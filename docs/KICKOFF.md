@@ -47,15 +47,19 @@
 | 2026-10-04 | 关卡 3 | 方向"D 原生 + 贴纸（推荐）"；主色"貘墨黑 #25232B（推荐）"                                                                             | `docs/design-language.md`、`src/ui/theme/tokens.ts`                          |
 | 2026-10-04 | 关卡 4 | 提交"提交并推送（推荐）"；账号"都还没有"；阶段 4"先配 CI，TestFlight 后接（推荐）"                                                    | 只配 GitHub Actions CI                                                       |
 | 2026-10-04 | 关卡 4 | Bundle ID："为什么要带邮箱就很奇怪"                                                                                                   | 待定，注册 Apple 账号时再定（候选 com.tapiro.app 等）                        |
+| 2026-10-04 | 阶段 5 | "直接开始阶段 5，磁盘已经清理了"；Bundle ID "app.tapiro"                                                                              | 验证模式、Debug 场景、2 个用例浅/深色通过                                    |
 
 ## 对外操作记录
 
 | 日期       | 操作                                                  | 你的确认（原话）                     |
 | ---------- | ----------------------------------------------------- | ------------------------------------ |
 | 2026-10-04 | 创建私有仓库 github.com/sudongyuer/tapiro 并推送 main | "私有仓库 sudongyuer/tapiro（推荐）" |
+| 2026-10-04 | 推送阶段 3 提交到 main                                | "提交并推送（推荐）"                 |
+| 2026-10-04 | 推送 CI 到 main；GitHub Actions 首次运行通过          | "公开吧，然后CI提交并推送"           |
+| 2026-10-04 | 仓库 sudongyuer/tapiro 设为公开（提交邮箱随之公开）   | "无所谓，直接公开"                   |
+| 2026-10-04 | 推送阶段 5 提交到 main                                | "提交并推送到main"                   |
 
 ## 下一步
 
-- 推送 CI 并确认 GitHub Actions 通过。
-- 阶段 5：离线界面验证（ios-ui-verify）。
+- 阶段 6：第一个功能（悬赏令）——先头脑风暴产品细节，再写 spec。
 - 待账号：注册 Apple Developer + Expo 后定 Bundle ID，接 EAS Build/Submit → TestFlight。

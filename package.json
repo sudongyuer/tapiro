@@ -41,7 +41,10 @@
     "typecheck": "tsc --noEmit",
     "check-specs": "node scripts/check-specs.mjs --dir docs/specs",
     "test": "bun test",
-    "design-check": "node scripts/design-check.mjs"
+    "design-check": "node scripts/design-check.mjs",
+    "verify:build": "verification/ui/build.sh",
+    "verify:ui": "python3 verification/ui/run.py",
+    "verify:clean": "rm -rf .verify"
   },
   "private": true
 }

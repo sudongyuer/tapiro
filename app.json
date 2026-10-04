@@ -7,10 +7,13 @@
     "icon": "./assets/images/icon.png",
     "scheme": "tapiro",
     "userInterfaceStyle": "automatic",
-    "platforms": ["ios"],
+    "platforms": [
+      "ios"
+    ],
     "ios": {
       "icon": "./assets/expo.icon",
-      "deploymentTarget": "26.0"
+      "deploymentTarget": "26.0",
+      "bundleIdentifier": "app.tapiro"
     },
     "plugins": [
       "expo-router",

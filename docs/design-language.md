@@ -111,7 +111,8 @@ One component renders status everywhere (`src/ui/StatusBadge`).
 System fonts only; nothing is bundled. Chinese renders in PingFang SC, Latin in SF Pro,
 numerals for money and counts in SF Rounded (`fontFamily: 'ui-rounded'`). Sizes are the iOS
 Dynamic Type defaults at the Large setting (Apple HIG, Typography → Specifications) and scale
-with the user's text size.
+with the user's text size. Acceptance runs at Large; there are no separate layouts for
+accessibility sizes.
 
 | Token                              | Value | Role                                                |
 | ---------------------------------- | ----- | --------------------------------------------------- |
@@ -132,7 +133,7 @@ with the user's text size.
 | `--text-meta`                      | `13`  | Time, poster, footers (Footnote)                    |
 | `--text-meta--line-height`         | `18`  |                                                     |
 
-Layouts must not truncate the reward or the primary action at accessibility sizes.
+The reward and the primary action wrap rather than truncate at any size.
 
 ## Spacing, radius, targets
 
@@ -188,7 +189,7 @@ Waiting states use a small 小貘 loop instead of a spinner. Every animation res
 
 ## Information architecture
 
-Navigation uses the system tab bar. Tabs, the first screen and how future verticals
+Navigation uses NativeTabs with a native Stack per tab (see AGENTS.md, UI baseline). Tabs, the first screen and how future verticals
 (租房 / 二手 / 拼车) are reached are decided in feature specs, not here.
 
 ## Component inventory
