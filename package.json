@@ -44,7 +44,8 @@
     "design-check": "node scripts/design-check.mjs",
     "verify:build": "verification/ui/build.sh",
     "verify:ui": "python3 verification/ui/run.py",
-    "verify:clean": "rm -rf .verify"
+    "verify:clean": "rm -rf .verify",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" app.json package.json"
   },
   "private": true
 }
