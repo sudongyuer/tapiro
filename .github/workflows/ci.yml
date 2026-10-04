@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
+      - run: bun install --frozen-lockfile
+      - run: bunx expo lint
+      - run: bunx tsc --noEmit
+      - run: bunx prettier --check "src/**/*.{ts,tsx}" app.json package.json
+      - run: bun test
+      - run: node scripts/design-check.mjs
+      - run: node scripts/check-specs.mjs --dir docs/specs
+      - run: bunx expo-doctor
+      - run: bunx expo export --platform ios --output-dir dist
+        env:
+          CI: '1'

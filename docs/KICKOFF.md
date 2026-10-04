@@ -45,6 +45,8 @@
 | 2026-10-04 | 关卡 3 | "想办法去调研类似的app……把他们整合到设计稿里面"                                                                                       | 调研同类、获奖 App，设计稿 https://claude.ai/artifact/34EC3qaCsv1ibJZ4oeGK3o |
 | 2026-10-04 | 关卡 3 | "整体风格不需要太卡通，只是吉祥物卡通就行了"                                                                                          | 界面系统风，只有小貘卡通；全系统字体                                         |
 | 2026-10-04 | 关卡 3 | 方向"D 原生 + 贴纸（推荐）"；主色"貘墨黑 #25232B（推荐）"                                                                             | `docs/design-language.md`、`src/ui/theme/tokens.ts`                          |
+| 2026-10-04 | 关卡 4 | 提交"提交并推送（推荐）"；账号"都还没有"；阶段 4"先配 CI，TestFlight 后接（推荐）"                                                    | 只配 GitHub Actions CI                                                       |
+| 2026-10-04 | 关卡 4 | Bundle ID："为什么要带邮箱就很奇怪"                                                                                                   | 待定，注册 Apple 账号时再定（候选 com.tapiro.app 等）                        |
 
 ## 对外操作记录
 
@@ -54,4 +56,6 @@
 
 ## 下一步
 
-- 关卡 4：阶段 4 CI 和 TestFlight，需要确认 Bundle ID、Apple 开发者账号和 EAS。
+- 推送 CI 并确认 GitHub Actions 通过。
+- 阶段 5：离线界面验证（ios-ui-verify）。
+- 待账号：注册 Apple Developer + Expo 后定 Bundle ID，接 EAS Build/Submit → TestFlight。
