@@ -1,0 +1,5 @@
+base idle: app=0.6% backboardd=0.0% | during-swipes: app=18.3% backboardd=5.8%
+lottie idle: app=0.5% backboardd=86.7% | during-swipes: app=19.7% backboardd=87.5%
+rive idle: app=4.2% backboardd=0.4% | during-swipes: app=19.2% backboardd=9.7%
+rea idle: app=64.8% backboardd=7.5% | during-swipes: app=78.3% backboardd=7.9%
+rea-lite(transform-only) idle: app=22.5% backboardd=5.6% | during-swipes: app=33.2% backboardd=6.4%

@@ -1,0 +1,2 @@
+base idle(0-3s): static (no frames emitted)
+base scroll: s=16.36 frames=862 fps=52.7 hitch>34ms=22 (2.6%) >50ms=14 max_gap_ms=250

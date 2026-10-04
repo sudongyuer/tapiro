@@ -1,0 +1,2 @@
+lottie idle(0-3s): fps=98.3 hitch>34ms=0
+lottie scroll: s=22.62 frames=1443 fps=63.8 hitch>34ms=0 (0.0%) >50ms=0 max_gap_ms=25

@@ -1,0 +1,2 @@
+rive idle(0-3s): fps=141.2 hitch>34ms=6
+rive scroll: s=21.00 frames=2128 fps=101.4 hitch>34ms=51 (2.4%) >50ms=43 max_gap_ms=185

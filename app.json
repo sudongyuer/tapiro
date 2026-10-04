@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Tapiro",
+    "slug": "tapiro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "tapiro",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios"],
+    "ios": {
+      "icon": "./assets/expo.icon",
+      "deploymentTarget": "26.0"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#208AEF",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

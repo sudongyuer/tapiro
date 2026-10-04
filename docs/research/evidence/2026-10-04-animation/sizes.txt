@@ -1,0 +1,8 @@
+base SIZE app_kb=52312 exe_bytes=1619024 frameworks_kb=48568 bundle_js_bytes=1427372
+lottie SIZE app_kb=61664 exe_bytes=11093248 frameworks_kb=48568 bundle_js_bytes=1513976
+rea SIZE app_kb=65656 exe_bytes=14069680 frameworks_kb=48568 bundle_js_bytes=2632832
+rive SIZE app_kb=74548 exe_bytes=13566144 frameworks_kb=59036 bundle_js_bytes=1496444
+base arm64_exe=799824 arm64_riveRuntime=0
+lottie arm64_exe=5424384 arm64_riveRuntime=0
+rea arm64_exe=6909872 arm64_riveRuntime=0
+rive arm64_exe=6537408 arm64_riveRuntime=5086448

@@ -1,0 +1,2 @@
+rea idle(0-3s): fps=58.7 hitch>34ms=2
+rea scroll: s=210.65 frames=11936 fps=56.7 hitch>34ms=191 (1.6%) >50ms=9 max_gap_ms=120
