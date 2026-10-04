@@ -1,0 +1,10 @@
+{
+  "cheatsheet": "docs/design-language.md",
+  "tokensTs": "src/ui/theme/tokens.ts",
+  "componentsDir": "src/ui",
+  "lintCommand": "bunx expo lint",
+  "scan": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/**/*.test.*"],
+  "allowHex": [],
+  "forbid": []
+}

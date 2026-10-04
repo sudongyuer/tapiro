@@ -77,6 +77,9 @@
 ## Checks
 
 - Before commit: `bunx expo lint <files>`, `bunx tsc --noEmit`, `bunx prettier --check <files>`.
+- Logic tests run with `bun test`. UI work runs `node scripts/design-check.mjs`; tokens live only in
+  `docs/design-language.md` and `src/ui/theme/tokens.ts`, and product code never uses raw colours,
+  font sizes or font families.
 - Tests when behavior changes; a production bundle when the build can change.
 - UI changes add or update a check under `verification/ui` and run it in light and dark;
   screenshots for state, video for motion. Missing scenes and timeouts fail.
@@ -96,3 +99,5 @@
   failed once with a TLS error.
 - Keep `eslint` on major 9. Reason: `eslint-plugin-react` (via `eslint-config-expo`) does not
   support ESLint 10; `expo lint` crashed with `contextOrFilename.getFilename is not a function`.
+- `tsconfig.json` lists global type packages in `types` (currently `bun`). Reason: TypeScript 6
+  no longer loads `@types/*` automatically; `bun:test` failed to resolve until it was listed.
