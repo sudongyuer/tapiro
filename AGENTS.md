@@ -82,6 +82,30 @@
 - `src/debug/`: development-only Debug scenes (fixtures + production components); reachable only
   when `__DEV__` or verify mode. `verification/ui/`: offline UI checks (see its README).
 
+## AI
+
+- Every cloud AI call goes through a Supabase Edge Function pinned to Singapore; no model or
+  provider key ships in the app. Reason: keys in a client are extractable.
+- Primary model: Qwen on Alibaba Model Studio international (Singapore), per-workspace
+  endpoint, pinned model IDs. Fallback: DeepSeek models through the same Model Studio account;
+  never the DeepSeek direct API. Reason: data stays outside the PRC and is not used for
+  training; direct DeepSeek stores data in the PRC (docs/research/2026-10-04-ai-providers.md).
+- Apple on-device Foundation Models is optional, always gated on
+  `SystemLanguageModel.default.availability`; Malay always uses the cloud path. Reason: no
+  Malay support; unavailable on mainland-China iPhones and pre-iPhone 15 Pro devices.
+- The AI never performs an action: tool calls produce drafts, and nothing is published,
+  accepted, cancelled or sent to another user without the user's tap.
+- Before the first cloud AI call, show a consent screen naming the provider and purpose, and
+  record the consent. Reason: App Review 5.1.2(i) and PDPA cross-border transfer.
+- A per-user daily limit on AI usage is enforced in the Edge Function.
+- Speech-to-text tries SpeechTranscriber → DictationTranscriber → SFSpeechRecognizer on device,
+  then cloud Qwen ASR; map en-MY to en-US. Speech is verified on a physical device only.
+  Reason: none of the engines produced output on the iOS 26.5 Simulator.
+- Native AI and speech live in `modules/tapiro-kit`: map native errors to typed result codes
+  in Swift, stream through events tagged with a `requestId`. Reason: thrown Swift errors reach
+  JS as untyped `UnexpectedException`.
+- Every AI flow has a manual path that works without AI.
+
 ## Docs and specs
 
 - Specs: `docs/specs/YYYY-MM-DD-<topic>-design.md`, indexed in `docs/specs/README.md`.
