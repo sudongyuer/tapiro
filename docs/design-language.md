@@ -17,8 +17,8 @@ from die-cut stickers.
 The skeleton (navigation, tab bar, lists, sheets, controls, semantic colours) belongs to the
 platform. Our own expression is spent in exactly these places:
 
-1. **Sticker moments**: post published, task completed, empty states, the sticker book. Speckle
-   background, one large die-cut sticker, at most one 小貘.
+1. **Sticker moments**: post published, task completed, empty states, the sticker book, errors.
+   Speckle background, one large die-cut sticker, 小貘 at full size.
 2. **Type stickers**: each task type has a small die-cut icon (40–48 pt) on list cards.
 3. **One ink accent**: 貘墨黑, the tapir's own colour, for the primary pill button.
 4. **Rounded numerals**: rewards and counts in SF Rounded.
@@ -35,15 +35,33 @@ Everything else uses platform defaults. Do not imitate a native control the plat
 4. **Status is colour + shape.** A state is never carried by colour alone.
 5. **Type is semantic.** Every text node uses a role below. No raw font sizes, no bundled fonts.
 6. **Only tokens.** No raw hex or font sizes outside `src/ui/theme/tokens.ts`.
-7. **Mascot only in moments.** Never on list cards or navigation chrome.
+7. **The mascot can appear anywhere, at the size the screen class allows.** Everyday screens
+   show the 小貘 character only as a small head (≤ 32 pt) with an expression; moment screens show
+   it at full size. Mascot graphics (trust heads, review faces, the coin, tab icons) are allowed
+   everywhere. There is no per-screen limit.
 8. **Motion is named by intent** and respects Reduce Motion.
+9. **Detail and motion are the signature.** Every object the user earns, spends or completes
+   (coins, stickers, the tapir) is crafted with material detail and has a purposeful animation;
+   chrome stays native and calm. Reference: the coin study on the design canvas.
+10. **Signature motion is for key moments.** Frequent actions (lists, buttons, tab switches) use
+    system animations. Stickers and large 小貘 animations play at moments; every celebration can
+    be skipped or interrupted.
+11. **Picture, sound and haptic land together.** One result maps to one haptic (success,
+    error, impact) and is never reused for another meaning.
+
+Sources for 8–11 and the mascot and voice rules below: `docs/research/2026-10-05-design-methods.md`
+(Duolingo, Monzo, CapWords, Karrot SEED and Apple HIG, checked against each brand's own
+publications).
 
 ## Screen classes
 
-| Class    | Screens                                                    | Background                | Mascot      | Stickers          |
-| -------- | ---------------------------------------------------------- | ------------------------- | ----------- | ----------------- |
-| Everyday | list, detail, chat, post flow, settings                    | system grouped background | never       | type icons only   |
-| Moment   | post published, completed, empty, sticker book, onboarding | moment speckle            | at most one | one large sticker |
+| Class    | Screens                                                           | Background                | Mascot       | Stickers          |
+| -------- | ----------------------------------------------------------------- | ------------------------- | ------------ | ----------------- |
+| Everyday | list, detail, chat, post flow, settings                           | system grouped background | head ≤ 32 pt | type icons only   |
+| Moment   | post published, completed, empty, sticker book, onboarding, error | moment speckle            | full size    | one large sticker |
+
+Everyday screens are the ones people use daily to get something done. Moment screens are rare
+and carry emotion.
 
 ## Layers
 
@@ -82,7 +100,8 @@ System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackg
 | `--color-moment-grain`   | `#3C321E21` | `#F4F0E61A` | Speckle dots on moment screens  |
 | `--color-sticker-border` | `#FFFFFF`   | `#FFFFFF`   | Die-cut border of every sticker |
 | `--color-sticker-shadow` | `#1E1B222E` | `#0000004D` | Sticker drop shadow             |
-| `--color-mascot-ink`     | `#25232B`   |             | 小貘 head, legs, rump           |
+| `--color-mascot-ink`     | `#2E2B35`   |             | 小貘 head, legs, rump           |
+| `--color-mascot-line`    | `#1E1C22`   |             | 小貘 outline                    |
 | `--color-mascot-saddle`  | `#F3EFE6`   |             | 小貘 saddle and ear rims        |
 | `--color-mascot-blush`   | `#FF8A7A`   |             | 小貘 cheeks                     |
 
@@ -170,10 +189,30 @@ Radii are continuous corners. Buttons are pills.
 
 ## Mascot
 
-- 小貘: black head, legs and rump, cream saddle, white-rimmed ears, blush cheeks (tokens above).
-  Animated with Rive (see AGENTS.md).
-- Appears only on moment screens and waiting states; never on list cards or navigation chrome.
-- Final character art comes from a designer; mockup drawings are placeholders.
+- **Drawing: style C1** (design canvas, 品牌元素 → 小貘 C 重画). Big head, short legs; one outer
+  outline in mascot-line, and a single inner line on the saddle edge. The saddle wraps from
+  behind the shoulders to the rump. Cream-rimmed ears, round eyes with a highlight, blush
+  cheeks. Side view: a short, soft, drooping trunk. Front view: a round snout with two nostrils,
+  no outline. Far-side legs are one shade darker. Every expression, pose, the coin, badges and
+  growth stages are drawn from these rules; no second style.
+- **Expressions follow real events.** The same event always shows the same expression; a tap
+  stops any mascot animation.
+- **Any moment, including negative ones.** Errors may use dizzy; disputes, reports and money
+  moments may use upset or angry. The copy stays plain (see Voice).
+- **One trait, one meaning.** The saddle carries things; the trunk points and hands things over.
+  New poses do not have to relate to bounties.
+- While 小貘 drafts a bounty it shows its thinking expression next to the draft.
+- Animated with Rive (see AGENTS.md). Final character art comes from a designer, following C1.
+
+## Voice
+
+| Context                                                                     | Tone            |
+| --------------------------------------------------------------------------- | --------------- |
+| Completion, sticker book, empty states, onboarding                          | Playful allowed |
+| Errors, disputes, reports, cancellations, payments, coins, account security | Plain, no jokes |
+
+Humour is seasoning: the user is part of the joke, never its target. When a joke does not
+translate into all three languages, drop it.
 
 ## Motion
 
@@ -184,8 +223,20 @@ Radii are continuous corners. Buttons are pills.
 | `--duration-settle` | `240` | Layout changes, card pop (spring)                          |
 | `--duration-peel`   | `420` | Sticker peels off and flies into the sticker book (spring) |
 
-Completion pairs `peel` with a light haptic and an optional paper sound (off by default).
-Waiting states use a small 小貘 loop instead of a spinner. Every animation respects Reduce Motion.
+Motion principles:
+
+- **Weight**: things that land squash and settle (spring), never stop dead.
+- **Cause and effect**: the user sees where an object comes from and where it goes (coin into
+  the bounty slot, coins from the sticker into the balance).
+- **Paired with haptics and sound**: every signature animation has a matching haptic and sound.
+- **Interruptible and skippable**: no animation blocks input for more than its duration.
+- **Waiting has a picture**: split a wait into steps the user takes part in (confirm the photo
+  and type while the server works) and show a small 小貘 loop instead of a spinner.
+
+Completion pairs `peel` with a light haptic and a paper sound. Sound is on by default, follows
+the ring/silent switch, and can be turned off in settings. Every animation respects Reduce
+Motion. Easing curves and a reduced-motion token set are added with the first production
+animation.
 
 ## Information architecture
 

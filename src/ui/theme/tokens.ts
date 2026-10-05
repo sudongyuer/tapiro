@@ -10,7 +10,8 @@ export const vars = {
   '--color-moment-grain': '#3C321E21',
   '--color-sticker-border': '#FFFFFF',
   '--color-sticker-shadow': '#1E1B222E',
-  '--color-mascot-ink': '#25232B',
+  '--color-mascot-ink': '#2E2B35',
+  '--color-mascot-line': '#1E1C22',
   '--color-mascot-saddle': '#F3EFE6',
   '--color-mascot-blush': '#FF8A7A',
 
