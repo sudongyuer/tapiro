@@ -14,8 +14,7 @@
       "bundleIdentifier": "app.tapiro",
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true
-      },
-      "supportsRTL": false
+      }
     },
     "plugins": [
       "expo-router",
@@ -44,7 +43,7 @@
           }
         }
       ],
-      "expo-secure-store",
+      ["expo-secure-store", { "faceIDPermission": false }],
       "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {
