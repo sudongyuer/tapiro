@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { findScene } from '@/debug/scenes';
+import { useI18n } from '@/lib/i18n';
 import { debugToolsEnabled } from '@/lib/uiVerify';
 
 export default function DebugScene() {
   const { scene: id } = useLocalSearchParams<{ scene: string }>();
+  const { t } = useI18n();
   const [ready, setReady] = useState(false);
   const scene = findScene(id);
 
@@ -15,7 +17,7 @@ export default function DebugScene() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ headerShown: true, title: scene.title }} />
+      <Stack.Screen options={{ headerShown: true, title: t(scene.titleKey) }} />
       <scene.Component onReady={() => setReady(true)} />
       {ready && <View testID="ui-verify-ready" accessible style={styles.marker} />}
     </View>

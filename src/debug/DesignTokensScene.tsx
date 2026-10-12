@@ -1,20 +1,35 @@
+import type { ParseKeys } from 'i18next';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { PlatformColor, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { typeRoles, vars, type TokenName } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-const STATUSES: { label: string; symbol: SFSymbol; color: TokenName | null }[] = [
-  { label: '待接单', symbol: 'circle', color: null },
-  { label: '进行中', symbol: 'circle.fill', color: '--color-accent' },
-  { label: '待确认', symbol: 'exclamationmark.circle.fill', color: '--color-warning' },
-  { label: '已完成', symbol: 'checkmark.circle.fill', color: '--color-success' },
-  { label: '紧急', symbol: 'clock.badge.exclamationmark', color: '--color-urgent' },
+const STATUSES: { labelKey: ParseKeys; symbol: SFSymbol; color: TokenName | null }[] = [
+  { labelKey: 'debug.tokens.statusOpen', symbol: 'circle', color: null },
+  { labelKey: 'debug.tokens.statusActive', symbol: 'circle.fill', color: '--color-accent' },
+  {
+    labelKey: 'debug.tokens.statusPending',
+    symbol: 'exclamationmark.circle.fill',
+    color: '--color-warning',
+  },
+  {
+    labelKey: 'debug.tokens.statusDone',
+    symbol: 'checkmark.circle.fill',
+    color: '--color-success',
+  },
+  {
+    labelKey: 'debug.tokens.statusUrgent',
+    symbol: 'clock.badge.exclamationmark',
+    color: '--color-urgent',
+  },
 ];
 
 export function DesignTokensScene({ onReady }: { onReady: () => void }) {
   const { color } = useTheme();
+  const { t } = useI18n();
 
   return (
     <ScrollView
@@ -26,7 +41,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
       <View style={styles.card}>
         {typeRoles.map((role) => (
           <AppText key={role} variant={role} testID={`tokens-type-${role}`}>
-            {role === 'reward' ? 'RM 15' : `${role} 悬赏令`}
+            {role === 'reward' ? t('debug.tokens.reward') : t('debug.tokens.roleSample', { role })}
           </AppText>
         ))}
       </View>
@@ -34,7 +49,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
       <View style={styles.card}>
         {STATUSES.map((status) => (
           <View
-            key={status.label}
+            key={status.labelKey}
             accessible
             style={styles.statusRow}
             testID={`tokens-status-${status.symbol}`}
@@ -44,7 +59,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
               size={20}
               tintColor={status.color ? color(status.color) : PlatformColor('secondaryLabel')}
             />
-            <AppText variant="body">{status.label}</AppText>
+            <AppText variant="body">{t(status.labelKey)}</AppText>
           </View>
         ))}
       </View>
@@ -58,7 +73,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
           variant="body"
           style={[styles.primaryLabel, { color: color('--color-on-accent') }]}
         >
-          接单
+          {t('debug.tokens.accept')}
         </AppText>
       </Pressable>
 
@@ -67,7 +82,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
         testID="tokens-moment"
         style={[styles.moment, { backgroundColor: color('--color-moment-bg') }]}
       >
-        <AppText variant="moment-title">悬赏贴出去啦</AppText>
+        <AppText variant="moment-title">{t('debug.tokens.posted')}</AppText>
       </View>
     </ScrollView>
   );

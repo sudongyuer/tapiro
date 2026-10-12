@@ -1,12 +1,14 @@
 import { Link, Redirect, Stack } from 'expo-router';
 import { PlatformColor, ScrollView, StyleSheet } from 'react-native';
 
+import { useI18n } from '@/lib/i18n';
 import { scenes } from '@/debug/scenes';
 import { debugToolsEnabled } from '@/lib/uiVerify';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 
 export default function DebugIndex() {
+  const { t } = useI18n();
   if (!debugToolsEnabled) return <Redirect href="/" />;
 
   return (
@@ -15,7 +17,7 @@ export default function DebugIndex() {
       style={styles.screen}
       contentContainerStyle={styles.content}
     >
-      <Stack.Screen options={{ headerShown: true, title: 'Debug' }} />
+      <Stack.Screen options={{ headerShown: true, title: t('debug.title') }} />
       {scenes.map((scene) => (
         <Link
           key={scene.id}
@@ -23,7 +25,7 @@ export default function DebugIndex() {
           testID={`debug-scene-${scene.id}`}
           style={styles.row}
         >
-          <AppText variant="body">{scene.title}</AppText>
+          <AppText variant="body">{t(scene.titleKey)}</AppText>
         </Link>
       ))}
     </ScrollView>

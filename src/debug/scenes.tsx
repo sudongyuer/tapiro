@@ -4,12 +4,12 @@ import { DesignTokensScene } from './DesignTokensScene';
 
 export type Scene = {
   id: string;
-  title: string;
+  titleKey: 'debug.tokens.title';
   Component: ComponentType<{ onReady: () => void }>;
 };
 
 export const scenes: Scene[] = [
-  { id: 'design-tokens', title: 'Design tokens', Component: DesignTokensScene },
+  { id: 'design-tokens', titleKey: 'debug.tokens.title', Component: DesignTokensScene },
 ];
 
 export function findScene(id: string) {
