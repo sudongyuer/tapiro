@@ -44,7 +44,8 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {
       "typedRoutes": true,

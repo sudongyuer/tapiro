@@ -3,7 +3,6 @@ import type { Translation } from '../resources';
 const ms: Translation = {
   account: {
     signIn: {
-      apple: 'Log masuk dengan Apple',
       google: 'Log masuk dengan Google',
       error: {
         notConfigured: 'Log masuk belum disediakan lagi.',

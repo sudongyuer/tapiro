@@ -84,6 +84,24 @@ describe('supabase auth service', () => {
     expect(signInWithIdToken).not.toHaveBeenCalled();
   });
 
+  test('a throwing adapter or client maps to failed', async () => {
+    const { client, signInWithIdToken } = fakeClient();
+    const broken: IdTokenProvider = {
+      requestIdToken: async () => {
+        throw new Error('adapter crashed');
+      },
+    };
+    const service = createSupabaseAuthService(client, { apple: broken });
+    expect(await service.signIn('apple')).toEqual({ ok: false, reason: 'failed' });
+    signInWithIdToken.mockImplementationOnce(async () => {
+      throw new Error('client crashed');
+    });
+    expect(await createSupabaseAuthService(client, { apple }).signIn('apple')).toEqual({
+      ok: false,
+      reason: 'failed',
+    });
+  });
+
   test('maps rejected and unreachable sign-in', async () => {
     const rejected = fakeClient({ signInError: new AuthApiError('bad token', 400, undefined) });
     expect(await createSupabaseAuthService(rejected.client, { apple }).signIn('apple')).toEqual({

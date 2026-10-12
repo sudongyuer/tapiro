@@ -77,40 +77,56 @@ export function createChunkedStorage(
   store: KeyValueStore,
   { chunkBytes = DEFAULT_CHUNK_BYTES, newId = newGenerationId } = {},
 ): ChunkedStorage {
+  const pending = new Map<string, Promise<unknown>>();
+
+  function serialized<T>(key: string, operation: () => Promise<T>): Promise<T> {
+    const result = (pending.get(key) ?? Promise.resolve()).then(operation, operation);
+    const tail = result.catch(() => {});
+    pending.set(key, tail);
+    tail.then(() => {
+      if (pending.get(key) === tail) pending.delete(key);
+    });
+    return result;
+  }
+
   async function deleteChunks(key: string, manifest: Manifest) {
     for (let index = 0; index < manifest.count; index++) {
       await store.deleteItemAsync(chunkKey(key, manifest, index));
     }
   }
 
+  async function readItem(key: string) {
+    const manifest = parseManifest(await store.getItemAsync(key));
+    if (!manifest) return null;
+    let value = '';
+    for (let index = 0; index < manifest.count; index++) {
+      const chunk = await store.getItemAsync(chunkKey(key, manifest, index));
+      if (chunk === null) return null;
+      value += chunk;
+    }
+    return value;
+  }
+
+  async function writeItem(key: string, value: string) {
+    const previous = parseManifest(await store.getItemAsync(key));
+    const chunks = splitUtf8(value, chunkBytes);
+    const manifest: Manifest = { id: newId(), count: chunks.length };
+    for (const [index, chunk] of chunks.entries()) {
+      await store.setItemAsync(chunkKey(key, manifest, index), chunk);
+    }
+    await store.setItemAsync(key, JSON.stringify(manifest));
+    if (previous) await deleteChunks(key, previous);
+  }
+
+  async function deleteItem(key: string) {
+    const manifest = parseManifest(await store.getItemAsync(key));
+    await store.deleteItemAsync(key);
+    if (manifest) await deleteChunks(key, manifest);
+  }
+
   return {
-    async getItem(key) {
-      const manifest = parseManifest(await store.getItemAsync(key));
-      if (!manifest) return null;
-      let value = '';
-      for (let index = 0; index < manifest.count; index++) {
-        const chunk = await store.getItemAsync(chunkKey(key, manifest, index));
-        if (chunk === null) return null;
-        value += chunk;
-      }
-      return value;
-    },
-
-    async setItem(key, value) {
-      const previous = parseManifest(await store.getItemAsync(key));
-      const chunks = splitUtf8(value, chunkBytes);
-      const manifest: Manifest = { id: newId(), count: chunks.length };
-      for (const [index, chunk] of chunks.entries()) {
-        await store.setItemAsync(chunkKey(key, manifest, index), chunk);
-      }
-      await store.setItemAsync(key, JSON.stringify(manifest));
-      if (previous) await deleteChunks(key, previous);
-    },
-
-    async removeItem(key) {
-      const manifest = parseManifest(await store.getItemAsync(key));
-      await store.deleteItemAsync(key);
-      if (manifest) await deleteChunks(key, manifest);
-    },
+    getItem: (key) => serialized(key, () => readItem(key)),
+    setItem: (key, value) => serialized(key, () => writeItem(key, value)),
+    removeItem: (key) => serialized(key, () => deleteItem(key)),
   };
 }

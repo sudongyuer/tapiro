@@ -3,7 +3,6 @@ import type { Translation } from '../resources';
 const en: Translation = {
   account: {
     signIn: {
-      apple: 'Sign in with Apple',
       google: 'Sign in with Google',
       error: {
         notConfigured: 'Sign-in isn’t set up yet.',

@@ -7,7 +7,13 @@ import {
 
 import { createSessionStore } from './sessionStore';
 import { toAccountUser } from './toAccountUser';
-import type { AuthService, ProviderAdapters } from './types';
+import type {
+  AuthProvider,
+  AuthService,
+  IdTokenProvider,
+  ProviderAdapters,
+  SignInResult,
+} from './types';
 
 export const ACCOUNT_DELETE_FUNCTION = 'account-delete';
 export const ACCOUNT_DELETE_BLOCKED_STATUS = 409;
@@ -32,16 +38,11 @@ export function createSupabaseAuthService(
     async signIn(provider) {
       const adapter = adapters[provider];
       if (!client || !adapter) return { ok: false, reason: 'notConfigured' };
-      const token = await adapter.requestIdToken();
-      if (!token.ok) return { ok: false, reason: token.reason };
-      const { error } = await client.auth.signInWithIdToken({
-        provider,
-        token: token.idToken,
-        nonce: token.nonce,
-        access_token: token.accessToken,
-      });
-      if (!error) return { ok: true };
-      return { ok: false, reason: isAuthRetryableFetchError(error) ? 'network' : 'failed' };
+      try {
+        return await signInWithAdapter(client, provider, adapter);
+      } catch {
+        return { ok: false, reason: 'failed' };
+      }
     },
 
     async signOut() {
@@ -61,4 +62,21 @@ export function createSupabaseAuthService(
       return { ok: true };
     },
   };
+}
+
+async function signInWithAdapter(
+  client: SupabaseClient,
+  provider: AuthProvider,
+  adapter: IdTokenProvider,
+): Promise<SignInResult> {
+  const token = await adapter.requestIdToken();
+  if (!token.ok) return { ok: false, reason: token.reason };
+  const { error } = await client.auth.signInWithIdToken({
+    provider,
+    token: token.idToken,
+    nonce: token.nonce,
+    access_token: token.accessToken,
+  });
+  if (!error) return { ok: true };
+  return { ok: false, reason: isAuthRetryableFetchError(error) ? 'network' : 'failed' };
 }

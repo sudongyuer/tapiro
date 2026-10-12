@@ -1,7 +1,6 @@
 export default {
   account: {
     signIn: {
-      apple: '通过 Apple 登录',
       google: '通过 Google 登录',
       error: {
         notConfigured: '登录还没配置好，暂时不能用',

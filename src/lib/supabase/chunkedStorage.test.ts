@@ -83,6 +83,27 @@ describe('chunked storage', () => {
     expect(await storage.getItem('k')).toBeNull();
   });
 
+  test('serializes interleaved operations on the same key', async () => {
+    const { store } = memoryStore(2048);
+    const tick = () => new Promise((resolve) => setTimeout(resolve, Math.random() * 3));
+    const slow: KeyValueStore = {
+      getItemAsync: async (key) => (await tick(), store.getItemAsync(key)),
+      setItemAsync: async (key, value) => (await tick(), store.setItemAsync(key, value)),
+      deleteItemAsync: async (key) => (await tick(), store.deleteItemAsync(key)),
+    };
+    const storage = createChunkedStorage(slow, { chunkBytes: 100 });
+    const second = session.replace('u1', 'u2');
+    const results = await Promise.all([
+      storage.setItem('k', session),
+      storage.getItem('k'),
+      storage.setItem('k', second),
+      storage.getItem('k'),
+      storage.removeItem('k'),
+      storage.getItem('k'),
+    ]);
+    expect(results).toEqual([undefined, session, undefined, second, undefined, null]);
+  });
+
   test('stores an empty string', async () => {
     const { store } = memoryStore(2048);
     const storage = createChunkedStorage(store);
