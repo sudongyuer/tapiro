@@ -45,7 +45,10 @@
     "verify:build": "verification/ui/build.sh",
     "verify:ui": "python3 verification/ui/run.py",
     "verify:clean": "rm -rf .verify",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" app.json package.json"
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" app.json package.json",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db"
   },
   "private": true
 }
