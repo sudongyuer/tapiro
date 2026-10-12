@@ -85,12 +85,18 @@ def run_case(case, scene, locale, appearance, udid, out):
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=180,
         )
-        message = (proc.stdout + proc.stderr).strip().splitlines()[-1] if (proc.stdout + proc.stderr).strip() else ''
+        (out / 'log.txt').write_text(proc.stdout + proc.stderr)
+        lines = (proc.stdout if proc.returncode == 0 else proc.stderr or proc.stdout).strip().splitlines()
+        message = lines[-1] if lines else ''
         if proc.returncode != 0:
             status = 'fail'
-            (out / 'log.txt').write_text(proc.stdout + proc.stderr)
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as error:
         status, message = 'fail', 'timeout after 180 s'
+        partial = ''.join(p.decode() if isinstance(p, bytes) else p or '' for p in (error.stdout, error.stderr))
+        (out / 'log.txt').write_text(partial)
+        calls = sorted(float(m) for m in re.findall(r'^\s*([\d.]+)s axe ', partial, re.M))
+        if calls:
+            message += f'; {len(calls)} axe calls, median {calls[len(calls) // 2]:.1f} s'
     if status == 'fail':
         subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')], capture_output=True)
     recorder.send_signal(signal.SIGINT)

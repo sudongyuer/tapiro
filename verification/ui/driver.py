@@ -1,5 +1,6 @@
 import json
 import struct
+import sys
 import zlib
 import subprocess
 import time
@@ -14,7 +15,9 @@ class UI:
         self.output.mkdir(parents=True, exist_ok=True)
 
     def axe(self, *args, timeout=20):
+        started = time.monotonic()
         out = subprocess.check_output(['axe', *args, '--udid', self.udid], text=True, timeout=timeout)
+        print(f'{time.monotonic() - started:5.1f}s axe {" ".join(args)}', file=sys.stderr, flush=True)
         if out.startswith('Error:'):
             raise RuntimeError(out.strip())
         return out
@@ -40,6 +43,23 @@ class UI:
             time.sleep(0.2)  # polling interval, not an assertion
         raise AssertionError(message)
 
+    def settled(self, match, message, timeout=30):
+        previous = None
+
+        def check(items):
+            nonlocal previous
+            found = match(items)
+            current = found.get('frame') if found else None
+            stable = found if current is not None and current == previous else None
+            previous = current
+            return stable
+
+        return self.wait(check, message, timeout)
+
+    def gone(self, identifier, timeout=30):
+        self.wait(lambda items: all(i.get('AXUniqueId') != identifier for i in items),
+                  f'{identifier} is still on screen', timeout)
+
     def element(self, identifier, timeout=30):
         return self.wait(
             lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
@@ -64,13 +84,20 @@ class UI:
             timeout,
         )
 
+    # A target found during a push, pop or sheet transition is still moving, and a tap at its
+    # activation point can land beside it; tap only once two reads give the same frame.
     def tap(self, identifier):
-        self.element(identifier)
+        self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
+                     f'{identifier} never settled')
         self.axe('tap', '--id', identifier, '--post-delay', '0.5')
 
     def tap_label(self, label):
-        self.labelled(label)
+        self.settled(lambda items: next((i for i in items if i.get('AXLabel') == label), None),
+                     f'element labelled {label} never settled')
         self.axe('tap', '--label', label, '--post-delay', '0.5')
+
+    def tap_point(self, x, y):
+        self.axe('tap', '-x', str(round(x)), '-y', str(round(y)), '--post-delay', '0.5')
 
     def type(self, text):
         self.axe('type', text)
