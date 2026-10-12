@@ -24,7 +24,13 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
 {
   "error": "unsettled_payments",
   "payments": [
-    { "id": "…", "title": "Ride to KLIA", "counterpartName": "Aisyah", "amountSen": 2500, "direction": "owe" }
+    {
+      "id": "…",
+      "title": "Ride to KLIA",
+      "counterpartName": "Aisyah",
+      "amountSen": 2500,
+      "direction": "owe"
+    }
   ]
 }
 ```

@@ -160,6 +160,8 @@
   no longer loads `@types/*` automatically; `bun:test` failed to resolve until it was listed.
 - UI cases start scenes with the launch argument `-uiVerifyScene <id>`, never `simctl openurl`.
   Reason: custom-scheme deep links raise the system "Open in Tapiro?" prompt and block the run.
+- After `expo prebuild`, point `NODE_BINARY` in `ios/.xcode.env.local` at a current Node (Homebrew).
+  Reason: `pod install` writes the first `node` on PATH (Node 18 here); the Xcode bundle failed.
 - Keep the root `ThemeProvider` in `src/app/_layout.tsx`, and every case asserts appearance with
   pixels. Reason: removing it left the navigation bar white in dark mode while all AX
   assertions passed; only a screenshot showed it.
