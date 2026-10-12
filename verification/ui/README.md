@@ -19,10 +19,11 @@ Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 
 ## Cases
 
-| Case            | Behaviour                                                                                                            | Scene           |
-| --------------- | -------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `home_launches` | The app launches offline in verify mode and shows the home screen filling the display.                               | —               |
-| `design_tokens` | The design-tokens scene renders every type role, the status set and a 44 pt accent button in the current appearance. | `design-tokens` |
+| Case              | Behaviour                                                                                                            | Scene           |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `home_launches`   | The app launches offline in verify mode and shows the home screen filling the display.                               | —               |
+| `design_tokens`   | The design-tokens scene renders every type role, the status set and a 44 pt accent button in the current appearance. | `design-tokens` |
+| `sign_in_fixture` | Verify mode starts signed out and signs in as the fixture user after tapping a provider button.                      | `sign-in`       |
 
 ## Adding a case
 

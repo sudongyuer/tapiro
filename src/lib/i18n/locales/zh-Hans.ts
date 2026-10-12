@@ -1,6 +1,24 @@
 export default {
+  account: {
+    signIn: {
+      apple: '通过 Apple 登录',
+      google: '通过 Google 登录',
+      error: {
+        notConfigured: '登录还没配置好，暂时不能用',
+        cancelled: '已取消登录',
+        failed: '登录没成功，请再试一次',
+        network: '没有网络，连上后再试',
+      },
+    },
+  },
   debug: {
     title: '调试',
+    account: {
+      title: '登录',
+      loading: '正在读取登录状态',
+      signedOut: '未登录',
+      signedIn: '已登录：{{name}}',
+    },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',

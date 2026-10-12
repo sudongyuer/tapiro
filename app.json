@@ -43,7 +43,8 @@
             "ios": ["zh-Hans", "en", "ms"]
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

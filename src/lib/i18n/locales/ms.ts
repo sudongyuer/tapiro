@@ -1,8 +1,26 @@
 import type { Translation } from '../resources';
 
 const ms: Translation = {
+  account: {
+    signIn: {
+      apple: 'Log masuk dengan Apple',
+      google: 'Log masuk dengan Google',
+      error: {
+        notConfigured: 'Log masuk belum disediakan lagi.',
+        cancelled: 'Log masuk dibatalkan.',
+        failed: 'Tidak dapat log masuk. Cuba lagi.',
+        network: 'Tiada sambungan. Cuba lagi apabila dalam talian.',
+      },
+    },
+  },
   debug: {
     title: 'Nyahpepijat',
+    account: {
+      title: 'Log masuk',
+      loading: 'Menyemak log masuk',
+      signedOut: 'Belum log masuk',
+      signedIn: 'Log masuk sebagai {{name}}',
+    },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',
