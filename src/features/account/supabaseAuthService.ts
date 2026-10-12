@@ -34,7 +34,6 @@ export function createSupabaseAuthService(
   return {
     getState: store.get,
     subscribe: store.subscribe,
-    isProviderConfigured: (provider) => Boolean(client && adapters[provider]),
 
     async signIn(provider) {
       const adapter = adapters[provider];
@@ -47,7 +46,7 @@ export function createSupabaseAuthService(
     },
 
     async signOut() {
-      await client?.auth.signOut();
+      await client?.auth.signOut({ scope: 'local' }).catch(() => {});
     },
 
     async deleteAccount() {
@@ -84,6 +83,8 @@ async function signInWithAdapter(
     nonce: token.nonce,
     access_token: token.accessToken,
   });
-  if (!error) return { ok: true };
-  return { ok: false, reason: isAuthRetryableFetchError(error) ? 'network' : 'failed' };
+  if (error) return { ok: false, reason: isAuthRetryableFetchError(error) ? 'network' : 'failed' };
+  const fullName = token.fullName?.trim();
+  if (fullName) await client.auth.updateUser({ data: { full_name: fullName } }).catch(() => {});
+  return { ok: true };
 }

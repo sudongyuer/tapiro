@@ -20,7 +20,6 @@ export function initI18n() {
     fallbackLng: FALLBACK_LANGUAGE,
     initAsync: false,
     interpolation: { escapeValue: false },
-    returnNull: false,
   });
   return i18next;
 }

@@ -33,7 +33,12 @@ describe('parseUnsettledPayments', () => {
   });
 });
 
-test('formatRinggit shows sen as RM with two decimals', () => {
-  expect(formatRinggit(1250)).toBe('RM 12.50');
-  expect(formatRinggit(5)).toBe('RM 0.05');
-});
+test.each(['zh-Hans', 'en', 'ms'])(
+  'formatRinggit shows sen as RM with two decimals in %s',
+  (locale) => {
+    const normalized = (sen: number) => formatRinggit(sen, locale).replace(/\s/g, ' ');
+    expect(normalized(1250)).toMatch(/^RM ?12\.50$/);
+    expect(normalized(5)).toMatch(/^RM ?0\.05$/);
+    expect(normalized(123456)).toMatch(/^RM ?1,234\.56$/);
+  },
+);

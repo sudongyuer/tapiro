@@ -31,7 +31,7 @@ export function DeleteAccountSheet({
   onCancel: () => void;
   onLayout?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { color } = useTheme();
   const [guard] = useState(createInFlightGuard);
   const [pending, setPending] = useState(false);
@@ -94,7 +94,7 @@ export function DeleteAccountSheet({
               <AppText variant="secondary" tone="secondaryLabel">
                 {t(`account.delete.payment.${payment.direction}`, {
                   name: payment.counterpartName,
-                  amount: formatRinggit(payment.amountSen),
+                  amount: formatRinggit(payment.amountSen, language),
                 })}
               </AppText>
             </View>

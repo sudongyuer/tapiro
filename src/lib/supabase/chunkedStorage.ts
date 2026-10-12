@@ -111,10 +111,15 @@ export function createChunkedStorage(
     const previous = parseManifest(await store.getItemAsync(key));
     const chunks = splitUtf8(value, chunkBytes);
     const manifest: Manifest = { id: newId(), count: chunks.length };
-    for (const [index, chunk] of chunks.entries()) {
-      await store.setItemAsync(chunkKey(key, manifest, index), chunk);
+    try {
+      for (const [index, chunk] of chunks.entries()) {
+        await store.setItemAsync(chunkKey(key, manifest, index), chunk);
+      }
+      await store.setItemAsync(key, JSON.stringify(manifest));
+    } catch (error) {
+      await deleteChunks(key, manifest).catch(() => {});
+      throw error;
     }
-    await store.setItemAsync(key, JSON.stringify(manifest));
     if (previous) await deleteChunks(key, previous);
   }
 

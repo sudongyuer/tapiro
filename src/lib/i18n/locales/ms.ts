@@ -21,6 +21,7 @@ const ms: Translation = {
       placeholder: 'Masukkan nama anda',
       footer: 'Pelajar lain akan melihat nama ini. Maksimum 40 aksara.',
       avatar: 'Foto profil',
+      signOut: 'Log Keluar',
       continue: 'Teruskan',
       error: {
         empty: 'Masukkan nama.',

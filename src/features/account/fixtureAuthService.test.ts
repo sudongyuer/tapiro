@@ -7,11 +7,8 @@ import {
 } from './fixtureAuthService';
 
 describe('fixture auth service', () => {
-  test('starts signed out with every provider configured', () => {
-    const service = createFixtureAuthService();
-    expect(service.getState()).toEqual({ status: 'signedOut' });
-    expect(service.isProviderConfigured('apple')).toBe(true);
-    expect(service.isProviderConfigured('google')).toBe(true);
+  test('starts signed out', () => {
+    expect(createFixtureAuthService().getState()).toEqual({ status: 'signedOut' });
   });
 
   test('signs in as the fixture user for the tapped provider and notifies', async () => {

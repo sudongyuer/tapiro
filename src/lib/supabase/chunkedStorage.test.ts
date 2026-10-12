@@ -104,6 +104,39 @@ describe('chunked storage', () => {
     expect(results).toEqual([undefined, session, undefined, second, undefined, null]);
   });
 
+  test('a write that fails partway removes its chunks and keeps the previous value', async () => {
+    const { store, items } = memoryStore(2048);
+    const storage = createChunkedStorage(store, { chunkBytes: 100 });
+    await storage.setItem('k', 'previous');
+    const before = new Map(items);
+    let writes = 0;
+    const failing: KeyValueStore = {
+      ...store,
+      setItemAsync: async (key, value) => {
+        if (++writes === 3) throw new Error('keychain full');
+        return store.setItemAsync(key, value);
+      },
+    };
+    const flaky = createChunkedStorage(failing, { chunkBytes: 100 });
+    await expect(flaky.setItem('k', session)).rejects.toThrow('keychain full');
+    expect(items).toEqual(before);
+    expect(await storage.getItem('k')).toBe('previous');
+  });
+
+  test('a failed manifest write removes every new chunk', async () => {
+    const { store, items } = memoryStore(2048);
+    const failing: KeyValueStore = {
+      ...store,
+      setItemAsync: async (key, value) => {
+        if (key === 'k') throw new Error('keychain full');
+        return store.setItemAsync(key, value);
+      },
+    };
+    const storage = createChunkedStorage(failing, { chunkBytes: 100 });
+    await expect(storage.setItem('k', session)).rejects.toThrow('keychain full');
+    expect(items.size).toBe(0);
+  });
+
   test('stores an empty string', async () => {
     const { store } = memoryStore(2048);
     const storage = createChunkedStorage(store);

@@ -19,6 +19,7 @@ export default {
       placeholder: '输入名字',
       footer: '其他同学会看到这个名字，最多 40 个字。',
       avatar: '头像',
+      signOut: '退出登录',
       continue: '继续',
       error: {
         empty: '请输入名字',

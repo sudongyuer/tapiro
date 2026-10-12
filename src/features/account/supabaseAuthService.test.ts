@@ -16,7 +16,8 @@ type Listener = (event: string, session: Session | null) => void;
 function fakeClient({ signInError = null as unknown, invokeError = null as unknown } = {}) {
   let listener: Listener = () => {};
   const signInWithIdToken = mock(async () => ({ error: signInError }));
-  const signOut = mock(async () => ({ error: null }));
+  const signOut = mock(async (_options?: unknown) => ({ error: null }));
+  const updateUser = mock(async (_attributes: unknown) => ({ data: { user: null }, error: null }));
   const invoke = mock(async () => ({ data: null, error: invokeError }));
   const client = {
     auth: {
@@ -26,11 +27,12 @@ function fakeClient({ signInError = null as unknown, invokeError = null as unkno
       },
       signInWithIdToken,
       signOut,
+      updateUser,
     },
     functions: { invoke },
   } as unknown as SupabaseClient;
   const emit = (session: Session | null) => listener('SIGNED_IN', session);
-  return { client, emit, signInWithIdToken, signOut, invoke };
+  return { client, emit, signInWithIdToken, signOut, updateUser, invoke };
 }
 
 const session = {
@@ -50,14 +52,12 @@ describe('supabase auth service', () => {
   test('without a client it is signed out and every provider is unconfigured', async () => {
     const service = createSupabaseAuthService(null, { apple });
     expect(service.getState()).toEqual({ status: 'signedOut' });
-    expect(service.isProviderConfigured('apple')).toBe(false);
     expect(await service.signIn('apple')).toEqual({ ok: false, reason: 'notConfigured' });
   });
 
   test('a provider without an adapter is not configured', async () => {
     const { client, signInWithIdToken } = fakeClient();
     const service = createSupabaseAuthService(client, { apple });
-    expect(service.isProviderConfigured('google')).toBe(false);
     expect(await service.signIn('google')).toEqual({ ok: false, reason: 'notConfigured' });
     expect(signInWithIdToken).not.toHaveBeenCalled();
   });
@@ -72,6 +72,56 @@ describe('supabase auth service', () => {
       nonce: 'nonce',
       access_token: undefined,
     });
+  });
+
+  test('a one-time full name from the provider is written to user metadata', async () => {
+    const { client, updateUser } = fakeClient();
+    const named: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: true, idToken: 'token', fullName: '  林小貘 ' }),
+    };
+    expect(await createSupabaseAuthService(client, { apple: named }).signIn('apple')).toEqual({
+      ok: true,
+    });
+    expect(updateUser).toHaveBeenCalledWith({ data: { full_name: '林小貘' } });
+  });
+
+  test('without a full name, or when saving it fails, sign-in still succeeds', async () => {
+    const { client, updateUser } = fakeClient();
+    expect(await createSupabaseAuthService(client, { apple }).signIn('apple')).toEqual({
+      ok: true,
+    });
+    expect(updateUser).not.toHaveBeenCalled();
+    updateUser.mockImplementationOnce(async () => {
+      throw new Error('offline');
+    });
+    const named: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: true, idToken: 'token', fullName: 'Lin Mo' }),
+    };
+    expect(await createSupabaseAuthService(client, { apple: named }).signIn('apple')).toEqual({
+      ok: true,
+    });
+  });
+
+  test('a rejected sign-in does not write the name', async () => {
+    const { client, updateUser } = fakeClient({
+      signInError: new AuthApiError('bad token', 400, undefined),
+    });
+    const named: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: true, idToken: 'token', fullName: 'Lin Mo' }),
+    };
+    await createSupabaseAuthService(client, { apple: named }).signIn('apple');
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  test('signs out this device only and never rejects', async () => {
+    const { client, signOut } = fakeClient();
+    const service = createSupabaseAuthService(client, {});
+    await service.signOut();
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+    signOut.mockImplementationOnce(async () => {
+      throw new Error('storage failed');
+    });
+    await expect(service.signOut()).resolves.toBeUndefined();
   });
 
   test('a cancelled provider sheet stores nothing', async () => {

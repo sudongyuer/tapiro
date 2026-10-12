@@ -21,6 +21,7 @@ const en: Translation = {
       placeholder: 'Enter your name',
       footer: 'Other students see this name. Up to 40 characters.',
       avatar: 'Profile photo',
+      signOut: 'Sign Out',
       continue: 'Continue',
       error: {
         empty: 'Enter a name.',
