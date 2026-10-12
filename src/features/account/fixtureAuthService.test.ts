@@ -38,4 +38,11 @@ describe('fixture auth service', () => {
     await service.signIn('apple');
     expect(notified).toBe(0);
   });
+
+  test('a blocked fixture stays signed in when deletion is refused', async () => {
+    const service = createFixtureAuthService({ signedInAs: 'apple', deletion: 'blocked' });
+    expect(service.getState()).toEqual({ status: 'signedIn', user: fixtureUser('apple') });
+    expect(await service.deleteAccount()).toEqual({ ok: false, reason: 'blocked' });
+    expect(service.getState().status).toBe('signedIn');
+  });
 });

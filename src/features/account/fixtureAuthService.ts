@@ -11,8 +11,18 @@ export function fixtureUser(provider: AuthProvider): AccountUser {
   };
 }
 
-export function createFixtureAuthService(): AuthService {
-  const store = createSessionStore({ status: 'signedOut' });
+export type FixtureAuthOptions = {
+  signedInAs?: AuthProvider;
+  deletion?: 'allowed' | 'blocked';
+};
+
+export function createFixtureAuthService({
+  signedInAs,
+  deletion = 'allowed',
+}: FixtureAuthOptions = {}): AuthService {
+  const store = createSessionStore(
+    signedInAs ? { status: 'signedIn', user: fixtureUser(signedInAs) } : { status: 'signedOut' },
+  );
   return {
     getState: store.get,
     subscribe: store.subscribe,
@@ -26,6 +36,7 @@ export function createFixtureAuthService(): AuthService {
     },
     async deleteAccount() {
       if (store.get().status !== 'signedIn') return { ok: false, reason: 'signedOut' };
+      if (deletion === 'blocked') return { ok: false, reason: 'blocked' };
       store.set({ status: 'signedOut' });
       return { ok: true };
     },

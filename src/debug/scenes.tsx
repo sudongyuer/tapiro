@@ -1,6 +1,12 @@
 import type { ParseKeys } from 'i18next';
 import type { ComponentType } from 'react';
 
+import {
+  DeleteBlockedScene,
+  ProfileSetupScene,
+  SettingsScene,
+  WelcomeScene,
+} from './AccountScenes';
 import { DesignTokensScene } from './DesignTokensScene';
 import { SignInScene } from './SignInScene';
 
@@ -13,6 +19,18 @@ export type Scene = {
 export const scenes: Scene[] = [
   { id: 'design-tokens', titleKey: 'debug.tokens.title', Component: DesignTokensScene },
   { id: 'sign-in', titleKey: 'debug.account.title', Component: SignInScene },
+  { id: 'welcome', titleKey: 'debug.account.scenes.welcome', Component: WelcomeScene },
+  {
+    id: 'profile-setup',
+    titleKey: 'debug.account.scenes.profileSetup',
+    Component: ProfileSetupScene,
+  },
+  { id: 'settings', titleKey: 'debug.account.scenes.settings', Component: SettingsScene },
+  {
+    id: 'delete-blocked',
+    titleKey: 'debug.account.scenes.deleteBlocked',
+    Component: DeleteBlockedScene,
+  },
 ];
 
 export function findScene(id: string) {

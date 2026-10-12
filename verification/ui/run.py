@@ -82,7 +82,7 @@ def run_case(case, scene, locale, appearance, udid, out):
     status, message = 'pass', ''
     try:
         proc = subprocess.run(
-            [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance],
+            [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=180,
         )
         message = (proc.stdout + proc.stderr).strip().splitlines()[-1] if (proc.stdout + proc.stderr).strip() else ''

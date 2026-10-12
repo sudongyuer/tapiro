@@ -288,6 +288,9 @@ deno_version = 1
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+[functions.account-delete]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

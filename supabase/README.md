@@ -17,4 +17,17 @@ not configured. Verify builds never create a client. Sessions are stored in the 
 across items of at most 1800 bytes because larger Keychain values can be rejected.
 
 `deleteAccount()` calls the Edge Function `account-delete` with the user's JWT (`POST`, no body). The
-function answers 2xx on success and 409 when deletion is blocked by an unsettled payment.
+function answers 200 on success (the auth user is deleted with the service role and the profile
+cascades), 401 without a user token, and 409 with `{ error: 'unsettled_payments', payments }` when
+deletion is blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` is the only place
+that reads payments; it returns nothing until the payments table exists (foundation step 4).
+
+## Edge Functions
+
+- `bun run fn:serve` serves `functions/` on the local stack (this CLI version does not serve them on
+  `supabase start`).
+- `bun run test:stack` runs the `*.integration.ts` tests against the running stack and served
+  functions: `account-delete` (user A deletes itself, user B is untouched, calls without a user
+  token are rejected) and the app's profile service under RLS.
+- Request handling lives in `handler.ts` (no Deno APIs), unit-tested by `bun test`; `index.ts` wires
+  Deno and the service-role client and is excluded from `tsc`.

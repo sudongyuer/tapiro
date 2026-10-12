@@ -9,8 +9,8 @@ BUNDLE_ID = 'app.tapiro'
 
 
 class UI:
-    def __init__(self, udid, output, appearance='light'):
-        self.udid, self.output, self.appearance = udid, Path(output), appearance
+    def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
+        self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
         self.output.mkdir(parents=True, exist_ok=True)
 
     def axe(self, *args, timeout=20):
@@ -47,9 +47,36 @@ class UI:
             timeout,
         )
 
+    def labelled(self, label, timeout=30):
+        return self.wait(
+            lambda items: next((i for i in items if i.get('AXLabel') == label), None),
+            f'Missing element labelled {label}',
+            timeout,
+        )
+
+    def wait_label(self, identifier, predicate, message, timeout=30):
+        return self.wait(
+            lambda items: next(
+                (i for i in items if i.get('AXUniqueId') == identifier and predicate(i.get('AXLabel') or '')),
+                None,
+            ),
+            message,
+            timeout,
+        )
+
     def tap(self, identifier):
         self.element(identifier)
         self.axe('tap', '--id', identifier, '--post-delay', '0.5')
+
+    def tap_label(self, label):
+        self.labelled(label)
+        self.axe('tap', '--label', label, '--post-delay', '0.5')
+
+    def type(self, text):
+        self.axe('type', text)
+
+    def backspace(self, times):
+        self.axe('key-sequence', '--keycodes', ','.join(['42'] * times))
 
     def capture(self, name):
         subprocess.run(
