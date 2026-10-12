@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(23);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -24,11 +24,18 @@ select throws_ok(
   '23514', null, '41-char display_name violates check'
 );
 
+select throws_ok(
+  $$update public.profiles set display_name = '   ' where id = '00000000-0000-0000-0000-0000000000a1'$$,
+  '23514', null, 'whitespace-only display_name violates check'
+);
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a1', true);
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
 
-select is((select count(*) from public.profiles), 5::bigint, 'signed-in user reads every profile');
+select is((select count(*) from public.profiles where id in (
+  '00000000-0000-0000-0000-0000000000a1','00000000-0000-0000-0000-0000000000b2','00000000-0000-0000-0000-0000000000c3',
+  '00000000-0000-0000-0000-0000000000d4','00000000-0000-0000-0000-0000000000e5')), 5::bigint, 'signed-in user reads every profile');
 
 select lives_ok(
   $$update public.profiles set display_name = 'Alice 2', avatar_url = 'https://example.com/a.png' where id = '00000000-0000-0000-0000-0000000000a1'$$,
@@ -40,6 +47,19 @@ select ok((select updated_at > created_at from public.profiles where id = '00000
 select lives_ok(
   $$update public.profiles set display_name = 'Hacked' where id = '00000000-0000-0000-0000-0000000000b2'$$,
   'updating another user is filtered by RLS without error'
+);
+
+select throws_ok(
+  $$update public.profiles set id = '00000000-0000-0000-0000-0000000000f7' where id = '00000000-0000-0000-0000-0000000000a1'$$,
+  '42501', null, 'authenticated cannot update id'
+);
+select throws_ok(
+  $$update public.profiles set created_at = now() where id = '00000000-0000-0000-0000-0000000000a1'$$,
+  '42501', null, 'authenticated cannot update created_at'
+);
+select throws_ok(
+  $$update public.profiles set updated_at = now() where id = '00000000-0000-0000-0000-0000000000a1'$$,
+  '42501', null, 'authenticated cannot update updated_at'
 );
 
 select throws_ok(
@@ -57,6 +77,10 @@ select is((select display_name from public.profiles where id = '00000000-0000-00
 
 set local role anon;
 select throws_ok($$select * from public.profiles$$, '42501', null, 'anon cannot read profiles');
+select throws_ok(
+  $$insert into public.profiles (id, display_name) values ('00000000-0000-0000-0000-0000000000f8', 'Anon')$$,
+  '42501', null, 'anon cannot insert'
+);
 
 reset role;
 select lives_ok(

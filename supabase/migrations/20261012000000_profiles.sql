@@ -1,6 +1,6 @@
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
-  display_name text not null check (char_length(display_name) between 1 and 40),
+  display_name text not null check (char_length(btrim(display_name)) between 1 and 40),
   avatar_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
