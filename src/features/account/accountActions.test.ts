@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
 import { createAccountActions } from './accountActions';
-import { createFixtureAuthService, fixtureUser } from './fixtureAuthService';
+import {
+  createFixtureAuthService,
+  fixtureUnsettledPayment,
+  fixtureUser,
+} from './fixtureAuthService';
 import { createOnboardingStore, memoryOnboardedStorage } from './onboardingStore';
 import { createFixtureProfileService } from './profileService';
 import { createProfileStore } from './profileStore';
@@ -38,7 +42,11 @@ describe('account actions', () => {
     const { onboarding, actions } = setup(
       createFixtureAuthService({ signedInAs: 'apple', deletion: 'blocked' }),
     );
-    expect(await actions.deleteAccount()).toEqual({ ok: false, reason: 'blocked' });
+    expect(await actions.deleteAccount()).toEqual({
+      ok: false,
+      reason: 'blocked',
+      payments: [fixtureUnsettledPayment],
+    });
     expect(onboarding.getSnapshot().has(user.id)).toBe(true);
   });
 

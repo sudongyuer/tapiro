@@ -7,6 +7,7 @@ import {
 
 import { createSessionStore } from './sessionStore';
 import { toAccountUser } from './toAccountUser';
+import { readUnsettledPayments } from './unsettledPayments';
 import type {
   AuthProvider,
   AuthService,
@@ -53,8 +54,14 @@ export function createSupabaseAuthService(
       if (!client || store.get().status !== 'signedIn') return { ok: false, reason: 'signedOut' };
       const { error } = await client.functions.invoke(ACCOUNT_DELETE_FUNCTION, { method: 'POST' });
       if (error instanceof FunctionsHttpError) {
-        const blocked = error.context?.status === ACCOUNT_DELETE_BLOCKED_STATUS;
-        return { ok: false, reason: blocked ? 'blocked' : 'failed' };
+        if (error.context?.status !== ACCOUNT_DELETE_BLOCKED_STATUS) {
+          return { ok: false, reason: 'failed' };
+        }
+        return {
+          ok: false,
+          reason: 'blocked',
+          payments: await readUnsettledPayments(error.context),
+        };
       }
       if (error instanceof FunctionsFetchError) return { ok: false, reason: 'network' };
       if (error) return { ok: false, reason: 'failed' };

@@ -1,15 +1,17 @@
 import type { ParseKeys } from 'i18next';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import type { DeleteAccountFailure, DeleteAccountResult } from './types';
+import type { DeleteAccountFailure, DeleteAccountResult, UnsettledPayment } from './types';
+import { formatRinggit } from './unsettledPayments';
 
 const ITEMS: { key: ParseKeys; symbol: SFSymbol }[] = [
   { key: 'account.delete.items.profile', symbol: 'person.crop.circle' },
@@ -31,19 +33,21 @@ export function DeleteAccountSheet({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const pendingRef = useRef(false);
+  const [guard] = useState(createInFlightGuard);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<DeleteAccountFailure | null>(null);
+  const [payments, setPayments] = useState<UnsettledPayment[]>([]);
 
-  async function confirm() {
-    if (pendingRef.current) return;
-    pendingRef.current = true;
-    setPending(true);
-    setFailure(null);
-    const result = await onDelete();
-    pendingRef.current = false;
-    setPending(false);
-    if (!result.ok) setFailure(result.reason);
+  function confirm() {
+    return guard(async () => {
+      setPending(true);
+      setFailure(null);
+      const result = await onDelete();
+      setPending(false);
+      if (result.ok) return;
+      setFailure(result.reason);
+      setPayments(result.reason === 'blocked' ? result.payments : []);
+    });
   }
 
   return (
@@ -76,6 +80,26 @@ export function DeleteAccountSheet({
         >
           {t(`account.delete.error.${failure}`)}
         </AppText>
+      )}
+      {payments.length > 0 && (
+        <View style={styles.payments}>
+          {payments.map((payment) => (
+            <View
+              key={payment.id}
+              accessible
+              testID={`delete-account-payment-${payment.id}`}
+              style={styles.payment}
+            >
+              <AppText variant="body">{payment.title}</AppText>
+              <AppText variant="secondary" tone="secondaryLabel">
+                {t(`account.delete.payment.${payment.direction}`, {
+                  name: payment.counterpartName,
+                  amount: formatRinggit(payment.amountSen),
+                })}
+              </AppText>
+            </View>
+          ))}
+        </View>
       )}
       <View style={styles.actions}>
         <PillButton
@@ -110,4 +134,10 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
   itemLabel: { flex: 1 },
   actions: { gap: vars['--space-2'] },
+  payments: {
+    borderRadius: vars['--radius-chip'],
+    borderCurve: 'continuous',
+    backgroundColor: PlatformColor('secondarySystemBackground'),
+  },
+  payment: { padding: vars['--space-3'], gap: vars['--space-1'] },
 });

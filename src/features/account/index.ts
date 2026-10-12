@@ -24,4 +24,5 @@ export {
   type SessionState,
   type SignInFailure,
   type SignInResult,
+  type UnsettledPayment,
 } from './types';

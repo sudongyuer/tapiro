@@ -19,7 +19,18 @@ export type SignInResult = { ok: true } | { ok: false; reason: SignInFailure };
 
 export type DeleteAccountFailure = 'signedOut' | 'blocked' | 'failed' | 'network';
 
-export type DeleteAccountResult = { ok: true } | { ok: false; reason: DeleteAccountFailure };
+export type UnsettledPayment = {
+  id: string;
+  title: string;
+  counterpartName: string;
+  amountSen: number;
+  direction: 'owe' | 'owed';
+};
+
+export type DeleteAccountResult =
+  | { ok: true }
+  | { ok: false; reason: 'blocked'; payments: UnsettledPayment[] }
+  | { ok: false; reason: Exclude<DeleteAccountFailure, 'blocked'> };
 
 export type IdTokenResult =
   | { ok: true; idToken: string; nonce?: string; accessToken?: string }

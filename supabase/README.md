@@ -18,8 +18,20 @@ across items of at most 1800 bytes because larger Keychain values can be rejecte
 
 `deleteAccount()` calls the Edge Function `account-delete` with the user's JWT (`POST`, no body). The
 function answers 200 on success (the auth user is deleted with the service role and the profile
-cascades), 401 without a user token, and 409 with `{ error: 'unsettled_payments', payments }` when
-deletion is blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` is the only place
+cascades), 401 without a user token, and 409 when deletion is blocked:
+
+```json
+{
+  "error": "unsettled_payments",
+  "payments": [
+    { "id": "…", "title": "Ride to KLIA", "counterpartName": "Aisyah", "amountSen": 2500, "direction": "owe" }
+  ]
+}
+```
+
+`amountSen` is the amount in sen (RM × 100, integer); `direction` is `owe` when the deleting user
+pays the counterpart and `owed` when the counterpart pays them. The app drops items that do not
+match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` is the only place
 that reads payments; it returns nothing until the payments table exists (foundation step 4).
 
 ## Edge Functions

@@ -8,8 +8,8 @@ const admin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } },
 );
 
-// Payments arrive with the payments table (foundation step 4); until then no payment can be
-// unsettled. This is the only place the deletion block reads payments.
+// No payments table exists yet, so nothing can be unsettled. This is the only place the
+// deletion block reads payments.
 async function findUnsettledPayments(_userId: string): Promise<UnsettledPayment[]> {
   return [];
 }

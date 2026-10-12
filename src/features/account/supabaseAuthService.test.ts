@@ -145,7 +145,6 @@ describe('supabase auth service', () => {
 
   test('maps deletion failures and keeps the session', async () => {
     const cases = [
-      [new FunctionsHttpError(new Response(null, { status: 409 })), 'blocked'],
       [new FunctionsHttpError(new Response(null, { status: 500 })), 'failed'],
       [new FunctionsFetchError(new Error('offline')), 'network'],
     ] as const;
@@ -155,6 +154,41 @@ describe('supabase auth service', () => {
       emit(session);
       expect(await service.deleteAccount()).toEqual({ ok: false, reason });
       expect(signOut).not.toHaveBeenCalled();
+    }
+  });
+
+  test('a blocked deletion carries the unsettled payments from the 409 body', async () => {
+    const payment = {
+      id: 'p1',
+      title: 'Ride to KLIA',
+      counterpartName: 'Aisyah',
+      amountSen: 2500,
+      direction: 'owed' as const,
+    };
+    const body = JSON.stringify({ error: 'unsettled_payments', payments: [payment, { id: 2 }] });
+    const invokeError = new FunctionsHttpError(new Response(body, { status: 409 }));
+    const { client, emit, signOut } = fakeClient({ invokeError });
+    const service = createSupabaseAuthService(client, {});
+    emit(session);
+    expect(await service.deleteAccount()).toEqual({
+      ok: false,
+      reason: 'blocked',
+      payments: [payment],
+    });
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  test('a blocked deletion with a malformed body is still blocked, without items', async () => {
+    for (const body of [null, 'not json', '{"payments":"nope"}', '[]']) {
+      const invokeError = new FunctionsHttpError(new Response(body, { status: 409 }));
+      const { client, emit } = fakeClient({ invokeError });
+      const service = createSupabaseAuthService(client, {});
+      emit(session);
+      expect(await service.deleteAccount()).toEqual({
+        ok: false,
+        reason: 'blocked',
+        payments: [],
+      });
     }
   });
 

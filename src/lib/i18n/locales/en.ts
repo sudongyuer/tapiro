@@ -60,6 +60,10 @@ const en: Translation = {
       confirm: 'Delete Account',
       cancel: 'Cancel',
       deleting: 'Deleting account',
+      payment: {
+        owe: 'You pay {{name}} {{amount}}',
+        owed: '{{name}} pays you {{amount}}',
+      },
       error: {
         blocked:
           'You have a payment that isn’t settled yet. Settle it before deleting your account.',

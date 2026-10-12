@@ -3,10 +3,11 @@ import {
   AppleAuthenticationButtonStyle,
   AppleAuthenticationButtonType,
 } from 'expo-apple-authentication';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -21,22 +22,21 @@ const CORNER_RADIUS = BUTTON_HEIGHT / 2;
 export function SignInButtons() {
   const { t } = useI18n();
   const { theme } = useTheme();
-  const pendingRef = useRef(false);
+  const [guard] = useState(createInFlightGuard);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<SignInFailure | null>(null);
 
-  async function signIn(provider: AuthProvider) {
-    if (pendingRef.current) return;
-    pendingRef.current = true;
-    setPending(true);
-    setFailure(null);
-    try {
-      const result = await safeSignIn(authService, provider);
-      if (!result.ok) setFailure(result.reason);
-    } finally {
-      pendingRef.current = false;
-      setPending(false);
-    }
+  function signIn(provider: AuthProvider) {
+    return guard(async () => {
+      setPending(true);
+      setFailure(null);
+      try {
+        const result = await safeSignIn(authService, provider);
+        if (!result.ok) setFailure(result.reason);
+      } finally {
+        setPending(false);
+      }
+    });
   }
 
   const appleStyle =

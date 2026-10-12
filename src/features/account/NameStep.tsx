@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PlatformColor, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { AppText } from '@/ui/AppText';
 import { Avatar } from '@/ui/Avatar';
 import { PillButton } from '@/ui/PillButton';
@@ -32,21 +33,24 @@ export function NameStep({
   const [draft, setDraft] = useState<string | null>(null);
   const [error, setError] = useState<NameError | null>(null);
   const [saving, setSaving] = useState(false);
+  const [guard] = useState(createInFlightGuard);
   const value = draft ?? initialDisplayName(profile?.displayName ?? null, user.name);
   const avatarUrl = profile?.avatarUrl ?? user.avatarUrl;
 
-  async function submit() {
-    const checked = checkDisplayName(value);
-    if (!checked.ok) {
-      setError(checked.reason);
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    const saved = await onSave({ displayName: checked.value, avatarUrl });
-    setSaving(false);
-    if (saved) onDone();
-    else setError('saveFailed');
+  function submit() {
+    return guard(async () => {
+      const checked = checkDisplayName(value);
+      if (!checked.ok) {
+        setError(checked.reason);
+        return;
+      }
+      setSaving(true);
+      setError(null);
+      const saved = await onSave({ displayName: checked.value, avatarUrl }).catch(() => false);
+      setSaving(false);
+      if (saved) onDone();
+      else setError('saveFailed');
+    });
   }
 
   return (

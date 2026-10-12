@@ -30,7 +30,8 @@ describe('supabase profile service (local stack)', () => {
       email_confirm: true,
     });
     if (error) throw error;
-    await client.auth.signInWithPassword({ email, password });
+    const signIn = await client.auth.signInWithPassword({ email, password });
+    if (signIn.error) throw signIn.error;
     user = { id: data.user.id, email, name: null, avatarUrl: null, provider: null };
   });
 

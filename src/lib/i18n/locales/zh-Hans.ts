@@ -58,6 +58,10 @@ export default {
       confirm: '删除账号',
       cancel: '取消',
       deleting: '正在删除账号',
+      payment: {
+        owe: '付给 {{name}} {{amount}}',
+        owed: '{{name}} 付给你 {{amount}}',
+      },
       error: {
         blocked: '你还有没结清的付款，结清后才能删除账号。',
         failed: '账号没删除成功，请再试一次。',

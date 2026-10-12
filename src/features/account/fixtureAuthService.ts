@@ -1,5 +1,5 @@
 import { createSessionStore } from './sessionStore';
-import type { AccountUser, AuthProvider, AuthService } from './types';
+import type { AccountUser, AuthProvider, AuthService, UnsettledPayment } from './types';
 
 export function fixtureUser(provider: AuthProvider): AccountUser {
   return {
@@ -10,6 +10,14 @@ export function fixtureUser(provider: AuthProvider): AccountUser {
     provider,
   };
 }
+
+export const fixtureUnsettledPayment: UnsettledPayment = {
+  id: '00000000-0000-4000-8000-0000000000a1',
+  title: '帮忙从 Mid Valley 带一份奶茶',
+  counterpartName: '陈嘉欣',
+  amountSen: 1250,
+  direction: 'owe',
+};
 
 export type FixtureAuthOptions = {
   signedInAs?: AuthProvider;
@@ -36,7 +44,9 @@ export function createFixtureAuthService({
     },
     async deleteAccount() {
       if (store.get().status !== 'signedIn') return { ok: false, reason: 'signedOut' };
-      if (deletion === 'blocked') return { ok: false, reason: 'blocked' };
+      if (deletion === 'blocked') {
+        return { ok: false, reason: 'blocked', payments: [fixtureUnsettledPayment] };
+      }
       store.set({ status: 'signedOut' });
       return { ok: true };
     },

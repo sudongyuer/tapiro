@@ -1,13 +1,13 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-import { handleAccountDelete, type AccountDeleteDeps } from './handler';
+import { handleAccountDelete, type AccountDeleteDeps, type UnsettledPayment } from './handler';
 
 const USER = '00000000-0000-4000-8000-00000000000a';
 
 function deps(overrides: Partial<AccountDeleteDeps> = {}) {
   return {
     userIdFromToken: mock(async (token: string) => (token === 'valid' ? USER : null)),
-    findUnsettledPayments: mock(async () => []),
+    findUnsettledPayments: mock(async (): Promise<UnsettledPayment[]> => []),
     deleteUser: mock(async () => {}),
     ...overrides,
   };
@@ -36,10 +36,17 @@ describe('handleAccountDelete', () => {
   });
 
   test('blocks deletion while a payment is unsettled and names it', async () => {
-    const d = deps({ findUnsettledPayments: mock(async () => [{ id: 'p1' }]) });
+    const payment = {
+      id: 'p1',
+      title: 'Ride to KLIA',
+      counterpartName: 'Aisyah',
+      amountSen: 2500,
+      direction: 'owe' as const,
+    };
+    const d = deps({ findUnsettledPayments: mock(async () => [payment]) });
     const res = await handleAccountDelete(post('valid'), d);
     expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({ error: 'unsettled_payments', payments: [{ id: 'p1' }] });
+    expect(await res.json()).toEqual({ error: 'unsettled_payments', payments: [payment] });
     expect(d.deleteUser).not.toHaveBeenCalled();
   });
 

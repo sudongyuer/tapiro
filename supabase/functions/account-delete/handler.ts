@@ -1,4 +1,10 @@
-export type UnsettledPayment = { id: string };
+export type UnsettledPayment = {
+  id: string;
+  title: string;
+  counterpartName: string;
+  amountSen: number;
+  direction: 'owe' | 'owed';
+};
 
 export type AccountDeleteDeps = {
   userIdFromToken(token: string): Promise<string | null>;

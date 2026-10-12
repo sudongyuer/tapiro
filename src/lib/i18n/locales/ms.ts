@@ -60,6 +60,10 @@ const ms: Translation = {
       confirm: 'Padam Akaun',
       cancel: 'Batal',
       deleting: 'Memadam akaun',
+      payment: {
+        owe: 'Anda bayar {{name}} {{amount}}',
+        owed: '{{name}} bayar anda {{amount}}',
+      },
       error: {
         blocked:
           'Anda masih ada bayaran yang belum diselesaikan. Selesaikannya sebelum memadam akaun anda.',
