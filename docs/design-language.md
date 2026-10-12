@@ -63,6 +63,10 @@ publications).
 Everyday screens are the ones people use daily to get something done. Moment screens are rare
 and carry emotion.
 
+The mascot stage at the top of the home screen is a moment area inside an everyday screen: it may
+show 小貘 at full size with its state pose and background. It collapses to a strip with a ≤ 32 pt
+head when scrolled (docs/specs/2026-10-11-foundation-design.md).
+
 ## Layers
 
 ```text
@@ -240,8 +244,9 @@ animation.
 
 ## Information architecture
 
-Navigation uses NativeTabs with a native Stack per tab (see AGENTS.md, UI baseline). Tabs, the first screen and how future verticals
-(租房 / 二手 / 拼车) are reached are decided in feature specs, not here.
+Navigation uses NativeTabs with a native Stack per tab (see AGENTS.md, UI baseline). Tabs (悬赏 · 拼车 ·
+消息 · 我的, the 小貘 button in the search slot, the most-urgent strip above the bar) and the home
+screen are defined in docs/specs/2026-10-11-foundation-design.md.
 
 ## Component inventory
 
