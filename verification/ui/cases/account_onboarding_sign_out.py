@@ -5,7 +5,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI, assert_appearance  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-SIGN_OUT = {'zh-Hans': '退出登录', 'ms': 'Log Keluar'}
+SIGN_OUT = {'zh-Hans': '退出登录', 'ms': 'Daftar Keluar'}
 
 ui = UI(*sys.argv[1:])
 ui.tap('sign-in-apple')

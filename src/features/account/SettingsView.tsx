@@ -5,11 +5,13 @@ import {
   accessibilityIdentifier,
   font,
   foregroundStyle,
+  tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import { LanguagePickerSection } from './LanguagePicker';
 
@@ -27,9 +29,10 @@ export function SettingsView({
   onDeleteAccount: () => void;
 }) {
   const { t } = useI18n();
+  const { color } = useTheme();
   return (
     <Host style={styles.host} testID="settings-screen">
-      <Form>
+      <Form modifiers={[tint(color('--color-accent'))]}>
         <Section>
           <HStack
             spacing={vars['--space-3']}
@@ -55,6 +58,7 @@ export function SettingsView({
         <Section>
           <Button
             label={t('account.settings.signOut')}
+            modifiers={[foregroundStyle(color('--color-accent'))]}
             onPress={onSignOut}
             testID="settings-sign-out"
           />
@@ -63,6 +67,7 @@ export function SettingsView({
           <Button
             label={t('account.settings.deleteAccount')}
             role="destructive"
+            modifiers={[foregroundStyle(color('--color-urgent'))]}
             onPress={onDeleteAccount}
             testID="settings-delete"
           />

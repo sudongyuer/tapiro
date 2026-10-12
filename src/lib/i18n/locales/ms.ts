@@ -3,11 +3,11 @@ import type { Translation } from '../resources';
 const ms: Translation = {
   account: {
     signIn: {
-      google: 'Log masuk dengan Google',
+      google: 'Daftar masuk dengan Google',
       error: {
-        notConfigured: 'Log masuk belum disediakan lagi.',
-        cancelled: 'Log masuk dibatalkan.',
-        failed: 'Tidak dapat log masuk. Cuba lagi.',
+        notConfigured: 'Daftar masuk belum disediakan lagi.',
+        cancelled: 'Daftar masuk dibatalkan.',
+        failed: 'Tidak dapat daftar masuk. Cuba lagi.',
         network: 'Tiada sambungan. Cuba lagi apabila dalam talian.',
       },
     },
@@ -21,7 +21,7 @@ const ms: Translation = {
       placeholder: 'Masukkan nama anda',
       footer: 'Pelajar lain akan melihat nama ini. Maksimum 40 aksara.',
       avatar: 'Foto profil',
-      signOut: 'Log Keluar',
+      signOut: 'Daftar Keluar',
       continue: 'Teruskan',
       error: {
         empty: 'Masukkan nama.',
@@ -43,7 +43,7 @@ const ms: Translation = {
     settings: {
       title: 'Tetapan',
       language: 'Bahasa',
-      signOut: 'Log Keluar',
+      signOut: 'Daftar Keluar',
       deleteAccount: 'Padam Akaun',
       deleteFooter: 'Akaun yang telah dipadam tidak boleh dipulihkan.',
     },
@@ -70,17 +70,17 @@ const ms: Translation = {
           'Anda masih ada bayaran yang belum diselesaikan. Selesaikannya sebelum memadam akaun anda.',
         failed: 'Akaun anda tidak dapat dipadam. Cuba lagi.',
         network: 'Tiada sambungan. Cuba lagi apabila dalam talian.',
-        signedOut: 'Anda sudah log keluar.',
+        signedOut: 'Anda sudah daftar keluar.',
       },
     },
   },
   debug: {
     title: 'Nyahpepijat',
     account: {
-      title: 'Log masuk',
-      loading: 'Menyemak log masuk',
-      signedOut: 'Belum log masuk',
-      signedIn: 'Log masuk sebagai {{name}}',
+      title: 'Daftar masuk',
+      loading: 'Menyemak daftar masuk',
+      signedOut: 'Belum daftar masuk',
+      signedIn: 'Daftar masuk sebagai {{name}}',
       scenes: {
         welcome: 'Selamat datang',
         profileSetup: 'Langkah nama (nama panjang)',
