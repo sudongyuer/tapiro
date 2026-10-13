@@ -15,14 +15,21 @@ The runner uses a named Simulator, `Tapiro Verify` (iPhone 17 Pro, newest iOS ru
 creates it once if missing; never create Simulators or pass another DerivedData path yourself.
 Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 `LOCALES = ['zh-Hans', 'ms']` to also run in Malay and catch truncation. Each run writes
-`result.json` with commit, locale, Xcode and device.
+`result.json` with commit, locale, Xcode and device. `log.txt` lists every AXe call with its duration; a timeout
+message adds the median call time, which separates a slow Simulator from a stuck screen.
 
 ## Cases
 
-| Case            | Behaviour                                                                                                            | Scene           |
-| --------------- | -------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `home_launches` | The app launches offline in verify mode and shows the home screen filling the display.                               | —               |
-| `design_tokens` | The design-tokens scene renders every type role, the status set and a 44 pt accent button in the current appearance. | `design-tokens` |
+| Case                          | Behaviour                                                                                                                             | Scene            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `app_launches`                | The app launches offline in verify mode, signed out, and shows the welcome screen filling the display.                                | —                |
+| `design_tokens`               | The design-tokens scene renders every type role, the status set and a 44 pt accent button in the current appearance.                  | `design-tokens`  |
+| `sign_in_fixture`             | Verify mode starts signed out and signs in as the fixture user after tapping a provider button.                                       | `sign-in`        |
+| `account_flow`                | Sign in with the fixture, set a name, pick a language, reach home, sign out and back in, then delete the account and land on welcome. | —                |
+| `account_onboarding_sign_out` | The name step offers a header sign-out action; it returns to welcome, and signing in again restarts onboarding.                       | —                |
+| `account_delete_blocked`      | Deleting an account with an unsettled payment shows the reason and the payment, and keeps the delete button disabled.                 | `delete-blocked` |
+| `account_long_name`           | The name step shows a 40-character prefilled name with the field and continue button at full size.                                    | `profile-setup`  |
+| `account_settings_long`       | Settings with a 40-character name and long email keeps every row reachable and the delete row visible.                                | `settings`       |
 
 ## Adding a case
 
@@ -30,7 +37,9 @@ Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
    the `ui-verify-ready` marker.
 2. Write `cases/<name>.py`: docstring = behaviour sentence; `SCENE = '<id>'` if it starts from a
    scene (the runner launches with `-uiVerifyScene <id>`); optional `LOCALES = [...]`; wait on
-   identifiers, assert, capture.
+   identifiers, assert, capture. Cases receive the locale as `ui.locale` for controls that only
+   expose a localized label (native toolbar buttons); SwiftUI views from `@expo/ui` take their
+   identifier from `testID` or the `accessibilityIdentifier` modifier.
 3. Controls a case touches need a `testID`; plain `View`s also need `accessible` to appear in the
    accessibility tree.
 4. Run both appearances and open the screenshots before reporting.

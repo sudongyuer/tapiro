@@ -1,0 +1,101 @@
+export default {
+  account: {
+    signIn: {
+      google: '通过 Google 登录',
+      error: {
+        notConfigured: '登录还没配置好，暂时不能用',
+        cancelled: '已取消登录',
+        failed: '登录没成功，请再试一次',
+        network: '没有网络，连上后再试',
+      },
+    },
+    welcome: {
+      title: '欢迎来到 Tapiro',
+      tagline: '在马来西亚，同学之间互相帮一把。',
+    },
+    name: {
+      title: '你的名字',
+      label: '名字',
+      placeholder: '输入名字',
+      footer: '其他同学会看到这个名字，最多 40 个字。',
+      avatar: '头像',
+      signOut: '退出登录',
+      continue: '继续',
+      error: {
+        empty: '请输入名字',
+        tooLong: '名字最多 40 个字',
+        saveFailed: '名字没保存成功，请再试一次',
+      },
+    },
+    language: {
+      title: '语言',
+      footer: '默认跟随系统语言，之后可以在设置里更改。',
+      done: '开始使用',
+    },
+    home: {
+      title: '首页',
+      greeting: '你好，{{name}}',
+      comingSoon: '悬赏和拼车很快就来。',
+      settings: '设置',
+    },
+    settings: {
+      title: '设置',
+      language: '语言',
+      signOut: '退出登录',
+      deleteAccount: '删除账号',
+      deleteFooter: '账号删除后无法恢复。',
+    },
+    delete: {
+      title: '删除账号？',
+      intro: '这些内容会被永久删除：',
+      items: {
+        profile: '个人资料（名字和头像）',
+        payee: '收款方式',
+        messages: '你发的消息和评价',
+        memory: '小貘记得的内容',
+        coins: '貘币',
+        stickers: '贴纸',
+      },
+      confirm: '删除账号',
+      cancel: '取消',
+      deleting: '正在删除账号',
+      payment: {
+        owe: '付给 {{name}} {{amount}}',
+        owed: '{{name}} 付给你 {{amount}}',
+      },
+      error: {
+        blocked: '你还有没结清的付款，结清后才能删除账号。',
+        failed: '账号没删除成功，请再试一次。',
+        network: '没有网络，连上后再试。',
+        signedOut: '你已经退出登录了。',
+      },
+    },
+  },
+  debug: {
+    title: '调试',
+    account: {
+      title: '登录',
+      loading: '正在读取登录状态',
+      signedOut: '未登录',
+      signedIn: '已登录：{{name}}',
+      scenes: {
+        welcome: '欢迎页',
+        profileSetup: '填写名字（长名字）',
+        settings: '设置（长名字）',
+        deleteBlocked: '删除账号（有未结清付款）',
+      },
+    },
+    tokens: {
+      title: '设计令牌',
+      roleSample: '{{role}} 悬赏令',
+      reward: 'RM 15',
+      statusOpen: '待接单',
+      statusActive: '进行中',
+      statusPending: '待确认',
+      statusDone: '已完成',
+      statusUrgent: '紧急',
+      accept: '接单',
+      posted: '悬赏贴出去啦',
+    },
+  },
+};

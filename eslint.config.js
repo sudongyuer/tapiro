@@ -6,6 +6,10 @@ module.exports = defineConfig([
   expoConfig,
   eslintPluginPrettierRecommended,
   {
+    files: ['supabase/functions/**/*.ts'],
+    rules: { 'import/no-unresolved': ['error', { ignore: ['^npm:', '^jsr:'] }] },
+  },
+  {
     ignores: ['dist/*', 'ios/*', 'scripts/check-specs.mjs'],
   },
 ]);

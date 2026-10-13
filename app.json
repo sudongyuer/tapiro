@@ -11,7 +11,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "deploymentTarget": "26.0",
-      "bundleIdentifier": "app.tapiro"
+      "bundleIdentifier": "app.tapiro",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
     },
     "plugins": [
       "expo-router",
@@ -30,11 +33,27 @@
             "enableSceneSupport": true
           }
         }
-      ]
+      ],
+      [
+        "expo-localization",
+        {
+          "supportsRTL": false,
+          "supportedLocales": {
+            "ios": ["zh-Hans", "en", "ms"]
+          }
+        }
+      ],
+      ["expo-secure-store", { "faceIDPermission": false }],
+      "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "locales": {
+      "zh-Hans": "./src/lib/i18n/native/zh-Hans.json",
+      "en": "./src/lib/i18n/native/en.json",
+      "ms": "./src/lib/i18n/native/ms.json"
     }
   }
 }
