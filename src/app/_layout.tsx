@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 import { useAccountStage } from '@/features/account';
-import { I18nProvider, useI18n } from '@/lib/i18n';
+import { I18nProvider } from '@/lib/i18n';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -16,7 +16,6 @@ export default function RootLayout() {
 }
 
 function RootStack() {
-  const { t } = useI18n();
   const stage = useAccountStage();
   return (
     <Stack screenOptions={{ headerShown: false, headerTransparent: true }}>
@@ -28,17 +27,14 @@ function RootStack() {
         <Stack.Screen name="onboarding" />
       </Stack.Protected>
       <Stack.Protected guard={stage === 'ready'}>
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
-          name="home"
+          name="ask"
           options={{
-            headerShown: true,
-            headerLargeTitleEnabled: true,
-            title: t('account.home.title'),
+            presentation: 'formSheet',
+            sheetAllowedDetents: [0.5, 1],
+            sheetGrabberVisible: true,
           }}
-        />
-        <Stack.Screen
-          name="settings"
-          options={{ headerShown: true, title: t('account.settings.title') }}
         />
         <Stack.Screen
           name="delete-account"

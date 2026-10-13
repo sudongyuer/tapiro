@@ -34,10 +34,7 @@ const ms: Translation = {
       footer: 'Tapiro mengikut bahasa sistem anda. Anda boleh menukarnya kemudian dalam Tetapan.',
       done: 'Mula Sekarang',
     },
-    home: {
-      title: 'Utama',
-      greeting: 'Hai, {{name}}',
-      comingSoon: 'Ganjaran dan tumpangan akan tiba tidak lama lagi.',
+    me: {
       settings: 'Tetapan',
     },
     settings: {
@@ -72,6 +69,61 @@ const ms: Translation = {
         network: 'Tiada sambungan. Cuba lagi apabila dalam talian.',
         signedOut: 'Anda sudah daftar keluar.',
       },
+    },
+  },
+  shell: {
+    tabs: {
+      bounty: 'Ganjaran',
+      ride: 'Tumpangan',
+      messages: 'Mesej',
+      me: 'Saya',
+      askTapir: 'Tanya Tapir',
+    },
+    home: {
+      title: 'Ganjaran',
+      liveCards: 'Perkara yang sedang berlaku akan dipaparkan di sini',
+      sectionTitle: 'Ganjaran yang boleh anda ambil',
+      placeholder: 'Ganjaran akan tiba dalam keluaran seterusnya',
+    },
+    ride: {
+      emptyTitle: 'Tumpangan akan dibuka tidak lama lagi',
+      emptyBody: 'Kongsi kereta balik ke YC dan tambang dibahagikan secara automatik',
+    },
+    messages: {
+      emptyTitle: 'Belum ada mesej',
+      emptyBody:
+        'Perbualan akan dipaparkan di sini selepas anda mengambil ganjaran atau menyertai tumpangan',
+    },
+    accessory: {
+      withMore: '{{sub}} · {{count}} lagi',
+      hint: 'Buka Ganjaran dan kembangkan kad semasa anda',
+      money: 'RM',
+    },
+    ask: {
+      title: 'Tanya Tapir',
+      subtitle: {
+        bounty: 'Di Ganjaran · tulis ganjaran atau cari yang boleh diambil',
+        ride: 'Di Tumpangan · cari penumpang dan bahagikan tambang',
+        messages: 'Di Mesej · balas atau terjemah',
+        me: 'Di Saya · lihat apa yang Tapir ingat',
+      },
+      prompt: {
+        bounty: 'Perlukan bantuan apa? Satu ayat pun cukup',
+        ride: 'Siapa nak balik ke YC? Pukul berapa, dari mana?',
+        messages: 'Balas Ah Kit, atau terjemah sesuatu',
+      },
+      suggestions: {
+        bounty: { first: 'Ambil bungkusan saya', second: 'Apa yang boleh saya ambil berdekatan?' },
+        ride: {
+          first: 'Siapa nak balik ke YC pukul 5 petang?',
+          second: 'Bahagikan resit Grab ini',
+        },
+        messages: { first: 'Terjemah mesej Aiman', second: 'Beritahu Ah Kit: tunggu di lobi' },
+        writeBounty: 'Tuliskan ganjaran untuk saya',
+      },
+      mic: 'Bercakap',
+      comingSoon: 'Suara dan draf AI akan datang tidak lama lagi',
+      close: 'Tutup',
     },
   },
   debug: {

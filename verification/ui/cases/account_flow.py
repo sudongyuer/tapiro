@@ -5,7 +5,6 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI, assert_appearance, assert_touch_target  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-SETTINGS = {'zh-Hans': '设置', 'ms': 'Tetapan'}
 NATIVE_NAME = {'zh-Hans': '中文', 'ms': 'Bahasa Melayu'}
 NAME = 'Lin Mo'
 
@@ -20,8 +19,13 @@ def sign_in():
     ui.tap('sign-in-apple')
 
 
+def open_me():
+    ui.tap('tab-me')
+    return ui.element('me-profile')
+
+
 def open_settings():
-    ui.tap_label(SETTINGS[ui.locale])
+    ui.tap('me-settings')
     ui.element('settings-delete')
 
 
@@ -57,8 +61,10 @@ ui.tap_label(NATIVE_NAME[ui.locale])
 ui.wait_label('language-done', lambda label: label == before, 'language did not switch back')
 ui.tap('language-done')
 
-ui.wait_label('home-greeting', lambda label: NAME in label, 'home does not greet the saved name')
+ui.element('home-scroll')
 ui.capture('05-home')
+open_me()
+ui.wait_label('me-profile', lambda label: NAME in label, 'me does not show the saved name')
 
 open_settings()
 ui.wait_label('settings-profile', lambda label: label.startswith(NAME), 'settings does not show the saved name')
@@ -68,7 +74,9 @@ ui.gone('settings-sign-out')
 ui.element('sign-in-apple')
 
 sign_in()
-ui.wait_label('home-greeting', lambda label: NAME in label, 'onboarded user did not go straight home')
+ui.element('home-scroll')
+open_me()
+ui.wait_label('me-profile', lambda label: NAME in label, 'onboarded user did not go straight home')
 open_settings()
 ui.tap('settings-delete')
 confirm = ui.element('delete-account-confirm')

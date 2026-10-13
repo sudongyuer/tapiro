@@ -34,10 +34,7 @@ const en: Translation = {
       footer: 'Tapiro follows your system language. You can change it later in Settings.',
       done: 'Get Started',
     },
-    home: {
-      title: 'Home',
-      greeting: 'Hi, {{name}}',
-      comingSoon: 'Bounties and rides are coming soon.',
+    me: {
       settings: 'Settings',
     },
     settings: {
@@ -72,6 +69,57 @@ const en: Translation = {
         network: 'No connection. Try again when you’re online.',
         signedOut: 'You’re already signed out.',
       },
+    },
+  },
+  shell: {
+    tabs: {
+      bounty: 'Bounties',
+      ride: 'Rides',
+      messages: 'Messages',
+      me: 'Me',
+      askTapir: 'Ask Tapir',
+    },
+    home: {
+      title: 'Bounties',
+      liveCards: 'What’s happening now will show here',
+      sectionTitle: 'Bounties you can take',
+      placeholder: 'Bounties arrive in the next release',
+    },
+    ride: {
+      emptyTitle: 'Rides are coming soon',
+      emptyBody: 'Share a car back to YC and split the fare automatically',
+    },
+    messages: {
+      emptyTitle: 'No messages yet',
+      emptyBody: 'Chats show up here once you take a bounty or join a ride',
+    },
+    accessory: {
+      withMore: '{{sub}} · {{count}} more',
+      hint: 'Opens Bounties and fans out your live cards',
+      money: 'RM',
+    },
+    ask: {
+      title: 'Ask Tapir',
+      subtitle: {
+        bounty: 'On Bounties · write a bounty or find one to take',
+        ride: 'On Rides · find riders and split the fare',
+        messages: 'On Messages · reply or translate',
+        me: 'On Me · see what Tapir remembers',
+      },
+      prompt: {
+        bounty: 'What do you need? One sentence is enough',
+        ride: 'Who’s heading back to YC? When, and from where?',
+        messages: 'Reply to Ah Kit, or translate something',
+      },
+      suggestions: {
+        bounty: { first: 'Pick up my parcel', second: 'What can I take nearby?' },
+        ride: { first: 'Who’s going back to YC at 5 pm?', second: 'Split this Grab receipt' },
+        messages: { first: 'Translate Aiman’s message', second: 'Tell Ah Kit: wait in the lobby' },
+        writeBounty: 'Write a bounty for me',
+      },
+      mic: 'Speak',
+      comingSoon: 'Voice and AI drafts are coming soon',
+      close: 'Close',
     },
   },
   debug: {

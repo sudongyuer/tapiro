@@ -32,10 +32,7 @@ export default {
       footer: '默认跟随系统语言，之后可以在设置里更改。',
       done: '开始使用',
     },
-    home: {
-      title: '首页',
-      greeting: '你好，{{name}}',
-      comingSoon: '悬赏和拼车很快就来。',
+    me: {
       settings: '设置',
     },
     settings: {
@@ -69,6 +66,57 @@ export default {
         network: '没有网络，连上后再试。',
         signedOut: '你已经退出登录了。',
       },
+    },
+  },
+  shell: {
+    tabs: {
+      bounty: '悬赏',
+      ride: '拼车',
+      messages: '消息',
+      me: '我的',
+      askTapir: '问小貘',
+    },
+    home: {
+      title: '悬赏令',
+      liveCards: '进行中的事会显示在这里',
+      sectionTitle: '能接的悬赏',
+      placeholder: '悬赏功能下一阶段上线',
+    },
+    ride: {
+      emptyTitle: '拼车马上开放',
+      emptyBody: '一起打车回 YC，自动分账',
+    },
+    messages: {
+      emptyTitle: '还没有消息',
+      emptyBody: '接了悬赏或拼车以后，对话会出现在这里',
+    },
+    accessory: {
+      withMore: '{{sub}} · 还有 {{count}} 件',
+      hint: '回到悬赏，摊开进行中的卡片',
+      money: 'RM',
+    },
+    ask: {
+      title: '问小貘',
+      subtitle: {
+        bounty: '在悬赏页 · 帮你写悬赏、找能接的',
+        ride: '在拼车页 · 帮你凑人、算钱',
+        messages: '在消息页 · 帮你回、帮你翻译',
+        me: '在我的 · 看小貘记得什么',
+      },
+      prompt: {
+        bounty: '要帮什么忙？说一句就行',
+        ride: '谁一起回 YC？几点、从哪出发',
+        messages: '帮我回阿杰，或者翻译一下',
+      },
+      suggestions: {
+        bounty: { first: '帮我取快递', second: '附近有什么能接的' },
+        ride: { first: '下午五点回 YC 谁一起', second: '把这张 Grab 收据分一下' },
+        messages: { first: '翻译 Aiman 那条', second: '帮我回阿杰：在大堂等' },
+        writeBounty: '帮我写一条悬赏',
+      },
+      mic: '说话',
+      comingSoon: '语音和 AI 起草即将推出',
+      close: '关闭',
     },
   },
   debug: {
