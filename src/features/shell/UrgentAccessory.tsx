@@ -38,7 +38,7 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${item.title}, ${sub}`}
+      accessibilityLabel={t('shell.accessory.label', { title: item.title, sub })}
       accessibilityHint={t('shell.accessory.hint')}
       testID={inline ? 'urgent-accessory-inline' : 'urgent-accessory'}
       onPress={onPress}

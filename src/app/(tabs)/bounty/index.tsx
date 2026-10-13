@@ -1,16 +1,6 @@
-import { useEffect, useRef } from 'react';
-import {
-  PlatformColor,
-  ScrollView,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-  type LayoutChangeEvent,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { PlatformColor, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { homeSignals, useHomeReveal } from '@/features/shell';
+import { useHomeScroll } from '@/features/shell';
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { Mascot } from '@/ui/Mascot';
@@ -21,34 +11,13 @@ export default function BountyHome() {
   const { t } = useI18n();
   const { color } = useTheme();
   const { height } = useWindowDimensions();
-  const scroll = useRef<ScrollView>(null);
-  const liveCardsBottom = useRef(0);
-  const topInset = useRef(0);
-
-  useEffect(() => () => homeSignals.setLiveCardsOnScreen(true), []);
-
-  useHomeReveal(() => {
-    scroll.current?.scrollTo({ y: -topInset.current, animated: true });
-  });
-
-  const onLiveCardsLayout = (event: LayoutChangeEvent) => {
-    const { y, height: cardsHeight } = event.nativeEvent.layout;
-    liveCardsBottom.current = y + cardsHeight;
-  };
-
-  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset, contentInset } = event.nativeEvent;
-    topInset.current = contentInset.top;
-    homeSignals.setLiveCardsOnScreen(contentOffset.y + contentInset.top < liveCardsBottom.current);
-  };
+  const { scrollViewProps, onLiveCardsLayout } = useHomeScroll();
 
   return (
     <ScrollView
-      ref={scroll}
+      {...scrollViewProps}
       testID="home-scroll"
       contentInsetAdjustmentBehavior="automatic"
-      scrollEventThrottle={16}
-      onScroll={onScroll}
       style={styles.screen}
       contentContainerStyle={[styles.content, { minHeight: height * 2 }]}
     >

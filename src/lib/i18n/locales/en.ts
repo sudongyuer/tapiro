@@ -94,6 +94,7 @@ const en: Translation = {
       emptyBody: 'Chats show up here once you take a bounty or join a ride',
     },
     accessory: {
+      label: '{{title}}, {{sub}}',
       withMore: '{{sub}} · {{count}} more',
       hint: 'Opens Bounties and fans out your live cards',
       money: 'RM',

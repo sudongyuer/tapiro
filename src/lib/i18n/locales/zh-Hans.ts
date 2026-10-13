@@ -91,6 +91,7 @@ export default {
       emptyBody: '接了悬赏或拼车以后，对话会出现在这里',
     },
     accessory: {
+      label: '{{title}}，{{sub}}',
       withMore: '{{sub}} · 还有 {{count}} 件',
       hint: '回到悬赏，摊开进行中的卡片',
       money: 'RM',

@@ -95,6 +95,7 @@ const ms: Translation = {
         'Perbualan akan dipaparkan di sini selepas anda mengambil ganjaran atau menyertai tumpangan',
     },
     accessory: {
+      label: '{{title}}, {{sub}}',
       withMore: '{{sub}} · {{count}} lagi',
       hint: 'Buka Ganjaran dan kembangkan kad semasa anda',
       money: 'RM',

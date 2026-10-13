@@ -1,4 +1,14 @@
-import { Button, Form, HStack, Host, Image, Section, Spacer, Text } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Form,
+  HStack,
+  Host,
+  Image,
+  RNHostView,
+  Section,
+  Spacer,
+  Text,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityHidden,
@@ -10,13 +20,22 @@ import {
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { Avatar } from '@/ui/Avatar';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+const AVATAR_SIZE = 60;
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 
-export function MeView({ name, onOpenSettings }: { name: string; onOpenSettings: () => void }) {
+export function MeView({
+  name,
+  avatarUrl,
+  onOpenSettings,
+}: {
+  name: string;
+  avatarUrl: string | null;
+  onOpenSettings: () => void;
+}) {
   const { t } = useI18n();
   const { color } = useTheme();
   return (
@@ -27,11 +46,9 @@ export function MeView({ name, onOpenSettings }: { name: string; onOpenSettings:
             spacing={vars['--space-4']}
             modifiers={[accessibilityElement('combine'), accessibilityIdentifier('me-profile')]}
           >
-            <Image
-              systemName="person.crop.circle.fill"
-              size={60}
-              modifiers={[secondary, accessibilityHidden()]}
-            />
+            <RNHostView matchContents>
+              <Avatar uri={avatarUrl} size={AVATAR_SIZE} label={t('account.name.avatar')} />
+            </RNHostView>
             <Text modifiers={[font({ textStyle: 'title2', weight: 'bold' })]}>{name}</Text>
           </HStack>
         </Section>
