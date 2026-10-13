@@ -28,7 +28,7 @@ export function HomeStrip({
   const { color } = useTheme();
   return (
     <Animated.View
-      pointerEvents="none"
+      pointerEvents={shown ? 'auto' : 'none'}
       style={[
         styles.strip,
         {

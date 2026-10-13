@@ -2,7 +2,14 @@ import { describe, expect, test } from 'bun:test';
 
 import type { AccessoryItem, AccessoryKind } from '@/features/shell';
 
-import { liveCards, stageLine, stageState, type CardDetail } from './homeModel';
+import {
+  liveCards,
+  moneyParts,
+  moneyText,
+  stageLine,
+  stageState,
+  type CardDetail,
+} from './homeModel';
 
 const PRIORITY: AccessoryKind[] = ['oweMoney', 'rideSoon', 'owedToYou', 'bountyInProgress'];
 const priority = (kind: AccessoryKind) => PRIORITY.indexOf(kind) + 1;
@@ -93,5 +100,17 @@ describe('stageLine', () => {
     expect(stageLine(liveCards([owe], {}, priority))).toEqual({ key: 'pay' });
     expect(stageLine(liveCards([progress], {}, priority))).toEqual({ key: 'live' });
     expect(stageLine(liveCards([], {}, priority))).toEqual({ key: 'calm' });
+  });
+});
+
+describe('money', () => {
+  test('splits whole and cents with two decimals', () => {
+    expect(moneyParts(15)).toEqual({ whole: '15', cents: '.00' });
+    expect(moneyParts(15.5)).toEqual({ whole: '15', cents: '.50' });
+  });
+
+  test('short text drops zero cents only', () => {
+    expect(moneyText(15)).toBe('15');
+    expect(moneyText(15.5)).toBe('15.50');
   });
 });

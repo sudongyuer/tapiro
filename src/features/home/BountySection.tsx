@@ -23,7 +23,7 @@ export function BountySection() {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: vars['--space-3'], paddingTop: vars['--space-6'] },
+  section: { gap: vars['--space-3'], paddingTop: vars['--space-4'] },
   title: { fontWeight: '700', paddingHorizontal: 2 },
   empty: {
     flexDirection: 'row',

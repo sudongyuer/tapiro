@@ -147,7 +147,6 @@ const ms: Translation = {
       peekHint: 'Membentangkan semua kad',
     },
     money: 'RM {{amount}}',
-    cents: '.00',
     soon: 'Langkah ini belum dibuka',
     card: {
       pay: {

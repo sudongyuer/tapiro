@@ -39,3 +39,12 @@ export function stackLayout(heights: readonly number[]): StackLayout {
     fannedHeight: heights.length > 0 ? top - STACK_GAP : 0,
   };
 }
+
+export function stackHeight(layout: StackLayout, open: boolean) {
+  return open ? layout.fannedHeight : layout.stackedHeight;
+}
+
+export function followShift(progress: number, extra: number, open: boolean) {
+  'worklet';
+  return progress * extra - (open ? extra : 0);
+}

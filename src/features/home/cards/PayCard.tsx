@@ -7,7 +7,7 @@ import { CategorySticker } from '@/ui/CategorySticker';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { typeStyle, vars } from '@/ui/theme/tokens';
 
-import type { PayDetail } from '../homeModel';
+import { moneyParts, moneyText, type PayDetail } from '../homeModel';
 import { CardText, Pill } from './cardParts';
 
 const TRACK_HEIGHT = 58;
@@ -17,7 +17,8 @@ export function PayCard({ detail }: { detail: PayDetail }) {
   const { t } = useI18n();
   const paint = useLiveCardPaint('pay');
   const ink = paint.ink;
-  const amount = t('home.money', { amount: detail.amount });
+  const amount = t('home.money', { amount: moneyText(detail.amount) });
+  const { whole, cents } = moneyParts(detail.amount);
   return (
     <LiveCard tone="pay" hanging={<CategorySticker category={detail.category} size={78} />}>
       <Pill ink={ink} dot={paint.urgentDot}>
@@ -30,9 +31,9 @@ export function PayCard({ detail }: { detail: PayDetail }) {
         {t('home.card.pay.title', { name: detail.payee })}
       </CardText>
       <CardText variant="amount" ink={ink} style={styles.amount}>
-        {amount}
+        {t('home.money', { amount: whole })}
         <AppText variant="moment-title" style={[styles.cents, { color: ink }]}>
-          {t('home.cents')}
+          {cents}
         </AppText>
       </CardText>
       <View

@@ -143,7 +143,6 @@ const en: Translation = {
       peekHint: 'Spreads out all cards',
     },
     money: 'RM {{amount}}',
-    cents: '.00',
     soon: 'This step isn’t available yet',
     card: {
       pay: {

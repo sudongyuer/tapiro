@@ -140,7 +140,6 @@ export default {
       peekHint: '摊开全部卡片',
     },
     money: 'RM {{amount}}',
-    cents: '.00',
     soon: '这一步还没开放',
     card: {
       pay: {

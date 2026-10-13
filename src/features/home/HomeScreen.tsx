@@ -1,4 +1,4 @@
-import { useState, type RefObject } from 'react';
+import { useCallback, useState, type RefObject } from 'react';
 import {
   PlatformColor,
   ScrollView,
@@ -29,9 +29,9 @@ import { vars } from '@/ui/theme/tokens';
 import { BountySection } from './BountySection';
 import { liveCards, stageLine, stageState } from './homeModel';
 import { HomeStrip, STRIP_ROW } from './HomeStrip';
-import { LiveCardStack, useCardHeights } from './LiveCardStack';
+import { LiveCardStack, StackToggle, useCardHeights } from './LiveCardStack';
 import { homeCardDetails } from './services';
-import { stackLayout } from './stackLayout';
+import { followShift, stackHeight, stackLayout } from './stackLayout';
 import { useStackProgress } from './useLiveStack';
 
 const CARD_OVERLAP = STAGE_HILL_HEIGHT - 18;
@@ -110,22 +110,27 @@ export function HomeScreen({
     };
   });
 
-  const sectionStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: progress.value * extra }],
+  const followStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: followShift(progress.value, extra, open) }],
   }));
+
+  const attachScroll = useCallback(
+    (node: ScrollView | null) => {
+      ref.current = node;
+      animatedRef(node);
+    },
+    [ref, animatedRef],
+  );
 
   return (
     <>
       <ScrollView
         {...scrollProps}
-        ref={(node) => {
-          ref.current = node;
-          animatedRef(node);
-        }}
+        ref={attachScroll}
         testID="home-scroll"
         contentInsetAdjustmentBehavior="automatic"
         style={styles.screen}
-        contentContainerStyle={[styles.content, { minHeight: windowHeight * 1.5 }]}
+        contentContainerStyle={[styles.content, { minHeight: windowHeight * 2 }]}
       >
         <MascotStage
           state={state}
@@ -136,7 +141,7 @@ export function HomeScreen({
         <View
           testID="home-live-cards"
           onLayout={onLiveCardsLayout}
-          style={[styles.stack, { height: layout.stackedHeight }]}
+          style={[styles.stack, { height: stackHeight(layout, open) }]}
         >
           <LiveCardStack
             cards={cards}
@@ -150,10 +155,12 @@ export function HomeScreen({
             onCardLayout={onCardLayout}
           />
         </View>
-        <Animated.View style={sectionStyle}>
+        <Animated.View style={followStyle}>
+          {cards.length > 1 ? (
+            <StackToggle count={cards.length} open={open} onToggle={onToggle} />
+          ) : null}
           <BountySection />
         </Animated.View>
-        <View style={{ height: open ? extra : 0 }} />
       </ScrollView>
       <HomeStrip
         state={state}

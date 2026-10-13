@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { useLiveCardPaint, type LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
-import { vars } from '@/ui/theme/tokens';
+import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { OwedCard, ProgressCard } from './cards/BountyCard';
@@ -52,9 +52,7 @@ export type LiveCardStackProps = {
 };
 
 export function LiveCardStack(props: LiveCardStackProps) {
-  const { t } = useI18n();
-  const { color } = useTheme();
-  const { cards, layout, ready, open, onToggle } = props;
+  const { cards, layout, ready } = props;
   return (
     <View style={[styles.cards, { opacity: ready ? 1 : 0 }]}>
       {cards.map((card, index) => (
@@ -67,28 +65,37 @@ export function LiveCardStack(props: LiveCardStackProps) {
           fanned={layout.fanned[index]}
         />
       ))}
-      {cards.length > 1 ? (
-        <PressDim
-          accessibilityRole="button"
-          accessibilityLabel={
-            open ? t('home.stack.collapse') : t('home.stack.fanOut', { count: cards.length })
-          }
-          accessibilityHint={open ? t('home.stack.collapseHint') : t('home.stack.fanOutHint')}
-          testID="live-cards-toggle"
-          onPress={() => onToggle(!open)}
-          style={styles.toggle}
-        >
-          <View style={[styles.togglePill, { backgroundColor: color('--color-stage-bubble') }]}>
-            <AppText
-              variant="meta"
-              style={[styles.toggleText, { color: color('--color-on-stage') }]}
-            >
-              {open ? t('home.stack.collapse') : t('home.stack.fanOut', { count: cards.length })}
-            </AppText>
-          </View>
-        </PressDim>
-      ) : null}
     </View>
+  );
+}
+
+export function StackToggle({
+  count,
+  open,
+  onToggle,
+}: {
+  count: number;
+  open: boolean;
+  onToggle: (open: boolean) => void;
+}) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  const label = open ? t('home.stack.collapse') : t('home.stack.fanOut', { count });
+  return (
+    <PressDim
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={open ? t('home.stack.collapseHint') : t('home.stack.fanOutHint')}
+      testID="live-cards-toggle"
+      onPress={() => onToggle(!open)}
+      style={styles.toggle}
+    >
+      <View style={[styles.togglePill, { backgroundColor: color('--color-stage-bubble') }]}>
+        <AppText variant="meta" style={[styles.toggleText, { color: color('--color-on-stage') }]}>
+          {label}
+        </AppText>
+      </View>
+    </PressDim>
   );
 }
 
@@ -211,16 +218,14 @@ const styles = StyleSheet.create({
     lineHeight: PEEK,
     textAlign: 'center',
     fontWeight: '700',
-    opacity: 0.7,
+    opacity: MUTED_TEXT_OPACITY,
     paddingHorizontal: vars['--space-5'],
   },
   toggle: {
-    position: 'absolute',
-    zIndex: MAX_Z + 1,
-    right: 0,
-    top: -vars['--touch-min'] - vars['--space-1'],
+    alignSelf: 'flex-end',
     minHeight: vars['--touch-min'],
     justifyContent: 'center',
+    marginTop: vars['--space-2'],
   },
   togglePill: {
     opacity: 0.9,

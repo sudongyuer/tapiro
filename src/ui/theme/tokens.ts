@@ -51,6 +51,8 @@ export const vars = {
 
   '--text-amount': 48,
   '--text-amount--line-height': 52,
+  '--text-amount-compact': 36,
+  '--text-amount-compact--line-height': 40,
   '--text-large-title': 34,
   '--text-large-title--line-height': 41,
   '--text-moment-title': 28,
@@ -117,6 +119,7 @@ export const MUTED_TEXT_OPACITY = 0.72;
 
 export const typeRoles = [
   'amount',
+  'amount-compact',
   'large-title',
   'moment-title',
   'reward',

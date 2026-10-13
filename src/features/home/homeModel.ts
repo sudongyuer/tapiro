@@ -98,3 +98,13 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
       return front.kind === 'oweMoney' ? { key: 'pay' } : { key: 'live' };
   }
 }
+
+export function moneyParts(amount: number) {
+  const [whole, cents] = amount.toFixed(2).split('.');
+  return { whole, cents: `.${cents}` };
+}
+
+export function moneyText(amount: number) {
+  const { whole, cents } = moneyParts(amount);
+  return cents === '.00' ? whole : `${whole}${cents}`;
+}

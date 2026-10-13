@@ -6,7 +6,7 @@ import { CategorySticker } from '@/ui/CategorySticker';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { vars } from '@/ui/theme/tokens';
 
-import type { OwedDetail, ProgressDetail } from '../homeModel';
+import { moneyText, type OwedDetail, type ProgressDetail } from '../homeModel';
 import { CardHeader, CardText, Pill } from './cardParts';
 
 export function ProgressCard({ detail }: { detail: ProgressDetail }) {
@@ -57,8 +57,8 @@ function TitleRow({ ink, title, amount }: { ink: string; title: string; amount: 
       <CardText variant="title" ink={ink} style={styles.title}>
         {title}
       </CardText>
-      <CardText variant="large-title" ink={ink} style={styles.amount}>
-        {t('home.money', { amount })}
+      <CardText variant="amount-compact" ink={ink}>
+        {t('home.money', { amount: moneyText(amount) })}
       </CardText>
     </View>
   );
@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   title: { flex: 1, fontWeight: '700' },
-  amount: { fontFamily: vars['--font-rounded'], fontWeight: '800' },
   actions: { flexDirection: 'row', gap: vars['--space-2'], marginTop: vars['--space-4'] },
   action: {
     minHeight: vars['--touch-min'],
