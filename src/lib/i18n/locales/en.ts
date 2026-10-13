@@ -99,6 +99,8 @@ const en: Translation = {
       statusUrgent: 'Urgent',
       accept: 'Accept',
       posted: 'Your bounty is posted',
+      liveSample: 'Pay Ah Kit RM 15',
+      mascot: 'Tapir mascot',
     },
   },
 };

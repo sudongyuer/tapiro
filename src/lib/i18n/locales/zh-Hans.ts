@@ -96,6 +96,8 @@ export default {
       statusUrgent: '紧急',
       accept: '接单',
       posted: '悬赏贴出去啦',
+      liveSample: '付给阿杰 RM 15',
+      mascot: '小貘',
     },
   },
 };

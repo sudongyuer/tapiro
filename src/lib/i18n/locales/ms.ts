@@ -99,6 +99,8 @@ const ms: Translation = {
       statusUrgent: 'Segera',
       accept: 'Terima',
       posted: 'Ganjaran anda telah disiarkan',
+      liveSample: 'Bayar Ah Kit RM 15',
+      mascot: 'Maskot tapir',
     },
   },
 };

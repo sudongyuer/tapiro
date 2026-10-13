@@ -4,8 +4,22 @@ import { PlatformColor, Pressable, ScrollView, StyleSheet, View } from 'react-na
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { Mascot } from '@/ui/Mascot';
 import { typeRoles, vars, type TokenName } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+
+const CARDS = ['pay', 'ride', 'progress', 'calm'] as const;
+const STAGES = ['urgent', 'live', 'calm'] as const;
+const STICKERS = [
+  'pickup',
+  'buy',
+  'queue',
+  'handle',
+  'move',
+  'accompany',
+  'study',
+  'other',
+] as const;
 
 const STATUSES: { labelKey: ParseKeys; symbol: SFSymbol; color: TokenName | null }[] = [
   { labelKey: 'debug.tokens.statusOpen', symbol: 'circle', color: null },
@@ -38,6 +52,39 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
       contentContainerStyle={styles.content}
       onLayout={onReady}
     >
+      <View style={styles.card}>
+        {STAGES.map((stage) => (
+          <View
+            key={stage}
+            accessible
+            accessibilityLabel={t('debug.tokens.mascot')}
+            testID={`tokens-stage-${stage}`}
+            style={[styles.stage, { backgroundColor: color(`--color-stage-${stage}`) }]}
+          >
+            <Mascot variant={stage === 'calm' ? 'front' : 'side'} size={56} />
+            <AppText variant="body" style={{ color: color('--color-on-stage') }}>
+              {t('debug.tokens.liveSample')}
+            </AppText>
+          </View>
+        ))}
+      </View>
+
+      <View style={[styles.card, styles.stickers]}>
+        {STICKERS.map((sticker) => (
+          <View
+            key={sticker}
+            accessible
+            accessibilityLabel={sticker}
+            testID={`tokens-sticker-${sticker}`}
+            style={[styles.sticker, { backgroundColor: color(`--color-sticker-${sticker}`) }]}
+          >
+            <AppText variant="secondary" style={{ color: color('--color-on-sticker') }}>
+              {sticker.slice(0, 1).toUpperCase()}
+            </AppText>
+          </View>
+        ))}
+      </View>
+
       <View style={styles.card}>
         {typeRoles.map((role) => (
           <AppText key={role} variant={role} testID={`tokens-type-${role}`}>
@@ -77,6 +124,21 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
         </AppText>
       </Pressable>
 
+      <View style={styles.card}>
+        {CARDS.map((card) => (
+          <View
+            key={card}
+            accessible
+            testID={`tokens-card-${card}`}
+            style={[styles.liveCard, { backgroundColor: color(`--color-card-${card}`) }]}
+          >
+            <AppText variant="body" style={{ color: color(`--color-on-card-${card}`) }}>
+              {t('debug.tokens.liveSample')}
+            </AppText>
+          </View>
+        ))}
+      </View>
+
       <View
         accessible
         testID="tokens-moment"
@@ -106,6 +168,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryLabel: { fontWeight: '700' },
+  liveCard: {
+    borderRadius: vars['--radius-card'],
+    borderCurve: 'continuous',
+    padding: vars['--space-4'],
+  },
+  stage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: vars['--space-3'],
+    borderRadius: vars['--radius-card'],
+    borderCurve: 'continuous',
+    padding: vars['--space-3'],
+  },
+  stickers: { flexDirection: 'row', flexWrap: 'wrap' },
+  sticker: {
+    width: vars['--touch-min'],
+    height: vars['--touch-min'],
+    borderRadius: vars['--radius-chip'],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   moment: {
     borderRadius: vars['--radius-sheet'],
     borderCurve: 'continuous',

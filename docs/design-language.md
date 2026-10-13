@@ -108,11 +108,45 @@ System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackg
 | `--color-mascot-line`    | `#1E1C22`   |             | 小貘 outline                    |
 | `--color-mascot-saddle`  | `#F3EFE6`   |             | 小貘 saddle and ear rims        |
 | `--color-mascot-blush`   | `#FF8A7A`   |             | 小貘 cheeks                     |
+| `--color-mascot-eye`     | `#FFFFFF`   |             | 小貘 eye whites and highlights  |
+| `--color-mascot-snout`   | `#3A3742`   |             | 小貘 front-view snout           |
+
+### Live cards, stage and categories
+
+Dark mode keeps the pastel surfaces (decision D2): cards and stage stay light on the dark
+background and their text stays dark ink. The only exception is the pay card, which inverts.
+
+| Token                       | Light     | Dark      | Use                                           |
+| --------------------------- | --------- | --------- | --------------------------------------------- |
+| `--color-card-pay`          | `#25232B` | `#F3EFE6` | Live card: you owe a payment                  |
+| `--color-on-card-pay`       | `#F3EFE6` | `#25232B` | Text and icons on the pay card                |
+| `--color-card-ride`         | `#F5C8A0` |           | Live card: ride (椰糖杏)                      |
+| `--color-on-card-ride`      | `#25232B` |           | Text and icons on the ride card               |
+| `--color-card-progress`     | `#DCEBD2` |           | Live card: a bounty in progress               |
+| `--color-on-card-progress`  | `#25232B` |           | Text and icons on the progress card           |
+| `--color-card-calm`         | `#F4F0E6` |           | Live card: nothing pending                    |
+| `--color-on-card-calm`      | `#1C1C1E` |           | Text and icons on the calm card               |
+| `--color-ride`              | `#F5C8A0` |           | Ride identity colour (same value as the card) |
+| `--color-stage-urgent`      | `#FBE1D3` |           | Home mascot stage: something urgent           |
+| `--color-stage-live`        | `#F9E3CC` |           | Home mascot stage: in progress (no yellow)    |
+| `--color-stage-calm`        | `#DCE5EE` |           | Home mascot stage: nothing pending            |
+| `--color-on-stage`          | `#1C1C1E` |           | Text on every stage background                |
+| `--color-sticker-pickup`    | `#C89B62` |           | 代取 sticker                                  |
+| `--color-sticker-buy`       | `#A8D5A2` |           | 代买 sticker                                  |
+| `--color-sticker-queue`     | `#F2B8A8` |           | 代排 sticker                                  |
+| `--color-sticker-handle`    | `#D9CCF2` |           | 代办 sticker                                  |
+| `--color-sticker-move`      | `#B7C9D6` |           | 搬运 sticker                                  |
+| `--color-sticker-accompany` | `#9BC4E2` |           | 陪同 sticker                                  |
+| `--color-sticker-study`     | `#F0C9DA` |           | 课业 sticker                                  |
+| `--color-sticker-other`     | `#D8D4CC` |           | 其他 sticker                                  |
+| `--color-on-sticker`        | `#25232B` |           | Glyph on every category sticker               |
 
 Contrast rules, enforced by `src/ui/theme/tokens.test.ts`:
 
 - Accent ≥ 4.5:1 against white (light) and `#1C1C1E` (dark), and on-accent ≥ 4.5:1 on accent.
 - Each status colour ≥ 4.5:1 against white and `#F2F2F7` (light) and `#1C1C1E` (dark).
+- Each `--color-on-card-*` ≥ 4.5:1 on its card, `--color-on-stage` on every stage, and
+  `--color-on-sticker` on every category colour, in light and dark.
 - Yellow is never a brand colour; it is owned by 美团 / 闲鱼 / Timee in this market.
 
 ## Status language
@@ -244,20 +278,30 @@ animation.
 
 ## Information architecture
 
-Navigation uses NativeTabs with a native Stack per tab (see AGENTS.md, UI baseline). Tabs (悬赏 · 拼车 ·
-消息 · 我的, the 小貘 button in the search slot, the most-urgent strip above the bar) and the home
-screen are defined in docs/specs/2026-10-11-foundation-design.md.
+Navigation uses NativeTabs with a native Stack per tab (see AGENTS.md, UI baseline).
+
+- Four tabs: 悬赏 · 拼车 · 消息 · 我的. The tab icon is the C1 front head.
+- The 小貘 button sits in the search slot on the right of the bar and opens the 问小貘 half sheet.
+- The accessory strip above the bar shows the single most urgent item and minimises on scroll.
+- Home: mascot stage (background by state: urgent, live, calm) → live-card stack (pay, ride,
+  in progress, calm) → bounty section. The stage collapses to a strip on scroll.
+
+Details: docs/specs/2026-10-11-foundation-design.md.
 
 ## Component inventory
 
-| Component      | Replaces                              |
-| -------------- | ------------------------------------- |
-| `AppText`      | raw font sizes                        |
-| `StatusBadge`  | status strings and ad-hoc colours     |
-| `TaskCard`     | per-screen card layouts               |
-| `Sticker`      | ad-hoc image borders and shadows      |
-| `MomentScreen` | per-screen celebration layouts        |
-| `ListState`    | ad-hoc empty / error / loading states |
+| Component        | Replaces                              |
+| ---------------- | ------------------------------------- |
+| `AppText`        | raw font sizes                        |
+| `Mascot`         | ad-hoc 小貘 drawings (C1 side, front) |
+| `LiveCard`       | per-screen live-card layouts          |
+| `MascotStage`    | per-screen home hero areas            |
+| `AccessoryStrip` | ad-hoc urgent-item bars               |
+| `StatusBadge`    | status strings and ad-hoc colours     |
+| `TaskCard`       | per-screen card layouts               |
+| `Sticker`        | ad-hoc image borders and shadows      |
+| `MomentScreen`   | per-screen celebration layouts        |
+| `ListState`      | ad-hoc empty / error / loading states |
 
 ## Verification
 
