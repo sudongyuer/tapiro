@@ -1,8 +1,8 @@
 ---
 title: Foundation — accounts, navigation shell, direct payment, reputation, coins, 问小貘, chat
-status: proposed
+status: approved
 created: 2026-10-11
-approved:
+approved: 2026-10-13
 implemented:
 supersedes:
 superseded-by:
@@ -103,7 +103,8 @@ two feature specs only describe their own flows on top of it.
 
 ### Accounts
 
-- First launch: welcome → Sign in with Apple or Google → name and avatar (prefilled from the ID
+- First launch: welcome (sticker wall A, the sign-in sheet rises on the same screen) → Sign in with
+  Apple or Google → name and avatar (prefilled from the ID
   token when present) → language (follows system, changeable) → home. Email is kept only as the
   provider gives it (Apple relay addresses accepted).
 - 我的 → 设置 → 删除账号: confirm sheet listing what goes (profile, payee methods, the user's
@@ -237,22 +238,22 @@ in Implementation order:
 ## UI/UX and motion
 
 Design boards on the canvas (https://claude.ai/artifact/34EC3qaCsv1ibJZ4oeGK3o): 「设计交付 · 第 2 步」 is the
-handoff for step 2; 「欢迎 · 登录 · 引导」 holds the welcome and onboarding choice (pending). Colours are the
+handoff for step 2 (approved 2026-10-13); 「第一次打开 Tapiro」 concept A (floating sticker wall) is the chosen welcome (KICKOFF 2026-10-13). Colours are the
 approved tokens (KICKOFF 2026-10-13: light per home G, dark D2, stickers S1). Native controls (tab bar,
 sheets, glass, large titles) are drawn only to show position and content.
 
 ### Screens and states
 
-| Screen                      | Design board                                                                 | States to cover                                                                                                                                                               |
-| --------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Welcome and sign-in         | 「欢迎 · 登录 · 引导」 (choice pending; a moment screen per design-language) | signed out; sign-in failed line; not configured (dev build)                                                                                                                   |
-| Name, language (onboarding) | same board, styled after the chosen welcome                                  | prefilled, empty, 40-character name, save failed                                                                                                                              |
-| 悬赏 home frame             | 「设计交付 · 第 2 步」 H1–H5, D1–D2                                          | stage 有急事 / 进行中 / 没事; 1, 2, 3 live cards; stacked vs fanned out; scrolled (strip + minimised bar with the most-urgent item); bounty section placeholder; light / dark |
-| 拼车, 消息 (placeholders)   | T1, T2, D5                                                                   | empty state; most-urgent item shown above the bar; unread badge on 消息                                                                                                       |
-| 我的                        | T3, D3                                                                       | profile header; settings entry (moved from the home toolbar)                                                                                                                  |
-| 问小貘 sheet (stub)         | T4, D4                                                                       | opened from two tabs, tab stays selected, suggestions per tab, mic disabled                                                                                                   |
-| Most-urgent strip           | T5                                                                           | each of the four item kinds in priority order; 「还有 n 件」; hidden when none; hidden at the top of 悬赏                                                                     |
-| Settings, delete account    | step 1 screens (merged in PR #1)                                             | as built: language, sign out, delete, blocked with items                                                                                                                      |
+| Screen                      | Design board                                                             | States to cover                                                                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Welcome and sign-in         | 「第一次打开 Tapiro」 A 漂浮贴纸墙 (a moment screen per design-language) | signed out; sign-in failed line; not configured (dev build)                                                                                                                   |
+| Name, language (onboarding) | same board, styled after welcome A                                       | prefilled, empty, 40-character name, save failed                                                                                                                              |
+| 悬赏 home frame             | 「设计交付 · 第 2 步」 H1–H5, D1–D2                                      | stage 有急事 / 进行中 / 没事; 1, 2, 3 live cards; stacked vs fanned out; scrolled (strip + minimised bar with the most-urgent item); bounty section placeholder; light / dark |
+| 拼车, 消息 (placeholders)   | T1, T2, D5                                                               | empty state; most-urgent item shown above the bar; unread badge on 消息                                                                                                       |
+| 我的                        | T3, D3                                                                   | profile header; settings entry (moved from the home toolbar)                                                                                                                  |
+| 问小貘 sheet (stub)         | T4, D4                                                                   | opened from two tabs, tab stays selected, suggestions per tab, mic disabled                                                                                                   |
+| Most-urgent strip           | T5                                                                       | each of the four item kinds in priority order; 「还有 n 件」; hidden when none; hidden at the top of 悬赏                                                                     |
+| Settings, delete account    | step 1 screens (merged in PR #1)                                         | as built: language, sign out, delete, blocked with items                                                                                                                      |
 
 Long copy runs in `ms`; the largest supported text size is checked with `break-ui` worst cases.
 
@@ -327,6 +328,10 @@ Supabase (ap-southeast-1)
 - Alipay/WeChat receive-code rules and expiry are unverified (payee-setup §Open questions).
 - Reputation tiers need real volume to tune; thresholds start low.
 - Live Activity and speech are verified on a physical device only.
+- The full onboarding (canvas 「新手引导 · 第三版」, 11 screens: try a bounty, peel the first sticker,
+  places, explained permissions, school email) waits until the bounty, carpool, payment and
+  reputation flows are stable (KICKOFF 2026-10-13). Until then first launch is welcome A → sign-in
+  → name and language → home.
 
 ## Implementation order
 
@@ -334,6 +339,7 @@ Supabase (ap-southeast-1)
    verify-mode auth fixture. Testable: verify case "sign-in → profile → delete".
 2. Shell: NativeTabs, 小貘 search trigger and sheet stub, accessory with fixture items and the
    visibility rules, home G frame with fixture live cards. Testable: verify cases from the spike.
+   Then welcome A replaces the step 1 sign-in screen, after its own design handoff.
 3. Payee methods and QR classification (unit tests over real code strings).
 4. Pay step and settlement state machine as a shared component driven by fixtures.
 5. Spike: IAP library and server verification. Then coin ledger, IAP (sandbox), grants, refunds
