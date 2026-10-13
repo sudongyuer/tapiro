@@ -1,8 +1,8 @@
 ---
 title: Bounty board (悬赏令) v1
-status: approved
+status: proposed
 created: 2026-10-11
-approved: 2026-10-12
+approved:
 implemented:
 supersedes:
 superseded-by:
@@ -109,6 +109,12 @@ the foundation spec and is only referenced here.
 | Location                       | Optional per bounty; the viewer's position uses precise location, When In Use only; if the user turns Precise off, distances fall back to approximate (about 1 km off); manual area fallback when declined              | KICKOFF 2026-10-12 (overturns the approximate-only recommendation in `2026-10-04-push-location.md`: the real map and meeting points need it); App Review 5.1.1(iv) | Approximate only: pins about 1 km off               |
 | Address privacy                | Everyone sees the place label and area; the exact address (room, unit) only the selected helper                                                                                                                         | KICKOFF 2026-10-11 B11                                                                                                                                             | Visible to applicants                               |
 | Distance query                 | PostGIS nearest-neighbour through an RPC                                                                                                                                                                                | `docs/research/2026-10-04-backend-platform.md`                                                                                                                     | Client-side filtering                               |
+
+## UI/UX and motion
+
+Pending design handoff: the screens, their states and the motion table are delivered on the canvas and
+written here before its first UI step starts; the spec returns to approved after that review (process adopted
+2026-10-13, KICKOFF).
 
 ## Data flow and ownership
 
