@@ -1,15 +1,30 @@
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
 import { mascotPaint } from '@/ui/mascotPaint';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 export type MascotVariant = 'side' | 'front';
+export type MascotEyes = 'open' | 'asleep';
+
+const ART_SCALE = 0.6;
 
 const SIDE_TRUNK = 'M46 82 C36 86 27 93 21 103 C17 111 23 117 31 113 C37 109 45 105 56 102 Z';
 
-export function Mascot({ variant, size }: { variant: MascotVariant; size: number }) {
-  const { theme } = useTheme();
+export type MascotProps = {
+  variant: MascotVariant;
+  size: number;
+  outlined?: boolean;
+  eyes?: MascotEyes;
+};
+
+export function Mascot({ variant, size, outlined = false, eyes = 'open' }: MascotProps) {
+  const { theme, color } = useTheme();
   const paint = mascotPaint(theme);
+  const border = size >= 48 ? vars['--sticker-border'] : vars['--sticker-border-small'];
+  const sticker = outlined
+    ? { color: color('--color-sticker-border'), extra: (2 * border * 64) / (size * ART_SCALE) }
+    : null;
   return (
     <Svg
       width={size}
@@ -18,26 +33,40 @@ export function Mascot({ variant, size }: { variant: MascotVariant; size: number
       accessible={false}
       style={{ overflow: 'visible' }}
     >
-      {variant === 'side' ? <Side {...paint} /> : <Front {...paint} />}
+      {variant === 'side' ? (
+        <Side {...paint} sticker={sticker} eyes={eyes} />
+      ) : (
+        <Front {...paint} sticker={sticker} />
+      )}
     </Svg>
   );
 }
 
-type Paint = ReturnType<typeof mascotPaint>;
+type Paint = ReturnType<typeof mascotPaint> & {
+  sticker: { color: string; extra: number } | null;
+};
 
-function Side({ line, ink, rim, blush, eye }: Paint) {
+function SideSilhouette(stroke: { stroke: string; strokeWidth: number }) {
   const outline = {
     fill: 'none',
-    stroke: line,
-    strokeWidth: 7,
     strokeLinejoin: 'round',
     strokeLinecap: 'round',
+    ...stroke,
   } as const;
   return (
-    <G transform="translate(-4 -14) scale(0.6)">
+    <>
       <Ellipse cx={88} cy={50} rx={11} ry={15} rotation={18} origin="88, 50" {...outline} />
       <Ellipse cx={72} cy={82} rx={36} ry={33} {...outline} />
       <Path d={SIDE_TRUNK} {...outline} />
+    </>
+  );
+}
+
+function Side({ line, ink, rim, blush, eye, sticker, eyes }: Paint & { eyes: MascotEyes }) {
+  return (
+    <G transform={`translate(-4 -14) scale(${ART_SCALE})`}>
+      {sticker ? <SideSilhouette stroke={sticker.color} strokeWidth={7 + sticker.extra} /> : null}
+      <SideSilhouette stroke={line} strokeWidth={7} />
       <Ellipse cx={88} cy={50} rx={11} ry={15} rotation={18} origin="88, 50" fill={ink} />
       <Ellipse
         cx={88}
@@ -52,9 +81,21 @@ function Side({ line, ink, rim, blush, eye }: Paint) {
       />
       <Ellipse cx={72} cy={82} rx={36} ry={33} fill={ink} />
       <Path d={SIDE_TRUNK} fill={ink} />
-      <Ellipse cx={62} cy={76} rx={6} ry={6.6} fill={eye} />
-      <Ellipse cx={60} cy={77} rx={3.6} ry={4.2} fill={line} />
-      <Circle cx={61.6} cy={74.6} r={1.4} fill={eye} />
+      {eyes === 'open' ? (
+        <>
+          <Ellipse cx={62} cy={76} rx={6} ry={6.6} fill={eye} />
+          <Ellipse cx={60} cy={77} rx={3.6} ry={4.2} fill={line} />
+          <Circle cx={61.6} cy={74.6} r={1.4} fill={eye} />
+        </>
+      ) : (
+        <Path
+          d="M56 77 Q62 82 68 77"
+          fill="none"
+          stroke={rim}
+          strokeWidth={2.6}
+          strokeLinecap="round"
+        />
+      )}
       <Ellipse cx={74} cy={96} rx={7} ry={4.6} fill={blush} opacity={0.9} />
       <Path
         d="M40 104 Q46 108 52 104"
@@ -69,19 +110,23 @@ function Side({ line, ink, rim, blush, eye }: Paint) {
   );
 }
 
-function Front({ line, ink, rim, blush, snout, eye }: Paint) {
-  const outline = {
-    fill: 'none',
-    stroke: line,
-    strokeWidth: 6,
-    strokeLinejoin: 'round',
-  } as const;
+function FrontSilhouette(stroke: { stroke: string; strokeWidth: number }) {
+  const outline = { fill: 'none', strokeLinejoin: 'round', ...stroke } as const;
   return (
-    <G transform="translate(3.2 6) scale(0.6)">
+    <>
       <Ellipse cx={22} cy={20} rx={10} ry={13} rotation={-18} origin="22, 20" {...outline} />
       <Ellipse cx={74} cy={20} rx={10} ry={13} rotation={18} origin="74, 20" {...outline} />
       <Ellipse cx={48} cy={50} rx={34} ry={31} {...outline} />
       <Ellipse cx={48} cy={66} rx={13} ry={10} {...outline} />
+    </>
+  );
+}
+
+function Front({ line, ink, rim, blush, snout, eye, sticker }: Paint) {
+  return (
+    <G transform={`translate(3.2 6) scale(${ART_SCALE})`}>
+      {sticker ? <FrontSilhouette stroke={sticker.color} strokeWidth={6 + sticker.extra} /> : null}
+      <FrontSilhouette stroke={line} strokeWidth={6} />
       <Ellipse cx={22} cy={20} rx={10} ry={13} rotation={-18} origin="22, 20" fill={ink} />
       <Ellipse cx={74} cy={20} rx={10} ry={13} rotation={18} origin="74, 20" fill={ink} />
       <Ellipse cx={48} cy={50} rx={34} ry={31} fill={ink} />

@@ -31,6 +31,10 @@ export const vars = {
   '--color-stage-live': '#F9E3CC',
   '--color-stage-calm': '#DCE5EE',
   '--color-on-stage': '#1C1C1E',
+  '--color-stage-sun-urgent': '#FF9F7A',
+  '--color-stage-sun-live': '#F6B47F',
+  '--color-stage-sun-calm': '#F3EFE6',
+  '--color-stage-bubble': '#FFFFFF',
 
   '--color-sticker-pickup': '#C89B62',
   '--color-sticker-buy': '#A8D5A2',
@@ -45,6 +49,8 @@ export const vars = {
   '--font-sans': 'System',
   '--font-rounded': 'ui-rounded',
 
+  '--text-amount': 48,
+  '--text-amount--line-height': 52,
   '--text-large-title': 34,
   '--text-large-title--line-height': 41,
   '--text-moment-title': 28,
@@ -107,7 +113,10 @@ export function token(name: TokenName, theme: ThemeName = 'light') {
   return (theme === 'dark' ? darkVars[name] : undefined) ?? vars[name];
 }
 
+export const MUTED_TEXT_OPACITY = 0.72;
+
 export const typeRoles = [
+  'amount',
   'large-title',
   'moment-title',
   'reward',

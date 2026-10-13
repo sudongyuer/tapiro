@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 
-import { contrastRatio, darkVars, token, vars, type ThemeName, type TokenName } from './tokens';
+import {
+  contrastRatio,
+  darkVars,
+  MUTED_TEXT_OPACITY,
+  token,
+  vars,
+  type ThemeName,
+  type TokenName,
+} from './tokens';
 
 const LIGHT_SURFACES = ['#FFFFFF', '#F2F2F7'];
 const DARK_SURFACE = '#1C1C1E';
@@ -59,6 +67,16 @@ const STICKERS = [
   'other',
 ] as const;
 
+function blend(top: string, bottom: string, alpha: number) {
+  const rgb = (hex: string) =>
+    [1, 3, 5].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
+  const [a, b] = [rgb(top), rgb(bottom)];
+  return `#${a
+    .map((value, i) => Math.round(value * alpha + b[i] * (1 - alpha)))
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('')}`;
+}
+
 function resolved(name: TokenName, theme: ThemeName) {
   const value = token(name, theme);
   if (typeof value !== 'string') throw new Error(`${name} has no colour`);
@@ -72,8 +90,16 @@ describe('live cards, stage and stickers keep text readable in both themes', () 
         const surface = resolved(`--color-card-${card}`, theme);
         const text = resolved(`--color-on-card-${card}`, theme);
         expect(contrastRatio(text, surface)).toBeGreaterThanOrEqual(MIN);
+        expect(
+          contrastRatio(blend(text, surface, MUTED_TEXT_OPACITY), surface),
+        ).toBeGreaterThanOrEqual(MIN);
       });
     }
+    test(`${theme} bubble`, () => {
+      expect(
+        contrastRatio(resolved('--color-on-stage', theme), resolved('--color-stage-bubble', theme)),
+      ).toBeGreaterThanOrEqual(MIN);
+    });
     for (const stage of STAGES) {
       test(`${theme} stage ${stage}`, () => {
         expect(

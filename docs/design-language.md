@@ -131,6 +131,10 @@ background and their text stays dark ink. The only exception is the pay card, wh
 | `--color-stage-live`        | `#F9E3CC` |           | Home mascot stage: in progress (no yellow)    |
 | `--color-stage-calm`        | `#DCE5EE` |           | Home mascot stage: nothing pending            |
 | `--color-on-stage`          | `#1C1C1E` |           | Text on every stage background                |
+| `--color-stage-sun-urgent`  | `#FF9F7A` |           | Stage sun: something urgent                   |
+| `--color-stage-sun-live`    | `#F6B47F` |           | Stage sun: in progress (apricot, no yellow)   |
+| `--color-stage-sun-calm`    | `#F3EFE6` |           | Stage sun: nothing pending (low cream sun)    |
+| `--color-stage-bubble`      | `#FFFFFF` |           | 小貘's speech bubble; ask pill on the calm card |
 | `--color-sticker-pickup`    | `#C89B62` |           | 代取 sticker                                  |
 | `--color-sticker-buy`       | `#A8D5A2` |           | 代买 sticker                                  |
 | `--color-sticker-queue`     | `#F2B8A8` |           | 代排 sticker                                  |
@@ -141,11 +145,15 @@ background and their text stays dark ink. The only exception is the pay card, wh
 | `--color-sticker-other`     | `#D8D4CC` |           | 其他 sticker                                  |
 | `--color-on-sticker`        | `#25232B` |           | Glyph on every category sticker               |
 
+The stage hill is drawn in the screen background (`systemGroupedBackground`), so the stage meets
+the page in both appearances.
+
 Contrast rules, enforced by `src/ui/theme/tokens.test.ts`:
 
 - Accent ≥ 4.5:1 against white (light) and `#1C1C1E` (dark), and on-accent ≥ 4.5:1 on accent.
 - Each status colour ≥ 4.5:1 against white and `#F2F2F7` (light) and `#1C1C1E` (dark).
-- Each `--color-on-card-*` ≥ 4.5:1 on its card, `--color-on-stage` on every stage, and
+- Each `--color-on-card-*` ≥ 4.5:1 on its card, also at the 72 % muted opacity used for
+  secondary card lines; `--color-on-stage` on every stage and on the bubble; and
   `--color-on-sticker` on every category colour, in light and dark.
 - Yellow is never a brand colour; it is owned by 美团 / 闲鱼 / Timee in this market.
 
@@ -175,6 +183,8 @@ accessibility sizes.
 | ---------------------------------- | ----- | --------------------------------------------------- |
 | `--font-sans`                      |       | System (PingFang SC / SF Pro)                       |
 | `--font-rounded`                   |       | SF Rounded, numerals only                           |
+| `--text-amount`                    | `48`  | Live-card amount and countdown, rounded heavy       |
+| `--text-amount--line-height`       | `52`  |                                                     |
 | `--text-large-title`               | `34`  | Tab root titles (Large Title, bold)                 |
 | `--text-large-title--line-height`  | `41`  |                                                     |
 | `--text-moment-title`              | `28`  | Moment screen title (Title 1, heavy, white outline) |

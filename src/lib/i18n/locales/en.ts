@@ -81,9 +81,6 @@ const en: Translation = {
     },
     home: {
       title: 'Bounties',
-      liveCards: 'What’s happening now will show here',
-      sectionTitle: 'Bounties you can take',
-      placeholder: 'Bounties arrive in the next release',
     },
     ride: {
       emptyTitle: 'Rides are coming soon',
@@ -121,6 +118,78 @@ const en: Translation = {
       mic: 'Speak',
       comingSoon: 'Voice and AI drafts are coming soon',
       close: 'Close',
+    },
+  },
+  home: {
+    say: {
+      payNamed: '{{name}} delivered — remember to pay',
+      pay: 'You have a payment to make',
+      rideMinutes: 'Leaving in {{count}} min, don’t be late',
+      owedNamed: '{{name}} says they paid you — check it',
+      progressNamed: '{{name}} is helping you — message them anytime',
+      live: 'Something’s in progress, I’m keeping an eye on it',
+      calm: 'Nothing on today… post a bounty?',
+    },
+    stage: {
+      urgent: 'Urgent',
+      live: 'In progress',
+      calm: 'All clear',
+    },
+    stack: {
+      fanOut: 'Spread out · {{count}}',
+      collapse: 'Stack',
+      fanOutHint: 'Lays the cards out at their own heights',
+      collapseHint: 'Stacks the cards again',
+      peekHint: 'Spreads out all cards',
+    },
+    money: 'RM {{amount}}',
+    cents: '.00',
+    soon: 'This step isn’t available yet',
+    card: {
+      pay: {
+        tag: 'You owe',
+        title: 'Pay {{name}}',
+        slide: 'Slide to pay · {{amount}} →',
+        slideLabel: 'Slide to pay {{amount}}',
+        footer: 'Direct pay · money goes straight to {{name}}',
+      },
+      ride: {
+        tag: 'Ride · {{seats}} full',
+        youBook: 'You book',
+        departs: 'Leaves {{time}}',
+        countdownSuffix: 'to go',
+        countdownLabel: '{{time}} until departure',
+        meet: 'Meet',
+        arrive: 'I’m here',
+      },
+      owed: {
+        tag: 'Confirm',
+        title: '{{name}} says they paid you',
+      },
+      progress: {
+        tag: 'Your post · in progress',
+        helper: '{{name}} took it',
+        message: 'Message {{name}}',
+        details: 'Details',
+      },
+      calm: {
+        tag: 'Nothing pending today',
+        morning: 'Good morning, {{name}}',
+        afternoon: 'Good afternoon, {{name}}',
+        evening: 'Good evening, {{name}}',
+        ask: 'Say it and Tapir posts the bounty',
+        askHint: 'Opens Ask Tapir',
+        chipRide: 'Who’s heading back to YC at five?',
+        chipParcel: 'Pick up my parcel',
+        chipStudy: 'Find someone to explain calculus',
+      },
+    },
+    section: {
+      title: 'Bounties you can take',
+      empty: 'Bounties arrive in the next release',
+    },
+    strip: {
+      label: '{{title}}, {{line}}',
     },
   },
   debug: {
