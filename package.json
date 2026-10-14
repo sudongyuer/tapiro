@@ -45,7 +45,7 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
-    "lint": "expo lint",
+    "lint": "node -e \"const [a,b,c]=process.versions.node.split('.').map(Number);if(a<20||(a===20&&(b<19||(b===19&&c<4)))){console.error('expo lint needs Node >=20.19.4, found '+process.versions.node);process.exit(1)}\" && expo lint",
     "typecheck": "tsc --noEmit",
     "check-specs": "node scripts/check-specs.mjs --dir docs/specs",
     "test": "bun test",

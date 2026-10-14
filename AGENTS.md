@@ -165,3 +165,5 @@
 - Keep the root `ThemeProvider` in `src/app/_layout.tsx`, and every case asserts appearance with
   pixels. Reason: removing it left the navigation bar white in dark mode while all AX
   assertions passed; only a screenshot showed it.
+- Run lint through `bun run lint -- <files>` (checks Node >= 20.19.4 first). Reason: under Node 18
+  `bunx expo lint` prints an "outdated" notice and exits 0 without linting, a false pass.
