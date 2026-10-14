@@ -1,7 +1,5 @@
 import { describe, expect, test } from 'bun:test';
 
-import { pickMostUrgent } from '@/features/shell/accessory';
-
 import { FIXTURE_UNREAD_MESSAGES, fixtureLiveItems } from './liveItems';
 
 describe('fixtureLiveItems', () => {
@@ -13,7 +11,6 @@ describe('fixtureLiveItems', () => {
       'rideSoon',
       'oweMoney',
     ]);
-    expect(pickMostUrgent(feed.accessory)?.item.kind).toBe('oweMoney');
     expect(feed.unreadMessages).toBe(FIXTURE_UNREAD_MESSAGES);
   });
 

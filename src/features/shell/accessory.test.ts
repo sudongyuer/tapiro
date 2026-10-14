@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
-import { accessoryPriority, type AccessoryItem, type AccessoryKind } from '@/lib/liveItems';
+import {
+  accessoryPriority,
+  type AccessoryItem,
+  type AccessoryKind,
+  fixtureLiveItems,
+} from '@/lib/liveItems';
 
 import { accessoryVisible, badgeText, pickMostUrgent } from './accessory';
 
@@ -12,6 +17,10 @@ const item = (id: string, kind: AccessoryKind): AccessoryItem => ({
 });
 
 describe('pickMostUrgent', () => {
+  test('picks money owed from the default fixture feed', () => {
+    expect(pickMostUrgent(fixtureLiveItems(undefined).accessory)?.item.kind).toBe('oweMoney');
+  });
+
   test('returns null when there is nothing', () => {
     expect(pickMostUrgent([])).toBeNull();
   });
