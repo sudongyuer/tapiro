@@ -1,11 +1,20 @@
+import type { FixtureVariant } from '@/lib/fixtureVariant';
+
 import { createSessionStore } from './sessionStore';
 import type { AccountUser, AuthProvider, AuthService, UnsettledPayment } from './types';
 
-export function fixtureUser(provider: AuthProvider): AccountUser {
+const FIXTURE_USER_NAMES: Record<FixtureVariant, string> = {
+  demo: '林小貘',
+  worst: 'Muhammad Hafiz Haikal bin Mohd Yusof Ali',
+  one: 'Jo',
+  empty: '林小貘',
+};
+
+export function fixtureUser(provider: AuthProvider, variant: FixtureVariant = 'demo'): AccountUser {
   return {
     id: '00000000-0000-4000-8000-000000000001',
     email: provider === 'apple' ? 'fixture@privaterelay.appleid.com' : 'fixture@gmail.com',
-    name: '林小貘',
+    name: FIXTURE_USER_NAMES[variant],
     avatarUrl: null,
     provider,
   };
@@ -22,20 +31,24 @@ export const fixtureUnsettledPayment: UnsettledPayment = {
 export type FixtureAuthOptions = {
   signedInAs?: AuthProvider;
   deletion?: 'allowed' | 'blocked';
+  variant?: FixtureVariant;
 };
 
 export function createFixtureAuthService({
   signedInAs,
   deletion = 'allowed',
+  variant = 'demo',
 }: FixtureAuthOptions = {}): AuthService {
   const store = createSessionStore(
-    signedInAs ? { status: 'signedIn', user: fixtureUser(signedInAs) } : { status: 'signedOut' },
+    signedInAs
+      ? { status: 'signedIn', user: fixtureUser(signedInAs, variant) }
+      : { status: 'signedOut' },
   );
   return {
     getState: store.get,
     subscribe: store.subscribe,
     async signIn(provider) {
-      store.set({ status: 'signedIn', user: fixtureUser(provider) });
+      store.set({ status: 'signedIn', user: fixtureUser(provider, variant) });
       return { ok: true };
     },
     async signOut() {

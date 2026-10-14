@@ -1,5 +1,7 @@
 import { Settings } from 'react-native';
 
+import { fixtureVariant } from './fixtureVariant';
+
 export const uiVerify = process.env.EXPO_PUBLIC_UI_VERIFY === '1';
 
 export const debugToolsEnabled = __DEV__ || uiVerify;
@@ -10,3 +12,5 @@ export function uiVerifyArgument(name: string): string | undefined {
 }
 
 export const uiVerifyScene = uiVerifyArgument('uiVerifyScene');
+
+export const uiVerifyFixture = fixtureVariant(uiVerifyArgument('uiVerifyFixture'));

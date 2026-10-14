@@ -16,7 +16,10 @@ creates it once if missing; never create Simulators or pass another DerivedData 
 Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 `LOCALES = ['zh-Hans', 'ms']` to also run in Malay and catch truncation. `ARGS = [...]` adds
 launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items (omitted: all
-four; `none`: calm). Each run writes `result.json` with commit, locale, Xcode and device.
+four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
+same items, the 消息 badge and the fixture user's name (`worst`: 40-character names, long routes,
+RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread). Each run writes
+`result.json` with commit, locale, Xcode and device.
 `log.txt` lists every AXe call with its duration; a timeout message adds the median call time,
 which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
 `BUDGET = <seconds>`. Only one `verify:ui` run may drive the Simulator at a time; a second run
@@ -31,7 +34,7 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 
 ## Cases
 
-| Case                          | Behaviour                                                                                                                                                    | Scene            | Shell feed                           |
+| Case                          | Behaviour                                                                                                                                                    | Scene            | Shell feed / fixture                 |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- | ------------------------------------ |
 | `app_launches`                | The app launches offline in verify mode, signed out, and shows the welcome screen filling the display.                                                       | —                | —                                    |
 | `design_tokens`               | The design-tokens scene renders every type role, the status set and a 44 pt accent button in the current appearance.                                         | `design-tokens`  | —                                    |
@@ -50,6 +53,10 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `home_calm`                   | With no live items, home shows the calm stage and card, and no tab shows the accessory.                                                                      | —                | `none`                               |
 | `home_one_card`               | One live item shows one card with no peeks and no stack toggle.                                                                                              | —                | `bountyInProgress`                   |
 | `home_three_cards`            | Three live items stack with two peeks and fan out to three cards.                                                                                            | —                | `oweMoney,rideSoon,bountyInProgress` |
+| `home_worst`                  | Worst-case data renders on home stacked and fanned, the collapse strip, the accessory and the 消息 badge.                                                    | —                | `-uiVerifyFixture worst`             |
+| `home_worst_calm`             | The calm card greets a 40-character display name with the ask button at full size.                                                                           | —                | `none`, `-uiVerifyFixture worst`     |
+| `home_one`                    | Short and single-count data (`Jo`, RM 0.50, 1 minute, 1 unread) renders on the same surfaces.                                                                | —                | `-uiVerifyFixture one`               |
+| `home_worst_inline`           | Scrolling past one worst-case pay card shows the inline accessory with its long title on one line.                                                           | —                | `oweMoney`, `-uiVerifyFixture worst` |
 
 ## Adding a case
 
