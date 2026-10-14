@@ -1,5 +1,6 @@
 import { useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser } from '@/features/account';
 import { HomeScreen, useLiveStackState } from '@/features/home';
@@ -26,6 +27,7 @@ export default function BountyHome() {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
       />
+      <TitleHalo />
     </>
   );
 }

@@ -1,0 +1,10 @@
+{
+  "name": "tapiro-kit",
+  "version": "0.1.0",
+  "description": "Tapiro first-party native code",
+  "private": true,
+  "main": "index.tsx",
+  "license": "UNLICENSED",
+  "author": "Tapiro",
+  "homepage": "https://github.com/sudongyuer/tapiro"
+}
