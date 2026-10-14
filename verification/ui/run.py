@@ -70,6 +70,7 @@ def case_meta(case):
 
 
 def run_case(case, scene, extra, budget, locale, appearance, udid, out):
+    started = time.monotonic()
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob('*'):
         stale.unlink()
@@ -84,7 +85,6 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     simctl('launch', udid, BUNDLE_ID,
            '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
            *(['-uiVerifyScene', scene] if scene else []), *extra)
-    started = time.monotonic()
     status, message = 'pass', ''
     try:
         proc = subprocess.run(
@@ -104,7 +104,8 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         if calls:
             message += f'; {len(calls)} axe calls, median {calls[len(calls) // 2]:.1f} s'
     if status == 'fail':
-        subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')], capture_output=True)
+        subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
+                       capture_output=True, timeout=60)
     recorder.send_signal(signal.SIGINT)
     recorder.wait(timeout=30)
     if not video.exists() or video.stat().st_size == 0:
@@ -112,6 +113,13 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     if status == 'pass' and not list(out.glob('*.png')):
         status, message = 'fail', 'no screenshots captured'
     return status, message, round(time.monotonic() - started, 1)
+
+
+def print_timings(timings, total):
+    print(f"\n{'seconds':>8}  {'status':6} {'locale':7} {'look':5} case")
+    for duration, status, locale, appearance, case in timings:
+        print(f'{duration:8.1f}  {status:6} {locale:7} {appearance:5} {case}')
+    print(f'{total:8.1f}  total ({len(timings)} runs, {int(total // 60)} min {int(total % 60)} s)')
 
 
 def main():
@@ -142,6 +150,8 @@ def main():
     xcode = sh('xcodebuild', '-version').splitlines()[0]
 
     failures = 0
+    timings = []
+    run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
@@ -149,6 +159,7 @@ def main():
                 out = Path(args.output) / locale / appearance / case
                 status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
                 failures += status != 'pass'
+                timings.append((duration, status, locale, appearance, case))
                 (out / 'result.json').write_text(json.dumps({
                     'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
                     'status': status, 'message': message,
@@ -158,6 +169,7 @@ def main():
                 }, indent=2))
                 print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}')
 
+    print_timings(timings, time.monotonic() - run_started)
     print(f'Artifacts: {args.output}')
     sys.exit(1 if failures else 0)
 

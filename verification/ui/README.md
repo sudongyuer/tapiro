@@ -19,7 +19,9 @@ launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items 
 four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
 same items, the 消息 badge and the fixture user's name (`worst`: 40-character names, long routes,
 RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread). Each run writes
-`result.json` with commit, locale, Xcode and device.
+`result.json` with commit, locale, Xcode, device and `duration_s` (wall-clock seconds of that
+case, locale and appearance); the runner ends with a per-case timing table and the total, and
+`verify:build` prints its own wall-clock seconds.
 `log.txt` lists every AXe call with its duration; a timeout message adds the median call time,
 which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
 `BUDGET = <seconds>`. Only one `verify:ui` run may drive the Simulator at a time; a second run

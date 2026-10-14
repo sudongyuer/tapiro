@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DERIVED="$ROOT/.verify/DerivedData"
 
 cd "$ROOT"
+STARTED=$SECONDS
 [ -d ios/Tapiro.xcworkspace ] || CI=1 bunx expo prebuild --platform ios
 
 # The JS bundle is produced inside the Xcode build phase; the flag must reach it there.
@@ -17,4 +18,5 @@ EXPO_PUBLIC_UI_VERIFY=1 xcodebuild \
   -derivedDataPath "$DERIVED" \
   build | tail -n 20
 
+echo "Build wall-clock: $((SECONDS - STARTED)) s"
 echo "$DERIVED/Build/Products/Release-iphonesimulator/Tapiro.app"

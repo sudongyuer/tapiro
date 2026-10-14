@@ -38,7 +38,7 @@ assert str(parts['home'].get('AXValue')) == '1', '悬赏 is not the selected min
 assert home['x'] + home['width'] <= middle['x'] and middle['x'] + middle['width'] <= ask['x'], \
     f'minimised order is not tab | accessory | 小貘: {home} {middle} {ask}'
 assert abs(ask['width'] - 48) < 1 and abs(home['width'] - 48) < 1, f'minimised buttons are not 48 pt: {home} {ask}'
-assert parts['inline']['AXLabel'].startswith('付给阿杰 RM 15'), f'inline accessory label {parts["inline"]["AXLabel"]}'
+assert parts['inline']['AXLabel'].startswith('付给阿杰') and '15.00' in parts['inline']['AXLabel'], f'inline accessory label {parts["inline"]["AXLabel"]}'
 shot = ui.snap('02-minimised')
 assert_tapir_button(shot, ask, ui.appearance, '48 pt 小貘 button')
 
