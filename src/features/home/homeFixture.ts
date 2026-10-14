@@ -1,4 +1,4 @@
-import { FIXTURE_ACCESSORY } from '@/features/shell';
+import { FIXTURE_ACCESSORY } from '@/lib/liveItems';
 
 import type { CardDetail } from './homeModel';
 

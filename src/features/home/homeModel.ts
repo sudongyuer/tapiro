@@ -1,4 +1,4 @@
-import type { AccessoryItem, AccessoryKind } from '@/features/shell';
+import type { AccessoryItem, AccessoryKind } from '@/lib/liveItems';
 import type { StickerCategory } from '@/ui/CategorySticker';
 import type { StageState } from '@/ui/MascotStage';
 

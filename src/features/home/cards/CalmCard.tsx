@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { StyleSheet, View } from 'react-native';
 
-import type { AccessoryItem } from '@/features/shell';
+import type { AccessoryItem } from '@/lib/liveItems';
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { LiveCard, useLiveCardPaint, type LiveCardTone } from '@/ui/LiveCard';

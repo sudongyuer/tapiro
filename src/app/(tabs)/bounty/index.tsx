@@ -3,8 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser } from '@/features/account';
-import { HomeScreen, useLiveStackState } from '@/features/home';
-import { useHomeScroll } from '@/features/shell';
+import { HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
 
 export default function BountyHome() {
   const router = useRouter();

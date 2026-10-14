@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 
-import { pickMostUrgent } from './accessory';
-import { FIXTURE_UNREAD_MESSAGES, fixtureShellFeed } from './shellFixture';
+import { pickMostUrgent } from '@/features/shell/accessory';
 
-describe('fixtureShellFeed', () => {
+import { FIXTURE_UNREAD_MESSAGES, fixtureLiveItems } from './liveItems';
+
+describe('fixtureLiveItems', () => {
   test('defaults to all four kinds, listed out of priority order', () => {
-    const feed = fixtureShellFeed(undefined);
+    const feed = fixtureLiveItems(undefined);
     expect(feed.accessory.map((item) => item.kind)).toEqual([
       'bountyInProgress',
       'owedToYou',
@@ -17,11 +18,11 @@ describe('fixtureShellFeed', () => {
   });
 
   test('none empties the feed and the badge', () => {
-    expect(fixtureShellFeed('none')).toEqual({ accessory: [], unreadMessages: 0 });
+    expect(fixtureLiveItems('none')).toEqual({ accessory: [], unreadMessages: 0 });
   });
 
   test('a list of kinds picks those items and ignores unknown names', () => {
-    const feed = fixtureShellFeed('owedToYou, rideSoon,bogus');
+    const feed = fixtureLiveItems('owedToYou, rideSoon,bogus');
     expect(feed.accessory.map((item) => item.kind)).toEqual(['owedToYou', 'rideSoon']);
   });
 });

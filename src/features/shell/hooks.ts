@@ -1,27 +1,6 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 
-import { homeSignals } from './homeSignals';
-import { shellFeed } from './services';
 import { tabLocation, type TabLocation } from './tabs';
-
-export function useShellFeed() {
-  return useSyncExternalStore(shellFeed.subscribe, shellFeed.getSnapshot);
-}
-
-export function useLiveCardsOnScreen() {
-  return useSyncExternalStore(
-    homeSignals.liveCardsOnScreen.subscribe,
-    homeSignals.liveCardsOnScreen.get,
-  );
-}
-
-export function useHomeReveal(onReveal: () => void) {
-  const latest = useRef(onReveal);
-  useEffect(() => {
-    latest.current = onReveal;
-  }, [onReveal]);
-  useEffect(() => homeSignals.revealRequests.subscribe(() => latest.current()), []);
-}
 
 const INITIAL_LOCATION: TabLocation = { tab: 'bounty', onRoot: true };
 

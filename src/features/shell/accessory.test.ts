@@ -1,13 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-import {
-  accessoryPriority,
-  accessoryVisible,
-  badgeText,
-  pickMostUrgent,
-  type AccessoryItem,
-  type AccessoryKind,
-} from './accessory';
+import { accessoryPriority, type AccessoryItem, type AccessoryKind } from '@/lib/liveItems';
+
+import { accessoryVisible, badgeText, pickMostUrgent } from './accessory';
 
 const item = (id: string, kind: AccessoryKind): AccessoryItem => ({
   id,

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { AccessoryItem, AccessoryKind } from '@/features/shell';
+import type { AccessoryItem, AccessoryKind } from '@/lib/liveItems';
 
 import {
   liveCards,

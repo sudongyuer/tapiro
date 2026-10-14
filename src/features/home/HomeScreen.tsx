@@ -21,8 +21,9 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { accessoryPriority, useShellFeed } from '@/features/shell';
 import { useI18n } from '@/lib/i18n';
+import { accessoryPriority } from '@/lib/liveItems';
+import { useLiveItems } from '@/lib/useLiveItems';
 import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
@@ -63,7 +64,7 @@ export function HomeScreen({
   const { height: windowHeight } = useWindowDimensions();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
   const reduceMotion = useReducedMotion();
-  const { accessory } = useShellFeed();
+  const { accessory } = useLiveItems();
   const cards = liveCards(accessory, homeCardDetails, accessoryPriority);
   const state = stageState(accessory);
   const { key, ...values } = stageLine(cards);

@@ -3,12 +3,13 @@ import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import type { AccessoryKind } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
 import type { TokenName } from '@/ui/theme/tokens';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import type { AccessoryKind, MostUrgent } from './accessory';
+import type { MostUrgent } from './accessory';
 
 const GLYPHS: Record<AccessoryKind, { fill: TokenName; ink: TokenName; symbol: SFSymbol | null }> =
   {

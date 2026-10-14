@@ -7,9 +7,10 @@ import type {
 } from 'react-native';
 import { useHeaderHeight } from 'expo-router/react-navigation';
 
-import { homeSignals } from './homeSignals';
+import { homeSignals } from '@/lib/homeSignals';
+import { useHomeReveal } from '@/lib/useHomeSignals';
+
 import { createRestingOffset, liveCardsOnScreen } from './homeScroll';
-import { useHomeReveal } from './hooks';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 

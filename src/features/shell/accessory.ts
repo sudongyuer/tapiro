@@ -1,18 +1,6 @@
-export const ACCESSORY_KINDS = ['oweMoney', 'rideSoon', 'owedToYou', 'bountyInProgress'] as const;
-export type AccessoryKind = (typeof ACCESSORY_KINDS)[number];
-
-export type AccessoryItem = {
-  id: string;
-  kind: AccessoryKind;
-  title: string;
-  sub: string;
-};
+import { accessoryPriority, type AccessoryItem } from '@/lib/liveItems';
 
 export type MostUrgent = { item: AccessoryItem; more: number };
-
-export function accessoryPriority(kind: AccessoryKind) {
-  return ACCESSORY_KINDS.indexOf(kind) + 1;
-}
 
 export function pickMostUrgent(items: readonly AccessoryItem[]): MostUrgent | null {
   let best: AccessoryItem | null = null;

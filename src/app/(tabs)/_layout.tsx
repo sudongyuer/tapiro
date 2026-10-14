@@ -5,13 +5,13 @@ import {
   UrgentAccessory,
   accessoryVisible,
   badgeText,
-  homeSignals,
   pickMostUrgent,
-  useLiveCardsOnScreen,
-  useShellFeed,
   useTabLocation,
 } from '@/features/shell';
+import { homeSignals } from '@/lib/homeSignals';
 import { useI18n } from '@/lib/i18n';
+import { useLiveItems } from '@/lib/useLiveItems';
+import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
 import { useTheme } from '@/ui/theme/useTheme';
 
 const TAPIR_BUTTON = require('@/assets/images/tapir-button.png');
@@ -21,7 +21,7 @@ export default function TabsLayout() {
   const { color } = useTheme();
   const router = useRouter();
   const location = useTabLocation(useSegments());
-  const feed = useShellFeed();
+  const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();
   const urgent = pickMostUrgent(feed.accessory);
   const badge = badgeText(feed.unreadMessages);
