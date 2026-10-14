@@ -13,7 +13,7 @@ assert_home(ui, '01-stacked', 'urgent', CARDS)
 ui.tap('live-cards-toggle')
 ui.settled(lambda items: all(by_id(items, f'live-card-{c}') for c in CARDS) and by_id(items, 'live-card-rideSoon'),
            'three cards did not fan out')
-items = ui.state()
+items = ui.read()
 assert by_id(items, 'live-card-owedToYou') is None, 'a fourth card appeared'
 assert not by_id(items, 'live-card-peek-1'), 'peek still shown when fanned'
 shot = ui.snap('02-fanned')

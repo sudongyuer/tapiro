@@ -6,7 +6,7 @@ from driver import UI, assert_appearance, frame  # noqa: E402
 
 ui = UI(*sys.argv[1:])
 ui.element('sign-in-apple')
-items = ui.state()
+items = ui.read()
 screen = items[0]['frame']
 f = frame(items[1])
 assert f['width'] == screen['width'], f'app content is {f["width"]} wide, screen is {screen["width"]}'

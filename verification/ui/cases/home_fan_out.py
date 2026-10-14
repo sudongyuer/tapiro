@@ -2,14 +2,12 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_colour, bottom, by_id, card_fill, corner, reach_home, token  # noqa: E402
+from driver import UI, accessory, assert_colour, bottom, by_id, card_fill, corner, nav_bar, reach_home, token  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-TITLE = {'zh-Hans': '悬赏令', 'ms': 'Ganjaran'}
 TOGGLE = {'zh-Hans': ('摊开 · 4 件', '收起'), 'ms': ('Bentangkan · 4', 'Susun')}
 CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'live-card-bountyInProgress']
 PEEKS = ['live-card-peek-1', 'live-card-peek-2']
-ACCESSORIES = ('urgent-accessory', 'urgent-accessory-inline')
 
 ui = UI(*sys.argv[1:])
 fan_out, collapse = TOGGLE[ui.locale]
@@ -19,18 +17,10 @@ def present(items, identifiers):
     return [i for i in identifiers if by_id(items, i)]
 
 
-def accessory(items):
-    return next((by_id(items, a) for a in ACCESSORIES if by_id(items, a)), None)
-
-
-def nav_bar(items):
-    return next(i for i in items if i.get('type') == 'Group' and i.get('AXUniqueId') == TITLE[ui.locale])
-
-
 def assert_stacked(name):
     ui.settled(lambda items: by_id(items, 'live-card-peek-2') if present(items, CARDS) == CARDS[:1] else None,
                'cards did not stack')
-    items = ui.state()
+    items = ui.read()
     assert present(items, PEEKS) == PEEKS, f'peeks while stacked: {present(items, PEEKS)}'
     ui.wait_label('live-cards-toggle', lambda label: label == fan_out, f'toggle does not read {fan_out}')
     shot = ui.snap(name)
@@ -50,7 +40,7 @@ assert accessory(items) is None, 'accessory shown at the top of 悬赏'
 ui.tap('live-cards-toggle')
 last = ui.settled(lambda items: by_id(items, CARDS[-1]) if present(items, CARDS) == CARDS else None,
                   'cards did not fan out')
-items = ui.state()
+items = ui.read()
 assert not present(items, PEEKS), f'peeks still shown when fanned: {present(items, PEEKS)}'
 ui.wait_label('live-cards-toggle', lambda label: label == collapse, f'toggle does not read {collapse}')
 frames = [by_id(items, c)['frame'] for c in CARDS]
@@ -66,8 +56,8 @@ distance = 300
 for step in range(12):
     ui.swipe((200, 650), (200, 650 - distance), duration=2 if distance > 80 else 1)
     last = ui.settled(lambda items: by_id(items, CARDS[-1]), f'last card never settled after swipe {step}')
-    items = ui.state()
-    edge = bottom(nav_bar(items))
+    items = ui.read()
+    edge = bottom(nav_bar(items, ui.locale))
     print(f'step {step}: last card bottom {bottom(last):.0f}, bar bottom {edge:.0f}, accessory {accessory(items) is not None}')
     if bottom(last) > edge + 2:
         assert accessory(items) is None, f'accessory shown while the last card ends at {bottom(last):.0f}, bar at {edge:.0f}'
@@ -97,7 +87,7 @@ for _ in range(6):
 ui.tap('live-cards-toggle')
 ui.wait_label('live-cards-toggle', lambda label: label == fan_out, 'toggle did not stack the cards')
 for _ in range(4):
-    stage = by_id(ui.state(), 'home-stage-urgent')
+    stage = by_id(ui.read(), 'home-stage-urgent')
     if stage and stage['frame']['y'] > 100:
         break
     ui.swipe((200, 250), (200, 750))

@@ -2,28 +2,19 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_appearance, assert_tapir_button, assert_touch_target, by_id, reach_home  # noqa: E402
+from driver import (UI, TABS, accessory, assert_appearance, assert_tapir_button, assert_touch_target, by_id,  # noqa: E402
+                    reach_home, selected)
 
 LOCALES = ['zh-Hans', 'ms']
-TABS = ['tab-bounty', 'tab-ride', 'tab-messages', 'tab-me']
 SCREENS = {'tab-ride': 'ride-empty', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
-ACCESSORIES = ('urgent-accessory', 'urgent-accessory-inline')
 
 ui = UI(*sys.argv[1:])
-
-
-def selected(items):
-    return [t for t in TABS if str((by_id(items, t) or {}).get('AXValue')) == '1']
-
-
-def accessory(items):
-    return next((by_id(items, a) for a in ACCESSORIES if by_id(items, a)), None)
 
 
 ui.element('sign-in-apple')
 reach_home(ui)
 ui.settled(lambda items: by_id(items, 'tab-ask-tapir') and by_id(items, 'live-card-oweMoney'), 'home never settled')
-items = ui.state()
+items = ui.read()
 assert selected(items) == ['tab-bounty'], f'selected tabs on launch: {selected(items)}'
 assert accessory(items) is None, 'accessory shown at the top of 悬赏 while the live cards are on screen'
 for identifier in TABS:

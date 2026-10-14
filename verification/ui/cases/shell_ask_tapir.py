@@ -2,10 +2,9 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id, luma, reach_home  # noqa: E402
+from driver import UI, by_id, luma, reach_home, selected  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-TABS = ['tab-bounty', 'tab-ride', 'tab-messages', 'tab-me']
 COPY = {
     'zh-Hans': {
         'tab-bounty': ('在悬赏页 · 帮你写悬赏、找能接的', '帮我取快递'),
@@ -20,21 +19,18 @@ COPY = {
 ui = UI(*sys.argv[1:])
 
 
-def selected(items):
-    return [t for t in TABS if str((by_id(items, t) or {}).get('AXValue')) == '1']
-
-
 def open_sheet(tab, name):
     ui.tap('tab-ask-tapir')
     sheet = ui.settled(lambda items: by_id(items, 'ask-tapir-sheet'), 'ask sheet never settled')
     subtitle, suggestion = COPY[ui.locale][tab]
     ui.wait_label('ask-tapir-subtitle', lambda label: label == subtitle, f'subtitle is not {subtitle}')
     ui.wait_label('ask-tapir-suggestion-0', lambda label: label == suggestion, f'first suggestion is not {suggestion}')
-    items = ui.state()
-    scale = by_id(items, 'ask-tapir-sheet')['frame']['width'] / items[0]['frame']['width']
+    items = ui.read()
+    scale = min(1.0, max(0.9, by_id(items, 'ask-tapir-sheet')['frame']['width'] / items[0]['frame']['width']))
+    floor = 44 * scale - (0.5 if scale < 1 else 0)
     for identifier in ('ask-tapir-close', 'ask-tapir-mic'):
         f = by_id(items, identifier)['frame']
-        assert min(f['width'], f['height']) >= 44 * scale - 0.5, f'{identifier} is under 44 pt at sheet scale {scale:.3f}: {f}'
+        assert min(f['width'], f['height']) >= floor, f'{identifier} is under 44 pt at sheet scale {scale:.3f}: {f}'
     assert by_id(items, 'ask-tapir-mic').get('enabled') is False, 'the mic is not marked disabled'
     for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-suggestion-2', 'ask-tapir-prompt', 'ask-tapir-coming-soon'):
         f, edge = by_id(items, identifier)['frame'], sheet['frame']

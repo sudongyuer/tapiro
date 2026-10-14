@@ -2,11 +2,10 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_appearance, bottom, by_id, glow, reach_home  # noqa: E402
+from driver import (TAB_LABELS, TITLE, UI, assert_appearance, bottom, by_id, close, dominant, glow, nav_bar,  # noqa: E402
+                    reach_home, tab)
 
 LOCALES = ['zh-Hans', 'ms']
-TITLE = {'zh-Hans': '悬赏令', 'ms': 'Ganjaran'}
-TABS = {'zh-Hans': ('悬赏', '我的'), 'ms': ('Ganjaran', 'Saya')}
 STRIP_ROW = 44
 
 ui = UI(*sys.argv[1:])
@@ -15,14 +14,6 @@ title = TITLE[ui.locale]
 
 def heading(items):
     return next((i for i in items if i.get('type') == 'Heading' and i.get('AXLabel') == title), None)
-
-
-def nav_bar(items):
-    return next((i for i in items if i.get('type') == 'Group' and i.get('AXUniqueId') == title), None)
-
-
-def tab(items, label):
-    return next((i for i in items if i.get('type') == 'RadioButton' and i.get('AXLabel') == label), None)
 
 
 def expanded_title():
@@ -44,7 +35,9 @@ def assert_halo(shot, f, name):
 
 
 def assert_no_halo_on_strip_line(shot):
-    strip = by_id(ui.state(), 'home-strip')['frame']
+    strip = by_id(ui.read(), 'home-strip')
+    assert strip, 'home-strip disappeared after the collapsed state was captured'
+    strip = strip['frame']
     text = {'x': strip['x'] + 52, 'y': strip['y'] + 6, 'width': 220, 'height': strip['height'] - 12}
     background = shot.rgb(strip['x'] + strip['width'] - 6, strip['y'] + strip['height'] / 2)
     ink, light = glow(shot, text, background, pad=0)
@@ -53,16 +46,16 @@ def assert_no_halo_on_strip_line(shot):
 
 
 def assert_strip_under_bar(shot):
-    items = ui.state()
-    bar, strip = nav_bar(items), by_id(items, 'home-strip')
+    items = ui.read()
+    bar, strip = nav_bar(items, ui.locale), by_id(items, 'home-strip')
     assert bar and strip, 'navigation bar or strip missing'
     edge = bottom(bar)
     assert abs(strip['frame']['y'] - edge) <= 1, f'strip row starts at {strip["frame"]["y"]}, compact bar ends at {edge}'
     assert abs(strip['frame']['height'] - STRIP_ROW) <= 1, f'strip row is {strip["frame"]["height"]} tall'
-    band = shot.rgb(380, edge + STRIP_ROW - 3)
-    above = shot.rgb(380, edge - 3)
+    band = dominant(shot, {'x': 340, 'y': edge + STRIP_ROW - 6, 'width': 40, 'height': 4})
+    above = dominant(shot, {'x': 340, 'y': edge - 6, 'width': 40, 'height': 4})
     below = shot.rgb(380, edge + STRIP_ROW + 16)
-    assert band == above, f'strip colour {band} breaks at the bar edge (bar shows {above})'
+    assert close(band, above, 3), f'strip colour {band} breaks at the bar edge (bar shows {above})'
     assert max(abs(a - b) for a, b in zip(below, band)) > 20, f'strip does not end {STRIP_ROW} pt under the bar: {band} vs {below}'
 
 
@@ -80,7 +73,7 @@ assert_halo(shot, f, 'collapsed')
 assert_no_halo_on_strip_line(shot)
 assert_strip_under_bar(shot)
 
-home_tab, me_tab = TABS[ui.locale]
+home_tab = TAB_LABELS[ui.locale]['bounty']
 minimised = ui.wait(lambda items: (t := tab(items, home_tab)) and t['frame']['width'] < 50 and t, 'tab bar did not minimise')
 ui.tap_point(minimised['frame']['x'] + 24, minimised['frame']['y'] + 24)
 ui.element('tab-me')

@@ -17,6 +17,7 @@ DEFAULT_APP = ROOT / '.verify/DerivedData/Build/Products/Release-iphonesimulator
 DEVICE_NAME = 'Tapiro Verify'
 DEVICE_TYPE = 'com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro'
 DEFAULT_LOCALES = ['zh-Hans']
+DEFAULT_BUDGET = 180
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
 
 
@@ -59,14 +60,16 @@ def case_meta(case):
     scene = re.search(r"^SCENE = '([^']+)'", source, re.M)
     locales = re.search(r"^LOCALES = \[([^\]]*)\]", source, re.M)
     extra = re.search(r"^ARGS = \[([^\]]*)\]", source, re.M)
+    budget = re.search(r"^BUDGET = (\d+)$", source, re.M)
     return (
         scene.group(1) if scene else None,
         re.findall(r"'([^']+)'", locales.group(1)) if locales else DEFAULT_LOCALES,
         re.findall(r"'([^']+)'", extra.group(1)) if extra else [],
+        int(budget.group(1)) if budget else DEFAULT_BUDGET,
     )
 
 
-def run_case(case, scene, extra, locale, appearance, udid, out):
+def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob('*'):
         stale.unlink()
@@ -86,7 +89,7 @@ def run_case(case, scene, extra, locale, appearance, udid, out):
     try:
         proc = subprocess.run(
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
-            capture_output=True, text=True, timeout=180,
+            capture_output=True, text=True, timeout=budget,
         )
         (out / 'log.txt').write_text(proc.stdout + proc.stderr)
         lines = (proc.stdout if proc.returncode == 0 else proc.stderr or proc.stdout).strip().splitlines()
@@ -94,7 +97,7 @@ def run_case(case, scene, extra, locale, appearance, udid, out):
         if proc.returncode != 0:
             status = 'fail'
     except subprocess.TimeoutExpired as error:
-        status, message = 'fail', 'timeout after 180 s'
+        status, message = 'fail', f'timeout after {budget} s'
         partial = ''.join(p.decode() if isinstance(p, bytes) else p or '' for p in (error.stdout, error.stderr))
         (out / 'log.txt').write_text(partial)
         calls = sorted(float(m) for m in re.findall(r'^\s*([\d.]+)s axe ', partial, re.M))
@@ -126,6 +129,7 @@ def main():
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
     appearances = ['light', 'dark'] if args.appearance == 'both' else [args.appearance]
 
+    (ROOT / '.verify').mkdir(exist_ok=True)
     lock = open(ROOT / '.verify/ui.lock', 'w')
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -140,10 +144,10 @@ def main():
     failures = 0
     runs = [(case, *case_meta(case)) for case in cases]
     for appearance in appearances:
-        for case, scene, locales, extra in runs:
+        for case, scene, locales, extra, budget in runs:
             for locale in locales:
                 out = Path(args.output) / locale / appearance / case
-                status, message, duration = run_case(case, scene, extra, locale, appearance, udid, out)
+                status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
                 failures += status != 'pass'
                 (out / 'result.json').write_text(json.dumps({
                     'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,

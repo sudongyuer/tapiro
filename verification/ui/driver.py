@@ -16,6 +16,10 @@ class AxeError(RuntimeError):
     pass
 
 
+class Transition(AxeError):
+    pass
+
+
 class UI:
     def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
@@ -43,16 +47,32 @@ class UI:
         try:
             tree = self.axe('describe-ui')
         except AxeError as error:
-            if TRANSITION_ERROR not in str(error):
-                raise
-            print('        describe-ui: no accessibility tree during a transition', file=sys.stderr, flush=True)
-            return []
+            if TRANSITION_ERROR in str(error):
+                raise Transition(str(error)) from None
+            raise
         return list(walk(json.loads(tree)))
+
+    def read(self, timeout=30):
+        previous = None
+
+        def check(items):
+            nonlocal previous
+            ids = sorted(i.get('AXUniqueId') or '' for i in items)
+            stable = items if ids == previous else None
+            previous = ids
+            return stable
+
+        return self.wait(check, 'accessibility tree never settled', timeout)
 
     def wait(self, predicate, message, timeout=30):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            result = predicate(self.state())
+            try:
+                items = self.state()
+            except Transition:
+                print('        describe-ui: no accessibility tree during a transition', file=sys.stderr, flush=True)
+                items = []
+            result = predicate(items) if items else None
             if result:
                 return result
             time.sleep(0.2)  # polling interval, not an assertion
@@ -153,6 +173,29 @@ def by_id(items, identifier):
 
 def bottom(element):
     return element['frame']['y'] + element['frame']['height']
+
+
+TABS = ['tab-bounty', 'tab-ride', 'tab-messages', 'tab-me']
+ACCESSORIES = ('urgent-accessory', 'urgent-accessory-inline')
+TITLE = {'zh-Hans': '悬赏令', 'ms': 'Ganjaran'}
+TAB_LABELS = {'zh-Hans': {'bounty': '悬赏', 'me': '我的', 'ask': '问小貘'},
+              'ms': {'bounty': 'Ganjaran', 'me': 'Saya', 'ask': 'Tanya Tapir'}}
+
+
+def selected(items):
+    return [t for t in TABS if str((by_id(items, t) or {}).get('AXValue')) == '1']
+
+
+def accessory(items):
+    return next((by_id(items, a) for a in ACCESSORIES if by_id(items, a)), None)
+
+
+def tab(items, label):
+    return next((i for i in items if i.get('type') == 'RadioButton' and i.get('AXLabel') == label), None)
+
+
+def nav_bar(items, locale):
+    return next((i for i in items if i.get('type') == 'Group' and i.get('AXUniqueId') == TITLE[locale]), None)
 
 
 def frame(element):
@@ -317,7 +360,7 @@ def assert_home(ui, name, stage, cards):
     reach_home(ui)
     found = ui.settled(lambda items: by_id(items, f'home-stage-{stage}'), f'home-stage-{stage} missing')
     front = ui.settled(lambda items: by_id(items, f'live-card-{cards[0]}'), f'front card {cards[0]} missing')
-    items = ui.state()
+    items = ui.read()
     others = [s for s in STAGES if s != stage and by_id(items, f'home-stage-{s}')]
     assert not others, f'other stages shown: {others}'
     assert found.get('AXLabel'), f'home-stage-{stage} has no line'

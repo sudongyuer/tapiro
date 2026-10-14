@@ -18,8 +18,10 @@ Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items (omitted: all
 four; `none`: calm). Each run writes `result.json` with commit, locale, Xcode and device.
 `log.txt` lists every AXe call with its duration; a timeout message adds the median call time,
-which separates a slow Simulator from a stuck screen. Only one run may drive the Simulator at a
-time; a second run exits instead of interleaving taps with the first.
+which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
+`BUDGET = <seconds>`. Only one `verify:ui` run may drive the Simulator at a time; a second run
+exits instead of interleaving taps with the first. The lock does not cover `verify:build` or
+scripts that drive the Simulator outside the runner.
 
 Shell and home cases sign in through `reach_home`. `Shot` reads screenshot pixels in points, so
 cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`), the 悬赏令 halo

@@ -2,11 +2,10 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_appearance, assert_home, assert_touch_target, by_id  # noqa: E402
+from driver import ACCESSORIES, UI, assert_appearance, assert_home, assert_touch_target, by_id  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyShellFeed', 'none']
-ACCESSORIES = ('urgent-accessory', 'urgent-accessory-inline')
 
 ui = UI(*sys.argv[1:])
 ui.element('sign-in-apple')
@@ -19,7 +18,7 @@ assert not any(by_id(items, a) for a in ACCESSORIES), 'accessory shown with no l
 ui.tap('tab-ride')
 ui.element('ride-empty')
 ui.wait(lambda items: str(by_id(items, 'tab-ride').get('AXValue')) == '1', '拼车 not selected')
-items = ui.state()
+items = ui.read()
 assert not any(by_id(items, a) for a in ACCESSORIES), 'accessory shown on 拼车 with no live items'
 shot = ui.capture('ride-calm')
 assert_appearance(shot, ui.appearance, 20, 1300, 'ride background')
