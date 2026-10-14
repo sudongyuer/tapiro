@@ -8,6 +8,7 @@ import { vars } from '@/ui/theme/tokens';
 
 import { moneyText, type OwedDetail, type ProgressDetail } from '../homeModel';
 import { CardHeader, CardText, Pill } from './cardParts';
+import { useStackedBeside } from './useStackedBeside';
 
 export function ProgressCard({ detail }: { detail: ProgressDetail }) {
   const { t } = useI18n();
@@ -18,7 +19,7 @@ export function ProgressCard({ detail }: { detail: ProgressDetail }) {
       <CardText variant="secondary" ink={ink} muted style={styles.note}>
         {`${detail.when} · ${t('home.card.progress.helper', { name: detail.helper })}`}
       </CardText>
-      <TitleRow ink={ink} title={detail.title} amount={detail.amount} />
+      <TitleRow key={detail.title} ink={ink} title={detail.title} amountSen={detail.amountSen} />
       <View style={styles.actions}>
         <InertAction
           label={t('home.card.progress.message', { name: detail.helper })}
@@ -42,23 +43,30 @@ export function OwedCard({ detail }: { detail: OwedDetail }) {
         {detail.note}
       </CardText>
       <TitleRow
+        key={detail.payer}
         ink={ink}
         title={t('home.card.owed.title', { name: detail.payer })}
-        amount={detail.amount}
+        amountSen={detail.amountSen}
       />
     </LiveCard>
   );
 }
 
-function TitleRow({ ink, title, amount }: { ink: string; title: string; amount: number }) {
-  const { t } = useI18n();
+function TitleRow({ ink, title, amountSen }: { ink: string; title: string; amountSen: number }) {
+  const { t, language } = useI18n();
+  const { stacked, onTextLayout } = useStackedBeside();
   return (
-    <View style={styles.titleRow}>
-      <CardText variant="title" ink={ink} style={styles.title}>
+    <View style={[styles.titleRow, stacked && styles.titleStacked]}>
+      <CardText
+        variant="title"
+        ink={ink}
+        style={stacked ? styles.titleFull : styles.title}
+        onTextLayout={onTextLayout}
+      >
         {title}
       </CardText>
-      <CardText variant="amount-compact" ink={ink}>
-        {t('home.money', { amount: moneyText(amount) })}
+      <CardText variant="amount-compact" ink={ink} style={stacked && styles.amountStacked}>
+        {t('home.money', { amount: moneyText(amountSen, language) })}
       </CardText>
     </View>
   );
@@ -108,7 +116,10 @@ const styles = StyleSheet.create({
     gap: vars['--space-3'],
     marginTop: 2,
   },
+  titleStacked: { flexDirection: 'column', alignItems: 'stretch', gap: vars['--space-1'] },
   title: { flex: 1, fontWeight: '700' },
+  titleFull: { fontWeight: '700' },
+  amountStacked: { textAlign: 'right' },
   actions: { flexDirection: 'row', gap: vars['--space-2'], marginTop: vars['--space-4'] },
   action: {
     minHeight: vars['--touch-min'],

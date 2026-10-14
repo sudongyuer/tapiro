@@ -21,7 +21,7 @@ const owed = item('owedToYou');
 const progress = item('bountyInProgress');
 
 const DETAILS: Record<string, CardDetail> = {
-  oweMoney: { kind: 'oweMoney', payee: '阿杰', amount: 15, note: '', category: 'pickup' },
+  oweMoney: { kind: 'oweMoney', payee: '阿杰', amountSen: 1500, note: '', category: 'pickup' },
   rideSoon: {
     kind: 'rideSoon',
     departAt: '17:00',
@@ -35,13 +35,13 @@ const DETAILS: Record<string, CardDetail> = {
     progress: 0.4,
     riders: [],
   },
-  owedToYou: { kind: 'owedToYou', payer: '小林', amount: 8, note: '', category: 'buy' },
+  owedToYou: { kind: 'owedToYou', payer: '小林', amountSen: 800, note: '', category: 'buy' },
   bountyInProgress: {
     kind: 'bountyInProgress',
     helper: 'Aiman',
     when: '',
     title: '',
-    amount: 20,
+    amountSen: 2000,
     category: 'study',
   },
 };
@@ -104,13 +104,18 @@ describe('stageLine', () => {
 });
 
 describe('money', () => {
-  test('splits whole and cents with two decimals', () => {
-    expect(moneyParts(15)).toEqual({ whole: '15', cents: '.00' });
-    expect(moneyParts(15.5)).toEqual({ whole: '15', cents: '.50' });
+  test.each(['zh-Hans', 'en', 'ms'])('splits whole and cents with separators in %s', (locale) => {
+    expect(moneyParts(1500, locale)).toEqual({ whole: '15', cents: '.00' });
+    expect(moneyParts(50, locale)).toEqual({ whole: '0', cents: '.50' });
+    expect(moneyParts(0, locale)).toEqual({ whole: '0', cents: '.00' });
+    expect(moneyParts(1234560, locale)).toEqual({ whole: '12,345', cents: '.60' });
+    expect(moneyParts(125000, locale)).toEqual({ whole: '1,250', cents: '.00' });
   });
 
   test('short text drops zero cents only', () => {
-    expect(moneyText(15)).toBe('15');
-    expect(moneyText(15.5)).toBe('15.50');
+    expect(moneyText(1500, 'en')).toBe('15');
+    expect(moneyText(1550, 'en')).toBe('15.50');
+    expect(moneyText(125000, 'zh-Hans')).toBe('1,250');
+    expect(moneyText(1234560, 'ms')).toBe('12,345.60');
   });
 });

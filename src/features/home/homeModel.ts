@@ -1,11 +1,12 @@
 import type { AccessoryItem, AccessoryKind } from '@/lib/liveItems';
+import { formatRinggit } from '@/lib/money';
 import type { StickerCategory } from '@/ui/CategorySticker';
 import type { StageState } from '@/ui/MascotStage';
 
 export type PayDetail = {
   kind: 'oweMoney';
   payee: string;
-  amount: number;
+  amountSen: number;
   note: string;
   category: StickerCategory;
 };
@@ -27,7 +28,7 @@ export type RideDetail = {
 export type OwedDetail = {
   kind: 'owedToYou';
   payer: string;
-  amount: number;
+  amountSen: number;
   note: string;
   category: StickerCategory;
 };
@@ -37,7 +38,7 @@ export type ProgressDetail = {
   helper: string;
   when: string;
   title: string;
-  amount: number;
+  amountSen: number;
   category: StickerCategory;
 };
 
@@ -99,12 +100,13 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
   }
 }
 
-export function moneyParts(amount: number) {
-  const [whole, cents] = amount.toFixed(2).split('.');
-  return { whole, cents: `.${cents}` };
+export function moneyParts(amountSen: number, locale: string) {
+  const digits = formatRinggit(amountSen, locale).replace(/^RM\s*/, '');
+  const split = digits.length - 3;
+  return { whole: digits.slice(0, split), cents: digits.slice(split) };
 }
 
-export function moneyText(amount: number) {
-  const { whole, cents } = moneyParts(amount);
+export function moneyText(amountSen: number, locale: string) {
+  const { whole, cents } = moneyParts(amountSen, locale);
   return cents === '.00' ? whole : `${whole}${cents}`;
 }

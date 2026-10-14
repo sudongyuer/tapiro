@@ -4,6 +4,7 @@ import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import type { AccessoryKind } from '@/lib/liveItems';
+import { formatRinggit } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import type { TokenName } from '@/ui/theme/tokens';
 import { vars } from '@/ui/theme/tokens';
@@ -30,16 +31,18 @@ const GLYPHS: Record<AccessoryKind, { fill: TokenName; ink: TokenName; symbol: S
 const GLYPH_SIZE = { regular: 36, inline: 28 } as const;
 
 export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPress: () => void }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const placement = NativeTabs.BottomAccessory.usePlacement();
   const { item, more } = urgent;
   const sub = more > 0 ? t('shell.accessory.withMore', { sub: item.sub, count: more }) : item.sub;
   const inline = placement === 'inline';
+  const amount = item.amountSen === undefined ? null : formatRinggit(item.amountSen, language);
+  const spokenTitle = amount ? `${item.title} ${amount}` : item.title;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('shell.accessory.label', { title: item.title, sub })}
+      accessibilityLabel={t('shell.accessory.label', { title: spokenTitle, sub })}
       accessibilityHint={t('shell.accessory.hint')}
       testID={inline ? 'urgent-accessory-inline' : 'urgent-accessory'}
       onPress={onPress}
@@ -56,10 +59,26 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
           </AppText>
         )}
       </View>
+      {amount ? (
+        <AppText variant="secondary" style={styles.amount} numberOfLines={1}>
+          {amount}
+        </AppText>
+      ) : null}
+      {inline || more === 0 ? null : <MorePill count={more} />}
       {inline ? null : (
         <SymbolView name="chevron.right" size={13} tintColor={PlatformColor('tertiaryLabel')} />
       )}
     </Pressable>
+  );
+}
+
+function MorePill({ count }: { count: number }) {
+  return (
+    <View style={styles.more} importantForAccessibility="no-hide-descendants">
+      <AppText variant="meta" tone="secondaryLabel" style={styles.moreText}>
+        {`+${count}`}
+      </AppText>
+    </View>
   );
 }
 
@@ -99,6 +118,17 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   text: { flex: 1, minWidth: 0 },
   title: { fontWeight: '600' },
+  amount: { fontWeight: '700', flexShrink: 0, fontVariant: ['tabular-nums'] },
+  more: {
+    minWidth: vars['--space-6'],
+    height: vars['--space-5'],
+    paddingHorizontal: vars['--space-2'],
+    borderRadius: vars['--radius-pill'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: PlatformColor('quaternarySystemFill'),
+  },
+  moreText: { fontWeight: '700' },
   glyph: { alignItems: 'center', justifyContent: 'center' },
   money: { fontWeight: '800' },
 });

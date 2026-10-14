@@ -14,11 +14,11 @@ const TRACK_HEIGHT = 58;
 const KNOB = 48;
 
 export function PayCard({ detail }: { detail: PayDetail }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const paint = useLiveCardPaint('pay');
   const ink = paint.ink;
-  const amount = t('home.money', { amount: moneyText(detail.amount) });
-  const { whole, cents } = moneyParts(detail.amount);
+  const amount = t('home.money', { amount: moneyText(detail.amountSen, language) });
+  const { whole, cents } = moneyParts(detail.amountSen, language);
   return (
     <LiveCard tone="pay" hanging={<CategorySticker category={detail.category} size={78} />}>
       <Pill ink={ink} dot={paint.urgentDot}>

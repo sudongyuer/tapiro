@@ -10,14 +10,17 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { RideDetail } from '../homeModel';
 import { CardHeader, CardText, Pill } from './cardParts';
+import { useStackedBeside } from './useStackedBeside';
 
 const AVATAR = 28;
 const CAR = 30;
+const STOP_LABEL = 64;
 
 export function RideCard({ detail }: { detail: RideDetail }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const { ink, surface } = useLiveCardPaint('ride');
+  const { stacked, onTextLayout } = useStackedBeside();
   return (
     <LiveCard tone="ride">
       <CardHeader
@@ -30,19 +33,19 @@ export function RideCard({ detail }: { detail: RideDetail }) {
           ) : null
         }
       />
-      <View style={styles.main}>
+      <View style={[styles.main, stacked && styles.mainStacked]}>
         <View style={styles.where}>
           <CardText variant="secondary" ink={ink} muted>
             {t('home.card.ride.departs', { time: detail.departAt })}
           </CardText>
-          <CardText variant="title" ink={ink} style={styles.route}>
+          <CardText variant="title" ink={ink} style={styles.route} onTextLayout={onTextLayout}>
             {detail.route}
           </CardText>
         </View>
         <View
           accessible
           accessibilityLabel={t('home.card.ride.countdownLabel', { time: detail.countdown })}
-          style={styles.countdown}
+          style={[styles.countdown, stacked && styles.countdownStacked]}
         >
           <CardText variant="amount" ink={ink}>
             {detail.countdown}
@@ -54,15 +57,8 @@ export function RideCard({ detail }: { detail: RideDetail }) {
       </View>
       <RouteLine ink={ink} window={surface} progress={detail.progress} />
       <View style={styles.stops}>
-        <CardText variant="meta" ink={ink} muted>
-          {t('home.card.ride.meet')}
-        </CardText>
-        <CardText variant="meta" ink={ink} muted>
-          {detail.meet}
-        </CardText>
-        <CardText variant="meta" ink={ink} muted>
-          {detail.destination}
-        </CardText>
+        <Stop label={t('home.card.ride.meet')} value={detail.meet} ink={ink} />
+        <Stop label={t('home.card.ride.destination')} value={detail.destination} ink={ink} />
       </View>
       <View style={styles.bottom}>
         <View style={styles.riders} accessible={false}>
@@ -95,6 +91,19 @@ export function RideCard({ detail }: { detail: RideDetail }) {
         </View>
       </View>
     </LiveCard>
+  );
+}
+
+function Stop({ label, value, ink }: { label: string; value: string; ink: string }) {
+  return (
+    <View style={styles.stop}>
+      <CardText variant="meta" ink={ink} muted style={styles.stopLabel}>
+        {label}
+      </CardText>
+      <CardText variant="meta" ink={ink} muted numberOfLines={2} style={styles.stopValue}>
+        {value}
+      </CardText>
+    </View>
   );
 }
 
@@ -137,7 +146,12 @@ const styles = StyleSheet.create({
   routeLine: { height: 30, marginTop: vars['--space-1'], marginHorizontal: vars['--space-2'] },
   done: { position: 'absolute', left: 0, top: 13, height: 4, borderRadius: 2 },
   car: { position: 'absolute', top: -2, marginLeft: -CAR / 2 },
-  stops: { flexDirection: 'row', justifyContent: 'space-between', gap: vars['--space-2'] },
+  mainStacked: { flexDirection: 'column', alignItems: 'stretch' },
+  countdownStacked: { alignSelf: 'flex-end' },
+  stops: { gap: vars['--space-1'] },
+  stop: { flexDirection: 'row', gap: vars['--space-2'] },
+  stopLabel: { width: STOP_LABEL, flexShrink: 0 },
+  stopValue: { flex: 1, minWidth: 0 },
   bottom: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -38,3 +38,24 @@ describe('fixtureLiveItems variants', () => {
     expect(fixtureLiveItems(undefined, 'empty')).toEqual({ accessory: [], unreadMessages: 0 });
   });
 });
+
+describe('accessory amounts', () => {
+  test('money items carry integer sen and keep the amount out of the title', () => {
+    for (const variant of ['demo', 'worst', 'one'] as const) {
+      const feed = fixtureLiveItems('oweMoney,owedToYou,rideSoon', variant).accessory;
+      for (const item of feed) {
+        if (item.kind === 'rideSoon') {
+          expect(item.amountSen).toBeUndefined();
+          continue;
+        }
+        expect(Number.isInteger(item.amountSen)).toBe(true);
+        expect(item.title).not.toMatch(/RM/);
+      }
+    }
+  });
+
+  test('worst amounts are 12,345.60 and 0.50', () => {
+    const feed = fixtureLiveItems('oweMoney,owedToYou', 'worst').accessory;
+    expect(feed.map((item) => item.amountSen)).toEqual([50, 1234560]);
+  });
+});

@@ -8,6 +8,7 @@ export type AccessoryItem = {
   id: string;
   kind: AccessoryKind;
   title: string;
+  amountSen?: number;
   sub: string;
 };
 
@@ -37,7 +38,8 @@ export const FIXTURE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   oweMoney: {
     id: 'fixture-owe',
     kind: 'oweMoney',
-    title: '付给阿杰 RM 15',
+    title: '付给阿杰',
+    amountSen: 1500,
     sub: '帮取快递',
   },
   rideSoon: {
@@ -49,7 +51,8 @@ export const FIXTURE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   owedToYou: {
     id: 'fixture-owed',
     kind: 'owedToYou',
-    title: '小林说已付你 RM 8',
+    title: '小林说已付你',
+    amountSen: 800,
     sub: '帮带一杯咖啡 · 等你确认',
   },
   bountyInProgress: {
@@ -63,7 +66,8 @@ export const FIXTURE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
 const WORST_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   oweMoney: {
     ...FIXTURE_ACCESSORY.oweMoney,
-    title: '付给Wan Nurul Aisyah binti Wan Abdul Rahman RM 12345.60',
+    title: '付给Wan Nurul Aisyah binti Wan Abdul Rahman',
+    amountSen: 1234560,
     sub: '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便买两杯 Tealive',
   },
   rideSoon: {
@@ -73,7 +77,8 @@ const WORST_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   },
   owedToYou: {
     ...FIXTURE_ACCESSORY.owedToYou,
-    title: '陈美玲 (Tan Mei Ling) 说已付你 RM 0.50',
+    title: '陈美玲 (Tan Mei Ling) 说已付你',
+    amountSen: 50,
     sub: '帮忙在 Sunway Pyramid 的 ZUS Coffee 带一杯 Spanish Latte · 等你确认',
   },
   bountyInProgress: {
@@ -84,13 +89,23 @@ const WORST_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
 };
 
 const ONE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
-  oweMoney: { ...FIXTURE_ACCESSORY.oweMoney, title: '付给Jo RM 0.50', sub: '取件' },
+  oweMoney: {
+    ...FIXTURE_ACCESSORY.oweMoney,
+    title: '付给Jo',
+    amountSen: 50,
+    sub: '取件',
+  },
   rideSoon: {
     ...FIXTURE_ACCESSORY.rideSoon,
     title: '9:05 → KL · 1 分钟后集合',
     sub: '门口 · 2 人',
   },
-  owedToYou: { ...FIXTURE_ACCESSORY.owedToYou, title: 'J 说已付你 RM 1', sub: '咖啡' },
+  owedToYou: {
+    ...FIXTURE_ACCESSORY.owedToYou,
+    title: 'J 说已付你',
+    amountSen: 100,
+    sub: '咖啡',
+  },
   bountyInProgress: { ...FIXTURE_ACCESSORY.bountyInProgress, title: 'Jo 在讲题', sub: '今晚' },
 };
 

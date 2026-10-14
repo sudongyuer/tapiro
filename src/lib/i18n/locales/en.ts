@@ -157,6 +157,7 @@ const en: Translation = {
         countdownSuffix: 'to go',
         countdownLabel: '{{time}} until departure',
         meet: 'Meet',
+        destination: 'To',
         arrive: 'I’m here',
       },
       owed: {

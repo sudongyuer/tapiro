@@ -119,7 +119,7 @@ export default {
   },
   home: {
     say: {
-      payNamed: '{{name}}送到啦，记得付他',
+      payNamed: '{{name}}送到啦，记得付款',
       pay: '有一笔钱要付，别忘了',
       rideMinutes: '{{count}} 分钟后出发，别迟到',
       owedNamed: '{{name}}说付你了，去确认一下',
@@ -154,6 +154,7 @@ export default {
         countdownSuffix: '后出发',
         countdownLabel: '还有 {{time}} 出发',
         meet: '集合点',
+        destination: '目的地',
         arrive: '我到了',
       },
       owed: {

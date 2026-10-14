@@ -161,6 +161,7 @@ const ms: Translation = {
         countdownSuffix: 'lagi',
         countdownLabel: '{{time}} lagi sebelum bertolak',
         meet: 'Titik temu',
+        destination: 'Ke',
         arrive: 'Saya sampai',
       },
       owed: {
