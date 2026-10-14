@@ -255,7 +255,7 @@ sheets, glass, large titles) are drawn only to show position and content.
 | Most-urgent strip           | T5                                                                       | each of the four item kinds in priority order; 「还有 n 件」; hidden when none; hidden at the top of 悬赏                                                                     |
 | Settings, delete account    | step 1 screens (merged in PR #1)                                         | as built: language, sign out, delete, blocked with items                                                                                                                      |
 
-Long copy runs in `ms`; the largest supported text size is checked with `break-ui` worst cases.
+Long copy runs in `ms`; `break-ui` worst-case data runs at the default text size in `zh-Hans` and `ms`, light and dark. Larger accessibility text sizes are not part of the pass (decision 2026-10-14, KICKOFF).
 
 ### Motion
 
