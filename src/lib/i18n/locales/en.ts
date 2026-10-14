@@ -131,9 +131,7 @@ const en: Translation = {
       calm: 'Nothing on today… post a bounty?',
     },
     stage: {
-      urgent: 'Urgent',
       live: 'In progress',
-      calm: 'All clear',
     },
     stack: {
       fanOut: 'Spread out · {{count}}',

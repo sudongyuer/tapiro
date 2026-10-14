@@ -135,9 +135,7 @@ const ms: Translation = {
       calm: 'Tiada apa hari ini… mahu siarkan ganjaran?',
     },
     stage: {
-      urgent: 'Segera',
       live: 'Sedang berjalan',
-      calm: 'Tiada urusan',
     },
     stack: {
       fanOut: 'Bentangkan · {{count}}',

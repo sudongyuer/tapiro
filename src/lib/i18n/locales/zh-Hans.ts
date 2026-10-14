@@ -128,9 +128,7 @@ export default {
       calm: '今天没事…要发个悬赏吗',
     },
     stage: {
-      urgent: '有急事',
       live: '进行中',
-      calm: '没事',
     },
     stack: {
       fanOut: '摊开 · {{count}} 件',
