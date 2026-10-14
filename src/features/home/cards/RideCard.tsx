@@ -17,10 +17,10 @@ const CAR = 30;
 const STOP_LABEL = 64;
 
 export function RideCard({ detail }: { detail: RideDetail }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { color } = useTheme();
   const { ink, surface } = useLiveCardPaint('ride');
-  const { stacked, onTextLayout } = useStackedBeside();
+  const { stacked, onTextLayout } = useStackedBeside(`${language}|${detail.route}`);
   return (
     <LiveCard tone="ride">
       <CardHeader

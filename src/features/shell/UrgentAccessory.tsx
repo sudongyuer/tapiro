@@ -34,7 +34,8 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
   const { t, language } = useI18n();
   const placement = NativeTabs.BottomAccessory.usePlacement();
   const { item, more } = urgent;
-  const sub = more > 0 ? t('shell.accessory.withMore', { sub: item.sub, count: more }) : item.sub;
+  const spokenSub =
+    more > 0 ? t('shell.accessory.withMore', { sub: item.sub, count: more }) : item.sub;
   const inline = placement === 'inline';
   const amount = item.amountSen === undefined ? null : formatRinggit(item.amountSen, language);
   const spokenTitle = amount ? `${item.title} ${amount}` : item.title;
@@ -42,7 +43,7 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('shell.accessory.label', { title: spokenTitle, sub })}
+      accessibilityLabel={t('shell.accessory.label', { title: spokenTitle, sub: spokenSub })}
       accessibilityHint={t('shell.accessory.hint')}
       testID={inline ? 'urgent-accessory-inline' : 'urgent-accessory'}
       onPress={onPress}
@@ -55,7 +56,7 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
         </AppText>
         {inline ? null : (
           <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
-            {sub}
+            {item.sub}
           </AppText>
         )}
       </View>
@@ -74,7 +75,7 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
 
 function MorePill({ count }: { count: number }) {
   return (
-    <View style={styles.more} importantForAccessibility="no-hide-descendants">
+    <View style={styles.more}>
       <AppText variant="meta" tone="secondaryLabel" style={styles.moreText}>
         {`+${count}`}
       </AppText>

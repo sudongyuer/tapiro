@@ -104,10 +104,17 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         if calls:
             message += f'; {len(calls)} axe calls, median {calls[len(calls) // 2]:.1f} s'
     if status == 'fail':
-        subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
-                       capture_output=True, timeout=60)
+        try:
+            subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
+                           capture_output=True, timeout=60)
+        except subprocess.TimeoutExpired:
+            message += '; failure screenshot timed out (Simulator unresponsive)'
     recorder.send_signal(signal.SIGINT)
-    recorder.wait(timeout=30)
+    try:
+        recorder.wait(timeout=30)
+    except subprocess.TimeoutExpired:
+        recorder.kill()
+        status, message = 'fail', f'{message}; recorder did not stop'.strip('; ')
     if not video.exists() or video.stat().st_size == 0:
         status, message = 'fail', f'{message}; video missing'.strip('; ')
     if status == 'pass' and not list(out.glob('*.png')):

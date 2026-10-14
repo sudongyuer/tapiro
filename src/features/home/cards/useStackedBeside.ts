@@ -3,13 +3,14 @@ import type { NativeSyntheticEvent, TextLayoutEventData } from 'react-native';
 
 import { exceedsBeside } from '../beside';
 
-export function useStackedBeside() {
-  const [stacked, setStacked] = useState(false);
+export function useStackedBeside(resetKey: string) {
+  const [stackedKey, setStackedKey] = useState<string | null>(null);
+  const stacked = stackedKey === resetKey;
   const onTextLayout = useCallback(
     (event: NativeSyntheticEvent<TextLayoutEventData>) => {
-      if (!stacked && exceedsBeside(event.nativeEvent.lines.length)) setStacked(true);
+      if (!stacked && exceedsBeside(event.nativeEvent.lines.length)) setStackedKey(resetKey);
     },
-    [stacked],
+    [stacked, resetKey],
   );
   return { stacked, onTextLayout };
 }

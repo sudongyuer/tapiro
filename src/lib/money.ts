@@ -6,3 +6,9 @@ export function formatRinggit(sen: number, locale: string) {
     .format(sen / 100)
     .replace('MYR', 'RM');
 }
+
+export function formatRinggitParts(sen: number, locale: string) {
+  const digits = formatRinggit(sen, locale).replace(/^(-?)RM\s*/, '$1');
+  const match = /^(.*)([.,]\d{2})$/.exec(digits);
+  return match ? { whole: match[1], cents: match[2] } : { whole: digits, cents: '' };
+}

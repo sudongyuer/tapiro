@@ -2,6 +2,7 @@
 from driver import accessory, by_id, reach_home
 
 FRONT = {'worst': '付给Wan Nurul Aisyah', 'one': '付给Jo'}
+MORE = {'zh-Hans': '还有 3 件', 'en': '3 more', 'ms': '3 lagi'}
 AMOUNT = {'worst': '12,345.60', 'one': '0.50'}
 DESTINATION = {
     'worst': 'Pangsapuri Vista Harmoni Blok C, Jalan PJS 7/19',
@@ -34,7 +35,7 @@ def walk_home(ui, variant, steps=14):
     label = accessory(items).get('AXLabel') or ''
     assert label.startswith(FRONT[variant]), f'accessory label {label}'
     assert AMOUNT[variant] in label, f'accessory label lacks the amount {AMOUNT[variant]}: {label}'
-    assert '3' in label, f'accessory label lacks the more count: {label}'
+    assert MORE[ui.locale] in label, f'accessory label lacks "{MORE[ui.locale]}": {label}'
     ui.snap('02-accessory-expanded')
 
     ui.tap('tab-bounty')

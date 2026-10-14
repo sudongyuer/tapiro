@@ -1,5 +1,5 @@
 import type { AccessoryItem, AccessoryKind } from '@/lib/liveItems';
-import { formatRinggit } from '@/lib/money';
+import { formatRinggitParts } from '@/lib/money';
 import type { StickerCategory } from '@/ui/CategorySticker';
 import type { StageState } from '@/ui/MascotStage';
 
@@ -101,9 +101,7 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
 }
 
 export function moneyParts(amountSen: number, locale: string) {
-  const digits = formatRinggit(amountSen, locale).replace(/^RM\s*/, '');
-  const split = digits.length - 3;
-  return { whole: digits.slice(0, split), cents: digits.slice(split) };
+  return formatRinggitParts(amountSen, locale);
 }
 
 export function moneyText(amountSen: number, locale: string) {

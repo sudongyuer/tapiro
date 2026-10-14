@@ -19,7 +19,7 @@ export function ProgressCard({ detail }: { detail: ProgressDetail }) {
       <CardText variant="secondary" ink={ink} muted style={styles.note}>
         {`${detail.when} · ${t('home.card.progress.helper', { name: detail.helper })}`}
       </CardText>
-      <TitleRow key={detail.title} ink={ink} title={detail.title} amountSen={detail.amountSen} />
+      <TitleRow ink={ink} title={detail.title} amountSen={detail.amountSen} />
       <View style={styles.actions}>
         <InertAction
           label={t('home.card.progress.message', { name: detail.helper })}
@@ -43,7 +43,6 @@ export function OwedCard({ detail }: { detail: OwedDetail }) {
         {detail.note}
       </CardText>
       <TitleRow
-        key={detail.payer}
         ink={ink}
         title={t('home.card.owed.title', { name: detail.payer })}
         amountSen={detail.amountSen}
@@ -54,7 +53,7 @@ export function OwedCard({ detail }: { detail: OwedDetail }) {
 
 function TitleRow({ ink, title, amountSen }: { ink: string; title: string; amountSen: number }) {
   const { t, language } = useI18n();
-  const { stacked, onTextLayout } = useStackedBeside();
+  const { stacked, onTextLayout } = useStackedBeside(`${language}|${title}`);
   return (
     <View style={[styles.titleRow, stacked && styles.titleStacked]}>
       <CardText

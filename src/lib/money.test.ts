@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 
-import { formatRinggit } from './money';
+import { formatRinggit, formatRinggitParts } from './money';
 
 test.each(['zh-Hans', 'en', 'ms'])(
   'formatRinggit shows sen as RM with two decimals in %s',
@@ -14,3 +14,9 @@ test.each(['zh-Hans', 'en', 'ms'])(
     expect(normalized(0)).toMatch(/^RM ?0\.00$/);
   },
 );
+
+test.each(['zh-Hans', 'en', 'ms'])('formatRinggitParts splits whole and cents in %s', (locale) => {
+  expect(formatRinggitParts(1234560, locale)).toEqual({ whole: '12,345', cents: '.60' });
+  expect(formatRinggitParts(50, locale)).toEqual({ whole: '0', cents: '.50' });
+  expect(formatRinggitParts(-1250, locale)).toEqual({ whole: '-12', cents: '.50' });
+});
