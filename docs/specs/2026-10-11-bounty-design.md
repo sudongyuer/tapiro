@@ -127,6 +127,9 @@ written here before its first UI step starts; the spec returns to approved after
   field readable only by the poster and the selected helper.
 - `bounty_applications`: one row per (bounty, applicant); note, status (`pending` / `withdrawn` /
   `selected` / `not_selected`).
+- Text limits (KICKOFF 2026-10-14): titles ≤ 60 characters, place labels ≤ 80, notes ≤ 140, enforced
+  by `char_length` checks in the migration and the same `maxLength` in the forms. Live items carry
+  structured fields (kind, names, amount in sen, time) and are localized where they render.
 - `bounty_events`: append-only history of status changes and ETA updates (who, when, from, to).
   Live cards, notifications, the Live Activity and dispute review read from it.
 - Storage bucket for stickers: written by the poster, readable by anyone who can read the bounty.

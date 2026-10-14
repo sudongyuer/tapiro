@@ -158,6 +158,10 @@ app (拼车 tab, ride detail, sheets) ──RPC──> Supabase (rides, members,
 8. **Review**: after a rider's payment is received, organiser and that rider can review each other
    (foundation three-face review; public when both reviewed or after 7 days, StatusFlows board).
 
+- Text limits (KICKOFF 2026-10-14): titles ≤ 60 characters, place labels ≤ 80, notes ≤ 140, enforced
+  by `char_length` checks in the migration and the same `maxLength` in the forms. Live items carry
+  structured fields (kind, names, amount in sen, time) and are localized where they render.
+
 ## Errors and degradation
 
 | Failure                                    | User sees                                                              | System does                                                         |
