@@ -21,7 +21,9 @@ four; `none`: calm). Each run writes `result.json` with commit, locale, Xcode an
 which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
 `BUDGET = <seconds>`. Only one `verify:ui` run may drive the Simulator at a time; a second run
 exits instead of interleaving taps with the first. The lock does not cover `verify:build` or
-scripts that drive the Simulator outside the runner.
+scripts that drive the Simulator outside the runner. Do not click or scroll in the Simulator window
+while a run is in progress: a pointer drag reaches the app as a real touch, and a home case once
+failed because a stray drag scrolled 悬赏 back to the top.
 
 Shell and home cases sign in through `reach_home`. `Shot` reads screenshot pixels in points, so
 cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`), the 悬赏令 halo
