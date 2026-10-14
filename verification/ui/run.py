@@ -1,5 +1,6 @@
 """Run UI verification cases in light and dark on a named Simulator, with screenshots and video."""
 import argparse
+import fcntl
 import re
 import json
 import signal
@@ -57,13 +58,15 @@ def case_meta(case):
     source = (HERE / 'cases' / f'{case}.py').read_text()
     scene = re.search(r"^SCENE = '([^']+)'", source, re.M)
     locales = re.search(r"^LOCALES = \[([^\]]*)\]", source, re.M)
+    extra = re.search(r"^ARGS = \[([^\]]*)\]", source, re.M)
     return (
         scene.group(1) if scene else None,
         re.findall(r"'([^']+)'", locales.group(1)) if locales else DEFAULT_LOCALES,
+        re.findall(r"'([^']+)'", extra.group(1)) if extra else [],
     )
 
 
-def run_case(case, scene, locale, appearance, udid, out):
+def run_case(case, scene, extra, locale, appearance, udid, out):
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob('*'):
         stale.unlink()
@@ -77,7 +80,7 @@ def run_case(case, scene, locale, appearance, udid, out):
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     simctl('launch', udid, BUNDLE_ID,
            '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
-           *(['-uiVerifyScene', scene] if scene else []))
+           *(['-uiVerifyScene', scene] if scene else []), *extra)
     started = time.monotonic()
     status, message = 'pass', ''
     try:
@@ -123,6 +126,11 @@ def main():
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
     appearances = ['light', 'dark'] if args.appearance == 'both' else [args.appearance]
 
+    lock = open(ROOT / '.verify/ui.lock', 'w')
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        raise SystemExit('Another verify:ui run is driving the Simulator; wait for it to finish.')
     udid, runtime = resolve_device(args.udid)
     boot(udid)
     simctl('install', udid, str(app))
@@ -132,13 +140,13 @@ def main():
     failures = 0
     runs = [(case, *case_meta(case)) for case in cases]
     for appearance in appearances:
-        for case, scene, locales in runs:
+        for case, scene, locales, extra in runs:
             for locale in locales:
                 out = Path(args.output) / locale / appearance / case
-                status, message, duration = run_case(case, scene, locale, appearance, udid, out)
+                status, message, duration = run_case(case, scene, extra, locale, appearance, udid, out)
                 failures += status != 'pass'
                 (out / 'result.json').write_text(json.dumps({
-                    'case': case, 'locale': locale, 'appearance': appearance,
+                    'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
                     'status': status, 'message': message,
                     'duration_s': duration, 'commit': sha, 'dirty': dirty, 'xcode': xcode,
                     'device': {'name': DEVICE_NAME, 'udid': udid, 'runtime': runtime},
