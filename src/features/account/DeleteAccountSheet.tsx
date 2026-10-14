@@ -5,13 +5,13 @@ import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
+import { formatRinggit } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { DeleteAccountFailure, DeleteAccountResult, UnsettledPayment } from './types';
-import { formatRinggit } from './unsettledPayments';
 
 const ITEMS: { key: ParseKeys; symbol: SFSymbol }[] = [
   { key: 'account.delete.items.profile', symbol: 'person.crop.circle' },
