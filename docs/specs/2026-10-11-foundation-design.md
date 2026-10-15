@@ -368,3 +368,78 @@ Steps 1–4 unblock the bounty and carpool specs.
   sheet.
 - Acceptance on a physical device: Apple and Google sign-in, push delivery, opening each supported
   payment app, speech in zh/en/ms, a Live Activity, an IAP sandbox purchase.
+
+## Implementation Record (2026-10-14) — step 2: navigation shell and home frame
+
+PR: not opened yet · Commits: a051454..4a620b6 (branch `feat/foundation-shell`). Steps 3–9 and welcome A are
+not built; the spec stays `approved` until they are.
+
+### What was built
+
+- Palette tokens and the C1 mascot component. Evidence: `src/ui/theme/tokens.ts`, `src/ui/Mascot.tsx` (c28de87)
+- Native tabs (悬赏, 拼车, 消息, 我的) with the 小貘 `role="search"` slot that opens the 问小貘 `formSheet` stub,
+  `minimizeBehavior="onScrollDown"`, and the urgent `bottomAccessory` with priority and visibility rules. Evidence:
+  `src/app/(tabs)/_layout.tsx`, `src/app/ask.tsx`, `src/features/shell/accessory.ts` (f3f39f1, 57ec546)
+- Home G frame: mascot stage, live-card stack that fans out, pay / ride / bounty / calm cards, and the two-tier
+  collapse strip under the compact bar. Evidence: `src/features/home/HomeScreen.tsx`, `src/features/home/cards/`,
+  `src/features/home/stackLayout.ts` (2401871, 59da54b)
+- `modules/tapiro-kit`, the first native module: `TitleHaloView` keeps a white halo on the 悬赏令 navigation title.
+  Evidence: `modules/tapiro-kit/ios/TitleHaloView.swift` (68efbc6)
+- The live-item contract shared by shell and home (and later bounty and carpool) lives in `src/lib`, so features do
+  not import each other. Evidence: `src/lib/liveItems.ts`, `src/lib/useLiveItems.ts` (f32e33e, 40f6952)
+- Worst-case layout per the 2026-10-14 decisions: accessory amount on the right and a `+N` pill, big numbers move
+  below text only when it would exceed two lines, ride meet point and destination on separate lines, integer-sen
+  money with thousands separators through `src/lib/money.ts`. Evidence: 937c4af, 08042ef, aea867b
+
+### Deviations from the design
+
+| Design said                                                | Shipped                                                                            | Why                                                       | Confirmed by                                                  |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
+| G board: hard white sticker outline on the 悬赏令 title    | Native large title plus a soft white halo (kit)                                    | System titles cannot take a hard stroke                   | user, 2026-10-13 ("B 原生 + 白色光晕")                        |
+| Fan-out spring left open                                   | dampingRatio 0.8 at `--duration-settle`                                            | Chosen on the canvas                                      | user, 2026-10-13 ("2 稳一点")                                 |
+| UI/UX: largest supported text size checked with `break-ui` | Worst-case data at the default text size, zh-Hans and ms, light and dark           | No users at accessibility sizes; acceptance runs at Large | user, 2026-10-14                                              |
+| Accessory item carries a composed title                    | Structured `amountSen` shown right-aligned; `+N` pill; title holds action and name | The amount was truncated away with long names             | user, 2026-10-14 ("A")                                        |
+| 小貘 line "记得付他"                                       | "记得付款"                                                                         | Gender-neutral, matches en and ms                         | user, 2026-10-14 ("A")                                        |
+| Mascot animated with Rive                                  | Static C1 mascot (`react-native-svg`)                                              | No `.riv` assets yet                                      | not intent-changing (ledger ruling; swap the component later) |
+| Money shown as "RM 15" in the demo                         | "RM 15.00" everywhere                                                              | One money format app-wide                                 | not intent-changing (ledger ruling)                           |
+
+### Bugs fixed during implementation
+
+- **Symptom:** scroll-to-top and accessory visibility were wrong on home.
+  **Root cause:** `contentInset` is always 0 under automatic insets; the resting offset was never known.
+  **Fix:** learn the resting offset at the first drag and use the header height (57ec546, `src/features/home/homeScroll.ts`)
+- **Symptom:** the accessory appeared while fanned cards were still on screen.
+  **Root cause:** the stack reported its stacked bottom, not its fanned bottom.
+  **Fix:** report the fanned bottom (59da54b)
+- **Symptom:** negative UI waits passed vacuously.
+  **Root cause:** empty accessibility trees during transitions read as "element absent".
+  **Fix:** `state()` raises `Transition` and `read()` needs two consistent reads (c2016e8)
+- **Symptom:** home scrolled back to the top after a fling, once in about ten runs.
+  **Root cause:** an outside pointer drag in the Simulator window, not the app (instrumented runs showed no
+  app-initiated scroll). **Fix:** README warning (bedc872)
+- **Symptom:** long payee names and stops broke the accessory and ride card (break-ui report).
+  **Root cause:** single-line composed titles and an unshrinkable stops row.
+  **Fix:** 08042ef, aea867b
+
+### Verification
+
+- `bun test` → 172 pass, 0 fail; `bunx tsc --noEmit`, `bun run format:check`, `node scripts/design-check.mjs`,
+  `bun run lint -- <changed files>` → exit 0 (2026-10-14)
+- UI cases `home_worst home_one shell_minimise` after the last fix → 10/10 pass light and dark (build 101 s, runs
+  493 s); screenshots under `.verify/ui/`, before/after set attached to the PR
+- Full `bun run verify:ui` at 4a620b6 → 72/74 pass in 31 min 47 s; the two failures passed on rerun
+  (`account_flow` zh-Hans light: the typed name lost " Mo" after the space; `home_fan_out` ms light: an empty
+  `axe describe-ui` error). Both are recorded as flaky in Known limits.
+
+### Known limits
+
+- Welcome A, payee methods, payment, coins, reviews, chat, 问小貘 and Live Activity are later steps (Implementation order 2–9).
+- Stage art is static, slide-to-pay is inert until step 4, no location capsule; the 问小貘 sheet is a stub.
+- Reduce Motion paths and the light haptic are implemented but not verified (`useLiveStack.ts`, `HomeScreen.tsx`).
+- Halo has a brief gap on pop or tab return; nil compact appearances skip the halo (landscape only).
+- `COMPACT_BAR = 54` verified only on the iPhone 17 Pro Simulator.
+- Home keeps `minHeight: windowHeight * 2` until the bounty list lands; feed items will move to structured fields
+  in the bounty spec (text limits recorded there and in carpool).
+- VoiceOver announcement of the 消息 badge count is unverified.
+- Flaky UI cases: `account_flow` typing can drop characters after a space; AXe `describe-ui` occasionally returns
+  empty (also seen once in `account_onboarding_sign_out`). Not fixed in this step.
