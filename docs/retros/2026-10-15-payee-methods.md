@@ -27,16 +27,23 @@ Running file: candidates are added as they appear; the core table is completed b
 ## Candidates (first occurrence, not yet generalised)
 
 1. The runner reports "Simulator unresponsive" from a 20 s timeout alone. That is an inference; the tools may be waiting for
-   an idle app that the welcome screen's endless animations never reach. Investigation running.
-2. No requirements-to-test traceability: suite completeness rested on judgment. Decided: user story map, traceability
+   an idle app that the welcome screen's endless animations never reach. Measured: not a hang and not an idle wait;
+   the endless welcome loops kept SimRenderServer at 91–137% CPU, so screenshots and taps queued past 20 s (static
+   screen 1%, 0.2 s). Cost: full suite 104 min with 53 timeouts plus ~20 min debugging. Fixed: motion settles after
+   2 drift / 4 breath cycles (user pick 1, `animate-expo`), runner says "timed out" and logs render CPU.
+2. Endless ambient loops shipped without a purpose check; the motion's purpose (first-look delight) expired after
+   ~15 s. Costly, so generalise now: ambient loops settle unless a purpose needs them running.
+3. The `animate-expo` skill was not run for the welcome motion or the hang fix until the user asked, although
+   AGENTS.md (Animation) requires it: a rule that was violated.
+4. No requirements-to-test traceability: suite completeness rested on judgment. Decided: user story map, traceability
    check and a generated canvas board (separate PR).
-3. Product usage facts (wallets over banks) were never asked before the setup board. Ask "how do users actually do this"
+5. Product usage facts (wallets over banks) were never asked before the setup board. Ask "how do users actually do this"
    in step 0.
-4. Promised retro items lived only in conversation context until the user asked where they were kept. Start the retro
+6. Promised retro items lived only in conversation context until the user asked where they were kept. Start the retro
    file when the first candidate appears, not at the end.
-5. Ledger lines are free-form, so `retro-metrics.py` undercounts rulings and user decisions. Use the prefixes it expects
+7. Ledger lines are free-form, so `retro-metrics.py` undercounts rulings and user decisions. Use the prefixes it expects
    (`Ruling:`, `User:`).
-6. The new `require-retro` hook blocked a command whose heredoc text only mentioned `gh pr create`. Fixed in
+8. The new `require-retro` hook blocked a command whose heredoc text only mentioned `gh pr create`. Fixed in
    `~/work/claude` 8d99a81 with regression cases.
 
 ## Rules and skills
@@ -44,7 +51,7 @@ Running file: candidates are added as they appear; the core table is completed b
 - Helped: Pace 20-minute time-box (outside stalls were not chased); review before the PR caught UTF-8 CRC, WeChat order
   codes, QR type switch and load states.
 - Unused: pending
-- Violated: pending
+- Violated: AGENTS.md Animation "build UI motion with the `animate-expo` skill" (candidate 8)
 
 ## Kept (worked well)
 
