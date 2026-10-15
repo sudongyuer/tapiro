@@ -7,7 +7,7 @@ import { heroBottom, POP_STAGGER, stickerExampleKey, welcomeLayout } from './wel
 
 const PRO_PANEL = { 'zh-Hans': 273, ms: 311 };
 const SE_BOTTOM_PADDING_SAVING = 34 - 20;
-const WRAP_ALLOWANCE = 24;
+const WRAP_ALLOWANCE = 40;
 const SE_PANELS = Object.values(PRO_PANEL).map(
   (panel) => panel - SE_BOTTOM_PADDING_SAVING + WRAP_ALLOWANCE,
 );

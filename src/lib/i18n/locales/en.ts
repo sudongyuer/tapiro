@@ -17,7 +17,8 @@ const en: Translation = {
       hello: 'Hi there!',
       headline: 'Tapir has your back in Malaysia',
       subline: 'Parcels, queues, rides back to YC: students helping each other out.',
-      terms: 'By continuing, you agree to the Terms of Use and Privacy Policy.',
+      terms:
+        'By continuing, you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.',
       examples: {
         parcel: 'Pick up a parcel · RM 8',
         coffee: 'Bring a coffee · RM 5',
@@ -50,6 +51,34 @@ const en: Translation = {
       question: 'Which language do you prefer?',
       footer: 'Tapiro follows your system language. You can change it later in Settings.',
       done: 'Get Started',
+    },
+    legal: {
+      draft: 'Draft: this text will be replaced before the App Store release.',
+      close: 'Close',
+      contact: 'Contact us: [contact email]',
+      terms: {
+        title: 'Terms of Use',
+        aboutTitle: 'What Tapiro Is',
+        about:
+          'Tapiro helps students in Malaysia help each other: post bounties, help out on the way, share rides.',
+        accountTitle: 'Your Account',
+        account:
+          'You sign in with Apple or Google. You can delete your account at any time in Me → Settings.',
+        moneyTitle: 'Payments',
+        money: 'Tapiro never handles money: students pay each other directly.',
+      },
+      privacy: {
+        title: 'Privacy Policy',
+        collectTitle: 'What We Collect',
+        collect:
+          'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; and the bounties, rides and messages you post.',
+        storeTitle: 'Where It’s Stored',
+        store:
+          'Data is stored with Supabase in Singapore (ap-southeast-1). Your sign-in session stays in your phone’s Keychain.',
+        deleteTitle: 'Deleting Your Account',
+        delete:
+          'Delete your account and profile in Me → Settings → Delete Account. Settle any unpaid payments first.',
+      },
     },
     me: {
       settings: 'Settings',

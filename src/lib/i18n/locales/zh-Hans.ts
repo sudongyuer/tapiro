@@ -15,7 +15,7 @@ export default {
       hello: '你好呀',
       headline: '小貘陪你在马来西亚好好生活',
       subline: '取快递、排队、拼车回 YC，同学之间互相帮一把',
-      terms: '继续即表示同意《用户协议》和《隐私政策》',
+      terms: '继续即表示同意<terms>《用户协议》</terms>和<privacy>《隐私政策》</privacy>',
       examples: {
         parcel: '帮取快递 · RM 8',
         coffee: '帮带咖啡 · RM 5',
@@ -48,6 +48,32 @@ export default {
       question: '你想用哪种语言？',
       footer: '默认跟随系统语言，之后可以在设置里更改。',
       done: '开始使用',
+    },
+    legal: {
+      draft: '草稿：上架 App Store 前会替换为正式文本。',
+      close: '关闭',
+      contact: '联系我们：[联系邮箱]',
+      terms: {
+        title: '用户协议',
+        aboutTitle: 'Tapiro 是什么',
+        about: 'Tapiro 帮在马来西亚的同学互相帮忙：发悬赏、顺路接单、拼车。',
+        accountTitle: '账号',
+        account: '你用 Apple 或 Google 账号登录。你可以随时在「我的 → 设置」里删除账号。',
+        moneyTitle: '付款',
+        money: 'Tapiro 不经手钱：付款在同学之间直接进行。',
+      },
+      privacy: {
+        title: '隐私政策',
+        collectTitle: '我们收集什么',
+        collect:
+          '登录时 Apple 或 Google 提供的名字、邮箱（接受 Apple 隐藏邮箱）和头像；你设置的显示名字；你发布的悬赏、拼车和消息。',
+        storeTitle: '存放在哪里',
+        store:
+          '数据存放在 Supabase 的新加坡服务器（ap-southeast-1）。登录凭证保存在你手机的钥匙串里。',
+        deleteTitle: '删除账号',
+        delete:
+          '在「我的 → 设置 → 删除账号」可以删除账号和个人资料。有未结清的付款时，需要先处理完。',
+      },
     },
     me: {
       settings: '设置',

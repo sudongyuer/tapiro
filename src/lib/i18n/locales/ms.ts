@@ -17,7 +17,8 @@ const ms: Translation = {
       hello: 'Hai!',
       headline: 'Tapir teman anda di Malaysia',
       subline: 'Ambil bungkusan, beratur, tumpang balik ke YC: pelajar saling membantu.',
-      terms: 'Dengan meneruskan, anda bersetuju dengan Terma Penggunaan dan Dasar Privasi.',
+      terms:
+        'Dengan meneruskan, anda bersetuju dengan <terms>Terma Penggunaan</terms> dan <privacy>Dasar Privasi</privacy>.',
       examples: {
         parcel: 'Ambil bungkusan · RM 8',
         coffee: 'Belikan kopi · RM 5',
@@ -50,6 +51,35 @@ const ms: Translation = {
       question: 'Bahasa mana pilihan anda?',
       footer: 'Tapiro mengikut bahasa sistem anda. Anda boleh menukarnya kemudian dalam Tetapan.',
       done: 'Mula Sekarang',
+    },
+    legal: {
+      draft: 'Draf: teks ini akan diganti sebelum dikeluarkan di App Store.',
+      close: 'Tutup',
+      contact: 'Hubungi kami: [e-mel hubungan]',
+      terms: {
+        title: 'Terma Penggunaan',
+        aboutTitle: 'Apa Itu Tapiro',
+        about:
+          'Tapiro membantu pelajar di Malaysia saling membantu: pasang ganjaran, bantu sambil lalu, berkongsi kereta.',
+        accountTitle: 'Akaun Anda',
+        account:
+          'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun bila-bila masa dalam Saya → Tetapan.',
+        moneyTitle: 'Bayaran',
+        money:
+          'Tapiro tidak mengendalikan wang: pelajar membayar antara satu sama lain secara terus.',
+      },
+      privacy: {
+        title: 'Dasar Privasi',
+        collectTitle: 'Apa Yang Kami Kumpul',
+        collect:
+          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; dan ganjaran, perjalanan serta mesej yang anda siarkan.',
+        storeTitle: 'Di Mana Ia Disimpan',
+        store:
+          'Data disimpan dengan Supabase di Singapura (ap-southeast-1). Sesi daftar masuk anda kekal dalam Keychain telefon anda.',
+        deleteTitle: 'Memadam Akaun Anda',
+        delete:
+          'Padam akaun dan profil anda dalam Saya → Tetapan → Padam Akaun. Selesaikan bayaran tertunggak terlebih dahulu.',
+      },
     },
     me: {
       settings: 'Tetapan',

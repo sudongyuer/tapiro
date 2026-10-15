@@ -70,6 +70,7 @@ export type WelcomeFrame = {
 const MASCOT_TOP = 168;
 const BUBBLE_BELOW_MASCOT_TOP = 150;
 const WORDMARK_BELOW_MASCOT = 30;
+const MIN_WORDMARK_GAP = vars['--space-1'];
 const WORDMARK_TOP = MASCOT_TOP + MASCOT_SIZE + WORDMARK_BELOW_MASCOT;
 
 function place(spec: StickerSpec, scale: number, index: number): PlacedSticker {
@@ -93,10 +94,10 @@ export function welcomeLayout({ width, height, panelHeight, topInset }: WelcomeF
   );
   const short = height < SHORT_SCREEN_HEIGHT || !lowFits;
   const wordmarkTop = Math.min(WORDMARK_TOP - (short ? SHORT_LIFT : 0), floor - HERO_TEXT_HEIGHT);
-  const mascotBottom = wordmarkTop - WORDMARK_BELOW_MASCOT;
-  const minTop = topInset + vars['--space-2'];
-  const mascotSize = Math.max(0, Math.min(MASCOT_SIZE, mascotBottom - minTop));
-  const mascotTop = mascotBottom - mascotSize;
+  const room = wordmarkTop - (topInset + vars['--space-2']);
+  const gap = Math.min(WORDMARK_BELOW_MASCOT, Math.max(MIN_WORDMARK_GAP, room - MASCOT_SIZE));
+  const mascotSize = Math.max(0, Math.min(MASCOT_SIZE, room - gap));
+  const mascotTop = wordmarkTop - gap - mascotSize;
   const kept = STICKERS.filter((spec) => {
     if (short && DROPPED_ON_SHORT.includes(spec.kind)) return false;
     if (spec.kind === 'umbrella') return spec.top + spec.width * STICKER_ASPECT <= mascotTop;

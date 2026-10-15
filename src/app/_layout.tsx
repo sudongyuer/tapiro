@@ -15,11 +15,15 @@ export default function RootLayout() {
   );
 }
 
+const LEGAL_SHEET = { presentation: 'pageSheet', headerShown: true } as const;
+
 function RootStack() {
   const stage = useAccountStage();
   return (
     <Stack screenOptions={{ headerShown: false, headerTransparent: true }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="legal/terms" options={LEGAL_SHEET} />
+      <Stack.Screen name="legal/privacy" options={LEGAL_SHEET} />
       <Stack.Protected guard={stage === 'signedOut'}>
         <Stack.Screen name="welcome" />
       </Stack.Protected>

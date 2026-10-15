@@ -8,6 +8,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { SignInButtons } from './SignInButtons';
+import { TermsLine } from './TermsLine';
 import { useRise } from './welcomeMotion';
 
 const OVERSHOOT_BLEED = vars['--space-7'];
@@ -47,9 +48,7 @@ export function SignInPanel({ onMeasure }: { onMeasure: (visibleHeight: number) 
         </AppText>
       </View>
       <SignInButtons />
-      <AppText variant="meta" tone="secondaryLabel" style={styles.center} testID="welcome-terms">
-        {t('account.welcome.terms')}
-      </AppText>
+      <TermsLine />
     </Animated.View>
   );
 }
