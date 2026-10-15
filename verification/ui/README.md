@@ -18,7 +18,7 @@ Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items (omitted: all
 four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
 same items, the 消息 badge, the fixture user's name and the seeded payee methods (`worst`: 40-character names, long routes,
-RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread; `empty`: no payee methods).
+RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread; `empty`: no payee methods; `worst` also seeds seven payee methods with long names).
 `-uiVerifyQr <names>` replaces the screenshot picker and camera at the decode boundary: each pick
 returns the next fixture in the comma-separated list (`duitnow`, `paying`, `dynamic`, `alipay`,
 `none`; default `duitnow`), so a case can show an error and then a success. Each run writes
@@ -69,6 +69,7 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `payee_list`                  | 我的 shows a red dot for a stale QR; the list shows the default mark, a masked bank number, the re-check banner and the cash toggle clear of the accessory; re-picking the TNG code with an Alipay code confirms the switch and replaces the row; the + menu lists Alipay, WeChat, TNG, then 其他. | —                | `-uiVerifyQr alipay`                 |
 | `payee_add_duitnow`           | With no methods, the + menu adds a DuitNow phone; the bank name is required; the saved row is the default.                                                                                                                                                                                         | —                | `-uiVerifyFixture empty`             |
 | `payee_qr`                    | From 支付宝收钱码 the sheet shows Alipay's steps; a paying code shows the red card and saves nothing; a DuitNow code is accepted after a wallet-switch line and 发布者会看到 name · bank.                                                                                                          | —                | `one`, `-uiVerifyQr paying,duitnow`  |
+| `payee_long`                  | Seven worst-case methods (long bank and payee names); after scrolling to the bottom the cash row sits fully above the accessory and tab bar.                                                                                                                                                       | —                | `-uiVerifyFixture worst`             |
 
 ## Adding a case
 
