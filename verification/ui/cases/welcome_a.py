@@ -2,7 +2,9 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_colour, assert_touch_target, by_id, bottom, token  # noqa: E402
+import time
+
+from driver import UI, assert_colour, assert_touch_target, by_id, bottom, dominant, luma, token  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
 KINDS = ['parcel', 'coffee', 'ticket', 'books', 'umbrella', 'car', 'boba']
@@ -13,7 +15,14 @@ EXAMPLES = {
 }
 
 ui = UI(*sys.argv[1:])
-apple = ui.settled(lambda items: by_id(items, 'sign-in-apple'), 'the sign-in panel never settled')
+
+
+def risen(items):
+    button = by_id(items, 'sign-in-apple')
+    return button if button and bottom(button) <= items[0]['frame']['height'] else None
+
+
+apple = ui.settled(risen, 'the sign-in panel never settled')
 items = ui.read()
 screen = items[0]['frame']
 
@@ -22,7 +31,8 @@ for provider in ('apple', 'google'):
     assert button, f'{provider} button missing'
     assert_touch_target(button, f'{provider} sign-in button')
     assert bottom(button) <= screen['height'], f'{provider} button is below the screen: {button["frame"]}'
-assert by_id(items, 'welcome-terms'), 'terms line missing'
+for page in ('terms', 'privacy'):
+    assert by_id(items, f'welcome-{page}-link'), f'{page} link missing'
 
 panel_top = by_id(items, 'welcome-headline')['frame']['y']
 for kind in KINDS:
@@ -36,7 +46,17 @@ label = by_id(items, 'welcome-sticker-parcel').get('AXLabel')
 assert label == EXAMPLES[ui.locale]['parcel'], f'parcel sticker reads {label}'
 ui.wait_label('welcome-bubble', lambda text: text == HELLO[ui.locale], 'bubble does not greet')
 
+time.sleep(1)  # a second read one second later proves the panel stays where it settled
+again = by_id(ui.read(), 'welcome-headline')['frame']
+assert again == by_id(items, 'welcome-headline')['frame'], f'panel moved after settling: {again}'
+
 shot = ui.snap('01-settled')
+f = apple['frame']
+fill = luma(dominant(shot, {'x': f['x'] + 10, 'y': f['y'] + f['height'] / 2 - 4, 'width': 20, 'height': 8}))
+if ui.appearance == 'dark':
+    assert fill > 215, f'Apple button is not white in dark appearance (luma {fill:.0f})'
+else:
+    assert fill < 40, f'Apple button is not black in light appearance (luma {fill:.0f})'
 assert_colour(shot, {'x': 2, 'y': 230, 'width': 12, 'height': 12},
               token('--color-moment-bg', ui.appearance), 'moment background')
 
