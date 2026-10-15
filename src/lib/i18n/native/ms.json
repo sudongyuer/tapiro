@@ -1,1 +1,6 @@
-{ "ios": { "CFBundleDisplayName": "Tapiro" } }
+{
+  "ios": {
+    "CFBundleDisplayName": "Tapiro",
+    "NSCameraUsageDescription": "Imbas kod QR terima yang dipaparkan pada skrin lain. Tapiro hanya membaca kod dan tidak menyimpan foto."
+  }
+}

@@ -11,6 +11,7 @@ export default function MeLayout() {
         options={{ title: t('shell.tabs.me'), headerLargeTitleEnabled: true }}
       />
       <Stack.Screen name="settings" options={{ title: t('account.settings.title') }} />
+      <Stack.Screen name="payee" options={{ title: t('payee.title') }} />
     </Stack>
   );
 }

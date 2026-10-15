@@ -44,6 +44,22 @@
         }
       ],
       ["expo-secure-store", { "faceIDPermission": false }],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": false,
+          "cameraPermission": "Scan a receive QR code shown on another screen. Tapiro reads the code only and saves no photo.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Scan a receive QR code shown on another screen. Tapiro reads the code only and saves no photo.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
       "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {

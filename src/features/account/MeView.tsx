@@ -13,6 +13,7 @@ import {
   accessibilityElement,
   accessibilityHidden,
   accessibilityIdentifier,
+  accessibilityLabel,
   font,
   foregroundStyle,
   tint,
@@ -30,10 +31,14 @@ const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 export function MeView({
   name,
   avatarUrl,
+  payeeDue,
+  onOpenPayee,
   onOpenSettings,
 }: {
   name: string;
   avatarUrl: string | null;
+  payeeDue: boolean;
+  onOpenPayee: () => void;
   onOpenSettings: () => void;
 }) {
   const { t } = useI18n();
@@ -53,22 +58,52 @@ export function MeView({
           </HStack>
         </Section>
         <Section>
-          <Button onPress={onOpenSettings} testID="me-settings">
-            <HStack>
-              <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>
-                {t('account.me.settings')}
-              </Text>
-              <Spacer />
-              <Image
-                systemName="chevron.right"
-                size={14}
-                modifiers={[tertiary, accessibilityHidden()]}
-              />
-            </HStack>
-          </Button>
+          <NavRow
+            label={t('payee.meRow')}
+            dotLabel={payeeDue ? t('payee.meRowDue') : null}
+            onPress={onOpenPayee}
+            testID="me-payee"
+          />
+          <NavRow label={t('account.me.settings')} onPress={onOpenSettings} testID="me-settings" />
         </Section>
       </Form>
     </Host>
+  );
+}
+
+function NavRow({
+  label,
+  dotLabel = null,
+  onPress,
+  testID,
+}: {
+  label: string;
+  dotLabel?: string | null;
+  onPress: () => void;
+  testID: string;
+}) {
+  const { color } = useTheme();
+  return (
+    <Button onPress={onPress} testID={testID}>
+      <HStack spacing={vars['--space-2']}>
+        <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>
+          {label}
+        </Text>
+        <Spacer />
+        {dotLabel ? (
+          <Image
+            systemName="circle.fill"
+            size={10}
+            modifiers={[
+              foregroundStyle(color('--color-urgent')),
+              accessibilityLabel(dotLabel),
+              accessibilityIdentifier(`${testID}-dot`),
+            ]}
+          />
+        ) : null}
+        <Image systemName="chevron.right" size={14} modifiers={[tertiary, accessibilityHidden()]} />
+      </HStack>
+    </Button>
   );
 }
 
