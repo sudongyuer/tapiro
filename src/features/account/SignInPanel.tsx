@@ -12,14 +12,18 @@ import { useRise } from './welcomeMotion';
 
 const OVERSHOOT_BLEED = vars['--space-7'];
 
-export function SignInPanel() {
+export function SignInPanel({ onMeasure }: { onMeasure: (visibleHeight: number) => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const { bottom } = useSafeAreaInsets();
   const { style, height } = useRise();
   return (
     <Animated.View
-      onLayout={(event) => height.set(event.nativeEvent.layout.height)}
+      onLayout={(event) => {
+        const { height: full } = event.nativeEvent.layout;
+        height.set(full);
+        onMeasure(full - OVERSHOOT_BLEED);
+      }}
       style={[
         styles.panel,
         {

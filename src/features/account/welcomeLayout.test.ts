@@ -5,9 +5,15 @@ import { OBJECT_KINDS } from '@/ui/objectKinds';
 
 import { heroBottom, POP_STAGGER, stickerExampleKey, welcomeLayout } from './welcomeLayout';
 
-const SE = { width: 375, height: 667 };
-const PRO = { width: 402, height: 874 };
-const PANEL_ON_SE = 270;
+const PRO_PANEL = { 'zh-Hans': 273, ms: 311 };
+const SE_BOTTOM_PADDING_SAVING = 34 - 20;
+const WRAP_ALLOWANCE = 24;
+const SE_PANELS = Object.values(PRO_PANEL).map(
+  (panel) => panel - SE_BOTTOM_PADDING_SAVING + WRAP_ALLOWANCE,
+);
+const SE = { width: 375, height: 667, panelHeight: SE_PANELS[0], topInset: 20 };
+const PRO = { width: 402, height: 874, panelHeight: PRO_PANEL.ms, topInset: 62 };
+const MARGIN = 12;
 
 function lookup(tree: object, key: string) {
   return key
@@ -26,25 +32,51 @@ describe('welcomeLayout', () => {
     const tall = welcomeLayout(PRO);
     const short = welcomeLayout(SE);
     expect(short.short).toBe(true);
-    expect(short.stickers.map((s) => s.kind)).toEqual([
-      'parcel',
-      'coffee',
-      'ticket',
-      'books',
-      'umbrella',
-    ]);
+    const kinds = short.stickers.map((s) => s.kind);
+    expect(kinds).not.toContain('car');
+    expect(kinds).not.toContain('boba');
+    expect(kinds).toEqual(expect.arrayContaining(['parcel', 'coffee', 'ticket', 'books']));
     expect(short.mascotTop).toBeLessThan(tall.mascotTop);
     expect(short.wordmarkTop).toBeLessThan(tall.wordmarkTop);
     expect(short.bubble.y).toBeLessThan(tall.bubble.y);
   });
 
-  test('nothing on a short screen sits under the sign-in panel', () => {
-    expect(heroBottom(welcomeLayout(SE))).toBeLessThanOrEqual(SE.height - PANEL_ON_SE);
+  test.each(SE_PANELS)('nothing on a short screen sits under a %d pt panel', (panelHeight) => {
+    const layout = welcomeLayout({ ...SE, panelHeight });
+    expect(heroBottom(layout)).toBeLessThanOrEqual(SE.height - panelHeight - MARGIN);
+    expect(layout.mascotTop).toBeGreaterThanOrEqual(SE.topInset);
+    expect(layout.mascotSize).toBeGreaterThanOrEqual(160);
+  });
+
+  test('the Malay panel on a short screen lifts the hero past the umbrella and drops it', () => {
+    const layout = welcomeLayout({ ...SE, panelHeight: SE_PANELS[1] });
+    expect(layout.stickers.map((s) => s.kind)).toEqual(['parcel', 'coffee', 'ticket', 'books']);
+  });
+
+  test('a standard screen keeps the design positions in both locales', () => {
+    for (const panelHeight of Object.values(PRO_PANEL)) {
+      const layout = welcomeLayout({ ...PRO, panelHeight });
+      expect(layout.mascotTop).toBe(168);
+      expect(layout.wordmarkTop).toBe(368);
+      expect(heroBottom(layout)).toBeLessThanOrEqual(PRO.height - panelHeight - MARGIN);
+    }
+  });
+
+  test('a panel that would cover the low stickers drops them on a tall screen too', () => {
+    const layout = welcomeLayout({ ...PRO, panelHeight: 420 });
+    expect(layout.short).toBe(true);
+    expect(heroBottom(layout)).toBeLessThanOrEqual(PRO.height - 420 - MARGIN);
+  });
+
+  test('the bubble stops before the books sticker', () => {
+    const layout = welcomeLayout(PRO);
+    const books = layout.stickers.find((s) => s.kind === 'books')!;
+    expect(layout.bubble.maxRight).toBeLessThan(books.x);
   });
 
   test('the 700 pt boundary is the first standard height', () => {
-    expect(welcomeLayout({ width: 375, height: 699 }).short).toBe(true);
-    expect(welcomeLayout({ width: 375, height: 700 }).short).toBe(false);
+    expect(welcomeLayout({ ...SE, height: 699, panelHeight: 100 }).short).toBe(true);
+    expect(welcomeLayout({ ...SE, height: 700, panelHeight: 100 }).short).toBe(false);
   });
 
   test('stickers pop in 70 ms apart and stay inside the screen width', () => {

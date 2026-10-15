@@ -221,6 +221,7 @@ const ms: Translation = {
       scenes: {
         welcome: 'Selamat datang',
         profileSetup: 'Langkah nama (nama panjang)',
+        languageStep: 'Langkah bahasa',
         settings: 'Tetapan (nama panjang)',
         deleteBlocked: 'Padam akaun (bayaran belum selesai)',
       },

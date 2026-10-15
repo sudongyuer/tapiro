@@ -184,6 +184,7 @@ Google sign-in button.
 | `--color-google-green`  | `#34A853` |           | G logo                  |
 | `--color-google-yellow` | `#FBBC05` |           | G logo                  |
 | `--color-google-red`    | `#EA4335` |           | G logo                  |
+| `--google-stroke-width` | `1`       |           | Stroke width in points  |
 
 The stage hill is drawn in the screen background (`systemGroupedBackground`), so the stage meets
 the page in both appearances.
@@ -262,6 +263,7 @@ The reward and the primary action wrap rather than truncate at any size.
 | `--radius-sheet` | `24`  |
 | `--radius-pill`  | `999` |
 | `--touch-min`    | `44`  |
+| `--opacity-pressed` | `0.7` |
 
 Radii are continuous corners. Buttons are pills.
 

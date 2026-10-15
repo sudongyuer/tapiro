@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { MomentBackground } from '@/ui/MomentBackground';
@@ -13,21 +14,29 @@ import { WelcomeSticker } from './WelcomeSticker';
 export function WelcomeScreen({ onLayout }: { onLayout?: () => void }) {
   const { t } = useI18n();
   const window = useWindowDimensions();
-  const layout = welcomeLayout(window);
+  const { top } = useSafeAreaInsets();
+  const [panelHeight, setPanelHeight] = useState<number | null>(null);
   const [picked, setPicked] = useState<ObjectKind | null>(null);
+  const layout =
+    panelHeight === null
+      ? null
+      : welcomeLayout({ width: window.width, height: window.height, panelHeight, topInset: top });
   const line = picked ? t(stickerExampleKey(picked)) : t('account.welcome.hello');
   return (
     <MomentBackground testID="welcome-screen" onLayout={onLayout}>
-      {layout.stickers.map((sticker) => (
+      {layout?.stickers.map((sticker) => (
         <WelcomeSticker
           key={sticker.kind}
           sticker={sticker}
           label={t(stickerExampleKey(sticker.kind))}
-          onPress={() => setPicked(sticker.kind)}
+          onPress={() => {
+            setPicked(sticker.kind);
+            AccessibilityInfo.announceForAccessibility(t(stickerExampleKey(sticker.kind)));
+          }}
         />
       ))}
-      <WelcomeHero layout={layout} line={line} />
-      <SignInPanel />
+      {layout ? <WelcomeHero layout={layout} line={line} /> : null}
+      <SignInPanel onMeasure={setPanelHeight} />
     </MomentBackground>
   );
 }

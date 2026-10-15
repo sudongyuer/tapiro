@@ -214,6 +214,7 @@ export default {
       scenes: {
         welcome: '欢迎页',
         profileSetup: '填写名字（长名字）',
+        languageStep: '选择语言',
         settings: '设置（长名字）',
         deleteBlocked: '删除账号（有未结清付款）',
       },

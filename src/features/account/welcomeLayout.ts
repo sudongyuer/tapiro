@@ -1,11 +1,13 @@
 import type { ObjectKind } from '@/ui/objectKinds';
+import { vars } from '@/ui/theme/tokens';
 
 export const DESIGN_WIDTH = 390;
 export const SHORT_SCREEN_HEIGHT = 700;
 export const SHORT_LIFT = 72;
 export const MASCOT_SIZE = 170;
 export const POP_STAGGER = 70;
-export const HERO_TEXT_HEIGHT = 96;
+export const HERO_TEXT_HEIGHT = 104;
+export const PANEL_MARGIN = 16;
 
 const STICKER_ASPECT = 80 / 96;
 const DROPPED_ON_SHORT: readonly ObjectKind[] = ['car', 'boba'];
@@ -52,39 +54,78 @@ export type WelcomeLayout = {
   short: boolean;
   stickers: PlacedSticker[];
   mascotTop: number;
-  bubble: { x: number; y: number };
+  mascotSize: number;
+  bubble: { x: number; y: number; maxRight: number };
   wordmarkTop: number;
+  floor: number;
 };
 
-export function welcomeLayout({ width, height }: { width: number; height: number }) {
-  const short = height < SHORT_SCREEN_HEIGHT;
+export type WelcomeFrame = {
+  width: number;
+  height: number;
+  panelHeight: number;
+  topInset: number;
+};
+
+const MASCOT_TOP = 168;
+const BUBBLE_BELOW_MASCOT_TOP = 150;
+const WORDMARK_BELOW_MASCOT = 30;
+const WORDMARK_TOP = MASCOT_TOP + MASCOT_SIZE + WORDMARK_BELOW_MASCOT;
+
+function place(spec: StickerSpec, scale: number, index: number): PlacedSticker {
+  return {
+    kind: spec.kind,
+    x: spec.left * scale,
+    y: spec.top,
+    width: spec.width,
+    height: spec.width * STICKER_ASPECT,
+    rotate: spec.rotate,
+    drift: spec.drift,
+    delay: index * POP_STAGGER,
+  };
+}
+
+export function welcomeLayout({ width, height, panelHeight, topInset }: WelcomeFrame) {
   const scale = width / DESIGN_WIDTH;
-  const lift = short ? SHORT_LIFT : 0;
-  const stickers = STICKERS.filter((spec) => !short || !DROPPED_ON_SHORT.includes(spec.kind)).map(
-    (spec, index): PlacedSticker => ({
-      kind: spec.kind,
-      x: spec.left * scale,
-      y: spec.top,
-      width: spec.width,
-      height: spec.width * STICKER_ASPECT,
-      rotate: spec.rotate,
-      drift: spec.drift,
-      delay: index * POP_STAGGER,
-    }),
+  const floor = height - panelHeight - PANEL_MARGIN;
+  const lowFits = STICKERS.filter((spec) => DROPPED_ON_SHORT.includes(spec.kind)).every(
+    (spec) => spec.top + spec.width * STICKER_ASPECT <= floor,
   );
+  const short = height < SHORT_SCREEN_HEIGHT || !lowFits;
+  const wordmarkTop = Math.min(WORDMARK_TOP - (short ? SHORT_LIFT : 0), floor - HERO_TEXT_HEIGHT);
+  const mascotBottom = wordmarkTop - WORDMARK_BELOW_MASCOT;
+  const minTop = topInset + vars['--space-2'];
+  const mascotSize = Math.max(0, Math.min(MASCOT_SIZE, mascotBottom - minTop));
+  const mascotTop = mascotBottom - mascotSize;
+  const kept = STICKERS.filter((spec) => {
+    if (short && DROPPED_ON_SHORT.includes(spec.kind)) return false;
+    if (spec.kind === 'umbrella') return spec.top + spec.width * STICKER_ASPECT <= mascotTop;
+    return true;
+  });
+  const stickers = kept.map((spec, index) => {
+    const placed = place(spec, scale, index);
+    return { ...placed, y: Math.min(placed.y, floor - placed.height) };
+  });
+  const books = stickers.find((sticker) => sticker.kind === 'books');
   return {
     short,
     stickers,
-    mascotTop: 168 - lift,
-    bubble: { x: 228 * scale, y: 318 - lift },
-    wordmarkTop: 368 - lift,
+    mascotTop,
+    mascotSize,
+    bubble: {
+      x: 228 * scale,
+      y: mascotTop + (BUBBLE_BELOW_MASCOT_TOP * mascotSize) / MASCOT_SIZE,
+      maxRight: books ? books.x - vars['--space-2'] : width - vars['--space-4'],
+    },
+    wordmarkTop,
+    floor,
   } satisfies WelcomeLayout;
 }
 
 export function heroBottom(layout: WelcomeLayout) {
   return Math.max(
     ...layout.stickers.map((sticker) => sticker.y + sticker.height),
-    layout.mascotTop + MASCOT_SIZE,
+    layout.mascotTop + layout.mascotSize,
     layout.wordmarkTop + HERO_TEXT_HEIGHT,
   );
 }

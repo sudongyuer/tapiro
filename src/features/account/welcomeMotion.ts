@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import {
+  cancelAnimation,
   Easing,
   Extrapolation,
   interpolate,
@@ -32,6 +33,8 @@ export function usePop(delay: number, drift?: Drift) {
   const float = useSharedValue(0);
   useEffect(() => {
     if (reduceMotion) {
+      cancelAnimation(float);
+      float.set(0);
       pop.set(withTiming(1, FADE));
       return;
     }
@@ -65,7 +68,11 @@ export function useBreath(delay: number) {
   const reduceMotion = useReducedMotion();
   const breath = useSharedValue(0);
   useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion) {
+      cancelAnimation(breath);
+      breath.set(0);
+      return;
+    }
     breath.set(
       withDelay(
         delay + POP_DURATION,
@@ -104,8 +111,8 @@ export function useRise() {
     rise.set(withDelay(PANEL_DELAY, withSpring(0, { duration: 600, dampingRatio: 0.72 })));
   }, [reduceMotion, rise, fade]);
   const style = useAnimatedStyle(() => ({
-    opacity: fade.value,
-    transform: [{ translateY: rise.value * (height.value || 1000) }],
+    opacity: height.value > 0 ? fade.value : 0,
+    transform: [{ translateY: rise.value * height.value }],
   }));
   return { style, height };
 }

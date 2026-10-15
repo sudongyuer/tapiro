@@ -1,8 +1,10 @@
+import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
 
 import {
   DeleteAccountSheet,
+  LanguageStep,
   NameStep,
   SettingsView,
   WelcomeScreen,
@@ -17,15 +19,31 @@ export function WelcomeScene({ onReady }: SceneProps) {
   return <WelcomeScreen onLayout={onReady} />;
 }
 
+function ProductionHeader() {
+  return <Stack.Screen options={{ headerTitle: '' }} />;
+}
+
+export function LanguageStepScene({ onReady }: SceneProps) {
+  return (
+    <>
+      <ProductionHeader />
+      <LanguageStep onDone={() => {}} onLayout={onReady} />
+    </>
+  );
+}
+
 export function ProfileSetupScene({ onReady }: SceneProps) {
   return (
-    <NameStep
-      user={longNameUser}
-      profile={{ displayName: LONG_NAME, avatarUrl: null }}
-      onSave={async () => true}
-      onDone={() => {}}
-      onLayout={onReady}
-    />
+    <>
+      <ProductionHeader />
+      <NameStep
+        user={longNameUser}
+        profile={{ displayName: LONG_NAME, avatarUrl: null }}
+        onSave={async () => true}
+        onDone={() => {}}
+        onLayout={onReady}
+      />
+    </>
   );
 }
 

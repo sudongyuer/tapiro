@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: vars['--space-5'],
     paddingVertical: vars['--space-3'],
   },
-  pressed: { opacity: 0.7 },
+  pressed: { opacity: vars['--opacity-pressed'] },
   disabled: { opacity: 0.4 },
   label: { fontWeight: '600', textAlign: 'center' },
 });

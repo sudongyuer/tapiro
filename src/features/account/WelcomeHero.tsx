@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -10,7 +10,7 @@ import { StickerShadow } from '@/ui/StickerArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { MASCOT_SIZE, type WelcomeLayout } from './welcomeLayout';
+import type { WelcomeLayout } from './welcomeLayout';
 import { useBreath, usePop } from './welcomeMotion';
 
 const MASCOT_DELAY = 420;
@@ -20,17 +20,16 @@ const BUBBLE_DELAY = 700;
 
 export function WelcomeHero({ layout, line }: { layout: WelcomeLayout; line: string }) {
   const { t } = useI18n();
-  const { color } = useTheme();
+  const { color, theme } = useTheme();
   const mascotPop = usePop(MASCOT_DELAY);
   const breath = useBreath(MASCOT_DELAY);
   const wordmarkPop = usePop(WORDMARK_DELAY);
   const taglinePop = usePop(TAGLINE_DELAY);
   const bubblePop = usePop(BUBBLE_DELAY);
   const ink = color('--color-on-sticker');
-  const { width } = useWindowDimensions();
   const [bubbleWidth, setBubbleWidth] = useState(0);
-  const room = width - 2 * vars['--space-4'];
-  const shift = Math.min(layout.bubble.x - vars['--space-4'], room - bubbleWidth);
+  const room = layout.bubble.maxRight - vars['--space-4'];
+  const shift = Math.max(0, Math.min(layout.bubble.x - vars['--space-4'], room - bubbleWidth));
   return (
     <>
       <Animated.View
@@ -39,14 +38,14 @@ export function WelcomeHero({ layout, line }: { layout: WelcomeLayout; line: str
       >
         <Animated.View style={breath}>
           <StickerShadow>
-            <Mascot variant="side" size={MASCOT_SIZE} outlined />
+            <Mascot variant="side" size={layout.mascotSize} outlined />
           </StickerShadow>
         </Animated.View>
       </Animated.View>
       <View pointerEvents="none" style={[styles.bubbleRow, { top: layout.bubble.y }]}>
         <Animated.View
           onLayout={(event) => setBubbleWidth(event.nativeEvent.layout.width)}
-          style={[{ transform: [{ translateX: shift }] }, styles.start]}
+          style={[{ transform: [{ translateX: shift }], maxWidth: room }, styles.start]}
         >
           <Animated.View style={bubblePop}>
             <View
@@ -86,14 +85,20 @@ export function WelcomeHero({ layout, line }: { layout: WelcomeLayout; line: str
           </OutlinedText>
         </Animated.View>
         <Animated.View style={taglinePop}>
-          <OutlinedText
-            variant="body"
-            outline={vars['--sticker-border-small']}
-            ink={ink}
-            style={[styles.center, styles.tagline]}
-          >
-            {t('account.welcome.tagline')}
-          </OutlinedText>
+          {theme === 'dark' ? (
+            <AppText variant="body" style={[styles.center, styles.tagline]}>
+              {t('account.welcome.tagline')}
+            </AppText>
+          ) : (
+            <OutlinedText
+              variant="body"
+              outline={vars['--sticker-border-small']}
+              ink={ink}
+              style={[styles.center, styles.tagline]}
+            >
+              {t('account.welcome.tagline')}
+            </OutlinedText>
+          )}
         </Animated.View>
       </View>
     </>

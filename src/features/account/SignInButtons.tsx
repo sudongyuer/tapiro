@@ -105,9 +105,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: vars['--space-3'],
     paddingHorizontal: vars['--space-4'],
-    borderWidth: 1,
+    borderWidth: vars['--google-stroke-width'],
   },
-  pressed: { opacity: 0.7 },
+  pressed: { opacity: vars['--opacity-pressed'] },
   googleLabel: { fontWeight: '500', flexShrink: 1 },
   message: { textAlign: 'center', fontWeight: '600' },
 });

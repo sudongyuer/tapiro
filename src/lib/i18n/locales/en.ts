@@ -217,6 +217,7 @@ const en: Translation = {
       scenes: {
         welcome: 'Welcome',
         profileSetup: 'Name step (long name)',
+        languageStep: 'Language Step',
         settings: 'Settings (long name)',
         deleteBlocked: 'Delete account (unsettled payment)',
       },

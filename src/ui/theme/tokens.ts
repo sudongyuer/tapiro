@@ -69,6 +69,7 @@ export const vars = {
   '--color-google-green': '#34A853',
   '--color-google-yellow': '#FBBC05',
   '--color-google-red': '#EA4335',
+  '--google-stroke-width': 1,
 
   '--font-sans': 'System',
   '--font-rounded': 'ui-rounded',
@@ -106,6 +107,7 @@ export const vars = {
   '--radius-sheet': 24,
   '--radius-pill': 999,
   '--touch-min': 44,
+  '--opacity-pressed': 0.7,
 
   '--sticker-border': 3,
   '--sticker-border-small': 2,
