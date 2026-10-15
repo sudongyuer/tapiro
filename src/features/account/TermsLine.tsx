@@ -16,10 +16,10 @@ export function TermsLine() {
   const router = useRouter();
   return (
     <View style={styles.line}>
-      {linkSegments(t('account.welcome.terms')).map((segment) =>
+      {linkSegments(t('account.welcome.terms')).map((segment, index) =>
         segment.link ? (
           <Pressable
-            key={segment.link}
+            key={index}
             accessibilityRole="link"
             hitSlop={{ top: LINK_SLOP, bottom: LINK_SLOP }}
             testID={`welcome-${segment.link}-link`}
@@ -30,7 +30,7 @@ export function TermsLine() {
             </AppText>
           </Pressable>
         ) : (
-          <AppText key={segment.text} variant="meta" tone="secondaryLabel">
+          <AppText key={index} variant="meta" tone="secondaryLabel">
             {segment.text}
           </AppText>
         ),

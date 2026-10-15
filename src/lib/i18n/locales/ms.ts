@@ -63,22 +63,24 @@ const ms: Translation = {
           'Tapiro membantu pelajar di Malaysia saling membantu: pasang ganjaran, bantu sambil lalu, berkongsi kereta.',
         accountTitle: 'Akaun Anda',
         account:
-          'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun bila-bila masa dalam Saya → Tetapan.',
-        moneyTitle: 'Bayaran',
+          'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun dalam Saya → Tetapan; jika ada bayaran yang belum selesai, selesaikannya dahulu.',
+        moneyTitle: 'Bayaran dan Syiling',
         money:
-          'Tapiro tidak mengendalikan wang: pelajar membayar antara satu sama lain secara terus.',
+          'Pelajar membayar antara satu sama lain terus dalam aplikasi bank atau e-dompet sendiri; Tapiro tidak mengendalikan bayaran antara pelajar. Syiling dibeli melalui App Store, hanya boleh digunakan dalam Tapiro, dan tidak boleh dihantar kepada orang lain atau ditunaikan.',
       },
       privacy: {
         title: 'Dasar Privasi',
         collectTitle: 'Apa Yang Kami Kumpul',
         collect:
-          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; dan ganjaran, perjalanan serta mesej yang anda siarkan.',
+          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; serta token peranti untuk pemberitahuan tolak.',
+        aiTitle: 'Tanya Tapir',
+        ai: 'Hanya selepas anda bersetuju: apa yang anda hantar kepada Tanya Tapir melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura). Perbualan dan draf kekal dalam telefon anda; tempat dan pilihan dalam Tapir Ingat disegerakkan, dan anda boleh melihat serta memadamnya.',
         storeTitle: 'Di Mana Ia Disimpan',
         store:
-          'Data disimpan dengan Supabase di Singapura (ap-southeast-1). Sesi daftar masuk anda kekal dalam Keychain telefon anda.',
+          'Data disimpan dengan Supabase di Singapura (ap‑southeast‑1). Sesi daftar masuk anda kekal dalam Keychain telefon anda.',
         deleteTitle: 'Memadam Akaun Anda',
         delete:
-          'Padam akaun dan profil anda dalam Saya → Tetapan → Padam Akaun. Selesaikan bayaran tertunggak terlebih dahulu.',
+          'Padam akaun anda dalam Saya → Tetapan → Padam Akaun. Dipadam: profil, kaedah bayaran, mesej dan ulasan anda, Tapir Ingat, syiling dan pelekat. Disimpan: sebelah pihak lain dalam setiap sembang (tanpa mesej anda), serta rekod lejar syiling dan pembelian dalam aplikasi yang dinyahnamakan. Anda tidak boleh memadam semasa ada bayaran belum selesai; Tapiro menunjukkan yang mana satu.',
       },
     },
     me: {

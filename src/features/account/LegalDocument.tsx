@@ -8,7 +8,7 @@ import type { LegalPage } from './linkSegments';
 
 const SECTIONS = {
   terms: ['about', 'account', 'money'],
-  privacy: ['collect', 'store', 'delete'],
+  privacy: ['collect', 'ai', 'store', 'delete'],
 } as const;
 
 export function LegalDocument({ page }: { page: LegalPage }) {

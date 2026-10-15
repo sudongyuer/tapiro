@@ -18,8 +18,19 @@ describe('linkSegments', () => {
     const segments = linkSegments(
       resources[code as keyof typeof resources].translation.account.welcome.terms,
     );
-    expect(segments.filter((s) => s.link).map((s) => s.link)).toEqual(['terms', 'privacy']);
+    expect(segments.flatMap((s) => (s.link ? [s.link] : [])).sort()).toEqual(['privacy', 'terms']);
     expect(segments.every((s) => !s.text.includes('<'))).toBe(true);
+  });
+
+  test('a link may span a line break', () => {
+    expect(linkSegments('a <terms>Terms\nof Use</terms>')).toEqual([
+      { text: 'a ' },
+      { text: 'Terms\nof Use', link: 'terms' },
+    ]);
+  });
+
+  test('an unclosed tag falls back to plain text without the tag', () => {
+    expect(linkSegments('agree to <terms>Terms')).toEqual([{ text: 'agree to Terms' }]);
   });
 
   test('a line without markers stays one plain segment', () => {
