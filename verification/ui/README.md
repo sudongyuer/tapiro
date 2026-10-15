@@ -28,7 +28,7 @@ case, locale and appearance); the runner ends with a per-case timing table and t
 `log.txt` lists every AXe call with its duration; a timeout message adds the median call time,
 which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
 `BUDGET = <seconds>`. Three consecutive runs that fail with the same timeout class (screenshot, `axe <command>`, or the case budget) stop the whole run with a render server CPU sample; `python3 -m unittest test_breaker` in `verification/ui` covers the rule. Only one `verify:ui` run may drive the Simulator at a time; a second run
-exits instead of interleaving taps with the first. The lock does not cover `verify:build` or
+exits instead of interleaving taps with the first. Every run also takes the machine-wide lock `/tmp/ios-ui-verify.lock` shared with other projects' runners and waits while another project holds it, printing the holder. The lock does not cover `verify:build` or
 scripts that drive the Simulator outside the runner. Do not click or scroll in the Simulator window
 while a run is in progress: a pointer drag reaches the app as a real touch, and a home case once
 failed because a stray drag scrolled 悬赏 back to the top.

@@ -3,6 +3,7 @@ import argparse
 import fcntl
 import re
 import json
+import os
 import signal
 import subprocess
 import sys
@@ -12,6 +13,7 @@ from pathlib import Path
 from breaker import tripped
 from driver import BUNDLE_ID
 
+MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 DEFAULT_APP = ROOT / '.verify/DerivedData/Build/Products/Release-iphonesimulator/Tapiro.app'
@@ -162,6 +164,16 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         raise SystemExit('Another verify:ui run is driving the Simulator; wait for it to finish.')
+    machine = open(MACHINE_LOCK, 'a+')
+    try:
+        fcntl.flock(machine, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        machine.seek(0)
+        print(f'Waiting for the machine-wide Simulator lock held by: {machine.read().strip() or "another project"}', flush=True)
+        fcntl.flock(machine, fcntl.LOCK_EX)
+    machine.truncate(0)
+    machine.write(f'{ROOT} pid {os.getpid()} since {time.strftime("%H:%M:%S")}\n')
+    machine.flush()
     udid, runtime = resolve_device(args.udid)
     boot(udid)
     simctl('install', udid, str(app))
