@@ -66,13 +66,13 @@ const en: Translation = {
           'You sign in with Apple or Google. You can delete your account in Me → Settings; if a payment is still unsettled, settle it first.',
         moneyTitle: 'Payments and Coins',
         money:
-          'Students pay each other directly in their own bank or e-wallet apps; Tapiro does not handle payments between students. Coins are bought through the App Store, can be used only in Tapiro, and can’t be sent to others or cashed out.',
+          'Students pay each other directly in their own bank or e-wallet apps, or in cash in person; Tapiro does not handle payments between students. Coins are bought through the App Store, can be used only in Tapiro, and can’t be sent to others or cashed out.',
       },
       privacy: {
         title: 'Privacy Policy',
         collectTitle: 'What We Collect',
         collect:
-          'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; the bounties and rides you post, chat messages and images, and reviews; the payment methods you add (DuitNow number, bank account, and the text read from a receive QR code, never the image); screenshots you attach when paying (visible to both sides and moderators); your reports and blocks; and a device token for push notifications.',
+          'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; the bounties and rides you post, chat messages and images, and reviews; the payment methods you add (DuitNow number, bank account, and the text read from a receive QR code, never the image); screenshots you attach when paying (visible to both sides and moderators); your reports and blocks; payment records (who paid whom, the amount and whether it was confirmed); your coin ledger and App Store purchase records; and a device token for push notifications.',
         aiTitle: 'Ask Tapir',
         ai: 'Only after you agree: what you send to Ask Tapir goes through our server to Alibaba Cloud Model Studio (Singapore). Conversations and drafts stay on your phone; the places and preferences in Tapir Remembers are synced, and you can view and delete them.',
         storeTitle: 'Where It’s Stored',

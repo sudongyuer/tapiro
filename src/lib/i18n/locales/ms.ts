@@ -66,13 +66,13 @@ const ms: Translation = {
           'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun dalam Saya → Tetapan; jika ada bayaran yang belum selesai, selesaikannya dahulu.',
         moneyTitle: 'Bayaran dan Syiling',
         money:
-          'Pelajar membayar antara satu sama lain terus dalam aplikasi bank atau e-dompet sendiri; Tapiro tidak mengendalikan bayaran antara pelajar. Syiling dibeli melalui App Store, hanya boleh digunakan dalam Tapiro, dan tidak boleh dihantar kepada orang lain atau ditunaikan.',
+          'Pelajar membayar antara satu sama lain terus dalam aplikasi bank atau e-dompet sendiri, atau secara tunai bersemuka; Tapiro tidak mengendalikan bayaran antara pelajar. Syiling dibeli melalui App Store, hanya boleh digunakan dalam Tapiro, dan tidak boleh dihantar kepada orang lain atau ditunaikan.',
       },
       privacy: {
         title: 'Dasar Privasi',
         collectTitle: 'Apa Yang Kami Kumpul',
         collect:
-          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; serta token peranti untuk pemberitahuan tolak.',
+          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; rekod bayaran (siapa membayar siapa, jumlah dan sama ada telah disahkan); lejar syiling dan rekod pembelian App Store anda; serta token peranti untuk pemberitahuan tolak.',
         aiTitle: 'Tanya Tapir',
         ai: 'Hanya selepas anda bersetuju: apa yang anda hantar kepada Tanya Tapir melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura). Perbualan dan draf kekal dalam telefon anda; tempat dan pilihan dalam Tapir Ingat disegerakkan, dan anda boleh melihat serta memadamnya.',
         storeTitle: 'Di Mana Ia Disimpan',
