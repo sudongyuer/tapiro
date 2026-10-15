@@ -46,6 +46,8 @@
   `headerBlurEffect`. Reason: react-native-screens warns the two effects overlap on iOS 26.
 - Dynamic Type: acceptance runs at the default (Large) size. Text keeps the system scaling
   behaviour, but do not add separate layouts or remount logic for accessibility sizes.
+- A row that pushes a screen stays selected until the return transition deselects it. Views that
+  own keyboard layout natively are not wrapped in RN keyboard avoidance. Source: expo-ios-starter.
 
 ## Platform pitfalls
 
@@ -69,6 +71,8 @@
 
 ## Animation
 
+- Build UI motion with the `animate-expo` skill: decide whether it should animate first, then offer
+  numbered options before writing it. Source: expo-ios-starter.
 - Mascot animation uses Rive (`@rive-app/react-native`, pinned exact version; it is 0.x and
   churns). Load each `.riv` once and share it; commit the generated `*.riv.d.ts`; `riv` is in
   Metro `assetExts`.
@@ -121,6 +125,17 @@
   and update the index. `node scripts/check-specs.mjs --dir docs/specs` must pass.
 - An overturned design gets a new spec that supersedes the old one; never delete a spec.
 
+## Data integrity
+
+Reason: payment and settlement are two-sided confirmations; a lost draft, a replayed write or a
+failure shown as "empty" misleads both users (the payee list showed a failed load as "no methods",
+2026-10-15). Source: expo-ios-starter.
+
+- Persist the user's input before sending it, and keep drafts across failures.
+- An acknowledgement means delivered, not completed; show progress until the outcome is known.
+- Never replay a write automatically after a failure or restart; the user retries.
+- Never show partial, stale or failed data as live, complete or empty.
+
 ## Checks
 
 - Before commit: `bunx expo lint <files>`, `bunx tsc --noEmit`, `bun run format:check` (the same
@@ -130,6 +145,9 @@
   font sizes or font families.
 - Tests when behavior changes; a production bundle when the build can change. Prefer
   behavioural checks over implementation snapshots.
+- Tests assert behaviour, not snapshots or mock call counts, and each assertion must be able to
+  fail: a check that passes before the screen settles proves nothing. Source: expo-ios-starter;
+  two vacuous UI checks were found in review (2026-10-14, 2026-10-15).
 - UI changes add or update a check under `verification/ui` (`bun run verify:build`,
   `bun run verify:ui`) and run it in light and dark; screenshots for state, video for motion.
   Missing scenes, missing identifiers and timeouts fail; open the screenshots before reporting.
