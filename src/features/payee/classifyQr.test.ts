@@ -3,7 +3,6 @@ import { describe, expect, test } from 'bun:test';
 import { classifyFirst, classifyQr } from './classifyQr';
 import { crc16, hasValidCrc, parseTlv, tlv, withCrc } from './emv';
 
-// PayNet P2P example, docs/research/2026-10-06-payee-setup.md §3 (static, with a RM 10.00 amount).
 const PAYNET_EXAMPLE =
   '00020201021126410014A000000615000101065016640209123456789520400005303458540510.005802MY5909AUSERNAME6005BANGI63043A23';
 

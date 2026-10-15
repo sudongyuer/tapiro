@@ -15,11 +15,15 @@ function duitNow(acquirerId: string, name: string, initiation = '11') {
 }
 
 const tng = duitNow('890053', 'LIM WEI JIE');
+const maybank = duitNow('588734', 'TAN MEI LING');
 
 export const FIXTURE_QR = {
   tngDetails: { payload: tng, acquirerId: '890053', mcc: '0000', name: 'LIM WEI JIE' },
+  maybankDetails: { payload: maybank, acquirerId: '588734', mcc: '0000', name: 'TAN MEI LING' },
+  alipay: 'https://qr.alipay.com/fkx12345abcdefghijkl',
+  wechat: 'wxp://f2f0abcdEFGHijklMNOPqrstUVWXyz012345',
   scans: {
-    duitnow: [duitNow('588734', 'TAN MEI LING')],
+    duitnow: [maybank],
     paying: ['284567890123456789'],
     dynamic: [duitNow('588734', 'TAN MEI LING', '12')],
     alipay: ['https://qr.alipay.com/fkx12345abcdefghijkl'],

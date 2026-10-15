@@ -17,30 +17,46 @@ const LONG_NAME = 'NUR AISYAH BINTI MOHD FAKHRUDDIN AL-HADDAD SYED';
 
 function seed(variant: FixtureVariant): PayeeDetails[] {
   if (variant === 'empty') return [];
-  const name = variant === 'worst' ? LONG_NAME : 'LIM WEI JIE';
   if (variant === 'one') return [{ type: 'duitnow_id', phone: '+60123456789', displayName: 'JO' }];
-  const bank: PayeeDetails =
-    variant === 'worst'
-      ? {
-          type: 'bank_account',
-          bankCode: null,
-          bankName: 'Bank Kerjasama Rakyat Malaysia Berhad',
-          accountNumber: '12345678901234564821',
-          displayName: name,
-        }
-      : {
-          type: 'bank_account',
-          bankCode: '588734',
-          bankName: null,
-          accountNumber: '1234564821',
-          displayName: name,
-        };
+  const name = variant === 'worst' ? LONG_NAME : 'LIM WEI JIE';
+  const maybank: PayeeDetails = {
+    type: 'bank_account',
+    bankCode: '588734',
+    bankName: null,
+    accountNumber: '1234564821',
+    displayName: name,
+  };
+  if (variant !== 'worst')
+    return [
+      { type: 'duitnow_id', phone: '+60123456789', displayName: name },
+      maybank,
+      { type: 'duitnow_qr', ...FIXTURE_QR.tngDetails },
+      { type: 'cash' },
+    ];
   return [
-    { type: 'duitnow_id', phone: '+60123456789', displayName: name },
-    bank,
+    { type: 'duitnow_id', phone: '+601112345678', displayName: name },
+    {
+      type: 'bank_account',
+      bankCode: null,
+      bankName: 'Bank Kerjasama Rakyat Malaysia Berhad (Bank Rakyat) Cawangan Seri Kembangan',
+      accountNumber: '12345678901234564821',
+      displayName: name,
+    },
+    maybank,
     { type: 'duitnow_qr', ...FIXTURE_QR.tngDetails },
+    { type: 'duitnow_qr', ...FIXTURE_QR.maybankDetails },
+    { type: 'alipay', payload: FIXTURE_QR.alipay },
+    { type: 'wechat', payload: FIXTURE_QR.wechat },
     { type: 'cash' },
   ];
+}
+
+function assertShape(details: PayeeDetails) {
+  if (
+    details.type === 'bank_account' &&
+    (details.bankCode === null) === (details.bankName === null)
+  )
+    throw new Error('payee_methods_shape: a bank account has a bank code or a bank name');
 }
 
 const STALE_QR_DAYS = 120;
@@ -74,12 +90,15 @@ export function createFixturePayeeService(variant: FixtureVariant): PayeeService
       return methods;
     },
     async add(details) {
+      assertShape(details);
       methods = withAdded(methods, make(details, new Date().toISOString()));
     },
     async update(id, details) {
-      if (!canUpdateInPlace(find(id), details))
+      const existing = find(id);
+      if (!canUpdateInPlace(existing, details))
         throw new Error('payee_methods_shape: the type of a method cannot change');
-      const checkedAt = new Date().toISOString();
+      assertShape(details);
+      const checkedAt = isQrMethod(details) ? new Date().toISOString() : existing.checkedAt;
       methods = methods.map((method) =>
         method.id === id
           ? { ...details, id, isDefault: method.isDefault, createdAt: method.createdAt, checkedAt }

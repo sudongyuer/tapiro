@@ -91,6 +91,39 @@ describe('fixture service keeps the database shape rules', () => {
     ).rejects.toThrow();
   });
 
+  test('a bank account needs a bank code or a bank name, not both', async () => {
+    const service = createFixturePayeeService('empty');
+    const bank = { type: 'bank_account', accountNumber: '1234567890', displayName: 'LIM' } as const;
+    await expect(service.add({ ...bank, bankCode: null, bankName: null })).rejects.toThrow();
+    await expect(
+      service.add({ ...bank, bankCode: '588734', bankName: 'Maybank' }),
+    ).rejects.toThrow();
+    await service.add({ ...bank, bankCode: null, bankName: 'Bank Rakyat' });
+    expect(await service.list()).toHaveLength(1);
+  });
+
+  test('editing a phone keeps checkedAt; re-saving a QR refreshes it', async () => {
+    const service = createFixturePayeeService('demo');
+    const [phone, , qr] = await service.list();
+    await service.update(phone.id, {
+      type: 'duitnow_id',
+      phone: '+60123456780',
+      displayName: 'LIM',
+    });
+    await service.update(qr.id, { type: 'duitnow_qr', ...FIXTURE_QR.tngDetails });
+    const after = await service.list();
+    expect(after.find((m) => m.id === phone.id)!.checkedAt).toBe(phone.checkedAt);
+    expect(Date.parse(after.find((m) => m.id === qr.id)!.checkedAt)).toBeGreaterThan(
+      Date.parse(qr.checkedAt),
+    );
+  });
+
+  test('the worst fixture has seven transfer methods including a named bank', async () => {
+    const methods = await createFixturePayeeService('worst').list();
+    expect(methods.filter((m) => m.type !== 'cash')).toHaveLength(7);
+    expect(methods.some((m) => m.type === 'bank_account' && m.bankName !== null)).toBe(true);
+  });
+
   test('updating or removing a missing id fails', async () => {
     const service = createFixturePayeeService('demo');
     await expect(service.remove('missing')).rejects.toThrow();

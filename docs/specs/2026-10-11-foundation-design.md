@@ -524,9 +524,12 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
 
 ### Verification
 
-- `bun test` → 256 pass; `supabase test db` → payee_methods 25/25, profiles 23/23; `test:stack` payee service and
-  account-delete (payee rows cascade) pass; `tsc`, lint on changed files, `format:check`, `design-check` → exit 0
-- UI cases `payee_list`, `payee_add_duitnow`, `payee_qr` → 12/12 pass light and dark, zh-Hans and ms
+- `bun test` → 272 pass; `supabase test db` → payee_methods 43/43, profiles 23/23; `test:stack` → 12 pass (payee
+  service incl. QR replacement and 其他银行, account-delete with payee rows cascading); `tsc`, lint on changed files,
+  `format:check`, `design-check` → exit 0 (2026-10-15)
+- UI cases `payee_list`, `payee_add_duitnow`, `payee_qr` → 12/12 pass light and dark, zh-Hans and ms at 6f2cee2;
+  `payee_long` (seven worst-case methods, last row above the accessory after scrolling) and `payee_list` rerun after
+  the fixture follow-ups
 
 ### Known limits and follow-ups
 
