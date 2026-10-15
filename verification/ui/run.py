@@ -9,6 +9,7 @@ import sys
 import time
 from pathlib import Path
 
+from breaker import tripped
 from driver import BUNDLE_ID
 
 HERE = Path(__file__).resolve().parent
@@ -169,6 +170,8 @@ def main():
 
     failures = 0
     timings = []
+    results = []
+    stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
     for appearance in appearances:
@@ -186,8 +189,20 @@ def main():
                     'app': str(app),
                 }, indent=2))
                 print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}')
+                results.append({'status': status, 'message': message})
+                stopped = tripped(results)
+                if stopped:
+                    break
+            if stopped:
+                break
+        if stopped:
+            break
 
     print_timings(timings, time.monotonic() - run_started)
+    if stopped:
+        print(f'stopped: 3 consecutive {stopped} timeouts — environment or screen problem')
+        print(render_cpu_sample())
+        failures += 1
     print(f'Artifacts: {args.output}')
     sys.exit(1 if failures else 0)
 
