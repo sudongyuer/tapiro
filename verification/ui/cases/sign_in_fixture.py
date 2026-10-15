@@ -12,6 +12,7 @@ ui.element('ui-verify-ready')
 ui.element('account-session-signedOut')
 for provider in ('apple', 'google'):
     assert_touch_target(ui.element(f'sign-in-{provider}'), f'{provider} sign-in button')
+ui.at_rest()
 shot = ui.capture('signed-out')
 assert_appearance(shot, ui.appearance, 60, 300, 'navigation bar')
 assert_appearance(shot, ui.appearance, 20, 2500, 'screen background')

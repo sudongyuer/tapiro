@@ -69,6 +69,17 @@ def case_meta(case):
     )
 
 
+def render_cpu_sample():
+    try:
+        out = subprocess.run(['top', '-l', '2', '-s', '1', '-o', 'cpu', '-n', '20', '-stats', 'pid,cpu,command'],
+                             capture_output=True, text=True, timeout=20).stdout
+    except subprocess.TimeoutExpired:
+        return 'top timed out'
+    last = out.split('PID')[-1]
+    rows = [line for line in last.splitlines() if 'SimRenderServer' in line or 'SimRenderingServices' in line]
+    return '\n'.join(rows) or 'SimRenderServer and SimRenderingServices are not among the 20 busiest processes'
+
+
 def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     started = time.monotonic()
     out.mkdir(parents=True, exist_ok=True)
@@ -97,9 +108,9 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         if proc.returncode != 0:
             status = 'fail'
     except subprocess.TimeoutExpired as error:
-        status, message = 'fail', f'timeout after {budget} s'
+        status, message = 'fail', f'command timed out after {budget} s'
         partial = ''.join(p.decode() if isinstance(p, bytes) else p or '' for p in (error.stdout, error.stderr))
-        (out / 'log.txt').write_text(partial)
+        (out / 'log.txt').write_text(f'{partial}\n--- CPU sample at timeout (top, second sample, %cpu) ---\n{render_cpu_sample()}\n')
         calls = sorted(float(m) for m in re.findall(r'^\s*([\d.]+)s axe ', partial, re.M))
         if calls:
             message += f'; {len(calls)} axe calls, median {calls[len(calls) // 2]:.1f} s'
@@ -108,7 +119,7 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
             subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
                            capture_output=True, timeout=60)
         except subprocess.TimeoutExpired:
-            message += '; failure screenshot timed out (Simulator unresponsive)'
+            message += '; failure screenshot timed out after 60 s'
     recorder.send_signal(signal.SIGINT)
     try:
         recorder.wait(timeout=30)

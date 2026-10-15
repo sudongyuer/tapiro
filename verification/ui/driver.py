@@ -152,6 +152,24 @@ class UI:
         (self.output / f'{name}.json').write_text(self.axe('describe-ui'))
         return self.output / f'{name}.png'
 
+    def frame_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'f.png'
+            subprocess.run(['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(path)],
+                           check=True, timeout=20, capture_output=True)
+            return path.read_bytes()
+
+    def at_rest(self, message='the screen never came to rest', timeout=30, gap=1.0):
+        deadline = time.monotonic() + timeout
+        previous = None
+        while time.monotonic() < deadline:
+            current = self.frame_bytes()
+            if current == previous:
+                return
+            previous = current
+            time.sleep(gap)  # frame spacing, not an assertion
+        raise AssertionError(message)
+
     def snap(self, name):
         path = self.capture(name)
         points = json.loads((self.output / f'{name}.json').read_text())[0]['frame']['width']
