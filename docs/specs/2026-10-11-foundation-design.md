@@ -492,3 +492,42 @@ PR: not opened yet · Commits: 51aa12c..0b76203 (branch `feat/welcome`). Steps 3
   sign-in failure line are not exercised by a UI case.
 - Legal pages are drafts: wording, a real contact address and review are required before App Store release.
 - en and ms copy (including "Tapir Ingat", "syiling") needs a native-speaker review.
+
+## Implementation Record (2026-10-15) — step 3: payee methods and QR classification
+
+PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). Steps 4–9 remain; the spec stays `approved`.
+
+### What was built
+
+- `payee_methods` (one table, `type` enum incl. `cash`), owner-only RLS, one default per user (partial unique
+  index), first transfer method becomes default and the oldest remaining one is promoted on delete,
+  `set_default_payee_method` RPC, `checked_at` refreshed whenever the QR string is re-picked, cascade with the auth
+  user. Evidence: `supabase/migrations/20261015000000_payee_methods.sql`, `supabase/tests/payee_methods.test.sql` (a5b912a)
+- Pure TS QR classifier: EMV TLV, CRC-16/CCITT-FALSE, DuitNow AID, `01`=`12` and tag `54` rejected, MCC ≠ `0000`
+  labelled business, acquirer names from payee-setup §3, Alipay/WeChat URL forms, Alipay/WeChat/DuitNow-CPM paying
+  codes blocked. Evidence: `src/features/payee/classifyQr.ts`, `emv.ts` (a5b912a)
+- 我的 → 收款方式: native grouped list, + menu, page sheets per type, screenshot pick (`expo-image-picker`, no Photos
+  usage string) and the system scanner (`expo-camera` `launchScanner`), confirm step, red error card, yellow re-check
+  banner and 我的 red dot. Evidence: `src/features/payee/`, `src/app/payee/` (a441140)
+
+### Deviations from the design
+
+| Design said                   | Shipped                                                      | Why                                                                       | Confirmed by            |
+| ----------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- | ----------------------- |
+| Cash in person: a toggle      | Toggle backed by a `cash` row in `payee_methods`             | Profiles are public; a profile flag would leak it outside the pay step    | not intent-changing     |
+| Reject dynamic (amount) codes | Also rejects static codes that carry tag `54` (fixed amount) | Every payment amount differs; PayNet's own P2P example carries RM 10.00   | not intent-changing     |
+| Bank picker                   | Five banks from payee-setup §3 Table 9 examples              | Only those acquirer IDs are sourced; the full Table 9 was not transcribed | needs user (see limits) |
+
+### Verification
+
+- `bun test` → 256 pass; `supabase test db` → payee_methods 25/25, profiles 23/23; `test:stack` payee service and
+  account-delete (payee rows cascade) pass; `tsc`, lint on changed files, `format:check`, `design-check` → exit 0
+- UI cases `payee_list`, `payee_add_duitnow`, `payee_qr` → 12/12 pass light and dark, zh-Hans and ms
+
+### Known limits and follow-ups
+
+- Payer visibility (payer of an item where this user is the selected payee, until settled) is not in RLS yet; it
+  comes with step 4's `payments` table.
+- The "付不了" re-check trigger arrives with step 4; `checked_at` is stored now.
+- Camera scanning and real screenshot decoding are not exercised by UI cases (injected at the decode boundary);
+  check on a device. Alipay/WeChat receive-code formats remain heuristics (payee-setup §Open questions).
