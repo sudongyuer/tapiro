@@ -46,13 +46,13 @@ label = by_id(items, 'welcome-sticker-parcel').get('AXLabel')
 assert label == EXAMPLES[ui.locale]['parcel'], f'parcel sticker reads {label}'
 ui.wait_label('welcome-bubble', lambda text: text == HELLO[ui.locale], 'bubble does not greet')
 
-time.sleep(1)  # a second read one second later proves the panel stays where it settled
+time.sleep(1)
 again = by_id(ui.read(), 'welcome-headline')['frame']
 assert again == by_id(items, 'welcome-headline')['frame'], f'panel moved after settling: {again}'
 
 shot = ui.snap('01-settled')
 f = apple['frame']
-fill = luma(dominant(shot, {'x': f['x'] + 10, 'y': f['y'] + f['height'] / 2 - 4, 'width': 20, 'height': 8}))
+fill = luma(dominant(shot, {'x': f['x'] + f['width'] * 0.08, 'y': f['y'] + f['height'] / 2 - 4, 'width': 16, 'height': 8}))
 if ui.appearance == 'dark':
     assert fill > 215, f'Apple button is not white in dark appearance (luma {fill:.0f})'
 else:
