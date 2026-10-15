@@ -78,6 +78,9 @@
   Metro `assetExts`.
 - UI motion uses Reanimated, animating transforms and opacity only. Never drive SVG
   attributes via `useAnimatedProps` in lists. Reason: ~3x CPU in the prototype.
+- Ambient motion runs finite cycles, then rests; no `withRepeat` with -1/Infinity and no
+  `animationIterationCount: 'infinite'` (ESLint `no-restricted-syntax`; spinners may disable it with a
+  reason). Reason: the welcome loops saturated the Simulator render server (2026-10-15).
 - Performance sign-off happens on a device with Instruments, never on Simulator numbers.
 
 ## Layout
