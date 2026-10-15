@@ -17,8 +17,11 @@ Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 `LOCALES = ['zh-Hans', 'ms']` to also run in Malay and catch truncation. `ARGS = [...]` adds
 launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items (omitted: all
 four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
-same items, the 消息 badge and the fixture user's name (`worst`: 40-character names, long routes,
-RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread). Each run writes
+same items, the 消息 badge, the fixture user's name and the seeded payee methods (`worst`: 40-character names, long routes,
+RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread; `empty`: no payee methods).
+`-uiVerifyQr <names>` replaces the screenshot picker and camera at the decode boundary: each pick
+returns the next fixture in the comma-separated list (`duitnow`, `paying`, `dynamic`, `alipay`,
+`none`; default `duitnow`), so a case can show an error and then a success. Each run writes
 `result.json` with commit, locale, Xcode, device and `duration_s` (wall-clock seconds of that
 case, locale and appearance); the runner ends with a per-case timing table and the total, and
 `verify:build` prints its own wall-clock seconds.
@@ -63,6 +66,9 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `home_worst_calm`             | The calm card greets a 40-character display name with the ask button at full size.                                                                           | —                | `none`, `-uiVerifyFixture worst`     |
 | `home_one`                    | Short and single-count data (`Jo`, RM 0.50, 1 minute, 1 unread) renders on the same surfaces.                                                                | —                | `-uiVerifyFixture one`               |
 | `home_worst_inline`           | Scrolling past one worst-case pay card shows the inline accessory with its long title on one line.                                                           | —                | `oweMoney`, `-uiVerifyFixture worst` |
+| `payee_list`                  | 我的 shows a red dot for a stale QR; 收款方式 lists the default mark, a masked bank number, the yellow re-check banner and the cash toggle. | —                | —                                    |
+| `payee_add_duitnow`           | With no methods, the + menu adds a DuitNow phone; the bank name is required; the saved row is the default.                                    | —                | `-uiVerifyFixture empty`             |
+| `payee_qr`                    | A picked paying code shows the red card and saves nothing; a picked DuitNow code shows 发布者会看到 name · bank and saves.                     | —                | `one`, `-uiVerifyQr paying,duitnow`  |
 
 ## Adding a case
 
