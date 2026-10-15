@@ -1,12 +1,15 @@
-"""我的 shows a red dot for a stale QR; 收款方式 lists seeded methods with the default mark, masked bank number, the yellow re-check banner and the cash toggle."""
+"""我的 shows a red dot for a stale QR; 收款方式 lists the default mark, a masked bank number, the yellow re-check banner and the cash toggle above the accessory; the + menu puts Alipay, WeChat and TNG first; re-picking the stale TNG code with an Alipay screenshot confirms the switch and replaces the row."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, assert_colour, assert_touch_target, by_id, close, token  # noqa: E402
-from payee import DEFAULT, open_payee, row_labels  # noqa: E402
+from driver import accessory  # noqa: E402
+from payee import ALIPAY, DEFAULT, MENU_ORDER, SAVE, TNG, open_menu, open_payee, row_labels  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-BUDGET = 200
+BUDGET = 260
+ARGS = ['-uiVerifyQr', 'alipay']
+MISMATCH = {'zh-Hans': '这是支付宝的码，按支付宝收钱码保存？', 'ms': 'Ini kod Alipay. Simpan sebagai Kod Terima Alipay?'}
 
 DUE = {'zh-Hans': '有收款码需要重新确认', 'ms': 'Kod QR perlu disemak semula'}
 
@@ -34,7 +37,7 @@ assert len(rows) == 3, f'expected three transfer methods, got {rows}'
 assert DEFAULT[ui.locale] in rows[0] and '+60 12-345 6789' in rows[0], f'first row is not the default phone: {rows[0]!r}'
 assert all(DEFAULT[ui.locale] not in row for row in rows[1:]), f'more than one default: {rows}'
 assert '•••• 4821' in rows[1] and '1234564821' not in rows[1], f'bank number not masked: {rows[1]!r}'
-assert "Touch 'n Go" in rows[2], f'QR row does not name the wallet: {rows[2]!r}'
+assert rows[2].count('TNG') == 1 and TNG[ui.locale] in rows[2], f'TNG row should name the wallet once: {rows[2]!r}'
 for identifier in ('payee-recheck-action', 'payee-cash'):
     assert_touch_target(by_id(items, identifier), identifier)
 cash = by_id(items, 'payee-cash')
@@ -46,7 +49,33 @@ assert_colour(shot, {'x': banner['x'] + 4, 'width': 8, 'y': banner['y'] + banner
               're-check banner fill', tolerance=10)
 assert_appearance(shot.path, ui.appearance, 20, 2500, 'screen background')
 
+ui.tap('payee-recheck-action')
+ui.tap('payee-qr-pick')
+ui.wait_label('payee-qr-mismatch', lambda label: MISMATCH[ui.locale] in label, 'wallet switch was not confirmed')
+ui.capture('02-switch')
+ui.tap_label(SAVE[ui.locale])
+ui.gone('payee-qr-confirm')
+items = ui.wait(lambda items: any(ALIPAY[ui.locale] in r for r in row_labels(items)) and items, 'Alipay row did not replace the TNG row')
+rows = row_labels(items)
+assert len(rows) == 3 and not any(TNG[ui.locale] in r for r in rows), rows
+ui.gone('payee-recheck', timeout=5)
+ui.capture('03-replaced')
+
+items = ui.read()
+cash, bar = by_id(items, 'payee-cash'), accessory(items)
+if bar:
+    assert cash['frame']['y'] + cash['frame']['height'] <= bar['frame']['y'], f'cash row {cash["frame"]} sits under the accessory {bar["frame"]}'
 ui.tap('payee-cash')
 ui.wait(lambda items: str((by_id(items, 'payee-cash') or {}).get('AXValue')) == '0', 'cash did not turn off')
-ui.capture('02-cash-off')
-print('PASS: seeded list, default mark, masked bank, re-check banner and cash toggle')
+ui.capture('04-cash-off')
+
+open_menu(ui)
+items = ui.read()
+ys = []
+for labels in MENU_ORDER[:-1]:
+    found = [i['frame']['y'] for i in items if i.get('AXLabel') == labels[ui.locale]]
+    assert found, f'menu is missing {labels[ui.locale]}'
+    ys.append(min(found))
+assert ys == sorted(ys), f'menu order is wrong: {ys}'
+ui.capture('05-menu')
+print('PASS: list states, QR replacement, accessory clearance and menu order')
