@@ -145,6 +145,46 @@ background and their text stays dark ink. The only exception is the pay card, wh
 | `--color-sticker-other`     | `#D8D4CC` |           | 其他 sticker                                    |
 | `--color-on-sticker`        | `#25232B` |           | Glyph on every category sticker                 |
 
+### Object stickers
+
+The welcome screen's die-cut objects (parcel, coffee, queue ticket, books, umbrella, car, milk
+tea). They are artwork, so dark mode keeps the same fills and the white die-cut border; the
+outline is `--color-sticker-border` and dark lines use `--color-on-sticker`.
+
+| Token                          | Light     | Use                                        |
+| ------------------------------ | --------- | ------------------------------------------ |
+| `--color-object-cardboard`     | `#C8925A` | Parcel box                                 |
+| `--color-object-cardboard-lid` | `#DDA874` | Parcel lid                                 |
+| `--color-object-tape`          | `#EBD3A8` | Parcel tape, coffee sleeve                 |
+| `--color-object-coffee`        | `#7A4E35` | Coffee cup and handle                      |
+| `--color-object-roast`         | `#3B2F2A` | Coffee lid, tapioca pearls                 |
+| `--color-object-red`           | `#D2412C` | Ticket number, top book                    |
+| `--color-object-grey`          | `#C7C7CC` | Ticket rule, hubcaps                       |
+| `--color-object-blue`          | `#1D6FD1` | Book                                       |
+| `--color-object-green`         | `#187A50` | Book                                       |
+| `--color-object-orange`        | `#E8833A` | Book                                       |
+| `--color-object-violet`        | `#6D4AFF` | Umbrella canopy                            |
+| `--color-object-coral`         | `#E8604C` | Car body, straw                            |
+| `--color-object-glass`         | `#BFE3F5` | Car windows                                |
+| `--color-object-milk-tea`      | `#EFD9B4` | Milk-tea cup                               |
+| `--color-object-cream`         | `#F3EFE6` | Milk-tea lid                               |
+
+### Sign in with Google
+
+Google's branding guidelines fix these values (developers.google.com/identity/branding-guidelines,
+light and dark themes, standard-colour G). They are not Tapiro colours and are used only by the
+Google sign-in button.
+
+| Token                   | Light     | Dark      | Use                     |
+| ----------------------- | --------- | --------- | ----------------------- |
+| `--color-google-fill`   | `#FFFFFF` | `#131314` | Button fill             |
+| `--color-google-stroke` | `#747775` | `#8E918F` | 1 pt inside stroke      |
+| `--color-google-label`  | `#1F1F1F` | `#E3E3E3` | Button label            |
+| `--color-google-blue`   | `#4285F4` |           | G logo                  |
+| `--color-google-green`  | `#34A853` |           | G logo                  |
+| `--color-google-yellow` | `#FBBC05` |           | G logo                  |
+| `--color-google-red`    | `#EA4335` |           | G logo                  |
+
 The stage hill is drawn in the screen background (`systemGroupedBackground`), so the stage meets
 the page in both appearances.
 
@@ -183,6 +223,8 @@ accessibility sizes.
 | ------------------------------------ | ----- | --------------------------------------------------- |
 | `--font-sans`                        |       | System (PingFang SC / SF Pro)                       |
 | `--font-rounded`                     |       | SF Rounded, numerals only                           |
+| `--text-wordmark`                    | `48`  | Tapiro wordmark, rounded heavy, white outline       |
+| `--text-wordmark--line-height`       | `56`  |                                                     |
 | `--text-amount`                      | `48`  | Live-card amount and countdown, rounded heavy       |
 | `--text-amount--line-height`         | `52`  |                                                     |
 | `--text-amount-compact`              | `36`  | Amount beside a card title, rounded heavy           |

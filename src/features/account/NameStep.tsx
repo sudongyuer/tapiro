@@ -4,7 +4,8 @@ import { PlatformColor, ScrollView, StyleSheet, TextInput, View } from 'react-na
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { AppText } from '@/ui/AppText';
-import { Avatar } from '@/ui/Avatar';
+import { MascotSays } from '@/ui/MascotSays';
+import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -54,78 +55,93 @@ export function NameStep({
   }
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      keyboardShouldPersistTaps="handled"
-      automaticallyAdjustKeyboardInsets
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      onLayout={onLayout}
-      testID="name-step"
-    >
-      <View style={styles.avatar}>
-        <Avatar uri={avatarUrl} size={80} label={t('account.name.avatar')} />
-      </View>
-      <View style={styles.group}>
-        <View style={styles.card}>
-          <TextInput
-            value={value}
-            onChangeText={(text) => {
-              setDraft(text);
-              if (error) setError(null);
-            }}
-            onSubmitEditing={submit}
-            placeholder={t('account.name.placeholder')}
-            placeholderTextColor={PlatformColor('placeholderText')}
-            accessibilityLabel={t('account.name.label')}
-            autoCorrect={false}
-            textContentType="name"
-            returnKeyType="done"
-            clearButtonMode="while-editing"
-            testID="name-input"
-            style={styles.input}
-          />
+    <MomentBackground onLayout={onLayout}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.content}
+        testID="name-step"
+      >
+        <View style={styles.top}>
+          <MascotSays line={t('account.name.greeting')} />
+          <View style={styles.heading}>
+            <AppText variant="moment-title" accessibilityRole="header">
+              {t('account.name.question')}
+            </AppText>
+            <AppText variant="secondary" tone="secondaryLabel">
+              {t('account.name.footer')}
+            </AppText>
+          </View>
+          <View style={styles.group}>
+            <View style={[styles.card, { shadowColor: color('--color-sticker-shadow') }]}>
+              <TextInput
+                value={value}
+                onChangeText={(text) => {
+                  setDraft(text);
+                  if (error) setError(null);
+                }}
+                onSubmitEditing={submit}
+                placeholder={t('account.name.placeholder')}
+                placeholderTextColor={PlatformColor('placeholderText')}
+                accessibilityLabel={t('account.name.label')}
+                autoCorrect={false}
+                textContentType="name"
+                returnKeyType="done"
+                clearButtonMode="while-editing"
+                testID="name-input"
+                style={styles.input}
+              />
+            </View>
+            {error && (
+              <AppText
+                variant="meta"
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
+                testID="name-error"
+                style={[styles.error, { color: color('--color-urgent') }]}
+              >
+                {t(`account.name.error.${error}`)}
+              </AppText>
+            )}
+          </View>
         </View>
-        <AppText variant="meta" tone="secondaryLabel" style={styles.footer}>
-          {t('account.name.footer')}
-        </AppText>
-        {error && (
-          <AppText
-            variant="meta"
-            accessibilityRole="alert"
-            accessibilityLiveRegion="polite"
-            testID="name-error"
-            style={[styles.footer, { color: color('--color-urgent') }]}
-          >
-            {t(`account.name.error.${error}`)}
-          </AppText>
-        )}
-      </View>
-      <PillButton
-        label={t('account.name.continue')}
-        onPress={submit}
-        loading={saving}
-        testID="name-continue"
-      />
-    </ScrollView>
+        <PillButton
+          label={t('account.name.continue')}
+          onPress={submit}
+          loading={saving}
+          testID="name-continue"
+        />
+      </ScrollView>
+    </MomentBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: PlatformColor('systemGroupedBackground') },
-  content: { padding: vars['--space-4'], gap: vars['--space-6'] },
-  avatar: { alignItems: 'center', paddingTop: vars['--space-4'] },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: vars['--space-6'],
+    paddingTop: vars['--space-4'],
+    paddingBottom: vars['--space-4'],
+    gap: vars['--space-7'],
+  },
+  top: { gap: vars['--space-6'] },
+  heading: { gap: vars['--space-1'] },
   group: { gap: vars['--space-2'] },
   card: {
-    borderRadius: vars['--radius-chip'],
+    borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
     backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
     paddingHorizontal: vars['--space-4'],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: vars['--space-1'],
   },
   input: {
     fontSize: vars['--text-body'],
-    minHeight: vars['--touch-min'],
+    minHeight: vars['--touch-min'] + vars['--space-2'],
     color: PlatformColor('label'),
   },
-  footer: { paddingHorizontal: vars['--space-4'] },
+  error: { paddingHorizontal: vars['--space-4'] },
 });

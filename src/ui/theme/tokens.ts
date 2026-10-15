@@ -46,9 +46,35 @@ export const vars = {
   '--color-sticker-other': '#D8D4CC',
   '--color-on-sticker': '#25232B',
 
+  '--color-object-cardboard': '#C8925A',
+  '--color-object-cardboard-lid': '#DDA874',
+  '--color-object-tape': '#EBD3A8',
+  '--color-object-coffee': '#7A4E35',
+  '--color-object-roast': '#3B2F2A',
+  '--color-object-red': '#D2412C',
+  '--color-object-grey': '#C7C7CC',
+  '--color-object-blue': '#1D6FD1',
+  '--color-object-green': '#187A50',
+  '--color-object-orange': '#E8833A',
+  '--color-object-violet': '#6D4AFF',
+  '--color-object-coral': '#E8604C',
+  '--color-object-glass': '#BFE3F5',
+  '--color-object-milk-tea': '#EFD9B4',
+  '--color-object-cream': '#F3EFE6',
+
+  '--color-google-fill': '#FFFFFF',
+  '--color-google-stroke': '#747775',
+  '--color-google-label': '#1F1F1F',
+  '--color-google-blue': '#4285F4',
+  '--color-google-green': '#34A853',
+  '--color-google-yellow': '#FBBC05',
+  '--color-google-red': '#EA4335',
+
   '--font-sans': 'System',
   '--font-rounded': 'ui-rounded',
 
+  '--text-wordmark': 48,
+  '--text-wordmark--line-height': 56,
   '--text-amount': 48,
   '--text-amount--line-height': 52,
   '--text-amount-compact': 36,
@@ -107,6 +133,9 @@ export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-sticker-shadow': '#0000004D',
   '--color-card-pay': '#F3EFE6',
   '--color-on-card-pay': '#25232B',
+  '--color-google-fill': '#131314',
+  '--color-google-stroke': '#8E918F',
+  '--color-google-label': '#E3E3E3',
 };
 
 export type ThemeName = 'light' | 'dark';
@@ -118,6 +147,7 @@ export function token(name: TokenName, theme: ThemeName = 'light') {
 export const MUTED_TEXT_OPACITY = 0.72;
 
 export const typeRoles = [
+  'wordmark',
   'amount',
   'amount-compact',
   'large-title',
