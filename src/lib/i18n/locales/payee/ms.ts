@@ -7,23 +7,35 @@ const ms: typeof zhHans = {
   privacy:
     'Hanya pembayar yang memilih anda nampak maklumat ini semasa membayar, dan ia disembunyikan selepas selesai.',
   emptyTitle: 'Belum ada kaedah terima bayaran',
-  emptyBody:
-    'Tambah satu supaya pembayar tahu cara membayar anda. Nombor telefon DuitNow paling sesuai: tidak luput dan kekal walaupun tukar bank.',
+  emptyBody: 'Tambah satu supaya pembayar tahu cara membayar anda.',
   add: 'Tambah Kaedah',
   default: 'Lalai',
   makeDefault: 'Jadikan Lalai',
   delete: 'Padam',
+  cancel: 'Batal',
+  deleteConfirm: {
+    title: 'Padam kaedah ini?',
+    body: 'Pembayar tidak akan nampak kaedah ini lagi.',
+  },
+  loading: 'Memuatkan',
+  loadFailed: {
+    title: 'Kaedah terima bayaran tidak dapat dimuatkan',
+    body: 'Semak sambungan anda dan cuba lagi.',
+  },
+  retry: 'Cuba Lagi',
+  actionFailed: 'Tidak berjaya. Semak sambungan anda dan cuba lagi.',
+  menuOther: 'Lain-lain',
   deleteMethod: 'Padam Kaedah Ini',
   close: 'Tutup',
   save: 'Simpan',
   types: {
     duitnow_id: 'Nombor Telefon DuitNow',
     bank_account: 'Akaun Bank',
-    qr: 'Kod QR (dari Foto)',
     duitnow_qr: 'Kod QR {{bank}}',
     duitnow_qr_generic: 'Kod QR DuitNow',
     alipay: 'Kod Terima Alipay',
     wechat: 'Kod Terima WeChat',
+    tng: 'Kod QR TNG',
     cash: 'Tunai Bersemuka',
   },
   detail: {
@@ -50,6 +62,9 @@ const ms: typeof zhHans = {
       'Bank pembayar memaparkan nama ini semasa pindahan. Jika tidak sepadan, mereka tidak akan membayar.',
     bankLabel: 'Bank',
     bankPlaceholder: 'Pilih Bank',
+    otherBank: 'Bank Lain',
+    bankNameLabel: 'Nama bank',
+    bankNamePlaceholder: 'cth. Bank Rakyat',
     accountLabel: 'Nombor akaun',
     accountFooter: 'Digit sahaja. Hanya 4 digit terakhir dipaparkan selepas disimpan.',
     error: {
@@ -58,6 +73,8 @@ const ms: typeof zhHans = {
       nameEmpty: 'Masukkan nama yang dipaparkan oleh bank.',
       nameInvalid: 'Gunakan 60 aksara atau kurang.',
       bankEmpty: 'Pilih bank.',
+      bankNameEmpty: 'Masukkan nama bank.',
+      bankNameInvalid: 'Nama bank mestilah 60 aksara atau kurang.',
       accountEmpty: 'Masukkan nombor akaun.',
       accountInvalid: 'Nombor akaun ialah 6 hingga 20 digit.',
       saveFailed: 'Tidak dapat disimpan. Cuba lagi.',
@@ -80,11 +97,24 @@ const ms: typeof zhHans = {
     walletNote:
       'Tapiro tidak dapat menyemak kod Alipay dan WeChat. Pastikan ini kod terima anda sendiri. Hanya kandungan kod disimpan, bukan gambar.',
     retry: 'Pilih Lain',
+    steps: {
+      alipay:
+        '1. Buka Alipay → Terima (收钱) di skrin utama\n2. Ketik Simpan Gambar\n3. Kembali dan pilih gambar itu di bawah',
+      wechat:
+        '1. Buka WeChat → Saya → Perkhidmatan → Wang → Terima Wang\n2. Ketik Simpan Kod Wang\n3. Kembali dan pilih gambar itu di bawah',
+      tng: '1. Buka TNG eWallet → Receive\n2. Simpan gambar QR ke Foto\n3. Kembali dan pilih gambar itu di bawah',
+    },
+    wallet: { alipay: 'Alipay', wechat: 'WeChat' },
+    mismatch: 'Ini kod {{wallet}}. Simpan sebagai {{method}}?',
     error: {
       noCode: { title: 'Tiada kod QR ditemui', body: 'Pangkas lebih dekat dan cuba lagi.' },
       payingCode: {
         title: 'Ini kod bayar, bukan kod terima.',
-        body: 'Sesiapa yang ada kod bayar boleh mengenakan caj kepada anda, jadi ia disekat dan tidak disimpan. Buka Terima dalam Alipay atau WeChat dan ambil tangkapan skrin itu.',
+        body: 'Sesiapa yang ada kod bayar boleh mengenakan caj kepada anda, jadi ia disekat dan tidak disimpan. Buka Terima dalam Alipay, WeChat, TNG atau aplikasi bank dan ambil tangkapan skrin itu (kod bayar DuitNow juga tidak boleh digunakan).',
+      },
+      merchantOrder: {
+        title: 'Ini kod pesanan peniaga, bukan kod terima',
+        body: 'Kod ini luput dalam 2 jam. Dalam WeChat, buka Wang → Terima Wang dan simpan kod terima anda.',
       },
       badCrc: {
         title: 'Kod ini rosak',

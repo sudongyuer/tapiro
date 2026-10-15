@@ -6,6 +6,7 @@ export type PayeeService = {
   list(): Promise<PayeeMethod[]>;
   add(details: PayeeDetails): Promise<void>;
   update(id: string, details: PayeeDetails): Promise<void>;
+  replaceQr(id: string, details: PayeeDetails): Promise<void>;
   remove(id: string): Promise<void>;
   setDefault(id: string): Promise<void>;
 };
@@ -19,6 +20,7 @@ type Row = {
   display_name: string | null;
   phone: string | null;
   bank_code: string | null;
+  bank_name: string | null;
   account_number: string | null;
   qr_payload: string | null;
   acquirer_id: string | null;
@@ -32,6 +34,7 @@ const EMPTY: Omit<Columns, 'type'> = {
   display_name: null,
   phone: null,
   bank_code: null,
+  bank_name: null,
   account_number: null,
   qr_payload: null,
   acquirer_id: null,
@@ -53,6 +56,7 @@ export function toColumns(details: PayeeDetails): Columns {
         ...EMPTY,
         type: details.type,
         bank_code: details.bankCode,
+        bank_name: details.bankName,
         account_number: details.accountNumber,
         display_name: details.displayName,
       };
@@ -80,10 +84,11 @@ function toDetails(row: Row): PayeeDetails | null {
         ? { type: row.type, phone: row.phone, displayName: row.display_name }
         : null;
     case 'bank_account':
-      return row.bank_code && row.account_number && row.display_name
+      return (row.bank_code || row.bank_name) && row.account_number && row.display_name
         ? {
             type: row.type,
             bankCode: row.bank_code,
+            bankName: row.bank_name,
             accountNumber: row.account_number,
             displayName: row.display_name,
           }
@@ -140,10 +145,30 @@ export function createSupabasePayeeService(client: SupabaseClient | null): Payee
     },
     async update(id, details) {
       const { type: _type, ...columns } = toColumns(details);
-      unwrap(await db().from('payee_methods').update(columns).eq('id', id));
+      const checked =
+        details.type === 'duitnow_qr' || details.type === 'alipay' || details.type === 'wechat';
+      const values = checked ? { ...columns, checked_at: new Date().toISOString() } : columns;
+      const { data } = unwrap(
+        await db().from('payee_methods').update(values).eq('id', id).select('id'),
+      );
+      if (!data?.length) throw new Error('payee method not found');
+    },
+    async replaceQr(id, details) {
+      const columns = toColumns(details);
+      unwrap(
+        await db().rpc('replace_payee_qr', {
+          method_id: id,
+          new_type: columns.type,
+          new_payload: columns.qr_payload,
+          new_acquirer_id: columns.acquirer_id,
+          new_mcc: columns.mcc,
+          new_qr_name: columns.qr_name,
+        }),
+      );
     },
     async remove(id) {
-      unwrap(await db().from('payee_methods').delete().eq('id', id));
+      const { data } = unwrap(await db().from('payee_methods').delete().eq('id', id).select('id'));
+      if (!data?.length) throw new Error('payee method not found');
     },
     async setDefault(id) {
       unwrap(await db().rpc('set_default_payee_method', { method_id: id }));

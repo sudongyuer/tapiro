@@ -72,8 +72,20 @@ describe('checkPayeeName', () => {
 
 describe('checkBank', () => {
   test('accepts a bank from the acquirer table and refuses a wallet', () => {
-    expect(checkBank('588734')).toEqual({ ok: true, value: '588734' });
+    expect(checkBank('588734')).toEqual({
+      ok: true,
+      value: { bankCode: '588734', bankName: null },
+    });
     expect(checkBank('890053')).toEqual({ ok: false, reason: 'invalid' });
     expect(checkBank(null)).toEqual({ ok: false, reason: 'empty' });
+  });
+
+  test('其他银行 needs a trimmed name of 1–60 characters', () => {
+    expect(checkBank('other', '  Bank   Rakyat ')).toEqual({
+      ok: true,
+      value: { bankCode: null, bankName: 'Bank Rakyat' },
+    });
+    expect(checkBank('other', '  ')).toEqual({ ok: false, reason: 'nameEmpty' });
+    expect(checkBank('other', 'B'.repeat(61))).toEqual({ ok: false, reason: 'nameInvalid' });
   });
 });

@@ -7,23 +7,35 @@ const en: typeof zhHans = {
   privacy:
     'Only a poster who picked you sees these, during payment, and they’re hidden once settled.',
   emptyTitle: 'No payment methods yet',
-  emptyBody:
-    'Add one so posters know how to pay you. DuitNow phone number is best: it doesn’t expire and survives a bank change.',
+  emptyBody: 'Add one so posters know how to pay you.',
   add: 'Add Payment Method',
   default: 'Default',
   makeDefault: 'Make Default',
   delete: 'Delete',
+  cancel: 'Cancel',
+  deleteConfirm: {
+    title: 'Delete this payment method?',
+    body: 'Posters won’t see it when they pay you.',
+  },
+  loading: 'Loading',
+  loadFailed: {
+    title: 'Couldn’t load payment methods',
+    body: 'Check your connection and try again.',
+  },
+  retry: 'Try Again',
+  actionFailed: 'That didn’t work. Check your connection and try again.',
+  menuOther: 'Other',
   deleteMethod: 'Delete Payment Method',
   close: 'Close',
   save: 'Save',
   types: {
     duitnow_id: 'DuitNow Phone Number',
     bank_account: 'Bank Account',
-    qr: 'QR Code (from Photos)',
     duitnow_qr: '{{bank}} QR Code',
     duitnow_qr_generic: 'DuitNow QR Code',
     alipay: 'Alipay Receive Code',
     wechat: 'WeChat Receive Code',
+    tng: 'TNG QR Code',
     cash: 'Cash in Person',
   },
   detail: {
@@ -50,6 +62,9 @@ const en: typeof zhHans = {
       'Posters’ banks show this name when they transfer. If it doesn’t match, they won’t pay.',
     bankLabel: 'Bank',
     bankPlaceholder: 'Choose Bank',
+    otherBank: 'Other Bank',
+    bankNameLabel: 'Bank name',
+    bankNamePlaceholder: 'e.g. Bank Rakyat',
     accountLabel: 'Account number',
     accountFooter: 'Digits only. Only the last 4 digits are shown after saving.',
     error: {
@@ -58,6 +73,8 @@ const en: typeof zhHans = {
       nameEmpty: 'Enter the name your bank shows.',
       nameInvalid: 'Use 60 characters or fewer.',
       bankEmpty: 'Choose a bank.',
+      bankNameEmpty: 'Enter the bank name.',
+      bankNameInvalid: 'Use 60 characters or fewer for the bank name.',
       accountEmpty: 'Enter an account number.',
       accountInvalid: 'Account numbers are 6 to 20 digits.',
       saveFailed: 'Couldn’t save. Try again.',
@@ -79,11 +96,24 @@ const en: typeof zhHans = {
     walletNote:
       'Tapiro can’t check Alipay and WeChat codes. Make sure this is your own receive code. Only the code’s content is saved, never the image.',
     retry: 'Choose Another',
+    steps: {
+      alipay:
+        '1. Open Alipay → Receive (收钱) on the home screen\n2. Tap Save Image\n3. Come back and choose that image below',
+      wechat:
+        '1. Open WeChat → Me → Services → Money → Receive Money\n2. Tap Save Money Code\n3. Come back and choose that image below',
+      tng: '1. Open TNG eWallet → Receive\n2. Save the QR image to Photos\n3. Come back and choose that image below',
+    },
+    wallet: { alipay: 'Alipay', wechat: 'WeChat' },
+    mismatch: 'This is a {{wallet}} code. Save it as {{method}}?',
     error: {
       noCode: { title: 'No QR code found', body: 'Crop closer and try again.' },
       payingCode: {
         title: 'This is a payment code, not a receive code.',
-        body: 'Anyone with a payment code can charge you, so it was blocked and not saved. Open Receive in Alipay or WeChat and take a screenshot of that.',
+        body: 'Anyone with a payment code can charge you, so it was blocked and not saved. Open Receive in Alipay, WeChat, TNG or your bank app and take a screenshot of that (DuitNow payment codes don’t work either).',
+      },
+      merchantOrder: {
+        title: 'This is a merchant order code, not a receive code',
+        body: 'These codes expire in 2 hours. In WeChat, open Money → Receive Money and save your receive code.',
       },
       badCrc: {
         title: 'This code is damaged',

@@ -1,4 +1,4 @@
-import { Camera, CameraView, scanFromURLAsync } from 'expo-camera';
+import { CameraView, scanFromURLAsync } from 'expo-camera';
 import { File } from 'expo-file-system';
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
@@ -12,7 +12,10 @@ export type ScanStart =
 
 export type QrSource = {
   pickScreenshot(): Promise<PickResult>;
-  startScan(onDecoded: (payloads: string[]) => void): Promise<ScanStart>;
+  startScan(
+    requestPermission: () => Promise<{ granted: boolean }>,
+    onDecoded: (payloads: string[]) => void,
+  ): Promise<ScanStart>;
 };
 
 // The picker returns a copy in the app cache; deleting it keeps no screenshot on the device.
@@ -39,8 +42,8 @@ export const deviceQrSource: QrSource = {
     }
   },
 
-  async startScan(onDecoded) {
-    const permission = await Camera.requestCameraPermissionsAsync();
+  async startScan(requestPermission, onDecoded) {
+    const permission = await requestPermission();
     if (!permission.granted) return { status: 'denied' };
     if (!CameraView.isModernBarcodeScannerAvailable) return { status: 'unavailable' };
     const subscription = CameraView.onModernBarcodeScanned((event) => {
@@ -70,7 +73,7 @@ export function fixtureQrSource(scans: string | undefined): QrSource {
     async pickScreenshot() {
       return { status: 'decoded', payloads: take() };
     },
-    async startScan(onDecoded) {
+    async startScan(_requestPermission, onDecoded) {
       onDecoded(take());
       return { status: 'started', stop: () => {} };
     },

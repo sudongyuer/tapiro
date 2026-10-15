@@ -1,4 +1,4 @@
-import { BANKS } from './acquirers';
+import { BANKS, OTHER_BANK } from './acquirers';
 
 export const PAYEE_NAME_MAX = 60;
 export const ACCOUNT_DIGITS = { min: 6, max: 20 } as const;
@@ -52,9 +52,21 @@ export function checkPayeeName(input: string): FieldCheck<string> {
     : { ok: false, reason: 'invalid' };
 }
 
-export function checkBank(code: string | null): FieldCheck<string> {
-  if (!code) return { ok: false, reason: 'empty' };
-  return BANKS.some((bank) => bank.id === code)
-    ? { ok: true, value: code }
+export type BankChoice =
+  { bankCode: string; bankName: null } | { bankCode: null; bankName: string };
+
+export function checkBank(
+  choice: string | null,
+  otherName = '',
+): FieldCheck<BankChoice> | { ok: false; reason: 'nameEmpty' | 'nameInvalid' } {
+  if (!choice) return { ok: false, reason: 'empty' };
+  if (choice === OTHER_BANK) {
+    const name = checkPayeeName(otherName);
+    if (!name.ok)
+      return { ok: false, reason: name.reason === 'empty' ? 'nameEmpty' : 'nameInvalid' };
+    return { ok: true, value: { bankCode: null, bankName: name.value } };
+  }
+  return BANKS.some((bank) => bank.id === choice)
+    ? { ok: true, value: { bankCode: choice, bankName: null } }
     : { ok: false, reason: 'invalid' };
 }

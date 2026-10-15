@@ -504,19 +504,23 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
   `set_default_payee_method` RPC, `checked_at` refreshed whenever the QR string is re-picked, cascade with the auth
   user. Evidence: `supabase/migrations/20261015000000_payee_methods.sql`, `supabase/tests/payee_methods.test.sql` (a5b912a)
 - Pure TS QR classifier: EMV TLV, CRC-16/CCITT-FALSE, DuitNow AID, `01`=`12` and tag `54` rejected, MCC ≠ `0000`
-  labelled business, acquirer names from payee-setup §3, Alipay/WeChat URL forms, Alipay/WeChat/DuitNow-CPM paying
-  codes blocked. Evidence: `src/features/payee/classifyQr.ts`, `emv.ts` (a5b912a)
+  labelled business, acquirer names from payee-setup §3, Alipay `qr.alipay.com` and WeChat `wxp://` receive codes,
+  WeChat `weixin://wxpay/` merchant order codes rejected (2 h expiry), Alipay/WeChat paying codes blocked, and DuitNow
+  consumer-presented codes blocked by their `hQVDUFYw` prefix **[I]** (base64 of the EMV CPM header; the EMVCo spec was
+  not reachable). TLV lengths count characters (HKMA Common QR Code Specification §2); the CRC runs over UTF-8 bytes. Evidence: `src/features/payee/classifyQr.ts`, `emv.ts` (a5b912a)
 - 我的 → 收款方式: native grouped list, + menu, page sheets per type, screenshot pick (`expo-image-picker`, no Photos
   usage string) and the system scanner (`expo-camera` `launchScanner`), confirm step, red error card, yellow re-check
   banner and 我的 red dot. Evidence: `src/features/payee/`, `src/app/payee/` (a441140)
 
 ### Deviations from the design
 
-| Design said                   | Shipped                                                      | Why                                                                       | Confirmed by            |
-| ----------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- | ----------------------- |
-| Cash in person: a toggle      | Toggle backed by a `cash` row in `payee_methods`             | Profiles are public; a profile flag would leak it outside the pay step    | not intent-changing     |
-| Reject dynamic (amount) codes | Also rejects static codes that carry tag `54` (fixed amount) | Every payment amount differs; PayNet's own P2P example carries RM 10.00   | not intent-changing     |
-| Bank picker                   | Five banks from payee-setup §3 Table 9 examples              | Only those acquirer IDs are sourced; the full Table 9 was not transcribed | needs user (see limits) |
+| Design said                     | Shipped                                                                                                                                                             | Why                                                                     | Confirmed by                         |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------ |
+| Cash in person: a toggle        | Toggle backed by a `cash` row in `payee_methods`                                                                                                                    | Profiles are public; a profile flag would leak it outside the pay step  | not intent-changing                  |
+| Reject dynamic (amount) codes   | Also rejects static codes that carry tag `54` (fixed amount)                                                                                                        | Every payment amount differs; PayNet's own P2P example carries RM 10.00 | not intent-changing                  |
+| Bank picker                     | Five banks from payee-setup §3 plus 「其他银行」 with a typed name (no bank code)                                                                                   | Only those acquirer IDs are sourced                                     | user, 2026-10-15                     |
+| + menu: DuitNow, bank, QR, cash | 支付宝收钱码, 微信收款码, TNG 收款码 first, then 「其他」 (DuitNow, bank, cash); per-wallet save steps; a code from another wallet is accepted after a confirm line | Students mainly use Alipay, WeChat Pay and TNG                          | user, 2026-10-15 (PayeeWalletMenu A) |
+| Re-pick a QR                    | A code of another type replaces the row in one RPC (`replace_payee_qr`), keeping default and position                                                               | Row shape is per type; `type` is not client-updatable                   | not intent-changing                  |
 
 ### Verification
 
@@ -529,5 +533,6 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
 - Payer visibility (payer of an item where this user is the selected payee, until settled) is not in RLS yet; it
   comes with step 4's `payments` table.
 - The "付不了" re-check trigger arrives with step 4; `checked_at` is stored now.
+- The per-wallet save steps (Alipay 首页「收钱」, WeChat 「收付款 → 二维码收款」, TNG Receive) need confirming on a device.
 - Camera scanning and real screenshot decoding are not exercised by UI cases (injected at the decode boundary);
   check on a device. Alipay/WeChat receive-code formats remain heuristics (payee-setup §Open questions).

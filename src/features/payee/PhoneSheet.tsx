@@ -12,6 +12,7 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { LoadStateForm } from './LoadState';
 import { NoticeCard } from './NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
 import { useMethodEditor } from './useMethodEditor';
@@ -34,7 +35,15 @@ export function PhoneSheet({
   onDone: () => void;
 }) {
   const editor = useMethodEditor(userId, methodId, onDone);
+  const { t } = useI18n();
   const initial = editor.existing?.type === 'duitnow_id' ? editor.existing : null;
+  if (editor.pending)
+    return (
+      <>
+        <SheetChrome title={t('payee.types.duitnow_id')} onClose={onDone} />
+        <LoadStateForm status={editor.pending} onRetry={editor.retry} />
+      </>
+    );
   return (
     <PhoneForm
       key={initial?.id ?? 'new'}

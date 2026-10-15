@@ -10,6 +10,7 @@ create table public.payee_methods (
   display_name text check (char_length(btrim(display_name)) between 1 and 60),
   phone text check (phone ~ '^\+601[0-9]{8,9}$'),
   bank_code text check (bank_code ~ '^[0-9]{6}$'),
+  bank_name text check (char_length(btrim(bank_name)) between 1 and 60),
   account_number text check (account_number ~ '^[0-9]{6,20}$'),
   qr_payload text check (char_length(qr_payload) between 1 and 512),
   acquirer_id text check (acquirer_id ~ '^[0-9]{6}$'),
@@ -21,17 +22,17 @@ create table public.payee_methods (
   constraint payee_methods_shape check (
     case type
       when 'duitnow_id' then phone is not null and display_name is not null
-        and num_nulls(bank_code, account_number, qr_payload, acquirer_id, mcc, qr_name) = 6
-      when 'bank_account' then bank_code is not null and account_number is not null
+        and num_nulls(bank_code, bank_name, account_number, qr_payload, acquirer_id, mcc, qr_name) = 7
+      when 'bank_account' then num_nulls(bank_code, bank_name) = 1 and account_number is not null
         and display_name is not null
         and num_nulls(phone, qr_payload, acquirer_id, mcc, qr_name) = 5
       when 'duitnow_qr' then qr_payload is not null and acquirer_id is not null and mcc is not null
         and qr_name is not null
-        and num_nulls(display_name, phone, bank_code, account_number) = 4
+        and num_nulls(display_name, phone, bank_code, bank_name, account_number) = 5
       when 'cash' then not is_default
-        and num_nulls(display_name, phone, bank_code, account_number, qr_payload, acquirer_id, mcc, qr_name) = 8
+        and num_nulls(display_name, phone, bank_code, bank_name, account_number, qr_payload, acquirer_id, mcc, qr_name) = 9
       else qr_payload is not null
-        and num_nulls(display_name, phone, bank_code, account_number, acquirer_id, mcc, qr_name) = 7
+        and num_nulls(display_name, phone, bank_code, bank_name, account_number, acquirer_id, mcc, qr_name) = 8
     end
   )
 );
@@ -45,10 +46,12 @@ alter table public.payee_methods enable row level security;
 revoke all on public.payee_methods from anon, authenticated;
 grant select, delete on public.payee_methods to authenticated;
 grant insert (
-  id, user_id, type, display_name, phone, bank_code, account_number, qr_payload, acquirer_id, mcc, qr_name
+  id, user_id, type, display_name, phone, bank_code, bank_name, account_number, qr_payload, acquirer_id,
+  mcc, qr_name
 ) on public.payee_methods to authenticated;
 grant update (
-  display_name, phone, bank_code, account_number, qr_payload, acquirer_id, mcc, qr_name
+  display_name, phone, bank_code, bank_name, account_number, qr_payload, acquirer_id, mcc, qr_name,
+  checked_at
 ) on public.payee_methods to authenticated;
 
 create policy payee_methods_select_own on public.payee_methods
@@ -89,18 +92,21 @@ create trigger payee_methods_first_is_default
   before insert on public.payee_methods
   for each row execute function public.payee_methods_before_insert();
 
+-- Clients cannot choose checked_at: any change to it, or to the QR string, stamps the server time.
 create function public.payee_methods_touch_checked() returns trigger
 language plpgsql
 set search_path = ''
 as $$
 begin
-  new.checked_at := now();
+  if new.qr_payload is distinct from old.qr_payload or new.checked_at is distinct from old.checked_at then
+    new.checked_at := now();
+  end if;
   return new;
 end;
 $$;
 
 create trigger payee_methods_qr_rechecked
-  before update of qr_payload on public.payee_methods
+  before update on public.payee_methods
   for each row execute function public.payee_methods_touch_checked();
 
 create function public.payee_methods_after_delete() returns trigger
@@ -148,3 +154,47 @@ $$;
 
 revoke all on function public.set_default_payee_method(uuid) from public, anon;
 grant execute on function public.set_default_payee_method(uuid) to authenticated;
+
+create function public.replace_payee_qr(
+  method_id uuid,
+  new_type public.payee_method_type,
+  new_payload text,
+  new_acquirer_id text default null,
+  new_mcc text default null,
+  new_qr_name text default null
+) returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  old_row public.payee_methods;
+  new_id uuid;
+begin
+  if new_type not in ('duitnow_qr', 'alipay', 'wechat') then
+    raise exception 'not a QR type' using errcode = '22023';
+  end if;
+  select * into old_row from public.payee_methods
+  where id = method_id and user_id = (select auth.uid())
+    and type in ('duitnow_qr', 'alipay', 'wechat')
+  for update;
+  if not found then
+    raise exception 'payee method not found' using errcode = 'P0002';
+  end if;
+  update public.payee_methods set is_default = false where id = method_id;
+  delete from public.payee_methods where id = method_id;
+  insert into public.payee_methods (user_id, type, qr_payload, acquirer_id, mcc, qr_name, created_at)
+  values (old_row.user_id, new_type, new_payload, new_acquirer_id, new_mcc, new_qr_name, old_row.created_at)
+  returning id into new_id;
+  if old_row.is_default then
+    update public.payee_methods set is_default = false where user_id = old_row.user_id and is_default;
+    update public.payee_methods set is_default = true where id = new_id;
+  end if;
+  return new_id;
+end;
+$$;
+
+revoke all on function public.replace_payee_qr(uuid, public.payee_method_type, text, text, text, text)
+  from public, anon;
+grant execute on function public.replace_payee_qr(uuid, public.payee_method_type, text, text, text, text)
+  to authenticated;

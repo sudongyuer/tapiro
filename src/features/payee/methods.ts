@@ -10,7 +10,13 @@ export type PayeeType = (typeof PAYEE_TYPES)[number];
 
 export type PayeeDetails =
   | { type: 'duitnow_id'; phone: string; displayName: string }
-  | { type: 'bank_account'; bankCode: string; accountNumber: string; displayName: string }
+  | {
+      type: 'bank_account';
+      bankCode: string | null;
+      bankName: string | null;
+      accountNumber: string;
+      displayName: string;
+    }
   | { type: 'duitnow_qr'; payload: string; acquirerId: string; mcc: string; name: string }
   | { type: 'alipay' | 'wechat'; payload: string }
   | { type: 'cash' };
@@ -68,6 +74,10 @@ export function withDefault(methods: readonly PayeeMethod[], id: string): PayeeM
   const target = methods.find((method) => method.id === id);
   if (!target || target.type === 'cash') return [...methods];
   return methods.map((method) => ({ ...method, isDefault: method.id === id }));
+}
+
+export function canUpdateInPlace(method: PayeeMethod, details: PayeeDetails) {
+  return method.type === details.type;
 }
 
 export function samePayload(methods: readonly PayeeMethod[], payload: string) {

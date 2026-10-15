@@ -10,10 +10,14 @@ export default function PayeeMethods() {
   return (
     <PayeeScreen
       userId={user.id}
-      onOpen={(sheet, options) =>
+      onOpen={(sheet, options = {}) =>
         router.push({
           pathname: `/payee/${sheet}`,
-          params: options ? { id: options.id, repick: options.repick ? '1' : undefined } : {},
+          params: {
+            id: options.id,
+            wallet: options.wallet,
+            repick: options.repick ? '1' : undefined,
+          },
         })
       }
     />

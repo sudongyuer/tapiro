@@ -3,7 +3,6 @@ import {
   accessibilityElement,
   accessibilityHidden,
   accessibilityIdentifier,
-  buttonStyle,
   font,
   foregroundStyle,
   listRowBackground,
@@ -59,7 +58,7 @@ export function NoticeCard({
           label={action.label}
           onPress={action.onPress}
           testID={action.testID}
-          modifiers={[buttonStyle('borderless'), foregroundStyle(accent)]}
+          modifiers={[foregroundStyle(accent)]}
         />
       ) : null}
     </Section>

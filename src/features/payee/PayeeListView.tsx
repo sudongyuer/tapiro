@@ -29,6 +29,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { METHOD_ICONS, methodDetail, methodTitle } from './display';
 import { firstRecheckDue, hasCash, transferMethods, type PayeeMethod } from './methods';
+import { LoadStateSections } from './LoadState';
 import { NoticeCard } from './NoticeCard';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -36,15 +37,21 @@ const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 const ICON_BOX = 28;
 
 export function PayeeListView({
+  status,
   methods,
   now,
+  actionFailed,
+  onRetry,
   onEdit,
   onRemove,
   onRecheck,
   onCashChange,
 }: {
+  status: 'loading' | 'ready' | 'failed';
   methods: readonly PayeeMethod[];
   now: Date;
+  actionFailed: boolean;
+  onRetry: () => void;
   onEdit: (method: PayeeMethod) => void;
   onRemove: (method: PayeeMethod) => void;
   onRecheck: (method: PayeeMethod) => void;
@@ -58,7 +65,16 @@ export function PayeeListView({
   return (
     <Host style={styles.host} testID="payee-screen">
       <List modifiers={[listStyle('insetGrouped'), tint(color('--color-accent'))]}>
-        {due ? (
+        {status === 'ready' ? null : <LoadStateSections status={status} onRetry={onRetry} />}
+        {actionFailed ? (
+          <NoticeCard
+            tone="urgent"
+            icon="exclamationmark.circle.fill"
+            title={t('payee.actionFailed')}
+            testID="payee-action-failed"
+          />
+        ) : null}
+        {status !== 'ready' ? null : due ? (
           <NoticeCard
             tone="warning"
             icon="clock.badge.exclamationmark"
@@ -72,7 +88,7 @@ export function PayeeListView({
             testID="payee-recheck"
           />
         ) : null}
-        {rows.length === 0 ? (
+        {status !== 'ready' ? null : rows.length === 0 ? (
           <Section footer={<Text>{t('payee.privacy')}</Text>}>
             <VStack
               alignment="leading"
@@ -94,15 +110,17 @@ export function PayeeListView({
             </List.ForEach>
           </Section>
         )}
-        <Section title={t('payee.cash.header')}>
-          <Toggle
-            label={t('payee.cash.toggle')}
-            systemImage={METHOD_ICONS.cash}
-            isOn={hasCash(methods)}
-            onIsOnChange={onCashChange}
-            testID="payee-cash"
-          />
-        </Section>
+        {status === 'ready' ? (
+          <Section title={t('payee.cash.header')}>
+            <Toggle
+              label={t('payee.cash.toggle')}
+              systemImage={METHOD_ICONS.cash}
+              isOn={hasCash(methods)}
+              onIsOnChange={onCashChange}
+              testID="payee-cash"
+            />
+          </Section>
+        ) : null}
       </List>
     </Host>
   );

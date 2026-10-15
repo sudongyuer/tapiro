@@ -4,22 +4,29 @@ export default {
   meRowDue: '有收款码需要重新确认',
   privacy: '只有选中你的发布者，在付款那一步看得到，结清后隐藏。',
   emptyTitle: '还没有收款方式',
-  emptyBody: '加一个，发布者付款时才知道怎么转给你。推荐 DuitNow 手机号：不会过期，换银行也能用。',
+  emptyBody: '加一个，发布者付款时才知道怎么转给你。',
   add: '添加收款方式',
   default: '默认',
   makeDefault: '设为默认',
   delete: '删除',
+  cancel: '取消',
+  deleteConfirm: { title: '删除这个收款方式？', body: '删除后，发布者付款时就看不到它了。' },
+  loading: '正在加载',
+  loadFailed: { title: '收款方式没加载出来', body: '请检查网络后重试。' },
+  retry: '重试',
+  actionFailed: '没成功，请检查网络后再试一次。',
+  menuOther: '其他',
   deleteMethod: '删除这个收款方式',
   close: '关闭',
   save: '保存',
   types: {
     duitnow_id: 'DuitNow 手机号',
     bank_account: '银行账户',
-    qr: '收款码（从相册选）',
     duitnow_qr: '{{bank}} 收款码',
     duitnow_qr_generic: 'DuitNow 收款码',
     alipay: '支付宝收钱码',
     wechat: '微信收款码',
+    tng: 'TNG 收款码',
     cash: '现金当面付',
   },
   detail: {
@@ -45,6 +52,9 @@ export default {
     nameFooter: '发布者转账时，他的银行会显示这个名字；对不上，他就不会付。',
     bankLabel: '银行',
     bankPlaceholder: '选择银行',
+    otherBank: '其他银行',
+    bankNameLabel: '银行名称',
+    bankNamePlaceholder: '例如 Bank Rakyat',
     accountLabel: '账号',
     accountFooter: '只填数字，保存后只显示尾号。',
     error: {
@@ -53,6 +63,8 @@ export default {
       nameEmpty: '请填银行显示的名字',
       nameInvalid: '名字最多 60 个字',
       bankEmpty: '请选择银行',
+      bankNameEmpty: '请填银行名称',
+      bankNameInvalid: '银行名称最多 60 个字',
       accountEmpty: '请输入账号',
       accountInvalid: '账号是 6 到 20 位数字',
       saveFailed: '没保存成功，请再试一次',
@@ -74,11 +86,24 @@ export default {
     walletNote:
       '支付宝和微信的码 Tapiro 没法核对，请确认是你自己的收款码。只存码的内容，不存图片。',
     retry: '换一张',
+    steps: {
+      alipay:
+        '1. 打开支付宝 → 首页「收钱」\n2. 点「保存图片」存到相册\n3. 回来点下面的按钮选这张图',
+      wechat:
+        '1. 打开微信 →「我」→「服务」→「收付款」→「二维码收款」\n2. 点「保存收款码」存到相册\n3. 回来点下面的按钮选这张图',
+      tng: '1. 打开 TNG eWallet →「Receive / 收款」\n2. 保存二维码图片到相册\n3. 回来点下面的按钮选这张图',
+    },
+    wallet: { alipay: '支付宝', wechat: '微信' },
+    mismatch: '这是{{wallet}}的码，按{{method}}保存？',
     error: {
       noCode: { title: '没找到二维码', body: '截图里没识别出二维码。裁近一点再试。' },
       payingCode: {
         title: '这是付款码，不是收款码。',
-        body: '付款码别人拿到就能扣你的钱，已拦下没有保存。请在支付宝或微信里打开「收钱」再截图。',
+        body: '付款码别人拿到就能扣你的钱，已拦下没有保存。请在支付宝、微信或 TNG / 银行 App 里打开「收钱 / 收款」再截图（DuitNow 付款码同样不能用）。',
+      },
+      merchantOrder: {
+        title: '这是商家订单码，不是收款码',
+        body: '这种码 2 小时就过期。请在微信「收付款 → 二维码收款」里保存你的收款码。',
       },
       badCrc: {
         title: '这个码坏了',

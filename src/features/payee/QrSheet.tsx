@@ -1,10 +1,15 @@
+import { useCameraPermissions } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 
-import { classifyFirst, type ClassifiedQr, type QrRejection } from './classifyQr';
+import { useI18n } from '@/lib/i18n';
+
+import { classifyFirst, type ClassifiedQr } from './classifyQr';
+import { methodTitle, walletOf, type QrWallet } from './display';
+import { LoadStateForm } from './LoadState';
 import { isQrMethod, samePayload, type PayeeDetails, type PayeeMethod } from './methods';
 import { QrConfirmForm, QrPickForm, type QrError } from './QrForms';
 import { qrSource } from './services';
-import type { ScanStart } from './qrSource';
+import { SheetChrome } from './SheetChrome';
 import { useMethodEditor } from './useMethodEditor';
 
 function toQr(method: PayeeMethod | null): ClassifiedQr | null {
@@ -27,22 +32,36 @@ function toDetails(qr: ClassifiedQr): PayeeDetails {
 export function QrSheet({
   userId,
   methodId,
+  wallet,
   repick = false,
   onDone,
 }: {
   userId: string;
   methodId?: string;
+  wallet?: QrWallet;
   repick?: boolean;
   onDone: () => void;
 }) {
+  const { t } = useI18n();
   const editor = useMethodEditor(userId, methodId, onDone);
+  const [, requestCamera] = useCameraPermissions();
   const [picked, setPicked] = useState<ClassifiedQr | null>(null);
   const [error, setError] = useState<QrError | null>(null);
   const [showPicker, setShowPicker] = useState(repick);
   const stopScan = useRef<(() => void) | null>(null);
   const current = showPicker ? null : (picked ?? toQr(editor.existing));
+  const expected = wallet ?? (editor.existing ? walletOfMethod(editor.existing) : undefined);
+  const title = wallet ? t(`payee.types.${wallet}`) : t('payee.qr.title');
 
   useEffect(() => () => stopScan.current?.(), []);
+
+  if (editor.pending)
+    return (
+      <>
+        <SheetChrome title={title} onClose={onDone} />
+        <LoadStateForm status={editor.pending} onRetry={editor.retry} />
+      </>
+    );
 
   function accept(payloads: string[]) {
     const result = classifyFirst(payloads);
@@ -51,7 +70,7 @@ export function QrSheet({
       setPicked(result.qr);
       setShowPicker(false);
     } else {
-      setError(result.reason satisfies QrRejection);
+      setError(result.reason);
     }
   }
 
@@ -65,25 +84,29 @@ export function QrSheet({
   async function scan() {
     setError(null);
     stopScan.current?.();
-    const started: ScanStart = await qrSource.startScan(accept);
+    const started = await qrSource.startScan(requestCamera, accept);
     if (started.status === 'started') stopScan.current = started.stop;
     else setError(started.status);
   }
 
   function save() {
     if (!current) return;
-    const details = toDetails(current);
-    const target = editor.existing ?? samePayload(editor.methods, current.payload);
-    if (target) editor.update(target.id, details);
-    else editor.save(details);
+    editor.write(
+      editor.existing ?? samePayload(editor.methods, current.payload),
+      toDetails(current),
+    );
   }
 
   const shownError = error ?? (editor.saveFailed ? 'saveFailed' : null);
 
-  if (current)
+  if (current) {
+    const detected = walletOf(current);
+    const mismatch = picked && expected && detected !== expected ? current : null;
     return (
       <QrConfirmForm
+        title={mismatch ? methodTitle(t, current) : title}
         qr={current}
+        mismatch={mismatch}
         error={shownError}
         existing={picked ? null : editor.existing}
         onClose={onDone}
@@ -97,5 +120,22 @@ export function QrSheet({
         onDelete={editor.remove}
       />
     );
-  return <QrPickForm error={shownError} onClose={onDone} onPick={pick} onScan={scan} />;
+  }
+  return (
+    <QrPickForm
+      title={title}
+      wallet={wallet}
+      error={shownError}
+      onClose={onDone}
+      onPick={pick}
+      onScan={scan}
+    />
+  );
+}
+
+function walletOfMethod(method: PayeeMethod) {
+  const qr = toQr(method);
+  if (!qr) return undefined;
+  const wallet = walletOf(qr);
+  return wallet === 'duitnow' ? undefined : wallet;
 }

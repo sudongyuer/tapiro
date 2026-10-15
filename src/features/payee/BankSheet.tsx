@@ -1,5 +1,6 @@
 import { Form, Host, Picker, Section, Text, TextField, useNativeState } from '@expo/ui/swift-ui';
 import {
+  accessibilityLabel,
   autocorrectionDisabled,
   keyboardType,
   pickerStyle,
@@ -14,14 +15,22 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { BANKS } from './acquirers';
+import { BANKS, OTHER_BANK } from './acquirers';
+import { LoadStateForm } from './LoadState';
 import { NoticeCard } from './NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
 import { useMethodEditor } from './useMethodEditor';
 import { checkAccountNumber, checkBank, checkPayeeName, PAYEE_NAME_MAX } from './validate';
 
 type BankError =
-  'bankEmpty' | 'accountEmpty' | 'accountInvalid' | 'nameEmpty' | 'nameInvalid' | 'saveFailed';
+  | 'bankEmpty'
+  | 'bankNameEmpty'
+  | 'bankNameInvalid'
+  | 'accountEmpty'
+  | 'accountInvalid'
+  | 'nameEmpty'
+  | 'nameInvalid'
+  | 'saveFailed';
 
 export function BankSheet({
   userId,
@@ -33,11 +42,20 @@ export function BankSheet({
   onDone: () => void;
 }) {
   const editor = useMethodEditor(userId, methodId, onDone);
+  const { t } = useI18n();
   const initial = editor.existing?.type === 'bank_account' ? editor.existing : null;
+  if (editor.pending)
+    return (
+      <>
+        <SheetChrome title={t('payee.types.bank_account')} onClose={onDone} />
+        <LoadStateForm status={editor.pending} onRetry={editor.retry} />
+      </>
+    );
   return (
     <BankForm
       key={initial?.id ?? 'new'}
-      initialBank={initial?.bankCode ?? ''}
+      initialBank={initial ? (initial.bankCode ?? OTHER_BANK) : ''}
+      initialBankName={initial?.bankName ?? ''}
       initialAccount={initial?.accountNumber ?? ''}
       initialName={initial?.displayName ?? ''}
       editor={editor}
@@ -48,12 +66,14 @@ export function BankSheet({
 
 function BankForm({
   initialBank,
+  initialBankName,
   initialAccount,
   initialName,
   editor,
   onClose,
 }: {
   initialBank: string;
+  initialBankName: string;
   initialAccount: string;
   initialName: string;
   editor: ReturnType<typeof useMethodEditor>;
@@ -63,13 +83,21 @@ function BankForm({
   const { color } = useTheme();
   const accountText = useNativeState(initialAccount);
   const nameText = useNativeState(initialName);
+  const bankNameText = useNativeState(initialBankName);
   const [bank, setBank] = useState(initialBank);
   const [error, setError] = useState<BankError | null>(null);
   const shown = error ?? (editor.saveFailed ? 'saveFailed' : null);
 
   function submit() {
-    const checkedBank = checkBank(bank || null);
-    if (!checkedBank.ok) return setError('bankEmpty');
+    const checkedBank = checkBank(bank || null, bankNameText.get());
+    if (!checkedBank.ok)
+      return setError(
+        checkedBank.reason === 'nameEmpty'
+          ? 'bankNameEmpty'
+          : checkedBank.reason === 'nameInvalid'
+            ? 'bankNameInvalid'
+            : 'bankEmpty',
+      );
     const checkedAccount = checkAccountNumber(accountText.get());
     if (!checkedAccount.ok)
       return setError(checkedAccount.reason === 'empty' ? 'accountEmpty' : 'accountInvalid');
@@ -79,7 +107,7 @@ function BankForm({
     setError(null);
     editor.save({
       type: 'bank_account',
-      bankCode: checkedBank.value,
+      ...checkedBank.value,
       accountNumber: checkedAccount.value,
       displayName: checkedName.value,
     });
@@ -116,7 +144,24 @@ function BankForm({
                 {option.name}
               </Text>
             ))}
+            <Text modifiers={[tag(OTHER_BANK)]}>{t('payee.form.otherBank')}</Text>
           </Picker>
+          {bank === OTHER_BANK ? (
+            <TextField
+              text={bankNameText}
+              maxLength={PAYEE_NAME_MAX}
+              onTextChange={() => {
+                setError(null);
+                editor.clearSaveFailed();
+              }}
+              placeholder={t('payee.form.bankNamePlaceholder')}
+              testID="payee-bank-name-input"
+              modifiers={[
+                accessibilityLabel(t('payee.form.bankNameLabel')),
+                autocorrectionDisabled(),
+              ]}
+            />
+          ) : null}
           <TextField
             text={accountText}
             onTextChange={() => {

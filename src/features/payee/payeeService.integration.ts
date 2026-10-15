@@ -51,6 +51,7 @@ describe('supabase payee service (local stack)', () => {
     await service.add({
       type: 'bank_account',
       bankCode: '588734',
+      bankName: null,
       accountNumber: '1234564821',
       displayName: 'LIM WEI JIE',
     });
@@ -86,11 +87,46 @@ describe('supabase payee service (local stack)', () => {
     expect(methods.find((method) => method.isDefault)?.id).toBe(phone.id);
   });
 
+  test('saves a bank that is not in the picker by name', async () => {
+    await owner.service.add({
+      type: 'bank_account',
+      bankCode: null,
+      bankName: 'Bank Rakyat',
+      accountNumber: '9876543210',
+      displayName: 'LIM WEI JIE',
+    });
+    const saved = (await owner.service.list()).find(
+      (method) => method.type === 'bank_account' && method.bankName === 'Bank Rakyat',
+    );
+    expect(saved).toMatchObject({ bankCode: null, accountNumber: '9876543210' });
+  });
+
+  test('replaces a QR with another wallet in place and keeps the default', async () => {
+    const { service } = owner;
+    await service.add({ type: 'duitnow_qr', ...FIXTURE_QR.tngDetails });
+    const qr = (await service.list()).find((method) => method.type === 'duitnow_qr')!;
+    await service.setDefault(qr.id);
+    await expect(
+      service.update(qr.id, { type: 'wechat', payload: 'wxp://f2f0abcdEFGH' }),
+    ).rejects.toBeDefined();
+    await service.replaceQr(qr.id, { type: 'wechat', payload: 'wxp://f2f0abcdEFGH' });
+    const methods = await service.list();
+    expect(methods.some((method) => method.id === qr.id)).toBe(false);
+    expect(methods.find((method) => method.isDefault)?.type).toBe('wechat');
+  });
+
   test('another user sees none of them and cannot change them', async () => {
     const [phone] = await owner.service.list();
     expect(await other.service.list()).toEqual([]);
     await expect(other.service.setDefault(phone.id)).rejects.toBeDefined();
-    await other.service.remove(phone.id);
+    await expect(other.service.remove(phone.id)).rejects.toBeDefined();
+    await expect(
+      other.service.update(phone.id, {
+        type: 'duitnow_id',
+        phone: '+60123456789',
+        displayName: 'MALLORY',
+      }),
+    ).rejects.toBeDefined();
     expect((await owner.service.list()).some((method) => method.id === phone.id)).toBe(true);
   });
 });

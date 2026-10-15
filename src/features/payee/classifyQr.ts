@@ -2,7 +2,8 @@ import { hasValidCrc, parseTlv } from './emv';
 
 export const DUITNOW_AID = 'A0000006150001';
 
-export type QrRejection = 'noCode' | 'payingCode' | 'badCrc' | 'dynamic' | 'hasAmount' | 'unknown';
+export type QrRejection =
+  'noCode' | 'payingCode' | 'merchantOrder' | 'badCrc' | 'dynamic' | 'hasAmount' | 'unknown';
 
 export type ClassifiedQr =
   | {
@@ -27,9 +28,12 @@ function isPayingCode(text: string) {
   return text.startsWith('hQVDUFYw');
 }
 
+// WeChat Pay Native order codes ("weixin://wxpay/bizpayurl…") expire after 2 hours
+// (docs/research/2026-10-06-payee-setup.md §1), so only wxp:// counts as a receive code.
+const isMerchantOrder = (text: string) => /^weixin:\/\/wxpay\//i.test(text);
+
 function walletUrl(text: string): 'alipay' | 'wechat' | null {
   if (/^wxp:\/\/\S+$/i.test(text)) return 'wechat';
-  if (/^weixin:\/\/wxpay\/\S+$/i.test(text)) return 'wechat';
   const match = text.match(/^https?:\/\/([^/?#]+)\/\S+$/i);
   if (match && match[1].toLowerCase() === 'qr.alipay.com') return 'alipay';
   return null;
@@ -67,6 +71,7 @@ export function classifyQr(raw: string): QrClassification {
   const text = raw.trim();
   if (text === '') return reject('noCode');
   if (isPayingCode(text)) return reject('payingCode');
+  if (isMerchantOrder(text)) return reject('merchantOrder');
   if (/^0002\d{2}/.test(text)) return classifyEmv(text);
   const wallet = walletUrl(text);
   if (wallet) return { ok: true, qr: { type: wallet, payload: text } };

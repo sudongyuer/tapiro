@@ -55,6 +55,43 @@ describe('emv', () => {
   });
 });
 
+// Vectors computed independently (Python, CRC-16/CCITT-FALSE over UTF-8 bytes). Lengths count characters:
+// HKMA Common QR Code Specification §2 ("the number of characters included in the third field"); PayNet's
+// DuitNow data objects define tag 64 sub-values as String (S), "any precomposed character(s) defined in [Unicode]".
+const WITH_CHINESE_NAME =
+  '00020201021126420014A00000061500010106588734021001234567895204000053034585802MY5911LIM WEI JIE6012KUALA LUMPUR64130002ZH0103林伟杰6304ACE6';
+const WITH_ACCENTED_NAME =
+  '00020201021126420014A00000061500010106588734021001234567895204000053034585802MY5910JOSÉ ÑÚÑEZ6012KUALA LUMPUR6304C719';
+
+describe('non-ASCII values', () => {
+  test('CRC runs over UTF-8 bytes', () => {
+    expect(crc16('林伟杰')).toBe('3F8F');
+  });
+
+  test('accepts a code with a Chinese alternate-language name (tag 64)', () => {
+    const result = classifyQr(WITH_CHINESE_NAME);
+    expect(result.ok && result.qr).toMatchObject({ name: 'LIM WEI JIE', acquirerId: '588734' });
+    expect(parseTlv(parseTlv(WITH_CHINESE_NAME)!.get('64')!)?.get('01')).toBe('林伟杰');
+  });
+
+  test('accepts a code with an accented tag 59 name', () => {
+    const result = classifyQr(WITH_ACCENTED_NAME);
+    expect(result.ok && result.qr).toMatchObject({ name: 'JOSÉ ÑÚÑEZ' });
+  });
+
+  test('the builder counts characters and matches the independent vector', () => {
+    expect(tlv('01', '林伟杰')).toBe('0103林伟杰');
+    expect(withCrc(WITH_CHINESE_NAME.slice(0, -8))).toBe(WITH_CHINESE_NAME);
+  });
+
+  test('a changed non-ASCII character breaks the CRC', () => {
+    expect(classifyQr(WITH_CHINESE_NAME.replace('林', '材'))).toEqual({
+      ok: false,
+      reason: 'badCrc',
+    });
+  });
+});
+
 describe('classifyQr', () => {
   test('accepts a static personal DuitNow QR with bank and name', () => {
     const payload = duitNow();
@@ -115,9 +152,15 @@ describe('classifyQr', () => {
     ['https://qr.alipay.com/fkx12345abcdefghijkl', 'alipay'],
     ['HTTPS://QR.ALIPAY.COM/FKX12345ABCDEFGHIJKL', 'alipay'],
     ['wxp://f2f0abcdEFGHijklMNOPqrstUVWXyz012345', 'wechat'],
-    ['weixin://wxpay/bizpayurl/up?pr=NwY5Mz9&groupid=00', 'wechat'],
   ])('accepts the wallet URL %s', (payload, type) => {
     expect(classifyQr(payload)).toEqual({ ok: true, qr: { type, payload } as never });
+  });
+
+  test('rejects a WeChat Pay merchant order code (expires in 2 h)', () => {
+    expect(classifyQr('weixin://wxpay/bizpayurl/up?pr=NwY5Mz9&groupid=00')).toEqual({
+      ok: false,
+      reason: 'merchantOrder',
+    });
   });
 
   test('does not accept a look-alike Alipay host', () => {

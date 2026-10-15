@@ -20,7 +20,7 @@ export function createPayeeStore(service: PayeeService) {
 
   async function reload(userId: string) {
     try {
-      const methods = await service.list();
+      const methods = [...(await service.list())];
       if (isCurrent(userId)) set({ status: 'ready', userId, methods });
     } catch {
       if (isCurrent(userId) && state.status !== 'ready') set({ status: 'failed', userId });
@@ -28,13 +28,14 @@ export function createPayeeStore(service: PayeeService) {
   }
 
   async function mutate(userId: string, change: () => Promise<void>) {
+    let ok = true;
     try {
       await change();
     } catch {
-      return false;
+      ok = false;
     }
     await reload(userId);
-    return true;
+    return ok;
   }
 
   return {
@@ -55,6 +56,8 @@ export function createPayeeStore(service: PayeeService) {
     add: (userId: string, details: PayeeDetails) => mutate(userId, () => service.add(details)),
     update: (userId: string, id: string, details: PayeeDetails) =>
       mutate(userId, () => service.update(id, details)),
+    replaceQr: (userId: string, id: string, details: PayeeDetails) =>
+      mutate(userId, () => service.replaceQr(id, details)),
     remove: (userId: string, id: string) => mutate(userId, () => service.remove(id)),
     setDefault: (userId: string, id: string) => mutate(userId, () => service.setDefault(id)),
   };

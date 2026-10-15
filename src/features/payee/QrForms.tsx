@@ -13,7 +13,7 @@ import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ClassifiedQr, QrRejection } from './classifyQr';
-import { methodTitle, qrBank } from './display';
+import { methodTitle, qrBank, walletName, type QrWallet } from './display';
 import type { PayeeMethod } from './methods';
 import { NoticeCard } from './NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
@@ -43,11 +43,15 @@ function QrErrorCard({ error }: { error: QrError }) {
 }
 
 export function QrPickForm({
+  title,
+  wallet,
   error,
   onClose,
   onPick,
   onScan,
 }: {
+  title: string;
+  wallet?: QrWallet;
   error: QrError | null;
   onClose: () => void;
   onPick: () => void;
@@ -57,11 +61,18 @@ export function QrPickForm({
   const { color } = useTheme();
   return (
     <Host style={styles.host} testID="payee-qr-sheet">
-      <SheetChrome title={t('payee.qr.title')} onClose={onClose} />
+      <SheetChrome title={title} onClose={onClose} />
       <Form modifiers={[tint(color('--color-accent'))]}>
         {error ? <QrErrorCard error={error} /> : null}
         <Section footer={<Text>{t('payee.qr.footer')}</Text>}>
-          <Text modifiers={[font({ textStyle: 'subheadline' })]}>{t('payee.qr.hint')}</Text>
+          <Text
+            modifiers={[
+              font({ textStyle: 'subheadline' }),
+              accessibilityIdentifier('payee-qr-steps'),
+            ]}
+          >
+            {wallet ? t(`payee.qr.steps.${wallet}`) : t('payee.qr.hint')}
+          </Text>
           <Button
             label={t('payee.qr.pick')}
             systemImage="photo.on.rectangle"
@@ -87,7 +98,9 @@ export function QrPickForm({
 }
 
 export function QrConfirmForm({
+  title,
   qr,
+  mismatch,
   error,
   existing,
   onClose,
@@ -96,7 +109,9 @@ export function QrConfirmForm({
   onMakeDefault,
   onDelete,
 }: {
+  title: string;
   qr: ClassifiedQr;
+  mismatch: ClassifiedQr | null;
   error: QrError | null;
   existing: PayeeMethod | null;
   onClose: () => void;
@@ -118,9 +133,20 @@ export function QrConfirmForm({
     : t('payee.qr.seenWallet', { method: methodTitle(t, qr) });
   return (
     <Host style={styles.host} testID="payee-qr-confirm">
-      <SheetChrome title={t('payee.qr.title')} onClose={onClose} onSave={onSave} />
+      <SheetChrome title={title} onClose={onClose} onSave={onSave} />
       <Form modifiers={[tint(color('--color-accent'))]}>
         {error ? <QrErrorCard error={error} /> : null}
+        {mismatch ? (
+          <NoticeCard
+            tone="warning"
+            icon="questionmark.circle.fill"
+            title={t('payee.qr.mismatch', {
+              wallet: walletName(t, mismatch),
+              method: methodTitle(t, mismatch),
+            })}
+            testID="payee-qr-mismatch"
+          />
+        ) : null}
         <Section footer={<Text>{t(duitNow ? 'payee.qr.note' : 'payee.qr.walletNote')}</Text>}>
           <LabeledContent label={t('payee.qr.typeLabel')}>
             <Text>{typeLabel}</Text>
