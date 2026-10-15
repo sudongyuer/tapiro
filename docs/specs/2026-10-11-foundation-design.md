@@ -443,3 +443,52 @@ not built; the spec stays `approved` until they are.
 - VoiceOver announcement of the 消息 badge count is unverified.
 - Flaky UI cases: `account_flow` typing can drop characters after a space; AXe `describe-ui` occasionally returns
   empty (also seen once in `account_onboarding_sign_out`). Not fixed in this step.
+
+## Implementation Record (2026-10-15) — welcome A and onboarding restyle
+
+PR: not opened yet · Commits: 51aa12c..0b76203 (branch `feat/welcome`). Steps 3–9 remain; the spec stays `approved`.
+
+### What was built
+
+- Welcome A: seven object stickers with white outlines that pop in 70 ms apart, drift on 6–8 s loops and hop when
+  tapped (小貘's bubble names the example and VoiceOver announces it); the 170 pt C1 小貘 breathing; outlined wordmark
+  and tagline; a sign-in panel that is part of the page and rises 0.9 s after appear; Reduce Motion fades only.
+  Evidence: `src/features/account/WelcomeScreen.tsx`, `WelcomeHero.tsx`, `WelcomeSticker.tsx`, `welcomeMotion.ts` (203e361)
+- Layout fitted to the measured panel: on short screens or long copy the low stickers drop and the hero lifts.
+  Evidence: `src/features/account/welcomeLayout.ts`, `welcomeLayout.test.ts` (bc1384f)
+- Real `AppleAuthenticationButton` (black in light, white in dark) and a Google button per Google branding; a failed
+  or cancelled sign-in shows one line in the panel. Evidence: `src/features/account/SignInButtons.tsx`, `SignInPanel.tsx`
+- Name and language steps on the moment background with a small 小貘 head and bubble; native controls unchanged.
+  Evidence: `NameStep.tsx`, `LanguageStep.tsx` (203e361, c60138c)
+- Draft 《用户协议》 and 《隐私政策》 as page sheets linked from the welcome terms line, three locales, facts limited to
+  this spec. Evidence: `src/app/legal/`, `src/features/account/LegalDocument.tsx`, `TermsLine.tsx` (f91329b, b573022, 0b76203)
+
+### Deviations from the design
+
+| Design said                                               | Shipped                                                      | Why                                     | Confirmed by                                          |
+| --------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------- | ----------------------------------------------------- |
+| Accounts: "name and avatar (prefilled from the ID token)" | Name step shows no avatar; the sign-in avatar is still saved | Board 「名字页头像」 option A           | user, 2026-10-15 ("A A")                              |
+| Terms line names documents that do not exist              | Draft in-app legal pages opened as sheets                    | Board 「协议页面怎么打开」 option A     | user, 2026-10-15 ("3 现在就做两个简单页面", "A A")    |
+| Canvas panel radius 34 pt, smaller panel text             | 24 pt radius (system sheet), subline 15 pt, terms 13 pt      | Match system sheets; readability        | not intent-changing (shown at walkthrough 2026-10-15) |
+| Tagline with white outline                                | No outline in dark mode                                      | The outline clotted CJK strokes in dark | not intent-changing (review finding)                  |
+
+### Bugs fixed during implementation
+
+- **Symptom:** in Malay on a 667 pt screen the tagline would sit under the sign-in panel.
+  **Root cause:** the layout assumed a fixed panel height. **Fix:** measure the panel and lay out above it (bc1384f)
+- **Symptom:** UI waits for a settled panel could pass in the 0.9 s before it rises.
+  **Root cause:** the wait checked the panel frame, which exists off screen. **Fix:** wait for the Apple button on screen (c2c71bc)
+
+### Verification
+
+- `bun test` → 194 pass; `bunx tsc --noEmit`, `bun run lint -- <changed files>`, `bun run format:check`,
+  `node scripts/design-check.mjs` → exit 0 (2026-10-15)
+- Full `bun run verify:ui` → 90/90 pass in 41 min 14 s (build before 0b76203); `welcome_legal` after 0b76203 → 4/4
+  light and dark, zh-Hans and ms. New cases: `welcome_a`, `welcome_legal`, `onboarding_moment`, `onboarding_language_moment`.
+
+### Known limits
+
+- iPhone SE size is covered by unit tests only (the runner has one iPhone 17 Pro Simulator); Reduce Motion and the
+  sign-in failure line are not exercised by a UI case.
+- Legal pages are drafts: wording, a real contact address and review are required before App Store release.
+- en and ms copy (including "Tapir Ingat", "syiling") needs a native-speaker review.
