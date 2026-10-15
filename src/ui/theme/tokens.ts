@@ -14,10 +14,45 @@ export const vars = {
   '--color-mascot-line': '#1E1C22',
   '--color-mascot-saddle': '#F3EFE6',
   '--color-mascot-blush': '#FF8A7A',
+  '--color-mascot-eye': '#FFFFFF',
+  '--color-mascot-snout': '#3A3742',
+
+  '--color-card-pay': '#25232B',
+  '--color-on-card-pay': '#F3EFE6',
+  '--color-card-ride': '#F5C8A0',
+  '--color-on-card-ride': '#25232B',
+  '--color-card-progress': '#DCEBD2',
+  '--color-on-card-progress': '#25232B',
+  '--color-card-calm': '#F4F0E6',
+  '--color-on-card-calm': '#1C1C1E',
+  '--color-ride': '#F5C8A0',
+
+  '--color-stage-urgent': '#FBE1D3',
+  '--color-stage-live': '#F9E3CC',
+  '--color-stage-calm': '#DCE5EE',
+  '--color-on-stage': '#1C1C1E',
+  '--color-stage-sun-urgent': '#FF9F7A',
+  '--color-stage-sun-live': '#F6B47F',
+  '--color-stage-sun-calm': '#F3EFE6',
+  '--color-stage-bubble': '#FFFFFF',
+
+  '--color-sticker-pickup': '#C89B62',
+  '--color-sticker-buy': '#A8D5A2',
+  '--color-sticker-queue': '#F2B8A8',
+  '--color-sticker-handle': '#D9CCF2',
+  '--color-sticker-move': '#B7C9D6',
+  '--color-sticker-accompany': '#9BC4E2',
+  '--color-sticker-study': '#F0C9DA',
+  '--color-sticker-other': '#D8D4CC',
+  '--color-on-sticker': '#25232B',
 
   '--font-sans': 'System',
   '--font-rounded': 'ui-rounded',
 
+  '--text-amount': 48,
+  '--text-amount--line-height': 52,
+  '--text-amount-compact': 36,
+  '--text-amount-compact--line-height': 40,
   '--text-large-title': 34,
   '--text-large-title--line-height': 41,
   '--text-moment-title': 28,
@@ -70,6 +105,8 @@ export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-moment-grain': '#F4F0E61A',
   '--color-sticker-border': '#FFFFFF',
   '--color-sticker-shadow': '#0000004D',
+  '--color-card-pay': '#F3EFE6',
+  '--color-on-card-pay': '#25232B',
 };
 
 export type ThemeName = 'light' | 'dark';
@@ -78,7 +115,11 @@ export function token(name: TokenName, theme: ThemeName = 'light') {
   return (theme === 'dark' ? darkVars[name] : undefined) ?? vars[name];
 }
 
+export const MUTED_TEXT_OPACITY = 0.72;
+
 export const typeRoles = [
+  'amount',
+  'amount-compact',
   'large-title',
   'moment-title',
   'reward',

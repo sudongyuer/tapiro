@@ -4,7 +4,8 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/assets/*": ["./assets/*"],
+      "tapiro-kit": ["./modules/tapiro-kit/index.tsx"]
     },
     "types": ["bun"]
   },

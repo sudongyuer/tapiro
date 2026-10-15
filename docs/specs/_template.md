@@ -46,6 +46,23 @@ A small diagram if a linear description is hard to follow.>
 | --- | --- | --- |
 | <offline / rejected / timeout / empty> | <message or state> | <retry, fallback, no replay> |
 
+## UI/UX and motion
+
+<Design handoff. Approved before implementation starts; a spec with no user-facing change writes
+"None:" and the reason.>
+
+### Screens and states
+
+| Screen | Design board | States to cover |
+| --- | --- | --- |
+| <screen> | <canvas board name> | <empty, one, many, loading, error, long copy (ms), largest text, light/dark> |
+
+### Motion
+
+| Motion | Purpose (one word) | Trigger | Duration token | Haptic / sound | Reduce Motion |
+| --- | --- | --- | --- | --- | --- |
+| <what moves> | <why> | <user action or event> | <--duration-*> | <none / light / sound> | <fallback> |
+
 ## Known limits
 
 - <Ceilings, unsupported cases, deliberate gaps>
@@ -59,6 +76,7 @@ A small diagram if a linear description is hard to follow.>
 
 - <Automated checks that must pass>
 - <UI cases (light/dark, screenshots, video) that must exist>
+- <Design QA: screenshots beside the design boards, reviewed by the owner before the PR>
 - <Acceptance: what a person checks>
 
 <!-- After implementation, spec-lifecycle appends "## Implementation Record (YYYY-MM-DD)" below. -->

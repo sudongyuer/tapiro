@@ -7,7 +7,7 @@ import { uiVerifyScene } from '@/lib/uiVerify';
 const STAGE_ROUTES = {
   signedOut: '/welcome',
   onboarding: '/onboarding',
-  ready: '/home',
+  ready: '/bounty',
 } as const;
 
 export default function Index() {

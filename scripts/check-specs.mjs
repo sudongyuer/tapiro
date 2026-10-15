@@ -78,6 +78,7 @@ export function checkSpecs(dir, { index = 'README.md' } = {}) {
     const { status } = data;
     if (!STATUSES.includes(status)) report(file, `invalid status "${status ?? ''}" (expected ${STATUSES.join(' | ')})`);
     if (!data.title) report(file, 'missing title');
+    if (!/^## UI\/UX and motion\s*$/m.test(body)) report(file, 'missing "## UI/UX and motion" section (write "None:" with a reason if nothing is user-facing)');
     if (!DATE.test(data.created ?? '')) report(file, 'created must be YYYY-MM-DD');
     if ((status === 'approved' || status === 'implemented') && !DATE.test(data.approved ?? '')) {
       report(file, `status ${status} requires approved: YYYY-MM-DD`);

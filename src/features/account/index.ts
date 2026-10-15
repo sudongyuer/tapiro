@@ -1,9 +1,9 @@
-export { AccountGreeting } from './AccountGreeting';
 export { authService } from './authService';
 export { DeleteAccountSheet } from './DeleteAccountSheet';
 export { createFixtureAuthService, fixtureUser } from './fixtureAuthService';
 export { useAccountStage, useProfile, useSignedInUser } from './hooks';
 export { LanguageStep } from './LanguageStep';
+export { MeView } from './MeView';
 export { NameStep } from './NameStep';
 export { accountActions, profileStore } from './services';
 export { SettingsView } from './SettingsView';

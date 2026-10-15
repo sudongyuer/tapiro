@@ -1,8 +1,8 @@
 ---
 title: Bounty board (悬赏令) v1
-status: approved
+status: proposed
 created: 2026-10-11
-approved: 2026-10-12
+approved:
 implemented:
 supersedes:
 superseded-by:
@@ -110,6 +110,12 @@ the foundation spec and is only referenced here.
 | Address privacy                | Everyone sees the place label and area; the exact address (room, unit) only the selected helper                                                                                                                         | KICKOFF 2026-10-11 B11                                                                                                                                             | Visible to applicants                               |
 | Distance query                 | PostGIS nearest-neighbour through an RPC                                                                                                                                                                                | `docs/research/2026-10-04-backend-platform.md`                                                                                                                     | Client-side filtering                               |
 
+## UI/UX and motion
+
+Pending design handoff: the screens, their states and the motion table are delivered on the canvas and
+written here before its first UI step starts; the spec returns to approved after that review (process adopted
+2026-10-13, KICKOFF).
+
 ## Data flow and ownership
 
 **Server (Supabase, `ap-southeast-1`).** Tables named here are contracts; columns are indicative.
@@ -121,6 +127,9 @@ the foundation spec and is only referenced here.
   field readable only by the poster and the selected helper.
 - `bounty_applications`: one row per (bounty, applicant); note, status (`pending` / `withdrawn` /
   `selected` / `not_selected`).
+- Text limits (KICKOFF 2026-10-14): titles ≤ 60 characters, place labels ≤ 80, notes ≤ 140, enforced
+  by `char_length` checks in the migration and the same `maxLength` in the forms. Live items carry
+  structured fields (kind, names, amount in sen, time) and are localized where they render.
 - `bounty_events`: append-only history of status changes and ETA updates (who, when, from, to).
   Live cards, notifications, the Live Activity and dispute review read from it.
 - Storage bucket for stickers: written by the poster, readable by anyone who can read the bounty.

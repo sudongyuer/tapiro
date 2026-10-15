@@ -32,10 +32,7 @@ export default {
       footer: '默认跟随系统语言，之后可以在设置里更改。',
       done: '开始使用',
     },
-    home: {
-      title: '首页',
-      greeting: '你好，{{name}}',
-      comingSoon: '悬赏和拼车很快就来。',
+    me: {
       settings: '设置',
     },
     settings: {
@@ -71,6 +68,125 @@ export default {
       },
     },
   },
+  shell: {
+    tabs: {
+      bounty: '悬赏',
+      ride: '拼车',
+      messages: '消息',
+      me: '我的',
+      askTapir: '问小貘',
+    },
+    home: {
+      title: '悬赏令',
+    },
+    ride: {
+      emptyTitle: '拼车马上开放',
+      emptyBody: '一起打车回 YC，自动分账',
+    },
+    messages: {
+      emptyTitle: '还没有消息',
+      emptyBody: '接了悬赏或拼车以后，对话会出现在这里',
+    },
+    accessory: {
+      label: '{{title}}，{{sub}}',
+      withMore: '{{sub}} · 还有 {{count}} 件',
+      hint: '回到悬赏，摊开进行中的卡片',
+      money: 'RM',
+    },
+    ask: {
+      title: '问小貘',
+      subtitle: {
+        bounty: '在悬赏页 · 帮你写悬赏、找能接的',
+        ride: '在拼车页 · 帮你凑人、算钱',
+        messages: '在消息页 · 帮你回、帮你翻译',
+        me: '在我的 · 看小貘记得什么',
+      },
+      prompt: {
+        bounty: '要帮什么忙？说一句就行',
+        ride: '谁一起回 YC？几点、从哪出发',
+        messages: '帮我回阿杰，或者翻译一下',
+      },
+      suggestions: {
+        bounty: { first: '帮我取快递', second: '附近有什么能接的' },
+        ride: { first: '下午五点回 YC 谁一起', second: '把这张 Grab 收据分一下' },
+        messages: { first: '翻译 Aiman 那条', second: '帮我回阿杰：在大堂等' },
+        writeBounty: '帮我写一条悬赏',
+      },
+      mic: '说话',
+      comingSoon: '语音和 AI 起草即将推出',
+      close: '关闭',
+    },
+  },
+  home: {
+    say: {
+      payNamed: '{{name}}送到啦，记得付款',
+      pay: '有一笔钱要付，别忘了',
+      rideMinutes: '{{count}} 分钟后出发，别迟到',
+      owedNamed: '{{name}}说付你了，去确认一下',
+      progressNamed: '{{name}}在帮你，有事发消息',
+      live: '有事在进行，小貘帮你盯着',
+      calm: '今天没事…要发个悬赏吗',
+    },
+    stage: {
+      live: '进行中',
+    },
+    stack: {
+      fanOut: '摊开 · {{count}} 件',
+      collapse: '收起',
+      fanOutHint: '把卡片按各自高度摊开',
+      collapseHint: '把卡片叠起来',
+      peekHint: '摊开全部卡片',
+    },
+    money: 'RM {{amount}}',
+    soon: '这一步还没开放',
+    card: {
+      pay: {
+        tag: '待你付款',
+        title: '付给{{name}}',
+        slide: '滑动付款 · {{amount}} →',
+        slideLabel: '滑动付款 {{amount}}',
+        footer: '撮合付款 · 钱直接到{{name}}',
+      },
+      ride: {
+        tag: '拼车 · {{seats}} 人齐',
+        youBook: '你叫车',
+        departs: '{{time}} 出发',
+        countdownSuffix: '后出发',
+        countdownLabel: '还有 {{time}} 出发',
+        meet: '集合点',
+        destination: '目的地',
+        arrive: '我到了',
+      },
+      owed: {
+        tag: '等你确认',
+        title: '{{name}}说已付你',
+      },
+      progress: {
+        tag: '你发的 · 进行中',
+        helper: '{{name}} 接了',
+        message: '发消息给 {{name}}',
+        details: '详情',
+      },
+      calm: {
+        tag: '今天没有待处理的事',
+        morning: '早上好，{{name}}',
+        afternoon: '下午好，{{name}}',
+        evening: '晚上好，{{name}}',
+        ask: '说一句话，小貘帮你发悬赏',
+        askHint: '打开问小貘',
+        chipRide: '五点回 YC 谁一起',
+        chipParcel: '帮我取个快递',
+        chipStudy: '找人讲微积分',
+      },
+    },
+    section: {
+      title: '能接的悬赏',
+      empty: '悬赏功能下一阶段上线',
+    },
+    strip: {
+      label: '{{title}}，{{line}}',
+    },
+  },
   debug: {
     title: '调试',
     account: {
@@ -96,6 +212,8 @@ export default {
       statusUrgent: '紧急',
       accept: '接单',
       posted: '悬赏贴出去啦',
+      liveSample: '付给阿杰 RM 15',
+      mascot: '小貘',
     },
   },
 };

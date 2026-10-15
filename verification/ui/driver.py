@@ -1,12 +1,23 @@
 import json
+import re
 import struct
 import sys
+import tempfile
 import zlib
 import subprocess
 import time
 from pathlib import Path
 
 BUNDLE_ID = 'app.tapiro'
+TRANSITION_ERROR = 'No translation object returned for simulator'
+
+
+class AxeError(RuntimeError):
+    pass
+
+
+class Transition(AxeError):
+    pass
 
 
 class UI:
@@ -16,11 +27,12 @@ class UI:
 
     def axe(self, *args, timeout=20):
         started = time.monotonic()
-        out = subprocess.check_output(['axe', *args, '--udid', self.udid], text=True, timeout=timeout)
+        proc = subprocess.run(['axe', *args, '--udid', self.udid], text=True, capture_output=True, timeout=timeout)
         print(f'{time.monotonic() - started:5.1f}s axe {" ".join(args)}', file=sys.stderr, flush=True)
-        if out.startswith('Error:'):
-            raise RuntimeError(out.strip())
-        return out
+        error = proc.stderr.strip() or proc.stdout.strip()
+        if proc.returncode != 0 or proc.stdout.startswith('Error:'):
+            raise AxeError(f'axe {" ".join(args)} failed: {error}')
+        return proc.stdout
 
     def state(self):
         def walk(node):
@@ -32,12 +44,35 @@ class UI:
                 for child in node:
                     yield from walk(child)
 
-        return list(walk(json.loads(self.axe('describe-ui'))))
+        try:
+            tree = self.axe('describe-ui')
+        except AxeError as error:
+            if TRANSITION_ERROR in str(error):
+                raise Transition(str(error)) from None
+            raise
+        return list(walk(json.loads(tree)))
+
+    def read(self, timeout=30):
+        previous = None
+
+        def check(items):
+            nonlocal previous
+            ids = sorted(i.get('AXUniqueId') or '' for i in items)
+            stable = items if ids == previous else None
+            previous = ids
+            return stable
+
+        return self.wait(check, 'accessibility tree never settled', timeout)
 
     def wait(self, predicate, message, timeout=30):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            result = predicate(self.state())
+            try:
+                items = self.state()
+            except Transition:
+                print('        describe-ui: no accessibility tree during a transition', file=sys.stderr, flush=True)
+                items = []
+            result = predicate(items) if items else None
             if result:
                 return result
             time.sleep(0.2)  # polling interval, not an assertion
@@ -99,6 +134,10 @@ class UI:
     def tap_point(self, x, y):
         self.axe('tap', '-x', str(round(x)), '-y', str(round(y)), '--post-delay', '0.5')
 
+    def swipe(self, start, end, duration=0.5):
+        self.axe('swipe', '--start-x', str(round(start[0])), '--start-y', str(round(start[1])),
+                 '--end-x', str(round(end[0])), '--end-y', str(round(end[1])), '--duration', str(duration))
+
     def type(self, text):
         self.axe('type', text)
 
@@ -112,6 +151,51 @@ class UI:
         )
         (self.output / f'{name}.json').write_text(self.axe('describe-ui'))
         return self.output / f'{name}.png'
+
+    def snap(self, name):
+        path = self.capture(name)
+        points = json.loads((self.output / f'{name}.json').read_text())[0]['frame']['width']
+        return Shot(path, points)
+
+
+def reach_home(ui):
+    ui.tap('sign-in-apple')
+    ui.wait(lambda items: any(i.get('AXUniqueId') == 'name-input' and i.get('AXValue') for i in items),
+            'name not prefilled from the fixture profile')
+    ui.tap('name-continue')
+    ui.tap('language-done')
+    ui.element('home-scroll')
+
+
+def by_id(items, identifier):
+    return next((i for i in items if i.get('AXUniqueId') == identifier), None)
+
+
+def bottom(element):
+    return element['frame']['y'] + element['frame']['height']
+
+
+TABS = ['tab-bounty', 'tab-ride', 'tab-messages', 'tab-me']
+ACCESSORIES = ('urgent-accessory', 'urgent-accessory-inline')
+TITLE = {'zh-Hans': '悬赏令', 'ms': 'Ganjaran'}
+TAB_LABELS = {'zh-Hans': {'bounty': '悬赏', 'me': '我的', 'ask': '问小貘'},
+              'ms': {'bounty': 'Ganjaran', 'me': 'Saya', 'ask': 'Tanya Tapir'}}
+
+
+def selected(items):
+    return [t for t in TABS if str((by_id(items, t) or {}).get('AXValue')) == '1']
+
+
+def accessory(items):
+    return next((by_id(items, a) for a in ACCESSORIES if by_id(items, a)), None)
+
+
+def tab(items, label):
+    return next((i for i in items if i.get('type') == 'RadioButton' and i.get('AXLabel') == label), None)
+
+
+def nav_bar(items, locale):
+    return next((i for i in items if i.get('type') == 'Group' and i.get('AXUniqueId') == TITLE[locale]), None)
 
 
 def frame(element):
@@ -162,3 +246,139 @@ def assert_appearance(png_path, appearance, x, y, name):
         assert luma < 80, f'{name} is light ({r},{g},{b}) in dark appearance'
     else:
         assert luma > 175, f'{name} is dark ({r},{g},{b}) in light appearance'
+
+
+def luma(rgb):
+    r, g, b = rgb
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+class Shot:
+    def __init__(self, png_path, points_wide):
+        self.path = Path(png_path)
+        with tempfile.TemporaryDirectory() as tmp:
+            bmp = Path(tmp) / 'shot.bmp'
+            subprocess.run(['sips', '-s', 'format', 'bmp', str(self.path), '--out', str(bmp)],
+                           check=True, capture_output=True, timeout=20)
+            data = bmp.read_bytes()
+        offset = struct.unpack('<I', data[10:14])[0]
+        width, height = struct.unpack('<ii', data[18:26])
+        assert struct.unpack('<H', data[28:30])[0] == 32, f'{self.path} did not convert to 32-bit BMP'
+        self.data, self.offset, self.width, self.height = data, offset, width, abs(height)
+        self.top_down = height < 0
+        self.scale = width / points_wide
+
+    def _px(self, x, y):
+        row = y if self.top_down else self.height - 1 - y
+        i = self.offset + (row * self.width + x) * 4
+        return self.data[i + 2], self.data[i + 1], self.data[i]
+
+    def rgb(self, x, y):
+        return self._px(min(self.width - 1, round(x * self.scale)), min(self.height - 1, round(y * self.scale)))
+
+    def pixels(self, f, pad=0):
+        x0 = max(0, round((f['x'] - pad) * self.scale))
+        y0 = max(0, round((f['y'] - pad) * self.scale))
+        x1 = min(self.width, round((f['x'] + f['width'] + pad) * self.scale))
+        y1 = min(self.height, round((f['y'] + f['height'] + pad) * self.scale))
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                yield self._px(x, y)
+
+    def count(self, f, predicate, pad=0):
+        return sum(1 for rgb in self.pixels(f, pad) if predicate(rgb))
+
+
+def glow(shot, f, background, pad=4):
+    floor = luma(background) + 12
+    whitest = min(background) + 12
+    ink = shot.count(f, lambda rgb: luma(rgb) < 90, pad)
+    light = shot.count(f, lambda rgb: luma(rgb) > floor and min(rgb) > whitest, pad)
+    return ink, light
+
+
+def token(name, appearance):
+    source = (Path(__file__).resolve().parents[2] / 'src/ui/theme/tokens.ts').read_text()
+    light, _, dark = source.partition('export const darkVars')
+    pattern = re.compile(rf"'{re.escape(name)}': '#([0-9A-Fa-f]{{6}})'")
+    found = (pattern.search(dark) if appearance == 'dark' else None) or pattern.search(light)
+    assert found, f'token {name} not found'
+    return tuple(int(found.group(1)[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def dominant(shot, f):
+    counts = {}
+    for rgb in shot.pixels(f):
+        counts[rgb] = counts.get(rgb, 0) + 1
+    assert counts, f'region {f} is off screen'
+    return max(counts, key=counts.get)
+
+
+def close(a, b, tolerance=6):
+    return max(abs(x - y) for x, y in zip(a, b)) <= tolerance
+
+
+def assert_colour(shot, f, expected, name, tolerance=6):
+    found = dominant(shot, f)
+    assert close(found, expected, tolerance), f'{name} is {found}, expected {expected}'
+
+
+def assert_tapir_button(shot, f, appearance, name):
+    snout = {**f, 'width': f['width'] * 0.4}
+    outline = shot.count(snout, lambda rgb: luma(rgb) > 235)
+    ink = shot.count(f, lambda rgb: luma(rgb) < 60)
+    glass = luma(dominant(shot, f))
+    print(f'{name}: glass luma {glass:.0f}, {outline} white snout-outline pixels, {ink} ink pixels')
+    if appearance == 'dark':
+        assert glass < 80, f'{name}: button glass is light ({glass:.0f}) in dark appearance'
+        assert outline > 150, f'{name}: no white outline around the head on dark glass ({outline} pixels)'
+    else:
+        assert glass > 175, f'{name}: button glass is dark ({glass:.0f}) in light appearance'
+        assert ink > 800, f'{name}: the head ink is missing ({ink} pixels)'
+
+
+CARD_FILL = {
+    'oweMoney': '--color-card-pay',
+    'rideSoon': '--color-card-ride',
+    'owedToYou': '--color-card-progress',
+    'bountyInProgress': '--color-card-progress',
+    'calm': '--color-card-calm',
+}
+STAGES = ('urgent', 'live', 'calm')
+FAN_OUT = {'zh-Hans': '摊开 · {} 件', 'ms': 'Bentangkan · {}'}
+
+
+def corner(f, size=8):
+    return {'x': f['x'] + 2, 'y': f['y'] + 2, 'width': size, 'height': size}
+
+
+def card_fill(f):
+    return {'x': f['x'] + 2, 'y': f['y'] + f['height'] * 0.35, 'width': 10, 'height': f['height'] * 0.3}
+
+
+def assert_home(ui, name, stage, cards):
+    reach_home(ui)
+    found = ui.settled(lambda items: by_id(items, f'home-stage-{stage}'), f'home-stage-{stage} missing')
+    front = ui.settled(lambda items: by_id(items, f'live-card-{cards[0]}'), f'front card {cards[0]} missing')
+    items = ui.read()
+    others = [s for s in STAGES if s != stage and by_id(items, f'home-stage-{s}')]
+    assert not others, f'other stages shown: {others}'
+    assert found.get('AXLabel'), f'home-stage-{stage} has no line'
+    for kind in CARD_FILL:
+        if kind != cards[0]:
+            assert by_id(items, f'live-card-{kind}') is None, f'live-card-{kind} shown in front while stacked'
+    peeks = [p for p in ('live-card-peek-1', 'live-card-peek-2') if by_id(items, p)]
+    assert len(peeks) == min(2, len(cards) - 1), f'{len(cards)} cards show peeks {peeks}'
+    toggle = by_id(items, 'live-cards-toggle')
+    if len(cards) > 1:
+        expected = FAN_OUT[ui.locale].format(len(cards))
+        assert toggle and toggle.get('AXLabel') == expected, f'toggle reads {toggle and toggle.get("AXLabel")}, not {expected}'
+    else:
+        assert toggle is None, 'a single card shows the stack toggle'
+    for element in (found, front):
+        f = element['frame']
+        assert f['x'] >= 0 and f['x'] + f['width'] <= items[0]['frame']['width'], f'{element["AXUniqueId"]} overflows: {f}'
+    shot = ui.snap(name)
+    assert_colour(shot, corner(found['frame']), token(f'--color-stage-{stage}', ui.appearance), f'{stage} stage')
+    assert_colour(shot, card_fill(front['frame']), token(CARD_FILL[cards[0]], ui.appearance), f'{cards[0]} card')
+    return items

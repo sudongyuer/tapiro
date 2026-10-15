@@ -1,8 +1,8 @@
 ---
 title: Carpool (拼车) v1
-status: approved
+status: proposed
 created: 2026-10-11
-approved: 2026-10-12
+approved:
 implemented:
 supersedes:
 superseded-by:
@@ -95,6 +95,12 @@ Carpool is a separate feature from bounties but shares payment and reputation wi
 | Live Activity                | Four phases 凑人 / 集合 / 上车 / 到了, one sentence and a progress line                                                                                                                                                                                                                | Craft detail 1 (KICKOFF 2026-10-11); CraftPick board                                                                    | —                                                       |
 | Time nodes                   | 集合 starts 30 min before departure; a ride with no 出发 expires 2 h after departure and nobody is marked no-show                                                                                                                                                                      | KICKOFF 2026-10-11 C14                                                                                                  | 15 min / 1 h                                            |
 
+## UI/UX and motion
+
+Pending design handoff: the screens, their states and the motion table are delivered on the canvas and
+written here before its first UI step starts; the spec returns to approved after that review (process adopted
+2026-10-13, KICKOFF).
+
 ## Data flow and ownership
 
 ```
@@ -151,6 +157,10 @@ app (拼车 tab, ride detail, sheets) ──RPC──> Supabase (rides, members,
    received the ride closes.
 8. **Review**: after a rider's payment is received, organiser and that rider can review each other
    (foundation three-face review; public when both reviewed or after 7 days, StatusFlows board).
+
+- Text limits (KICKOFF 2026-10-14): titles ≤ 60 characters, place labels ≤ 80, notes ≤ 140, enforced
+  by `char_length` checks in the migration and the same `maxLength` in the forms. Live items carry
+  structured fields (kind, names, amount in sen, time) and are localized where they render.
 
 ## Errors and degradation
 

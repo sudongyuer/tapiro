@@ -22,6 +22,12 @@ for role in ROLES:
     ui.element(f'tokens-type-{role}', timeout=5)
 for symbol in STATUSES:
     ui.element(f'tokens-status-{symbol}', timeout=5)
+for name in ['pay', 'ride', 'progress', 'calm']:
+    ui.element(f'tokens-card-{name}', timeout=5)
+for name in ['urgent', 'live', 'calm']:
+    ui.element(f'tokens-stage-{name}', timeout=5)
+for name in ['pickup', 'buy', 'queue', 'handle', 'move', 'accompany', 'study', 'other']:
+    ui.element(f'tokens-sticker-{name}', timeout=5)
 
 assert_touch_target(ui.element('tokens-primary-button'), 'primary button')
 shot = ui.capture('design-tokens')

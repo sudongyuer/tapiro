@@ -34,10 +34,7 @@ const en: Translation = {
       footer: 'Tapiro follows your system language. You can change it later in Settings.',
       done: 'Get Started',
     },
-    home: {
-      title: 'Home',
-      greeting: 'Hi, {{name}}',
-      comingSoon: 'Bounties and rides are coming soon.',
+    me: {
       settings: 'Settings',
     },
     settings: {
@@ -74,6 +71,125 @@ const en: Translation = {
       },
     },
   },
+  shell: {
+    tabs: {
+      bounty: 'Bounties',
+      ride: 'Rides',
+      messages: 'Messages',
+      me: 'Me',
+      askTapir: 'Ask Tapir',
+    },
+    home: {
+      title: 'Bounties',
+    },
+    ride: {
+      emptyTitle: 'Rides are coming soon',
+      emptyBody: 'Share a car back to YC and split the fare automatically',
+    },
+    messages: {
+      emptyTitle: 'No messages yet',
+      emptyBody: 'Chats show up here once you take a bounty or join a ride',
+    },
+    accessory: {
+      label: '{{title}}, {{sub}}',
+      withMore: '{{sub}} · {{count}} more',
+      hint: 'Opens Bounties and fans out your live cards',
+      money: 'RM',
+    },
+    ask: {
+      title: 'Ask Tapir',
+      subtitle: {
+        bounty: 'On Bounties · write a bounty or find one to take',
+        ride: 'On Rides · find riders and split the fare',
+        messages: 'On Messages · reply or translate',
+        me: 'On Me · see what Tapir remembers',
+      },
+      prompt: {
+        bounty: 'What do you need? One sentence is enough',
+        ride: 'Who’s heading back to YC? When, and from where?',
+        messages: 'Reply to Ah Kit, or translate something',
+      },
+      suggestions: {
+        bounty: { first: 'Pick up my parcel', second: 'What can I take nearby?' },
+        ride: { first: 'Who’s going back to YC at 5 pm?', second: 'Split this Grab receipt' },
+        messages: { first: 'Translate Aiman’s message', second: 'Tell Ah Kit: wait in the lobby' },
+        writeBounty: 'Write a bounty for me',
+      },
+      mic: 'Speak',
+      comingSoon: 'Voice and AI drafts are coming soon',
+      close: 'Close',
+    },
+  },
+  home: {
+    say: {
+      payNamed: '{{name}} delivered — remember to pay',
+      pay: 'You have a payment to make',
+      rideMinutes: 'Leaving in {{count}} min, don’t be late',
+      owedNamed: '{{name}} says they paid you — check it',
+      progressNamed: '{{name}} is helping you — message them anytime',
+      live: 'Something’s in progress, I’m keeping an eye on it',
+      calm: 'Nothing on today… post a bounty?',
+    },
+    stage: {
+      live: 'In progress',
+    },
+    stack: {
+      fanOut: 'Spread out · {{count}}',
+      collapse: 'Stack',
+      fanOutHint: 'Lays the cards out at their own heights',
+      collapseHint: 'Stacks the cards again',
+      peekHint: 'Spreads out all cards',
+    },
+    money: 'RM {{amount}}',
+    soon: 'This step isn’t available yet',
+    card: {
+      pay: {
+        tag: 'You owe',
+        title: 'Pay {{name}}',
+        slide: 'Slide to pay · {{amount}} →',
+        slideLabel: 'Slide to pay {{amount}}',
+        footer: 'Direct pay · money goes straight to {{name}}',
+      },
+      ride: {
+        tag: 'Ride · {{seats}} full',
+        youBook: 'You book',
+        departs: 'Leaves {{time}}',
+        countdownSuffix: 'to go',
+        countdownLabel: '{{time}} until departure',
+        meet: 'Meet',
+        destination: 'To',
+        arrive: 'I’m here',
+      },
+      owed: {
+        tag: 'Confirm',
+        title: '{{name}} says they paid you',
+      },
+      progress: {
+        tag: 'Your post · in progress',
+        helper: '{{name}} took it',
+        message: 'Message {{name}}',
+        details: 'Details',
+      },
+      calm: {
+        tag: 'Nothing pending today',
+        morning: 'Good morning, {{name}}',
+        afternoon: 'Good afternoon, {{name}}',
+        evening: 'Good evening, {{name}}',
+        ask: 'Say it and Tapir posts the bounty',
+        askHint: 'Opens Ask Tapir',
+        chipRide: 'Who’s heading back to YC at five?',
+        chipParcel: 'Pick up my parcel',
+        chipStudy: 'Find someone to explain calculus',
+      },
+    },
+    section: {
+      title: 'Bounties you can take',
+      empty: 'Bounties arrive in the next release',
+    },
+    strip: {
+      label: '{{title}}, {{line}}',
+    },
+  },
   debug: {
     title: 'Debug',
     account: {
@@ -99,6 +215,8 @@ const en: Translation = {
       statusUrgent: 'Urgent',
       accept: 'Accept',
       posted: 'Your bounty is posted',
+      liveSample: 'Pay Ah Kit RM 15',
+      mascot: 'Tapir mascot',
     },
   },
 };

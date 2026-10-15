@@ -34,10 +34,7 @@ const ms: Translation = {
       footer: 'Tapiro mengikut bahasa sistem anda. Anda boleh menukarnya kemudian dalam Tetapan.',
       done: 'Mula Sekarang',
     },
-    home: {
-      title: 'Utama',
-      greeting: 'Hai, {{name}}',
-      comingSoon: 'Ganjaran dan tumpangan akan tiba tidak lama lagi.',
+    me: {
       settings: 'Tetapan',
     },
     settings: {
@@ -74,6 +71,129 @@ const ms: Translation = {
       },
     },
   },
+  shell: {
+    tabs: {
+      bounty: 'Ganjaran',
+      ride: 'Tumpangan',
+      messages: 'Mesej',
+      me: 'Saya',
+      askTapir: 'Tanya Tapir',
+    },
+    home: {
+      title: 'Ganjaran',
+    },
+    ride: {
+      emptyTitle: 'Tumpangan akan dibuka tidak lama lagi',
+      emptyBody: 'Kongsi kereta balik ke YC dan tambang dibahagikan secara automatik',
+    },
+    messages: {
+      emptyTitle: 'Belum ada mesej',
+      emptyBody:
+        'Perbualan akan dipaparkan di sini selepas anda mengambil ganjaran atau menyertai tumpangan',
+    },
+    accessory: {
+      label: '{{title}}, {{sub}}',
+      withMore: '{{sub}} · {{count}} lagi',
+      hint: 'Buka Ganjaran dan kembangkan kad semasa anda',
+      money: 'RM',
+    },
+    ask: {
+      title: 'Tanya Tapir',
+      subtitle: {
+        bounty: 'Di Ganjaran · tulis ganjaran atau cari yang boleh diambil',
+        ride: 'Di Tumpangan · cari penumpang dan bahagikan tambang',
+        messages: 'Di Mesej · balas atau terjemah',
+        me: 'Di Saya · lihat apa yang Tapir ingat',
+      },
+      prompt: {
+        bounty: 'Perlukan bantuan apa? Satu ayat pun cukup',
+        ride: 'Siapa nak balik ke YC? Pukul berapa, dari mana?',
+        messages: 'Balas Ah Kit, atau terjemah sesuatu',
+      },
+      suggestions: {
+        bounty: { first: 'Ambil bungkusan saya', second: 'Apa yang boleh saya ambil berdekatan?' },
+        ride: {
+          first: 'Siapa nak balik ke YC pukul 5 petang?',
+          second: 'Bahagikan resit Grab ini',
+        },
+        messages: { first: 'Terjemah mesej Aiman', second: 'Beritahu Ah Kit: tunggu di lobi' },
+        writeBounty: 'Tuliskan ganjaran untuk saya',
+      },
+      mic: 'Bercakap',
+      comingSoon: 'Suara dan draf AI akan datang tidak lama lagi',
+      close: 'Tutup',
+    },
+  },
+  home: {
+    say: {
+      payNamed: '{{name}} dah hantar — jangan lupa bayar',
+      pay: 'Ada bayaran yang perlu dibuat',
+      rideMinutes: 'Bertolak dalam {{count}} minit, jangan lewat',
+      owedNamed: '{{name}} kata dah bayar anda — semak',
+      progressNamed: '{{name}} sedang membantu — hantar mesej bila-bila',
+      live: 'Ada urusan berjalan, Tapir tolong perhatikan',
+      calm: 'Tiada apa hari ini… mahu siarkan ganjaran?',
+    },
+    stage: {
+      live: 'Sedang berjalan',
+    },
+    stack: {
+      fanOut: 'Bentangkan · {{count}}',
+      collapse: 'Susun',
+      fanOutHint: 'Membentangkan kad mengikut ketinggian masing-masing',
+      collapseHint: 'Menyusun semula kad',
+      peekHint: 'Membentangkan semua kad',
+    },
+    money: 'RM {{amount}}',
+    soon: 'Langkah ini belum dibuka',
+    card: {
+      pay: {
+        tag: 'Perlu dibayar',
+        title: 'Bayar {{name}}',
+        slide: 'Leret untuk bayar · {{amount}} →',
+        slideLabel: 'Leret untuk bayar {{amount}}',
+        footer: 'Bayaran terus · wang terus ke {{name}}',
+      },
+      ride: {
+        tag: 'Tumpangan · {{seats}} penuh',
+        youBook: 'Anda tempah',
+        departs: 'Bertolak {{time}}',
+        countdownSuffix: 'lagi',
+        countdownLabel: '{{time}} lagi sebelum bertolak',
+        meet: 'Titik temu',
+        destination: 'Ke',
+        arrive: 'Saya sampai',
+      },
+      owed: {
+        tag: 'Perlu disahkan',
+        title: '{{name}} kata dah bayar anda',
+      },
+      progress: {
+        tag: 'Siaran anda · sedang berjalan',
+        helper: '{{name}} ambil',
+        message: 'Mesej {{name}}',
+        details: 'Butiran',
+      },
+      calm: {
+        tag: 'Tiada urusan tertunggak hari ini',
+        morning: 'Selamat pagi, {{name}}',
+        afternoon: 'Selamat petang, {{name}}',
+        evening: 'Selamat malam, {{name}}',
+        ask: 'Sebut sahaja, Tapir siarkan ganjaran',
+        askHint: 'Membuka Tanya Tapir',
+        chipRide: 'Siapa balik ke YC pukul lima?',
+        chipParcel: 'Ambilkan bungkusan saya',
+        chipStudy: 'Cari orang terangkan kalkulus',
+      },
+    },
+    section: {
+      title: 'Ganjaran yang boleh anda ambil',
+      empty: 'Ganjaran akan tiba dalam keluaran seterusnya',
+    },
+    strip: {
+      label: '{{title}}, {{line}}',
+    },
+  },
   debug: {
     title: 'Nyahpepijat',
     account: {
@@ -99,6 +219,8 @@ const ms: Translation = {
       statusUrgent: 'Segera',
       accept: 'Terima',
       posted: 'Ganjaran anda telah disiarkan',
+      liveSample: 'Bayar Ah Kit RM 15',
+      mascot: 'Maskot tapir',
     },
   },
 };
