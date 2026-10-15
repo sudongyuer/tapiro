@@ -4,11 +4,12 @@ import {
   AppleAuthenticationButtonType,
 } from 'expo-apple-authentication';
 import { useState } from 'react';
-import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { AppText } from '@/ui/AppText';
+import { GoogleLogo } from '@/ui/GoogleLogo';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -16,12 +17,13 @@ import { authService } from './authService';
 import { safeSignIn } from './safeSignIn';
 import type { AuthProvider, SignInFailure } from './types';
 
-const BUTTON_HEIGHT = vars['--touch-min'];
+const BUTTON_HEIGHT = vars['--touch-min'] + vars['--space-2'];
+const LOGO_SIZE = 18;
 const CORNER_RADIUS = BUTTON_HEIGHT / 2;
 
 export function SignInButtons() {
   const { t } = useI18n();
-  const { theme } = useTheme();
+  const { theme, color } = useTheme();
   const [guard] = useState(createInFlightGuard);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<SignInFailure | null>(null);
@@ -59,20 +61,30 @@ export function SignInButtons() {
         disabled={pending}
         onPress={() => signIn('google')}
         testID="sign-in-google"
-        style={({ pressed }) => [styles.google, pressed && styles.pressed]}
+        style={({ pressed }) => [
+          styles.google,
+          {
+            backgroundColor: color('--color-google-fill'),
+            borderColor: color('--color-google-stroke'),
+          },
+          pressed && styles.pressed,
+        ]}
       >
-        <AppText variant="body" style={styles.googleLabel}>
+        <GoogleLogo size={LOGO_SIZE} />
+        <AppText
+          variant="body"
+          style={[styles.googleLabel, { color: color('--color-google-label') }]}
+        >
           {t('account.signIn.google')}
         </AppText>
       </Pressable>
       {failure && (
         <AppText
           variant="secondary"
-          tone="secondaryLabel"
           accessibilityRole="alert"
           accessibilityLiveRegion="polite"
           testID="sign-in-message"
-          style={styles.message}
+          style={[styles.message, { color: color('--color-urgent') }]}
         >
           {t(`account.signIn.error.${failure}`)}
         </AppText>
@@ -88,14 +100,14 @@ const styles = StyleSheet.create({
     minHeight: BUTTON_HEIGHT,
     borderRadius: CORNER_RADIUS,
     borderCurve: 'continuous',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: vars['--space-3'],
     paddingHorizontal: vars['--space-4'],
-    backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: PlatformColor('separator'),
+    borderWidth: vars['--google-stroke-width'],
   },
-  pressed: { backgroundColor: PlatformColor('systemFill') },
-  googleLabel: { fontWeight: '600' },
-  message: { textAlign: 'center' },
+  pressed: { opacity: vars['--opacity-pressed'] },
+  googleLabel: { fontWeight: '500', flexShrink: 1 },
+  message: { textAlign: 'center', fontWeight: '600' },
 });

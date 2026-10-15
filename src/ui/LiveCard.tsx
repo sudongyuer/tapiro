@@ -1,13 +1,11 @@
-import { useId, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { StyleSheet, View, type ViewProps } from 'react-native';
-import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
 
+import { Grain } from './Grain';
 import { luminance, token, vars, type TokenName } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
 export type LiveCardTone = 'pay' | 'ride' | 'progress' | 'calm';
-
-const GRAIN_SPACING = 14;
 
 export function useLiveCardPaint(tone: LiveCardTone) {
   const { color } = useTheme();
@@ -32,7 +30,6 @@ export type LiveCardProps = ViewProps & {
 export function LiveCard({ tone, hanging, children, style, ...rest }: LiveCardProps) {
   const { color } = useTheme();
   const paint = useLiveCardPaint(tone);
-  const patternId = `grain${useId().replace(/:/g, '')}`;
   return (
     <View
       {...rest}
@@ -43,19 +40,7 @@ export function LiveCard({ tone, hanging, children, style, ...rest }: LiveCardPr
       ]}
     >
       <View style={styles.grain} pointerEvents="none">
-        <Svg width="100%" height="100%">
-          <Defs>
-            <Pattern
-              id={patternId}
-              width={GRAIN_SPACING}
-              height={GRAIN_SPACING}
-              patternUnits="userSpaceOnUse"
-            >
-              <Circle cx={GRAIN_SPACING / 2} cy={GRAIN_SPACING / 2} r={1} fill={paint.grain} />
-            </Pattern>
-          </Defs>
-          <Rect width="100%" height="100%" fill={`url(#${patternId})`} />
-        </Svg>
+        <Grain color={paint.grain} />
       </View>
       {children}
       {hanging ? (

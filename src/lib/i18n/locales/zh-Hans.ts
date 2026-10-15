@@ -10,11 +10,26 @@ export default {
       },
     },
     welcome: {
-      title: '欢迎来到 Tapiro',
-      tagline: '在马来西亚，同学之间互相帮一把。',
+      wordmark: 'Tapiro',
+      tagline: '有事发悬赏，顺路接一单',
+      hello: '你好呀',
+      headline: '小貘陪你在马来西亚好好生活',
+      subline: '取快递、排队、拼车回 YC，同学之间互相帮一把',
+      terms: '继续即表示同意<terms>《用户协议》</terms>和<privacy>《隐私政策》</privacy>',
+      examples: {
+        parcel: '帮取快递 · RM 8',
+        coffee: '帮带咖啡 · RM 5',
+        ticket: '帮排队取号 · RM 15',
+        books: '讲微积分 · RM 20',
+        umbrella: '借把伞 · 顺路',
+        car: '17:00 回 YC · 差 1 人',
+        boba: '帮买奶茶 · RM 6',
+      },
     },
     name: {
       title: '你的名字',
+      greeting: '先认识一下～',
+      question: '你叫什么名字？',
       label: '名字',
       placeholder: '输入名字',
       footer: '其他同学会看到这个名字，最多 40 个字。',
@@ -29,8 +44,40 @@ export default {
     },
     language: {
       title: '语言',
+      greeting: '最后一步～',
+      question: '你想用哪种语言？',
       footer: '默认跟随系统语言，之后可以在设置里更改。',
       done: '开始使用',
+    },
+    legal: {
+      draft: '草稿：上架 App Store 前会替换为正式文本。',
+      close: '关闭',
+      contact: '联系我们：[联系邮箱]',
+      terms: {
+        title: '用户协议',
+        aboutTitle: 'Tapiro 是什么',
+        about: 'Tapiro 帮在马来西亚的同学互相帮忙：发悬赏、顺路接单、拼车。',
+        accountTitle: '账号',
+        account:
+          '你用 Apple 或 Google 账号登录。你可以在「我的 → 设置」里删除账号；有未结清的付款时，要先结清才能删除。',
+        moneyTitle: '付款和貘币',
+        money:
+          '同学之间的付款由双方用自己的银行或电子钱包 App 直接完成，或当面付现金，Tapiro 不经手这笔钱。貘币通过 App Store 购买，只能在 Tapiro 里使用，不能转给别人或提现。',
+      },
+      privacy: {
+        title: '隐私政策',
+        collectTitle: '我们收集什么',
+        collect:
+          '登录时 Apple 或 Google 提供的名字、邮箱（接受 Apple 隐藏邮箱）和头像；你设置的显示名字；你发布的悬赏和拼车、聊天消息和图片、评价；你添加的收款方式（DuitNow 号码、银行账号、从收款码解析出的文字，不保存图片）；你付款时附上的截图（付款双方和审核人员可见）；你的举报和屏蔽；付款记录（谁付给谁、金额、是否已确认）；貘币账目和 App Store 购买记录；用于推送通知的设备标识。',
+        aiTitle: '问小貘',
+        ai: '你同意后才会使用：你发给问小貘的内容经我们的服务器发送到阿里云 Model Studio（新加坡）。对话和草稿只存在你的手机上；「小貘记得」的地点和偏好会同步，你可以查看和删除。',
+        storeTitle: '存放在哪里',
+        store:
+          '数据存放在 Supabase 的新加坡服务器（ap‑southeast‑1）。登录凭证保存在你手机的钥匙串里。',
+        deleteTitle: '删除账号',
+        delete:
+          '在「我的 → 设置 → 删除账号」可以删除账号。会删除：个人资料、收款方式、你发的消息和评价、小貘记得、貘币和贴纸。会保留：对方那边的对话（不含你的消息），以及匿名化的貘币账目和 App 内购买记录。有未结清的付款时不能删除，会告诉你是哪一笔。',
+      },
     },
     me: {
       settings: '设置',
@@ -197,6 +244,7 @@ export default {
       scenes: {
         welcome: '欢迎页',
         profileSetup: '填写名字（长名字）',
+        languageStep: '选择语言',
         settings: '设置（长名字）',
         deleteBlocked: '删除账号（有未结清付款）',
       },

@@ -1,38 +1,42 @@
-import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
+import { AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
-import { AppText } from '@/ui/AppText';
-import { vars } from '@/ui/theme/tokens';
+import { MomentBackground } from '@/ui/MomentBackground';
+import type { ObjectKind } from '@/ui/objectKinds';
 
-import { SignInButtons } from './SignInButtons';
+import { SignInPanel } from './SignInPanel';
+import { WelcomeHero } from './WelcomeHero';
+import { stickerExampleKey, welcomeLayout } from './welcomeLayout';
+import { WelcomeSticker } from './WelcomeSticker';
 
 export function WelcomeScreen({ onLayout }: { onLayout?: () => void }) {
   const { t } = useI18n();
+  const window = useWindowDimensions();
+  const { top } = useSafeAreaInsets();
+  const [panelHeight, setPanelHeight] = useState<number | null>(null);
+  const [picked, setPicked] = useState<ObjectKind | null>(null);
+  const layout =
+    panelHeight === null
+      ? null
+      : welcomeLayout({ width: window.width, height: window.height, panelHeight, topInset: top });
+  const line = picked ? t(stickerExampleKey(picked)) : t('account.welcome.hello');
   return (
-    <SafeAreaView style={styles.screen} testID="welcome-screen" onLayout={onLayout}>
-      <ScrollView contentContainerStyle={styles.content} bounces={false}>
-        <View style={styles.intro}>
-          <AppText variant="large-title" accessibilityRole="header">
-            {t('account.welcome.title')}
-          </AppText>
-          <AppText variant="body" tone="secondaryLabel">
-            {t('account.welcome.tagline')}
-          </AppText>
-        </View>
-        <SignInButtons />
-      </ScrollView>
-    </SafeAreaView>
+    <MomentBackground testID="welcome-screen" onLayout={onLayout}>
+      {layout?.stickers.map((sticker) => (
+        <WelcomeSticker
+          key={sticker.kind}
+          sticker={sticker}
+          label={t(stickerExampleKey(sticker.kind))}
+          onPress={() => {
+            setPicked(sticker.kind);
+            AccessibilityInfo.announceForAccessibility(t(stickerExampleKey(sticker.kind)));
+          }}
+        />
+      ))}
+      {layout ? <WelcomeHero layout={layout} line={line} /> : null}
+      <SignInPanel onMeasure={setPanelHeight} />
+    </MomentBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: PlatformColor('systemGroupedBackground') },
-  content: {
-    flexGrow: 1,
-    justifyContent: 'space-between',
-    padding: vars['--space-5'],
-    gap: vars['--space-7'],
-  },
-  intro: { gap: vars['--space-2'], paddingTop: vars['--space-7'] },
-});

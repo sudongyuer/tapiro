@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 
 import {
   DeleteBlockedScene,
+  LanguageStepScene,
   ProfileSetupScene,
   SettingsScene,
   WelcomeScene,
@@ -24,6 +25,11 @@ export const scenes: Scene[] = [
     id: 'profile-setup',
     titleKey: 'debug.account.scenes.profileSetup',
     Component: ProfileSetupScene,
+  },
+  {
+    id: 'language-step',
+    titleKey: 'debug.account.scenes.languageStep',
+    Component: LanguageStepScene,
   },
   { id: 'settings', titleKey: 'debug.account.scenes.settings', Component: SettingsScene },
   {

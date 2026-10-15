@@ -12,11 +12,27 @@ const en: Translation = {
       },
     },
     welcome: {
-      title: 'Welcome to Tapiro',
-      tagline: 'Students in Malaysia, helping each other out.',
+      wordmark: 'Tapiro',
+      tagline: 'Post a bounty. Help out on your way.',
+      hello: 'Hi there!',
+      headline: 'Tapir has your back in Malaysia',
+      subline: 'Parcels, queues, rides back to YC: students helping each other out.',
+      terms:
+        'By continuing, you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.',
+      examples: {
+        parcel: 'Pick up a parcel · RM 8',
+        coffee: 'Bring a coffee · RM 5',
+        ticket: 'Take a queue number · RM 15',
+        books: 'Explain calculus · RM 20',
+        umbrella: 'Lend an umbrella · on the way',
+        car: '17:00 to YC · 1 more seat',
+        boba: 'Buy bubble tea · RM 6',
+      },
     },
     name: {
       title: 'Your Name',
+      greeting: 'Nice to meet you!',
+      question: 'What’s your name?',
       label: 'Name',
       placeholder: 'Enter your name',
       footer: 'Other students see this name. Up to 40 characters.',
@@ -31,8 +47,41 @@ const en: Translation = {
     },
     language: {
       title: 'Language',
+      greeting: 'One last thing!',
+      question: 'Which language do you prefer?',
       footer: 'Tapiro follows your system language. You can change it later in Settings.',
       done: 'Get Started',
+    },
+    legal: {
+      draft: 'Draft: this text will be replaced before the App Store release.',
+      close: 'Close',
+      contact: 'Contact us: [contact email]',
+      terms: {
+        title: 'Terms of Use',
+        aboutTitle: 'What Tapiro Is',
+        about:
+          'Tapiro helps students in Malaysia help each other: post bounties, help out on the way, share rides.',
+        accountTitle: 'Your Account',
+        account:
+          'You sign in with Apple or Google. You can delete your account in Me → Settings; if a payment is still unsettled, settle it first.',
+        moneyTitle: 'Payments and Coins',
+        money:
+          'Students pay each other directly in their own bank or e-wallet apps, or in cash in person; Tapiro does not handle payments between students. Coins are bought through the App Store, can be used only in Tapiro, and can’t be sent to others or cashed out.',
+      },
+      privacy: {
+        title: 'Privacy Policy',
+        collectTitle: 'What We Collect',
+        collect:
+          'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; the bounties and rides you post, chat messages and images, and reviews; the payment methods you add (DuitNow number, bank account, and the text read from a receive QR code, never the image); screenshots you attach when paying (visible to both sides and moderators); your reports and blocks; payment records (who paid whom, the amount and whether it was confirmed); your coin ledger and App Store purchase records; and a device token for push notifications.',
+        aiTitle: 'Ask Tapir',
+        ai: 'Only after you agree: what you send to Ask Tapir goes through our server to Alibaba Cloud Model Studio (Singapore). Conversations and drafts stay on your phone; the places and preferences in Tapir Remembers are synced, and you can view and delete them.',
+        storeTitle: 'Where It’s Stored',
+        store:
+          'Data is stored with Supabase in Singapore (ap‑southeast‑1). Your sign-in session stays in your phone’s Keychain.',
+        deleteTitle: 'Deleting Your Account',
+        delete:
+          'Delete your account in Me → Settings → Delete Account. Deleted: your profile, payment methods, your messages and reviews, Tapir Remembers, coins and stickers. Kept: the other person’s side of each chat (without your messages), and anonymised coin ledger and in-app purchase records. You can’t delete while a payment is unsettled; Tapiro shows which one.',
+      },
     },
     me: {
       settings: 'Settings',
@@ -200,6 +249,7 @@ const en: Translation = {
       scenes: {
         welcome: 'Welcome',
         profileSetup: 'Name step (long name)',
+        languageStep: 'Language Step',
         settings: 'Settings (long name)',
         deleteBlocked: 'Delete account (unsettled payment)',
       },

@@ -3,6 +3,7 @@ export { DeleteAccountSheet } from './DeleteAccountSheet';
 export { createFixtureAuthService, fixtureUser } from './fixtureAuthService';
 export { useAccountStage, useProfile, useSignedInUser } from './hooks';
 export { LanguageStep } from './LanguageStep';
+export { LegalDocument } from './LegalDocument';
 export { MeView } from './MeView';
 export { NameStep } from './NameStep';
 export { accountActions, profileStore } from './services';
