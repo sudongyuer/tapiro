@@ -16,6 +16,8 @@ assert len(field.get('AXValue') or '') == 40, f'expected the 40-character fixtur
 assert_touch_target(field, 'name field')
 button = ui.element('name-continue')
 assert_touch_target(button, 'continue button')
+screen = ui.read()[0]['frame']
+assert button['frame']['y'] + button['frame']['height'] <= screen['height'], f'continue button is off screen: {button["frame"]}'
 assert title['frame']['y'] < field['frame']['y'] < button['frame']['y'], 'title, field and button are out of order'
 shot = ui.snap('name-step')
 assert_colour(shot, {'x': 2, 'y': field['frame']['y'] + field['frame']['height'] + 60, 'width': 12, 'height': 12},

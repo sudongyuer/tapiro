@@ -53,6 +53,10 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
 
 const styles = StyleSheet.create({
   form: { flex: 1 },
-  heading: { gap: vars['--space-6'], paddingTop: vars['--space-4'] },
+  heading: {
+    gap: vars['--space-6'],
+    paddingTop: vars['--space-4'],
+    paddingHorizontal: vars['--space-5'],
+  },
   actions: { paddingHorizontal: vars['--space-6'], paddingTop: vars['--space-2'] },
 });

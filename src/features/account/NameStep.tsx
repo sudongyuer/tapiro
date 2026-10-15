@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { PlatformColor, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  PlatformColor,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
@@ -31,6 +39,7 @@ export function NameStep({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const { bottom } = useSafeAreaInsets();
   const [draft, setDraft] = useState<string | null>(null);
   const [error, setError] = useState<NameError | null>(null);
   const [saving, setSaving] = useState(false);
@@ -55,15 +64,13 @@ export function NameStep({
   }
 
   return (
-    <MomentBackground onLayout={onLayout}>
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={styles.content}
-        testID="name-step"
-      >
-        <View style={styles.top}>
+    <MomentBackground onLayout={onLayout} testID="name-step">
+      <KeyboardAvoidingView behavior="padding" style={styles.fill}>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.content}
+        >
           <MascotSays line={t('account.name.greeting')} />
           <View style={styles.heading}>
             <AppText variant="moment-title" accessibilityRole="header">
@@ -105,28 +112,28 @@ export function NameStep({
               </AppText>
             )}
           </View>
+        </ScrollView>
+        <View style={[styles.actions, { paddingBottom: bottom + vars['--space-4'] }]}>
+          <PillButton
+            label={t('account.name.continue')}
+            onPress={submit}
+            loading={saving}
+            testID="name-continue"
+          />
         </View>
-        <PillButton
-          label={t('account.name.continue')}
-          onPress={submit}
-          loading={saving}
-          testID="name-continue"
-        />
-      </ScrollView>
+      </KeyboardAvoidingView>
     </MomentBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
   content: {
-    flexGrow: 1,
-    justifyContent: 'space-between',
     paddingHorizontal: vars['--space-6'],
-    paddingTop: vars['--space-4'],
-    paddingBottom: vars['--space-4'],
-    gap: vars['--space-7'],
+    paddingVertical: vars['--space-4'],
+    gap: vars['--space-6'],
   },
-  top: { gap: vars['--space-6'] },
+  actions: { paddingHorizontal: vars['--space-6'], paddingTop: vars['--space-2'] },
   heading: { gap: vars['--space-1'] },
   group: { gap: vars['--space-2'] },
   card: {

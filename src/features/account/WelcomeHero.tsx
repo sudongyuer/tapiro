@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -26,6 +27,10 @@ export function WelcomeHero({ layout, line }: { layout: WelcomeLayout; line: str
   const taglinePop = usePop(TAGLINE_DELAY);
   const bubblePop = usePop(BUBBLE_DELAY);
   const ink = color('--color-on-sticker');
+  const { width } = useWindowDimensions();
+  const [bubbleWidth, setBubbleWidth] = useState(0);
+  const room = width - 2 * vars['--space-4'];
+  const shift = Math.min(layout.bubble.x - vars['--space-4'], room - bubbleWidth);
   return (
     <>
       <Animated.View
@@ -38,31 +43,33 @@ export function WelcomeHero({ layout, line }: { layout: WelcomeLayout; line: str
           </StickerShadow>
         </Animated.View>
       </Animated.View>
-      <View
-        pointerEvents="none"
-        style={[styles.bubbleRow, { left: layout.bubble.x, top: layout.bubble.y }]}
-      >
-        <Animated.View style={bubblePop}>
-          <View
-            accessible
-            accessibilityLabel={line}
-            testID="welcome-bubble"
-            style={[
-              styles.bubble,
-              {
-                backgroundColor: color('--color-stage-bubble'),
-                shadowColor: color('--color-sticker-shadow'),
-              },
-            ]}
-          >
-            <AppText
-              variant="secondary"
-              numberOfLines={2}
-              style={[styles.say, { color: color('--color-on-stage') }]}
+      <View pointerEvents="none" style={[styles.bubbleRow, { top: layout.bubble.y }]}>
+        <Animated.View
+          onLayout={(event) => setBubbleWidth(event.nativeEvent.layout.width)}
+          style={[{ transform: [{ translateX: shift }] }, styles.start]}
+        >
+          <Animated.View style={bubblePop}>
+            <View
+              accessible
+              accessibilityLabel={line}
+              testID="welcome-bubble"
+              style={[
+                styles.bubble,
+                {
+                  backgroundColor: color('--color-stage-bubble'),
+                  shadowColor: color('--color-sticker-shadow'),
+                },
+              ]}
             >
-              {line}
-            </AppText>
-          </View>
+              <AppText
+                variant="secondary"
+                numberOfLines={2}
+                style={[styles.say, { color: color('--color-on-stage') }]}
+              >
+                {line}
+              </AppText>
+            </View>
+          </Animated.View>
         </Animated.View>
       </View>
       <View pointerEvents="none" style={[styles.words, { top: layout.wordmarkTop }]}>
@@ -95,7 +102,13 @@ export function WelcomeHero({ layout, line }: { layout: WelcomeLayout; line: str
 
 const styles = StyleSheet.create({
   mascot: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  bubbleRow: { position: 'absolute', right: vars['--space-4'], alignItems: 'flex-start' },
+  bubbleRow: {
+    position: 'absolute',
+    left: vars['--space-4'],
+    right: vars['--space-4'],
+    alignItems: 'flex-start',
+  },
+  start: { alignSelf: 'flex-start' },
   bubble: {
     borderRadius: vars['--radius-chip'],
     borderCurve: 'continuous',
