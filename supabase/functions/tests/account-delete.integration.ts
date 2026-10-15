@@ -42,6 +42,15 @@ async function userExists(id: string) {
   return Boolean(data.user);
 }
 
+async function payeeMethodCount(id: string) {
+  const { count, error } = await admin
+    .from('payee_methods')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', id);
+  if (error) throw error;
+  return count ?? 0;
+}
+
 const post = (headers: Record<string, string>) => fetch(endpoint, { method: 'POST', headers });
 
 describe('account-delete (local stack)', () => {
@@ -69,14 +78,23 @@ describe('account-delete (local stack)', () => {
     expect(await userExists(a.id)).toBe(true);
   });
 
-  test('deletes the calling user and their profile, leaving another user untouched', async () => {
+  test('deletes the calling user, their profile and payee methods, leaving another user untouched', async () => {
     expect(await profileExists(a.id)).toBe(true);
+    for (const client of [a.client, b.client]) {
+      const { error } = await client
+        .from('payee_methods')
+        .insert({ type: 'duitnow_id', phone: '+60123456789', display_name: 'LIM WEI JIE' });
+      expect(error).toBeNull();
+    }
+    expect(await payeeMethodCount(a.id)).toBe(1);
     const res = await post({ Authorization: `Bearer ${a.token}`, apikey: anonKey });
     expect(res.status).toBe(200);
     expect(await userExists(a.id)).toBe(false);
     expect(await profileExists(a.id)).toBe(false);
+    expect(await payeeMethodCount(a.id)).toBe(0);
     expect(await userExists(b.id)).toBe(true);
     expect(await profileExists(b.id)).toBe(true);
+    expect(await payeeMethodCount(b.id)).toBe(1);
   });
 
   test('works through supabase-js functions.invoke as the app calls it', async () => {

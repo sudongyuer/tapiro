@@ -8,11 +8,14 @@
     "expo": "~57.0.29",
     "expo-apple-authentication": "~57.0.2",
     "expo-build-properties": "~57.0.22",
+    "expo-camera": "~57.0.6",
     "expo-constants": "~57.0.22",
+    "expo-file-system": "~57.0.7",
     "expo-font": "~57.0.4",
     "expo-glass-effect": "~57.0.4",
     "expo-haptics": "~57.0.3",
     "expo-image": "~57.0.5",
+    "expo-image-picker": "~57.0.20",
     "expo-linking": "~57.0.13",
     "expo-localization": "~57.0.2",
     "expo-router": "~57.0.27",
@@ -58,7 +61,7 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "fn:serve": "supabase functions serve",
-    "test:stack": "bun test ./supabase/functions/tests/*.integration.ts ./src/features/account/*.integration.ts"
+    "test:stack": "bun test ./supabase/functions/tests/*.integration.ts ./src/features/account/*.integration.ts ./src/features/payee/*.integration.ts"
   },
   "private": true
 }
