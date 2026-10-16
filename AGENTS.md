@@ -172,8 +172,11 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   and get the answers; a task does not start with open UI questions.
 - Each implementation task writes the UI cases for the screens it changes, in the same task. Do not
   collect cases into a separate task at the end.
-- While a task iterates, run only the UI cases for the screens it touches; the full suite runs once
-  before the PR is opened or updated.
+- UI checks run in three tiers. Smoke (a few core cases, zh-Hans light) and affected (cases whose declared
+  dependencies changed against `main`, selected by the runner; dark only where visuals changed, `ms` only where
+  copy changed) gate every PR. The full matrix does not gate PRs: it runs in the background when the machine is idle
+  and before each TestFlight build. Reason: full runs took 30–104 min per PR and mostly re-checked untouched screens
+  (user, 2026-10-15).
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside
   cause, record it in the ledger and move on; if not, report what is known and ask.
 

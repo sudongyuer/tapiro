@@ -45,6 +45,22 @@ Running file: candidates are added as they appear; the core table is completed b
    (`Ruling:`, `User:`).
 8. The new `require-retro` hook blocked a command whose heredoc text only mentioned `gh pr create`. Fixed in
    `~/work/claude` 8d99a81 with regression cases.
+9. Tag `screenshot-timeout` again (third time). Settling the loops was not enough: at load 3.6 SimRenderServer still
+   runs 100–180% for the first ~25 s of the welcome screen, and cases tap `sign-in-apple` inside that window. The run
+   at load 367 was first attributed to the other project's Simulators; the one CPU sample (3.9%) was taken after the
+   motion had settled, so that attribution was only partly right. Lesson: sample during the failing window, not after.
+   Measured (one change at a time): shadows, outlines and grain cost nothing; any continuous motion, even one plain
+   red view, holds SimRenderServer at 100–150% and every `axe tap` blocks until motion stops, while `describe-ui`
+   stays at 0.2–0.4 s. A Simulator artifact: on device a few transform animations are cheap (shadows without
+   `shadowPath` add a small off-screen pass). Ruling: cases that only need a signed-in user start signed in at the
+   auth fixture boundary; welcome cases wait for rest before tapping.
+12. The `retro-capture` prompt hook also fires on background-task notifications, not only on the user's words.
+    Fixed in `~/work/claude` f25cb68 with a test.
+13. Short replies to background notifications came out in English although the reply-in-Chinese memory covers every
+    user-facing message (violated rule, user had to ask).
+10. The circuit breaker worked twice: runs stopped after 28 and 22 runs instead of burning ~100 minutes.
+11. Cases that only need a signed-in user still drive the welcome screen to sign in; a signed-in start at the auth
+    fixture boundary would skip the expensive screen and shorten every case.
 
 ## Rules and skills
 
