@@ -97,6 +97,21 @@ const ms: typeof zhHans = {
     walletNote:
       'Tapiro tidak dapat menyemak kod Alipay dan WeChat. Pastikan ini kod terima anda sendiri. Hanya kandungan kod disimpan, bukan gambar.',
     retry: 'Pilih Lain',
+    nameLabel: {
+      alipay: 'Nama yang dipaparkan oleh Alipay',
+      wechat: 'Nama yang dipaparkan oleh WeChat',
+    },
+    namePlaceholder: { alipay: 'Seperti dalam Alipay', wechat: 'Seperti dalam WeChat' },
+    nameFooter: {
+      alipay:
+        'Alipay memaparkan nama sebenar anda semasa pembayaran. Pembayar menggunakannya untuk menyemak.',
+      wechat:
+        'WeChat memaparkan nama sebenar anda semasa pembayaran. Pembayar menggunakannya untuk menyemak.',
+    },
+    nameError: {
+      empty: 'Masukkan nama yang dipaparkan oleh {{wallet}}.',
+      invalid: 'Gunakan 60 aksara atau kurang.',
+    },
     steps: {
       alipay:
         '1. Buka Alipay → Terima (收钱) di skrin utama\n2. Ketik Simpan Gambar\n3. Kembali dan pilih gambar itu di bawah',

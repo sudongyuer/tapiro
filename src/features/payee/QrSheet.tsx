@@ -10,6 +10,7 @@ import { isQrMethod, samePayload, type PayeeDetails, type PayeeMethod } from './
 import { QrConfirmForm, QrPickForm, type QrError } from './QrForms';
 import { qrSource } from './services';
 import { SheetChrome } from './SheetChrome';
+import { checkPayeeName } from './validate';
 import { useMethodEditor } from './useMethodEditor';
 
 function toQr(method: PayeeMethod | null): ClassifiedQr | null {
@@ -21,12 +22,12 @@ function toQr(method: PayeeMethod | null): ClassifiedQr | null {
   return null;
 }
 
-function toDetails(qr: ClassifiedQr): PayeeDetails {
+function toDetails(qr: ClassifiedQr, displayName: string): PayeeDetails {
   if (qr.type === 'duitnow_qr') {
     const { payload, acquirerId, mcc, name } = qr;
     return { type: qr.type, payload, acquirerId, mcc, name };
   }
-  return { type: qr.type, payload: qr.payload };
+  return { type: qr.type, payload: qr.payload, displayName };
 }
 
 export function QrSheet({
@@ -89,12 +90,24 @@ export function QrSheet({
     else setError(started.status);
   }
 
-  function save() {
+  function save(name: string) {
     if (!current) return;
+    let displayName = '';
+    if (current.type !== 'duitnow_qr') {
+      const checked = checkPayeeName(name);
+      if (!checked.ok) return setError(checked.reason === 'empty' ? 'nameEmpty' : 'nameInvalid');
+      displayName = checked.value;
+    }
+    setError(null);
     editor.write(
       editor.existing ?? samePayload(editor.methods, current.payload),
-      toDetails(current),
+      toDetails(current, displayName),
     );
+  }
+
+  function clearNameError() {
+    if (error === 'nameEmpty' || error === 'nameInvalid') setError(null);
+    editor.clearSaveFailed();
   }
 
   const shownError = error ?? (editor.saveFailed ? 'saveFailed' : null);
@@ -109,8 +122,10 @@ export function QrSheet({
         mismatch={mismatch}
         error={shownError}
         existing={picked ? null : editor.existing}
+        initialName={sameWalletName(editor.existing, current)}
         onClose={onDone}
         onSave={save}
+        onNameEdit={clearNameError}
         onRetry={() => {
           setError(null);
           setPicked(null);
@@ -138,4 +153,10 @@ function walletOfMethod(method: PayeeMethod) {
   if (!qr) return undefined;
   const wallet = walletOf(qr);
   return wallet === 'duitnow' ? undefined : wallet;
+}
+
+function sameWalletName(existing: PayeeMethod | null, qr: ClassifiedQr) {
+  return existing && existing.type === qr.type && 'displayName' in existing
+    ? existing.displayName
+    : '';
 }

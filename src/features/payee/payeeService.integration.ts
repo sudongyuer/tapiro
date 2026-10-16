@@ -56,7 +56,11 @@ describe('supabase payee service (local stack)', () => {
       displayName: 'LIM WEI JIE',
     });
     await service.add({ type: 'duitnow_qr', ...FIXTURE_QR.tngDetails });
-    await service.add({ type: 'alipay', payload: 'https://qr.alipay.com/fkx12345abcdefghijkl' });
+    await service.add({
+      type: 'alipay',
+      payload: 'https://qr.alipay.com/fkx12345abcdefghijkl',
+      displayName: 'LIM WEI JIE',
+    });
     await service.add({ type: 'cash' });
     const methods = await service.list();
     expect(methods.map((method) => method.type)).toEqual([
@@ -107,9 +111,17 @@ describe('supabase payee service (local stack)', () => {
     const qr = (await service.list()).find((method) => method.type === 'duitnow_qr')!;
     await service.setDefault(qr.id);
     await expect(
-      service.update(qr.id, { type: 'wechat', payload: 'wxp://f2f0abcdEFGH' }),
+      service.update(qr.id, {
+        type: 'wechat',
+        payload: 'wxp://f2f0abcdEFGH',
+        displayName: 'LIM WEI JIE',
+      }),
     ).rejects.toBeDefined();
-    await service.replaceQr(qr.id, { type: 'wechat', payload: 'wxp://f2f0abcdEFGH' });
+    await service.replaceQr(qr.id, {
+      type: 'wechat',
+      payload: 'wxp://f2f0abcdEFGH',
+      displayName: 'LIM WEI JIE',
+    });
     const methods = await service.list();
     expect(methods.some((method) => method.id === qr.id)).toBe(false);
     expect(methods.find((method) => method.isDefault)?.type).toBe('wechat');

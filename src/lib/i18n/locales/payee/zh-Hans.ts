@@ -86,6 +86,13 @@ export default {
     walletNote:
       '支付宝和微信的码 Tapiro 没法核对，请确认是你自己的收款码。只存码的内容，不存图片。',
     retry: '换一张',
+    nameLabel: { alipay: '支付宝里显示的名字', wechat: '微信里显示的名字' },
+    namePlaceholder: { alipay: '和支付宝里一样', wechat: '和微信里一样' },
+    nameFooter: {
+      alipay: '付款时支付宝会显示你的实名，发布者用它核对。',
+      wechat: '付款时微信会显示你的实名，发布者用它核对。',
+    },
+    nameError: { empty: '请填{{wallet}}里显示的名字', invalid: '名字最多 60 个字' },
     steps: {
       alipay:
         '1. 打开支付宝 → 首页「收钱」\n2. 点「保存图片」存到相册\n3. 回来点下面的按钮选这张图',

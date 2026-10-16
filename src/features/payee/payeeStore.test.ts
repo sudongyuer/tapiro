@@ -62,7 +62,11 @@ describe('fixture service keeps the database shape rules', () => {
     const service = createFixturePayeeService('demo');
     const qr = (await service.list()).find((method) => method.type === 'duitnow_qr')!;
     await expect(
-      service.update(qr.id, { type: 'alipay', payload: 'https://qr.alipay.com/fkx1' }),
+      service.update(qr.id, {
+        type: 'alipay',
+        payload: 'https://qr.alipay.com/fkx1',
+        displayName: 'LIM WEI JIE',
+      }),
     ).rejects.toThrow('payee_methods_shape');
   });
 
@@ -73,7 +77,11 @@ describe('fixture service keeps the database shape rules', () => {
     const qr = (await service.list()).find((method) => method.type === 'duitnow_qr')!;
     await store.setDefault(USER, qr.id);
     expect(
-      await store.replaceQr(USER, qr.id, { type: 'alipay', payload: 'https://qr.alipay.com/fkx1' }),
+      await store.replaceQr(USER, qr.id, {
+        type: 'alipay',
+        payload: 'https://qr.alipay.com/fkx1',
+        displayName: 'LIM WEI JIE',
+      }),
     ).toBe(true);
     const methods = await service.list();
     const replaced = methods.find((method) => method.type === 'alipay')!;

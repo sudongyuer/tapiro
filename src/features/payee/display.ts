@@ -15,7 +15,7 @@ export const METHOD_ICONS: Record<PayeeDetails['type'], SFSymbol> = {
   cash: 'banknote.fill',
 };
 
-export function methodTitle(t: TFunction, method: PayeeDetails) {
+export function methodTitle(t: TFunction, method: PayeeDetails | ClassifiedQr) {
   if (method.type === 'duitnow_qr') {
     if (method.acquirerId === TNG_ACQUIRER) return t('payee.types.tng');
     const bank = acquirerName(method.acquirerId);
@@ -37,7 +37,7 @@ export function methodDetail(t: TFunction, method: PayeeDetails) {
       return method.mcc === '0000' ? method.name : joined(method.name, t('payee.detail.business'));
     case 'alipay':
     case 'wechat':
-      return t(`payee.detail.${method.type}`);
+      return joined(method.displayName, t(`payee.detail.${method.type}`));
     case 'cash':
       return '';
   }

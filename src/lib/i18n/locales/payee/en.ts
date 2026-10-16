@@ -96,6 +96,16 @@ const en: typeof zhHans = {
     walletNote:
       'Tapiro can’t check Alipay and WeChat codes. Make sure this is your own receive code. Only the code’s content is saved, never the image.',
     retry: 'Choose Another',
+    nameLabel: { alipay: 'Name Alipay shows', wechat: 'Name WeChat shows' },
+    namePlaceholder: { alipay: 'As in Alipay', wechat: 'As in WeChat' },
+    nameFooter: {
+      alipay: 'Alipay shows your real name when someone pays. Posters use it to check.',
+      wechat: 'WeChat shows your real name when someone pays. Posters use it to check.',
+    },
+    nameError: {
+      empty: 'Enter the name {{wallet}} shows.',
+      invalid: 'Use 60 characters or fewer.',
+    },
     steps: {
       alipay:
         '1. Open Alipay → Receive (收钱) on the home screen\n2. Tap Save Image\n3. Come back and choose that image below',

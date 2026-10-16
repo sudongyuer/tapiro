@@ -28,7 +28,12 @@ function method(id: string, details: Partial<PayeeMethod> = {}): PayeeMethod {
 
 const cash = (id: string) => method(id, { type: 'cash' } as Partial<PayeeMethod>);
 const qr = (id: string, checkedAt: string) =>
-  method(id, { type: 'alipay', payload: 'https://qr.alipay.com/x', checkedAt } as never);
+  method(id, {
+    type: 'alipay',
+    payload: 'https://qr.alipay.com/x',
+    displayName: 'LIM WEI JIE',
+    checkedAt,
+  } as never);
 const defaults = (methods: PayeeMethod[]) => methods.filter((m) => m.isDefault).map((m) => m.id);
 
 describe('default method', () => {

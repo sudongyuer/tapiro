@@ -1,12 +1,25 @@
-import { Button, Form, Host, LabeledContent, Section, Text } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Form,
+  Host,
+  LabeledContent,
+  Section,
+  Text,
+  TextField,
+  useNativeState,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
+  autocorrectionDisabled,
   buttonStyle,
   controlSize,
   font,
   foregroundStyle,
+  textContentType,
+  textInputAutocapitalization,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -17,11 +30,22 @@ import { methodTitle, qrBank, walletName, type QrWallet } from './display';
 import type { PayeeMethod } from './methods';
 import { NoticeCard } from './NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
+import { PAYEE_NAME_MAX } from './validate';
 
-export type QrError = QrRejection | 'denied' | 'unavailable' | 'failed' | 'saveFailed';
+export type QrError =
+  QrRejection | 'denied' | 'unavailable' | 'failed' | 'saveFailed' | 'nameEmpty' | 'nameInvalid';
 
-function QrErrorCard({ error }: { error: QrError }) {
+function QrErrorCard({ error, wallet }: { error: QrError; wallet: string }) {
   const { t } = useI18n();
+  if (error === 'nameEmpty' || error === 'nameInvalid')
+    return (
+      <NoticeCard
+        tone="urgent"
+        icon="exclamationmark.circle.fill"
+        title={t(`payee.qr.nameError.${error === 'nameEmpty' ? 'empty' : 'invalid'}`, { wallet })}
+        testID="payee-qr-error-name"
+      />
+    );
   if (error === 'saveFailed')
     return (
       <NoticeCard
@@ -63,7 +87,7 @@ export function QrPickForm({
     <Host style={styles.host} testID="payee-qr-sheet">
       <SheetChrome title={title} onClose={onClose} />
       <Form modifiers={[tint(color('--color-accent'))]}>
-        {error ? <QrErrorCard error={error} /> : null}
+        {error ? <QrErrorCard error={error} wallet="" /> : null}
         <Section footer={<Text>{t('payee.qr.footer')}</Text>}>
           <Text
             modifiers={[
@@ -103,8 +127,10 @@ export function QrConfirmForm({
   mismatch,
   error,
   existing,
+  initialName,
   onClose,
   onSave,
+  onNameEdit,
   onRetry,
   onMakeDefault,
   onDelete,
@@ -114,8 +140,10 @@ export function QrConfirmForm({
   mismatch: ClassifiedQr | null;
   error: QrError | null;
   existing: PayeeMethod | null;
+  initialName: string;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (name: string) => void;
+  onNameEdit: () => void;
   onRetry: () => void;
   onMakeDefault: () => void;
   onDelete: () => void;
@@ -128,14 +156,20 @@ export function QrConfirmForm({
         bank: qrBank(duitNow),
       })
     : methodTitle(t, qr);
+  const wallet = qr.type === 'alipay' || qr.type === 'wechat' ? qr.type : null;
+  const nameText = useNativeState(initialName);
+  const [typedName, setTypedName] = useState(initialName);
+  const trimmed = typedName.trim().replace(/\s+/g, ' ');
   const seen = duitNow
     ? t('payee.qr.seen', { name: duitNow.name, bank: qrBank(duitNow) })
-    : t('payee.qr.seenWallet', { method: methodTitle(t, qr) });
+    : trimmed
+      ? t('payee.qr.seen', { name: trimmed, bank: walletName(t, qr) })
+      : t('payee.qr.seenWallet', { method: methodTitle(t, qr) });
   return (
     <Host style={styles.host} testID="payee-qr-confirm">
-      <SheetChrome title={title} onClose={onClose} onSave={onSave} />
+      <SheetChrome title={title} onClose={onClose} onSave={() => onSave(nameText.get())} />
       <Form modifiers={[tint(color('--color-accent'))]}>
-        {error ? <QrErrorCard error={error} /> : null}
+        {error ? <QrErrorCard error={error} wallet={walletName(t, qr)} /> : null}
         {mismatch ? (
           <NoticeCard
             tone="warning"
@@ -162,6 +196,28 @@ export function QrConfirmForm({
             {seen}
           </Text>
         </Section>
+        {wallet ? (
+          <Section
+            title={t(`payee.qr.nameLabel.${wallet}`)}
+            footer={<Text>{t(`payee.qr.nameFooter.${wallet}`)}</Text>}
+          >
+            <TextField
+              text={nameText}
+              maxLength={PAYEE_NAME_MAX}
+              onTextChange={(next: string) => {
+                setTypedName(next);
+                onNameEdit();
+              }}
+              placeholder={t(`payee.qr.namePlaceholder.${wallet}`)}
+              testID="payee-name-input"
+              modifiers={[
+                textContentType('name'),
+                textInputAutocapitalization('characters'),
+                autocorrectionDisabled(),
+              ]}
+            />
+          </Section>
+        ) : null}
         <Section>
           <Button
             label={t('payee.qr.retry')}

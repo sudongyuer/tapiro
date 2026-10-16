@@ -71,7 +71,12 @@ export function toColumns(details: PayeeDetails): Columns {
       };
     case 'alipay':
     case 'wechat':
-      return { ...EMPTY, type: details.type, qr_payload: details.payload };
+      return {
+        ...EMPTY,
+        type: details.type,
+        qr_payload: details.payload,
+        display_name: details.displayName,
+      };
     case 'cash':
       return { ...EMPTY, type: details.type };
   }
@@ -105,7 +110,9 @@ function toDetails(row: Row): PayeeDetails | null {
         : null;
     case 'alipay':
     case 'wechat':
-      return row.qr_payload ? { type: row.type, payload: row.qr_payload } : null;
+      return row.qr_payload && row.display_name
+        ? { type: row.type, payload: row.qr_payload, displayName: row.display_name }
+        : null;
     case 'cash':
       return { type: row.type };
   }
@@ -163,6 +170,7 @@ export function createSupabasePayeeService(client: SupabaseClient | null): Payee
           new_acquirer_id: columns.acquirer_id,
           new_mcc: columns.mcc,
           new_qr_name: columns.qr_name,
+          new_display_name: columns.display_name,
         }),
       );
     },

@@ -18,7 +18,7 @@ export type PayeeDetails =
       displayName: string;
     }
   | { type: 'duitnow_qr'; payload: string; acquirerId: string; mcc: string; name: string }
-  | { type: 'alipay' | 'wechat'; payload: string }
+  | { type: 'alipay' | 'wechat'; payload: string; displayName: string }
   | { type: 'cash' };
 
 export type PayeeMethod = PayeeDetails & {

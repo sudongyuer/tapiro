@@ -1,5 +1,5 @@
 begin;
-select plan(43);
+select plan(46);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -48,6 +48,14 @@ select throws_ok(
 select throws_ok(
   $$insert into public.payee_methods (type, qr_payload, phone) values ('alipay', 'https://qr.alipay.com/x', '+60123456789')$$,
   '23514', null, 'fields of another type are rejected'
+);
+select throws_ok(
+  $$insert into public.payee_methods (type, qr_payload) values ('alipay', 'https://qr.alipay.com/x')$$,
+  '23514', null, 'an Alipay code needs the name the wallet shows'
+);
+select throws_ok(
+  $$insert into public.payee_methods (type, qr_payload, display_name) values ('wechat', 'wxp://f2f0abc', '   ')$$,
+  '23514', null, 'a blank wallet name is rejected'
 );
 select throws_ok(
   $$insert into public.payee_methods (type, is_default, qr_payload) values ('alipay', true, 'https://qr.alipay.com/x')$$,
@@ -140,8 +148,13 @@ select lives_ok(
   'the QR becomes the default'
 );
 select lives_ok(
-  $$select public.replace_payee_qr('00000000-0000-4000-8000-000000000003', 'alipay', 'https://qr.alipay.com/fkx1')$$,
+  $$select public.replace_payee_qr('00000000-0000-4000-8000-000000000003', 'alipay', 'https://qr.alipay.com/fkx1', null, null, null, 'ALICE TAN')$$,
   'owner replaces the DuitNow QR with an Alipay code'
+);
+select is(
+  (select display_name from public.payee_methods where type = 'alipay'),
+  'ALICE TAN',
+  'the replacement stores the wallet name'
 );
 select is(
   (select type::text from public.payee_methods where is_default),

@@ -45,8 +45,8 @@ function seed(variant: FixtureVariant): PayeeDetails[] {
     maybank,
     { type: 'duitnow_qr', ...FIXTURE_QR.tngDetails },
     { type: 'duitnow_qr', ...FIXTURE_QR.maybankDetails },
-    { type: 'alipay', payload: FIXTURE_QR.alipay },
-    { type: 'wechat', payload: FIXTURE_QR.wechat },
+    { type: 'alipay', payload: FIXTURE_QR.alipay, displayName: name },
+    { type: 'wechat', payload: FIXTURE_QR.wechat, displayName: name },
     { type: 'cash' },
   ];
 }
