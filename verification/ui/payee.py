@@ -37,9 +37,33 @@ def row_labels(items):
 
 
 SEEN_WALLET = {'zh-Hans': '发布者会看到：{}', 'ms': 'Pembayar akan nampak: {}'}
+SEEN_NAMED = {'zh-Hans': '发布者会看到：{} · {}', 'ms': 'Pembayar akan nampak: {} · {}'}
+WALLET_NAME = {
+    'alipay': {'zh-Hans': '支付宝', 'ms': 'Alipay'},
+    'wechat': {'zh-Hans': '微信', 'ms': 'WeChat'},
+}
+NAME_ERROR = {
+    'zh-Hans': '请填{}里显示的名字',
+    'ms': 'Masukkan nama yang dipaparkan oleh {}.',
+}
+WALLET_PAYEE = 'TANMEILING'
 
 
-def save_wallet_qr(ui, entry, step, prefix=''):
+def fill_wallet_name(ui, wallet, name=WALLET_PAYEE):
+    short = WALLET_NAME[wallet][ui.locale]
+    ui.tap_label(SAVE[ui.locale])
+    expected = NAME_ERROR[ui.locale].format(short)
+    ui.wait_label('payee-qr-error-name', lambda label: expected in label, 'missing wallet name error not shown')
+    ui.capture('name-required')
+    ui.tap('payee-name-input')
+    ui.type(name)
+    ui.wait(lambda items: (by_id(items, 'payee-name-input') or {}).get('AXValue') == name, 'wallet name not typed')
+    seen = SEEN_NAMED[ui.locale].format(name, short)
+    ui.wait_label('payee-qr-seen', lambda label: label == seen, f'confirm line is not {seen!r}')
+    return seen
+
+
+def save_wallet_qr(ui, entry, wallet, step, prefix=''):
     before = row_labels(ui.read())
     add_from_menu(ui, entry)
     ui.element('payee-qr-sheet')
@@ -50,11 +74,12 @@ def save_wallet_qr(ui, entry, step, prefix=''):
     items = ui.wait_label('payee-qr-seen', lambda label: label == seen, f'confirm line is not {seen!r}')
     items = ui.read()
     assert by_id(items, 'payee-qr-mismatch') is None, 'a matching wallet code showed the wallet-switch line'
+    fill_wallet_name(ui, wallet)
     ui.capture(f'{prefix}02-confirm')
     ui.tap_label(SAVE[ui.locale])
     ui.gone('payee-qr-confirm')
     items = ui.wait(lambda items: len(row_labels(items)) == len(before) + 1 and items, f'{entry[ui.locale]} row did not appear')
     added = [row for row in row_labels(items) if row not in before]
-    assert len(added) == 1 and entry[ui.locale] in added[0], f'new row is not {entry[ui.locale]}: {added}'
+    assert len(added) == 1 and entry[ui.locale] in added[0] and WALLET_PAYEE in added[0], f'new row is not {entry[ui.locale]} with the name: {added}'
     ui.capture(f'{prefix}03-saved')
     return added[0]

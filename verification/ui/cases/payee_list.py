@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, assert_colour, assert_touch_target, by_id, close, token  # noqa: E402
 from driver import accessory  # noqa: E402
-from payee import ALIPAY, DEFAULT, MENU_ORDER, SAVE, TNG, open_menu, open_payee, row_labels  # noqa: E402
+from payee import ALIPAY, DEFAULT, MENU_ORDER, SAVE, TNG, fill_wallet_name, open_menu, open_payee, row_labels  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 260
@@ -52,6 +52,7 @@ assert_appearance(shot.path, ui.appearance, 20, 2500, 'screen background')
 ui.tap('payee-recheck-action')
 ui.tap('payee-qr-pick')
 ui.wait_label('payee-qr-mismatch', lambda label: MISMATCH[ui.locale] in label, 'wallet switch was not confirmed')
+fill_wallet_name(ui, 'alipay')
 ui.capture('injected-02-switch')
 ui.tap_label(SAVE[ui.locale])
 ui.gone('payee-qr-confirm')
