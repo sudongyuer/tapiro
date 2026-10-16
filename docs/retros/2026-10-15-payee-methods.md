@@ -76,6 +76,12 @@ Running file: candidates are added as they appear; the core table is completed b
 14. Two one-off failures after the signed-in change (`welcome_a` dark wrong background colour once; `account_flow`
     dark ms `describe-ui` error once) passed on a targeted rerun; tags `pixel-mismatch`, `axe-describe-error`.
 
+15. Walkthrough escape: the primary path (支付宝/微信 entry → own receive code → saved) had no UI case, and the real
+    photo picker path had none; payee_qr injected a paying code then a Maybank code, so the evidence showed "tap
+    Alipay, get Maybank" with no label. The user caught it. Root cause: no traceability from user stories (wallets
+    first) to cases; injected steps not marked. Fix: main-path cases, a real-picker case via `simctl addmedia`,
+    `injected-` capture prefix; story map next.
+
 ## Changes picked from this retro
 
 Applied during the step (user-approved): settle ambient loops + lint rule; runner timeout wording, render CPU,
