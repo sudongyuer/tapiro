@@ -10,4 +10,6 @@ export const payeeStore = createPayeeStore(
   uiVerify ? createFixturePayeeService(uiVerifyFixture) : createSupabasePayeeService(getSupabase()),
 );
 
-export const qrSource = uiVerify ? fixtureQrSource(uiVerifyArgument('uiVerifyQr')) : deviceQrSource;
+const fixtureScans = uiVerifyArgument('uiVerifyQr');
+
+export const qrSource = fixtureScans ? fixtureQrSource(fixtureScans) : deviceQrSource;
