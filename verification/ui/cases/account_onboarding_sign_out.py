@@ -22,6 +22,7 @@ assert f['height'] >= 36 and f['width'] >= 44, f'sign-out header button is too s
 ui.tap_point(f['x'] + f['width'] / 2, f['y'] - 4)
 ui.gone('name-input')
 ui.element('sign-in-apple')
+ui.at_rest()
 ui.capture('02-welcome')
 
 sign_in_apple(ui)

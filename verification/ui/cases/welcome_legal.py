@@ -41,6 +41,7 @@ for index, page in enumerate(('terms', 'privacy')):
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] - 10)
     ui.wait_label('legal-draft', lambda text: text.startswith(DRAFT[ui.locale]), f'{page} draft marker missing')
     ui.labelled(TITLES[ui.locale][page])
+    ui.at_rest()
     ui.capture(f'{index + 1}-{page}')
     if page == 'terms':
         ui.tap_label(CLOSE[ui.locale])

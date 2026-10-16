@@ -150,6 +150,7 @@ def main():
     parser.add_argument('--udid')
     parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
+    parser.add_argument('--locale')
     parser.add_argument('cases', nargs='*')
     args = parser.parse_args()
 
@@ -189,7 +190,7 @@ def main():
     runs = [(case, *case_meta(case)) for case in cases]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
-            for locale in locales:
+            for locale in [l for l in locales if args.locale in (None, l)]:
                 out = Path(args.output) / locale / appearance / case
                 status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
                 failures += status != 'pass'

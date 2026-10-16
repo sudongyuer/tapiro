@@ -31,6 +31,7 @@ def open_settings():
 
 
 ui.element('sign-in-apple')
+ui.at_rest()
 shot = ui.capture('01-welcome')
 assert_appearance(shot, ui.appearance, 20, 2500, 'welcome background')
 
@@ -87,6 +88,7 @@ ui.capture('07-delete-sheet')
 ui.tap('delete-account-confirm')
 ui.gone('delete-account-confirm')
 ui.element('sign-in-apple', timeout=10)
+ui.at_rest()
 ui.capture('08-deleted-welcome')
 
 sign_in()

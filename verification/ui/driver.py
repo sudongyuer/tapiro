@@ -161,11 +161,15 @@ class UI:
                            check=True, timeout=20, capture_output=True)
             return path.read_bytes()
 
-    def at_rest(self, message='the screen never came to rest', timeout=30, gap=1.0):
+    def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0):
         deadline = time.monotonic() + timeout
         previous = None
         while time.monotonic() < deadline:
-            current = self.frame_bytes()
+            try:
+                current = self.frame_bytes()
+            except subprocess.TimeoutExpired:
+                previous = None
+                continue
             if current == previous:
                 return
             previous = current
