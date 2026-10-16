@@ -32,8 +32,8 @@ export default {
   detail: {
     joined: '{{first}} · {{second}}',
     business: '商家收款码',
-    alipay: '已识别 · 适合同样用支付宝的人',
-    wechat: '已识别 · 适合同样用微信的人',
+    alipay: '已识别',
+    wechat: '已识别',
   },
   cash: {
     header: '当面',

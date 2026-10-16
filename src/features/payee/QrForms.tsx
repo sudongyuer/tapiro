@@ -212,7 +212,7 @@ export function QrConfirmForm({
               testID="payee-name-input"
               modifiers={[
                 textContentType('name'),
-                textInputAutocapitalization('characters'),
+                textInputAutocapitalization('never'),
                 autocorrectionDisabled(),
               ]}
             />

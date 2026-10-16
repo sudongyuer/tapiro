@@ -41,8 +41,8 @@ const en: typeof zhHans = {
   detail: {
     joined: '{{first}} · {{second}}',
     business: 'Business QR',
-    alipay: 'Recognised · for posters who use Alipay',
-    wechat: 'Recognised · for posters who use WeChat',
+    alipay: 'Recognised',
+    wechat: 'Recognised',
   },
   cash: {
     header: 'In Person',

@@ -41,8 +41,8 @@ const ms: typeof zhHans = {
   detail: {
     joined: '{{first}} · {{second}}',
     business: 'QR Perniagaan',
-    alipay: 'Dikenal pasti · untuk pembayar yang guna Alipay',
-    wechat: 'Dikenal pasti · untuk pembayar yang guna WeChat',
+    alipay: 'Dikenal pasti',
+    wechat: 'Dikenal pasti',
   },
   cash: {
     header: 'Bersemuka',
