@@ -2,7 +2,7 @@
 branch: feat/payee-methods
 date: 2026-10-15
 pr: not opened yet
-status: running (step not finished)
+status: complete before PR
 ---
 
 # Retro: foundation step 3 — payee methods
@@ -11,18 +11,18 @@ Running file: candidates are added as they appear; the core table is completed b
 
 ## Core (mandatory)
 
-| Dimension | Measure                                                       | This step                                                                                                                    |
-| --------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Quality   | Defects escaping review (walkthrough, CI, after merge)        | pending                                                                                                                      |
-| Quality   | Checks that could not fail (vacuous)                          | 1: `payee_list` "cash above accessory" passed with 3 rows; fixed by `payee_long`                                             |
-| Quality   | Skipped verifications / open device checks / new known limits | camera scan, real screenshot decode, per-wallet save-step names, character-counted lengths on a real DuitNow code            |
-| Quality   | Acceptance criteria with no covering test and no device mark  | unknown: no story map yet                                                                                                    |
-| Speed     | Wall-clock first commit to PR; budget vs actual               | pending (implement 73 min vs ~3 h budget; fix round 1 53 min vs 90; follow-ups 17 min vs 40)                                 |
-| Speed     | Wasted time by class                                          | outside interference ~25 min (other projects' Simulators); full suite 104 min with 53 timeouts (cause under investigation)   |
-| Speed     | Rework rounds                                                 | 2 (review → fix round 1 → follow-ups)                                                                                        |
-| Autonomy  | Avoidable interventions                                       | 3 so far: wallets-over-banks came after implementation; the user raised coverage; the user asked where retro items were kept |
-| Autonomy  | Rulings made / overturned                                     | pending                                                                                                                      |
-| Loop      | Minutes spent on this retro                                   | pending                                                                                                                      |
+| Dimension | Measure                                                       | This step                                                                                                                                                                                                 |
+| --------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Quality   | Defects escaping review (walkthrough, CI, after merge)        | 0 so far (walkthrough pending)                                                                                                                                                                            |
+| Quality   | Checks that could not fail (vacuous)                          | 1: `payee_list` "cash above accessory" passed with 3 rows; fixed by `payee_long`                                                                                                                          |
+| Quality   | Skipped verifications / open device checks / new known limits | camera scan, real screenshot decode, per-wallet save-step names, character-counted lengths on a real DuitNow code                                                                                         |
+| Quality   | Acceptance criteria with no covering test and no device mark  | unknown: no story map yet (next PR)                                                                                                                                                                       |
+| Speed     | Wall-clock first commit to PR; budget vs actual               | 14.0 h first to last commit; implement 73 min vs ~3 h, fix round 1 53 min vs 90, follow-ups 17 min vs 40, signed-in start 141 min vs 75                                                                   |
+| Speed     | Wasted time by class                                          | Simulator timeouts on the welcome screen ~184 min across four suite runs (104, 24, 12, 44) plus ~30 min debugging; outside interference ~25 min; one dead-end attribution to load                         |
+| Speed     | Rework rounds                                                 | 2 review rounds, plus 3 rounds on the welcome-motion hang                                                                                                                                                 |
+| Autonomy  | Avoidable interventions                                       | 8 of 17 cue messages (57 user messages): wallets-over-banks, coverage map, where retro items live, run animate-expo, "maybe a misjudgement", unwatched long run, reply in Chinese, why another full suite |
+| Autonomy  | Rulings made / overturned                                     | 8 listed in the PR under "Decided for you" / 0 overturned so far                                                                                                                                          |
+| Loop      | Minutes spent on this retro                                   | ~15 (running file kept during the step)                                                                                                                                                                   |
 
 ## Candidates (first occurrence, not yet generalised)
 
@@ -54,21 +54,31 @@ Running file: candidates are added as they appear; the core table is completed b
    stays at 0.2–0.4 s. A Simulator artifact: on device a few transform animations are cheap (shadows without
    `shadowPath` add a small off-screen pass). Ruling: cases that only need a signed-in user start signed in at the
    auth fixture boundary; welcome cases wait for rest before tapping.
-12. The `retro-capture` prompt hook also fires on background-task notifications, not only on the user's words.
+10. The `retro-capture` prompt hook also fires on background-task notifications, not only on the user's words.
     Fixed in `~/work/claude` f25cb68 with a test.
-13. Short replies to background notifications came out in English although the reply-in-Chinese memory covers every
+11. Short replies to background notifications came out in English although the reply-in-Chinese memory covers every
     user-facing message (violated rule, user had to ask).
-10. The circuit breaker worked twice: runs stopped after 28 and 22 runs instead of burning ~100 minutes.
-11. Cases that only need a signed-in user still drive the welcome screen to sign in; a signed-in start at the auth
+12. The circuit breaker worked twice: runs stopped after 28 and 22 runs instead of burning ~100 minutes.
+13. Cases that only need a signed-in user still drive the welcome screen to sign in; a signed-in start at the auth
     fixture boundary would skip the expensive screen and shorten every case.
 
 ## Rules and skills
 
 - Helped: Pace 20-minute time-box (outside stalls were not chased); review before the PR caught UTF-8 CRC, WeChat order
   codes, QR type switch and load states.
-- Unused: pending
+- Unused: none observed
 - Violated: AGENTS.md Animation "build UI motion with the `animate-expo` skill" (candidate 8)
 
 ## Kept (worked well)
 
 - Canvas decisions before implementation: six questions answered in one round.
+
+14. Two one-off failures after the signed-in change (`welcome_a` dark wrong background colour once; `account_flow`
+    dark ms `describe-ui` error once) passed on a targeted rerun; tags `pixel-mismatch`, `axe-describe-error`.
+
+## Changes picked from this retro
+
+Applied during the step (user-approved): settle ambient loops + lint rule; runner timeout wording, render CPU,
+breaker, machine-wide lock; signed-in verify start; tiered UI checks; story map planned; `compound-loop` triggers,
+capture hook and metrics; `ios-ui-verify` and motion standards updated; expo-ios-starter rules adopted.
+Open: `tapiro-step` skill (with the `animate-expo` gate in briefs and reviews); runner selection of affected cases.
