@@ -8,7 +8,7 @@ from payee import ALIPAY, DEFAULT, MENU_ORDER, SAVE, TNG, open_menu, open_payee,
 
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 260
-ARGS = ['-uiVerifyQr', 'alipay']
+ARGS = ['-uiVerifyQr', 'alipay', '-uiVerifySignedIn', 'onboarded']
 MISMATCH = {'zh-Hans': '这是支付宝的码，按支付宝收钱码保存？', 'ms': 'Ini kod Alipay. Simpan sebagai Kod Terima Alipay?'}
 
 DUE = {'zh-Hans': '有收款码需要重新确认', 'ms': 'Kod QR perlu disemak semula'}

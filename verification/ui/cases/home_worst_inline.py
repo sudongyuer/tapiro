@@ -4,11 +4,10 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id, reach_home  # noqa: E402
 
-ARGS = ['-uiVerifyFixture', 'worst', '-uiVerifyShellFeed', 'oweMoney']
+ARGS = ['-uiVerifyFixture', 'worst', '-uiVerifyShellFeed', 'oweMoney', '-uiVerifySignedIn', 'onboarded']
 LOCALES = ['zh-Hans', 'ms']
 
 ui = UI(*sys.argv[1:])
-ui.element('sign-in-apple')
 reach_home(ui)
 ui.settled(lambda items: by_id(items, 'live-card-oweMoney'), 'home never settled')
 for _ in range(4):

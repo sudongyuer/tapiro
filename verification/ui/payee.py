@@ -13,7 +13,6 @@ MENU_ORDER = [ALIPAY, WECHAT, TNG, PHONE, BANK, CASH]
 
 
 def open_payee(ui, on_me=None):
-    ui.element('sign-in-apple')
     reach_home(ui)
     ui.tap('tab-me')
     ui.element('me-payee')

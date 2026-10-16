@@ -16,6 +16,7 @@ COPY = {
     },
 }
 
+ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 
 
@@ -47,7 +48,6 @@ def open_sheet(tab, name):
     ui.wait(lambda items: selected(items) == [tab], f'{tab} is not selected after closing the sheet')
 
 
-ui.element('sign-in-apple')
 reach_home(ui)
 open_sheet('tab-bounty', '01-sheet-from-bounty')
 ui.element('home-scroll')

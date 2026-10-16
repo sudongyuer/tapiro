@@ -62,6 +62,7 @@ else:
 assert_colour(shot, {'x': 2, 'y': 230, 'width': 12, 'height': 12},
               token('--color-moment-bg', ui.appearance), 'moment background')
 
+ui.at_rest()
 ui.axe('tap', '--id', 'welcome-sticker-coffee', '--post-delay', '0.5')
 ui.wait_label('welcome-bubble', lambda text: text == EXAMPLES[ui.locale]['coffee'],
               'bubble did not show the coffee example')

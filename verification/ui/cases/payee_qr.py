@@ -6,7 +6,7 @@ from driver import UI, assert_colour, by_id, token  # noqa: E402
 from payee import ALIPAY, SAVE, add_from_menu, open_payee, row_labels  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifyFixture', 'one', '-uiVerifyQr', 'paying,duitnow']
+ARGS = ['-uiVerifyFixture', 'one', '-uiVerifyQr', 'paying,duitnow', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 220
 PAYING = {'zh-Hans': '这是付款码，不是收款码。', 'ms': 'Ini kod bayar, bukan kod terima.'}
 STEP = {'zh-Hans': '首页「收钱」', 'ms': 'Terima (收钱)'}

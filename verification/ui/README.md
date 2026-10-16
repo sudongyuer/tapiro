@@ -19,6 +19,7 @@ launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items 
 four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
 same items, the 消息 badge, the fixture user's name and the seeded payee methods (`worst`: 40-character names, long routes,
 RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread; `empty`: no payee methods; `worst` also seeds seven payee methods with long names).
+`-uiVerifySignedIn [onboarded]` starts with the fixture session already signed in (with `onboarded`, onboarding is also done, so the app opens on home); `reach_home` then only waits for home. Cases that just need home, tabs or payee use it; only cases that test welcome, sign-in or onboarding go through welcome, and they call `ui.at_rest()` (or `sign_in_apple`) before tapping, because any continuous motion blocks `axe tap`.
 `-uiVerifyQr <names>` replaces the screenshot picker and camera at the decode boundary: each pick
 returns the next fixture in the comma-separated list (`duitnow`, `paying`, `dynamic`, `alipay`,
 `none`; default `duitnow`), so a case can show an error and then a success. Each run writes

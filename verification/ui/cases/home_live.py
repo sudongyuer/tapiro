@@ -5,9 +5,8 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI, assert_home  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifyShellFeed', 'rideSoon,bountyInProgress']
+ARGS = ['-uiVerifyShellFeed', 'rideSoon,bountyInProgress', '-uiVerifySignedIn', 'onboarded']
 
 ui = UI(*sys.argv[1:])
-ui.element('sign-in-apple')
 assert_home(ui, 'live', 'live', ['rideSoon', 'bountyInProgress'])
 print('PASS: live stage, ride card in front, two-card stack')

@@ -6,7 +6,7 @@ from driver import UI, assert_appearance, by_id  # noqa: E402
 from payee import DEFAULT, PHONE, SAVE, add_from_menu, open_payee, row_labels  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifyFixture', 'empty']
+ARGS = ['-uiVerifyFixture', 'empty', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 220
 NAME_ERROR = {'zh-Hans': '请填银行显示的名字', 'ms': 'Masukkan nama yang dipaparkan oleh bank.'}
 

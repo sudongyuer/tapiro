@@ -6,7 +6,7 @@ from driver import UI, accessory, assert_appearance, by_id  # noqa: E402
 from payee import open_payee, row_labels  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifyFixture', 'worst']
+ARGS = ['-uiVerifyFixture', 'worst', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 220
 
 ui = UI(*sys.argv[1:])

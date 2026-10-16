@@ -104,6 +104,7 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         proc = subprocess.run(
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=budget,
+            env={**os.environ, 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
         )
         (out / 'log.txt').write_text(proc.stdout + proc.stderr)
         lines = (proc.stdout if proc.returncode == 0 else proc.stderr or proc.stdout).strip().splitlines()

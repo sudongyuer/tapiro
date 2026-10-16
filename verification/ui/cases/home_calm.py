@@ -5,10 +5,9 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import ACCESSORIES, UI, assert_appearance, assert_home, assert_touch_target, by_id  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifyShellFeed', 'none']
+ARGS = ['-uiVerifyShellFeed', 'none', '-uiVerifySignedIn', 'onboarded']
 
 ui = UI(*sys.argv[1:])
-ui.element('sign-in-apple')
 items = assert_home(ui, 'calm', 'calm', ['calm'])
 assert_touch_target(by_id(items, 'home-ask'), 'home-ask')
 ask = by_id(items, 'home-ask')['frame']

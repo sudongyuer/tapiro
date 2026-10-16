@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import struct
 import sys
@@ -24,6 +25,7 @@ class UI:
     def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
         self.output.mkdir(parents=True, exist_ok=True)
+        self.launch_args = os.environ.get('TAPIRO_VERIFY_ARGS', '').split()
 
     def axe(self, *args, timeout=20):
         started = time.monotonic()
@@ -176,8 +178,17 @@ class UI:
         return Shot(path, points)
 
 
-def reach_home(ui):
+def sign_in_apple(ui):
+    ui.element('sign-in-apple')
+    ui.at_rest()
     ui.tap('sign-in-apple')
+
+
+def reach_home(ui):
+    if '-uiVerifySignedIn' in ui.launch_args:
+        ui.element('home-scroll')
+        return
+    sign_in_apple(ui)
     ui.wait(lambda items: any(i.get('AXUniqueId') == 'name-input' and i.get('AXValue') for i in items),
             'name not prefilled from the fixture profile')
     ui.tap('name-continue')

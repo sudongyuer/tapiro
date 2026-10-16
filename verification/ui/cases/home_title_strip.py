@@ -8,6 +8,7 @@ from driver import (TAB_LABELS, TITLE, UI, assert_appearance, bottom, by_id, clo
 LOCALES = ['zh-Hans', 'ms']
 STRIP_ROW = 44
 
+ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 title = TITLE[ui.locale]
 
@@ -59,7 +60,6 @@ def assert_strip_under_bar(shot):
     assert max(abs(a - b) for a, b in zip(below, band)) > 20, f'strip does not end {STRIP_ROW} pt under the bar: {band} vs {below}'
 
 
-ui.element('sign-in-apple')
 reach_home(ui)
 f = expanded_title()['frame']
 shot = ui.snap('01-expanded')
