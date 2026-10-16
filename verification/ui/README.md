@@ -22,7 +22,16 @@ RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread; `empty`: n
 `-uiVerifySignedIn [onboarded]` starts with the fixture session already signed in (with `onboarded`, onboarding is also done, so the app opens on home); `reach_home` then only waits for home. Cases that just need home, tabs or payee use it; only cases that test welcome, sign-in or onboarding go through welcome, and they call `ui.at_rest()` (or `sign_in_apple`) before tapping, because any continuous motion blocks `axe tap`.
 `-uiVerifyQr <names>` replaces the screenshot picker and camera at the decode boundary: each pick
 returns the next fixture in the comma-separated list (`duitnow`, `paying`, `dynamic`, `alipay`,
-`none`; default `duitnow`), so a case can show an error and then a success. Each run writes
+`wechat`, `none`), so a case can show an error and then a success. The system photo picker never
+opens, so captures taken after an injected pick are named `injected-…` and the case docstring says so.
+Without `-uiVerifyQr` the app uses the device source (expo-image-picker + `scanFromURLAsync`):
+`payee_qr_real` adds the PNGs in `media/` to the Simulator library with `xcrun simctl addmedia`
+before each pick, finds the picker cell by the image's tint (Alipay `#b8e4ff`, DuitNow TNG
+`#ffd8a8` light modules) and taps it by coordinates, because the picker runs out of process and
+`axe describe-ui` does not expose its cells. simctl cannot remove photos, so the library grows by
+two images per run; the case does not depend on order or count. The PNGs were made with segno
+1.6.1 (scale 12, border 8); the DuitNow payload is a static TNG code for NURUL AINA BINTI AHMAD
+with a valid CRC. Each run writes
 `result.json` with commit, locale, Xcode, device and `duration_s` (wall-clock seconds of that
 case, locale and appearance); the runner ends with a per-case timing table and the total, and
 `verify:build` prints its own wall-clock seconds.
@@ -70,6 +79,9 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `payee_list`                  | 我的 shows a red dot for a stale QR; the list shows the default mark, a masked bank number, the re-check banner and the cash toggle clear of the accessory; re-picking the TNG code with an Alipay code confirms the switch and replaces the row; the + menu lists Alipay, WeChat, TNG, then 其他. | —                | `-uiVerifyQr alipay`                 |
 | `payee_add_duitnow`           | With no methods, the + menu adds a DuitNow phone; the bank name is required; the saved row is the default.                                                                                                                                                                                         | —                | `-uiVerifyFixture empty`             |
 | `payee_qr`                    | From 支付宝收钱码 the sheet shows Alipay's steps; a paying code shows the red card and saves nothing; a DuitNow code is accepted after a wallet-switch line and 发布者会看到 name · bank.                                                                                                          | —                | `one`, `-uiVerifyQr paying,duitnow`  |
+| `payee_qr_alipay`             | From 支付宝收钱码 an injected Alipay receive code confirms as 支付宝收钱码 with no wallet-switch line and saves the Alipay row.                                                                                                                                                                     | —                | `one`, `-uiVerifyQr alipay`          |
+| `payee_qr_wechat`             | From 微信收款码 an injected `wxp://` receive code confirms as 微信收款码 with no wallet-switch line and saves the WeChat row.                                                                                                                                                                       | —                | `one`, `-uiVerifyQr wechat`          |
+| `payee_qr_real`               | Real system photo picker, nothing injected: a generated Alipay QR and a DuitNow TNG QR are decoded on device, confirm and save. zh-Hans; passes in light and dark.                                                                                                                                                     | —                | `one`                                |
 | `payee_long`                  | Seven worst-case methods (long bank and payee names); after scrolling to the bottom the cash row sits fully above the accessory and tab bar.                                                                                                                                                       | —                | `-uiVerifyFixture worst`             |
 
 ## Adding a case

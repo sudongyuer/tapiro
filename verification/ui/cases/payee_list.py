@@ -1,4 +1,4 @@
-"""我的 shows a red dot for a stale QR; 收款方式 lists the default mark, a masked bank number, the yellow re-check banner and the cash toggle above the accessory; the + menu puts Alipay, WeChat and TNG first; re-picking the stale TNG code with an Alipay screenshot confirms the switch and replaces the row."""
+"""我的 shows a red dot for a stale QR; 收款方式 lists the default mark, a masked bank number, the yellow re-check banner and the cash toggle above the accessory; the + menu puts Alipay, WeChat and TNG first; re-picking the stale TNG code with an Alipay screenshot confirms the switch and replaces the row. The Alipay pick is injected at the decode boundary (`-uiVerifyQr`), so the photo picker never opens and the switch and replaced captures carry the `injected-` prefix."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -52,14 +52,14 @@ assert_appearance(shot.path, ui.appearance, 20, 2500, 'screen background')
 ui.tap('payee-recheck-action')
 ui.tap('payee-qr-pick')
 ui.wait_label('payee-qr-mismatch', lambda label: MISMATCH[ui.locale] in label, 'wallet switch was not confirmed')
-ui.capture('02-switch')
+ui.capture('injected-02-switch')
 ui.tap_label(SAVE[ui.locale])
 ui.gone('payee-qr-confirm')
 items = ui.wait(lambda items: any(ALIPAY[ui.locale] in r for r in row_labels(items)) and items, 'Alipay row did not replace the TNG row')
 rows = row_labels(items)
 assert len(rows) == 3 and not any(TNG[ui.locale] in r for r in rows), rows
 ui.gone('payee-recheck', timeout=5)
-ui.capture('03-replaced')
+ui.capture('injected-03-replaced')
 
 items = ui.read()
 cash, bar = by_id(items, 'payee-cash'), accessory(items)

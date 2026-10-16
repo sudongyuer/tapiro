@@ -1,4 +1,4 @@
-from driver import reach_home
+from driver import by_id, reach_home
 
 ADD = {'zh-Hans': '添加收款方式', 'ms': 'Tambah Kaedah'}
 SAVE = {'zh-Hans': '保存', 'ms': 'Simpan'}
@@ -34,3 +34,27 @@ def add_from_menu(ui, labels):
 
 def row_labels(items):
     return [i.get('AXLabel') or '' for i in items if (i.get('AXUniqueId') or '').startswith('payee-row-')]
+
+
+SEEN_WALLET = {'zh-Hans': '发布者会看到：{}', 'ms': 'Pembayar akan nampak: {}'}
+
+
+def save_wallet_qr(ui, entry, step, prefix=''):
+    before = row_labels(ui.read())
+    add_from_menu(ui, entry)
+    ui.element('payee-qr-sheet')
+    ui.wait_label('payee-qr-steps', lambda label: step[ui.locale] in label, f'{entry[ui.locale]} save steps missing')
+    ui.capture('01-pick')
+    ui.tap('payee-qr-pick')
+    seen = SEEN_WALLET[ui.locale].format(entry[ui.locale])
+    items = ui.wait_label('payee-qr-seen', lambda label: label == seen, f'confirm line is not {seen!r}')
+    items = ui.read()
+    assert by_id(items, 'payee-qr-mismatch') is None, 'a matching wallet code showed the wallet-switch line'
+    ui.capture(f'{prefix}02-confirm')
+    ui.tap_label(SAVE[ui.locale])
+    ui.gone('payee-qr-confirm')
+    items = ui.wait(lambda items: len(row_labels(items)) == len(before) + 1 and items, f'{entry[ui.locale]} row did not appear')
+    added = [row for row in row_labels(items) if row not in before]
+    assert len(added) == 1 and entry[ui.locale] in added[0], f'new row is not {entry[ui.locale]}: {added}'
+    ui.capture(f'{prefix}03-saved')
+    return added[0]
