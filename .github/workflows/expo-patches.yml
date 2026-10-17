@@ -1,0 +1,35 @@
+name: Expo patch updates
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
+      - run: bun install --frozen-lockfile
+      - run: bunx expo install --fix
+      - name: Open a PR when versions changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git diff --quiet package.json bun.lock && exit 0
+          branch="chore/expo-patches-$(date +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add package.json bun.lock
+          git commit -m "chore(deps): update Expo SDK 57 patch releases"
+          git push origin "$branch"
+          gh pr create --title "chore(deps): update Expo SDK 57 patch releases" --body "Weekly Expo patch update from \`expo install --fix\`. Before merging: \`pod install\` (update ExpoModulesCore and ExpoModulesWorklets together if CocoaPods asks), \`bun run verify:build\` and the smoke UI cases."

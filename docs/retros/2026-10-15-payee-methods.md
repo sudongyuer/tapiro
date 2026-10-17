@@ -82,6 +82,10 @@ Running file: candidates are added as they appear; the core table is completed b
     first) to cases; injected steps not marked. Fix: main-path cases, a real-picker case via `simctl addmedia`,
     `injected-` capture prefix; story map next.
 
+16. Tag `expo-patch-drift` second time: CI failed on PR #4 because Expo shipped patch releases (first on PR #2).
+    Generalised (user pick 1): CI warns when only the version check fails (`scripts/expo-doctor-ci.mjs`, tested), and a
+    weekly workflow opens the upgrade PR.
+
 ## Changes picked from this retro
 
 Applied during the step (user-approved): settle ambient loops + lint rule; runner timeout wording, render CPU,
