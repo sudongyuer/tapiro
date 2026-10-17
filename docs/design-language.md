@@ -90,11 +90,13 @@ System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackg
 
 ### Status
 
-| Token             | Light     | Dark      | Use                                      |
-| ----------------- | --------- | --------- | ---------------------------------------- |
-| `--color-urgent`  | `#C4321F` | `#FF6B5A` | Deadline under 1 h, overdue, destructive |
-| `--color-success` | `#187A50` | `#3ECF8E` | Completed                                |
-| `--color-warning` | `#965A00` | `#FFB340` | Needs your action                        |
+| Token                  | Light     | Dark      | Use                                                 |
+| ---------------------- | --------- | --------- | --------------------------------------------------- |
+| `--color-urgent`       | `#C4321F` | `#FF6B5A` | Deadline under 1 h, overdue, destructive            |
+| `--color-success`      | `#187A50` | `#3ECF8E` | Completed                                           |
+| `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                   |
+| `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)         |
+| `--color-warning-fill` | `#FFF2D6` | `#3A2A0E` | Notice banner behind warning text (re-check prompt) |
 
 ### Moments, stickers and mascot
 

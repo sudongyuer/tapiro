@@ -8,10 +8,10 @@ from driver import (UI, TABS, accessory, assert_appearance, assert_tapir_button,
 LOCALES = ['zh-Hans', 'ms']
 SCREENS = {'tab-ride': 'ride-empty', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
 
+ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 
 
-ui.element('sign-in-apple')
 reach_home(ui)
 ui.settled(lambda items: by_id(items, 'tab-ask-tapir') and by_id(items, 'live-card-oweMoney'), 'home never settled')
 items = ui.read()

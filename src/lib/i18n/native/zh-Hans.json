@@ -1,1 +1,6 @@
-{ "ios": { "CFBundleDisplayName": "Tapiro" } }
+{
+  "ios": {
+    "CFBundleDisplayName": "Tapiro",
+    "NSCameraUsageDescription": "用相机扫另一块屏幕上的收款码。Tapiro 只读取码的内容，不保存照片。"
+  }
+}

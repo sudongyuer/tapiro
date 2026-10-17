@@ -2,7 +2,7 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_appearance, assert_touch_target  # noqa: E402
+from driver import UI, assert_appearance, assert_touch_target, sign_in_apple  # noqa: E402
 
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 200
@@ -17,7 +17,7 @@ def value(identifier):
 
 
 def sign_in():
-    ui.tap('sign-in-apple')
+    sign_in_apple(ui)
 
 
 def open_me():
@@ -31,6 +31,7 @@ def open_settings():
 
 
 ui.element('sign-in-apple')
+ui.at_rest()
 shot = ui.capture('01-welcome')
 assert_appearance(shot, ui.appearance, 20, 2500, 'welcome background')
 
@@ -87,6 +88,7 @@ ui.capture('07-delete-sheet')
 ui.tap('delete-account-confirm')
 ui.gone('delete-account-confirm')
 ui.element('sign-in-apple', timeout=10)
+ui.at_rest()
 ui.capture('08-deleted-welcome')
 
 sign_in()

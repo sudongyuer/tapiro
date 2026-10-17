@@ -49,6 +49,19 @@ describe('status colours are text-safe', () => {
   }
 });
 
+test('status fills keep their status colour and body text readable', () => {
+  const pairs = [
+    ['--color-urgent', '--color-urgent-fill'],
+    ['--color-warning', '--color-warning-fill'],
+  ] as const;
+  for (const [text, fill] of pairs) {
+    expect(contrastRatio(vars[text], vars[fill])).toBeGreaterThanOrEqual(MIN);
+    expect(contrastRatio(dark(text), dark(fill))).toBeGreaterThanOrEqual(MIN);
+    expect(contrastRatio('#000000', vars[fill])).toBeGreaterThanOrEqual(MIN);
+    expect(contrastRatio('#FFFFFF', dark(fill))).toBeGreaterThanOrEqual(MIN);
+  }
+});
+
 test('moment background keeps body text readable', () => {
   expect(contrastRatio('#000000', vars['--color-moment-bg'])).toBeGreaterThanOrEqual(MIN);
   expect(contrastRatio('#FFFFFF', dark('--color-moment-bg'))).toBeGreaterThanOrEqual(MIN);

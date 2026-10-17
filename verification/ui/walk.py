@@ -21,7 +21,6 @@ def ride_stops_inside_card(items, variant):
 
 
 def walk_home(ui, variant, steps=14):
-    ui.element('sign-in-apple')
     reach_home(ui)
     ui.settled(lambda items: by_id(items, 'live-card-oweMoney') and by_id(items, 'home-stage-urgent'),
                'home never settled')

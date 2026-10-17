@@ -1,1 +1,6 @@
-{ "ios": { "CFBundleDisplayName": "Tapiro" } }
+{
+  "ios": {
+    "CFBundleDisplayName": "Tapiro",
+    "NSCameraUsageDescription": "Scan a receive QR code shown on another screen. Tapiro reads the code only and saves no photo."
+  }
+}

@@ -5,6 +5,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import (TAB_LABELS, UI, accessory, assert_colour, assert_tapir_button, bottom, by_id, corner,  # noqa: E402
                     nav_bar, reach_home, tab, token)
 
+ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 
 
@@ -17,7 +18,6 @@ def minimised(items):
     return None
 
 
-ui.element('sign-in-apple')
 reach_home(ui)
 stage = ui.settled(lambda items: by_id(items, 'live-card-oweMoney') and by_id(items, 'home-stage-urgent'),
                    'home never settled')

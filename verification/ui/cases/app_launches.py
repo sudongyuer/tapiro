@@ -11,6 +11,7 @@ screen = items[0]['frame']
 f = frame(items[1])
 assert f['width'] == screen['width'], f'app content is {f["width"]} wide, screen is {screen["width"]}'
 assert f['height'] >= screen['height'] * 0.9, f'app content is {f["height"]} tall, screen is {screen["height"]}'
+ui.at_rest()
 shot = ui.snap('welcome')
 assert_colour(shot, {'x': 2, 'y': 230, 'width': 12, 'height': 12},
               token('--color-moment-bg', ui.appearance), 'welcome moment background')

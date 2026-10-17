@@ -4,11 +4,10 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_colour, assert_home, by_id, card_fill, token  # noqa: E402
 
-ARGS = ['-uiVerifyShellFeed', 'oweMoney,rideSoon,bountyInProgress']
+ARGS = ['-uiVerifyShellFeed', 'oweMoney,rideSoon,bountyInProgress', '-uiVerifySignedIn', 'onboarded']
 CARDS = ['oweMoney', 'rideSoon', 'bountyInProgress']
 
 ui = UI(*sys.argv[1:])
-ui.element('sign-in-apple')
 assert_home(ui, '01-stacked', 'urgent', CARDS)
 ui.tap('live-cards-toggle')
 ui.settled(lambda items: all(by_id(items, f'live-card-{c}') for c in CARDS) and by_id(items, 'live-card-rideSoon'),

@@ -28,7 +28,7 @@ jobs:
       - run: bun test
       - run: node scripts/design-check.mjs
       - run: node scripts/check-specs.mjs --dir docs/specs
-      - run: bunx expo-doctor
+      - run: node scripts/expo-doctor-ci.mjs
       - run: bunx expo export --platform ios --output-dir dist
         env:
           CI: '1'

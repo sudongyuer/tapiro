@@ -46,6 +46,8 @@
   `headerBlurEffect`. Reason: react-native-screens warns the two effects overlap on iOS 26.
 - Dynamic Type: acceptance runs at the default (Large) size. Text keeps the system scaling
   behaviour, but do not add separate layouts or remount logic for accessibility sizes.
+- A row that pushes a screen stays selected until the return transition deselects it. Views that
+  own keyboard layout natively are not wrapped in RN keyboard avoidance. Source: expo-ios-starter.
 
 ## Platform pitfalls
 
@@ -69,11 +71,16 @@
 
 ## Animation
 
+- Build UI motion with the `animate-expo` skill: decide whether it should animate first, then offer
+  numbered options before writing it. Source: expo-ios-starter.
 - Mascot animation uses Rive (`@rive-app/react-native`, pinned exact version; it is 0.x and
   churns). Load each `.riv` once and share it; commit the generated `*.riv.d.ts`; `riv` is in
   Metro `assetExts`.
 - UI motion uses Reanimated, animating transforms and opacity only. Never drive SVG
   attributes via `useAnimatedProps` in lists. Reason: ~3x CPU in the prototype.
+- Ambient motion runs finite cycles, then rests; no `withRepeat` with -1/Infinity and no
+  `animationIterationCount: 'infinite'` (ESLint `no-restricted-syntax`; spinners may disable it with a
+  reason). Reason: the welcome loops saturated the Simulator render server (2026-10-15).
 - Performance sign-off happens on a device with Instruments, never on Simulator numbers.
 
 ## Layout
@@ -121,6 +128,17 @@
   and update the index. `node scripts/check-specs.mjs --dir docs/specs` must pass.
 - An overturned design gets a new spec that supersedes the old one; never delete a spec.
 
+## Data integrity
+
+Reason: payment and settlement are two-sided confirmations; a lost draft, a replayed write or a
+failure shown as "empty" misleads both users (the payee list showed a failed load as "no methods",
+2026-10-15). Source: expo-ios-starter.
+
+- Persist the user's input before sending it, and keep drafts across failures.
+- An acknowledgement means delivered, not completed; show progress until the outcome is known.
+- Never replay a write automatically after a failure or restart; the user retries.
+- Never show partial, stale or failed data as live, complete or empty.
+
 ## Checks
 
 - Before commit: `bunx expo lint <files>`, `bunx tsc --noEmit`, `bun run format:check` (the same
@@ -130,6 +148,9 @@
   font sizes or font families.
 - Tests when behavior changes; a production bundle when the build can change. Prefer
   behavioural checks over implementation snapshots.
+- Tests assert behaviour, not snapshots or mock call counts, and each assertion must be able to
+  fail: a check that passes before the screen settles proves nothing. Source: expo-ios-starter;
+  two vacuous UI checks were found in review (2026-10-14, 2026-10-15).
 - UI changes add or update a check under `verification/ui` (`bun run verify:build`,
   `bun run verify:ui`) and run it in light and dark; screenshots for state, video for motion.
   Missing scenes, missing identifiers and timeouts fail; open the screenshots before reporting.
@@ -151,8 +172,11 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   and get the answers; a task does not start with open UI questions.
 - Each implementation task writes the UI cases for the screens it changes, in the same task. Do not
   collect cases into a separate task at the end.
-- While a task iterates, run only the UI cases for the screens it touches; the full suite runs once
-  before the PR is opened or updated.
+- UI checks run in three tiers. Smoke (a few core cases, zh-Hans light) and affected (cases whose declared
+  dependencies changed against `main`, selected by the runner; dark only where visuals changed, `ms` only where
+  copy changed) gate every PR. The full matrix does not gate PRs: it runs in the background when the machine is idle
+  and before each TestFlight build. Reason: full runs took 30–104 min per PR and mostly re-checked untouched screens
+  (user, 2026-10-15).
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside
   cause, record it in the ledger and move on; if not, report what is known and ask.
 

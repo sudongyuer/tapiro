@@ -1,5 +1,7 @@
 import type { Translation } from '../resources';
 
+import payee from './payee/en';
+
 const en: Translation = {
   account: {
     signIn: {
@@ -120,6 +122,7 @@ const en: Translation = {
       },
     },
   },
+  payee,
   shell: {
     tabs: {
       bounty: 'Bounties',

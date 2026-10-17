@@ -50,6 +50,8 @@ time.sleep(1)
 again = by_id(ui.read(), 'welcome-headline')['frame']
 assert again == by_id(items, 'welcome-headline')['frame'], f'panel moved after settling: {again}'
 
+ui.at_rest('sticker and mascot loops never came to rest (two screenshots 1 s apart still differ)')
+
 shot = ui.snap('01-settled')
 f = apple['frame']
 fill = luma(dominant(shot, {'x': f['x'] + f['width'] * 0.08, 'y': f['y'] + f['height'] / 2 - 4, 'width': 16, 'height': 8}))
@@ -60,7 +62,7 @@ else:
 assert_colour(shot, {'x': 2, 'y': 230, 'width': 12, 'height': 12},
               token('--color-moment-bg', ui.appearance), 'moment background')
 
-# Stickers drift for good, so their frame never settles; a drift of at most 7 pt stays inside the sticker.
+ui.at_rest()
 ui.axe('tap', '--id', 'welcome-sticker-coffee', '--post-delay', '0.5')
 ui.wait_label('welcome-bubble', lambda text: text == EXAMPLES[ui.locale]['coffee'],
               'bubble did not show the coffee example')

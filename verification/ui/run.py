@@ -3,14 +3,17 @@ import argparse
 import fcntl
 import re
 import json
+import os
 import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
 
+from breaker import tripped
 from driver import BUNDLE_ID
 
+MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 DEFAULT_APP = ROOT / '.verify/DerivedData/Build/Products/Release-iphonesimulator/Tapiro.app'
@@ -69,6 +72,17 @@ def case_meta(case):
     )
 
 
+def render_cpu_sample():
+    try:
+        out = subprocess.run(['top', '-l', '2', '-s', '1', '-o', 'cpu', '-n', '20', '-stats', 'pid,cpu,command'],
+                             capture_output=True, text=True, timeout=20).stdout
+    except subprocess.TimeoutExpired:
+        return 'top timed out'
+    last = out.split('PID')[-1]
+    rows = [line for line in last.splitlines() if 'SimRenderServer' in line or 'SimRenderingServices' in line]
+    return '\n'.join(rows) or 'SimRenderServer and SimRenderingServices are not among the 20 busiest processes'
+
+
 def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     started = time.monotonic()
     out.mkdir(parents=True, exist_ok=True)
@@ -90,6 +104,7 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         proc = subprocess.run(
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=budget,
+            env={**os.environ, 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
         )
         (out / 'log.txt').write_text(proc.stdout + proc.stderr)
         lines = (proc.stdout if proc.returncode == 0 else proc.stderr or proc.stdout).strip().splitlines()
@@ -97,9 +112,9 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         if proc.returncode != 0:
             status = 'fail'
     except subprocess.TimeoutExpired as error:
-        status, message = 'fail', f'timeout after {budget} s'
+        status, message = 'fail', f'command timed out after {budget} s'
         partial = ''.join(p.decode() if isinstance(p, bytes) else p or '' for p in (error.stdout, error.stderr))
-        (out / 'log.txt').write_text(partial)
+        (out / 'log.txt').write_text(f'{partial}\n--- CPU sample at timeout (top, second sample, %cpu) ---\n{render_cpu_sample()}\n')
         calls = sorted(float(m) for m in re.findall(r'^\s*([\d.]+)s axe ', partial, re.M))
         if calls:
             message += f'; {len(calls)} axe calls, median {calls[len(calls) // 2]:.1f} s'
@@ -108,7 +123,7 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
             subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
                            capture_output=True, timeout=60)
         except subprocess.TimeoutExpired:
-            message += '; failure screenshot timed out (Simulator unresponsive)'
+            message += '; failure screenshot timed out after 60 s'
     recorder.send_signal(signal.SIGINT)
     try:
         recorder.wait(timeout=30)
@@ -135,6 +150,7 @@ def main():
     parser.add_argument('--udid')
     parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
+    parser.add_argument('--locale')
     parser.add_argument('cases', nargs='*')
     args = parser.parse_args()
 
@@ -150,6 +166,16 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         raise SystemExit('Another verify:ui run is driving the Simulator; wait for it to finish.')
+    machine = open(MACHINE_LOCK, 'a+')
+    try:
+        fcntl.flock(machine, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        machine.seek(0)
+        print(f'Waiting for the machine-wide Simulator lock held by: {machine.read().strip() or "another project"}', flush=True)
+        fcntl.flock(machine, fcntl.LOCK_EX)
+    machine.truncate(0)
+    machine.write(f'{ROOT} pid {os.getpid()} since {time.strftime("%H:%M:%S")}\n')
+    machine.flush()
     udid, runtime = resolve_device(args.udid)
     boot(udid)
     simctl('install', udid, str(app))
@@ -158,11 +184,13 @@ def main():
 
     failures = 0
     timings = []
+    results = []
+    stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
-            for locale in locales:
+            for locale in [l for l in locales if args.locale in (None, l)]:
                 out = Path(args.output) / locale / appearance / case
                 status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
                 failures += status != 'pass'
@@ -175,8 +203,20 @@ def main():
                     'app': str(app),
                 }, indent=2))
                 print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}')
+                results.append({'status': status, 'message': message})
+                stopped = tripped(results)
+                if stopped:
+                    break
+            if stopped:
+                break
+        if stopped:
+            break
 
     print_timings(timings, time.monotonic() - run_started)
+    if stopped:
+        print(f'stopped: 3 consecutive {stopped} timeouts — environment or screen problem')
+        print(render_cpu_sample())
+        failures += 1
     print(f'Artifacts: {args.output}')
     sys.exit(1 if failures else 0)
 

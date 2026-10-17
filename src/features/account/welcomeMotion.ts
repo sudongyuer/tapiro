@@ -17,8 +17,8 @@ import {
 import { vars } from '@/ui/theme/tokens';
 
 import type { Drift } from './welcomeLayout';
+import { BREATH_CYCLES, DRIFT_CYCLES, POP_DURATION } from './welcomeTiming';
 
-export const POP_DURATION = 520;
 export const PANEL_DELAY = 900;
 const POP = { duration: POP_DURATION, dampingRatio: 0.55 } as const;
 const FADE = { duration: vars['--duration-fade'] } as const;
@@ -43,7 +43,11 @@ export function usePop(delay: number, drift?: Drift) {
       float.set(
         withDelay(
           delay + POP_DURATION,
-          withRepeat(withTiming(1, { duration: drift.period / 2, easing: loop }), -1, true),
+          withRepeat(
+            withTiming(1, { duration: drift.period / 2, easing: loop }),
+            DRIFT_CYCLES * 2,
+            true,
+          ),
         ),
       );
     }
@@ -76,7 +80,7 @@ export function useBreath(delay: number) {
     breath.set(
       withDelay(
         delay + POP_DURATION,
-        withRepeat(withTiming(1, { duration: BREATH, easing: loop }), -1, true),
+        withRepeat(withTiming(1, { duration: BREATH / 2, easing: loop }), BREATH_CYCLES * 2, true),
       ),
     );
   }, [reduceMotion, delay, breath]);

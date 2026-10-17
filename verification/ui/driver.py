@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import struct
 import sys
@@ -24,6 +25,7 @@ class UI:
     def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
         self.output.mkdir(parents=True, exist_ok=True)
+        self.launch_args = os.environ.get('TAPIRO_VERIFY_ARGS', '').split()
 
     def axe(self, *args, timeout=20):
         started = time.monotonic()
@@ -152,14 +154,45 @@ class UI:
         (self.output / f'{name}.json').write_text(self.axe('describe-ui'))
         return self.output / f'{name}.png'
 
+    def frame_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'f.png'
+            subprocess.run(['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(path)],
+                           check=True, timeout=20, capture_output=True)
+            return path.read_bytes()
+
+    def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0):
+        deadline = time.monotonic() + timeout
+        previous = None
+        while time.monotonic() < deadline:
+            try:
+                current = self.frame_bytes()
+            except subprocess.TimeoutExpired:
+                previous = None
+                continue
+            if current == previous:
+                return
+            previous = current
+            time.sleep(gap)  # frame spacing, not an assertion
+        raise AssertionError(message)
+
     def snap(self, name):
         path = self.capture(name)
         points = json.loads((self.output / f'{name}.json').read_text())[0]['frame']['width']
         return Shot(path, points)
 
 
-def reach_home(ui):
+def sign_in_apple(ui):
+    ui.element('sign-in-apple')
+    ui.at_rest()
     ui.tap('sign-in-apple')
+
+
+def reach_home(ui):
+    if '-uiVerifySignedIn' in ui.launch_args:
+        ui.element('home-scroll')
+        return
+    sign_in_apple(ui)
     ui.wait(lambda items: any(i.get('AXUniqueId') == 'name-input' and i.get('AXValue') for i in items),
             'name not prefilled from the fixture profile')
     ui.tap('name-continue')

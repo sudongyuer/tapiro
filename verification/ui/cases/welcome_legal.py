@@ -36,10 +36,12 @@ for index, page in enumerate(('terms', 'privacy')):
     assert link.get('type') == 'Link', f'{page} is exposed as {link.get("type")}, not a link'
     slop = (44 - f['height']) / 2
     assert f['y'] - slop >= google_bottom, f'{page} link target reaches into the Google button: {f}'
+    ui.at_rest()
     # The link text is 18 pt tall; hitSlop extends it to 44 pt, so tap 10 pt above the text.
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] - 10)
     ui.wait_label('legal-draft', lambda text: text.startswith(DRAFT[ui.locale]), f'{page} draft marker missing')
     ui.labelled(TITLES[ui.locale][page])
+    ui.at_rest()
     ui.capture(f'{index + 1}-{page}')
     if page == 'terms':
         ui.tap_label(CLOSE[ui.locale])

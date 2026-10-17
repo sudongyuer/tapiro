@@ -9,6 +9,7 @@ TOGGLE = {'zh-Hans': ('摊开 · 4 件', '收起'), 'ms': ('Bentangkan · 4', 'S
 CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'live-card-bountyInProgress']
 PEEKS = ['live-card-peek-1', 'live-card-peek-2']
 
+ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 fan_out, collapse = TOGGLE[ui.locale]
 
@@ -29,7 +30,6 @@ def assert_stacked(name):
     return items, shot
 
 
-ui.element('sign-in-apple')
 reach_home(ui)
 stage = ui.settled(lambda items: by_id(items, 'home-stage-urgent'), 'urgent stage missing')
 items, shot = assert_stacked('01-stacked')

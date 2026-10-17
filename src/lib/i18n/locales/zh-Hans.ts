@@ -1,3 +1,5 @@
+import payee from './payee/zh-Hans';
+
 export default {
   account: {
     signIn: {
@@ -115,6 +117,7 @@ export default {
       },
     },
   },
+  payee,
   shell: {
     tabs: {
       bounty: '悬赏',
