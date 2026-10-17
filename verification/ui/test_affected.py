@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -37,6 +38,10 @@ class Select(unittest.TestCase):
         for path in ('verification/ui/run.py', 'verification/ui/driver.py', 'bun.lock', 'package.json', 'app.json'):
             self.assertEqual(list(select(CASES, [path])), list(CASES), path)
 
+    def test_debug_scenes_are_shared(self):
+        for path in ('src/debug/scenes.tsx', 'src/app/debug/[scene].tsx'):
+            self.assertEqual(list(select(CASES, [path])), list(CASES), path)
+
     def test_a_changed_case_file_picks_that_case(self):
         picked = select(CASES, ['verification/ui/cases/home_calm.py'])
         self.assertEqual(picked, {'home_calm': ['own file: verification/ui/cases/home_calm.py']})
@@ -49,6 +54,15 @@ class Select(unittest.TestCase):
         changed = [f'src/ui/{n}.tsx' for n in 'abcde']
         reason = select({'home_calm': []}, changed)['home_calm'][0]
         self.assertEqual(reason, 'shared: src/ui/a.tsx, src/ui/b.tsx, src/ui/c.tsx (+2 more)')
+
+
+class Runner(unittest.TestCase):
+    def test_a_missing_base_ref_exits_2_with_a_hint(self):
+        proc = subprocess.run([sys.executable, str(HERE / 'run.py'), '--affected', '--base', 'no-such-ref-xyz',
+                               '--app', '/nonexistent.app'], capture_output=True, text=True, timeout=60)
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn('base ref no-such-ref-xyz not found (fetch it?)', proc.stderr)
+        self.assertNotIn('Traceback', proc.stderr)
 
 
 class Locales(unittest.TestCase):
@@ -66,12 +80,17 @@ class Declarations(unittest.TestCase):
         self.assertEqual(parse_deps("x = 1\nDEPS = [\n    'a/',\n    'b/',\n]\n"), ['a/', 'b/'])
         self.assertIsNone(parse_deps("ARGS = ['x']\n"))
 
+    def test_parse_keeps_brackets_inside_quoted_entries(self):
+        self.assertEqual(parse_deps("DEPS = [\n    'src/app/[scene].tsx',\n    'src/a/',\n]\n"),
+                         ['src/app/[scene].tsx', 'src/a/'])
+        self.assertEqual(parse_deps('DEPS = []\n'), [])
+
     def test_every_case_declares_deps_that_exist(self):
         tracked = subprocess.run(['git', '-C', str(ROOT), 'ls-files'], capture_output=True, text=True,
                                  check=True).stdout.splitlines()
         for case in sorted((HERE / 'cases').glob('*.py')):
             deps = parse_deps(case.read_text())
-            self.assertTrue(deps, f'{case.name} declares no DEPS')
+            self.assertIsNotNone(deps, f'{case.name} declares no DEPS')
             for prefix in deps:
                 exists = (ROOT / prefix).exists() or any(path.startswith(prefix) for path in tracked)
                 self.assertTrue(exists, f'{case.name}: DEPS entry {prefix} matches no file')

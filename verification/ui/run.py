@@ -73,7 +73,16 @@ def case_meta(case):
     )
 
 
+def require_ref(base):
+    found = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', '--quiet', f'{base}^{{commit}}'],
+                           capture_output=True)
+    if found.returncode != 0:
+        print(f'base ref {base} not found (fetch it?)', file=sys.stderr)
+        sys.exit(2)
+
+
 def changed_files(base):
+    require_ref(base)
     committed = sh('git', '-C', str(ROOT), 'diff', '--name-only', '--no-renames', f'{base}...HEAD')
     working = sh('git', '-C', str(ROOT), 'diff', '--name-only', '--no-renames', 'HEAD')
     untracked = sh('git', '-C', str(ROOT), 'ls-files', '--others', '--exclude-standard')
@@ -177,9 +186,6 @@ def main():
     parser.add_argument('cases', nargs='*')
     args = parser.parse_args()
 
-    app = Path(args.app)
-    if not app.exists():
-        raise SystemExit(f'App not found: {app}. Run bun run verify:build first.')
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
     tiered = args.affected or args.smoke
     if args.smoke:
@@ -189,6 +195,9 @@ def main():
         if not cases:
             print('No UI case is affected.')
             sys.exit(0)
+    app = Path(args.app)
+    if not app.exists():
+        raise SystemExit(f'App not found: {app}. Run bun run verify:build first.')
     if tiered:
         appearances = ['light', 'dark'] if args.dark else ['light']
     else:

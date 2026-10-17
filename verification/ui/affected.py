@@ -1,11 +1,12 @@
-"""Pick the UI cases a change can affect, from each case's DEPS path prefixes."""
-import re
+import ast
 
 SHARED = [
     'src/ui/',
     'src/lib/',
     'src/app/_layout.tsx',
     'src/app/index.tsx',
+    'src/debug/',
+    'src/app/debug/',
     'modules/',
     'plugins/',
     'assets/',
@@ -24,8 +25,10 @@ DEFAULT_LOCALE = 'zh-Hans'
 
 
 def parse_deps(source):
-    match = re.search(r"^DEPS = \[([^\]]*)\]", source, re.M)
-    return re.findall(r"'([^']+)'", match.group(1)) if match else None
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign) and any(getattr(t, 'id', None) == 'DEPS' for t in node.targets):
+            return list(ast.literal_eval(node.value))
+    return None
 
 
 def matches(path, prefix):
