@@ -5,6 +5,16 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI, assert_colour, by_id, token  # noqa: E402
 from payee import ALIPAY, SAVE, add_from_menu, open_payee, row_labels  # noqa: E402
 
+DEPS = [
+    'src/features/payee/',
+    'src/app/payee/',
+    'src/app/(tabs)/_layout.tsx',
+    'src/app/(tabs)/me/',
+    'src/features/account/',
+    'src/features/shell/',
+    'verification/ui/payee.py',
+]
+
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifyQr', 'paying,duitnow', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 220

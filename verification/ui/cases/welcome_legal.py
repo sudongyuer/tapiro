@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, bottom, by_id  # noqa: E402
 
+DEPS = ['src/features/account/', 'src/app/welcome.tsx', 'src/app/legal/']
+
 LOCALES = ['zh-Hans', 'ms']
 TITLES = {
     'zh-Hans': {'terms': '用户协议', 'privacy': '隐私政策'},

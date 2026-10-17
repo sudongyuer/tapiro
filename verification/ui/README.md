@@ -7,12 +7,24 @@ accessibility tree, and captures screenshots and video in light and dark.
 ```bash
 bun run verify:build          # prebuild if needed, Release build into .verify/DerivedData
 bun run verify:ui             # all cases, light + dark → .verify/ui/<locale>/<appearance>/<case>/
+bun run verify:smoke          # app_launches, sign_in_fixture, shell_tabs, home_one_card; zh-Hans light
+bun run verify:ui --affected  # cases whose DEPS meet the diff against main; zh-Hans light
+bun run verify:ui --affected --base main --dark --locales   # also dark, also each case's LOCALES
+bun run verify:full           # the full matrix: every case, light + dark, every declared locale
 bun run verify:ui design_tokens --appearance dark
 bun run verify:clean
 ```
 
 The runner uses a named Simulator, `Tapiro Verify` (iPhone 17 Pro, newest iOS runtime), and
 creates it once if missing; never create Simulators or pass another DerivedData path yourself.
+`--affected` collects `git diff --name-only <base>...HEAD`, uncommitted changes and untracked files, and
+picks each case whose `DEPS` prefixes (or its own file) match one, printing why. A change to shared code
+(`affected.SHARED`: `src/ui/`, `src/lib/`, the root layout and index route, `modules/`, `plugins/`, `assets/`,
+`app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker and build script)
+picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
+`--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
+before TestFlight. `python3 -m unittest test_affected test_breaker` in `verification/ui` covers the selection (and
+checks that every case declares `DEPS` that match real paths); CI runs it.
 Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
 `LOCALES = ['zh-Hans', 'ms']` to also run in Malay and catch truncation. `ARGS = [...]` adds
 launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items (omitted: all
@@ -63,7 +75,9 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `onboarding_moment`           | The name step sits on the moment background with 小貘's head and the moment title, and keeps a 40-character name in a full-size field.                                                                                                                                                             | `profile-setup`  | —                                    |
 | `onboarding_language_moment`  | The language step sits on the moment background with 小貘's head and the moment title above the native picker and a 44 pt get-started button.                                                                                                                                                      | `language-step`  | —                                    |
 | `account_settings_long`       | Settings with a 40-character name and long email keeps every row reachable and the delete row visible.                                                                                                                                                                                             | `settings`       | —                                    |
+| `settings_language`           | Choosing English in settings switches the settings screen to English at once; choosing the launch language switches it back.                                                                                                                                                               | `settings`       | —                                    |
 | `shell_tabs`                  | Four tabs switch screens, 消息 shows its badge, the 62 pt 小貘 button keeps its outline; the accessory is hidden at the top of 悬赏 and shown on other tabs.                                                                                                                                       | —                | —                                    |
+| `shell_accessory_tap`         | Tapping the accessory on 拼车, and the inline accessory on a scrolled 悬赏, opens 悬赏 at the top with the live cards fanned out and the accessory hidden.                                                                                                                                       | —                | —                                    |
 | `shell_ask_tapir`             | 问小貘 opens from 悬赏 and 拼车 with that tab's subtitle and suggestions; closing it keeps the tab selected.                                                                                                                                                                                       | —                | —                                    |
 | `shell_minimise`              | Scrolling 悬赏 minimises the bar (selected tab, inline accessory, 48 pt 小貘), and tapping the minimised tab expands it.                                                                                                                                                                           | —                | —                                    |
 | `home_title_strip`            | The 悬赏令 title keeps its white halo expanded, collapsed and after a tab switch; the strip hangs directly under the compact bar.                                                                                                                                                                  | —                | —                                    |
@@ -88,11 +102,14 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 
 1. Add or reuse a scene in `src/debug/scenes.tsx`; it calls `onReady` once settled, which shows
    the `ui-verify-ready` marker.
-2. Write `cases/<name>.py`: docstring = behaviour sentence; `SCENE = '<id>'` if it starts from a
-   scene (the runner launches with `-uiVerifyScene <id>`); optional `LOCALES = [...]`; wait on
+2. Write `cases/<name>.py`: docstring = behaviour sentence; `DEPS = [...]` path prefixes the case
+   depends on (feature folders, routes, helpers such as `verification/ui/payee.py`; shared code is
+   implied); `SCENE = '<id>'` if it starts from a scene (the runner launches with `-uiVerifyScene <id>`); optional `LOCALES = [...]`; wait on
    identifiers, assert, capture. Cases receive the locale as `ui.locale` for controls that only
    expose a localized label (native toolbar buttons); SwiftUI views from `@expo/ui` take their
    identifier from `testID` or the `accessibilityIdentifier` modifier.
 3. Controls a case touches need a `testID`; plain `View`s also need `accessible` to appear in the
    accessibility tree.
 4. Run both appearances and open the screenshots before reporting.
+5. Reference the case from the acceptance criterion it proves in `docs/story-map.md`; the story-map
+   check warns about a case no criterion references.

@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_home  # noqa: E402
 
+DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx', 'src/app/(tabs)/bounty/']
+
 ARGS = ['-uiVerifyShellFeed', 'bountyInProgress', '-uiVerifySignedIn', 'onboarded']
 
 ui = UI(*sys.argv[1:])

@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, assert_touch_target  # noqa: E402
 
+DEPS = ['src/debug/', 'src/app/debug/']
+
 ROLES = ['large-title', 'moment-title', 'reward', 'title', 'body', 'secondary', 'meta']
 STATUSES = [
     'circle',

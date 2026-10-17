@@ -4,6 +4,16 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, assert_touch_target, sign_in_apple  # noqa: E402
 
+DEPS = [
+    'src/features/account/',
+    'src/app/welcome.tsx',
+    'src/app/onboarding/',
+    'src/app/(tabs)/',
+    'src/app/delete-account.tsx',
+    'src/features/shell/',
+    'src/features/home/',
+]
+
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 200
 NATIVE_NAME = {'zh-Hans': '中文', 'ms': 'Bahasa Melayu'}

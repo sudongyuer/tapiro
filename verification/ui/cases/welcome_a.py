@@ -6,6 +6,8 @@ import time
 
 from driver import UI, assert_colour, assert_touch_target, by_id, bottom, dominant, luma, token  # noqa: E402
 
+DEPS = ['src/features/account/', 'src/app/welcome.tsx']
+
 LOCALES = ['zh-Hans', 'ms']
 KINDS = ['parcel', 'coffee', 'ticket', 'books', 'umbrella', 'car', 'boba']
 HELLO = {'zh-Hans': '你好呀', 'ms': 'Hai!'}

@@ -10,6 +10,7 @@ import sys
 import time
 from pathlib import Path
 
+from affected import SMOKE, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
 
@@ -70,6 +71,22 @@ def case_meta(case):
         re.findall(r"'([^']+)'", extra.group(1)) if extra else [],
         int(budget.group(1)) if budget else DEFAULT_BUDGET,
     )
+
+
+def changed_files(base):
+    committed = sh('git', '-C', str(ROOT), 'diff', '--name-only', '--no-renames', f'{base}...HEAD')
+    working = sh('git', '-C', str(ROOT), 'diff', '--name-only', '--no-renames', 'HEAD')
+    untracked = sh('git', '-C', str(ROOT), 'ls-files', '--others', '--exclude-standard')
+    return [line for line in (committed + working + untracked).splitlines() if line.strip()]
+
+
+def pick_affected(cases, base):
+    deps = {case: parse_deps((HERE / 'cases' / f'{case}.py').read_text()) for case in cases}
+    picked = select(deps, changed_files(base))
+    print(f'Affected cases against {base}: {len(picked)} of {len(cases)}')
+    for case, reasons in picked.items():
+        print(f'  {case}: {"; ".join(reasons)}')
+    return list(picked)
 
 
 def render_cpu_sample():
@@ -151,6 +168,12 @@ def main():
     parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
     parser.add_argument('--locale')
+    parser.add_argument('--affected', action='store_true',
+                        help='only cases whose DEPS meet the diff against --base plus uncommitted changes; zh-Hans light')
+    parser.add_argument('--smoke', action='store_true', help='the fixed smoke set in zh-Hans light')
+    parser.add_argument('--base', default='main')
+    parser.add_argument('--dark', action='store_true', help='with --affected or --smoke, also run dark')
+    parser.add_argument('--locales', action='store_true', help="with --affected or --smoke, also run each case's LOCALES")
     parser.add_argument('cases', nargs='*')
     args = parser.parse_args()
 
@@ -158,7 +181,18 @@ def main():
     if not app.exists():
         raise SystemExit(f'App not found: {app}. Run bun run verify:build first.')
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
-    appearances = ['light', 'dark'] if args.appearance == 'both' else [args.appearance]
+    tiered = args.affected or args.smoke
+    if args.smoke:
+        cases = [case for case in SMOKE if case in cases]
+    if args.affected:
+        cases = pick_affected(cases, args.base)
+        if not cases:
+            print('No UI case is affected.')
+            sys.exit(0)
+    if tiered:
+        appearances = ['light', 'dark'] if args.dark else ['light']
+    else:
+        appearances = ['light', 'dark'] if args.appearance == 'both' else [args.appearance]
 
     (ROOT / '.verify').mkdir(exist_ok=True)
     lock = open(ROOT / '.verify/ui.lock', 'w')
@@ -188,6 +222,9 @@ def main():
     stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
+    if tiered:
+        runs = [(case, scene, run_locales(locales, args.locales), extra, budget)
+                for case, scene, locales, extra, budget in runs]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
             for locale in [l for l in locales if args.locale in (None, l)]:

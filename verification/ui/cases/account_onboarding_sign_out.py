@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, sign_in_apple  # noqa: E402
 
+DEPS = ['src/features/account/', 'src/app/welcome.tsx', 'src/app/onboarding/']
+
 LOCALES = ['zh-Hans', 'ms']
 SIGN_OUT = {'zh-Hans': '退出登录', 'ms': 'Daftar Keluar'}
 
