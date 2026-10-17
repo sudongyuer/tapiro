@@ -12,14 +12,16 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 故事下面四行固定：`- 故事：作为…我想…以便…`、`- 状态：done | building | planned`、`- 版本：v1 | later`、
   `- 规格：[名字](相对路径)`。
 - 然后是一张表 `| 验收 id | 行为 | 覆盖 |`。验收 id 以故事 id 开头再加一段（`payee.add-alipay.name-required`）；
-  行为用中文写一句；覆盖用英文逗号分隔，可以写多个：
+  行为用中文写一句；覆盖用英文逗号分隔，可以写多个（逗号后面紧跟下面的类别名才算分隔）：
   - `ui:<用例名>`：`verification/ui/cases/<用例名>.py`
   - `unit:<路径>`、`int:<路径>`、`db:<路径>`：单元测试、集成测试（本地 Supabase）、pgTAP 文件，路径从仓库根算起；
-    可以加 `#<测试名的一段>`，检查会确认文件里有这段文字
+    可以加 `#<完整的测试名>`，必须和文件里某个 `test`/`describe` 名字（或其他引号里的完整字符串、`def` 函数名）
+    完全一致
   - `device`：只能在真机上验，自动进入真机清单；可以写 `device: <怎么验>`
   - `gap: <原因>`：已知没有测试，原因必须写；只写 `gap` 不带原因时，done 的故事检查不通过
   - 只写类别不写目标（`ui`、`unit`、`db`、`int`）：计划中的覆盖，只允许出现在 building 和 planned 的故事里
 - done 的故事每条标准都要有测试、`device` 或带原因的 `gap`。
+- 验收行只能写在故事的验收表里；写在表外的检查会警告。
 
 ## 第一次打开与登录
 
@@ -45,11 +47,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id                            | 行为                                                       | 覆盖                                                                                |
 | ---------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | welcome.sticker-wall.settles       | 七张贴纸、小貘气泡、字标和登录面板静止下来                 | ui:welcome_a                                                                        |
-| welcome.sticker-wall.sticker-tap   | 点一张贴纸，小貘气泡说出这张贴纸的例子                     | ui:welcome_a, unit:src/features/account/welcomeLayout.test.ts#the parcel example    |
-| welcome.sticker-wall.panel-rises   | 登录面板 0.9 秒后升起，之后固定                            | ui:welcome_a, unit:src/features/account/welcomeTiming.test.ts                       |
-| welcome.sticker-wall.drift-settles | 贴纸漂移不超过 7 pt 和 1.5 度，6–8 秒一圈，17 秒内全部停下 | unit:src/features/account/welcomeLayout.test.ts#drift stays, unit:src/features/account/welcomeTiming.test.ts#within 17 s |
-| welcome.sticker-wall.short-screen  | 667 pt 小屏去掉最下面两张贴纸并抬高主视觉                  | unit:src/features/account/welcomeLayout.test.ts#a short screen, device: iPhone SE 尺寸看一遍 |
-| welcome.sticker-wall.malay-panel   | 马来文面板在小屏上不盖住标语                               | unit:src/features/account/welcomeLayout.test.ts#the Malay panel                     |
+| welcome.sticker-wall.sticker-tap   | 点一张贴纸，小貘气泡说出这张贴纸的例子                     | ui:welcome_a, unit:src/features/account/welcomeLayout.test.ts#the parcel example matches the design copy    |
+| welcome.sticker-wall.panel-rises   | 登录面板 0.9 秒后升起，之后固定                            | ui:welcome_a, unit:src/features/account/welcomeTiming.test.ts#rises 0.9 s after the welcome screen appears       |
+| welcome.sticker-wall.drift-settles | 贴纸漂移不超过 7 pt 和 1.5 度，6–8 秒一圈，17 秒内全部停下 | unit:src/features/account/welcomeLayout.test.ts#drift stays within 7 pt and 1.5 degrees on a 6 to 8 s loop, unit:src/features/account/welcomeTiming.test.ts#every sticker drift ends within 17 s |
+| welcome.sticker-wall.short-screen  | 667 pt 小屏去掉最下面两张贴纸并抬高主视觉                  | unit:src/features/account/welcomeLayout.test.ts#a short screen drops the car and the milk tea and lifts the hero, device: iPhone SE 尺寸看一遍 |
+| welcome.sticker-wall.malay-panel   | 马来文面板在小屏上不盖住标语                               | unit:src/features/account/welcomeLayout.test.ts#the Malay panel on a short screen lifts the hero past the umbrella and drops it                     |
 | welcome.sticker-wall.reduce-motion | 打开减弱动效时贴纸和小貘都不动，只淡入                     | device: 设置里打开减弱动效后冷启动                                                  |
 
 ### welcome.legal 协议和隐私政策
@@ -74,11 +76,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id                       | 行为                                               | 覆盖                                                                                                |
 | ----------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | account.sign-in.fixture       | 验证模式下点登录按钮，以测试用户登录               | ui:sign_in_fixture, unit:src/features/account/fixtureAuthService.test.ts                            |
-| account.sign-in.id-token      | 把 ID token 和 nonce 交给 Supabase，不走网页 OAuth | unit:src/features/account/supabaseAuthService.test.ts#passes the provider ID token                  |
-| account.sign-in.full-name     | 只给一次的全名写进用户资料；写失败也照样登录       | unit:src/features/account/supabaseAuthService.test.ts#one-time full name                            |
-| account.sign-in.cancelled     | 取消登录什么都不存，停在欢迎页                     | unit:src/features/account/supabaseAuthService.test.ts#a cancelled provider sheet                    |
+| account.sign-in.id-token      | 把 ID token 和 nonce 交给 Supabase，不走网页 OAuth | unit:src/features/account/supabaseAuthService.test.ts#passes the provider ID token and nonce to Supabase                  |
+| account.sign-in.full-name     | 只给一次的全名写进用户资料；写失败也照样登录       | unit:src/features/account/supabaseAuthService.test.ts#a one-time full name from the provider is written to user metadata                            |
+| account.sign-in.cancelled     | 取消登录什么都不存，停在欢迎页                     | unit:src/features/account/supabaseAuthService.test.ts#a cancelled provider sheet stores nothing                    |
 | account.sign-in.failed-line   | 登录失败时面板里显示一行原因                       | unit:src/features/account/safeSignIn.test.ts, device: 真机上取消 Apple 登录看面板里的那一行          |
-| account.sign-in.unconfigured  | 开发版没配置登录时按钮显示未配置                   | unit:src/features/account/supabaseAuthService.test.ts#every provider is unconfigured                |
+| account.sign-in.unconfigured  | 开发版没配置登录时按钮显示未配置                   | unit:src/features/account/supabaseAuthService.test.ts#without a client it is signed out and every provider is unconfigured                |
 | account.sign-in.keychain      | 会话存在 Keychain，超过单项大小时分块存，坏块读成空 | unit:src/lib/supabase/chunkedStorage.test.ts                                                        |
 | account.sign-in.real-apple    | 真机 Apple 登录成功                                | device                                                                                              |
 | account.sign-in.real-google   | 真机 Google 登录成功                               | device                                                                                              |
@@ -130,7 +132,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | me.settings.resolve    | 语言优先用 App 里选的，其次按系统语言加文字匹配，最后 zh-Hans | unit:src/lib/i18n/resolve.test.ts                                                     |
 | me.settings.complete   | 三种语言没有空文案                                           | unit:src/lib/i18n/resources.test.ts                                                   |
 | me.settings.copy-review | 英文和马来文文案经母语者看过                                | device: 用 en 和 ms 走一遍，请母语者审读                                              |
-| me.settings.sign-out   | 退出登录只退这台手机，回到欢迎页，再登录直接回首页           | ui:account_flow, unit:src/features/account/supabaseAuthService.test.ts#signs out this device only |
+| me.settings.sign-out   | 退出登录只退这台手机，回到欢迎页，再登录直接回首页           | ui:account_flow, unit:src/features/account/supabaseAuthService.test.ts#signs out this device only and never rejects |
 
 ### account.delete 删除账号
 
@@ -142,10 +144,10 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id                   | 行为                                                         | 覆盖                                                                                                                                       |
 | ------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | account.delete.deletes    | 确认后删掉资料和收款方式，回到欢迎页，再登录重新引导         | ui:account_flow, unit:src/features/account/accountActions.test.ts, int:supabase/functions/tests/account-delete.integration.ts               |
-| account.delete.blocked    | 有没结清的付款时显示原因和那笔付款，删除按钮不能点           | ui:account_delete_blocked, unit:src/features/account/unsettledPayments.test.ts, unit:src/features/account/supabaseAuthService.test.ts#a blocked deletion |
+| account.delete.blocked    | 有没结清的付款时显示原因和那笔付款，删除按钮不能点           | ui:account_delete_blocked, unit:src/features/account/unsettledPayments.test.ts, unit:src/features/account/supabaseAuthService.test.ts#a blocked deletion carries the unsettled payments from the 409 body |
 | account.delete.auth       | 删除接口拒绝没有 token 和只带 anon key 的请求，不碰别的用户   | int:supabase/functions/tests/account-delete.integration.ts                                                                                 |
 | account.delete.lists      | 确认页列出会删掉的内容（资料、收款方式、消息和评价等）       | gap: account_flow 只截了确认页的图，没有断言列出的内容                                                                                       |
-| account.delete.failure    | 删除失败时保留会话并显示失败                                 | unit:src/features/account/supabaseAuthService.test.ts#maps deletion failures, unit:src/features/account/accountActions.test.ts#a throwing service |
+| account.delete.failure    | 删除失败时保留会话并显示失败                                 | unit:src/features/account/supabaseAuthService.test.ts#maps deletion failures and keeps the session, unit:src/features/account/accountActions.test.ts#a throwing service reports failure instead of rejecting |
 
 ## 首页
 
@@ -190,7 +192,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id          | 行为                                                   | 覆盖                                                                                     |
 | ---------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | home.stage.urgent | 欠钱时舞台是有急事的颜色                              | ui:home_three_cards, ui:shell_minimise, unit:src/features/home/homeModel.test.ts#owing money is urgent |
-| home.stage.live  | 有进行中的事、没欠钱时是进行中的颜色                   | ui:home_live, ui:home_one_card, unit:src/features/home/homeModel.test.ts#anything else live |
+| home.stage.live  | 有进行中的事、没欠钱时是进行中的颜色                   | ui:home_live, ui:home_one_card, unit:src/features/home/homeModel.test.ts#anything else live is in progress |
 | home.stage.calm  | 什么都没有时是没事的舞台和平静卡，卡上有问小貘入口     | ui:home_calm, unit:src/features/home/homeModel.test.ts#nothing pending is calm           |
 | home.stage.line  | 小貘的话点名最前面那张卡的人，例如「送到啦，记得付款」 | ui:home_worst, unit:src/features/home/homeModel.test.ts#stageLine                        |
 
@@ -203,10 +205,10 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                       | 行为                                                       | 覆盖                                                                                    |
 | ----------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| home.live-cards.one           | 只有一件事时一张卡，没有叠影也没有摊开按钮                 | ui:home_one_card, unit:src/features/home/stackLayout.test.ts#one card sits alone        |
+| home.live-cards.one           | 只有一件事时一张卡，没有叠影也没有摊开按钮                 | ui:home_one_card, unit:src/features/home/stackLayout.test.ts#one card sits alone at its own height        |
 | home.live-cards.three         | 三件事叠起露两层叠影，摊开成三张，付款卡在最前             | ui:home_three_cards                                                                     |
-| home.live-cards.fan-out       | 四件事叠起后摊开再收起；提醒条等最后一张卡滑到栏下才出现   | ui:home_fan_out, unit:src/features/home/stackLayout.test.ts#reports the fanned bottom   |
-| home.live-cards.order         | 卡片顺序跟提醒条的优先级一样                               | ui:home_live, unit:src/features/home/homeModel.test.ts#cards follow the accessory priority |
+| home.live-cards.fan-out       | 四件事叠起后摊开再收起；提醒条等最后一张卡滑到栏下才出现   | ui:home_fan_out, unit:src/features/home/stackLayout.test.ts#reports the fanned bottom while open so the accessory waits for the last card   |
+| home.live-cards.order         | 卡片顺序跟提醒条的优先级一样                               | ui:home_live, unit:src/features/home/homeModel.test.ts#cards follow the accessory priority and carry their detail |
 | home.live-cards.haptic        | 摊开时有一下轻触感                                         | device                                                                                  |
 | home.live-cards.reduce-motion | 打开减弱动效时摊开和收起没有位移，直接切换                 | device                                                                                  |
 
@@ -261,14 +263,14 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id                  | 行为                                                           | 覆盖                                                                                                                      |
 | ------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | payee.list.default       | 默认方式有标记并排在第一，第一个转账方式自动成为默认           | ui:payee_list, unit:src/features/payee/methods.test.ts#default method, db:supabase/tests/payee_methods.test.sql            |
-| payee.list.set-default   | 改默认后只剩一个默认                                           | unit:src/features/payee/methods.test.ts#changing the default leaves exactly one, int:src/features/payee/payeeService.integration.ts#changes the default |
+| payee.list.set-default   | 改默认后只剩一个默认                                           | unit:src/features/payee/methods.test.ts#changing the default leaves exactly one, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete |
 | payee.list.masked-bank   | 银行账号只显示后四位                                           | ui:payee_list, unit:src/features/payee/validate.test.ts#masks to the last four digits                                     |
 | payee.list.recheck       | 收款码 90 天没重选时列表顶部黄色提示，「我的」有小红点         | ui:payee_list, unit:src/features/payee/methods.test.ts#a QR method is due after 90 days                                   |
 | payee.list.menu-order    | + 菜单先列支付宝、微信、TNG，然后是「其他」                    | ui:payee_list                                                                                                             |
-| payee.list.long          | 七个长名字的方式滚到底，现金那行完整地在提醒条和 Tab 栏上面    | ui:payee_long, unit:src/features/payee/payeeStore.test.ts#the worst fixture                                               |
-| payee.list.delete-rule   | 删掉默认方式后最早的转账方式成为默认                           | unit:src/features/payee/methods.test.ts#removing the default promotes, int:src/features/payee/payeeService.integration.ts#promotes on delete |
+| payee.list.long          | 七个长名字的方式滚到底，现金那行完整地在提醒条和 Tab 栏上面    | ui:payee_long, unit:src/features/payee/payeeStore.test.ts#the worst fixture has seven transfer methods including a named bank                                               |
+| payee.list.delete-rule   | 删掉默认方式后最早的转账方式成为默认                           | unit:src/features/payee/methods.test.ts#removing the default promotes the oldest remaining transfer method, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete |
 | payee.list.swipe-delete  | 左滑一行删除这个方式                                           | gap: 没有 UI 用例做左滑删除；删除规则由单元和集成测试覆盖                                                                  |
-| payee.list.owner-only    | 别的用户看不到也改不了我的收款方式                             | db:supabase/tests/payee_methods.test.sql, int:src/features/payee/payeeService.integration.ts#another user sees none       |
+| payee.list.owner-only    | 别的用户看不到也改不了我的收款方式                             | db:supabase/tests/payee_methods.test.sql, int:src/features/payee/payeeService.integration.ts#another user sees none of them and cannot change them       |
 | payee.list.load-retry    | 加载失败可以重试；删除失败列表不变                             | unit:src/features/payee/payeeStore.test.ts                                                                                |
 
 ### payee.add-alipay 添加支付宝收钱码
@@ -284,8 +286,8 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | payee.add-alipay.accepts      | 支付宝收钱码确认为支付宝收钱码，没有换钱包的提示             | ui:payee_qr_alipay, unit:src/features/payee/classifyQr.test.ts               |
 | payee.add-alipay.name-required | 不填支付宝显示的名字就保存会报错；填了显示「发布者会看到：名字 · 支付宝」 | ui:payee_qr_alipay, unit:src/features/payee/walletName.test.ts |
 | payee.add-alipay.real-picker  | 系统相册里选一张真实的支付宝码图片，在机器上识别并保存       | ui:payee_qr_real                                                             |
-| payee.add-alipay.look-alike   | 冒充 qr.alipay.com 的网址不被接受                            | unit:src/features/payee/classifyQr.test.ts#look-alike Alipay host            |
-| payee.add-alipay.paying-code  | 支付宝付款码被拦下，显示红色付款码提示，不保存               | ui:payee_qr, unit:src/features/payee/classifyQr.test.ts#Alipay 18 digits     |
+| payee.add-alipay.look-alike   | 冒充 qr.alipay.com 的网址不被接受                            | unit:src/features/payee/classifyQr.test.ts#does not accept a look-alike Alipay host            |
+| payee.add-alipay.paying-code  | 支付宝付款码被拦下，显示红色付款码提示，不保存               | ui:payee_qr, unit:src/features/payee/classifyQr.test.ts#Alipay 18 digits from 28     |
 | payee.add-alipay.step-names   | 支付宝首页「收钱」等按钮名和真机一致                         | device                                                                       |
 | payee.add-alipay.masked-name  | 能输入支付宝显示的打码中文名（例如「*明」）                  | device: AXe 打不出中文，在真机上输入                                         |
 
@@ -300,7 +302,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
 | payee.add-wechat.accepts       | wxp:// 收款码确认为微信收款码，没有换钱包的提示            | ui:payee_qr_wechat, unit:src/features/payee/classifyQr.test.ts           |
 | payee.add-wechat.name-required | 不填微信显示的名字就保存会报错；填了显示「发布者会看到：名字 · 微信」 | ui:payee_qr_wechat, unit:src/features/payee/walletName.test.ts |
-| payee.add-wechat.merchant-order | 微信商户订单码（2 小时过期）被拒                          | unit:src/features/payee/classifyQr.test.ts#WeChat Pay merchant order code |
+| payee.add-wechat.merchant-order | 微信商户订单码（2 小时过期）被拒                          | unit:src/features/payee/classifyQr.test.ts#rejects a WeChat Pay merchant order code (expires in 2 h) |
 | payee.add-wechat.step-names    | 微信「收付款 → 二维码收款」按钮名和真机一致                | device                                                                   |
 
 ### payee.add-tng 添加 TNG / DuitNow 收款码
@@ -312,15 +314,15 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                     | 行为                                                           | 覆盖                                                                                           |
 | --------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| payee.add-tng.accepts       | CRC 正确、不带金额的个人 DuitNow 码显示银行或钱包和码里的名字  | ui:payee_qr, ui:payee_qr_real, unit:src/features/payee/classifyQr.test.ts#accepts a static personal DuitNow QR |
+| payee.add-tng.accepts       | CRC 正确、不带金额的个人 DuitNow 码显示银行或钱包和码里的名字  | ui:payee_qr, ui:payee_qr_real, unit:src/features/payee/classifyQr.test.ts#accepts a static personal DuitNow QR with bank and name |
 | payee.add-tng.wallet-switch | 在别家入口选到 DuitNow 码时，先提示换成 TNG 再保存             | ui:payee_qr                                                                                    |
-| payee.add-tng.damaged       | 改了一个字符的码判为损坏，不保存                               | unit:src/features/payee/classifyQr.test.ts#one changed character                               |
-| payee.add-tng.amount        | 动态码和带固定金额的静态码都被拒                               | unit:src/features/payee/classifyQr.test.ts#rejects a dynamic code, unit:src/features/payee/classifyQr.test.ts#carries an amount |
-| payee.add-tng.business      | 商家码可以存，标为商家                                         | unit:src/features/payee/classifyQr.test.ts#allows a business code                              |
-| payee.add-tng.several-codes | 一张截图里有几个码时选收款码                                   | unit:src/features/payee/classifyQr.test.ts#picks the receive code                              |
+| payee.add-tng.damaged       | 改了一个字符的码判为损坏，不保存                               | unit:src/features/payee/classifyQr.test.ts#rejects a code with one changed character as damaged                               |
+| payee.add-tng.amount        | 动态码和带固定金额的静态码都被拒                               | unit:src/features/payee/classifyQr.test.ts#rejects a dynamic code, unit:src/features/payee/classifyQr.test.ts#rejects a static code that carries an amount (the PayNet example) |
+| payee.add-tng.business      | 商家码可以存，标为商家                                         | unit:src/features/payee/classifyQr.test.ts#allows a business code and labels it                              |
+| payee.add-tng.several-codes | 一张截图里有几个码时选收款码                                   | unit:src/features/payee/classifyQr.test.ts#picks the receive code when a screenshot holds several codes                              |
 | payee.add-tng.non-ascii     | 中文和带重音的名字照样识别，CRC 按 UTF-8 算                    | unit:src/features/payee/classifyQr.test.ts#non-ASCII values                                    |
-| payee.add-tng.replace       | 重选另一家的码原地替换这一行，默认和位置不变                   | ui:payee_list, unit:src/features/payee/payeeStore.test.ts#replacing a QR, int:src/features/payee/payeeService.integration.ts#replaces a QR |
-| payee.add-tng.checked-at    | 重选收款码会刷新检查时间，改手机号不会                         | unit:src/features/payee/payeeStore.test.ts#re-saving a QR refreshes it                         |
+| payee.add-tng.replace       | 重选另一家的码原地替换这一行，默认和位置不变                   | ui:payee_list, unit:src/features/payee/payeeStore.test.ts#replacing a QR with another wallet keeps the default and the position, int:src/features/payee/payeeService.integration.ts#replaces a QR with another wallet in place and keeps the default |
+| payee.add-tng.checked-at    | 重选收款码会刷新检查时间，改手机号不会                         | unit:src/features/payee/payeeStore.test.ts#editing a phone keeps checkedAt; re-saving a QR refreshes it                         |
 | payee.add-tng.camera        | 用相机扫码添加（只在那时问相机权限）                           | device                                                                                         |
 | payee.add-tng.step-names    | TNG「Receive」按钮名和真机一致                                 | device                                                                                         |
 
@@ -348,7 +350,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id                | 行为                                                       | 覆盖                                                                                               |
 | ---------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | payee.add-bank.digits  | 账号去掉空格和横线，只收数字                               | unit:src/features/payee/validate.test.ts#strips spaces and dashes                                  |
-| payee.add-bank.picker  | 五家银行加「其他银行」，选其他时必须填 1–60 个字的银行名   | unit:src/features/payee/validate.test.ts#checkBank, int:src/features/payee/payeeService.integration.ts#not in the picker |
+| payee.add-bank.picker  | 五家银行加「其他银行」，选其他时必须填 1–60 个字的银行名   | unit:src/features/payee/validate.test.ts#checkBank, int:src/features/payee/payeeService.integration.ts#saves a bank that is not in the picker by name |
 | payee.add-bank.form    | 银行表单从 + 菜单打开、填写、保存后出现在列表里            | gap: 没有 UI 用例走银行表单；银行行的显示由 payee_list 覆盖                                         |
 
 ### payee.cash 现金当面付
@@ -360,7 +362,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id          | 行为                                                       | 覆盖                                                                                                     |
 | ---------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| payee.cash.toggle | 现金是单独一组的开关，存成一行 cash，永远不会成为默认     | ui:payee_list, unit:src/features/payee/methods.test.ts#cash is never the default, int:src/features/payee/payeeService.integration.ts#round-trips every method type |
+| payee.cash.toggle | 现金是单独一组的开关，存成一行 cash，永远不会成为默认     | ui:payee_list, unit:src/features/payee/methods.test.ts#cash is never the default, even when added first, int:src/features/payee/payeeService.integration.ts#round-trips every method type with the first one as default |
 
 ## 付款与结清
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { DRIFT_CYCLES, loopEndMs, POP_DURATION } from './welcomeTiming';
+import { DRIFT_CYCLES, loopEndMs, PANEL_DELAY, POP_DURATION } from './welcomeTiming';
 import { welcomeLayout } from './welcomeLayout';
 
 describe('loopEndMs', () => {
@@ -12,5 +12,11 @@ describe('loopEndMs', () => {
     const { stickers } = welcomeLayout({ width: 402, height: 874, panelHeight: 311, topInset: 62 });
     const ends = stickers.map((s) => loopEndMs(s.delay, s.drift.period, DRIFT_CYCLES));
     expect(Math.max(...ends)).toBeLessThan(17000);
+  });
+});
+
+describe('sign-in panel', () => {
+  test('rises 0.9 s after the welcome screen appears', () => {
+    expect(PANEL_DELAY).toBe(900);
   });
 });

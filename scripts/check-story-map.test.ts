@@ -1,12 +1,20 @@
 import { describe, expect, test } from 'bun:test';
 
-import { checkStoryMap, parseCoverage, parseStoryMap, summarize } from './check-story-map.mjs';
+import {
+  checkStoryMap,
+  parseCoverage,
+  parseStoryMap,
+  quotedNames,
+  summarize,
+} from './check-story-map.mjs';
 
 const files: Record<string, string> = {
   'docs/specs/a.md': '',
   'verification/ui/cases/payee_list.py': '',
   'verification/ui/cases/orphan.py': '',
-  'src/features/payee/validate.test.ts': "test('is required', () => {});",
+  'src/features/payee/validate.test.ts':
+    "test('is required', () => {});\ntest('caps at 60 characters, trimmed', () => {});",
+  'verification/ui/helper.py': 'def walk_home(ui):\n    pass\n',
   'supabase/tests/payee_methods.test.sql': '',
 };
 const fs = {
@@ -138,7 +146,7 @@ describe('check', () => {
     expect(errors).toEqual([
       expect.stringContaining('missing UI case nope'),
       expect.stringContaining('missing file src/missing.test.ts'),
-      expect.stringContaining('has no test matching "caps at 60"'),
+      expect.stringContaining('has no test or quoted name exactly "caps at 60"'),
     ]);
   });
 
@@ -210,5 +218,33 @@ describe('check', () => {
     expect(text).toContain('GAP  payee.add.b: 乙 — 没有用例');
     expect(text).toContain('[done] payee.add.c: 丙');
     expect(text).toContain('Story map OK');
+  });
+
+  test('a fragment names a whole test or def, and may contain a comma', () => {
+    const { errors } = check(
+      map(
+        story('payee.add', 'done', [
+          '| payee.add.a | 甲 | unit:src/features/payee/validate.test.ts#caps at 60 characters, trimmed, device |',
+          '| payee.add.b | 乙 | unit:verification/ui/helper.py#walk_home |',
+          '| payee.add.c | 丙 | unit:src/features/payee/validate.test.ts#is req |',
+        ]),
+      ),
+    );
+    expect(errors).toEqual([expect.stringContaining('exactly "is req"')]);
+    expect(quotedNames('it("x", f); describe(`y`, g);\ndef z():')).toEqual(
+      new Set(['x', 'y', 'z']),
+    );
+  });
+
+  test('warns about criterion rows outside a criteria table', () => {
+    const text = map(story('payee.add', 'done', ['| payee.add.a | 甲 | ui:payee_list |'])).replace(
+      '## 写法\n\n- 说明',
+      '## 写法\n\n| payee.add.z | 迷路 | ui |',
+    );
+    const stray = `${text}\n- 说明\n\n| payee.add.y | 表外 | ui |\n`;
+    expect(check(stray).warnings.filter((w) => w.includes('outside'))).toEqual([
+      expect.stringContaining('payee.add.z is outside'),
+      expect.stringContaining('payee.add.y is outside'),
+    ]);
   });
 });

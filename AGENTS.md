@@ -184,7 +184,7 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   (user, 2026-10-15).
   Commands: `bun run verify:smoke`, `bun run verify:ui --affected [--base main] [--dark] [--locales]`,
   `bun run verify:full`. Every case declares `DEPS = [...]` path prefixes; shared code (`src/ui/`, `src/lib/`,
-  root layout, native modules, app config, the runner, `package.json`, `bun.lock`) selects every case.
+  root layout, Debug scenes, native modules, app config, the runner, `package.json`, `bun.lock`) selects every case.
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside
   cause, record it in the ledger and move on; if not, report what is known and ask.
 

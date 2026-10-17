@@ -22,7 +22,7 @@ function cells(line) {
 
 export function parseCoverage(text) {
   if (NONE.has(text.trim())) return [];
-  return text.split(',').map((raw) => {
+  return text.split(/,(?=\s*(?:ui|unit|int|db|device|gap)\b)/).map((raw) => {
     const token = raw.trim();
     const target = /^(ui|unit|int|db):(.+)$/.exec(token);
     if (target) {
@@ -43,8 +43,12 @@ export function parseCoverage(text) {
   });
 }
 
-export function parseStoryMap(text) {
+const looksLikeCriterion = (line) =>
+  line.trim().startsWith('|') && /^[a-z][a-z0-9-]*\./.test(cells(line)[0] ?? '');
+
+export function parseStoryMapDetailed(text) {
   const activities = [];
+  const stray = [];
   let activity = null;
   let story = null;
   let inTable = false;
@@ -64,7 +68,10 @@ export function parseStoryMap(text) {
       inTable = false;
       return;
     }
-    if (!story) return;
+    if (!story) {
+      if (looksLikeCriterion(line)) stray.push({ line: lineNo, id: cells(line)[0] });
+      return;
+    }
     const field = /^- (故事|状态|版本|规格)[：:]\s*(.*)$/.exec(line);
     if (field) {
       story[FIELDS[field[1]]] = field[2].trim();
@@ -79,7 +86,11 @@ export function parseStoryMap(text) {
       inTable = true;
       return;
     }
-    if (!inTable || row.every((cell) => /^:?-+:?$/.test(cell))) return;
+    if (row.every((cell) => /^:?-+:?$/.test(cell))) return;
+    if (!inTable) {
+      if (looksLikeCriterion(line)) stray.push({ line: lineNo, id: row[0] });
+      return;
+    }
     story.criteria.push({
       id: row[0],
       behaviour: row[1] ?? '',
@@ -88,7 +99,18 @@ export function parseStoryMap(text) {
       line: lineNo,
     });
   });
-  return activities.filter((a) => a.stories.length > 0);
+  return { activities: activities.filter((a) => a.stories.length > 0), stray };
+}
+
+export function parseStoryMap(text) {
+  return parseStoryMapDetailed(text).activities;
+}
+
+export function quotedNames(source) {
+  const names = new Set();
+  for (const match of source.matchAll(/(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g)) names.add(match[2]);
+  for (const match of source.matchAll(/^\s*def\s+(\w+)/gm)) names.add(match[1]);
+  return names;
 }
 
 function specPath(spec) {
@@ -98,7 +120,7 @@ function specPath(spec) {
 export function checkStoryMap(text, { exists, read, mapDir = 'docs', uiCases }) {
   const errors = [];
   const warnings = [];
-  const activities = parseStoryMap(text);
+  const { activities, stray } = parseStoryMapDetailed(text);
   const stories = activities.flatMap((a) => a.stories);
   const storyIds = new Set();
   const criterionIds = new Set();
@@ -168,13 +190,16 @@ export function checkStoryMap(text, { exists, read, mapDir = 'docs', uiCases }) 
         }
         if (!exists(c.target)) {
           errors.push(`${where} references missing file ${c.target}`);
-        } else if (c.fragment && !read(c.target).includes(c.fragment)) {
-          errors.push(`${where}: ${c.target} has no test matching "${c.fragment}"`);
+        } else if (c.fragment && !quotedNames(read(c.target)).has(c.fragment)) {
+          errors.push(`${where}: ${c.target} has no test or quoted name exactly "${c.fragment}"`);
         }
       }
     }
   }
 
+  for (const row of stray) {
+    warnings.push(`line ${row.line}: criterion row ${row.id} is outside a story's criteria table`);
+  }
   for (const name of uiCases ?? []) {
     if (!referencedCases.has(name)) warnings.push(`UI case ${name} is referenced by no criterion`);
   }
@@ -229,6 +254,10 @@ function main() {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const argIndex = process.argv.indexOf('--file');
   const file = argIndex > 0 ? process.argv[argIndex + 1] : 'docs/story-map.md';
+  if (!file || file.startsWith('--')) {
+    console.error('usage: node scripts/check-story-map.mjs [--file <story-map.md>]');
+    process.exit(2);
+  }
   const text = readFileSync(join(root, file), 'utf8');
   const uiCases = readdirSync(join(root, 'verification/ui/cases'))
     .filter((name) => name.endsWith('.py'))

@@ -78,8 +78,19 @@ function card(story, x, y) {
   );
 }
 
+export function releaseOrder(stories) {
+  const rank = (release) => (release === 'later' ? Infinity : Number(release.slice(1)));
+  return [...new Set(stories.map((s) => s.release))].sort((a, b) => rank(a) - rank(b));
+}
+
+function releaseLabel(release) {
+  if (release === 'later') return 'later 以后';
+  if (release === 'v1') return 'v1 第一版';
+  return `${release} 第 ${release.slice(1)} 版`;
+}
+
 export function renderBoard(activities) {
-  const releases = ['v1', 'later'];
+  const releases = releaseOrder(activities.flatMap((a) => a.stories));
   const width = PAD * 2 + activities.length * COLUMN + (activities.length - 1) * GUTTER;
   const bandTop = {};
   const bandHeight = {};
@@ -90,7 +101,7 @@ export function renderBoard(activities) {
       0,
       ...activities.map((activity) =>
         activity.stories
-          .filter((s) => (s.release === 'later' ? 'later' : 'v1') === release)
+          .filter((s) => s.release === release)
           .reduce((sum, s) => sum + cardHeight(s) + CARD_GAP, 0),
       ),
     );
@@ -117,7 +128,7 @@ export function renderBoard(activities) {
     const top = bandTop[release] - 22;
     out.push(
       `<div class="release" style="left:${PAD}px;top:${top}px;width:${width - PAD * 2}px">` +
-        `<span>${release === 'v1' ? 'v1 第一版' : 'later 以后'}</span></div>`,
+        `<span>${escape(releaseLabel(release))}</span></div>`,
     );
   }
   activities.forEach((activity, index) => {
@@ -128,9 +139,7 @@ export function renderBoard(activities) {
     );
     for (const release of releases) {
       let cy = bandTop[release];
-      for (const story of activity.stories.filter(
-        (s) => (s.release === 'later' ? 'later' : 'v1') === release,
-      )) {
+      for (const story of activity.stories.filter((s) => s.release === release)) {
         out.push(card(story, x, cy));
         cy += cardHeight(story) + CARD_GAP;
       }
