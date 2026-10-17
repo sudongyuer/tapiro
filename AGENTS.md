@@ -161,6 +161,11 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   directly; the runner owns the `Tapiro Verify` Simulator. Reason: the disk incident below.
 - Verify mode (`EXPO_PUBLIC_UI_VERIFY=1`) replaces services at their boundary only; it never ships
   enabled.
+- Requirements and acceptance criteria live in `docs/story-map.md`; each criterion names its test
+  (`ui:`, `unit:`, `int:`, `db:`), `device` (the device checklist) or `gap: <reason>`. A behaviour change
+  updates its criterion in the same task, and `node scripts/check-story-map.mjs` (CI) must pass.
+  Reason: suite completeness rested on judgment; the main Alipay/WeChat path shipped untested until the
+  walkthrough (KICKOFF 2026-10-15).
 - Report skipped checks and why.
 
 ## Pace
@@ -177,6 +182,9 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   copy changed) gate every PR. The full matrix does not gate PRs: it runs in the background when the machine is idle
   and before each TestFlight build. Reason: full runs took 30–104 min per PR and mostly re-checked untouched screens
   (user, 2026-10-15).
+  Commands: `bun run verify:smoke`, `bun run verify:ui --affected [--base main] [--dark] [--locales]`,
+  `bun run verify:full`. Every case declares `DEPS = [...]` path prefixes; shared code (`src/ui/`, `src/lib/`,
+  root layout, native modules, app config, the runner, `package.json`, `bun.lock`) selects every case.
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside
   cause, record it in the ledger and move on; if not, report what is known and ask.
 
