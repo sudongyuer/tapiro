@@ -514,13 +514,14 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
 
 ### Deviations from the design
 
-| Design said                     | Shipped                                                                                                                                                             | Why                                                                     | Confirmed by                         |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------ |
-| Cash in person: a toggle        | Toggle backed by a `cash` row in `payee_methods`                                                                                                                    | Profiles are public; a profile flag would leak it outside the pay step  | not intent-changing                  |
-| Reject dynamic (amount) codes   | Also rejects static codes that carry tag `54` (fixed amount)                                                                                                        | Every payment amount differs; PayNet's own P2P example carries RM 10.00 | not intent-changing                  |
-| Bank picker                     | Five banks from payee-setup §3 plus 「其他银行」 with a typed name (no bank code)                                                                                   | Only those acquirer IDs are sourced                                     | user, 2026-10-15                     |
-| + menu: DuitNow, bank, QR, cash | 支付宝收钱码, 微信收款码, TNG 收款码 first, then 「其他」 (DuitNow, bank, cash); per-wallet save steps; a code from another wallet is accepted after a confirm line | Students mainly use Alipay, WeChat Pay and TNG                          | user, 2026-10-15 (PayeeWalletMenu A) |
-| Re-pick a QR                    | A code of another type replaces the row in one RPC (`replace_payee_qr`), keeping default and position                                                               | Row shape is per type; `type` is not client-updatable                   | not intent-changing                  |
+| Design said                           | Shipped                                                                                                                                                             | Why                                                                     | Confirmed by                         |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------ |
+| Cash in person: a toggle              | Toggle backed by a `cash` row in `payee_methods`                                                                                                                    | Profiles are public; a profile flag would leak it outside the pay step  | not intent-changing                  |
+| Reject dynamic (amount) codes         | Also rejects static codes that carry tag `54` (fixed amount)                                                                                                        | Every payment amount differs; PayNet's own P2P example carries RM 10.00 | not intent-changing                  |
+| Bank picker                           | Five banks from payee-setup §3 plus 「其他银行」 with a typed name (no bank code)                                                                                   | Only those acquirer IDs are sourced                                     | user, 2026-10-15                     |
+| + menu: DuitNow, bank, QR, cash       | 支付宝收钱码, 微信收款码, TNG 收款码 first, then 「其他」 (DuitNow, bank, cash); per-wallet save steps; a code from another wallet is accepted after a confirm line | Students mainly use Alipay, WeChat Pay and TNG                          | user, 2026-10-15 (PayeeWalletMenu A) |
+| Alipay/WeChat accepted as URL strings | Also require the name the wallet shows (no case change), shown to payers as `{name} · 支付宝/微信`                                                                  | Codes carry no payee name, so payers could not check who they pay       | user, 2026-10-16                     |
+| Re-pick a QR                          | A code of another type replaces the row in one RPC (`replace_payee_qr`), keeping default and position                                                               | Row shape is per type; `type` is not client-updatable                   | not intent-changing                  |
 
 ### Verification
 
@@ -530,6 +531,9 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
 - UI cases `payee_list`, `payee_add_duitnow`, `payee_qr` → 12/12 pass light and dark, zh-Hans and ms at 6f2cee2;
   `payee_long` (seven worst-case methods, last row above the accessory after scrolling) and `payee_list` rerun after
   the fixture follow-ups
+- After walkthrough (2026-10-16): `bun test` 281 pass; `supabase test db` 69/69; payee and account integration 8/8;
+  main-path cases `payee_qr_alipay`, `payee_qr_wechat` and the real-picker case `payee_qr_real` (images added with
+  `simctl addmedia`, picked in the system picker) pass with `payee_qr` and `payee_list` in their locales, light and dark
 
 ### Known limits and follow-ups
 
@@ -537,5 +541,5 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
   comes with step 4's `payments` table.
 - The "付不了" re-check trigger arrives with step 4; `checked_at` is stored now.
 - The per-wallet save steps (Alipay 首页「收钱」, WeChat 「收付款 → 二维码收款」, TNG Receive) need confirming on a device.
-- Camera scanning and real screenshot decoding are not exercised by UI cases (injected at the decode boundary);
-  check on a device. Alipay/WeChat receive-code formats remain heuristics (payee-setup §Open questions).
+- Camera scanning is device-only; screenshot decoding is exercised by `payee_qr_real` in the Simulator.
+- Chinese masked wallet names (for example "*明") cannot be typed by AXe; check on a device. Alipay/WeChat receive-code formats remain heuristics (payee-setup §Open questions).
