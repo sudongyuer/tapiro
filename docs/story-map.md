@@ -146,7 +146,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | account.delete.deletes    | 确认后删掉资料和收款方式，回到欢迎页，再登录重新引导         | ui:account_flow, unit:src/features/account/accountActions.test.ts, int:supabase/functions/tests/account-delete.integration.ts               |
 | account.delete.blocked    | 有没结清的付款时显示原因和那笔付款，删除按钮不能点           | ui:account_delete_blocked, unit:src/features/account/unsettledPayments.test.ts, unit:src/features/account/supabaseAuthService.test.ts#a blocked deletion carries the unsettled payments from the 409 body |
 | account.delete.auth       | 删除接口拒绝没有 token 和只带 anon key 的请求，不碰别的用户   | int:supabase/functions/tests/account-delete.integration.ts                                                                                 |
-| account.delete.lists      | 确认页列出会删掉的内容（资料、收款方式、消息和评价等）       | gap: account_flow 只截了确认页的图，没有断言列出的内容                                                                                       |
+| account.delete.lists      | 确认页列出会删掉的内容（资料、收款方式、消息和评价等）       | ui:account_flow                                                                                       |
 | account.delete.failure    | 删除失败时保留会话并显示失败                                 | unit:src/features/account/supabaseAuthService.test.ts#maps deletion failures and keeps the session, unit:src/features/account/accountActions.test.ts#a throwing service reports failure instead of rejecting |
 
 ## 首页
@@ -269,7 +269,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | payee.list.menu-order    | + 菜单先列支付宝、微信、TNG，然后是「其他」                    | ui:payee_list                                                                                                             |
 | payee.list.long          | 七个长名字的方式滚到底，现金那行完整地在提醒条和 Tab 栏上面    | ui:payee_long, unit:src/features/payee/payeeStore.test.ts#the worst fixture has seven transfer methods including a named bank                                               |
 | payee.list.delete-rule   | 删掉默认方式后最早的转账方式成为默认                           | unit:src/features/payee/methods.test.ts#removing the default promotes the oldest remaining transfer method, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete |
-| payee.list.swipe-delete  | 左滑一行删除这个方式                                           | gap: 没有 UI 用例做左滑删除；删除规则由单元和集成测试覆盖                                                                  |
+| payee.list.swipe-delete  | 左滑一行删除这个方式                                           | ui:payee_swipe_delete, unit:src/features/payee/methods.test.ts                                                                  |
 | payee.list.owner-only    | 别的用户看不到也改不了我的收款方式                             | db:supabase/tests/payee_methods.test.sql, int:src/features/payee/payeeService.integration.ts#another user sees none of them and cannot change them       |
 | payee.list.load-retry    | 加载失败可以重试；删除失败列表不变                             | unit:src/features/payee/payeeStore.test.ts                                                                                |
 
@@ -351,7 +351,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ---------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | payee.add-bank.digits  | 账号去掉空格和横线，只收数字                               | unit:src/features/payee/validate.test.ts#strips spaces and dashes                                  |
 | payee.add-bank.picker  | 五家银行加「其他银行」，选其他时必须填 1–60 个字的银行名   | unit:src/features/payee/validate.test.ts#checkBank, int:src/features/payee/payeeService.integration.ts#saves a bank that is not in the picker by name |
-| payee.add-bank.form    | 银行表单从 + 菜单打开、填写、保存后出现在列表里            | gap: 没有 UI 用例走银行表单；银行行的显示由 payee_list 覆盖                                         |
+| payee.add-bank.form    | 银行表单从 + 菜单打开、填写、保存后出现在列表里            | ui:payee_add_bank                                         |
 
 ### payee.cash 现金当面付
 
