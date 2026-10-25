@@ -18,6 +18,11 @@ LOCALES = ['zh-Hans', 'ms']
 BUDGET = 200
 NATIVE_NAME = {'zh-Hans': '中文', 'ms': 'Bahasa Melayu'}
 NAME = 'Lin Mo'
+DELETE_ITEMS = {
+    'zh-Hans': ['个人资料（名字和头像）', '收款方式', '你发的消息和评价', '小貘记得的内容', '貘币', '贴纸'],
+    'ms': ['Profil anda (nama dan foto)', 'Kaedah anda menerima bayaran', 'Mesej dan ulasan yang anda tulis',
+           'Perkara yang Tapir ingat tentang anda', 'Syiling Tapir anda', 'Pelekat anda'],
+}
 
 ui = UI(*sys.argv[1:])
 
@@ -94,6 +99,9 @@ ui.tap('settings-delete')
 confirm = ui.element('delete-account-confirm')
 assert_touch_target(confirm, 'delete button')
 assert_touch_target(ui.element('delete-account-cancel'), 'cancel button')
+labels = [i.get('AXLabel') or '' for i in ui.read()]
+for item in DELETE_ITEMS[ui.locale]:
+    assert item in labels, f'delete confirmation does not list {item!r}: {labels}'
 ui.capture('07-delete-sheet')
 ui.tap('delete-account-confirm')
 ui.gone('delete-account-confirm')
