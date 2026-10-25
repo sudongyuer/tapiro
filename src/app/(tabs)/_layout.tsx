@@ -1,6 +1,8 @@
 import { useRouter, useSegments } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
+import { useSignedInUser } from '@/features/account';
+import { useLivePayments } from '@/features/payment';
 import {
   UrgentAccessory,
   accessoryVisible,
@@ -20,6 +22,7 @@ export default function TabsLayout() {
   const { t } = useI18n();
   const { color } = useTheme();
   const router = useRouter();
+  useLivePayments(useSignedInUser()?.id ?? null);
   const location = useTabLocation(useSegments());
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();

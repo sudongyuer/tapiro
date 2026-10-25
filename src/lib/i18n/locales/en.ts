@@ -200,8 +200,8 @@ const en: Translation = {
       pay: {
         tag: 'You owe',
         title: 'Pay {{name}}',
-        slide: 'Slide to pay · {{amount}} →',
-        slideLabel: 'Slide to pay {{amount}}',
+        button: 'Pay now',
+        buttonLabel: 'Pay {{amount}} now',
         footer: 'Direct pay · money goes straight to {{name}}',
       },
       ride: {

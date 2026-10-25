@@ -5,6 +5,7 @@ import type { StageState } from '@/ui/MascotStage';
 
 export type PayDetail = {
   kind: 'oweMoney';
+  paymentId: string | null;
   payee: string;
   amountSen: number;
   note: string;
@@ -63,14 +64,41 @@ export function liveCards(
     .map((item, index) => ({ item, index }))
     .sort((a, b) => priority(a.item.kind) - priority(b.item.kind) || a.index - b.index)
     .map(({ item }) => {
-      const detail = details[item.id];
+      const detail = details[item.id] ?? paymentDetail(item);
       return {
         kind: item.kind,
         id: item.id,
         item,
-        detail: detail && detail.kind === item.kind ? detail : null,
+        detail: detail && detail.kind === item.kind ? withPayment(detail, item) : null,
       };
     });
+}
+
+function paymentDetail(item: AccessoryItem): CardDetail | undefined {
+  const { payment, amountSen } = item;
+  if (!payment || amountSen === undefined) return undefined;
+  if (item.kind === 'oweMoney')
+    return {
+      kind: 'oweMoney',
+      paymentId: payment.id,
+      payee: payment.counterpart,
+      amountSen,
+      note: payment.note,
+      category: 'other',
+    };
+  if (item.kind === 'owedToYou')
+    return {
+      kind: 'owedToYou',
+      payer: payment.counterpart,
+      amountSen,
+      note: payment.note,
+      category: 'other',
+    };
+  return undefined;
+}
+
+function withPayment(detail: CardDetail, item: AccessoryItem): CardDetail {
+  return detail.kind === 'oweMoney' ? { ...detail, paymentId: item.payment?.id ?? null } : detail;
 }
 
 export type StageLine =

@@ -204,8 +204,8 @@ const ms: Translation = {
       pay: {
         tag: 'Perlu dibayar',
         title: 'Bayar {{name}}',
-        slide: 'Leret untuk bayar · {{amount}} →',
-        slideLabel: 'Leret untuk bayar {{amount}}',
+        button: 'Bayar sekarang',
+        buttonLabel: 'Bayar {{amount}} sekarang',
         footer: 'Bayaran terus · wang terus ke {{name}}',
       },
       ride: {

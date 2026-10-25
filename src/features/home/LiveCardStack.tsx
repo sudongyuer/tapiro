@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
@@ -119,6 +120,7 @@ function StackedCard({
   onCardLayout,
 }: StackedCardProps) {
   const { t } = useI18n();
+  const router = useRouter();
   const behind = index > 0 && !open;
   const hidden = !stacked.visible && !open;
   const motion = useAnimatedStyle(() => ({
@@ -130,6 +132,8 @@ function StackedCard({
   }));
   const face = useAnimatedStyle(() => ({ opacity: index > 0 ? 1 - progress.value : 0 }));
   const peek = card.kind === 'calm' ? '' : card.item.title;
+  const paymentId = card.kind === 'calm' ? undefined : card.item.payment?.id;
+  const openPayment = () => paymentId && router.push(`/pay/${paymentId}`);
 
   return (
     <Animated.View
@@ -152,9 +156,17 @@ function StackedCard({
       ) : (
         <View
           accessible={card.kind !== 'calm'}
+          accessibilityRole={paymentId ? 'button' : undefined}
+          onAccessibilityTap={paymentId ? openPayment : undefined}
           testID={card.kind === 'calm' ? undefined : `live-card-${card.kind}`}
         >
-          <CardBody card={card} name={name} onAsk={onAsk} />
+          {paymentId ? (
+            <PressDim onPress={openPayment}>
+              <CardBody card={card} name={name} onAsk={onAsk} />
+            </PressDim>
+          ) : (
+            <CardBody card={card} name={name} onAsk={onAsk} />
+          )}
           {index > 0 ? <BackFace tone={TONE[card.kind]} label={peek} style={face} /> : null}
         </View>
       )}

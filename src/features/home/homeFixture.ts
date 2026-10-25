@@ -6,6 +6,7 @@ import type { CardDetail } from './homeModel';
 const DEMO_DETAILS: Readonly<Record<string, CardDetail>> = {
   [FIXTURE_ACCESSORY.oweMoney.id]: {
     kind: 'oweMoney',
+    paymentId: null,
     payee: '阿杰',
     amountSen: 1500,
     note: '阿杰 10 分钟前送到 · 帮取快递',
@@ -44,6 +45,7 @@ const DEMO_DETAILS: Readonly<Record<string, CardDetail>> = {
 const WORST_DETAILS: Readonly<Record<string, CardDetail>> = {
   [FIXTURE_ACCESSORY.oweMoney.id]: {
     kind: 'oweMoney',
+    paymentId: null,
     payee: 'Wan Nurul Aisyah binti Wan Abdul Rahman',
     amountSen: 1234560,
     note: '2 小时前送到 · 帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便买两杯 Tealive 珍珠奶茶',
@@ -82,6 +84,7 @@ const WORST_DETAILS: Readonly<Record<string, CardDetail>> = {
 const ONE_DETAILS: Readonly<Record<string, CardDetail>> = {
   [FIXTURE_ACCESSORY.oweMoney.id]: {
     kind: 'oweMoney',
+    paymentId: null,
     payee: 'Jo',
     amountSen: 50,
     note: '取件',

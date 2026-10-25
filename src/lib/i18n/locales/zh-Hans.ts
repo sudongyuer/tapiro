@@ -195,8 +195,8 @@ export default {
       pay: {
         tag: '待你付款',
         title: '付给{{name}}',
-        slide: '滑动付款 · {{amount}} →',
-        slideLabel: '滑动付款 {{amount}}',
+        button: '去付款',
+        buttonLabel: '去付款 {{amount}}',
         footer: '撮合付款 · 钱直接到{{name}}',
       },
       ride: {
