@@ -11,3 +11,4 @@ board; a decision that contradicts a note needs the user.
 - Cash in person is settled by the payee's 已收到 alone (user, 2026-10-15).
 - A cancelled prepaid item is settled by a reverse payment from the helper, confirmed by the poster (user, 2026-10-15).
 - A helper without any payee method cannot apply (user, 2026-10-15).
+- The CNY reference uses Bank Negara Malaysia's daily 17:00 middle rate, attributed "Source: Bank Negara Malaysia" with a link to its dataset terms (user, 2026-10-26).
