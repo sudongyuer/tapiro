@@ -1,6 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import type { PayeeDetails, PayeeMethod, PayeeType } from './methods';
+import { toMethod, type PayeeMethodRow } from '@/lib/payeeMethods';
+
+import type { PayeeDetails, PayeeMethod } from './methods';
+
+export { toMethod };
 
 export type PayeeService = {
   list(): Promise<PayeeMethod[]>;
@@ -11,22 +15,7 @@ export type PayeeService = {
   setDefault(id: string): Promise<void>;
 };
 
-type Row = {
-  id: string;
-  type: PayeeType;
-  is_default: boolean;
-  created_at: string;
-  checked_at: string;
-  display_name: string | null;
-  phone: string | null;
-  bank_code: string | null;
-  bank_name: string | null;
-  account_number: string | null;
-  qr_payload: string | null;
-  acquirer_id: string | null;
-  mcc: string | null;
-  qr_name: string | null;
-};
+type Row = PayeeMethodRow;
 
 type Columns = Omit<Row, 'id' | 'is_default' | 'created_at' | 'checked_at'>;
 
@@ -80,54 +69,6 @@ export function toColumns(details: PayeeDetails): Columns {
     case 'cash':
       return { ...EMPTY, type: details.type };
   }
-}
-
-function toDetails(row: Row): PayeeDetails | null {
-  switch (row.type) {
-    case 'duitnow_id':
-      return row.phone && row.display_name
-        ? { type: row.type, phone: row.phone, displayName: row.display_name }
-        : null;
-    case 'bank_account':
-      return (row.bank_code || row.bank_name) && row.account_number && row.display_name
-        ? {
-            type: row.type,
-            bankCode: row.bank_code,
-            bankName: row.bank_name,
-            accountNumber: row.account_number,
-            displayName: row.display_name,
-          }
-        : null;
-    case 'duitnow_qr':
-      return row.qr_payload && row.acquirer_id && row.mcc && row.qr_name
-        ? {
-            type: row.type,
-            payload: row.qr_payload,
-            acquirerId: row.acquirer_id,
-            mcc: row.mcc,
-            name: row.qr_name,
-          }
-        : null;
-    case 'alipay':
-    case 'wechat':
-      return row.qr_payload && row.display_name
-        ? { type: row.type, payload: row.qr_payload, displayName: row.display_name }
-        : null;
-    case 'cash':
-      return { type: row.type };
-  }
-}
-
-export function toMethod(row: Row): PayeeMethod | null {
-  const details = toDetails(row);
-  if (!details) return null;
-  return {
-    ...details,
-    id: row.id,
-    isDefault: row.is_default,
-    createdAt: row.created_at,
-    checkedAt: row.checked_at,
-  };
 }
 
 function unwrap<T extends { error: unknown }>(result: T) {

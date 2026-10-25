@@ -78,6 +78,39 @@ describe('account-delete (local stack)', () => {
     expect(await userExists(a.id)).toBe(true);
   });
 
+  test('blocks deletion while a real payment is unsettled, then allows it after settlement', async () => {
+    const opened = await admin.rpc('open_payment', {
+      kind: 'bounty',
+      item: crypto.randomUUID(),
+      item_title: '帮取快递',
+      payer: a.id,
+      payee: b.id,
+      amount: 1500,
+    });
+    expect(opened.error).toBeNull();
+    const blocked = await post({ Authorization: `Bearer ${a.token}`, apikey: anonKey });
+    expect(blocked.status).toBe(409);
+    const body = await blocked.json();
+    expect(body.payments).toEqual([
+      {
+        id: opened.data,
+        title: '帮取快递',
+        counterpartName: 'user-b',
+        amountSen: 1500,
+        direction: 'owe',
+      },
+    ]);
+    const owed = await post({ Authorization: `Bearer ${b.token}`, apikey: anonKey });
+    expect(owed.status).toBe(409);
+    expect((await owed.json()).payments[0].direction).toBe('owed');
+    expect(await userExists(a.id)).toBe(true);
+    const { error } = await admin
+      .from('payments')
+      .update({ state: 'settled', settled_at: new Date().toISOString() })
+      .eq('id', opened.data);
+    expect(error).toBeNull();
+  });
+
   test('deletes the calling user, their profile and payee methods, leaving another user untouched', async () => {
     expect(await profileExists(a.id)).toBe(true);
     for (const client of [a.client, b.client]) {

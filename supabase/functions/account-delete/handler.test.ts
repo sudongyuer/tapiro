@@ -1,6 +1,11 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-import { handleAccountDelete, type AccountDeleteDeps, type UnsettledPayment } from './handler';
+import {
+  handleAccountDelete,
+  toUnsettledPayments,
+  type AccountDeleteDeps,
+  type UnsettledPayment,
+} from './handler';
 
 const USER = '00000000-0000-4000-8000-00000000000a';
 
@@ -65,5 +70,29 @@ describe('handleAccountDelete', () => {
       }),
     });
     expect((await handleAccountDelete(post('valid'), d)).status).toBe(500);
+  });
+});
+
+describe('toUnsettledPayments', () => {
+  test('names the counterpart and the direction from the deleting user', () => {
+    const rows = [
+      { id: 'p1', title: '帮取快递', amount_sen: 1500, payer_id: USER, payee_id: 'helper' },
+      { id: 'p2', title: 'KLIA', amount_sen: 2500, payer_id: 'rider', payee_id: USER },
+      { id: 'p3', title: 'Gone', amount_sen: 100, payer_id: null, payee_id: USER },
+    ];
+    expect(toUnsettledPayments(USER, rows, { helper: '阿杰', rider: 'Aisyah' })).toEqual([
+      { id: 'p1', title: '帮取快递', counterpartName: '阿杰', amountSen: 1500, direction: 'owe' },
+      { id: 'p2', title: 'KLIA', counterpartName: 'Aisyah', amountSen: 2500, direction: 'owed' },
+      { id: 'p3', title: 'Gone', counterpartName: '', amountSen: 100, direction: 'owed' },
+    ]);
+  });
+});
+
+describe('a failed unsettled check', () => {
+  test('deletes nothing and reports a server error', async () => {
+    const d = deps({ findUnsettledPayments: mock(async () => Promise.reject(new Error('db'))) });
+    const res = await handleAccountDelete(post('valid'), d);
+    expect(res.status).toBe(500);
+    expect(d.deleteUser).not.toHaveBeenCalled();
   });
 });

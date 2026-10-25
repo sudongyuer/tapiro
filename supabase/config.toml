@@ -291,6 +291,12 @@ deno_version = 1
 [functions.account-delete]
 verify_jwt = true
 
+[functions.fx-rate]
+verify_jwt = true
+
+[functions.payment-proof-cleanup]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

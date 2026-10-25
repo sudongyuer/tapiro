@@ -30,7 +30,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { METHOD_ICONS, methodDetail, methodTitle } from './display';
 import { firstRecheckDue, hasCash, transferMethods, type PayeeMethod } from './methods';
 import { LoadStateSections } from './LoadState';
-import { NoticeCard } from './NoticeCard';
+import { NoticeCard } from '@/ui/NoticeCard';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });

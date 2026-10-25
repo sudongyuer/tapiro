@@ -1,32 +1,11 @@
-export const PAYEE_TYPES = [
-  'duitnow_id',
-  'bank_account',
-  'duitnow_qr',
-  'alipay',
-  'wechat',
-  'cash',
-] as const;
-export type PayeeType = (typeof PAYEE_TYPES)[number];
+import type { PayeeDetails, PayeeMethod, PayeeType } from '@/lib/payeeMethods';
 
-export type PayeeDetails =
-  | { type: 'duitnow_id'; phone: string; displayName: string }
-  | {
-      type: 'bank_account';
-      bankCode: string | null;
-      bankName: string | null;
-      accountNumber: string;
-      displayName: string;
-    }
-  | { type: 'duitnow_qr'; payload: string; acquirerId: string; mcc: string; name: string }
-  | { type: 'alipay' | 'wechat'; payload: string; displayName: string }
-  | { type: 'cash' };
-
-export type PayeeMethod = PayeeDetails & {
-  id: string;
-  isDefault: boolean;
-  createdAt: string;
-  checkedAt: string;
-};
+export {
+  PAYEE_TYPES,
+  type PayeeDetails,
+  type PayeeMethod,
+  type PayeeType,
+} from '@/lib/payeeMethods';
 
 export const RECHECK_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;

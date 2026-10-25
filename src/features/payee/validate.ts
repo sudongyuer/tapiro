@@ -1,4 +1,4 @@
-import { BANKS, OTHER_BANK } from './acquirers';
+import { BANKS, OTHER_BANK } from '@/lib/acquirers';
 
 export const PAYEE_NAME_MAX = 60;
 export const ACCOUNT_DIGITS = { min: 6, max: 20 } as const;
@@ -21,14 +21,7 @@ export function checkMalaysianMobile(input: string): FieldCheck<string> {
   return /^\+601\d{8,9}$/.test(e164) ? { ok: true, value: e164 } : { ok: false, reason: 'invalid' };
 }
 
-export function formatMalaysianMobile(e164: string) {
-  const national = e164.replace(/^\+60/, '');
-  if (!/^1\d{8,9}$/.test(national)) return e164;
-  const head = national.slice(0, 2);
-  const rest = national.slice(2);
-  const split = rest.length === 8 ? 4 : 3;
-  return `+60 ${head}-${rest.slice(0, split)} ${rest.slice(split)}`;
-}
+export { formatMalaysianMobile } from '@/lib/payeeMethods';
 
 export function checkAccountNumber(input: string): FieldCheck<string> {
   const compact = stripSeparators(input);
