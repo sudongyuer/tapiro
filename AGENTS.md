@@ -152,10 +152,11 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   fail: a check that passes before the screen settles proves nothing. Source: expo-ios-starter;
   two vacuous UI checks were found in review (2026-10-14, 2026-10-15).
 - UI changes add or update a check under `verification/ui` (`bun run verify:build`,
-  `bun run verify:ui`) and run it in light and dark; screenshots for state, video for motion.
+  `bun run verify:ui`), run per the tiers in Pace; screenshots for state, video for motion.
   Missing scenes, missing identifiers and timeouts fail; open the screenshots before reporting.
 - UI checks run in `zh-Hans`. A case that shows long copy also declares `LOCALES` with `ms` to
-  catch truncation. Light and dark are always both covered.
+  catch truncation. The full matrix covers light and dark; PR runs follow the tiers in Pace (dark only
+  where visuals changed).
 - Verify builds share one DerivedData per checkout (`.verify/DerivedData`). Never pass a
   per-task `-derivedDataPath`, copy the checkout to a temp directory, or call `simctl create`
   directly; the runner owns the `Tapiro Verify` Simulator. Reason: the disk incident below.
