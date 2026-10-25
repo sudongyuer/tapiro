@@ -7,3 +7,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | ---------- | -------------------- | --------------- | ------------- | ------------------------------------------- | ----------------------- | ------------------ |
 | 2026-10-15 | 3 payee methods      | 1 (walkthrough) | 2 + 3         | ~240 min (Simulator timeouts, outside load) | 8                       | 0 of 8             |
 | 2026-10-25 | story map + selector | pending         | 1             | ~8 days waiting on decisions                | 1                       | 0                  |
+| 2026-10-26 | 4 payment            | pending         | 1             | ~0                                          | 0                       | pending            |
