@@ -152,11 +152,10 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   fail: a check that passes before the screen settles proves nothing. Source: expo-ios-starter;
   two vacuous UI checks were found in review (2026-10-14, 2026-10-15).
 - UI changes add or update a check under `verification/ui` (`bun run verify:build`,
-  `bun run verify:ui`), run per the tiers in Pace; screenshots for state, video for motion.
+  `bun run verify:ui`), run as Pace describes; screenshots for state, video for motion.
   Missing scenes, missing identifiers and timeouts fail; open the screenshots before reporting.
 - UI checks run in `zh-Hans`. A case that shows long copy also declares `LOCALES` with `ms` to
-  catch truncation. The full matrix covers light and dark; PR runs follow the tiers in Pace (dark only
-  where visuals changed).
+  catch truncation. Milestone runs cover light and dark (Pace).
 - Verify builds share one DerivedData per checkout (`.verify/DerivedData`). Never pass a
   per-task `-derivedDataPath`, copy the checkout to a temp directory, or call `simctl create`
   directly; the runner owns the `Tapiro Verify` Simulator. Reason: the disk incident below.
@@ -178,14 +177,14 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   and get the answers; a task does not start with open UI questions.
 - Each implementation task writes the UI cases for the screens it changes, in the same task. Do not
   collect cases into a separate task at the end.
-- UI checks run in three tiers. Smoke (a few core cases, zh-Hans light) and affected (cases whose declared
-  dependencies changed against `main`, selected by the runner; dark only where visuals changed, `ms` only where
-  copy changed) gate every PR. The full matrix does not gate PRs: it runs in the background when the machine is idle
-  and before each TestFlight build. Reason: full runs took 30–104 min per PR and mostly re-checked untouched screens
-  (user, 2026-10-15).
-  Commands: `bun run verify:smoke`, `bun run verify:ui --affected [--base main] [--dark] [--locales]`,
-  `bun run verify:full`. Every case declares `DEPS = [...]` path prefixes; shared code (`src/ui/`, `src/lib/`,
-  root layout, Debug scenes, native modules, app config, the runner, `package.json`, `bun.lock`) selects every case.
+- UI checks run at milestones, not per PR. Every PR runs the fast checks (`bun test`, `tsc`, lint on changed files,
+  `format:check`, `check-specs`, `check-story-map`, pgTAP when SQL changed) and `bun run verify:smoke` (a few core
+  cases, zh-Hans light). UI cases for changed screens are still written in the same task, and each new case is run once
+  by its author. A milestone (a feature area done, for example payment, bounty or carpool, and before each TestFlight
+  build) runs `bun run verify:ui --affected --base <last milestone> --dark --locales`, then the user's walkthrough;
+  `bun run verify:full` runs when the machine is idle. Reason: Simulator runs dominated each step's time
+  (user, 2026-10-25). Every case declares `DEPS = [...]` path prefixes; shared code (`src/ui/`, `src/lib/`, root layout,
+  Debug scenes, native modules, app config, the runner, `package.json`, `bun.lock`) selects every case.
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside
   cause, record it in the ledger and move on; if not, report what is known and ask.
 
