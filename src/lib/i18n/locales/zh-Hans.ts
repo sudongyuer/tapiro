@@ -1,3 +1,4 @@
+import pay from './pay/zh-Hans';
 import payee from './payee/zh-Hans';
 
 export default {
@@ -118,6 +119,7 @@ export default {
     },
   },
   payee,
+  pay,
   shell: {
     tabs: {
       bounty: '悬赏',
@@ -252,6 +254,7 @@ export default {
         deleteBlocked: '删除账号（有未结清付款）',
       },
     },
+    pay: { title: '付款弹窗' },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',

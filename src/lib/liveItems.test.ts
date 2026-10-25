@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
-import { FIXTURE_UNREAD_MESSAGES, fixtureLiveItems } from './liveItems';
+import {
+  createLiveItems,
+  FIXTURE_UNREAD_MESSAGES,
+  fixtureLiveItems,
+  withoutMoney,
+} from './liveItems';
 
 describe('fixtureLiveItems', () => {
   test('defaults to all four kinds, listed out of priority order', () => {
@@ -57,5 +62,31 @@ describe('accessory amounts', () => {
   test('worst amounts are 12,345.60 and 0.50', () => {
     const feed = fixtureLiveItems('oweMoney,owedToYou', 'worst').accessory;
     expect(feed.map((item) => item.amountSen)).toEqual([50, 1234560]);
+  });
+});
+
+describe('live item sources', () => {
+  test('a source adds its items after the base feed and replaces them on the next publish', () => {
+    const live = createLiveItems(withoutMoney(fixtureLiveItems('oweMoney,rideSoon')));
+    expect(live.getSnapshot().accessory.map((item) => item.kind)).toEqual(['rideSoon']);
+    const owe = {
+      id: 'p1',
+      kind: 'oweMoney',
+      title: '付给阿杰',
+      amountSen: 1500,
+      sub: '帮取快递',
+    } as const;
+    live.setSource('payments', [owe]);
+    expect(live.getSnapshot().accessory.map((item) => item.id)).toEqual(['fixture-ride', 'p1']);
+    live.setSource('payments', []);
+    expect(live.getSnapshot().accessory.map((item) => item.id)).toEqual(['fixture-ride']);
+  });
+
+  test('an empty first source does not notify', () => {
+    const live = createLiveItems();
+    let calls = 0;
+    live.subscribe(() => (calls += 1));
+    live.setSource('payments', []);
+    expect(calls).toBe(0);
   });
 });

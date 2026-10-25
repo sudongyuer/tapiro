@@ -9,6 +9,7 @@ import {
   WelcomeScene,
 } from './AccountScenes';
 import { DesignTokensScene } from './DesignTokensScene';
+import { PaySheetScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
 
 export type Scene = {
@@ -37,6 +38,7 @@ export const scenes: Scene[] = [
     titleKey: 'debug.account.scenes.deleteBlocked',
     Component: DeleteBlockedScene,
   },
+  { id: 'pay-sheet', titleKey: 'debug.pay.title', Component: PaySheetScene },
 ];
 
 export function findScene(id: string) {

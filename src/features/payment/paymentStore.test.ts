@@ -1,0 +1,126 @@
+import { describe, expect, test } from 'bun:test';
+import { createInstance } from 'i18next';
+
+import { resources } from '@/lib/i18n/resources';
+import { createLiveItems } from '@/lib/liveItems';
+
+import {
+  createFixturePaymentService,
+  FIXTURE_PAYMENT_IDS,
+  FIXTURE_USER_ID,
+  type FixturePaymentOptions,
+} from './fixturePaymentService';
+import { accessoryItems } from './livePayments';
+import { createPaymentStore } from './paymentStore';
+
+const OPTIONS: FixturePaymentOptions = {
+  variant: 'demo',
+  feed: undefined,
+  mix: 'all',
+  settledBefore: false,
+  rate: true,
+};
+
+const i18n = createInstance();
+i18n.init({ resources, lng: 'zh-Hans', initAsync: false, interpolation: { escapeValue: false } });
+const t = i18n.t;
+
+async function ready(options: Partial<FixturePaymentOptions> = {}) {
+  const store = createPaymentStore(createFixturePaymentService({ ...OPTIONS, ...options }));
+  await store.ensureLoaded(FIXTURE_USER_ID);
+  return store;
+}
+
+const payments = (store: Awaited<ReturnType<typeof ready>>) => {
+  const state = store.getSnapshot();
+  return state.status === 'ready' ? state.payments : [];
+};
+
+describe('payment store', () => {
+  test('lists the unsettled payments the feed selects', async () => {
+    expect(payments(await ready()).map((p) => p.id)).toEqual([
+      FIXTURE_PAYMENT_IDS.owe,
+      FIXTURE_PAYMENT_IDS.owed,
+    ]);
+    expect(payments(await ready({ feed: 'oweMoney,rideSoon' })).map((p) => p.id)).toEqual([
+      FIXTURE_PAYMENT_IDS.owe,
+    ]);
+    expect(payments(await ready({ feed: 'none' }))).toEqual([]);
+  });
+
+  test('a failed action reports failure and keeps the list', async () => {
+    const store = await ready();
+    const result = await store.run(FIXTURE_USER_ID, () =>
+      store.service.undo(FIXTURE_PAYMENT_IDS.owe),
+    );
+    expect(result.ok).toBe(false);
+    expect(payments(store)).toHaveLength(2);
+  });
+
+  test('settling removes the payment from the list; only the first settle is first', async () => {
+    const store = await ready();
+    const first = await store.run(FIXTURE_USER_ID, () =>
+      store.service.confirm(FIXTURE_PAYMENT_IDS.owed),
+    );
+    expect(first).toEqual({ ok: true, value: { firstSettled: true } });
+    expect(payments(store).map((p) => p.id)).toEqual([FIXTURE_PAYMENT_IDS.owe]);
+    const later = await store.run(FIXTURE_USER_ID, () =>
+      store.service.confirm(FIXTURE_PAYMENT_IDS.owedCash),
+    );
+    expect(later).toEqual({ ok: true, value: { firstSettled: false } });
+  });
+
+  test('marking paid then undoing returns the payment to due', async () => {
+    const store = await ready();
+    const methods = await store.service.methodsOf('fixture-payee');
+    const phone = methods.find((method) => method.type === 'duitnow_id');
+    const cash = methods.find((method) => method.type === 'cash');
+    expect(
+      (
+        await store.run(FIXTURE_USER_ID, () =>
+          store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, cash!.id, null),
+        )
+      ).ok,
+    ).toBe(false);
+    await store.run(FIXTURE_USER_ID, () =>
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null),
+    );
+    expect(payments(store)[0]).toMatchObject({ state: 'marked_paid', methodType: 'duitnow_id' });
+    await store.run(FIXTURE_USER_ID, () => store.service.undo(FIXTURE_PAYMENT_IDS.owe));
+    expect(payments(store)[0]).toMatchObject({ state: 'due', methodType: null });
+  });
+});
+
+describe('live payments', () => {
+  test('a due payment is money I owe; a marked-paid one is owed to me, waiting for my confirmation', async () => {
+    const items = accessoryItems(payments(await ready()), t);
+    expect(
+      items.map(({ kind, title, sub, amountSen }) => ({ kind, title, sub, amountSen })),
+    ).toEqual([
+      { kind: 'oweMoney', title: '付给阿杰', sub: '帮取快递', amountSen: 1500 },
+      { kind: 'owedToYou', title: '小林说已付你', sub: '帮带一杯咖啡 · 等你确认', amountSen: 800 },
+    ]);
+    expect(items[0].payment).toEqual({
+      id: FIXTURE_PAYMENT_IDS.owe,
+      counterpart: '阿杰',
+      note: '帮取快递',
+    });
+  });
+
+  test('after 我已付款 the payer has nothing urgent until the payee says 还没收到', async () => {
+    const store = await ready({ feed: 'oweMoney' });
+    const [owe] = payments(store);
+    expect(accessoryItems([{ ...owe, state: 'marked_paid' }], t)).toEqual([]);
+    const [nudged] = accessoryItems([{ ...owe, state: 'marked_paid', nudgedAt: owe.createdAt }], t);
+    expect(nudged).toMatchObject({ kind: 'oweMoney', sub: '阿杰说还没收到 · 帮取快递' });
+  });
+
+  test('the store feeds the accessory through the live-item contract', async () => {
+    const live = createLiveItems();
+    const store = await ready();
+    live.setSource('payments', accessoryItems(payments(store), t));
+    await store.run(FIXTURE_USER_ID, () => store.service.confirm(FIXTURE_PAYMENT_IDS.owed));
+    live.setSource('payments', accessoryItems(payments(store), t));
+    expect(live.getSnapshot().accessory.map((item) => item.kind)).toEqual(['oweMoney']);
+  });
+});

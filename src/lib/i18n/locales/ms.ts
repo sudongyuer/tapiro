@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import pay from './pay/ms';
 import payee from './payee/ms';
 
 const ms: Translation = {
@@ -123,6 +124,7 @@ const ms: Translation = {
     },
   },
   payee,
+  pay,
   shell: {
     tabs: {
       bounty: 'Ganjaran',
@@ -261,6 +263,7 @@ const ms: Translation = {
         deleteBlocked: 'Padam akaun (bayaran belum selesai)',
       },
     },
+    pay: { title: 'Helaian bayaran' },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',

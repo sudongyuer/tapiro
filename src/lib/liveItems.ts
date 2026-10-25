@@ -10,7 +10,10 @@ export type AccessoryItem = {
   title: string;
   amountSen?: number;
   sub: string;
+  payment?: { id: string; counterpart: string; note: string };
 };
+
+export const MONEY_KINDS: readonly AccessoryKind[] = ['oweMoney', 'owedToYou'];
 
 export function accessoryPriority(kind: AccessoryKind) {
   return ACCESSORY_KINDS.indexOf(kind) + 1;
@@ -25,13 +28,37 @@ export type LiveItems = {
   getSnapshot: () => LiveItemsSnapshot;
   subscribe: (listener: () => void) => () => void;
   publish: (next: LiveItemsSnapshot) => void;
+  setSource: (name: string, items: readonly AccessoryItem[]) => void;
 };
 
 export const EMPTY_LIVE_ITEMS: LiveItemsSnapshot = { accessory: [], unreadMessages: 0 };
 
 export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): LiveItems {
+  let base = initial;
+  const sources = new Map<string, readonly AccessoryItem[]>();
   const store = createStore(initial);
-  return { getSnapshot: store.get, subscribe: store.subscribe, publish: store.set };
+  const merge = () =>
+    store.set({ ...base, accessory: [...base.accessory, ...[...sources.values()].flat()] });
+  return {
+    getSnapshot: store.get,
+    subscribe: store.subscribe,
+    publish(next) {
+      base = next;
+      merge();
+    },
+    setSource(name, items) {
+      if (items.length === 0 && !sources.has(name)) return;
+      sources.set(name, items);
+      merge();
+    },
+  };
+}
+
+export function withoutMoney(snapshot: LiveItemsSnapshot): LiveItemsSnapshot {
+  return {
+    ...snapshot,
+    accessory: snapshot.accessory.filter((item) => !MONEY_KINDS.includes(item.kind)),
+  };
 }
 
 export const FIXTURE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {

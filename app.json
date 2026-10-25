@@ -60,6 +60,14 @@
           "recordAudioAndroid": false
         }
       ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": false,
+          "savePhotosPermission": "Save a payee's receive QR code to Photos so you can scan it from your wallet app. Tapiro only adds this one image.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
       "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {

@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import pay from './pay/en';
 import payee from './payee/en';
 
 const en: Translation = {
@@ -123,6 +124,7 @@ const en: Translation = {
     },
   },
   payee,
+  pay,
   shell: {
     tabs: {
       bounty: 'Bounties',
@@ -257,6 +259,7 @@ const en: Translation = {
         deleteBlocked: 'Delete account (unsettled payment)',
       },
     },
+    pay: { title: 'Pay sheet' },
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',
