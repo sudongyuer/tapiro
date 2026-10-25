@@ -1,5 +1,6 @@
 export default {
   live: {
+    waitingConfirm: 'Menunggu pengesahan {{name}}',
     owe: 'Bayar {{name}}',
     notReceived: '{{name}} belum terima · {{title}}',
     saysPaid: '{{name}} kata sudah bayar anda',
@@ -79,6 +80,9 @@ export default {
     settled: { title: 'Selesai', body: '{{amount}} · {{title}}' },
   },
   payee: {
+    viewProof: 'Lihat tangkapan skrin bayaran',
+    proofLabel: 'Tangkapan skrin bayaran',
+    proofFailed: 'Tangkapan skrin tidak dapat dibuka. Cuba lagi kemudian.',
     saysPaid: '{{name}} kata sudah bayar',
     saysPaidBody: '{{amount}} · melalui {{method}}',
     proof: 'Tangkapan skrin bayaran dilampirkan',

@@ -197,6 +197,13 @@ const en: Translation = {
     money: 'RM {{amount}}',
     soon: 'This step isn’t available yet',
     card: {
+      waiting: { tag: 'Waiting to be confirmed' },
+      unavailable: {
+        title: 'Couldn’t load your payments',
+        body: 'We can’t tell yet whether you owe money or someone paid you.',
+        retry: 'Try again',
+        loading: 'Loading your payments',
+      },
       pay: {
         tag: 'You owe',
         title: 'Pay {{name}}',

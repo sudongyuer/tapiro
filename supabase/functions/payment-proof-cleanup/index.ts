@@ -10,16 +10,19 @@ const admin = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey, {
 Deno.serve((req) =>
   handleProofCleanup(req, {
     authorized: (token) => token === serviceKey,
-    async expiredProofs() {
-      const { data, error } = await admin.rpc('expired_payment_proofs');
+    async objectsToDelete() {
+      const { data, error } = await admin.rpc('payment_proofs_to_delete');
       if (error) throw error;
-      return (data ?? []).map((row: { payment_id: string; proof_path: string }) => ({
-        paymentId: row.payment_id,
-        proofPath: row.proof_path,
-      }));
+      return (data ?? []).map(
+        (row: { object_name: string; payment_id: string | null; clears_proof: boolean }) => ({
+          objectName: row.object_name,
+          paymentId: row.payment_id,
+          clearsProof: row.clears_proof,
+        }),
+      );
     },
-    async removeObjects(paths) {
-      const { error } = await admin.storage.from('payment-proofs').remove(paths);
+    async removeObjects(names) {
+      const { error } = await admin.storage.from('payment-proofs').remove(names);
       if (error) throw error;
     },
     async clearProof(paymentId) {

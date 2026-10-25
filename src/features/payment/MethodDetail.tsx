@@ -17,6 +17,7 @@ import { payDevice } from './services';
 import { useQrImage } from './useQrImage';
 
 const QR_PREVIEW = 168;
+const QR_SAVE = 512;
 
 export function optionTitle(t: TFunction, option: PayOption) {
   if (option.kind === 'cash') return t('payee.types.cash');
@@ -112,8 +113,9 @@ function QrSection({
   const hint = t(`pay.sheet.qr.hint.${option.app ?? 'bank'}`);
 
   async function save() {
-    if (!uri) return setSaved('failed');
-    const ok = await payDevice.saveToPhotos(uri);
+    const file = await payDevice.qrImage(option.payload, QR_SAVE).catch(() => null);
+    if (!file) return setSaved('failed');
+    const ok = await payDevice.saveToPhotos(file);
     setSaved(ok ? 'saved' : 'failed');
     if (ok && primary.link) await payDevice.open(primary.link);
   }

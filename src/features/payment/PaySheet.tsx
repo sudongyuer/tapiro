@@ -46,9 +46,10 @@ export function PaySheet({
     else Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
   }
 
+  // An uploaded proof keeps its path, so a failed 我已付款 is retried with the same file instead of a new upload.
   async function markPaid(methodId: string, proof: Proof, setProof: (next: Proof) => void) {
-    let path: string | null = null;
-    if (proof.status !== 'none') {
+    let path: string | null = proof.status === 'uploaded' ? proof.path : null;
+    if (proof.status === 'picked' || proof.status === 'failed') {
       setProof({ status: 'uploading', uri: proof.uri });
       try {
         path = await sheet.uploadProof(proof.uri);
@@ -56,6 +57,7 @@ export function PaySheet({
         setProof({ status: 'failed', uri: proof.uri });
         return;
       }
+      setProof({ status: 'uploaded', uri: proof.uri, path });
     }
     await sheet.markPaid(methodId, path);
   }
@@ -134,6 +136,7 @@ function SheetBody({
         busy={sheet.busy}
         onConfirm={onConfirm}
         onNotReceived={sheet.notReceived}
+        proofUrl={sheet.proofUrl}
       />
     );
   if (payment.state === 'due')

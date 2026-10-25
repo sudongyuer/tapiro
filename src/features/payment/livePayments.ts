@@ -13,6 +13,13 @@ export function accessoryFor(payment: Payment, t: TFunction): AccessoryItem | nu
   };
   if (payment.role === 'payer') {
     const nudged = payment.state === 'marked_paid' && payment.nudgedAt !== null;
+    if (payment.state === 'marked_paid' && !nudged)
+      return {
+        ...base,
+        kind: 'waitingConfirm',
+        title: t('pay.live.waitingConfirm', { name }),
+        sub: payment.title,
+      };
     if (payment.state !== 'due' && !nudged) return null;
     return {
       ...base,

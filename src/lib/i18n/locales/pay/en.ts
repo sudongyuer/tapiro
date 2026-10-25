@@ -1,5 +1,6 @@
 export default {
   live: {
+    waitingConfirm: 'Waiting for {{name}} to confirm',
     owe: 'Pay {{name}}',
     notReceived: '{{name}} hasn’t received it · {{title}}',
     saysPaid: '{{name}} says they paid you',
@@ -79,6 +80,9 @@ export default {
     settled: { title: 'Settled', body: '{{amount}} · {{title}}' },
   },
   payee: {
+    viewProof: 'View payment screenshot',
+    proofLabel: 'Payment screenshot',
+    proofFailed: 'Couldn’t open the screenshot. Try again later.',
     saysPaid: '{{name}} says they paid',
     saysPaidBody: '{{amount}} · via {{method}}',
     proof: 'Payment screenshot attached',

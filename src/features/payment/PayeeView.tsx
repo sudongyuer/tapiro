@@ -4,24 +4,29 @@ import { useI18n } from '@/lib/i18n';
 import type { PayeeType } from '@/lib/payeeMethods';
 import { formatRinggit } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { useState } from 'react';
 
 import { ActionButton, TextSection } from './formParts';
 import type { SheetAction, SheetData } from './hooks';
 import { AmountHeader } from './PayerView';
 import { takesCash } from './payOptions';
+import { ProofViewer } from './ProofViewer';
 
 export function PayeeView({
   data,
   busy,
   onConfirm,
   onNotReceived,
+  proofUrl,
 }: {
   data: SheetData;
   busy: SheetAction | null;
   onConfirm: () => void;
   onNotReceived: () => void;
+  proofUrl: (path: string) => Promise<string>;
 }) {
   const { t, language } = useI18n();
+  const [viewing, setViewing] = useState<string | null>(null);
   const { payment, methods } = data;
   const name = payment.counterpartName;
   const amount = formatRinggit(payment.amountSen, language);
@@ -78,6 +83,17 @@ export function PayeeView({
           .join('\n')}
         testID="pay-payee-says-paid"
       />
+      {payment.proofPath ? (
+        <Section>
+          <ActionButton
+            label={t('pay.payee.viewProof')}
+            tone="plain"
+            onPress={() => setViewing(payment.proofPath)}
+            testID="pay-view-proof"
+          />
+        </Section>
+      ) : null}
+      <ProofViewer path={viewing} load={proofUrl} onClose={() => setViewing(null)} />
       {payment.nudgedAt ? (
         <NoticeCard
           tone="warning"

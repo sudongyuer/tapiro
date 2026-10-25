@@ -10,6 +10,7 @@ export type Proof =
   | { status: 'none' }
   | { status: 'picked'; uri: string }
   | { status: 'uploading'; uri: string }
+  | { status: 'uploaded'; uri: string; path: string }
   | { status: 'failed'; uri: string };
 
 export function ProofSection({

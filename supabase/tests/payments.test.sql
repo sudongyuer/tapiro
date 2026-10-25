@@ -1,5 +1,5 @@
 begin;
-select plan(61);
+select plan(70);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -165,6 +165,10 @@ select is(
   'the payee''s methods are hidden from the payer after settlement'
 );
 select is(public.publish_blocked(), false, 'one fresh unpaid payment does not block publishing');
+select throws_ok(
+  $$select public.undo_marked_paid((select id from ids where name = 'one'))$$,
+  '55000', null, 'undo after settlement is rejected'
+);
 
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000c3');
 select throws_ok(
@@ -210,7 +214,27 @@ reset role;
 insert into ids values ('proofed', public.open_payment('bounty', gen_random_uuid(), '排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 600));
 
 set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select throws_ok(
+  format($$insert into storage.objects (bucket_id, name) values ('payment-proofs', '%s/sneaky.jpg')$$, (select id from ids where name = 'proofed')),
+  '42501', null, 'a non-party cannot upload into another payment''s folder'
+);
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000c3');
+select lives_ok(
+  format($$insert into storage.objects (bucket_id, name) values ('payment-proofs', '%s/draft.jpg')$$, (select id from ids where name = 'proofed')),
+  'the payer uploads a draft proof'
+);
+select results_eq(
+  $$with removed as (delete from storage.objects where bucket_id = 'payment-proofs' and name = (select id from ids where name = 'proofed') || '/draft.jpg' returning 1)
+    select count(*)::int from removed$$,
+  $$values (1)$$,
+  'the payer deletes an unattached draft while the payment is due'
+);
+select throws_ok(
+  format($$select public.mark_payment_paid(%L, '00000000-0000-4000-8000-0000000000b1', %L)$$,
+    (select id from ids where name = 'proofed'), (select id from ids where name = 'proofed') || '/missing.jpg'),
+  '22023', null, 'a proof must exist in storage'
+);
 select lives_ok(
   format($$insert into storage.objects (bucket_id, name) values ('payment-proofs', '%s/proof.jpg')$$, (select id from ids where name = 'proofed')),
   'the payer uploads a proof into the payment''s folder'
@@ -218,6 +242,20 @@ select lives_ok(
 select is(
   public.mark_payment_paid((select id from ids where name = 'proofed'), '00000000-0000-4000-8000-0000000000b1', (select id from ids where name = 'proofed') || '/proof.jpg')::text,
   'marked_paid', 'the payer marks paid with the proof'
+);
+select is(
+  (select count(*) from public.payee_methods where user_id = '00000000-0000-0000-0000-0000000000b2'), 2::bigint,
+  'the payer still reads the payee''s methods while marked paid, with no other payment due'
+);
+select throws_ok(
+  format($$insert into storage.objects (bucket_id, name) values ('payment-proofs', '%s/late.jpg')$$, (select id from ids where name = 'proofed')),
+  '42501', null, 'no upload after 我已付款'
+);
+select results_eq(
+  $$with removed as (delete from storage.objects where bucket_id = 'payment-proofs' and name = (select id from ids where name = 'proofed') || '/proof.jpg' returning 1)
+    select count(*)::int from removed$$,
+  $$values (0)$$,
+  'the attached proof cannot be deleted by the payer'
 );
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select is((select count(*) from storage.objects where bucket_id = 'payment-proofs'), 1::bigint, 'the payee reads the proof');
@@ -229,10 +267,20 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select is((select count(*) from storage.objects where bucket_id = 'payment-proofs'), 0::bigint, 'a third person cannot read the proof');
 
 reset role;
+insert into storage.objects (bucket_id, name, created_at)
+values ('payment-proofs', (select id from ids where name = 'proofed') || '/abandoned.jpg', now() - interval '4 hours'),
+       ('payment-proofs', (select id from ids where name = 'proofed') || '/fresh.jpg', now());
+update storage.objects set created_at = now() - interval '4 hours' where name = (select id from ids where name = 'proofed') || '/proof.jpg';
+select results_eq(
+  $$select split_part(object_name, '/', 2), clears_proof from public.payment_proofs_to_delete() order by 1$$,
+  $$values ('abandoned.jpg', false)$$,
+  'an unattached object older than the grace period is deleted; the current proof and fresh drafts stay'
+);
 update public.payments set state = 'settled', settled_at = now() - interval '31 days' where id = (select id from ids where name = 'proofed');
-select is(
-  (select count(*) from public.expired_payment_proofs() where payment_id = (select id from ids where name = 'proofed')), 1::bigint,
-  'a proof 30 days after settlement is due for deletion'
+select results_eq(
+  $$select split_part(object_name, '/', 2), clears_proof from public.payment_proofs_to_delete() order by 1$$,
+  $$values ('abandoned.jpg', false), ('fresh.jpg', false), ('proof.jpg', true)$$,
+  'everything of a payment settled 30 days ago is deleted'
 );
 select public.clear_payment_proof((select id from ids where name = 'proofed'));
 select is((select proof_path from public.payments where id = (select id from ids where name = 'proofed')), null, 'clearing removes the proof path');

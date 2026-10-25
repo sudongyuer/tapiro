@@ -32,6 +32,8 @@ export type PaymentService = {
   methodsOf(userId: string): Promise<PayeeMethod[]>;
   latestRate(): Promise<FxRate | null>;
   uploadProof(paymentId: string, fileUri: string): Promise<string>;
+  removeProof(path: string): Promise<void>;
+  proofUrl(path: string): Promise<string>;
   markPaid(paymentId: string, methodId: string, proofPath: string | null): Promise<void>;
   undo(paymentId: string): Promise<void>;
   confirm(paymentId: string): Promise<SettleResult>;

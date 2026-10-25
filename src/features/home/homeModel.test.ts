@@ -72,7 +72,7 @@ describe('liveCards', () => {
   test('cards follow the accessory priority and carry their detail', () => {
     const cards = liveCards([progress, owed, ride, owe], DETAILS, priority);
     expect(cards.map((card) => card.kind)).toEqual(PRIORITY);
-    expect(cards.every((card) => card.kind === 'calm' || card.detail?.kind === card.kind)).toBe(
+    expect(cards.every((card) => !('detail' in card) || card.detail?.kind === card.kind)).toBe(
       true,
     );
   });
@@ -139,7 +139,7 @@ describe('payment-driven cards', () => {
 
   test('a payment item without fixture details builds its card from the payment', () => {
     const [pay, owedCard] = liveCards([paid('oweMoney'), paid('owedToYou')], {}, priority);
-    expect(pay.kind !== 'calm' && pay.detail).toEqual({
+    expect('detail' in pay && pay.detail).toEqual({
       kind: 'oweMoney',
       paymentId: 'p-oweMoney',
       payee: '阿杰',
@@ -147,7 +147,7 @@ describe('payment-driven cards', () => {
       note: '帮取快递',
       category: 'other',
     });
-    expect(owedCard.kind !== 'calm' && owedCard.detail).toMatchObject({
+    expect('detail' in owedCard && owedCard.detail).toMatchObject({
       kind: 'owedToYou',
       payer: '阿杰',
     });
@@ -155,10 +155,36 @@ describe('payment-driven cards', () => {
 
   test('fixture details keep their copy and take the payment id from the item', () => {
     const [card] = liveCards([{ ...paid('oweMoney'), id: 'oweMoney' }], DETAILS, priority);
-    expect(card.kind !== 'calm' && card.detail).toMatchObject({
+    expect('detail' in card && card.detail).toMatchObject({
       payee: '阿杰',
       paymentId: 'p-oweMoney',
       category: 'pickup',
     });
+  });
+});
+
+describe('payments that are not known', () => {
+  test('a failed source shows the unavailable card instead of calm and keeps the stage off calm', () => {
+    const issues = [{ source: 'payments', status: 'failed' } as const];
+    expect(liveCards([], DETAILS, priority, issues)).toEqual([
+      { kind: 'unavailable', id: 'unavailable', issue: issues[0] },
+    ]);
+    expect(stageState([], issues)).toBe('live');
+  });
+
+  test('a stale source puts the unavailable card in front of the other live items', () => {
+    const issues = [{ source: 'payments', status: 'stale' } as const];
+    expect(liveCards([ride], DETAILS, priority, issues).map((card) => card.kind)).toEqual([
+      'unavailable',
+      'rideSoon',
+    ]);
+  });
+
+  test('loading shows a loading card only while there is nothing else', () => {
+    const issues = [{ source: 'payments', status: 'loading' } as const];
+    expect(liveCards([], DETAILS, priority, issues)[0].kind).toBe('unavailable');
+    expect(liveCards([ride], DETAILS, priority, issues).map((card) => card.kind)).toEqual([
+      'rideSoon',
+    ]);
   });
 });

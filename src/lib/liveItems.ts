@@ -1,8 +1,15 @@
 import type { FixtureVariant } from './fixtureVariant';
 import { createStore } from './store';
 
-export const ACCESSORY_KINDS = ['oweMoney', 'rideSoon', 'owedToYou', 'bountyInProgress'] as const;
+export const ACCESSORY_KINDS = [
+  'oweMoney',
+  'rideSoon',
+  'owedToYou',
+  'bountyInProgress',
+  'waitingConfirm',
+] as const;
 export type AccessoryKind = (typeof ACCESSORY_KINDS)[number];
+type FixtureKind = Exclude<AccessoryKind, 'waitingConfirm'>;
 
 export type AccessoryItem = {
   id: string;
@@ -19,26 +26,45 @@ export function accessoryPriority(kind: AccessoryKind) {
   return ACCESSORY_KINDS.indexOf(kind) + 1;
 }
 
+export type SourceStatus = 'loading' | 'ready' | 'failed' | 'stale';
+export type SourceIssue = { source: string; status: Exclude<SourceStatus, 'ready'> };
+
 export type LiveItemsSnapshot = {
   accessory: readonly AccessoryItem[];
   unreadMessages: number;
+  issues?: readonly SourceIssue[];
 };
 
 export type LiveItems = {
   getSnapshot: () => LiveItemsSnapshot;
   subscribe: (listener: () => void) => () => void;
   publish: (next: LiveItemsSnapshot) => void;
-  setSource: (name: string, items: readonly AccessoryItem[]) => void;
+  setSource: (
+    name: string,
+    items: readonly AccessoryItem[],
+    status?: SourceStatus,
+    retry?: () => void,
+  ) => void;
+  retry: (name: string) => void;
 };
 
 export const EMPTY_LIVE_ITEMS: LiveItemsSnapshot = { accessory: [], unreadMessages: 0 };
 
 export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): LiveItems {
   let base = initial;
-  const sources = new Map<string, readonly AccessoryItem[]>();
+  const sources = new Map<string, { items: readonly AccessoryItem[]; status: SourceStatus }>();
+  const retries = new Map<string, () => void>();
   const store = createStore(initial);
-  const merge = () =>
-    store.set({ ...base, accessory: [...base.accessory, ...[...sources.values()].flat()] });
+  // A source that is loading, failed or stale contributes no items: they are not known to be live.
+  const merge = () => {
+    const live = [...sources.values()].flatMap((source) =>
+      source.status === 'ready' ? source.items : [],
+    );
+    const issues = [...sources.entries()].flatMap(([source, { status }]) =>
+      status === 'ready' ? [] : [{ source, status }],
+    );
+    store.set({ ...base, accessory: [...base.accessory, ...live], issues });
+  };
   return {
     getSnapshot: store.get,
     subscribe: store.subscribe,
@@ -46,10 +72,14 @@ export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): 
       base = next;
       merge();
     },
-    setSource(name, items) {
-      if (items.length === 0 && !sources.has(name)) return;
-      sources.set(name, items);
+    setSource(name, items, status = 'ready', retry) {
+      if (items.length === 0 && status === 'ready' && !sources.has(name)) return;
+      sources.set(name, { items, status });
+      if (retry) retries.set(name, retry);
       merge();
+    },
+    retry(name) {
+      retries.get(name)?.();
     },
   };
 }
@@ -61,7 +91,7 @@ export function withoutMoney(snapshot: LiveItemsSnapshot): LiveItemsSnapshot {
   };
 }
 
-export const FIXTURE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
+export const FIXTURE_ACCESSORY: Record<FixtureKind, AccessoryItem> = {
   oweMoney: {
     id: 'fixture-owe',
     kind: 'oweMoney',
@@ -90,7 +120,7 @@ export const FIXTURE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   },
 };
 
-const WORST_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
+const WORST_ACCESSORY: Record<FixtureKind, AccessoryItem> = {
   oweMoney: {
     ...FIXTURE_ACCESSORY.oweMoney,
     title: '付给Wan Nurul Aisyah binti Wan Abdul Rahman',
@@ -115,7 +145,7 @@ const WORST_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   },
 };
 
-const ONE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
+const ONE_ACCESSORY: Record<FixtureKind, AccessoryItem> = {
   oweMoney: {
     ...FIXTURE_ACCESSORY.oweMoney,
     title: '付给Jo',
@@ -136,7 +166,7 @@ const ONE_ACCESSORY: Record<AccessoryKind, AccessoryItem> = {
   bountyInProgress: { ...FIXTURE_ACCESSORY.bountyInProgress, title: 'Jo 在讲题', sub: '今晚' },
 };
 
-const ACCESSORY_BY_VARIANT: Record<FixtureVariant, Record<AccessoryKind, AccessoryItem>> = {
+const ACCESSORY_BY_VARIANT: Record<FixtureVariant, Record<FixtureKind, AccessoryItem>> = {
   demo: FIXTURE_ACCESSORY,
   worst: WORST_ACCESSORY,
   one: ONE_ACCESSORY,
@@ -152,7 +182,7 @@ const UNREAD_BY_VARIANT: Record<FixtureVariant, number> = {
   empty: 0,
 };
 
-const FEED_ORDER: AccessoryKind[] = ['bountyInProgress', 'owedToYou', 'rideSoon', 'oweMoney'];
+const FEED_ORDER: FixtureKind[] = ['bountyInProgress', 'owedToYou', 'rideSoon', 'oweMoney'];
 
 export function fixtureLiveItems(
   selection: string | undefined,

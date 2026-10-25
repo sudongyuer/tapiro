@@ -201,6 +201,13 @@ const ms: Translation = {
     money: 'RM {{amount}}',
     soon: 'Langkah ini belum dibuka',
     card: {
+      waiting: { tag: 'Menunggu pengesahan' },
+      unavailable: {
+        title: 'Bayaran anda tidak dapat dimuatkan',
+        body: 'Kami belum tahu sama ada anda berhutang atau seseorang sudah membayar anda.',
+        retry: 'Cuba lagi',
+        loading: 'Memuatkan bayaran anda',
+      },
       pay: {
         tag: 'Perlu dibayar',
         title: 'Bayar {{name}}',

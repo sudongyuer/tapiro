@@ -417,9 +417,9 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                  | 行为                                                       | 覆盖         |
 | ------------------------ | ---------------------------------------------------------- | ------------ |
-| pay.mark-paid.waiting    | 点了之后原地变成等待确认                                   | ui:pay_mark_paid_undo |
+| pay.mark-paid.waiting    | 点了之后原地变成等待确认；首页和提醒条安静地显示「等 {名字} 确认」直到结清或对方说还没收到 | ui:pay_mark_paid_undo, unit:src/features/payment/paymentStore.test.ts#after 我已付款 the payer sees a quiet waiting item until the payee says 还没收到 |
 | pay.mark-paid.undo       | 收款人确认前可以撤回                                       | ui:pay_mark_paid_undo, unit:src/features/payment/model.test.ts#the payer undoes 我已付款 only before the payee confirms, db:supabase/tests/payments.test.sql |
-| pay.mark-paid.screenshot | 可以附付款截图，只有双方看得到，结清 30 天后删除           | ui:pay_mark_paid_undo, db:supabase/tests/payments.test.sql, unit:supabase/functions/payment-proof-cleanup/handler.test.ts#removes proofs 30 days after settlement and clears their paths, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, device |
+| pay.mark-paid.screenshot | 可以附付款截图，双方和审核员可见，结清 30 天后删除；没挂上的草稿和撤回后的截图也会删掉 | ui:pay_mark_paid_undo, ui:pay_payee_confirm, db:supabase/tests/payments.test.sql, unit:supabase/functions/payment-proof-cleanup/handler.test.ts#removes proofs 30 days after settlement and clears their paths, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, device, gap: 审核员查看入口在第 7 步（举报）做 |
 
 ### pay.confirm 收款确认和结清
 
@@ -431,8 +431,8 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id                 | 行为                                                         | 覆盖     |
 | ----------------------- | ------------------------------------------------------------ | -------- |
 | pay.confirm.states      | 状态只经 RPC 变化：待付 → 已付 → 已结清或有争议              | unit:src/features/payment/model.test.ts#due → marked_paid → settled through the payer then the payee, db:supabase/tests/payments.test.sql |
-| pay.confirm.received    | 收款人看到「{名字} 说已付款」，点已收到才结清                | ui:pay_payee_confirm, db:supabase/tests/payments.test.sql |
-| pay.confirm.not-yet     | 点还没收到会提醒付款人，24 小时后可以举报（举报入口第 7 步做，先放说明） | ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#after 我已付款 the payer has nothing urgent until the payee says 还没收到, db:supabase/tests/payments.test.sql |
+| pay.confirm.received    | 收款人看到「{名字} 说已付款」，能打开对方附的截图，点已收到才结清 | ui:pay_payee_confirm, db:supabase/tests/payments.test.sql |
+| pay.confirm.not-yet     | 点还没收到会提醒付款人，24 小时后可以举报（举报入口第 7 步做，先放说明） | ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#after 我已付款 the payer sees a quiet waiting item until the payee says 还没收到, db:supabase/tests/payments.test.sql |
 | pay.confirm.cash        | 现金只要收款人点已收到                                       | unit:src/features/payment/model.test.ts#cash settles from due on the payee alone; the payer never marks cash paid, ui:pay_first_settle, db:supabase/tests/payments.test.sql |
 | pay.confirm.celebration | 第一次结清全屏庆祝，之后只打勾加轻触感                       | ui:pay_first_settle, ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#settling removes the payment from the list; only the first settle is first, device: 真机看动效和轻触感 |
 | pay.confirm.visibility  | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏       | db:supabase/tests/payments.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs |
@@ -471,6 +471,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | --------------------- | ---------------------------------------------------------- | -------- |
 | pay.home.pay-card     | 首页待付卡片是「去付款」按钮，打开付款弹窗                 | ui:pay_card_button |
 | pay.home.accessory    | 提醒条和实时卡读真实的付款数据                             | ui:pay_card_button, unit:src/features/payment/paymentStore.test.ts#the store feeds the accessory through the live-item contract, unit:src/features/home/homeModel.test.ts#a payment item without fixture details builds its card from the payment, unit:src/lib/liveItems.test.ts#a source adds its items after the base feed and replaces them on the next publish |
+| pay.home.unknown      | 付款没加载出来或刷新失败时，首页显示「付款信息没加载出来 · 重试」，不显示「没事」 | ui:home_payments_failed, unit:src/features/payment/paymentStore.test.ts#a failed refresh marks the list stale instead of keeping it live, unit:src/features/home/homeModel.test.ts#a failed source shows the unavailable card instead of calm and keeps the stage off calm, unit:src/lib/liveItems.test.ts#a failed or stale source shows no items and reports the issue |
 | pay.home.delete-check | 删除账号时检查真实的未结清付款                             | int:supabase/functions/tests/account-delete.integration.ts#blocks deletion while a real payment is unsettled, then allows it after settlement, ui:account_delete_blocked, unit:supabase/functions/account-delete/handler.test.ts#names the counterpart and the direction from the deleting user |
 
 ### pay.cant-pay 付不了

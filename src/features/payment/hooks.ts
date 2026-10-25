@@ -8,7 +8,10 @@ import type { FxRate, Payment, SettleResult } from './types';
 
 export function useLivePayments(userId: string | null) {
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      paymentStore.clear();
+      return;
+    }
     paymentStore.ensureLoaded(userId);
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') paymentStore.reload(userId);
@@ -82,6 +85,7 @@ export function usePaySheet(userId: string, paymentId: string) {
   }
 
   const { service } = paymentStore;
+  const proofUrl = useCallback((path: string) => service.proofUrl(path), [service]);
   return {
     state,
     busy,
@@ -89,7 +93,13 @@ export function usePaySheet(userId: string, paymentId: string) {
     retry,
     markPaid: (methodId: string, proofPath: string | null) =>
       act('markPaid', () => service.markPaid(paymentId, methodId, proofPath)),
-    undo: () => act('undo', () => service.undo(paymentId)),
+    undo: () =>
+      act('undo', async () => {
+        const detached = state.status === 'ready' ? state.payment.proofPath : null;
+        await service.undo(paymentId);
+        if (detached) await service.removeProof(detached).catch(() => undefined);
+      }),
+    proofUrl,
     confirm: (): Promise<SettleResult | null> => act('confirm', () => service.confirm(paymentId)),
     notReceived: () => act('notReceived', () => service.notReceived(paymentId)),
     uploadProof: (fileUri: string) => service.uploadProof(paymentId, fileUri),

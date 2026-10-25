@@ -90,3 +90,38 @@ describe('live item sources', () => {
     expect(calls).toBe(0);
   });
 });
+
+describe('live item source states', () => {
+  const owe = {
+    id: 'p1',
+    kind: 'oweMoney',
+    title: '付给阿杰',
+    amountSen: 1500,
+    sub: '帮取快递',
+  } as const;
+
+  test('a failed or stale source shows no items and reports the issue', () => {
+    const live = createLiveItems();
+    live.setSource('payments', [], 'failed');
+    expect(live.getSnapshot()).toMatchObject({
+      accessory: [],
+      issues: [{ source: 'payments', status: 'failed' }],
+    });
+    live.setSource('payments', [owe], 'stale');
+    expect(live.getSnapshot()).toMatchObject({
+      accessory: [],
+      issues: [{ source: 'payments', status: 'stale' }],
+    });
+    live.setSource('payments', [owe], 'ready');
+    expect(live.getSnapshot()).toMatchObject({ accessory: [owe], issues: [] });
+  });
+
+  test('retry calls the source that failed', () => {
+    const live = createLiveItems();
+    let retried = 0;
+    live.setSource('payments', [], 'failed', () => (retried += 1));
+    live.retry('payments');
+    live.retry('rides');
+    expect(retried).toBe(1);
+  });
+});

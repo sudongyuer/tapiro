@@ -75,11 +75,16 @@ describe('supabase payment service (local stack)', () => {
     const methods = await poster.service.methodsOf(helper.id);
     expect(methods.map((method) => method.id)).toEqual([methodId]);
 
-    await poster.service.markPaid(id, methodId, null);
+    const file = `data:image/png;base64,${Buffer.from('proof').toString('base64')}`;
+    await expect(poster.service.markPaid(id, methodId, `${id}/missing.png`)).rejects.toBeDefined();
+    const first = await poster.service.uploadProof(id, file);
+    await poster.service.markPaid(id, methodId, first);
     await poster.service.undo(id);
     expect((await poster.service.get(poster.id, id))?.state).toBe('due');
+    await poster.service.removeProof(first);
+    const remaining = await admin.storage.from('payment-proofs').list(id);
+    expect(remaining.data?.map((object) => object.name)).toEqual([]);
 
-    const file = `data:image/png;base64,${Buffer.from('proof').toString('base64')}`;
     const path = await poster.service.uploadProof(id, file);
     expect(path.startsWith(`${id}/`)).toBe(true);
     await poster.service.markPaid(id, methodId, path);
@@ -93,6 +98,7 @@ describe('supabase payment service (local stack)', () => {
     });
     const proof = await helper.client.storage.from('payment-proofs').download(path);
     expect(proof.error).toBeNull();
+    expect(await helper.service.proofUrl(path)).toContain('/payment-proofs/');
 
     await helper.service.notReceived(id);
     expect((await poster.service.get(poster.id, id))?.nudgedAt).not.toBeNull();

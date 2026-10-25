@@ -5,7 +5,7 @@ import type { Payment, PaymentService } from './types';
 export type PaymentListState =
   | { status: 'idle' }
   | { status: 'loading' | 'failed'; userId: string; payments: Payment[] }
-  | { status: 'ready'; userId: string; payments: Payment[] };
+  | { status: 'ready' | 'stale'; userId: string; payments: Payment[] };
 
 export type ActionResult<T> = { ok: true; value: T } | { ok: false };
 
@@ -22,8 +22,12 @@ export function createPaymentStore(service: PaymentService) {
       if (isCurrent(userId)) store.set({ status: 'ready', userId, payments });
     } catch {
       const state = store.get();
-      if (isCurrent(userId) && state.status !== 'ready')
-        store.set({ status: 'failed', userId, payments: [] });
+      if (!isCurrent(userId) || state.status === 'idle') return;
+      store.set(
+        state.status === 'ready' || state.status === 'stale'
+          ? { status: 'stale', userId, payments: state.payments }
+          : { status: 'failed', userId, payments: [] },
+      );
     }
   }
 
@@ -33,11 +37,15 @@ export function createPaymentStore(service: PaymentService) {
     subscribe: store.subscribe,
     async ensureLoaded(userId: string) {
       const state = store.get();
-      if (isCurrent(userId) && state.status !== 'failed') return;
+      if (isCurrent(userId) && state.status !== 'failed') {
+        if (state.status === 'stale') await reload(userId);
+        return;
+      }
       store.set({ status: 'loading', userId, payments: [] });
       await reload(userId);
     },
     reload,
+    clear: () => store.set({ status: 'idle' }),
     async run<T>(userId: string, action: () => Promise<T>): Promise<ActionResult<T>> {
       let result: ActionResult<T>;
       try {

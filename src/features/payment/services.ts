@@ -18,13 +18,17 @@ const mix: PayMethodMix = PAY_METHOD_MIXES.find((value) => value === mixArgument
 
 export const paymentStore = createPaymentStore(
   uiVerify
-    ? createFixturePaymentService({
-        variant: uiVerifyFixture,
-        feed: uiVerifyArgument('uiVerifyShellFeed'),
-        mix,
-        settledBefore: uiVerifyArgument('uiVerifySettledBefore') === '1',
-        rate: uiVerifyArgument('uiVerifyFx') !== 'none',
-      })
+    ? createFixturePaymentService(
+        {
+          variant: uiVerifyFixture,
+          feed: uiVerifyArgument('uiVerifyShellFeed'),
+          mix,
+          settledBefore: uiVerifyArgument('uiVerifySettledBefore') === '1',
+          rate: uiVerifyArgument('uiVerifyFx') !== 'none',
+          failFirstLoad: uiVerifyArgument('uiVerifyPaymentsFail') === '1',
+        },
+        () => fixturePay().qrImage('Tapiro fixture payment screenshot', 240),
+      )
     : createSupabasePaymentService(getSupabase(), readFileBytes),
 );
 
@@ -32,10 +36,15 @@ export const payDevice = uiVerify ? fixturePay() : devicePay;
 
 const i18n = initI18n();
 
+function retry() {
+  const state = paymentStore.getSnapshot();
+  if (state.status !== 'idle') paymentStore.ensureLoaded(state.userId);
+}
+
 function publish() {
   const state = paymentStore.getSnapshot();
-  const payments = state.status === 'ready' ? state.payments : [];
-  liveItems.setSource('payments', accessoryItems(payments, i18n.t));
+  if (state.status === 'idle') return liveItems.setSource('payments', [], 'ready');
+  liveItems.setSource('payments', accessoryItems(state.payments, i18n.t), state.status, retry);
 }
 
 paymentStore.subscribe(publish);

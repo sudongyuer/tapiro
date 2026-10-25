@@ -192,6 +192,13 @@ export default {
     money: 'RM {{amount}}',
     soon: '这一步还没开放',
     card: {
+      waiting: { tag: '等对方确认' },
+      unavailable: {
+        title: '付款信息没加载出来',
+        body: '没法确定你现在欠不欠钱，或别人有没有付你。',
+        retry: '重试',
+        loading: '正在加载付款信息',
+      },
       pay: {
         tag: '待你付款',
         title: '付给{{name}}',

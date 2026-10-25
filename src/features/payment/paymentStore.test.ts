@@ -36,6 +36,44 @@ const payments = (store: Awaited<ReturnType<typeof ready>>) => {
   return state.status === 'ready' ? state.payments : [];
 };
 
+function flaky(options: Partial<FixturePaymentOptions> = {}) {
+  const service = createFixturePaymentService({ ...OPTIONS, ...options });
+  let failing = false;
+  const store = createPaymentStore({
+    ...service,
+    list: (userId) => (failing ? Promise.reject(new Error('offline')) : service.list(userId)),
+  });
+  return { store, fail: (next: boolean) => (failing = next) };
+}
+
+describe('payment store load states', () => {
+  test('a failed first load is failed, never an empty ready list', async () => {
+    const { store, fail } = flaky();
+    fail(true);
+    await store.ensureLoaded(FIXTURE_USER_ID);
+    expect(store.getSnapshot()).toMatchObject({ status: 'failed', payments: [] });
+  });
+
+  test('a failed refresh marks the list stale instead of keeping it live', async () => {
+    const { store, fail } = flaky();
+    await store.ensureLoaded(FIXTURE_USER_ID);
+    fail(true);
+    await store.reload(FIXTURE_USER_ID);
+    const state = store.getSnapshot();
+    expect(state.status).toBe('stale');
+    expect(state.status !== 'idle' && state.payments).toHaveLength(2);
+    fail(false);
+    await store.reload(FIXTURE_USER_ID);
+    expect(store.getSnapshot().status).toBe('ready');
+  });
+
+  test('signing out clears the list', async () => {
+    const store = await ready();
+    store.clear();
+    expect(store.getSnapshot()).toEqual({ status: 'idle' });
+  });
+});
+
 describe('payment store', () => {
   test('lists the unsettled payments the feed selects', async () => {
     expect(payments(await ready()).map((p) => p.id)).toEqual([
@@ -107,10 +145,11 @@ describe('live payments', () => {
     });
   });
 
-  test('after 我已付款 the payer has nothing urgent until the payee says 还没收到', async () => {
+  test('after 我已付款 the payer sees a quiet waiting item until the payee says 还没收到', async () => {
     const store = await ready({ feed: 'oweMoney' });
     const [owe] = payments(store);
-    expect(accessoryItems([{ ...owe, state: 'marked_paid' }], t)).toEqual([]);
+    const [waiting] = accessoryItems([{ ...owe, state: 'marked_paid' }], t);
+    expect(waiting).toMatchObject({ kind: 'waitingConfirm', title: '等阿杰确认', sub: '帮取快递' });
     const [nudged] = accessoryItems([{ ...owe, state: 'marked_paid', nudgedAt: owe.createdAt }], t);
     expect(nudged).toMatchObject({ kind: 'oweMoney', sub: '阿杰说还没收到 · 帮取快递' });
   });

@@ -96,6 +96,7 @@ export type FixturePaymentOptions = {
   mix: PayMethodMix;
   settledBefore: boolean;
   rate: boolean;
+  failFirstLoad?: boolean;
 };
 
 export function fixtureFeedKinds(feed: string | undefined, variant: FixtureVariant) {
@@ -108,7 +109,10 @@ function malaysiaToday() {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
 }
 
-export function createFixturePaymentService(options: FixturePaymentOptions): PaymentService {
+export function createFixturePaymentService(
+  options: FixturePaymentOptions,
+  proofImage: () => Promise<string | null> = async () => 'file:///fixture/proof.png',
+): PaymentService {
   const people = PEOPLE[options.variant];
   const items = ITEMS[options.variant];
   const opened = new Date(Date.now() - 10 * 60_000).toISOString();
@@ -168,6 +172,7 @@ export function createFixturePaymentService(options: FixturePaymentOptions): Pay
     FIXTURE_USER_ID,
   );
   let settledCount = options.settledBefore ? 1 : 0;
+  let failLoad = options.failFirstLoad ?? false;
 
   function find(id: string) {
     const payment = catalog[id];
@@ -181,6 +186,10 @@ export function createFixturePaymentService(options: FixturePaymentOptions): Pay
 
   return {
     async list() {
+      if (failLoad) {
+        failLoad = false;
+        throw new Error('fixture payments offline');
+      }
       return listed.map((id) => catalog[id]).filter((payment) => payment.state !== 'settled');
     },
     async get(_userId, id) {
@@ -196,6 +205,12 @@ export function createFixturePaymentService(options: FixturePaymentOptions): Pay
     },
     async uploadProof(paymentId) {
       return `${paymentId}/fixture-proof.jpg`;
+    },
+    async removeProof() {},
+    async proofUrl() {
+      const uri = await proofImage();
+      if (!uri) throw new Error('no fixture proof');
+      return uri;
     },
     async markPaid(paymentId, methodId, proofPath) {
       const payment = find(paymentId);

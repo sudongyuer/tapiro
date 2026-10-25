@@ -575,13 +575,16 @@ PR: not opened yet · Commits: 5810e58, c748860, 3324cf8 (branch `feat/payment`)
 | 打开 {app}                                    | `WALLET_LINKS` table, every link unconfirmed, so the sheet shows 存到相册 + a per-wallet hint    | Links ship only after a device check (Known limits)                              | not intent-changing                  |
 | Amount in RM                                  | RM plus 约 ¥（参考） for Alipay/WeChat at the BNM middle rate, hidden without a rate ≤ 7 days old | Most students pay from mainland accounts (product notes)                         | user, 2026-10-15 (2B), 2026-10-26 (BNM) |
 | Settlement                                    | Cash settles from `due` on the payee's 已收到 alone; reverse payments for cancelled prepaid items | Product answers 3B, 4B                                                           | user, 2026-10-15                     |
-| Payer after 我已付款                          | No accessory item while waiting; it returns as 欠款 when the payee taps 还没收到                 | Nothing for the payer to do while waiting                                        | Unverified: not asked                |
+| Payer after 我已付款                          | A quiet `waitingConfirm` item (等 {name} 确认, lowest priority) until settled; 欠款 again after 还没收到 | Data integrity: show progress until the outcome is known                          | controller ruling C, 2026-10-25      |
 | Celebration motion                            | Spring pop (`--duration-peel`, damping 0.6) and one 8-spark burst; Reduce Motion fades          | Canvas ⑥A left the numbers open                                                  | Unverified: needs the user's pick    |
 
 ### Verification
 
 - `bun test` 346 pass; `supabase test db` 4 files, 135 tests; `bun run test:stack` incl.
   `src/features/payment/paymentService.integration.ts` (3) and the real-payment deletion block.
+- Fix round (controller review): load states in the live-item contract, proof deletion for drafts and undo, proof
+  reuse on retry, payee proof viewer, reference retry on unique violation, proof existence check; pgTAP 70 in
+  `payments.test.sql`.
 - UI, zh-Hans light, run once: `pay_sheet_wallets`, `pay_sheet_duitnow`, `pay_sheet_cash`, `pay_sheet_none`,
   `pay_mark_paid_undo`, `pay_payee_confirm`, `pay_first_settle`, `pay_card_button`; smoke; and the home, shell,
   account and payee cases touched by the live-item change.
@@ -592,6 +595,9 @@ PR: not opened yet · Commits: 5810e58, c748860, 3324cf8 (branch `feat/payment`)
   UI (bounty/carpool publish) are not wired; `reminderDue`, `publishBlocked` and `publish_blocked()` are ready.
 - BNM dataset terms do not name exchange rates explicitly. The pg_cron jobs need the Vault secrets `project_url` and
   `service_role_key` per environment.
-- No network-state detection: offline actions fail with 没成功 and keep the input. A failed payments load shows the
-  calm home instead of an error. The payee cannot view the proof image yet; moderators have no access path.
+- No network-state detection: offline actions fail with 没成功 and keep the input (an uploaded screenshot is reused on
+  retry). A failed or stale payments load shows 付款信息没加载出来 · 重试 on home (`home_payments_failed`); the bottom
+  accessory shows nothing for that source meanwhile.
+- Moderators have no access path to proofs until reports (step 7).
+- Unsettled payments of a cancelled item have no exit until bounty/carpool cancellation exists.
 - Device only: wallet links, saving to Photos with add-only access and scanning from the album, haptics.

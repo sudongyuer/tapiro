@@ -141,6 +141,14 @@ export function createSupabasePaymentService(
       );
       return path;
     },
+    async removeProof(path) {
+      unwrap(await db().storage.from(PROOF_BUCKET).remove([path]));
+    },
+    async proofUrl(path) {
+      const { data } = unwrap(await db().storage.from(PROOF_BUCKET).createSignedUrl(path, 300));
+      if (!data?.signedUrl) throw new Error('no signed url');
+      return data.signedUrl;
+    },
     async markPaid(paymentId, methodId, proofPath) {
       await rpc('mark_payment_paid', { payment: paymentId, method: methodId, proof: proofPath });
     },

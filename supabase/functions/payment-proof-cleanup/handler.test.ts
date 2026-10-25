@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-import { handleProofCleanup, type ExpiredProof, type ProofCleanupDeps } from './handler';
+import { handleProofCleanup, type ProofCleanupDeps, type ProofObject } from './handler';
 
 const post = (token?: string) =>
   new Request('http://localhost/payment-proof-cleanup', {
@@ -8,9 +8,10 @@ const post = (token?: string) =>
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
-const EXPIRED: ExpiredProof[] = [
-  { paymentId: 'p1', proofPath: 'p1/proof.jpg' },
-  { paymentId: 'p2', proofPath: 'p2/proof.png' },
+const DOOMED: ProofObject[] = [
+  { objectName: 'p1/proof.jpg', paymentId: 'p1', clearsProof: true },
+  { objectName: 'p2/draft.png', paymentId: 'p2', clearsProof: false },
+  { objectName: 'gone/x.jpg', paymentId: null, clearsProof: false },
 ];
 
 function deps(overrides: Partial<ProofCleanupDeps> = {}) {
@@ -18,8 +19,8 @@ function deps(overrides: Partial<ProofCleanupDeps> = {}) {
   return {
     cleared,
     authorized: (token: string) => token === 'service',
-    expiredProofs: mock(async () => EXPIRED),
-    removeObjects: mock(async (_paths: string[]) => {}),
+    objectsToDelete: mock(async () => DOOMED),
+    removeObjects: mock(async (_names: string[]) => {}),
     clearProof: async (paymentId: string) => {
       cleared.push(paymentId);
     },
@@ -31,9 +32,9 @@ describe('handleProofCleanup', () => {
   test('removes proofs 30 days after settlement and clears their paths', async () => {
     const d = deps();
     const res = await handleProofCleanup(post('service'), d);
-    expect(await res.json()).toEqual({ removed: 2 });
-    expect(d.removeObjects).toHaveBeenCalledWith(['p1/proof.jpg', 'p2/proof.png']);
-    expect(d.cleared).toEqual(['p1', 'p2']);
+    expect(await res.json()).toEqual({ removed: 3 });
+    expect(d.removeObjects).toHaveBeenCalledWith(['p1/proof.jpg', 'p2/draft.png', 'gone/x.jpg']);
+    expect(d.cleared).toEqual(['p1']);
   });
 
   test('keeps the paths when storage removal fails', async () => {
@@ -45,6 +46,6 @@ describe('handleProofCleanup', () => {
   test('rejects callers without the service key', async () => {
     const d = deps();
     expect((await handleProofCleanup(post('user'), d)).status).toBe(401);
-    expect(d.expiredProofs).not.toHaveBeenCalled();
+    expect(d.objectsToDelete).not.toHaveBeenCalled();
   });
 });

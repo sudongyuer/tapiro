@@ -15,6 +15,16 @@ export type PayDevice = {
 
 export const readFileBytes = (uri: string) => new File(uri).arrayBuffer();
 
+function removeFile(uri: string) {
+  try {
+    const file = new File(uri);
+    if (file.exists) file.delete();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const devicePay: PayDevice = {
   async copy(text) {
     await Clipboard.setStringAsync(text);
@@ -28,6 +38,8 @@ export const devicePay: PayDevice = {
       return true;
     } catch {
       return false;
+    } finally {
+      removeFile(fileUri);
     }
   },
   async open(url) {
@@ -60,6 +72,7 @@ export function fixturePay(): PayDevice & { saved: string[]; copied: string[] } 
     qrImage: qrImageFile,
     async saveToPhotos(fileUri) {
       saved.push(fileUri);
+      removeFile(fileUri);
       return true;
     },
     async open() {

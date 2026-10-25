@@ -1,5 +1,6 @@
 export default {
   live: {
+    waitingConfirm: '等{{name}}确认',
     owe: '付给{{name}}',
     notReceived: '{{name}}说还没收到 · {{title}}',
     saysPaid: '{{name}}说已付你',
@@ -73,6 +74,9 @@ export default {
     settled: { title: '已结清', body: '{{amount}} · {{title}}' },
   },
   payee: {
+    viewProof: '查看付款截图',
+    proofLabel: '付款截图',
+    proofFailed: '截图没打开，请稍后再试。',
     saysPaid: '{{name}}说已付款',
     saysPaidBody: '{{amount}} · 用{{method}}',
     proof: '附了付款截图',
