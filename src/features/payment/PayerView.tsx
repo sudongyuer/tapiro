@@ -10,21 +10,23 @@ import {
   foregroundStyle,
   multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { formatRinggit } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { ActionButton, secondary } from './formParts';
+import { secondary } from './formParts';
 import { cnyFen, formatCny, FX_TERMS_URL } from './fx';
 import type { SheetAction, SheetData } from './hooks';
 import { MethodDetail, optionTitle } from './MethodDetail';
 import { initialSelection, payOptions, type PayOption } from './payOptions';
 import { ProofSection, type Proof } from './ProofSection';
 import { QrFullScreen } from './QrFullScreen';
+import { SheetFrame } from './SheetFrame';
 
 const showsCny = (option: PayOption | undefined) =>
   option?.kind === 'qr' && (option.type === 'alipay' || option.type === 'wechat');
@@ -87,10 +89,12 @@ export function AmountHeader({
 export function PayerView({
   data,
   busy,
+  notice,
   onMarkPaid,
 }: {
   data: SheetData;
   busy: SheetAction | null;
+  notice: ReactNode;
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
 }) {
   const { t } = useI18n();
@@ -105,7 +109,19 @@ export function PayerView({
   const cny = showsCny(selected) ? cnyFen(payment.amountSen, rate, new Date()) : null;
 
   return (
-    <>
+    <SheetFrame
+      notice={notice}
+      actions={
+        selected && selected.kind !== 'cash' ? (
+          <PillButton
+            label={t('pay.sheet.markPaid')}
+            onPress={() => onMarkPaid(selected.id, proof, setProof)}
+            disabled={busy !== null || proof.status === 'uploading'}
+            testID="pay-mark-paid"
+          />
+        ) : null
+      }
+    >
       <AmountHeader
         title={t('pay.sheet.payTo', { name })}
         amountSen={payment.amountSen}
@@ -157,14 +173,6 @@ export function PayerView({
             testID="pay-name-check"
           />
           <ProofSection proof={proof} onChange={setProof} />
-          <Section>
-            <ActionButton
-              label={t('pay.sheet.markPaid')}
-              onPress={() => onMarkPaid(selected.id, proof, setProof)}
-              disabled={busy !== null || proof.status === 'uploading'}
-              testID="pay-mark-paid"
-            />
-          </Section>
         </>
       ) : null}
       {selected?.kind === 'qr' ? (
@@ -175,7 +183,7 @@ export function PayerView({
           onClose={() => setFullScreen(false)}
         />
       ) : null}
-    </>
+    </SheetFrame>
   );
 }
 

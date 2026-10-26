@@ -37,6 +37,7 @@ export function BookPanel({
   first,
   slots,
   target,
+  drop,
   title,
   counts,
   badge,
@@ -48,6 +49,7 @@ export function BookPanel({
   first: boolean;
   slots: BookSlot[];
   target: number | null;
+  drop: number;
   title: string;
   counts: [string, string] | null;
   badge: string;
@@ -60,7 +62,10 @@ export function BookPanel({
   const [line, setLine] = useState(0);
   const rise = useAnimatedStyle(() => {
     const p = tween(clock.value, TIMELINE.book, 0, 1);
-    return { transform: [{ translateY: 340 * (1 - p) }, { rotate: `${3 * (1 - p)}deg` }] };
+    const lift = drop * (1 - tween(clock.value, TIMELINE.converge, 0, 1));
+    return {
+      transform: [{ translateY: 340 * (1 - p) + lift }, { rotate: `${3 * (1 - p)}deg` }],
+    };
   });
   const bump = useAnimatedStyle(() => {
     const { start, duration } = TIMELINE.bump;

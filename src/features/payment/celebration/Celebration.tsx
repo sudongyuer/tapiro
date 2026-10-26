@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, View, type LayoutRectangle } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type LayoutRectangle,
+} from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,13 +19,15 @@ import { vars } from '@/ui/theme/tokens';
 
 import { formatCny } from '../fx';
 import { BookPanel, type SlotCentre } from './BookPanel';
+import { TAPIR_RISE } from './BookTapir';
 import { Headline } from './Headline';
 import { bookSlots, celebrationBody, targetSlot } from './model';
 import { FlyingSticker, Receipt, STICKER_OFFSET } from './ReceiptSticker';
 import { TIMELINE, tween } from './timeline';
 import { useCelebrationClock } from './useCelebrationClock';
 
-const RECEIPT_BELOW_HEADLINE = 66;
+const RECEIPT_TOP = 16;
+const GROUP_GAP = TAPIR_RISE + vars['--space-2'];
 
 export type CelebrationData = {
   first: boolean;
@@ -43,20 +52,21 @@ export function Celebration({
 }) {
   const { t, language } = useI18n();
   const insets = useSafeAreaInsets();
-  const headlineTop = insets.top;
-  const receiptTop = headlineTop + RECEIPT_BELOW_HEADLINE;
+  const { height } = useWindowDimensions();
+  const receiptTop = insets.top + RECEIPT_TOP;
   const [width, setWidth] = useState(0);
   const [frame, setFrame] = useState<LayoutRectangle | null>(null);
   const [centre, setCentre] = useState<SlotCentre | null>(null);
+  const [drop, setDrop] = useState<number | null>(null);
   const amount = formatRinggit(data.amountSen, language);
   const announcement = t('pay.celebrate.announce', { amount, title: data.title, name: data.name });
-  const ready = width > 0 && frame !== null && centre !== null;
+  const ready = width > 0 && frame !== null && centre !== null && drop !== null;
   const { clock, skip, fadeStyle, buttonsLive } = useCelebrationClock(ready, announcement);
   const buttonsIn = useAnimatedStyle(() => {
     const p = tween(clock.value, TIMELINE.buttons, 0, 1);
     return { opacity: p, transform: [{ translateY: 10 * (1 - p) }] };
   });
-  const target = data.count === null ? null : targetSlot(data.count);
+  const target = targetSlot(data.count);
   const body = celebrationBody(data.first, data.count);
   const start = { x: width / 2, y: receiptTop + STICKER_OFFSET };
   const bookTitle = t('stickers.book.title');
@@ -85,18 +95,44 @@ export function Celebration({
       >
         <Pressable style={styles.fill} onPress={skip} accessible={false}>
           <MomentBackground>
+            <View style={{ height: insets.top }} pointerEvents="none" />
             <View style={styles.spacer} pointerEvents="none" />
+            <Headline
+              clock={clock}
+              top={t('pay.celebrate.top', { title: data.title, name: data.name })}
+              amountSen={data.amountSen}
+              language={language}
+              cny={
+                data.cnyFen === null
+                  ? null
+                  : t('pay.celebrate.cny', { amount: formatCny(data.cnyFen, language) })
+              }
+              title={t(data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title')}
+              body={
+                body.key === 'pay.celebrate.routine.body'
+                  ? t(body.key, { count: body.count })
+                  : t(body.key)
+              }
+              announcement={announcement}
+            />
+            <View style={styles.gap} pointerEvents="none" />
             <BookPanel
               clock={clock}
               first={data.first}
               slots={bookSlots(data.count, data.previous)}
               target={target}
+              drop={drop ?? height}
               title={bookTitle}
               counts={counts}
               badge={t('pay.celebrate.badge')}
               countLabel={counts ? `${bookTitle} ${counts[1]}` : bookTitle}
               onFrame={setFrame}
               onTarget={setCentre}
+            />
+            <View
+              style={styles.spacer}
+              pointerEvents="none"
+              onLayout={(event) => setDrop(event.nativeEvent.layout.height)}
             />
             <Animated.View
               pointerEvents={buttonsLive ? 'auto' : 'none'}
@@ -136,28 +172,6 @@ export function Celebration({
                   art={stickerArt(data)}
                 />
               ) : null}
-              <View style={[styles.headline, { top: headlineTop }]}>
-                <Headline
-                  clock={clock}
-                  top={t('pay.celebrate.top', { title: data.title, name: data.name })}
-                  amountSen={data.amountSen}
-                  language={language}
-                  cny={
-                    data.cnyFen === null
-                      ? null
-                      : t('pay.celebrate.cny', { amount: formatCny(data.cnyFen, language) })
-                  }
-                  title={t(
-                    data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title',
-                  )}
-                  body={
-                    body.key === 'pay.celebrate.routine.body'
-                      ? t(body.key, { count: body.count })
-                      : t(body.key)
-                  }
-                  announcement={announcement}
-                />
-              </View>
             </View>
           </MomentBackground>
         </Pressable>
@@ -174,5 +188,5 @@ const styles = StyleSheet.create({
     paddingTop: vars['--space-4'],
     gap: vars['--space-1'],
   },
-  headline: { position: 'absolute', left: 0, right: 0 },
+  gap: { height: GROUP_GAP },
 });

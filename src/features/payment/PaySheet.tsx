@@ -1,13 +1,12 @@
-import { Form, Host, Image, HStack, Section, Text, VStack } from '@expo/ui/swift-ui';
+import { Image, HStack, Section, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
   font,
   foregroundStyle,
-  tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -20,10 +19,12 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { Celebration, type CelebrationData } from './celebration/Celebration';
 import { ActionButton, secondary, TextSection } from './formParts';
 import { cnyFen } from './fx';
-import { usePaySheet, type SheetData } from './hooks';
+import { usePaymentList, usePaySheet, type SheetData } from './hooks';
 import { AmountHeader, PayerView } from './PayerView';
 import { PayeeView } from './PayeeView';
 import type { Proof } from './ProofSection';
+import { SheetFrame } from './SheetFrame';
+import { sheetTitleKey } from './stateMachine';
 
 export function PaySheet({
   userId,
@@ -37,10 +38,21 @@ export function PaySheet({
   onOpenStickerBook: () => void;
 }) {
   const { t } = useI18n();
-  const { color } = useTheme();
   const sheet = usePaySheet(userId, paymentId);
   const [celebration, setCelebration] = useState<CelebrationData | null>(null);
   const { state } = sheet;
+  const listed = usePaymentList();
+  const cached =
+    listed.status === 'idle' ? undefined : listed.payments.find(({ id }) => id === paymentId);
+  const role = state.status === 'ready' ? state.payment.role : (cached?.role ?? null);
+  const notice = sheet.failed ? (
+    <NoticeCard
+      tone="urgent"
+      icon="exclamationmark.circle.fill"
+      title={t('pay.sheet.failed')}
+      testID="pay-failed"
+    />
+  ) : null;
 
   useEffect(() => {
     stickerStore.ensureLoaded(userId);
@@ -86,7 +98,7 @@ export function PaySheet({
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: t('pay.sheet.title') }} />
+      <Stack.Screen options={{ title: t(sheetTitleKey(role)) }} />
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button
           icon="xmark"
@@ -94,32 +106,30 @@ export function PaySheet({
           onPress={onClose}
         />
       </Stack.Toolbar>
-      <Host style={styles.root} testID="pay-sheet">
-        <Form modifiers={[tint(color('--color-accent'))]}>
-          {sheet.failed ? (
-            <NoticeCard
-              tone="urgent"
-              icon="exclamationmark.circle.fill"
-              title={t('pay.sheet.failed')}
-              testID="pay-failed"
-            />
-          ) : null}
-          {state.status === 'loading' ? (
-            <TextSection title={t('pay.sheet.loading')} testID="pay-loading" />
-          ) : state.status === 'failed' || state.status === 'missing' ? (
-            <NoticeCard
-              tone="urgent"
-              icon="wifi.exclamationmark"
-              title={t('pay.sheet.loadFailed.title')}
-              body={t('pay.sheet.loadFailed.body')}
-              action={{ label: t('pay.sheet.retry'), onPress: sheet.retry, testID: 'pay-retry' }}
-              testID="pay-load-failed"
-            />
-          ) : (
-            <SheetBody data={state} sheet={sheet} onConfirm={confirm} onMarkPaid={markPaid} />
-          )}
-        </Form>
-      </Host>
+      {state.status === 'loading' ? (
+        <SheetFrame notice={notice}>
+          <TextSection title={t('pay.sheet.loading')} testID="pay-loading" />
+        </SheetFrame>
+      ) : state.status === 'failed' || state.status === 'missing' ? (
+        <SheetFrame notice={notice}>
+          <NoticeCard
+            tone="urgent"
+            icon="wifi.exclamationmark"
+            title={t('pay.sheet.loadFailed.title')}
+            body={t('pay.sheet.loadFailed.body')}
+            action={{ label: t('pay.sheet.retry'), onPress: sheet.retry, testID: 'pay-retry' }}
+            testID="pay-load-failed"
+          />
+        </SheetFrame>
+      ) : (
+        <SheetBody
+          data={state}
+          sheet={sheet}
+          notice={notice}
+          onConfirm={confirm}
+          onMarkPaid={markPaid}
+        />
+      )}
       {celebration ? (
         <Celebration
           data={celebration}
@@ -137,11 +147,13 @@ export function PaySheet({
 function SheetBody({
   data,
   sheet,
+  notice,
   onConfirm,
   onMarkPaid,
 }: {
   data: SheetData;
   sheet: ReturnType<typeof usePaySheet>;
+  notice: ReactNode;
   onConfirm: () => void;
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
 }) {
@@ -150,21 +162,27 @@ function SheetBody({
   const name = payment.counterpartName;
   const amount = formatRinggit(payment.amountSen, language);
 
-  if (payment.state === 'settled') return <Settled data={data} />;
+  if (payment.state === 'settled')
+    return (
+      <SheetFrame notice={notice}>
+        <Settled data={data} />
+      </SheetFrame>
+    );
   if (payment.role === 'payee')
     return (
       <PayeeView
         data={data}
         busy={sheet.busy}
+        notice={notice}
         onConfirm={onConfirm}
         onNotReceived={sheet.notReceived}
         proofUrl={sheet.proofUrl}
       />
     );
   if (payment.state === 'due')
-    return <PayerView data={data} busy={sheet.busy} onMarkPaid={onMarkPaid} />;
+    return <PayerView data={data} busy={sheet.busy} notice={notice} onMarkPaid={onMarkPaid} />;
   return (
-    <>
+    <SheetFrame notice={notice}>
       <AmountHeader
         title={t('pay.sheet.payTo', { name })}
         amountSen={payment.amountSen}
@@ -198,7 +216,7 @@ function SheetBody({
           />
         </Section>
       ) : null}
-    </>
+    </SheetFrame>
   );
 }
 

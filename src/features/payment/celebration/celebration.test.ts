@@ -5,7 +5,15 @@ import type { Sticker } from '@/lib/stickers';
 import { createFixtureStickerService } from '@/lib/stickers/fixture';
 
 import { createFixturePaymentService, FIXTURE_PAYMENT_IDS } from '../fixturePaymentService';
-import { bookSlots, celebrationBody, confettiPieces, glyphs, targetSlot } from './model';
+import {
+  bookSlots,
+  celebrationBody,
+  confettiPieces,
+  glyphs,
+  shiftStart,
+  targetSlot,
+  type BookSlot,
+} from './model';
 import { ease, keyframes, TIMELINE, TOTAL } from './timeline';
 
 const earlier = (id: string): Sticker => ({
@@ -17,9 +25,15 @@ const earlier = (id: string): Sticker => ({
   earnedAt: '2026-10-01T00:00:00Z',
 });
 
+const describeSlot = (slot: BookSlot) =>
+  slot.kind === 'sticker' || slot.kind === 'earlier'
+    ? `${slot.kind === 'sticker' ? slot.sticker.id : 'earlier'}<${slot.from ?? '-'}${slot.arrives ? '!' : ''}`
+    : slot.kind;
+
 describe('book slots', () => {
-  test('the first sticker lands in the first slot and the rest are empty outlines', () => {
-    expect(bookSlots(1, []).map((slot) => slot.kind)).toEqual([
+  test('the first sticker lands in the first slot and nothing shifts', () => {
+    expect(targetSlot(1)).toBe(0);
+    expect(bookSlots(1, []).map(describeSlot)).toEqual([
       'target',
       'empty',
       'empty',
@@ -29,24 +43,42 @@ describe('book slots', () => {
     ]);
   });
 
-  test('later stickers land after the most recent earlier ones, and the sixth slot holds every later one', () => {
-    const slots = bookSlots(3, [earlier('b'), earlier('a')]);
-    expect(slots.map((slot) => (slot.kind === 'sticker' ? slot.sticker.id : slot.kind))).toEqual([
-      'b',
-      'a',
+  test('a later sticker lands in the first slot and each earlier one shifts one slot forward', () => {
+    expect(targetSlot(3)).toBe(0);
+    expect(bookSlots(3, [earlier('b'), earlier('a')]).map(describeSlot)).toEqual([
       'target',
+      'b<0',
+      'a<1!',
       'empty',
       'empty',
       'empty',
     ]);
-    expect(targetSlot(8)).toBe(5);
+  });
+
+  test('from the seventh sticker on, the five most recent fill slots 1 to 5 and the sixth leaves the page', () => {
+    const previous = ['g', 'f', 'e', 'd', 'c', 'b', 'a'].map(earlier);
+    expect(targetSlot(8)).toBe(0);
+    expect(bookSlots(8, previous).map(describeSlot)).toEqual([
+      'target',
+      'g<0',
+      'f<1',
+      'e<2',
+      'd<3',
+      'c<4!',
+    ]);
+  });
+
+  test('the last card of a row moves to the first slot of the next row', () => {
+    const step = shiftStart(2, 3, 110, 94);
+    expect(step).toEqual({ x: 220, y: -94 });
+    expect(shiftStart(0, 1, 110, 94)).toEqual({ x: -110, y: 0 });
   });
 
   test('earlier stickers that did not load show as filled slots, never as empty ones', () => {
-    expect(bookSlots(3, null).map((slot) => slot.kind)).toEqual([
-      'earlier',
-      'earlier',
+    expect(bookSlots(3, null).map(describeSlot)).toEqual([
       'target',
+      'earlier<0',
+      'earlier<1!',
       'empty',
       'empty',
       'empty',
@@ -55,15 +87,15 @@ describe('book slots', () => {
 });
 
 describe('unknown sticker count', () => {
-  test('claims no slot: earlier stickers stay, nothing is a target or an empty outline', () => {
-    const slots = bookSlots(null, [earlier('b')]);
-    expect(slots.map((slot) => slot.kind)).toEqual([
-      'sticker',
-      'earlier',
-      'earlier',
-      'earlier',
-      'earlier',
-      'earlier',
+  test('claims no slot and shifts nothing: earlier stickers stay, nothing is a target or an empty outline', () => {
+    expect(targetSlot(null)).toBeNull();
+    expect(bookSlots(null, [earlier('b')]).map(describeSlot)).toEqual([
+      'b<-',
+      'earlier<-',
+      'earlier<-',
+      'earlier<-',
+      'earlier<-',
+      'earlier<-',
     ]);
   });
 
@@ -115,6 +147,9 @@ describe('timeline', () => {
 
   test('the sticker lands at 1020 ms and every part ends by the end of the clock', () => {
     expect(TIMELINE.flyX.start + TIMELINE.flyX.duration).toBe(TIMELINE.land);
+    expect(TIMELINE.converge.start + TIMELINE.converge.duration).toBe(TIMELINE.land);
+    expect(TIMELINE.converge.curve).toEqual(TIMELINE.flyX.curve);
+    expect(TIMELINE.shift.start + TIMELINE.shift.duration).toBeLessThan(TIMELINE.land);
     expect(TIMELINE.amountShine.start + TIMELINE.amountShine.duration).toBeLessThanOrEqual(TOTAL);
     expect(
       TIMELINE.digits.start + 8 * TIMELINE.digits.step + TIMELINE.digits.duration,

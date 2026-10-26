@@ -1,25 +1,42 @@
 import type { Sticker } from '@/lib/stickers';
 
 export const BOOK_SLOTS = 6;
+export const BOOK_COLUMNS = 3;
+
+export type BookCard = { kind: 'sticker'; sticker: Sticker } | { kind: 'earlier' };
 
 export type BookSlot =
-  | { kind: 'sticker'; sticker: Sticker }
-  | { kind: 'earlier' }
-  | { kind: 'target' }
-  | { kind: 'empty' };
+  (BookCard & { from: number | null; arrives: boolean }) | { kind: 'target' } | { kind: 'empty' };
 
-export function targetSlot(count: number) {
-  return Math.min(Math.max(count, 1), BOOK_SLOTS) - 1;
+export function targetSlot(count: number | null) {
+  return count === null ? null : 0;
+}
+
+function card(previous: readonly Sticker[] | null, index: number): BookCard {
+  const sticker = previous?.[index];
+  return sticker ? { kind: 'sticker', sticker } : { kind: 'earlier' };
 }
 
 export function bookSlots(count: number | null, previous: readonly Sticker[] | null): BookSlot[] {
-  const target = count === null ? null : targetSlot(count);
+  if (count === null)
+    return Array.from({ length: BOOK_SLOTS }, (_, index) => ({
+      ...card(previous, index),
+      from: null,
+      arrives: false,
+    }));
+  const earlier = Math.min(Math.max(count - 1, 0), BOOK_SLOTS - 1);
   return Array.from({ length: BOOK_SLOTS }, (_, index): BookSlot => {
-    if (index === target) return { kind: 'target' };
-    if (target !== null && index > target) return { kind: 'empty' };
-    const sticker = previous?.[index];
-    return sticker ? { kind: 'sticker', sticker } : { kind: 'earlier' };
+    if (index === 0) return { kind: 'target' };
+    if (index > earlier) return { kind: 'empty' };
+    return { ...card(previous, index - 1), from: index - 1, arrives: index === earlier };
   });
+}
+
+export function shiftStart(from: number, to: number, columnStep: number, rowStep: number) {
+  return {
+    x: ((from % BOOK_COLUMNS) - (to % BOOK_COLUMNS)) * columnStep,
+    y: (Math.floor(from / BOOK_COLUMNS) - Math.floor(to / BOOK_COLUMNS)) * rowStep,
+  };
 }
 
 export type CelebrationBody =

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
@@ -6,7 +7,7 @@ import { EarnedSticker } from '@/ui/EarnedSticker';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import type { BookSlot } from './model';
+import { BOOK_COLUMNS, BOOK_SLOTS, shiftStart, type BookSlot } from './model';
 import { EASE_OUT, keyframes, TIMELINE, tween } from './timeline';
 import type { Clock } from './useCelebrationClock';
 
@@ -50,33 +51,94 @@ function Target({ clock }: { clock: Clock }) {
   );
 }
 
-function Slot({ slot, index, clock }: { slot: BookSlot; index: number; clock: Clock }) {
+function Card({
+  slot,
+  index,
+  step,
+  clock,
+}: {
+  slot: Extract<BookSlot, { from: number | null }>;
+  index: number;
+  step: number;
+  clock: Clock;
+}) {
+  const { color } = useTheme();
+  const { from } = slot;
+  const offset = from === null ? null : shiftStart(from, index, step, SLOT_HEIGHT + SLOT_GAP);
+  const shift = useAnimatedStyle(() => {
+    if (!offset) return {};
+    const rest = 1 - tween(clock.value, TIMELINE.shift, 0, 1);
+    return { transform: [{ translateX: offset.x * rest }, { translateY: offset.y * rest }] };
+  });
+  const outline = useAnimatedStyle(() => ({
+    opacity: 1 - tween(clock.value, TIMELINE.shift, 0, 1),
+  }));
+  return (
+    <>
+      {slot.arrives ? (
+        <Animated.View
+          style={[
+            styles.fill,
+            styles.dashed,
+            { borderColor: color('--color-paper-slot') },
+            outline,
+          ]}
+        />
+      ) : null}
+      <Animated.View
+        style={[
+          styles.fill,
+          styles.filled,
+          { backgroundColor: color('--color-paper-line') },
+          shift,
+        ]}
+      >
+        {slot.kind === 'sticker' ? (
+          <View style={{ transform: [{ rotate: `${index % 2 ? 6 : -6}deg` }] }}>
+            <EarnedSticker art={stickerArt(slot.sticker)} width={SLOT_ART} />
+          </View>
+        ) : null}
+      </Animated.View>
+    </>
+  );
+}
+
+function Slot({
+  slot,
+  index,
+  step,
+  clock,
+}: {
+  slot: BookSlot;
+  index: number;
+  step: number;
+  clock: Clock;
+}) {
   const { color } = useTheme();
   if (slot.kind === 'target') return <Target clock={clock} />;
   if (slot.kind === 'empty')
     return (
       <View style={[styles.fill, styles.dashed, { borderColor: color('--color-paper-slot') }]} />
     );
-  return (
-    <View style={[styles.fill, styles.filled, { backgroundColor: color('--color-paper-line') }]}>
-      {slot.kind === 'sticker' ? (
-        <View style={{ transform: [{ rotate: `${index % 2 ? 6 : -6}deg` }] }}>
-          <EarnedSticker art={stickerArt(slot.sticker)} width={SLOT_ART} />
-        </View>
-      ) : null}
-    </View>
-  );
+  return <Card slot={slot} index={index} step={step} clock={clock} />;
 }
 
 export function BookSlots({ slots, clock }: { slots: BookSlot[]; clock: Clock }) {
-  const rows = [slots.slice(0, 3), slots.slice(3, 6)];
+  const [width, setWidth] = useState(0);
+  const step = (width - (BOOK_COLUMNS - 1) * SLOT_GAP) / BOOK_COLUMNS + SLOT_GAP;
+  const rows = [slots.slice(0, BOOK_COLUMNS), slots.slice(BOOK_COLUMNS, BOOK_SLOTS)];
   return (
-    <View style={styles.grid}>
+    <View style={styles.grid} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
           {row.map((slot, column) => (
             <View key={column} style={styles.cell}>
-              <Slot slot={slot} index={rowIndex * 3 + column} clock={clock} />
+              <Slot
+                slot={slot}
+                index={rowIndex * BOOK_COLUMNS + column}
+                step={step}
+                clock={clock}
+              />
             </View>
           ))}
         </View>

@@ -9,6 +9,7 @@ export default {
   },
   sheet: {
     title: 'Pay',
+    titlePayee: 'Get paid',
     close: 'Close',
     loading: 'Loading',
     loadFailed: {
