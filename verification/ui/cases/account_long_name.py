@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, assert_touch_target  # noqa: E402
 
+DEPS = ['src/features/account/', 'src/app/onboarding/']
+
 SCENE = 'profile-setup'
 LOCALES = ['zh-Hans', 'ms']
 

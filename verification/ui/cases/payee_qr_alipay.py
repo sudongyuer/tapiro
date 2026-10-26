@@ -5,6 +5,16 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI  # noqa: E402
 from payee import ALIPAY, open_payee, save_wallet_qr  # noqa: E402
 
+DEPS = [
+    'src/features/payee/',
+    'src/app/payee/',
+    'src/app/(tabs)/_layout.tsx',
+    'src/app/(tabs)/me/',
+    'src/features/account/',
+    'src/features/shell/',
+    'verification/ui/payee.py',
+]
+
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifyQr', 'alipay', '-uiVerifySignedIn', 'onboarded']
 STEP = {'zh-Hans': '首页「收钱」', 'ms': 'Terima (收钱)'}

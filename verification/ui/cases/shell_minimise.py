@@ -5,6 +5,8 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import (TAB_LABELS, UI, accessory, assert_colour, assert_tapir_button, bottom, by_id, corner,  # noqa: E402
                     nav_bar, reach_home, tab, token)
 
+DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
+
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 

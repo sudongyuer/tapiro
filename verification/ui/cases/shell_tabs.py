@@ -5,6 +5,8 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import (UI, TABS, accessory, assert_appearance, assert_tapir_button, assert_touch_target, by_id,  # noqa: E402
                     reach_home, selected)
 
+DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
+
 LOCALES = ['zh-Hans', 'ms']
 SCREENS = {'tab-ride': 'ride-empty', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
 

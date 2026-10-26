@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, accessory, assert_colour, bottom, by_id, card_fill, corner, nav_bar, reach_home, token  # noqa: E402
 
+DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx', 'src/app/(tabs)/bounty/']
+
 LOCALES = ['zh-Hans', 'ms']
 TOGGLE = {'zh-Hans': ('摊开 · 4 件', '收起'), 'ms': ('Bentangkan · 4', 'Susun')}
 CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'live-card-bountyInProgress']

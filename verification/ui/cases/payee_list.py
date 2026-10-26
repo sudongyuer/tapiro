@@ -6,6 +6,16 @@ from driver import UI, assert_appearance, assert_colour, assert_touch_target, by
 from driver import accessory  # noqa: E402
 from payee import ALIPAY, DEFAULT, MENU_ORDER, SAVE, TNG, fill_wallet_name, open_menu, open_payee, row_labels  # noqa: E402
 
+DEPS = [
+    'src/features/payee/',
+    'src/app/payee/',
+    'src/app/(tabs)/_layout.tsx',
+    'src/app/(tabs)/me/',
+    'src/features/account/',
+    'src/features/shell/',
+    'verification/ui/payee.py',
+]
+
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 260
 ARGS = ['-uiVerifyQr', 'alipay', '-uiVerifySignedIn', 'onboarded']

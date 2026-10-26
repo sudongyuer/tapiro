@@ -4,6 +4,14 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import ACCESSORIES, UI, assert_appearance, assert_home, assert_touch_target, by_id  # noqa: E402
 
+DEPS = [
+    'src/features/home/',
+    'src/features/shell/',
+    'src/app/(tabs)/_layout.tsx',
+    'src/app/(tabs)/bounty/',
+    'src/app/ask.tsx',
+]
+
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyShellFeed', 'none', '-uiVerifySignedIn', 'onboarded']
 

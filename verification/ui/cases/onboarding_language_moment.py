@@ -4,6 +4,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_colour, assert_touch_target, token  # noqa: E402
 
+DEPS = ['src/features/account/', 'src/app/onboarding/']
+
 SCENE = 'language-step'
 LOCALES = ['zh-Hans', 'ms']
 QUESTION = {'zh-Hans': '你想用哪种语言？', 'ms': 'Bahasa mana pilihan anda?'}

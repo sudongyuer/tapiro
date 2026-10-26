@@ -8,6 +8,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from driver import UI, close  # noqa: E402
 from payee import ALIPAY, SAVE, SEEN_WALLET, TNG, WALLET_PAYEE, add_from_menu, fill_wallet_name, open_payee, row_labels  # noqa: E402
 
+DEPS = [
+    'src/features/payee/',
+    'src/app/payee/',
+    'src/app/(tabs)/_layout.tsx',
+    'src/app/(tabs)/me/',
+    'src/features/account/',
+    'src/features/shell/',
+    'verification/ui/payee.py',
+    'verification/ui/media/',
+]
+
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 240
 MEDIA = Path(__file__).resolve().parents[1] / 'media'
