@@ -158,8 +158,14 @@ export function createSupabasePaymentService(
     async confirm(paymentId) {
       const data = (await rpc('confirm_payment_received', { payment: paymentId })) as {
         firstSettled?: unknown;
+        stickerCount?: unknown;
       } | null;
-      return { firstSettled: data?.firstSettled === true };
+      const count = data?.stickerCount;
+      return {
+        firstSettled: data?.firstSettled === true,
+        stickerCount:
+          typeof count === 'number' && Number.isInteger(count) && count >= 0 ? count : 0,
+      };
     },
     async notReceived(paymentId) {
       await rpc('report_not_received', { payment: paymentId });

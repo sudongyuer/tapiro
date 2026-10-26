@@ -146,7 +146,7 @@ select isnt((select nudged_at from public.payments where id = (select id from id
 select is((select kind::text from public.payment_events where payment_id = (select id from ids where name = 'one') order by id desc limit 1), 'nudged', '还没收到 logs an event');
 select is(
   public.confirm_payment_received((select id from ids where name = 'one')),
-  '{"state": "settled", "firstSettled": true}'::jsonb, '已收到 settles the first payment with the first flag'
+  '{"state": "settled", "firstSettled": true, "stickerCount": 1}'::jsonb, '已收到 settles the first payment with the first flag'
 );
 select is((select kind::text from public.payment_events where payment_id = (select id from ids where name = 'one') order by id desc limit 1), 'settled', 'settling emits a settled event');
 select throws_ok(
@@ -155,7 +155,7 @@ select throws_ok(
 );
 select is(
   public.confirm_payment_received((select id from ids where name = 'two')),
-  '{"state": "settled", "firstSettled": false}'::jsonb, 'cash: 已收到 alone settles a due payment; later settles are not first'
+  '{"state": "settled", "firstSettled": false, "stickerCount": 2}'::jsonb, 'cash: 已收到 alone settles a due payment; later settles are not first'
 );
 select is((select method_type::text from public.payments where id = (select id from ids where name = 'two')), 'cash', 'a payment settled from due records cash');
 

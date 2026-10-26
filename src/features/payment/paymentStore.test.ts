@@ -17,7 +17,6 @@ const OPTIONS: FixturePaymentOptions = {
   variant: 'demo',
   feed: undefined,
   mix: 'all',
-  settledBefore: false,
   rate: true,
 };
 
@@ -100,12 +99,12 @@ describe('payment store', () => {
     const first = await store.run(FIXTURE_USER_ID, () =>
       store.service.confirm(FIXTURE_PAYMENT_IDS.owed),
     );
-    expect(first).toEqual({ ok: true, value: { firstSettled: true } });
+    expect(first).toEqual({ ok: true, value: { firstSettled: true, stickerCount: 1 } });
     expect(payments(store).map((p) => p.id)).toEqual([FIXTURE_PAYMENT_IDS.owe]);
     const later = await store.run(FIXTURE_USER_ID, () =>
       store.service.confirm(FIXTURE_PAYMENT_IDS.owedCash),
     );
-    expect(later).toEqual({ ok: true, value: { firstSettled: false } });
+    expect(later).toEqual({ ok: true, value: { firstSettled: false, stickerCount: 2 } });
   });
 
   test('marking paid then undoing returns the payment to due', async () => {

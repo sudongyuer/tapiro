@@ -90,14 +90,25 @@ function asMethods(details: PayeeDetails[], owner: string): PayeeMethod[] {
   }));
 }
 
+export type EarnSticker = (input: {
+  paymentId: string;
+  itemKind: Payment['itemKind'];
+  title: string;
+}) => number;
+
 export type FixturePaymentOptions = {
   variant: FixtureVariant;
   feed: string | undefined;
   mix: PayMethodMix;
-  settledBefore: boolean;
   rate: boolean;
   failFirstLoad?: boolean;
+  earnSticker?: EarnSticker;
 };
+
+function countingStickers(): EarnSticker {
+  const earned = new Set<string>();
+  return ({ paymentId }) => earned.add(paymentId).size;
+}
 
 export function fixtureFeedKinds(feed: string | undefined, variant: FixtureVariant) {
   if (feed === 'none' || variant === 'empty') return { owe: false, owed: false };
@@ -171,7 +182,7 @@ export function createFixturePaymentService(
     methodsFor('duitnow', 'LIN XIAO MO').concat({ type: 'cash' }),
     FIXTURE_USER_ID,
   );
-  let settledCount = options.settledBefore ? 1 : 0;
+  const earnSticker = options.earnSticker ?? countingStickers();
   let failLoad = options.failFirstLoad ?? false;
 
   function find(id: string) {
@@ -239,10 +250,13 @@ export function createFixturePaymentService(
         !(payment.state === 'marked_paid' || (payment.state === 'due' && cash))
       )
         throw new Error('cannot confirm');
-      const firstSettled = settledCount === 0;
-      settledCount += 1;
       update(paymentId, { state: 'settled', methodType: payment.methodType ?? 'cash' });
-      return { firstSettled };
+      const stickerCount = earnSticker({
+        paymentId,
+        itemKind: payment.itemKind,
+        title: payment.title,
+      });
+      return { firstSettled: stickerCount === 1, stickerCount };
     },
     async notReceived(paymentId) {
       const payment = find(paymentId);
