@@ -1,5 +1,5 @@
 begin;
-select plan(17);
+select plan(21);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -90,6 +90,31 @@ select throws_ok(
   $$insert into public.stickers (owner_id, payment_id, item_kind, title)
     values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'parcel'), 'bounty', '帮取快递')$$,
   '23505', null, 'one payment holds at most one sticker'
+);
+insert into ids values
+  ('pre', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 600)),
+  ('old', public.open_payment('ride', gen_random_uuid(), '拼车去 Sunway', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700));
+insert into public.stickers (owner_id, payment_id, item_kind, title)
+values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'pre'), 'bounty', '帮忙排队');
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select is(
+  public.confirm_payment_received((select id from ids where name = 'pre')),
+  '{"state": "settled", "firstSettled": false, "stickerCount": 3}'::jsonb,
+  'settling a payment that already holds a sticker keeps that one sticker'
+);
+reset role;
+select is(
+  (select count(*) from public.stickers where payment_id = (select id from ids where name = 'pre')), 1::bigint,
+  'the existing sticker row is not duplicated'
+);
+update public.payments set state = 'settled', settled_at = now() - interval '3 days', method_type = 'cash'
+where id = (select id from ids where name = 'old');
+select is(public.award_missing_stickers(), 1, 'the backfill awards a settled payment that has no sticker');
+select is(
+  (select row(owner_id, item_kind::text, title) from public.stickers where payment_id = (select id from ids where name = 'old')),
+  row('00000000-0000-0000-0000-0000000000b2'::uuid, 'ride'::text, '拼车去 Sunway'::text),
+  'the backfilled sticker belongs to the payee with the payment''s kind and title; reverse payments stay without one'
 );
 delete from auth.users where id = '00000000-0000-0000-0000-0000000000b2';
 select is((select count(*) from public.stickers), 0::bigint, 'deleting the account deletes its stickers');
