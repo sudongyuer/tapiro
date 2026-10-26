@@ -1,5 +1,6 @@
 import pay from './pay/zh-Hans';
 import payee from './payee/zh-Hans';
+import stickers from './stickers/zh-Hans';
 
 export default {
   account: {
@@ -120,6 +121,7 @@ export default {
   },
   payee,
   pay,
+  stickers,
   shell: {
     tabs: {
       bounty: '悬赏',
@@ -262,6 +264,7 @@ export default {
       },
     },
     pay: { title: '付款弹窗' },
+    stickers: { title: '贴纸本' },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',

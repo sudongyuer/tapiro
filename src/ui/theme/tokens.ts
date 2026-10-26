@@ -48,6 +48,20 @@ export const vars = {
   '--color-sticker-other': '#D8D4CC',
   '--color-on-sticker': '#25232B',
 
+  '--color-paper': '#FFFDF8',
+  '--color-paper-line': '#EDE7DA',
+  '--color-paper-slot': '#D6D1C6',
+  '--color-paper-landed': '#187A5014',
+  '--color-on-paper': '#25232B',
+  '--color-on-paper-muted': '#6C6C70',
+  '--color-receipt': '#FFFFFF',
+  '--color-paper-green': '#187A50',
+  '--color-glow': '#3ECF8E8C',
+  '--color-glow-clear': '#3ECF8E00',
+  '--color-shine': '#FFFFFFB3',
+  '--color-shine-clear': '#FFFFFF00',
+  '--color-moment-chip': '#FFFFFFBF',
+
   '--color-object-cardboard': '#C8925A',
   '--color-object-cardboard-lid': '#DDA874',
   '--color-object-tape': '#EBD3A8',
@@ -78,6 +92,8 @@ export const vars = {
 
   '--text-wordmark': 48,
   '--text-wordmark--line-height': 56,
+  '--text-amount-hero': 62,
+  '--text-amount-hero--line-height': 66,
   '--text-amount': 48,
   '--text-amount--line-height': 52,
   '--text-amount-compact': 36,
@@ -135,6 +151,7 @@ export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-warning-fill': '#3A2A0E',
   '--color-moment-bg': '#24221E',
   '--color-moment-grain': '#F4F0E61A',
+  '--color-moment-chip': '#FFFFFF1A',
   '--color-sticker-border': '#FFFFFF',
   '--color-sticker-shadow': '#0000004D',
   '--color-card-pay': '#F3EFE6',
@@ -154,6 +171,7 @@ export const MUTED_TEXT_OPACITY = 0.72;
 
 export const typeRoles = [
   'wordmark',
+  'amount-hero',
   'amount',
   'amount-compact',
   'large-title',

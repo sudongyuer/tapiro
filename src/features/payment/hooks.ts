@@ -41,7 +41,7 @@ async function loadSheet(userId: string, paymentId: string): Promise<SheetState>
   const owner = payment.role === 'payer' ? payment.counterpartId : userId;
   const [methods, rate] = await Promise.all([
     owner && payment.state !== 'settled' ? service.methodsOf(owner) : Promise.resolve([]),
-    payment.role === 'payer' ? service.latestRate().catch(() => null) : Promise.resolve(null),
+    service.latestRate().catch(() => null),
   ]);
   return { status: 'ready', payment, methods, rate };
 }

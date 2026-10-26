@@ -8,5 +8,15 @@ export default function PayRoute() {
   const user = useSignedInUser();
   const { id } = useLocalSearchParams<{ id: string }>();
   if (!user || !id) return null;
-  return <PaySheet userId={user.id} paymentId={id} onClose={() => router.back()} />;
+  return (
+    <PaySheet
+      userId={user.id}
+      paymentId={id}
+      onClose={() => router.back()}
+      onOpenStickerBook={() => {
+        router.back();
+        router.navigate('/me/stickers');
+      }}
+    />
+  );
 }

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ColorValue } from 'react-native';
 
 import { AppText, type AppTextProps } from './AppText';
 import { useTheme } from './theme/useTheme';
@@ -14,7 +14,7 @@ const DIRECTIONS = [
   [-0.7, -0.7],
 ] as const;
 
-export type OutlinedTextProps = AppTextProps & { outline: number; ink: string };
+export type OutlinedTextProps = AppTextProps & { outline: number; ink: ColorValue };
 
 export function OutlinedText({ outline, ink, style, children, ...rest }: OutlinedTextProps) {
   const { color } = useTheme();
