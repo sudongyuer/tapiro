@@ -5,7 +5,18 @@ import type { Sticker } from '@/lib/stickers';
 import { createFixtureStickerService } from '@/lib/stickers/fixture';
 
 import { createFixturePaymentService, FIXTURE_PAYMENT_IDS } from '../fixturePaymentService';
-import { bookSlots, celebrationBody, confettiPieces, glyphs, targetSlot } from './model';
+import {
+  bookSlots,
+  celebrationBody,
+  confettiPieces,
+  glyphs,
+  groupDrop,
+  groupLayout,
+  groupPoint,
+  shiftStart,
+  targetSlot,
+  type BookSlot,
+} from './model';
 import { ease, keyframes, TIMELINE, TOTAL } from './timeline';
 
 const earlier = (id: string): Sticker => ({
@@ -17,9 +28,15 @@ const earlier = (id: string): Sticker => ({
   earnedAt: '2026-10-01T00:00:00Z',
 });
 
+const describeSlot = (slot: BookSlot) =>
+  slot.kind === 'sticker' || slot.kind === 'earlier'
+    ? `${slot.kind === 'sticker' ? slot.sticker.id : 'earlier'}<${slot.from ?? '-'}${slot.arrives ? '!' : ''}`
+    : slot.kind;
+
 describe('book slots', () => {
-  test('the first sticker lands in the first slot and the rest are empty outlines', () => {
-    expect(bookSlots(1, []).map((slot) => slot.kind)).toEqual([
+  test('the first sticker lands in the first slot and nothing shifts', () => {
+    expect(targetSlot(1)).toBe(0);
+    expect(bookSlots(1, []).map(describeSlot)).toEqual([
       'target',
       'empty',
       'empty',
@@ -29,24 +46,42 @@ describe('book slots', () => {
     ]);
   });
 
-  test('later stickers land after the most recent earlier ones, and the sixth slot holds every later one', () => {
-    const slots = bookSlots(3, [earlier('b'), earlier('a')]);
-    expect(slots.map((slot) => (slot.kind === 'sticker' ? slot.sticker.id : slot.kind))).toEqual([
-      'b',
-      'a',
+  test('a later sticker lands in the first slot and each earlier one shifts one slot forward', () => {
+    expect(targetSlot(3)).toBe(0);
+    expect(bookSlots(3, [earlier('b'), earlier('a')]).map(describeSlot)).toEqual([
       'target',
+      'b<0',
+      'a<1!',
       'empty',
       'empty',
       'empty',
     ]);
-    expect(targetSlot(8)).toBe(5);
+  });
+
+  test('from the seventh sticker on, the five most recent fill slots 1 to 5 and the sixth leaves the page', () => {
+    const previous = ['g', 'f', 'e', 'd', 'c', 'b', 'a'].map(earlier);
+    expect(targetSlot(8)).toBe(0);
+    expect(bookSlots(8, previous).map(describeSlot)).toEqual([
+      'target',
+      'g<0',
+      'f<1',
+      'e<2',
+      'd<3',
+      'c<4!',
+    ]);
+  });
+
+  test('the last card of a row moves to the first slot of the next row', () => {
+    const step = shiftStart(2, 3, 110, 94);
+    expect(step).toEqual({ x: 220, y: -94 });
+    expect(shiftStart(0, 1, 110, 94)).toEqual({ x: -110, y: 0 });
   });
 
   test('earlier stickers that did not load show as filled slots, never as empty ones', () => {
-    expect(bookSlots(3, null).map((slot) => slot.kind)).toEqual([
-      'earlier',
-      'earlier',
+    expect(bookSlots(3, null).map(describeSlot)).toEqual([
       'target',
+      'earlier<0',
+      'earlier<1!',
       'empty',
       'empty',
       'empty',
@@ -54,16 +89,76 @@ describe('book slots', () => {
   });
 });
 
+describe('slot shift at other counts', () => {
+  test('a second sticker shifts the only earlier one into slot 1', () => {
+    expect(bookSlots(2, [earlier('a')]).map(describeSlot)).toEqual([
+      'target',
+      'a<0!',
+      'empty',
+      'empty',
+      'empty',
+      'empty',
+    ]);
+  });
+
+  test('a sixth sticker shifts five earlier ones and nothing leaves', () => {
+    const slots = bookSlots(6, ['e', 'd', 'c', 'b', 'a'].map(earlier));
+    expect(slots.map(describeSlot)).toEqual(['target', 'e<0', 'd<1', 'c<2', 'b<3', 'a<4!']);
+    expect(slots[5]).toMatchObject({ leaving: null });
+  });
+
+  test('a seventh sticker shifts five and fades out the sixth earlier one in the last slot', () => {
+    const slots = bookSlots(7, ['f', 'e', 'd', 'c', 'b', 'a'].map(earlier));
+    expect(slots.map(describeSlot)).toEqual(['target', 'f<0', 'e<1', 'd<2', 'c<3', 'b<4!']);
+    expect(slots[5]).toMatchObject({ leaving: { kind: 'sticker', sticker: { id: 'a' } } });
+    expect(bookSlots(7, null)[5]).toMatchObject({ leaving: { kind: 'earlier' } });
+  });
+});
+
+const GAP = { ideal: 84.8, min: 76.8 };
+const PANEL = 247;
+
+describe('centred group', () => {
+  test('on an iPhone 17 Pro the group keeps the full gap at full size', () => {
+    const space = 874 - 62 - 154;
+    expect(groupLayout(space, 250, PANEL, GAP)).toEqual({ gap: 84.8, height: 581.8, scale: 1 });
+  });
+
+  test('on a 667 pt iPhone SE the gap shrinks first, then the group scales to fit above the buttons', () => {
+    const space = 667 - 20 - (16 + 46 + 4 + 46 + 8);
+    expect(groupLayout(space, 190, PANEL, GAP)).toMatchObject({ gap: 84.8, scale: 1 });
+    expect(groupLayout(space, 200, PANEL, GAP).gap).toBeCloseTo(80);
+    for (const headline of [250, 300]) {
+      const layout = groupLayout(space, headline, PANEL, GAP);
+      expect(layout.gap).toBe(GAP.min);
+      expect(layout.height * layout.scale).toBeCloseTo(space);
+      expect(layout.scale).toBeGreaterThan(0.8);
+    }
+  });
+
+  test('the panel starts at the bottom of the stage and the sticker targets the scaled slot', () => {
+    const stage = { x: 0, y: 20, width: 375, height: 527 };
+    const layout = groupLayout(stage.height, 300, PANEL, GAP);
+    const bottom = groupPoint(stage, layout, 0, layout.height).y;
+    expect(bottom + groupDrop(stage, layout) * layout.scale).toBeCloseTo(stage.y + stage.height);
+    expect(groupPoint(stage, layout, 187.5, layout.height / 2)).toEqual({ x: 187.5, y: 283.5 });
+    const roomy = groupLayout(658, 250, PANEL, GAP);
+    expect(groupPoint({ x: 0, y: 62, width: 402, height: 658 }, roomy, 50, 0).y).toBeCloseTo(
+      62 + (658 - 581.8) / 2,
+    );
+  });
+});
+
 describe('unknown sticker count', () => {
-  test('claims no slot: earlier stickers stay, nothing is a target or an empty outline', () => {
-    const slots = bookSlots(null, [earlier('b')]);
-    expect(slots.map((slot) => slot.kind)).toEqual([
-      'sticker',
-      'earlier',
-      'earlier',
-      'earlier',
-      'earlier',
-      'earlier',
+  test('claims no slot and shifts nothing: earlier stickers stay, nothing is a target or an empty outline', () => {
+    expect(targetSlot(null)).toBeNull();
+    expect(bookSlots(null, [earlier('b')]).map(describeSlot)).toEqual([
+      'b<-',
+      'earlier<-',
+      'earlier<-',
+      'earlier<-',
+      'earlier<-',
+      'earlier<-',
     ]);
   });
 
@@ -115,6 +210,9 @@ describe('timeline', () => {
 
   test('the sticker lands at 1020 ms and every part ends by the end of the clock', () => {
     expect(TIMELINE.flyX.start + TIMELINE.flyX.duration).toBe(TIMELINE.land);
+    expect(TIMELINE.converge.start + TIMELINE.converge.duration).toBe(TIMELINE.land);
+    expect(TIMELINE.converge.curve).toEqual(TIMELINE.flyX.curve);
+    expect(TIMELINE.shift.start + TIMELINE.shift.duration).toBeLessThan(TIMELINE.land);
     expect(TIMELINE.amountShine.start + TIMELINE.amountShine.duration).toBeLessThanOrEqual(TOTAL);
     expect(
       TIMELINE.digits.start + 8 * TIMELINE.digits.step + TIMELINE.digits.duration,

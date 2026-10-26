@@ -79,6 +79,7 @@ export function FlyingSticker({
   y,
   dx,
   dy,
+  land,
   art,
 }: {
   clock: Clock;
@@ -86,6 +87,7 @@ export function FlyingSticker({
   y: number;
   dx: number;
   dy: number;
+  land: number;
   art: StickerArt;
 }) {
   const { color } = useTheme();
@@ -126,6 +128,9 @@ export function FlyingSticker({
       ],
     };
   });
+  const fit = useAnimatedStyle(() => ({
+    transform: [{ scale: tween(clock.value, TIMELINE.flyX, 1, land) }],
+  }));
   const lift = useAnimatedStyle(() => {
     const p = tween(clock.value, TIMELINE.lift, 0, 1);
     return {
@@ -145,22 +150,24 @@ export function FlyingSticker({
     <View style={[styles.anchor, { left: x, top: y }]} pointerEvents="none">
       <Animated.View style={flyX}>
         <Animated.View style={flyY}>
-          <Animated.View style={[styles.art, squash]}>
-            <Animated.View style={lift}>
-              <View style={styles.clip}>
-                <EarnedSticker art={art} width={ART_WIDTH} />
-                <Shine clock={clock} segment={TIMELINE.stickerShine} travel={220} />
-              </View>
-              <Animated.View
-                style={[
-                  styles.curl,
-                  {
-                    experimental_backgroundImage: `linear-gradient(315deg, ${clear} 49%, ${color('--color-receipt')} 50%, ${color('--color-paper-line')} 85%)`,
-                    shadowColor: color('--color-sticker-shadow'),
-                  },
-                  curl,
-                ]}
-              />
+          <Animated.View style={fit}>
+            <Animated.View style={[styles.art, squash]}>
+              <Animated.View style={lift}>
+                <View style={styles.clip}>
+                  <EarnedSticker art={art} width={ART_WIDTH} />
+                  <Shine clock={clock} segment={TIMELINE.stickerShine} travel={220} />
+                </View>
+                <Animated.View
+                  style={[
+                    styles.curl,
+                    {
+                      experimental_backgroundImage: `linear-gradient(315deg, ${clear} 49%, ${color('--color-receipt')} 50%, ${color('--color-paper-line')} 85%)`,
+                      shadowColor: color('--color-sticker-shadow'),
+                    },
+                    curl,
+                  ]}
+                />
+              </Animated.View>
             </Animated.View>
           </Animated.View>
         </Animated.View>

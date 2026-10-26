@@ -4,6 +4,7 @@ import { useI18n } from '@/lib/i18n';
 import type { PayeeType } from '@/lib/payeeMethods';
 import { formatRinggit } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { PillButton } from '@/ui/PillButton';
 import { useState } from 'react';
 
 import { ActionButton, TextSection } from './formParts';
@@ -11,6 +12,7 @@ import type { SheetAction, SheetData } from './hooks';
 import { AmountHeader } from './PayerView';
 import { takesCash } from './payOptions';
 import { ProofViewer } from './ProofViewer';
+import { SheetActions, SheetLayer } from './SheetFrame';
 
 export function PayeeView({
   data,
@@ -38,27 +40,27 @@ export function PayeeView({
         : '';
 
   const confirm = (
-    <ActionButton
+    <PillButton
       label={t('pay.payee.received')}
       onPress={onConfirm}
       disabled={busy !== null}
+      loading={busy === 'confirm'}
       testID="pay-confirm"
     />
   );
 
-  if (payment.state === 'due')
+  if (payment.state === 'due') {
+    const cash = takesCash(methods);
     return (
       <>
+        {cash ? <SheetActions>{confirm}</SheetActions> : null}
         <AmountHeader title={payment.title} amountSen={payment.amountSen} cny={null} />
-        {takesCash(methods) ? (
-          <>
-            <TextSection
-              title={t('pay.payee.dueCash', { name })}
-              body={t('pay.payee.dueCashBody')}
-              testID="pay-payee-due-cash"
-            />
-            <Section>{confirm}</Section>
-          </>
+        {cash ? (
+          <TextSection
+            title={t('pay.payee.dueCash', { name })}
+            body={t('pay.payee.dueCashBody')}
+            testID="pay-payee-due-cash"
+          />
         ) : (
           <TextSection
             title={t('pay.payee.dueWait', { name })}
@@ -68,9 +70,23 @@ export function PayeeView({
         )}
       </>
     );
+  }
 
   return (
     <>
+      <SheetActions>
+        {confirm}
+        {payment.nudgedAt ? null : (
+          <PillButton
+            label={t('pay.payee.notReceived')}
+            variant="plain"
+            onPress={onNotReceived}
+            disabled={busy !== null}
+            loading={busy === 'notReceived'}
+            testID="pay-not-received"
+          />
+        )}
+      </SheetActions>
       <AmountHeader title={payment.title} amountSen={payment.amountSen} cny={null} />
       <TextSection
         title={t('pay.payee.saysPaid', { name })}
@@ -93,7 +109,9 @@ export function PayeeView({
           />
         </Section>
       ) : null}
-      <ProofViewer path={viewing} load={proofUrl} onClose={() => setViewing(null)} />
+      <SheetLayer>
+        <ProofViewer path={viewing} load={proofUrl} onClose={() => setViewing(null)} />
+      </SheetLayer>
       {payment.nudgedAt ? (
         <NoticeCard
           tone="warning"
@@ -103,18 +121,6 @@ export function PayeeView({
           testID="pay-payee-nudged"
         />
       ) : null}
-      <Section>
-        {confirm}
-        {payment.nudgedAt ? null : (
-          <ActionButton
-            label={t('pay.payee.notReceived')}
-            tone="plain"
-            onPress={onNotReceived}
-            disabled={busy !== null}
-            testID="pay-not-received"
-          />
-        )}
-      </Section>
     </>
   );
 }

@@ -32,3 +32,8 @@ export function availableActions(context: Omit<ActionContext, 'methodIsCash'>) {
 }
 
 export const isUnsettled = (state: PaymentState) => state !== 'settled';
+
+export function sheetTitleKey(role: PaymentRole | null) {
+  if (role === null) return null;
+  return role === 'payee' ? ('pay.sheet.titlePayee' as const) : ('pay.sheet.title' as const);
+}

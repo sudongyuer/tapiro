@@ -9,6 +9,7 @@ export default {
   },
   sheet: {
     title: 'Bayar',
+    titlePayee: 'Terima bayaran',
     close: 'Tutup',
     loading: 'Memuatkan',
     loadFailed: {

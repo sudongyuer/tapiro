@@ -1,25 +1,77 @@
 import type { Sticker } from '@/lib/stickers';
 
 export const BOOK_SLOTS = 6;
+export const BOOK_COLUMNS = 3;
+
+export type BookCard = { kind: 'sticker'; sticker: Sticker } | { kind: 'earlier' };
 
 export type BookSlot =
-  | { kind: 'sticker'; sticker: Sticker }
-  | { kind: 'earlier' }
+  | (BookCard & { from: number | null; arrives: boolean; leaving: BookCard | null })
   | { kind: 'target' }
   | { kind: 'empty' };
 
-export function targetSlot(count: number) {
-  return Math.min(Math.max(count, 1), BOOK_SLOTS) - 1;
+export function targetSlot(count: number | null) {
+  return count === null ? null : 0;
+}
+
+function card(previous: readonly Sticker[] | null, index: number): BookCard {
+  const sticker = previous?.[index];
+  return sticker ? { kind: 'sticker', sticker } : { kind: 'earlier' };
 }
 
 export function bookSlots(count: number | null, previous: readonly Sticker[] | null): BookSlot[] {
-  const target = count === null ? null : targetSlot(count);
+  if (count === null)
+    return Array.from({ length: BOOK_SLOTS }, (_, index) => ({
+      ...card(previous, index),
+      from: null,
+      arrives: false,
+      leaving: null,
+    }));
+  const earlier = Math.min(Math.max(count - 1, 0), BOOK_SLOTS - 1);
+  const leaving = count - 1 > earlier ? card(previous, earlier) : null;
   return Array.from({ length: BOOK_SLOTS }, (_, index): BookSlot => {
-    if (index === target) return { kind: 'target' };
-    if (target !== null && index > target) return { kind: 'empty' };
-    const sticker = previous?.[index];
-    return sticker ? { kind: 'sticker', sticker } : { kind: 'earlier' };
+    if (index === 0) return { kind: 'target' };
+    if (index > earlier) return { kind: 'empty' };
+    const arrives = index === earlier;
+    return {
+      ...card(previous, index - 1),
+      from: index - 1,
+      arrives,
+      leaving: arrives ? leaving : null,
+    };
   });
+}
+
+export function shiftStart(from: number, to: number, columnStep: number, rowStep: number) {
+  return {
+    x: ((from % BOOK_COLUMNS) - (to % BOOK_COLUMNS)) * columnStep,
+    y: (Math.floor(from / BOOK_COLUMNS) - Math.floor(to / BOOK_COLUMNS)) * rowStep,
+  };
+}
+
+export type GroupLayout = { gap: number; height: number; scale: number };
+export type Box = { x: number; y: number; width: number; height: number };
+
+export function groupLayout(
+  space: number,
+  headline: number,
+  panel: number,
+  gap: { ideal: number; min: number },
+): GroupLayout {
+  const fitted = Math.min(gap.ideal, Math.max(gap.min, space - headline - panel));
+  const height = headline + fitted + panel;
+  return { gap: fitted, height, scale: Math.min(1, space / height) };
+}
+
+export function groupPoint(stage: Box, layout: GroupLayout, x: number, y: number) {
+  return {
+    x: stage.x + stage.width / 2 + (x - stage.width / 2) * layout.scale,
+    y: stage.y + stage.height / 2 + (y - layout.height / 2) * layout.scale,
+  };
+}
+
+export function groupDrop(stage: Box, layout: GroupLayout) {
+  return (stage.height - layout.height * layout.scale) / (2 * layout.scale);
 }
 
 export type CelebrationBody =

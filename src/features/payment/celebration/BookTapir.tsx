@@ -9,6 +9,7 @@ import { EASE_OUT, keyframes, TIMELINE, tween } from './timeline';
 import type { Clock } from './useCelebrationClock';
 
 const MASCOT = 96;
+export const TAPIR_RISE = MASCOT * 0.8;
 const HOP = [0, 0.14, 0.4, 0.62, 0.8, 1];
 const HOP_CURVES = ['linear', 'linear', [0.5, 0, 0.8, 0.6], 'linear', 'linear'] as const;
 const BLUSH_SCALE = MASCOT / 64;
@@ -75,7 +76,7 @@ export function BookTapir({ clock, first }: { clock: Clock; first: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  tapir: { position: 'absolute', right: vars['--space-2'], top: -MASCOT * 0.8 },
+  tapir: { position: 'absolute', right: vars['--space-2'], top: -TAPIR_RISE },
   hop: { transformOrigin: 'bottom' },
   cheek: {
     position: 'absolute',
