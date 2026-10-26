@@ -12,7 +12,7 @@ import type { SheetAction, SheetData } from './hooks';
 import { AmountHeader } from './PayerView';
 import { takesCash } from './payOptions';
 import { ProofViewer } from './ProofViewer';
-import { SheetActions } from './SheetFrame';
+import { SheetActions, SheetLayer } from './SheetFrame';
 
 export function PayeeView({
   data,
@@ -109,7 +109,9 @@ export function PayeeView({
           />
         </Section>
       ) : null}
-      <ProofViewer path={viewing} load={proofUrl} onClose={() => setViewing(null)} />
+      <SheetLayer>
+        <ProofViewer path={viewing} load={proofUrl} onClose={() => setViewing(null)} />
+      </SheetLayer>
       {payment.nudgedAt ? (
         <NoticeCard
           tone="warning"

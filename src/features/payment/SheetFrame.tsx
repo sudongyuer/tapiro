@@ -7,12 +7,25 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-const ActionSlot = createContext<(actions: ReactNode) => void>(() => undefined);
+type Slots = { actions: (node: ReactNode) => void; layers: (node: ReactNode) => void };
 
-export function SheetActions({ children }: { children: ReactNode }) {
-  const place = useContext(ActionSlot);
+const SlotContext = createContext<Slots>({ actions: () => undefined, layers: () => undefined });
+
+function useSlot(name: keyof Slots, children: ReactNode) {
+  const place = useContext(SlotContext)[name];
   useLayoutEffect(() => place(children), [place, children]);
   useLayoutEffect(() => () => place(null), [place]);
+}
+
+export function SheetActions({ children }: { children: ReactNode }) {
+  useSlot('actions', children);
+  return null;
+}
+
+// SwiftUI's Form only realizes rows near the viewport, so a Modal declared among the rows cannot present
+// once its row scrolls away; modals mount outside the Host through this slot.
+export function SheetLayer({ children }: { children: ReactNode }) {
+  useSlot('layers', children);
   return null;
 }
 
@@ -20,8 +33,10 @@ export function SheetFrame({ notice, children }: { notice?: ReactNode; children:
   const { color } = useTheme();
   const { bottom } = useSafeAreaInsets();
   const [actions, setActions] = useState<ReactNode>(null);
+  const [layers, setLayers] = useState<ReactNode>(null);
+  const [slots] = useState<Slots>(() => ({ actions: setActions, layers: setLayers }));
   return (
-    <ActionSlot.Provider value={setActions}>
+    <SlotContext.Provider value={slots}>
       <Host style={styles.form} testID="pay-sheet">
         <Form modifiers={[tint(color('--color-accent'))]}>
           {notice}
@@ -33,7 +48,8 @@ export function SheetFrame({ notice, children }: { notice?: ReactNode; children:
           {actions}
         </View>
       ) : null}
-    </ActionSlot.Provider>
+      {layers}
+    </SlotContext.Provider>
   );
 }
 

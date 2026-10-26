@@ -26,7 +26,7 @@ import { MethodDetail, optionTitle } from './MethodDetail';
 import { initialSelection, payOptions, type PayOption } from './payOptions';
 import { ProofSection, type Proof } from './ProofSection';
 import { QrFullScreen } from './QrFullScreen';
-import { SheetActions } from './SheetFrame';
+import { SheetActions, SheetLayer } from './SheetFrame';
 
 const showsCny = (option: PayOption | undefined) =>
   option?.kind === 'qr' && (option.type === 'alipay' || option.type === 'wechat');
@@ -172,14 +172,16 @@ export function PayerView({
           <ProofSection proof={proof} onChange={setProof} />
         </>
       ) : null}
-      {selected?.kind === 'qr' ? (
-        <QrFullScreen
-          payload={selected.payload}
-          name={selected.payeeName}
-          visible={fullScreen}
-          onClose={() => setFullScreen(false)}
-        />
-      ) : null}
+      <SheetLayer>
+        {selected?.kind === 'qr' ? (
+          <QrFullScreen
+            payload={selected.payload}
+            name={selected.payeeName}
+            visible={fullScreen}
+            onClose={() => setFullScreen(false)}
+          />
+        ) : null}
+      </SheetLayer>
     </>
   );
 }

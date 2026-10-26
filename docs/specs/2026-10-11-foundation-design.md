@@ -663,3 +663,5 @@ on a short screen the gap shrinks to 小貘's overhang and then the group scales
 667 pt). An unknown role shows no sheet title. One `SheetFrame` stays mounted across sheet states and views hand
 their buttons to it through `SheetActions`; the pinned buttons show a spinner while their action runs. From the
 seventh sticker on, the sixth earlier sticker fades out during the shift.
+The pinned bar shortened the Form enough that SwiftUI no longer realized the row holding the full-screen QR `Modal`,
+so 用另一台手机扫 stopped opening (`pay_sheet_wallets`); sheet modals now mount outside the Host through `SheetLayer`.
