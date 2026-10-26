@@ -97,4 +97,11 @@ describe('sticker store', () => {
     await slow;
     expect(store.getSnapshot()).toEqual({ status: 'ready', userId: USER, stickers: [] });
   });
+
+  test('signing out forgets the stickers', async () => {
+    const store = createStickerStore(createFixtureStickerService('one'));
+    await store.ensureLoaded(USER);
+    store.clear();
+    expect(store.getSnapshot()).toEqual({ status: 'idle' });
+  });
 });

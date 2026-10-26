@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
+import { AppState } from 'react-native';
 
 import { stickerStore } from './instance';
 import type { Sticker } from './model';
@@ -18,4 +19,18 @@ export function useStickers(userId: string | null): StickersView {
   if (state.status === 'failed')
     return { status: 'failed', retry: () => stickerStore.reload(userId) };
   return { status: 'loading' };
+}
+
+export function useLiveStickers(userId: string | null) {
+  useEffect(() => {
+    if (!userId) {
+      stickerStore.clear();
+      return;
+    }
+    stickerStore.ensureLoaded(userId);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') stickerStore.reload(userId);
+    });
+    return () => subscription.remove();
+  }, [userId]);
 }
