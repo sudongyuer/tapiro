@@ -543,3 +543,61 @@ PR: not opened yet · Commits: a5b912a..883540a (branch `feat/payee-methods`). S
 - The per-wallet save steps (Alipay 首页「收钱」, WeChat 「收付款 → 二维码收款」, TNG Receive) need confirming on a device.
 - Camera scanning is device-only; screenshot decoding is exercised by `payee_qr_real` in the Simulator.
 - Chinese masked wallet names (for example "*明") cannot be typed by AXe; check on a device. Alipay/WeChat receive-code formats remain heuristics (payee-setup §Open questions).
+
+## Implementation Record (2026-10-25) — step 4: pay step and settlement
+
+PR: not opened yet · Commits: 5810e58, c748860, 3324cf8 (branch `feat/payment`). Steps 5–9 remain; the spec stays `approved`.
+
+### What was built
+
+- `payments` (item kind + id, title snapshot, payer, payee, `amount_sen`, `TP-XXXX` reference, state, method, proof,
+  `reverses`, `nudged_at`) changed only through RPCs: `mark_payment_paid`, `undo_marked_paid`,
+  `confirm_payment_received` (returns `firstSettled`), `report_not_received`; `open_payment`, `open_reverse_payment`
+  and `set_payment_amount` are service-role only. Every change logs a `payment_events` row; `settled` is the
+  interface for steps 5–6. Payer reads the payee's `payee_methods` while a payment between them is unsettled.
+  `publish_blocked()` and `src/lib/unpaid.ts` implement the 7-day / 2-open rule. Evidence:
+  `supabase/migrations/20261025000000_payments.sql`, `supabase/tests/payments.test.sql` (61 tests) (5810e58)
+- CNY reference from Bank Negara Malaysia: `fx-rate` Edge Function stores the 17:00 CNY middle rate in `fx_rates`,
+  scheduled 17:30 Malaysia time by pg_cron; proofs are removed 30 days after settlement by `payment-proof-cleanup`.
+  Evidence: `supabase/functions/fx-rate/`, `supabase/functions/payment-proof-cleanup/`,
+  `supabase/tests/fx_rates.test.sql` (5810e58)
+- Account deletion reads real unsettled payments; a failed check answers 500. Evidence:
+  `supabase/functions/account-delete/index.ts`, `account-delete.integration.ts` (5810e58)
+- Pay sheet (`src/features/payment`, route `src/app/pay/[id].tsx`), payee side, celebration, QR image from the kit
+  (`modules/tapiro-kit/ios/QrImage.swift`), Photos add-only save (c748860); home 去付款 and payment-driven live items
+  (3324cf8). Evidence: UI cases `pay_*` under `verification/ui/cases/`.
+
+### Deviations from the design
+
+| Design said                                   | Shipped                                                                                          | Why                                                                              | Confirmed by                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ |
+| Method picker                                 | Single-select list, wallets first, one method preselected, none preselected otherwise           | Canvas 「付款 · 开工前六件事」 ①C                                                | user, 2026-10-16 ("1c 其他都走推荐") |
+| 打开 {app}                                    | `WALLET_LINKS` table, every link unconfirmed, so the sheet shows 存到相册 + a per-wallet hint    | Links ship only after a device check (Known limits)                              | not intent-changing                  |
+| Amount in RM                                  | RM plus 约 ¥（参考） for Alipay/WeChat at the BNM middle rate, hidden without a rate ≤ 7 days old | Most students pay from mainland accounts (product notes)                         | user, 2026-10-15 (2B), 2026-10-26 (BNM) |
+| Settlement                                    | Cash settles from `due` on the payee's 已收到 alone; reverse payments for cancelled prepaid items | Product answers 3B, 4B                                                           | user, 2026-10-15                     |
+| Payer after 我已付款                          | A quiet `waitingConfirm` item (等 {name} 确认, lowest priority) until settled; 欠款 again after 还没收到 | Data integrity: show progress until the outcome is known                          | controller ruling C, 2026-10-25      |
+| Celebration motion                            | Spring pop (`--duration-peel`, damping 0.6) and one 8-spark burst; Reduce Motion fades          | Canvas ⑥A left the numbers open                                                  | Unverified: needs the user's pick    |
+
+### Verification
+
+- `bun test` 346 pass; `supabase test db` 4 files, 135 tests; `bun run test:stack` incl.
+  `src/features/payment/paymentService.integration.ts` (3) and the real-payment deletion block.
+- Fix round (controller review): load states in the live-item contract, proof deletion for drafts and undo, proof
+  reuse on retry, payee proof viewer, reference retry on unique violation, proof existence check; pgTAP 70 in
+  `payments.test.sql`.
+- UI, zh-Hans light, run once: `pay_sheet_wallets`, `pay_sheet_duitnow`, `pay_sheet_cash`, `pay_sheet_none`,
+  `pay_mark_paid_undo`, `pay_payee_confirm`, `pay_first_settle`, `pay_card_button`; smoke; and the home, shell,
+  account and payee cases touched by the live-item change.
+
+### Known limits and follow-ups
+
+- Push reminders at 24/72 h (step 9), the report entry after 24 h (step 7, placeholder text) and the publish block
+  UI (bounty/carpool publish) are not wired; `reminderDue`, `publishBlocked` and `publish_blocked()` are ready.
+- BNM dataset terms do not name exchange rates explicitly. The pg_cron jobs need the Vault secrets `project_url` and
+  `service_role_key` per environment.
+- No network-state detection: offline actions fail with 没成功 and keep the input (an uploaded screenshot is reused on
+  retry). A failed or stale payments load shows 付款信息没加载出来 · 重试 on home (`home_payments_failed`); the bottom
+  accessory shows nothing for that source meanwhile.
+- Moderators have no access path to proofs until reports (step 7).
+- Unsettled payments of a cancelled item have no exit until bounty/carpool cancellation exists.
+- Device only: wallet links, saving to Photos with add-only access and scanning from the album, haptics.

@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import pay from './pay/ms';
 import payee from './payee/ms';
 
 const ms: Translation = {
@@ -123,6 +124,7 @@ const ms: Translation = {
     },
   },
   payee,
+  pay,
   shell: {
     tabs: {
       bounty: 'Ganjaran',
@@ -199,11 +201,18 @@ const ms: Translation = {
     money: 'RM {{amount}}',
     soon: 'Langkah ini belum dibuka',
     card: {
+      waiting: { tag: 'Menunggu pengesahan' },
+      unavailable: {
+        title: 'Bayaran anda tidak dapat dimuatkan',
+        body: 'Kami belum tahu sama ada anda berhutang atau seseorang sudah membayar anda.',
+        retry: 'Cuba lagi',
+        loading: 'Memuatkan bayaran anda',
+      },
       pay: {
         tag: 'Perlu dibayar',
         title: 'Bayar {{name}}',
-        slide: 'Leret untuk bayar · {{amount}} →',
-        slideLabel: 'Leret untuk bayar {{amount}}',
+        button: 'Bayar sekarang',
+        buttonLabel: 'Bayar {{amount}} sekarang',
         footer: 'Bayaran terus · wang terus ke {{name}}',
       },
       ride: {
@@ -261,6 +270,7 @@ const ms: Translation = {
         deleteBlocked: 'Padam akaun (bayaran belum selesai)',
       },
     },
+    pay: { title: 'Helaian bayaran' },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',

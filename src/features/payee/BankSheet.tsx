@@ -15,9 +15,9 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { BANKS, OTHER_BANK } from './acquirers';
+import { BANKS, OTHER_BANK } from '@/lib/acquirers';
 import { LoadStateForm } from './LoadState';
-import { NoticeCard } from './NoticeCard';
+import { NoticeCard } from '@/ui/NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
 import { useMethodEditor } from './useMethodEditor';
 import { checkAccountNumber, checkBank, checkPayeeName, PAYEE_NAME_MAX } from './validate';

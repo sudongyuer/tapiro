@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import pay from './pay/en';
 import payee from './payee/en';
 
 const en: Translation = {
@@ -123,6 +124,7 @@ const en: Translation = {
     },
   },
   payee,
+  pay,
   shell: {
     tabs: {
       bounty: 'Bounties',
@@ -195,11 +197,18 @@ const en: Translation = {
     money: 'RM {{amount}}',
     soon: 'This step isn’t available yet',
     card: {
+      waiting: { tag: 'Waiting to be confirmed' },
+      unavailable: {
+        title: 'Couldn’t load your payments',
+        body: 'We can’t tell yet whether you owe money or someone paid you.',
+        retry: 'Try again',
+        loading: 'Loading your payments',
+      },
       pay: {
         tag: 'You owe',
         title: 'Pay {{name}}',
-        slide: 'Slide to pay · {{amount}} →',
-        slideLabel: 'Slide to pay {{amount}}',
+        button: 'Pay now',
+        buttonLabel: 'Pay {{amount}} now',
         footer: 'Direct pay · money goes straight to {{name}}',
       },
       ride: {
@@ -257,6 +266,7 @@ const en: Translation = {
         deleteBlocked: 'Delete account (unsettled payment)',
       },
     },
+    pay: { title: 'Pay sheet' },
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',

@@ -1,20 +1,22 @@
 import { SymbolView } from 'expo-symbols';
+import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
+import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
 
 import { moneyParts, moneyText, type PayDetail } from '../homeModel';
 import { CardText, Pill } from './cardParts';
 
-const TRACK_HEIGHT = 58;
-const KNOB = 48;
+const BUTTON_HEIGHT = 52;
 
 export function PayCard({ detail }: { detail: PayDetail }) {
   const { t, language } = useI18n();
+  const router = useRouter();
   const paint = useLiveCardPaint('pay');
   const ink = paint.ink;
   const amount = t('home.money', { amount: moneyText(detail.amountSen, language) });
@@ -36,22 +38,23 @@ export function PayCard({ detail }: { detail: PayDetail }) {
           {cents}
         </AppText>
       </CardText>
-      <View
-        accessible
+      <PressDim
         accessibilityRole="button"
-        accessibilityState={{ disabled: true }}
-        accessibilityLabel={t('home.card.pay.slideLabel', { amount })}
-        accessibilityHint={t('home.soon')}
-        style={styles.track}
+        accessibilityState={{ disabled: detail.paymentId === null }}
+        accessibilityLabel={t('home.card.pay.buttonLabel', { amount })}
+        disabled={detail.paymentId === null}
+        onPress={() => detail.paymentId && router.push(`/pay/${detail.paymentId}`)}
+        testID="pay-card-button"
+        style={[styles.button, { backgroundColor: ink }]}
       >
-        <View style={[StyleSheet.absoluteFill, styles.trackFill, { backgroundColor: ink }]} />
-        <AppText variant="secondary" numberOfLines={1} style={[styles.slide, { color: ink }]}>
-          {t('home.card.pay.slide', { amount })}
+        <AppText
+          variant="body"
+          numberOfLines={1}
+          style={[styles.buttonLabel, { color: paint.surface }]}
+        >
+          {t('home.card.pay.button')}
         </AppText>
-        <View style={[styles.knob, { backgroundColor: ink }]}>
-          <SymbolView name="chevron.right" size={18} weight="bold" tintColor={paint.surface} />
-        </View>
-      </View>
+      </PressDim>
       <View style={styles.footer}>
         <CardText variant="meta" ink={ink} muted style={styles.footerText} numberOfLines={2}>
           {t('home.card.pay.footer', { name: detail.payee })}
@@ -72,23 +75,15 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     opacity: 0.55,
   },
-  track: {
-    height: TRACK_HEIGHT,
-    borderRadius: TRACK_HEIGHT / 2,
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  trackFill: { opacity: 0.1 },
-  slide: { textAlign: 'center', fontWeight: '600', opacity: 0.8, paddingLeft: KNOB },
-  knob: {
-    position: 'absolute',
-    left: 5,
-    width: KNOB,
-    height: KNOB,
-    borderRadius: KNOB / 2,
+  button: {
+    minHeight: BUTTON_HEIGHT,
+    borderRadius: vars['--radius-pill'],
+    borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: vars['--space-5'],
   },
+  buttonLabel: { fontWeight: '600', textAlign: 'center' },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,10 +1,11 @@
-import type { AccessoryItem, AccessoryKind } from '@/lib/liveItems';
+import type { AccessoryItem, AccessoryKind, SourceIssue } from '@/lib/liveItems';
 import { formatRinggitParts } from '@/lib/money';
 import type { StickerCategory } from '@/ui/CategorySticker';
 import type { StageState } from '@/ui/MascotStage';
 
 export type PayDetail = {
   kind: 'oweMoney';
+  paymentId: string | null;
   payee: string;
   amountSen: number;
   note: string;
@@ -46,31 +47,78 @@ export type CardDetail = PayDetail | RideDetail | OwedDetail | ProgressDetail;
 
 export type LiveCardModel =
   | { kind: 'calm'; id: 'calm' }
+  | { kind: 'unavailable'; id: 'unavailable'; issue: SourceIssue }
   | { kind: AccessoryKind; id: string; item: AccessoryItem; detail: CardDetail | null };
 
-export function stageState(items: readonly AccessoryItem[]): StageState {
+// Not knowing is not the same as nothing to do: a source that is loading, failed or stale keeps the stage off calm.
+export function stageState(
+  items: readonly AccessoryItem[],
+  issues: readonly SourceIssue[] = [],
+): StageState {
   if (items.some((item) => item.kind === 'oweMoney')) return 'urgent';
-  return items.length > 0 ? 'live' : 'calm';
+  return items.length > 0 || issues.length > 0 ? 'live' : 'calm';
 }
 
 export function liveCards(
   items: readonly AccessoryItem[],
   details: Readonly<Record<string, CardDetail>>,
   priority: (kind: AccessoryKind) => number,
+  issues: readonly SourceIssue[] = [],
 ): LiveCardModel[] {
-  if (items.length === 0) return [{ kind: 'calm', id: 'calm' }];
+  const problem =
+    issues.find((issue) => issue.status !== 'loading') ??
+    (items.length === 0 ? issues[0] : undefined);
+  const unavailable: LiveCardModel[] = problem
+    ? [{ kind: 'unavailable', id: 'unavailable', issue: problem }]
+    : [];
+  if (items.length === 0) return unavailable.length ? unavailable : [{ kind: 'calm', id: 'calm' }];
+  return [...unavailable, ...sortedCards(items, details, priority)];
+}
+
+function sortedCards(
+  items: readonly AccessoryItem[],
+  details: Readonly<Record<string, CardDetail>>,
+  priority: (kind: AccessoryKind) => number,
+): LiveCardModel[] {
   return items
     .map((item, index) => ({ item, index }))
     .sort((a, b) => priority(a.item.kind) - priority(b.item.kind) || a.index - b.index)
     .map(({ item }) => {
-      const detail = details[item.id];
+      const detail = details[item.id] ?? paymentDetail(item);
       return {
         kind: item.kind,
         id: item.id,
         item,
-        detail: detail && detail.kind === item.kind ? detail : null,
+        detail: detail && detail.kind === item.kind ? withPayment(detail, item) : null,
       };
     });
+}
+
+function paymentDetail(item: AccessoryItem): CardDetail | undefined {
+  const { payment, amountSen } = item;
+  if (!payment || amountSen === undefined) return undefined;
+  if (item.kind === 'oweMoney')
+    return {
+      kind: 'oweMoney',
+      paymentId: payment.id,
+      payee: payment.counterpart,
+      amountSen,
+      note: payment.note,
+      category: 'other',
+    };
+  if (item.kind === 'owedToYou')
+    return {
+      kind: 'owedToYou',
+      payer: payment.counterpart,
+      amountSen,
+      note: payment.note,
+      category: 'other',
+    };
+  return undefined;
+}
+
+function withPayment(detail: CardDetail, item: AccessoryItem): CardDetail {
+  return detail.kind === 'oweMoney' ? { ...detail, paymentId: item.payment?.id ?? null } : detail;
 }
 
 export type StageLine =
@@ -85,6 +133,7 @@ export type StageLine =
 export function stageLine(cards: readonly LiveCardModel[]): StageLine {
   const front = cards[0];
   if (front.kind === 'calm') return { key: 'calm' };
+  if (front.kind === 'unavailable') return { key: 'live' };
   const { detail } = front;
   switch (detail?.kind) {
     case 'oweMoney':

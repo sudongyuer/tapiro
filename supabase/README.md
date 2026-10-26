@@ -37,8 +37,24 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
 
 `amountSen` is the amount in sen (RM × 100, integer); `direction` is `owe` when the deleting user
 pays the counterpart and `owed` when the counterpart pays them. The app drops items that do not
-match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` is the only place
-that reads payments; it returns nothing until the payments table exists (foundation step 4).
+match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` reads every payment the user is
+payer or payee of that is not settled; a failed check answers 500 and deletes nothing.
+
+## Payments
+
+`payments` rows are opened only by server code (`open_payment`, `open_reverse_payment`, service role).
+Clients read their own rows and change state through `mark_payment_paid`, `undo_marked_paid`,
+`confirm_payment_received` (returns `firstSettled`) and `report_not_received`; every change logs a
+`payment_events` row, and `settled` is the event steps 5–6 build on. A payer reads the payee's
+`payee_methods` while a payment between them is unsettled. Proofs live in the private
+`payment-proofs` bucket under `<payment id>/`.
+
+## Scheduled functions
+
+`fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);
+`payment-proof-cleanup` removes proofs 30 days after settlement. Both are called by pg_cron through
+`call_edge_function`, which needs the Vault secrets `project_url` and `service_role_key` in each
+environment; without them the jobs post nothing.
 
 ## Edge Functions
 

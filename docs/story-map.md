@@ -369,109 +369,110 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### pay.sheet 付款弹窗
 
 - 故事：作为要付钱的发布者，我想在一个弹窗里看到金额、收款方式和要复制的内容，以便在自己的 App 里付对人。
-- 状态：planned
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id               | 行为                                                         | 覆盖     |
 | --------------------- | ------------------------------------------------------------ | -------- |
-| pay.sheet.methods     | 收款方式是单选列表，钱包类在前；只有一种时直接选中那一行     | ui       |
-| pay.sheet.copy        | 每个值都能复制，复制后有反馈；参考号 TP-XXXX 也能复制        | ui, unit |
-| pay.sheet.name-check  | 显示「付款前核对：银行显示的收款人应该是 {名字}」            | ui       |
-| pay.sheet.no-methods  | 收款人没有方式或只有现金时说明清楚                           | ui       |
-| pay.sheet.cny         | 人民币码显示 RM 金额加「约 ¥xx（参考）」，按每日汇率         | unit, ui |
-| pay.sheet.worst       | 长名字、大金额在浅色、深色和马来文下排得下                   | ui       |
-| pay.sheet.offline     | 没有网络时操作不可用，显示没有网络                           | ui       |
+| pay.sheet.methods     | 收款方式是单选列表，钱包类在前；只有一种时直接选中那一行     | ui:pay_sheet_wallets, ui:pay_sheet_duitnow, unit:src/features/payment/model.test.ts#wallets come first: Alipay, WeChat, TNG, other DuitNow QR, phone, bank, cash, unit:src/features/payment/model.test.ts#a single method is preselected; several wait for a choice |
+| pay.sheet.copy        | 每个值都能复制，复制后有反馈；参考号 TP-XXXX 也能复制        | ui:pay_sheet_duitnow, unit:src/features/payment/model.test.ts#a payer copies the full number, in the format banks accept, unit:src/features/payment/model.test.ts#TP- plus four characters, never 0, O, 1 or I, db:supabase/tests/payments.test.sql |
+| pay.sheet.name-check  | 显示「付款前核对：收款人应该是 {名字}」                       | ui:pay_sheet_wallets |
+| pay.sheet.no-methods  | 收款人没有方式或只有现金时说明清楚                           | ui:pay_sheet_none, ui:pay_sheet_cash |
+| pay.sheet.cny         | 支付宝、微信显示 RM 金额加「约 ¥xx（参考）」，按 BNM 每日中间价，7 天内没有汇率就不显示，旁边写汇率来源 | ui:pay_sheet_wallets, unit:src/features/payment/model.test.ts#converts RM to yuan at the daily rate and rounds to the fen, unit:src/features/payment/model.test.ts#hides the reference when no rate is newer than 7 days, unit:supabase/functions/fx-rate/handler.test.ts#reads the CNY middle rate from a recorded BNM response, db:supabase/tests/fx_rates.test.sql, int:src/features/payment/paymentService.integration.ts#reads the latest BNM rate |
+| pay.sheet.worst       | 长名字、大金额在浅色、深色和马来文下排得下                   | gap: worst 夹具已有长名字和 RM 12,345.60，付款弹窗的极端数据用例留到全量矩阵前补 |
+| pay.sheet.offline     | 没有网络时操作不可用，显示没有网络                           | unit:src/features/payment/paymentStore.test.ts#a failed action reports failure and keeps the list, gap: 还没有网络状态检测，断网时操作失败后显示「没成功」并保留输入 |
 
 ### pay.open-app 打开付款 App
 
 - 故事：作为付款人，我想一点就打开我的钱包 App，以便少切几次屏。
-- 状态：planned
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id               | 行为                                                         | 覆盖     |
 | --------------------- | ------------------------------------------------------------ | -------- |
-| pay.open-app.wallets  | 有真机确认过的链接时只打开钱包首页                           | ui       |
-| pay.open-app.banks    | DuitNow 和银行只提示「打开你的银行 App，选 DuitNow」，号码可复制 | ui    |
-| pay.open-app.real     | 真机上逐个打开 TNG、Grab、支付宝、微信                       | device   |
+| pay.open-app.wallets  | 有真机确认过的链接时只打开钱包首页；没确认的链接不用，只给提示 | ui:pay_sheet_wallets, unit:src/features/payment/model.test.ts#no wallet link opens until it is confirmed on a device |
+| pay.open-app.banks    | DuitNow 和银行只提示「打开你的银行 App，选 DuitNow」，号码可复制 | ui:pay_sheet_duitnow |
+| pay.open-app.real     | 真机上逐个打开 TNG、Grab、支付宝、微信，确认后在 WALLET_LINKS 里标 confirmed | device |
 
 ### pay.qr 收款码付款
 
 - 故事：作为付款人，我想把收款码存到相册再打开钱包扫，以便在同一台手机上也能扫码付。
-- 状态：planned
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id               | 行为                                                       | 覆盖       |
 | --------------------- | ---------------------------------------------------------- | ---------- |
-| pay.qr.save-and-open  | 主按钮「存到相册并打开 {app}」，另有「用另一台手机扫」全屏码 | ui         |
-| pay.qr.photos         | 真机上存进相册、在钱包里从相册扫成功                       | device     |
+| pay.qr.save-and-open  | 主按钮「存到相册」（链接确认后是「存到相册并打开 {app}」），另有「用另一台手机扫」全屏码 | ui:pay_sheet_wallets |
+| pay.qr.photos         | 真机上只要「添加照片」权限就存进相册、在钱包里从相册扫成功   | device     |
 
 ### pay.mark-paid 我已付款
 
 - 故事：作为付完钱的发布者，我想点一下「我已付款」，以便接单人知道去查收。
-- 状态：planned
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id                  | 行为                                                       | 覆盖         |
 | ------------------------ | ---------------------------------------------------------- | ------------ |
-| pay.mark-paid.waiting    | 点了之后原地变成等待确认                                   | ui           |
-| pay.mark-paid.undo       | 收款人确认前可以撤回                                       | ui, unit, db |
-| pay.mark-paid.screenshot | 可以附付款截图，只有双方和管理员看得到，结清 30 天后删除   | ui, db, device |
+| pay.mark-paid.waiting    | 点了之后原地变成等待确认；首页和提醒条安静地显示「等 {名字} 确认」直到结清或对方说还没收到 | ui:pay_mark_paid_undo, unit:src/features/payment/paymentStore.test.ts#after 我已付款 the payer sees a quiet waiting item until the payee says 还没收到 |
+| pay.mark-paid.undo       | 收款人确认前可以撤回                                       | ui:pay_mark_paid_undo, unit:src/features/payment/model.test.ts#the payer undoes 我已付款 only before the payee confirms, db:supabase/tests/payments.test.sql |
+| pay.mark-paid.screenshot | 可以附付款截图，双方和审核员可见，结清 30 天后删除；没挂上的草稿和撤回后的截图也会删掉 | ui:pay_mark_paid_undo, ui:pay_payee_confirm, db:supabase/tests/payments.test.sql, unit:supabase/functions/payment-proof-cleanup/handler.test.ts#removes proofs 30 days after settlement and clears their paths, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, device, gap: 审核员查看入口在第 7 步（举报）做 |
 
 ### pay.confirm 收款确认和结清
 
 - 故事：作为接单人，我想确认真的收到了钱，以便这件事结清、双方都能评价。
-- 状态：planned
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id                 | 行为                                                         | 覆盖     |
 | ----------------------- | ------------------------------------------------------------ | -------- |
-| pay.confirm.states      | 状态只经 RPC 变化：待付 → 已付 → 已结清或有争议              | unit, db |
-| pay.confirm.received    | 收款人看到「{名字} 说已付款」，点已收到才结清                | ui, db   |
-| pay.confirm.not-yet     | 点还没收到会提醒付款人，24 小时后可以举报                    | ui, db   |
-| pay.confirm.cash        | 现金只要收款人点已收到                                       | unit, ui |
-| pay.confirm.celebration | 第一次结清全屏庆祝，之后只打勾加轻触感                       | ui, device |
-| pay.confirm.visibility  | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏       | db       |
+| pay.confirm.states      | 状态只经 RPC 变化：待付 → 已付 → 已结清或有争议              | unit:src/features/payment/model.test.ts#due → marked_paid → settled through the payer then the payee, db:supabase/tests/payments.test.sql |
+| pay.confirm.received    | 收款人看到「{名字} 说已付款」，能打开对方附的截图，点已收到才结清 | ui:pay_payee_confirm, db:supabase/tests/payments.test.sql |
+| pay.confirm.not-yet     | 点还没收到会提醒付款人，24 小时后可以举报（举报入口第 7 步做，先放说明） | ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#after 我已付款 the payer sees a quiet waiting item until the payee says 还没收到, db:supabase/tests/payments.test.sql |
+| pay.confirm.cash        | 现金只要收款人点已收到                                       | unit:src/features/payment/model.test.ts#cash settles from due on the payee alone; the payer never marks cash paid, ui:pay_first_settle, db:supabase/tests/payments.test.sql |
+| pay.confirm.celebration | 第一次结清全屏庆祝，之后只打勾加轻触感                       | ui:pay_first_settle, ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#settling removes the payment from the list; only the first settle is first, device: 真机看动效和轻触感 |
+| pay.confirm.visibility  | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏       | db:supabase/tests/payments.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs |
 
 ### pay.unpaid 不付款的处理
 
 - 故事：作为接单人，我想 App 帮我提醒不付钱的人，以便我不用自己去催。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id              | 行为                                                       | 覆盖         |
 | -------------------- | ---------------------------------------------------------- | ------------ |
-| pay.unpaid.reminders | 24 小时和 72 小时提醒付款人                                | unit, db     |
-| pay.unpaid.block     | 欠 7 天或同时 2 笔没付就不能发新的，结清或举报处理后解除   | unit, db, ui |
+| pay.unpaid.reminders | 24 小时和 72 小时提醒付款人（推送第 9 步接上）             | unit:src/lib/unpaid.test.ts#reminds at 24 h and 72 h, once each, db |
+| pay.unpaid.block     | 欠 7 天或同时 2 笔没付就不能发新的，结清或举报处理后解除   | unit:src/lib/unpaid.test.ts, db:supabase/tests/payments.test.sql, ui |
 
 ### pay.prepay-refund 先付单取消后退款
 
 - 故事：作为先付了钱的发布者，我想在取消时由接单人把钱付回给我，以便我不吃亏。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[product notes](product-notes.md)
 
 | 验收 id                   | 行为                                                       | 覆盖     |
 | ------------------------- | ---------------------------------------------------------- | -------- |
-| pay.prepay-refund.reverse | 取消先付单生成一笔反向付款，发布者确认收到后才算取消完成   | unit, db |
+| pay.prepay-refund.reverse | 取消先付单生成一笔反向付款，发布者确认收到后才算取消完成   | db:supabase/tests/payments.test.sql, unit |
 
 ### pay.home 首页和提醒条接上真实付款
 
 - 故事：作为欠着钱的同学，我想首页和提醒条显示真实的待付款，以便一点「去付款」就能付。
-- 状态：planned
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id               | 行为                                                       | 覆盖     |
 | --------------------- | ---------------------------------------------------------- | -------- |
-| pay.home.pay-card     | 首页待付卡片是「去付款」按钮，打开付款弹窗                 | ui       |
-| pay.home.accessory    | 提醒条和实时卡读真实的付款数据                             | ui, unit |
-| pay.home.delete-check | 删除账号时检查真实的未结清付款                             | int, ui  |
+| pay.home.pay-card     | 首页待付卡片是「去付款」按钮，打开付款弹窗                 | ui:pay_card_button |
+| pay.home.accessory    | 提醒条和实时卡读真实的付款数据                             | ui:pay_card_button, unit:src/features/payment/paymentStore.test.ts#the store feeds the accessory through the live-item contract, unit:src/features/home/homeModel.test.ts#a payment item without fixture details builds its card from the payment, unit:src/lib/liveItems.test.ts#a source adds its items after the base feed and replaces them on the next publish |
+| pay.home.unknown      | 付款没加载出来或刷新失败时，首页显示「付款信息没加载出来 · 重试」，不显示「没事」 | ui:home_payments_failed, unit:src/features/payment/paymentStore.test.ts#a failed refresh marks the list stale instead of keeping it live, unit:src/features/home/homeModel.test.ts#a failed source shows the unavailable card instead of calm and keeps the stage off calm, unit:src/lib/liveItems.test.ts#a failed or stale source shows no items and reports the issue |
+| pay.home.delete-check | 删除账号时检查真实的未结清付款                             | int:supabase/functions/tests/account-delete.integration.ts#blocks deletion while a real payment is unsettled, then allows it after settlement, ui:account_delete_blocked, unit:supabase/functions/account-delete/handler.test.ts#names the counterpart and the direction from the deleting user |
 
 ### pay.cant-pay 付不了
 

@@ -1,3 +1,4 @@
+import pay from './pay/zh-Hans';
 import payee from './payee/zh-Hans';
 
 export default {
@@ -118,6 +119,7 @@ export default {
     },
   },
   payee,
+  pay,
   shell: {
     tabs: {
       bounty: '悬赏',
@@ -190,11 +192,18 @@ export default {
     money: 'RM {{amount}}',
     soon: '这一步还没开放',
     card: {
+      waiting: { tag: '等对方确认' },
+      unavailable: {
+        title: '付款信息没加载出来',
+        body: '没法确定你现在欠不欠钱，或别人有没有付你。',
+        retry: '重试',
+        loading: '正在加载付款信息',
+      },
       pay: {
         tag: '待你付款',
         title: '付给{{name}}',
-        slide: '滑动付款 · {{amount}} →',
-        slideLabel: '滑动付款 {{amount}}',
+        button: '去付款',
+        buttonLabel: '去付款 {{amount}}',
         footer: '撮合付款 · 钱直接到{{name}}',
       },
       ride: {
@@ -252,6 +261,7 @@ export default {
         deleteBlocked: '删除账号（有未结清付款）',
       },
     },
+    pay: { title: '付款弹窗' },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',

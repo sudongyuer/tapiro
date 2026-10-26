@@ -1,6 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Tapiro",
-    "NSCameraUsageDescription": "Imbas kod QR terima yang dipaparkan pada skrin lain. Tapiro hanya membaca kod dan tidak menyimpan foto."
+    "NSCameraUsageDescription": "Imbas kod QR terima yang dipaparkan pada skrin lain. Tapiro hanya membaca kod dan tidak menyimpan foto.",
+    "NSPhotoLibraryAddUsageDescription": "Simpan kod QR terima penerima ke Foto supaya anda boleh mengimbasnya dalam aplikasi e-dompet. Tapiro hanya menambah imej ini."
   }
 }

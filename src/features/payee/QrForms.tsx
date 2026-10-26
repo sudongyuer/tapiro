@@ -28,7 +28,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import type { ClassifiedQr, QrRejection } from './classifyQr';
 import { methodTitle, qrBank, walletName, type QrWallet } from './display';
 import type { PayeeMethod } from './methods';
-import { NoticeCard } from './NoticeCard';
+import { NoticeCard } from '@/ui/NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
 import { PAYEE_NAME_MAX } from './validate';
 

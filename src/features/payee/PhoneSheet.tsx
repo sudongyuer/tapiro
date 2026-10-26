@@ -13,7 +13,7 @@ import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { LoadStateForm } from './LoadState';
-import { NoticeCard } from './NoticeCard';
+import { NoticeCard } from '@/ui/NoticeCard';
 import { EditActions, SheetChrome } from './SheetChrome';
 import { useMethodEditor } from './useMethodEditor';
 import {

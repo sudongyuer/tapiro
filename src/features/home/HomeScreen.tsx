@@ -64,9 +64,9 @@ export function HomeScreen({
   const { height: windowHeight } = useWindowDimensions();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
   const reduceMotion = useReducedMotion();
-  const { accessory } = useLiveItems();
-  const cards = liveCards(accessory, homeCardDetails, accessoryPriority);
-  const state = stageState(accessory);
+  const { accessory, issues } = useLiveItems();
+  const cards = liveCards(accessory, homeCardDetails, accessoryPriority, issues);
+  const state = stageState(accessory, issues);
   const { key, ...values } = stageLine(cards);
   const line = t(`home.say.${key}`, values);
   const { heights, ready, onCardLayout } = useCardHeights(cards);

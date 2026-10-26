@@ -43,6 +43,7 @@ function RootStack() {
         <Stack.Screen name="payee/phone" options={PAGE_SHEET} />
         <Stack.Screen name="payee/bank" options={PAGE_SHEET} />
         <Stack.Screen name="payee/qr" options={PAGE_SHEET} />
+        <Stack.Screen name="pay/[id]" options={PAGE_SHEET} />
         <Stack.Screen
           name="delete-account"
           options={{

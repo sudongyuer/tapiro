@@ -26,6 +26,11 @@ const GLYPHS: Record<AccessoryKind, { fill: TokenName; ink: TokenName; symbol: S
       ink: '--color-on-sticker',
       symbol: 'hourglass',
     },
+    waitingConfirm: {
+      fill: '--color-card-calm',
+      ink: '--color-on-card-calm',
+      symbol: 'clock',
+    },
   };
 
 const GLYPH_SIZE = { regular: 36, inline: 28 } as const;

@@ -31,6 +31,7 @@ launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items 
 four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
 same items, the 消息 badge, the fixture user's name and the seeded payee methods (`worst`: 40-character names, long routes,
 RM 12,345.60, 1,284 unread; `one`: `Jo`, RM 0.50, 1 minute, 1 unread; `empty`: no payee methods; `worst` also seeds seven payee methods with long names).
+`-uiVerifyPayMethods all|wallets|alipay|duitnow|cash|none` picks the payee methods the pay sheet shows (default `all`), `-uiVerifyPayment <id>` opens the `pay-sheet` scene on `fixture-owe` (default, payer), `fixture-owed` (payee, marked paid) or `fixture-owed-cash` (payee, due, takes cash), `-uiVerifySettledBefore 1` makes the next settle a later one (tick, no celebration), `-uiVerifyFx none` removes the fixture BNM rate, and `-uiVerifyPaymentsFail 1` fails the first payments load. The fixture payments replace the money kinds of the shell feed, so `oweMoney` and `owedToYou` come from the payment fixture. Saving to Photos is replaced at the device boundary; the QR image itself is drawn by the kit.
 `-uiVerifySignedIn [onboarded]` starts with the fixture session already signed in (with `onboarded`, onboarding is also done, so the app opens on home); `reach_home` then only waits for home. Cases that just need home, tabs or payee use it; only cases that test welcome, sign-in or onboarding go through welcome, and they call `ui.at_rest()` (or `sign_in_apple`) before tapping, because any continuous motion blocks `axe tap`.
 `-uiVerifyQr <names>` replaces the screenshot picker and camera at the decode boundary: each pick
 returns the next fixture in the comma-separated list (`duitnow`, `paying`, `dynamic`, `alipay`,
@@ -99,6 +100,15 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `payee_qr_wechat`             | From 微信收款码 an injected `wxp://` receive code confirms as 微信收款码 with no wallet-switch line and saves the WeChat row.                                                                                                                                                                      | —                | `one`, `-uiVerifyQr wechat`          |
 | `payee_qr_real`               | Real system photo picker, nothing injected: a generated Alipay QR and a DuitNow TNG QR are decoded on device, confirm and save. zh-Hans; passes in light and dark.                                                                                                                                 | —                | `one`                                |
 | `payee_long`                  | Seven worst-case methods (long bank and payee names); after scrolling to the bottom the cash row sits fully above the accessory and tab bar.                                                                                                                                                       | —                | `-uiVerifyFixture worst`             |
+| `pay_sheet_wallets` | Alipay, WeChat and TNG list in that order with none chosen; Alipay shows RM with 约 ¥（参考） and the BNM source, the QR, the name check and 存到相册 (no confirmed app link), which saves; 用另一台手机扫 shows the code full screen. | `pay-sheet` | `-uiVerifyPayMethods wallets` |
+| `pay_sheet_duitnow` | A single DuitNow phone is preselected; the number and the TP- reference copy with 已复制 feedback; the bank hint shows and no CNY line. | `pay-sheet` | `-uiVerifyPayMethods duitnow` |
+| `pay_sheet_cash` | Cash only: the cash row is preselected with the hand-over note and there is no 我已付款. | `pay-sheet` | `-uiVerifyPayMethods cash` |
+| `pay_sheet_none` | A payee without methods shows the 还没有可用的收款方式 card and nothing to pay with. | `pay-sheet` | `-uiVerifyPayMethods none` |
+| `pay_mark_paid_undo` | A screenshot is attached, 我已付款 turns the sheet into 等…确认 · 附了截图, and 撤回 restores the pay step. | `pay-sheet` | `-uiVerifyPayMethods duitnow` |
+| `pay_payee_confirm` | The payee sees 小林说已付款; 还没收到 shows the reminder and 24-hour report note; 已收到 after an earlier settle shows the tick, no celebration. | `pay-sheet` | `-uiVerifyPayment fixture-owed -uiVerifySettledBefore 1` |
+| `pay_first_settle` | A cash payee settles a due payment; the first settle opens the full-screen celebration and 好的 returns to the settled sheet. | `pay-sheet` | `-uiVerifyPayment fixture-owed-cash` |
+| `pay_card_button` | The home pay card has a 去付款 button instead of the slider; tapping the button opens the pay sheet for that payment. | — | `oweMoney` |
+| `home_payments_failed` | A failed payments load shows 付款信息没加载出来 · 重试 instead of calm; 重试 loads the pay card. | — | `oweMoney`, `-uiVerifyPaymentsFail 1` |
 
 ## Adding a case
 

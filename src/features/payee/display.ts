@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
-import { acquirerName, TNG_ACQUIRER } from './acquirers';
+import { acquirerName, TNG_ACQUIRER } from '@/lib/acquirers';
 import type { ClassifiedQr } from './classifyQr';
 import type { PayeeDetails } from './methods';
 import { formatMalaysianMobile, maskAccountNumber } from './validate';

@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 
-import { NoticeCard } from './NoticeCard';
+import { NoticeCard } from '@/ui/NoticeCard';
 
 export function LoadStateSections({
   status,

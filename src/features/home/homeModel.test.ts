@@ -21,7 +21,14 @@ const owed = item('owedToYou');
 const progress = item('bountyInProgress');
 
 const DETAILS: Record<string, CardDetail> = {
-  oweMoney: { kind: 'oweMoney', payee: '阿杰', amountSen: 1500, note: '', category: 'pickup' },
+  oweMoney: {
+    kind: 'oweMoney',
+    paymentId: null,
+    payee: '阿杰',
+    amountSen: 1500,
+    note: '',
+    category: 'pickup',
+  },
   rideSoon: {
     kind: 'rideSoon',
     departAt: '17:00',
@@ -65,7 +72,7 @@ describe('liveCards', () => {
   test('cards follow the accessory priority and carry their detail', () => {
     const cards = liveCards([progress, owed, ride, owe], DETAILS, priority);
     expect(cards.map((card) => card.kind)).toEqual(PRIORITY);
-    expect(cards.every((card) => card.kind === 'calm' || card.detail?.kind === card.kind)).toBe(
+    expect(cards.every((card) => !('detail' in card) || card.detail?.kind === card.kind)).toBe(
       true,
     );
   });
@@ -117,5 +124,67 @@ describe('money', () => {
     expect(moneyText(1550, 'en')).toBe('15.50');
     expect(moneyText(125000, 'zh-Hans')).toBe('1,250');
     expect(moneyText(1234560, 'ms')).toBe('12,345.60');
+  });
+});
+
+describe('payment-driven cards', () => {
+  const paid = (kind: AccessoryKind): AccessoryItem => ({
+    id: `p-${kind}`,
+    kind,
+    title: kind,
+    sub: '',
+    amountSen: 1500,
+    payment: { id: `p-${kind}`, counterpart: '阿杰', note: '帮取快递' },
+  });
+
+  test('a payment item without fixture details builds its card from the payment', () => {
+    const [pay, owedCard] = liveCards([paid('oweMoney'), paid('owedToYou')], {}, priority);
+    expect('detail' in pay && pay.detail).toEqual({
+      kind: 'oweMoney',
+      paymentId: 'p-oweMoney',
+      payee: '阿杰',
+      amountSen: 1500,
+      note: '帮取快递',
+      category: 'other',
+    });
+    expect('detail' in owedCard && owedCard.detail).toMatchObject({
+      kind: 'owedToYou',
+      payer: '阿杰',
+    });
+  });
+
+  test('fixture details keep their copy and take the payment id from the item', () => {
+    const [card] = liveCards([{ ...paid('oweMoney'), id: 'oweMoney' }], DETAILS, priority);
+    expect('detail' in card && card.detail).toMatchObject({
+      payee: '阿杰',
+      paymentId: 'p-oweMoney',
+      category: 'pickup',
+    });
+  });
+});
+
+describe('payments that are not known', () => {
+  test('a failed source shows the unavailable card instead of calm and keeps the stage off calm', () => {
+    const issues = [{ source: 'payments', status: 'failed' } as const];
+    expect(liveCards([], DETAILS, priority, issues)).toEqual([
+      { kind: 'unavailable', id: 'unavailable', issue: issues[0] },
+    ]);
+    expect(stageState([], issues)).toBe('live');
+  });
+
+  test('a stale source puts the unavailable card in front of the other live items', () => {
+    const issues = [{ source: 'payments', status: 'stale' } as const];
+    expect(liveCards([ride], DETAILS, priority, issues).map((card) => card.kind)).toEqual([
+      'unavailable',
+      'rideSoon',
+    ]);
+  });
+
+  test('loading shows a loading card only while there is nothing else', () => {
+    const issues = [{ source: 'payments', status: 'loading' } as const];
+    expect(liveCards([], DETAILS, priority, issues)[0].kind).toBe('unavailable');
+    expect(liveCards([ride], DETAILS, priority, issues).map((card) => card.kind)).toEqual([
+      'rideSoon',
+    ]);
   });
 });

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
@@ -13,6 +14,7 @@ import { OwedCard, ProgressCard } from './cards/BountyCard';
 import { CalmCard, FallbackCard } from './cards/CalmCard';
 import { PayCard } from './cards/PayCard';
 import { RideCard } from './cards/RideCard';
+import { UnavailableCard } from './cards/UnavailableCard';
 import type { LiveCardModel } from './homeModel';
 import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
 
@@ -23,7 +25,9 @@ const TONE: Record<LiveCardModel['kind'], LiveCardTone> = {
   rideSoon: 'ride',
   owedToYou: 'progress',
   bountyInProgress: 'progress',
+  waitingConfirm: 'calm',
   calm: 'calm',
+  unavailable: 'calm',
 };
 
 export function useCardHeights(cards: readonly LiveCardModel[]) {
@@ -119,6 +123,7 @@ function StackedCard({
   onCardLayout,
 }: StackedCardProps) {
   const { t } = useI18n();
+  const router = useRouter();
   const behind = index > 0 && !open;
   const hidden = !stacked.visible && !open;
   const motion = useAnimatedStyle(() => ({
@@ -129,7 +134,16 @@ function StackedCard({
     ],
   }));
   const face = useAnimatedStyle(() => ({ opacity: index > 0 ? 1 - progress.value : 0 }));
-  const peek = card.kind === 'calm' ? '' : card.item.title;
+  const peek =
+    card.kind === 'calm'
+      ? ''
+      : card.kind === 'unavailable'
+        ? t('home.card.unavailable.title')
+        : card.item.title;
+  const paymentId =
+    card.kind === 'calm' || card.kind === 'unavailable' ? undefined : card.item.payment?.id;
+  const openPayment = () => paymentId && router.push(`/pay/${paymentId}`);
+  const ownButton = card.kind === 'oweMoney';
 
   return (
     <Animated.View
@@ -151,10 +165,23 @@ function StackedCard({
         </PressDim>
       ) : (
         <View
-          accessible={card.kind !== 'calm'}
-          testID={card.kind === 'calm' ? undefined : `live-card-${card.kind}`}
+          accessible={card.kind !== 'calm' && card.kind !== 'unavailable'}
+          accessibilityRole={paymentId ? 'button' : undefined}
+          accessibilityActions={paymentId ? [{ name: 'activate' }] : undefined}
+          onAccessibilityAction={paymentId ? openPayment : undefined}
+          testID={
+            card.kind === 'calm' || card.kind === 'unavailable'
+              ? undefined
+              : `live-card-${card.kind}`
+          }
         >
-          <CardBody card={card} name={name} onAsk={onAsk} />
+          {paymentId && !ownButton ? (
+            <PressDim onPress={openPayment}>
+              <CardBody card={card} name={name} onAsk={onAsk} />
+            </PressDim>
+          ) : (
+            <CardBody card={card} name={name} onAsk={onAsk} />
+          )}
           {index > 0 ? <BackFace tone={TONE[card.kind]} label={peek} style={face} /> : null}
         </View>
       )}
@@ -164,6 +191,7 @@ function StackedCard({
 
 function CardBody({ card, name, onAsk }: { card: LiveCardModel; name: string; onAsk: () => void }) {
   if (card.kind === 'calm') return <CalmCard name={name} onAsk={onAsk} />;
+  if (card.kind === 'unavailable') return <UnavailableCard issue={card.issue} />;
   const { detail, item } = card;
   switch (detail?.kind) {
     case 'oweMoney':

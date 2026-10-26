@@ -84,6 +84,7 @@ const FALLBACK_TONE: Record<AccessoryItem['kind'], LiveCardTone> = {
   rideSoon: 'ride',
   owedToYou: 'progress',
   bountyInProgress: 'progress',
+  waitingConfirm: 'calm',
 };
 
 const FALLBACK_TAG = {
@@ -91,6 +92,7 @@ const FALLBACK_TAG = {
   rideSoon: 'home.stage.live',
   owedToYou: 'home.card.owed.tag',
   bountyInProgress: 'home.stage.live',
+  waitingConfirm: 'home.card.waiting.tag',
 } as const;
 
 export function FallbackCard({ item }: { item: AccessoryItem }) {
