@@ -112,6 +112,7 @@ System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackg
 | `--color-mascot-blush`   | `#FF8A7A`   |             | 小貘 cheeks                     |
 | `--color-mascot-eye`     | `#FFFFFF`   |             | 小貘 eye whites and highlights  |
 | `--color-mascot-snout`   | `#3A3742`   |             | 小貘 front-view snout           |
+| `--color-moment-chip`    | `#FFFFFFBF` | `#FFFFFF1A` | Info chip on moment screens     |
 
 ### Live cards, stage and categories
 
@@ -146,6 +147,26 @@ background and their text stays dark ink. The only exception is the pay card, wh
 | `--color-sticker-study`     | `#F0C9DA` |           | 课业 sticker                                    |
 | `--color-sticker-other`     | `#D8D4CC` |           | 其他 sticker                                    |
 | `--color-on-sticker`        | `#25232B` |           | Glyph on every category sticker                 |
+
+### Sticker book and receipt
+
+Paper surfaces of the settlement celebration and the sticker book. They are paper, so dark mode keeps the same
+values, as it does for stickers.
+
+| Token                    | Light       | Use                                                       |
+| ------------------------ | ----------- | --------------------------------------------------------- |
+| `--color-paper`          | `#FFFDF8`   | Sticker book page in the celebration                      |
+| `--color-paper-line`     | `#EDE7DA`   | Ruled lines on the page                                   |
+| `--color-paper-slot`     | `#D6D1C6`   | Dashed outline of an empty slot, binding dots             |
+| `--color-paper-landed`   | `#187A5014` | Fill of the slot a sticker just landed in                 |
+| `--color-on-paper`       | `#25232B`   | Text on paper and on the receipt                          |
+| `--color-on-paper-muted` | `#6C6C70`   | Secondary text on paper, the receipt and sticker labels   |
+| `--color-receipt`        | `#FFFFFF`   | Receipt card the sticker is peeled from; sticker labels   |
+| `--color-paper-green`    | `#187A50`   | Green on paper: 第一次收款 badge fill, receipt amount     |
+| `--color-glow`           | `#3ECF8E8C` | Glow centre when a sticker lands                          |
+| `--color-glow-clear`     | `#3ECF8E00` | Glow edge                                                 |
+| `--color-shine`          | `#FFFFFFB3` | Centre of the shine that sweeps the sticker and the amount |
+| `--color-shine-clear`    | `#FFFFFF00` | Shine edge                                                |
 
 ### Object stickers
 
@@ -228,6 +249,8 @@ accessibility sizes.
 | `--font-rounded`                     |       | SF Rounded, numerals only                           |
 | `--text-wordmark`                    | `48`  | Tapiro wordmark, rounded heavy, white outline       |
 | `--text-wordmark--line-height`       | `56`  |                                                     |
+| `--text-amount-hero`                 | `62`  | Celebration amount, rounded heavy, white outline    |
+| `--text-amount-hero--line-height`    | `66`  |                                                     |
 | `--text-amount`                      | `48`  | Live-card amount and countdown, rounded heavy       |
 | `--text-amount--line-height`         | `52`  |                                                     |
 | `--text-amount-compact`              | `36`  | Amount beside a card title, rounded heavy           |

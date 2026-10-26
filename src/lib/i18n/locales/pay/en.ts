@@ -97,8 +97,19 @@ export default {
     dueWaitBody: 'When they tap “I’ve paid”, you’ll confirm here.',
   },
   celebrate: {
-    title: 'Your first payment!',
-    body: '{{title}} is settled · {{amount}}',
+    top: '{{title}} · {{name}} has paid',
+    cny: '≈ ¥{{amount}} · Bank Negara Malaysia middle rate',
+    first: {
+      title: 'Your first payment is in!',
+      body: 'This errand’s sticker is now in your sticker book.',
+    },
+    routine: { title: 'Another one done', body: 'Sticker {{count}} is in your book.' },
+    unknownBody: 'This errand’s sticker went into your sticker book.',
+    badge: 'First payment',
+    receiptPaid: '{{name}} · Paid',
+    announce:
+      'Received {{amount}}. {{title}}: {{name}} has paid. The sticker is in your sticker book.',
+    openBook: 'Open sticker book',
     done: 'OK',
     tick: 'Settled · received {{amount}}',
   },

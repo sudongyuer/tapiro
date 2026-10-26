@@ -6,19 +6,20 @@ import {
   foregroundStyle,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { formatRinggit } from '@/lib/money';
+import { stickerStore } from '@/lib/stickers';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { Celebration } from './Celebration';
+import { Celebration, type CelebrationData } from './celebration/Celebration';
 import { ActionButton, secondary, TextSection } from './formParts';
+import { cnyFen } from './fx';
 import { usePaySheet, type SheetData } from './hooks';
 import { AmountHeader, PayerView } from './PayerView';
 import { PayeeView } from './PayeeView';
@@ -28,22 +29,43 @@ export function PaySheet({
   userId,
   paymentId,
   onClose,
+  onOpenStickerBook,
 }: {
   userId: string;
   paymentId: string;
   onClose: () => void;
+  onOpenStickerBook: () => void;
 }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const { color } = useTheme();
   const sheet = usePaySheet(userId, paymentId);
-  const [celebrating, setCelebrating] = useState(false);
+  const [celebration, setCelebration] = useState<CelebrationData | null>(null);
   const { state } = sheet;
 
+  useEffect(() => {
+    stickerStore.ensureLoaded(userId);
+  }, [userId]);
+
   async function confirm() {
+    if (state.status !== 'ready') return;
+    const { payment, rate } = state;
+    const known = stickerStore.getSnapshot();
+    const previous = known.status === 'ready' && known.userId === userId ? known.stickers : null;
     const result = await sheet.confirm();
     if (!result) return;
-    if (result.firstSettled) setCelebrating(true);
-    else Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    stickerStore.reload(userId);
+    if (payment.reverses !== null) return;
+    setCelebration({
+      first: result.firstSettled,
+      count: result.stickerCount,
+      previous,
+      title: payment.title,
+      name: payment.counterpartName,
+      amountSen: payment.amountSen,
+      cnyFen: cnyFen(payment.amountSen, rate, new Date()),
+      itemKind: payment.itemKind,
+      category: null,
+    });
   }
 
   // An uploaded proof keeps its path, so a failed 我已付款 is retried with the same file instead of a new upload.
@@ -98,14 +120,14 @@ export function PaySheet({
           )}
         </Form>
       </Host>
-      {celebrating && state.status === 'ready' ? (
+      {celebration ? (
         <Celebration
-          title={t('pay.celebrate.title')}
-          body={t('pay.celebrate.body', {
-            title: state.payment.title,
-            amount: formatRinggit(state.payment.amountSen, language),
-          })}
-          onDone={() => setCelebrating(false)}
+          data={celebration}
+          onDone={() => setCelebration(null)}
+          onOpenBook={() => {
+            setCelebration(null);
+            onOpenStickerBook();
+          }}
         />
       ) : null}
     </View>

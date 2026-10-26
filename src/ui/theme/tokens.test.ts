@@ -144,3 +144,21 @@ describe('live cards, stage and stickers keep text readable in both themes', () 
     expect(dark('--color-on-card-pay')).toBe(vars['--color-card-pay']);
   });
 });
+
+test('paper and receipt keep their text readable in both themes', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    for (const surface of ['--color-paper', '--color-receipt'] as const) {
+      for (const text of ['--color-on-paper', '--color-on-paper-muted'] as const) {
+        expect(
+          contrastRatio(resolved(text, theme), resolved(surface, theme)),
+        ).toBeGreaterThanOrEqual(MIN);
+      }
+    }
+    expect(
+      contrastRatio(
+        resolved('--color-sticker-border', theme),
+        resolved('--color-paper-green', theme),
+      ),
+    ).toBeGreaterThanOrEqual(MIN);
+  }
+});

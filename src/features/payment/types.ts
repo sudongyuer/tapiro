@@ -24,7 +24,7 @@ export type Payment = {
 
 export type FxRate = { rateDate: string; rmPerCny: number };
 
-export type SettleResult = { firstSettled: boolean };
+export type SettleResult = { firstSettled: boolean; stickerCount: number | null };
 
 export type PaymentService = {
   list(userId: string): Promise<Payment[]>;

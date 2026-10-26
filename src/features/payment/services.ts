@@ -1,4 +1,5 @@
 import { initI18n } from '@/lib/i18n';
+import { earnFixtureSticker } from '@/lib/stickers';
 import { getSupabase } from '@/lib/supabase';
 import { liveItems } from '@/lib/useLiveItems';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
@@ -23,9 +24,9 @@ export const paymentStore = createPaymentStore(
           variant: uiVerifyFixture,
           feed: uiVerifyArgument('uiVerifyShellFeed'),
           mix,
-          settledBefore: uiVerifyArgument('uiVerifySettledBefore') === '1',
           rate: uiVerifyArgument('uiVerifyFx') !== 'none',
           failFirstLoad: uiVerifyArgument('uiVerifyPaymentsFail') === '1',
+          earnSticker: earnFixtureSticker,
         },
         () => fixturePay().qrImage('Tapiro fixture payment screenshot', 240),
       )

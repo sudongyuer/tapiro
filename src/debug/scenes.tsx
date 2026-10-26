@@ -9,7 +9,7 @@ import {
   WelcomeScene,
 } from './AccountScenes';
 import { DesignTokensScene } from './DesignTokensScene';
-import { PaySheetScene } from './PayScenes';
+import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
 
 export type Scene = {
@@ -39,6 +39,7 @@ export const scenes: Scene[] = [
     Component: DeleteBlockedScene,
   },
   { id: 'pay-sheet', titleKey: 'debug.pay.title', Component: PaySheetScene },
+  { id: 'sticker-book', titleKey: 'debug.stickers.title', Component: StickerBookScene },
 ];
 
 export function findScene(id: string) {

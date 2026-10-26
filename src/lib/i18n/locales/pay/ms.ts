@@ -97,8 +97,19 @@ export default {
     dueWaitBody: 'Apabila dia ketik “Saya sudah bayar”, anda sahkan di sini.',
   },
   celebrate: {
-    title: 'Bayaran pertama anda!',
-    body: '{{title}} selesai · {{amount}}',
+    top: '{{title}} · {{name}} telah membayar',
+    cny: '≈ ¥{{amount}} · Kadar tengah Bank Negara Malaysia',
+    first: {
+      title: 'Bayaran pertama anda sudah diterima!',
+      body: 'Pelekat tugasan ini sudah ditampal dalam buku pelekat anda.',
+    },
+    routine: { title: 'Satu lagi selesai', body: 'Pelekat ke-{{count}} sudah ditampal.' },
+    unknownBody: 'Pelekat tugasan ini masuk ke dalam buku pelekat anda.',
+    badge: 'Bayaran pertama',
+    receiptPaid: '{{name}} · Sudah dibayar',
+    announce:
+      'Diterima {{amount}}. {{title}}: {{name}} telah membayar. Pelekat sudah ditampal dalam buku pelekat anda.',
+    openBook: 'Lihat buku pelekat',
     done: 'OK',
     tick: 'Selesai · diterima {{amount}}',
   },

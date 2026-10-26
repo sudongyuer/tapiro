@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { createClient } from '@supabase/supabase-js';
 
+import { createSupabaseStickerService } from '@/lib/stickers/service';
+
 import { createSupabasePaymentService } from './paymentService';
 
 const env = Bun.spawnSync(['supabase', 'status', '-o', 'env']).stdout.toString();
@@ -102,7 +104,12 @@ describe('supabase payment service (local stack)', () => {
 
     await helper.service.notReceived(id);
     expect((await poster.service.get(poster.id, id))?.nudgedAt).not.toBeNull();
-    expect(await helper.service.confirm(id)).toEqual({ firstSettled: true });
+    expect(await helper.service.confirm(id)).toEqual({ firstSettled: true, stickerCount: 1 });
+    const stickers = await createSupabaseStickerService(helper.client).list(helper.id);
+    expect(
+      stickers.map(({ paymentId, itemKind, title }) => ({ paymentId, itemKind, title })),
+    ).toEqual([{ paymentId: id, itemKind: 'bounty', title: '帮取快递' }]);
+    expect(await createSupabaseStickerService(poster.client).list(helper.id)).toEqual([]);
     expect(await poster.service.list(poster.id)).toEqual([]);
     expect(await poster.service.methodsOf(helper.id)).toEqual([]);
   });

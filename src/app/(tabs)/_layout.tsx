@@ -12,6 +12,7 @@ import {
 } from '@/features/shell';
 import { homeSignals } from '@/lib/homeSignals';
 import { useI18n } from '@/lib/i18n';
+import { useLiveStickers } from '@/lib/stickers';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -22,7 +23,9 @@ export default function TabsLayout() {
   const { t } = useI18n();
   const { color } = useTheme();
   const router = useRouter();
-  useLivePayments(useSignedInUser()?.id ?? null);
+  const userId = useSignedInUser()?.id ?? null;
+  useLivePayments(userId);
+  useLiveStickers(userId);
   const location = useTabLocation(useSegments());
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();

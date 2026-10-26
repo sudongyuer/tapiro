@@ -2,6 +2,7 @@ import type { Translation } from '../resources';
 
 import pay from './pay/en';
 import payee from './payee/en';
+import stickers from './stickers/en';
 
 const en: Translation = {
   account: {
@@ -125,6 +126,7 @@ const en: Translation = {
   },
   payee,
   pay,
+  stickers,
   shell: {
     tabs: {
       bounty: 'Bounties',
@@ -267,6 +269,7 @@ const en: Translation = {
       },
     },
     pay: { title: 'Pay sheet' },
+    stickers: { title: 'Sticker book' },
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',

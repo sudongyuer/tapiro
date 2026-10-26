@@ -32,12 +32,16 @@ export function MeView({
   name,
   avatarUrl,
   payeeDue,
+  stickerCount,
+  onOpenStickers,
   onOpenPayee,
   onOpenSettings,
 }: {
   name: string;
   avatarUrl: string | null;
   payeeDue: boolean;
+  stickerCount: number | null;
+  onOpenStickers: () => void;
   onOpenPayee: () => void;
   onOpenSettings: () => void;
 }) {
@@ -59,6 +63,12 @@ export function MeView({
         </Section>
         <Section>
           <NavRow
+            label={t('stickers.book.title')}
+            value={stickerCount === null ? null : t('stickers.count', { count: stickerCount })}
+            onPress={onOpenStickers}
+            testID="me-stickers"
+          />
+          <NavRow
             label={t('payee.meRow')}
             dotLabel={payeeDue ? t('payee.meRowDue') : null}
             onPress={onOpenPayee}
@@ -73,11 +83,13 @@ export function MeView({
 
 function NavRow({
   label,
+  value = null,
   dotLabel = null,
   onPress,
   testID,
 }: {
   label: string;
+  value?: string | null;
   dotLabel?: string | null;
   onPress: () => void;
   testID: string;
@@ -90,6 +102,11 @@ function NavRow({
           {label}
         </Text>
         <Spacer />
+        {value ? (
+          <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'secondary' })]}>
+            {value}
+          </Text>
+        ) : null}
         {dotLabel ? (
           <Image
             systemName="circle.fill"

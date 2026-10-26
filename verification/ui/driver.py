@@ -48,6 +48,10 @@ class UI:
     def t(self, key, **values):
         return self.t_in(self.locale, key, **values)
 
+    def tn(self, key, count, **values):
+        suffix = '_one' if count == 1 and self.locale == 'en' else '_other'
+        return self.t(f'{key}{suffix}', count=count, **values)
+
     def t_in(self, locale, key, **values):
         table = self.strings[locale]
         if key not in table:

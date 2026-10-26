@@ -6,6 +6,7 @@ type Tone = 'label' | 'secondaryLabel' | 'tertiaryLabel';
 
 const WEIGHTS: Record<TypeRole, '400' | '600' | '700' | '800'> = {
   wordmark: '800',
+  'amount-hero': '800',
   amount: '800',
   'amount-compact': '800',
   'large-title': '700',
@@ -17,7 +18,13 @@ const WEIGHTS: Record<TypeRole, '400' | '600' | '700' | '800'> = {
   meta: '400',
 };
 
-const ROUNDED = new Set<TypeRole>(['wordmark', 'reward', 'amount', 'amount-compact']);
+const ROUNDED = new Set<TypeRole>([
+  'wordmark',
+  'amount-hero',
+  'reward',
+  'amount',
+  'amount-compact',
+]);
 
 export type AppTextProps = TextProps & {
   variant: TypeRole;

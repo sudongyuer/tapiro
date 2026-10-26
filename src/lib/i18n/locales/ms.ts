@@ -2,6 +2,7 @@ import type { Translation } from '../resources';
 
 import pay from './pay/ms';
 import payee from './payee/ms';
+import stickers from './stickers/ms';
 
 const ms: Translation = {
   account: {
@@ -125,6 +126,7 @@ const ms: Translation = {
   },
   payee,
   pay,
+  stickers,
   shell: {
     tabs: {
       bounty: 'Ganjaran',
@@ -271,6 +273,7 @@ const ms: Translation = {
       },
     },
     pay: { title: 'Helaian bayaran' },
+    stickers: { title: 'Buku pelekat' },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',
