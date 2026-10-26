@@ -29,6 +29,15 @@ def load_strings():
     return json.loads(STRINGS.read_text())
 
 
+# `axe type` sends keys with no delay; the SwiftUI TextField re-renders React on every change and dropped trailing
+# keys in dark runs (2026-10-26), so plain lower-case letters and digits go through paced key-sequence instead.
+HID_KEYCODES = {
+    **{chr(ord('a') + offset): str(4 + offset) for offset in range(26)},
+    **{str(digit): str(29 + digit) for digit in range(1, 10)},
+    '0': '39',
+}
+
+
 class UI:
     def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
@@ -175,7 +184,10 @@ class UI:
                  '--end-x', str(round(end[0])), '--end-y', str(round(end[1])), '--duration', str(duration))
 
     def type(self, text):
-        self.axe('type', text)
+        if all(char in HID_KEYCODES for char in text):
+            self.axe('key-sequence', '--keycodes', ','.join(HID_KEYCODES[char] for char in text), '--delay', '0.08')
+        else:
+            self.axe('type', text)
 
     def backspace(self, times):
         self.axe('key-sequence', '--keycodes', ','.join(['42'] * times))

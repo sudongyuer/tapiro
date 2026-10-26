@@ -80,9 +80,9 @@ open_menu(ui)
 items = ui.read()
 ys = []
 for entry in MENU_ORDER[:-1]:
-    found = [i['frame']['y'] for i in items if i.get('AXLabel') == ui.t(entry)]
+    found = [i['frame'] for i in items if i.get('AXLabel') == ui.t(entry)]
     assert found, f'menu is missing {ui.t(entry)}'
-    ys.append(min(found))
+    ys.append(max(found, key=lambda frame: frame['x'])['y'])
 assert ys == sorted(ys), f'menu order is wrong: {ys}'
 ui.capture('05-menu')
 print('PASS: list states, QR replacement, accessory clearance and menu order')
