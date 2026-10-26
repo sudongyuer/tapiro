@@ -41,6 +41,13 @@ status: running
    only covers our runner, not other tools. Candidate: the runner checks for foreign `xcodebuild`/`agent-device`
    processes targeting its UDID before each case and fails fast with that cause; the rerun decides the fixes.
 
+   Follow-up: load average stayed 280–420 for hours (another project's Simulator app and Spotlight indexing). The
+   dark payment run failed `pay_sheet_cash` (`describe-ui` timeout after 20 s) and `sticker_book` (missing cell);
+   the rerun passed both in dark and `sticker_book` in light, while `pay_sheet_cash` light timed out again (it
+   passed in the implementer's light run). Every failure was a timeout or a missing element at load > 280, none
+   reproduced at a stable point. Tag `axe-timeout-under-load`. Candidate: the runner records load average per case
+   in `result.json` and refuses to start a matrix above a threshold, so a run on a saturated machine fails fast
+   with that cause instead of producing 65 false failures.
 5. The user asked "为什么老在让我运行某个命令？". I answered from the settings file (`defaultMode: auto`, no project
    allowlist) and blamed missing allow rules, but the session runs in bypass-permissions mode, which the user then
    pointed out; the implementer transcript shows no denied or rejected calls. I diagnosed before finding out what
