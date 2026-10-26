@@ -18,6 +18,7 @@ const ms: typeof zhHans = {
     title: 'Pelekat tidak dapat dimuatkan',
     body: 'Semak sambungan anda dan cuba lagi.',
   },
+  stale: 'Pelekat tidak dapat dikemas kini. Ini daripada muatan terakhir.',
   retry: 'Cuba Lagi',
 };
 

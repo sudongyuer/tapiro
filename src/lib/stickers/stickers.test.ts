@@ -104,4 +104,45 @@ describe('sticker store', () => {
     store.clear();
     expect(store.getSnapshot()).toEqual({ status: 'idle' });
   });
+
+  test('a foreground refresh keeps the book on screen and marks it stale when it fails', async () => {
+    let fail = false;
+    const seen: string[] = [];
+    const service: StickerService = {
+      async list() {
+        if (fail) throw new Error('offline');
+        return [sticker('a', '2026-10-01T00:00:00Z')];
+      },
+    };
+    const store = createStickerStore(service);
+    await store.ensureLoaded(USER);
+    store.subscribe(() => seen.push(store.getSnapshot().status));
+    fail = true;
+    await store.refresh(USER);
+    expect(seen).not.toContain('loading');
+    const state = store.getSnapshot();
+    expect(state.status).toBe('stale');
+    expect(state.status === 'stale' && state.stickers.length).toBe(1);
+    fail = false;
+    await store.refresh(USER);
+    expect(store.getSnapshot().status).toBe('ready');
+  });
+
+  test('signing out (the session view unmounting) leaves no stickers behind', async () => {
+    const store = createStickerStore(createFixtureStickerService('seven'));
+    let onChange: (state: string) => void = () => undefined;
+    const appState = {
+      addEventListener: (_: 'change', listener: (state: string) => void) => {
+        onChange = listener;
+        return { remove: () => undefined };
+      },
+    };
+    const stop = store.follow(USER, appState);
+    await store.ensureLoaded(USER);
+    expect(store.getSnapshot().status).toBe('ready');
+    onChange('active');
+    expect(store.getSnapshot().status).toBe('ready');
+    stop();
+    expect(store.getSnapshot()).toEqual({ status: 'idle' });
+  });
 });

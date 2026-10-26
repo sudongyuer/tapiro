@@ -18,6 +18,7 @@ const en: typeof zhHans = {
     title: 'Couldn’t load your stickers',
     body: 'Check your connection and try again.',
   },
+  stale: 'Couldn’t refresh your stickers. These are from the last load.',
   retry: 'Try Again',
 };
 

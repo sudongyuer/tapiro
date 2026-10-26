@@ -13,5 +13,6 @@ export default {
   },
   loading: '正在加载贴纸',
   loadFailed: { title: '贴纸没加载出来', body: '请检查网络后重试。' },
+  stale: '贴纸没刷新出来，下面是上次加载的。',
   retry: '重试',
 };

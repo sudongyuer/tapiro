@@ -69,7 +69,7 @@ export function StickerBook({ userId }: { userId: string }) {
               testID="sticker-book-retry"
             />
           </View>
-        ) : view.stickers.length === 0 ? (
+        ) : view.stickers.length === 0 && view.status === 'ready' ? (
           <View style={styles.state} testID="sticker-book-empty">
             <Mascot variant="front" size={EMPTY_MASCOT} outlined />
             <AppText
@@ -85,6 +85,19 @@ export function StickerBook({ userId }: { userId: string }) {
           </View>
         ) : (
           <View style={styles.grid}>
+            {view.status === 'stale' ? (
+              <View style={styles.stale} testID="sticker-book-stale">
+                <AppText variant="secondary" tone="secondaryLabel" style={styles.center}>
+                  {t('stickers.stale')}
+                </AppText>
+                <PillButton
+                  label={t('stickers.retry')}
+                  variant="plain"
+                  onPress={view.retry}
+                  testID="sticker-book-stale-retry"
+                />
+              </View>
+            ) : null}
             {rows(view.stickers).map((row, rowIndex) => (
               <View key={rowIndex} style={styles.row}>
                 {Array.from({ length: COLUMNS }, (_, column) => {
@@ -129,4 +142,5 @@ const styles = StyleSheet.create({
   grid: { gap: vars['--space-6'] - 2 },
   row: { flexDirection: 'row', gap: vars['--space-2'] },
   filler: { flex: 1 },
+  stale: { alignItems: 'center', gap: vars['--space-1'] },
 });

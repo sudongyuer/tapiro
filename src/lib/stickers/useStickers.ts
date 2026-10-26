@@ -7,6 +7,7 @@ import type { Sticker } from './model';
 export type StickersView =
   | { status: 'loading' }
   | { status: 'failed'; retry: () => void }
+  | { status: 'stale'; stickers: Sticker[]; retry: () => void }
   | { status: 'ready'; stickers: Sticker[] };
 
 export function useStickers(userId: string | null): StickersView {
@@ -16,21 +17,13 @@ export function useStickers(userId: string | null): StickersView {
   }, [userId]);
   if (!userId || state.status === 'idle' || state.userId !== userId) return { status: 'loading' };
   if (state.status === 'ready') return { status: 'ready', stickers: state.stickers };
+  if (state.status === 'stale')
+    return { status: 'stale', stickers: state.stickers, retry: () => stickerStore.refresh(userId) };
   if (state.status === 'failed')
     return { status: 'failed', retry: () => stickerStore.reload(userId) };
   return { status: 'loading' };
 }
 
 export function useLiveStickers(userId: string | null) {
-  useEffect(() => {
-    if (!userId) {
-      stickerStore.clear();
-      return;
-    }
-    stickerStore.ensureLoaded(userId);
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') stickerStore.reload(userId);
-    });
-    return () => subscription.remove();
-  }, [userId]);
+  useEffect(() => stickerStore.follow(userId, AppState), [userId]);
 }
