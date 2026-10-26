@@ -437,8 +437,8 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | pay.confirm.celebration | 每次结清都全屏庆祝：贴纸从收据卡撕下飞进贴纸本、金额滚动、一次成功触感；第一次多「第一次收款」徽章，之后标题是「又帮成一单」 | ui:pay_first_settle, ui:pay_payee_confirm, ui:pay_settle_routine, unit:src/features/payment/paymentStore.test.ts#settling removes the payment from the list; only the first settle is first, unit:src/features/payment/celebration/celebration.test.ts#the fixture settle returns the sticker count the sticker book then lists, db:supabase/tests/stickers.test.sql, device: 真机看动效和成功触感 |
 | pay.confirm.celebration-slots | 贴纸飞进第 n 格（第 6 张以后都进第 6 格），前面几格是最近的贴纸，张数从 n-1 滚到 n | ui:pay_settle_routine, unit:src/features/payment/celebration/celebration.test.ts#later stickers land after the most recent earlier ones, and the sixth slot holds every later one, unit:src/features/payment/celebration/celebration.test.ts#earlier stickers that did not load show as filled slots, never as empty ones |
 | pay.confirm.celebration-cny | 有 7 天内的 BNM 汇率时金额下面显示人民币参考价（马来西亚国家银行中间价），没有就不显示 | ui:pay_first_settle, ui:pay_settle_routine |
-| pay.confirm.celebration-book | 「看看贴纸本」进贴纸本，新贴纸在最前；「好的」回到已结清 | ui:pay_settle_routine, ui:pay_first_settle |
-| pay.confirm.celebration-skip | 点屏幕任意处跳到落定画面；减弱动态效果时只淡入落定画面并保留一次成功触感；读屏只朗读一次完整结果 | unit:src/features/payment/celebration/celebration.test.ts#the sticker lands at 1020 ms and every part ends by the end of the clock, device: 真机上点屏幕跳过、打开减弱动态效果和旁白各看一遍 |
+| pay.confirm.celebration-book | 「看看贴纸本」进贴纸本，新贴纸在最前；「好的」回到已结清 | ui:pay_settle_routine, ui:pay_first_settle, gap: 用例从调试场景打开贴纸本；真实路由（关掉付款弹窗再进「我的 → 我帮过的忙」）没有用例，因为验证模式的首页只有付款人那一方能打开付款弹窗 |
+| pay.confirm.celebration-skip | 按钮出现前（1.4 秒）点按钮的位置也只是跳过，不会关掉或跳转；点屏幕任意处跳到落定画面；减弱动态效果时只淡入落定画面并保留一次成功触感；读屏只朗读一次完整结果 | unit:src/features/payment/celebration/celebration.test.ts#the sticker lands at 1020 ms and every part ends by the end of the clock, device: 真机上在按钮出现前点按钮位置、点屏幕跳过、打开减弱动态效果和旁白各看一遍 |
 | pay.confirm.visibility  | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏       | db:supabase/tests/payments.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs |
 
 ### pay.unpaid 不付款的处理
