@@ -11,7 +11,7 @@ bun run verify:smoke          # app_launches, sign_in_fixture, shell_tabs, home_
 bun run verify:ui --affected  # cases whose DEPS meet the diff against main; zh-Hans light
 bun run verify:ui --affected --base main --dark --locales   # also dark, also en and each case's LOCALES
 bun run verify:full           # the full matrix: every case, light + dark, zh-Hans + en + every declared locale
-bun run verify:ui design_tokens --appearance dark
+bun run verify:ui design_tokens --appearance dark   # named cases run zh-Hans; add --locales or --locale en
 bun run verify:clean
 ```
 

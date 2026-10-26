@@ -208,7 +208,6 @@ def main():
         appearances = ['light', 'dark'] if args.appearance == 'both' else [args.appearance]
 
     (ROOT / '.verify').mkdir(exist_ok=True)
-    export_strings()
     lock = open(ROOT / '.verify/ui.lock', 'w')
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -224,6 +223,7 @@ def main():
     machine.truncate(0)
     machine.write(f'{ROOT} pid {os.getpid()} since {time.strftime("%H:%M:%S")}\n')
     machine.flush()
+    export_strings()
     udid, runtime = resolve_device(args.udid)
     boot(udid)
     simctl('install', udid, str(app))
@@ -236,7 +236,7 @@ def main():
     stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
-    runs = [(case, scene, run_locales(locales, args.locales or not tiered), extra, budget)
+    runs = [(case, scene, run_locales(locales, args.locales or not (tiered or args.cases)), extra, budget)
             for case, scene, locales, extra, budget in runs]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:

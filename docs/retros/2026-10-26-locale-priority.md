@@ -49,6 +49,10 @@ status: complete before PR
 6. Canvas: "这个应该盖在贴纸上" was read as "stamp it" and produced a stamp the user disliked; the intent was
    layering. Ambiguous one-line feedback on a design gets one restated interpretation before a redraw.
 
+7. Review (one round, no Important): upper-case and space input still goes through burst `axe type`
+   (`TANMEILING`, `Lin Mo`); if `axe-dropped-keys` recurs there, map shift + letter in `HID_KEYCODES`. Fixed in
+   this PR: string export now runs under the Simulator lock, and named-case runs stay zh-Hans unless `--locales`.
+
 ## Rules and skills
 
 - Helped: Data integrity (none applicable); the tiered run caught both locale bugs on the first pass.
