@@ -8,12 +8,11 @@ DEPS = ['src/features/account/', 'src/app/onboarding/']
 
 SCENE = 'language-step'
 LOCALES = ['zh-Hans', 'ms']
-QUESTION = {'zh-Hans': '你想用哪种语言？', 'ms': 'Bahasa mana pilihan anda?'}
 
 ui = UI(*sys.argv[1:])
 ui.element('ui-verify-ready')
-title = ui.labelled(QUESTION[ui.locale])
-english = ui.labelled('English')
+title = ui.labelled(ui.t('account.language.question'))
+english = ui.labelled(ui.t('languages.en'))
 done = ui.element('language-done')
 assert_touch_target(done, 'get started button')
 screen = ui.read()[0]['frame']

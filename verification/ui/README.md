@@ -9,9 +9,9 @@ bun run verify:build          # prebuild if needed, Release build into .verify/D
 bun run verify:ui             # all cases, light + dark → .verify/ui/<locale>/<appearance>/<case>/
 bun run verify:smoke          # app_launches, sign_in_fixture, shell_tabs, home_one_card; zh-Hans light
 bun run verify:ui --affected  # cases whose DEPS meet the diff against main; zh-Hans light
-bun run verify:ui --affected --base main --dark --locales   # also dark, also each case's LOCALES
-bun run verify:full           # the full matrix: every case, light + dark, every declared locale
-bun run verify:ui design_tokens --appearance dark
+bun run verify:ui --affected --base main --dark --locales   # also dark, also en and each case's LOCALES
+bun run verify:full           # the full matrix: every case, light + dark, zh-Hans + en + every declared locale
+bun run verify:ui design_tokens --appearance dark   # named cases run zh-Hans; add --locales or --locale en
 bun run verify:clean
 ```
 
@@ -20,13 +20,24 @@ creates it once if missing; never create Simulators or pass another DerivedData 
 `--affected` collects `git diff --name-only <base>...HEAD`, uncommitted changes and untracked files, and
 picks each case whose `DEPS` prefixes (or its own file) match one, printing why. A change to shared code
 (`affected.SHARED`: `src/ui/`, `src/lib/`, the root layout and index route, the Debug scenes (`src/debug/`, `src/app/debug/`), `modules/`, `plugins/`, `assets/`,
-`app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker and build script)
+`app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
 before TestFlight. `python3 -m unittest test_affected test_breaker` in `verification/ui` covers the selection (and
 checks that every case declares `DEPS` that match real paths); CI runs it.
-Cases launch in `zh-Hans` (`-AppleLanguages`); a case that shows long copy adds
-`LOCALES = ['zh-Hans', 'ms']` to also run in Malay and catch truncation. `ARGS = [...]` adds
+Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:
+a PR run uses zh-Hans, a milestone run (`--locales`, and the full matrix) adds `en` for every case, and `ms` exists
+only to catch truncation of the longest copy, so a case that shows long copy declares
+`LOCALES = ['zh-Hans', 'ms']` and runs Malay at milestones. A case never needs to declare `en`.
+
+App copy is never typed into a case. `run.py` runs `scripts/export-ui-strings.ts` once per invocation, which writes
+every locale's strings (the `src/lib/i18n/locales` objects flattened by dotted key, the native permission strings
+under `native.ios.*`, and `languages.<code>` for the picker names) to `.verify/ui-strings.json`. A case asserts copy
+with `ui.t('pay.sheet.payTo', name='阿杰')` (i18next `{{name}}` interpolation, locale of the run); `ui.t_in(locale, key)` reads
+another locale, `ui.tagged(key, 'terms')` returns the text inside a `<terms>` tag, `ui.pattern(key, amount=r'\d+')` builds a
+regex from a string with placeholders, and `ui.other_locale()` gives a different language to switch to. A missing key raises,
+so a renamed string fails the case instead of falling back. Fixture data (names such as 小林, task titles, amounts) stays
+literal in the case. `ARGS = [...]` adds
 launch arguments, such as `-uiVerifyShellFeed <kinds>` to choose the live items (omitted: all
 four; `none`: calm) and `-uiVerifyFixture worst|one|empty` to swap the fixture data behind the
 same items, the 消息 badge, the fixture user's name and the seeded payee methods (`worst`: 40-character names, long routes,

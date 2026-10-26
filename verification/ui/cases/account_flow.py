@@ -16,13 +16,8 @@ DEPS = [
 
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 200
-NATIVE_NAME = {'zh-Hans': '中文', 'ms': 'Bahasa Melayu'}
 NAME = 'Lin Mo'
-DELETE_ITEMS = {
-    'zh-Hans': ['个人资料（名字和头像）', '收款方式', '你发的消息和评价', '小貘记得的内容', '貘币', '贴纸'],
-    'ms': ['Profil anda (nama dan foto)', 'Kaedah anda menerima bayaran', 'Mesej dan ulasan yang anda tulis',
-           'Perkara yang Tapir ingat tentang anda', 'Syiling Tapir anda', 'Pelekat anda'],
-}
+DELETE_ITEMS = ['profile', 'payee', 'messages', 'memory', 'coins', 'stickers']
 
 ui = UI(*sys.argv[1:])
 
@@ -72,9 +67,10 @@ done = ui.element('language-done')
 assert_touch_target(done, 'get started button')
 before = done.get('AXLabel')
 ui.capture('04-language')
-ui.tap_label('English')
-ui.wait_label('language-done', lambda label: label == 'Get Started', 'language did not switch to English')
-ui.tap_label(NATIVE_NAME[ui.locale])
+other = ui.other_locale()
+ui.tap_label(ui.t('languages.' + other))
+ui.wait_label('language-done', lambda label: label == ui.t_in(other, 'account.language.done'), f'language did not switch to {other}')
+ui.tap_label(ui.t('languages.' + ui.locale))
 ui.wait_label('language-done', lambda label: label == before, 'language did not switch back')
 ui.tap('language-done')
 
@@ -100,7 +96,7 @@ confirm = ui.element('delete-account-confirm')
 assert_touch_target(confirm, 'delete button')
 assert_touch_target(ui.element('delete-account-cancel'), 'cancel button')
 labels = [i.get('AXLabel') or '' for i in ui.read()]
-for item in DELETE_ITEMS[ui.locale]:
+for item in (ui.t(f'account.delete.items.{key}') for key in DELETE_ITEMS):
     assert item in labels, f'delete confirmation does not list {item!r}: {labels}'
 ui.capture('07-delete-sheet')
 ui.tap('delete-account-confirm')

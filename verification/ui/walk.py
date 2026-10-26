@@ -1,8 +1,7 @@
 """Shared walk for the worst-case home cases: accessory and badge on 拼车, then home stacked, fanned and scrolled."""
 from driver import accessory, by_id, reach_home
 
-FRONT = {'worst': '付给Wan Nurul Aisyah', 'one': '付给Jo'}
-MORE = {'zh-Hans': '还有 3 件', 'en': '3 more', 'ms': '3 lagi'}
+PAYEE = {'worst': 'Wan Nurul Aisyah', 'one': 'Jo'}
 AMOUNT = {'worst': '12,345.60', 'one': '0.50'}
 DESTINATION = {
     'worst': 'Pangsapuri Vista Harmoni Blok C, Jalan PJS 7/19',
@@ -25,16 +24,17 @@ def walk_home(ui, variant, steps=14):
     ui.settled(lambda items: by_id(items, 'live-card-oweMoney') and by_id(items, 'home-stage-urgent'),
                'home never settled')
     stage = by_id(ui.read(), 'home-stage-urgent').get('AXLabel') or ''
-    if ui.locale == 'zh-Hans':
-        assert stage.endswith('送到啦，记得付款'), f'stage line {stage}'
+    say = ui.t('home.say.payNamed', name='').strip()
+    assert stage.endswith(say), f'stage line {stage}'
     ui.snap('01-stacked')
 
     ui.tap('tab-ride')
     items = ui.wait(lambda items: accessory(items) and items, 'accessory missing on 拼车')
     label = accessory(items).get('AXLabel') or ''
-    assert label.startswith(FRONT[variant]), f'accessory label {label}'
+    assert label.startswith(ui.t('pay.live.owe', name=PAYEE[variant])), f'accessory label {label}'
     assert AMOUNT[variant] in label, f'accessory label lacks the amount {AMOUNT[variant]}: {label}'
-    assert MORE[ui.locale] in label, f'accessory label lacks "{MORE[ui.locale]}": {label}'
+    more = ui.t('shell.accessory.withMore', sub='', count=3).lstrip(' ·')
+    assert more in label, f'accessory label lacks "{more}": {label}'
     ui.snap('02-accessory-expanded')
 
     ui.tap('tab-bounty')

@@ -18,7 +18,7 @@ for _ in range(4):
     if inline:
         break
 assert inline, 'the inline accessory never appeared after scrolling past the pay card'
-assert inline['AXLabel'].startswith('付给Wan Nurul Aisyah'), f'inline accessory label {inline["AXLabel"]}'
+assert inline['AXLabel'].startswith(ui.t('pay.live.owe', name='Wan Nurul Aisyah')), f'inline accessory label {inline["AXLabel"]}'
 assert '12,345.60' in inline['AXLabel'], f'inline accessory label lacks the amount: {inline["AXLabel"]}'
 f = inline['frame']
 assert f['x'] >= 0 and f['x'] + f['width'] <= 402, f'inline accessory overflows: {f}'

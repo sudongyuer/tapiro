@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from driver import UI, close  # noqa: E402
-from payee import ALIPAY, SAVE, SEEN_WALLET, TNG, WALLET_PAYEE, add_from_menu, fill_wallet_name, open_payee, row_labels  # noqa: E402
+from payee import ALIPAY, SAVE, TNG, WALLET_PAYEE, add_from_menu, fill_wallet_name, open_payee, row_labels  # noqa: E402
 
 DEPS = [
     'src/features/payee/',
@@ -22,7 +22,6 @@ DEPS = [
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 240
 MEDIA = Path(__file__).resolve().parents[1] / 'media'
-TNG_SEEN = '发布者会看到：NURUL AINA BINTI AHMAD · TNG'
 
 ui = UI(*sys.argv[1:])
 
@@ -50,18 +49,18 @@ def pick_real(image, tint, entry, seen, step, wallet=None):
     if wallet:
         fill_wallet_name(ui, wallet)
     ui.capture(f'{step}-confirm')
-    ui.tap_label(SAVE[ui.locale])
+    ui.tap_label(ui.t(SAVE))
     ui.gone('payee-qr-confirm')
-    items = ui.wait(lambda items: len(row_labels(items)) == len(before) + 1 and items, f'{entry[ui.locale]} row did not appear')
+    items = ui.wait(lambda items: len(row_labels(items)) == len(before) + 1 and items, f'{ui.t(entry)} row did not appear')
     added = [row for row in row_labels(items) if row not in before]
-    assert len(added) == 1 and entry[ui.locale] in added[0], f'new row is not {entry[ui.locale]}: {added}'
+    assert len(added) == 1 and ui.t(entry) in added[0], f'new row is not {ui.t(entry)}: {added}'
     assert not wallet or WALLET_PAYEE in added[0], f'new row lacks the typed name: {added}'
     return added[0]
 
 
 open_payee(ui)
-pick_real('real-alipay.png', (0xB8, 0xE4, 0xFF), ALIPAY, SEEN_WALLET[ui.locale].format(ALIPAY[ui.locale]), '01-alipay', 'alipay')
-row = pick_real('real-duitnow-tng.png', (0xFF, 0xD8, 0xA8), TNG, TNG_SEEN, '02-tng')
+pick_real('real-alipay.png', (0xB8, 0xE4, 0xFF), ALIPAY, ui.t('payee.qr.seenWallet', method=ui.t(ALIPAY)), '01-alipay', 'alipay')
+row = pick_real('real-duitnow-tng.png', (0xFF, 0xD8, 0xA8), TNG, ui.t('payee.qr.seen', name='NURUL AINA BINTI AHMAD', bank='TNG'), '02-tng')
 assert 'NURUL AINA BINTI AHMAD' in row, row
 ui.capture('03-saved')
 print('PASS: real picker decoded an Alipay and a DuitNow TNG screenshot and both were saved')

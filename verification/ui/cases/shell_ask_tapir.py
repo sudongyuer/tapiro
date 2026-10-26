@@ -8,14 +8,8 @@ DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app
 
 LOCALES = ['zh-Hans', 'ms']
 COPY = {
-    'zh-Hans': {
-        'tab-bounty': ('在悬赏页 · 帮你写悬赏、找能接的', '帮我取快递'),
-        'tab-ride': ('在拼车页 · 帮你凑人、算钱', '下午五点回 YC 谁一起'),
-    },
-    'ms': {
-        'tab-bounty': ('Di Ganjaran · tulis ganjaran atau cari yang boleh diambil', 'Ambil bungkusan saya'),
-        'tab-ride': ('Di Tumpangan · cari penumpang dan bahagikan tambang', 'Siapa nak balik ke YC pukul 5 petang?'),
-    },
+    'tab-bounty': ('shell.ask.subtitle.bounty', 'shell.ask.suggestions.bounty.first'),
+    'tab-ride': ('shell.ask.subtitle.ride', 'shell.ask.suggestions.ride.first'),
 }
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
@@ -25,7 +19,7 @@ ui = UI(*sys.argv[1:])
 def open_sheet(tab, name):
     ui.tap('tab-ask-tapir')
     sheet = ui.settled(lambda items: by_id(items, 'ask-tapir-sheet'), 'ask sheet never settled')
-    subtitle, suggestion = COPY[ui.locale][tab]
+    subtitle, suggestion = (ui.t(key) for key in COPY[tab])
     ui.wait_label('ask-tapir-subtitle', lambda label: label == subtitle, f'subtitle is not {subtitle}')
     ui.wait_label('ask-tapir-suggestion-0', lambda label: label == suggestion, f'first suggestion is not {suggestion}')
     items = ui.read()

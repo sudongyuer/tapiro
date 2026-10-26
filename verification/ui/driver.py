@@ -21,11 +21,54 @@ class Transition(AxeError):
     pass
 
 
+STRINGS = Path(__file__).resolve().parents[2] / '.verify/ui-strings.json'
+INTERPOLATION = re.compile(r'\{\{\s*(\w+)\s*\}\}')
+
+
+def load_strings():
+    return json.loads(STRINGS.read_text())
+
+
+# `axe type` sends keys with no delay; the SwiftUI TextField re-renders React on every change and dropped trailing
+# keys in dark runs (2026-10-26), so plain lower-case letters and digits go through paced key-sequence instead.
+HID_KEYCODES = {
+    **{chr(ord('a') + offset): str(4 + offset) for offset in range(26)},
+    **{str(digit): str(29 + digit) for digit in range(1, 10)},
+    '0': '39',
+}
+
+
 class UI:
     def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
         self.output.mkdir(parents=True, exist_ok=True)
         self.launch_args = os.environ.get('TAPIRO_VERIFY_ARGS', '').split()
+        self.strings = load_strings()
+
+    def t(self, key, **values):
+        return self.t_in(self.locale, key, **values)
+
+    def t_in(self, locale, key, **values):
+        table = self.strings[locale]
+        if key not in table:
+            raise KeyError(f'no UI string {key!r} for {locale}')
+        return INTERPOLATION.sub(lambda m: str(values[m.group(1)]), table[key])
+
+    def pattern(self, key, **patterns):
+        marks = {name: f'PATTERN{index}X' for index, name in enumerate(patterns)}
+        escaped = re.escape(self.t(key, **marks))
+        for name, mark in marks.items():
+            escaped = escaped.replace(mark, patterns[name])
+        return escaped
+
+    def other_locale(self):
+        return 'zh-Hans' if self.locale == 'en' else 'en'
+
+    def tagged(self, key, tag):
+        found = re.search(rf'<{tag}>(.*?)</{tag}>', self.t(key))
+        if not found:
+            raise KeyError(f'UI string {key!r} has no <{tag}> section')
+        return found.group(1)
 
     def axe(self, *args, timeout=20):
         started = time.monotonic()
@@ -141,7 +184,10 @@ class UI:
                  '--end-x', str(round(end[0])), '--end-y', str(round(end[1])), '--duration', str(duration))
 
     def type(self, text):
-        self.axe('type', text)
+        if all(char in HID_KEYCODES for char in text):
+            self.axe('key-sequence', '--keycodes', ','.join(HID_KEYCODES[char] for char in text), '--delay', '0.08')
+        else:
+            self.axe('type', text)
 
     def backspace(self, times):
         self.axe('key-sequence', '--keycodes', ','.join(['42'] * times))
@@ -210,9 +256,6 @@ def bottom(element):
 
 TABS = ['tab-bounty', 'tab-ride', 'tab-messages', 'tab-me']
 ACCESSORIES = ('urgent-accessory', 'urgent-accessory-inline')
-TITLE = {'zh-Hans': '悬赏令', 'ms': 'Ganjaran'}
-TAB_LABELS = {'zh-Hans': {'bounty': '悬赏', 'me': '我的', 'ask': '问小貘'},
-              'ms': {'bounty': 'Ganjaran', 'me': 'Saya', 'ask': 'Tanya Tapir'}}
 
 
 def selected(items):
@@ -227,8 +270,9 @@ def tab(items, label):
     return next((i for i in items if i.get('type') == 'RadioButton' and i.get('AXLabel') == label), None)
 
 
-def nav_bar(items, locale):
-    return next((i for i in items if i.get('type') == 'Group' and i.get('AXUniqueId') == TITLE[locale]), None)
+def nav_bar(items, ui):
+    title = ui.t('shell.home.title')
+    return next((i for i in items if i.get('type') == 'Group' and i.get('AXUniqueId') == title), None)
 
 
 def frame(element):
@@ -378,7 +422,6 @@ CARD_FILL = {
     'calm': '--color-card-calm',
 }
 STAGES = ('urgent', 'live', 'calm')
-FAN_OUT = {'zh-Hans': '摊开 · {} 件', 'ms': 'Bentangkan · {}'}
 
 
 def corner(f, size=8):
@@ -404,7 +447,7 @@ def assert_home(ui, name, stage, cards):
     assert len(peeks) == min(2, len(cards) - 1), f'{len(cards)} cards show peeks {peeks}'
     toggle = by_id(items, 'live-cards-toggle')
     if len(cards) > 1:
-        expected = FAN_OUT[ui.locale].format(len(cards))
+        expected = ui.t('home.stack.fanOut', count=len(cards))
         assert toggle and toggle.get('AXLabel') == expected, f'toggle reads {toggle and toggle.get("AXLabel")}, not {expected}'
     else:
         assert toggle is None, 'a single card shows the stack toggle'

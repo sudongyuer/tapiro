@@ -7,13 +7,12 @@ from driver import UI, accessory, assert_colour, bottom, by_id, card_fill, corne
 DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx', 'src/app/(tabs)/bounty/']
 
 LOCALES = ['zh-Hans', 'ms']
-TOGGLE = {'zh-Hans': ('摊开 · 4 件', '收起'), 'ms': ('Bentangkan · 4', 'Susun')}
 CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'live-card-bountyInProgress']
 PEEKS = ['live-card-peek-1', 'live-card-peek-2']
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
-fan_out, collapse = TOGGLE[ui.locale]
+fan_out, collapse = ui.t('home.stack.fanOut', count=4), ui.t('home.stack.collapse')
 
 
 def present(items, identifiers):
@@ -59,7 +58,7 @@ for step in range(12):
     ui.swipe((200, 650), (200, 650 - distance), duration=2 if distance > 80 else 1)
     last = ui.settled(lambda items: by_id(items, CARDS[-1]), f'last card never settled after swipe {step}')
     items = ui.read()
-    edge = bottom(nav_bar(items, ui.locale))
+    edge = bottom(nav_bar(items, ui))
     print(f'step {step}: last card bottom {bottom(last):.0f}, bar bottom {edge:.0f}, accessory {accessory(items) is not None}')
     if bottom(last) > edge + 2:
         assert accessory(items) is None, f'accessory shown while the last card ends at {bottom(last):.0f}, bar at {edge:.0f}'

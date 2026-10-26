@@ -2,6 +2,8 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+import re
+
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from pay import open_sheet, scroll_to  # noqa: E402
 
@@ -9,7 +11,6 @@ DEPS = ['src/features/payment/', 'src/app/pay/', 'verification/ui/pay.py']
 SCENE = 'pay-sheet'
 ARGS = ['-uiVerifyPayMethods', 'duitnow']
 LOCALES = ['zh-Hans', 'ms']
-WAITING = {'zh-Hans': ('等阿杰确认', '附了截图'), 'ms': ('Menunggu pengesahan 阿杰', 'tangkapan skrin dilampirkan')}
 
 ui = UI(*sys.argv[1:])
 open_sheet(ui)
@@ -17,10 +18,10 @@ scroll_to(ui, 'pay-proof-add')
 ui.tap('pay-proof-add')
 ui.element('pay-proof-added')
 mark = scroll_to(ui, 'pay-mark-paid')
-assert_touch_target(mark, '我已付款')
+assert_touch_target(mark, 'mark paid button')
 ui.capture('01-before')
 ui.tap('pay-mark-paid')
-waiting = ui.wait_label('pay-waiting', lambda label: all(part in label for part in WAITING[ui.locale]),
+waiting = ui.wait_label('pay-waiting', lambda label: ui.t('pay.sheet.waiting.title', name='阿杰') in label and re.search(ui.pattern('pay.sheet.waiting.bodyProof', amount=r'RM\s?15\.00'), label),
                         'waiting state missing or without the screenshot note')
 items = ui.read()
 assert by_id(items, 'pay-mark-paid') is None and by_id(items, 'pay-number-value') is None, 'pay steps still shown'

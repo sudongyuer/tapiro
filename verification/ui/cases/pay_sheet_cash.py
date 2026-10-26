@@ -12,7 +12,7 @@ ARGS = ['-uiVerifyPayMethods', 'cash']
 ui = UI(*sys.argv[1:])
 open_sheet(ui)
 note = ui.element('pay-cash-note')
-assert '已收到' in (note.get('AXLabel') or ''), note.get('AXLabel')
+assert ui.t('pay.sheet.cash', name='阿杰') in (note.get('AXLabel') or ''), note.get('AXLabel')
 items = ui.read()
 assert [m.split('-')[0] for m in method_ids(items)] == ['cash'], method_ids(items)
 assert by_id(items, 'pay-mark-paid') is None and by_id(items, 'pay-reference-value') is None, 'cash shows transfer steps'

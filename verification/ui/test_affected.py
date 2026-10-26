@@ -68,10 +68,19 @@ class Runner(unittest.TestCase):
 class Locales(unittest.TestCase):
     def test_affected_runs_zh_hans_only_unless_locales_are_asked(self):
         self.assertEqual(run_locales(['zh-Hans', 'ms'], False), ['zh-Hans'])
-        self.assertEqual(run_locales(['zh-Hans', 'ms'], True), ['zh-Hans', 'ms'])
+
+    def test_locales_always_add_english_and_keep_the_language_order(self):
+        self.assertEqual(run_locales(['zh-Hans'], True), ['zh-Hans', 'en'])
+        self.assertEqual(run_locales(['zh-Hans', 'ms'], True), ['zh-Hans', 'en', 'ms'])
+        self.assertEqual(run_locales(['ms', 'zh-Hans'], True), ['zh-Hans', 'en', 'ms'])
+        self.assertEqual(run_locales(['zh-Hans', 'en', 'ms'], True), ['zh-Hans', 'en', 'ms'])
 
     def test_a_case_without_zh_hans_keeps_its_first_locale(self):
         self.assertEqual(run_locales(['ms'], False), ['ms'])
+        self.assertEqual(run_locales(['ms'], True), ['zh-Hans', 'en', 'ms'])
+
+    def test_the_export_script_is_shared_code(self):
+        self.assertEqual(list(select(CASES, ['scripts/export-ui-strings.ts'])), list(CASES))
 
 
 class Declarations(unittest.TestCase):

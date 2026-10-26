@@ -8,11 +8,10 @@ DEPS = ['src/features/account/', 'src/app/onboarding/']
 
 SCENE = 'profile-setup'
 LOCALES = ['zh-Hans', 'ms']
-QUESTION = {'zh-Hans': '你叫什么名字？', 'ms': 'Siapa nama anda?'}
 
 ui = UI(*sys.argv[1:])
 ui.element('ui-verify-ready')
-title = ui.labelled(QUESTION[ui.locale])
+title = ui.labelled(ui.t('account.name.question'))
 field = ui.element('name-input')
 assert len(field.get('AXValue') or '') == 40, f'expected the 40-character fixture name, got {field.get("AXValue")}'
 assert_touch_target(field, 'name field')

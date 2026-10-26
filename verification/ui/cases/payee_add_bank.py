@@ -18,13 +18,11 @@ DEPS = [
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'empty', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 260
-PICK_BANK = {'zh-Hans': '选择银行', 'ms': 'Pilih Bank'}
-OTHER = {'zh-Hans': '其他银行', 'ms': 'Bank Lain'}
 ERRORS = {
-    'bank': {'zh-Hans': '请选择银行', 'ms': 'Pilih bank.'},
-    'account': {'zh-Hans': '账号是 6 到 20 位数字', 'ms': 'Nombor akaun ialah 6 hingga 20 digit.'},
-    'name': {'zh-Hans': '请填银行显示的名字', 'ms': 'Masukkan nama yang dipaparkan oleh bank.'},
-    'bankName': {'zh-Hans': '请填银行名称', 'ms': 'Masukkan nama bank.'},
+    'bank': 'payee.form.error.bankEmpty',
+    'account': 'payee.form.error.accountInvalid',
+    'name': 'payee.form.error.nameEmpty',
+    'bankName': 'payee.form.error.bankNameEmpty',
 }
 HOLDER = 'TANMEILING'
 
@@ -44,11 +42,11 @@ def pick_bank(label):
 
 
 def error(kind):
-    ui.wait_label('payee-form-error', lambda label: ERRORS[kind][ui.locale] in label, f'{kind} error not shown')
+    ui.wait_label('payee-form-error', lambda label: ui.t(ERRORS[kind]) in label, f'{kind} error not shown')
 
 
 def save():
-    ui.tap_label(SAVE[ui.locale])
+    ui.tap_label(ui.t(SAVE))
 
 
 open_payee(ui)
@@ -60,7 +58,7 @@ error('bank')
 ui.capture('01-bank-required')
 
 pick_bank('Maybank')
-ui.wait(lambda items: not any(i.get('AXLabel') == PICK_BANK[ui.locale] for i in items), 'bank placeholder still shown')
+ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('payee.form.bankPlaceholder') for i in items), 'bank placeholder still shown')
 typed('payee-account-input', 'ABC123')
 save()
 error('account')
@@ -78,14 +76,14 @@ ui.gone('payee-bank-sheet')
 items = ui.wait(lambda items: row_labels(items) and items, 'saved bank row did not appear')
 rows = row_labels(items)
 assert len(rows) == 1, f'expected one row, got {rows}'
-for part in ('Maybank', '•••• 4821', HOLDER, DEFAULT[ui.locale]):
+for part in ('Maybank', '•••• 4821', HOLDER, ui.t(DEFAULT)):
     assert part in rows[0], f'row is missing {part!r}: {rows[0]!r}'
 assert '1234564821' not in rows[0], f'account number is not masked: {rows[0]!r}'
 ui.capture('05-saved-maybank')
 
 add_from_menu(ui, BANK)
 ui.element('payee-bank-sheet')
-pick_bank(OTHER[ui.locale])
+pick_bank(ui.t('payee.form.otherBank'))
 ui.element('payee-bank-name-input')
 typed('payee-account-input', '98765432100')
 typed('payee-name-input', HOLDER)
@@ -100,6 +98,6 @@ added = [row for row in row_labels(items) if 'Maybank' not in row]
 assert len(added) == 1, f'expected one new row, got {added}'
 for part in ('Bank Rakyat', '•••• 2100', HOLDER):
     assert part in added[0], f'row is missing {part!r}: {added[0]!r}'
-assert DEFAULT[ui.locale] not in added[0], f'second method took the default: {added[0]!r}'
+assert ui.t(DEFAULT) not in added[0], f'second method took the default: {added[0]!r}'
 ui.capture('07-saved-other')
 print('PASS: bank form validates, saves a listed bank and an other bank with masked last four')

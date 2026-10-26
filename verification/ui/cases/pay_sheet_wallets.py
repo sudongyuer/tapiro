@@ -10,8 +10,6 @@ DEPS = ['src/features/payment/', 'src/app/pay/', 'verification/ui/pay.py']
 SCENE = 'pay-sheet'
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyPayMethods', 'wallets']
-CNY = {'zh-Hans': r'约 ¥2[0-9]\.[0-9]{2}（参考）', 'ms': r'Kira-kira ¥2[0-9]\.[0-9]{2} \(rujukan\)'}
-SAVED = {'zh-Hans': '已存到相册', 'ms': 'Disimpan ke Foto'}
 
 ui = UI(*sys.argv[1:])
 amount = open_sheet(ui)
@@ -25,14 +23,14 @@ alipay = next(i for i in items if (i.get('AXUniqueId') or '').startswith('pay-me
 assert_touch_target(alipay, 'Alipay row')
 ui.tap(alipay['AXUniqueId'])
 ui.element('pay-qr-image')
-cny = ui.wait_label('pay-amount', lambda label: re.search(CNY[ui.locale], label), 'CNY reference missing')
+cny = ui.wait_label('pay-amount', lambda label: re.search(ui.pattern('pay.sheet.cny', amount=r'2[0-9]\.[0-9]{2}'), label), 'CNY reference missing')
 assert by_id(ui.read(), 'pay-fx-source'), 'BNM source link missing'
 ui.capture('02-alipay')
 save = scroll_to(ui, 'pay-qr-save')
 assert_touch_target(save, 'save button')
 ui.tap('pay-qr-save')
 status = scroll_to(ui, 'pay-qr-status-saved')
-assert SAVED[ui.locale] in (status.get('AXLabel') or ''), f'saved line {status.get("AXLabel")!r}'
+assert ui.t('pay.sheet.qr.saved') in (status.get('AXLabel') or ''), f'saved line {status.get("AXLabel")!r}'
 scroll_to(ui, 'pay-name-check')
 ui.capture('03-saved')
 scroll_to(ui, 'pay-qr-full')
