@@ -9,17 +9,17 @@ status: complete before merge
 
 ## Core (mandatory)
 
-| Dimension | Measure                                                       | This step                                                                         |
-| --------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Quality   | Defects escaping review (walkthrough, CI, after merge)        | 4 from the walkthrough (button affordance, empty middle, slot order, sheet title) |
-| Quality   | Checks that could not fail (vacuous)                          | pending review                                                                    |
-| Quality   | Skipped verifications / open device checks / new known limits | pending                                                                           |
-| Speed     | Wall-clock first commit to PR; budget vs actual               | pending                                                                           |
-| Speed     | Wasted time by class                                          | ~10 min: the Simulator window stayed behind a full-screen terminal (`sim-hidden`) |
-| Speed     | Rework rounds                                                 | pending                                                                           |
-| Autonomy  | Avoidable interventions                                       | 2: the user asked where the Simulator was and where to tap 「已收到」             |
-| Autonomy  | Rulings made / overturned                                     | panel converge values reuse the flight's X curve (brief)                          |
-| Loop      | Minutes spent on this retro                                   | ~5                                                                                |
+| Dimension | Measure                                                       | This step                                                                                                    |
+| --------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Quality   | Defects escaping review (walkthrough, CI, after merge)        | 4 from the walkthrough (button affordance, empty middle, slot order, sheet title); recheck passed ("OK通过") |
+| Quality   | Checks that could not fail (vacuous)                          | pending review                                                                                               |
+| Quality   | Skipped verifications / open device checks / new known limits | pending                                                                                                      |
+| Speed     | Wall-clock first commit to PR; budget vs actual               | pending                                                                                                      |
+| Speed     | Wasted time by class                                          | ~10 min: the Simulator window stayed behind a full-screen terminal (`sim-hidden`)                            |
+| Speed     | Rework rounds                                                 | pending                                                                                                      |
+| Autonomy  | Avoidable interventions                                       | 2: the user asked where the Simulator was and where to tap 「已收到」                                        |
+| Autonomy  | Rulings made / overturned                                     | panel converge values reuse the flight's X curve (brief)                                                     |
+| Loop      | Minutes spent on this retro                                   | ~5                                                                                                           |
 
 ## Candidates
 
@@ -48,6 +48,7 @@ status: complete before merge
    reproduced at a stable point. Tag `axe-timeout-under-load`. Candidate: the runner records load average per case
    in `result.json` and refuses to start a matrix above a threshold, so a run on a saturated machine fails fast
    with that cause instead of producing 65 false failures.
+
 5. The user asked "为什么老在让我运行某个命令？". I answered from the settings file (`defaultMode: auto`, no project
    allowlist) and blamed missing allow rules, but the session runs in bypass-permissions mode, which the user then
    pointed out; the implementer transcript shows no denied or rejected calls. I diagnosed before finding out what
