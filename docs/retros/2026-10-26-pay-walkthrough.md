@@ -1,8 +1,8 @@
 ---
 branch: fix/pay-walkthrough
 date: 2026-10-26
-pr: not opened yet
-status: running
+pr: 10
+status: complete before merge
 ---
 
 # Retro: payment walkthrough fixes
