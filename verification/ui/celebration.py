@@ -1,10 +1,61 @@
 import re
 
-from driver import Shot, assert_colour, by_id, token
+from driver import assert_colour, by_id, close, dominant, token
+
+SLOT_HEIGHT = 84
+SLOT_GAP = 10
+HEADER_GAP = 12
+PAPER_PADDING = 16
+BUTTONS_PADDING = 16
+SAFE_TOP = 62
+# Body to book header is 小貘's overhang + 8 (85 pt) plus the paper's top padding (16 pt); the old layout left ~250 pt.
+GROUP_GAP_MAX = 130
+PAPER = (255, 253, 248)
+CARD = (239, 233, 221)
 
 
 def book_label(ui, count):
     return f"{ui.t('stickers.book.title')} {ui.tn('stickers.count', count)}"
+
+
+def slot_frame(book, index):
+    f = book['frame']
+    width = (f['width'] - 2 * SLOT_GAP) / 3
+    return {
+        'x': f['x'] + index % 3 * (width + SLOT_GAP),
+        'y': f['y'] + f['height'] + HEADER_GAP + index // 3 * (SLOT_HEIGHT + SLOT_GAP),
+        'width': width,
+        'height': SLOT_HEIGHT,
+    }
+
+
+def slot_fill(shot, book, index):
+    f = slot_frame(book, index)
+    return dominant(shot, {'x': f['x'] + 5, 'y': f['y'] + f['height'] / 2 - 3, 'width': 5, 'height': 6})
+
+
+def assert_slots(shot, book, count):
+    landed = slot_fill(shot, book, 0)
+    assert landed[1] - landed[0] >= 3, f'slot 0 is not the landed green tint: {landed}'
+    cards = min(count - 1, 5)
+    for index in range(1, 6):
+        found = slot_fill(shot, book, index)
+        expected, kind = (CARD, 'an earlier sticker') if index <= cards else (PAPER, 'an empty outline')
+        assert close(found, expected, 8), f'slot {index} should be {kind}, found {found}'
+
+
+def assert_centred(items, book):
+    summary = by_id(items, 'pay-celebration-summary')['frame']
+    body = by_id(items, 'pay-celebration-body')['frame']
+    opener = by_id(items, 'pay-celebration-book-open')['frame']
+    b = book['frame']
+    gap = b['y'] - (body['y'] + body['height'])
+    assert 0 < gap < GROUP_GAP_MAX, f'the book is {gap:.0f} pt below the subtitle, not in one group with it'
+    panel_bottom = b['y'] + b['height'] + HEADER_GAP + 2 * SLOT_HEIGHT + SLOT_GAP + PAPER_PADDING
+    above = summary['y'] - SAFE_TOP
+    below = opener['y'] - BUTTONS_PADDING - panel_bottom
+    assert above >= -1 and below >= -1, f'the group does not fit: {above:.0f} pt above, {below:.0f} pt below'
+    assert abs(above - below) <= 12, f'the group is not centred: {above:.0f} pt above, {below:.0f} pt below'
 
 
 def assert_celebration(ui, *, first, count, title, name, amount, shot_name, cny=None):
@@ -31,7 +82,9 @@ def assert_celebration(ui, *, first, count, title, name, amount, shot_name, cny=
     else:
         assert badge is None, 'a later settle shows the first-payment badge'
     assert by_id(items, 'pay-celebration-book-open') and by_id(items, 'pay-celebration-done'), 'buttons missing'
+    assert_centred(items, book)
     shot = ui.snap(shot_name)
+    assert_slots(shot, book, count)
     f = book['frame']
     assert_colour(shot, {**f, 'width': f['width'] * 0.6}, token('--color-paper', ui.appearance), 'book paper', 10)
     screen = by_id(items, 'pay-celebration')['frame']

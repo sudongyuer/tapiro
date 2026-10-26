@@ -1,4 +1,4 @@
-"""A later settle (seven stickers already) plays the same celebration without the badge: 又帮成一单, sticker 8 lands in the sixth slot after the five most recent stickers, the count rolls 7 → 8 (video); 看看贴纸本 opens the sticker book with the new sticker first."""
+"""A later settle (seven stickers already) plays the same celebration without the badge: 又帮成一单, the five most recent stickers shift one slot forward while the book rises into one centred group with the headline, sticker 8 lands in the first slot, the count rolls 7 → 8 (video); 看看贴纸本 opens the sticker book with the new sticker first."""
 import re
 import sys
 
@@ -16,6 +16,7 @@ DEPS = [
 ]
 SCENE = 'pay-sheet'
 ARGS = ['-uiVerifyPayment', 'fixture-owed-cash', '-uiVerifyStickers', 'seven', '-uiVerifyFx', 'none']
+LOCALES = ['zh-Hans', 'ms']
 
 ui = UI(*sys.argv[1:])
 open_sheet(ui)
