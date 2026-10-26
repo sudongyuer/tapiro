@@ -34,6 +34,19 @@ status: running
    state the user could not see. Before handing a walkthrough over, take a screenshot of the screen the user will
    see and name the exact element to tap. Tag `walkthrough-handoff`.
 
+4. The first `--affected --dark` run: 31 pass, 65 fail; from `home_three_cards` on nearly every case failed with
+   `Missing home-scroll`, `describe-ui` timeouts or an empty axe error. During the run an `agent-device`
+   `xcodebuild test-without-building` from another session was attached to the `Tapiro Verify` Simulator
+   (destination id `1F1AA09D…`); it later moved to another device. Tag `sim-contention`. The runner's machine lock
+   only covers our runner, not other tools. Candidate: the runner checks for foreign `xcodebuild`/`agent-device`
+   processes targeting its UDID before each case and fails fast with that cause; the rerun decides the fixes.
+
+5. The user asked "为什么老在让我运行某个命令？". I answered from the settings file (`defaultMode: auto`, no project
+   allowlist) and blamed missing allow rules, but the session runs in bypass-permissions mode, which the user then
+   pointed out; the implementer transcript shows no denied or rejected calls. I diagnosed before finding out what
+   the user actually saw. Tag `diagnosis-without-evidence`. Rule for myself: when the user reports something on
+   their screen, ask for the text or a screenshot before naming a cause. Root cause of the prompts: open.
+
 ## Rules and skills
 
 - Helped: drawing the four fixes on the canvas with the current state beside each option; one-round decision.
