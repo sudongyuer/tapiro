@@ -22,7 +22,7 @@ const RECEIPT_BELOW_HEADLINE = 66;
 
 export type CelebrationData = {
   first: boolean;
-  count: number;
+  count: number | null;
   previous: Sticker[] | null;
   title: string;
   name: string;
@@ -51,15 +51,22 @@ export function Celebration({
   const amount = formatRinggit(data.amountSen, language);
   const announcement = t('pay.celebrate.announce', { amount, title: data.title, name: data.name });
   const ready = width > 0 && frame !== null && centre !== null;
-  const { clock, skip, fadeStyle } = useCelebrationClock(ready, announcement);
+  const { clock, skip, fadeStyle, buttonsLive } = useCelebrationClock(ready, announcement);
   const buttonsIn = useAnimatedStyle(() => {
     const p = tween(clock.value, TIMELINE.buttons, 0, 1);
     return { opacity: p, transform: [{ translateY: 10 * (1 - p) }] };
   });
-  const target = targetSlot(data.count);
+  const placed = data.count ?? (data.previous ? data.previous.length + 1 : 1);
+  const target = targetSlot(placed);
   const start = { x: width / 2, y: receiptTop + STICKER_OFFSET };
   const bookTitle = t('stickers.book.title');
-  const after = t('stickers.count', { count: data.count });
+  const counts: [string, string] | null =
+    data.count === null
+      ? null
+      : [
+          t('stickers.count', { count: Math.max(data.count - 1, 0) }),
+          t('stickers.count', { count: data.count }),
+        ];
 
   return (
     <Modal
@@ -82,16 +89,17 @@ export function Celebration({
             <BookPanel
               clock={clock}
               first={data.first}
-              slots={bookSlots(data.count, data.previous)}
+              slots={bookSlots(placed, data.previous)}
               target={target}
               title={bookTitle}
-              counts={[t('stickers.count', { count: Math.max(data.count - 1, 0) }), after]}
+              counts={counts}
               badge={t('pay.celebrate.badge')}
-              countLabel={`${bookTitle} ${after}`}
+              countLabel={counts ? `${bookTitle} ${counts[1]}` : bookTitle}
               onFrame={setFrame}
               onTarget={setCentre}
             />
             <Animated.View
+              pointerEvents={buttonsLive ? 'auto' : 'none'}
               style={[
                 styles.buttons,
                 { paddingBottom: insets.bottom + vars['--space-2'] },
@@ -145,7 +153,9 @@ export function Celebration({
                   body={
                     data.first
                       ? t('pay.celebrate.first.body')
-                      : t('pay.celebrate.routine.body', { count: data.count })
+                      : data.count === null
+                        ? t('pay.celebrate.first.body')
+                        : t('pay.celebrate.routine.body', { count: data.count })
                   }
                   announcement={announcement}
                 />

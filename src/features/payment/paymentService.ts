@@ -164,7 +164,7 @@ export function createSupabasePaymentService(
       return {
         firstSettled: data?.firstSettled === true,
         stickerCount:
-          typeof count === 'number' && Number.isInteger(count) && count >= 0 ? count : 0,
+          typeof count === 'number' && Number.isInteger(count) && count > 0 ? count : null,
       };
     },
     async notReceived(paymentId) {

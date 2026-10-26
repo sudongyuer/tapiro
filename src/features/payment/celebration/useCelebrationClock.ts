@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import {
   cancelAnimation,
@@ -26,9 +26,11 @@ export function useCelebrationClock(ready: boolean, announcement: string) {
   const clock = useSharedValue(0);
   const fade = useSharedValue(reduceMotion ? 0 : 1);
 
+  const [buttonsLive, setButtonsLive] = useState(false);
+
   useEffect(() => {
-    AccessibilityInfo.announceForAccessibility(announcement);
-  }, [announcement]);
+    if (ready) AccessibilityInfo.announceForAccessibility(announcement);
+  }, [ready, announcement]);
 
   useEffect(() => {
     if (!ready) return;
@@ -48,12 +50,20 @@ export function useCelebrationClock(ready: boolean, announcement: string) {
     },
   );
 
+  useAnimatedReaction(
+    () => clock.value >= TIMELINE.buttons.start,
+    (now, before) => {
+      if (now && before !== true) scheduleOnRN(setButtonsLive, true);
+    },
+  );
+
   const skip = useCallback(() => {
     cancelAnimation(clock);
     clock.set(TOTAL);
+    setButtonsLive(true);
   }, [clock]);
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
 
-  return { clock, skip, fadeStyle, reduceMotion };
+  return { clock, skip, fadeStyle, reduceMotion, buttonsLive };
 }

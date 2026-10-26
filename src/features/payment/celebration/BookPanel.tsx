@@ -48,7 +48,7 @@ export function BookPanel({
   slots: BookSlot[];
   target: number;
   title: string;
-  counts: [string, string];
+  counts: [string, string] | null;
   badge: string;
   countLabel: string;
   onFrame: (frame: LayoutRectangle) => void;
@@ -126,22 +126,24 @@ export function BookPanel({
           <AppText variant="title" style={[styles.heavy, { color: color('--color-on-paper') }]}>
             {title}
           </AppText>
-          <View style={[styles.count, line ? { height: line } : null]}>
-            <Animated.View style={roll}>
-              {counts.map((label, index) => (
-                <AppText
-                  key={index}
-                  variant="meta"
-                  style={[styles.bold, { color: color('--color-on-paper-muted') }]}
-                  onLayout={
-                    index === 0 ? (event) => setLine(event.nativeEvent.layout.height) : undefined
-                  }
-                >
-                  {label}
-                </AppText>
-              ))}
-            </Animated.View>
-          </View>
+          {counts ? (
+            <View style={[styles.count, line ? { height: line } : null]}>
+              <Animated.View style={roll}>
+                {counts.map((label, index) => (
+                  <AppText
+                    key={index}
+                    variant="meta"
+                    style={[styles.bold, { color: color('--color-on-paper-muted') }]}
+                    onLayout={
+                      index === 0 ? (event) => setLine(event.nativeEvent.layout.height) : undefined
+                    }
+                  >
+                    {label}
+                  </AppText>
+                ))}
+              </Animated.View>
+            </View>
+          ) : null}
         </View>
         <View
           onLayout={(event) => {

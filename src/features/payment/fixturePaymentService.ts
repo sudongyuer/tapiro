@@ -94,7 +94,7 @@ export type EarnSticker = (input: {
   paymentId: string;
   itemKind: Payment['itemKind'];
   title: string;
-}) => number;
+}) => number | null;
 
 export type FixturePaymentOptions = {
   variant: FixtureVariant;
