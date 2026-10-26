@@ -7,12 +7,11 @@ from driver import UI, assert_appearance, sign_in_apple  # noqa: E402
 DEPS = ['src/features/account/', 'src/app/welcome.tsx', 'src/app/onboarding/']
 
 LOCALES = ['zh-Hans', 'ms']
-SIGN_OUT = {'zh-Hans': '退出登录', 'ms': 'Daftar Keluar'}
 
 ui = UI(*sys.argv[1:])
 sign_in_apple(ui)
 ui.element('name-input')
-sign_out = ui.settled(lambda items: next((i for i in items if i.get('AXLabel') == SIGN_OUT[ui.locale]), None),
+sign_out = ui.settled(lambda items: next((i for i in items if i.get('AXLabel') == ui.t('account.name.signOut')), None),
                       'sign-out header button missing')
 shot = ui.capture('01-name-step')
 assert_appearance(shot, ui.appearance, 20, 2500, 'name step background')

@@ -34,7 +34,7 @@ for index, identifier in enumerate(TABS[1:], start=2):
     ui.element(SCREENS[identifier])
     items = ui.wait(lambda items: selected(items) == [identifier] and accessory(items) and items,
                     f'{identifier} not selected with the accessory shown')
-    assert accessory(items)['AXLabel'].startswith('付给阿杰') and '15.00' in accessory(items)['AXLabel'], f'accessory label {accessory(items)["AXLabel"]}'
+    assert accessory(items)['AXLabel'].startswith(ui.t('pay.live.owe', name='阿杰')) and '15.00' in accessory(items)['AXLabel'], f'accessory label {accessory(items)["AXLabel"]}'
     shot = ui.snap(f'0{index}-{identifier[4:]}')
     assert_appearance(shot.path, ui.appearance, 20, 1300, f'{identifier} background')
     for element in (by_id(items, SCREENS[identifier]), accessory(items)):

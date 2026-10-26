@@ -2,7 +2,7 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import (TAB_LABELS, TITLE, UI, assert_appearance, bottom, by_id, close, dominant, glow, nav_bar,  # noqa: E402
+from driver import (UI, assert_appearance, bottom, by_id, close, dominant, glow, nav_bar,  # noqa: E402
                     reach_home, tab)
 
 DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx', 'src/app/(tabs)/bounty/']
@@ -12,7 +12,7 @@ STRIP_ROW = 44
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
-title = TITLE[ui.locale]
+title = ui.t('shell.home.title')
 
 
 def heading(items):
@@ -50,7 +50,7 @@ def assert_no_halo_on_strip_line(shot):
 
 def assert_strip_under_bar(shot):
     items = ui.read()
-    bar, strip = nav_bar(items, ui.locale), by_id(items, 'home-strip')
+    bar, strip = nav_bar(items, ui), by_id(items, 'home-strip')
     assert bar and strip, 'navigation bar or strip missing'
     edge = bottom(bar)
     assert abs(strip['frame']['y'] - edge) <= 1, f'strip row starts at {strip["frame"]["y"]}, compact bar ends at {edge}'
@@ -75,7 +75,7 @@ assert_halo(shot, f, 'collapsed')
 assert_no_halo_on_strip_line(shot)
 assert_strip_under_bar(shot)
 
-home_tab = TAB_LABELS[ui.locale]['bounty']
+home_tab = ui.t('shell.tabs.bounty')
 minimised = ui.wait(lambda items: (t := tab(items, home_tab)) and t['frame']['width'] < 50 and t, 'tab bar did not minimise')
 ui.tap_point(minimised['frame']['x'] + 24, minimised['frame']['y'] + 24)
 ui.element('tab-me')

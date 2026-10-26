@@ -12,7 +12,7 @@ ARGS = ['-uiVerifyPayMethods', 'none']
 ui = UI(*sys.argv[1:])
 open_sheet(ui)
 card = ui.element('pay-no-methods')
-assert '还没有可用的收款方式' in (card.get('AXLabel') or ''), card.get('AXLabel')
+assert ui.t('pay.sheet.none.title', name='阿杰') in (card.get('AXLabel') or ''), card.get('AXLabel')
 items = ui.read()
 assert method_ids(items) == [] and by_id(items, 'pay-mark-paid') is None, 'methods or mark paid shown'
 ui.capture('01-none')

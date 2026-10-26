@@ -8,7 +8,6 @@ DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/']
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'live-card-bountyInProgress']
-COLLAPSE = {'zh-Hans': '收起', 'ms': 'Susun'}
 ui = UI(*sys.argv[1:])
 
 
@@ -25,7 +24,7 @@ def assert_revealed(message, name, tab_shown=True):
     items = ui.read()
     stage = by_id(items, 'home-stage-urgent')['frame']
     assert stage['y'] > 0, f'home is not back at the top: stage at {stage}'
-    ui.wait_label('live-cards-toggle', lambda label: label == COLLAPSE[ui.locale], 'live cards are not fanned out')
+    ui.wait_label('live-cards-toggle', lambda label: label == ui.t('home.stack.collapse'), 'live cards are not fanned out')
     ui.snap(name)
 
 

@@ -10,11 +10,6 @@ DEPS = ['src/features/account/', 'src/app/welcome.tsx']
 
 LOCALES = ['zh-Hans', 'ms']
 KINDS = ['parcel', 'coffee', 'ticket', 'books', 'umbrella', 'car', 'boba']
-HELLO = {'zh-Hans': '你好呀', 'ms': 'Hai!'}
-EXAMPLES = {
-    'zh-Hans': {'parcel': '帮取快递 · RM 8', 'coffee': '帮带咖啡 · RM 5'},
-    'ms': {'parcel': 'Ambil bungkusan · RM 8', 'coffee': 'Belikan kopi · RM 5'},
-}
 
 ui = UI(*sys.argv[1:])
 
@@ -45,8 +40,8 @@ for kind in KINDS:
 wordmark = by_id(items, 'welcome-wordmark')
 assert wordmark and bottom(wordmark) <= panel_top, f'wordmark sits under the panel: {wordmark}'
 label = by_id(items, 'welcome-sticker-parcel').get('AXLabel')
-assert label == EXAMPLES[ui.locale]['parcel'], f'parcel sticker reads {label}'
-ui.wait_label('welcome-bubble', lambda text: text == HELLO[ui.locale], 'bubble does not greet')
+assert label == ui.t('account.welcome.examples.parcel'), f'parcel sticker reads {label}'
+ui.wait_label('welcome-bubble', lambda text: text == ui.t('account.welcome.hello'), 'bubble does not greet')
 
 time.sleep(1)
 again = by_id(ui.read(), 'welcome-headline')['frame']
@@ -66,7 +61,7 @@ assert_colour(shot, {'x': 2, 'y': 230, 'width': 12, 'height': 12},
 
 ui.at_rest()
 ui.axe('tap', '--id', 'welcome-sticker-coffee', '--post-delay', '0.5')
-ui.wait_label('welcome-bubble', lambda text: text == EXAMPLES[ui.locale]['coffee'],
+ui.wait_label('welcome-bubble', lambda text: text == ui.t('account.welcome.examples.coffee'),
               'bubble did not show the coffee example')
 ui.capture('02-tapped-coffee')
 print('PASS: welcome A settled with stickers, bubble, wordmark and a 44 pt sign-in panel; a tap changes the bubble')

@@ -19,10 +19,6 @@ DEPS = [
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 260
 ARGS = ['-uiVerifyQr', 'alipay', '-uiVerifySignedIn', 'onboarded']
-MISMATCH = {'zh-Hans': '这是支付宝的码，按支付宝收钱码保存？', 'ms': 'Ini kod Alipay. Simpan sebagai Kod Terima Alipay?'}
-
-DUE = {'zh-Hans': '有收款码需要重新确认', 'ms': 'Kod QR perlu disemak semula'}
-
 ui = UI(*sys.argv[1:])
 
 
@@ -30,7 +26,7 @@ def red_dot():
     items = ui.read()
     row = by_id(items, 'me-payee')
     dot = by_id(items, 'me-payee-dot')
-    assert dot or DUE[ui.locale] in (row.get('AXLabel') or ''), f'no re-check dot on 我的: {row.get("AXLabel")!r}'
+    assert dot or ui.t('payee.meRowDue') in (row.get('AXLabel') or ''), f'no re-check dot on 我的: {row.get("AXLabel")!r}'
     shot = ui.snap('00-me')
     f = row['frame']
     red = shot.count(f, lambda rgb: close(rgb, token('--color-urgent', ui.appearance), 24))
@@ -44,10 +40,10 @@ items = ui.settled(lambda items: by_id(items, 'payee-recheck') and items and by_
 items = ui.read()
 rows = row_labels(items)
 assert len(rows) == 3, f'expected three transfer methods, got {rows}'
-assert DEFAULT[ui.locale] in rows[0] and '+60 12-345 6789' in rows[0], f'first row is not the default phone: {rows[0]!r}'
-assert all(DEFAULT[ui.locale] not in row for row in rows[1:]), f'more than one default: {rows}'
+assert ui.t(DEFAULT) in rows[0] and '+60 12-345 6789' in rows[0], f'first row is not the default phone: {rows[0]!r}'
+assert all(ui.t(DEFAULT) not in row for row in rows[1:]), f'more than one default: {rows}'
 assert '•••• 4821' in rows[1] and '1234564821' not in rows[1], f'bank number not masked: {rows[1]!r}'
-assert rows[2].count('TNG') == 1 and TNG[ui.locale] in rows[2], f'TNG row should name the wallet once: {rows[2]!r}'
+assert rows[2].count('TNG') == 1 and ui.t(TNG) in rows[2], f'TNG row should name the wallet once: {rows[2]!r}'
 for identifier in ('payee-recheck-action', 'payee-cash'):
     assert_touch_target(by_id(items, identifier), identifier)
 cash = by_id(items, 'payee-cash')
@@ -61,14 +57,14 @@ assert_appearance(shot.path, ui.appearance, 20, 2500, 'screen background')
 
 ui.tap('payee-recheck-action')
 ui.tap('payee-qr-pick')
-ui.wait_label('payee-qr-mismatch', lambda label: MISMATCH[ui.locale] in label, 'wallet switch was not confirmed')
+ui.wait_label('payee-qr-mismatch', lambda label: ui.t('payee.qr.mismatch', wallet=ui.t('payee.qr.wallet.alipay'), method=ui.t(ALIPAY)) in label, 'wallet switch was not confirmed')
 fill_wallet_name(ui, 'alipay')
 ui.capture('injected-02-switch')
-ui.tap_label(SAVE[ui.locale])
+ui.tap_label(ui.t(SAVE))
 ui.gone('payee-qr-confirm')
-items = ui.wait(lambda items: any(ALIPAY[ui.locale] in r for r in row_labels(items)) and items, 'Alipay row did not replace the TNG row')
+items = ui.wait(lambda items: any(ui.t(ALIPAY) in r for r in row_labels(items)) and items, 'Alipay row did not replace the TNG row')
 rows = row_labels(items)
-assert len(rows) == 3 and not any(TNG[ui.locale] in r for r in rows), rows
+assert len(rows) == 3 and not any(ui.t(TNG) in r for r in rows), rows
 ui.gone('payee-recheck', timeout=5)
 ui.capture('injected-03-replaced')
 
@@ -83,9 +79,9 @@ ui.capture('04-cash-off')
 open_menu(ui)
 items = ui.read()
 ys = []
-for labels in MENU_ORDER[:-1]:
-    found = [i['frame']['y'] for i in items if i.get('AXLabel') == labels[ui.locale]]
-    assert found, f'menu is missing {labels[ui.locale]}'
+for entry in MENU_ORDER[:-1]:
+    found = [i['frame']['y'] for i in items if i.get('AXLabel') == ui.t(entry)]
+    assert found, f'menu is missing {ui.t(entry)}'
     ys.append(min(found))
 assert ys == sorted(ys), f'menu order is wrong: {ys}'
 ui.capture('05-menu')

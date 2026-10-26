@@ -17,9 +17,8 @@ DEPS = [
 
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifyQr', 'wechat', '-uiVerifySignedIn', 'onboarded']
-STEP = {'zh-Hans': '「二维码收款」', 'ms': 'Terima Wang'}
 
 ui = UI(*sys.argv[1:])
 open_payee(ui)
-save_wallet_qr(ui, WECHAT, 'wechat', STEP, prefix='injected-')
+save_wallet_qr(ui, WECHAT, 'wechat', prefix='injected-')
 print('PASS: WeChat receive code confirmed without a wallet switch and saved')

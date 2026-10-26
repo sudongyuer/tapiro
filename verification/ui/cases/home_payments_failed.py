@@ -10,11 +10,11 @@ ARGS = ['-uiVerifyShellFeed', 'oweMoney', '-uiVerifyPaymentsFail', '1', '-uiVeri
 ui = UI(*sys.argv[1:])
 reach_home(ui)
 card = ui.element('live-card-unavailable-failed')
-assert '付款信息没加载出来' in (card.get('AXLabel') or ''), card.get('AXLabel')
+assert ui.t('home.card.unavailable.title') in (card.get('AXLabel') or ''), card.get('AXLabel')
 items = ui.read()
 assert by_id(items, 'live-card-calm') is None and by_id(items, 'home-stage-calm') is None, 'failure shown as calm'
 retry = ui.element('live-card-unavailable-retry')
-assert_touch_target(retry, '重试')
+assert_touch_target(retry, 'retry button')
 ui.capture('01-failed')
 ui.tap('live-card-unavailable-retry')
 ui.settled(lambda items: by_id(items, 'live-card-oweMoney'), 'pay card did not load after retry')

@@ -73,6 +73,10 @@ def case_meta(case):
     )
 
 
+def export_strings():
+    subprocess.run(['bun', str(ROOT / 'scripts/export-ui-strings.ts')], cwd=ROOT, check=True)
+
+
 def require_ref(base):
     found = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', '--quiet', f'{base}^{{commit}}'],
                            capture_output=True)
@@ -182,7 +186,7 @@ def main():
     parser.add_argument('--smoke', action='store_true', help='the fixed smoke set in zh-Hans light')
     parser.add_argument('--base', default='main')
     parser.add_argument('--dark', action='store_true', help='with --affected or --smoke, also run dark')
-    parser.add_argument('--locales', action='store_true', help="with --affected or --smoke, also run each case's LOCALES")
+    parser.add_argument('--locales', action='store_true', help="with --affected or --smoke, also run en and each case's LOCALES")
     parser.add_argument('cases', nargs='*')
     args = parser.parse_args()
 
@@ -204,6 +208,7 @@ def main():
         appearances = ['light', 'dark'] if args.appearance == 'both' else [args.appearance]
 
     (ROOT / '.verify').mkdir(exist_ok=True)
+    export_strings()
     lock = open(ROOT / '.verify/ui.lock', 'w')
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -231,9 +236,8 @@ def main():
     stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
-    if tiered:
-        runs = [(case, scene, run_locales(locales, args.locales), extra, budget)
-                for case, scene, locales, extra, budget in runs]
+    runs = [(case, scene, run_locales(locales, args.locales or not tiered), extra, budget)
+            for case, scene, locales, extra, budget in runs]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
             for locale in [l for l in locales if args.locale in (None, l)]:

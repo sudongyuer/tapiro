@@ -2,7 +2,7 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import (TAB_LABELS, UI, accessory, assert_colour, assert_tapir_button, bottom, by_id, corner,  # noqa: E402
+from driver import (UI, accessory, assert_colour, assert_tapir_button, bottom, by_id, corner,  # noqa: E402
                     nav_bar, reach_home, tab, token)
 
 DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
@@ -12,8 +12,7 @@ ui = UI(*sys.argv[1:])
 
 
 def minimised(items):
-    labels = TAB_LABELS[ui.locale]
-    home, ask = tab(items, labels['bounty']), tab(items, labels['ask'])
+    home, ask = tab(items, ui.t('shell.tabs.bounty')), tab(items, ui.t('shell.tabs.askTapir'))
     inline = by_id(items, 'urgent-accessory-inline')
     if home and ask and inline and home['frame']['width'] < 50 and by_id(items, 'tab-bounty') is None:
         return {'home': home, 'ask': ask, 'inline': inline}
@@ -33,14 +32,14 @@ ui.swipe((200, 650), (200, 250))
 ui.settled(lambda items: (m := minimised(items)) and m['inline'], 'tab bar did not minimise with the inline accessory')
 items = ui.read()
 parts = minimised(items)
-bar = nav_bar(items, ui.locale)
+bar = nav_bar(items, ui)
 assert bottom(by_id(items, 'home-live-cards')) <= bottom(bar), 'accessory shown while the live cards are on screen'
 home, middle, ask = parts['home']['frame'], parts['inline']['frame'], parts['ask']['frame']
 assert str(parts['home'].get('AXValue')) == '1', '悬赏 is not the selected minimised tab'
 assert home['x'] + home['width'] <= middle['x'] and middle['x'] + middle['width'] <= ask['x'], \
     f'minimised order is not tab | accessory | 小貘: {home} {middle} {ask}'
 assert abs(ask['width'] - 48) < 1 and abs(home['width'] - 48) < 1, f'minimised buttons are not 48 pt: {home} {ask}'
-assert parts['inline']['AXLabel'].startswith('付给阿杰') and '15.00' in parts['inline']['AXLabel'], f'inline accessory label {parts["inline"]["AXLabel"]}'
+assert parts['inline']['AXLabel'].startswith(ui.t('pay.live.owe', name='阿杰')) and '15.00' in parts['inline']['AXLabel'], f'inline accessory label {parts["inline"]["AXLabel"]}'
 shot = ui.snap('02-minimised')
 assert_tapir_button(shot, ask, ui.appearance, '48 pt 小貘 button')
 

@@ -10,8 +10,6 @@ DEPS = ['src/features/payment/', 'src/app/pay/', 'verification/ui/pay.py']
 SCENE = 'pay-sheet'
 ARGS = ['-uiVerifyPayMethods', 'duitnow']
 LOCALES = ['zh-Hans', 'ms']
-COPIED = {'zh-Hans': '已复制', 'ms': 'Disalin'}
-HINT = {'zh-Hans': '打开你的银行 App，选 DuitNow', 'ms': 'pilih DuitNow'}
 
 ui = UI(*sys.argv[1:])
 amount = open_sheet(ui)
@@ -22,11 +20,11 @@ number = ui.element('pay-number-value')
 assert '+60 12-345 6789' in (number.get('AXLabel') or ''), number.get('AXLabel')
 ui.capture('01-preselected')
 ui.tap('pay-number-copy')
-ui.wait_label('pay-number-copy', lambda label: COPIED[ui.locale] in label, 'number copy gave no feedback')
+ui.wait_label('pay-number-copy', lambda label: ui.t('pay.sheet.copied') in label, 'number copy gave no feedback')
 reference = scroll_to(ui, 'pay-reference-value')
 assert re.search(r'TP-[A-HJ-NP-Z2-9]{4}', reference.get('AXLabel') or ''), reference.get('AXLabel')
 ui.tap('pay-reference-copy')
-ui.wait_label('pay-reference-copy', lambda label: COPIED[ui.locale] in label, 'reference copy gave no feedback')
-assert any(HINT[ui.locale] in (i.get('AXLabel') or '') for i in ui.read()), 'bank hint missing'
+ui.wait_label('pay-reference-copy', lambda label: ui.t('pay.sheet.copied') in label, 'reference copy gave no feedback')
+assert any(ui.t('pay.sheet.bankHint') in (i.get('AXLabel') or '') for i in ui.read()), 'bank hint missing'
 ui.capture('02-copied')
 print('PASS: single DuitNow method preselected with copy feedback')

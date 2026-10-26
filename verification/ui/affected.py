@@ -19,9 +19,12 @@ SHARED = [
     'verification/ui/affected.py',
     'verification/ui/breaker.py',
     'verification/ui/build.sh',
+    'scripts/export-ui-strings.ts',
 ]
 SMOKE = ['app_launches', 'sign_in_fixture', 'shell_tabs', 'home_one_card']
 DEFAULT_LOCALE = 'zh-Hans'
+MILESTONE_LOCALES = ['zh-Hans', 'en']
+LANGUAGE_ORDER = ['zh-Hans', 'en', 'ms']
 
 
 def parse_deps(source):
@@ -60,5 +63,6 @@ def select(cases, changed, shared=SHARED):
 
 def run_locales(declared, with_declared):
     if with_declared:
-        return declared
+        wanted = {*MILESTONE_LOCALES, *declared}
+        return sorted(wanted, key=lambda l: (LANGUAGE_ORDER.index(l) if l in LANGUAGE_ORDER else len(LANGUAGE_ORDER), l))
     return [DEFAULT_LOCALE] if DEFAULT_LOCALE in declared else declared[:1]

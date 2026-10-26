@@ -17,9 +17,8 @@ DEPS = [
 
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifyQr', 'alipay', '-uiVerifySignedIn', 'onboarded']
-STEP = {'zh-Hans': '首页「收钱」', 'ms': 'Terima (收钱)'}
 
 ui = UI(*sys.argv[1:])
 open_payee(ui)
-save_wallet_qr(ui, ALIPAY, 'alipay', STEP, prefix='injected-')
+save_wallet_qr(ui, ALIPAY, 'alipay', prefix='injected-')
 print('PASS: Alipay receive code confirmed without a wallet switch and saved')
