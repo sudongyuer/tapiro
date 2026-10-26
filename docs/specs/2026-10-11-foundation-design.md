@@ -601,3 +601,38 @@ PR: not opened yet · Commits: 5810e58, c748860, 3324cf8 (branch `feat/payment`)
 - Moderators have no access path to proofs until reports (step 7).
 - Unsettled payments of a cancelled item have no exit until bounty/carpool cancellation exists.
 - Device only: wallet links, saving to Photos with add-only access and scanning from the album, haptics.
+
+### Settlement celebration and sticker book (2026-10-26)
+
+Decisions: KICKOFF 2026-10-26 (celebration G final, read-only sticker book now, haptic only, `stickers` table now,
+car sticker for rides and 小貘 sticker for bounties until categories exist, three columns). Branch
+`feat/settle-celebration`.
+
+- `stickers` (owner, unique `payment_id`, `item_kind`, nullable `category`, title snapshot, `earned_at`), select-own RLS,
+  no client writes, owner cascade on account deletion. `confirm_payment_received` is replaced in a new migration: it
+  inserts the payee's sticker in the settle transaction (`on conflict (payment_id) do nothing`), skips reverse payments,
+  and returns `{ state, firstSettled, stickerCount }`; `firstSettled` is now "this settle earned the first sticker".
+  Settled payments from before the table get their stickers in the migration. Evidence:
+  `supabase/migrations/20261026000000_stickers.sql`, `supabase/tests/stickers.test.sql` (17),
+  `src/features/payment/paymentService.integration.ts`.
+- Client: `src/lib/stickers` (model with the single art mapping `stickerArt`, Supabase and fixture services, store with
+  loading / failed / ready); `src/ui/EarnedSticker.tsx`, `src/ui/InkText.tsx`.
+- Celebration on every payee settle (`src/features/payment/celebration/`), shown in a full-screen modal over the pay
+  sheet: receipt card, sticker peel and arc flight into the book slot, headline odometer, CNY line from the BNM rate
+  (hidden without a rate ≤ 7 days old), panel with 小貘, confetti, badge and count roll on the first settle only, one
+  success haptic at landing, tap to skip, Reduce Motion fade, one VoiceOver announcement. 看看贴纸本 opens the book.
+- Sticker book: `src/features/stickers`, route `src/app/(tabs)/me/stickers.tsx`, Me row 我帮过的忙 · n 张 above 收款方式.
+
+| Design said | Shipped | Why | Confirmed by |
+| ----------- | ------- | --- | ------------ |
+| Reanimated `withDelay` + `withTiming` per value | One linear clock (`withTiming` 0 → 2600 ms) with the canvas keyframes and cubic-béziers evaluated per frame | Tap-to-skip jumps one value to the end; all parts stay in sync | not intent-changing |
+| Sticker and amount shine | Gradient bar with `mixBlendMode` (soft-light / overlay), clipped to the sticker box and the amount row | No mask view in the project | Unverified: needs the user's look on device |
+| Canvas liftShadow, slot ghost art | Not built | Not in the brief; the sticker keeps its own shadow | not intent-changing |
+| Earlier slots show previous stickers | Shown when the sticker list is loaded; otherwise filled paper slots without art | Never show unknown as empty (Data integrity) | not intent-changing |
+| Reverse payment settle | No celebration, no sticker; the sheet shows 已结清 | A refund is not an earned errand | Unverified: confirm when cancellation exists |
+
+Verification: see the PR; `bun test`, `supabase test db` (stickers 17/17, payments 70/70), `bun run test:stack`, UI cases
+`pay_first_settle`, `pay_payee_confirm`, `pay_settle_routine`, `sticker_book`, `sticker_book_empty` (zh-Hans light).
+
+Known limits: device-only checks (haptic, Reduce Motion, VoiceOver announcement, motion feel); no UI case injects a
+failed sticker load; stickers for the payer side and categories come with steps 5–6.

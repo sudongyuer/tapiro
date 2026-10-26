@@ -434,7 +434,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | pay.confirm.received    | 收款人看到「{名字} 说已付款」，能打开对方附的截图，点已收到才结清 | ui:pay_payee_confirm, db:supabase/tests/payments.test.sql |
 | pay.confirm.not-yet     | 点还没收到会提醒付款人，24 小时后可以举报（举报入口第 7 步做，先放说明） | ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#after 我已付款 the payer sees a quiet waiting item until the payee says 还没收到, db:supabase/tests/payments.test.sql |
 | pay.confirm.cash        | 现金只要收款人点已收到                                       | unit:src/features/payment/model.test.ts#cash settles from due on the payee alone; the payer never marks cash paid, ui:pay_first_settle, db:supabase/tests/payments.test.sql |
-| pay.confirm.celebration | 第一次结清全屏庆祝，之后只打勾加轻触感                       | ui:pay_first_settle, ui:pay_payee_confirm, unit:src/features/payment/paymentStore.test.ts#settling removes the payment from the list; only the first settle is first, device: 真机看动效和轻触感 |
+| pay.confirm.celebration | 每次结清都全屏庆祝：贴纸从收据卡撕下飞进贴纸本、金额滚动、一次成功触感；第一次多「第一次收款」徽章，之后标题是「又帮成一单」 | ui:pay_first_settle, ui:pay_payee_confirm, ui:pay_settle_routine, unit:src/features/payment/paymentStore.test.ts#settling removes the payment from the list; only the first settle is first, unit:src/features/payment/celebration/celebration.test.ts#the fixture settle returns the sticker count the sticker book then lists, db:supabase/tests/stickers.test.sql, device: 真机看动效和成功触感 |
+| pay.confirm.celebration-slots | 贴纸飞进第 n 格（第 6 张以后都进第 6 格），前面几格是最近的贴纸，张数从 n-1 滚到 n | ui:pay_settle_routine, unit:src/features/payment/celebration/celebration.test.ts#later stickers land after the most recent earlier ones, and the sixth slot holds every later one, unit:src/features/payment/celebration/celebration.test.ts#earlier stickers that did not load show as filled slots, never as empty ones |
+| pay.confirm.celebration-cny | 有 7 天内的 BNM 汇率时金额下面显示人民币参考价（马来西亚国家银行中间价），没有就不显示 | ui:pay_first_settle, ui:pay_settle_routine |
+| pay.confirm.celebration-book | 「看看贴纸本」进贴纸本，新贴纸在最前；「好的」回到已结清 | ui:pay_settle_routine, ui:pay_first_settle |
+| pay.confirm.celebration-skip | 点屏幕任意处跳到落定画面；减弱动态效果时只淡入落定画面并保留一次成功触感；读屏只朗读一次完整结果 | unit:src/features/payment/celebration/celebration.test.ts#the sticker lands at 1020 ms and every part ends by the end of the clock, device: 真机上点屏幕跳过、打开减弱动态效果和旁白各看一遍 |
 | pay.confirm.visibility  | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏       | db:supabase/tests/payments.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs |
 
 ### pay.unpaid 不付款的处理
@@ -749,6 +753,23 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ------------------- | ------------------------------------------------------------ | ------ |
 | rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                       | db, ui |
 | rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮     | unit   |
+
+### rep.sticker-book 只读贴纸本「我帮过的忙」
+
+- 故事：作为帮过忙的同学，我想在「我的」里翻看攒下的贴纸，以便看到自己帮成了多少单。
+- 状态：done
+- 版本：v1
+- 规格：[foundation](specs/2026-10-11-foundation-design.md)
+
+| 验收 id                  | 行为                                                         | 覆盖   |
+| ------------------------ | ------------------------------------------------------------ | ------ |
+| rep.sticker-book.earn    | 收款人点已收到、服务器结清时在同一事务里发一张贴纸（拼车是汽车，没有类别的悬赏是小貘）；重放结清不多发，反向付款不发 | db:supabase/tests/stickers.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, unit:src/lib/stickers/stickers.test.ts#a ride earns a car sticker; a bounty without a category earns a 小貘 sticker |
+| rep.sticker-book.private | 只有自己读得到自己的贴纸，客户端不能新增、修改或删除；删除账号时一起删除 | db:supabase/tests/stickers.test.sql |
+| rep.sticker-book.me-row  | 「我的」在收款方式上面有一行「我帮过的忙」和张数，点进贴纸本（push，系统返回） | ui:sticker_book, ui:sticker_book_empty |
+| rep.sticker-book.grid    | 三列、最新在前，每张贴纸下有白色标签和日期，只读；长标题在马来文下也排得下 | ui:sticker_book, unit:src/lib/stickers/stickers.test.ts#stickers list newest first |
+| rep.sticker-book.empty   | 没有贴纸时显示全尺寸小貘和怎么得到第一张                     | ui:sticker_book_empty |
+| rep.sticker-book.unknown | 贴纸没加载出来时显示「贴纸没加载出来 · 重试」，不显示空的贴纸本 | unit:src/lib/stickers/stickers.test.ts#a failed load is failed, never an empty book, and a retry loads it, gap: 还没有注入贴纸加载失败的 UI 用例 |
+| rep.sticker-book.count   | 张数在英文里区分单复数，中文和马来文不变                     | unit:src/lib/stickers/stickers.test.ts#English pluralises the count; Chinese and Malay do not |
 
 ### coins.purchase 买貘币
 
