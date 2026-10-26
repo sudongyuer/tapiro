@@ -10,6 +10,9 @@ import {
   celebrationBody,
   confettiPieces,
   glyphs,
+  groupDrop,
+  groupLayout,
+  groupPoint,
   shiftStart,
   targetSlot,
   type BookSlot,
@@ -83,6 +86,66 @@ describe('book slots', () => {
       'empty',
       'empty',
     ]);
+  });
+});
+
+describe('slot shift at other counts', () => {
+  test('a second sticker shifts the only earlier one into slot 1', () => {
+    expect(bookSlots(2, [earlier('a')]).map(describeSlot)).toEqual([
+      'target',
+      'a<0!',
+      'empty',
+      'empty',
+      'empty',
+      'empty',
+    ]);
+  });
+
+  test('a sixth sticker shifts five earlier ones and nothing leaves', () => {
+    const slots = bookSlots(6, ['e', 'd', 'c', 'b', 'a'].map(earlier));
+    expect(slots.map(describeSlot)).toEqual(['target', 'e<0', 'd<1', 'c<2', 'b<3', 'a<4!']);
+    expect(slots[5]).toMatchObject({ leaving: null });
+  });
+
+  test('a seventh sticker shifts five and fades out the sixth earlier one in the last slot', () => {
+    const slots = bookSlots(7, ['f', 'e', 'd', 'c', 'b', 'a'].map(earlier));
+    expect(slots.map(describeSlot)).toEqual(['target', 'f<0', 'e<1', 'd<2', 'c<3', 'b<4!']);
+    expect(slots[5]).toMatchObject({ leaving: { kind: 'sticker', sticker: { id: 'a' } } });
+    expect(bookSlots(7, null)[5]).toMatchObject({ leaving: { kind: 'earlier' } });
+  });
+});
+
+const GAP = { ideal: 84.8, min: 76.8 };
+const PANEL = 247;
+
+describe('centred group', () => {
+  test('on an iPhone 17 Pro the group keeps the full gap at full size', () => {
+    const space = 874 - 62 - 154;
+    expect(groupLayout(space, 250, PANEL, GAP)).toEqual({ gap: 84.8, height: 581.8, scale: 1 });
+  });
+
+  test('on a 667 pt iPhone SE the gap shrinks first, then the group scales to fit above the buttons', () => {
+    const space = 667 - 20 - (16 + 46 + 4 + 46 + 8);
+    expect(groupLayout(space, 190, PANEL, GAP)).toMatchObject({ gap: 84.8, scale: 1 });
+    expect(groupLayout(space, 200, PANEL, GAP).gap).toBeCloseTo(80);
+    for (const headline of [250, 300]) {
+      const layout = groupLayout(space, headline, PANEL, GAP);
+      expect(layout.gap).toBe(GAP.min);
+      expect(layout.height * layout.scale).toBeCloseTo(space);
+      expect(layout.scale).toBeGreaterThan(0.8);
+    }
+  });
+
+  test('the panel starts at the bottom of the stage and the sticker targets the scaled slot', () => {
+    const stage = { x: 0, y: 20, width: 375, height: 527 };
+    const layout = groupLayout(stage.height, 300, PANEL, GAP);
+    const bottom = groupPoint(stage, layout, 0, layout.height).y;
+    expect(bottom + groupDrop(stage, layout) * layout.scale).toBeCloseTo(stage.y + stage.height);
+    expect(groupPoint(stage, layout, 187.5, layout.height / 2)).toEqual({ x: 187.5, y: 283.5 });
+    const roomy = groupLayout(658, 250, PANEL, GAP);
+    expect(groupPoint({ x: 0, y: 62, width: 402, height: 658 }, roomy, 50, 0).y).toBeCloseTo(
+      62 + (658 - 581.8) / 2,
+    );
   });
 });
 

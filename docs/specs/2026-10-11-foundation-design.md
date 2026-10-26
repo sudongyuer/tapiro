@@ -657,3 +657,9 @@ Verification: `bun test`; UI cases `pay_payee_confirm`, `pay_first_settle`, `pay
 (zh-Hans light and dark), `pay_first_settle` and `pay_settle_routine` also en and ms. The cases assert the pinned
 buttons, the 收款 title, the landed tint in slot 0 with earlier stickers after it, and a subtitle-to-book gap under
 130 pt (the old layout left about 250 pt).
+
+Review fixes: the celebration group sits in a flex stage above the buttons, so the buttons always keep their place;
+on a short screen the gap shrinks to 小貘's overhang and then the group scales down (`groupLayout`, unit-checked for
+667 pt). An unknown role shows no sheet title. One `SheetFrame` stays mounted across sheet states and views hand
+their buttons to it through `SheetActions`; the pinned buttons show a spinner while their action runs. From the
+seventh sticker on, the sixth earlier sticker fades out during the shift.

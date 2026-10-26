@@ -87,10 +87,10 @@ describe('payment state machine', () => {
   });
 });
 
-test('the payee sees 收款 as the sheet title; the payer and an unknown role see 付款', () => {
+test('the payee sees 收款 as the sheet title, the payer 付款, and an unknown role no title', () => {
   expect(sheetTitleKey('payee')).toBe('pay.sheet.titlePayee');
   expect(sheetTitleKey('payer')).toBe('pay.sheet.title');
-  expect(sheetTitleKey(null)).toBe('pay.sheet.title');
+  expect(sheetTitleKey(null)).toBeNull();
 });
 
 describe('reference', () => {

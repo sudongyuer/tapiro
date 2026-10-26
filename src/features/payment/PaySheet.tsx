@@ -6,7 +6,7 @@ import {
   foregroundStyle,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -45,6 +45,7 @@ export function PaySheet({
   const cached =
     listed.status === 'idle' ? undefined : listed.payments.find(({ id }) => id === paymentId);
   const role = state.status === 'ready' ? state.payment.role : (cached?.role ?? null);
+  const titleKey = sheetTitleKey(role);
   const notice = sheet.failed ? (
     <NoticeCard
       tone="urgent"
@@ -98,7 +99,7 @@ export function PaySheet({
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: t(sheetTitleKey(role)) }} />
+      <Stack.Screen options={{ title: titleKey ? t(titleKey) : '' }} />
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button
           icon="xmark"
@@ -106,12 +107,10 @@ export function PaySheet({
           onPress={onClose}
         />
       </Stack.Toolbar>
-      {state.status === 'loading' ? (
-        <SheetFrame notice={notice}>
+      <SheetFrame notice={notice}>
+        {state.status === 'loading' ? (
           <TextSection title={t('pay.sheet.loading')} testID="pay-loading" />
-        </SheetFrame>
-      ) : state.status === 'failed' || state.status === 'missing' ? (
-        <SheetFrame notice={notice}>
+        ) : state.status === 'failed' || state.status === 'missing' ? (
           <NoticeCard
             tone="urgent"
             icon="wifi.exclamationmark"
@@ -120,16 +119,10 @@ export function PaySheet({
             action={{ label: t('pay.sheet.retry'), onPress: sheet.retry, testID: 'pay-retry' }}
             testID="pay-load-failed"
           />
-        </SheetFrame>
-      ) : (
-        <SheetBody
-          data={state}
-          sheet={sheet}
-          notice={notice}
-          onConfirm={confirm}
-          onMarkPaid={markPaid}
-        />
-      )}
+        ) : (
+          <SheetBody data={state} sheet={sheet} onConfirm={confirm} onMarkPaid={markPaid} />
+        )}
+      </SheetFrame>
       {celebration ? (
         <Celebration
           data={celebration}
@@ -147,13 +140,11 @@ export function PaySheet({
 function SheetBody({
   data,
   sheet,
-  notice,
   onConfirm,
   onMarkPaid,
 }: {
   data: SheetData;
   sheet: ReturnType<typeof usePaySheet>;
-  notice: ReactNode;
   onConfirm: () => void;
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
 }) {
@@ -162,27 +153,21 @@ function SheetBody({
   const name = payment.counterpartName;
   const amount = formatRinggit(payment.amountSen, language);
 
-  if (payment.state === 'settled')
-    return (
-      <SheetFrame notice={notice}>
-        <Settled data={data} />
-      </SheetFrame>
-    );
+  if (payment.state === 'settled') return <Settled data={data} />;
   if (payment.role === 'payee')
     return (
       <PayeeView
         data={data}
         busy={sheet.busy}
-        notice={notice}
         onConfirm={onConfirm}
         onNotReceived={sheet.notReceived}
         proofUrl={sheet.proofUrl}
       />
     );
   if (payment.state === 'due')
-    return <PayerView data={data} busy={sheet.busy} notice={notice} onMarkPaid={onMarkPaid} />;
+    return <PayerView data={data} busy={sheet.busy} onMarkPaid={onMarkPaid} />;
   return (
-    <SheetFrame notice={notice}>
+    <>
       <AmountHeader
         title={t('pay.sheet.payTo', { name })}
         amountSen={payment.amountSen}
@@ -216,7 +201,7 @@ function SheetBody({
           />
         </Section>
       ) : null}
-    </SheetFrame>
+    </>
   );
 }
 

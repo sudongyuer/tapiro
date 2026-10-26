@@ -7,7 +7,7 @@ import { EarnedSticker } from '@/ui/EarnedSticker';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { BOOK_COLUMNS, BOOK_SLOTS, shiftStart, type BookSlot } from './model';
+import { BOOK_COLUMNS, BOOK_SLOTS, shiftStart, type BookCard, type BookSlot } from './model';
 import { EASE_OUT, keyframes, TIMELINE, tween } from './timeline';
 import type { Clock } from './useCelebrationClock';
 
@@ -73,9 +73,14 @@ function Card({
   const outline = useAnimatedStyle(() => ({
     opacity: 1 - tween(clock.value, TIMELINE.shift, 0, 1),
   }));
+  const paper = { backgroundColor: color('--color-paper-line') };
   return (
     <>
-      {slot.arrives ? (
+      {slot.leaving ? (
+        <Animated.View style={[styles.fill, styles.filled, paper, outline]}>
+          <CardArt card={slot.leaving} index={index} />
+        </Animated.View>
+      ) : slot.arrives ? (
         <Animated.View
           style={[
             styles.fill,
@@ -85,21 +90,19 @@ function Card({
           ]}
         />
       ) : null}
-      <Animated.View
-        style={[
-          styles.fill,
-          styles.filled,
-          { backgroundColor: color('--color-paper-line') },
-          shift,
-        ]}
-      >
-        {slot.kind === 'sticker' ? (
-          <View style={{ transform: [{ rotate: `${index % 2 ? 6 : -6}deg` }] }}>
-            <EarnedSticker art={stickerArt(slot.sticker)} width={SLOT_ART} />
-          </View>
-        ) : null}
+      <Animated.View style={[styles.fill, styles.filled, paper, shift]}>
+        <CardArt card={slot} index={index} />
       </Animated.View>
     </>
+  );
+}
+
+function CardArt({ card, index }: { card: BookCard; index: number }) {
+  if (card.kind !== 'sticker') return null;
+  return (
+    <View style={{ transform: [{ rotate: `${index % 2 ? 6 : -6}deg` }] }}>
+      <EarnedSticker art={stickerArt(card.sticker)} width={SLOT_ART} />
+    </View>
   );
 }
 

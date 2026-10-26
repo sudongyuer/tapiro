@@ -5,26 +5,24 @@ import type { PayeeType } from '@/lib/payeeMethods';
 import { formatRinggit } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 
 import { ActionButton, TextSection } from './formParts';
 import type { SheetAction, SheetData } from './hooks';
 import { AmountHeader } from './PayerView';
 import { takesCash } from './payOptions';
 import { ProofViewer } from './ProofViewer';
-import { SheetFrame } from './SheetFrame';
+import { SheetActions } from './SheetFrame';
 
 export function PayeeView({
   data,
   busy,
-  notice,
   onConfirm,
   onNotReceived,
   proofUrl,
 }: {
   data: SheetData;
   busy: SheetAction | null;
-  notice: ReactNode;
   onConfirm: () => void;
   onNotReceived: () => void;
   proofUrl: (path: string) => Promise<string>;
@@ -46,6 +44,7 @@ export function PayeeView({
       label={t('pay.payee.received')}
       onPress={onConfirm}
       disabled={busy !== null}
+      loading={busy === 'confirm'}
       testID="pay-confirm"
     />
   );
@@ -53,7 +52,8 @@ export function PayeeView({
   if (payment.state === 'due') {
     const cash = takesCash(methods);
     return (
-      <SheetFrame notice={notice} actions={cash ? confirm : null}>
+      <>
+        {cash ? <SheetActions>{confirm}</SheetActions> : null}
         <AmountHeader title={payment.title} amountSen={payment.amountSen} cny={null} />
         {cash ? (
           <TextSection
@@ -68,28 +68,25 @@ export function PayeeView({
             testID="pay-payee-due"
           />
         )}
-      </SheetFrame>
+      </>
     );
   }
 
   return (
-    <SheetFrame
-      notice={notice}
-      actions={
-        <>
-          {confirm}
-          {payment.nudgedAt ? null : (
-            <PillButton
-              label={t('pay.payee.notReceived')}
-              variant="plain"
-              onPress={onNotReceived}
-              disabled={busy !== null}
-              testID="pay-not-received"
-            />
-          )}
-        </>
-      }
-    >
+    <>
+      <SheetActions>
+        {confirm}
+        {payment.nudgedAt ? null : (
+          <PillButton
+            label={t('pay.payee.notReceived')}
+            variant="plain"
+            onPress={onNotReceived}
+            disabled={busy !== null}
+            loading={busy === 'notReceived'}
+            testID="pay-not-received"
+          />
+        )}
+      </SheetActions>
       <AmountHeader title={payment.title} amountSen={payment.amountSen} cny={null} />
       <TextSection
         title={t('pay.payee.saysPaid', { name })}
@@ -122,6 +119,6 @@ export function PayeeView({
           testID="pay-payee-nudged"
         />
       ) : null}
-    </SheetFrame>
+    </>
   );
 }
