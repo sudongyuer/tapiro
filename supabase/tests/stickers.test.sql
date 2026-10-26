@@ -1,5 +1,5 @@
 begin;
-select plan(21);
+select plan(22);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -114,7 +114,11 @@ select is(public.award_missing_stickers(), 1, 'the backfill awards a settled pay
 select is(
   (select row(owner_id, item_kind::text, title) from public.stickers where payment_id = (select id from ids where name = 'old')),
   row('00000000-0000-0000-0000-0000000000b2'::uuid, 'ride'::text, '拼车去 Sunway'::text),
-  'the backfilled sticker belongs to the payee with the payment''s kind and title; reverse payments stay without one'
+  'the backfilled sticker belongs to the payee with the payment''s kind and title'
+);
+select is(
+  (select count(*) from public.stickers where payment_id = (select id from ids where name = 'reverse')), 0::bigint,
+  'the backfill leaves the settled reverse payment without a sticker'
 );
 delete from auth.users where id = '00000000-0000-0000-0000-0000000000b2';
 select is((select count(*) from public.stickers), 0::bigint, 'deleting the account deletes its stickers');
