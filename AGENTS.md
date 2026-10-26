@@ -68,6 +68,8 @@
 - App config declares `supportedLocales`, `CFBundleAllowMixedLocalizations: true`, a `locales`
   map for the app name and permission strings, and `supportsRTL: false`.
 - No user-facing string is hard-coded; every string exists in all three locales.
+- Usage order is `zh-Hans` > `en` > `ms`; prioritise copy, review and checks in that order. `ms` is
+  checked mainly because it has the longest copy. Source: user, 2026-10-26.
 
 ## Animation
 
@@ -154,8 +156,10 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
 - UI changes add or update a check under `verification/ui` (`bun run verify:build`,
   `bun run verify:ui`), run as Pace describes; screenshots for state, video for motion.
   Missing scenes, missing identifiers and timeouts fail; open the screenshots before reporting.
-- UI checks run in `zh-Hans`. A case that shows long copy also declares `LOCALES` with `ms` to
-  catch truncation. Milestone runs cover light and dark (Pace).
+- UI checks run in `zh-Hans`; milestone runs (`--locales`) add `en` for every case. Cases assert app
+  copy through `ui.t('<key>')`, never a literal. A case that shows long copy also declares `LOCALES`
+  with `ms` to catch truncation. Milestone runs cover light and dark (Pace). Reason: no case ran in
+  `en`, the second most used language, until 2026-10-26.
 - Verify builds share one DerivedData per checkout (`.verify/DerivedData`). Never pass a
   per-task `-derivedDataPath`, copy the checkout to a temp directory, or call `simctl create`
   directly; the runner owns the `Tapiro Verify` Simulator. Reason: the disk incident below.
