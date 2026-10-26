@@ -9,10 +9,15 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 type Slots = { actions: (node: ReactNode) => void; layers: (node: ReactNode) => void };
 
-const SlotContext = createContext<Slots>({ actions: () => undefined, layers: () => undefined });
+const SlotContext = createContext<Slots | null>(null);
 
 function useSlot(name: keyof Slots, children: ReactNode) {
-  const place = useContext(SlotContext)[name];
+  const slots = useContext(SlotContext);
+  if (!slots)
+    throw new Error(
+      `Sheet${name === 'actions' ? 'Actions' : 'Layer'} must render inside SheetFrame`,
+    );
+  const place = slots[name];
   useLayoutEffect(() => place(children), [place, children]);
   useLayoutEffect(() => () => place(null), [place]);
 }
@@ -22,8 +27,8 @@ export function SheetActions({ children }: { children: ReactNode }) {
   return null;
 }
 
-// SwiftUI's Form only realizes rows near the viewport, so a Modal declared among the rows cannot present
-// once its row scrolls away; modals mount outside the Host through this slot.
+// A Modal declared among the Form rows stopped presenting once the pinned actions bar shortened the Form
+// (cause inside SwiftUI unconfirmed); modals mount outside the Host through this slot.
 export function SheetLayer({ children }: { children: ReactNode }) {
   useSlot('layers', children);
   return null;

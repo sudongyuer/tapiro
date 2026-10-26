@@ -65,7 +65,9 @@ def assert_centred(items, book, scale):
         "(小貘's overhang + 8 = 85 pt, plus the paper's 16 pt top padding, plus text-metric slack; "
         'the old split layout left about 250 pt)')
     panel_bottom = b['y'] + b['height'] + (HEADER_GAP + 2 * SLOT_HEIGHT + SLOT_GAP + PAPER_PADDING) * scale
-    above = summary['y'] - SAFE_TOP[round(screen['height'])]
+    safe_top = SAFE_TOP.get(round(screen['height']))
+    assert safe_top is not None, f"no safe-area inset known for screen height {screen['height']}; add it to SAFE_TOP"
+    above = summary['y'] - safe_top
     below = opener['y'] - BUTTONS_PADDING - panel_bottom
     assert above >= -1 and below >= -1, f'the group does not fit: {above:.0f} pt above, {below:.0f} pt below'
     assert abs(above - below) <= 12, f'the group is not centred: {above:.0f} pt above, {below:.0f} pt below'
