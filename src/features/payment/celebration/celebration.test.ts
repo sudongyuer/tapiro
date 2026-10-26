@@ -5,7 +5,7 @@ import type { Sticker } from '@/lib/stickers';
 import { createFixtureStickerService } from '@/lib/stickers/fixture';
 
 import { createFixturePaymentService, FIXTURE_PAYMENT_IDS } from '../fixturePaymentService';
-import { bookSlots, confettiPieces, glyphs, targetSlot } from './model';
+import { bookSlots, celebrationBody, confettiPieces, glyphs, targetSlot } from './model';
 import { ease, keyframes, TIMELINE, TOTAL } from './timeline';
 
 const earlier = (id: string): Sticker => ({
@@ -51,6 +51,27 @@ describe('book slots', () => {
       'empty',
       'empty',
     ]);
+  });
+});
+
+describe('unknown sticker count', () => {
+  test('claims no slot: earlier stickers stay, nothing is a target or an empty outline', () => {
+    const slots = bookSlots(null, [earlier('b')]);
+    expect(slots.map((slot) => slot.kind)).toEqual([
+      'sticker',
+      'earlier',
+      'earlier',
+      'earlier',
+      'earlier',
+      'earlier',
+    ]);
+  });
+
+  test('the body never claims a number or a first, even on a first settle', () => {
+    expect(celebrationBody(true, null)).toEqual({ key: 'pay.celebrate.unknownBody' });
+    expect(celebrationBody(false, null)).toEqual({ key: 'pay.celebrate.unknownBody' });
+    expect(celebrationBody(true, 1)).toEqual({ key: 'pay.celebrate.first.body' });
+    expect(celebrationBody(false, 8)).toEqual({ key: 'pay.celebrate.routine.body', count: 8 });
   });
 });
 

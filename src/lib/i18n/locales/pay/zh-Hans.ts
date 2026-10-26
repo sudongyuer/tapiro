@@ -95,6 +95,7 @@ export default {
     cny: '约 ¥{{amount}} · 马来西亚国家银行中间价',
     first: { title: '第一次收到钱！', body: '这一单的贴纸已经贴进你的贴纸本。' },
     routine: { title: '又帮成一单', body: '第 {{count}} 张贴纸贴好了。' },
+    unknownBody: '这一单的贴纸贴进了你的贴纸本。',
     badge: '第一次收款',
     receiptPaid: '{{name}} · 已付清',
     announce: '收到 {{amount}}。{{title}}，{{name}}已付清。贴纸已贴进你的贴纸本。',

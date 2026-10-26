@@ -13,7 +13,7 @@ import { vars } from '@/ui/theme/tokens';
 import { formatCny } from '../fx';
 import { BookPanel, type SlotCentre } from './BookPanel';
 import { Headline } from './Headline';
-import { bookSlots, targetSlot } from './model';
+import { bookSlots, celebrationBody, targetSlot } from './model';
 import { FlyingSticker, Receipt, STICKER_OFFSET } from './ReceiptSticker';
 import { TIMELINE, tween } from './timeline';
 import { useCelebrationClock } from './useCelebrationClock';
@@ -56,8 +56,8 @@ export function Celebration({
     const p = tween(clock.value, TIMELINE.buttons, 0, 1);
     return { opacity: p, transform: [{ translateY: 10 * (1 - p) }] };
   });
-  const placed = data.count ?? (data.previous ? data.previous.length + 1 : 1);
-  const target = targetSlot(placed);
+  const target = data.count === null ? null : targetSlot(data.count);
+  const body = celebrationBody(data.first, data.count);
   const start = { x: width / 2, y: receiptTop + STICKER_OFFSET };
   const bookTitle = t('stickers.book.title');
   const counts: [string, string] | null =
@@ -89,7 +89,7 @@ export function Celebration({
             <BookPanel
               clock={clock}
               first={data.first}
-              slots={bookSlots(placed, data.previous)}
+              slots={bookSlots(data.count, data.previous)}
               target={target}
               title={bookTitle}
               counts={counts}
@@ -151,11 +151,9 @@ export function Celebration({
                     data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title',
                   )}
                   body={
-                    data.first
-                      ? t('pay.celebrate.first.body')
-                      : data.count === null
-                        ? t('pay.celebrate.first.body')
-                        : t('pay.celebrate.routine.body', { count: data.count })
+                    body.key === 'pay.celebrate.routine.body'
+                      ? t(body.key, { count: body.count })
+                      : t(body.key)
                   }
                   announcement={announcement}
                 />

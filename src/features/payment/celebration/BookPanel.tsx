@@ -20,8 +20,9 @@ const BUMP = [0, 0.22, 0.55, 1];
 
 export type SlotCentre = { x: number; y: number; width: number };
 
-export function slotCentre(grid: LayoutRectangle, index: number): SlotCentre {
+export function slotCentre(grid: LayoutRectangle, index: number | null): SlotCentre {
   const width = (grid.width - 2 * SLOT_GAP) / 3;
+  if (index === null) return { x: grid.x + grid.width / 2, y: grid.y + grid.height / 2, width };
   const column = index % 3;
   const row = Math.floor(index / 3);
   return {
@@ -46,7 +47,7 @@ export function BookPanel({
   clock: Clock;
   first: boolean;
   slots: BookSlot[];
-  target: number;
+  target: number | null;
   title: string;
   counts: [string, string] | null;
   badge: string;

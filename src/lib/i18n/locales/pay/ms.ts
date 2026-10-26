@@ -104,6 +104,7 @@ export default {
       body: 'Pelekat tugasan ini sudah ditampal dalam buku pelekat anda.',
     },
     routine: { title: 'Satu lagi selesai', body: 'Pelekat ke-{{count}} sudah ditampal.' },
+    unknownBody: 'Pelekat tugasan ini masuk ke dalam buku pelekat anda.',
     badge: 'Bayaran pertama',
     receiptPaid: '{{name}} · Sudah dibayar',
     announce:

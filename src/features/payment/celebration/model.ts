@@ -12,14 +12,25 @@ export function targetSlot(count: number) {
   return Math.min(Math.max(count, 1), BOOK_SLOTS) - 1;
 }
 
-export function bookSlots(count: number, previous: readonly Sticker[] | null): BookSlot[] {
-  const target = targetSlot(count);
+export function bookSlots(count: number | null, previous: readonly Sticker[] | null): BookSlot[] {
+  const target = count === null ? null : targetSlot(count);
   return Array.from({ length: BOOK_SLOTS }, (_, index): BookSlot => {
     if (index === target) return { kind: 'target' };
-    if (index > target) return { kind: 'empty' };
+    if (target !== null && index > target) return { kind: 'empty' };
     const sticker = previous?.[index];
     return sticker ? { kind: 'sticker', sticker } : { kind: 'earlier' };
   });
+}
+
+export type CelebrationBody =
+  | { key: 'pay.celebrate.first.body' }
+  | { key: 'pay.celebrate.routine.body'; count: number }
+  | { key: 'pay.celebrate.unknownBody' };
+
+export function celebrationBody(first: boolean, count: number | null): CelebrationBody {
+  if (count === null) return { key: 'pay.celebrate.unknownBody' };
+  if (first) return { key: 'pay.celebrate.first.body' };
+  return { key: 'pay.celebrate.routine.body', count };
 }
 
 export type Glyph = { kind: 'digit'; digit: number } | { kind: 'mark'; text: string };

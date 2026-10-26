@@ -36,7 +36,11 @@ export function useCelebrationClock(ready: boolean, announcement: string) {
     if (!ready) return;
     if (reduceMotion) {
       clock.set(TOTAL);
-      fade.set(withTiming(1, { duration: REDUCED_FADE }));
+      fade.set(
+        withTiming(1, { duration: REDUCED_FADE }, (finished) => {
+          if (finished) scheduleOnRN(setButtonsLive, true);
+        }),
+      );
       return;
     }
     clock.set(withTiming(TOTAL, { duration: TOTAL, easing: Easing.linear }));
@@ -51,7 +55,7 @@ export function useCelebrationClock(ready: boolean, announcement: string) {
   );
 
   useAnimatedReaction(
-    () => clock.value >= TIMELINE.buttons.start,
+    () => !reduceMotion && clock.value >= TIMELINE.buttons.start,
     (now, before) => {
       if (now && before !== true) scheduleOnRN(setButtonsLive, true);
     },
@@ -60,8 +64,10 @@ export function useCelebrationClock(ready: boolean, announcement: string) {
   const skip = useCallback(() => {
     cancelAnimation(clock);
     clock.set(TOTAL);
+    cancelAnimation(fade);
+    fade.set(1);
     setButtonsLive(true);
-  }, [clock]);
+  }, [clock, fade]);
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
 

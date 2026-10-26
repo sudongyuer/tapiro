@@ -104,6 +104,7 @@ export default {
       body: 'This errand’s sticker is now in your sticker book.',
     },
     routine: { title: 'Another one done', body: 'Sticker {{count}} is in your book.' },
+    unknownBody: 'This errand’s sticker went into your sticker book.',
     badge: 'First payment',
     receiptPaid: '{{name}} · Paid',
     announce:
