@@ -636,3 +636,24 @@ Verification: see the PR; `bun test`, `supabase test db` (stickers 17/17, paymen
 
 Known limits: device-only checks (haptic, Reduce Motion, VoiceOver announcement, motion feel); no UI case injects a
 failed sticker load; stickers for the payer side and categories come with steps 5–6.
+
+### Payment walkthrough fixes (2026-10-26)
+
+Decisions: KICKOFF 2026-10-26 (walkthrough "1A 2A 3A 4A"). Branch `fix/pay-walkthrough`.
+
+- 1A: the pay sheet's main action is a primary `PillButton` pinned under the form (`SheetFrame.tsx`, safe area plus
+  8 pt): 已收到 for the payee with 还没收到 as a plain text button under it (cash: 已收到 only), and 我已付款 for the payer,
+  which used the same row pattern. 撤回「我已付款」 stays a row. Busy and failure handling is unchanged.
+- 2A: the celebration lays out headline, 小貘 and the book as one group centred above the buttons; the panel rises as
+  before and then moves up by the measured lower spacer during the flight (`TIMELINE.converge`, 500 + 520 ms, the X
+  flight curve). The flight targets the slot's final position. The receipt starts 16 pt below the safe area instead of
+  66 pt below the headline so it falls clear of the rising book.
+- 3A: the new sticker lands in slot 0; up to five earlier stickers shift one slot forward (`TIMELINE.shift`, 460 + 220 ms,
+  transforms only) and the slot that receives the last card fades its outline. Unknown count: no target, no shift.
+  Evidence: `src/features/payment/celebration/model.ts`, `celebration.test.ts`.
+- 4A: the sheet title is 收款 / Get paid / Terima bayaran for the payee (`pay.sheet.titlePayee`, `sheetTitleKey`).
+
+Verification: `bun test`; UI cases `pay_payee_confirm`, `pay_first_settle`, `pay_settle_routine`, `pay_mark_paid_undo`
+(zh-Hans light and dark), `pay_first_settle` and `pay_settle_routine` also en and ms. The cases assert the pinned
+buttons, the 收款 title, the landed tint in slot 0 with earlier stickers after it, and a subtitle-to-book gap under
+130 pt (the old layout left about 250 pt).
