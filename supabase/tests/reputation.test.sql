@@ -1,5 +1,5 @@
 begin;
-select plan(30);
+select plan(31);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -14,6 +14,7 @@ create function pg_temp.act_as(uid uuid) returns void language sql as $$
 $$;
 
 create temp table ids (name text primary key, id uuid);
+grant all on ids to authenticated;
 insert into ids values
   ('first', gen_random_uuid()), ('second', gen_random_uuid()), ('again', gen_random_uuid()),
   ('mixed', gen_random_uuid()), ('restored', gen_random_uuid());
@@ -176,6 +177,21 @@ select is(
    where payment_id = (select id from ids where name = 'orphan')),
   row('00000000-0000-0000-0000-0000000000b2'::uuid, null::uuid),
   'the payee''s event has no counterpart once the payer is gone'
+);
+
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000b2', 'cash');
+insert into ids values
+  ('client', public.open_payment('bounty', gen_random_uuid(), '帮带饭', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700));
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select public.confirm_payment_received((select id from ids where name = 'client'));
+reset role;
+select results_eq(
+  $$select user_id, counterpart_id from public.reputation_events
+    where payment_id = (select id from ids where name = 'client') and kind = 'settled' order by user_id$$,
+  $$values ('00000000-0000-0000-0000-0000000000a1'::uuid, '00000000-0000-0000-0000-0000000000b2'::uuid),
+           ('00000000-0000-0000-0000-0000000000b2'::uuid, '00000000-0000-0000-0000-0000000000a1'::uuid)$$,
+  'a client settle records the settled event of both sides'
 );
 
 select is(

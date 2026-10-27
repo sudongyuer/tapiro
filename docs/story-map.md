@@ -776,14 +776,14 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### rep.stickers 贴纸本和小貘等级
 
 - 故事：作为同学，我想每结清一件事得到一张贴纸、小貘升级，以便帮忙这件事有点乐趣。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id             | 行为                                                     | 覆盖   |
-| ------------------- | -------------------------------------------------------- | ------ |
-| rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                   | db, ui |
-| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit   |
+| 验收 id             | 行为                                                     | 覆盖                                                                            |
+| ------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                   | db:supabase/tests/stickers.test.sql, unit:src/lib/stickers/stickers.test.ts, ui |
+| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit                                                                            |
 
 ### rep.sticker-book 只读贴纸本「我帮过的忙」
 
@@ -794,7 +794,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                  | 行为                                                                                                                                      | 覆盖                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| rep.sticker-book.earn    | 收款人点已收到、服务器结清时在同一事务里发一张贴纸（拼车是汽车，没有类别的悬赏是小貘）；重放结清不多发，反向付款不发                      | db:supabase/tests/stickers.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, unit:src/lib/stickers/stickers.test.ts#a ride earns a car sticker; a bounty without a category earns a 小貘 sticker                                                                                                       |
+| rep.sticker-book.earn    | 结清时在同一事务里给收款人和付款人各发一张贴纸（拼车是汽车，有类别的悬赏是类别贴纸，没有类别是小貘）；重放结清不多发，反向付款不发        | db:supabase/tests/stickers.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, unit:src/lib/stickers/stickers.test.ts#a ride earns a car sticker; a bounty without a category earns a 小貘 sticker                                                                                                       |
 | rep.sticker-book.private | 只有自己读得到自己的贴纸，客户端不能新增、修改或删除；删除账号时一起删除                                                                  | db:supabase/tests/stickers.test.sql                                                                                                                                                                                                                                                                                                                                                 |
 | rep.sticker-book.me-row  | 「我的」在收款方式上面有一行「我帮过的忙」和张数，点进贴纸本（push，系统返回）                                                            | ui:sticker_book, ui:sticker_book_empty                                                                                                                                                                                                                                                                                                                                              |
 | rep.sticker-book.grid    | 三列、最新在前，每张贴纸下有白色标签和日期，只读；长标题在马来文下也排得下                                                                | ui:sticker_book, unit:src/lib/stickers/stickers.test.ts#stickers list newest first                                                                                                                                                                                                                                                                                                  |

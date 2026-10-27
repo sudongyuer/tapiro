@@ -1,5 +1,5 @@
 begin;
-select plan(77);
+select plan(79);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -9,7 +9,8 @@ values
   ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'd@example.com', '{"full_name":"Devi"}'),
   ('00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'e@example.com', '{"full_name":"Emma"}'),
   ('00000000-0000-0000-0000-0000000000f6', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'f@example.com', '{"full_name":"Farid"}'),
-  ('00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'g@example.com', '{"full_name":"Grace"}');
+  ('00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'g@example.com', '{"full_name":"Grace"}'),
+  ('00000000-0000-0000-0000-0000000000b8', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'h@example.com', '{"full_name":"Hafiz"}');
 
 create function pg_temp.act_as(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claim.sub', uid::text, true),
@@ -414,6 +415,26 @@ select is(
      and item_id = (select item_id from public.payments where id = (select id from ids where name = 'eleventh'))),
   0::bigint, 'the eleventh help in a Malaysia month grants nothing'
 );
+
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000b8', 'cash');
+insert into ids values
+  ('settle1', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000b8', 1000)),
+  ('settle2', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000b8', 500));
+insert into counts values ('b8_before', pg_temp.coins_of('00000000-0000-0000-0000-0000000000b8'));
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b8');
+select public.confirm_payment_received((select id from ids where name = 'settle1'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000b8')::bigint, (select n + 2 from counts where name = 'b8_before'),
+  'the first bounty settled through the settle grants the payee two coins'
+);
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b8');
+select public.confirm_payment_received((select id from ids where name = 'settle2'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000b8')::bigint, (select n + 3 from counts where name = 'b8_before'),
+  'a second bounty settled through the settle grants one more coin'
+);
+reset role;
 
 insert into counts values ('backfill_ledger', (select count(*) from public.coin_ledger));
 select is(private.backfill_coin_grants(), 0, 'the backfill writes nothing for users who have their grants');

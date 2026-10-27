@@ -49,10 +49,19 @@ the bounty category (`bounty_category`: pickup, buy, queue, handle, move, accomp
 rides and reverse payments carry none. Each sticker has a `role` (`payee` or `payer`), one per
 (payment, owner), and `award_missing_stickers()` gives every side of a settled forward payment that
 still has an account its missing sticker. Clients read their own rows and change state through `mark_payment_paid`, `undo_marked_paid`,
-`confirm_payment_received` (returns `firstSettled`) and `report_not_received`; every change logs a
+`confirm_payment_received` and `report_not_received`; every change logs a
 `payment_events` row, and `settled` is the event steps 5–6 build on. A payer reads the payee's
 `payee_methods` while a payment between them is unsettled. Proofs live in the private
 `payment-proofs` bucket under `<payment id>/`.
+
+`confirm_payment_received(payment)` (authenticated, payee only) settles and, for a forward payment,
+in the same transaction writes a sticker for the payee (`payee`) and for the payer (`payer`, when the
+account still exists) with the payment's title, kind and category, records both sides'
+`settled` reputation events (`private.record_settled`) and the payee's help grant
+(`private.grant_help_settled`). It returns `{ state: 'settled', firstSettled, stickerCount }` for the
+payee: `firstSettled` is true on the payee's first sticker as payee, `stickerCount` counts their
+whole book, payer stickers included. A reverse payment writes no sticker, event or grant and is
+never first; a replayed settle raises `55000` and writes nothing.
 
 ## Blocks
 

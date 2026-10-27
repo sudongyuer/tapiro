@@ -1,5 +1,5 @@
 begin;
-select plan(26);
+select plan(28);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -70,20 +70,42 @@ select throws_ok(
 );
 
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
-select is((select count(*) from public.stickers), 0::bigint, 'the payer cannot read the payee''s stickers');
+select results_eq(
+  $$select payment_id, role::text from public.stickers$$,
+  $$select id, 'payer' from ids where name = 'parcel'$$,
+  'the payer reads only their own payer sticker'
+);
 
 reset role;
+select results_eq(
+  $$select owner_id, role::text, item_kind::text, title, category::text from public.stickers
+    where payment_id = (select id from ids where name = 'parcel') order by role$$,
+  $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee', 'bounty', '帮取快递', 'pickup'),
+           ('00000000-0000-0000-0000-0000000000a1'::uuid, 'payer', 'bounty', '帮取快递', 'pickup')$$,
+  'one settle writes a sticker for each side with the payment''s category, and the replay added none'
+);
 insert into ids values ('reverse', public.open_reverse_payment((select id from ids where name = 'parcel')));
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select is(
   public.confirm_payment_received((select id from ids where name = 'reverse')),
-  '{"state": "settled", "firstSettled": false, "stickerCount": 0}'::jsonb,
-  'settling a reverse payment earns no sticker and is not a first settle'
+  '{"state": "settled", "firstSettled": false, "stickerCount": 1}'::jsonb,
+  'settling a reverse payment earns no sticker, is not a first settle and counts the payer''s existing sticker'
 );
 select is(
   (select count(*) from public.stickers where payment_id = (select id from ids where name = 'reverse')), 0::bigint,
   'the poster paid back holds no sticker for the reverse payment'
+);
+
+reset role;
+insert into ids values
+  ('help', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500, item_category => 'queue'));
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select is(
+  public.confirm_payment_received((select id from ids where name = 'help')),
+  '{"state": "settled", "firstSettled": true, "stickerCount": 2}'::jsonb,
+  'a user who paid first gets the first settle on their first help, counting the whole book'
 );
 
 reset role;
@@ -95,11 +117,6 @@ select throws_ok(
   $$insert into public.stickers (owner_id, payment_id, role, item_kind, title)
     values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'parcel'), 'payer', 'bounty', '帮取快递')$$,
   '23505', null, 'one owner holds at most one sticker per payment'
-);
-select lives_ok(
-  $$insert into public.stickers (owner_id, payment_id, role, item_kind, category, title)
-    values ('00000000-0000-0000-0000-0000000000a1', (select id from ids where name = 'parcel'), 'payer', 'bounty', 'pickup', '帮取快递')$$,
-  'two owners hold a sticker each for one payment'
 );
 select throws_ok(
   $$insert into public.stickers (owner_id, payment_id, role, item_kind, category, title)
@@ -127,7 +144,7 @@ select is(
 );
 update public.payments set state = 'settled', settled_at = now() - interval '3 days', method_type = 'cash'
 where id = (select id from ids where name = 'old');
-select is(public.award_missing_stickers(), 4, 'the backfill awards every missing side of the settled payments');
+select is(public.award_missing_stickers(), 2, 'the backfill awards both sides of a settled payment that has no stickers');
 select results_eq(
   $$select owner_id, role::text, item_kind::text, title from public.stickers
     where payment_id = (select id from ids where name = 'old') order by role$$,
@@ -141,6 +158,8 @@ select is(
 );
 insert into ids values
   ('gone', public.open_payment('bounty', gen_random_uuid(), '帮忙搬宿舍', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 2000, item_category => 'move'));
+insert into ids values
+  ('orphan', public.open_payment('bounty', gen_random_uuid(), '帮忙拿外卖', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 900));
 update public.payments set state = 'settled', settled_at = now(), method_type = 'cash'
 where id = (select id from ids where name = 'gone');
 delete from auth.users where id = '00000000-0000-0000-0000-0000000000d4';
@@ -150,6 +169,15 @@ select results_eq(
     where payment_id = (select id from ids where name = 'gone')$$,
   $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee', 'move')$$,
   'the backfilled sticker carries the payment''s category'
+);
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select public.confirm_payment_received((select id from ids where name = 'orphan'));
+reset role;
+select results_eq(
+  $$select owner_id, role::text from public.stickers where payment_id = (select id from ids where name = 'orphan')$$,
+  $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee')$$,
+  'a settle whose payer was deleted writes only the payee''s sticker'
 );
 delete from auth.users where id = '00000000-0000-0000-0000-0000000000b2';
 select is(
