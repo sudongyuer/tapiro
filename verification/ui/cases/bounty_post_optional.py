@@ -50,6 +50,17 @@ days = ui.wait(lambda items: [i for i in items if i.get('type') == 'Button' and 
 assert any(day.get('enabled') is False for day in days), 'past days are not disabled in the calendar'
 open_days = sorted((day for day in days if day.get('enabled')), key=lambda day: (day['frame']['y'], day['frame']['x']))
 ui.capture('02a-calendar')
+if len(open_days) < 2:
+    top = min(day['frame']['y'] for day in days)
+    header = [i for i in ui.read() if i.get('type') == 'Button' and i.get('enabled') and i['frame']['y'] < top - 20
+              and i['frame']['width'] < 60]
+    forward = max(header, key=lambda i: i['frame']['x'])['frame']
+    ui.tap_point(forward['x'] + forward['width'] / 2, forward['y'] + forward['height'] / 2)
+    first = ui.wait(lambda items: min((i for i in items if i.get('type') == 'Button' and i.get('enabled')
+                                       and 40 <= i['frame']['width'] <= 48 and 40 <= i['frame']['height'] <= 50),
+                                      key=lambda day: (day['frame']['y'], day['frame']['x']), default=None),
+                    'next month shows no open day')
+    open_days = [open_days[0], first]
 tomorrow = open_days[1]['frame']
 ui.tap_point(tomorrow['x'] + tomorrow['width'] / 2, tomorrow['y'] + tomorrow['height'] / 2)
 ui.tap_point(OUTSIDE_POPOVER[0], OUTSIDE_POPOVER[1])

@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser } from '@/features/account';
+import { useStartPost } from '@/features/bounty';
 import { HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
 import { useI18n } from '@/lib/i18n';
 
@@ -15,6 +16,13 @@ export default function BountyHome() {
   const name =
     (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user?.name ?? '';
   const stack = useLiveStackState();
+  const startPost = useStartPost({
+    open: () => router.push('/bounty-post'),
+    pay: (paymentId) => {
+      router.back();
+      router.push({ pathname: '/pay/[id]', params: { id: paymentId } });
+    },
+  });
   const { scrollViewProps, onLiveCardsLayout } = useHomeScroll(() => stack.setOpen(true));
 
   return (
@@ -24,7 +32,7 @@ export default function BountyHome() {
         <Stack.Toolbar.Button
           icon="plus"
           accessibilityLabel={t('bounty.post.open')}
-          onPress={() => router.push('/bounty-post')}
+          onPress={startPost}
         />
       </Stack.Toolbar>
       <HomeScreen

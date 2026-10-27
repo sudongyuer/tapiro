@@ -531,7 +531,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | bounty.post.limits          | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit       |
 | bounty.post.category        | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql             |
 | bounty.post.cost            | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | db:supabase/tests/bounty_publish.test.sql, unit, ui:bounty_post_publish, ui:bounty_post_coin |
-| bounty.post.publish-blocked | 有没付清的钱时发布被拒，什么都不写                                                | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_blocked |
+| bounty.post.publish-blocked | 有没付清的钱时发布被拒，什么都不写                                                | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_blocked, ui:bounty_post_unpaid_hint, unit:src/features/bounty/post/startPost.test.ts |
 | bounty.post.no-balance      | 没有免费名额也没有貘币时发布被拒，什么都不写                                      | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_no_balance |
 | bounty.post.replay          | 同一条重发只发布一次、只扣一次                                                    | db:supabase/tests/bounty_publish.test.sql       |
 | bounty.post.expiry          | 没有截止时间的悬赏 7 天后关闭、有截止时间的到点关闭，没人被选中就退回             | db:supabase/tests/bounty_jobs.test.sql          |

@@ -128,8 +128,10 @@ def tap_sheet_action(ui, label, besides):
 DEMO_TITLE = '帮我取个快递'
 
 
-def open_confirm(ui):
+def open_confirm(ui, hint=False):
     open_post(ui)
+    if hint:
+        dismiss_hint(ui)
     ui.wait(lambda items: field_text(ui, items, 'bounty-post-title') == DEMO_TITLE, 'the demo draft is not in the form')
     next_step(ui)
     return ui.element('bounty-post-confirm')
@@ -158,3 +160,8 @@ def publish_and_close(ui):
     ui.gone('bounty-post-confirm', timeout=30)
     ui.element('home-scroll')
 
+
+def dismiss_hint(ui):
+    ui.labelled(ui.t('bounty.post.hint.title'))
+    ui.tap_label(ui.t('bounty.post.hint.later'))
+    ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.post.hint.later') for i in items), 'the hint stayed')
