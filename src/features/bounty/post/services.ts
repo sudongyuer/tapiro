@@ -1,5 +1,6 @@
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
+import { userCleanups } from '@/lib/userCleanups';
 
 import { newDraftId } from './draftId';
 import { settingsDraftStorage } from './draftStorage';
@@ -13,5 +14,7 @@ export const postService: PostService = uiVerify
   : createSupabasePostService(getSupabase());
 
 export const draftStore = createDraftStore(settingsDraftStorage, newDraftId);
+
+userCleanups.register((userId) => draftStore.clear(userId));
 
 export { newDraftId };

@@ -1,5 +1,6 @@
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyFixture, uiVerifySignedIn } from '@/lib/uiVerify';
+import { userCleanups } from '@/lib/userCleanups';
 
 import { createAccountActions } from './accountActions';
 import { authService } from './authService';
@@ -25,4 +26,5 @@ export const accountActions = createAccountActions({
   auth: authService,
   onboarding: onboardingStore,
   profiles: profileStore,
+  cleanups: userCleanups,
 });
