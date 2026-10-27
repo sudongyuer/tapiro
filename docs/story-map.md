@@ -773,13 +773,13 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id            | 行为                                                               | 覆盖                                        |
-| ------------------ | ------------------------------------------------------------------ | ------------------------------------------- |
-| rep.tier.inputs    | 按 180 天内结清数、不同对象、完成率和按时付款算；评价在第 6 步加入 | db:supabase/tests/reputation.test.sql, unit |
-| rep.tier.recompute | 每天马来西亚时间 03:30 重算                                        | db:supabase/tests/reputation.test.sql       |
-| rep.tier.visible   | 所有登录用户只读得到档位，读不到明细                               | db:supabase/tests/reputation.test.sql       |
-| rep.tier.tiers     | 新朋友 / 靠谱 / 很靠谱 / 貘友四档，以文字徽章显示                  | ui                                          |
-| rep.tier.drop      | 掉档时用一个平静的系统弹窗说明原因和怎么恢复                       | ui                                          |
+| 验收 id            | 行为                                                                                                     | 覆盖                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| rep.tier.inputs    | 按 180 天内结清数、不同对象、完成率和注册时长算；按时付款比例只记在快照里、不参与门槛；评价在第 6 步加入 | db:supabase/tests/reputation.test.sql, unit |
+| rep.tier.recompute | 每天马来西亚时间 03:30 重算                                                                              | db:supabase/tests/reputation.test.sql       |
+| rep.tier.visible   | 所有登录用户只读得到档位，读不到明细                                                                     | db:supabase/tests/reputation.test.sql       |
+| rep.tier.tiers     | 新朋友 / 靠谱 / 很靠谱 / 貘友四档，以文字徽章显示                                                        | ui                                          |
+| rep.tier.drop      | 掉档时用一个平静的系统弹窗说明原因和怎么恢复                                                             | ui                                          |
 
 ### rep.no-show 放鸽子记录
 
