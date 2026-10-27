@@ -1,4 +1,5 @@
 import type { PayeeMethod, PayeeType } from '@/lib/payeeMethods';
+import type { BountyCategory } from '@/lib/stickers';
 
 export const PAYMENT_STATES = ['due', 'marked_paid', 'settled', 'disputed'] as const;
 export type PaymentState = (typeof PAYMENT_STATES)[number];
@@ -7,6 +8,7 @@ export type PaymentRole = 'payer' | 'payee';
 export type Payment = {
   id: string;
   itemKind: 'bounty' | 'ride';
+  category: BountyCategory | null;
   title: string;
   amountSen: number;
   reference: string;

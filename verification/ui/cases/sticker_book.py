@@ -1,4 +1,4 @@
-"""我的 shows 我帮过的忙 · 7 张 above 收款方式; the row pushes the sticker book: outlined title, count line, seven worst-case stickers (long titles wrap to two lines, ride → car, bounty → 小貘) in three columns newest first, and system back returns to 我的."""
+"""我的 shows 我帮过的忙 · 7 张 above 收款方式; the row pushes the sticker book: outlined title, count line, seven worst-case stickers (long titles wrap to two lines, ride → car, bounty → its category sticker) in three columns newest first, and system back returns to 我的."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))

@@ -1,12 +1,13 @@
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { StyleSheet, View } from 'react-native';
 
+import type { BountyCategory } from '@/lib/stickers';
+
 import { ParcelArt, StickerShadow } from './StickerArt';
 import { vars, type TokenName } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
-export type StickerCategory =
-  'pickup' | 'buy' | 'queue' | 'handle' | 'move' | 'accompany' | 'study' | 'other';
+export type StickerCategory = BountyCategory;
 
 const SYMBOLS: Record<Exclude<StickerCategory, 'pickup'>, SFSymbol> = {
   buy: 'bag.fill',

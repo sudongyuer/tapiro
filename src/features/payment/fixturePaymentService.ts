@@ -93,6 +93,7 @@ function asMethods(details: PayeeDetails[], owner: string): PayeeMethod[] {
 export type EarnSticker = (input: {
   paymentId: string;
   itemKind: Payment['itemKind'];
+  category: Payment['category'];
   title: string;
 }) => number | null;
 
@@ -128,9 +129,11 @@ export function createFixturePaymentService(
   const items = ITEMS[options.variant];
   const opened = new Date(Date.now() - 10 * 60_000).toISOString();
   const common = { itemKind: 'bounty' as const, nudgedAt: null, createdAt: opened, reverses: null };
+  const owed = { ...common, category: 'buy' as const };
   const catalog: Record<string, Payment> = {
     [FIXTURE_PAYMENT_IDS.owe]: {
       ...common,
+      category: 'pickup',
       id: FIXTURE_PAYMENT_IDS.owe,
       title: items.owe[0],
       amountSen: items.owe[1],
@@ -144,7 +147,7 @@ export function createFixturePaymentService(
       markedPaidAt: null,
     },
     [FIXTURE_PAYMENT_IDS.owed]: {
-      ...common,
+      ...owed,
       id: FIXTURE_PAYMENT_IDS.owed,
       title: items.owed[0],
       amountSen: items.owed[1],
@@ -158,7 +161,7 @@ export function createFixturePaymentService(
       markedPaidAt: opened,
     },
     [FIXTURE_PAYMENT_IDS.owedCash]: {
-      ...common,
+      ...owed,
       id: FIXTURE_PAYMENT_IDS.owedCash,
       title: items.owed[0],
       amountSen: items.owed[1],
@@ -254,6 +257,7 @@ export function createFixturePaymentService(
       const stickerCount = earnSticker({
         paymentId,
         itemKind: payment.itemKind,
+        category: payment.category,
         title: payment.title,
       });
       return { firstSettled: stickerCount === 1, stickerCount };

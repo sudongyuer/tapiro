@@ -9,11 +9,29 @@ export type Sticker = {
   earnedAt: string;
 };
 
-export type StickerArt = 'car' | 'mascot';
+export const BOUNTY_CATEGORIES = [
+  'pickup',
+  'buy',
+  'queue',
+  'handle',
+  'move',
+  'accompany',
+  'study',
+  'other',
+] as const;
+export type BountyCategory = (typeof BOUNTY_CATEGORIES)[number];
+
+export function bountyCategory(value: unknown): BountyCategory | null {
+  return BOUNTY_CATEGORIES.find((category) => category === value) ?? null;
+}
+
+export type StickerArt =
+  { kind: 'car' } | { kind: 'mascot' } | { kind: 'category'; category: BountyCategory };
 
 export function stickerArt(sticker: Pick<Sticker, 'itemKind' | 'category'>): StickerArt {
-  if (sticker.itemKind === 'ride') return 'car';
-  return 'mascot';
+  if (sticker.itemKind === 'ride') return { kind: 'car' };
+  const category = bountyCategory(sticker.category);
+  return category ? { kind: 'category', category } : { kind: 'mascot' };
 }
 
 export function newestFirst(stickers: readonly Sticker[]) {

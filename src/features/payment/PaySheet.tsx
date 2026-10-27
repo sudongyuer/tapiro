@@ -77,7 +77,7 @@ export function PaySheet({
       amountSen: payment.amountSen,
       cnyFen: cnyFen(payment.amountSen, rate, new Date()),
       itemKind: payment.itemKind,
-      category: null,
+      category: payment.category,
     });
   }
 
