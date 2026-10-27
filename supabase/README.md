@@ -180,6 +180,34 @@ user) and deletes the address rows of every bounty they posted. Their applicatio
 keep their rows for the other side with the deleted party set null, which is why `bounties_helper`
 allows a `confirmed` bounty without a helper.
 
+### Read model
+
+Five `security definer` functions (authenticated) return JSON and apply the `bounties_select` rules themselves
+through `private.bounty_viewer_role(b, uid)`: `poster`, `helper`, `applicant` (any application, while no block stands
+between the applicant and the poster), `viewer` (an `open` bounty, no block), or nothing. `settled` is never stored:
+`private.bounty_status(b)` reads `settled` for a `confirmed` bounty whose forward payment is settled. A deleted poster
+or helper (possible on `confirmed`) reads as `null`.
+
+- `bounty_detail(bounty)`: the bounty with derived `status`, `viewerRole`, `place` (label, latitude, longitude),
+  `poster` `{ id, name, tier }` and `myApplication`. Only the poster and the helper get `helper`, `etaAt`,
+  `previousEtaAt`, `issueReason` (latest 「有问题」 reason while `disputed`), `payment` `{ id, state }` and `events`
+  (with `applied` / `withdrawn` filtered as in `bounty_events`, `actor` as `poster`, `helper` or null). `address`
+  goes to the poster, and to the helper from `assigned` to `confirmed`. `applicantCount` (pending, blocked pairs left
+  out) goes to the poster. `P0002 bounty_not_found` when the caller cannot see the bounty. A non-selected applicant
+  never receives the helper's id or name.
+- `my_bounties()`: `{ posted, applied }`, each every non-terminal row plus the 20 most recent `confirmed`, `closed`
+  or `cancelled` rows, newest status change first. `applied` leaves out withdrawn applications; its
+  `counterpartName` is always the poster.
+- `bounty_applicants(bounty)`: poster only (`42501 not_poster`; `P0002 bounty_not_found` for an unknown id); pending
+  and selected applications, oldest first, blocked pairs left out, each with name, tier and note.
+- `bounty_live_items()`: one item per bounty for the caller, unranked (order of the table in the bounty schema plan,
+  Task 7). `confirmed` and `settled` bounties produce no item; the payment cards cover them. A pending application
+  produces none.
+- `mark_bounty_seen(bounty, card)`: writes the `bounty_seen` row for `not_selected` (the caller's application was
+  not selected) or `expired` (the caller's bounty closed by expiry); a repeat writes nothing. `P0002
+bounty_not_found` when the caller has no such card on that bounty. The row is per user, so every device stops
+  showing the card.
+
 ### Board: `nearby_bounties`
 
 `nearby_bounties(latitude, longitude, board_filter, page_after, page_size)` (authenticated, `security invoker`, so
