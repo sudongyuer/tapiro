@@ -1,5 +1,5 @@
 begin;
-select plan(79);
+select plan(82);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -228,6 +228,30 @@ select throws_ok(
   $$select public.spend_post('00000000-0000-0000-0000-0000000000a1', 'bounty', null)$$,
   '22023', 'invalid_charge', 'a spend needs an item'
 );
+select throws_ok(
+  $$select public.spend_post('00000000-0000-0000-0000-00000000dead', 'bounty', gen_random_uuid())$$,
+  'P0002', 'user_not_found', 'a spend by an unknown poster is rejected'
+);
+
+create function public.test_charge_race() returns trigger
+language plpgsql
+as $$
+begin
+  if pg_trigger_depth() = 1 then
+    insert into public.post_charges (item_kind, item_id, user_id, charge, free_month)
+    values (new.item_kind, new.item_id, '00000000-0000-0000-0000-0000000000b2', 'free', new.free_month);
+  end if;
+  return new;
+end;
+$$;
+create trigger test_charge_race before insert on public.post_charges
+  for each row execute function public.test_charge_race();
+select throws_ok(
+  $$select public.spend_post('00000000-0000-0000-0000-0000000000c3', 'bounty', gen_random_uuid())$$,
+  '22023', 'item_charged_elsewhere', 'a poster who loses the race for an item gets item_charged_elsewhere'
+);
+drop trigger test_charge_race on public.post_charges;
+drop function public.test_charge_race();
 
 select private.grant_coins('00000000-0000-0000-0000-0000000000c3', 'help_settled', 1, 'bounty', gen_random_uuid());
 select private.grant_coins('00000000-0000-0000-0000-0000000000c3', 'help_settled', 1, 'bounty', gen_random_uuid());
@@ -292,6 +316,9 @@ select throws_ok(
 select throws_ok(
   $$delete from public.coin_ledger where user_id = '00000000-0000-0000-0000-0000000000c3'$$,
   '55000', 'ledger_is_append_only', 'even the owner cannot delete a ledger row'
+);
+select throws_ok(
+  $$truncate public.coin_ledger$$, '55000', 'ledger_is_append_only', 'the ledger cannot be truncated'
 );
 
 select public.spend_post('00000000-0000-0000-0000-0000000000d4', 'bounty', (select id from ids where name = 'd1'));

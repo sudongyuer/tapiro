@@ -25,9 +25,10 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  if tg_op = 'UPDATE' and old.user_id is not null and new.user_id is null
-    and to_jsonb(new) - 'user_id' = to_jsonb(old) - 'user_id' then
-    return new;
+  if tg_op = 'UPDATE' then
+    if old.user_id is not null and new.user_id is null and to_jsonb(new) - 'user_id' = to_jsonb(old) - 'user_id' then
+      return new;
+    end if;
   end if;
   raise exception 'ledger_is_append_only' using errcode = '55000';
 end;
@@ -38,6 +39,10 @@ revoke all on function public.coin_ledger_append_only() from public, anon, authe
 create trigger coin_ledger_append_only
   before update or delete on public.coin_ledger
   for each row execute function public.coin_ledger_append_only();
+
+create trigger coin_ledger_no_truncate
+  before truncate on public.coin_ledger
+  for each statement execute function public.coin_ledger_append_only();
 
 alter table public.coin_ledger enable row level security;
 
@@ -114,6 +119,9 @@ begin
   if poster is null or kind is null or item is null then
     raise exception 'invalid_charge' using errcode = '22023';
   end if;
+  if not exists (select 1 from public.profiles where id = poster) then
+    raise exception 'user_not_found' using errcode = 'P0002';
+  end if;
   -- Serialises coin writes per user so two publishes cannot both take the last free slot or the last coin.
   perform pg_advisory_xact_lock(hashtextextended('coins:' || poster::text, 0));
   select * into stored from public.post_charges where item_kind = kind and item_id = item;
@@ -134,8 +142,12 @@ begin
   else
     raise exception 'no_balance' using errcode = '55000';
   end if;
-  insert into public.post_charges (item_kind, item_id, user_id, charge, free_month)
-  values (kind, item, poster, charged, month);
+  begin
+    insert into public.post_charges (item_kind, item_id, user_id, charge, free_month)
+    values (kind, item, poster, charged, month);
+  exception when unique_violation then
+    raise exception 'item_charged_elsewhere' using errcode = '22023';
+  end;
   perform private.grant_coins(poster, 'onboarding_first_post', 1);
   return charged::text;
 end;
