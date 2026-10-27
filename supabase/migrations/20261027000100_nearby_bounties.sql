@@ -2,7 +2,7 @@ create index bounties_open_recent on public.bounties (created_at desc, id desc) 
 
 create function private.bounty_slot(starts_at timestamptz, ends_at timestamptz) returns tstzrange
 language sql
-immutable
+stable
 set search_path = ''
 as $$
   select case when starts_at is not null
@@ -33,6 +33,8 @@ declare
   after_distance double precision;
   after_at timestamptz;
   after_id uuid;
+  cursor_latitude double precision;
+  cursor_longitude double precision;
   fetch_size integer;
   near_ids uuid[];
   near_distances double precision[];
@@ -64,13 +66,25 @@ begin
       after_id := (page_after ->> 'id')::uuid;
       after_distance := (page_after ->> 'distance')::double precision;
       after_at := (page_after ->> 'createdAt')::timestamptz;
+      cursor_latitude := (page_after ->> 'latitude')::double precision;
+      cursor_longitude := (page_after ->> 'longitude')::double precision;
     exception when others then
       raise exception 'invalid_board_query' using errcode = '22023';
     end;
     if after_id is null
       or (after_distance is null) = (after_at is null)
-      or (after_distance is not null and here is null)
+      or not (after_distance >= 0 and after_distance < 'Infinity')
+      or not isfinite(after_at)
     then
+      raise exception 'invalid_board_query' using errcode = '22023';
+    end if;
+    if cursor_latitude is distinct from latitude
+      or cursor_longitude is distinct from longitude
+      or page_after ->> 'filter' is distinct from board_filter
+    then
+      raise exception 'board_cursor_mismatch' using errcode = '22023';
+    end if;
+    if after_distance is not null and here is null then
       raise exception 'invalid_board_query' using errcode = '22023';
     end if;
   end if;
@@ -150,7 +164,7 @@ begin
     next_cursor := case when last_item.by_distance
       then jsonb_build_object('distance', last_item.distance::text, 'id', last_item.id)
       else jsonb_build_object('createdAt', last_item.created_at, 'id', last_item.id)
-    end;
+    end || jsonb_build_object('latitude', latitude, 'longitude', longitude, 'filter', board_filter);
   end if;
 
   return jsonb_build_object(

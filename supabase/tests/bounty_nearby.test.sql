@@ -1,5 +1,5 @@
 begin;
-select plan(43);
+select plan(52);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -129,7 +129,8 @@ values ('50000000-0000-0000-0000-000000000001', '双威金字塔 LG2 层 12 号�
 insert into public.bounty_applications (bounty_id, applicant_id, status)
 values
   ('50000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000b2', 'pending'),
-  ('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000b2', 'withdrawn');
+  ('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000b2', 'withdrawn'),
+  ('50000000-0000-0000-0000-000000000022', '00000000-0000-0000-0000-0000000000b2', 'pending');
 insert into public.blocks (blocker_id, blocked_id)
 values
   ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-0000000000d4'),
@@ -211,14 +212,15 @@ select is(
   (select r -> 'items' -> 0 ->> 'placeLabel' from results where name = 'near'), 'Sunway',
   'the place label is returned'
 );
-select ok(
-  (select position('双威金字塔' in r::text) = 0 and position('LG2' in r::text) = 0 from results where name = 'near'),
-  'the exact address is never returned'
-);
 reset role;
 select is(
   (select count(*) from public.bounty_addresses where bounty_id = '50000000-0000-0000-0000-000000000001'), 1::bigint,
   'the first bounty does have an exact address'
+);
+select ok(
+  (select position('双威金字塔' in r::text) = 0 and position('LG2' in r::text) = 0
+   from public.nearby_bounties(latitude => 3.0733, longitude => 101.6078) as r),
+  'the exact address is never returned, even to a caller whom RLS lets read it'
 );
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
@@ -241,9 +243,14 @@ select ok(
   and not (pg_temp.ids((select r from results where name = 'recent')) && array['50000000-0000-0000-0000-000000000021'::uuid]),
   'the viewer''s own bounty is excluded'
 );
+select is(
+  (select count(*) from public.bounties where id = '50000000-0000-0000-0000-000000000022'), 1::bigint,
+  'the viewer can read the closed bounty they applied to'
+);
 select ok(
-  not (pg_temp.ids((select r from results where name = 'recent')) && array['50000000-0000-0000-0000-000000000022'::uuid]),
-  'a closed bounty is excluded'
+  not (pg_temp.ids((select r from results where name = 'near')) && array['50000000-0000-0000-0000-000000000022'::uuid])
+  and not (pg_temp.ids((select r from results where name = 'recent')) && array['50000000-0000-0000-0000-000000000022'::uuid]),
+  'a closed bounty is excluded even when the viewer applied to it'
 );
 select ok(
   not (pg_temp.ids((select r from results where name = 'recent')) && array['50000000-0000-0000-0000-000000000023'::uuid]),
@@ -407,13 +414,67 @@ select throws_ok(
     'select public.nearby_bounties(page_after => %L)',
     public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_size => 1) -> 'next'
   ),
-  '22023', 'invalid_board_query', 'a distance cursor without a point is rejected'
+  '22023', 'board_cursor_mismatch', 'a distance cursor without a point is rejected'
+);
+select throws_ok(
+  format(
+    'select public.nearby_bounties(latitude => 3.0657, longitude => 101.6110, page_after => %L)',
+    public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_size => 1) -> 'next'
+  ),
+  '22023', 'board_cursor_mismatch', 'a cursor from Sunway Pyramid is rejected at Sunway Geo'
+);
+select throws_ok(
+  format(
+    'select public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, board_filter => %L, page_after => %L)',
+    'urgent', public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_size => 1) -> 'next'
+  ),
+  '22023', 'board_cursor_mismatch', 'a cursor from another filter is rejected'
+);
+select throws_ok(
+  format(
+    'select public.nearby_bounties(page_after => %L)',
+    public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_size => 19) -> 'next'
+  ),
+  '22023', 'board_cursor_mismatch', 'a recency cursor from a point session is rejected without the point'
+);
+select throws_ok(
+  format(
+    'select public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_after => %L)',
+    public.nearby_bounties(page_size => 1) -> 'next'
+  ),
+  '22023', 'board_cursor_mismatch', 'a cursor from a session without a point is rejected with a point'
+);
+select throws_ok(
+  $$select public.nearby_bounties(page_after => '{"createdAt":"2026-10-27T00:00:00Z","distance":"1","id":"50000000-0000-0000-0000-000000000001","latitude":null,"longitude":null,"filter":"all"}')$$,
+  '22023', 'invalid_board_query', 'a cursor with both a distance and a time is rejected'
+);
+select throws_ok(
+  $$select public.nearby_bounties(page_after => '{"createdAt":"2026-10-27T00:00:00Z","id":"not-a-uuid","latitude":null,"longitude":null,"filter":"all"}')$$,
+  '22023', 'invalid_board_query', 'a cursor with a malformed id is rejected'
+);
+select throws_ok(
+  $$select public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_after => '{"distance":"NaN","id":"50000000-0000-0000-0000-000000000001","latitude":3.0733,"longitude":101.6078,"filter":"all"}')$$,
+  '22023', 'invalid_board_query', 'a non-finite distance cursor is rejected'
+);
+
+reset role;
+update public.bounties set deadline_at = now() + interval '3 hours', expires_at = now() + interval '3 hours'
+where id = '50000000-0000-0000-0000-000000000006';
+update public.bounties set deadline_at = now() + interval '3 hours 1 second', expires_at = now() + interval '4 hours'
+where id = '50000000-0000-0000-0000-000000000004';
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select is(
+  pg_temp.ids(public.nearby_bounties(board_filter => 'urgent')),
+  array['50000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000006']::uuid[],
+  'urgent keeps a deadline exactly 3 hours away and drops one a second later'
 );
 
 reset role;
 set local role anon;
 select throws_ok(
-  $$select public.nearby_bounties()$$, '42501', null, 'anon cannot call nearby_bounties'
+  $$select public.nearby_bounties()$$, '42501', 'permission denied for function nearby_bounties',
+  'anon cannot call nearby_bounties'
 );
 
 select * from finish();
