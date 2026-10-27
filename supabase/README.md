@@ -77,6 +77,31 @@ tier. One row per (user, kind, item kind, item).
   payer's `on_time` is whether they marked it paid (or it settled) within 72 hours of opening.
   Reverse payments and repeat calls write nothing.
 
+## Coins
+
+`coin_ledger` is append-only: a client reads its own rows and never writes; even the owner role
+cannot update or delete a row (`55000 ledger_is_append_only`), except the `user_id → null` that
+account deletion makes, so a deleted user's rows stay without a user. The balance is the sum of
+`delta`. `post_charges` (server-only) records how each bounty or ride post was paid. Months are
+Malaysia calendar months, `malaysia_month(at)` (`Asia/Kuala_Lumpur`).
+
+- `spend_post(poster, kind, item)` (service role): `free` while the poster has fewer than 3
+  unrefunded free charges this month (bounties and rides share them), else `coin` with a `-1`
+  `post_spend` row; `55000 no_balance` with no free slot and no coin, and nothing is written. The
+  poster's first charge ever grants `onboarding_first_post` (+1), once. A replay for the same item
+  returns the stored charge and writes nothing; `22023 item_charged_elsewhere` when another poster
+  holds the item; `22023 invalid_charge` for a null argument.
+- `refund_post(kind, item)` (service role): stamps `refunded_at`; a `coin` charge gets a `+1`
+  `post_refund` row, a `free` charge frees its slot in its own month. A second call returns the
+  same charge and writes nothing; `P0002 charge_not_found` for an item never charged.
+- `coin_balance()` (authenticated, the caller): `{ coins, freePostsLeft, freePostsPerMonth: 3,
+nextFreeAt }`, `nextFreeAt` being 00:00 on the 1st of next month in Malaysia.
+- `private.grant_coins(uid, why, amount, kind, item)` (internal): writes one row unless the
+  once-per-user or once-per-item index already holds it; returns whether it wrote.
+
+Spends and refunds take a per-user advisory lock, so concurrent publishes cannot both take the
+last free slot or the last coin.
+
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);
