@@ -1,5 +1,5 @@
 begin;
-select plan(71);
+select plan(72);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -156,9 +156,12 @@ select is(
   0::bigint, 'a viewer gets no address, events, payment, helper, applicant count or application'
 );
 select is(
-  pg_temp.detail('c3', 'main') -> 'place',
+  pg_temp.detail('c3', 'main') -> 'place', '{"label": "KL Sentral"}'::jsonb, 'a viewer reads the place label only'
+);
+select is(
+  pg_temp.detail('a1', 'main') -> 'place',
   '{"label": "KL Sentral", "latitude": 3.134, "longitude": 101.686}'::jsonb,
-  'a viewer reads the place label and point'
+  'the poster reads the point'
 );
 select is(
   pg_temp.detail('c3', 'main') -> 'poster',
@@ -173,8 +176,8 @@ select is(
   pg_temp.detail('a1', 'main') - array['id', 'title', 'description', 'category', 'rewardSen', 'place', 'startsAt',
     'endsAt', 'deadlineAt', 'expiresAt', 'publishedAt', 'poster', 'events'],
   jsonb_build_object(
-    'status', 'open', 'viewerRole', 'poster', 'address', 'Block C, 3-2', 'helper', null, 'myApplication', null,
-    'applicantCount', 2, 'etaAt', null, 'previousEtaAt', null, 'autoConfirmAt', null, 'startLate', false,
+    'status', 'open', 'viewerRole', 'poster', 'distanceM', null, 'address', 'Block C, 3-2', 'helper', null,
+    'myApplication', null, 'applicantCount', 2, 'etaAt', null, 'previousEtaAt', null, 'autoConfirmAt', null, 'startLate', false,
     'issueReason', null, 'payment', null
   ),
   'the poster reads the address and the pending applicant count'
@@ -481,8 +484,8 @@ select throws_ok(
 );
 
 reset role;
-create temp table fns as select unnest(array['public.bounty_detail(uuid)', 'public.my_bounties()',
-  'public.bounty_applicants(uuid)', 'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)']) f;
+create temp table fns as select unnest(array['public.bounty_detail(uuid, double precision, double precision)',
+  'public.my_bounties()', 'public.bounty_applicants(uuid)', 'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)']) f;
 select is(
   (select count(*) from fns where has_function_privilege('anon', f, 'execute')), 0::bigint,
   'anon cannot execute any read function'
