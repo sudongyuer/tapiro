@@ -1,5 +1,5 @@
 begin;
-select plan(31);
+select plan(35);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -192,6 +192,39 @@ select results_eq(
   $$values ('00000000-0000-0000-0000-0000000000a1'::uuid, '00000000-0000-0000-0000-0000000000b2'::uuid),
            ('00000000-0000-0000-0000-0000000000b2'::uuid, '00000000-0000-0000-0000-0000000000a1'::uuid)$$,
   'a client settle records the settled event of both sides'
+);
+select is(
+  (select on_time from public.reputation_events
+   where payment_id = (select id from ids where name = 'client') and user_id = '00000000-0000-0000-0000-0000000000a1'),
+  null::boolean, 'a cash payment the payer never marked paid leaves on-time unknown'
+);
+
+insert into ids values ('ride', gen_random_uuid());
+insert into ids values
+  ('rider_a', public.open_payment('ride', (select id from ids where name = 'ride'), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)),
+  ('rider_c', public.open_payment('ride', (select id from ids where name = 'ride'), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 900));
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select public.confirm_payment_received((select id from ids where name = 'rider_a'));
+select public.confirm_payment_received((select id from ids where name = 'rider_c'));
+reset role;
+select results_eq(
+  $$select counterpart_id from public.reputation_events
+    where user_id = '00000000-0000-0000-0000-0000000000b2' and kind = 'settled'
+      and item_id = (select id from ids where name = 'ride')
+    order by counterpart_id$$,
+  $$values ('00000000-0000-0000-0000-0000000000a1'::uuid), ('00000000-0000-0000-0000-0000000000c3'::uuid)$$,
+  'a driver with two riders on one ride gets one settled event per rider'
+);
+select is(
+  (select count(*) from public.reputation_events
+   where item_id = (select id from ids where name = 'ride') and kind = 'settled'),
+  4::bigint, 'each rider payment records both sides'
+);
+select throws_ok(
+  $$insert into public.reputation_events (user_id, kind, item_kind, item_id, waived)
+    values ('00000000-0000-0000-0000-0000000000a1', 'no_show', 'bounty', (select id from ids where name = 'first'), false)$$,
+  '23505', null, 'a user holds at most one no-show per item'
 );
 
 select is(

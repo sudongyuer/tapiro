@@ -11,9 +11,13 @@ create table public.reputation_events (
   waived boolean not null default false,
   on_time boolean,
   created_at timestamptz not null default now(),
-  unique (user_id, kind, item_kind, item_id),
   check (kind = 'no_show' or not waived)
 );
+
+create unique index reputation_events_no_show_per_item on public.reputation_events (user_id, item_kind, item_id)
+where kind = 'no_show';
+create unique index reputation_events_settled_per_payment on public.reputation_events (user_id, payment_id)
+where kind = 'settled';
 
 create index reputation_events_user on public.reputation_events (user_id, kind, created_at);
 
@@ -68,10 +72,10 @@ as $$
   cross join lateral (
     values
       (p.payee_id, p.payer_id, null::boolean),
-      (p.payer_id, p.payee_id, coalesce(p.marked_paid_at, p.settled_at) - p.created_at <= interval '72 hours')
+      (p.payer_id, p.payee_id, p.marked_paid_at - p.created_at <= interval '72 hours')
   ) as side (user_id, counterpart_id, on_time)
   where p.id = payment and p.state = 'settled' and p.reverses is null and side.user_id is not null
-  on conflict do nothing;
+  on conflict (user_id, payment_id) where kind = 'settled' do nothing;
 $$;
 
 revoke all on function private.record_settled(uuid) from public, anon, authenticated;
