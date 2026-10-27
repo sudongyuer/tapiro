@@ -1,13 +1,15 @@
 """「＋ 时间」 and 「＋ 说明」 expand in place: the time row offers 截止 / 时间段 with system date pickers, a picked time
-sticks, and 移除 collapses it back; the description counter counts what was typed. A seeded long draft shows its
+sticks, and 移除 collapses it back; confirm shows the deadline and the description's first line; the description counter counts what was typed. A seeded long draft shows its
 counters in code points (an emoji counts once)."""
+import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import EMPTY_DRAFT, open_post, relaunch, typed  # noqa: E402
+from bounty import fill_fixed, open_post, relaunch, typed  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py']
+DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 300
@@ -78,11 +80,24 @@ ui.element('bounty-post-add-time')
 ui.gone('bounty-post-deadline')
 ui.capture('04-time-removed')
 
+ui.tap('bounty-post-add-time')
+ui.element('bounty-post-deadline')
+fill_fixed(ui)
+ui.tap_label(ui.t('bounty.post.next'))
+ui.element('bounty-post-confirm')
+deadline = re.compile(ui.pattern('bounty.post.confirm.deadlineAt', when=r'\S.*\d{2}:\d{2}'))
+ui.wait_label('bounty-post-time', lambda label: deadline.search(label), 'confirm does not show the chosen deadline')
+ui.wait_label('bounty-post-summary-description', lambda label: NOTE.capitalize() in label,
+              'confirm does not show the description')
+ui.capture('05-confirm')
+ui.tap('BackButton')
+ui.element('bounty-post-form')
+
 assert len(WORST_TITLE) != len(WORST_TITLE.encode('utf-16-le')) // 2, 'the seeded title must contain an astral character'
 ui.tap_label(ui.t('bounty.post.cancel'))
 ui.gone('bounty-post-form')
 relaunch(ui, add=['-uiVerifyBountyDraft', 'worst'])
 open_post(ui)
 counter('bounty-post-title-count', len(WORST_TITLE), 60)
-ui.capture('05-worst-counters')
+ui.capture('06-worst-counters')
 print(f'PASS: time and description rows expand, a picked time sticks ({before} → {after}), counters count code points')

@@ -74,6 +74,13 @@ const ms: typeof zhHans = {
       needCoin: 'Perlu 1 Syiling',
       pay: 'Bayar Sekarang',
       failed: 'Tidak berjaya dihantar. Cuba lagi.',
+      today: 'Hari ini',
+      tomorrow: 'Esok',
+      deadlineAt: 'Sebelum {{when}}',
+      windowAt: '{{start}} – {{end}}',
+      time: 'Masa',
+      description: 'Butiran',
+      rewardLabel: 'Ganjaran {{amount}}',
       invalid: {
         title: 'Ada satu perkara perlu diubah',
         action: 'Kembali dan Ubah',

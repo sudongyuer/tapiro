@@ -71,6 +71,13 @@ export default {
       needCoin: '需要 1 貘币',
       pay: '去付款',
       failed: '没发出去，再试一次',
+      today: '今天',
+      tomorrow: '明天',
+      deadlineAt: '{{when}} 前',
+      windowAt: '{{start}} – {{end}}',
+      time: '时间',
+      description: '说明',
+      rewardLabel: '赏金 {{amount}}',
       invalid: {
         title: '有一项要改一下',
         action: '回去修改',

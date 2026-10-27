@@ -74,6 +74,13 @@ const en: typeof zhHans = {
       needCoin: 'Needs 1 Coin',
       pay: 'Pay Now',
       failed: 'Didn’t go through. Try again.',
+      today: 'Today',
+      tomorrow: 'Tomorrow',
+      deadlineAt: 'By {{when}}',
+      windowAt: '{{start}} – {{end}}',
+      time: 'Time',
+      description: 'Details',
+      rewardLabel: 'Reward {{amount}}',
       invalid: {
         title: 'One thing needs a change',
         action: 'Go Back and Edit',

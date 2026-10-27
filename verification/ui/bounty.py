@@ -1,6 +1,6 @@
 import subprocess
 
-from driver import BUNDLE_ID, by_id, reach_home
+from driver import BUNDLE_ID, assert_touch_target, by_id, reach_home
 from run import REGIONS
 
 OPEN = 'bounty.post.open'
@@ -99,7 +99,7 @@ def close_sheet_by_swipe(ui):
     ui.gone('bounty-post-form')
 
 
-def relaunch(ui, drop=EMPTY_DRAFT, add=()):
+def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll'):
     args = list(ui.launch_args)
     for start in range(len(args) - len(drop) + 1):
         if args[start:start + len(drop)] == drop:
@@ -108,7 +108,7 @@ def relaunch(ui, drop=EMPTY_DRAFT, add=()):
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
     subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, '-AppleLanguages', f'({ui.locale})',
                     '-AppleLocale', REGIONS[ui.locale], *args, *add], check=True, capture_output=True, timeout=60)
-    ui.element('home-scroll', timeout=60)
+    ui.element(ready, timeout=60)
 
 
 def assert_grouped_background(ui, shot, f, name):
@@ -123,4 +123,38 @@ def tap_sheet_action(ui, label, besides):
                                             and i.get('AXUniqueId') != besides and i.get('type') == 'Button'), None),
                         f'action sheet button {label} never settled')['frame']
     ui.tap_point(action['x'] + action['width'] / 2, action['y'] + action['height'] / 2)
+
+
+DEMO_TITLE = '帮我取个快递'
+
+
+def open_confirm(ui):
+    open_post(ui)
+    ui.wait(lambda items: field_text(ui, items, 'bounty-post-title') == DEMO_TITLE, 'the demo draft is not in the form')
+    next_step(ui)
+    return ui.element('bounty-post-confirm')
+
+
+def cost_label(ui):
+    return (ui.element('bounty-post-cost') or {}).get('AXLabel') or ''
+
+
+def assert_cost(ui, expected):
+    return ui.wait_label('bounty-post-cost', lambda label: expected in label, f'cost row does not read {expected!r}')
+
+
+def assert_pinned(ui, identifier, name):
+    items = ui.read()
+    button, sheet = by_id(items, identifier), by_id(items, 'bounty-post-confirm')
+    assert button and sheet, f'{name} or the confirm sheet is missing'
+    assert_touch_target(button, name)
+    f, form = button['frame'], sheet['frame']
+    assert f['y'] >= form['y'] + form['height'] - 1, f'{name} is inside the form, not pinned below it: {f}'
+    return button
+
+
+def publish_and_close(ui):
+    ui.tap('bounty-post-publish')
+    ui.gone('bounty-post-confirm', timeout=30)
+    ui.element('home-scroll')
 

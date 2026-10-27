@@ -25,7 +25,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -38,8 +38,8 @@ import { errorKey } from './errorCopy';
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
 import { DescriptionRows, TimeRows } from './OptionalRows';
 import { draftStore } from './services';
-import type { DraftError, PostDraft } from './types';
-import { resetDraft, useDraft } from './useDraft';
+import type { PostDraft } from './types';
+import { formError, resetDraft, useDraft, useFormError } from './useDraft';
 import { codePoints, checkDraft, REWARD_MAX_RM, REWARD_MIN_RM, TITLE_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -50,6 +50,7 @@ type FormProps = { userId: string; onNext: () => void; onClose: () => void };
 
 export function PostForm(props: FormProps) {
   const draft = useDraft(props.userId);
+  useEffect(() => () => formError.set(null), []);
   return <PostFormBody key={draft.id} draft={draft} {...props} />;
 }
 
@@ -61,12 +62,12 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
   const description = useNativeState(draft.description ?? '');
   const titleField = useRef<TextFieldRef>(null);
   const rewardField = useRef<TextFieldRef>(null);
-  const [error, setError] = useState<DraftError | null>(null);
+  const error = useFormError();
   const shown = error ? errorKey(error) : null;
 
   function edit(patch: Partial<PostDraft>) {
     draftStore.update(userId, patch);
-    setError(null);
+    formError.set(null);
   }
 
   // onTextChange can miss the last keystroke when keys arrive faster than SwiftUI's change handler runs; the
@@ -91,8 +92,8 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
   function next() {
     sync();
     const checked = checkDraft(draftStore.load(userId), new Date());
-    if (!checked.ok) return setError(checked.error);
-    setError(null);
+    if (!checked.ok) return formError.set(checked.error);
+    formError.set(null);
     onNext();
   }
 
@@ -219,25 +220,13 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
             onEdit={edit}
           />
         </Section>
-        <ClearSection
-          userId={userId}
-          empty={draftStore.isEmpty(draft)}
-          onCleared={() => setError(null)}
-        />
+        <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} />
       </Form>
     </Host>
   );
 }
 
-function ClearSection({
-  userId,
-  empty,
-  onCleared,
-}: {
-  userId: string;
-  empty: boolean;
-  onCleared: () => void;
-}) {
+function ClearSection({ userId, empty }: { userId: string; empty: boolean }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const [asking, setAsking] = useState(false);
@@ -263,10 +252,7 @@ function ClearSection({
           <Button
             label={t('bounty.post.form.clearConfirm.confirm')}
             role="destructive"
-            onPress={() => {
-              resetDraft(userId);
-              onCleared();
-            }}
+            onPress={() => resetDraft(userId)}
           />
           <Button label={t('bounty.post.form.clearConfirm.cancel')} role="cancel" />
         </ConfirmationDialog.Actions>
