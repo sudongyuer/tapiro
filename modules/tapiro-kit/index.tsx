@@ -14,7 +14,7 @@ export type ResolvedPlace = {
 };
 export type PlaceResult =
   | { status: 'ok'; place: ResolvedPlace }
-  | { status: 'notFound' | 'failed'; code?: 'network' | 'unknown' };
+  | { status: 'notFound' | 'failed'; code?: 'network' | 'unknown' | 'stale' };
 
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;

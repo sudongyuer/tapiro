@@ -35,6 +35,14 @@ describe('place fixtures', () => {
     });
   });
 
+  test('an id the fixture never listed is stale', async () => {
+    const { places, searchId } = query('ok');
+    expect(await places.resolvePlace(searchId, 'gone')).toEqual({
+      status: 'failed',
+      code: 'stale',
+    });
+  });
+
   test('none answers with no results', () => {
     const { events } = query('none');
     expect(events[0]).toMatchObject({ status: 'ok', items: [] });

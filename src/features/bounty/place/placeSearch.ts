@@ -26,7 +26,7 @@ export const QUERY_DEBOUNCE_MS = 250;
 
 export const IDLE_SNAPSHOT: PlaceSearchSnapshot = { query: '', state: { kind: 'idle' } };
 
-const ENDED: PlaceResult = { status: 'failed', code: 'unknown' };
+export const STALE: PlaceResult = { status: 'failed', code: 'stale' };
 
 const systemTimers: Timers = {
   set: (run, ms) => setTimeout(run, ms),
@@ -40,9 +40,10 @@ export function createPlaceSearch(
   timers: Timers = systemTimers,
 ) {
   let snapshot = IDLE_SNAPSHOT;
-  let latestRequestId: string | null = null;
+  let latest: { requestId: string; query: string } | null = null;
   let pending: unknown = null;
   let ended = false;
+  let answered: { query: string; items: PlaceSuggestion[] } | null = null;
 
   const publish = (next: PlaceSearchSnapshot) => {
     snapshot = next;
@@ -56,7 +57,8 @@ export function createPlaceSearch(
 
   const searchId = facade.startPlaceSearch(region);
   const subscription = facade.addPlaceSuggestionsListener((event) => {
-    if (ended || event.searchId !== searchId || event.requestId !== latestRequestId) return;
+    if (ended || event.searchId !== searchId || event.requestId !== latest?.requestId) return;
+    answered = event.status === 'ok' ? { query: latest.query, items: event.items } : null;
     publish({
       query: snapshot.query,
       state: event.status === 'ok' ? { kind: 'ready', items: event.items } : { kind: 'failed' },
@@ -68,7 +70,7 @@ export function createPlaceSearch(
     setQuery(query: string) {
       if (ended) return;
       cancelPending();
-      latestRequestId = null;
+      latest = null;
       if (query.trim() === '') {
         publish({ query, state: { kind: 'idle' } });
         return;
@@ -76,11 +78,15 @@ export function createPlaceSearch(
       publish({ query, state: { kind: 'loading' } });
       pending = timers.set(() => {
         pending = null;
-        latestRequestId = facade.updatePlaceQuery(searchId, query);
+        if (answered?.query === query) {
+          publish({ query, state: { kind: 'ready', items: answered.items } });
+          return;
+        }
+        latest = { requestId: facade.updatePlaceQuery(searchId, query), query };
       }, QUERY_DEBOUNCE_MS);
     },
     resolve(suggestionId: string): Promise<PlaceResult> {
-      return ended ? Promise.resolve(ENDED) : facade.resolvePlace(searchId, suggestionId);
+      return ended ? Promise.resolve(STALE) : facade.resolvePlace(searchId, suggestionId);
     },
     end() {
       if (ended) return;

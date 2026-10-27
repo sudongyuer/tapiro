@@ -147,6 +147,53 @@ describe('suggestion events', () => {
   });
 });
 
+describe('a query that repeats the last answered one', () => {
+  function silentOnRepeats() {
+    const fake = fakeFacade();
+    const asked = new Set<string>();
+    const outbox: PlaceSuggestionsEvent[] = [];
+    const update = fake.facade.updatePlaceQuery;
+    fake.facade.updatePlaceQuery = (searchId, query) => {
+      const requestId = update(searchId, query);
+      if (!asked.has(query)) {
+        asked.add(query);
+        outbox.push({ searchId, requestId, status: 'ok', items: ITEMS });
+      }
+      return requestId;
+    };
+    const clock = fakeTimers();
+    const seen: PlaceSearchSnapshot[] = [];
+    const search = createPlaceSearch(fake.facade, null, (s) => seen.push(s), clock.timers);
+    const deliver = () => outbox.splice(0).forEach(fake.emit);
+    return { ...fake, ...clock, search, deliver, last: () => seen[seen.length - 1] };
+  }
+
+  test('shows the answer again without waiting on a facade that ignores repeated queries', () => {
+    const { search, queries, advance, deliver, last } = silentOnRepeats();
+    search.setQuery('sunway');
+    advance(QUERY_DEBOUNCE_MS);
+    deliver();
+    search.setQuery('sunwayx');
+    advance(100);
+    search.setQuery('sunway');
+    expect(last().state).toEqual({ kind: 'loading' });
+    advance(QUERY_DEBOUNCE_MS);
+    deliver();
+    expect(last()).toEqual({ query: 'sunway', state: { kind: 'ready', items: ITEMS } });
+    expect(queries.map((q) => q.query)).toEqual(['sunway']);
+  });
+
+  test('a retry after a failure goes back to the facade', () => {
+    const { search, queries, advance, emit } = setup();
+    search.setQuery('sunway');
+    advance(QUERY_DEBOUNCE_MS);
+    emit({ ...queries[0], status: 'failed', code: 'network' });
+    search.setQuery('sunway');
+    advance(QUERY_DEBOUNCE_MS);
+    expect(queries.map((q) => q.query)).toEqual(['sunway', 'sunway']);
+  });
+});
+
 describe('ending the search', () => {
   test('removes the listener, ends the native session and cancels a pending query', () => {
     const { search, queries, ended, listeners, advance } = setup();
@@ -166,7 +213,7 @@ describe('ending the search', () => {
     emit({ ...queries[0], status: 'ok', items: ITEMS });
     search.setQuery('pyramid');
     expect(last()).toEqual({ query: 'sunway', state: { kind: 'loading' } });
-    expect(await search.resolve('1.0')).toEqual({ status: 'failed', code: 'unknown' });
+    expect(await search.resolve('1.0')).toEqual({ status: 'failed', code: 'stale' });
   });
 
   test('ending twice ends the native session once', () => {

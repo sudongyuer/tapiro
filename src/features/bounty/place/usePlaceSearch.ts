@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PlaceResult } from 'tapiro-kit';
 
 import type { Point } from '@/lib/location';
 
-import { createPlaceSearch, IDLE_SNAPSHOT, type PlaceSearch } from './placeSearch';
+import { createPlaceSearch, IDLE_SNAPSHOT, type PlaceSearch, STALE } from './placeSearch';
 import { placeFacade } from './places';
-
-const ENDED: PlaceResult = { status: 'failed', code: 'unknown' };
 
 export function usePlaceSearch(region: Point | null) {
   const [snapshot, setSnapshot] = useState(IDLE_SNAPSHOT);
@@ -31,7 +28,7 @@ export function usePlaceSearch(region: Point | null) {
 
   const setQuery = useCallback((next: string) => search.current?.setQuery(next), []);
   const resolve = useCallback(
-    (id: string) => search.current?.resolve(id) ?? Promise.resolve(ENDED),
+    (id: string) => search.current?.resolve(id) ?? Promise.resolve(STALE),
     [],
   );
 

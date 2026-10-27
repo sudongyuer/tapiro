@@ -90,7 +90,7 @@ export function createFixturePlaces(
     async resolvePlace(_searchId, suggestionId) {
       if (fixture === 'resolveFail') return FAILED;
       const match = FIXTURE_PLACES.find((place) => place.id === suggestionId);
-      return match ? { status: 'ok', place: match.place } : { status: 'notFound' };
+      return match ? { status: 'ok', place: match.place } : { status: 'failed', code: 'stale' };
     },
     async placeAt() {
       return fixture === 'resolveFail' ? FAILED : { status: 'ok', place: FIXTURE_PLACES[2].place };
