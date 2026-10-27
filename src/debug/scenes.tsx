@@ -8,6 +8,7 @@ import {
   SettingsScene,
   WelcomeScene,
 } from './AccountScenes';
+import { BountyConfirmScene, BountyPostScene } from './BountyScenes';
 import { DesignTokensScene } from './DesignTokensScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
@@ -40,6 +41,8 @@ export const scenes: Scene[] = [
   },
   { id: 'pay-sheet', titleKey: 'debug.pay.title', Component: PaySheetScene },
   { id: 'sticker-book', titleKey: 'debug.stickers.title', Component: StickerBookScene },
+  { id: 'bounty-post', titleKey: 'debug.bounty.post', Component: BountyPostScene },
+  { id: 'bounty-confirm', titleKey: 'debug.bounty.confirm', Component: BountyConfirmScene },
 ];
 
 export function findScene(id: string) {

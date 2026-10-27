@@ -5,6 +5,7 @@ import type { PayeeType } from '@/lib/payeeMethods';
 import { formatRinggit } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
+import { SheetActions, SheetLayer } from '@/ui/SheetFrame';
 import { useState } from 'react';
 
 import { ActionButton, TextSection } from './formParts';
@@ -12,7 +13,6 @@ import type { SheetAction, SheetData } from './hooks';
 import { AmountHeader } from './PayerView';
 import { takesCash } from './payOptions';
 import { ProofViewer } from './ProofViewer';
-import { SheetActions, SheetLayer } from './SheetFrame';
 
 export function PayeeView({
   data,

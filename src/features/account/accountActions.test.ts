@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { createUserCleanups } from '@/lib/userCleanups';
+
 import { createAccountActions } from './accountActions';
 import {
   createFixtureAuthService,
@@ -16,18 +18,27 @@ const user = fixtureUser('apple');
 function setup(auth: AuthService) {
   const onboarding = createOnboardingStore(memoryOnboardedStorage([user.id]));
   const profiles = createProfileStore(createFixtureProfileService());
-  return { onboarding, profiles, actions: createAccountActions({ auth, onboarding, profiles }) };
+  const cleanups = createUserCleanups();
+  const cleaned: string[] = [];
+  cleanups.register((userId) => cleaned.push(userId));
+  return {
+    onboarding,
+    profiles,
+    cleaned,
+    actions: createAccountActions({ auth, onboarding, profiles, cleanups }),
+  };
 }
 
 describe('account actions', () => {
   test('a deleted account onboards again and loses its profile', async () => {
-    const { onboarding, profiles, actions } = setup(
+    const { onboarding, profiles, cleaned, actions } = setup(
       createFixtureAuthService({ signedInAs: 'apple' }),
     );
     await profiles.ensureLoaded(user);
     await profiles.save(user, { displayName: 'Renamed', avatarUrl: null });
 
     expect(await actions.deleteAccount()).toEqual({ ok: true });
+    expect(cleaned).toEqual([user.id]);
     expect(onboarding.getSnapshot().has(user.id)).toBe(false);
     expect(profiles.getSnapshot()).toEqual({ status: 'idle' });
     await profiles.ensureLoaded(user);
@@ -39,7 +50,7 @@ describe('account actions', () => {
   });
 
   test('a blocked deletion keeps the account as it was', async () => {
-    const { onboarding, actions } = setup(
+    const { onboarding, cleaned, actions } = setup(
       createFixtureAuthService({ signedInAs: 'apple', deletion: 'blocked' }),
     );
     expect(await actions.deleteAccount()).toEqual({
@@ -48,6 +59,7 @@ describe('account actions', () => {
       payments: [fixtureUnsettledPayment],
     });
     expect(onboarding.getSnapshot().has(user.id)).toBe(true);
+    expect(cleaned).toEqual([]);
   });
 
   test('a throwing service reports failure instead of rejecting', async () => {

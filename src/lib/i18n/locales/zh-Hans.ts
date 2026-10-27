@@ -1,3 +1,4 @@
+import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import payee from './payee/zh-Hans';
 import stickers from './stickers/zh-Hans';
@@ -122,6 +123,7 @@ export default {
   payee,
   pay,
   stickers,
+  bounty,
   shell: {
     tabs: {
       bounty: '悬赏',
@@ -263,6 +265,7 @@ export default {
         deleteBlocked: '删除账号（有未结清付款）',
       },
     },
+    bounty: { post: '发悬赏表单', confirm: '确认发布' },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
     tokens: {
