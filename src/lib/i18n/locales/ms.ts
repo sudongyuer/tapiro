@@ -274,7 +274,7 @@ const ms: Translation = {
         deleteBlocked: 'Padam akaun (bayaran belum selesai)',
       },
     },
-    bounty: { post: 'Borang ganjaran', confirm: 'Sahkan siaran' },
+    bounty: { post: 'Borang ganjaran', confirm: 'Sahkan siaran', placeSearch: 'Pilih Tempat' },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
     tokens: {

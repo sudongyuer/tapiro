@@ -878,3 +878,30 @@ Tasks that share files or interfaces; run them in order, never in parallel.
 ## Deviations and rulings
 
 Filled in Task 14.
+
+### Task 5 (place search and posting place rows)
+
+- `placeLabelEmpty` (ruling 11, Task 5 brief) is the existing `bounty.post.error.placeEmpty`; the duplicate
+  `bounty.place.placeLabelEmpty` was deleted from all three locales (controller ruling). `validate.ts` already emitted
+  it, so the task added a code-point/trim test and no validation change.
+- New copy keys in all three locales: `bounty.place.{denied, noFix, stale, locating, searching, resolving, addLabel,
+  picked}`, `bounty.post.confirm.{place, addressNote, meta}`, `debug.bounty.placeSearch`. `stale` (「列表变了，再点一次」)
+  is shown when resolve answers `failed`/`stale`; `noFix` covers a granted permission without a position.
+- 用当前位置 stores the device point as the coordinates and the reverse-geocoded name as the label; if `placeAt` fails or
+  throws, the label is empty and the field takes focus (ruling 11). The search is biased to the viewer's point only
+  when permission is already granted (a status check, no prompt); otherwise to Malaysia.
+- The 地点 row shows the current place name from the draft (the draft keeps no separate result name). Picking again
+  resets the exact address to empty, as the brief's `address: null` says.
+- Empty results use the system `ContentUnavailableView`; a failed search is an urgent `NoticeCard` with 重试, never the
+  empty view.
+- Verify mode cannot show the system location alert: the `undetermined` fixture answers the request itself, so
+  `bounty_post_place` asserts the outcome, and the prompt text stays on the device checklist.
+- "The debug marker the fixture exposes" is the defaults key `uiVerifyPublishedArgs`: the verify post service writes
+  each accepted publish's arguments there (cleared at launch) and `bounty.published_args(ui)` reads the app container
+  plist, because the sheet closes on publish and no on-screen marker survives.
+- AXe cannot type CJK, so the case renames the place by pasting (`simctl pbcopy` + ⌘V).
+- The verify build lacked `NSLocationWhenInUseUsageDescription`: `ios/` predated Task 3 and `build.sh` prebuilds only when
+  the workspace is missing. `expo prebuild --platform ios` was re-run (no tracked file changed); see the retro.
+- The search bar sets `placement: 'stacked'`: with the default placement iOS 26 put it in the bottom toolbar, while
+  Decided UI asks for the header search bar. `autoFocus: true` is set, but in the Simulator the field was not focused
+  when the screen settled (the cases tap it first); check on a device.

@@ -13,19 +13,25 @@ type Text = { get(): string };
 export function useDraftSync(
   userId: string,
   draftId: string,
-  fields: { title: Text; reward: Text; description: Text },
+  fields: { title: Text; reward: Text; description: Text; placeLabel: Text; address: Text },
 ) {
-  const { title, reward, description } = fields;
+  const { title, reward, description, placeLabel, address } = fields;
   const sync = useCallback(() => {
     let typed;
     try {
-      typed = { title: title.get(), rewardText: reward.get(), description: description.get() };
+      typed = {
+        title: title.get(),
+        rewardText: reward.get(),
+        description: description.get(),
+        placeLabel: placeLabel.get(),
+        address: address.get(),
+      };
     } catch {
       return;
     }
     const patch = typedPatch(draftStore.load(userId), draftId, typed);
     if (patch) draftStore.update(userId, patch);
-  }, [userId, draftId, title, reward, description]);
+  }, [userId, draftId, title, reward, description, placeLabel, address]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {

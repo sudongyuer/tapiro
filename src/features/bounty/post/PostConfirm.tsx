@@ -106,22 +106,40 @@ function Preview({ draft }: { draft: PostDraft }) {
   const time = useTimeLine(draft.time);
   const rewardSen = parseReward(draft.rewardText);
   const firstLine = draft.description?.trim().split('\n')[0] ?? '';
+  const place = draft.place?.label.trim() || null;
+  const address = draft.place?.address?.trim() || null;
   if (!draft.category || rewardSen === null) return null;
   const reward = ringgit(rewardSen, language);
+  const meta = place && time ? t('bounty.post.confirm.meta', { place, time }) : (place ?? time);
   return (
     <>
       <Section>
         <TaskCard
           category={draft.category}
           title={draft.title.trim()}
-          meta={time}
+          meta={meta}
           reward={reward}
           rewardLabel={t('bounty.post.confirm.rewardLabel', { amount: reward })}
           testID="bounty-post-preview"
         />
       </Section>
-      {time || firstLine ? (
-        <Section>
+      {time || firstLine || place ? (
+        <Section
+          footer={
+            place && address ? (
+              <Text modifiers={[accessibilityIdentifier('bounty-post-address-note')]}>
+                {t('bounty.post.confirm.addressNote')}
+              </Text>
+            ) : undefined
+          }
+        >
+          {place ? (
+            <SummaryRow
+              label={t('bounty.post.confirm.place')}
+              value={place}
+              testID="bounty-post-summary-place"
+            />
+          ) : null}
           {time ? (
             <SummaryRow
               label={t('bounty.post.confirm.time')}

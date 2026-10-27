@@ -141,6 +141,24 @@ describe('publish', () => {
     expect((await service.status()).freePostsLeft).toBe(0);
   });
 
+  test('an accepted publish reports its arguments, coordinates included', async () => {
+    const reported: PublishArgs[] = [];
+    const service = createFixturePostService(options({ publish: 'failOnce' }), (sent) =>
+      reported.push(sent),
+    );
+    const placed = {
+      ...args('a'),
+      place_label: 'Sunway Pyramid',
+      latitude: 3.0733,
+      longitude: 101.6078,
+    };
+    await service.publish(placed);
+    expect(reported).toEqual([]);
+    await service.publish(placed);
+    await service.publish(placed);
+    expect(reported).toEqual([placed]);
+  });
+
   test('coin cost charges a coin', async () => {
     const service = createFixturePostService(options({ cost: 'coin' }));
     const outcome = await service.publish(args('a'));

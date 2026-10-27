@@ -1,7 +1,10 @@
+import json
 import re
 import subprocess
+import time
+from pathlib import Path
 
-from driver import BUNDLE_ID, assert_touch_target, by_id, reach_home
+from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, reach_home
 from run import REGIONS
 
 OPEN = 'bounty.post.open'
@@ -175,3 +178,58 @@ def assert_preview(ui, title, amount):
                           f'the preview reward is not RM {amount}')
     return text, found
 
+
+
+PUBLISHED_KEY = 'uiVerifyPublishedArgs'
+RETURN_KEY = '40'
+
+
+def form_scroll_to(ui, identifier, tries=6):
+    for _ in range(tries):
+        items = ui.read()
+        found, form = by_id(items, identifier), by_id(items, 'bounty-post-form')
+        f = form['frame']
+        if found and found['frame']['y'] >= f['y'] + 100 and bottom(found) <= f['y'] + f['height'] - 40:
+            return found
+        x = f['x'] + f['width'] / 2
+        ui.swipe((x, f['y'] + f['height'] * 0.75), (x, f['y'] + f['height'] * 0.4), 0.4)
+    return ui.element(identifier, timeout=5)
+
+
+def end_editing(ui):
+    ui.axe('key', RETURN_KEY)
+
+
+def search_field(ui):
+    hint = ui.t('bounty.place.searchPlaceholder')
+    return lambda items: next((i for i in items if i.get('type') in ('SearchField', 'TextField')
+                               and hint in (i.get('AXValue') or '', i.get('AXPlaceholderValue') or '')), None)
+
+
+def search_places(ui, text):
+    f = ui.settled(search_field(ui), 'the header search field never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+    ui.type(text)
+
+
+def paste_into(ui, identifier, text):
+    f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+    ui.axe('key-combo', '--modifiers', '227', '--key', '4')
+    subprocess.run(['xcrun', 'simctl', 'pbcopy', ui.udid], input=text.encode(), check=True, timeout=20)
+    ui.axe('key-combo', '--modifiers', '227', '--key', '25')
+    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
+
+
+def published_args(ui, timeout=20):
+    container = subprocess.run(['xcrun', 'simctl', 'get_app_container', ui.udid, BUNDLE_ID, 'data'],
+                               capture_output=True, text=True, check=True, timeout=20).stdout.strip()
+    plist = Path(container) / 'Library' / 'Preferences' / f'{BUNDLE_ID}.plist'
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        proc = subprocess.run(['plutil', '-extract', PUBLISHED_KEY, 'raw', '-o', '-', str(plist)],
+                              capture_output=True, text=True)
+        if proc.returncode == 0 and proc.stdout.strip():
+            return json.loads(proc.stdout)
+        time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously
+    raise AssertionError(f'the fixture recorded no publish in {PUBLISHED_KEY}')

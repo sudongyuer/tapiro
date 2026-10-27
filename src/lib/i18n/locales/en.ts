@@ -270,7 +270,7 @@ const en: Translation = {
         deleteBlocked: 'Delete account (unsettled payment)',
       },
     },
-    bounty: { post: 'Post form', confirm: 'Confirm post' },
+    bounty: { post: 'Post form', confirm: 'Confirm post', placeSearch: 'Choose a Place' },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
     tokens: {
