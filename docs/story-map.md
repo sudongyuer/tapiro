@@ -518,15 +518,18 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id              | 行为                                                                              | 覆盖                                      |
-| -------------------- | --------------------------------------------------------------------------------- | ----------------------------------------- |
-| bounty.post.ai-draft | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                        |
-| bounty.post.manual   | 手动 + 表单走到同一个确认页                                                       | ui                                        |
-| bounty.post.limits   | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit |
-| bounty.post.category | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql       |
-| bounty.post.cost     | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | unit, db                                  |
-| bounty.post.sticker  | 发布时贴纸飞进实时卡                                                              | ui                                        |
-| bounty.post.photo    | 物品照片抠成贴纸                                                                  | device                                    |
+| 验收 id                     | 行为                                                                              | 覆盖                                            |
+| --------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
+| bounty.post.ai-draft        | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                              |
+| bounty.post.manual          | 手动 + 表单走到同一个确认页                                                       | ui                                              |
+| bounty.post.limits          | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit       |
+| bounty.post.category        | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql             |
+| bounty.post.cost            | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | db:supabase/tests/bounty_publish.test.sql, unit |
+| bounty.post.publish-blocked | 有没付清的钱时发布被拒，什么都不写                                                | db:supabase/tests/bounty_publish.test.sql, ui   |
+| bounty.post.no-balance      | 没有免费名额也没有貘币时发布被拒，什么都不写                                      | db:supabase/tests/bounty_publish.test.sql, ui   |
+| bounty.post.replay          | 同一条重发只发布一次、只扣一次                                                    | db:supabase/tests/bounty_publish.test.sql       |
+| bounty.post.sticker         | 发布时贴纸飞进实时卡                                                              | ui                                              |
+| bounty.post.photo           | 物品照片抠成贴纸                                                                  | device                                          |
 
 ### bounty.apply 申请和挑人
 
@@ -550,13 +553,13 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id                  | 行为                                            | 覆盖     |
-| ------------------------ | ----------------------------------------------- | -------- |
-| bounty.flow.start        | 接单人点「出发了」；先付单要等发布者已收到      | db, ui   |
-| bounty.flow.eta          | 到达时间改了，旧时间划掉显示新时间              | ui       |
-| bounty.flow.auto-confirm | 接单人点完成后 48 小时没人处理自动确认          | unit, db |
-| bounty.flow.cancel       | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次 | unit, db |
-| bounty.flow.refund       | 没人被选中或挑人前取消，退回貘币或免费名额      | unit, db |
+| 验收 id                  | 行为                                                                   | 覆盖                                          |
+| ------------------------ | ---------------------------------------------------------------------- | --------------------------------------------- |
+| bounty.flow.start        | 接单人点「出发了」；先付单要等发布者已收到                             | db, ui                                        |
+| bounty.flow.eta          | 到达时间改了，旧时间划掉显示新时间                                     | ui                                            |
+| bounty.flow.auto-confirm | 接单人点完成后 48 小时没人处理自动确认                                 | unit, db                                      |
+| bounty.flow.cancel       | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次                        | unit, db                                      |
+| bounty.flow.refund       | 没人被选中就关掉、过期或挑人前取消，退回貘币或免费名额；挑人后取消不退 | db:supabase/tests/bounty_publish.test.sql, db |
 
 ### bounty.boosts 加急、置顶、装扮
 
@@ -568,7 +571,6 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id             | 行为                         | 覆盖     |
 | ------------------- | ---------------------------- | -------- |
 | bounty.boosts.spend | 加急、置顶花貘币，第一版不做 | unit, ui |
-
 ## 拼车
 
 ### ride.board 我的拼车和能加入的拼车
