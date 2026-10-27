@@ -6,7 +6,7 @@ declare
   duplicated integer;
 begin
   select count(*) into duplicated from (
-    select 1 from public.payments where reverses is null group by item_kind, item_id having count(*) > 1
+    select 1 from public.payments where reverses is null and item_kind = 'bounty' group by item_kind, item_id having count(*) > 1
   ) as items;
   if duplicated > 0 then
     raise exception '% items hold more than one forward payment', duplicated using errcode = '23505';
@@ -31,7 +31,7 @@ alter table public.payments add column category public.bounty_category;
 alter table public.payments add constraint payments_category_bounty
   check (category is null or (item_kind = 'bounty' and reverses is null));
 
-create unique index payments_one_forward_per_item on public.payments (item_kind, item_id) where reverses is null;
+create unique index payments_one_forward_per_item on public.payments (item_kind, item_id) where reverses is null and item_kind = 'bounty';
 
 drop function public.open_payment(public.payment_item_kind, uuid, text, uuid, uuid, integer, uuid);
 

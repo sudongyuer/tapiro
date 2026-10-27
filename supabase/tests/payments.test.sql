@@ -1,5 +1,5 @@
 begin;
-select plan(77);
+select plan(78);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -307,6 +307,11 @@ select lives_ok(
   format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)$$,
     (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
   'the same item id under the other kind opens'
+);
+select lives_ok(
+  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c3', 900)$$,
+    (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
+  'a ride opens one payment per rider'
 );
 select throws_ok(
   $$select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, item_category => 'parcel')$$,
