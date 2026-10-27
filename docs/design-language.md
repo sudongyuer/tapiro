@@ -67,6 +67,10 @@ The mascot stage at the top of the home screen is a moment area inside an everyd
 show 小貘 at full size with its state pose and background. It collapses to a strip with a ≤ 32 pt
 head when scrolled (docs/specs/2026-10-11-foundation-design.md).
 
+Empty and error states of lists inside the home screen follow the everyday class: an inline card
+with a ≤ 32 pt head, one line and one button. Reason: the stage above already shows the full-size
+小貘 (bounty board, decision 32A).
+
 ## Layers
 
 ```text
@@ -92,7 +96,7 @@ System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackg
 
 | Token                  | Light     | Dark      | Use                                                 |
 | ---------------------- | --------- | --------- | --------------------------------------------------- |
-| `--color-urgent`       | `#C4321F` | `#FF6B5A` | Deadline under 1 h, overdue, destructive            |
+| `--color-urgent`       | `#C4321F` | `#FF6B5A` | Deadline under 3 h, overdue, destructive            |
 | `--color-success`      | `#187A50` | `#3ECF8E` | Completed                                           |
 | `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                   |
 | `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)         |
