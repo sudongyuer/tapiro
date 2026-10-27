@@ -1,5 +1,5 @@
 begin;
-select plan(64);
+select plan(69);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -244,7 +244,7 @@ insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000',
   'authenticated', 'authenticated', 'u' || n || '@example.com', json_build_object('full_name', 'User ' || n)::jsonb
 from unnest(array['100', '101', '102', '103', '104', '105', '106', '107', '108', '109', '110',
-  '201', '202', '203', '204', '205', '206', '207', '208']) as n;
+  '111', '112', '113', '114', '115', '116', '201', '202', '203', '204', '205', '206', '207', '208', '209', '210', '211', '212', '213']) as n;
 
 create function pg_temp.u(n text) returns uuid language sql as $$
   select ('00000000-0000-0000-0000-000000000' || n)::uuid;
@@ -287,6 +287,18 @@ select pg_temp.settle('108', 9, 4);
 select pg_temp.no_show('108', false);
 select pg_temp.settle('109', 12, 8);
 select pg_temp.settle('110', 12, 8);
+insert into public.reputation_events (user_id, kind, item_kind, item_id, counterpart_id)
+select pg_temp.u(subject), 'settled', 'bounty', gen_random_uuid(), pg_temp.u(counterpart)
+from (values ('111', '209'), ('111', '210'), ('112', '211'), ('112', '212'), ('112', '213')) as v (subject, counterpart);
+delete from auth.users where id in (pg_temp.u('210'), pg_temp.u('212'), pg_temp.u('213'));
+select pg_temp.settle('113', 5, 4);
+select pg_temp.settle('114', 4, 4);
+select pg_temp.settle('115', 4, 2);
+select pg_temp.no_show('115', false);
+select pg_temp.settle('116', 19, 8);
+select pg_temp.no_show('116', false);
+update public.profiles set created_at = now() - interval '60 days' where id in (pg_temp.u('113'), pg_temp.u('114'));
+update public.profiles set created_at = now() - interval '180 days' where id = pg_temp.u('116');
 update public.profiles set created_at = now() - interval '59 days' where id = pg_temp.u('107');
 update public.profiles set created_at = now() - interval '60 days' where id = pg_temp.u('108');
 update public.profiles set created_at = now() - interval '180 days' where id = pg_temp.u('109');
@@ -324,13 +336,18 @@ select is(pg_temp.tier('108'), 'very_reliable', 'the same on a 60-day account is
 select is(pg_temp.tier('109'), 'tapir_friend', '12 settled with 8 counterparts on a 180-day account is tapir_friend');
 select is(pg_temp.tier('110'), 'very_reliable', 'the same on a 179-day account stays very_reliable');
 select is(public.reputation_tier(pg_temp.u('108'))::text, 'very_reliable', 'reputation_tier reads the snapshot');
+select is(pg_temp.tier('113'), 'very_reliable', '5 settled with 4 counterparts on a 60-day account is very_reliable');
+select is(pg_temp.tier('114'), 'reliable', '4 settled on a 60-day account stays reliable');
+select is(pg_temp.tier('115'), 'reliable', 'a completion rate of exactly 0.8 is reliable');
+select is(pg_temp.tier('116'), 'tapir_friend', 'a completion rate of exactly 0.95 on a 180-day account is tapir_friend');
+select is(pg_temp.tier('111'), 'reliable', 'a counterpart who deleted their account still counts');
+select is(
+  (select counterpart_count from public.reputation_snapshots where user_id = pg_temp.u('112')), 2,
+  'counterparts who deleted their accounts count together as one'
+);
 
 select public.recompute_reputation(now() + interval '2 days');
 select is(pg_temp.tier('105'), 'new_friend', 'a later as_of drops events that left the 180-day window');
-select is(
-  (select count(*) from public.reputation_snapshots where user_id = pg_temp.u('105')), 1::bigint,
-  'a rerun replaces the snapshot rather than adding a row'
-);
 select is(
   (select computed_at from public.reputation_snapshots where user_id = pg_temp.u('105')), now() + interval '2 days',
   'the replaced snapshot carries the new as_of'

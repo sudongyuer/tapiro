@@ -116,7 +116,7 @@ payment), so a driver gets one per rider on the same ride.
 - `recompute_reputation(as_of default now())` (service role): upserts one snapshot per profile from
   the events with `as_of - 180 days < created_at <= as_of` and returns the rows written. Inputs:
   `settled_count` (settled events, one per payment), `counterpart_count` (distinct counterparts
-  among them), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
+  among them; counterparts whose account was deleted count together as one, so a deletion never lowers a tier), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
   counted no-shows), null when both are 0, and `on_time_share` over the user's payer events with a
   known `on_time`, null when none. Account age is `as_of - profiles.created_at`.
 - `private.tier_for(settled, counterparts, rate, account_age)` holds every threshold, so tuning is
@@ -185,19 +185,22 @@ allows a `confirmed` bounty without a helper.
 Five `security definer` functions (authenticated) return JSON and apply the `bounties_select` rules themselves
 through `private.bounty_viewer_role(b, uid)`: `poster`, `helper`, `applicant` (any application, while no block stands
 between the applicant and the poster), `viewer` (an `open` bounty, no block), or nothing. `settled` is never stored:
-`private.bounty_status(b)` reads `settled` for a `confirmed` bounty whose forward payment is settled. A deleted poster
-or helper (possible on `confirmed`) reads as `null`.
+`private.bounty_status(b)` reads `settled` for a `confirmed` bounty whose forward payment is settled, and only the poster
+and the helper get that derived status (`private.bounty_status_for`); everyone else reads the stored `confirmed`, as
+payment state is the parties' business. A deleted poster or helper (possible on `confirmed`) reads as `null`.
 
 - `bounty_detail(bounty)`: the bounty with derived `status`, `viewerRole`, `place` (label, latitude, longitude),
   `poster` `{ id, name, tier }` and `myApplication`. Only the poster and the helper get `helper`, `etaAt`,
-  `previousEtaAt`, `issueReason` (latest 「有问题」 reason while `disputed`), `payment` `{ id, state }` and `events`
+  `previousEtaAt`, `autoConfirmAt`, `startLate`, `issueReason` (latest 「有问题」 reason while `disputed`), `payment` `{ id, state }` and `events`
   (with `applied` / `withdrawn` filtered as in `bounty_events`, `actor` as `poster`, `helper` or null). `address`
   goes to the poster, and to the helper from `assigned` to `confirmed`. `applicantCount` (pending, blocked pairs left
-  out) goes to the poster. `P0002 bounty_not_found` when the caller cannot see the bounty. A non-selected applicant
-  never receives the helper's id or name.
-- `my_bounties()`: `{ posted, applied }`, each every non-terminal row plus the 20 most recent `confirmed`, `closed`
-  or `cancelled` rows, newest status change first. `applied` leaves out withdrawn applications; its
-  `counterpartName` is always the poster.
+  out) goes to the poster. `P0002 bounty_not_found` when the caller cannot see the bounty. No read function returns
+  the helper's id or name to a non-selected applicant.
+- `my_bounties()`: `{ posted, applied }`, each every active row plus the 20 most recent finished rows, newest
+  status change first. Finished is `settled`, `closed` or `cancelled`; for an applicant who is not the helper,
+  `confirmed` too. A `confirmed` bounty not yet settled stays active for the poster and the helper. `applied` leaves out withdrawn applications; its
+  `counterpartName` is always the poster. An application stays `pending` when its bounty closes or expires; the
+  client reads `applicationStatus` together with the bounty's `status` and shows a closed bounty as closed.
 - `bounty_applicants(bounty)`: poster only (`42501 not_poster`; `P0002 bounty_not_found` for an unknown id); pending
   and selected applications, oldest first, blocked pairs left out, each with name, tier and note.
 - `bounty_live_items()`: one item per bounty for the caller, unranked (order of the table in the bounty schema plan,
@@ -207,6 +210,10 @@ or helper (possible on `confirmed`) reads as `null`.
   not selected) or `expired` (the caller's bounty closed by expiry); a repeat writes nothing. `P0002
 bounty_not_found` when the caller has no such card on that bounty. The row is per user, so every device stops
   showing the card.
+
+Follow-up: `bounties_select` still gives a non-selected applicant the row's `helper_id` (and `eta_at`,
+`previous_eta_at`, `done_at`), and `profiles` names it. Move `bounties` to column grants that leave these out, or
+read bounties only through the RPCs.
 
 ### Board: `nearby_bounties`
 

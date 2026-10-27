@@ -1,5 +1,5 @@
 begin;
-select plan(60);
+select plan(71);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -80,10 +80,9 @@ end;
 $$;
 
 create function pg_temp.item(viewer text, n text) returns jsonb language plpgsql as $$
-begin
-  perform pg_temp.act_as(pg_temp.u(viewer));
+  begin perform pg_temp.act_as(pg_temp.u(viewer));
   return (select x from jsonb_array_elements(public.bounty_live_items()) x where x ->> 'bountyId' = pg_temp.fx(n)::text);
-end;
+  end;
 $$;
 
 create function pg_temp.shape(x jsonb) returns text language sql as $$
@@ -91,31 +90,21 @@ create function pg_temp.shape(x jsonb) returns text language sql as $$
 $$;
 
 create function pg_temp.detail(viewer text, n text) returns jsonb language plpgsql as $$
-begin
-  perform pg_temp.act_as(pg_temp.u(viewer));
-  return public.bounty_detail(pg_temp.fx(n));
-end;
+  begin perform pg_temp.act_as(pg_temp.u(viewer)); return public.bounty_detail(pg_temp.fx(n)); end;
 $$;
-
 create function pg_temp.mine(viewer text, list text, n text) returns jsonb language plpgsql as $$
-begin
-  perform pg_temp.act_as(pg_temp.u(viewer));
+  begin perform pg_temp.act_as(pg_temp.u(viewer));
   return (select x from jsonb_array_elements(public.my_bounties() -> list) x where x ->> 'id' = pg_temp.fx(n)::text);
-end;
+  end;
 $$;
-
+create function pg_temp.list(viewer text, list text) returns jsonb language plpgsql as $$
+  begin perform pg_temp.act_as(pg_temp.u(viewer)); return public.my_bounties() -> list; end;
+$$;
 create function pg_temp.applicants(viewer text, n text) returns jsonb language plpgsql as $$
-begin
-  perform pg_temp.act_as(pg_temp.u(viewer));
-  return public.bounty_applicants(pg_temp.fx(n));
-end;
+  begin perform pg_temp.act_as(pg_temp.u(viewer)); return public.bounty_applicants(pg_temp.fx(n)); end;
 $$;
-
 create function pg_temp.mark(viewer text, n text, card public.bounty_seen_card) returns void language plpgsql as $$
-begin
-  perform pg_temp.act_as(pg_temp.u(viewer));
-  perform public.mark_bounty_seen(pg_temp.fx(n), card);
-end;
+  begin perform pg_temp.act_as(pg_temp.u(viewer)); perform public.mark_bounty_seen(pg_temp.fx(n), card); end;
 $$;
 
 select pg_temp.post('expiring', 'a1', array[]::text[]);
@@ -133,6 +122,9 @@ select pg_temp.post('disputed');
 select pg_temp.post('confirmed');
 select pg_temp.post('orphaned', 'a1', array['a7']);
 select pg_temp.post('abandoned', 'f6', array['e5']);
+select pg_temp.post('withdrawn', 'a1', array['b2']);
+select pg_temp.act_as(pg_temp.u('b2'));
+select public.withdraw_application(pg_temp.fx('withdrawn'));
 select pg_temp.drive(pg_temp.fx('assigned'), 'assigned');
 update public.bounties set starts_at = now() - interval '1 minute' where id = pg_temp.fx('assigned');
 select pg_temp.drive(pg_temp.fx('en_route'), 'en_route');
@@ -142,6 +134,17 @@ select pg_temp.drive(pg_temp.fx('confirmed'), 'confirmed');
 select pg_temp.drive(pg_temp.fx('orphaned'), 'confirmed', 'a1', 'a7');
 select pg_temp.drive(pg_temp.fx('abandoned'), 'confirmed', 'f6', 'e5');
 delete from auth.users where id in (pg_temp.u('a7'), pg_temp.u('f6'));
+insert into public.post_charges (item_kind, item_id, user_id, charge, free_month)
+select 'ride', gen_random_uuid(), pg_temp.u('e5'), 'free', public.malaysia_month(now()) from generate_series(1, 3);
+select pg_temp.post('coin_expiring', 'e5', array[]::text[]);
+update public.bounties set expires_at = now() - interval '1 minute' where id = pg_temp.fx('coin_expiring');
+select private.run_bounty_jobs(now());
+insert into public.bounties (id, poster_id, title, category, reward_sen, expires_at, status, status_changed_at)
+select gen_random_uuid(), pg_temp.u('c3'), '旧的悬赏', 'other', 500, now(), 'closed', now() - make_interval(mins => i)
+from generate_series(1, 21) as i;
+insert into fx values ('old_confirmed', gen_random_uuid());
+insert into public.bounties (id, poster_id, title, category, reward_sen, expires_at, status, status_changed_at)
+values (pg_temp.fx('old_confirmed'), pg_temp.u('c3'), '还没付', 'other', 500, now(), 'confirmed', now() - interval '1 day');
 
 set local role authenticated;
 
@@ -317,6 +320,8 @@ select lives_ok(
   format('select public.mark_bounty_seen(%L, %L)', pg_temp.fx('main'), 'not_selected'),
   'marking the same card again is fine'
 );
+reset role;
+set local role authenticated;
 select pg_temp.act_as(pg_temp.u('d4'));
 select is(
   array[
@@ -324,7 +329,7 @@ select is(
     (select count(*)::integer from jsonb_array_elements(public.bounty_live_items()) x
      where x ->> 'bountyId' = pg_temp.fx('main')::text)
   ],
-  array[1, 0], 'the seen flag is one server row, so a second device sees the card gone too'
+  array[1, 0], 'the seen flag is one server row, read again in a fresh session'
 );
 select throws_ok(
   format('select pg_temp.mark(%L, %L, %L)', 'b2', 'main', 'not_selected'),
@@ -399,6 +404,39 @@ select is(
   array[pg_temp.mine('a1', 'posted', 'confirmed') ->> 'status', pg_temp.mine('b2', 'applied', 'confirmed') ->> 'status'],
   array['settled', 'settled'], 'both lists read settled'
 );
+select is(
+  array[pg_temp.detail('d4', 'confirmed') ->> 'status', pg_temp.mine('d4', 'applied', 'confirmed') ->> 'status',
+    pg_temp.item('d4', 'confirmed') ->> 'status'],
+  array['confirmed', 'confirmed', 'confirmed'], 'a non-selected applicant never reads settled'
+);
+select is(
+  array[pg_temp.detail('d4', 'done') ->> 'autoConfirmAt', pg_temp.item('d4', 'done') ->> 'autoConfirmAt',
+    pg_temp.detail('d4', 'assigned') ->> 'startLate', pg_temp.item('d4', 'assigned') ->> 'startLate'],
+  array[null, null, 'false', 'false'], 'a non-selected applicant gets no auto-confirm time or late start'
+);
+select is(
+  pg_temp.shape(pg_temp.item('d4', 'done')), 'applicant/oneTime/not_selected', 'D has a not_selected card on done'
+);
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.block_user(pg_temp.u('d4'));
+select is(pg_temp.item('d4', 'done'), null, 'a not-selected applicant the poster blocked loses the card');
+select throws_ok(
+  format('select pg_temp.mark(%L, %L, %L)', 'd4', 'done', 'not_selected'),
+  'P0002', 'bounty_not_found', 'a blocked applicant cannot mark the card'
+);
+select is(
+  pg_temp.item('e5', 'coin_expiring') ->> 'refund', 'coin', 'an expired coin post shows the coin refund'
+);
+select is(
+  (select count(*) from jsonb_array_elements(pg_temp.list('c3', 'posted')) x where x ->> 'status' = 'closed'),
+  20::bigint, 'the posted list keeps only the 20 most recent terminal bounties'
+);
+select is(
+  (select x ->> 'status' from jsonb_array_elements(pg_temp.list('c3', 'posted')) x
+   where x ->> 'id' = pg_temp.fx('old_confirmed')::text),
+  'confirmed', 'a confirmed bounty not yet settled stays in the list past the cap'
+);
+select is(pg_temp.mine('b2', 'applied', 'withdrawn'), null, 'a withdrawn application is not in the applied list');
 select pg_temp.act_as(pg_temp.u('a1'));
 select is(
   (select status::text from public.bounties where id = pg_temp.fx('confirmed')), 'confirmed',
@@ -432,23 +470,25 @@ select is(
   array[null, 'confirmed', null], 'a poster reads a confirmed bounty whose helper deleted their account'
 );
 
+select throws_ok(
+  format('select pg_temp.mark(%L, %L, %L)', 'e5', 'lonely', 'not_selected'),
+  'P0002', 'bounty_not_found', 'a viewer who never applied has no card to mark'
+);
+select pg_temp.act_as(pg_temp.u('e5'));
+select public.block_user(pg_temp.u('a1'));
+select throws_ok(
+  $$select pg_temp.detail('e5', 'lonely')$$, 'P0002', 'bounty_not_found', 'a viewer who blocked the poster sees nothing'
+);
+
 reset role;
+create temp table fns as select unnest(array['public.bounty_detail(uuid)', 'public.my_bounties()',
+  'public.bounty_applicants(uuid)', 'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)']) f;
 select is(
-  array(
-    select f from unnest(array['public.bounty_detail(uuid)', 'public.my_bounties()', 'public.bounty_applicants(uuid)',
-      'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)']) f
-    where has_function_privilege('anon', f, 'execute')
-  ),
-  array[]::text[], 'anon cannot execute any read function'
+  (select count(*) from fns where has_function_privilege('anon', f, 'execute')), 0::bigint,
+  'anon cannot execute any read function'
 );
 select is(
-  array(
-    select f from unnest(array['public.bounty_detail(uuid)', 'public.my_bounties()', 'public.bounty_applicants(uuid)',
-      'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)']) f
-    where has_function_privilege('authenticated', f, 'execute')
-  ),
-  array['public.bounty_detail(uuid)', 'public.my_bounties()', 'public.bounty_applicants(uuid)',
-    'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)'],
+  (select count(*) from fns where has_function_privilege('authenticated', f, 'execute')), 5::bigint,
   'a signed-in client executes all five'
 );
 
