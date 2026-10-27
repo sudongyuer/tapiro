@@ -1,3 +1,4 @@
+import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import payee from './payee/zh-Hans';
 import stickers from './stickers/zh-Hans';
@@ -122,6 +123,7 @@ export default {
   payee,
   pay,
   stickers,
+  bounty,
   shell: {
     tabs: {
       bounty: '悬赏',

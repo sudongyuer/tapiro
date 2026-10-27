@@ -45,19 +45,22 @@ export type PostDraft = {
   updatedAt: string;
 };
 
-export type DraftError =
-  | 'titleEmpty'
-  | 'titleTooLong'
-  | 'categoryEmpty'
-  | 'rewardEmpty'
-  | 'rewardRange'
-  | 'descriptionTooLong'
-  | 'placeEmpty'
-  | 'placeTooLong'
-  | 'addressTooLong'
-  | 'timePast'
-  | 'timeTooFar'
-  | 'windowOrder';
+export const DRAFT_ERRORS = [
+  'titleEmpty',
+  'titleTooLong',
+  'categoryEmpty',
+  'rewardEmpty',
+  'rewardRange',
+  'descriptionTooLong',
+  'placeEmpty',
+  'placeTooLong',
+  'addressTooLong',
+  'timePast',
+  'timeTooFar',
+  'windowOrder',
+] as const;
+
+export type DraftError = (typeof DRAFT_ERRORS)[number];
 
 export type UnpaidSummary = {
   paymentId: string;
