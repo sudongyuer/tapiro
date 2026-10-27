@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { toMethod, type PayeeMethodRow, type PayeeType } from '@/lib/payeeMethods';
-import { bountyCategory } from '@/lib/stickers/model';
+import { bountyCategory } from '@/lib/stickers/category';
 
 import type { Payment, PaymentService, PaymentState } from './types';
 

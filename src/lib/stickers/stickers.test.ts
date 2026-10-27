@@ -4,13 +4,8 @@ import { createInstance } from 'i18next';
 import { resources } from '@/lib/i18n/resources';
 
 import { createFixtureStickerService } from './fixture';
-import {
-  bountyCategory,
-  newestFirst,
-  stickerArt,
-  type Sticker,
-  type StickerService,
-} from './model';
+import { bountyCategory } from './category';
+import { newestFirst, stickerArt, type Sticker, type StickerService } from './model';
 import { createStickerStore } from './store';
 
 const USER = 'user-1';

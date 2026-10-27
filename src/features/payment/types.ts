@@ -1,5 +1,5 @@
 import type { PayeeMethod, PayeeType } from '@/lib/payeeMethods';
-import type { BountyCategory } from '@/lib/stickers';
+import type { BountyCategory } from '@/lib/stickers/category';
 
 export const PAYMENT_STATES = ['due', 'marked_paid', 'settled', 'disputed'] as const;
 export type PaymentState = (typeof PAYMENT_STATES)[number];

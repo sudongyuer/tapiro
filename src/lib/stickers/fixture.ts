@@ -1,4 +1,5 @@
-import type { BountyCategory, Sticker, StickerKind, StickerService } from './model';
+import type { BountyCategory } from './category';
+import type { Sticker, StickerKind, StickerService } from './model';
 
 export const STICKER_FIXTURES = ['none', 'one', 'seven', 'worst'] as const;
 export type StickerFixture = (typeof STICKER_FIXTURES)[number];
