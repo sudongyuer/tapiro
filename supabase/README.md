@@ -137,6 +137,12 @@ take the last free slot or the last coin, and concurrent settles cannot pass the
 `call_edge_function`, which needs the Vault secrets `project_url` and `service_role_key` in each
 environment; without them the jobs post nothing.
 
+`bounty-jobs` runs `run_bounty_jobs()` in SQL every 5 minutes (no Edge Function, no Vault secret): it
+closes open bounties past `expires_at` and refunds their post, confirms bounties `done` for 48 hours
+and opens their payment, and adds one `start_reminder` event to assigned bounties whose start passed.
+Each row is locked with `skip locked` and runs in its own exception block, so a failing or busy row
+waits for the next run.
+
 ## Edge Functions
 
 - `bun run fn:serve` serves `functions/` on the local stack (this CLI version does not serve them on
