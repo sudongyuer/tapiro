@@ -1,4 +1,4 @@
-import { HStack, RNHostView, Section, Spacer, Text } from '@expo/ui/swift-ui';
+import { HStack, Section, Spacer, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
@@ -97,16 +97,14 @@ function Preview({ draft }: { draft: PostDraft }) {
   return (
     <>
       <Section>
-        <RNHostView matchContents={{ vertical: true }}>
-          <TaskCard
-            category={draft.category}
-            title={draft.title.trim()}
-            meta={time}
-            reward={reward}
-            rewardLabel={t('bounty.post.confirm.rewardLabel', { amount: reward })}
-            testID="bounty-post-preview"
-          />
-        </RNHostView>
+        <TaskCard
+          category={draft.category}
+          title={draft.title.trim()}
+          meta={time}
+          reward={reward}
+          rewardLabel={t('bounty.post.confirm.rewardLabel', { amount: reward })}
+          testID="bounty-post-preview"
+        />
       </Section>
       {time || firstLine ? (
         <Section>

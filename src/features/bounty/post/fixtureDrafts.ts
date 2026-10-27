@@ -1,7 +1,7 @@
 import type { PostDraft } from './types';
 
 export const FIXTURE_USER_ID = '00000000-0000-4000-8000-000000000001';
-export const FIXTURE_DRAFTS = ['none', 'demo', 'worst'] as const;
+export const FIXTURE_DRAFTS = ['none', 'demo', 'one', 'worst'] as const;
 export type FixtureDraftName = (typeof FIXTURE_DRAFTS)[number];
 
 const HOUR_MS = 3_600_000;
@@ -50,6 +50,18 @@ export function fixtureDraft(name: string | undefined, id: string, now: Date): P
       rewardText: '8',
       description: 'Shopee 包裹在 Sunway Geo 管理处，取件码 8812，放我门口就行。',
       time: { kind: 'deadline', deadlineAt: demoDeadline(now).toISOString() },
+      place: null,
+      updatedAt: now.toISOString(),
+    };
+  }
+  if (name === 'one') {
+    return {
+      id,
+      title: '借伞',
+      category: 'other',
+      rewardText: '1',
+      description: null,
+      time: { kind: 'none' },
       place: null,
       updatedAt: now.toISOString(),
     };

@@ -33,6 +33,13 @@ describe('fixture drafts', () => {
     expect(checkDraft(draft!, EVENING).ok).toBe(true);
   });
 
+  test('one is the smallest valid draft: RM 1 and no optional rows', () => {
+    const draft = fixtureDraft('one', 'id', MORNING)!;
+    expect(draft).toMatchObject({ rewardText: '1', description: null, time: { kind: 'none' } });
+    const checked = checkDraft(draft, MORNING);
+    expect(checked.ok && checked.args.reward_sen).toBe(100);
+  });
+
   test('worst sits on every limit and still validates', () => {
     const draft = fixtureDraft('worst', 'id', MORNING)!;
     expect(codePoints(draft.title)).toBe(60);

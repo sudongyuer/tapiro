@@ -4,7 +4,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import DEMO_TITLE, assert_cost, assert_pinned, open_confirm  # noqa: E402
+from bounty import DEMO_TITLE, assert_cost, assert_pinned, assert_preview, open_confirm  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
@@ -24,7 +24,7 @@ assert button.get('enabled') is False, '需要 1 貘币 is not disabled'
 ui.capture('01-no-balance')
 ui.tap('bounty-post-publish')
 ui.element('bounty-post-confirm')
-ui.wait_label('bounty-post-preview', lambda label: DEMO_TITLE in label, 'the draft left the preview')
+assert_preview(ui, DEMO_TITLE, '8')
 items = ui.read()
 sheet = by_id(items, 'bounty-post-confirm')['frame']
 below = [i for i in items if i.get('type') == 'Button' and i['frame']['y'] >= sheet['y'] + sheet['height'] - 1]

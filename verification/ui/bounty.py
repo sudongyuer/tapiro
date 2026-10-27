@@ -1,3 +1,4 @@
+import re
 import subprocess
 
 from driver import BUNDLE_ID, assert_touch_target, by_id, reach_home
@@ -165,3 +166,11 @@ def dismiss_hint(ui):
     ui.labelled(ui.t('bounty.post.hint.title'))
     ui.tap_label(ui.t('bounty.post.hint.later'))
     ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.post.hint.later') for i in items), 'the hint stayed')
+
+
+def assert_preview(ui, title, amount):
+    reward = re.compile(rf'RM\s?{re.escape(amount)}$')
+    text = ui.wait_label('bounty-post-preview-text', lambda label: title in label, f'the preview does not show {title!r}')
+    found = ui.wait_label('bounty-post-preview-reward', lambda label: bool(reward.search(label)),
+                          f'the preview reward is not RM {amount}')
+    return text, found

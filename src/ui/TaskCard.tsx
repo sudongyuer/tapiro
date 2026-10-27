@@ -1,13 +1,26 @@
-import { StyleSheet, View } from 'react-native';
+import { HStack, RNHostView, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  accessibilityElement,
+  accessibilityIdentifier,
+  accessibilityLabel,
+  fixedSize,
+  font,
+  frame,
+  foregroundStyle,
+  layoutPriority,
+  lineLimit,
+} from '@expo/ui/swift-ui/modifiers';
 
 import type { BountyCategory } from '@/lib/stickers';
 
-import { AppText } from './AppText';
 import { CategorySticker } from './CategorySticker';
 import { vars } from './theme/tokens';
 
 const STICKER = 44;
+const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
+// SwiftUI layout, not RN: an RN row inside RNHostView in a Form row was measured at its unwrapped width, so a
+// long title pushed the reward out of the card.
 export function TaskCard({
   category,
   title,
@@ -26,34 +39,43 @@ export function TaskCard({
   testID: string;
 }) {
   return (
-    <View
-      style={styles.card}
-      accessible
-      accessibilityLabel={[title, meta, rewardLabel].filter(Boolean).join(', ')}
-      testID={testID}
-    >
-      <CategorySticker category={category} size={STICKER} />
-      <View style={styles.text}>
-        <AppText variant="title" numberOfLines={titleLines}>
+    <HStack spacing={vars['--space-3']}>
+      <RNHostView matchContents>
+        <CategorySticker category={category} size={STICKER} />
+      </RNHostView>
+      <VStack
+        alignment="leading"
+        spacing={vars['--space-1']}
+        modifiers={[
+          frame({ maxWidth: Infinity, alignment: 'leading' }),
+          accessibilityElement('combine'),
+          accessibilityIdentifier(`${testID}-text`),
+        ]}
+      >
+        <Text
+          modifiers={[
+            font({ textStyle: 'title3', weight: 'semibold' }),
+            lineLimit(titleLines),
+            accessibilityIdentifier(`${testID}-title`),
+          ]}
+        >
           {title}
-        </AppText>
+        </Text>
         {meta ? (
-          <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
-            {meta}
-          </AppText>
+          <Text modifiers={[font({ textStyle: 'footnote' }), secondary, lineLimit(1)]}>{meta}</Text>
         ) : null}
-      </View>
-      <AppText variant="reward">{reward}</AppText>
-    </View>
+      </VStack>
+      <Text
+        modifiers={[
+          font({ size: vars['--text-reward'], weight: 'heavy', design: 'rounded' }),
+          fixedSize(),
+          layoutPriority(1),
+          accessibilityLabel(rewardLabel),
+          accessibilityIdentifier(`${testID}-reward`),
+        ]}
+      >
+        {reward}
+      </Text>
+    </HStack>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: vars['--space-3'],
-    paddingVertical: vars['--space-2'],
-  },
-  text: { flex: 1, gap: vars['--space-1'] },
-});
