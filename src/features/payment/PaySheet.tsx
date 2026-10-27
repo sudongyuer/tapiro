@@ -23,7 +23,7 @@ import { usePaymentList, usePaySheet, type SheetData } from './hooks';
 import { AmountHeader, PayerView } from './PayerView';
 import { PayeeView } from './PayeeView';
 import type { Proof } from './ProofSection';
-import { SheetFrame } from './SheetFrame';
+import { SheetFrame } from '@/ui/SheetFrame';
 import { sheetTitleKey } from './stateMachine';
 
 export function PaySheet({
@@ -107,7 +107,7 @@ export function PaySheet({
           onPress={onClose}
         />
       </Stack.Toolbar>
-      <SheetFrame notice={notice}>
+      <SheetFrame notice={notice} testID="pay-sheet">
         {state.status === 'loading' ? (
           <TextSection title={t('pay.sheet.loading')} testID="pay-loading" />
         ) : state.status === 'failed' || state.status === 'missing' ? (

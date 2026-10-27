@@ -8,8 +8,8 @@ import { FIXTURE_USER_ID, fixtureDraft } from './fixtureDrafts';
 
 const key = (userId: string) => `tapiro.bountyDraft.${userId}`;
 
-// Stored as a JSON string: Settings.set drops null-valued keys when converting to a property list, so a
-// draft object would come back after a relaunch without `description`/`place` and fail to parse.
+// Stored as a JSON string, and cleared by writing '': Settings.set drops null-valued keys when converting to a
+// property list, so a null would leave the old draft in place and a draft object would lose its null fields.
 export const settingsDraftStorage: DraftStorage = {
   read(userId) {
     const value: unknown = Settings.get(key(userId));
@@ -21,11 +21,11 @@ export const settingsDraftStorage: DraftStorage = {
     }
   },
   write(userId, draft) {
-    Settings.set({ [key(userId)]: draft === null ? null : JSON.stringify(draft) });
+    Settings.set({ [key(userId)]: draft === null ? '' : JSON.stringify(draft) });
   },
 };
 
-if (uiVerify) {
-  const seed = fixtureDraft(uiVerifyArgument('uiVerifyBountyDraft'), newDraftId(), new Date());
-  if (seed) settingsDraftStorage.write(FIXTURE_USER_ID, seed);
+const seedName = uiVerifyArgument('uiVerifyBountyDraft');
+if (uiVerify && seedName !== undefined) {
+  settingsDraftStorage.write(FIXTURE_USER_ID, fixtureDraft(seedName, newDraftId(), new Date()));
 }

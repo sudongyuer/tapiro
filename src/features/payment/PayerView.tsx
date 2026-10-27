@@ -16,6 +16,7 @@ import { useI18n } from '@/lib/i18n';
 import { formatRinggit } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
+import { SheetActions, SheetLayer } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -26,7 +27,6 @@ import { MethodDetail, optionTitle } from './MethodDetail';
 import { initialSelection, payOptions, type PayOption } from './payOptions';
 import { ProofSection, type Proof } from './ProofSection';
 import { QrFullScreen } from './QrFullScreen';
-import { SheetActions, SheetLayer } from './SheetFrame';
 
 const showsCny = (option: PayOption | undefined) =>
   option?.kind === 'qr' && (option.type === 'alipay' || option.type === 'wechat');

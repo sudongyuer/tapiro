@@ -9,7 +9,8 @@ import { useTheme } from './theme/useTheme';
 
 export type StickerCategory = BountyCategory;
 
-const SYMBOLS: Record<Exclude<StickerCategory, 'pickup'>, SFSymbol> = {
+export const CATEGORY_SYMBOLS: Record<StickerCategory, SFSymbol> = {
+  pickup: 'tray.and.arrow.down.fill',
   buy: 'bag.fill',
   queue: 'person.3.fill',
   handle: 'doc.text.fill',
@@ -46,7 +47,7 @@ export function CategorySticker({ category, size }: { category: StickerCategory;
         ]}
       >
         <SymbolView
-          name={SYMBOLS[category]}
+          name={CATEGORY_SYMBOLS[category]}
           size={tile * 0.48}
           tintColor={color('--color-on-sticker')}
         />

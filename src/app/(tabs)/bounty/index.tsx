@@ -1,12 +1,14 @@
-import { useIsFocused, useRouter } from 'expo-router';
+import { Stack, useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser } from '@/features/account';
 import { HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
+import { useI18n } from '@/lib/i18n';
 
 export default function BountyHome() {
   const router = useRouter();
+  const { t } = useI18n();
   const focused = useIsFocused();
   const user = useSignedInUser();
   const profile = useProfile(user);
@@ -18,6 +20,13 @@ export default function BountyHome() {
   return (
     <>
       {focused ? <StatusBar style="dark" /> : null}
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          icon="plus"
+          accessibilityLabel={t('bounty.post.open')}
+          onPress={() => router.push('/bounty-post')}
+        />
+      </Stack.Toolbar>
       <HomeScreen
         scrollViewProps={scrollViewProps}
         onLiveCardsLayout={onLiveCardsLayout}

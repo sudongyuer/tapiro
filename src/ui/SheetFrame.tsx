@@ -34,7 +34,15 @@ export function SheetLayer({ children }: { children: ReactNode }) {
   return null;
 }
 
-export function SheetFrame({ notice, children }: { notice?: ReactNode; children: ReactNode }) {
+export function SheetFrame({
+  notice,
+  testID,
+  children,
+}: {
+  notice?: ReactNode;
+  testID: string;
+  children: ReactNode;
+}) {
   const { color } = useTheme();
   const { bottom } = useSafeAreaInsets();
   const [actions, setActions] = useState<ReactNode>(null);
@@ -42,7 +50,7 @@ export function SheetFrame({ notice, children }: { notice?: ReactNode; children:
   const [slots] = useState<Slots>(() => ({ actions: setActions, layers: setLayers }));
   return (
     <SlotContext.Provider value={slots}>
-      <Host style={styles.form} testID="pay-sheet">
+      <Host style={styles.form} testID={testID}>
         <Form modifiers={[tint(color('--color-accent'))]}>
           {notice}
           {children}
