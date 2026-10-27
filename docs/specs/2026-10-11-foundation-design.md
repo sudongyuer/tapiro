@@ -220,9 +220,9 @@ unpaid items, the payer cannot publish new bounties or rides until settled or a 
 
 1. Live Activity / Dynamic Island — this spec. 2. Old time struck through when a time changes —
    feature specs. 3. Published sticker flies to the live-card stack — bounty and carpool. 4. Photo cut
-   out into a sticker — bounty. 5. Hold to confirm for selecting a helper — bounty. 6. Celebration by
-   rarity (first settled item: full burst; routine: check and haptic) — this spec, via the settlement
-   event. Each follows design-language principles 9–11 and the motion gate in CLAUDE.md.
+   out into a sticker — bounty. 5. Hold to confirm for selecting a helper — bounty. 6. Settlement
+   celebration on every settle (superseded the rarity budget; see step 4's Implementation Record) — this
+   spec, via the settlement event. Each follows design-language principles 9–11 and the motion gate in CLAUDE.md.
 
 ## Open points
 
@@ -344,14 +344,14 @@ Supabase (ap-southeast-1)
 4. Pay step and settlement state machine as a shared component driven by fixtures.
 5. Spike: IAP library and server verification. Then coin ledger, IAP (sandbox), grants, refunds
    and the shared free allowance (unit tests on ledger rules).
-6. Reviews, reputation recompute, stickers, mascot level and the rarity celebration.
+6. Reviews, reputation recompute, stickers and mascot level.
 7. Chat with report and block.
 8. 问小貘: consent, `ai-draft`, 小貘体力 metering, pantry and feeding, voice (sheet microphone),
    image input, 小貘记得. Spike long-press on the 小貘 button.
 9. Spikes: Live Activity extension via config plugin; in-app Dynamic Island. Then push and Live
    Activity.
 
-Steps 1–4 unblock the bounty and carpool specs.
+Steps 1–4 plus the bounty prerequisites (a coin ledger without purchase, reputation level and no-show, the block list; bounty spec, 2026-10-26) unblock the bounty spec.
 
 ## Verification
 
@@ -569,14 +569,14 @@ PR: not opened yet · Commits: 5810e58, c748860, 3324cf8 (branch `feat/payment`)
 
 ### Deviations from the design
 
-| Design said                                   | Shipped                                                                                          | Why                                                                              | Confirmed by                         |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ |
-| Method picker                                 | Single-select list, wallets first, one method preselected, none preselected otherwise           | Canvas 「付款 · 开工前六件事」 ①C                                                | user, 2026-10-16 ("1c 其他都走推荐") |
-| 打开 {app}                                    | `WALLET_LINKS` table, every link unconfirmed, so the sheet shows 存到相册 + a per-wallet hint    | Links ship only after a device check (Known limits)                              | not intent-changing                  |
-| Amount in RM                                  | RM plus 约 ¥（参考） for Alipay/WeChat at the BNM middle rate, hidden without a rate ≤ 7 days old | Most students pay from mainland accounts (product notes)                         | user, 2026-10-15 (2B), 2026-10-26 (BNM) |
-| Settlement                                    | Cash settles from `due` on the payee's 已收到 alone; reverse payments for cancelled prepaid items | Product answers 3B, 4B                                                           | user, 2026-10-15                     |
-| Payer after 我已付款                          | A quiet `waitingConfirm` item (等 {name} 确认, lowest priority) until settled; 欠款 again after 还没收到 | Data integrity: show progress until the outcome is known                          | controller ruling C, 2026-10-25      |
-| Celebration motion                            | Spring pop (`--duration-peel`, damping 0.6) and one 8-spark burst; Reduce Motion fades          | Canvas ⑥A left the numbers open                                                  | Unverified: needs the user's pick    |
+| Design said          | Shipped                                                                                                  | Why                                                      | Confirmed by                            |
+| -------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------- |
+| Method picker        | Single-select list, wallets first, one method preselected, none preselected otherwise                    | Canvas 「付款 · 开工前六件事」 ①C                        | user, 2026-10-16 ("1c 其他都走推荐")    |
+| 打开 {app}           | `WALLET_LINKS` table, every link unconfirmed, so the sheet shows 存到相册 + a per-wallet hint            | Links ship only after a device check (Known limits)      | not intent-changing                     |
+| Amount in RM         | RM plus 约 ¥（参考） for Alipay/WeChat at the BNM middle rate, hidden without a rate ≤ 7 days old        | Most students pay from mainland accounts (product notes) | user, 2026-10-15 (2B), 2026-10-26 (BNM) |
+| Settlement           | Cash settles from `due` on the payee's 已收到 alone; reverse payments for cancelled prepaid items        | Product answers 3B, 4B                                   | user, 2026-10-15                        |
+| Payer after 我已付款 | A quiet `waitingConfirm` item (等 {name} 确认, lowest priority) until settled; 欠款 again after 还没收到 | Data integrity: show progress until the outcome is known | controller ruling C, 2026-10-25         |
+| Celebration motion   | Spring pop (`--duration-peel`, damping 0.6) and one 8-spark burst; Reduce Motion fades                   | Canvas ⑥A left the numbers open                          | Unverified: needs the user's pick       |
 
 ### Verification
 
@@ -623,13 +623,13 @@ car sticker for rides and 小貘 sticker for bounties until categories exist, th
   success haptic at landing, tap to skip, Reduce Motion fade, one VoiceOver announcement. 看看贴纸本 opens the book.
 - Sticker book: `src/features/stickers`, route `src/app/(tabs)/me/stickers.tsx`, Me row 我帮过的忙 · n 张 above 收款方式.
 
-| Design said | Shipped | Why | Confirmed by |
-| ----------- | ------- | --- | ------------ |
-| Reanimated `withDelay` + `withTiming` per value | One linear clock (`withTiming` 0 → 2600 ms) with the canvas keyframes and cubic-béziers evaluated per frame | Tap-to-skip jumps one value to the end; all parts stay in sync | not intent-changing |
-| Sticker and amount shine | Gradient bar with `mixBlendMode` (soft-light / overlay), clipped to the sticker box and the amount row | No mask view in the project | Unverified: needs the user's look on device |
-| Canvas liftShadow, slot ghost art | Not built | Not in the brief; the sticker keeps its own shadow | not intent-changing |
-| Earlier slots show previous stickers | Shown when the sticker list is loaded; otherwise filled paper slots without art | Never show unknown as empty (Data integrity) | not intent-changing |
-| Reverse payment settle | No celebration, no sticker; the sheet shows 已结清 | A refund is not an earned errand | Unverified: confirm when cancellation exists |
+| Design said                                     | Shipped                                                                                                     | Why                                                            | Confirmed by                                 |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------- |
+| Reanimated `withDelay` + `withTiming` per value | One linear clock (`withTiming` 0 → 2600 ms) with the canvas keyframes and cubic-béziers evaluated per frame | Tap-to-skip jumps one value to the end; all parts stay in sync | not intent-changing                          |
+| Sticker and amount shine                        | Gradient bar with `mixBlendMode` (soft-light / overlay), clipped to the sticker box and the amount row      | No mask view in the project                                    | Unverified: needs the user's look on device  |
+| Canvas liftShadow, slot ghost art               | Not built                                                                                                   | Not in the brief; the sticker keeps its own shadow             | not intent-changing                          |
+| Earlier slots show previous stickers            | Shown when the sticker list is loaded; otherwise filled paper slots without art                             | Never show unknown as empty (Data integrity)                   | not intent-changing                          |
+| Reverse payment settle                          | No celebration, no sticker; the sheet shows 已结清                                                          | A refund is not an earned errand                               | Unverified: confirm when cancellation exists |
 
 Verification: see the PR; `bun test`, `supabase test db` (stickers 17/17, payments 70/70), `bun run test:stack`, UI cases
 `pay_first_settle`, `pay_payee_confirm`, `pay_settle_routine`, `sticker_book`, `sticker_book_empty` (zh-Hans light).

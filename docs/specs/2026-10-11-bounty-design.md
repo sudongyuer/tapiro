@@ -165,6 +165,12 @@ bounty; 12A description 500, address 120. Still open on the canvas: which bounty
 items and their rank in the F5 order; every bounty screen, state and motion; the poster's sticker copy and the
 payer-side celebration.
 
+Follow-up answers (KICKOFF 2026-10-26, row 「悬赏修订 6 题」): 1A decisions 3–5 and the `void` payment state stay
+under "Later"; 2A the 「有问题」 loop without an exit is a known limit; 3A when a 先付 poster never pays, the no-show
+is the poster's; 4A v1 settles without reviews and the tier is computed without them until step 6; 5A the ledger
+ships only grants that need no new UI (new user, onboarding tasks, each help settled); 6A a block by either side
+hides the bounty and stops applying.
+
 ## UI/UX and motion
 
 Pending design handoff: every bounty screen, its states and the motion table are decided on the design canvas and
@@ -271,7 +277,7 @@ Not offered in v1 (decision 7). They open by a later decision once reputation ha
 - Below the gate: the bounty stays in the list, dimmed, with 「{tier} 及以上可申请」 and 「怎么解锁」, which opens a
   sheet showing what is missing (KICKOFF 2026-10-11 "L1"); 先付 uses the reason 「先付的单需要靠谱及以上」.
 - Unpaid prepay (decision 4): once the agreed time passes without the prepayment received, the helper's cancel is
-  not a no-show.
+  not a no-show; the no-show is the poster's (2026-10-26 follow-up 3A).
 - Cancel with an unsettled payment (decision 3): if the poster has not tapped 「我已付款」 (`due`), the payment is
   voided with the cancel. If they have (`marked_paid`), the bounty waits in `cancelling` and the cancel completes
   after the helper's 已收到 (then as below) or 还没收到 (the payment is voided). An undo of 「我已付款」 returns to
