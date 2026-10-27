@@ -555,16 +555,17 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id                  | 行为                                                                   | 覆盖                                          |
-| ------------------------ | ---------------------------------------------------------------------- | --------------------------------------------- |
-| bounty.flow.transitions  | 每个允许和禁止的状态变化都由服务器检查，原因分类型                     | db:supabase/tests/bounty_flow.test.sql        |
-| bounty.flow.start        | 接单人点「出发了」；先付单要等发布者已收到                             | db:supabase/tests/bounty_flow.test.sql, ui    |
-| bounty.flow.eta          | 到达时间改了，旧时间划掉显示新时间                                     | ui                                            |
-| bounty.flow.dispute      | 「有问题」暂停自动确认，接单人能看到原因；再点完成重新算 48 小时       | db:supabase/tests/bounty_flow.test.sql, ui    |
-| bounty.flow.payment      | 确认完成后开一笔付款，带类别，每个悬赏只有一笔                         | db:supabase/tests/bounty_flow.test.sql        |
-| bounty.flow.auto-confirm | 接单人点完成后 48 小时没人处理自动确认                                 | unit, db                                      |
-| bounty.flow.cancel       | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次                        | unit, db                                      |
-| bounty.flow.refund       | 没人被选中就关掉、过期或挑人前取消，退回貘币或免费名额；挑人后取消不退 | db:supabase/tests/bounty_publish.test.sql, db |
+| 验收 id                    | 行为                                                                                                    | 覆盖                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| bounty.flow.transitions    | 每个允许和禁止的状态变化都由服务器检查，原因分类型                                                      | db:supabase/tests/bounty_flow.test.sql, db:supabase/tests/bounty_cancel.test.sql    |
+| bounty.flow.start          | 接单人点「出发了」；先付单要等发布者已收到                                                              | db:supabase/tests/bounty_flow.test.sql, ui                                          |
+| bounty.flow.eta            | 到达时间改了，旧时间划掉显示新时间                                                                      | ui                                                                                  |
+| bounty.flow.dispute        | 「有问题」暂停自动确认，接单人能看到原因；再点完成重新算 48 小时                                        | db:supabase/tests/bounty_flow.test.sql, ui                                          |
+| bounty.flow.payment        | 确认完成后开一笔付款，带类别，每个悬赏只有一笔                                                          | db:supabase/tests/bounty_flow.test.sql                                              |
+| bounty.flow.auto-confirm   | 接单人点完成后 48 小时没人处理自动确认                                                                  | unit, db                                                                            |
+| bounty.flow.cancel         | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次；约定开始 30 分钟后接单人还没出发，发布者取消算接单人的 | db:supabase/tests/bounty_cancel.test.sql, unit                                      |
+| bounty.flow.cancel-preview | 取消前告诉自己会不会算放鸽子、还有没有豁免                                                              | db:supabase/tests/bounty_cancel.test.sql, ui                                        |
+| bounty.flow.refund         | 没人被选中就关掉、过期或挑人前取消，退回貘币或免费名额；挑人后取消不退                                  | db:supabase/tests/bounty_publish.test.sql, db:supabase/tests/bounty_cancel.test.sql |
 
 ### bounty.boosts 加急、置顶、装扮
 
