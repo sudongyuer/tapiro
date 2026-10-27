@@ -20,4 +20,5 @@ status: running
    missing, so config-plugin changes never reached the build; requesting location would have crashed a real build.
    Re-running `expo prebuild --platform ios` fixed it. Tag `stale-prebuild`. Candidate: `build.sh` prebuilds when
    `app.json`, `plugins/` or `src/lib/i18n/native/` are newer than `ios/Podfile.lock`, or a check that greps the built
-   `Info.plist` for every usage key the config declares.
+   `Info.plist` for every usage key the config declares. Done: `build.sh` prebuilds when a native input (app config,
+   lockfiles, plugins, native strings, kit non-TS files) is newer than `ios/.verify-prebuild-stamp`.
