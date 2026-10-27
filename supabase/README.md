@@ -162,6 +162,28 @@ user) and deletes the address rows of every bounty they posted. Their applicatio
 keep their rows for the other side with the deleted party set null, which is why `bounties_helper`
 allows a `confirmed` bounty without a helper.
 
+### Board: `nearby_bounties`
+
+`nearby_bounties(latitude, longitude, board_filter, page_after, page_size)` (authenticated, `security invoker`, so
+RLS still applies) returns `{ items, next }`. Each item has `id`, `title`, `category`, `rewardSen`, `placeLabel`,
+`stickerPath`, `startsAt`, `endsAt`, `deadlineAt`, `urgent`, `distanceM`, `appliedByMe` and `createdAt`; never the
+exact address or the place's coordinates. Only `open` bounties before `expires_at` are listed, never the viewer's
+own and never one whose poster and viewer are blocked in either direction.
+
+- Order: with a point (`latitude` and `longitude` together), bounties with a place come first by distance (`<->`, the
+  GiST KNN on `bounties_place`), ties by `id`; then bounties without a place by `created_at` descending, ties by
+  `id` descending. Without a point every bounty is ordered by recency and `distanceM` is null. `distanceM` is the
+  spherical distance rounded to whole metres (within about 0.5% of the spheroid distance).
+- Paging: `page_size` 1–50 (default 20). Pass the previous answer's `next` as `page_after` until `next` is null;
+  the cursor is tied to the same point and filter. A distance cursor without a point, an unknown filter, a lone
+  coordinate or a size outside 1–50 raise `22023 invalid_board_query`.
+- `urgent` (filter and flag): `deadline_at` within the next 3 hours.
+- `fits_my_time`: a bounty's slot is `[starts_at, ends_at)`, or one hour from `starts_at` when there is no end. It is
+  dropped when its slot overlaps the slot of a bounty the viewer posts or helps on that is `assigned`, `en_route`,
+  `done` or `disputed`. Slots that only touch do not overlap. A bounty without `starts_at` (deadline only or no
+  time) always fits, because its helper picks when to do it.
+- `appliedByMe` is true while the viewer's application is `pending`.
+
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);

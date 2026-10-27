@@ -443,7 +443,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | pay.confirm.celebration-book  | 「看看贴纸本」进贴纸本，新贴纸在最前；「好的」回到已结清                                                                                                                                                                                             | ui:pay_settle_routine, ui:pay_first_settle, gap: 用例从调试场景打开贴纸本；真实路由（关掉付款弹窗再进「我的 → 我帮过的忙」）没有用例，因为验证模式的首页只有付款人那一方能打开付款弹窗                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | pay.confirm.celebration-skip  | 按钮出现前（1.4 秒）点按钮的位置也只是跳过，不会关掉或跳转；点屏幕任意处跳到落定画面；减弱动态效果时只淡入落定画面并保留一次成功触感；读屏只朗读一次完整结果                                                                                         | unit:src/features/payment/celebration/celebration.test.ts#the sticker lands at 1020 ms and every part ends by the end of the clock, device: 真机上在按钮出现前点按钮位置、点屏幕跳过、打开减弱动态效果和旁白各看一遍                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | pay.confirm.visibility        | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏                                                                                                                                                                                               | db:supabase/tests/payments.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| pay.confirm.one-per-item      | 每个悬赏只有一笔正向付款，反向退款不算；拼车每位乘客一笔                                                                                                                                                                                                                 | db:supabase/tests/payments.test.sql                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| pay.confirm.one-per-item      | 每个悬赏只有一笔正向付款，反向退款不算；拼车每位乘客一笔                                                                                                                                                                                             | db:supabase/tests/payments.test.sql                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | pay.confirm.category          | 悬赏付款带上类别，只能是八种之一                                                                                                                                                                                                                     | db:supabase/tests/payments.test.sql                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ### pay.unpaid 不付款的处理
@@ -499,18 +499,20 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### bounty.board 能接的悬赏
 
 - 故事：作为想帮忙赚点钱的同学，我想在首页下面看到能接的悬赏，以便找到顺手能做的事。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                                      | 覆盖                                |
-| --------------------- | --------------------------------------------------------- | ----------------------------------- |
-| bounty.board.filters  | 全部 / 急单 / 塞得进空档三个筛选；急单是 3 小时内截止     | unit, ui                            |
-| bounty.board.distance | 0–2 km 距离轴，点轴上的贴纸让对应卡片响一下               | ui                                  |
-| bounty.board.map      | 列表和地图用两张贴纸切换，记住上次的视图                  | ui                                  |
-| bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁 | ui, db                              |
-| bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下              | ui                                  |
-| bounty.board.blocked  | 任何一方拉黑后，看不到对方的悬赏，也看不到对方的申请      | db:supabase/tests/bounties.test.sql |
+| 验收 id               | 行为                                                                                                                                                             | 覆盖                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| bounty.board.data     | 有位置时有地点的悬赏按距离由近到远，没地点的排在后面按新到旧；没位置时全部按新到旧；只列开放、没过期、不是自己发的、双方没有拉黑的悬赏；只给地点名，不给详细地址 | db:supabase/tests/bounty_nearby.test.sql                                      |
+| bounty.board.pages    | 每页默认 20 条、最多 50 条，往下翻不重复不漏，距离相同或发布时间相同也一样                                                                                       | db:supabase/tests/bounty_nearby.test.sql                                      |
+| bounty.board.filters  | 全部 / 急单 / 塞得进空档三个筛选；急单是 3 小时内截止；塞得进空档去掉和自己进行中的悬赏时间重叠的                                                                | db:supabase/tests/bounty_nearby.test.sql, unit, ui                            |
+| bounty.board.distance | 0–2 km 距离轴，点轴上的贴纸让对应卡片响一下                                                                                                                      | ui                                                                            |
+| bounty.board.map      | 列表和地图用两张贴纸切换，记住上次的视图                                                                                                                         | ui                                                                            |
+| bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁                                                                                                        | ui, db                                                                        |
+| bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下                                                                                                                     | ui                                                                            |
+| bounty.board.blocked  | 任何一方拉黑后，看不到对方的悬赏，也看不到对方的申请                                                                                                             | db:supabase/tests/bounties.test.sql, db:supabase/tests/bounty_nearby.test.sql |
 
 ### bounty.post 发悬赏
 
@@ -580,6 +582,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id             | 行为                         | 覆盖     |
 | ------------------- | ---------------------------- | -------- |
 | bounty.boosts.spend | 加急、置顶花貘币，第一版不做 | unit, ui |
+
 ## 拼车
 
 ### ride.board 我的拼车和能加入的拼车
@@ -780,11 +783,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id                 | 行为                                                  | 覆盖                                  |
-| ----------------------- | ----------------------------------------------------- | ------------------------------------- |
+| 验收 id                 | 行为                                                  | 覆盖                                                                                                                                   |
+| ----------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | rep.no-show.waiver      | 60 天内第一次放鸽子豁免，之后算数；豁免过了 60 天恢复 | db:supabase/tests/reputation.test.sql, gap: concurrency needs two sessions（两次同时取消抢同一个豁免要两个数据库会话，pgTAP 只有一个） |
-| rep.no-show.once        | 同一件事只记一次，重复调用返回同样结果                | db:supabase/tests/reputation.test.sql |
-| rep.no-show.server-only | 只有服务器能记，客户端读不到也写不了                  | db:supabase/tests/reputation.test.sql |
+| rep.no-show.once        | 同一件事只记一次，重复调用返回同样结果                | db:supabase/tests/reputation.test.sql                                                                                                  |
+| rep.no-show.server-only | 只有服务器能记，客户端读不到也写不了                  | db:supabase/tests/reputation.test.sql                                                                                                  |
 
 ### rep.stickers 贴纸本和小貘等级
 
@@ -835,12 +838,12 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id                 | 行为                                                     | 覆盖                             |
-| ----------------------- | -------------------------------------------------------- | -------------------------------- |
+| 验收 id                 | 行为                                                     | 覆盖                                                                                                                                              |
+| ----------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | coins.ledger.spend      | 先用本月免费名额，再扣 1 颗；都没有时拒绝，什么都不写    | db:supabase/tests/coins.test.sql, gap: concurrency needs two sessions（两次同时发布抢最后一个免费名额或最后一颗要两个数据库会话，pgTAP 只有一个） |
-| coins.ledger.refund     | 退回恢复貘币或免费名额，同一件事只退一次                 | db:supabase/tests/coins.test.sql |
-| coins.ledger.balance    | 余额由账本算出，只读得到自己的，并给出下次免费名额的时间 | db:supabase/tests/coins.test.sql |
-| coins.ledger.anonymised | 删除账号后账本行保留但不再关联到人                       | db:supabase/tests/coins.test.sql |
+| coins.ledger.refund     | 退回恢复貘币或免费名额，同一件事只退一次                 | db:supabase/tests/coins.test.sql                                                                                                                  |
+| coins.ledger.balance    | 余额由账本算出，只读得到自己的，并给出下次免费名额的时间 | db:supabase/tests/coins.test.sql                                                                                                                  |
+| coins.ledger.anonymised | 删除账号后账本行保留但不再关联到人                       | db:supabase/tests/coins.test.sql                                                                                                                  |
 
 ### coins.grants 免费貘币
 
