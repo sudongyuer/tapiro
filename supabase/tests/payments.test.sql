@@ -1,5 +1,5 @@
 begin;
-select plan(70);
+select plan(78);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -199,6 +199,11 @@ select is(
   row('00000000-0000-0000-0000-0000000000b2'::uuid, '00000000-0000-0000-0000-0000000000a1'::uuid, 1500, (select id from ids where name = 'one')),
   'a reverse payment has the helper pay the poster back the same amount'
 );
+select is(
+  (select item_id from public.payments where id = (select id from ids where name = 'reverse')),
+  (select item_id from public.payments where id = (select id from ids where name = 'one')),
+  'a reverse payment opens for an item that already has its forward payment'
+);
 select throws_ok(
   $$select public.open_reverse_payment((select id from ids where name = 'one'))$$,
   '23505', null, 'a payment is reversed once'
@@ -284,6 +289,46 @@ select results_eq(
 );
 select public.clear_payment_proof((select id from ids where name = 'proofed'));
 select is((select proof_path from public.payments where id = (select id from ids where name = 'proofed')), null, 'clearing removes the proof path');
+
+insert into ids values ('coffee', public.open_payment(
+  'bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900,
+  item_category => 'buy'
+));
+select is(
+  (select category::text from public.payments where id = (select id from ids where name = 'coffee')), 'buy',
+  'a bounty payment stores its category'
+);
+select throws_ok(
+  format($$select public.open_payment('bounty', %L, '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)$$,
+    (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
+  '23505', 'payment_exists', 'an item holds one forward payment'
+);
+select lives_ok(
+  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)$$,
+    (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
+  'the same item id under the other kind opens'
+);
+select lives_ok(
+  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c3', 900)$$,
+    (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
+  'a ride opens one payment per rider'
+);
+select throws_ok(
+  $$select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, item_category => 'parcel')$$,
+  '23514', null, 'a category outside the eight slugs is rejected'
+);
+select throws_ok(
+  $$select public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, item_category => 'pickup')$$,
+  '23514', null, 'a ride payment carries no category'
+);
+select is(
+  has_function_privilege(
+    'authenticated',
+    'public.open_payment(public.payment_item_kind, uuid, text, uuid, uuid, integer, uuid, public.bounty_category)',
+    'execute'
+  ),
+  false, 'a client cannot execute open_payment'
+);
 
 set local role anon;
 select throws_ok($$select * from public.payments$$, '42501', null, 'anon cannot read payments');

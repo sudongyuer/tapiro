@@ -442,6 +442,8 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | pay.confirm.celebration-book  | 「看看贴纸本」进贴纸本，新贴纸在最前；「好的」回到已结清                                                                                                                                                                                             | ui:pay_settle_routine, ui:pay_first_settle, gap: 用例从调试场景打开贴纸本；真实路由（关掉付款弹窗再进「我的 → 我帮过的忙」）没有用例，因为验证模式的首页只有付款人那一方能打开付款弹窗                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | pay.confirm.celebration-skip  | 按钮出现前（1.4 秒）点按钮的位置也只是跳过，不会关掉或跳转；点屏幕任意处跳到落定画面；减弱动态效果时只淡入落定画面并保留一次成功触感；读屏只朗读一次完整结果                                                                                         | unit:src/features/payment/celebration/celebration.test.ts#the sticker lands at 1020 ms and every part ends by the end of the clock, device: 真机上在按钮出现前点按钮位置、点屏幕跳过、打开减弱动态效果和旁白各看一遍                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | pay.confirm.visibility        | 收款信息只给这件事的付款人，在付款步骤里看，结清后隐藏                                                                                                                                                                                               | db:supabase/tests/payments.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| pay.confirm.one-per-item      | 每个悬赏只有一笔正向付款，反向退款不算；拼车每位乘客一笔                                                                                                                                                                                                                 | db:supabase/tests/payments.test.sql                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| pay.confirm.category          | 悬赏付款带上类别，只能是八种之一                                                                                                                                                                                                                     | db:supabase/tests/payments.test.sql                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ### pay.unpaid 不付款的处理
 
@@ -650,6 +652,20 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ------------------ | ---------------------------------- | ------ |
 | chat.safety.report | 每个资料页和每条消息都能举报和拉黑 | ui, db |
 
+### chat.block 拉黑
+
+- 故事：作为同学，我想拉黑让我不舒服的人，以便我们不再在悬赏里遇到。
+- 状态：building
+- 版本：v1
+- 规格：[bounty](specs/2026-10-11-bounty-design.md)
+
+| 验收 id                   | 行为                                                           | 覆盖                              |
+| ------------------------- | -------------------------------------------------------------- | --------------------------------- |
+| chat.block.private        | 名单只有拉黑的人自己读得到，被拉黑的人读不到，客户端不能直接写 | db:supabase/tests/blocks.test.sql |
+| chat.block.either-side    | 任何一方拉黑都算双方互相屏蔽；取消后恢复                       | db:supabase/tests/blocks.test.sql |
+| chat.block.account-delete | 删除账号时一起删掉                                             | db:supabase/tests/blocks.test.sql |
+| chat.block.entry          | 悬赏详情、资料页和申请人长按菜单里的「屏蔽某某」               | ui                                |
+
 ### chat.push 推送通知
 
 - 故事：作为同学，我想有人申请、付款或发消息时收到通知，以便不错过。
@@ -744,17 +760,30 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | rep.tier.tiers  | 新朋友 / 靠谱 / 很靠谱 / 貘友四档，以文字徽章显示                 | ui       |
 | rep.tier.drop   | 掉档时用一个平静的系统弹窗说明原因和怎么恢复                      | ui       |
 
+### rep.no-show 放鸽子记录
+
+- 故事：作为同学，我想偶尔一次临时有事不被记成不靠谱，而反复放鸽子的人会被记下，以便靠谱度公平。
+- 状态：building
+- 版本：v1
+- 规格：[bounty](specs/2026-10-11-bounty-design.md)
+
+| 验收 id                 | 行为                                                  | 覆盖                                  |
+| ----------------------- | ----------------------------------------------------- | ------------------------------------- |
+| rep.no-show.waiver      | 60 天内第一次放鸽子豁免，之后算数；豁免过了 60 天恢复 | db:supabase/tests/reputation.test.sql, gap: concurrency needs two sessions（两次同时取消抢同一个豁免要两个数据库会话，pgTAP 只有一个） |
+| rep.no-show.once        | 同一件事只记一次，重复调用返回同样结果                | db:supabase/tests/reputation.test.sql |
+| rep.no-show.server-only | 只有服务器能记，客户端读不到也写不了                  | db:supabase/tests/reputation.test.sql |
+
 ### rep.stickers 贴纸本和小貘等级
 
 - 故事：作为同学，我想每结清一件事得到一张贴纸、小貘升级，以便帮忙这件事有点乐趣。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id             | 行为                                                     | 覆盖   |
-| ------------------- | -------------------------------------------------------- | ------ |
-| rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                   | db, ui |
-| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit   |
+| 验收 id             | 行为                                                     | 覆盖                                                                            |
+| ------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                   | db:supabase/tests/stickers.test.sql, unit:src/lib/stickers/stickers.test.ts, ui |
+| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit                                                                            |
 
 ### rep.sticker-book 只读贴纸本「我帮过的忙」
 
@@ -763,15 +792,15 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                  | 行为                                                                                                                                      | 覆盖                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| rep.sticker-book.earn    | 收款人点已收到、服务器结清时在同一事务里发一张贴纸（拼车是汽车，没有类别的悬赏是小貘）；重放结清不多发，反向付款不发                      | db:supabase/tests/stickers.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, unit:src/lib/stickers/stickers.test.ts#a ride earns a car sticker; a bounty without a category earns a 小貘 sticker                                                                                                       |
-| rep.sticker-book.private | 只有自己读得到自己的贴纸，客户端不能新增、修改或删除；删除账号时一起删除                                                                  | db:supabase/tests/stickers.test.sql                                                                                                                                                                                                                                                                                                                                                 |
-| rep.sticker-book.me-row  | 「我的」在收款方式上面有一行「我帮过的忙」和张数，点进贴纸本（push，系统返回）                                                            | ui:sticker_book, ui:sticker_book_empty                                                                                                                                                                                                                                                                                                                                              |
-| rep.sticker-book.grid    | 三列、最新在前，每张贴纸下有白色标签和日期，只读；长标题在马来文下也排得下                                                                | ui:sticker_book, unit:src/lib/stickers/stickers.test.ts#stickers list newest first                                                                                                                                                                                                                                                                                                  |
-| rep.sticker-book.empty   | 没有贴纸时显示全尺寸小貘和怎么得到第一张                                                                                                  | ui:sticker_book_empty                                                                                                                                                                                                                                                                                                                                                               |
-| rep.sticker-book.unknown | 贴纸没加载出来时显示「贴纸没加载出来 · 重试」，不显示空的贴纸本；回到前台静默刷新，刷新失败保留上次的贴纸并标明不是最新；退出登录清掉贴纸 | unit:src/lib/stickers/stickers.test.ts#a failed load is failed, never an empty book, and a retry loads it, unit:src/lib/stickers/stickers.test.ts#a foreground refresh keeps the book on screen and marks it stale when it fails, unit:src/lib/stickers/stickers.test.ts#signing out (the session view unmounting) leaves no stickers behind, gap: 还没有注入贴纸加载失败的 UI 用例 |
-| rep.sticker-book.count   | 张数在英文里区分单复数，中文和马来文不变                                                                                                  | unit:src/lib/stickers/stickers.test.ts#English pluralises the count; Chinese and Malay do not                                                                                                                                                                                                                                                                                       |
+| 验收 id                  | 行为                                                                                                                                      | 覆盖                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| rep.sticker-book.earn    | 结清时在同一事务里给收款人和付款人各发一张贴纸（拼车是汽车，有类别的悬赏是类别贴纸，没有类别是小貘）；重放结清不多发，反向付款不发        | db:supabase/tests/stickers.test.sql, int:src/features/payment/paymentService.integration.ts#pays, undoes, pays with a proof and settles through the RPCs, unit:src/lib/stickers/stickers.test.ts#a ride earns a car sticker; a bounty with a category earns its category sticker; without one, a 小貘 sticker, unit:src/lib/stickers/stickers.test.ts#an unknown category from the server falls back to the 小貘 sticker |
+| rep.sticker-book.private | 只有自己读得到自己的贴纸，客户端不能新增、修改或删除；删除账号时一起删除                                                                  | db:supabase/tests/stickers.test.sql                                                                                                                                                                                                                                                                                                                                                                                      |
+| rep.sticker-book.me-row  | 「我的」在收款方式上面有一行「我帮过的忙」和张数，点进贴纸本（push，系统返回）                                                            | ui:sticker_book, ui:sticker_book_empty                                                                                                                                                                                                                                                                                                                                                                                   |
+| rep.sticker-book.grid    | 三列、最新在前，每张贴纸下有白色标签和日期，只读；长标题在马来文下也排得下                                                                | ui:sticker_book, unit:src/lib/stickers/stickers.test.ts#stickers list newest first                                                                                                                                                                                                                                                                                                                                       |
+| rep.sticker-book.empty   | 没有贴纸时显示全尺寸小貘和怎么得到第一张                                                                                                  | ui:sticker_book_empty                                                                                                                                                                                                                                                                                                                                                                                                    |
+| rep.sticker-book.unknown | 贴纸没加载出来时显示「贴纸没加载出来 · 重试」，不显示空的贴纸本；回到前台静默刷新，刷新失败保留上次的贴纸并标明不是最新；退出登录清掉贴纸 | unit:src/lib/stickers/stickers.test.ts#a failed load is failed, never an empty book, and a retry loads it, unit:src/lib/stickers/stickers.test.ts#a foreground refresh keeps the book on screen and marks it stale when it fails, unit:src/lib/stickers/stickers.test.ts#signing out (the session view unmounting) leaves no stickers behind, gap: 还没有注入贴纸加载失败的 UI 用例                                      |
+| rep.sticker-book.count   | 张数在英文里区分单复数，中文和马来文不变                                                                                                  | unit:src/lib/stickers/stickers.test.ts#English pluralises the count; Chinese and Malay do not                                                                                                                                                                                                                                                                                                                            |
 
 ### coins.purchase 买貘币
 
@@ -786,18 +815,35 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | coins.purchase.short   | 余额不够时弹出三档和「下个月 1 号还有 3 条免费」     | ui      |
 | coins.purchase.sandbox | 真机沙盒购买成功入账                                 | device  |
 
+### coins.ledger 发布扣费、退回和余额
+
+- 故事：作为发布悬赏或拼车的同学，我想发布时先用免费名额、不够再扣貘币，取消时退回，以便清楚自己花了什么。
+- 状态：building
+- 版本：v1
+- 规格：[bounty](specs/2026-10-11-bounty-design.md)
+
+| 验收 id                 | 行为                                                     | 覆盖                             |
+| ----------------------- | -------------------------------------------------------- | -------------------------------- |
+| coins.ledger.spend      | 先用本月免费名额，再扣 1 颗；都没有时拒绝，什么都不写    | db:supabase/tests/coins.test.sql, gap: concurrency needs two sessions（两次同时发布抢最后一个免费名额或最后一颗要两个数据库会话，pgTAP 只有一个） |
+| coins.ledger.refund     | 退回恢复貘币或免费名额，同一件事只退一次                 | db:supabase/tests/coins.test.sql |
+| coins.ledger.balance    | 余额由账本算出，只读得到自己的，并给出下次免费名额的时间 | db:supabase/tests/coins.test.sql |
+| coins.ledger.anonymised | 删除账号后账本行保留但不再关联到人                       | db:supabase/tests/coins.test.sql |
+
 ### coins.grants 免费貘币
 
 - 故事：作为新同学和常帮忙的同学，我想免费得到貘币，以便不花钱也能用。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                 | 行为                                                                                             | 覆盖     |
-| ----------------------- | ------------------------------------------------------------------------------------------------ | -------- |
-| coins.grants.ledger     | 一个只追加的服务器账本，余额由账本算出，客户端不能写                                             | db       |
-| coins.grants.sources    | 新人 5 颗；新手任务 3 × 1；每周点首页小貘 1 颗；每帮完一单 1 颗，每月最多 10 颗；邀请双方各 3 颗 | unit, db |
-| coins.grants.free-posts | 每月 3 条免费发布，悬赏和拼车共用，退回的免费发布恢复名额                                        | unit, db |
+| 验收 id                   | 行为                                                                              | 覆盖                             |
+| ------------------------- | --------------------------------------------------------------------------------- | -------------------------------- |
+| coins.grants.ledger       | 一个只追加的服务器账本，余额由账本算出，客户端不能写                              | db:supabase/tests/coins.test.sql |
+| coins.grants.new-user     | 新人 5 颗，注册时由服务器发                                                       | db:supabase/tests/coins.test.sql |
+| coins.grants.onboarding   | 新手任务各 1 颗：加收款方式、第一次发布或拼车、第一次帮成；每项只发一次           | db:supabase/tests/coins.test.sql |
+| coins.grants.help-settled | 每帮成一单悬赏 1 颗，马来西亚时间每月最多 10 颗；拼车和反向付款不发               | db:supabase/tests/coins.test.sql |
+| coins.grants.sources      | 每周点首页小貘 1 颗；邀请双方各 3 颗                                              | unit, db                         |
+| coins.grants.free-posts   | 每月 3 条免费发布，按马来西亚时间的自然月，悬赏和拼车共用，退回的免费发布恢复名额 | db:supabase/tests/coins.test.sql |
 
 ### rep.vouching 熟人担保
 

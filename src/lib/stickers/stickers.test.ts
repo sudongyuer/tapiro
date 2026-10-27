@@ -4,6 +4,7 @@ import { createInstance } from 'i18next';
 import { resources } from '@/lib/i18n/resources';
 
 import { createFixtureStickerService } from './fixture';
+import { bountyCategory } from './category';
 import { newestFirst, stickerArt, type Sticker, type StickerService } from './model';
 import { createStickerStore } from './store';
 
@@ -14,9 +15,19 @@ function sticker(id: string, earnedAt: string, itemKind: Sticker['itemKind'] = '
 }
 
 describe('sticker art', () => {
-  test('a ride earns a car sticker; a bounty without a category earns a 小貘 sticker', () => {
-    expect(stickerArt({ itemKind: 'ride', category: null })).toBe('car');
-    expect(stickerArt({ itemKind: 'bounty', category: null })).toBe('mascot');
+  test('a ride earns a car sticker; a bounty with a category earns its category sticker; without one, a 小貘 sticker', () => {
+    expect(stickerArt({ itemKind: 'ride', category: null })).toEqual({ kind: 'car' });
+    expect(stickerArt({ itemKind: 'bounty', category: 'move' })).toEqual({
+      kind: 'category',
+      category: 'move',
+    });
+    expect(stickerArt({ itemKind: 'bounty', category: null })).toEqual({ kind: 'mascot' });
+  });
+
+  test('an unknown category from the server falls back to the 小貘 sticker', () => {
+    expect(stickerArt({ itemKind: 'bounty', category: 'parcel' })).toEqual({ kind: 'mascot' });
+    expect(bountyCategory('Pickup')).toBeNull();
+    expect(bountyCategory('pickup')).toBe('pickup');
   });
 
   test('stickers list newest first', () => {
@@ -53,8 +64,12 @@ describe('sticker store', () => {
     await loading;
     const ready = store.getSnapshot();
     expect(ready.status === 'ready' && ready.stickers.length).toBe(7);
-    expect(service.earn({ paymentId: 'pay-1', itemKind: 'ride', title: '拼车回 YC' })).toBe(8);
-    expect(service.earn({ paymentId: 'pay-1', itemKind: 'ride', title: '拼车回 YC' })).toBe(8);
+    expect(
+      service.earn({ paymentId: 'pay-1', itemKind: 'ride', category: null, title: '拼车回 YC' }),
+    ).toBe(8);
+    expect(
+      service.earn({ paymentId: 'pay-1', itemKind: 'ride', category: null, title: '拼车回 YC' }),
+    ).toBe(8);
     await store.reload(USER);
     const after = store.getSnapshot();
     expect(after.status === 'ready' && after.stickers.map((item) => item.paymentId)[0]).toBe(
