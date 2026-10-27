@@ -758,6 +758,19 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | rep.tier.tiers  | 新朋友 / 靠谱 / 很靠谱 / 貘友四档，以文字徽章显示                 | ui       |
 | rep.tier.drop   | 掉档时用一个平静的系统弹窗说明原因和怎么恢复                      | ui       |
 
+### rep.no-show 放鸽子记录
+
+- 故事：作为同学，我想偶尔一次临时有事不被记成不靠谱，而反复放鸽子的人会被记下，以便靠谱度公平。
+- 状态：building
+- 版本：v1
+- 规格：[bounty](specs/2026-10-11-bounty-design.md)
+
+| 验收 id                 | 行为                                                  | 覆盖                                  |
+| ----------------------- | ----------------------------------------------------- | ------------------------------------- |
+| rep.no-show.waiver      | 60 天内第一次放鸽子豁免，之后算数；豁免过了 60 天恢复 | db:supabase/tests/reputation.test.sql |
+| rep.no-show.once        | 同一件事只记一次，重复调用返回同样结果                | db:supabase/tests/reputation.test.sql |
+| rep.no-show.server-only | 只有服务器能记，客户端读不到也写不了                  | db:supabase/tests/reputation.test.sql |
+
 ### rep.stickers 贴纸本和小貘等级
 
 - 故事：作为同学，我想每结清一件事得到一张贴纸、小貘升级，以便帮忙这件事有点乐趣。

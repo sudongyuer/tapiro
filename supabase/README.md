@@ -63,6 +63,20 @@ user never learns who blocked them, and writes go through RPCs only.
 
 Deleting an account removes its blocks in both directions.
 
+## Reputation events
+
+`reputation_events` is server-only (RLS on, no client grants); it is the input to the reputation
+tier. One row per (user, kind, item kind, item).
+
+- `record_no_show(offender, kind, item)` (service role): returns `waived` when the offender has no
+  waived no-show in the last 60 days, `counted` otherwise; a replay for the same item returns the
+  stored outcome and writes nothing. Calls are serialised per offender. `22023 invalid_no_show` for a
+  null argument, `P0002 user_not_found` when the offender has no profile.
+- `private.record_settled(payment)` (internal, no grant): for a settled forward payment, one
+  `settled` event for each side that still has an account, the other side as `counterpart_id`; the
+  payer's `on_time` is whether they marked it paid (or it settled) within 72 hours of opening.
+  Reverse payments and repeat calls write nothing.
+
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);
