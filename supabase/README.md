@@ -43,8 +43,9 @@ payer or payee of that is not settled; a failed check answers 500 and deletes no
 ## Payments
 
 `payments` rows are opened only by server code (`open_payment`, `open_reverse_payment`, service role).
-An item holds one forward payment: a second `open_payment` for the same `(kind, item)` raises
-`23505 payment_exists`, while its reverse payment still opens. `open_payment(…, item_category)` stores
+A bounty holds one forward payment: a second `open_payment` for the same bounty raises
+`23505 payment_exists`, while its reverse payment still opens. A ride opens one forward payment per
+rider on the same ride id. `open_payment(…, item_category)` stores
 the bounty category (`bounty_category`: pickup, buy, queue, handle, move, accompany, study, other);
 rides and reverse payments carry none. Each sticker has a `role` (`payee` or `payer`), one per
 (payment, owner), and `award_missing_stickers()` gives every side of a settled forward payment that
@@ -80,7 +81,8 @@ Deleting an account removes its blocks in both directions.
 ## Reputation events
 
 `reputation_events` is server-only (RLS on, no client grants); it is the input to the reputation
-tier. One row per (user, kind, item kind, item).
+tier. A `no_show` is one row per (user, item kind, item); a `settled` event is one row per (user,
+payment), so a driver gets one per rider on the same ride.
 
 - `record_no_show(offender, kind, item)` (service role): returns `waived` when the offender has no
   waived no-show in the last 60 days, `counted` otherwise; a replay for the same item returns the
@@ -88,13 +90,14 @@ tier. One row per (user, kind, item kind, item).
   null argument, `P0002 user_not_found` when the offender has no profile.
 - `private.record_settled(payment)` (internal, no grant): for a settled forward payment, one
   `settled` event for each side that still has an account, the other side as `counterpart_id`; the
-  payer's `on_time` is whether they marked it paid (or it settled) within 72 hours of opening.
+  payer's `on_time` is whether they marked it paid within 72 hours of opening; it is null when the
+  payer never marked it paid (cash confirmed by the payee), since only the payee sets `settled_at`.
   Reverse payments and repeat calls write nothing.
 
 ## Coins
 
 `coin_ledger` is append-only: a client reads its own rows and never writes; even the owner role
-cannot update or delete a row (`55000 ledger_is_append_only`), except the `user_id → null` that
+cannot update or delete a row or truncate the table (`55000 ledger_is_append_only`), except the `user_id → null` that
 account deletion makes, so a deleted user's rows stay without a user. The balance is the sum of
 `delta`. `post_charges` (server-only) records how each bounty or ride post was paid. Months are
 Malaysia calendar months, `malaysia_month(at)` (`Asia/Kuala_Lumpur`).
@@ -104,7 +107,10 @@ Malaysia calendar months, `malaysia_month(at)` (`Asia/Kuala_Lumpur`).
   `post_spend` row; `55000 no_balance` with no free slot and no coin, and nothing is written. The
   poster's first charge ever grants `onboarding_first_post` (+1), once. A replay for the same item
   returns the stored charge and writes nothing; `22023 item_charged_elsewhere` when another poster
-  holds the item; `22023 invalid_charge` for a null argument.
+  holds the item, including when two posters charge it at the same moment; `P0002 user_not_found`
+  when the poster has no profile; `22023 invalid_charge` for a null argument. A refunded charge is
+  final for its item id: a replay still returns the original charge, although nothing is held, so a
+  re-published post needs a new item id.
 - `refund_post(kind, item)` (service role): stamps `refunded_at`; a `coin` charge gets a `+1`
   `post_refund` row, a `free` charge frees its slot in its own month. A second call returns the
   same charge and writes nothing; `P0002 charge_not_found` for an item never charged.

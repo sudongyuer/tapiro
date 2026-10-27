@@ -68,7 +68,7 @@ foundation step 5.
 | ------ | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | Create | `supabase/migrations/20261026000100_blocks.sql`                                                                   | `blocks`, `block_user`, `unblock_user`, `private.is_blocked_between`                                                   |
 | Create | `supabase/migrations/20261026000200_reputation_events.sql`                                                        | `reputation_events`, `record_no_show`, `private.record_settled`                                                        |
-| Create | `supabase/migrations/20261026000300_reputation_snapshots.sql`                                                     | `reputation_snapshots`, `reputation_tier`, `recompute_reputation`, cron job                                            |
+| Create | `supabase/migrations/20261026000800_reputation_snapshots.sql`                                                     | `reputation_snapshots`, `reputation_tier`, `recompute_reputation`, cron job                                            |
 | Create | `supabase/migrations/20261026000400_coin_ledger.sql`                                                              | `coin_ledger`, `post_charges`, `malaysia_month`, `spend_post`, `refund_post`, `coin_balance`                           |
 | Create | `supabase/migrations/20261026000500_coin_grants.sql`                                                              | new-user and payee-method grants, backfill, `private.grant_help_settled`                                               |
 | Create | `supabase/migrations/20261026000600_payment_category_and_stickers.sql`                                            | `bounty_category` domain, `payments.category`, one forward payment per item, `stickers.role`, new unique key, backfill |
@@ -203,8 +203,10 @@ private.record_settled(payment uuid) returns void     internal, no grant
 
 ## Task 3: P2 reputation snapshots and the daily recompute
 
-**Files:** create `supabase/migrations/20261026000300_reputation_snapshots.sql`; extend
+**Files:** create `supabase/migrations/20261026000800_reputation_snapshots.sql`; extend
 `supabase/tests/reputation.test.sql`; modify `docs/story-map.md`, `supabase/README.md`.
+The timestamp sorts after `20261026000700`, the newest migration on this branch, so `supabase db push` applies it
+without `--include-all`.
 
 **Interfaces**
 
@@ -234,9 +236,11 @@ cron: select cron.schedule('reputation-recompute-daily', '30 19 * * *', $$select
   (03:30 Malaysia time; SQL directly, no Edge Function)
 ```
 
-- Inputs in the window: `settled_count` = settled events; `counterpart_count` = distinct counterparts among them;
+- Inputs in the window: `settled_count` = settled events (one per payment, so a driver counts each rider);
+  `counterpart_count` = distinct counterparts among them;
   `counted_no_shows` = no-shows with `waived = false`; `completion_rate` = settled / (settled + counted no-shows),
-  null when both are 0; `on_time_share` = on-time share of the user's payer events, null when none. Reviews join in
+  null when both are 0; `on_time_share` = on-time share of the user's payer events with a non-null `on_time` (cash never marked paid is
+  null), null when none. Reviews join in
   foundation step 6.
 - Tier thresholds: see Open question 1; the plan's default is the research Design B ladder with school
   verification replaced by account age — 靠谱 ≥ 3 settled, ≥ 2 counterparts, completion ≥ 0.8; 很靠谱 ≥ 8, ≥ 5,
