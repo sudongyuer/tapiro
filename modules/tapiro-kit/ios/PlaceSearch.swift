@@ -106,6 +106,7 @@ private final class Session: NSObject, MKLocalSearchCompleterDelegate {
     request = (requestId, query)
     if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       completer.cancel()
+      answeredQuery = nil
       send(items: [])
       return
     }
