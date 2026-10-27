@@ -538,13 +538,15 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                             | 覆盖                                |
-| --------------------- | ------------------------------------------------ | ----------------------------------- |
-| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db                              |
-| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db                                  |
-| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db, ui                              |
-| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device                          |
-| bounty.apply.address  | 详细地址只给选中的接单人                         | db:supabase/tests/bounties.test.sql |
+| 验收 id               | 行为                                             | 覆盖                                        |
+| --------------------- | ------------------------------------------------ | ------------------------------------------- |
+| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db:supabase/tests/bounty_apply.test.sql |
+| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db                                          |
+| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db:supabase/tests/bounty_apply.test.sql, ui |
+| bounty.apply.blocked  | 任何一方拉黑后不能申请                           | db:supabase/tests/bounty_apply.test.sql     |
+| bounty.apply.closed   | 已选好人、已关闭或已过期的悬赏不能申请，原因分开 | db:supabase/tests/bounty_apply.test.sql     |
+| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device                                  |
+| bounty.apply.address  | 详细地址只给选中的接单人                         | db:supabase/tests/bounties.test.sql         |
 
 ### bounty.flow 进行和完成
 
