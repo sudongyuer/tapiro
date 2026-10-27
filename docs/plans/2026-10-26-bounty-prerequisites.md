@@ -621,3 +621,23 @@ export function stickerArt(sticker: Pick<Sticker, 'itemKind' | 'category'>): Sti
    B: the book lists only `role = 'payee'` stickers until step 7.
 4. Backfill for existing accounts (Task 5). A (recommended): existing users get the new-user 5 and the payee-method
    1; no retroactive help grants. B: no backfill; only accounts created after the migration get grants.
+
+## Deviations and rulings (2026-10-26)
+
+- Ruling (Q2): `firstSettled` is the payee's first help and `stickerCount` is the payee's whole book.
+- Ruling (Q3): the old 「我帮过的忙」 book title stays until bounty step 7; no bounty payment exists before step 1.
+- Ruling (Q4): existing accounts get the new-user 5 coins and the payee-method 1 coin; no retroactive help grants.
+- Ruling: `record_settled` keeps its settled-state guard; it is harmless and safer.
+- Ruling: the implementer's additions (`malaysia_month` grants, null-argument `invalid_charge`, the backfill name, the shared advisory lock) are accepted; all tighten behaviour.
+- Ruling: `payments_one_forward_per_item` is scoped to `item_kind = 'bounty'`; carpool opens one payment per rider on the ride id.
+- Ruling (final review): I1, M1, M4, M5, M7, M8, M9 fixed; M6 became a story-map gap note (the two-session concurrency test); M2 accepts the payer-sticker backfill including rides and the bounty-only category check; M3 as below.
+- Deviation: `is_blocked_between` lives in the `private` schema.
+- Deviation: `payments.category` is added and checked for bounty payments only.
+- Deviation: `stickers.role` (`payee` or `payer`) is added; old stickers carry `role = 'payee'` and payers get a backfilled sticker.
+- Deviation: `spend_post(poster, kind, item)` takes the poster, the item kind and the item id, and raises `P0002 user_not_found` and `22023 item_charged_elsewhere`.
+- Deviation: the reputation recompute is SQL, not the foundation's `reputation-recompute` Edge Function.
+- Deviation: settling both sides runs in SQL, not in the foundation's `settle` Edge Function.
+- I1: settled reputation events are keyed per payment (`reputation_events_settled_per_payment` on `user_id, payment_id`); no-show stays per item, so a driver with two riders gets one settled event per rider.
+- M3: the payer's `on_time` is `marked_paid_at - created_at <= 72 h` and is null when the payer never marked the payment paid (cash settled from `due`); `settled_at` is never used because the payee alone controls it.
+- M7: the sticker book case asserts the drawn category art by counting pixels of each art token per cell (more than 3000 own pixels, under a tenth of that for the other two), because identifiers inside the accessible `StickerCell` never reach AXe.
+- Rehearsal (local stack only): at `5f74863` after `db:reset` I seeded three users, one payee method, two settled payments and two payee stickers; `supabase migration up` applied 20261026000100, 200, 400, 500, 600 and 700 without error; afterwards each user had `new_user` 5, the payee user also had `onboarding_payee_method` 1, the two old stickers carried `role = 'payee'`, each payment gained a `payer` sticker, and `reputation_events` stayed empty because settled history before the migration is not backfilled.
