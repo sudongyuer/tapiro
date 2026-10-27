@@ -2,8 +2,10 @@ import { describe, expect, mock, test } from 'bun:test';
 
 import {
   handleAccountDelete,
+  toActiveBounties,
   toUnsettledPayments,
   type AccountDeleteDeps,
+  type ActiveBounty,
   type UnsettledPayment,
 } from './handler';
 
@@ -13,10 +15,27 @@ function deps(overrides: Partial<AccountDeleteDeps> = {}) {
   return {
     userIdFromToken: mock(async (token: string) => (token === 'valid' ? USER : null)),
     findUnsettledPayments: mock(async (): Promise<UnsettledPayment[]> => []),
+    findActiveBounties: mock(async (): Promise<ActiveBounty[]> => []),
     deleteUser: mock(async () => {}),
     ...overrides,
   };
 }
+
+const payment: UnsettledPayment = {
+  id: 'p1',
+  title: 'Ride to KLIA',
+  counterpartName: 'Aisyah',
+  amountSen: 2500,
+  direction: 'owe',
+};
+
+const bounty: ActiveBounty = {
+  id: 'b1',
+  title: '帮取快递',
+  counterpartName: '阿杰',
+  amountSen: 500,
+  role: 'poster',
+};
 
 function post(token?: string) {
   return new Request('http://localhost/account-delete', {
@@ -26,10 +45,11 @@ function post(token?: string) {
 }
 
 describe('handleAccountDelete', () => {
-  test('deletes the caller', async () => {
+  test('deletes the caller when no payment is unsettled and no bounty is active', async () => {
     const d = deps();
     const res = await handleAccountDelete(post('valid'), d);
     expect(res.status).toBe(200);
+    expect(d.findActiveBounties).toHaveBeenCalledWith(USER);
     expect(d.deleteUser).toHaveBeenCalledWith(USER);
   });
 
@@ -41,17 +61,41 @@ describe('handleAccountDelete', () => {
   });
 
   test('blocks deletion while a payment is unsettled and names it', async () => {
-    const payment = {
-      id: 'p1',
-      title: 'Ride to KLIA',
-      counterpartName: 'Aisyah',
-      amountSen: 2500,
-      direction: 'owe' as const,
-    };
     const d = deps({ findUnsettledPayments: mock(async () => [payment]) });
     const res = await handleAccountDelete(post('valid'), d);
     expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({ error: 'unsettled_payments', payments: [payment] });
+    expect(await res.json()).toEqual({
+      error: 'unsettled_payments',
+      payments: [payment],
+      bounties: [],
+    });
+    expect(d.deleteUser).not.toHaveBeenCalled();
+  });
+
+  test('blocks deletion while a bounty is active and names it', async () => {
+    const d = deps({ findActiveBounties: mock(async () => [bounty]) });
+    const res = await handleAccountDelete(post('valid'), d);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'unsettled_payments',
+      payments: [],
+      bounties: [bounty],
+    });
+    expect(d.deleteUser).not.toHaveBeenCalled();
+  });
+
+  test('lists unsettled payments and active bounties together', async () => {
+    const d = deps({
+      findUnsettledPayments: mock(async () => [payment]),
+      findActiveBounties: mock(async () => [bounty]),
+    });
+    const res = await handleAccountDelete(post('valid'), d);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'unsettled_payments',
+      payments: [payment],
+      bounties: [bounty],
+    });
     expect(d.deleteUser).not.toHaveBeenCalled();
   });
 
@@ -88,11 +132,44 @@ describe('toUnsettledPayments', () => {
   });
 });
 
+describe('toActiveBounties', () => {
+  test('names the counterpart and keeps the role and reward', () => {
+    const rows = [
+      {
+        id: 'b1',
+        title: '帮取快递',
+        reward_sen: 500,
+        role: 'poster' as const,
+        counterpart_id: 'helper',
+      },
+      {
+        id: 'b2',
+        title: '代买早餐',
+        reward_sen: 800,
+        role: 'helper' as const,
+        counterpart_id: null,
+      },
+    ];
+    expect(toActiveBounties(rows, { helper: '阿杰' })).toEqual([
+      { id: 'b1', title: '帮取快递', counterpartName: '阿杰', amountSen: 500, role: 'poster' },
+      { id: 'b2', title: '代买早餐', counterpartName: '', amountSen: 800, role: 'helper' },
+    ]);
+  });
+});
+
 describe('a failed unsettled check', () => {
   test('deletes nothing and reports a server error', async () => {
     const d = deps({ findUnsettledPayments: mock(async () => Promise.reject(new Error('db'))) });
     const res = await handleAccountDelete(post('valid'), d);
     expect(res.status).toBe(500);
+    expect(d.deleteUser).not.toHaveBeenCalled();
+  });
+
+  test('a failed active-bounty check deletes nothing and answers check_failed', async () => {
+    const d = deps({ findActiveBounties: mock(async () => Promise.reject(new Error('db'))) });
+    const res = await handleAccountDelete(post('valid'), d);
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'check_failed' });
     expect(d.deleteUser).not.toHaveBeenCalled();
   });
 });

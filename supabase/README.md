@@ -31,6 +31,15 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
       "amountSen": 2500,
       "direction": "owe"
     }
+  ],
+  "bounties": [
+    {
+      "id": "…",
+      "title": "帮取快递",
+      "counterpartName": "阿杰",
+      "amountSen": 500,
+      "role": "poster"
+    }
   ]
 }
 ```
@@ -38,7 +47,11 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
 `amountSen` is the amount in sen (RM × 100, integer); `direction` is `owe` when the deleting user
 pays the counterpart and `owed` when the counterpart pays them. The app drops items that do not
 match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` reads every payment the user is
-payer or payee of that is not settled; a failed check answers 500 and deletes nothing.
+payer or payee of that is not settled; `findActiveBounties` lists, through `active_bounties_of(uid)`
+(service role), the bounties the user posts or helps on that are `assigned`, `en_route`, `done` or
+`disputed`, with `amountSen` the reward and `role` `poster` or `helper`. Either list blocks the
+deletion; the error stays `unsettled_payments` so the shipped app treats a bounty-only answer as
+blocked (it does not list `bounties` yet). A failed check answers 500 and deletes nothing.
 
 ## Payments
 
@@ -129,6 +142,16 @@ existing accounts the two sign-up grants and returns how many rows it wrote.
 
 Spends, refunds and help grants take a per-user advisory lock, so concurrent publishes cannot both
 take the last free slot or the last coin, and concurrent settles cannot pass the monthly cap.
+
+## Bounties
+
+Account deletion: the `bounties_before_user_delete` trigger on `auth.users` runs inside the delete.
+It refuses (`55000 active_bounties`) while the user has an active bounty, closes each of their `open`
+bounties through `private.close_bounty(id, 'closed')` (event and refund, the ledger rows keep a null
+user) and deletes the address rows of every bounty they posted. Their applications go with the
+`on delete cascade`; other applications to their closed bounties stay `pending`. Settled bounties
+keep their rows for the other side with the deleted party set null, which is why `bounties_helper`
+allows a `confirmed` bounty without a helper.
 
 ## Scheduled functions
 

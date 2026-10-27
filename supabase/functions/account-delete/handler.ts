@@ -32,9 +32,39 @@ export function toUnsettledPayments(
   });
 }
 
+export type ActiveBounty = {
+  id: string;
+  title: string;
+  counterpartName: string;
+  amountSen: number;
+  role: 'poster' | 'helper';
+};
+
+export type ActiveBountyRow = {
+  id: string;
+  title: string;
+  reward_sen: number;
+  role: 'poster' | 'helper';
+  counterpart_id: string | null;
+};
+
+export function toActiveBounties(
+  rows: readonly ActiveBountyRow[],
+  names: Readonly<Record<string, string>>,
+): ActiveBounty[] {
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    counterpartName: (row.counterpart_id && names[row.counterpart_id]) || '',
+    amountSen: row.reward_sen,
+    role: row.role,
+  }));
+}
+
 export type AccountDeleteDeps = {
   userIdFromToken(token: string): Promise<string | null>;
   findUnsettledPayments(userId: string): Promise<UnsettledPayment[]>;
+  findActiveBounties(userId: string): Promise<ActiveBounty[]>;
   deleteUser(userId: string): Promise<void>;
 };
 
@@ -52,12 +82,18 @@ export async function handleAccountDelete(req: Request, deps: AccountDeleteDeps)
   if (!userId) return json(401, { error: 'unauthorized' });
 
   let payments: UnsettledPayment[];
+  let bounties: ActiveBounty[];
   try {
-    payments = await deps.findUnsettledPayments(userId);
+    [payments, bounties] = await Promise.all([
+      deps.findUnsettledPayments(userId),
+      deps.findActiveBounties(userId),
+    ]);
   } catch {
     return json(500, { error: 'check_failed' });
   }
-  if (payments.length > 0) return json(409, { error: 'unsettled_payments', payments });
+  if (payments.length > 0 || bounties.length > 0) {
+    return json(409, { error: 'unsettled_payments', payments, bounties });
+  }
 
   try {
     await deps.deleteUser(userId);
