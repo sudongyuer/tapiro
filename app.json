@@ -68,6 +68,15 @@
           "isAccessMediaLocationEnabled": false
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false,
+          "isIosBackgroundLocationEnabled": false
+        }
+      ],
       "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {
