@@ -86,23 +86,23 @@ counter('bounty-post-description-count', len(NOTE), 500)
 ui.gone('bounty-post-remove-description')
 ui.capture('03-expanded')
 
-ui.tap('bounty-post-remove-time')
-ui.element('bounty-post-add-time')
-ui.gone('bounty-post-deadline')
-ui.capture('04-time-removed')
-
-ui.tap('bounty-post-add-time')
-ui.element('bounty-post-deadline')
+chosen = picker_value(ui.read(), 'bounty-post-deadline')
+clock = re.search(r'\d{1,2}:\d{2}', chosen).group(0)
 fill_fixed(ui)
 ui.tap_label(ui.t('bounty.post.next'))
 ui.element('bounty-post-confirm')
-deadline = re.compile(ui.pattern('bounty.post.confirm.deadlineAt', when=r'\S.*\d{2}:\d{2}'))
-ui.wait_label('bounty-post-time', lambda label: deadline.search(label), 'confirm does not show the chosen deadline')
+ui.wait_label('bounty-post-time', lambda label: clock in label and ui.t('bounty.post.confirm.tomorrow') in label,
+              f'confirm does not show the chosen deadline (tomorrow {clock}, picker read {chosen!r})')
 ui.wait_label('bounty-post-summary-description', lambda label: NOTE.capitalize() in label,
               'confirm does not show the description')
-ui.capture('05-confirm')
+ui.capture('04-confirm')
 ui.tap('BackButton')
 ui.element('bounty-post-form')
+
+ui.tap('bounty-post-remove-time')
+ui.element('bounty-post-add-time')
+ui.gone('bounty-post-deadline')
+ui.capture('05-time-removed')
 
 assert len(WORST_TITLE) != len(WORST_TITLE.encode('utf-16-le')) // 2, 'the seeded title must contain an astral character'
 ui.tap_label(ui.t('bounty.post.cancel'))

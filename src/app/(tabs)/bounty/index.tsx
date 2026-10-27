@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser } from '@/features/account';
-import { useStartPost } from '@/features/bounty';
+import { closePostSheet, useStartPost } from '@/features/bounty';
 import { HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
 import { useI18n } from '@/lib/i18n';
 
@@ -17,9 +17,9 @@ export default function BountyHome() {
     (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user?.name ?? '';
   const stack = useLiveStackState();
   const startPost = useStartPost({
-    open: () => router.push('/bounty-post'),
+    open: () => router.navigate('/bounty-post'),
     pay: (paymentId) => {
-      router.back();
+      closePostSheet();
       router.push({ pathname: '/pay/[id]', params: { id: paymentId } });
     },
   });

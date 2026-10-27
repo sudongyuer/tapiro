@@ -97,6 +97,10 @@ export function createSupabasePostService(client: SupabaseClient | null): PostSe
       if (typeof isBlocked !== 'boolean') throw new Error('publish_blocked returned no boolean');
       return { blocked: isBlocked, unpaid: owed, ...toBalance(unwrap(balance).data) };
     },
+    async isPublished(id) {
+      const { data } = unwrap(await db().from('bounties').select('id').eq('id', id).maybeSingle());
+      return data !== null;
+    },
     async publish(args) {
       try {
         const { data, error } = await db().rpc('publish_bounty', args);

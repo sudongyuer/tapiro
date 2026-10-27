@@ -224,3 +224,42 @@ describe('publish', () => {
     });
   });
 });
+
+describe('isPublished', () => {
+  function bountiesClient(answer: Answer) {
+    const asked: unknown[][] = [];
+    const builder = {
+      select: (...args: unknown[]) => (asked.push(['select', ...args]), builder),
+      eq: (...args: unknown[]) => (asked.push(['eq', ...args]), builder),
+      maybeSingle: async () => answer,
+    };
+    const client = {
+      from: (table: string) => (asked.push(['from', table]), builder),
+    } as unknown as SupabaseClient;
+    return { client, asked };
+  }
+
+  test('reads the user’s own bounty with that id through RLS', async () => {
+    const stub = bountiesClient({ data: { id: ARGS.id }, error: null });
+    expect(await createSupabasePostService(stub.client).isPublished(ARGS.id)).toBe(true);
+    expect(stub.asked).toEqual([
+      ['from', 'bounties'],
+      ['select', 'id'],
+      ['eq', 'id', ARGS.id],
+    ]);
+  });
+
+  test('no row means not published', async () => {
+    const stub = bountiesClient({ data: null, error: null });
+    expect(await createSupabasePostService(stub.client).isPublished(ARGS.id)).toBe(false);
+  });
+
+  test('a failed read throws instead of answering no', async () => {
+    const stub = bountiesClient({ data: null, error: { message: 'JWT expired' } });
+    await expect(createSupabasePostService(stub.client).isPublished(ARGS.id)).rejects.toMatchObject(
+      {
+        message: 'JWT expired',
+      },
+    );
+  });
+});

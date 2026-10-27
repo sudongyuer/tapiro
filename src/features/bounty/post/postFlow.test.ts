@@ -44,6 +44,7 @@ function setup({
     cleared: 0,
     done: 0,
     invalid: [] as string[],
+    sent: 0,
   };
   let current: PostDraft | null = draft;
   const deps: FlowDeps = {
@@ -58,6 +59,9 @@ function setup({
         calls.published.push(args);
         return outcomes[Math.min(calls.published.length - 1, outcomes.length - 1)];
       },
+      async isPublished() {
+        return false;
+      },
     },
     draft: () => current ?? { ...DRAFT, id: 'fresh', title: '' },
     clearDraft: () => {
@@ -69,6 +73,7 @@ function setup({
   const handlers = {
     onPublished: () => (calls.done += 1),
     onInvalid: (error: string) => calls.invalid.push(error),
+    onAlreadySent: () => (calls.sent += 1),
   };
   const created = createPostFlow(deps);
   const flow = { ...created, publish: () => created.publish(handlers) };
@@ -185,6 +190,18 @@ describe('post flow', () => {
     await flow.publish();
     expect(flow.get().rejected).toBe('invalid');
     expect(calls.cleared).toBe(0);
+  });
+
+  test('an already-sent answer clears the draft and says so, without publishing again', async () => {
+    const { flow, calls, draft } = setup({ outcomes: [{ ok: false, reason: 'alreadySent' }] });
+    await flow.load();
+    await flow.publish();
+    expect(calls.sent).toBe(1);
+    expect(calls.cleared).toBe(1);
+    expect(draft()).toBeNull();
+    expect(calls.done).toBe(0);
+    expect(calls.published).toHaveLength(1);
+    expect(flow.get()).toMatchObject({ busy: false, rejected: null });
   });
 
   test('success clears the draft once and reports once', async () => {

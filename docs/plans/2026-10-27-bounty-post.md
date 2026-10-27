@@ -613,6 +613,29 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
 14. Copy added: confirm summary keys (today, tomorrow, deadlineAt, windowAt, time, description, rewardLabel) and debug
     scene titles in three locales; en/ms day words lower-case inside sentences. en/ms still need the copy review.
 
+**Final review fixes (I1–I3, M1–M12):**
+
+15. 13A 「去付款」 closes the whole post sheet through one registered closer (`registerPostSheet` in the sheet layout,
+    `closePostSheet` used by the form, confirm and the 悬赏 tab), then opens the pay sheet; never sheet on sheet. The
+    alert only shows while the form is frontmost: a hint gate drops answers that arrive after confirm was pushed or
+    the sheet closed, and holds an early answer until the form appears.
+16. Migration `20261027000400_bounty_publish_replay.sql`: a replay of a published id with different content raises
+    `post_already_sent`; same content still returns the first answer. The client clears the draft and shows
+    「上次那条已经发出去了」 on that answer, and also when the form opens with a draft whose id is already one of the
+    user's bounties (a direct `bounties` select by id, which RLS allows for the poster; `bounty_detail` is not on
+    this branch). Nothing is replayed automatically.
+17. Account deletion runs registered per-user cleanups (`src/lib/userCleanups.ts`); bounty registers clearing
+    `tapiro.bountyDraft.<userId>`.
+18. 「+」 and 下一步 use `router.navigate`, so a double tap opens one sheet and one confirm.
+19. The typed text is also read back when the app goes to the background and, best effort, on unmount (reading a
+    removed native view throws, so that read is guarded).
+20. Character counting (M4): `@expo/ui` `maxLength` counts grapheme clusters, the counter and `checkDraft` count
+    code points. Hermes in this build exposes only `Intl.Collator`, `Intl.DateTimeFormat` and `Intl.NumberFormat`
+    (no `Intl.Segmenter`), so the counter stays on code points: a title of ZWJ emoji can show more than 60/60 and is
+    stopped by `titleTooLong` on 下一步; the server checks the same code points.
+21. A blocked status with no unpaid payment read yet hides 去付款 and reloads the status once; a payee without a name
+    reads as 「对方」 / "the other person" / "pihak lain".
+
 ## Not in this plan
 
 | Item | Owning step |

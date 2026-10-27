@@ -38,7 +38,7 @@ ui.wait(lambda items: field_text(ui, items, 'bounty-post-title') == DEMO_TITLE, 
 deadline = time.monotonic() + QUIET_S
 while time.monotonic() < deadline:
     assert not any(i.get('AXLabel') == title for i in ui.state()), 'a hint appeared without unpaid payments'
-    time.sleep(0.3)  # polling interval while the status answers, not an assertion
+    time.sleep(0.3)
 ui.gone('bounty-post-pay', timeout=1)
 ui.capture('03-no-hint')
 print('PASS: the unpaid hint shows once over the open form and only when blocked')

@@ -58,8 +58,15 @@ describe('launch arguments', () => {
         uiVerifyUnpaid: 'old',
         uiVerifyPublish: 'failOnce',
         uiVerifyStatusFail: '1',
+        uiVerifyDraftSent: '1',
       }),
-    ).toMatchObject({ cost: 'coin', unpaid: 'old', publish: 'failOnce', statusFail: true });
+    ).toMatchObject({
+      cost: 'coin',
+      unpaid: 'old',
+      publish: 'failOnce',
+      statusFail: true,
+      draftSent: true,
+    });
     expect(
       read({
         uiVerifyPostCost: 'lots',
@@ -178,5 +185,27 @@ describe('publish', () => {
       deadline_at: '2026-10-27T10:00:00.000Z',
     });
     expect(outcome.ok && outcome.result.expiresAt).toBe('2026-10-27T10:00:00.000Z');
+  });
+
+  test('alreadySent rejects and publishes nothing', async () => {
+    const service = createFixturePostService(options({ publish: 'alreadySent' }));
+    expect(await service.publish(args('a'))).toEqual({ ok: false, reason: 'alreadySent' });
+    expect(service.published()).toEqual([]);
+  });
+});
+
+describe('isPublished', () => {
+  test('an accepted id is published, another is not', async () => {
+    const service = createFixturePostService(options());
+    await service.publish(args('a'));
+    expect(await service.isPublished('a')).toBe(true);
+    expect(await service.isPublished('b')).toBe(false);
+  });
+
+  test('draftSent marks only the first draft asked about as published', async () => {
+    const service = createFixturePostService(options({ draftSent: true }));
+    expect(await service.isPublished('seeded')).toBe(true);
+    expect(await service.isPublished('next')).toBe(false);
+    expect(await service.isPublished('seeded')).toBe(true);
   });
 });

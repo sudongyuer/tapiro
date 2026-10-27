@@ -189,6 +189,18 @@ describe('draft store', () => {
     }
   });
 
+  test('loading tells no subscriber, so it is safe inside a render', () => {
+    const drafts = store(memoryStorage().storage);
+    let heard = 0;
+    drafts.subscribe(() => {
+      heard += 1;
+    });
+    const first = drafts.load('a');
+    expect(drafts.load('a')).toBe(first);
+    expect(drafts.getSnapshot()).toBe(first);
+    expect(heard).toBe(0);
+  });
+
   test('subscribers hear updates and clears; the snapshot follows', () => {
     const drafts = store(memoryStorage().storage);
     let heard = 0;

@@ -27,3 +27,7 @@ export function malaysiaDay(iso: string) {
     day: local.getUTCDate(),
   };
 }
+
+export function payTarget(line: CostLine): string | null {
+  return line.kind === 'blocked' ? (line.unpaid[0]?.paymentId ?? null) : null;
+}

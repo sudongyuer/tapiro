@@ -12,6 +12,7 @@ const en: typeof zhHans = {
     other: 'Other',
   },
   post: {
+    unknownName: 'the other person',
     open: 'Post a Bounty',
     title: 'Post a Bounty',
     cancel: 'Cancel',
@@ -43,6 +44,7 @@ const en: typeof zhHans = {
       removeTimeLabel: 'Remove the time',
       removeDescriptionLabel: 'Remove the note',
       draftFooter: 'Your draft stays on this phone only, and isn’t lost when you close it.',
+      alreadySent: 'Your last post already went out',
       clear: 'Clear Draft',
       clearConfirm: {
         title: 'Clear this draft?',
@@ -70,7 +72,6 @@ const en: typeof zhHans = {
       fee: 'Posting fee',
       publish: 'Post It',
       publishCoin: 'Post It · 1 Coin',
-      publishing: 'Posting',
       needCoin: 'Needs 1 Coin',
       pay: 'Pay Now',
       failed: 'Didn’t go through. Try again.',

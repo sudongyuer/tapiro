@@ -11,7 +11,7 @@ export type StatusState =
 export type FlowState = {
   status: StatusState;
   busy: boolean;
-  rejected: Exclude<PublishFailure, 'blocked' | 'noBalance'> | null;
+  rejected: Exclude<PublishFailure, 'blocked' | 'noBalance' | 'alreadySent'> | null;
 };
 
 export type FlowDeps = {
@@ -24,6 +24,7 @@ export type FlowDeps = {
 export type PublishHandlers = {
   onPublished: () => void;
   onInvalid: (error: DraftError) => void;
+  onAlreadySent: () => void;
 };
 
 const INITIAL: FlowState = { status: { kind: 'loading' }, busy: false, rejected: null };
@@ -62,6 +63,12 @@ export function createPostFlow(deps: FlowDeps) {
         return;
       }
       const { reason } = outcome;
+      if (reason === 'alreadySent') {
+        deps.clearDraft();
+        patch({ busy: false });
+        handlers.onAlreadySent();
+        return;
+      }
       if (reason === 'blocked' || reason === 'noBalance') {
         patch({ busy: false });
         await load();

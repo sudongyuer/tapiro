@@ -10,6 +10,7 @@ export default {
     other: '其他',
   },
   post: {
+    unknownName: '对方',
     open: '发悬赏',
     title: '发悬赏',
     cancel: '取消',
@@ -40,6 +41,7 @@ export default {
       removeTimeLabel: '移除时间',
       removeDescriptionLabel: '移除说明',
       draftFooter: '草稿只存在这台手机上，退出也不会丢。',
+      alreadySent: '上次那条已经发出去了',
       clear: '清空草稿',
       clearConfirm: {
         title: '清空这份草稿？',
@@ -67,7 +69,6 @@ export default {
       fee: '发布费',
       publish: '发出去',
       publishCoin: '发出去 · 1 貘币',
-      publishing: '正在发出去',
       needCoin: '需要 1 貘币',
       pay: '去付款',
       failed: '没发出去，再试一次',

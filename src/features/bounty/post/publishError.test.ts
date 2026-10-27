@@ -7,6 +7,7 @@ describe('toFailure', () => {
     [{ message: 'publish_blocked', code: '55000' }, 'blocked'],
     [{ message: 'no_balance', code: '55000' }, 'noBalance'],
     [{ message: 'invalid_bounty', code: '22023' }, 'invalid'],
+    [{ message: 'post_already_sent', code: '55000' }, 'alreadySent'],
     [
       { message: 'new row violates check constraint "bounties_title_check"', code: '23514' },
       'invalid',

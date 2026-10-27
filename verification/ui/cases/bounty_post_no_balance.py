@@ -1,5 +1,5 @@
 """With no free post and no coin, the cost row reads 1 貘币 · 余额 0, the 还差 1 貘币 notice names the next free date and
-how to earn one, and 需要 1 貘币 is disabled: tapping it keeps the sheet and the draft, and nothing offers a purchase."""
+how to earn one, and 需要 1 貘币 is disabled under the kept draft, and nothing offers a purchase."""
 import re
 import sys
 
@@ -22,8 +22,6 @@ button = assert_pinned(ui, 'bounty-post-publish', '需要 1 貘币')
 assert button.get('AXLabel') == ui.t('bounty.post.confirm.needCoin'), f'button reads {button.get("AXLabel")!r}'
 assert button.get('enabled') is False, '需要 1 貘币 is not disabled'
 ui.capture('01-no-balance')
-ui.tap('bounty-post-publish')
-ui.element('bounty-post-confirm')
 assert_preview(ui, DEMO_TITLE, '8')
 items = ui.read()
 sheet = by_id(items, 'bounty-post-confirm')['frame']

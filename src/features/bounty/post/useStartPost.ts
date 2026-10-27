@@ -1,11 +1,22 @@
+import { useEffect } from 'react';
 import { Alert } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 
 import { blockedReason, ringgit } from './blockedReason';
 import { postService } from './services';
-import { createStartPost } from './startPost';
+import { createHintGate, createStartPost } from './startPost';
 import type { PostStatus } from './types';
+
+export const hintGate = createHintGate();
+
+export function useHintFocus(focused: boolean) {
+  useEffect(() => {
+    if (focused) hintGate.formFocused();
+    else hintGate.formBlurred();
+  }, [focused]);
+  useEffect(() => () => hintGate.formBlurred(), []);
+}
 
 export function useStartPost({
   open,
@@ -17,7 +28,7 @@ export function useStartPost({
   const { t, language } = useI18n();
 
   function hint(status: PostStatus) {
-    const reason = blockedReason(status.unpaid, new Date());
+    const reason = blockedReason(status.unpaid, new Date(), t('bounty.post.unknownName'));
     if (!reason) return;
     const body =
       reason.kind === 'many'
@@ -37,5 +48,9 @@ export function useStartPost({
     ]);
   }
 
-  return () => createStartPost({ status: () => postService.status(), open, hint })();
+  useEffect(() => {
+    hintGate.setPresenter(hint);
+  });
+
+  return () => createStartPost({ status: () => postService.status(), open, gate: hintGate })();
 }

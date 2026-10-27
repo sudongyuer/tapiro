@@ -7,7 +7,7 @@ const ago = (days: number) => new Date(NOW.getTime() - days * 86_400_000).toISOS
 
 describe('blocked reason', () => {
   test('nothing unpaid gives no reason', () => {
-    expect(blockedReason([], NOW)).toBeNull();
+    expect(blockedReason([], NOW, '对方')).toBeNull();
   });
 
   test('two or more unpaid name the count and the total, oldest first as given', () => {
@@ -17,6 +17,7 @@ describe('blocked reason', () => {
         { paymentId: 'b', payeeName: 'Lily', amountSen: 600, createdAt: ago(1) },
       ],
       NOW,
+      '对方',
     );
     expect(reason?.kind).toBe('many');
     if (reason?.kind !== 'many') return;
@@ -28,8 +29,18 @@ describe('blocked reason', () => {
     const reason = blockedReason(
       [{ paymentId: 'a', payeeName: '阿杰', amountSen: 1500, createdAt: ago(8.5) }],
       NOW,
+      '对方',
     );
     expect(reason).toMatchObject({ kind: 'old', days: 8, payment: { payeeName: '阿杰' } });
+  });
+
+  test('a payee without a name is named with the fallback', () => {
+    const reason = blockedReason(
+      [{ paymentId: 'a', payeeName: '  ', amountSen: 1500, createdAt: ago(8) }],
+      NOW,
+      '对方',
+    );
+    expect(reason).toMatchObject({ kind: 'old', payment: { payeeName: '对方' } });
   });
 
   test('whole ringgit drop the cents, others keep them', () => {

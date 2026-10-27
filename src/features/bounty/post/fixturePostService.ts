@@ -4,7 +4,7 @@ import type { PostService, PublishOutcome, UnpaidSummary } from './types';
 
 export const POST_COSTS = ['free', 'last', 'coin', 'none'] as const;
 export const UNPAID_MIXES = ['none', 'two', 'old'] as const;
-export const PUBLISH_MODES = ['ok', 'failOnce', 'fail'] as const;
+export const PUBLISH_MODES = ['ok', 'failOnce', 'fail', 'alreadySent'] as const;
 
 export type PostCost = (typeof POST_COSTS)[number];
 export type UnpaidMix = (typeof UNPAID_MIXES)[number];
@@ -15,6 +15,7 @@ export type FixturePostOptions = {
   unpaid: UnpaidMix;
   publish: PublishMode;
   statusFail: boolean;
+  draftSent: boolean;
   variant: FixtureVariant;
   now: () => Date;
 };
@@ -38,6 +39,7 @@ export function fixturePostOptions(
     unpaid: pick(UNPAID_MIXES, argument('uiVerifyUnpaid'), 'none'),
     publish: pick(PUBLISH_MODES, argument('uiVerifyPublish'), 'ok'),
     statusFail: argument('uiVerifyStatusFail') === '1',
+    draftSent: argument('uiVerifyDraftSent') === '1',
     variant,
     now,
   };
@@ -104,6 +106,7 @@ export function createFixturePostService(options: FixturePostOptions): FixturePo
   const balance = { ...BALANCES[options.cost] };
   const accepted = new Map<string, PublishOutcome>();
   let statusFailures = options.statusFail ? 1 : 0;
+  let sentId: string | null = null;
   let publishFailures = options.publish === 'failOnce' ? 1 : 0;
 
   return {
@@ -126,6 +129,7 @@ export function createFixturePostService(options: FixturePostOptions): FixturePo
       const first = accepted.get(args.id);
       if (first) return first;
       if (options.publish === 'fail') return { ok: false, reason: 'failed' };
+      if (options.publish === 'alreadySent') return { ok: false, reason: 'alreadySent' };
       if (publishFailures > 0) {
         publishFailures -= 1;
         return { ok: false, reason: 'failed' };
@@ -149,6 +153,10 @@ export function createFixturePostService(options: FixturePostOptions): FixturePo
       };
       accepted.set(args.id, outcome);
       return outcome;
+    },
+    async isPublished(id) {
+      if (options.draftSent && sentId === null) sentId = id;
+      return accepted.has(id) || id === sentId;
     },
     published: () => [...accepted.keys()],
   };

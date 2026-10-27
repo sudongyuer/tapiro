@@ -12,6 +12,7 @@ const ms: typeof zhHans = {
     other: 'Lain-lain',
   },
   post: {
+    unknownName: 'pihak lain',
     open: 'Pasang Ganjaran',
     title: 'Pasang Ganjaran',
     cancel: 'Batal',
@@ -43,6 +44,7 @@ const ms: typeof zhHans = {
       removeTimeLabel: 'Buang masa',
       removeDescriptionLabel: 'Buang nota',
       draftFooter: 'Draf disimpan dalam telefon ini sahaja dan tidak hilang apabila ditutup.',
+      alreadySent: 'Siaran anda yang lepas sudah dihantar',
       clear: 'Kosongkan Draf',
       clearConfirm: {
         title: 'Kosongkan draf ini?',
@@ -70,7 +72,6 @@ const ms: typeof zhHans = {
       fee: 'Yuran pasang',
       publish: 'Hantar',
       publishCoin: 'Hantar · 1 Syiling',
-      publishing: 'Sedang menghantar',
       needCoin: 'Perlu 1 Syiling',
       pay: 'Bayar Sekarang',
       failed: 'Tidak berjaya dihantar. Cuba lagi.',

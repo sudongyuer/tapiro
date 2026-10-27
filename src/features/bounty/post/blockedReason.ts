@@ -8,8 +8,15 @@ export type BlockedReason =
   | { kind: 'many'; unpaid: UnpaidSummary[]; totalSen: number }
   | { kind: 'old'; payment: UnpaidSummary; days: number };
 
-export function blockedReason(unpaid: UnpaidSummary[], now: Date): BlockedReason | null {
-  if (unpaid.length === 0) return null;
+export function blockedReason(
+  owed: UnpaidSummary[],
+  now: Date,
+  unknownName: string,
+): BlockedReason | null {
+  if (owed.length === 0) return null;
+  const unpaid = owed.map((payment) =>
+    payment.payeeName.trim() === '' ? { ...payment, payeeName: unknownName } : payment,
+  );
   if (unpaid.length > 1) {
     return {
       kind: 'many',

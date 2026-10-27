@@ -24,22 +24,24 @@ import {
   tag,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { Stack } from 'expo-router';
+import { Stack, useIsFocused } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
 import { CATEGORY_SYMBOLS } from '@/ui/CategorySticker';
-import { NoticeCard } from '@/ui/NoticeCard';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { errorKey } from './errorCopy';
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
+import { FormNotice } from './FormNotice';
 import { DescriptionRows, TimeRows } from './OptionalRows';
 import { draftStore } from './services';
 import type { PostDraft } from './types';
 import { formError, resetDraft, useDraft, useFormError } from './useDraft';
+import { useDraftSync } from './useDraftSync';
+import { useHintFocus } from './useStartPost';
+import { useSentCheck } from './useSentCheck';
 import { codePoints, checkDraft, REWARD_MAX_RM, REWARD_MIN_RM, TITLE_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -50,7 +52,9 @@ type FormProps = { userId: string; onNext: () => void; onClose: () => void };
 
 export function PostForm(props: FormProps) {
   const draft = useDraft(props.userId);
+  useHintFocus(useIsFocused());
   useEffect(() => () => formError.set(null), []);
+  useSentCheck(props.userId, draft);
   return <PostFormBody key={draft.id} draft={draft} {...props} />;
 }
 
@@ -62,28 +66,14 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
   const description = useNativeState(draft.description ?? '');
   const titleField = useRef<TextFieldRef>(null);
   const rewardField = useRef<TextFieldRef>(null);
-  const error = useFormError();
-  const shown = error ? errorKey(error) : null;
+  const notice = useFormError();
 
   function edit(patch: Partial<PostDraft>) {
     draftStore.update(userId, patch);
     formError.set(null);
   }
 
-  // onTextChange can miss the last keystroke when keys arrive faster than SwiftUI's change handler runs; the
-  // native values are read back before anything depends on the stored draft.
-  function sync() {
-    const stored = draftStore.load(userId);
-    const typed: Partial<PostDraft> = {
-      title: title.get(),
-      rewardText: reward.get(),
-      description: stored.description === null ? null : description.get(),
-    };
-    const changed = (Object.keys(typed) as (keyof typeof typed)[]).some(
-      (key) => typed[key] !== stored[key],
-    );
-    if (changed) draftStore.update(userId, typed);
-  }
+  const sync = useDraftSync(userId, draft.id, { title, reward, description });
 
   const onBlur = (focused: boolean) => {
     if (!focused) sync();
@@ -119,14 +109,7 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
       <Form modifiers={[tint(color('--color-accent'))]}>
-        {shown ? (
-          <NoticeCard
-            tone="urgent"
-            icon="exclamationmark.circle.fill"
-            title={t(shown.key, shown.values)}
-            testID="bounty-post-error"
-          />
-        ) : null}
+        <FormNotice notice={notice} />
         <Section>
           <FieldRow field={titleField}>
             <TextField

@@ -111,7 +111,7 @@ export function createDraftStore(
       id: newId(),
       updatedAt: now().toISOString(),
     };
-    set({ userId, draft });
+    current = { userId, draft };
     return draft;
   }
 

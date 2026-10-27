@@ -86,7 +86,7 @@ export type CostBase =
 export type CostLine =
   CostBase | { kind: 'blocked'; unpaid: UnpaidSummary[]; under: CostBase['kind'] };
 
-export type PublishFailure = 'blocked' | 'noBalance' | 'invalid' | 'failed';
+export type PublishFailure = 'blocked' | 'noBalance' | 'invalid' | 'alreadySent' | 'failed';
 
 export type PublishOutcome =
   { ok: true; result: PublishResult } | { ok: false; reason: PublishFailure };
@@ -94,4 +94,5 @@ export type PublishOutcome =
 export type PostService = {
   status(): Promise<PostStatus>;
   publish(args: PublishArgs): Promise<PublishOutcome>;
+  isPublished(id: string): Promise<boolean>;
 };

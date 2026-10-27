@@ -9,8 +9,7 @@ DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx
 
 LOCALES = ['zh-Hans', 'ms']
 STRIP_ROW = 44
-# Left of the 「+」 toolbar button, whose glass shadow darkens the bar around x 320–390.
-SEAM_X = 250
+SAMPLE_WIDTH = 40
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
@@ -50,6 +49,13 @@ def assert_no_halo_on_strip_line(shot):
     assert ink > 100 and light < ink * 0.01, f'control failed: plain strip text reads as haloed ({light} vs {ink})'
 
 
+def seam_x(items):
+    title = next(i for i in items if i.get('type') == 'Heading' and i.get('AXLabel') == ui.t('shell.home.title'))
+    plus = next(i for i in items if i.get('type') == 'Button' and i.get('AXLabel') == ui.t('bounty.post.open'))
+    gap_start = title['frame']['x'] + title['frame']['width']
+    return (gap_start + plus['frame']['x']) / 2 - SAMPLE_WIDTH / 2
+
+
 def assert_strip_under_bar(shot):
     items = ui.read()
     bar, strip = nav_bar(items, ui), by_id(items, 'home-strip')
@@ -57,8 +63,9 @@ def assert_strip_under_bar(shot):
     edge = bottom(bar)
     assert abs(strip['frame']['y'] - edge) <= 1, f'strip row starts at {strip["frame"]["y"]}, compact bar ends at {edge}'
     assert abs(strip['frame']['height'] - STRIP_ROW) <= 1, f'strip row is {strip["frame"]["height"]} tall'
-    band = dominant(shot, {'x': SEAM_X, 'y': edge + STRIP_ROW - 6, 'width': 40, 'height': 4})
-    above = dominant(shot, {'x': SEAM_X, 'y': edge - 6, 'width': 40, 'height': 4})
+    x = seam_x(items)
+    band = dominant(shot, {'x': x, 'y': edge + STRIP_ROW - 6, 'width': SAMPLE_WIDTH, 'height': 4})
+    above = dominant(shot, {'x': x, 'y': edge - 6, 'width': SAMPLE_WIDTH, 'height': 4})
     below = shot.rgb(380, edge + STRIP_ROW + 16)
     assert close(band, above, 3), f'strip colour {band} breaks at the bar edge (bar shows {above})'
     assert max(abs(a - b) for a, b in zip(below, band)) > 20, f'strip does not end {STRIP_ROW} pt under the bar: {band} vs {below}'

@@ -59,7 +59,7 @@ function BaseSection({ base, status }: { base: CostBase; status: PostStatus }) {
 
 function BlockedNotice({ status }: { status: PostStatus }) {
   const { t, language } = useI18n();
-  const reason = blockedReason(status.unpaid, new Date());
+  const reason = blockedReason(status.unpaid, new Date(), t('bounty.post.unknownName'));
   const body =
     reason?.kind === 'many'
       ? t('bounty.post.blocked.many', {

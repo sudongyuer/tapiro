@@ -6,7 +6,7 @@ import {
   lineLimit,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, useNavigation } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -15,7 +15,7 @@ import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { TaskCard } from '@/ui/TaskCard';
 
 import { ringgit } from './blockedReason';
-import { costLine } from './cost';
+import { costLine, payTarget } from './cost';
 import { CostSection } from './CostSection';
 import { canPublish, type FlowState } from './postFlow';
 import { draftStore } from './services';
@@ -46,12 +46,26 @@ export function PostConfirm({ userId, onPublished, onPay, onBack }: ConfirmProps
       formError.set(error);
       onBack();
     },
+    onAlreadySent: () => {
+      formError.set('alreadySent');
+      onBack();
+    },
   });
   const { busy, rejected } = flow.state;
 
   useEffect(() => {
     navigation.getParent()?.setOptions({ gestureEnabled: !busy });
   }, [navigation, busy]);
+
+  const status = flow.state.status;
+  const unpaidMissing =
+    status.kind === 'ready' && payTarget(costLine(status.status)) === null && status.status.blocked;
+  const reloaded = useRef(false);
+  useEffect(() => {
+    if (!unpaidMissing || reloaded.current) return;
+    reloaded.current = true;
+    flow.retry();
+  }, [unpaidMissing, flow]);
 
   const notice =
     rejected === 'failed' ? (
@@ -150,15 +164,17 @@ function Actions({
   const { t } = useI18n();
   const ready = state.status.kind === 'ready' ? state.status.status : null;
   const line = ready ? costLine(ready) : null;
+  const target = line ? payTarget(line) : null;
   if (line?.kind === 'blocked') {
-    const oldest = line.unpaid[0];
     return (
       <SheetActions>
-        <PillButton
-          label={t('bounty.post.confirm.pay')}
-          onPress={() => onPay(oldest.paymentId)}
-          testID="bounty-post-pay"
-        />
+        {target ? (
+          <PillButton
+            label={t('bounty.post.confirm.pay')}
+            onPress={() => onPay(target)}
+            testID="bounty-post-pay"
+          />
+        ) : null}
         <PillButton
           label={t('bounty.post.confirm.publish')}
           variant="plain"

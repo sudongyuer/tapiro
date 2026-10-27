@@ -25,6 +25,7 @@ export function usePostFlow(userId: string, handlers: PublishHandlers) {
         handlers.onPublished();
       },
       onInvalid: handlers.onInvalid,
+      onAlreadySent: handlers.onAlreadySent,
     });
   return { state, publish, retry: flow.load };
 }

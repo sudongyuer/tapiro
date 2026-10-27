@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { costLine, malaysiaDay } from './cost';
+import { costLine, payTarget, malaysiaDay } from './cost';
 import type { PostStatus, UnpaidSummary } from './types';
 
 const NEXT = '2026-10-31T16:00:00Z';
@@ -72,5 +72,19 @@ describe('malaysiaDay', () => {
     expect(malaysiaDay(NEXT)).toEqual({ year: 2026, month: 11, day: 1 });
     expect(malaysiaDay('2026-11-30T15:59:59Z')).toEqual({ year: 2026, month: 11, day: 30 });
     expect(malaysiaDay('2026-12-31T16:00:00Z')).toEqual({ year: 2027, month: 1, day: 1 });
+  });
+});
+
+describe('payTarget', () => {
+  test('blocked pays the oldest unpaid payment', () => {
+    expect(payTarget(costLine(status({ blocked: true, unpaid: [lily, jie] })))).toBe(jie.paymentId);
+  });
+
+  test('blocked with no unpaid payment read yet has nothing to pay', () => {
+    expect(payTarget(costLine(status({ blocked: true, unpaid: [] })))).toBeNull();
+  });
+
+  test('an unblocked line has nothing to pay', () => {
+    expect(payTarget(costLine(status({ blocked: false, unpaid: [jie] })))).toBeNull();
   });
 });

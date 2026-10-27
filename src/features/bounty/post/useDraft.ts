@@ -5,7 +5,9 @@ import { createStore } from '@/lib/store';
 import { draftStore } from './services';
 import type { DraftError } from './types';
 
-export const formError = createStore<DraftError | null>(null);
+export type FormNotice = DraftError | 'alreadySent';
+
+export const formError = createStore<FormNotice | null>(null);
 
 export function useFormError() {
   return useSyncExternalStore(formError.subscribe, formError.get);

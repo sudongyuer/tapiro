@@ -174,3 +174,4 @@ def assert_preview(ui, title, amount):
     found = ui.wait_label('bounty-post-preview-reward', lambda label: bool(reward.search(label)),
                           f'the preview reward is not RM {amount}')
     return text, found
+
