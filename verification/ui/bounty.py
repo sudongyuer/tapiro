@@ -39,9 +39,9 @@ def value(ui, identifier):
 FIELD_BAND = 9
 
 
-def typed(ui, identifier, text, shows=None):
+def typed(ui, identifier, text, shows=None, band=True):
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
-    ui.tap_point(f['x'] + f['width'] - 4, f['y'] - FIELD_BAND)
+    ui.tap_point(f['x'] + f['width'] - 4, f['y'] - FIELD_BAND if band else f['y'] + f['height'] / 2)
     ui.type(text)
     shows = shows or text
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
@@ -99,7 +99,7 @@ def close_sheet_by_swipe(ui):
     ui.gone('bounty-post-form')
 
 
-def relaunch(ui, drop=EMPTY_DRAFT):
+def relaunch(ui, drop=EMPTY_DRAFT, add=()):
     args = list(ui.launch_args)
     for start in range(len(args) - len(drop) + 1):
         if args[start:start + len(drop)] == drop:
@@ -107,7 +107,7 @@ def relaunch(ui, drop=EMPTY_DRAFT):
             break
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
     subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, '-AppleLanguages', f'({ui.locale})',
-                    '-AppleLocale', REGIONS[ui.locale], *args], check=True, capture_output=True, timeout=60)
+                    '-AppleLocale', REGIONS[ui.locale], *args, *add], check=True, capture_output=True, timeout=60)
     ui.element('home-scroll', timeout=60)
 
 

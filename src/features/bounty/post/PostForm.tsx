@@ -36,6 +36,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { errorKey } from './errorCopy';
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
+import { DescriptionRows, TimeRows } from './OptionalRows';
 import { draftStore } from './services';
 import type { DraftError, PostDraft } from './types';
 import { resetDraft, useDraft } from './useDraft';
@@ -57,6 +58,7 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
   const { color } = useTheme();
   const title = useNativeState(draft.title);
   const reward = useNativeState(draft.rewardText);
+  const description = useNativeState(draft.description ?? '');
   const titleField = useRef<TextFieldRef>(null);
   const rewardField = useRef<TextFieldRef>(null);
   const [error, setError] = useState<DraftError | null>(null);
@@ -67,7 +69,27 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
     setError(null);
   }
 
+  // onTextChange can miss the last keystroke when keys arrive faster than SwiftUI's change handler runs; the
+  // native values are read back before anything depends on the stored draft.
+  function sync() {
+    const stored = draftStore.load(userId);
+    const typed: Partial<PostDraft> = {
+      title: title.get(),
+      rewardText: reward.get(),
+      description: stored.description === null ? null : description.get(),
+    };
+    const changed = (Object.keys(typed) as (keyof typeof typed)[]).some(
+      (key) => typed[key] !== stored[key],
+    );
+    if (changed) draftStore.update(userId, typed);
+  }
+
+  const onBlur = (focused: boolean) => {
+    if (!focused) sync();
+  };
+
   function next() {
+    sync();
     const checked = checkDraft(draftStore.load(userId), new Date());
     if (!checked.ok) return setError(checked.error);
     setError(null);
@@ -77,7 +99,14 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
   return (
     <Host style={styles.host} testID="bounty-post-form">
       <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button onPress={onClose}>{t('bounty.post.cancel')}</Stack.Toolbar.Button>
+        <Stack.Toolbar.Button
+          onPress={() => {
+            sync();
+            onClose();
+          }}
+        >
+          {t('bounty.post.cancel')}
+        </Stack.Toolbar.Button>
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
@@ -105,6 +134,7 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
               maxLength={TITLE_MAX}
               placeholder={t('bounty.post.form.titlePlaceholder')}
               onTextChange={(text) => edit({ title: text })}
+              onFocusChange={onBlur}
               testID="bounty-post-title"
             />
             <Text
@@ -166,6 +196,7 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
                 max: REWARD_MAX_RM,
               })}
               onTextChange={(text) => edit({ rewardText: text })}
+              onFocusChange={onBlur}
               testID="bounty-post-reward"
               modifiers={[
                 keyboardType('numeric'),
@@ -175,6 +206,18 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
               ]}
             />
           </FieldRow>
+        </Section>
+        <Section
+          header={<Text>{t('bounty.post.form.detailsHeader')}</Text>}
+          footer={<Text>{t('bounty.post.form.draftFooter')}</Text>}
+        >
+          <TimeRows time={draft.time} onEdit={edit} />
+          <DescriptionRows
+            description={draft.description}
+            text={description}
+            onBlur={onBlur}
+            onEdit={edit}
+          />
         </Section>
         <ClearSection
           userId={userId}
@@ -198,40 +241,39 @@ function ClearSection({
   const { t } = useI18n();
   const { color } = useTheme();
   const [asking, setAsking] = useState(false);
+  if (empty) return null;
   return (
-    <Section footer={<Text>{t('bounty.post.form.draftFooter')}</Text>}>
-      {empty ? null : (
-        <ConfirmationDialog
-          title={t('bounty.post.form.clearConfirm.title')}
-          titleVisibility="visible"
-          isPresented={asking}
-          onIsPresentedChange={setAsking}
-        >
-          <ConfirmationDialog.Trigger>
-            <Button
-              label={t('bounty.post.form.clear')}
-              role="destructive"
-              onPress={() => setAsking(true)}
-              testID="bounty-post-clear"
-              modifiers={[foregroundStyle(color('--color-urgent')), fullRow, ROW_INSETS]}
-            />
-          </ConfirmationDialog.Trigger>
-          <ConfirmationDialog.Actions>
-            <Button
-              label={t('bounty.post.form.clearConfirm.confirm')}
-              role="destructive"
-              onPress={() => {
-                resetDraft(userId);
-                onCleared();
-              }}
-            />
-            <Button label={t('bounty.post.form.clearConfirm.cancel')} role="cancel" />
-          </ConfirmationDialog.Actions>
-          <ConfirmationDialog.Message>
-            <Text>{t('bounty.post.form.clearConfirm.message')}</Text>
-          </ConfirmationDialog.Message>
-        </ConfirmationDialog>
-      )}
+    <Section>
+      <ConfirmationDialog
+        title={t('bounty.post.form.clearConfirm.title')}
+        titleVisibility="visible"
+        isPresented={asking}
+        onIsPresentedChange={setAsking}
+      >
+        <ConfirmationDialog.Trigger>
+          <Button
+            label={t('bounty.post.form.clear')}
+            role="destructive"
+            onPress={() => setAsking(true)}
+            testID="bounty-post-clear"
+            modifiers={[foregroundStyle(color('--color-urgent')), fullRow, ROW_INSETS]}
+          />
+        </ConfirmationDialog.Trigger>
+        <ConfirmationDialog.Actions>
+          <Button
+            label={t('bounty.post.form.clearConfirm.confirm')}
+            role="destructive"
+            onPress={() => {
+              resetDraft(userId);
+              onCleared();
+            }}
+          />
+          <Button label={t('bounty.post.form.clearConfirm.cancel')} role="cancel" />
+        </ConfirmationDialog.Actions>
+        <ConfirmationDialog.Message>
+          <Text>{t('bounty.post.form.clearConfirm.message')}</Text>
+        </ConfirmationDialog.Message>
+      </ConfirmationDialog>
     </Section>
   );
 }

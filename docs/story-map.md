@@ -526,6 +526,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | bounty.post.ai-draft        | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                              |
 | bounty.post.manual          | 手动 + 表单走到同一个确认页                                                       | ui:bounty_post_form                             |
 | bounty.post.draft           | 草稿只存在这台手机上：取消、下滑关闭、重启后都还在；清空草稿要确认，清空后重启也不回来 | ui:bounty_post_draft                            |
+| bounty.post.optional        | 「＋ 时间」「＋ 说明」原地展开：时间可选截止或时间段，只能选现在到 30 天内，移除后收起；字数按码点计 | ui:bounty_post_optional, unit:src/features/bounty/post/timeChoice.test.ts |
 | bounty.post.limits          | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit       |
 | bounty.post.category        | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql             |
 | bounty.post.cost            | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | db:supabase/tests/bounty_publish.test.sql, unit |
