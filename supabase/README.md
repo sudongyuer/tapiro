@@ -162,6 +162,38 @@ user) and deletes the address rows of every bounty they posted. Their applicatio
 keep their rows for the other side with the deleted party set null, which is why `bounties_helper`
 allows a `confirmed` bounty without a helper.
 
+### Board: `nearby_bounties`
+
+`nearby_bounties(latitude, longitude, board_filter, page_after, page_size)` (authenticated, `security invoker`, so
+RLS still applies) returns `{ items, next }`. Each item has `id`, `title`, `category`, `rewardSen`, `placeLabel`,
+`stickerPath`, `startsAt`, `endsAt`, `deadlineAt`, `urgent`, `distanceM`, `appliedByMe` and `createdAt`. The response
+never carries the exact address (`bounty_addresses`, readable only by the poster and helper) or coordinates. The place
+point itself is public by design: `bounties_select` lets any signed-in user read `bounties.place`, and `distanceM`
+from several points locates it too. Only `open` bounties before `expires_at` are listed, never the viewer's
+own and never one whose poster and viewer are blocked in either direction.
+
+- Order: with a point (`latitude` and `longitude` together), bounties with a place come first by distance (`<->`, the
+  GiST KNN on `bounties_place`), ties by `id`; then bounties without a place by `created_at` descending, ties by
+  `id` descending. Without a point every bounty is ordered by recency and `distanceM` is null. `distanceM` is the
+  spherical distance rounded to whole metres (within about 0.5% of the spheroid distance).
+- Paging: `page_size` 1–50 (default 20). Pass the previous answer's `next` as `page_after` until `next` is null.
+  The cursor records the point and filter; a call whose `latitude`, `longitude` or `board_filter` differ from the
+  cursor's raises `22023 board_cursor_mismatch`, and the client restarts from page 1. A malformed cursor (bad id,
+  both or neither of `distance` and `createdAt`, a non-finite value), an unknown filter, a lone coordinate or a
+  size outside 1–50 raise `22023 invalid_board_query`.
+- `urgent` (filter and flag): `deadline_at` within the next 3 hours.
+- `fits_my_time`: a bounty's slot is `[starts_at, ends_at)`, or one hour from `starts_at` when there is no end. It is
+  dropped when its slot overlaps the slot of a bounty the viewer posts or helps on that is `assigned`, `en_route`,
+  `done` or `disputed`. Slots that only touch do not overlap. A bounty without `starts_at` (deadline only or no
+  time) always fits, because its helper picks when to do it.
+- `appliedByMe` is true while the viewer's application is `pending`.
+- Known limits:
+  - Deep paging costs grow: each page rescans every row nearer than the cursor, and a page boundary inside a group of
+    bounties at the same point rescans the whole group. Filtered queries with few matches scan every located open
+    bounty. Fine at campus scale; a radius cap or a same-point keyset for the boundary group is the fix.
+  - The pages-of-1 tie test in `bounty_nearby.test.sql` relies on the scan returning tied rows in insertion order; a
+    fixture with a fixed expected order would make it independent of the plan.
+
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);
