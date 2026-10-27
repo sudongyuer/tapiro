@@ -4,7 +4,7 @@ resolved shows an inline notice and the screen stays."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import relaunch, search_places  # noqa: E402
+from bounty import assert_grouped_background, relaunch, search_places  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/place/', 'src/lib/location/', 'verification/ui/bounty.py']
@@ -26,7 +26,8 @@ current = ui.wait_label('place-search-current', lambda label: ui.t('bounty.place
                         '用当前位置 is not the first row')
 assert_touch_target(current, '用当前位置')
 assert by_id(ui.read(), 'place-search-result-0') is None, 'results are listed before anything is typed'
-ui.capture('01-empty-query')
+shot = ui.snap('01-empty-query')
+assert_grouped_background(ui, shot, ui.element('place-search')['frame'], 'place search')
 
 search_places(ui, QUERY)
 for index, title in enumerate(PLACES):

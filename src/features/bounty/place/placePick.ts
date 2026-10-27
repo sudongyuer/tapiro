@@ -1,5 +1,7 @@
 import type { ResolvedPlace } from 'tapiro-kit';
 
+import { userCleanups } from '@/lib/userCleanups';
+
 export type PlacePurpose = 'post' | 'board';
 
 export function createPlacePick() {
@@ -13,7 +15,12 @@ export function createPlacePick() {
       picks.delete(purpose);
       return place;
     },
+    clear() {
+      picks.clear();
+    },
   };
 }
 
 export const placePick = createPlacePick();
+
+userCleanups.register(() => placePick.clear());

@@ -24,9 +24,10 @@ import {
   listStyle,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { Stack } from 'expo-router';
+import { Stack, useNavigation, type NativeStackNavigationProp } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
+import type { SearchBarCommands } from 'react-native-screens';
 import type { PlaceResult, PlaceSuggestion, ResolvedPlace } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
@@ -89,6 +90,8 @@ export function PlaceSearchScreen({
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busy, setBusy] = useState<Busy>(null);
   const mounted = useRef(true);
+  const working = useRef(false);
+  const searchBar = useFocusedSearchBar();
   useEffect(
     () => () => {
       mounted.current = false;
@@ -103,13 +106,16 @@ export function PlaceSearchScreen({
     onPicked();
   }
 
-  async function run(next: Busy, work: () => Promise<void>) {
-    if (busy) return;
+  async function run(next: Busy, work: () => Promise<boolean>) {
+    if (working.current) return;
+    working.current = true;
     setBusy(next);
     setNotice(null);
+    let done = false;
     try {
-      await work();
+      done = await work();
     } finally {
+      working.current = done;
       if (mounted.current) setBusy(null);
     }
   }
@@ -117,17 +123,25 @@ export function PlaceSearchScreen({
   const pickCurrent = () =>
     run({ kind: 'current' }, async () => {
       const result = await currentPlace(locationService, placeFacade.placeAt);
-      if (!mounted.current) return;
-      if (result.kind === 'picked') picked(result.place);
-      else setNotice(result.kind);
+      if (!mounted.current) return true;
+      if (result.kind !== 'picked') {
+        setNotice(result.kind);
+        return false;
+      }
+      picked(result.place);
+      return true;
     });
 
   const resolve = (id: string) =>
     run({ kind: 'result', id }, async () => {
       const result = await search.resolve(id).catch((): PlaceResult => ({ status: 'failed' }));
-      if (!mounted.current) return;
-      if (result.status === 'ok') picked(result.place);
-      else setNotice(failureNotice(result));
+      if (!mounted.current) return true;
+      if (result.status !== 'ok') {
+        setNotice(failureNotice(result));
+        return false;
+      }
+      picked(result.place);
+      return true;
     });
 
   return (
@@ -135,6 +149,7 @@ export function PlaceSearchScreen({
       <Stack.Screen
         options={{
           headerSearchBarOptions: {
+            ref: searchBar,
             placeholder: t('bounty.place.searchPlaceholder'),
             autoFocus: true,
             placement: 'stacked',
@@ -176,6 +191,19 @@ export function PlaceSearchScreen({
       </List>
     </Host>
   );
+}
+
+function useFocusedSearchBar() {
+  const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
+  const searchBar = useRef<SearchBarCommands>(null);
+  useEffect(
+    () =>
+      navigation.addListener('transitionEnd', (event) => {
+        if (!event.data.closing) searchBar.current?.focus();
+      }),
+    [navigation],
+  );
+  return searchBar;
 }
 
 function useShownItems(state: ReturnType<typeof usePlaceSearch>['state']) {

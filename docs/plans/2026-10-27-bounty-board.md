@@ -903,5 +903,9 @@ Filled in Task 14.
 - The verify build lacked `NSLocationWhenInUseUsageDescription`: `ios/` predated Task 3 and `build.sh` prebuilds only when
   the workspace is missing. `expo prebuild --platform ios` was re-run (no tracked file changed); see the retro.
 - The search bar sets `placement: 'stacked'`: with the default placement iOS 26 put it in the bottom toolbar, while
-  Decided UI asks for the header search bar. `autoFocus: true` is set, but in the Simulator the field was not focused
-  when the screen settled (the cases tap it first); check on a device.
+  Decided UI asks for the header search bar. `autoFocus` alone did not focus it, so the screen also calls the search
+  bar ref's `focus()` on the push's `transitionEnd`; `bounty_post_place` types without tapping to prove it (the
+  Simulator's hardware keyboard keeps the software keyboard down). The `place-search` debug scene has no push, so its
+  case taps the field.
+- 用当前位置 and result taps are guarded by a ref, and a successful pick keeps the screen locked, so a double tap cannot
+  pick twice and pop the sheet. `placePick` is cleared through `userCleanups` on sign-out.

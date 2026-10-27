@@ -30,4 +30,13 @@ describe('handing a picked place back', () => {
     expect(pick.take('post')).toBeNull();
     expect(pick.take('board')).toEqual(GEO);
   });
+
+  test('signing out clears both purposes', () => {
+    const pick = createPlacePick();
+    pick.set('post', GEO);
+    pick.set('board', PYRAMID);
+    pick.clear();
+    expect(pick.take('post')).toBeNull();
+    expect(pick.take('board')).toBeNull();
+  });
 });

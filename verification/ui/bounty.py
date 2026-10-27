@@ -206,9 +206,10 @@ def search_field(ui):
                                and hint in (i.get('AXValue') or '', i.get('AXPlaceholderValue') or '')), None)
 
 
-def search_places(ui, text):
+def search_places(ui, text, focused=False):
     f = ui.settled(search_field(ui), 'the header search field never settled')['frame']
-    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+    if not focused:
+        ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
     ui.type(text)
 
 
