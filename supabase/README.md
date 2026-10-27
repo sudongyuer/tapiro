@@ -107,6 +107,24 @@ payment), so a driver gets one per rider on the same ride.
   payer never marked it paid (cash confirmed by the payee), since only the payee sets `settled_at`.
   Reverse payments and repeat calls write nothing.
 
+## Reputation tiers
+
+`reputation_snapshots` holds one row per user: the tier (`new_friend` 新朋友, `reliable` 靠谱,
+`very_reliable` 很靠谱, `tapir_friend` 貘友) and the inputs behind it. A signed-in client reads only
+`user_id` and `tier` (column grant); every write is the recompute.
+
+- `recompute_reputation(as_of default now())` (service role): upserts one snapshot per profile from
+  the events with `as_of - 180 days < created_at <= as_of` and returns the rows written. Inputs:
+  `settled_count` (settled events, one per payment), `counterpart_count` (distinct counterparts
+  among them), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
+  counted no-shows), null when both are 0, and `on_time_share` over the user's payer events with a
+  known `on_time`, null when none. Account age is `as_of - profiles.created_at`.
+- `private.tier_for(settled, counterparts, rate, account_age)` holds every threshold, so tuning is
+  one migration: 靠谱 ≥ 2 settled, ≥ 2 counterparts, rate ≥ 0.8; 很靠谱 ≥ 5, ≥ 4, ≥ 0.9, account
+  ≥ 60 days; 貘友 ≥ 12, ≥ 8, ≥ 0.95, account ≥ 180 days. `on_time_share` is stored but not yet a
+  threshold; reviews join in foundation step 6.
+- `reputation_tier(uid)` (authenticated): the snapshot's tier, `new_friend` when there is none.
+
 ## Coins
 
 `coin_ledger` is append-only: a client reads its own rows and never writes; even the owner role
@@ -209,6 +227,8 @@ waits for the next run. The result counts each kind of change and `skipped`, the
 failed; a row that keeps failing is retried every run and shows up only there and in the log warning,
 so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` always runs at `now()`
 (service role); the clock-taking body `private.run_bounty_jobs(as_of)` has no grant and is for tests.
+
+`reputation-recompute-daily` runs `recompute_reputation()` in SQL at 19:30 UTC (03:30 Malaysia time).
 
 ## Edge Functions
 
