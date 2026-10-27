@@ -68,6 +68,16 @@
           "isAccessMediaLocationEnabled": false
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Sort nearby bounties by how far they are, or use where you are now as a bounty's place. Used only while you use Tapiro.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false,
+          "isIosBackgroundLocationEnabled": false
+        }
+      ],
       "./plugins/withoutAppleSignInEntitlement"
     ],
     "experiments": {

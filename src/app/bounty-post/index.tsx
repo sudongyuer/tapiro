@@ -12,6 +12,7 @@ export default function BountyPostFormRoute() {
       userId={user.id}
       onNext={() => router.navigate('/bounty-post/confirm')}
       onClose={closePostSheet}
+      onPickPlace={() => router.push('/bounty-post/place')}
     />
   );
 }

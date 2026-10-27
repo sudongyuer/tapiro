@@ -156,22 +156,23 @@ select is(
   (select array_agg((item ->> 'distanceM')::integer order by n)
    from jsonb_array_elements((select r -> 'items' from results where name = 'near')) with ordinality as e(item, n)
    where n <= 5) [1:1],
-  array[0], 'a bounty at the viewer''s point is 0 m away'
+  array[100], 'a bounty at the viewer''s point reads 100 m, never 0'
 );
-select ok(
-  (select bool_and((item ->> 'distanceM')::integer between 700 and 1000)
+select is(
+  (select array_agg((item ->> 'distanceM')::integer order by item ->> 'id')
    from jsonb_array_elements((select r -> 'items' from results where name = 'near')) as item
    where item ->> 'id' in (
      '50000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000003',
      '50000000-0000-0000-0000-000000000004', '50000000-0000-0000-0000-000000000006'
    )),
-  'Sunway University and Sunway Geo are 700–1000 m from Sunway Pyramid'
+  array[800, 900, 900, 900],
+  'Sunway University (832 m) and Sunway Geo (917 m) read in whole 100 m from Sunway Pyramid'
 );
 select is(
-  (select (item ->> 'distanceM')::integer / 100
+  (select (item ->> 'distanceM')::integer
    from jsonb_array_elements((select r -> 'items' from results where name = 'near')) as item
    where item ->> 'id' = '50000000-0000-0000-0000-000000000005'),
-  50, 'the point 0.045° north is about 5 km away'
+  5000, 'the point 0.045° north (5004 m) reads 5000 m'
 );
 select is(
   (select count(*) from jsonb_array_elements((select r -> 'items' from results where name = 'near')) as item
@@ -203,8 +204,8 @@ select is(
   (select array_agg(k order by k) from jsonb_object_keys(
      (select r -> 'items' -> 0 from results where name = 'near')) as k),
   array[
-    'appliedByMe', 'category', 'createdAt', 'deadlineAt', 'distanceM', 'endsAt', 'id', 'placeLabel', 'rewardSen',
-    'startsAt', 'stickerPath', 'title', 'urgent'
+    'appliedByMe', 'category', 'createdAt', 'deadlineAt', 'distanceM', 'endsAt', 'id', 'placeLabel', 'poster',
+    'rewardSen', 'startsAt', 'stickerPath', 'title', 'urgent'
   ],
   'a card carries only the board fields'
 );
@@ -445,16 +446,16 @@ select throws_ok(
   '22023', 'board_cursor_mismatch', 'a cursor from a session without a point is rejected with a point'
 );
 select throws_ok(
-  $$select public.nearby_bounties(page_after => '{"createdAt":"2026-10-27T00:00:00Z","distance":"1","id":"50000000-0000-0000-0000-000000000001","latitude":null,"longitude":null,"filter":"all"}')$$,
-  '22023', 'invalid_board_query', 'a cursor with both a distance and a time is rejected'
+  $$select public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_after => '{"kind":"distance","createdAt":"2026-10-27T00:00:00Z","id":"50000000-0000-0000-0000-000000000001","latitude":3.0733,"longitude":101.6078,"filter":"all"}')$$,
+  '22023', 'invalid_board_query', 'a distance cursor with a time is rejected'
 );
 select throws_ok(
-  $$select public.nearby_bounties(page_after => '{"createdAt":"2026-10-27T00:00:00Z","id":"not-a-uuid","latitude":null,"longitude":null,"filter":"all"}')$$,
+  $$select public.nearby_bounties(page_after => '{"kind":"recent","createdAt":"2026-10-27T00:00:00Z","id":"not-a-uuid","latitude":null,"longitude":null,"filter":"all"}')$$,
   '22023', 'invalid_board_query', 'a cursor with a malformed id is rejected'
 );
 select throws_ok(
-  $$select public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_after => '{"distance":"NaN","id":"50000000-0000-0000-0000-000000000001","latitude":3.0733,"longitude":101.6078,"filter":"all"}')$$,
-  '22023', 'invalid_board_query', 'a non-finite distance cursor is rejected'
+  $$select public.nearby_bounties(latitude => 3.0733, longitude => 101.6078, page_after => '{"distance":"0","id":"50000000-0000-0000-0000-000000000001","latitude":3.0733,"longitude":101.6078,"filter":"all"}')$$,
+  '22023', 'invalid_board_query', 'a cursor in the old shape with a distance is rejected'
 );
 
 reset role;

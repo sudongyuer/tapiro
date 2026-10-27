@@ -32,7 +32,7 @@ const DATE_PARTS: ('date' | 'hourAndMinute')[] = ['date', 'hourAndMinute'];
 
 type Edit = (patch: Partial<PostDraft>) => void;
 
-function AddRow({
+export function AddRow({
   label,
   voiceOver,
   testID,
@@ -60,11 +60,13 @@ function AddRow({
   );
 }
 
-function RemoveRow({
+export function RemoveRow({
+  label,
   voiceOver,
   testID,
   onPress,
 }: {
+  label?: string;
   voiceOver: string;
   testID: string;
   onPress: () => void;
@@ -73,7 +75,7 @@ function RemoveRow({
   const { color } = useTheme();
   return (
     <Button
-      label={t('bounty.post.form.remove')}
+      label={label ?? t('bounty.post.form.remove')}
       role="destructive"
       onPress={onPress}
       testID={testID}

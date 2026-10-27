@@ -25,7 +25,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, useIsFocused } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -36,10 +36,12 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
 import { FormNotice } from './FormNotice';
 import { DescriptionRows, TimeRows } from './OptionalRows';
+import { AddPlaceRow, PlaceSections } from './PlaceRows';
 import { draftStore } from './services';
 import type { PostDraft } from './types';
 import { formError, resetDraft, useDraft, useFormError } from './useDraft';
 import { useDraftSync } from './useDraftSync';
+import { usePlaceFields } from './usePlaceFields';
 import { useHintFocus } from './useStartPost';
 import { useSentCheck } from './useSentCheck';
 import { codePoints, checkDraft, REWARD_MAX_RM, REWARD_MIN_RM, TITLE_MAX } from './validate';
@@ -48,7 +50,12 @@ const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const REWARD_DIGITS = String(REWARD_MAX_RM).length;
 const REWARD_FIELD_WIDTH = 96;
 
-type FormProps = { userId: string; onNext: () => void; onClose: () => void };
+type FormProps = {
+  userId: string;
+  onNext: () => void;
+  onClose: () => void;
+  onPickPlace: () => void;
+};
 
 export function PostForm(props: FormProps) {
   const draft = useDraft(props.userId);
@@ -58,7 +65,13 @@ export function PostForm(props: FormProps) {
   return <PostFormBody key={draft.id} draft={draft} {...props} />;
 }
 
-function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: PostDraft }) {
+function PostFormBody({
+  userId,
+  draft,
+  onNext,
+  onClose,
+  onPickPlace,
+}: FormProps & { draft: PostDraft }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const title = useNativeState(draft.title);
@@ -67,13 +80,26 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
   const titleField = useRef<TextFieldRef>(null);
   const rewardField = useRef<TextFieldRef>(null);
   const notice = useFormError();
+  const clearError = useCallback(() => formError.set(null), []);
+  const place = usePlaceFields(userId, draft.place, clearError);
 
   function edit(patch: Partial<PostDraft>) {
     draftStore.update(userId, patch);
     formError.set(null);
   }
 
-  const sync = useDraftSync(userId, draft.id, { title, reward, description });
+  const sync = useDraftSync(userId, draft.id, {
+    title,
+    reward,
+    description,
+    placeLabel: place.label,
+    address: place.address,
+  });
+
+  function pickPlace() {
+    sync();
+    onPickPlace();
+  }
 
   const onBlur = (focused: boolean) => {
     if (!focused) sync();
@@ -202,7 +228,20 @@ function PostFormBody({ userId, draft, onNext, onClose }: FormProps & { draft: P
             onBlur={onBlur}
             onEdit={edit}
           />
+          {draft.place === null ? <AddPlaceRow onPick={pickPlace} /> : null}
         </Section>
+        {draft.place ? (
+          <PlaceSections
+            place={draft.place}
+            label={place.label}
+            address={place.address}
+            focusLabel={place.focusLabel}
+            onPick={pickPlace}
+            onEdit={place.edit}
+            onBlur={onBlur}
+            onRemove={place.remove}
+          />
+        ) : null}
         <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} />
       </Form>
     </Host>

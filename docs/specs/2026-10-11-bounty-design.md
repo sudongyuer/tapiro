@@ -173,7 +173,7 @@ hides the bounty and stops applying.
 
 ## UI/UX and motion
 
-Decided on the design canvas, page 05, boards 「悬赏 · 开工前（一）发布与申请」 and 「（二）进行中与结清」 (KICKOFF
+Decided on the design canvas, page 05, boards 「悬赏 · 开工前（一）发布与申请」, 「（二）进行中与结清」, 「（三）」 and 「（四）附近的悬赏与地点」 (KICKOFF
 2026-10-26, rows 「悬赏界面 15 题」). Option ids refer to those boards.
 
 | #   | Surface                | Decision                                                                                                                                                                                                                                                                                       |
@@ -203,6 +203,14 @@ Decided on the design canvas, page 05, boards 「悬赏 · 开工前（一）发
 | 23A | 「去付款」 target      | Close the post sheet (draft kept) and open the pay sheet for the oldest unpaid payment                                                                                                                                                                                                         |
 | 24A | Confirm preview card   | Sticker, title, place label, time line and reward; no poster line and no distance                                                                                                                                                                                                              |
 | 25A | Empty draft defaults   | No category chosen (placeholder 「选类型」) and an empty reward; both required                                                                                                                                                                                                                 |
+| 26A | Board card             | Three rows: sticker, category, title, reward / time, place label, distance / poster, tier, 申请; one SwiftUI Host per card inside the home RN scroll view; sticker 48 pt                                                                                                                       |
+| 27A | Beyond the axis        | The distance axis covers 0–2 km and ends in a 「+N 更远」 bubble; the list follows the RPC order, with bounties without a place last under a small header                                                                                                                                      |
+| 28A | Location permission    | An inline card at the top of the board; the system prompt (When In Use only) appears only after 「允许定位」; 「先不用」 replaces it with 「选一个地方」                                                                                                                                       |
+| 29A | 「选一个地方」         | Search any place with the 33A search screen; distances and the axis use the chosen point, labelled 「这里」; the choice is kept on the device                                                                                                                                                  |
+| 30A | Filters                | 全部 / 急 / 塞得进空档 chips under the section title, scrolling with the list; an empty filter shows 「这个筛选下没有」 with 「看全部」                                                                                                                                                        |
+| 31A | Withdraw               | Only in the bounty detail; the card shows 「已申请 · 等对方选」 in place of 申请                                                                                                                                                                                                               |
+| 32A | Board states           | First-load failure, empty board and end of list are inline cards (mascot head ≤ 32 pt, one line, one button); a failed refresh keeps the list under a notice with the time of the data; first-load failure never shows a count                                                                 |
+| 33A | Place picker           | MapKit `MKLocalSearchCompleter` in tapiro-kit; first row 「用当前位置」 asks When In Use only when tapped; the label others see defaults to the result name and is editable (≤ 80); the exact-address row appears after a place is chosen                                                      |
 
 - Reputation tiers are named 新朋友 / 靠谱 / 很靠谱 / 貘友 everywhere (the CraftPick 「新来的」 is superseded).
 - One-time cards (「这次没选上」, 「过期了 · 免费次数已退回」) disappear once seen; the seen flag is stored on the
@@ -276,7 +284,7 @@ open ──select──▶ assigned ──出发了──▶ en_route ──完�
   `t()`, amounts as `amountSen`). The card-detail types (`ProgressDetail` and siblings in
   `src/features/home/homeModel.ts`) move into `src/lib` beside `liveItems` so the bounty source can publish card
   details without a cross-feature import.
-- Board data: one RPC `nearby_bounties(area or point, filters, cursor)` returning open bounties with distance;
+- Board data: one RPC `nearby_bounties(point, filters, cursor)` returning open bounties with distance;
   bounties without a place are included without distance and are not placed on the axis or map.
 - Unsent manual drafts stay on the device (KICKOFF 2026-10-11 "只存手机"; data integrity: keep drafts across failures).
 - Photo → sticker: subject cut-out runs on the device in `modules/tapiro-kit`; only the resulting PNG is uploaded.
@@ -300,7 +308,7 @@ and refunded. Push for these arrives with foundation step 9.
 | Applicant has no payee method                 | 申请 explains why and links to 我的 → 收款方式                                                                       | Apply RPC rejects                                                              |
 | Bounty taken, closed or blocked while viewing | Card shows it is no longer open; 申请 disabled                                                                       | Server rejects with a typed reason                                             |
 | Two devices race on select                    | Second attempt shows 「已经选好了」                                                                                  | The transition function is the single writer                                   |
-| Location denied                               | Board sorts by recency; area picker 「选一个地方」 at the top                                                        | No distance axis or map pins                                                   |
+| Location denied                               | Board offers 「选一个地方」 (29A); until a place is chosen it sorts by recency                                       | No distance axis or map pins until a place is chosen                           |
 | Sticker cut-out fails                         | The photo is kept as a rounded thumbnail                                                                             | Upload continues                                                               |
 | Helper never taps 「出发了」                  | Reminder item to both at the agreed time; poster can cancel                                                          | No-show is the helper's if the poster cancels > 30 min after the reminder (B4) |
 | Poster never confirms 完成                    | The confirm item shows the auto-confirm time                                                                         | Scheduled job confirms at 48 h                                                 |

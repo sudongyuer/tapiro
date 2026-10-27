@@ -265,7 +265,7 @@ export default {
         deleteBlocked: '删除账号（有未结清付款）',
       },
     },
-    bounty: { post: '发悬赏表单', confirm: '确认发布' },
+    bounty: { post: '发悬赏表单', confirm: '确认发布', placeSearch: '选地点' },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
     tokens: {

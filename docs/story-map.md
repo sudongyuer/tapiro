@@ -513,6 +513,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁                                                                                                        | ui, db                                                                        |
 | bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下                                                                                                                     | ui                                                                            |
 | bounty.board.blocked  | 任何一方拉黑后，看不到对方的悬赏，也看不到对方的申请                                                                                                             | db:supabase/tests/bounties.test.sql, db:supabase/tests/bounty_nearby.test.sql |
+| bounty.board.privacy  | 除了发布者和选中的人，谁都拿不到地点坐标；距离取整到 100 米 | db:supabase/tests/bounty_privacy.test.sql |
 
 ### bounty.post 发悬赏
 
@@ -527,6 +528,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | bounty.post.manual          | 手动 + 表单走到同一个确认页                                                                                      | ui:bounty_post_form, ui:bounty_post_publish                                                                                                                                          |
 | bounty.post.draft           | 草稿只存在这台手机上：关掉、失败、重启都还在，发出去后才清空；删除账号时一起删掉                                 | unit:src/features/bounty/post/draftStore.test.ts, unit:src/features/bounty/post/settingsDraftStorage.test.ts, unit:src/features/account/accountActions.test.ts, ui:bounty_post_draft |
 | bounty.post.optional        | 时间和说明按需添加，在原位展开                                                                                   | ui:bounty_post_optional, unit:src/features/bounty/post/timeChoice.test.ts                                                                                                            |
+| bounty.post.place           | 发悬赏时搜地点或用当前位置；名称可改，精确地址只给选中的人 | ui:bounty_post_place, ui:bounty_place_search, unit:src/features/bounty/post/validate.test.ts, unit:src/features/bounty/place/currentPlace.test.ts, unit:src/features/bounty/place/placePick.test.ts |
 | bounty.post.failure         | 发布失败显示没发出去，表单保持，重试用同一条，不自动重发；同一条已经发出去时清空草稿并说「上次那条已经发出去了」 | unit:src/features/bounty/post/postFlow.test.ts, unit:src/features/bounty/post/sentDraft.test.ts, db:supabase/tests/bounty_publish_replay.test.sql, ui:bounty_post_failed             |
 | bounty.post.unpaid-hint     | 有欠款时点 + 先提示一次原因，表单照样打开；只在表单还在最前面时提示，去付款先关掉发悬赏再打开付款                | ui:bounty_post_unpaid_hint, ui:bounty_post_blocked, unit:src/features/bounty/post/startPost.test.ts, unit:src/features/bounty/post/postSheet.test.ts                                 |
 | bounty.post.worst           | 60 字标题、500 字说明、RM 500 和 RM 1 在表单和确认页都排得下                                                     | ui:bounty_post_worst                                                                                                                                                                 |

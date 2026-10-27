@@ -159,6 +159,14 @@ describe('checkDraft', () => {
     expect(orphan.place).toBeNull();
   });
 
+  test('a place name counts code points after trimming, like the server', () => {
+    const place = { label: ` ${'🏠'.repeat(80)} `, latitude: 3, longitude: 101, address: null };
+    expect(errorOf({ place })).toBeNull();
+    expect(errorOf({ place: { ...place, label: '🏠'.repeat(81) } })).toBe('placeTooLong');
+    const sent = checkDraft({ ...valid, place: { ...place, label: ' Sunway Geo 宿舍 ' } }, NOW);
+    expect(sent.ok && sent.args.place_label).toBe('Sunway Geo 宿舍');
+  });
+
   test('deadline', () => {
     expect(errorOf({ time: { kind: 'deadline', deadlineAt: at(-1) } })).toBe('timePast');
     expect(errorOf({ time: { kind: 'deadline', deadlineAt: NOW.toISOString() } })).toBe('timePast');

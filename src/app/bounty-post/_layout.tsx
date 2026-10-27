@@ -12,6 +12,7 @@ export default function BountyPostLayout() {
     <Stack screenOptions={{ headerTransparent: true }}>
       <Stack.Screen name="index" options={{ title: t('bounty.post.title') }} />
       <Stack.Screen name="confirm" options={{ title: t('bounty.post.confirm.title') }} />
+      <Stack.Screen name="place" options={{ title: t('bounty.place.title') }} />
     </Stack>
   );
 }

@@ -1,6 +1,6 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 
-import type { PostService, PublishOutcome, UnpaidSummary } from './types';
+import type { PostService, PublishArgs, PublishOutcome, UnpaidSummary } from './types';
 
 export const POST_COSTS = ['free', 'last', 'coin', 'none'] as const;
 export const UNPAID_MIXES = ['none', 'two', 'old'] as const;
@@ -102,7 +102,10 @@ function nextMonthInMalaysia(now: Date) {
 
 export type FixturePostService = PostService & { published(): string[] };
 
-export function createFixturePostService(options: FixturePostOptions): FixturePostService {
+export function createFixturePostService(
+  options: FixturePostOptions,
+  onPublished: (args: PublishArgs) => void = () => {},
+): FixturePostService {
   const balance = { ...BALANCES[options.cost] };
   const accepted = new Map<string, PublishOutcome>();
   let statusFailures = options.statusFail ? 1 : 0;
@@ -152,6 +155,7 @@ export function createFixturePostService(options: FixturePostOptions): FixturePo
         },
       };
       accepted.set(args.id, outcome);
+      onPublished(args);
       return outcome;
     },
     async isPublished(id) {
