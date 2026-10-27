@@ -15,8 +15,16 @@ function point({ coords }: { coords: Point }): Point {
   return { latitude: coords.latitude, longitude: coords.longitude };
 }
 
-function timeoutAfter(ms: number): Promise<null> {
-  return new Promise((resolve) => setTimeout(() => resolve(null), ms));
+async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), ms);
+  });
+  try {
+    return await Promise.race([work, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function createLocationService(
@@ -34,7 +42,7 @@ export function createLocationService(
       try {
         const lastKnown = await api.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS });
         if (lastKnown) return point(lastKnown);
-        const fix = await Promise.race([api.getCurrentPositionAsync(), timeoutAfter(timeoutMs)]);
+        const fix = await withTimeout(api.getCurrentPositionAsync(), timeoutMs);
         return fix ? point(fix) : null;
       } catch {
         return null;
