@@ -136,3 +136,112 @@ describe('account-delete (local stack)', () => {
     expect(await userExists(b.id)).toBe(false);
   });
 });
+
+describe('account-delete with bounties (local stack)', () => {
+  let poster: { id: string; token: string; client: SupabaseClient };
+  let helper: { id: string; token: string; client: SupabaseClient };
+  const assigned = crypto.randomUUID();
+  const open = crypto.randomUUID();
+
+  async function call(client: SupabaseClient, fn: string, args: Record<string, unknown>) {
+    const { data, error } = await client.rpc(fn, args);
+    if (error) throw error;
+    return data;
+  }
+
+  beforeAll(async () => {
+    poster = await createUser('poster');
+    helper = await createUser('helper');
+    const method = await helper.client.from('payee_methods').insert({ type: 'cash' });
+    if (method.error) throw method.error;
+    for (const id of [assigned, open]) {
+      await call(poster.client, 'publish_bounty', {
+        id,
+        title: '帮取快递',
+        category: 'pickup',
+        reward_sen: 500,
+      });
+      await call(helper.client, 'apply_to_bounty', { bounty: id });
+    }
+    await call(poster.client, 'select_helper', { bounty: assigned, applicant: helper.id });
+  });
+
+  afterAll(async () => {
+    for (const user of [poster, helper]) if (user) await admin.auth.admin.deleteUser(user.id);
+  });
+
+  test('blocks deletion while a bounty is active, for the poster and the helper', async () => {
+    const asPoster = await post({ Authorization: `Bearer ${poster.token}`, apikey: anonKey });
+    expect(asPoster.status).toBe(409);
+    expect(await asPoster.json()).toEqual({
+      error: 'unsettled_payments',
+      payments: [],
+      bounties: [
+        {
+          id: assigned,
+          title: '帮取快递',
+          counterpartName: 'helper',
+          amountSen: 500,
+          role: 'poster',
+        },
+      ],
+    });
+    const asHelper = await post({ Authorization: `Bearer ${helper.token}`, apikey: anonKey });
+    expect(asHelper.status).toBe(409);
+    expect((await asHelper.json()).bounties).toEqual([
+      {
+        id: assigned,
+        title: '帮取快递',
+        counterpartName: 'poster',
+        amountSen: 500,
+        role: 'helper',
+      },
+    ]);
+    expect(await userExists(poster.id)).toBe(true);
+    expect(await userExists(helper.id)).toBe(true);
+  });
+
+  test('the helper of a settled bounty can leave and the poster keeps the bounty', async () => {
+    await call(helper.client, 'start_bounty', { bounty: assigned });
+    await call(helper.client, 'complete_bounty', { bounty: assigned });
+    await call(poster.client, 'confirm_bounty', { bounty: assigned });
+    const owed = await post({ Authorization: `Bearer ${helper.token}`, apikey: anonKey });
+    expect(owed.status).toBe(409);
+    expect((await owed.json()).payments).toHaveLength(1);
+    const settled = await admin
+      .from('payments')
+      .update({ state: 'settled', settled_at: new Date().toISOString(), method_type: 'cash' })
+      .eq('item_id', assigned);
+    expect(settled.error).toBeNull();
+
+    const res = await post({ Authorization: `Bearer ${helper.token}`, apikey: anonKey });
+    expect(res.status).toBe(200);
+    expect(await userExists(helper.id)).toBe(false);
+
+    const bounty = await poster.client
+      .from('bounties')
+      .select('status, poster_id, helper_id')
+      .eq('id', assigned)
+      .single();
+    expect(bounty.error).toBeNull();
+    expect(bounty.data).toEqual({ status: 'confirmed', poster_id: poster.id, helper_id: null });
+    const applications = await poster.client
+      .from('bounty_applications')
+      .select('applicant_id')
+      .eq('bounty_id', open);
+    expect(applications.error).toBeNull();
+    expect(applications.data).toEqual([]);
+  });
+
+  test('deleting the poster closes their open bounty', async () => {
+    const res = await post({ Authorization: `Bearer ${poster.token}`, apikey: anonKey });
+    expect(res.status).toBe(200);
+    const { data, error } = await admin
+      .from('bounties')
+      .select('status, poster_id')
+      .eq('id', open)
+      .single();
+    expect(error).toBeNull();
+    expect(data).toEqual({ status: 'closed', poster_id: null });
+  });
+});

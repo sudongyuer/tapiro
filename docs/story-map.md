@@ -141,13 +141,14 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                | 行为                                                        | 覆盖                                                                                                                                                                                                         |
-| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| account.delete.deletes | 确认后删掉资料和收款方式，回到欢迎页，再登录重新引导        | ui:account_flow, unit:src/features/account/accountActions.test.ts, int:supabase/functions/tests/account-delete.integration.ts                                                                                |
-| account.delete.blocked | 有没结清的付款时显示原因和那笔付款，删除按钮不能点          | ui:account_delete_blocked, unit:src/features/account/unsettledPayments.test.ts, unit:src/features/account/supabaseAuthService.test.ts#a blocked deletion carries the unsettled payments from the 409 body    |
-| account.delete.auth    | 删除接口拒绝没有 token 和只带 anon key 的请求，不碰别的用户 | int:supabase/functions/tests/account-delete.integration.ts                                                                                                                                                   |
-| account.delete.lists   | 确认页列出会删掉的内容（资料、收款方式、消息和评价等）      | ui:account_flow                                                                                                                                                                                              |
-| account.delete.failure | 删除失败时保留会话并显示失败                                | unit:src/features/account/supabaseAuthService.test.ts#maps deletion failures and keeps the session, unit:src/features/account/accountActions.test.ts#a throwing service reports failure instead of rejecting |
+| 验收 id                | 行为                                                                                                                 | 覆盖                                                                                                                                                                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| account.delete.deletes | 确认后删掉资料和收款方式，回到欢迎页，再登录重新引导                                                                 | ui:account_flow, unit:src/features/account/accountActions.test.ts, int:supabase/functions/tests/account-delete.integration.ts                                                                                                                          |
+| account.delete.blocked | 有没结清的付款时显示原因和那笔付款，删除按钮不能点                                                                   | ui:account_delete_blocked, unit:src/features/account/unsettledPayments.test.ts, unit:src/features/account/supabaseAuthService.test.ts#a blocked deletion carries the unsettled payments from the 409 body                                              |
+| account.delete.auth    | 删除接口拒绝没有 token 和只带 anon key 的请求，不碰别的用户                                                          | int:supabase/functions/tests/account-delete.integration.ts                                                                                                                                                                                             |
+| account.delete.lists   | 确认页列出会删掉的内容（资料、收款方式、消息和评价等）                                                               | ui:account_flow                                                                                                                                                                                                                                        |
+| account.delete.failure | 删除失败时保留会话并显示失败                                                                                         | unit:src/features/account/supabaseAuthService.test.ts#maps deletion failures and keeps the session, unit:src/features/account/accountActions.test.ts#a throwing service reports failure instead of rejecting                                           |
+| account.delete.bounty  | 有进行中的悬赏（已选人、还没确认完成）时不能删除，和没结清的付款列在一起；开着的悬赏随删除关掉并退回，申请随删除撤回 | db:supabase/tests/bounty_account_delete.test.sql, unit:supabase/functions/account-delete/handler.test.ts#blocks deletion while a bounty is active and names it, int:supabase/functions/tests/account-delete.integration.ts, gap: 列表界面在悬赏第 6 步 |
 
 ## 首页
 
@@ -502,59 +503,72 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                                      | 覆盖     |
-| --------------------- | --------------------------------------------------------- | -------- |
-| bounty.board.filters  | 全部 / 急单 / 塞得进空档三个筛选；急单是 3 小时内截止     | unit, ui |
-| bounty.board.distance | 0–2 km 距离轴，点轴上的贴纸让对应卡片响一下               | ui       |
-| bounty.board.map      | 列表和地图用两张贴纸切换，记住上次的视图                  | ui       |
-| bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁 | ui, db   |
-| bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下              | ui       |
+| 验收 id               | 行为                                                      | 覆盖                                |
+| --------------------- | --------------------------------------------------------- | ----------------------------------- |
+| bounty.board.filters  | 全部 / 急单 / 塞得进空档三个筛选；急单是 3 小时内截止     | unit, ui                            |
+| bounty.board.distance | 0–2 km 距离轴，点轴上的贴纸让对应卡片响一下               | ui                                  |
+| bounty.board.map      | 列表和地图用两张贴纸切换，记住上次的视图                  | ui                                  |
+| bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁 | ui, db                              |
+| bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下              | ui                                  |
+| bounty.board.blocked  | 任何一方拉黑后，看不到对方的悬赏，也看不到对方的申请      | db:supabase/tests/bounties.test.sql |
 
 ### bounty.post 发悬赏
 
 - 故事：作为需要帮忙的同学，我想用一句话或一个表单发悬赏，以便很快找到人。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id              | 行为                                                           | 覆盖     |
-| -------------------- | -------------------------------------------------------------- | -------- |
-| bounty.post.ai-draft | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销     | ui       |
-| bounty.post.manual   | 手动 + 表单走到同一个确认页                                    | ui       |
-| bounty.post.limits   | 报酬 RM 1–500，标题 60、地点 80、备注 140 个字，服务器同样检查 | unit, db |
-| bounty.post.cost     | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币               | unit, db |
-| bounty.post.sticker  | 发布时贴纸飞进实时卡                                           | ui       |
-| bounty.post.photo    | 物品照片抠成贴纸                                               | device   |
+| 验收 id                     | 行为                                                                              | 覆盖                                            |
+| --------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
+| bounty.post.ai-draft        | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                              |
+| bounty.post.manual          | 手动 + 表单走到同一个确认页                                                       | ui                                              |
+| bounty.post.limits          | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit       |
+| bounty.post.category        | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql             |
+| bounty.post.cost            | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | db:supabase/tests/bounty_publish.test.sql, unit |
+| bounty.post.publish-blocked | 有没付清的钱时发布被拒，什么都不写                                                | db:supabase/tests/bounty_publish.test.sql, ui   |
+| bounty.post.no-balance      | 没有免费名额也没有貘币时发布被拒，什么都不写                                      | db:supabase/tests/bounty_publish.test.sql, ui   |
+| bounty.post.replay          | 同一条重发只发布一次、只扣一次                                                    | db:supabase/tests/bounty_publish.test.sql       |
+| bounty.post.expiry          | 没有截止时间的悬赏 7 天后关闭、有截止时间的到点关闭，没人被选中就退回             | db:supabase/tests/bounty_jobs.test.sql          |
+| bounty.post.sticker         | 发布时贴纸飞进实时卡                                                              | ui                                              |
+| bounty.post.photo           | 物品照片抠成贴纸                                                                  | device                                          |
 
 ### bounty.apply 申请和挑人
 
 - 故事：作为接单的同学，我想申请一条悬赏、等发布者挑我，以便双方都愿意再开始。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                             | 覆盖       |
-| --------------------- | ------------------------------------------------ | ---------- |
-| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db     |
-| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db         |
-| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db, ui     |
-| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device |
-| bounty.apply.address  | 详细地址只给选中的接单人                         | db         |
+| 验收 id               | 行为                                                     | 覆盖                                                                                                                                                        |
+| --------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回             | ui, db:supabase/tests/bounty_apply.test.sql                                                                                                                 |
+| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                           | db                                                                                                                                                          |
+| bounty.apply.no-payee | 没有任何收款方式不能申请，申请后删光收款方式也不能被选中 | db:supabase/tests/bounty_apply.test.sql, db:supabase/tests/bounty_flow.test.sql, ui                                                                         |
+| bounty.apply.blocked  | 任何一方拉黑后不能申请                                   | db:supabase/tests/bounty_apply.test.sql                                                                                                                     |
+| bounty.apply.closed   | 已选好人、已关闭或已过期的悬赏不能申请，原因分开         | db:supabase/tests/bounty_apply.test.sql                                                                                                                     |
+| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」         | ui, device, db:supabase/tests/bounty_flow.test.sql, gap: concurrency needs two sessions（两台设备同时挑人要两个数据库会话；单会话测了第二次挑人得到 taken） |
+| bounty.apply.address  | 详细地址只给选中的接单人                                 | db:supabase/tests/bounties.test.sql                                                                                                                         |
 
 ### bounty.flow 进行和完成
 
 - 故事：作为发布者和接单人，我们想清楚地走完出发、完成、付款，以便谁该做什么一目了然。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id                  | 行为                                            | 覆盖     |
-| ------------------------ | ----------------------------------------------- | -------- |
-| bounty.flow.start        | 接单人点「出发了」；先付单要等发布者已收到      | db, ui   |
-| bounty.flow.eta          | 到达时间改了，旧时间划掉显示新时间              | ui       |
-| bounty.flow.auto-confirm | 接单人点完成后 48 小时没人处理自动确认          | unit, db |
-| bounty.flow.cancel       | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次 | unit, db |
-| bounty.flow.refund       | 没人被选中或挑人前取消，退回貘币或免费名额      | unit, db |
+| 验收 id                    | 行为                                                                                                                                | 覆盖                                                                                                                                                                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bounty.flow.transitions    | 每个允许和禁止的状态变化都由服务器检查，原因分类型                                                                                  | db:supabase/tests/bounty_flow.test.sql, db:supabase/tests/bounty_cancel.test.sql                                                                                                                                          |
+| bounty.flow.start          | 接单人点「出发了」；先付单要等发布者已收到                                                                                          | db:supabase/tests/bounty_flow.test.sql, ui                                                                                                                                                                                |
+| bounty.flow.eta            | 到达时间改了，旧时间划掉显示新时间                                                                                                  | ui                                                                                                                                                                                                                        |
+| bounty.flow.dispute        | 「有问题」暂停自动确认，接单人能看到原因；再点完成重新算 48 小时                                                                    | db:supabase/tests/bounty_flow.test.sql, db:supabase/tests/bounty_jobs.test.sql, ui                                                                                                                                        |
+| bounty.flow.payment        | 确认完成后开一笔付款，带类别，每个悬赏只有一笔                                                                                      | db:supabase/tests/bounty_flow.test.sql                                                                                                                                                                                    |
+| bounty.flow.auto-confirm   | 接单人点完成后 48 小时没人处理自动确认                                                                                              | db:supabase/tests/bounty_jobs.test.sql, db:supabase/tests/bounty_flow.test.sql, unit, gap: concurrency needs two sessions（发布者确认和定时任务同时发生要两个数据库会话；单会话测了任务先确认后发布者确认得到同一笔付款） |
+| bounty.flow.reminder       | 约定开始时间到了还没出发，双方都看到提醒                                                                                            | db:supabase/tests/bounty_jobs.test.sql, ui                                                                                                                                                                                |
+| bounty.flow.cancel         | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次；约定开始 30 分钟后（开始后才挑人的从挑人算起）接单人还没出发，发布者取消算接单人的 | db:supabase/tests/bounty_cancel.test.sql, unit, gap: concurrency needs two sessions（双方同时取消要两个数据库会话；单会话测了重放得到第一次的结果）                                                                       |
+| bounty.flow.cancel-preview | 取消前告诉自己会不会算放鸽子、还有没有豁免                                                                                          | db:supabase/tests/bounty_cancel.test.sql, ui                                                                                                                                                                              |
+| bounty.flow.refund         | 没人被选中就关掉、过期或挑人前取消，退回貘币或免费名额；挑人后取消不退                                                              | db:supabase/tests/bounty_publish.test.sql, db:supabase/tests/bounty_cancel.test.sql, db:supabase/tests/bounty_jobs.test.sql                                                                                               |
 
 ### bounty.boosts 加急、置顶、装扮
 
@@ -566,7 +580,6 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id             | 行为                         | 覆盖     |
 | ------------------- | ---------------------------- | -------- |
 | bounty.boosts.spend | 加急、置顶花貘币，第一版不做 | unit, ui |
-
 ## 拼车
 
 ### ride.board 我的拼车和能加入的拼车

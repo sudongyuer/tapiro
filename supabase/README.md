@@ -31,6 +31,15 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
       "amountSen": 2500,
       "direction": "owe"
     }
+  ],
+  "bounties": [
+    {
+      "id": "…",
+      "title": "帮取快递",
+      "counterpartName": "阿杰",
+      "amountSen": 500,
+      "role": "poster"
+    }
   ]
 }
 ```
@@ -38,7 +47,11 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
 `amountSen` is the amount in sen (RM × 100, integer); `direction` is `owe` when the deleting user
 pays the counterpart and `owed` when the counterpart pays them. The app drops items that do not
 match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` reads every payment the user is
-payer or payee of that is not settled; a failed check answers 500 and deletes nothing.
+payer or payee of that is not settled; `findActiveBounties` lists, through `active_bounties_of(uid)`
+(service role), the bounties the user posts or helps on that are `assigned`, `en_route`, `done` or
+`disputed`, with `amountSen` the reward and `role` `poster` or `helper`. Either list blocks the
+deletion; the error stays `unsettled_payments` so the shipped app treats a bounty-only answer as
+blocked (it does not list `bounties` yet). A failed check answers 500 and deletes nothing.
 
 ## Payments
 
@@ -130,12 +143,40 @@ existing accounts the two sign-up grants and returns how many rows it wrote.
 Spends, refunds and help grants take a per-user advisory lock, so concurrent publishes cannot both
 take the last free slot or the last coin, and concurrent settles cannot pass the monthly cap.
 
+## Bounties
+
+Reads: `bounty_events` gives the poster and the helper the bounty's events, except that `applied` and
+`withdrawn` events are shown to the helper only when they are their own, and to the poster only when no block
+stands between the poster and that applicant. An applicant who was not selected still reads the bounty row
+(through `private.has_applied`), including `helper_id`, `eta_at`, `done_at` and later statuses; read functions
+built on top must not pass the helper's identity on to them.
+
+Cancelling an `assigned` bounty counts against the helper when the poster cancels more than 30 minutes after
+`greatest(starts_at, the selection)`, so a helper selected after the start gets the same 30 minutes.
+
+Account deletion: the `bounties_before_user_delete` trigger on `auth.users` runs inside the delete.
+It refuses (`55000 active_bounties`) while the user has an active bounty, closes each of their `open`
+bounties through `private.close_bounty(id, 'closed')` (event and refund, the ledger rows keep a null
+user) and deletes the address rows of every bounty they posted. Their applications go with the
+`on delete cascade`; other applications to their closed bounties stay `pending`. Settled bounties
+keep their rows for the other side with the deleted party set null, which is why `bounties_helper`
+allows a `confirmed` bounty without a helper.
+
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);
 `payment-proof-cleanup` removes proofs 30 days after settlement. Both are called by pg_cron through
 `call_edge_function`, which needs the Vault secrets `project_url` and `service_role_key` in each
 environment; without them the jobs post nothing.
+
+`bounty-jobs` runs `run_bounty_jobs()` in SQL every 5 minutes (no Edge Function, no Vault secret): it
+closes open bounties past `expires_at` and refunds their post, confirms bounties `done` for 48 hours
+and opens their payment, and adds one `start_reminder` event to assigned bounties whose start passed.
+Each row is locked with `skip locked` and runs in its own exception block, so a failing or busy row
+waits for the next run. The result counts each kind of change and `skipped`, the rows whose change
+failed; a row that keeps failing is retried every run and shows up only there and in the log warning,
+so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` always runs at `now()`
+(service role); the clock-taking body `private.run_bounty_jobs(as_of)` has no grant and is for tests.
 
 ## Edge Functions
 
