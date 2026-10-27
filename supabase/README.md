@@ -99,8 +99,16 @@ nextFreeAt }`, `nextFreeAt` being 00:00 on the 1st of next month in Malaysia.
 - `private.grant_coins(uid, why, amount, kind, item)` (internal): writes one row unless the
   once-per-user or once-per-item index already holds it; returns whether it wrote.
 
-Spends and refunds take a per-user advisory lock, so concurrent publishes cannot both take the
-last free slot or the last coin.
+Grants: `handle_new_user` writes `new_user` (+5) with the profile; the first `payee_methods` row
+(cash counts) writes `onboarding_payee_method` (+1). Both are once per user, so deleting and
+re-adding a method grants nothing. `private.grant_help_settled(payment)` (internal, called by the
+settle) gives the payee of a settled forward bounty payment `onboarding_first_help` (+1, once) and
+`help_settled` (+1 per bounty, at most 10 per Malaysia month); rides, reverse payments and unsettled
+payments grant nothing, and a replay writes nothing. `private.backfill_coin_grants()` gives
+existing accounts the two sign-up grants and returns how many rows it wrote.
+
+Spends, refunds and help grants take a per-user advisory lock, so concurrent publishes cannot both
+take the last free slot or the last coin, and concurrent settles cannot pass the monthly cap.
 
 ## Scheduled functions
 

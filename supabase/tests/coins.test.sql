@@ -1,12 +1,15 @@
 begin;
-select plan(57);
+select plan(77);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
   ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'a@example.com', '{"full_name":"Alice Tan"}'),
   ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'b@example.com', '{"full_name":"Bob Lim"}'),
   ('00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'c@example.com', '{"full_name":"Chen"}'),
-  ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'd@example.com', '{"full_name":"Devi"}');
+  ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'd@example.com', '{"full_name":"Devi"}'),
+  ('00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'e@example.com', '{"full_name":"Emma"}'),
+  ('00000000-0000-0000-0000-0000000000f6', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'f@example.com', '{"full_name":"Farid"}'),
+  ('00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'g@example.com', '{"full_name":"Grace"}');
 
 create function pg_temp.act_as(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claim.sub', uid::text, true),
@@ -30,6 +33,21 @@ begin
     perform public.spend_post(uid, 'bounty', gen_random_uuid());
   end loop;
 end;
+$$;
+
+create function pg_temp.settled_payment(kind public.payment_item_kind, payer uuid, payee uuid) returns uuid
+language plpgsql as $$
+declare
+  opened uuid := public.open_payment(kind, gen_random_uuid(), '帮取快递', payer, payee, 1000);
+begin
+  update public.payments set state = 'settled', settled_at = now(), method_type = 'cash' where id = opened;
+  return opened;
+end;
+$$;
+
+create function pg_temp.help_rows(uid uuid, at timestamptz, n integer) returns void language sql as $$
+  insert into public.coin_ledger (user_id, reason, delta, item_kind, item_id, created_at)
+  select uid, 'help_settled', 1, 'bounty', gen_random_uuid(), at from generate_series(1, n);
 $$;
 
 create temp table ids (name text primary key, id uuid);
@@ -226,7 +244,7 @@ select is(
   'coins is the sum of the client''s ledger'
 );
 select is(
-  (select n from counts where name = 'c3_coins'), 3::bigint, 'two help coins and the first-post coin make three'
+  (select n from counts where name = 'c3_coins'), 8::bigint, 'the new-user five, two help coins and the first-post coin make eight'
 );
 select is((public.coin_balance() ->> 'freePostsLeft')::integer, 2, 'one free post this month leaves two');
 select is((public.coin_balance() ->> 'freePostsPerMonth')::integer, 3, 'three free posts a month');
@@ -236,7 +254,7 @@ select is(
   'the next free post comes at midnight on the 1st in Malaysia'
 );
 select is(
-  (select count(*) from public.coin_ledger), 3::bigint, 'a client reads only its own ledger rows'
+  (select count(*) from public.coin_ledger), 4::bigint, 'a client reads only its own ledger rows'
 );
 select throws_ok(
   $$insert into public.coin_ledger (user_id, reason, delta) values ('00000000-0000-0000-0000-0000000000c3', 'new_user', 5)$$,
@@ -293,6 +311,128 @@ select is(
 select is(
   pg_temp.coins_of('00000000-0000-0000-0000-0000000000b2')::bigint, (select n from counts where name = 'b2_coins'),
   'deleting one account leaves other balances unchanged'
+);
+
+select is(pg_temp.coins_of('00000000-0000-0000-0000-0000000000e5'), 5, 'a new account starts with five coins');
+select is(
+  (select count(*) from public.coin_ledger where user_id = '00000000-0000-0000-0000-0000000000e5'), 1::bigint,
+  'the five coins are one new-user row'
+);
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000e5', 'cash');
+select is((public.coin_balance() ->> 'coins')::integer, 6, 'adding a first payee method, even cash, grants one coin');
+insert into public.payee_methods (user_id, type, phone, display_name)
+values ('00000000-0000-0000-0000-0000000000e5', 'duitnow_id', '+60123456789', 'EMMA');
+select is((public.coin_balance() ->> 'coins')::integer, 6, 'a second payee method grants nothing');
+delete from public.payee_methods;
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000e5', 'cash');
+select is((public.coin_balance() ->> 'coins')::integer, 6, 'deleting and re-adding a payee method grants nothing');
+reset role;
+
+insert into ids values
+  ('help1', pg_temp.settled_payment('bounty', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6')),
+  ('help2', pg_temp.settled_payment('bounty', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6'));
+insert into counts values
+  ('e5_before', pg_temp.coins_of('00000000-0000-0000-0000-0000000000e5')),
+  ('f6_before', pg_temp.coins_of('00000000-0000-0000-0000-0000000000f6'));
+select private.grant_help_settled((select id from ids where name = 'help1'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000f6')::bigint, (select n + 2 from counts where name = 'f6_before'),
+  'the first settled help grants the payee the first-help coin and a help coin'
+);
+select is(
+  (select array_agg(reason::text order by reason) from public.coin_ledger
+   where user_id = '00000000-0000-0000-0000-0000000000f6' and reason in ('onboarding_first_help', 'help_settled')),
+  array['onboarding_first_help', 'help_settled'], 'the two help grants are one row each'
+);
+select is(
+  (select row(item_kind::text, item_id) from public.coin_ledger
+   where user_id = '00000000-0000-0000-0000-0000000000f6' and reason = 'help_settled'),
+  (select row(item_kind::text, item_id) from public.payments where id = (select id from ids where name = 'help1')),
+  'the help coin names the bounty'
+);
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000e5')::bigint, (select n from counts where name = 'e5_before'),
+  'the payer gets nothing for a settled help'
+);
+select private.grant_help_settled((select id from ids where name = 'help2'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000f6')::bigint, (select n + 3 from counts where name = 'f6_before'),
+  'a second settled help grants only the help coin'
+);
+select private.grant_help_settled((select id from ids where name = 'help2'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000f6')::bigint, (select n + 3 from counts where name = 'f6_before'),
+  'a replay for the same payment grants nothing'
+);
+
+insert into ids values
+  ('ride', pg_temp.settled_payment('ride', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7')),
+  ('due', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7', 500));
+insert into ids values ('reverse', public.open_reverse_payment((select id from ids where name = 'help1')));
+update public.payments set state = 'settled', settled_at = now(), method_type = 'cash'
+where id = (select id from ids where name = 'reverse');
+insert into counts values
+  ('a7_before', pg_temp.coins_of('00000000-0000-0000-0000-0000000000a7')),
+  ('e5_reverse', pg_temp.coins_of('00000000-0000-0000-0000-0000000000e5'));
+select private.grant_help_settled((select id from ids where name = 'ride'));
+select private.grant_help_settled((select id from ids where name = 'due'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000a7')::bigint, (select n from counts where name = 'a7_before'),
+  'a settled ride and an unsettled bounty grant nothing'
+);
+select private.grant_help_settled((select id from ids where name = 'reverse'));
+select is(
+  pg_temp.coins_of('00000000-0000-0000-0000-0000000000e5')::bigint, (select n from counts where name = 'e5_reverse'),
+  'a settled reverse payment grants nothing'
+);
+
+select pg_temp.help_rows(
+  '00000000-0000-0000-0000-0000000000a7',
+  (public.malaysia_month(now())::timestamp at time zone 'Asia/Kuala_Lumpur') + interval '1 second', 9
+);
+select pg_temp.help_rows(
+  '00000000-0000-0000-0000-0000000000a7',
+  (public.malaysia_month(now())::timestamp at time zone 'Asia/Kuala_Lumpur') - interval '1 second', 1
+);
+insert into ids values
+  ('tenth', pg_temp.settled_payment('bounty', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7')),
+  ('eleventh', pg_temp.settled_payment('bounty', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7'));
+select private.grant_help_settled((select id from ids where name = 'tenth'));
+select is(
+  (select count(*) from public.coin_ledger
+   where user_id = '00000000-0000-0000-0000-0000000000a7' and reason = 'help_settled'
+     and item_id = (select item_id from public.payments where id = (select id from ids where name = 'tenth'))),
+  1::bigint, 'with nine this month and one last month the tenth help is granted'
+);
+select private.grant_help_settled((select id from ids where name = 'eleventh'));
+select is(
+  (select count(*) from public.coin_ledger
+   where user_id = '00000000-0000-0000-0000-0000000000a7' and reason = 'help_settled'
+     and item_id = (select item_id from public.payments where id = (select id from ids where name = 'eleventh'))),
+  0::bigint, 'the eleventh help in a Malaysia month grants nothing'
+);
+
+insert into counts values ('backfill_ledger', (select count(*) from public.coin_ledger));
+select is(private.backfill_coin_grants(), 0, 'the backfill writes nothing for users who have their grants');
+select is(
+  (select count(*) from public.coin_ledger), (select n from counts where name = 'backfill_ledger'),
+  'a second backfill leaves the ledger unchanged'
+);
+alter table public.payee_methods disable trigger payee_methods_onboarding_grant;
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000f6', 'cash');
+alter table public.payee_methods enable trigger payee_methods_onboarding_grant;
+select is(private.backfill_coin_grants(), 1, 'the backfill grants a payee method that has no grant yet');
+select is(
+  (select count(*) from public.coin_ledger
+   where user_id = '00000000-0000-0000-0000-0000000000f6' and reason = 'onboarding_payee_method'),
+  1::bigint, 'the backfilled payee-method grant is one row'
+);
+select is(
+  has_function_privilege('authenticated', 'private.grant_help_settled(uuid)', 'execute'), false,
+  'a client cannot grant a help coin'
 );
 
 select * from finish();

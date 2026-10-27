@@ -830,15 +830,18 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### coins.grants 免费貘币
 
 - 故事：作为新同学和常帮忙的同学，我想免费得到貘币，以便不花钱也能用。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                 | 行为                                                                                             | 覆盖                             |
-| ----------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------- |
-| coins.grants.ledger     | 一个只追加的服务器账本，余额由账本算出，客户端不能写                                             | db:supabase/tests/coins.test.sql |
-| coins.grants.sources    | 新人 5 颗；新手任务 3 × 1；每周点首页小貘 1 颗；每帮完一单 1 颗，每月最多 10 颗；邀请双方各 3 颗 | unit, db                         |
-| coins.grants.free-posts | 每月 3 条免费发布，按马来西亚时间的自然月，悬赏和拼车共用，退回的免费发布恢复名额                | db:supabase/tests/coins.test.sql |
+| 验收 id                   | 行为                                                                              | 覆盖                             |
+| ------------------------- | --------------------------------------------------------------------------------- | -------------------------------- |
+| coins.grants.ledger       | 一个只追加的服务器账本，余额由账本算出，客户端不能写                              | db:supabase/tests/coins.test.sql |
+| coins.grants.new-user     | 新人 5 颗，注册时由服务器发                                                       | db:supabase/tests/coins.test.sql |
+| coins.grants.onboarding   | 新手任务各 1 颗：加收款方式、第一次发布或拼车、第一次帮成；每项只发一次           | db:supabase/tests/coins.test.sql |
+| coins.grants.help-settled | 每帮成一单悬赏 1 颗，马来西亚时间每月最多 10 颗；拼车和反向付款不发               | db:supabase/tests/coins.test.sql |
+| coins.grants.sources      | 每周点首页小貘 1 颗；邀请双方各 3 颗                                              | unit, db                         |
+| coins.grants.free-posts   | 每月 3 条免费发布，按马来西亚时间的自然月，悬赏和拼车共用，退回的免费发布恢复名额 | db:supabase/tests/coins.test.sql |
 
 ### rep.vouching 熟人担保
 
