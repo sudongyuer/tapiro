@@ -7,7 +7,10 @@ import { createBoardController, nearEnd } from './boardState';
 import { boardService } from './services';
 import type { BoardFilter, BoardOrigin } from './types';
 
-export function useBoard(origin: BoardOrigin | null) {
+export function useBoard(
+  origin: BoardOrigin | null,
+  evaluateOrigin: () => Promise<BoardOrigin | null>,
+) {
   const [controller] = useState(() => createBoardController(boardService));
   const [filter, setFilter] = useState<BoardFilter>('all');
   const { state, refreshing } = useSyncExternalStore(controller.subscribe, controller.get);
@@ -46,6 +49,11 @@ export function useBoard(origin: BoardOrigin | null) {
     if (rows) bountyCache.seed(rows);
   }, [rows]);
 
+  const refresh = useCallback(async () => {
+    const next = await evaluateOrigin();
+    if (next) await controller.refresh(next, filter);
+  }, [controller, evaluateOrigin, filter]);
+
   const onViewport = useCallback(
     (boardEndY: number, viewportBottom: number, viewportHeight: number) => {
       if (nearEnd(boardEndY, viewportBottom, viewportHeight)) void controller.loadMore();
@@ -58,7 +66,7 @@ export function useBoard(origin: BoardOrigin | null) {
     refreshing,
     filter,
     setFilter,
-    refresh: controller.load,
+    refresh,
     retry: controller.load,
     retryPage: controller.retryPage,
     onViewport,

@@ -4,6 +4,7 @@ import { createUserCleanups } from '@/lib/userCleanups';
 
 import {
   createOriginStore,
+  evaluateOrigin,
   resolveOrigin,
   steadyOrigin,
   type ChosenPlace,
@@ -124,5 +125,53 @@ describe('steadyOrigin', () => {
     const place: BoardOrigin = { kind: 'place', point: GEO.point, label: GEO.label };
     expect(steadyOrigin(previous, place)).toBe(place);
     expect(steadyOrigin(null, moved)).toBe(moved);
+  });
+});
+
+describe('evaluateOrigin', () => {
+  const stored = { chosen: null, dismissed: false };
+
+  test('a thrown permission check reads as undetermined, never as granted', async () => {
+    let asked = false;
+    const origin = await evaluateOrigin(
+      {
+        permission: () => Promise.reject(new Error('boom')),
+        currentPoint: async () => {
+          asked = true;
+          return HERE;
+        },
+      },
+      stored,
+    );
+    expect(origin).toEqual({ kind: 'none', reason: 'undetermined' });
+    expect(asked).toBe(false);
+  });
+
+  test('asks for a fix only when granted; a thrown fix reads as no fix', async () => {
+    const granted = async () => ({ status: 'granted' as const, reduced: false });
+    expect(
+      await evaluateOrigin({ permission: granted, currentPoint: async () => HERE }, stored),
+    ).toEqual({
+      kind: 'me',
+      point: HERE,
+    });
+    expect(
+      await evaluateOrigin(
+        { permission: granted, currentPoint: () => Promise.reject(new Error('boom')) },
+        stored,
+      ),
+    ).toEqual({ kind: 'none', reason: 'noFix' });
+    let asked = false;
+    await evaluateOrigin(
+      {
+        permission: async () => ({ status: 'denied', reduced: false }),
+        currentPoint: async () => {
+          asked = true;
+          return HERE;
+        },
+      },
+      stored,
+    );
+    expect(asked).toBe(false);
   });
 });

@@ -5,36 +5,37 @@ import { AppState } from 'react-native';
 import { locationService } from '@/lib/location';
 
 import { sameOrigin } from './boardState';
-import { resolveOrigin, steadyOrigin, type ChosenPlace } from './originStore';
+import { evaluateOrigin, steadyOrigin, type ChosenPlace } from './originStore';
 import { originStore } from './services';
 import type { BoardOrigin } from './types';
 
+type Resolved = { userId: string; origin: BoardOrigin };
+
 export function useOrigin(userId: string) {
-  const [resolved, setResolved] = useState<{ userId: string; origin: BoardOrigin } | null>(null);
+  const [resolved, setResolved] = useState<Resolved | null>(null);
   const origin = resolved?.userId === userId ? resolved.origin : null;
+  const latest = useRef<Resolved | null>(null);
   const sequence = useRef(0);
   const focused = useIsFocused();
+  const focusedRef = useRef(focused);
 
-  const evaluate = useCallback(async () => {
+  useEffect(() => {
+    focusedRef.current = focused;
+  }, [focused]);
+
+  const evaluate = useCallback(async (): Promise<BoardOrigin | null> => {
     const run = ++sequence.current;
-    const stored = {
+    const next = await evaluateOrigin(locationService, {
       chosen: originStore.chosenPlace(userId),
       dismissed: originStore.cardDismissed(userId),
-    };
-    let next: BoardOrigin;
-    try {
-      const { status } = await locationService.permission();
-      const point = status === 'granted' ? await locationService.currentPoint() : null;
-      next = resolveOrigin({ permission: status, point, ...stored });
-    } catch {
-      next = resolveOrigin({ permission: 'granted', point: null, ...stored });
-    }
-    if (run !== sequence.current) return;
-    setResolved((current) => {
-      const previous = current?.userId === userId ? current.origin : null;
-      const steady = steadyOrigin(previous, next);
-      return previous && sameOrigin(previous, steady) ? current : { userId, origin: steady };
     });
+    const current = latest.current?.userId === userId ? latest.current.origin : null;
+    if (run !== sequence.current) return current;
+    const steady = steadyOrigin(current, next);
+    if (current && sameOrigin(current, steady)) return current;
+    latest.current = { userId, origin: steady };
+    setResolved(latest.current);
+    return steady;
   }, [userId]);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export function useOrigin(userId: string) {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') void evaluate();
+      if (state === 'active' && focusedRef.current) void evaluate();
     });
     return () => subscription.remove();
   }, [evaluate]);
@@ -66,5 +67,5 @@ export function useOrigin(userId: string) {
     [userId, evaluate],
   );
 
-  return { origin, allow, dismiss, choose };
+  return { origin, evaluate, allow, dismiss, choose };
 }

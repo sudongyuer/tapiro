@@ -64,7 +64,9 @@ export type BoardOrigin =
   | { kind: 'place'; point: Point; label: string }
   | { kind: 'none'; reason: NoOriginReason };
 
-export type BoardState = { generation: number } & (
+export type LocalWrite = { applied: boolean; generation: number };
+
+export type BoardState = { generation: number; writes: Readonly<Record<string, LocalWrite>> } & (
   | { kind: 'loading' }
   | { kind: 'failed' }
   | {

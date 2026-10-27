@@ -19,7 +19,9 @@ export type BoardEvent =
   | { type: 'originChanged' }
   | { type: 'filterChanged' };
 
-export const INITIAL_BOARD: BoardState = { kind: 'loading', generation: 0 };
+export const INITIAL_BOARD: BoardState = { kind: 'loading', generation: 0, writes: {} };
+
+type Writes = BoardState['writes'];
 
 function unique(rows: BoardRow[], seen = new Set<string>()) {
   return rows.filter((row) => {
@@ -29,11 +31,27 @@ function unique(rows: BoardRow[], seen = new Set<string>()) {
   });
 }
 
-function fresh(page: BoardPage, at: string, generation: number): BoardState {
+function overlaid(rows: BoardRow[], writes: Writes) {
+  return rows.map((row) => {
+    const write = writes[row.id];
+    return write && write.applied !== row.appliedByMe
+      ? { ...row, appliedByMe: write.applied }
+      : row;
+  });
+}
+
+function writesNewerThan(writes: Writes, loadGeneration: number): Writes {
+  return Object.fromEntries(
+    Object.entries(writes).filter(([, write]) => write.generation >= loadGeneration),
+  );
+}
+
+function fresh(page: BoardPage, at: string, generation: number, writes: Writes): BoardState {
   return {
     kind: 'ready',
     generation,
-    rows: unique(page.items),
+    writes,
+    rows: overlaid(unique(page.items), writes),
     total: page.total ?? null,
     next: page.next,
     loadedAt: at,
@@ -42,44 +60,43 @@ function fresh(page: BoardPage, at: string, generation: number): BoardState {
   };
 }
 
-function withApplied(state: BoardState, id: string, appliedByMe: boolean): BoardState {
-  if (state.kind !== 'ready') return state;
-  return {
-    ...state,
-    rows: state.rows.map((row) => (row.id === id ? { ...row, appliedByMe } : row)),
-  };
+function written(state: BoardState, id: string, applied: boolean): BoardState {
+  const writes = { ...state.writes, [id]: { applied, generation: state.generation } };
+  if (state.kind !== 'ready') return { ...state, writes };
+  return { ...state, writes, rows: overlaid(state.rows, writes) };
 }
 
 export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
+  const { generation, writes } = state;
   switch (event.type) {
     case 'originChanged':
     case 'filterChanged':
-      return { kind: 'loading', generation: state.generation + 1 };
+      return { kind: 'loading', generation: generation + 1, writes };
     case 'loadStarted':
       return state.kind === 'ready'
-        ? { ...state, generation: state.generation + 1, page: 'idle' }
-        : { kind: 'loading', generation: state.generation + 1 };
+        ? { ...state, generation: generation + 1, page: 'idle' }
+        : { kind: 'loading', generation: generation + 1, writes };
     case 'applied':
-      return withApplied(state, event.id, true);
+      return written(state, event.id, true);
     case 'withdrawn':
-      return withApplied(state, event.id, false);
+      return written(state, event.id, false);
     case 'pageStarted':
       return state.kind === 'ready' && state.next !== null && state.page !== 'loading'
         ? { ...state, page: 'loading' }
         : state;
   }
-  if (event.generation !== state.generation) return state;
+  if (event.generation !== generation) return state;
   switch (event.type) {
     case 'loadSucceeded':
-      return fresh(event.page, event.at, state.generation);
+      return fresh(event.page, event.at, generation, writesNewerThan(writes, generation));
     case 'loadFailed':
       return state.kind === 'ready'
         ? { ...state, refreshFailed: true }
-        : { kind: 'failed', generation: state.generation };
+        : { kind: 'failed', generation, writes };
     case 'pageSucceeded':
       if (state.kind !== 'ready') return state;
       if (event.page.restarted) {
-        const restarted = fresh(event.page, event.at, state.generation);
+        const restarted = fresh(event.page, event.at, generation, writes);
         return restarted.kind === 'ready' && event.page.total === undefined
           ? { ...restarted, total: state.total }
           : restarted;
@@ -88,7 +105,7 @@ export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
         ...state,
         rows: [
           ...state.rows,
-          ...unique(event.page.items, new Set(state.rows.map((row) => row.id))),
+          ...overlaid(unique(event.page.items, new Set(state.rows.map((row) => row.id))), writes),
         ],
         next: event.page.next,
         page: 'idle',
@@ -189,6 +206,16 @@ export function createBoardController(
     dispatch(answer);
   }
 
+  function setQuery(origin: BoardOrigin, filter: BoardFilter, reloadSame: boolean) {
+    if (query && sameOrigin(query.origin, origin) && query.filter === filter) {
+      return reloadSame ? load() : undefined;
+    }
+    if (query && !sameOrigin(query.origin, origin)) dispatch({ type: 'originChanged' });
+    else if (query) dispatch({ type: 'filterChanged' });
+    query = { origin, filter };
+    return load();
+  }
+
   return {
     get: () => snapshot,
     subscribe(listener: () => void) {
@@ -197,13 +224,8 @@ export function createBoardController(
         listeners.delete(listener);
       };
     },
-    setQuery(origin: BoardOrigin, filter: BoardFilter) {
-      if (query && sameOrigin(query.origin, origin) && query.filter === filter) return;
-      if (query && !sameOrigin(query.origin, origin)) dispatch({ type: 'originChanged' });
-      else if (query) dispatch({ type: 'filterChanged' });
-      query = { origin, filter };
-      return load();
-    },
+    setQuery: (origin: BoardOrigin, filter: BoardFilter) => setQuery(origin, filter, false),
+    refresh: (origin: BoardOrigin, filter: BoardFilter) => setQuery(origin, filter, true),
     load,
     loadMore: () => nextPage('idle'),
     retryPage: () => nextPage('failed'),

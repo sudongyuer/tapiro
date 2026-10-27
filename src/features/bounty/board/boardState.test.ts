@@ -209,6 +209,42 @@ describe('applied and withdrawn', () => {
   });
 });
 
+describe('local writes over load answers', () => {
+  const loaded = [{ type: 'loadStarted' } as const, succeed(page(['a', 'b']))];
+
+  test('a load that started before an apply does not undo it; a later load decides', () => {
+    const inFlight = run([...loaded, { type: 'loadStarted' }]);
+    const applied = boardReducer(inFlight, { type: 'applied', id: 'b' });
+    const stale = ready(boardReducer(applied, succeed(page(['a', 'b']))(applied)));
+    expect(stale.rows.map((item) => item.appliedByMe)).toEqual([false, true]);
+    const later = boardReducer(stale, { type: 'loadStarted' });
+    const answered = ready(boardReducer(later, succeed(page(['a', 'b']))(later)));
+    expect(answered.rows.map((item) => item.appliedByMe)).toEqual([false, false]);
+  });
+
+  test('a withdraw survives an older load answer and covers rows from later pages', () => {
+    const appliedRows: BoardPage = {
+      items: [row('a'), row('b', { appliedByMe: true })],
+      next: { after: 'b' },
+    };
+    const inFlight = run([{ type: 'loadStarted' }, succeed(appliedRows), { type: 'loadStarted' }]);
+    const withdrawn = boardReducer(boardReducer(inFlight, { type: 'withdrawn', id: 'b' }), {
+      type: 'withdrawn',
+      id: 'c',
+    });
+    const stale = ready(boardReducer(withdrawn, succeed(appliedRows)(withdrawn)));
+    expect(stale.rows.map((item) => item.appliedByMe)).toEqual([false, false]);
+    const started = boardReducer(stale, { type: 'pageStarted' });
+    const paged = ready(
+      boardReducer(
+        started,
+        pageAnswer({ items: [row('c', { appliedByMe: true })], next: null })(started),
+      ),
+    );
+    expect(paged.rows.find((item) => item.id === 'c')?.appliedByMe).toBe(false);
+  });
+});
+
 test('nearEnd: within one screen of the viewport', () => {
   expect(nearEnd(2000, 1000, 800)).toBe(false);
   expect(nearEnd(1800, 1000, 800)).toBe(true);
@@ -303,6 +339,21 @@ describe('controller', () => {
     await settle();
     expect(ready(board.get().state)).toMatchObject({ refreshFailed: true, loadedAt: AT });
     expect(board.get().refreshing).toBe(false);
+  });
+
+  test('refresh reloads the same query and switches to a new origin', async () => {
+    const stub = deferredService();
+    const board = createBoardController(stub.service, () => new Date(AT));
+    void board.setQuery(ME, 'all');
+    stub.pending[0].resolve(page(['a']));
+    await settle();
+    void board.refresh(ME, 'all');
+    expect(stub.calls).toHaveLength(2);
+    stub.pending[1].resolve(page(['a']));
+    await settle();
+    void board.refresh(NONE, 'all');
+    expect(stub.calls[2]).toEqual({ origin: NONE, filter: 'all', after: null });
+    expect(board.get().state.kind).toBe('loading');
   });
 
   test('setting the same query again does not reload', async () => {

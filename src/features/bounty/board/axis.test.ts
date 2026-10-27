@@ -62,7 +62,7 @@ describe('formatDistance', () => {
     expect(cases.map((m) => formatDistance(m, language))).toEqual([
       '100 m',
       '950 m',
-      '1.0 km',
+      '1 km',
       '1.6 km',
       '18 km',
     ]);
@@ -70,5 +70,10 @@ describe('formatDistance', () => {
 
   test('an unknown language falls back to the default copy', () => {
     expect(formatDistance(1600, 'fr')).toBe('1.6 km');
+  });
+
+  test('a whole kilometre drops the trailing zero', () => {
+    expect(formatDistance(2000, 'en')).toBe('2 km');
+    expect(formatDistance(9960, 'en')).toBe('10 km');
   });
 });

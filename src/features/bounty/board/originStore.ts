@@ -1,4 +1,4 @@
-import type { LocationPermission, Point } from '@/lib/location/types';
+import type { LocationPermission, LocationService, Point } from '@/lib/location/types';
 import type { UserCleanups } from '@/lib/userCleanups';
 
 import type { BoardOrigin } from './types';
@@ -89,4 +89,25 @@ export function steadyOrigin(previous: BoardOrigin | null, next: BoardOrigin): B
     return distanceM(previous.point, next.point) < ORIGIN_MOVE_M ? previous : next;
   }
   return next;
+}
+
+export async function evaluateOrigin(
+  location: Pick<LocationService, 'permission' | 'currentPoint'>,
+  stored: { chosen: ChosenPlace | null; dismissed: boolean },
+): Promise<BoardOrigin> {
+  let permission: LocationPermission;
+  try {
+    permission = (await location.permission()).status;
+  } catch {
+    permission = 'undetermined';
+  }
+  let point: Point | null = null;
+  if (permission === 'granted') {
+    try {
+      point = await location.currentPoint();
+    } catch {
+      point = null;
+    }
+  }
+  return resolveOrigin({ permission, point, ...stored });
 }

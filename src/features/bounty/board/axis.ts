@@ -35,10 +35,7 @@ export function formatDistance(m: number, language: string): string {
   const locale = isLanguage(language) ? language : FALLBACK_LANGUAGE;
   const { distance } = resources[locale].translation.bounty.board;
   const number = (value: number, digits: number) =>
-    new Intl.NumberFormat(locale, {
-      minimumFractionDigits: digits,
-      maximumFractionDigits: digits,
-    }).format(value);
+    new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(value);
   if (m < 1000) return distance.meters.replace('{{value}}', number(Math.round(m), 0));
   const km = Math.round(m / 100) / 10;
   return distance.kilometers.replace(
