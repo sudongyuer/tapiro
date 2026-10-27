@@ -609,6 +609,8 @@ export function stickerArt(sticker: Pick<Sticker, 'itemKind' | 'category'>): Sti
 
 ## Open questions
 
+Question 1 answered 2026-10-27: C (靠谱 2/2, 很靠谱 5/4, 貘友 12/8; completion and account age as A).
+
 1. Tier thresholds (Task 3). The research ladder needs school verification, which the foundation drops (F2).
    A (recommended): research numbers, school email replaced by account age (很靠谱 ≥ 60 days, 貘友 ≥ 180 days),
    靠谱 needs completion ≥ 0.8. B: research numbers with 貘友 unreachable until verification exists. C: start lower
