@@ -12,250 +12,357 @@ pr:
 <!-- Visual mockups: design canvas https://claude.ai/artifact/34EC3qaCsv1ibJZ4oeGK3o, boards
 「G 首屏 · 合体版」, 「G 首屏 · 15 种情况」, 「G · 列表/地图怎么切」 (V2), 「底部导航 N3+E · 完整稿」,
 「悬赏与拼车 · 状态流程」, 「门槛 · 发布者设置」, 「门槛 · 申请人视角」, 「撮合付款 · 可点原型」,
-「交互细节 · 六选」. Builds on: docs/specs/2026-10-11-foundation-design.md (accounts, navigation
-shell, home shell and live-card stack, 撮合付款, 靠谱度 / reviews / stickers / levels, 貘币 ledger,
-问小貘 sheet and 小貘体力, chat, notifications). Decisions: docs/KICKOFF.md rows dated 2026-10-04 to
-2026-10-11. -->
+「交互细节 · 六选」, 「G 贴进贴纸本 · 第三稿」. Builds on: docs/specs/2026-10-11-foundation-design.md. Built there:
+steps 1–4 (accounts, shell and home G frame, payee methods, pay step and settlement) plus welcome A, the
+`stickers` table, the settlement celebration G and the read-only sticker book. Not built: steps 5–9 (coins,
+reputation and reviews, chat with report and block, 问小貘, push and Live Activity). Decisions: docs/KICKOFF.md rows
+dated 2026-10-04 to 2026-10-26; the 2026-10-26 reconcile answers are recorded in "Decisions (2026-10-26)". -->
 
 ## Problem
 
 Chinese students in Malaysia ask for small favours (collect a parcel, queue at JPJ, help move,
 explain homework) in WeChat groups. The request scrolls away, nobody knows who took it, the
 payment is chased by hand, and there is no record of who is reliable (KICKOFF 开局摘要;
-`docs/research/2026-10-04-reputation.md`). Tapiro has no bounty feature yet: `src/app/index.tsx`
-renders an empty home screen.
+`docs/research/2026-10-04-reputation.md`).
+
+The 悬赏 tab exists only as a frame: `src/app/(tabs)/bounty/index.tsx` renders `HomeScreen`, whose
+`BountySection` is a placeholder (「能接的悬赏」 / 「悬赏功能下一阶段上线」, `src/lib/i18n/locales/zh-Hans.ts`), and
+the scroll content keeps `minHeight: windowHeight * 2` until the list lands (`src/features/home/HomeScreen.tsx:134`).
+The pay step, settlement, stickers and the celebration are built and are reused here unchanged except where
+"Prerequisites" says otherwise.
 
 This spec covers the 悬赏 tab: browsing, posting, applying, choosing a helper, the bounty status
-flow, cancellation, and the handoff to payment and reviews. Everything shared with carpool is in
-the foundation spec and is only referenced here.
+flow, cancellation, and the handoff to payment. Everything shared with carpool is in the
+foundation spec and is only referenced here.
 
 ## Goals and scope
 
-**Do**
+**Do (v1)**
 
 - The 悬赏 tab is home layout G: 小貘 stage → live-card stack → bounties, viewed as a list or a
-  map, switched by two stickers (V2), and the last view is remembered (KICKOFF 2026-10-10).
+  map, switched by two stickers (V2), and the last view is remembered (KICKOFF 2026-10-10). The board replaces
+  `BountySection` and removes the `minHeight` workaround.
 - List titled 「能接的悬赏」 (KICKOFF 2026-10-11 B9): a distance axis as a sort aid, filters
-  全部 / 急单 / 塞得进空档, cards with an 申请 button that tilts the
-  sticker and stamps 已申请 (canvas G; KICKOFF 2026-10-10).
+  全部 / 急单 / 塞得进空档, cards with an 申请 button that tilts the sticker and stamps 已申请 (canvas G).
 - Map: a real Apple map (`expo-maps`, `AppleMaps`) with bounty stickers as image annotations and
-  the user's position; tapping a pin opens a detail card with 申请 (KICKOFF 2026-10-11
-  B8 "M2"; canvas 「spec 待定」 M2). `expo-maps` is alpha in SDK 57 and annotations are images
-  only, not React views ([docs](https://docs.expo.dev/versions/v57.0.0/sdk/maps/)); sticker
-  annotations are rendered to images.
-- Below the gate: the bounty stays in the list, dimmed, with 「{tier} 及以上可申请」 and
-  「怎么解锁」, which opens a sheet showing what is missing (KICKOFF 2026-10-11 B1 "L1").
-- Posting by one sentence to 问小貘 (a draft the user confirms) or by a manual form; both lead
-  to the same confirm screen (AGENTS.md "Every AI flow has a manual path"; KICKOFF 2026-10-06).
-- A dynamic form: no online/offline field; fields depend on the content; location is optional
-  (KICKOFF 2026-10-06 "表单应该是动态的").
-- Optional photo of the item turned into a die-cut sticker on the card (KICKOFF 2026-10-11
-  交互细节六选, item 4).
-- The poster chooses payment timing and who may apply (gate) (KICKOFF 2026-10-05 撮合付款;
-  canvas 「门槛 · 发布者设置」).
+  the user's position; tapping a pin opens a detail card with 申请 (KICKOFF 2026-10-11 B8 "M2"). `expo-maps` is
+  alpha in SDK 57 and annotations are images only ([docs](https://docs.expo.dev/versions/v57.0.0/sdk/maps/));
+  sticker annotations are rendered to images.
+- Posting through the manual 「+」 form, which leads to a confirm screen. A dynamic form: no online/offline field;
+  optional fields depend on the content; location is optional (KICKOFF 2026-10-06 "表单应该是动态的").
+- Every v1 bounty is 完成后付 and open to every signed-in user; 先付 and gates are in "Later: 先付 and application
+  gates" (decision 7).
+- Optional photo of the item turned into a die-cut sticker on the card (交互细节六选 item 4).
 - Posting costs 1 貘币; the first 3 posts each month are free, shared with rides; the coin (or the
-  free slot) is refunded when nobody was selected or the poster cancels before selecting (KICKOFF
-  2026-10-06; 2026-10-11 F4, B7).
-- Applying is not accepting: applicants wait for the poster to pick (canvas G; KICKOFF).
-- Prepay bounties accept applications only from 靠谱 and above (KICKOFF 2026-10-05).
-- Choosing a helper is a hold-to-commit action; unselected applicants are told
-  「这次没选上」 (KICKOFF 2026-10-11 item 5; canvas 「交互细节 · 六选」).
-- The status flow from the canvas board 「悬赏与拼车 · 状态流程」 (Q1–Q4), cancellation rules
-  and their effect on 靠谱度, completion → 撮合付款 → settlement → reviews.
-- Bounty states feed the home live cards, the N3+E accessory strip and a Live Activity while the
-  helper is on the way; a slipped arrival time strikes through the old time (KICKOFF 2026-10-11
-  items 1 and 2).
-- Publishing flies the sticker into the live-card stack (item 3); settlement celebrations follow
-  the rarity budget (item 6).
+  free slot) is refunded when nobody was selected, the bounty expires, or the poster cancels before selecting
+  (KICKOFF 2026-10-06; 2026-10-11 F4, B7).
+- Applying is not accepting: an application carries one short note, and applicants wait for the poster to pick.
+  There is no chat before selection (decision 8).
+- Choosing a helper is a hold-to-commit action; unselected applicants see 「这次没选上」 (交互细节 item 5).
+- The status flow from 「悬赏与拼车 · 状态流程」 (Q1–Q4), cancellation and its no-show record, completion → 撮合付款
+  → settlement → a sticker for each side.
+- Bounty states feed the home live cards and the N3+E accessory strip; a slipped arrival time strikes through the
+  old time (KICKOFF 2026-10-11 items 1 and 2). Which states and their rank are decided on the canvas.
+- Publishing flies the sticker into the live-card stack (item 3). The settlement celebration G plays on every
+  settle, as built (KICKOFF 2026-10-26).
+
+**v1: absent, arrives later**
+
+- 问小貘 drafting into the confirm form: arrives with foundation step 8 (consent, `ai-draft`, 小貘体力). The manual
+  form is the only v1 path.
+- Chat between poster and helper, report, and the 发消息 button on the in-progress card: arrive with foundation
+  step 7. The block list is carved out of step 7 as a prerequisite.
+- Push notifications and the explicit permission prompt after the first post or application: arrive with
+  foundation step 9. Every event has an in-app surface instead (Data flow → In-app events).
+- Live Activity and Dynamic Island for `en_route`: arrive with foundation step 9.
+- Reviews after settlement: arrive with foundation step 6 reviews; the prerequisite carves out only the level and
+  the no-show record.
+- Buying 貘币: arrives with foundation step 5 IAP, after the developer account exists.
+- Realtime updates: none in v1 (freshness rule below).
 
 **Don't do**
 
 - Paid boosts 加急 / 置顶 / 装扮: deferred by KICKOFF 2026-10-06 ("暂时只要发布和 AI"). The 急 seal
-  in v1 is derived from the deadline and free (KICKOFF 2026-10-11 B2).
-- Multi-helper bounties: one helper per bounty in v1; a two-person move is posted twice (KICKOFF
-  2026-10-11 B5).
-- Money through Tapiro, escrow, or coins as a reward: the canvas board 「发布时选貘币或现金」
-  (PublishChoose) shows a coin reward and escrow; it is superseded by KICKOFF 2026-10-05 ("貘币不能
-  当最后的结算", direct payment) and must not be built.
+  is derived from the deadline and free (KICKOFF 2026-10-11 B2).
+- Multi-helper bounties: one helper per bounty; a two-person move is posted twice (B5).
+- Money through Tapiro, escrow, or coins as a reward: the canvas board 「发布时选貘币或现金」 (PublishChoose) is
+  superseded by KICKOFF 2026-10-05 ("貘币不能当最后的结算", direct payment) and must not be built.
 - Swipe-through card browsing (F3) and the cork-board wall (F1): dropped (KICKOFF 2026-10-10).
 - A full-screen AI chat as the main surface (`docs/research/2026-10-06-ai-native-patterns.md`).
 - Background location. Location is When In Use only (`docs/research/2026-10-04-push-location.md`).
-- Admin tooling for disputes beyond what the foundation spec defines.
+- A human support or dispute step for 「有问题」 (decision 10); admin tooling beyond the foundation spec.
+
+## Prerequisites
+
+Built before bounty step 1 (decision 1, order A). Each is carved from a foundation step; the rest of that step
+stays where it is. Contracts are named at the level of this spec; columns are indicative.
+
+| Piece                                  | Carved from                                                           | What bounty consumes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1 Coin ledger without purchase        | Foundation step 5 (IAP spike and purchase stay there)                 | `coin_ledger` (append-only, server-written, balance derived, select-own); the shared monthly free allowance (3 posts per Malaysia calendar month, bounties and rides); service-role `spend_post(user, item)` returning `free` or `coin` and failing typed on no balance; `refund_post(item)` restoring the coin or the free slot, idempotent per item; grant entries per the foundation's free-grant rules, of which bounty triggers only "each help settled" (from the settle transaction); a `coin_balance()` read for the publish button |
+| P2 Reputation level and no-show record | Foundation step 6 (reviews, mascot level and recompute UI stay there) | `reputation_events` (server-written; kinds include `no_show` with the item and the at-fault user, and `settled`); service-role `record_no_show(user, kind, item)` applying the one-waiver-per-60-days rule; `reputation_snapshots` tier per user (新朋友 / 靠谱 / 很靠谱 / 貘友), readable by every signed-in user as tier only; a scheduled recompute (pg_cron, rolling 180 days, inputs without reviews until step 6)                                                                                                                     |
+| P3 Block list                          | Foundation step 7 (chat, report and the report queue stay there)      | `blocks` (blocker, blocked; self-owned, unreadable by the blocked user); `block_user` / `unblock_user` RPCs; an `is_blocked_between(a, b)` helper for RLS and RPCs. The block entry point on profiles and bounties is a canvas item                                                                                                                                                                                                                                                                                                         |
+| P4 Payment-layer changes               | Foundation step 4 payment layer                                       | A partial unique index on `payments (item_kind, item_id) where reverses is null`, so a bounty has one open payment; `confirm_payment_received` writes a sticker for the payee and the payer (`stickers` unique on `(payment_id, owner_id)` instead of `payment_id`), copies the bounty's `category` into both, and keeps `firstSettled` / `stickerCount` for the payee; a check that `stickers.category` is null or one of the eight slugs; `stickerArt` maps a bounty category to `CategorySticker` in the book and the celebration        |
+
+Notes:
+
+- `open_payment` stays service-role only (`supabase/migrations/20261025000000_payments.sql`); the bounty
+  transition functions are `security definer` and call it.
+- The payer-side sticker changes the book and the mascot level count: the book's 「我帮过的忙」 /
+  「每帮成一单、收到钱」 copy no longer fits the poster, and the payer has no celebration today (the payee settles in
+  the pay sheet). Both are canvas items (decision 2); no copy or motion is written here.
+- Location: the `postgis` extension is not enabled (only `pg_cron` and `pg_net`, `20261025000200_schedules.sql`).
+  Bounty step 1 enables it, stores the place as `geography(Point)` with a GiST index, and `nearby_bounties` orders
+  by distance. `expo-location` is not installed; the board step installs it with `bunx expo install`, sets
+  `locationAlwaysAndWhenInUsePermission`, `locationAlwaysPermission` and `motionUsagePermission` to `false`,
+  keeps `isIosBackgroundLocationEnabled` false, and gives `locationWhenInUsePermission` zh-Hans, en and ms text
+  through the app config `locales` map ([docs](https://docs.expo.dev/versions/v57.0.0/sdk/location/)). `expo-maps`
+  is not installed either; the map step adds it after its spike.
+- Scheduled jobs (48 h auto-confirm, expiry) reuse the built pattern: pg_cron calling SQL directly or
+  `call_edge_function`, which needs the Vault secrets `project_url` and `service_role_key` per environment.
 
 ## Decisions
 
-| Decision                       | Choice                                                                                                                                                                                                                  | Why                                                                                                                                                                | Alternatives considered                             |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
-| Tab layout                     | Home G in the 悬赏 tab; the shell (stage, live-card stack, strip when scrolled) comes from the foundation spec                                                                                                          | KICKOFF 2026-10-10                                                                                                                                                 | H1/H2/H3, D/E/F alone: merged into G                |
-| List vs map switch             | Two die-cut stickers beside the section title; the selected one tilts and scales                                                                                                                                        | KICKOFF 2026-10-10 "V2"                                                                                                                                            | V1 icons, V3 floating capsule, V4 no switch         |
-| View memory                    | Last view (list/map) stored on the device and restored on launch, with 「记住了」 hint the first time                                                                                                                   | Canvas G13                                                                                                                                                         | Always list                                         |
-| Distance axis                  | 0–2 km axis, one sticker per located bounty; tapping one rings its card                                                                                                                                                 | Canvas HomeD/G (Citymapper, Apple Weather reference)                                                                                                               | Map only                                            |
-| Filters                        | 全部 / 急单 / 塞得进空档 chips; 急 = deadline within 3 hours, automatic and free                                                                                                                                        | Canvas G10; KICKOFF 2026-10-11 B2                                                                                                                                  | E3 full timeline: dropped, only the gap filter kept |
-| Posting entry                  | 问小貘 sheet (one sentence, voice, screenshot or photo) or the manual 「+」 on the 悬赏 tab                                                                                                                             | KICKOFF 2026-10-06, 2026-10-11 (N3+E); canvas 「N3+E 完整稿」 case 5                                                                                               | Composer always docked: dropped with N3+E           |
-| AI draft placement             | The draft fills the confirm form in place, changed fields highlighted, one 撤销 until the user leaves the form                                                                                                          | KICKOFF 2026-10-06 (撤销 "直到离开这个表单"); `2026-10-06-ai-native-patterns.md` recommendation 1                                                                  | Draft card in a thread                              |
-| AI label                       | No "AI wrote this" label; content confirmed by the user is the user's                                                                                                                                                   | KICKOFF 2026-10-06 "都不标"                                                                                                                                        | Label drafts                                        |
-| Form shape                     | Fixed core (title, reward RM 1–500 enforced on the server, payment timing, gate) plus optional fields chosen from the content: place, time window or deadline, photo sticker, description                               | KICKOFF 2026-10-06 "表单应该是动态的"; 2026-10-11 B10                                                                                                              | Online/offline toggle: rejected by the user         |
-| Category                       | Fixed 8: 代取, 代买, 代排, 代办, 搬运, 陪同, 课业, 其他; 小貘 picks one, shown as a tag with 「改类型」; it drives the gate suggestion                                                                                  | Canvas 「门槛 · 发布者设置」; KICKOFF 2026-10-11 B6                                                                                                                | Free tags; picker as the first step                 |
-| Gate                           | 所有人 (default) / 靠谱及以上 / 很靠谱及以上, chosen by the poster; 小貘 suggests a higher gate for home-entry and accompany types but never forces it                                                                  | Canvas 「门槛 · 发布者设置」; `2026-10-04-reputation.md` Design B                                                                                                  | Gate fixed per category                             |
-| Payment timing                 | Poster chooses 先付 or 完成后付 when posting; 先付 bounties only accept applicants at 靠谱 or above                                                                                                                     | KICKOFF 2026-10-05 ("发布者自己选", "限制谁能接先付的单")                                                                                                          | Always pay after                                    |
-| Applying                       | 申请 sends an application with an optional note; the applicant can withdraw before selection                                                                                                                            | Canvas G (「已申请，等 X 挑人」)                                                                                                                                   | First come, first served                            |
-| Selecting                      | Poster picks exactly one applicant (KICKOFF 2026-10-11 B5) with hold-to-commit; others get 「这次没选上」                                                                                                               | KICKOFF 2026-10-11 item 5; canvas 「交互细节 · 六选」 cell 5                                                                                                       | Tap + confirm alert                                 |
-| Start                          | Helper taps 「出发了」 (for 先付, only after the prepay is 「已收到」); at the agreed time without it, both sides are reminded; if the poster cancels more than 30 min after that reminder, the no-show is the helper's | Status board Q1; KICKOFF 2026-10-11 B3, B4                                                                                                                         | Start implied by selection                          |
-| Task completion                | Helper taps 完成; if the poster neither confirms nor disputes within 48 h, the task is confirmed automatically                                                                                                          | Status board Q2                                                                                                                                                    | No auto-confirm                                     |
-| Payment settlement             | Never automatic: only the helper's 「已收到」 settles; the app only reminds the helper                                                                                                                                  | KICKOFF 2026-10-05 "不自动，只提醒接单人"; canvas 撮合付款                                                                                                         | Auto-settle after N days                            |
-| Poster cancels after selecting | Counts as a no-show for the poster, same as a helper cancelling; one waiver per 60 days                                                                                                                                 | Status board Q3                                                                                                                                                    | No penalty for posters                              |
-| Reviews                        | Only after settlement; both sides' reviews are revealed when both have reviewed or after 7 days                                                                                                                         | Status board Q4 and header note                                                                                                                                    | Review on completion                                |
-| Coin cost                      | 1 貘币 per post; 3 free posts per calendar month shared with rides; refund (coin or free slot) when nobody was selected or the poster cancels before selecting                                                          | KICKOFF 2026-10-06; 2026-10-11 F4, B7                                                                                                                              | Charge per application                              |
-| Location                       | Optional per bounty; the viewer's position uses precise location, When In Use only; if the user turns Precise off, distances fall back to approximate (about 1 km off); manual area fallback when declined              | KICKOFF 2026-10-12 (overturns the approximate-only recommendation in `2026-10-04-push-location.md`: the real map and meeting points need it); App Review 5.1.1(iv) | Approximate only: pins about 1 km off               |
-| Address privacy                | Everyone sees the place label and area; the exact address (room, unit) only the selected helper                                                                                                                         | KICKOFF 2026-10-11 B11                                                                                                                                             | Visible to applicants                               |
-| Distance query                 | PostGIS nearest-neighbour through an RPC                                                                                                                                                                                | `docs/research/2026-10-04-backend-platform.md`                                                                                                                     | Client-side filtering                               |
+| Decision                       | Choice                                                                                                                                                                                                                                                          | Why                                                                                                                         | Alternatives considered                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Tab layout                     | Home G in the 悬赏 tab; the shell (stage, live-card stack, strip when scrolled) comes from the foundation spec                                                                                                                                                  | KICKOFF 2026-10-10                                                                                                          | H1/H2/H3, D/E/F alone: merged into G                      |
+| List vs map switch             | Two die-cut stickers beside the section title; the selected one tilts and scales                                                                                                                                                                                | KICKOFF 2026-10-10 "V2"                                                                                                     | V1 icons, V3 floating capsule, V4 no switch               |
+| View memory                    | Last view (list/map) stored on the device and restored on launch, with 「记住了」 hint the first time                                                                                                                                                           | Canvas G13                                                                                                                  | Always list                                               |
+| Distance axis                  | 0–2 km axis, one sticker per located bounty; tapping one rings its card                                                                                                                                                                                         | Canvas HomeD/G (Citymapper, Apple Weather reference)                                                                        | Map only                                                  |
+| Filters                        | 全部 / 急单 / 塞得进空档 chips; 急 = deadline within 3 hours, automatic and free                                                                                                                                                                                | Canvas G10; KICKOFF 2026-10-11 B2                                                                                           | E3 full timeline: dropped, only the gap filter kept       |
+| Posting entry                  | v1: the manual 「+」 on the 悬赏 tab. With foundation step 8: also the 问小貘 sheet (one sentence, voice, screenshot or photo), filling the same confirm form in place with changed fields highlighted and one 撤销 until the user leaves the form; no AI label | KICKOFF 2026-10-06 (撤销 "直到离开这个表单", "都不标"), 2026-10-11 (N3+E); decision 1                                       | Draft card in a thread                                    |
+| Form shape                     | Fixed core (title, category, reward) plus optional fields chosen from the content: place, exact address, time window or deadline, photo sticker, description                                                                                                    | KICKOFF 2026-10-06 "表单应该是动态的"; 2026-10-11 B10                                                                       | Online/offline toggle: rejected by the user               |
+| Reward                         | Whole RM 1–500 (integers), stored as integer sen; enforced on the server and in the form                                                                                                                                                                        | KICKOFF 2026-10-11 B10; decision 6                                                                                          | RM 0.10 steps; any sen                                    |
+| Text limits                    | Title ≤ 60, place label ≤ 80, application note ≤ 140, description ≤ 500, exact address ≤ 120 characters                                                                                                                                                         | KICKOFF 2026-10-14; decision 12                                                                                             | No limit on description and address                       |
+| Category                       | Fixed 8 slugs with labels: `pickup` 代取, `buy` 代买, `queue` 代排, `handle` 代办, `move` 搬运, `accompany` 陪同, `study` 课业, `other` 其他; picked in the form (by 小貘 once drafting exists), shown as a tag with 「改类型」                                 | Canvas 「门槛 · 发布者设置」; B6; slugs and colours already built (`src/ui/CategorySticker.tsx`, `docs/design-language.md`) | Free tags                                                 |
+| Applying                       | 申请 sends an application with one short note (≤ 140); the applicant can withdraw before selection; it requires at least one `payee_methods` row (cash counts)                                                                                                  | Canvas G; KICKOFF 2026-10-15 5A ("没有收款方式不能申请接单"); decision 8                                                    | First come, first served; chat before selection           |
+| Selecting                      | Poster picks exactly one applicant with hold-to-commit; others become `not_selected`                                                                                                                                                                            | 交互细节 item 5; B5                                                                                                         | Tap + confirm alert                                       |
+| Start                          | Helper taps 「出发了」. At the agreed start time without it, both sides see a reminder; if the poster cancels more than 30 min after that reminder, the no-show is the helper's                                                                                 | Status board Q1; B4                                                                                                         | Start implied by selection                                |
+| Task completion                | Helper taps 完成; if the poster neither confirms nor reports 「有问题」 within 48 h, the task is confirmed automatically                                                                                                                                        | Status board Q2                                                                                                             | No auto-confirm                                           |
+| 「有问题」                     | Pauses the 48 h auto-confirm and shows the poster's reason to the helper; the helper can tap 完成 again after fixing it, which restarts a fresh 48 h; no human support step                                                                                     | Decision 10                                                                                                                 | Routed to a report queue                                  |
+| Payment                        | v1 is 完成后付: the payment opens when the task is `confirmed`, one per bounty; settlement is never automatic, only the helper's 「已收到」 settles                                                                                                             | KICKOFF 2026-10-05; decision 7                                                                                              | Auto-settle after N days                                  |
+| Settled                        | Derived from the linked payment's state, not stored on the bounty                                                                                                                                                                                               | One source of truth with the payment                                                                                        | Copy a flag at settle                                     |
+| Stickers on settle             | Both sides get one, typed by the bounty's category; the celebration plays on every settle                                                                                                                                                                       | Decision 2; KICKOFF 2026-10-26 (celebration G)                                                                              | Helper only; rarity budget (first vs routine): superseded |
+| Poster cancels after selecting | Counts as a no-show for the poster, same as a helper cancelling; one waiver per 60 days                                                                                                                                                                         | Status board Q3                                                                                                             | No penalty for posters                                    |
+| Expiry                         | An open bounty closes at its deadline, or 7 days after publishing when it has none; nobody selected → coin refunded                                                                                                                                             | Decision 9                                                                                                                  | Never expires                                             |
+| Unpaid poster                  | Publishing is rejected while `publish_blocked()` is true (7 days unpaid or 2 open unpaid items, cash included)                                                                                                                                                  | Foundation unpaid handling; KICKOFF 2026-10-26 ("维持现状")                                                                 | Reminders only                                            |
+| Coin cost                      | 1 貘币 per post; 3 free posts per calendar month shared with rides; refund (coin or free slot) when nobody was selected, the bounty expires, or the poster cancels before selecting                                                                             | KICKOFF 2026-10-06; F4, B7                                                                                                  | Charge per application                                    |
+| Account deletion               | Blocked while the user has an active bounty (selected and not yet settled, as poster or helper), the same way and in the same list as an unsettled payment; open bounties are closed and pending applications withdrawn by the deletion                         | Decision 11; foundation F9                                                                                                  | Auto-cancel active bounties                               |
+| Location                       | Optional per bounty; the viewer's position uses precise location, When In Use only; if Precise is off, distances fall back to approximate (about 1 km off); manual area fallback when declined                                                                  | KICKOFF 2026-10-12; App Review 5.1.1(iv)                                                                                    | Approximate only                                          |
+| Address privacy                | Everyone sees the place label and area; the exact address only the poster and the selected helper                                                                                                                                                               | B11                                                                                                                         | Visible to applicants                                     |
+| Distance query                 | PostGIS nearest-neighbour through an RPC                                                                                                                                                                                                                        | `docs/research/2026-10-04-backend-platform.md`                                                                              | Client-side filtering                                     |
+| Freshness (v1)                 | Bounty surfaces load on app open, on returning to the foreground, on tab focus and on pull-to-refresh; a write's own answer updates the screen that made it; no Realtime                                                                                        | Decision 1; same rule as payments (`src/features/payment/hooks.ts`)                                                         | Realtime (arrives with chat, step 7)                      |
+| Blocked users                  | A bounty is hidden from, and cannot be applied to by, a user when either of them blocked the other                                                                                                                                                              | P3; foundation chat safety                                                                                                  | Hide only when the poster blocked                         |
+
+## Decisions (2026-10-26)
+
+The reconcile against the built foundation produced twelve answers (KICKOFF 2026-10-26, row 「悬赏需求对照 12 题」):
+1A prerequisites first (P1–P3; push, chat and 问小貘 stay in their steps; v1 freshness rule); 2B a sticker for both
+sides; 3A cancel with an unsettled payment (later, with 先付); 4A unpaid prepay frees the helper (later); 5A fresh
+先付 `due` exempt from `publish_blocked()` for 24 h (later); 6A whole RM; 7A no 先付 or gates in v1; 8A no chat before
+selection, one short note; 9A 7-day expiry without a deadline; 10A 「有问题」 loop; 11A deletion blocked by an active
+bounty; 12A description 500, address 120. Still open on the canvas: which bounty states become live cards and strip
+items and their rank in the F5 order; every bounty screen, state and motion; the poster's sticker copy and the
+payer-side celebration.
 
 ## UI/UX and motion
 
-Pending design handoff: the screens, their states and the motion table are delivered on the canvas and
-written here before its first UI step starts; the spec returns to approved after that review (process adopted
-2026-10-13, KICKOFF).
+Pending design handoff: every bounty screen, its states and the motion table are decided on the design canvas and
+written here before the first UI step starts (KICKOFF 2026-10-13; AGENTS.md Pace: a task does not start with open UI
+questions). The handoff also decides which bounty states become home live cards and strip items and where they rank
+against the F5 order (`src/lib/liveItems.ts` `ACCESSORY_KINDS`), the screen class of each screen (design-language:
+publish and completion are moments), the poster's sticker copy, and the payer-side celebration.
 
 ## Data flow and ownership
 
 **Server (Supabase, `ap-southeast-1`).** Tables named here are contracts; columns are indicative.
 
-- `bounties`: owner `poster_id`; title, description, category, reward amount (MYR, integer sen),
-  payment timing (`prepay` / `after`), gate (`anyone` / `reliable` / `very_reliable`), optional
-  place (PostGIS geography point plus a human label), optional time window and deadline,
-  optional sticker image path, `status`, timestamps. Exact address text, if any, is a separate
-  field readable only by the poster and the selected helper.
-- `bounty_applications`: one row per (bounty, applicant); note, status (`pending` / `withdrawn` /
-  `selected` / `not_selected`).
-- Text limits (KICKOFF 2026-10-14): titles ≤ 60 characters, place labels ≤ 80, notes ≤ 140, enforced
-  by `char_length` checks in the migration and the same `maxLength` in the forms. Live items carry
-  structured fields (kind, names, amount in sen, time) and are localized where they render.
-- `bounty_events`: append-only history of status changes and ETA updates (who, when, from, to).
-  Live cards, notifications, the Live Activity and dispute review read from it.
+- `bounties`: owner `poster_id`; title, description, `category` (check: one of the eight slugs), `reward_sen`
+  (check: between 100 and 50000 and a multiple of 100), optional place (`geography(Point)` plus a label), optional
+  time window and deadline, `expires_at` (deadline, else published + 7 days), optional sticker image path,
+  `status`, `payment_timing` and `gate` columns fixed to `after` / `anyone` in v1 (see Later), timestamps. Exact
+  address text lives in a separate table readable only by the poster and the selected helper.
+- `bounty_applications`: one row per (bounty, applicant); note, status (`pending` / `withdrawn` / `selected` /
+  `not_selected`).
+- Text limits are `char_length` checks in the migration and the same `maxLength` in the forms.
+- `bounty_events`: append-only history of status changes, ETA updates, the start reminder and 「有问题」 reasons
+  (who, when, from, to). Live items, status screens and no-show decisions read from it.
 - Storage bucket for stickers: written by the poster, readable by anyone who can read the bounty.
 
-**RLS.** Open bounties are readable by signed-in users who are not blocked by the poster.
-Applications are readable by their applicant and by the bounty's poster. Clients never update
-`status` directly: every transition goes through one Postgres function (RPC) or Edge Function that
-checks the actor, the current state and the gate, writes `bounty_events`, and calls the foundation
-contracts (coin debit/refund, 靠谱度 event, payment record, notification). Gate checks read the
-applicant's current tier from the foundation's reputation view.
+**RLS and transitions.** Open bounties are readable by signed-in users unless `is_blocked_between` holds.
+Applications are readable by their applicant and by the bounty's poster. Clients never update `status` directly:
+every transition is one `security definer` RPC that checks the actor, the current state and the rules, writes
+`bounty_events`, and calls the contracts: `publish_blocked()` and `spend_post` on publish, `refund_post` on close,
+`record_no_show` on cancel, `open_payment('bounty', id, title, poster, helper, reward_sen)` on confirm. Each
+rejection carries a typed reason (taken, closed, blocked, no payee method, publish blocked, no balance).
 
-**State machine (task).** Payment state is the foundation's 撮合付款 record linked to the bounty;
-this spec only says when it starts.
+**State machine (task).**
 
 ```
-open ──select──▶ assigned ──出发了──▶ en_route ──完成──▶ done ──confirm / 48 h──▶ confirmed
-  │                 │  (先付: payment record starts here)            (完成后付: payment starts here)
-  ├─expire/cancel──▶ closed (coin refunded)            confirmed + payment settled ──▶ settled ──▶ reviews
-  └ assigned/en_route ──cancel──▶ cancelled (no-show recorded for the canceller)
+open ──select──▶ assigned ──出发了──▶ en_route ──完成──▶ done ──确认完成 / 48 h──▶ confirmed ──payment settled──▶ settled
+ │                  │                    │               ▲  │                       (payment opens here)      (derived)
+ │                  │                    │          完成 │  │ 有问题
+ │                  │                    │               │  ▼
+ │                  │                    │             disputed (auto-confirm paused)
+ ├─ deadline / 7 days / poster cancel ─▶ closed (coin or free slot refunded)
+ └─ assigned / en_route ── cancel ──▶ cancelled (no-show for the canceller unless exempt)
 ```
 
-- `open`: visible on the board; applications accepted (gate and prepay rule enforced on apply).
-- `assigned`: one applicant selected; others become `not_selected`. For 先付, the poster's
-  payment card appears now; 「出发了」 stays disabled until the helper taps 「已收到」 (KICKOFF
-  2026-10-11 B3).
-- `en_route`: helper tapped 「出发了」. The helper may update the expected arrival; the previous
-  time is kept for the struck-through display.
-- `done`: helper tapped 完成. The poster sees 确认完成 / 有问题. 48 h without either confirms
-  automatically (scheduled job).
-- `confirmed`: for 完成后付, the payment card appears on the poster's home.
-- `settled`: the foundation reports the helper's 「已收到」. Both sides get a sticker; reviews open.
-- `closed`: deadline passed with nobody selected, or the poster cancelled while `open`.
-- `cancelled`: either side cancelled after selection; a no-show event goes to 靠谱度 (60-day
-  waiver handled by the foundation).
+- `open`: on the board; applications accepted (payee method and block checks on apply).
+- `assigned`: one applicant selected; others become `not_selected`; the exact address becomes readable.
+- `en_route`: the helper may update the expected arrival; the previous time is kept for the struck-through display.
+- `done` / `disputed`: as in Decisions; the 48 h job only confirms `done` rows whose clock has run out.
+- `confirmed`: the payment opens and the poster's pay card appears through the built payment live items.
+- `settled`: the payment is `settled`; both stickers were written in the settle transaction.
+- `closed`: expired or cancelled by the poster while `open`; refunded through `refund_post`.
+- `cancelled`: either side cancelled after selection and before 完成; v1 never has a payment at this point.
 
 **Client.**
 
-- `src/features/bounty/`: board (list, map, filters, distance axis), detail, posting form and
-  confirm screen, applicant list, status screens, live-card content for bounty states. It does not
-  import `src/features/carpool/`; shared pieces come from foundation modules.
-- Board data: one RPC `nearby_bounties(area or point, filters, cursor)` returning open bounties
-  with distance; bounties without a place are included without distance and are not placed on the
-  axis or map.
-- Live updates for a bounty the user is part of come through Supabase Realtime (foundation
-  transport); the board itself refreshes on pull-to-refresh and on focus.
-- Drafts from 问小貘 and unsent manual drafts stay on the device (KICKOFF 2026-10-11 "只存手机").
-- Photo → sticker: subject cut-out runs on the device in `modules/tapiro-kit` (AGENTS.md: native
-  code lives in the kit); only the resulting PNG is uploaded.
-- Live Activity and Dynamic Island for `en_route`: content defined here (helper name, one sentence,
-  progress, arrival time); the native extension and update transport belong to the foundation spec.
+- `src/features/bounty/`: board (list, map, filters, distance axis), detail, posting form and confirm screen,
+  applicant list, status screens, and the bounty live-item source. It does not import `src/features/carpool/` or
+  `src/features/home/`.
+- Live items follow the built contract: the bounty source registers through `setSource` with
+  `loading` / `ready` / `failed` / `stale` and publishes `AccessoryItem`s (strings localized by the source with
+  `t()`, amounts as `amountSen`). The card-detail types (`ProgressDetail` and siblings in
+  `src/features/home/homeModel.ts`) move into `src/lib` beside `liveItems` so the bounty source can publish card
+  details without a cross-feature import.
+- Board data: one RPC `nearby_bounties(area or point, filters, cursor)` returning open bounties with distance;
+  bounties without a place are included without distance and are not placed on the axis or map.
+- Unsent manual drafts stay on the device (KICKOFF 2026-10-11 "只存手机"; data integrity: keep drafts across failures).
+- Photo → sticker: subject cut-out runs on the device in `modules/tapiro-kit`; only the resulting PNG is uploaded.
 
-**Notifications** (delivery by the foundation): new application (poster); selected / not selected
-(applicant); start-time reminder without 「出发了」 (both); arrival time changed (poster); 完成
-(poster); auto-confirm warning before 48 h (poster); deadline reached with nobody selected (poster).
+**In-app events (v1, no push).** New application → the poster's bounty shows the applicant count; selected / not
+selected → the applicant's application shows the outcome; start time passed without 「出发了」 → a reminder item for
+both; arrival time changed → the poster's card shows the struck-through time; 完成 → a confirm item for the poster
+with the auto-confirm time; 「有问题」 → the reason on the helper's item; expiry → the poster's bounty shows closed
+and refunded. Push for these arrives with foundation step 9.
 
 ## Errors and degradation
 
-| Failure                                     | User sees                                                                                      | System does                                                                            |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Offline while browsing                      | Last loaded list with 「离线 · 下拉重试」                                                      | No writes queued                                                                       |
-| Offline when posting / applying / selecting | The action button shows 「没发出去，再试一次」; the form stays filled                          | Nothing is written; no coin is debited                                                 |
-| Coin balance 0 and no free post left        | Confirm button becomes 「需要 1 貘币」 with 充值 and earn options                              | Foundation coin sheet                                                                  |
-| Gate not met                                | Locked card: 「发布者设了「靠谱」才能申请」 with how to unlock (or hidden; open question 1)    | Server rejects the application regardless of client state                              |
-| 先付 bounty, applicant below 靠谱           | Same locked state, reason 「先付的单需要靠谱及以上」                                           | Server rejects                                                                         |
-| Bounty taken or closed while viewing        | Card shows 「已经有人在帮了」, 申请 disabled                                                   | Server rejects with a typed reason                                                     |
-| Two posters' devices race on select         | Second attempt shows 「已经选好了」                                                            | Transition function is the single writer                                               |
-| Location denied                             | Board sorts by recency; area picker 「选一个地方」 at the top                                  | No distance axis or map pins                                                           |
-| AI unavailable or 小貘体力 empty            | 问小貘 says so in one line and opens the manual form with the sentence kept as the description | Foundation 小貘体力 rules                                                              |
-| Sticker cut-out fails                       | The photo is kept as a rounded thumbnail                                                       | Upload continues                                                                       |
-| Helper never taps 「出发了」                | Reminder to both at the agreed time; poster can cancel with no penalty to themselves           | No-show recorded for the helper if the poster cancels > 30 min after the reminder (B4) |
-| Poster never confirms 完成                  | Reminder, then auto-confirm at 48 h                                                            | Scheduled job writes the transition                                                    |
-| Poster never pays                           | Foundation 撮合付款: reminders and posting limit                                               | Bounty stays `confirmed`                                                               |
+| Failure                                       | User sees                                                                                                            | System does                                                                    |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Board first load fails                        | A load-failed state with 重试, never 「没有悬赏」                                                                    | Nothing cached is shown as current                                             |
+| Board refresh fails                           | The last list stays, marked not current                                                                              | Next foreground or pull retries                                                |
+| Bounty live source fails or is stale          | The home shows it as unavailable, as payments do; the strip shows nothing for that source                            | `setSource` status `failed` / `stale`                                          |
+| Posting / applying / selecting fails          | The action shows progress until the RPC answers, then 「没发出去，再试一次」; the form stays filled                  | Nothing is written; no coin is debited; never replayed automatically           |
+| No balance and no free post left              | The confirm button says a coin is needed, when the next free posts arrive, and how to earn one; no 充值 until step 5 | `spend_post` rejects; nothing is published                                     |
+| Publishing blocked by unpaid items            | The reason with 去付款 to the unpaid payment                                                                         | Publish RPC rejects while `publish_blocked()`                                  |
+| Applicant has no payee method                 | 申请 explains why and links to 我的 → 收款方式                                                                       | Apply RPC rejects                                                              |
+| Bounty taken, closed or blocked while viewing | Card shows it is no longer open; 申请 disabled                                                                       | Server rejects with a typed reason                                             |
+| Two devices race on select                    | Second attempt shows 「已经选好了」                                                                                  | The transition function is the single writer                                   |
+| Location denied                               | Board sorts by recency; area picker 「选一个地方」 at the top                                                        | No distance axis or map pins                                                   |
+| Sticker cut-out fails                         | The photo is kept as a rounded thumbnail                                                                             | Upload continues                                                               |
+| Helper never taps 「出发了」                  | Reminder item to both at the agreed time; poster can cancel                                                          | No-show is the helper's if the poster cancels > 30 min after the reminder (B4) |
+| Poster never confirms 完成                    | The confirm item shows the auto-confirm time                                                                         | Scheduled job confirms at 48 h                                                 |
+| 「有问题」 never resolved                     | Both see the reason and the helper's 完成                                                                            | Auto-confirm stays paused (Known limits)                                       |
+| Poster never pays                             | The built pay card and unpaid handling                                                                               | Bounty stays `confirmed`; `publish_blocked()` applies                          |
+| Account deletion with an active bounty        | The bounty listed beside unsettled payments                                                                          | `account-delete` rejects with both lists                                       |
+
+## Later: 先付 and application gates
+
+Not offered in v1 (decision 7). They open by a later decision once reputation has data; the rules are kept here.
+
+- Payment timing: the poster chooses 先付 or 完成后付 when posting (KICKOFF 2026-10-05 "发布者自己选"). For 先付 the
+  payment opens at selection; 「出发了」 stays disabled until the helper taps 「已收到」 (B3).
+- Gate: 所有人 (default) / 靠谱及以上 / 很靠谱及以上, chosen by the poster; the category suggests a higher gate for
+  home-entry and accompany types but never forces it. 先付 bounties accept only applicants at 靠谱 or above
+  (KICKOFF 2026-10-05). Gate checks read `reputation_snapshots` (P2); the server rejects regardless of client state.
+- Below the gate: the bounty stays in the list, dimmed, with 「{tier} 及以上可申请」 and 「怎么解锁」, which opens a
+  sheet showing what is missing (KICKOFF 2026-10-11 "L1"); 先付 uses the reason 「先付的单需要靠谱及以上」.
+- Unpaid prepay (decision 4): once the agreed time passes without the prepayment received, the helper's cancel is
+  not a no-show.
+- Cancel with an unsettled payment (decision 3): if the poster has not tapped 「我已付款」 (`due`), the payment is
+  voided with the cancel. If they have (`marked_paid`), the bounty waits in `cancelling` and the cancel completes
+  after the helper's 已收到 (then as below) or 还没收到 (the payment is voided). An undo of 「我已付款」 returns to
+  the first case. The no-show is recorded at the cancel request.
+- Cancel after a settled prepay (KICKOFF 2026-10-15): `open_reverse_payment` opens the helper → poster payment;
+  the bounty waits in `cancelling` until the poster's 已收到 settles it, then `cancelled`. The reverse settle has no
+  sticker and no celebration (built).
+- Publish block (decision 5): a 先付 `due` payment does not count for `publish_blocked()` during its first 24 h.
+- Dependencies on the payment layer: a `void` payment state with a service-role `void_payment(id)` allowed from
+  `due`, and from `marked_paid` only after 还没收到 on a cancelling item; `publish_blocked()`, the unsettled-payment
+  check in `account-delete`, the payment live items and the pay sheet treat `void` as closed; the 24 h exemption
+  needs the payment's timing, read from the bounty.
 
 ## Known limits
 
-- If the user turns Precise Location off, distances use the approximate position (about 1.2 km
-  offset measured on the Simulator, `2026-10-04-push-location.md`). The poster's place is exact.
-- One helper per bounty (KICKOFF 2026-10-11 B5); 「搬家帮手 2 人」 means two posts.
-- The 塞得进空档 filter only knows the user's Tapiro commitments (accepted bounties and rides);
-  it does not read the iOS calendar.
+- If the user turns Precise Location off, distances use the approximate position (about 1.2 km offset measured on
+  the Simulator, `2026-10-04-push-location.md`). The poster's place is exact.
+- One helper per bounty; 「搬家帮手 2 人」 means two posts.
+- The 塞得进空档 filter only knows the user's Tapiro commitments (accepted bounties and rides); not the iOS calendar.
 - The map has no turn-by-turn or route; it shows bounty stickers on Apple Maps.
-- Live Activity updates depend on the foundation's push path; until then the Live Activity updates
-  only while the app runs.
+- v1 has no chat: after selection, poster and helper coordinate through the bounty's details and exact address
+  until foundation step 7.
+- Without push, a user learns of selection, completion or reminders only when the app is open (freshness rule).
+- A 「有问题」 the two sides never resolve stays `disputed`; there is no human support step yet (decision 10).
+- No network-state detection: "offline" is a failed load or write, not a probe (foundation known limit).
+- The reputation tier in v1 is computed without reviews; reviews join with foundation step 6.
 
 ## Implementation order
 
-1. Schema, RLS and the transition function with tests for every allowed and forbidden transition,
-   gate and prepay checks, coin debit/refund calls (against the foundation ledger), and the 48 h
-   auto-confirm job. No UI.
+0. Prerequisites P1–P4, each with its own pgTAP and unit tests (ledger arithmetic, free slot restore, waiver
+   window, block visibility, two stickers per settle with the category).
+1. Schema with `postgis`, RLS and the transition functions; pgTAP for every allowed and forbidden transition,
+   blocks, the payee-method rule, `publish_blocked()`, coin spend and refund, expiry (deadline and 7 days), the 48 h
+   job, 「有问题」 pause and restart, no-show recording, `open_payment` on confirm, settled derivation, and the
+   `account-delete` extension. No UI.
 2. `nearby_bounties` RPC with filters and cursor; tests with fixtures around Sunway.
-3. Manual posting: form, dynamic optional fields, confirm screen, gate and payment timing, free
-   monthly allowance (shared with rides), refund restoring the free slot, and coin cost. Verify scene with fixtures.
-4. Board list in the 悬赏 tab: cards, distance axis, filters, apply/withdraw, 已申请 stamp.
-5. Applicant list and hold-to-commit selection; selected / not-selected notifications.
-6. Status screens and live-card content for every state; 出发了, ETA update with struck-through
-   time, 完成, confirm/dispute, cancellation with no-show recording.
-7. Handoff to 撮合付款 and reviews (foundation), settlement stickers and the rarity-budget
-   celebration.
+3. Manual posting: form, dynamic optional fields, category, limits, confirm screen, free allowance and coin cost,
+   publish-block and no-balance states. Verify scene with fixtures.
+4. Board list replacing `BountySection`: cards, distance axis (`expo-location` installed here), filters,
+   apply/withdraw with the payee-method block, 已申请 stamp, load-failed and not-current states.
+5. Applicant list and hold-to-commit selection; in-app selected / not-selected states.
+6. Status screens and the bounty live-item source with the card-detail contract in `src/lib`; 出发了, ETA strike,
+   完成, confirm / 「有问题」, cancellation.
+7. Settlement: category art in the celebration and book, the payer-side sticker surfaces per the canvas.
 8. Map view (after the `expo-maps` spike) with the V2 sticker switch and remembered view.
-9. 问小貘 drafting into the confirm form, with 撤销 and the manual fallback.
-10. Photo → die-cut sticker in the kit, and the publish fly-to-stack animation.
-11. Live Activity content for `en_route` once the foundation extension exists.
+9. Photo → die-cut sticker in the kit, and the publish fly-to-stack animation.
+10. After foundation step 8: 问小貘 drafting into the confirm form, with 撤销 and the manual fallback.
+11. After foundation step 9: push for the in-app events and the Live Activity for `en_route`.
+12. Later, by decision: 先付 and gates with the `void` payment state.
 
-Each step ships behind the previous one and has its own UI case where it adds UI.
+Every UI step starts only after its canvas handoff is approved and writes the UI cases for the screens it changes.
 
 ## Verification
 
-- `bunx expo lint <changed files>`, `bunx tsc --noEmit`, `bun run format:check`, `bun test`
-  (transition rules, free-allowance and refund arithmetic, reward bounds, distance bucketing, ETA strike logic).
-- Database tests for RLS (applicant cannot read others' applications; non-selected users cannot
-  read the exact address; clients cannot update `status`) and for every transition; tooling as set
-  in the foundation spec.
-- `node scripts/design-check.mjs`; no raw colours or font sizes in `src/features/bounty/`.
-- UI cases under `verification/ui` in zh-Hans, light and dark; long-copy cases also in `ms`:
-  board list (empty, one, many, no location permission), filters, map with pins, posting form
-  (minimal and all optional fields), gate locked card, applicant list, hold-to-commit (video),
-  each status live card, ETA struck-through (video), publish fly-to-stack (video), settlement
-  celebration first vs routine (video).
-- `break-ui` worst-case data: 60-character titles, Malay copy, RM 9,999 rewards, 50 applicants,
+- Every PR: `bun test`, `bunx tsc --noEmit`, `bun run lint -- <changed files>`, `bun run format:check`,
+  `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs`, `supabase test db` when SQL
+  changed, and `bun run verify:smoke`. `node scripts/design-check.mjs` for UI; no raw colours, font sizes or font
+  families in `src/features/bounty/`.
+- UI cases under `verification/ui`, written in the step that changes the screen and run once by the author
+  (zh-Hans light). Each declares `DEPS`, asserts copy through `ui.t('<key>')` and appearance with pixels; long-copy
+  cases declare `LOCALES` with `ms`. Screenshots for states, video for hold-to-commit, ETA strike and the publish
+  moment.
+- Milestone when the bounty area is done: `bun run verify:ui --affected --base <last milestone> --dark --locales`
+  (adds `en` to every case and dark), then the user's walkthrough.
+- `break-ui` worst-case data at the default text size in zh-Hans and ms, light and dark: 60-character titles,
+  500-character descriptions, 40-character helper and applicant names, rewards RM 500 and RM 1, 50 applicants,
   bounties without place or time.
-- Acceptance on a physical device: location prompt text (precise, When In Use), haptics on hold-to-commit,
-  Live Activity on the Lock Screen and Dynamic Island, photo cut-out quality.
+- Device checklist: location prompt text (precise, When In Use), haptics on hold-to-commit, photo cut-out quality.
+
+Criteria for `docs/story-map.md` (each names its test when written):
+
+| Criterion                                                                                         | Test     |
+| ------------------------------------------------------------------------------------------------- | -------- |
+| Publish rejected while `publish_blocked()`; the form shows the reason and 去付款                  | db, ui   |
+| Reward accepts whole RM 1–500 only; description ≤ 500, address ≤ 120 on server and form           | unit, db |
+| Category is one of the eight slugs; settle copies it into both stickers                           | db       |
+| No balance and no free post: publish rejected, nothing written                                    | db, ui   |
+| Apply rejected without a payee method; UI links to 收款方式                                       | db, ui   |
+| Blocked pairs neither see nor apply to each other's bounties                                      | db       |
+| Open bounty without a deadline closes after 7 days and refunds the coin or free slot              | db       |
+| 「有问题」 pauses auto-confirm, shows the reason to the helper, 完成 again restarts 48 h          | db, ui   |
+| Settle gives the helper and the poster one sticker each, the celebration plays for the payee      | db, ui   |
+| Bounty `settled` follows the payment; one open payment per bounty                                 | db       |
+| Account deletion blocked by an active bounty, listed with unsettled payments                      | int, ui  |
+| Board first-load failure is not shown as empty; refresh failure keeps the list marked not current | unit, ui |
+| Bounty surfaces refresh on app open, foreground and focus                                         | unit     |
 
 ## Open questions
 
-None. Research spike before step 8: `expo-maps` (alpha) with image annotations for stickers on
-SDK 57; if it cannot render them acceptably, fall back to MapKit through `modules/tapiro-kit`.
+None for this spec beyond the canvas items in "UI/UX and motion". Research spike before step 8: `expo-maps` (alpha)
+with image annotations for stickers on SDK 57; if it cannot render them acceptably, fall back to MapKit through
+`modules/tapiro-kit`.
 
 <!-- After implementation, spec-lifecycle appends "## Implementation Record (YYYY-MM-DD)" below. -->
