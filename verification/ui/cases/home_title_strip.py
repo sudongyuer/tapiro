@@ -9,6 +9,8 @@ DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx
 
 LOCALES = ['zh-Hans', 'ms']
 STRIP_ROW = 44
+# Left of the 「+」 toolbar button, whose glass shadow darkens the bar around x 320–390.
+SEAM_X = 250
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
@@ -55,8 +57,8 @@ def assert_strip_under_bar(shot):
     edge = bottom(bar)
     assert abs(strip['frame']['y'] - edge) <= 1, f'strip row starts at {strip["frame"]["y"]}, compact bar ends at {edge}'
     assert abs(strip['frame']['height'] - STRIP_ROW) <= 1, f'strip row is {strip["frame"]["height"]} tall'
-    band = dominant(shot, {'x': 340, 'y': edge + STRIP_ROW - 6, 'width': 40, 'height': 4})
-    above = dominant(shot, {'x': 340, 'y': edge - 6, 'width': 40, 'height': 4})
+    band = dominant(shot, {'x': SEAM_X, 'y': edge + STRIP_ROW - 6, 'width': 40, 'height': 4})
+    above = dominant(shot, {'x': SEAM_X, 'y': edge - 6, 'width': 40, 'height': 4})
     below = shot.rgb(380, edge + STRIP_ROW + 16)
     assert close(band, above, 3), f'strip colour {band} breaks at the bar edge (bar shows {above})'
     assert max(abs(a - b) for a, b in zip(below, band)) > 20, f'strip does not end {STRIP_ROW} pt under the bar: {band} vs {below}'

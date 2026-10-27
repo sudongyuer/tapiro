@@ -521,22 +521,24 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id                     | 行为                                                                              | 覆盖                                            |
-| --------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
-| bounty.post.ai-draft        | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                              |
-| bounty.post.manual          | 手动 + 表单走到同一个确认页                                                       | ui:bounty_post_form                             |
-| bounty.post.draft           | 草稿只存在这台手机上：取消、下滑关闭、重启后都还在；清空草稿要确认，清空后重启也不回来 | ui:bounty_post_draft                            |
-| bounty.post.optional        | 「＋ 时间」「＋ 说明」原地展开：时间可选截止或时间段，只能选现在到 30 天内，移除后收起；字数按码点计 | ui:bounty_post_optional, unit:src/features/bounty/post/timeChoice.test.ts |
-| bounty.post.failed          | 发布失败显示「没发出去，再试一次」，草稿和 id 都留着，不自动重发；发布费没加载出来时显示重试，不当作免费 | ui:bounty_post_failed, unit:src/features/bounty/post/postFlow.test.ts |
-| bounty.post.limits          | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit       |
-| bounty.post.category        | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql             |
-| bounty.post.cost            | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | db:supabase/tests/bounty_publish.test.sql, unit, ui:bounty_post_publish, ui:bounty_post_coin |
-| bounty.post.publish-blocked | 有没付清的钱时发布被拒，什么都不写                                                | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_blocked, ui:bounty_post_unpaid_hint, unit:src/features/bounty/post/startPost.test.ts |
-| bounty.post.no-balance      | 没有免费名额也没有貘币时发布被拒，什么都不写                                      | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_no_balance |
-| bounty.post.replay          | 同一条重发只发布一次、只扣一次                                                    | db:supabase/tests/bounty_publish.test.sql       |
-| bounty.post.expiry          | 没有截止时间的悬赏 7 天后关闭、有截止时间的到点关闭，没人被选中就退回             | db:supabase/tests/bounty_jobs.test.sql          |
-| bounty.post.sticker         | 发布时贴纸飞进实时卡                                                              | ui                                              |
-| bounty.post.photo           | 物品照片抠成贴纸                                                                  | device                                          |
+| 验收 id                     | 行为                                                                              | 覆盖                                                                                                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| bounty.post.ai-draft        | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                                                                                                                                           |
+| bounty.post.manual          | 手动 + 表单走到同一个确认页                                                       | ui:bounty_post_form, ui:bounty_post_publish                                                                                                                  |
+| bounty.post.draft           | 草稿只存在这台手机上：关掉、失败、重启都还在，发出去后才清空                      | unit:src/features/bounty/post/draftStore.test.ts, ui:bounty_post_draft                                                                                       |
+| bounty.post.optional        | 时间和说明按需添加，在原位展开                                                    | ui:bounty_post_optional, unit:src/features/bounty/post/timeChoice.test.ts                                                                                    |
+| bounty.post.failure         | 发布失败显示没发出去，表单保持，重试用同一条，不自动重发                          | unit:src/features/bounty/post/postFlow.test.ts, ui:bounty_post_failed                                                                                        |
+| bounty.post.unpaid-hint     | 有欠款时点 + 先提示一次原因，表单照样打开                                         | ui:bounty_post_unpaid_hint, unit:src/features/bounty/post/startPost.test.ts                                                                                  |
+| bounty.post.worst           | 60 字标题、500 字说明、RM 500 和 RM 1 在表单和确认页都排得下                      | ui:bounty_post_worst                                                                                                                                         |
+| bounty.post.limits          | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit:src/features/bounty/post/validate.test.ts, ui:bounty_post_form                                                     |
+| bounty.post.category        | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql                                                                                                                          |
+| bounty.post.cost            | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | db:supabase/tests/bounty_publish.test.sql, unit:src/features/bounty/post/cost.test.ts, ui:bounty_post_publish, ui:bounty_post_coin                           |
+| bounty.post.publish-blocked | 有没付清的钱时发布被拒，什么都不写                                                | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_blocked                                                                                            |
+| bounty.post.no-balance      | 没有免费名额也没有貘币时发布被拒，什么都不写                                      | db:supabase/tests/bounty_publish.test.sql, ui:bounty_post_no_balance                                                                                         |
+| bounty.post.replay          | 同一条重发只发布一次、只扣一次                                                    | db:supabase/tests/bounty_publish.test.sql, unit:src/features/bounty/post/fixturePostService.test.ts, int:src/features/bounty/post/postService.integration.ts |
+| bounty.post.expiry          | 没有截止时间的悬赏 7 天后关闭、有截止时间的到点关闭，没人被选中就退回             | db:supabase/tests/bounty_jobs.test.sql                                                                                                                       |
+| bounty.post.sticker         | 发布时贴纸飞进实时卡                                                              | ui                                                                                                                                                           |
+| bounty.post.photo           | 物品照片抠成贴纸                                                                  | device                                                                                                                                                       |
 
 ### bounty.apply 申请和挑人
 

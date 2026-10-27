@@ -579,6 +579,40 @@ Starts after Q2.
 - [ ] Record deviations and rulings (answers to Q1–Q10, anything changed during build) under "Deviations and
       rulings" in this plan; commit `docs(bounty): step 3 story map and verification notes`.
 
+## Deviations and rulings
+
+Collected for the bounty spec's Implementation Record (written when the bounty spec is implemented, not in step 3).
+
+**Answers to Q1–Q10 (16A–25A):** all A. 「+」 is a native `Stack.Toolbar` button on 悬赏; 13A is a system alert 「先付清再发新的」
+with 先写着 / 去付款 over the opened form; no place or exact-address rows; the time row is a segmented 截止 / 时间段 with compact
+date pickers; validation is an urgent `NoticeCard` on 下一步; 清空草稿 is a red row with a system action sheet; after
+publish the sheet closes with the success haptic; 去付款 closes the post sheet (draft kept) and opens `/pay/[id]` for the
+oldest unpaid payment; the preview has no poster line or distance; an empty draft has no category and no reward.
+
+**Changed during the build:**
+
+1. Draft clearing wrote `null` to `Settings`, which RN drops, so a cleared or published draft came back after a relaunch
+   (Task 3 code). Clearing now writes `''`. `-uiVerifyBountyDraft none` now clears the stored draft; omitted keeps it.
+2. `@expo/ui` `TextField` can miss the last `onTextChange` when keys arrive fast; the form reads the native values back
+   on blur, 下一步 and 取消. The counter can lag one character while typing.
+3. Text fields only focus inside their 22 pt text frame; `FieldRow` makes the whole 44 pt row focus the field. The
+   system menu `Picker` (34 pt high, full row width) and the segmented control (32 pt) keep their system size.
+4. 「+」, 取消 and 下一步 are toolbar buttons without identifiers; cases find them by their localized label.
+5. `keyboardType('numeric')` (maps to the number pad) instead of `number-pad`, which `@expo/ui` 57 does not offer.
+6. No 5-minute minute step in the date pickers (`@expo/ui` has no minute interval); new times start on a 5-minute step.
+7. Optional rows appear without `withAnimation` (React-driven rows; `withAnimation` animates native state only).
+8. 「移除」 for the description shows only while it is empty.
+9. A local `checkDraft` failure at publish time returns to the form with its error (`formError` store); a server
+   `invalid` shows 「有一项要改一下」 with 回去修改.
+10. Blocked confirm also shows the underlying cost row under the warning; the 0-coin state is an urgent notice with the
+    next free date (Malaysia day) and the earn line, no purchase control.
+11. `TaskCard` is a SwiftUI composition (sticker hosted from RN): an RN row inside `RNHostView` in a Form row was
+    measured at its unwrapped width and pushed RM 500 off the card (Task 9). Step 4's board may need its own list row.
+12. Publish callbacks are passed per call (`flow.publish(handlers)`) instead of through a ref (React Compiler lint).
+13. `-uiVerifyStatusFail` is consumed by the 「+」 status check, so the cost-failure case starts on `bounty-confirm`.
+14. Copy added: confirm summary keys (today, tomorrow, deadlineAt, windowAt, time, description, rewardLabel) and debug
+    scene titles in three locales; en/ms day words lower-case inside sentences. en/ms still need the copy review.
+
 ## Not in this plan
 
 | Item | Owning step |
