@@ -107,6 +107,24 @@ payment), so a driver gets one per rider on the same ride.
   payer never marked it paid (cash confirmed by the payee), since only the payee sets `settled_at`.
   Reverse payments and repeat calls write nothing.
 
+## Reputation tiers
+
+`reputation_snapshots` holds one row per user: the tier (`new_friend` 新朋友, `reliable` 靠谱,
+`very_reliable` 很靠谱, `tapir_friend` 貘友) and the inputs behind it. A signed-in client reads only
+`user_id` and `tier` (column grant); every write is the recompute.
+
+- `recompute_reputation(as_of default now())` (service role): upserts one snapshot per profile from
+  the events with `as_of - 180 days < created_at <= as_of` and returns the rows written. Inputs:
+  `settled_count` (settled events, one per payment), `counterpart_count` (distinct counterparts
+  among them; counterparts whose account was deleted count together as one, so a deletion does not erase them and cannot be used to add more), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
+  counted no-shows), null when both are 0, and `on_time_share` over the user's payer events with a
+  known `on_time`, null when none. Account age is `as_of - profiles.created_at`.
+- `private.tier_for(settled, counterparts, rate, account_age)` holds every threshold, so tuning is
+  one migration: 靠谱 ≥ 2 settled, ≥ 2 counterparts, rate ≥ 0.8; 很靠谱 ≥ 5, ≥ 4, ≥ 0.9, account
+  ≥ 60 days; 貘友 ≥ 12, ≥ 8, ≥ 0.95, account ≥ 180 days. `on_time_share` is stored but not yet a
+  threshold; reviews join in foundation step 6.
+- `reputation_tier(uid)` (authenticated): the snapshot's tier, `new_friend` when there is none.
+
 ## Coins
 
 `coin_ledger` is append-only: a client reads its own rows and never writes; even the owner role
@@ -162,6 +180,41 @@ user) and deletes the address rows of every bounty they posted. Their applicatio
 keep their rows for the other side with the deleted party set null, which is why `bounties_helper`
 allows a `confirmed` bounty without a helper.
 
+### Read model
+
+Five `security definer` functions (authenticated) return JSON and apply the `bounties_select` rules themselves
+through `private.bounty_viewer_role(b, uid)`: `poster`, `helper`, `applicant` (any application, while no block stands
+between the applicant and the poster), `viewer` (an `open` bounty, no block), or nothing. `settled` is never stored:
+`private.bounty_status(b)` reads `settled` for a `confirmed` bounty whose forward payment is settled, and only the poster
+and the helper get that derived status (`private.bounty_status_for`); everyone else reads the stored `confirmed`, as
+payment state is the parties' business. A deleted poster or helper (possible on `confirmed`) reads as `null`.
+
+- `bounty_detail(bounty)`: the bounty with derived `status`, `viewerRole`, `place` (label, latitude, longitude),
+  `poster` `{ id, name, tier }` and `myApplication`. Only the poster and the helper get `helper`, `etaAt`,
+  `previousEtaAt`, `autoConfirmAt`, `startLate`, `issueReason` (latest 「有问题」 reason while `disputed`), `payment` `{ id, state }` and `events`
+  (with `applied` / `withdrawn` filtered as in `bounty_events`, `actor` as `poster`, `helper` or null). `address`
+  goes to the poster, and to the helper from `assigned` to `confirmed`. `applicantCount` (pending, blocked pairs left
+  out) goes to the poster. `P0002 bounty_not_found` when the caller cannot see the bounty. No read function returns
+  the helper's id or name to a non-selected applicant.
+- `my_bounties()`: `{ posted, applied }`, each every active row plus the 20 most recent finished rows, newest
+  status change first. Finished is `settled`, `closed` or `cancelled`; for an applicant who is not the helper,
+  `confirmed` too. A `confirmed` bounty not yet settled stays active for the poster and the helper. `applied` leaves out withdrawn applications; its
+  `counterpartName` is always the poster. An application stays `pending` when its bounty closes or expires; the
+  client reads `applicationStatus` together with the bounty's `status` and shows a closed bounty as closed.
+- `bounty_applicants(bounty)`: poster only (`42501 not_poster`; `P0002 bounty_not_found` for an unknown id); pending
+  and selected applications, oldest first, blocked pairs left out, each with name, tier and note.
+- `bounty_live_items()`: one item per bounty for the caller, unranked (order of the table in the bounty schema plan,
+  Task 7). `confirmed` and `settled` bounties produce no item; the payment cards cover them. A pending application
+  produces none.
+- `mark_bounty_seen(bounty, card)`: writes the `bounty_seen` row for `not_selected` (the caller's application was
+  not selected) or `expired` (the caller's bounty closed by expiry); a repeat writes nothing. `P0002
+bounty_not_found` when the caller has no such card on that bounty. The row is per user, so every device stops
+  showing the card.
+
+Follow-up: `bounties_select` still gives a non-selected applicant the row's `helper_id` (and `eta_at`,
+`previous_eta_at`, `done_at`), and `profiles` names it. Move `bounties` to column grants that leave these out, or
+read bounties only through the RPCs.
+
 ### Board: `nearby_bounties`
 
 `nearby_bounties(latitude, longitude, board_filter, page_after, page_size)` (authenticated, `security invoker`, so
@@ -209,6 +262,8 @@ waits for the next run. The result counts each kind of change and `skipped`, the
 failed; a row that keeps failing is retried every run and shows up only there and in the log warning,
 so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` always runs at `now()`
 (service role); the clock-taking body `private.run_bounty_jobs(as_of)` has no grant and is for tests.
+
+`reputation-recompute-daily` runs `recompute_reputation()` in SQL at 19:30 UTC (03:30 Malaysia time).
 
 ## Edge Functions
 
