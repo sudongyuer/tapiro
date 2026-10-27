@@ -1,5 +1,5 @@
 begin;
-select plan(32);
+select plan(38);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -84,7 +84,7 @@ end;
 $$;
 
 create temp table distances as
-select 0 as n, 0::double precision as d where false;
+select 0 as n, 0::double precision as d, 0::double precision as s where false;
 grant all on distances to authenticated;
 
 select pg_temp.bounty(1, 3.0740, 101.6078, '1 hour');
@@ -97,7 +97,7 @@ select pg_temp.bounty(7, 3.0733, 101.6078, state => 'assigned', helper => pg_tem
 update public.bounties set deadline_at = now() + interval '2 hours' where id = pg_temp.b(3);
 
 insert into distances
-select n, b.place operator(extensions.<->) pg_temp.here()
+select n, b.place operator(extensions.<->) pg_temp.here(), b.place_public operator(extensions.<->) pg_temp.here()
 from generate_series(1, 7) as n
 join public.bounties b on b.id = pg_temp.b(n)
 where b.place is not null;
@@ -135,6 +135,9 @@ select throws_ok(
   $$select place from public.bounties$$, '42501', null, 'a viewer cannot select the place column'
 );
 select throws_ok(
+  $$select place_public from public.bounties$$, '42501', null, 'a viewer cannot select the snapped point either'
+);
+select throws_ok(
   $$select * from public.bounties$$, '42501', null, 'a viewer cannot select every column'
 );
 select is(
@@ -169,8 +172,8 @@ select is(
 select is(
   (select (item ->> 'distanceM')::integer from jsonb_array_elements(pg_temp.board('d4') -> 'items') as item
    where (item ->> 'id')::uuid = pg_temp.b(3)),
-  (select (round(d / 100) * 100)::integer from distances where n = 3),
-  'a distance over 100 m is rounded to the nearest 100 m'
+  (select (round(s / 100) * 100)::integer from distances where n = 3),
+  'a distance over 100 m is measured to the snapped point and rounded to the nearest 100 m'
 );
 
 select is(
@@ -189,8 +192,8 @@ select is(
         jsonb_each_text(c) as kv,
         distances x
    where kv.value ~ '^-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?$'
-     and (kv.value::double precision = x.d or kv.value::double precision = round(x.d))),
-  0::bigint, 'no cursor value equals any row''s exact distance'
+     and kv.value::double precision in (x.d, round(x.d), x.s, round(x.s))),
+  0::bigint, 'no cursor value equals any row''s exact or snapped distance'
 );
 select is(
   (select array_agg(item ->> 'id' order by p, n)
@@ -254,6 +257,66 @@ select is(
 );
 select is(
   pg_temp.board('f6') -> 'total', '0'::jsonb, 'a viewer the poster blocked counts none of the poster''s bounties'
+);
+
+reset role;
+select pg_temp.bounty(8, 3.0734, 101.6084, '7 hours');
+select pg_temp.bounty(9, 3.0726, 101.6076, '7 hours');
+create temp table probes as
+select * from (values (3.0726, 101.6076), (3.0734, 101.6084), (3.0600, 101.5950), (3.0850, 101.6200), (3.0730, 101.6200))
+  as v(lat, lng);
+grant all on probes to authenticated;
+create temp table pair as
+select pr.lat, pr.lng, pt.n, pt.place operator(extensions.<->)
+  extensions.st_setsrid(extensions.st_makepoint(pr.lng, pr.lat), 4326)::extensions.geography as d
+from probes pr
+cross join (select n, b.place from generate_series(8, 9) as n join public.bounties b on b.id = pg_temp.b(n)) pt;
+select ok(
+  exists (
+    select 1 from pair a join pair c on (a.lat, a.lng) = (c.lat, c.lng)
+    where a.n = 9 and c.n = 8 and a.d < c.d
+  )
+  and exists (
+    select 1 from pair a join pair c on (a.lat, a.lng) = (c.lat, c.lng)
+    where a.n = 9 and c.n = 8 and (round(a.d / 100) * 100) <> (round(c.d / 100) * 100)
+  ),
+  'the pair''s exact points reorder and round differently from some probe points'
+);
+select is(
+  (select array_agg(distinct (place_public = (select place_public from public.bounties where id = pg_temp.b(8)))::text)
+   from public.bounties where id = pg_temp.b(9)),
+  array['true'], 'both bounties of the pair snap to the same grid point'
+);
+set local role authenticated;
+select pg_temp.act_as(pg_temp.u('d4'));
+select is(
+  (select array_agg(distinct format('%s,%s', p9.n - p8.n, (p8.item -> 'distanceM' = p9.item -> 'distanceM')::text))
+   from probes pr
+   cross join lateral (
+     select public.nearby_bounties(latitude => pr.lat, longitude => pr.lng, page_size => 50) -> 'items' as items
+   ) page
+   cross join lateral (
+     select e.item, e.n from jsonb_array_elements(page.items) with ordinality as e(item, n)
+     where (e.item ->> 'id')::uuid = pg_temp.b(8)
+   ) p8
+   cross join lateral (
+     select e.item, e.n from jsonb_array_elements(page.items) with ordinality as e(item, n)
+     where (e.item ->> 'id')::uuid = pg_temp.b(9)
+   ) p9),
+  array['1,true'],
+  'from every probe point the pair reads the same distance and stays tied in id order'
+);
+select is(
+  (select array_agg(distinct
+     (public.bounty_detail(pg_temp.b(8), pr.lat, pr.lng) -> 'distanceM'
+       = public.bounty_detail(pg_temp.b(9), pr.lat, pr.lng) -> 'distanceM')::text)
+   from probes pr),
+  array['true'], 'a viewer''s detail reads the same distance for the pair from every probe point'
+);
+select pg_temp.act_as(pg_temp.u('a1'));
+select is(
+  public.bounty_detail(pg_temp.b(9), 3.0730, 101.6200) -> 'distanceM', '1400'::jsonb,
+  'the poster''s detail measures from the exact point (1378 m, snapped 1332 m)'
 );
 
 select pg_temp.act_as(null);

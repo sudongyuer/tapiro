@@ -1,3 +1,9 @@
+alter table public.bounties add column place_public extensions.geography(Point, 4326)
+  generated always as (extensions.st_snaptogrid(place::extensions.geometry, 0.001)::extensions.geography) stored;
+
+create index bounties_place_public on public.bounties using gist (place_public) where status = 'open';
+drop index public.bounties_place;
+
 revoke select on public.bounties from authenticated;
 grant select (id, poster_id, helper_id, title, description, category, reward_sen, place_label, starts_at, ends_at,
   deadline_at, published_at, expires_at, sticker_path, status, payment_timing, gate, eta_at, previous_eta_at, done_at,
@@ -99,9 +105,9 @@ begin
       if here is null then
         raise exception 'invalid_board_query' using errcode = '22023';
       end if;
-      select b.place operator(extensions.<->) here into after_distance
+      select b.place_public operator(extensions.<->) here into after_distance
       from public.bounties b
-      where b.id = after_id and b.place is not null and not private.is_blocked_between(uid, b.poster_id);
+      where b.id = after_id and b.place_public is not null and not private.is_blocked_between(uid, b.poster_id);
       if after_distance is null then
         raise exception 'board_cursor_mismatch' using errcode = '22023';
       end if;
@@ -135,10 +141,10 @@ begin
       select coalesce(array_agg(q.id order by q.distance), '{}'), coalesce(array_agg(q.distance order by q.distance), '{}')
       into near_ids, near_distances
       from (
-        select b.id, b.place operator(extensions.<->) here as distance
+        select b.id, b.place_public operator(extensions.<->) here as distance
         from public.bounties b
         where b.status = 'open'
-          and b.place is not null
+          and b.place_public is not null
           and b.expires_at > now()
           and b.poster_id <> uid
           and not private.is_blocked_between(uid, b.poster_id)
@@ -146,9 +152,9 @@ begin
           and (board_filter <> 'fits_my_time' or not coalesce(private.bounty_slot(b.starts_at, b.ends_at) && busy, false))
           and (
             after_distance is null
-            or (b.place operator(extensions.<->) here, b.id) > (after_distance, after_id)
+            or (b.place_public operator(extensions.<->) here, b.id) > (after_distance, after_id)
           )
-        order by b.place operator(extensions.<->) here
+        order by b.place_public operator(extensions.<->) here
         limit fetch_size
       ) q;
       exit when cardinality(near_ids) < fetch_size
@@ -171,7 +177,7 @@ begin
       select b.id, b.created_at
       from public.bounties b
       where b.status = 'open'
-        and (here is null or b.place is null)
+        and (here is null or b.place_public is null)
         and b.expires_at > now()
         and b.poster_id <> uid
         and not private.is_blocked_between(uid, b.poster_id)
@@ -186,7 +192,7 @@ begin
   page := located || recent;
   if cardinality(page) > page_size then
     page := page[1:page_size];
-    select b.id, b.created_at, b.place is not null and here is not null as by_distance
+    select b.id, b.created_at, b.place_public is not null and here is not null as by_distance
     into last_item
     from public.bounties b
     where b.id = page[page_size];
@@ -209,7 +215,7 @@ begin
         'endsAt', b.ends_at,
         'deadlineAt', b.deadline_at,
         'urgent', coalesce(b.deadline_at > now() and b.deadline_at <= now() + interval '3 hours', false),
-        'distanceM', private.rounded_distance(b.place, here),
+        'distanceM', private.rounded_distance(b.place_public, here),
         'appliedByMe', exists (
           select 1 from public.bounty_applications a
           where a.bounty_id = b.id and a.applicant_id = uid and a.status = 'pending'
@@ -283,7 +289,7 @@ begin
       )
       else jsonb_build_object('label', b.place_label)
     end,
-    'distanceM', private.rounded_distance(b.place, here),
+    'distanceM', private.rounded_distance(case when party then b.place else b.place_public end, here),
     'address', case
       when role = 'poster' or (role = 'helper' and b.status in ('assigned', 'en_route', 'done', 'disputed', 'confirmed'))
       then (select a.address from public.bounty_addresses a where a.bounty_id = b.id)
