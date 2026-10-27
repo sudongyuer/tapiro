@@ -43,7 +43,12 @@ payer or payee of that is not settled; a failed check answers 500 and deletes no
 ## Payments
 
 `payments` rows are opened only by server code (`open_payment`, `open_reverse_payment`, service role).
-Clients read their own rows and change state through `mark_payment_paid`, `undo_marked_paid`,
+An item holds one forward payment: a second `open_payment` for the same `(kind, item)` raises
+`23505 payment_exists`, while its reverse payment still opens. `open_payment(…, item_category)` stores
+the bounty category (`bounty_category`: pickup, buy, queue, handle, move, accompany, study, other);
+rides and reverse payments carry none. Each sticker has a `role` (`payee` or `payer`), one per
+(payment, owner), and `award_missing_stickers()` gives every side of a settled forward payment that
+still has an account its missing sticker. Clients read their own rows and change state through `mark_payment_paid`, `undo_marked_paid`,
 `confirm_payment_received` (returns `firstSettled`) and `report_not_received`; every change logs a
 `payment_events` row, and `settled` is the event steps 5–6 build on. A payer reads the payee's
 `payee_methods` while a payment between them is unsettled. Proofs live in the private

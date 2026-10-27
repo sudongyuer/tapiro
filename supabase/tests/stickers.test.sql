@@ -1,10 +1,12 @@
 begin;
-select plan(22);
+select plan(26);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
   ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'a@example.com', '{"full_name":"Alice Tan"}'),
-  ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'b@example.com', '{"full_name":"Bob Lim"}');
+  ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'b@example.com', '{"full_name":"Bob Lim"}'),
+  ('00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'c@example.com', '{"full_name":"Chen"}'),
+  ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'd@example.com', '{"full_name":"Devi"}');
 
 create function pg_temp.act_as(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claim.sub', uid::text, true),
@@ -17,8 +19,8 @@ values ('00000000-0000-0000-0000-0000000000b2', 'cash'), ('00000000-0000-0000-00
 create temp table ids (name text primary key, id uuid);
 grant all on ids to authenticated;
 insert into ids values
-  ('parcel', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200)),
-  ('ride', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 850));
+  ('parcel', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200, item_category => 'pickup')),
+  ('ride', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 850));
 
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
@@ -30,9 +32,9 @@ select is(
   'the first settle earns the first sticker'
 );
 select is(
-  (select row(owner_id, item_kind::text, title, category) from public.stickers),
-  row('00000000-0000-0000-0000-0000000000b2'::uuid, 'bounty'::text, '帮取快递'::text, null::text),
-  'the sticker belongs to the payee and snapshots the kind and title, with no category yet'
+  (select row(owner_id, role::text, item_kind::text, title, category::text) from public.stickers),
+  row('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee'::text, 'bounty'::text, '帮取快递'::text, 'pickup'::text),
+  'the payee''s sticker snapshots the kind, the title and the payment''s category'
 );
 select is(
   (select payment_id from public.stickers), (select id from ids where name = 'parcel'),
@@ -79,7 +81,10 @@ select is(
   '{"state": "settled", "firstSettled": false, "stickerCount": 0}'::jsonb,
   'settling a reverse payment earns no sticker and is not a first settle'
 );
-select is((select count(*) from public.stickers), 0::bigint, 'the poster paid back holds no sticker');
+select is(
+  (select count(*) from public.stickers where payment_id = (select id from ids where name = 'reverse')), 0::bigint,
+  'the poster paid back holds no sticker for the reverse payment'
+);
 
 reset role;
 select is(
@@ -87,15 +92,25 @@ select is(
   'the helper keeps the stickers of the original payments after a reversal'
 );
 select throws_ok(
-  $$insert into public.stickers (owner_id, payment_id, item_kind, title)
-    values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'parcel'), 'bounty', '帮取快递')$$,
-  '23505', null, 'one payment holds at most one sticker'
+  $$insert into public.stickers (owner_id, payment_id, role, item_kind, title)
+    values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'parcel'), 'payer', 'bounty', '帮取快递')$$,
+  '23505', null, 'one owner holds at most one sticker per payment'
+);
+select lives_ok(
+  $$insert into public.stickers (owner_id, payment_id, role, item_kind, category, title)
+    values ('00000000-0000-0000-0000-0000000000a1', (select id from ids where name = 'parcel'), 'payer', 'bounty', 'pickup', '帮取快递')$$,
+  'two owners hold a sticker each for one payment'
+);
+select throws_ok(
+  $$insert into public.stickers (owner_id, payment_id, role, item_kind, category, title)
+    values ('00000000-0000-0000-0000-0000000000a1', (select id from ids where name = 'ride'), 'payer', 'ride', 'parcel', '拼车回 YC')$$,
+  '23514', null, 'a sticker category is one of the eight slugs'
 );
 insert into ids values
   ('pre', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 600)),
   ('old', public.open_payment('ride', gen_random_uuid(), '拼车去 Sunway', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700));
-insert into public.stickers (owner_id, payment_id, item_kind, title)
-values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'pre'), 'bounty', '帮忙排队');
+insert into public.stickers (owner_id, payment_id, role, item_kind, title)
+values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'pre'), 'payee', 'bounty', '帮忙排队');
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select is(
@@ -105,23 +120,42 @@ select is(
 );
 reset role;
 select is(
-  (select count(*) from public.stickers where payment_id = (select id from ids where name = 'pre')), 1::bigint,
+  (select count(*) from public.stickers
+   where payment_id = (select id from ids where name = 'pre') and owner_id = '00000000-0000-0000-0000-0000000000b2'),
+  1::bigint,
   'the existing sticker row is not duplicated'
 );
 update public.payments set state = 'settled', settled_at = now() - interval '3 days', method_type = 'cash'
 where id = (select id from ids where name = 'old');
-select is(public.award_missing_stickers(), 1, 'the backfill awards a settled payment that has no sticker');
-select is(
-  (select row(owner_id, item_kind::text, title) from public.stickers where payment_id = (select id from ids where name = 'old')),
-  row('00000000-0000-0000-0000-0000000000b2'::uuid, 'ride'::text, '拼车去 Sunway'::text),
-  'the backfilled sticker belongs to the payee with the payment''s kind and title'
+select is(public.award_missing_stickers(), 4, 'the backfill awards every missing side of the settled payments');
+select results_eq(
+  $$select owner_id, role::text, item_kind::text, title from public.stickers
+    where payment_id = (select id from ids where name = 'old') order by role$$,
+  $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee', 'ride', '拼车去 Sunway'),
+           ('00000000-0000-0000-0000-0000000000a1'::uuid, 'payer', 'ride', '拼车去 Sunway')$$,
+  'the backfill gives the payee and the payer a sticker each with the payment''s kind and title'
 );
 select is(
   (select count(*) from public.stickers where payment_id = (select id from ids where name = 'reverse')), 0::bigint,
   'the backfill leaves the settled reverse payment without a sticker'
 );
+insert into ids values
+  ('gone', public.open_payment('bounty', gen_random_uuid(), '帮忙搬宿舍', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 2000, item_category => 'move'));
+update public.payments set state = 'settled', settled_at = now(), method_type = 'cash'
+where id = (select id from ids where name = 'gone');
+delete from auth.users where id = '00000000-0000-0000-0000-0000000000d4';
+select is(public.award_missing_stickers(), 1, 'the backfill gives a payment whose payer was deleted only the payee''s sticker');
+select results_eq(
+  $$select owner_id, role::text, category::text from public.stickers
+    where payment_id = (select id from ids where name = 'gone')$$,
+  $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee', 'move')$$,
+  'the backfilled sticker carries the payment''s category'
+);
 delete from auth.users where id = '00000000-0000-0000-0000-0000000000b2';
-select is((select count(*) from public.stickers), 0::bigint, 'deleting the account deletes its stickers');
+select is(
+  (select count(*) from public.stickers where owner_id = '00000000-0000-0000-0000-0000000000b2'), 0::bigint,
+  'deleting the account deletes its stickers'
+);
 
 select * from finish();
 rollback;
