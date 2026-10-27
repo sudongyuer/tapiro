@@ -538,15 +538,15 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                             | 覆盖                                        |
-| --------------------- | ------------------------------------------------ | ------------------------------------------- |
-| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db:supabase/tests/bounty_apply.test.sql |
-| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db                                          |
-| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db:supabase/tests/bounty_apply.test.sql, ui |
-| bounty.apply.blocked  | 任何一方拉黑后不能申请                           | db:supabase/tests/bounty_apply.test.sql     |
-| bounty.apply.closed   | 已选好人、已关闭或已过期的悬赏不能申请，原因分开 | db:supabase/tests/bounty_apply.test.sql     |
-| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device                                  |
-| bounty.apply.address  | 详细地址只给选中的接单人                         | db:supabase/tests/bounties.test.sql         |
+| 验收 id               | 行为                                             | 覆盖                                                                                                                                                        |
+| --------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db:supabase/tests/bounty_apply.test.sql                                                                                                                 |
+| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db                                                                                                                                                          |
+| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db:supabase/tests/bounty_apply.test.sql, ui                                                                                                                 |
+| bounty.apply.blocked  | 任何一方拉黑后不能申请                           | db:supabase/tests/bounty_apply.test.sql                                                                                                                     |
+| bounty.apply.closed   | 已选好人、已关闭或已过期的悬赏不能申请，原因分开 | db:supabase/tests/bounty_apply.test.sql                                                                                                                     |
+| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device, db:supabase/tests/bounty_flow.test.sql, gap: concurrency needs two sessions（两台设备同时挑人要两个数据库会话；单会话测了第二次挑人得到 taken） |
+| bounty.apply.address  | 详细地址只给选中的接单人                         | db:supabase/tests/bounties.test.sql                                                                                                                         |
 
 ### bounty.flow 进行和完成
 
@@ -557,8 +557,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                  | 行为                                                                   | 覆盖                                          |
 | ------------------------ | ---------------------------------------------------------------------- | --------------------------------------------- |
-| bounty.flow.start        | 接单人点「出发了」；先付单要等发布者已收到                             | db, ui                                        |
+| bounty.flow.transitions  | 每个允许和禁止的状态变化都由服务器检查，原因分类型                     | db:supabase/tests/bounty_flow.test.sql        |
+| bounty.flow.start        | 接单人点「出发了」；先付单要等发布者已收到                             | db:supabase/tests/bounty_flow.test.sql, ui    |
 | bounty.flow.eta          | 到达时间改了，旧时间划掉显示新时间                                     | ui                                            |
+| bounty.flow.dispute      | 「有问题」暂停自动确认，接单人能看到原因；再点完成重新算 48 小时       | db:supabase/tests/bounty_flow.test.sql, ui    |
+| bounty.flow.payment      | 确认完成后开一笔付款，带类别，每个悬赏只有一笔                         | db:supabase/tests/bounty_flow.test.sql        |
 | bounty.flow.auto-confirm | 接单人点完成后 48 小时没人处理自动确认                                 | unit, db                                      |
 | bounty.flow.cancel       | 挑人后任何一方取消都记一次放鸽子，60 天豁免一次                        | unit, db                                      |
 | bounty.flow.refund       | 没人被选中就关掉、过期或挑人前取消，退回貘币或免费名额；挑人后取消不退 | db:supabase/tests/bounty_publish.test.sql, db |
