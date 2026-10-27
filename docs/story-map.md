@@ -502,49 +502,51 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                                      | 覆盖     |
-| --------------------- | --------------------------------------------------------- | -------- |
-| bounty.board.filters  | 全部 / 急单 / 塞得进空档三个筛选；急单是 3 小时内截止     | unit, ui |
-| bounty.board.distance | 0–2 km 距离轴，点轴上的贴纸让对应卡片响一下               | ui       |
-| bounty.board.map      | 列表和地图用两张贴纸切换，记住上次的视图                  | ui       |
-| bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁 | ui, db   |
-| bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下              | ui       |
+| 验收 id               | 行为                                                      | 覆盖                                |
+| --------------------- | --------------------------------------------------------- | ----------------------------------- |
+| bounty.board.filters  | 全部 / 急单 / 塞得进空档三个筛选；急单是 3 小时内截止     | unit, ui                            |
+| bounty.board.distance | 0–2 km 距离轴，点轴上的贴纸让对应卡片响一下               | ui                                  |
+| bounty.board.map      | 列表和地图用两张贴纸切换，记住上次的视图                  | ui                                  |
+| bounty.board.locked   | 门槛不够的悬赏变暗，显示「{档位} 及以上可申请」和怎么解锁 | ui, db                              |
+| bounty.board.worst    | 60 个字的标题、RM 9,999、50 个申请人都排得下              | ui                                  |
+| bounty.board.blocked  | 任何一方拉黑后，看不到对方的悬赏，也看不到对方的申请      | db:supabase/tests/bounties.test.sql |
 
 ### bounty.post 发悬赏
 
 - 故事：作为需要帮忙的同学，我想用一句话或一个表单发悬赏，以便很快找到人。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id              | 行为                                                           | 覆盖     |
-| -------------------- | -------------------------------------------------------------- | -------- |
-| bounty.post.ai-draft | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销     | ui       |
-| bounty.post.manual   | 手动 + 表单走到同一个确认页                                    | ui       |
-| bounty.post.limits   | 报酬 RM 1–500，标题 60、地点 80、备注 140 个字，服务器同样检查 | unit, db |
-| bounty.post.cost     | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币               | unit, db |
-| bounty.post.sticker  | 发布时贴纸飞进实时卡                                           | ui       |
-| bounty.post.photo    | 物品照片抠成贴纸                                               | device   |
+| 验收 id              | 行为                                                                              | 覆盖                                      |
+| -------------------- | --------------------------------------------------------------------------------- | ----------------------------------------- |
+| bounty.post.ai-draft | 问小貘把一句话起草进确认表单，改动处高亮，离开表单前可撤销                        | ui                                        |
+| bounty.post.manual   | 手动 + 表单走到同一个确认页                                                       | ui                                        |
+| bounty.post.limits   | 报酬 RM 1–500 整数，标题 60、地点 80、描述 500、详细地址 120 个字，服务器同样检查 | db:supabase/tests/bounties.test.sql, unit |
+| bounty.post.category | 类别只能是八种之一                                                                | db:supabase/tests/bounties.test.sql       |
+| bounty.post.cost     | 每月前 3 条免费（和拼车共用），之后每条 1 颗貘币                                  | unit, db                                  |
+| bounty.post.sticker  | 发布时贴纸飞进实时卡                                                              | ui                                        |
+| bounty.post.photo    | 物品照片抠成贴纸                                                                  | device                                    |
 
 ### bounty.apply 申请和挑人
 
 - 故事：作为接单的同学，我想申请一条悬赏、等发布者挑我，以便双方都愿意再开始。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
-| 验收 id               | 行为                                             | 覆盖       |
-| --------------------- | ------------------------------------------------ | ---------- |
-| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db     |
-| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db         |
-| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db, ui     |
-| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device |
-| bounty.apply.address  | 详细地址只给选中的接单人                         | db         |
+| 验收 id               | 行为                                             | 覆盖                                |
+| --------------------- | ------------------------------------------------ | ----------------------------------- |
+| bounty.apply.apply    | 申请后贴纸歪一下盖「已申请」；挑人前可以撤回     | ui, db                              |
+| bounty.apply.prepay   | 先付的悬赏只收靠谱及以上的申请                   | db                                  |
+| bounty.apply.no-payee | 没有任何收款方式不能申请                         | db, ui                              |
+| bounty.apply.select   | 发布者按住确认挑一个人，其他人收到「这次没选上」 | ui, device                          |
+| bounty.apply.address  | 详细地址只给选中的接单人                         | db:supabase/tests/bounties.test.sql |
 
 ### bounty.flow 进行和完成
 
 - 故事：作为发布者和接单人，我们想清楚地走完出发、完成、付款，以便谁该做什么一目了然。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 
