@@ -78,7 +78,7 @@ begin
   cross join lateral (
     select
       count(*) filter (where e.kind = 'settled')::integer as settled,
-      -- Deleted counterparts (null ids) count together as one: a deletion cannot lower a tier, nor add more than one.
+      -- Deleted counterparts (null ids) count together as one: deletions keep counting, but never as more than one.
       (
         count(distinct e.counterpart_id) filter (where e.kind = 'settled')
           + coalesce(bool_or(e.counterpart_id is null) filter (where e.kind = 'settled'), false)::integer
