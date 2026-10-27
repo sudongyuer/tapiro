@@ -1,8 +1,8 @@
 ---
 title: Bounty board (悬赏令) v1
-status: proposed
+status: approved
 created: 2026-10-11
-approved:
+approved: 2026-10-26
 implemented:
 supersedes:
 superseded-by:
@@ -173,11 +173,44 @@ hides the bounty and stops applying.
 
 ## UI/UX and motion
 
-Pending design handoff: every bounty screen, its states and the motion table are decided on the design canvas and
-written here before the first UI step starts (KICKOFF 2026-10-13; AGENTS.md Pace: a task does not start with open UI
-questions). The handoff also decides which bounty states become home live cards and strip items and where they rank
-against the F5 order (`src/lib/liveItems.ts` `ACCESSORY_KINDS`), the screen class of each screen (design-language:
-publish and completion are moments), the poster's sticker copy, and the payer-side celebration.
+Decided on the design canvas, page 05, boards 「悬赏 · 开工前（一）发布与申请」 and 「（二）进行中与结清」 (KICKOFF
+2026-10-26, rows 「悬赏界面 15 题」). Option ids refer to those boards.
+
+| #   | Surface                | Decision                                                                                                                                                                                                                                                                                       |
+| --- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1A  | Posting form           | Full-height sheet with a native grouped Form: title, category (system menu), reward (number pad, whole RM) fixed on top; optional fields as 「＋ 添加…」 rows that expand in place (exact address appears only after a place)                                                                  |
+| 2A  | Confirm                | Pushed inside the same sheet, a system screen: list-card preview, summary, one cost line (本月免费 n/3 or 1 貘币 and balance). Blocked states: unpaid → primary becomes 「去付款」; no free slot and no coin → 「需要 1 貘币」 with when the next free slot comes and how to earn; no purchase |
+| 3A  | Detail                 | Pushed from a list card or a map pin; grouped rows (place + distance, time, poster + tier, description) under the sticker and reward; 「申请」 pinned at the bottom; ⋯ top right                                                                                                               |
+| 4A  | Apply                  | Sheet with a multi-line note (≤ 140, optional) and 「发送」; no payee method → the same sheet explains and offers 「添加收款方式」; applied → sticker tilts with an 已申请 stamp, note shown, 「撤回申请」 confirmed by an action sheet                                                        |
+| 5A  | Block                  | 「屏蔽某某」 in red in the detail ⋯ menu, the profile ⋯ menu and an applicant row's long-press menu; confirmed by an action sheet stating the effect                                                                                                                                           |
+| 6A  | Choose helper          | Single-choice grouped list of applicants (name, tier, note); one hold-to-commit button at the bottom naming the selected person; others see 「这次没选上」; a lost race shows 「已经选好了」                                                                                                   |
+| 7A  | Status                 | One screen per bounty, both roles: vertical timeline (done ✓, current, upcoming grey, last step the payment), actions pinned at the bottom; slipped arrival struck through; 48 h auto-confirm time shown; confirmed → 「去付款」 opens the built pay sheet                                     |
+| 8A  | 有问题 / cancel        | 「有问题」: sheet with a multi-line reason shown to the helper; cancel after selection: action sheet stating the no-show consequence (waiver left, waiver used, the other side 30 min late → theirs, helper withdraws)                                                                         |
+| 9A  | Home live cards        | One card per bounty; one new accessory kind `bountyAction` (选人, 出发, 确认完成, 处理有问题) ranked after `owedToYou`; order oweMoney › rideSoon › owedToYou › bountyAction › bountyInProgress › waitingConfirm                                                                               |
+| 10A | Payer settle           | The payer's pay card turns 「已结清」 in place with the sticker; 「收进贴纸本」 flies the sticker to 我的; no full-screen moment for the payer                                                                                                                                                 |
+| 11A | Sticker book           | Title 「一起办成的事」, subtitle 「每办成一单、钱结清，就多一张」; labels say who helped whom (「帮小林取快递」 / 「Lily 帮我买奶茶」); the built celebration's book title follows; en/ms copy reviewed in the copy pass                                                                       |
+| 12A | Hold button colour     | A dedicated token for the hold-to-commit gold, recorded in design-language as the one exception to "yellow is never a brand colour"                                                                                                                                                            |
+| 13A | Unpaid block timing    | Tapping 「+」 while `publish_blocked()` shows the reason once; the form still opens and the draft is kept; the confirm screen blocks as in 2A                                                                                                                                                  |
+| 14A | Application note       | Optional                                                                                                                                                                                                                                                                                       |
+| 15A | Helper after confirmed | A 「等对方付款」 card for the helper from `confirmed` until the poster taps 「我已付款」 (then the built `owedToYou` card takes over)                                                                                                                                                          |
+
+- Reputation tiers are named 新朋友 / 靠谱 / 很靠谱 / 貘友 everywhere (the CraftPick 「新来的」 is superseded).
+- One-time cards (「这次没选上」, 「过期了 · 免费次数已退回」) disappear once seen; the seen flag is stored on the
+  server per user and item, so it holds across devices.
+- Screen classes: posting form, confirm, detail, apply, applicants and status are system screens; the publish
+  flight and the payee celebration are moments (design-language).
+
+**Motion.** Each runs only once per event and passes the motion gate; curves and durations are offered as numbered
+options at implementation (`animate-expo`).
+
+| Motion                                           | Purpose    | Decided by                                                             |
+| ------------------------------------------------ | ---------- | ---------------------------------------------------------------------- |
+| Published sticker flies into the live-card stack | continuity | CraftPick item 3                                                       |
+| 申请 tilts the sticker and stamps 已申请         | feedback   | canvas G, 4A                                                           |
+| Hold-to-commit fill                              | commitment | CraftPick item 5, 6A                                                   |
+| Payer card turns 已结清; sticker flies to 我的   | reward     | 10A                                                                    |
+| Current timeline step                            | status     | pulse a finite number of times or not at all: chosen at implementation |
+| Payee celebration G                              | reward     | built                                                                  |
 
 ## Data flow and ownership
 
