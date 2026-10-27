@@ -80,6 +80,8 @@ rows "Posting … fails", "No balance and no free post left", "Publishing blocke
 
 ## Open UI questions (answer before Task 5 starts)
 
+Answered 2026-10-27: all ★ (A) — canvas 16A–25A, spec UI table.
+
 Each has a recommendation (★). Pace rule: no implementation task starts with an open UI question; Tasks 1–4 have no
 UI and may start now.
 
