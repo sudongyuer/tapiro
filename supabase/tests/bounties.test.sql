@@ -1,5 +1,5 @@
 begin;
-select plan(63);
+select plan(67);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -264,6 +264,44 @@ select is(
 );
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000d4');
 select is((select count(*) from public.bounty_events), 0::bigint, 'an applicant does not read the events');
+
+reset role;
+insert into public.bounty_events (bounty_id, kind, actor_id)
+values
+  ('20000000-0000-0000-0000-000000000002', 'applied', '00000000-0000-0000-0000-0000000000b2'),
+  ('20000000-0000-0000-0000-000000000002', 'applied', '00000000-0000-0000-0000-0000000000d4'),
+  ('20000000-0000-0000-0000-000000000002', 'withdrawn', '00000000-0000-0000-0000-0000000000d4');
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select is(
+  (select array_agg(kind::text || ' ' || (actor_id = '00000000-0000-0000-0000-0000000000b2')::text order by id)
+   from public.bounty_events
+   where bounty_id = '20000000-0000-0000-0000-000000000002' and kind in ('applied', 'withdrawn')),
+  array['applied true'], 'the helper reads their own applied event and no other applicant''s'
+);
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select is(
+  (select count(*) from public.bounty_events
+   where bounty_id = '20000000-0000-0000-0000-000000000002' and kind in ('applied', 'withdrawn')),
+  3::bigint, 'the poster reads every applicant''s events'
+);
+reset role;
+insert into public.blocks (blocker_id, blocked_id)
+values ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000a1');
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select is(
+  (select count(*) from public.bounty_events where actor_id = '00000000-0000-0000-0000-0000000000d4'), 0::bigint,
+  'after an applicant blocks the poster the poster reads none of their events'
+);
+select is(
+  (select array_agg(kind::text order by id) from public.bounty_events
+   where bounty_id = '20000000-0000-0000-0000-000000000002'),
+  array['published', 'selected', 'applied'], 'and still reads the other events of the bounty'
+);
+reset role;
+delete from public.blocks where blocker_id = '00000000-0000-0000-0000-0000000000d4';
+set local role authenticated;
 
 reset role;
 insert into public.bounty_seen (user_id, bounty_id, card)

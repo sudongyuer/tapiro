@@ -1,5 +1,5 @@
 begin;
-select plan(31);
+select plan(33);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -108,12 +108,12 @@ insert into runs select 'second', public.run_bounty_jobs();
 reset role;
 
 select is(
-  (select r from runs where name = 'first'), '{"expired": 3, "autoConfirmed": 1, "reminded": 1}'::jsonb,
-  'the first run reports what it changed'
+  (select r from runs where name = 'first'), '{"expired": 3, "autoConfirmed": 1, "reminded": 1, "skipped": 1}'::jsonb,
+  'the first run reports what it changed and the row it skipped'
 );
 select is(
-  (select r from runs where name = 'second'), '{"expired": 0, "autoConfirmed": 0, "reminded": 0}'::jsonb,
-  'a second run right after changes nothing'
+  (select r from runs where name = 'second'), '{"expired": 0, "autoConfirmed": 0, "reminded": 0, "skipped": 1}'::jsonb,
+  'a second run right after changes nothing and skips the failing row again'
 );
 
 select is(pg_temp.status_of('free-expired'), 'closed', 'an open bounty published 7 days and 1 minute ago closes');
@@ -174,9 +174,7 @@ select is(
 );
 select is(pg_temp.status_of('remind'), 'assigned', 'a reminder does not change the status');
 
-set local role service_role;
-insert into runs select 'redo', public.run_bounty_jobs(now() + interval '1 hour');
-reset role;
+insert into runs select 'redo', private.run_bounty_jobs(now() + interval '1 hour');
 select is(
   pg_temp.status_of('redo'), 'done', 'a run at the first done time plus 48 hours does not confirm the redone bounty'
 );
@@ -191,15 +189,23 @@ select is(
   (select schedule from cron.job where jobname = 'bounty-jobs'), '*/5 * * * *', 'bounty-jobs runs every 5 minutes'
 );
 select is(
-  has_function_privilege('authenticated', 'public.run_bounty_jobs(timestamptz)', 'execute'), false,
+  has_function_privilege('authenticated', 'public.run_bounty_jobs()', 'execute'), false,
   'clients cannot run the jobs'
 );
 select is(
-  has_function_privilege('anon', 'public.run_bounty_jobs(timestamptz)', 'execute'), false, 'anon cannot run the jobs'
+  has_function_privilege('anon', 'public.run_bounty_jobs()', 'execute'), false, 'anon cannot run the jobs'
 );
 select is(
-  has_function_privilege('service_role', 'public.run_bounty_jobs(timestamptz)', 'execute'), true,
+  has_function_privilege('service_role', 'public.run_bounty_jobs()', 'execute'), true,
   'the service role runs the jobs'
+);
+
+select hasnt_function(
+  'public', 'run_bounty_jobs', array['timestamp with time zone'], 'no client-facing function takes a run time'
+);
+select is(
+  has_function_privilege('service_role', 'private.run_bounty_jobs(timestamptz)', 'execute'), false,
+  'the service role cannot run the jobs at another time'
 );
 
 select * from finish();

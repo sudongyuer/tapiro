@@ -66,14 +66,18 @@ begin
   if b.status <> 'open' then
     raise exception 'taken' using errcode = '55000';
   end if;
+  -- An applicant who blocked the poster is answered like a withdrawn one so the block is not revealed.
   if not exists (
     select 1 from public.bounty_applications
     where bounty_id = bounty and applicant_id = applicant and status = 'pending'
-  ) then
+  ) or exists (select 1 from public.blocks where blocker_id = applicant and blocked_id = uid) then
     raise exception 'not_pending' using errcode = '55000';
   end if;
-  if private.is_blocked_between(uid, applicant) then
+  if exists (select 1 from public.blocks where blocker_id = uid and blocked_id = applicant) then
     raise exception 'blocked' using errcode = '42501';
+  end if;
+  if not exists (select 1 from public.payee_methods where user_id = applicant) then
+    raise exception 'no_payee_method' using errcode = '55000';
   end if;
   update public.bounty_applications
   set status = case when applicant_id = applicant then 'selected' else 'not_selected' end::public.bounty_application_status
@@ -210,7 +214,8 @@ declare
   payment uuid;
 begin
   if b.status = 'confirmed' and exists (
-    select 1 from public.bounty_events where bounty_id = bounty and kind = 'confirmed' and actor_id = uid
+    select 1 from public.bounty_events
+    where bounty_id = bounty and (kind = 'confirmed' and actor_id = uid or kind = 'auto_confirmed')
   ) then
     payment := (
       select id from public.payments where item_kind = 'bounty' and item_id = bounty and reverses is null

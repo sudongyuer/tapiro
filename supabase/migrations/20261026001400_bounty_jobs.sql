@@ -1,4 +1,4 @@
-create function public.run_bounty_jobs(as_of timestamptz default now()) returns jsonb
+create function private.run_bounty_jobs(as_of timestamptz) returns jsonb
 language plpgsql
 security definer
 set search_path = ''
@@ -8,6 +8,7 @@ declare
   expired integer := 0;
   confirmed integer := 0;
   reminded integer := 0;
+  skipped integer := 0;
   written integer;
 begin
   for item in
@@ -18,6 +19,7 @@ begin
       perform private.close_bounty(item.id, 'expired');
       expired := expired + 1;
     exception when others then
+      skipped := skipped + 1;
       raise warning 'bounty % not expired: % %', item.id, sqlstate, sqlerrm;
     end;
   end loop;
@@ -30,6 +32,7 @@ begin
       perform private.confirm_bounty(item.id, null);
       confirmed := confirmed + 1;
     exception when others then
+      skipped := skipped + 1;
       raise warning 'bounty % not auto-confirmed: % %', item.id, sqlstate, sqlerrm;
     end;
   end loop;
@@ -46,15 +49,27 @@ begin
       get diagnostics written = row_count;
       reminded := reminded + written;
     exception when others then
+      skipped := skipped + 1;
       raise warning 'bounty % not reminded: % %', item.id, sqlstate, sqlerrm;
     end;
   end loop;
 
-  return jsonb_build_object('expired', expired, 'autoConfirmed', confirmed, 'reminded', reminded);
+  return jsonb_build_object(
+    'expired', expired, 'autoConfirmed', confirmed, 'reminded', reminded, 'skipped', skipped
+  );
 end;
 $$;
 
-revoke all on function public.run_bounty_jobs(timestamptz) from public, anon, authenticated;
-grant execute on function public.run_bounty_jobs(timestamptz) to service_role;
+create function public.run_bounty_jobs() returns jsonb
+language sql
+security definer
+set search_path = ''
+as $$
+  select private.run_bounty_jobs(now());
+$$;
+
+revoke all on function private.run_bounty_jobs(timestamptz) from public, anon, authenticated, service_role;
+revoke all on function public.run_bounty_jobs() from public, anon, authenticated;
+grant execute on function public.run_bounty_jobs() to service_role;
 
 select cron.schedule('bounty-jobs', '*/5 * * * *', $$select public.run_bounty_jobs()$$);

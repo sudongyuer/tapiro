@@ -37,6 +37,8 @@ begin
       or publish_bounty.ends_at < now()
       or publish_bounty.deadline_at < now()
       or publish_bounty.deadline_at > now() + interval '30 days'
+      or publish_bounty.starts_at > now() + interval '30 days'
+      or publish_bounty.deadline_at < publish_bounty.starts_at
     then
       raise exception 'invalid_bounty' using errcode = '22023';
     end if;

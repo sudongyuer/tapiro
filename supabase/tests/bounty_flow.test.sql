@@ -1,5 +1,5 @@
 begin;
-select plan(101);
+select plan(104);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -101,7 +101,7 @@ select n, pg_temp.bounty_in(s::public.bounty_status)
 from (values
   ('select', 'open'), ('select-block', 'open'), ('select-expired', 'open'), ('start', 'assigned'),
   ('eta', 'assigned'), ('complete', 'en_route'), ('dispute', 'done'), ('confirm', 'done'),
-  ('confirm-disputed', 'disputed')
+  ('confirm-disputed', 'disputed'), ('confirm-after-job', 'done')
 ) v (n, s);
 insert into fx values ('confirmed', pg_temp.bounty_in('confirmed'));
 
@@ -247,7 +247,7 @@ values ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select throws_ok(
   format('select public.select_helper(%L, %L)', pg_temp.fx('select-block'), '00000000-0000-0000-0000-0000000000d4'),
-  '42501', 'blocked', 'an applicant who blocked the poster since applying cannot be selected'
+  '55000', 'not_pending', 'an applicant who blocked the poster since applying looks like one who is no longer pending'
 );
 delete from public.blocks;
 insert into public.blocks (blocker_id, blocked_id)
@@ -257,6 +257,12 @@ select throws_ok(
   '42501', 'blocked', 'an applicant the poster blocked since applying cannot be selected'
 );
 delete from public.blocks;
+delete from public.payee_methods where user_id = '00000000-0000-0000-0000-0000000000d4';
+select throws_ok(
+  format('select public.select_helper(%L, %L)', pg_temp.fx('select-block'), '00000000-0000-0000-0000-0000000000d4'),
+  '55000', 'no_payee_method', 'an applicant who removed every payee method since applying cannot be selected'
+);
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000d4', 'cash');
 update public.bounties set expires_at = now() - interval '1 minute' where id = pg_temp.fx('select-expired');
 select throws_ok(
   format('select public.select_helper(%L, %L)', pg_temp.fx('select-expired'), '00000000-0000-0000-0000-0000000000b2'),
@@ -449,6 +455,21 @@ select is(
 select is(
   (select count(*) from public.payments where item_kind = 'bounty' and item_id = pg_temp.fx('confirm-disputed')),
   1::bigint, 'confirming from disputed opens one payment'
+);
+
+select private.confirm_bounty(pg_temp.fx('confirm-after-job'), null);
+select is(
+  pg_temp.step('confirm-after-job', 'confirm-after-job', '00000000-0000-0000-0000-0000000000a1',
+    'public.confirm_bounty(%L)'),
+  null, 'the poster confirming after the auto-confirm writes no event'
+);
+select is(
+  (select r from results where name = 'confirm-after-job'),
+  jsonb_build_object(
+    'status', 'confirmed',
+    'paymentId', (select id from public.payments where item_kind = 'bounty' and item_id = pg_temp.fx('confirm-after-job'))
+  ),
+  'and is answered confirmed with the payment the job opened'
 );
 
 select throws_ok(

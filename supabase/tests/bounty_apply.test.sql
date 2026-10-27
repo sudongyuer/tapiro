@@ -1,5 +1,5 @@
 begin;
-select plan(38);
+select plan(39);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -182,6 +182,18 @@ select is(
   'a blank note is stored as no note'
 );
 
+reset role;
+delete from public.payee_methods where user_id = '00000000-0000-0000-0000-0000000000b2';
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
+select is(
+  public.apply_to_bounty('40000000-0000-0000-0000-000000000001', '再说一次'), (select r from results where name = 'b1'),
+  'replaying an apply after removing every payee method returns the pending application'
+);
+reset role;
+insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000b2', 'cash');
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select is(
   public.apply_to_bounty('40000000-0000-0000-0000-000000000001', '换一句'), (select r from results where name = 'b1'),
   'replaying an apply returns the pending application unchanged'

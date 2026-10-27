@@ -1,5 +1,5 @@
 begin;
-select plan(50);
+select plan(52);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -236,6 +236,15 @@ select throws_ok(
 select throws_ok(
   $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, deadline_at => now() + interval '31 days')$$,
   '22023', 'invalid_bounty', 'a deadline more than 30 days out is rejected'
+);
+select throws_ok(
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, starts_at => now() + interval '31 days')$$,
+  '22023', 'invalid_bounty', 'a start more than 30 days out is rejected'
+);
+select throws_ok(
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500,
+    starts_at => now() + interval '2 days', deadline_at => now() + interval '1 day')$$,
+  '22023', 'invalid_bounty', 'a deadline before the start is rejected'
 );
 select throws_ok(
   $$select public.publish_bounty(gen_random_uuid(), repeat('题', 61), 'pickup', 500)$$,

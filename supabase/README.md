@@ -145,6 +145,15 @@ take the last free slot or the last coin, and concurrent settles cannot pass the
 
 ## Bounties
 
+Reads: `bounty_events` gives the poster and the helper the bounty's events, except that `applied` and
+`withdrawn` events are shown to the helper only when they are their own, and to the poster only when no block
+stands between the poster and that applicant. An applicant who was not selected still reads the bounty row
+(through `private.has_applied`), including `helper_id`, `eta_at`, `done_at` and later statuses; read functions
+built on top must not pass the helper's identity on to them.
+
+Cancelling an `assigned` bounty counts against the helper when the poster cancels more than 30 minutes after
+`greatest(starts_at, the selection)`, so a helper selected after the start gets the same 30 minutes.
+
 Account deletion: the `bounties_before_user_delete` trigger on `auth.users` runs inside the delete.
 It refuses (`55000 active_bounties`) while the user has an active bounty, closes each of their `open`
 bounties through `private.close_bounty(id, 'closed')` (event and refund, the ledger rows keep a null
@@ -164,7 +173,10 @@ environment; without them the jobs post nothing.
 closes open bounties past `expires_at` and refunds their post, confirms bounties `done` for 48 hours
 and opens their payment, and adds one `start_reminder` event to assigned bounties whose start passed.
 Each row is locked with `skip locked` and runs in its own exception block, so a failing or busy row
-waits for the next run.
+waits for the next run. The result counts each kind of change and `skipped`, the rows whose change
+failed; a row that keeps failing is retried every run and shows up only there and in the log warning,
+so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` always runs at `now()`
+(service role); the clock-taking body `private.run_bounty_jobs(as_of)` has no grant and is for tests.
 
 ## Edge Functions
 

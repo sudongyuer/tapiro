@@ -1,3 +1,4 @@
+-- A helper selected after the start gets the same 30 minutes, counted from the selection.
 create function private.no_show_offender(b public.bounties, canceller uuid) returns uuid
 language sql
 stable
@@ -5,7 +6,10 @@ set search_path = ''
 as $$
   select case
     when canceller = b.poster_id and b.status = 'assigned' and b.starts_at is not null
-      and now() > b.starts_at + interval '30 minutes'
+      and now() > greatest(
+        b.starts_at,
+        (select max(e.created_at) from public.bounty_events e where e.bounty_id = b.id and e.kind = 'selected')
+      ) + interval '30 minutes'
     then b.helper_id
     else canceller
   end;
@@ -16,7 +20,7 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  if uid is null or uid not in (b.poster_id, b.helper_id) then
+  if uid is null or (uid is distinct from b.poster_id and uid is distinct from b.helper_id) then
     raise exception 'not_helper' using errcode = '42501';
   end if;
   if b.status not in ('assigned', 'en_route') then

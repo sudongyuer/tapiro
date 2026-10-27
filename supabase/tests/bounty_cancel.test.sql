@@ -1,5 +1,5 @@
 begin;
-select plan(48);
+select plan(55);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -15,7 +15,9 @@ create function pg_temp.act_as(uid uuid) returns void language sql as $$
          set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
 $$;
 
-create function pg_temp.bounty_in(state public.bounty_status, starts_ago interval default null) returns uuid
+create function pg_temp.bounty_in(
+  state public.bounty_status, starts_ago interval default null, selected_ago interval default null
+) returns uuid
 language plpgsql as $$
 declare
   item uuid := gen_random_uuid();
@@ -36,6 +38,8 @@ begin
     perform public.close_bounty(item);
   elsif state <> 'open' then
     perform public.select_helper(item, '00000000-0000-0000-0000-0000000000b2');
+    update public.bounty_events set created_at = now() - selected_ago
+    where bounty_id = item and kind = 'selected' and selected_ago is not null;
   end if;
   if state in ('en_route', 'done', 'disputed', 'confirmed') then
     perform pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
@@ -86,13 +90,17 @@ create function pg_temp.footprint() returns bigint[] language sql as $$
 $$;
 
 insert into fx
-select n, pg_temp.bounty_in(s::public.bounty_status, ago)
+select n, pg_temp.bounty_in(s::public.bounty_status, ago, picked)
 from (values
-  ('helper-first', 'assigned', null::interval), ('helper-second', 'assigned', null),
-  ('poster-en-route', 'en_route', interval '31 minutes'), ('late-31', 'assigned', interval '31 minutes'),
-  ('late-29', 'assigned', interval '29 minutes'), ('no-start', 'assigned', null), ('helper-later', 'assigned', null),
-  ('open', 'open', null), ('done', 'done', null), ('disputed', 'disputed', null), ('closed', 'closed', null)
-) v (n, s, ago);
+  ('helper-first', 'assigned', null::interval, null::interval), ('helper-second', 'assigned', null, null),
+  ('poster-en-route', 'en_route', interval '31 minutes', interval '1 hour 31 minutes'),
+  ('late-31', 'assigned', interval '31 minutes', interval '1 hour 31 minutes'),
+  ('late-29', 'assigned', interval '29 minutes', interval '1 hour 29 minutes'), ('no-start', 'assigned', null, null),
+  ('helper-later', 'assigned', null, null), ('late-select', 'assigned', interval '2 hours', null),
+  ('late-select-31', 'assigned', interval '2 hours', interval '31 minutes'),
+  ('open', 'open', null, null), ('done', 'done', null, null), ('disputed', 'disputed', null, null),
+  ('closed', 'closed', null, null)
+) v (n, s, ago, picked);
 insert into fx values ('confirmed', pg_temp.bounty_in('confirmed'));
 create temp table charges_before as select count(*) as n from public.post_charges where refunded_at is not null;
 
@@ -256,6 +264,48 @@ select is(
 select is(
   pg_temp.call('helper-later', '00000000-0000-0000-0000-0000000000b2', 'cancel_bounty', 'helper-later'),
   '{"status": "cancelled", "offender": "self", "noShow": "waived"}'::jsonb, 'and the cancel uses it'
+);
+
+select is(
+  pg_temp.call('preview-late-select', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview', 'late-select')
+    ->> 'offender',
+  'self', 'selected 2 hours after the start, the preview right after the selection names the poster'
+);
+select is(
+  pg_temp.call('late-select', '00000000-0000-0000-0000-0000000000a1', 'cancel_bounty', 'late-select') ->> 'offender',
+  'self', 'and the poster cancelling right after the selection is their own no-show'
+);
+select is(
+  pg_temp.no_shows('late-select'), array['A counted'], 'the no-show of a late selection cancelled at once is the poster''s'
+);
+select is(
+  pg_temp.call('preview-late-select-31', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview',
+    'late-select-31') ->> 'offender',
+  'other', 'selected after the start, 31 minutes after the selection the preview names the helper'
+);
+select is(
+  pg_temp.call('late-select-31', '00000000-0000-0000-0000-0000000000a1', 'cancel_bounty', 'late-select-31'),
+  '{"status": "cancelled", "offender": "other", "noShow": null}'::jsonb,
+  'and the poster cancelling 31 minutes after a late selection names the helper'
+);
+select is(
+  pg_temp.no_shows('late-select-31'), array['B counted'], 'the no-show 31 minutes after a late selection is the helper''s'
+);
+
+create function pg_temp.cancellable_without_helper(item uuid, uid uuid) returns void language plpgsql as $$
+declare
+  b public.bounties;
+begin
+  select * into b from public.bounties where id = item;
+  b.helper_id := null;
+  perform private.cancellable_by(b, uid);
+end;
+$$;
+insert into fx values ('party-check', pg_temp.bounty_in('assigned'));
+select throws_ok(
+  format('select pg_temp.cancellable_without_helper(%L, %L)', pg_temp.fx('party-check'),
+    '00000000-0000-0000-0000-0000000000d4'),
+  '42501', 'not_helper', 'a stranger is not a party even when the helper is missing'
 );
 
 select is(

@@ -181,7 +181,17 @@ create policy bounty_events_select on public.bounty_events
   using (
     exists (
       select 1 from public.bounties b
-      where b.id = bounty_id and (b.poster_id = (select auth.uid()) or b.helper_id = (select auth.uid()))
+      where b.id = bounty_id
+        and (
+          (
+            b.poster_id = (select auth.uid())
+            and (kind not in ('applied', 'withdrawn') or not private.is_blocked_between((select auth.uid()), actor_id))
+          )
+          or (
+            b.helper_id = (select auth.uid())
+            and (kind not in ('applied', 'withdrawn') or actor_id = (select auth.uid()))
+          )
+        )
     )
   );
 

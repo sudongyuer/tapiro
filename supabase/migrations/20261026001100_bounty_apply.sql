@@ -29,18 +29,19 @@ begin
   if b.status <> 'open' then
     raise exception 'taken' using errcode = '55000';
   end if;
-  if not exists (select 1 from public.payee_methods where user_id = uid) then
-    raise exception 'no_payee_method' using errcode = '55000';
-  end if;
   select * into application from public.bounty_applications
   where bounty_id = bounty and applicant_id = uid
   for update;
-  if found and application.status = 'pending' then
+  if application.status = 'pending' then
     return jsonb_build_object('status', 'pending', 'note', application.note);
-  elsif found and application.status = 'withdrawn' then
+  end if;
+  if not exists (select 1 from public.payee_methods where user_id = uid) then
+    raise exception 'no_payee_method' using errcode = '55000';
+  end if;
+  if application.status = 'withdrawn' then
     update public.bounty_applications set status = 'pending', note = cleaned
     where bounty_id = bounty and applicant_id = uid;
-  elsif found then
+  elsif application.status is not null then
     raise exception 'not_pending' using errcode = '55000';
   else
     insert into public.bounty_applications (bounty_id, applicant_id, note) values (bounty, uid, cleaned);

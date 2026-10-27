@@ -64,8 +64,10 @@ handler unit-tested by `bun test`.
 ## Migration numbering
 
 Prerequisites end at `20261026000700`; `20261026000800` is reserved for the pending prerequisite Task 3
-(`reputation_snapshots`). This plan uses `20261026000900` … `20261026001600`. Task 3 must be applied to the hosted
-project before these, or `supabase db push` needs `--include-all` (Open question 1).
+(`reputation_snapshots`). This plan uses `20261026000900` … `20261026001400`, `20261026001600` and, for Task 7
+(which ran after Task 8), `20261026001700`, so no migration is ever older than one already written. Task 3 must be
+applied to the hosted project before these, or `supabase db push` needs `--include-all` (Open question 1); this
+branch is not pushed to the hosted project until `20261026000800` has landed.
 
 ## Rejection reasons
 
@@ -123,9 +125,9 @@ replayed on `done` does not restart the 48 h clock.
 | Create | `supabase/migrations/20261026001100_bounty_apply.sql`         | `apply_to_bounty`, `withdraw_application`                                               |
 | Create | `supabase/migrations/20261026001200_bounty_flow.sql`          | `select_helper`, `start_bounty`, `update_eta`, `complete_bounty`, `report_bounty_problem`, `confirm_bounty`, `private.confirm_bounty` |
 | Create | `supabase/migrations/20261026001300_bounty_cancel.sql`        | `cancel_bounty`, `bounty_cancel_preview`, `private.no_show_offender`                    |
-| Create | `supabase/migrations/20261026001400_bounty_jobs.sql`          | `run_bounty_jobs(as_of)`, cron `bounty-jobs`                                            |
-| Create | `supabase/migrations/20261026001500_bounty_read.sql`          | `private.bounty_status`, `bounty_detail`, `my_bounties`, `bounty_applicants`, `bounty_live_items`, `mark_bounty_seen` |
+| Create | `supabase/migrations/20261026001400_bounty_jobs.sql`          | `run_bounty_jobs()`, `private.run_bounty_jobs(as_of)`, cron `bounty-jobs`               |
 | Create | `supabase/migrations/20261026001600_bounty_account_delete.sql` | `active_bounties_of(user)`, `auth.users` before-delete trigger                         |
+| Create | `supabase/migrations/20261026001700_bounty_read.sql`          | `private.bounty_status`, `bounty_detail`, `my_bounties`, `bounty_applicants`, `bounty_live_items`, `mark_bounty_seen` |
 | Create | `supabase/tests/bounties.test.sql`, `bounty_publish.test.sql`, `bounty_apply.test.sql`, `bounty_flow.test.sql`, `bounty_cancel.test.sql`, `bounty_jobs.test.sql`, `bounty_read.test.sql`, `bounty_account_delete.test.sql` | pgTAP per area |
 | Modify | `supabase/functions/account-delete/handler.ts`, `handler.test.ts`, `index.ts` | active bounties in the 409                                                              |
 | Modify | `supabase/functions/tests/account-delete.integration.ts`      | a user with an active bounty is not deleted                                              |
@@ -285,8 +287,8 @@ private.close_bounty(bounty uuid, why public.bounty_event_kind) returns text   i
 
 - Rejections: `publish_blocked`, `no_balance` (nothing written: the whole transaction rolls back), `invalid_bounty`
   for latitude without longitude, a place without a label or a label without a place, an address without a place,
-  `starts_at`, `deadline_at` or `ends_at` in the past, `deadline_at` more than 30 days out (Open question 6), an id
-  that exists for another poster. `close_bounty`: `not_poster`, `invalid_transition` from any status but `open`; a
+  `starts_at`, `deadline_at` or `ends_at` in the past, `deadline_at` or `starts_at` more than 30 days out (Open
+  question 6; final review M5), `deadline_at` before `starts_at`, an id that exists for another poster. `close_bounty`: `not_poster`, `invalid_transition` from any status but `open`; a
   replay on `closed` by the poster returns the first answer.
 - `title`, `place_label`, `description`, `address` are stored `btrim`-ed; empty strings become null for the optional
   ones.
@@ -385,11 +387,13 @@ private.confirm_bounty(bounty uuid, actor uuid) returns uuid       internal; sta
   not null, 'auto_confirmed' otherwise), open_payment('bounty', id, title, poster_id, helper_id, reward_sen, null, category)
 ```
 
-- Select rejects `not_pending` for an applicant who withdrew, `blocked` when either side blocked the other since
-  applying, `closed` when expired. The bounty row is locked `for update`; the second of two selects sees `assigned`
+- Select rejects `not_pending` for an applicant who withdrew or who blocked the poster since applying, `blocked`
+  when the poster blocked the applicant, `no_payee_method` when the applicant has no payee method left, `closed`
+  when expired (final review M1, M7). The bounty row is locked `for update`; the second of two selects sees `assigned`
   and raises `taken` (UI 6A 「已经选好了」).
 - `reason`: 1–140 characters after `btrim` (Open question 5), else `invalid_reason`.
-- Confirm replayed on `confirmed` returns the same `paymentId`; a `payment_exists` from `open_payment` cannot occur
+- Confirm replayed on `confirmed`, or called after the job auto-confirmed (final review M2), returns the same
+  `paymentId`; a `payment_exists` from `open_payment` cannot occur
   through the RPCs and is not caught.
 
 **Steps**
@@ -429,7 +433,8 @@ modify `docs/story-map.md`.
 ```
 private.no_show_offender(b public.bounties, canceller uuid) returns uuid   internal
   the helper when the canceller is the poster, the status is 'assigned', starts_at is not null and
-  now() > starts_at + interval '30 minutes' (B4); otherwise the canceller
+  now() > greatest(starts_at, the 'selected' event's created_at) + interval '30 minutes' (B4; final review I1);
+  otherwise the canceller
 public.bounty_cancel_preview(bounty uuid) returns jsonb   poster or helper, assigned | en_route
   → { "offender": "self" | "other", "waiverAvailable": boolean }   waiverAvailable only when offender = self, else null
 public.cancel_bounty(bounty uuid) returns jsonb   poster or helper; assigned | en_route → cancelled
@@ -469,8 +474,9 @@ public.cancel_bounty(bounty uuid) returns jsonb   poster or helper; assigned | e
 modify `docs/story-map.md`, `supabase/README.md`.
 
 ```
-public.run_bounty_jobs(as_of timestamptz default now()) returns jsonb   service_role
-  → { "expired": n, "autoConfirmed": n, "reminded": n }
+public.run_bounty_jobs() returns jsonb   service_role; private.run_bounty_jobs(now())
+private.run_bounty_jobs(as_of timestamptz) returns jsonb   no grant; tests run it as the owner
+  → { "expired": n, "autoConfirmed": n, "reminded": n, "skipped": n }   skipped: rows whose change failed
   expire:       open and expires_at <= as_of → private.close_bounty(id, 'expired')
   auto-confirm: done and done_at + interval '48 hours' <= as_of → private.confirm_bounty(id, null)
   remind:       assigned and starts_at <= as_of → one 'start_reminder' event (unique index; on conflict do nothing)
@@ -507,8 +513,11 @@ cron: select cron.schedule('bounty-jobs', '*/5 * * * *', $$select public.run_bou
 
 ## Task 7: Read model, settled derivation and seen flags
 
-**Files:** create `supabase/migrations/20261026001500_bounty_read.sql`, `supabase/tests/bounty_read.test.sql`;
+**Files:** create `supabase/migrations/20261026001700_bounty_read.sql`, `supabase/tests/bounty_read.test.sql`;
 modify `docs/story-map.md`.
+
+A non-selected applicant still reads the bounty row (`private.has_applied`), `helper_id` included; the read model
+must not pass the helper's identity to them (final review M9).
 
 **Interfaces**
 
