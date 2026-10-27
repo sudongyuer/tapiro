@@ -49,6 +49,20 @@ Clients read their own rows and change state through `mark_payment_paid`, `undo_
 `payee_methods` while a payment between them is unsettled. Proofs live in the private
 `payment-proofs` bucket under `<payment id>/`.
 
+## Blocks
+
+`blocks` holds one row per (blocker, blocked); a client reads only the rows it created, so a blocked
+user never learns who blocked them, and writes go through RPCs only.
+
+- `block_user(target)` (authenticated): idempotent; `22023 cannot_block_self` for the caller's own
+  id, `P0002 user_not_found` when `target` has no profile.
+- `unblock_user(target)` (authenticated): idempotent; removing a block that does not exist is fine.
+- `private.is_blocked_between(a, b)`: true when either user blocked the other, false when either is
+  null. It lives in the unexposed `private` schema so it is callable from RLS policies and server
+  functions but is not an RPC that would let a client probe who blocked them.
+
+Deleting an account removes its blocks in both directions.
+
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);

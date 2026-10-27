@@ -650,6 +650,20 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ------------------ | ---------------------------------- | ------ |
 | chat.safety.report | 每个资料页和每条消息都能举报和拉黑 | ui, db |
 
+### chat.block 拉黑
+
+- 故事：作为同学，我想拉黑让我不舒服的人，以便我们不再在悬赏里遇到。
+- 状态：building
+- 版本：v1
+- 规格：[bounty](specs/2026-10-11-bounty-design.md)
+
+| 验收 id                   | 行为                                                           | 覆盖                              |
+| ------------------------- | -------------------------------------------------------------- | --------------------------------- |
+| chat.block.private        | 名单只有拉黑的人自己读得到，被拉黑的人读不到，客户端不能直接写 | db:supabase/tests/blocks.test.sql |
+| chat.block.either-side    | 任何一方拉黑都算双方互相屏蔽；取消后恢复                       | db:supabase/tests/blocks.test.sql |
+| chat.block.account-delete | 删除账号时一起删掉                                             | db:supabase/tests/blocks.test.sql |
+| chat.block.entry          | 悬赏详情、资料页和申请人长按菜单里的「屏蔽某某」               | ui                                |
+
 ### chat.push 推送通知
 
 - 故事：作为同学，我想有人申请、付款或发消息时收到通知，以便不错过。
