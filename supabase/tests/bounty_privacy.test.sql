@@ -1,5 +1,5 @@
 begin;
-select plan(38);
+select plan(41);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -256,12 +256,16 @@ select is(
   pg_temp.board('e5') -> 'items', '[]'::jsonb, 'a viewer who blocked the poster sees none of the poster''s bounties'
 );
 select is(
+  pg_temp.board('f6') -> 'items', '[]'::jsonb, 'a viewer the poster blocked sees none of the poster''s bounties'
+);
+select is(
   pg_temp.board('f6') -> 'total', '0'::jsonb, 'a viewer the poster blocked counts none of the poster''s bounties'
 );
 
 reset role;
 select pg_temp.bounty(8, 3.0734, 101.6084, '7 hours');
 select pg_temp.bounty(9, 3.0726, 101.6076, '7 hours');
+select pg_temp.bounty(10, 3.0726, 101.6076, state => 'assigned', helper => pg_temp.u('b2'));
 create temp table probes as
 select * from (values (3.0726, 101.6076), (3.0734, 101.6084), (3.0600, 101.5950), (3.0850, 101.6200), (3.0730, 101.6200))
   as v(lat, lng);
@@ -317,6 +321,21 @@ select pg_temp.act_as(pg_temp.u('a1'));
 select is(
   public.bounty_detail(pg_temp.b(9), 3.0730, 101.6200) -> 'distanceM', '1400'::jsonb,
   'the poster''s detail measures from the exact point (1378 m, snapped 1332 m)'
+);
+select pg_temp.act_as(pg_temp.u('b2'));
+select is(
+  public.bounty_detail(pg_temp.b(10), 3.0730, 101.6200) -> 'distanceM', '1400'::jsonb,
+  'the assigned helper''s detail measures from the exact point'
+);
+
+reset role;
+create temp table stale as select pg_temp.board('d4', 1) -> 'next' as cursor;
+grant all on stale to authenticated;
+update public.bounties set status = 'closed' where id = (select (cursor ->> 'id')::uuid from stale);
+set local role authenticated;
+select throws_ok(
+  format('select pg_temp.board(%L, 1, %L)', 'd4', (select cursor from stale)),
+  '22023', 'board_cursor_mismatch', 'a distance cursor on a bounty that is no longer open is rejected'
 );
 
 select pg_temp.act_as(null);

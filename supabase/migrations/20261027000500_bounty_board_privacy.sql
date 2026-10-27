@@ -107,7 +107,10 @@ begin
       end if;
       select b.place_public operator(extensions.<->) here into after_distance
       from public.bounties b
-      where b.id = after_id and b.place_public is not null and not private.is_blocked_between(uid, b.poster_id);
+      where b.id = after_id
+        and b.status = 'open'
+        and b.place_public is not null
+        and not private.is_blocked_between(uid, b.poster_id);
       if after_distance is null then
         raise exception 'board_cursor_mismatch' using errcode = '22023';
       end if;
