@@ -884,7 +884,7 @@ the reason; "cost" is what it costs if the ruling is wrong.
 
 ### UI answers
 
-- Q1–Q5, M1, M2 answered 「全推荐」 on 2026-10-27 (docs/KICKOFF.md; spec rows 34A–40A): Q1 B (34, the selected 全部
+- Q1–Q5, M1, M2 answered 「全推荐」 on 2026-10-27 (docs/KICKOFF.md; spec rows 34B–40A): Q1 B (34, the selected 全部
   shows `total` from the first page), Q2 A (35, crowded axis stickers merge with a count), Q3 A (36, 添加收款方式 closes
   the sheet and opens 我的 → 收款方式), Q4 A (37, ⋯ with 屏蔽 only plus a minimal 屏蔽名单), Q5 A (38, full-height
   `pageSheet`), M1 A (39, tilt 8° and stamp 80 ms later with the success haptic), M2 A (40, ring 150 ms / 1.2 s / 240 ms).
