@@ -3,6 +3,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from board import screen, visible as board_visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 
@@ -20,18 +21,8 @@ HEAD_MAX = 32
 ui = UI(*sys.argv[1:])
 
 
-def screen(items):
-    return items[0]['frame']
-
-
-def visible(identifier, tries=8):
-    for _ in range(tries):
-        items = ui.read()
-        found, s = by_id(items, identifier), screen(items)
-        if found and found['frame']['y'] >= 120 and found['frame']['y'] + found['frame']['height'] <= s['height'] - 110:
-            return ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')
-        ui.swipe((s['width'] / 2, s['height'] * 0.72), (s['width'] / 2, s['height'] * 0.4), 0.4)
-    raise AssertionError(f'{identifier} never scrolled into view')
+def visible(identifier):
+    return board_visible(ui, identifier)
 
 
 def chip(identifier):

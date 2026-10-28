@@ -16,23 +16,31 @@ def scroll_down(ui, items, share=0.32):
     ui.swipe((s['width'] / 2, s['height'] * 0.72), (s['width'] / 2, s['height'] * (0.72 - share)), 0.5)
 
 
-def in_view(element, s):
+def top_clear(items):
+    strip = by_id(items, 'home-strip')
+    if not strip:
+        return TOP_CLEAR
+    return max(TOP_CLEAR, strip['frame']['y'] + strip['frame']['height'])
+
+
+def in_view(element, s, top=TOP_CLEAR):
     f = element['frame']
-    return f['y'] >= TOP_CLEAR and f['y'] + f['height'] <= s['height'] - BOTTOM_CLEAR
+    return f['y'] >= top and f['y'] + f['height'] <= s['height'] - BOTTOM_CLEAR
 
 
 def visible(ui, identifier, tries=10):
     for _ in range(tries):
         items = ui.read()
         found, s = by_id(items, identifier), screen(items)
-        if found and in_view(found, s):
+        top = top_clear(items)
+        if found and in_view(found, s, top):
             return ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')
         if not found:
             scroll_down(ui, items)
             continue
         f = found['frame']
         below = f['y'] + f['height'] - (s['height'] - BOTTOM_CLEAR) + 24
-        delta = below if below > 0 else f['y'] - TOP_CLEAR - 24
+        delta = below if below > 0 else f['y'] - top - 24
         delta = max(-s['height'] * 0.5, min(s['height'] * 0.5, delta))
         delta = max(delta, MIN_DRAG) if delta > 0 else min(delta, -MIN_DRAG)
         start = s['height'] * (0.75 if delta > 0 else 0.25)
