@@ -84,7 +84,7 @@ function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: Bount
   const { state, focus } = board;
   const body = boardBody(state, board.refreshing);
   if (state.kind === 'loading') return <BoardLoading testID="bounty-board-loading" />;
-  if (state.kind === 'failed') return <BoardFailed onRetry={board.retry} />;
+  if (state.kind === 'failed' || body === 'failed') return <BoardFailed onRetry={board.retry} />;
   const firstUnlocated = unlocatedFrom(board.origin, state.rows);
   return (
     <>

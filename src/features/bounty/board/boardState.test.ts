@@ -255,6 +255,14 @@ describe('what the board body shows', () => {
     expect(boardBody(blockedOut({ after: 'a' }), false)).toBe('loading');
   });
 
+  test('a failed reload after the block shows the failure, not a spinner, unless a page is loading', () => {
+    const started = boardReducer(blockedOut({ after: 'a' }), { type: 'loadStarted' });
+    const failed = boardReducer(started, { type: 'loadFailed', generation: started.generation });
+    expect(ready(failed).refreshFailed).toBe(true);
+    expect(boardBody(failed, false)).toBe('failed');
+    expect(boardBody(boardReducer(failed, { type: 'pageStarted' }), false)).toBe('loading');
+  });
+
   test('empty only once the reload or the last page says so', () => {
     expect(boardBody(blockedOut(null), false)).toBe('empty');
     const empty = run([{ type: 'loadStarted' }, succeed(page([], null, 0))]);

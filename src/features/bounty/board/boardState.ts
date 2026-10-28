@@ -135,8 +135,10 @@ export function boardTotal(state: BoardState): number | null {
 export function boardBody(state: BoardState, refreshing: boolean) {
   if (state.kind !== 'ready') return state.kind;
   if (state.rows.length > 0) return 'rows';
-  const unknown = state.total === null && (refreshing || state.next !== null);
-  return unknown ? 'loading' : 'empty';
+  if (state.total !== null) return 'empty';
+  if (refreshing || state.page === 'loading') return 'loading';
+  if (state.next === null) return 'empty';
+  return state.refreshFailed ? 'failed' : 'loading';
 }
 
 export function nearEnd(endY: number, viewportBottom: number, viewportHeight: number) {
