@@ -292,6 +292,10 @@ const ms: Translation = {
       posted: 'Ganjaran anda telah disiarkan',
       liveSample: 'Bayar Ah Kit RM 15',
       mascot: 'Maskot tapir',
+      hold: 'Tahan untuk pilih Ah Kit',
+      holdHolding: 'Terus tahan…',
+      holdBusy: 'Memilih…',
+      holdHint: 'Tahan kira-kira 1 saat',
     },
   },
 };

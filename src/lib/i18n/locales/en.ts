@@ -288,6 +288,10 @@ const en: Translation = {
       posted: 'Your bounty is posted',
       liveSample: 'Pay Ah Kit RM 15',
       mascot: 'Tapir mascot',
+      hold: 'Hold to choose Ah Kit',
+      holdHolding: 'Keep holding…',
+      holdBusy: 'Choosing…',
+      holdHint: 'Hold for about 1 second',
     },
   },
 };

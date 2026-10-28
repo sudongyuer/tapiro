@@ -92,6 +92,17 @@ System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackg
 | `--color-accent`    | `#25232B` | `#F3EFE6` | 貘墨黑. Primary pill button, in-progress indicator |
 | `--color-on-accent` | `#FFFFFF` | `#25232B` | Label and icon on an accent fill                   |
 
+### Hold to commit
+
+The hold button's track is the accent; the gold fill appears only while the user holds (12A, 49A).
+
+| Token                   | Light     | Dark      | Use                                       |
+| ----------------------- | --------- | --------- | ----------------------------------------- |
+| `--color-hold-track`    | `#25232B` | `#F3EFE6` | `HoldButton` track (the accent)           |
+| `--color-on-hold-track` | `#FFFFFF` | `#25232B` | Label on the track (on-accent)            |
+| `--color-hold-fill`     | `#F6C66B` | `#D99A2B` | Gold fill while holding and while sending |
+| `--color-on-hold-fill`  | `#25232B` | `#25232B` | Label and spinner on the gold fill        |
+
 ### Status
 
 | Token                  | Light     | Dark      | Use                                                 |
@@ -223,7 +234,11 @@ Contrast rules, enforced by `src/ui/theme/tokens.test.ts`:
 - Each `--color-on-card-*` ≥ 4.5:1 on its card, also at the 72 % muted opacity used for
   secondary card lines; `--color-on-stage` on every stage and on the bubble; and
   `--color-on-sticker` on every category colour, in light and dark.
-- Yellow is never a brand colour; it is owned by 美团 / 闲鱼 / Timee in this market.
+- Each hold label ≥ 4.5:1 on its surface in light and dark: on-hold-track on the track 15.5:1 (light) and
+  13.5:1 (dark); on-hold-fill on the gold 9.8:1 (light) and 6.4:1 (dark).
+- Yellow is never a brand colour; it is owned by 美团 / 闲鱼 / Timee in this market. The one exception (12A) is
+  `--color-hold-fill`, the gold that fills the hold-to-commit button only while the user holds or the choice is
+  being sent; it never appears at rest.
 
 ## Status language
 
@@ -388,6 +403,7 @@ Details: docs/specs/2026-10-11-foundation-design.md.
 | `Sticker`        | ad-hoc image borders and shadows      |
 | `MomentScreen`   | per-screen celebration layouts        |
 | `ListState`      | ad-hoc empty / error / loading states |
+| `HoldButton`     | ad-hoc hold-to-confirm controls       |
 
 ## Verification
 

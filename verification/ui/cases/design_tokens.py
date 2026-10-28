@@ -1,8 +1,8 @@
-"""The design-tokens scene renders every type role, the status set and a 44 pt accent button in the current appearance."""
+"""The design-tokens scene renders every type role, the status set and a 44 pt accent button and the hold button (track at rest, gold while sending) in the current appearance."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_appearance, assert_touch_target  # noqa: E402
+from driver import UI, assert_appearance, assert_colour, assert_touch_target, token  # noqa: E402
 
 DEPS = []
 
@@ -35,4 +35,7 @@ assert_touch_target(ui.element('tokens-primary-button'), 'primary button')
 shot = ui.capture('design-tokens')
 assert_appearance(shot, ui.appearance, 60, 300, 'navigation bar')
 assert_appearance(shot, ui.appearance, 20, 2500, 'screen background')
-print('PASS: type roles, status set and accent button rendered')
+hold = ui.element('tokens-hold-button')['frame']
+track = {'x': hold['x'] + 12, 'y': hold['y'] + hold['height'] / 2 - 6, 'width': 12, 'height': 12}
+assert_colour(ui.snap('design-tokens-hold'), track, token('--color-hold-track', ui.appearance), 'hold track')
+print('PASS: type roles, status set, accent button and hold track rendered')

@@ -1,6 +1,10 @@
 export const vars = {
   '--color-accent': '#25232B',
   '--color-on-accent': '#FFFFFF',
+  '--color-hold-track': '#25232B',
+  '--color-on-hold-track': '#FFFFFF',
+  '--color-hold-fill': '#F6C66B',
+  '--color-on-hold-fill': '#25232B',
 
   '--color-urgent': '#C4321F',
   '--color-success': '#187A50',
@@ -144,6 +148,10 @@ export type TokenName = keyof typeof vars;
 export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-accent': '#F3EFE6',
   '--color-on-accent': '#25232B',
+  '--color-hold-track': '#F3EFE6',
+  '--color-on-hold-track': '#25232B',
+  '--color-hold-fill': '#D99A2B',
+  '--color-on-hold-fill': '#25232B',
   '--color-urgent': '#FF6B5A',
   '--color-success': '#3ECF8E',
   '--color-warning': '#FFB340',
