@@ -1,5 +1,5 @@
 import { TextField, useNativeState, type TextFieldProps } from '@expo/ui/swift-ui';
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { createTextSync } from './textSync';
 
@@ -24,17 +24,26 @@ type Props = Omit<TextFieldProps, 'text' | 'onTextChange' | 'onSelectionChange'>
   field: SyncedText;
 };
 
+const SETTLE_MS = 150;
+
 export function SyncedTextField({ field, onFocusChange, ...props }: Props) {
+  const settle = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(settle.current), []);
+  // TextFieldView posts onTextChange only for edits it flags as user-made, so the last keystrokes of a fast burst can
+  // arrive with no event at all; every event re-reads the text, and one more read after the burst settles catches them.
+  const resync = () => {
+    field.sync();
+    clearTimeout(settle.current);
+    settle.current = setTimeout(field.sync, SETTLE_MS);
+  };
   return (
     <TextField
       {...props}
       text={field.state}
-      onTextChange={() => field.sync()}
-      // TextFieldView posts onTextChange only for edits it flags as user-made, so the last keystroke of a fast burst
-      // can arrive with no event; the cursor move and focus change after it still arrive, so they re-read the text.
-      onSelectionChange={() => field.sync()}
+      onTextChange={resync}
+      onSelectionChange={resync}
       onFocusChange={(focused) => {
-        field.sync();
+        resync();
         onFocusChange?.(focused);
       }}
     />
