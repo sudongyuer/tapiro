@@ -36,12 +36,12 @@ const page = (
   ids: string[],
   next: unknown | null = null,
   total?: number,
-  locatedTotal?: number,
+  beyondTotal?: number,
 ): BoardPage => ({
   items: ids.map((id) => row(id)),
   next,
   ...(total === undefined ? {} : { total }),
-  ...(locatedTotal === undefined ? {} : { locatedTotal }),
+  ...(beyondTotal === undefined ? {} : { beyondTotal }),
 });
 
 const AT = '2026-10-27T04:00:00.000Z';
@@ -167,7 +167,7 @@ describe('pages', () => {
       ]),
     );
     expect(state.rows.map((item) => item.id)).toEqual(['x', 'a']);
-    expect(state).toMatchObject({ total: 7, locatedTotal: 5, loadedAt: LATER, page: 'idle' });
+    expect(state).toMatchObject({ total: 7, beyondTotal: 5, loadedAt: LATER, page: 'idle' });
   });
 
   test.each(['originChanged', 'filterChanged'] as const)(
@@ -450,7 +450,7 @@ describe('blocking a poster', () => {
       row(id, { poster: { id: poster, name: poster, tier: 'reliable' } }),
     ),
     next: null,
-    ...(total === undefined ? {} : { total, locatedTotal: total }),
+    ...(total === undefined ? {} : { total, beyondTotal: total }),
   });
 
   test('removes that poster’s rows at once and hides the count until the reload answers', () => {
@@ -470,7 +470,7 @@ describe('blocking a poster', () => {
     ]);
     expect(ids(state)).toEqual(['b']);
     expect(boardTotal(state)).toBeNull();
-    expect(ready(state).locatedTotal).toBeNull();
+    expect(ready(state).beyondTotal).toBeNull();
   });
 
   test('the reload after a block restores both counts', async () => {
@@ -488,10 +488,10 @@ describe('blocking a poster', () => {
     );
     await settle();
     void board.blocked('lin');
-    expect(ready(board.get().state)).toMatchObject({ total: null, locatedTotal: null });
+    expect(ready(board.get().state)).toMatchObject({ total: null, beyondTotal: null });
     stub.pending[1].resolve(mixed([['b', 'jie']], 1));
     await settle();
-    expect(ready(board.get().state)).toMatchObject({ total: 1, locatedTotal: 1 });
+    expect(ready(board.get().state)).toMatchObject({ total: 1, beyondTotal: 1 });
   });
 
   test('a load that started before the block cannot bring the rows back, and a fresh load runs', async () => {

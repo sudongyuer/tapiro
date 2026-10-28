@@ -1,6 +1,7 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 import type { Point } from '@/lib/location/types';
 
+import { AXIS_RANGE_M } from './axis';
 import { PAGE_SIZE } from './boardService';
 import {
   BOARDS,
@@ -226,8 +227,11 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
           : null;
       const items = slice.map((item) => toRow(item, here));
       if (after !== null) return { items, next };
-      const locatedTotal = list.filter((item) => item.point !== null).length;
-      return { items, next, total: list.length, locatedTotal };
+      if (!here) return { items, next, total: list.length };
+      const beyondTotal = list.filter(
+        (item) => (rounded(here, item.point) ?? 0) > AXIS_RANGE_M,
+      ).length;
+      return { items, next, total: list.length, beyondTotal };
     },
     async detail(id, point) {
       if (detailFailures > 0) {

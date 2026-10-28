@@ -28,7 +28,7 @@ import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
 import { liveCards, stageLine, stageState } from './homeModel';
-import { HomeStrip, STRIP_ROW } from './HomeStrip';
+import { HomeStrip, STRIP_ROW, STRIP_SHADOW } from './HomeStrip';
 import { LiveCardStack, StackToggle, useCardHeights } from './LiveCardStack';
 import { homeCardDetails } from './services';
 import { followShift, stackHeight, stackLayout } from './stackLayout';
@@ -41,7 +41,8 @@ const BUBBLE_TOP = 18;
 const BEFORE_FIRST_SCROLL = -100000;
 // useHeaderHeight reports the expanded large-title header; the strip hangs under the compact bar (54 pt on iOS 26).
 const COMPACT_BAR = 54;
-export const HOME_TOP_CHROME = COMPACT_BAR + STRIP_ROW;
+const HOME_TOP_CHROME = COMPACT_BAR + STRIP_ROW;
+export const HOME_TOP_CLEAR = HOME_TOP_CHROME + STRIP_SHADOW;
 export const HOME_BOTTOM_CHROME = 49;
 
 export type HomeScreenProps = {

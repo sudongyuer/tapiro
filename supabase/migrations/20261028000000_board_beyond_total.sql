@@ -30,7 +30,7 @@ declare
   last_item record;
   next_cursor jsonb;
   total jsonb;
-  located_total jsonb;
+  beyond_total jsonb;
 begin
   if uid is null then
     raise exception 'not_authenticated' using errcode = '42501';
@@ -103,8 +103,12 @@ begin
   end if;
 
   if after_kind is null then
-    select to_jsonb(count(*)), to_jsonb(count(*) filter (where b.place_public is not null))
-    into total, located_total
+    -- 2000 m is the client's AXIS_RANGE_M, compared on the same rounded distance the rows carry.
+    select to_jsonb(count(*)),
+      case when here is not null
+        then to_jsonb(count(*) filter (where private.rounded_distance(b.place_public, here) > 2000))
+      end
+    into total, beyond_total
     from public.bounties b
     where b.status = 'open'
       and b.expires_at > now()
@@ -208,9 +212,6 @@ begin
       join public.bounties b on b.id = p.id
     ),
     'next', next_cursor
-  ) || case when total is not null
-    then jsonb_build_object('total', total, 'locatedTotal', located_total)
-    else '{}'
-  end;
+  ) || jsonb_strip_nulls(jsonb_build_object('total', total, 'beyondTotal', beyond_total));
 end;
 $$;

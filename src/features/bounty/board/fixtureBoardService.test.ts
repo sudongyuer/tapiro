@@ -167,7 +167,7 @@ describe('paging', () => {
     expect(first.total).toBe(45);
     const second = await board.page(ME, 'all', first.next);
     expect(second.total).toBeUndefined();
-    expect(second.locatedTotal).toBeUndefined();
+    expect(second.beyondTotal).toBeUndefined();
     await expect(board.page(ME, 'urgent', first.next)).rejects.toThrow('board_cursor_mismatch');
     await expect(board.page(NONE, 'all', first.next)).rejects.toThrow('board_cursor_mismatch');
   });
@@ -177,7 +177,7 @@ describe('paging', () => {
       items: [],
       next: null,
       total: 0,
-      locatedTotal: 0,
+      beyondTotal: 0,
     });
     const one = await service({ board: 'one' }).page(ME, 'all', null);
     expect(one.items.map((row) => [row.title, row.urgent])).toEqual([['帮忙打印论文', false]]);
@@ -214,8 +214,13 @@ describe('worst', () => {
     while (pages.at(-1)?.next) pages.push(await board.page(ME, 'all', pages.at(-1)!.next));
     const items = pages.flatMap((page) => page.items);
     expect(pages[0].total).toBe(45);
-    expect(pages[0].locatedTotal).toBe(items.filter((row) => row.distanceM !== null).length);
-    expect(pages[0].locatedTotal).toBeLessThan(45);
+    expect(pages[0].beyondTotal).toBe(
+      items.filter((row) => row.distanceM !== null && row.distanceM > 2000).length,
+    );
+    expect(pages[0].beyondTotal).toBe(42);
+    const unlocated = await service({ board: 'worst' }).page(NONE, 'all', null);
+    expect(unlocated.total).toBe(45);
+    expect(unlocated.beyondTotal).toBeUndefined();
     expect(new Set(items.map((row) => row.id)).size).toBe(45);
     expect(Math.max(...items.map((row) => codePoints(row.title)))).toBe(60);
     expect(Math.max(...items.map((row) => codePoints(row.placeLabel ?? '')))).toBe(80);

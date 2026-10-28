@@ -9,6 +9,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 export const STRIP_ROW = 44;
+export const STRIP_SHADOW = vars['--space-1'] + vars['--space-3'];
 
 export function HomeStrip({
   state,
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     shadowOffset: { width: 0, height: vars['--space-1'] },
     shadowOpacity: 1,
-    shadowRadius: vars['--space-3'],
+    shadowRadius: STRIP_SHADOW - vars['--space-1'],
   },
   row: {
     height: STRIP_ROW,

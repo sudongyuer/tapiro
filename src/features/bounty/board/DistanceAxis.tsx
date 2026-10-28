@@ -22,14 +22,14 @@ const CLEAR_OF_DOT = DOT / 2 + STICKER / 2 + 2;
 export function DistanceAxis({
   rows,
   total,
-  locatedTotal,
+  beyondTotal,
   next,
   origin,
   onFocus,
 }: {
   rows: BoardRow[];
   total: number | null;
-  locatedTotal: number | null;
+  beyondTotal: number | null;
   next: unknown | null;
   origin: 'me' | 'place';
   onFocus: (id: string) => void;
@@ -38,7 +38,7 @@ export function DistanceAxis({
   const { color } = useTheme();
   const [width, setWidth] = useState(0);
   const { marks, firstBeyondId } = axisMarks(rows, width, CLEAR_OF_DOT);
-  const beyond = beyondCount({ rows, total, locatedTotal, next });
+  const beyond = beyondCount({ rows, total, beyondTotal, next });
   const moreTarget = firstBeyondId ?? rows.findLast((row) => row.distanceM !== null)?.id ?? null;
   const ink = PlatformColor('tertiaryLabel');
   const originName = t(origin === 'me' ? 'bounty.board.axis.you' : 'bounty.board.axis.here');

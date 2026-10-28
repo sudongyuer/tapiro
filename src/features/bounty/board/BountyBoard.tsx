@@ -65,7 +65,7 @@ function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlac
       <DistanceAxis
         rows={state.rows}
         total={state.total}
-        locatedTotal={state.locatedTotal}
+        beyondTotal={state.beyondTotal}
         next={state.next}
         origin={origin.kind}
         onFocus={board.focus.focus}

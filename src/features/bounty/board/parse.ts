@@ -74,12 +74,12 @@ export function toBoardPage(value: unknown): BoardPage {
   const items = (page.items as unknown[]).map(toBoardRow);
   const next = page.next ?? null;
   const total = countOrNull(page.total, 'total');
-  const locatedTotal = countOrNull(page.locatedTotal, 'locatedTotal');
+  const beyondTotal = countOrNull(page.beyondTotal, 'beyondTotal');
   return {
     items,
     next,
     ...(total === null ? {} : { total }),
-    ...(locatedTotal === null ? {} : { locatedTotal }),
+    ...(beyondTotal === null ? {} : { beyondTotal }),
   };
 }
 

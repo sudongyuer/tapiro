@@ -14,7 +14,7 @@ import { useProfile, useSignedInUser, type AccountUser } from '@/features/accoun
 import { BountyBoard, closePostSheet, useBountyBoard, useStartPost } from '@/features/bounty';
 import {
   HOME_BOTTOM_CHROME,
-  HOME_TOP_CHROME,
+  HOME_TOP_CLEAR,
   HomeScreen,
   useHomeScroll,
   useLiveStackState,
@@ -48,7 +48,7 @@ function BountyHome({ user }: { user: AccountUser }) {
   const board = useBountyBoard(user.id, {
     scroll: scrollViewProps.ref,
     content,
-    topInset: insets.top + HOME_TOP_CHROME + vars['--space-3'],
+    topInset: insets.top + HOME_TOP_CLEAR + vars['--space-3'],
     bottomInset: insets.bottom + HOME_BOTTOM_CHROME + vars['--space-3'],
   });
   const homeScroll = {

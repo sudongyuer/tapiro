@@ -216,5 +216,5 @@ row = visible(ui, 'bounty-place-row')
 ui.at_rest()
 near_word = re.escape(ui.t('bounty.board.place.near', place='').strip())
 assert_in_card(ui.snap('10-place-row'), padded(row, 4), near_word, 'the near word beside the long place')
-print(f'PASS: {COUNT} worst cards, RM 500 beside a two-line title, distances shown, 44 pt 申请, two-digit +N on the axis, '
+print(f'PASS: {COUNT} worst cards, RM 500 beside a two-line title, distances shown, 44 pt 申请, +{FARTHER} 更远 from the first page, '
       'detail, 140-code-point note, long place search and row')

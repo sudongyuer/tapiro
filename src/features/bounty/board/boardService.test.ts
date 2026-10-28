@@ -101,20 +101,18 @@ describe('page', () => {
     ]);
   });
 
-  test('carries the located total and rejects a malformed one', async () => {
-    const located = stubClient(() => ok({ items: [ROW], next: null, total: 3, locatedTotal: 2 }));
+  test('carries the farther count and rejects a malformed one', async () => {
+    const located = stubClient(() => ok({ items: [ROW], next: null, total: 3, beyondTotal: 2 }));
     expect(await createSupabaseBoardService(located.client).page(ME, 'all', null)).toEqual({
       items: [ROW],
       next: null,
       total: 3,
-      locatedTotal: 2,
+      beyondTotal: 2,
     });
-    const malformed = stubClient(() =>
-      ok({ items: [ROW], next: null, total: 3, locatedTotal: -1 }),
-    );
+    const malformed = stubClient(() => ok({ items: [ROW], next: null, total: 3, beyondTotal: -1 }));
     await expect(
       createSupabaseBoardService(malformed.client).page(ME, 'all', null),
-    ).rejects.toThrow('locatedTotal');
+    ).rejects.toThrow('beyondTotal');
   });
 
   test('a cursor mismatch restarts from page one once', async () => {
