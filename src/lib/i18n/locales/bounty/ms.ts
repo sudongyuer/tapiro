@@ -364,13 +364,13 @@ const ms: typeof zhHans = {
       failed: 'Gagal dihantar. Cuba lagi.',
       notPending:
         'Pemohon ini sudah menarik balik atau tidak boleh dipilih. Senarai sudah dimuat semula. Pilih sekali lagi.',
-      noPayee: 'Pemohon ini tiada kaedah bayaran buat masa ini, jadi belum boleh dipilih.',
+      noPayee: 'Pemohon ini tiada cara bayaran buat masa ini, jadi belum boleh dipilih.',
       closed: 'Ganjaran ini sudah ditutup, jadi tiada sesiapa boleh dipilih.',
     },
     race: {
       title: 'Sudah dipilih',
-      body: 'Anda sudah memilih {{name}} pada peranti lain.',
-      bodyNoName: 'Anda sudah memilih seseorang pada peranti lain.',
+      body: '{{name}} sudah dipilih untuk ganjaran ini.',
+      bodyNoName: 'Seseorang sudah dipilih untuk ganjaran ini.',
       ok: 'OK',
     },
     confirm: {

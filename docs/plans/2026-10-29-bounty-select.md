@@ -423,7 +423,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 - [ ] Case `bounty_applicants` (`ARGS -uiVerifySignedIn onboarded`, scene `bounty-applicants`, `LOCALES ['zh-Hans',
       'ms']`, `DEPS` the select folder, `src/ui/HoldButton.tsx`, the route): three rows in order 阿杰, Hana, Aiman with
       tier text and the Q48 meta; the button shows the Q46 state; tap Hana → check on Hana only and the label reads
-      `ui.t('bounty.select.hold', name='Hana')`; tap 阿杰 → the check moves (assert Hana unchecked, so the first
+      `ui.t('bounty.select.hold.label', name='Hana')`; tap 阿杰 → the check moves (assert Hana unchecked, so the first
       assertion can fail); the hint count reads 2; every row and the button ≥ 44 pt; `-uiVerifyApplicants none` → the
       Q47 state; `-uiVerifyApplicantsFail first` → 没加载出来, status line without a count, 重试 loads three rows.
       Pixel check: grouped background, the track colour of the button. Screenshots of each state.
@@ -455,7 +455,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 - [ ] Case `bounty_select_failed` (`-uiVerifySelect failOnce`, then `notPending`, `noPayee`, `closed` as passes): the
       first hold shows the `failed` copy with 阿杰 still checked and nothing reported as selected; a second hold
       succeeds; `notPending` shows its copy and the list reloads; `closed` shows the closed state. Screenshots.
-- [ ] Case `bounty_select_race` (`-uiVerifySelect taken`): hold → the alert title `ui.t('bounty.select.raced.title')` and
+- [ ] Case `bounty_select_race` (`-uiVerifySelect taken`): hold → the alert title `ui.t('bounty.select.race.title')` and
       the body naming 阿杰 (the fixture's actual helper); 好的 → the Q52 state for 阿杰.
 - [ ] Checks; run each once; commit `feat(bounty): hold to choose a helper`.
 

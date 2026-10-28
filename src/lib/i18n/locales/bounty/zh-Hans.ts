@@ -351,14 +351,14 @@ export default {
     },
     failure: {
       failed: '没发出去，再试一次',
-      notPending: '这位申请人已经撤回或不能选了，列表已刷新，请重新选。',
+      notPending: '这位申请人已经撤回或不能选了，列表已刷新，重新选一个。',
       noPayee: '这位申请人现在没有收款方式，暂时选不了。',
       closed: '这条悬赏已经关闭了，选不了人。',
     },
     race: {
       title: '已经选好了',
-      body: '你在另一台设备上已经选了{{name}}。',
-      bodyNoName: '你在另一台设备上已经选好了人。',
+      body: '这条悬赏已经选了{{name}}。',
+      bodyNoName: '这条悬赏已经选好了人。',
       ok: '好的',
     },
     confirm: {

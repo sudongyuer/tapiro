@@ -366,8 +366,8 @@ const en: typeof zhHans = {
     },
     race: {
       title: 'Already chosen',
-      body: 'You already chose {{name}} on another device.',
-      bodyNoName: 'You already chose someone on another device.',
+      body: '{{name}} was already chosen for this bounty.',
+      bodyNoName: 'Someone was already chosen for this bounty.',
       ok: 'OK',
     },
     confirm: {
