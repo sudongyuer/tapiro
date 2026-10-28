@@ -261,7 +261,7 @@ const ms: typeof zhHans = {
     title: 'Ganjaran',
     loading: 'Memuatkan ganjaran ini',
     failed: 'Ganjaran ini tidak dapat dimuatkan',
-    refreshFailed: 'Gagal dimuat semula. Ini mungkin bukan yang terkini.',
+    refreshFailed: 'Gagal muat semula · ini data pukul {{time}}, mungkin sudah berubah.',
     retry: 'Cuba Lagi',
     back: 'Kembali',
   },

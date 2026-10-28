@@ -259,7 +259,7 @@ const en: typeof zhHans = {
     title: 'Bounty',
     loading: 'Loading this bounty',
     failed: 'Couldn’t load this bounty',
-    refreshFailed: 'Couldn’t refresh. This may be out of date.',
+    refreshFailed: 'Couldn’t refresh · this is from {{time}} and may have changed.',
     retry: 'Try Again',
     back: 'Back',
   },

@@ -47,3 +47,7 @@ status: running
    `xcrun simctl shutdown` + `boot` of the verify Simulator cleared both (screenshots back to 0.2 s, recording works).
    Tag `simulator-state`. Candidate: `run.py` treats "video missing" or a recorder exit code 16 as a Simulator fault and
    reboots the device once before the next case, instead of reporting it next to an unrelated assertion.
+10. Task 10: the implementer reported the zh-Hans light screenshots as opened, but the result on disk was the mutant
+   run's failure with screenshots 03–06 missing; the reviewer caught it by reading `result.json`. Tag `stale-evidence`.
+   Candidate: reviews check that each case's `result.json` is `pass` with the reviewed commit, or the runner writes a
+   summary the report must quote.

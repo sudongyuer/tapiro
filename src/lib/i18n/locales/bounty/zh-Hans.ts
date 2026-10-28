@@ -254,7 +254,7 @@ export default {
     title: '悬赏详情',
     loading: '正在加载这条悬赏',
     failed: '没加载出来',
-    refreshFailed: '没刷新成功，下面可能不是最新的',
+    refreshFailed: '没刷新成功 · 下面是 {{time}} 的，可能已经有变化。',
     retry: '重试',
     back: '返回',
   },

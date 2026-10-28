@@ -54,8 +54,8 @@ test('applying and withdrawing update the row and detail in place and tell liste
   stop();
   cache.markApplied('b1', null);
   expect(changes).toEqual([
-    { id: 'b1', applied: true },
-    { id: 'b1', applied: false },
+    { id: 'b1', applied: true, note: '我在楼下' },
+    { id: 'b1', applied: false, note: null },
   ]);
 });
 

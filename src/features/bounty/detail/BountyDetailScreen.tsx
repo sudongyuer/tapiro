@@ -10,6 +10,7 @@ import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
+import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
 import { shownView, type DetailAction, type DetailView } from './detailState';
@@ -47,6 +48,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
     label: t('bounty.detail.retry'),
     onPress: () => void retry(),
     testID: 'bounty-detail-retry',
+    busy: (state.kind === 'failed' && state.retrying) || (stale && state.refreshing),
   };
 
   return (
@@ -58,7 +60,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
           <NoticeCard
             tone="warning"
             icon="exclamationmark.triangle.fill"
-            title={t('bounty.detail.refreshFailed')}
+            title={t('bounty.detail.refreshFailed', { time: malaysiaClock(state.loadedAt) })}
             action={retryAction}
             testID="bounty-detail-stale"
           />
@@ -78,7 +80,12 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
         <>
           <DetailInfo view={view} copy={copy} />
           <DetailDescription text={view.description} />
-          <DetailActions view={view} name={copy.name} onApply={() => onApply(id)} />
+          <DetailActions
+            view={view}
+            name={copy.name}
+            current={state.kind === 'ready'}
+            onApply={() => onApply(id)}
+          />
         </>
       ) : (
         <Section>
@@ -102,10 +109,12 @@ const REASON: Partial<Record<DetailAction, 'bounty.detail.closed' | 'bounty.deta
 function DetailActions({
   view,
   name,
+  current,
   onApply,
 }: {
   view: DetailView;
   name: string;
+  current: boolean;
   onApply: () => void;
 }) {
   const { t } = useI18n();
@@ -139,6 +148,7 @@ function DetailActions({
       ) : null}
       <PillButton
         label={t('bounty.detail.apply')}
+        loading={!current}
         disabled={reason !== undefined}
         onPress={onApply}
         testID="bounty-detail-apply"

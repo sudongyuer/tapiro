@@ -7,13 +7,14 @@ import { evaluateOrigin } from '../board/originStore';
 import { boardService, originStore } from '../board/services';
 import { originPoint } from '../board/types';
 import { bountyCache } from '../shared/bountyCache';
-import { detailReducer, initialDetail } from './detailState';
+import { detailReducer, initialDetail, keptWrite, withWrite, type LocalWrite } from './detailState';
 
 export function useDetail(id: string, userId: string) {
   const [state, dispatch] = useReducer(detailReducer, id, (key) =>
     initialDetail(bountyCache.row(key)),
   );
   const request = useRef(0);
+  const write = useRef<LocalWrite | null>(null);
   const gone = state.kind === 'gone';
   const focused = useIsFocused();
 
@@ -31,8 +32,10 @@ export function useDetail(id: string, userId: string) {
         dispatch({ type: 'gone', request: current });
         return;
       }
-      bountyCache.setDetail(answer);
-      dispatch({ type: 'loaded', request: current, detail: answer });
+      if (current !== request.current) return;
+      write.current = keptWrite(write.current, current);
+      bountyCache.setDetail(withWrite(answer, write.current));
+      dispatch({ type: 'loaded', request: current, detail: answer, at: new Date().toISOString() });
     } catch {
       dispatch({ type: 'failed', request: current });
     }
@@ -45,8 +48,9 @@ export function useDetail(id: string, userId: string) {
   useEffect(
     () =>
       bountyCache.onApplicationChange((change) => {
-        const detail = change.id === id ? bountyCache.detail(id) : null;
-        if (detail) dispatch({ type: 'changed', detail });
+        if (change.id !== id) return;
+        write.current = { applied: change.applied, note: change.note, request: request.current };
+        dispatch({ type: 'written', applied: change.applied, note: change.note });
       }),
     [id],
   );

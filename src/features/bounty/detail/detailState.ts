@@ -63,56 +63,86 @@ export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
   };
 }
 
-export type DetailState = { request: number } & (
+export type LocalWrite = { applied: boolean; note: string | null; request: number };
+
+export type DetailState = { request: number; write: LocalWrite | null } & (
   | { kind: 'loading'; seed: BoardRow | null }
-  | { kind: 'failed'; seed: BoardRow | null }
-  | { kind: 'ready'; detail: BountyDetail; refreshing: boolean; refreshFailed: boolean }
+  | { kind: 'failed'; seed: BoardRow | null; retrying: boolean }
+  | {
+      kind: 'ready';
+      detail: BountyDetail;
+      loadedAt: string;
+      refreshing: boolean;
+      refreshFailed: boolean;
+    }
   | { kind: 'gone' }
 );
 
 export type DetailEvent =
   | { type: 'started'; request: number }
-  | { type: 'loaded'; request: number; detail: BountyDetail }
+  | { type: 'loaded'; request: number; detail: BountyDetail; at: string }
   | { type: 'failed'; request: number }
   | { type: 'gone'; request: number }
-  | { type: 'changed'; detail: BountyDetail };
+  | { type: 'written'; applied: boolean; note: string | null };
 
 export const initialDetail = (seed: BoardRow | null): DetailState => ({
   request: 0,
+  write: null,
   kind: 'loading',
   seed,
 });
 
+export const keptWrite = (write: LocalWrite | null, answered: number) =>
+  write && write.request >= answered ? write : null;
+
+export function withWrite(detail: BountyDetail, write: LocalWrite | null): BountyDetail {
+  if (!write) return detail;
+  if (write.applied) return { ...detail, myApplication: { status: 'pending', note: write.note } };
+  return {
+    ...detail,
+    myApplication: detail.myApplication ? { ...detail.myApplication, status: 'withdrawn' } : null,
+  };
+}
+
 export function detailReducer(state: DetailState, event: DetailEvent): DetailState {
+  const { write } = state;
   if (event.type === 'started') {
     const { request } = event;
     if (state.kind === 'ready') return { ...state, request, refreshing: true };
     if (state.kind === 'gone') return state;
-    return { request, kind: 'loading', seed: state.seed };
+    if (state.kind === 'failed') return { ...state, request, retrying: true };
+    return { ...state, request };
   }
-  if (event.type === 'changed') {
-    return state.kind === 'ready' && state.detail.id === event.detail.id
-      ? { ...state, detail: event.detail }
-      : state;
+  if (event.type === 'written') {
+    if (state.kind === 'gone') return state;
+    return {
+      ...state,
+      write: { applied: event.applied, note: event.note, request: state.request },
+    };
   }
   if (event.request !== state.request) return state;
   if (event.type === 'loaded') {
     return {
       request: state.request,
+      write: keptWrite(write, event.request),
       kind: 'ready',
       detail: event.detail,
+      loadedAt: event.at,
       refreshing: false,
       refreshFailed: false,
     };
   }
-  if (event.type === 'gone') return { request: state.request, kind: 'gone' };
+  if (event.type === 'gone') return { request: state.request, write: null, kind: 'gone' };
   if (state.kind === 'ready') return { ...state, refreshing: false, refreshFailed: true };
-  if (state.kind === 'loading') return { request: state.request, kind: 'failed', seed: state.seed };
+  if (state.kind === 'loading' || state.kind === 'failed') {
+    return { request: state.request, write, kind: 'failed', seed: state.seed, retrying: false };
+  }
   return state;
 }
 
 export function shownView(state: DetailState, now: Date): DetailView | null {
-  if (state.kind === 'ready') return viewOfDetail(state.detail, now);
-  if (state.kind === 'gone') return null;
-  return state.seed ? viewOfRow(state.seed) : null;
+  if (state.kind === 'ready') return viewOfDetail(withWrite(state.detail, state.write), now);
+  if (state.kind === 'gone' || !state.seed) return null;
+  const seed = state.write ? { ...state.seed, appliedByMe: state.write.applied } : state.seed;
+  return viewOfRow(seed);
 }

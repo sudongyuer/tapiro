@@ -90,11 +90,15 @@ pinned = apply_frame()
 ui.at_rest()
 ui.capture('03-worst-top')
 s = screen(ui.read())
-for _ in range(6):
+for _ in range(8):
     found = by_id(ui.read(), 'bounty-detail-description')
     if found and bottom(found) <= pinned['y']:
         break
     ui.swipe((s['width'] / 2, s['height'] * 0.6), (s['width'] / 2, s['height'] * 0.2), 0.4)
+else:
+    raise AssertionError(f'the end of the description never scrolled above 申请: {found and found["frame"]}')
+end = bottom(found)
+assert 0 < end <= pinned['y'], f'the description ends at {end:.1f} pt, not on screen above 申请 at {pinned["y"]:.1f} pt'
 text = label('bounty-detail-description')
 assert len(text) == DESCRIPTION_LENGTH, f'the description reads {len(text)} characters, expected {DESCRIPTION_LENGTH}'
 assert apply_frame() == pinned, '申请 moved while the description scrolled'

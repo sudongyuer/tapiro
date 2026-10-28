@@ -2,7 +2,7 @@ import { userCleanups } from '@/lib/userCleanups';
 
 import type { BoardRow, BountyDetail } from '../board/types';
 
-export type ApplicationChange = { id: string; applied: boolean };
+export type ApplicationChange = { id: string; applied: boolean; note: string | null };
 
 export function createBountyCache() {
   const rows = new Map<string, BoardRow>();
@@ -31,7 +31,7 @@ export function createBountyCache() {
       if (row) rows.set(id, { ...row, appliedByMe: true });
       const detail = details.get(id);
       if (detail) details.set(id, { ...detail, myApplication: { status: 'pending', note } });
-      notify({ id, applied: true });
+      notify({ id, applied: true, note });
     },
     markWithdrawn(id: string) {
       const row = rows.get(id);
@@ -43,7 +43,7 @@ export function createBountyCache() {
           myApplication: { ...detail.myApplication, status: 'withdrawn' },
         });
       }
-      notify({ id, applied: false });
+      notify({ id, applied: false, note: null });
     },
     onApplicationChange(listener: (change: ApplicationChange) => void) {
       listeners.add(listener);
