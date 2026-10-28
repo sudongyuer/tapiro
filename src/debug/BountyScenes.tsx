@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { PlatformColor, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -118,6 +119,24 @@ export function BountyDetailScene({ onReady }: { onReady: () => void }) {
       <Marker name={left} />
     </>
   );
+}
+
+export function BountyApplicantsScene({ onReady }: { onReady: () => void }) {
+  const router = useRouter();
+  const pushed = useRef(false);
+  useEffect(() => {
+    if (pushed.current) return;
+    pushed.current = true;
+    router.push(
+      {
+        pathname: '/bounty/applicants/[id]',
+        params: { id: uiVerifyArgument('uiVerifyDetailId') ?? 'fixture-bounty-01' },
+      },
+      { withAnchor: true },
+    );
+    onReady();
+  }, [router, onReady]);
+  return null;
 }
 
 const styles = StyleSheet.create({

@@ -276,6 +276,7 @@ const ms: Translation = {
       placeSearch: 'Pilih Tempat',
       board: 'Papan ganjaran',
       detail: 'Butiran ganjaran',
+      applicants: 'Pilih pembantu (pemohon)',
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },

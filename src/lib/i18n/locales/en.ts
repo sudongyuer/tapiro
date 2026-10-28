@@ -272,6 +272,7 @@ const en: Translation = {
       placeSearch: 'Choose a Place',
       board: 'Bounty board',
       detail: 'Bounty detail',
+      applicants: 'Choose a helper (applicants)',
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },

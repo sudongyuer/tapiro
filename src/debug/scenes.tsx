@@ -9,6 +9,7 @@ import {
   WelcomeScene,
 } from './AccountScenes';
 import {
+  BountyApplicantsScene,
   BountyBoardScene,
   BountyConfirmScene,
   BountyDetailScene,
@@ -52,6 +53,11 @@ export const scenes: Scene[] = [
   { id: 'place-search', titleKey: 'debug.bounty.placeSearch', Component: PlaceSearchScene },
   { id: 'bounty-board', titleKey: 'debug.bounty.board', Component: BountyBoardScene },
   { id: 'bounty-detail', titleKey: 'debug.bounty.detail', Component: BountyDetailScene },
+  {
+    id: 'bounty-applicants',
+    titleKey: 'debug.bounty.applicants',
+    Component: BountyApplicantsScene,
+  },
 ];
 
 export function findScene(id: string) {

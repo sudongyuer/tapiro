@@ -30,7 +30,7 @@ export function useApplicants(bountyId: string) {
     refresh: controller.load,
     retry: controller.load,
     chose: controller.chose,
-    select: controller.select,
+    send: controller.select,
     acknowledgeRace: controller.acknowledgeRace,
   };
 }
