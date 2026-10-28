@@ -22,3 +22,11 @@ status: running
    `app.json`, `plugins/` or `src/lib/i18n/native/` are newer than `ios/Podfile.lock`, or a check that greps the built
    `Info.plist` for every usage key the config declares. Done: `build.sh` prebuilds when a native input (app config,
    lockfiles, plugins, native strings, kit non-TS files) is newer than `ios/.verify-prebuild-stamp`.
+4. Task 7: two verify runs passed without exercising the failure path. `run.py` read `ARGS` with a regex that skipped a
+   `[*BASE, …]` splat, so the launch argument never reached the app and the case silently ran the happy path. Tag
+   `vacuous-check`. Done: `run.py` reads `SCENE`/`LOCALES`/`ARGS`/`BUDGET` with `ast.literal_eval` and exits naming the
+   case when a value is not a literal (all 61 cases parse the same as before).
+5. Task 7: after a prebuild, `pod install` again pointed `ios/.xcode.env.local` at Node 18 and the verify build failed
+   (AGENTS.md "Rules from incidents" already names it, so a written rule did not hold). Tag `stale-prebuild`. Done:
+   `build.sh` writes `NODE_BINARY` from Homebrew Node on every run. Candidate: shorten the AGENTS.md rule to point at
+   `build.sh` once it holds.

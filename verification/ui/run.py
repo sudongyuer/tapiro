@@ -1,5 +1,6 @@
 """Run UI verification cases in light and dark on a named Simulator, with screenshots and video."""
 import argparse
+import ast
 import fcntl
 import re
 import json
@@ -61,15 +62,21 @@ def git_info():
 
 def case_meta(case):
     source = (HERE / 'cases' / f'{case}.py').read_text()
-    scene = re.search(r"^SCENE = '([^']+)'", source, re.M)
-    locales = re.search(r"^LOCALES = \[([^\]]*)\]", source, re.M)
-    extra = re.search(r"^ARGS = \[([^\]]*)\]", source, re.M)
-    budget = re.search(r"^BUDGET = (\d+)$", source, re.M)
+    values = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                name = getattr(target, 'id', None)
+                if name in ('SCENE', 'LOCALES', 'ARGS', 'BUDGET'):
+                    try:
+                        values[name] = ast.literal_eval(node.value)
+                    except ValueError:
+                        sys.exit(f'{case}: {name} must be a literal the runner can read without running the case')
     return (
-        scene.group(1) if scene else None,
-        re.findall(r"'([^']+)'", locales.group(1)) if locales else DEFAULT_LOCALES,
-        re.findall(r"'([^']+)'", extra.group(1)) if extra else [],
-        int(budget.group(1)) if budget else DEFAULT_BUDGET,
+        values.get('SCENE'),
+        list(values.get('LOCALES', DEFAULT_LOCALES)),
+        list(values.get('ARGS', [])),
+        int(values.get('BUDGET', DEFAULT_BUDGET)),
     )
 
 
