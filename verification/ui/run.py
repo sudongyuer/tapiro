@@ -187,7 +187,7 @@ def main():
     parser.add_argument('--udid')
     parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
-    parser.add_argument('--locale')
+    parser.add_argument('--locale', choices=sorted(REGIONS))
     parser.add_argument('--affected', action='store_true',
                         help='only cases whose DEPS meet the diff against --base plus uncommitted changes; zh-Hans light')
     parser.add_argument('--smoke', action='store_true', help='the fixed smoke set in zh-Hans light')
@@ -243,11 +243,12 @@ def main():
     stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
-    runs = [(case, scene, run_locales(locales, args.locales or not (tiered or args.cases)), extra, budget)
+    runs = [(case, scene, [args.locale] if args.locale else run_locales(locales, args.locales or not (tiered or args.cases)),
+             extra, budget)
             for case, scene, locales, extra, budget in runs]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
-            for locale in [l for l in locales if args.locale in (None, l)]:
+            for locale in locales:
                 out = Path(args.output) / locale / appearance / case
                 status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
                 failures += status != 'pass'
@@ -275,6 +276,8 @@ def main():
         print(render_cpu_sample())
         failures += 1
     print(f'Artifacts: {args.output}')
+    if not timings:
+        sys.exit('no case ran')
     sys.exit(1 if failures else 0)
 
 
