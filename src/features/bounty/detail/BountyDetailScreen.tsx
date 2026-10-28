@@ -48,7 +48,10 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
     label: t('bounty.detail.retry'),
     onPress: () => void retry(),
     testID: 'bounty-detail-retry',
-    busy: (state.kind === 'failed' && state.retrying) || (stale && state.refreshing),
+    busyLabel:
+      (state.kind === 'failed' && state.retrying) || (stale && state.refreshing)
+        ? t('bounty.detail.loading')
+        : undefined,
   };
 
   return (

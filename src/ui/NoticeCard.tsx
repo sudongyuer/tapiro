@@ -30,7 +30,7 @@ export function NoticeCard({
   icon: SFSymbol;
   title: string;
   body?: string;
-  action?: { label: string; onPress: () => void; testID: string; busy?: boolean };
+  action?: { label: string; onPress: () => void; testID: string; busyLabel?: string };
   testID: string;
 }) {
   const { color } = useTheme();
@@ -54,10 +54,10 @@ export function NoticeCard({
           {body ? <Text modifiers={[font({ textStyle: 'subheadline' })]}>{body}</Text> : null}
         </VStack>
       </HStack>
-      {action?.busy ? (
+      {action?.busyLabel ? (
         <ProgressView
           modifiers={[
-            accessibilityLabel(action.label),
+            accessibilityLabel(action.busyLabel),
             accessibilityIdentifier(`${action.testID}-busy`),
           ]}
         />
