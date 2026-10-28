@@ -8,7 +8,11 @@ import { vars } from '@/ui/theme/tokens';
 import { BoardCard } from './BoardCard';
 import { BoardEmpty, BoardFailed, BoardFooter, BoardLoading, BoardStale } from './BoardStates';
 import { boardTotal } from './boardState';
+import { DistanceAxis } from './DistanceAxis';
 import { FilterChips } from './FilterChips';
+import { FocusRing } from './FocusRing';
+import { LocationCard } from './LocationCard';
+import { PlaceRow } from './PlaceRow';
 import type { BoardOrigin, BoardRow } from './types';
 import type { BountyBoardModel } from './useBountyBoard';
 
@@ -16,6 +20,7 @@ type Handlers = {
   onPost: () => void;
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
+  onPickPlace: () => void;
 };
 
 export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBoardModel }) {
@@ -35,13 +40,42 @@ export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBo
         total={boardTotal(board.state)}
         onChange={board.setFilter}
       />
+      <OriginBar board={board} onPickPlace={handlers.onPickPlace} />
       <BoardBody board={board} {...handlers} />
     </View>
   );
 }
 
+function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlace: () => void }) {
+  const { origin, state } = board;
+  if (!origin) return null;
+  if (origin.kind === 'none') {
+    return origin.reason === 'undetermined' ? (
+      <LocationCard
+        busy={board.allowing}
+        onAllow={board.allowLocation}
+        onLater={board.dismissLocation}
+      />
+    ) : (
+      <PlaceRow chosen={null} onPick={onPickPlace} />
+    );
+  }
+  const axis =
+    state.kind === 'ready' && state.rows.length > 0 ? (
+      <DistanceAxis rows={state.rows} origin={origin.kind} onFocus={board.focus.focus} />
+    ) : null;
+  return origin.kind === 'place' ? (
+    <>
+      <PlaceRow chosen={origin.label} onPick={onPickPlace} />
+      {axis}
+    </>
+  ) : (
+    axis
+  );
+}
+
 function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: BountyBoardModel }) {
-  const { state } = board;
+  const { state, focus } = board;
   if (state.kind === 'loading') return <BoardLoading testID="bounty-board-loading" />;
   if (state.kind === 'failed') return <BoardFailed onRetry={board.retry} />;
   const firstUnlocated = unlocatedFrom(board.origin, state.rows);
@@ -61,7 +95,21 @@ function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: Bount
           {state.rows.map((row) => (
             <Fragment key={row.id}>
               {row.id === firstUnlocated ? <UnlocatedHeader /> : null}
-              <BoardCard row={row} onOpen={onOpen} onApply={onApply} />
+              <BoardCard
+                row={row}
+                onOpen={onOpen}
+                onApply={onApply}
+                cardRef={focus.cardRef(row.id)}
+                ring={
+                  focus.ring?.id === row.id ? (
+                    <FocusRing
+                      key={focus.ring.key}
+                      ringKey={focus.ring.key}
+                      onDone={focus.clearRing}
+                    />
+                  ) : null
+                }
+              />
             </Fragment>
           ))}
           <BoardFooter state={state} onRetryPage={board.retryPage} />

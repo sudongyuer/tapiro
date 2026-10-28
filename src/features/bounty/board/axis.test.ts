@@ -30,12 +30,12 @@ describe('axisMarks', () => {
     row('nowhere', null),
   ];
 
-  test('marks located rows within 2 km at their distance along the width', () => {
+  test('marks located rows within 2 km at their distance along the width, nearest first', () => {
     const { marks } = axisMarks(rows, 300);
     expect(marks).toEqual([
       { ids: ['near'], x: 45, category: 'move' },
-      { ids: ['edge'], x: 300, category: 'move' },
       { ids: ['mid'], x: 240, category: 'move' },
+      { ids: ['edge'], x: 300, category: 'move' },
     ]);
   });
 
@@ -52,6 +52,53 @@ describe('axisMarks', () => {
       beyond: 0,
       firstBeyondId: null,
     });
+  });
+});
+
+describe('axisMarks merging', () => {
+  const typed = (id: string, distanceM: number, category: BoardRow['category']) => ({
+    ...row(id, distanceM),
+    category,
+  });
+
+  test('marks closer than 44 pt merge into one at the nearest, keeping ids in distance order', () => {
+    const { marks } = axisMarks(
+      [
+        typed('a', 300, 'pickup'),
+        typed('b', 500, 'buy'),
+        typed('c', 800, 'accompany'),
+        typed('d', 900, 'handle'),
+        typed('e', 1200, 'study'),
+        typed('f', 1600, 'move'),
+        typed('g', 1900, 'pickup'),
+      ],
+      260,
+    );
+    expect(marks).toEqual([
+      { ids: ['a', 'b'], x: 39, category: 'pickup' },
+      { ids: ['c', 'd'], x: 104, category: 'accompany' },
+      { ids: ['e'], x: 156, category: 'study' },
+      { ids: ['f', 'g'], x: 208, category: 'move' },
+    ]);
+  });
+
+  test('a group is measured from its nearest mark, so drawn marks stay 44 pt apart', () => {
+    const { marks } = axisMarks([row('a', 0), row('b', 200), row('c', 400), row('d', 600)], 400);
+    expect(marks.map((mark) => mark.ids)).toEqual([
+      ['a', 'b'],
+      ['c', 'd'],
+    ]);
+    expect(marks.map((mark) => mark.x)).toEqual([0, 80]);
+  });
+
+  test('marks exactly 44 pt apart stay separate', () => {
+    const { marks } = axisMarks([row('a', 0), row('b', 440)], 200);
+    expect(marks.map((mark) => mark.ids)).toEqual([['a'], ['b']]);
+  });
+
+  test('rows at the same distance keep the RPC order inside the group', () => {
+    const { marks } = axisMarks([row('z', 700), row('y', 700), row('x', 100)], 300);
+    expect(marks.map((mark) => mark.ids)).toEqual([['x'], ['z', 'y']]);
   });
 });
 

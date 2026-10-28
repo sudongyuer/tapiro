@@ -1,5 +1,6 @@
 import { Host, VStack } from '@expo/ui/swift-ui';
 import { contentShape, frame, onTapGesture, padding, shapes } from '@expo/ui/swift-ui/modifiers';
+import type { ReactNode, Ref } from 'react';
 import type { AccessibilityActionEvent } from 'react-native';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
@@ -16,10 +17,14 @@ export function BoardCard({
   row,
   onOpen,
   onApply,
+  cardRef,
+  ring,
 }: {
   row: BoardRow;
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
+  cardRef?: Ref<View>;
+  ring?: ReactNode;
 }) {
   const { t, language } = useI18n();
   const copy = cardCopy(row, t, language, new Date());
@@ -32,6 +37,7 @@ export function BoardCard({
 
   return (
     <View
+      ref={cardRef}
       accessible
       accessibilityRole="button"
       accessibilityLabel={copy.label}
@@ -62,6 +68,7 @@ export function BoardCard({
           {row.appliedByMe ? <CardApplied testID={testID} /> : null}
         </VStack>
       </Host>
+      {ring}
     </View>
   );
 }

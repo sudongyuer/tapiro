@@ -17,6 +17,10 @@ export default function BountyLayout() {
           headerLargeTitleStyle: { color: onStage, fontWeight: '800' },
         }}
       />
+      <Stack.Screen
+        name="place"
+        options={{ title: t('bounty.board.place.pick'), headerLargeTitleEnabled: false }}
+      />
     </Stack>
   );
 }

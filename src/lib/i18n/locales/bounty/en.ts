@@ -177,6 +177,9 @@ const en: typeof zhHans = {
       km2: '2 km',
       more: '+{{count}} farther',
       label: 'Distance from {{origin}}',
+      mark: '{{titles}}, {{distance}}',
+      titleJoin: '; ',
+      range: '{{from}} to {{to}}',
       moreLabel: '{{count}} more bounties farther away; tap to see',
     },
     location: {

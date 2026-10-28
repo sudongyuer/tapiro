@@ -1,12 +1,20 @@
 import { Stack, useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { RefreshControl, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { useRef, type RefObject } from 'react';
+import {
+  RefreshControl,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser, type AccountUser } from '@/features/account';
 import { BountyBoard, closePostSheet, useBountyBoard, useStartPost } from '@/features/bounty';
-import { HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
+import { HOME_TOP_CHROME, HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
 import { useI18n } from '@/lib/i18n';
+import { vars } from '@/ui/theme/tokens';
 
 const openBounty = (_id: string) => {};
 const applyTo = (_id: string) => {};
@@ -32,14 +40,22 @@ function BountyHome({ user }: { user: AccountUser }) {
     },
   });
   const { scrollViewProps, onLiveCardsLayout } = useHomeScroll(() => stack.setOpen(true));
-  const board = useBountyBoard(user.id);
+  const topInset = useSafeAreaInsets().top + HOME_TOP_CHROME + vars['--space-3'];
+  const content = useRef<View>(null);
+  const board = useBountyBoard(user.id, { scroll: scrollViewProps.ref, content, topInset });
   const homeScroll = {
     ...scrollViewProps,
+    innerViewRef: content as RefObject<View>,
     onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       scrollViewProps.onScroll(event);
-      board.paging.onScroll(event);
+      board.scrollHandlers.onScroll(event);
     },
-    onContentSizeChange: board.paging.onContentSizeChange,
+    onScrollBeginDrag: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollViewProps.onScrollBeginDrag(event);
+      board.scrollHandlers.onScrollBeginDrag();
+    },
+    onContentSizeChange: board.scrollHandlers.onContentSizeChange,
+    onMomentumScrollEnd: board.scrollHandlers.onMomentumScrollEnd,
   };
 
   return (
@@ -60,7 +76,13 @@ function BountyHome({ user }: { user: AccountUser }) {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
         board={
-          <BountyBoard board={board} onPost={startPost} onOpen={openBounty} onApply={applyTo} />
+          <BountyBoard
+            board={board}
+            onPost={startPost}
+            onOpen={openBounty}
+            onApply={applyTo}
+            onPickPlace={() => router.push('/bounty/place')}
+          />
         }
         refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}
       />

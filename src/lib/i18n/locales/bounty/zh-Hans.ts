@@ -172,6 +172,9 @@ export default {
       km2: '2 km',
       more: '+{{count}} 更远',
       label: '距离，从{{origin}}算',
+      mark: '{{titles}}，{{distance}}',
+      titleJoin: '、',
+      range: '{{from}} 到 {{to}}',
       moreLabel: '还有 {{count}} 个更远的悬赏，点一下看',
     },
     location: {

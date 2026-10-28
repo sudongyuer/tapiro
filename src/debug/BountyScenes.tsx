@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { PlatformColor, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fixtureUser } from '@/features/account';
 import {
@@ -63,19 +64,23 @@ export function PlaceSearchScene({ onReady }: { onReady: () => void }) {
 }
 
 export function BountyBoardScene({ onReady }: { onReady: () => void }) {
-  const board = useBountyBoard(fixtureUser('apple').id);
+  const scroll = useRef<ScrollView>(null);
+  const content = useRef<View>(null);
+  const topInset = useSafeAreaInsets().top + vars['--space-3'];
+  const board = useBountyBoard(fixtureUser('apple').id, { scroll, content, topInset });
   const [left, setLeft] = useState<string | null>(null);
   useEffect(onReady, [onReady]);
   return (
     <>
       <ScrollView
+        ref={scroll}
+        innerViewRef={content as RefObject<View>}
         testID="bounty-board-scene"
         contentInsetAdjustmentBehavior="automatic"
         style={styles.screen}
         contentContainerStyle={styles.content}
         scrollEventThrottle={16}
-        onScroll={board.paging.onScroll}
-        onContentSizeChange={board.paging.onContentSizeChange}
+        {...board.scrollHandlers}
         refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}
       >
         <BountyBoard
@@ -83,6 +88,7 @@ export function BountyBoardScene({ onReady }: { onReady: () => void }) {
           onPost={() => setLeft('post')}
           onOpen={(id) => setLeft(`open-${id}`)}
           onApply={(id) => setLeft(`apply-${id}`)}
+          onPickPlace={() => setLeft('pick-place')}
         />
       </ScrollView>
       <Marker name={left} />

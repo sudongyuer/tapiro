@@ -1,3 +1,3 @@
-export { HomeScreen } from './HomeScreen';
+export { HOME_TOP_CHROME, HomeScreen } from './HomeScreen';
 export { useLiveStackState } from './useLiveStack';
 export { useHomeScroll } from './useHomeScroll';

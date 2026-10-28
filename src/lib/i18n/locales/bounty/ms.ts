@@ -179,6 +179,9 @@ const ms: typeof zhHans = {
       km2: '2 km',
       more: '+{{count}} lebih jauh',
       label: 'Jarak dari {{origin}}',
+      mark: '{{titles}}, {{distance}}',
+      titleJoin: '; ',
+      range: '{{from}} hingga {{to}}',
       moreLabel: '{{count}} lagi ganjaran yang lebih jauh; ketik untuk lihat',
     },
     location: {

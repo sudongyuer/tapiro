@@ -41,3 +41,9 @@ status: running
 8. Task 8 fix round: two ms runs of `bounty_board_list` timed out on the first `axe describe-ui` (20 s) while the
    machine's load average was 217–320 (a VM and LobeHub on top of `ps`); the same build passed once load fell to ~6.
    Tag `screenshot-timeout`. Outside cause, recorded with the load numbers; no change.
+9. Task 9: after the first `bounty_board_location` run, every `simctl io recordVideo` on `Tapiro Verify` failed with
+   "Host recording is already in progress" (no recorder process left on the host) and every `simctl io screenshot`
+   taken right after an AXe tap or swipe took 5–8 s, so the axis case saw one frame in 5 s and missed the 1.3 s ring.
+   `xcrun simctl shutdown` + `boot` of the verify Simulator cleared both (screenshots back to 0.2 s, recording works).
+   Tag `simulator-state`. Candidate: `run.py` treats "video missing" or a recorder exit code 16 as a Simulator fault and
+   reboots the device once before the next case, instead of reporting it next to an unrelated assertion.

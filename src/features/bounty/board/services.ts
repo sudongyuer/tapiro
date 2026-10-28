@@ -18,7 +18,7 @@ export const boardService: BoardService = uiVerify
 export const originStore = createOriginStore(Settings, userCleanups);
 
 const seededPlace = uiVerifyArgument('uiVerifyBoardPlace');
-if (uiVerify && seededPlace === 'none') originStore.setChosenPlace(FIXTURE_USER_ID, null);
+if (uiVerify && seededPlace === 'none') originStore.clear(FIXTURE_USER_ID);
 const sunway = FIXTURE_PLACES.find((place) => place.id === 'sunway-geo')?.place;
 if (uiVerify && seededPlace === 'sunway' && sunway) {
   originStore.setChosenPlace(FIXTURE_USER_ID, {

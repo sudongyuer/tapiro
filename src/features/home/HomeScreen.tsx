@@ -41,6 +41,7 @@ const BUBBLE_TOP = 18;
 const BEFORE_FIRST_SCROLL = -100000;
 // useHeaderHeight reports the expanded large-title header; the strip hangs under the compact bar (54 pt on iOS 26).
 const COMPACT_BAR = 54;
+export const HOME_TOP_CHROME = COMPACT_BAR + STRIP_ROW;
 
 export type HomeScreenProps = {
   scrollViewProps: ScrollViewProps & { ref: RefObject<ScrollView | null> };

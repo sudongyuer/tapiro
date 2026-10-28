@@ -5,6 +5,7 @@ import type { BountyCategory } from '@/lib/stickers/category';
 import type { BoardRow } from './types';
 
 export const AXIS_RANGE_M = 2000;
+export const AXIS_MERGE_PT = 44;
 
 export type AxisMark = { ids: string[]; x: number; category: BountyCategory };
 
@@ -12,7 +13,7 @@ export function axisMarks(
   rows: BoardRow[],
   widthPt: number,
 ): { marks: AxisMark[]; beyond: number; firstBeyondId: string | null } {
-  const marks: AxisMark[] = [];
+  const plotted: { id: string; x: number; category: BountyCategory }[] = [];
   let beyond = 0;
   let firstBeyondId: string | null = null;
   for (const row of rows) {
@@ -22,11 +23,18 @@ export function axisMarks(
       firstBeyondId ??= row.id;
       continue;
     }
-    marks.push({
-      ids: [row.id],
+    plotted.push({
+      id: row.id,
       x: (row.distanceM / AXIS_RANGE_M) * widthPt,
       category: row.category,
     });
+  }
+  plotted.sort((a, b) => a.x - b.x);
+  const marks: AxisMark[] = [];
+  for (const { id, x, category } of plotted) {
+    const last = marks.at(-1);
+    if (last && x - last.x < AXIS_MERGE_PT) last.ids.push(id);
+    else marks.push({ ids: [id], x, category });
   }
   return { marks, beyond, firstBeyondId };
 }
