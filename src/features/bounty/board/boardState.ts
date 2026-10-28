@@ -54,6 +54,7 @@ function fresh(page: BoardPage, at: string, generation: number, writes: Writes):
     writes,
     rows: overlaid(unique(page.items), writes),
     total: page.total ?? null,
+    locatedTotal: page.locatedTotal ?? null,
     next: page.next,
     loadedAt: at,
     refreshFailed: false,
@@ -75,6 +76,7 @@ function withoutPoster(state: BoardState, posterId: string): BoardState {
     generation,
     rows: state.rows.filter((row) => row.poster.id !== posterId),
     total: null,
+    locatedTotal: null,
     page: 'idle',
   };
 }
@@ -113,7 +115,7 @@ export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
       if (event.page.restarted) {
         const restarted = fresh(event.page, event.at, generation, writes);
         return restarted.kind === 'ready' && event.page.total === undefined
-          ? { ...restarted, total: state.total }
+          ? { ...restarted, total: state.total, locatedTotal: state.locatedTotal }
           : restarted;
       }
       return {

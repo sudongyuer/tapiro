@@ -43,10 +43,12 @@ export function axisMarks(
 export function beyondCount({
   rows,
   total,
+  locatedTotal,
   next,
 }: {
   rows: BoardRow[];
   total: number | null;
+  locatedTotal: number | null;
   next: unknown | null;
 }) {
   let inRange = 0;
@@ -57,7 +59,9 @@ export function beyondCount({
     else if (row.distanceM > AXIS_RANGE_M) beyond += 1;
     else inRange += 1;
   }
-  if (total === null || next === null) return beyond;
+  if (next === null) return beyond;
+  if (locatedTotal !== null) return Math.max(beyond, locatedTotal - inRange);
+  if (total === null) return beyond;
   return Math.max(beyond, total - inRange - unlocated);
 }
 

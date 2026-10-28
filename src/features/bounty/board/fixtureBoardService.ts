@@ -225,7 +225,9 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
             }
           : null;
       const items = slice.map((item) => toRow(item, here));
-      return after === null ? { items, next, total: list.length } : { items, next };
+      if (after !== null) return { items, next };
+      const locatedTotal = list.filter((item) => item.point !== null).length;
+      return { items, next, total: list.length, locatedTotal };
     },
     async detail(id, point) {
       if (detailFailures > 0) {

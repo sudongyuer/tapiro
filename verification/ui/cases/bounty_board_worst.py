@@ -1,8 +1,8 @@
 """Worst-case board (break-ui): with 45 bounties of 60-code-point titles, 80-code-point places and 40-character names,
 RM 500 sits inside the card beside a title that wraps to two lines; the place line truncates the label but always shows
 the distance (100 m, 1.8 km, 18 km); 申请 stays a 44 pt pill beside the 貘友 poster; the applied card shows 已申请 · 等对方选
-in full; a two-digit 「+N 更远」 fits the axis; the list loads all 45 cards and ends with 没写地点. The detail of the first card and the
-apply sheet with a 140-code-point note with spaces (`-uiVerifyApplyNote worst`) fit, and the applied detail keeps 撤回 at 44 pt. Place search lists an
+in full; the first page already reads the exact 「+42 更远」 (42 located bounties beyond 2 km), which fits the axis;
+the list loads all 45 cards and ends with 没写地点. The detail of the first card and the apply sheet with a 140-code-point note with spaces (`-uiVerifyApplyNote worst`) fit, and the applied detail keeps 撤回 at 44 pt. Place search lists an
 80-code-point place, and choosing it shows the place row with 附近 still visible and 换 at 44 pt."""
 import re
 import sys
@@ -29,6 +29,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
         '-uiVerifyFixture', 'worst', '-uiVerifyApplyNote', 'worst']
 NOTE_MAX = 140
 COUNT = 45
+FARTHER = 42
 PILL_MIN = 43.5
 GUTTER = 16
 WORST_PLACE = code_points('Sunway Pyramid Convention Centre 旁边的 Sunway Lagoon 正门售票处，', 80)
@@ -85,13 +86,12 @@ def tail(key):
 
 reach_home(ui)
 more = visible(ui, 'bounty-axis-more')
-more_label = re.compile(ui.pattern('bounty.board.axis.moreLabel', count=r'\d{2}'))
-assert more_label.fullmatch(more.get('AXLabel') or ''), more.get('AXLabel')
+assert more.get('AXLabel') == ui.t('bounty.board.axis.moreLabel', count=FARTHER), more.get('AXLabel')
 ui.at_rest()
 shot = ui.snap('00-axis')
 width = screen(ui.read())['width']
 assert more['frame']['x'] + more['frame']['width'] <= width - GUTTER + 1, f'「+N 更远」 runs past the gutter: {more["frame"]}'
-more_text = ui.pattern('bounty.board.axis.more', count=r'\d{2}').replace('\\ ', r'\s?')
+more_text = re.escape(ui.t('bounty.board.axis.more', count=FARTHER)).replace('\\ ', r'\s?')
 assert_in_card(shot, padded(more, 4), more_text, '「+N 更远」')
 
 first, shot = card_shot('bounty-card-fixture-worst-01', '01-top')

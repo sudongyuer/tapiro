@@ -27,6 +27,7 @@ export type BoardPage = {
   items: BoardRow[];
   next: unknown | null;
   total?: number;
+  locatedTotal?: number;
   restarted?: boolean;
 };
 
@@ -73,6 +74,7 @@ export type BoardState = { generation: number; writes: Readonly<Record<string, L
       kind: 'ready';
       rows: BoardRow[];
       total: number | null;
+      locatedTotal: number | null;
       next: unknown | null;
       loadedAt: string;
       refreshFailed: boolean;

@@ -74,7 +74,13 @@ export function toBoardPage(value: unknown): BoardPage {
   const items = (page.items as unknown[]).map(toBoardRow);
   const next = page.next ?? null;
   const total = countOrNull(page.total, 'total');
-  return total === null ? { items, next } : { items, next, total };
+  const locatedTotal = countOrNull(page.locatedTotal, 'locatedTotal');
+  return {
+    items,
+    next,
+    ...(total === null ? {} : { total }),
+    ...(locatedTotal === null ? {} : { locatedTotal }),
+  };
 }
 
 function toPlace(value: unknown): BountyDetail['place'] {

@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
+import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
+
+import { beyondCount } from './axis';
 import {
   INITIAL_BOARD,
   boardReducer,
@@ -8,6 +11,7 @@ import {
   nearEnd,
   type BoardEvent,
 } from './boardState';
+import { createFixtureBoardService, fixtureBoardOptions } from './fixtureBoardService';
 import type { BoardOrigin, BoardPage, BoardRow, BoardState } from './types';
 
 const row = (id: string, patch: Partial<BoardRow> = {}): BoardRow => ({
@@ -28,10 +32,16 @@ const row = (id: string, patch: Partial<BoardRow> = {}): BoardRow => ({
   ...patch,
 });
 
-const page = (ids: string[], next: unknown | null = null, total?: number): BoardPage => ({
+const page = (
+  ids: string[],
+  next: unknown | null = null,
+  total?: number,
+  locatedTotal?: number,
+): BoardPage => ({
   items: ids.map((id) => row(id)),
   next,
   ...(total === undefined ? {} : { total }),
+  ...(locatedTotal === undefined ? {} : { locatedTotal }),
 });
 
 const AT = '2026-10-27T04:00:00.000Z';
@@ -153,11 +163,11 @@ describe('pages', () => {
       run([
         ...loaded,
         { type: 'pageStarted' },
-        pageAnswer({ ...page(['x', 'a'], { after: 'a' }, 7), restarted: true }),
+        pageAnswer({ ...page(['x', 'a'], { after: 'a' }, 7, 5), restarted: true }),
       ]),
     );
     expect(state.rows.map((item) => item.id)).toEqual(['x', 'a']);
-    expect(state).toMatchObject({ total: 7, loadedAt: LATER, page: 'idle' });
+    expect(state).toMatchObject({ total: 7, locatedTotal: 5, loadedAt: LATER, page: 'idle' });
   });
 
   test.each(['originChanged', 'filterChanged'] as const)(
@@ -440,7 +450,7 @@ describe('blocking a poster', () => {
       row(id, { poster: { id: poster, name: poster, tier: 'reliable' } }),
     ),
     next: null,
-    ...(total === undefined ? {} : { total }),
+    ...(total === undefined ? {} : { total, locatedTotal: total }),
   });
 
   test('removes that poster’s rows at once and hides the count until the reload answers', () => {
@@ -460,6 +470,28 @@ describe('blocking a poster', () => {
     ]);
     expect(ids(state)).toEqual(['b']);
     expect(boardTotal(state)).toBeNull();
+    expect(ready(state).locatedTotal).toBeNull();
+  });
+
+  test('the reload after a block restores both counts', async () => {
+    const stub = deferredService();
+    const board = createBoardController(stub.service, () => new Date(AT));
+    void board.setQuery(ME, 'all');
+    stub.pending[0].resolve(
+      mixed(
+        [
+          ['a', 'lin'],
+          ['b', 'jie'],
+        ],
+        2,
+      ),
+    );
+    await settle();
+    void board.blocked('lin');
+    expect(ready(board.get().state)).toMatchObject({ total: null, locatedTotal: null });
+    stub.pending[1].resolve(mixed([['b', 'jie']], 1));
+    await settle();
+    expect(ready(board.get().state)).toMatchObject({ total: 1, locatedTotal: 1 });
   });
 
   test('a load that started before the block cannot bring the rows back, and a fresh load runs', async () => {
@@ -489,5 +521,26 @@ describe('blocking a poster', () => {
     stub.pending[2].resolve(mixed([['b', 'jie']]));
     await settle();
     expect(ids(board.get().state)).toEqual(['b']);
+  });
+});
+
+describe('the 45-row worst board', () => {
+  test('the first page reads the exact count of farther bounties', async () => {
+    const service = createFixtureBoardService({
+      ...fixtureBoardOptions(
+        () => undefined,
+        'demo',
+        () => new Date(AT),
+      ),
+      board: 'worst',
+    });
+    const board = createBoardController(service, () => new Date(AT));
+    await board.setQuery({ kind: 'me', point: SUNWAY_PYRAMID }, 'all');
+    const state = ready(board.get().state);
+    expect(state.next).not.toBeNull();
+    expect(beyondCount(state)).toBe(42);
+    while (ready(board.get().state).next !== null) await board.loadMore();
+    const rows = ready(board.get().state).rows;
+    expect(rows.filter((row) => row.distanceM !== null && row.distanceM > 2000)).toHaveLength(42);
   });
 });
