@@ -28,6 +28,13 @@ export const DEFAULT_DETAIL_ID = 'fixture-bounty-01';
 export const FIXTURE_ADDRESS = 'A 座 12-03';
 export const FIXTURE_ME: Person = { id: FIXTURE_USER_ID, name: '林小貘', tier: 'reliable' };
 const OUTCOME_NOTE = '我下午三点前都在宿舍，可以顺路帮你拿上来。';
+const WORST_OUTCOME_NOTE = [
+  ...'Saya di lobi Sunway Geo Residences sekarang, boleh sampai dalam 10 minit dengan troli. '.repeat(
+    2,
+  ),
+]
+  .slice(0, 140)
+  .join('');
 
 export type BoardFailure = (typeof BOARD_FAILURES)[number];
 export type ApplyMode = (typeof APPLY_MODES)[number];
@@ -175,7 +182,8 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
 
   function party(item: FixtureBounty, application: BountyDetail['myApplication']) {
     const shown = outcome(item);
-    const note = application?.note ?? OUTCOME_NOTE;
+    const note =
+      application?.note ?? (options.board === 'worst' ? WORST_OUTCOME_NOTE : OUTCOME_NOTE);
     if (shown === 'selected') {
       return {
         status: 'assigned',

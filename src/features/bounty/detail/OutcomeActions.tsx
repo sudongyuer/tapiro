@@ -82,20 +82,18 @@ export function NotSelectedActions({
         {t('bounty.detail.notSelected.body', { name })}
       </AppText>
       {note ? (
-        <View style={styles.note}>
-          <AppText variant="meta" tone="tertiaryLabel" style={styles.centred}>
+        <AppText
+          variant="secondary"
+          tone="secondaryLabel"
+          numberOfLines={NOTE_LINES}
+          testID="bounty-detail-not-selected-note"
+          style={styles.centred}
+        >
+          <AppText variant="meta" tone="tertiaryLabel">
             {t('bounty.detail.notSelected.yourNote')}
           </AppText>
-          <AppText
-            variant="secondary"
-            tone="secondaryLabel"
-            numberOfLines={NOTE_LINES}
-            testID="bounty-detail-not-selected-note"
-            style={styles.centred}
-          >
-            {note}
-          </AppText>
-        </View>
+          {` ${note}`}
+        </AppText>
       ) : null}
       <PillButton
         label={t('bounty.detail.notSelected.browse')}
@@ -117,5 +115,4 @@ const styles = StyleSheet.create({
   },
   shrink: { flexShrink: 1 },
   centred: { textAlign: 'center' },
-  note: { gap: vars['--space-1'] },
 });

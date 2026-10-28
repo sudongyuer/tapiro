@@ -18,6 +18,8 @@ import {
   font,
   foregroundStyle,
   frame,
+  layoutPriority,
+  lineLimit,
   listRowBackground,
   listRowInsets,
   multilineTextAlignment,
@@ -158,10 +160,16 @@ function ApplicantRow({
         </RNHostView>
         <VStack alignment="leading" spacing={vars['--space-1']} modifiers={[fill]}>
           <HStack spacing={vars['--space-2']} alignment="center">
-            <Text modifiers={[font({ textStyle: 'body', weight: 'semibold' }), primary, wraps]}>
+            <Text
+              modifiers={[font({ textStyle: 'body', weight: 'semibold' }), primary, lineLimit(1)]}
+            >
               {name}
             </Text>
-            <TierMark label={tier} rank={tierRank(applicant.tier)} />
+            <TierMark
+              label={tier}
+              rank={tierRank(applicant.tier)}
+              modifiers={[fixedSize(), layoutPriority(1)]}
+            />
           </HStack>
           <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{meta}</Text>
           {note ? <Text modifiers={[primary, wraps]}>{note}</Text> : null}

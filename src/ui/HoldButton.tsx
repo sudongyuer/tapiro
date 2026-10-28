@@ -193,7 +193,12 @@ export function HoldButton({
   const content = (tone: '--color-on-hold-track' | '--color-on-hold-fill') => (
     <>
       {busy ? <ActivityIndicator color={color(tone)} /> : null}
-      <AppText variant="body" style={[styles.label, { color: color(tone) }]}>
+      <AppText
+        variant="body"
+        numberOfLines={2}
+        ellipsizeMode="middle"
+        style={[styles.label, { color: color(tone) }]}
+      >
         {text}
       </AppText>
     </>

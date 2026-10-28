@@ -379,6 +379,13 @@ describe('outcomes and the poster view', () => {
     expect(detail.myApplication?.note).toBeTruthy();
   });
 
+  test('the worst board gives the not-selected outcome a 140-code-point note', async () => {
+    const board = service({ board: 'worst', detail: 'notSelected', detailId: 'fixture-worst-02' });
+    const detail = await detailOf(board, 'fixture-worst-02');
+    expect(detail.myApplication?.status).toBe('not_selected');
+    expect(codePoints(detail.myApplication?.note ?? '')).toBe(140);
+  });
+
   test('the poster sees the address, and the helper once one is chosen', async () => {
     let helper: Person | null = null;
     let posted = false;

@@ -32,3 +32,8 @@ Started overnight 2026-10-28 with the user's advance approval of every recommend
    ran while the detail still covered the board, and the large title expanded on appear. The top request now waits for
    the board's `transitionEnd`. Tags `case-insensitive-path`, `scroll-before-appear`. Candidate: a lint rule that rejects
    two files in one folder whose names differ only by case.
+7. Task 9: the first dark run of `bounty_applicants_worst` failed because OCR did not read the secondary-label tier
+   text (貘友) on the dark grouped background, while the light run read it. The tier was on screen. The case now proves
+   the one-line name by the position of the 帮过 line, which OCR reads in both appearances, and reads the tier in light
+   only. Tag `ocr-dark-secondary`. Candidate: a note in `verification/ui/README.md` that OCR on secondary text in dark is
+   unreliable, so a case asserts layout through AX frames or a primary-ink line.

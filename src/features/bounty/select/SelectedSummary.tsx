@@ -5,6 +5,8 @@ import {
   fixedSize,
   font,
   frame,
+  layoutPriority,
+  lineLimit,
 } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
@@ -20,7 +22,6 @@ import { AddressSection } from '../shared/AddressSection';
 import type { DetailLoad } from './applicantsController';
 
 const AVATAR = 36;
-const wraps = fixedSize({ horizontal: false, vertical: true });
 const fill = frame({ maxWidth: Infinity, alignment: 'leading' });
 
 function HelperRow({ helper }: { helper: Person }) {
@@ -39,8 +40,14 @@ function HelperRow({ helper }: { helper: Person }) {
       <RNHostView matchContents>
         <Avatar uri={null} size={AVATAR} label={name} initial={nameInitial(name)} />
       </RNHostView>
-      <Text modifiers={[font({ textStyle: 'body', weight: 'semibold' }), wraps]}>{name}</Text>
-      <TierMark label={tier} rank={tierRank(helper.tier)} />
+      <Text modifiers={[font({ textStyle: 'body', weight: 'semibold' }), lineLimit(1)]}>
+        {name}
+      </Text>
+      <TierMark
+        label={tier}
+        rank={tierRank(helper.tier)}
+        modifiers={[fixedSize(), layoutPriority(1)]}
+      />
     </HStack>
   );
 }

@@ -81,9 +81,8 @@ ui.wait_label('bounty-detail-not-selected', lambda text: text == ui.t('bounty.de
               'the detail never shows 这次没选上')
 body = label('bounty-detail-not-selected-body')
 assert body == ui.t('bounty.detail.notSelected.body', name='小林'), f'the body reads {body!r}'
-ui.labelled(ui.t('bounty.detail.notSelected.yourNote'))
 note = label('bounty-detail-not-selected-note')
-assert note == NOTE, f'the note reads {note!r}'
+assert note == f"{ui.t('bounty.detail.notSelected.yourNote')} {NOTE}", f'the note reads {note!r}'
 browse = ui.element('bounty-detail-browse')
 assert browse.get('AXLabel') == ui.t('bounty.detail.notSelected.browse'), browse.get('AXLabel')
 assert_touch_target(browse, ui.t('bounty.detail.notSelected.browse'))
