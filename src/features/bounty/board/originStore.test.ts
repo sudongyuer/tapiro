@@ -4,6 +4,8 @@ import { createUserCleanups } from '@/lib/userCleanups';
 
 import {
   createOriginStore,
+  createShownOrigins,
+  detailOrigin,
   evaluateOrigin,
   requestLocation,
   resolveOrigin,
@@ -126,6 +128,30 @@ describe('steadyOrigin', () => {
     const place: BoardOrigin = { kind: 'place', point: GEO.point, label: GEO.label };
     expect(steadyOrigin(previous, place)).toBe(place);
     expect(steadyOrigin(null, moved)).toBe(moved);
+  });
+});
+
+describe('detailOrigin', () => {
+  const me = (latitude: number): BoardOrigin => ({
+    kind: 'me',
+    point: { latitude, longitude: 101.6078 },
+  });
+
+  test('the detail measures from the point the board cards were measured from', async () => {
+    const cleanups = createUserCleanups();
+    const shown = createShownOrigins(cleanups);
+    const board = me(3.0733);
+    shown.set('u1', board);
+    let evaluated = 0;
+    const walked = async () => {
+      evaluated += 1;
+      return me(3.0733 + 80 / 111_195);
+    };
+    expect(await detailOrigin(shown.get('u1'), walked)).toBe(board);
+    expect(evaluated).toBe(0);
+    expect(await detailOrigin(shown.get('u2'), walked)).toEqual(me(3.0733 + 80 / 111_195));
+    cleanups.run('u1');
+    expect(shown.get('u1')).toBeNull();
   });
 });
 

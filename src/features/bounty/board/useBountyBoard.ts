@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 import { placePick } from '../place/placePick';
+import { shownOrigins } from './services';
 import { useBoard } from './useBoard';
 import { useCardFocus, type ScrollHost } from './useCardFocus';
 import { useOrigin } from './useOrigin';
@@ -71,6 +72,10 @@ type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 export function useBountyBoard(userId: string, host: ScrollHost) {
   const { origin, evaluate, allow, dismiss, choose } = useOrigin(userId);
   const board = useBoard(origin, evaluate);
+  const { shownOrigin } = board;
+  useEffect(() => {
+    if (shownOrigin) shownOrigins.set(userId, shownOrigin);
+  }, [userId, shownOrigin]);
   const [pulling, pull] = useTracked(board.refresh);
   const [retrying, retryRefresh] = useTracked(board.refresh);
   const [allowing, allowLocation] = useTracked(allow);

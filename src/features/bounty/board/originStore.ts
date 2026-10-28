@@ -91,6 +91,26 @@ export function steadyOrigin(previous: BoardOrigin | null, next: BoardOrigin): B
   return next;
 }
 
+export function createShownOrigins(cleanups?: UserCleanups) {
+  const shown = new Map<string, BoardOrigin>();
+  cleanups?.register((userId) => shown.delete(userId));
+  return {
+    get: (userId: string) => shown.get(userId) ?? null,
+    set(userId: string, origin: BoardOrigin) {
+      shown.set(userId, origin);
+    },
+  };
+}
+
+export type ShownOrigins = ReturnType<typeof createShownOrigins>;
+
+export async function detailOrigin(
+  shown: BoardOrigin | null,
+  evaluate: () => Promise<BoardOrigin>,
+): Promise<BoardOrigin> {
+  return shown ?? (await evaluate());
+}
+
 export async function evaluateOrigin(
   location: Pick<LocationService, 'permission' | 'currentPoint'>,
   stored: { chosen: ChosenPlace | null; dismissed: boolean },

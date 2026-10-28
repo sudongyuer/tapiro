@@ -3,8 +3,8 @@ import { useCallback, useEffect, useReducer, useRef } from 'react';
 
 import { locationService } from '@/lib/location';
 
-import { evaluateOrigin } from '../board/originStore';
-import { boardService, originStore } from '../board/services';
+import { detailOrigin, evaluateOrigin } from '../board/originStore';
+import { boardService, originStore, shownOrigins } from '../board/services';
 import { originPoint } from '../board/types';
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied } from '../shared/justApplied';
@@ -23,10 +23,12 @@ export function useDetail(id: string, userId: string) {
     const current = ++request.current;
     dispatch({ type: 'started', request: current });
     try {
-      const origin = await evaluateOrigin(locationService, {
-        chosen: originStore.chosenPlace(userId),
-        dismissed: originStore.cardDismissed(userId),
-      });
+      const origin = await detailOrigin(shownOrigins.get(userId), () =>
+        evaluateOrigin(locationService, {
+          chosen: originStore.chosenPlace(userId),
+          dismissed: originStore.cardDismissed(userId),
+        }),
+      );
       const answer = await boardService.detail(id, originPoint(origin));
       if (answer === 'gone') {
         bountyCache.drop(id);
