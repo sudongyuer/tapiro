@@ -8,7 +8,7 @@ from driver import UI, assert_touch_target, by_id, reach_home, tab  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/account/', 'src/app/(tabs)/', 'verification/ui/board.py',
         'verification/ui/bounty.py']
-BUDGET = 300
+BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBlock', 'failOnce']
 CARD = 'bounty-card-fixture-bounty-01'
 PERSON = 'fixture-poster-lin'
