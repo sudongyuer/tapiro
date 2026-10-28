@@ -99,6 +99,29 @@ describe('createTextSync', () => {
     expect(reported).toEqual(['oldx']);
   });
 
+  test('a second write before the first lands does not report the first as typing', () => {
+    let value = 'old';
+    const queued: string[] = [];
+    const native = {
+      get: () => value,
+      set: (text: string) => {
+        queued.push(text);
+      },
+    };
+    const reported: string[] = [];
+    const sync = createTextSync(native, 'old');
+    sync.listen((text) => reported.push(text));
+    sync.set('a');
+    sync.set('b');
+    value = queued.shift() ?? value;
+    expect(sync.sync()).toBe('b');
+    value = queued.shift() ?? value;
+    expect(sync.sync()).toBe('b');
+    value = 'bc';
+    expect(sync.sync()).toBe('bc');
+    expect(reported).toEqual(['bc']);
+  });
+
   test('a released native view keeps the last value', () => {
     const { native, reported, sync } = setup('a');
     native.get = () => {

@@ -7,7 +7,7 @@ export type TextSync = {
   attach(): () => void;
 };
 
-type PendingWrite = { from: string; to: string };
+type PendingWrite = { stale: Set<string>; to: string };
 
 function read(native: NativeText): string | null {
   try {
@@ -28,7 +28,7 @@ export function createTextSync(native: NativeText, start: string): TextSync {
       const text = read(native);
       if (text === null) return last;
       if (pending) {
-        if (text === pending.from && text !== pending.to) return last;
+        if (text !== pending.to && pending.stale.has(text)) return last;
         pending = null;
       }
       if (text !== last) {
@@ -39,7 +39,10 @@ export function createTextSync(native: NativeText, start: string): TextSync {
     },
     set(text) {
       const from = read(native);
-      pending = from === null || from === text ? null : { from, to: text };
+      const stale = pending ? new Set([...pending.stale, pending.to]) : new Set<string>();
+      if (from !== null) stale.add(from);
+      stale.delete(text);
+      pending = stale.size ? { stale, to: text } : null;
       last = text;
       native.set(text);
     },
