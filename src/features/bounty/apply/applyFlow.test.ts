@@ -7,6 +7,7 @@ import { createApplyFlow, createWithdrawFlow } from './applyFlow';
 import {
   applyReducer,
   canSend,
+  detailNotice,
   noteCount,
   noteFits,
   noteToSend,
@@ -246,7 +247,26 @@ describe('withdraw flow', () => {
     await flow.withdraw();
     expect(reloads()).toBe(1);
     expect(changes).toEqual([]);
-    expect(flow.get().kind).toBe('notPending');
+    expect(flow.get()).toEqual({ kind: 'notPending', reloaded: false });
+  });
+
+  test('notPending yields to a failed reload, shows once current, and clears on the next load', () => {
+    let state = withdrawReducer(
+      { kind: 'busy' },
+      {
+        type: 'answered',
+        answer: { ok: false, reason: 'notPending' },
+      },
+    );
+    expect(detailNotice(false, state)).toBeNull();
+    expect(detailNotice(true, state)).toBe('stale');
+    state = withdrawReducer(state, { type: 'loaded' });
+    expect(detailNotice(true, state)).toBe('stale');
+    expect(detailNotice(false, state)).toBe('notPending');
+    state = withdrawReducer(state, { type: 'loaded' });
+    expect(state.kind).toBe('idle');
+    expect(detailNotice(false, state)).toBeNull();
+    expect(withdrawReducer({ kind: 'idle' }, { type: 'loaded' })).toEqual({ kind: 'idle' });
   });
 
   test('a failure shows and is not retried', async () => {

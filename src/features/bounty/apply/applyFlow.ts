@@ -88,6 +88,9 @@ export function createWithdrawFlow(id: string, deps: WithdrawDeps) {
         listeners.delete(listener);
       };
     },
+    loaded() {
+      set(withdrawReducer(state, { type: 'loaded' }));
+    },
     async withdraw() {
       if (state.kind === 'busy') return;
       set(withdrawReducer(state, { type: 'started' }));
@@ -95,8 +98,8 @@ export function createWithdrawFlow(id: string, deps: WithdrawDeps) {
         .withdraw(id)
         .catch(() => ({ ok: false as const, reason: 'failed' as const }));
       if (answer.ok) deps.cache.markWithdrawn(id);
-      else if (answer.reason === 'notPending') deps.reload();
       set(withdrawReducer(state, { type: 'answered', answer }));
+      if (!answer.ok && answer.reason === 'notPending') deps.reload();
     },
   };
 }

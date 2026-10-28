@@ -56,15 +56,28 @@ export function noteToSend(text: string) {
 
 export const noteCount = (text: string) => codePoints(text.trim());
 
-export type WithdrawState = { kind: 'idle' | 'busy' | 'failed' | 'notPending' };
+export type WithdrawState =
+  { kind: 'idle' | 'busy' | 'failed' } | { kind: 'notPending'; reloaded: boolean };
 
 export type WithdrawEvent =
   | { type: 'started' }
-  | { type: 'answered'; answer: { ok: true } | { ok: false; reason: 'notPending' | 'failed' } };
+  | { type: 'answered'; answer: { ok: true } | { ok: false; reason: 'notPending' | 'failed' } }
+  | { type: 'loaded' };
 
 export function withdrawReducer(state: WithdrawState, event: WithdrawEvent): WithdrawState {
+  if (event.type === 'loaded') {
+    if (state.kind !== 'notPending') return state;
+    return state.reloaded ? { kind: 'idle' } : { kind: 'notPending', reloaded: true };
+  }
   if (event.type === 'started') return state.kind === 'busy' ? state : { kind: 'busy' };
   if (state.kind !== 'busy') return state;
   if (event.answer.ok) return { kind: 'idle' };
-  return { kind: event.answer.reason };
+  return event.answer.reason === 'notPending'
+    ? { kind: 'notPending', reloaded: false }
+    : { kind: 'failed' };
+}
+
+export function detailNotice(refreshFailed: boolean, withdraw: WithdrawState) {
+  if (refreshFailed) return 'stale';
+  return withdraw.kind === 'notPending' && withdraw.reloaded ? 'notPending' : null;
 }

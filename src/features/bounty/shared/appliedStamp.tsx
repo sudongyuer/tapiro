@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useIsFocused } from 'expo-router';
-import { useLayoutEffect, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   ReduceMotion,
@@ -30,6 +30,7 @@ const STAMP_MIN_SCALE = 0.6;
 const STAMP_FROM = 1.4;
 const STAMP_DELAY_MS = 80;
 const NEVER = ReduceMotion.Never;
+const RELEASE_FALLBACK_MS = 600;
 const SPRING = { damping: 14, stiffness: 220, reduceMotion: NEVER } as const;
 const TILT = vars['--sticker-rotation-max'];
 
@@ -40,31 +41,35 @@ function landed() {
 function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
   const focused = useIsFocused();
   const reduceMotion = useReducedMotion();
-  const revision = useSyncExternalStore(justApplied.subscribe, justApplied.version);
-  const final = applied && !justApplied.has(id, surface);
+  const entry = useSyncExternalStore(justApplied.subscribe, () => justApplied.entry(id, surface));
+  const final = applied && entry === 'none';
   const tilt = useSharedValue(final ? TILT : 0);
   const stamp = useSharedValue(final ? 1 : 0);
   const scale = useSharedValue(1);
   const landing = useSharedValue(false);
+  const played = useRef(false);
 
   useLayoutEffect(() => {
     if (!applied) {
+      played.current = false;
       tilt.set(0);
       stamp.set(0);
       scale.set(1);
       return;
     }
-    if (!justApplied.has(id, surface)) {
+    if (entry === 'none') {
+      if (played.current) return;
       tilt.set(TILT);
       stamp.set(1);
       scale.set(1);
       return;
     }
-    if (!focused || !justApplied.take(id, surface)) {
+    if (entry === 'waiting' || !focused || !justApplied.take(id, surface)) {
       tilt.set(0);
       stamp.set(0);
       return;
     }
+    played.current = true;
     if (reduceMotion) {
       tilt.set(TILT);
       scale.set(1);
@@ -82,7 +87,13 @@ function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
     tilt.set(withSpring(TILT, SPRING));
     stamp.set(withDelay(STAMP_DELAY_MS, withSpring(1, SPRING), NEVER));
     scale.set(withDelay(STAMP_DELAY_MS, withSpring(1, SPRING), NEVER));
-  }, [applied, focused, reduceMotion, revision, id, surface, tilt, stamp, scale, landing]);
+  }, [applied, entry, focused, reduceMotion, id, surface, tilt, stamp, scale, landing]);
+
+  useEffect(() => {
+    if (!applied || entry !== 'waiting' || !focused) return;
+    const timer = setTimeout(() => justApplied.release(id, surface), RELEASE_FALLBACK_MS);
+    return () => clearTimeout(timer);
+  }, [applied, entry, focused, id, surface]);
 
   useAnimatedReaction(
     () => landing.get() && scale.get() <= 1,

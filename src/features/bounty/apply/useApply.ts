@@ -42,5 +42,5 @@ export function useWithdraw(id: string, reload: () => void) {
     }),
   );
   const state = useSyncExternalStore(flow.subscribe, flow.get);
-  return { state, withdraw: flow.withdraw };
+  return { state, withdraw: flow.withdraw, loaded: flow.loaded };
 }

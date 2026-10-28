@@ -1,5 +1,6 @@
 import { ProgressView, Section } from '@expo/ui/swift-ui';
 import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/modifiers';
+import { useEffect } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -12,6 +13,7 @@ import { vars } from '@/ui/theme/tokens';
 
 import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
+import { detailNotice } from '../apply/applyState';
 import { useWithdraw } from '../apply/useApply';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
@@ -29,6 +31,11 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
   const { t, language } = useI18n();
   const { state, retry } = useDetail(id, userId);
   const withdrawal = useWithdraw(id, () => void retry());
+  const loadedAt = state.kind === 'ready' ? state.loadedAt : null;
+  const { loaded } = withdrawal;
+  useEffect(() => {
+    if (loadedAt) loaded();
+  }, [loadedAt, loaded]);
 
   if (state.kind === 'gone') {
     return (
@@ -47,6 +54,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
   const copy = view ? detailCopy(view, t, language, now) : null;
   const failed = state.kind === 'failed';
   const stale = state.kind === 'ready' && state.refreshFailed;
+  const notice = detailNotice(stale, withdrawal.state);
   const retryAction = {
     label: t('bounty.detail.retry'),
     onPress: () => void retry(),
@@ -62,14 +70,14 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
       testID="bounty-detail"
       pinnedAbove="tabBar"
       notice={
-        withdrawal.state.kind === 'notPending' ? (
+        notice === 'notPending' ? (
           <NoticeCard
             tone="warning"
             icon="exclamationmark.triangle.fill"
             title={t('bounty.detail.withdrawNotPending')}
             testID="bounty-detail-withdraw-stale"
           />
-        ) : stale ? (
+        ) : notice === 'stale' && state.kind === 'ready' ? (
           <NoticeCard
             tone="warning"
             icon="exclamationmark.triangle.fill"

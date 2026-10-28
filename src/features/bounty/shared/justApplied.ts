@@ -5,10 +5,8 @@ export type ApplySurface = 'card' | 'detail';
 export function createJustApplied() {
   const pending = new Map<string, { surface: ApplySurface; shown: boolean }>();
   const listeners = new Set<() => void>();
-  let version = 0;
 
   function changed() {
-    version += 1;
     for (const listener of listeners) listener();
   }
 
@@ -28,6 +26,17 @@ export function createJustApplied() {
       if (any) changed();
     },
     has: (id: string, surface: ApplySurface) => pending.get(id)?.surface === surface,
+    entry(id: string, surface: ApplySurface): 'none' | 'waiting' | 'ready' {
+      const entry = pending.get(id);
+      if (entry?.surface !== surface) return 'none';
+      return entry.shown ? 'ready' : 'waiting';
+    },
+    release(id: string, surface: ApplySurface) {
+      const entry = pending.get(id);
+      if (entry?.surface !== surface || entry.shown) return;
+      entry.shown = true;
+      changed();
+    },
     ready: (id: string, surface: ApplySurface) => {
       const entry = pending.get(id);
       return entry?.surface === surface && entry.shown;
@@ -41,7 +50,6 @@ export function createJustApplied() {
     drop(id: string) {
       if (pending.delete(id)) changed();
     },
-    version: () => version,
     subscribe(listener: () => void) {
       listeners.add(listener);
       return () => {
