@@ -870,7 +870,9 @@ Tasks that share files or interfaces; run them in order, never in parallel.
       `bounty_board_location`, `bounty_board_axis`, `bounty_detail`, `bounty_apply`, `bounty_apply_no_payee`,
       `bounty_apply_failed`, `bounty_withdraw`, `bounty_block` (Q4 = A), `bounty_board_worst` each ran once (zh-Hans
       light) with screenshots opened; the four home/shell cases ran once after Task 7; `verify:smoke` passes. Dark, `en`
-      and `ms` run at the bounty milestone.
+      and `ms` run at the bounty milestone. The full zh-Hans light run before Task 15 failed `bounty_post_no_balance`
+      (case stale since Task 7) and `payee_qr_real` (Simulator photo library growth); Task 15 fixed both cases.
+- [ ] Task 15 (43B and the two stale cases) committed with the same fast checks.
 - [ ] Device checklist entries added: the location prompt text (precise, When In Use only, all three languages),
       reduced-accuracy distances, MapKit search on a real network, the stamp haptic; board scroll performance with 45
       cards measured with Instruments at the milestone (one `Host` per card).
@@ -893,11 +895,12 @@ the reason; "cost" is what it costs if the ruling is wrong.
     ms copy plus 很靠谱 clipped the poster name to one glyph and truncated the status; differs from 26A/31A as drawn.
   - 42A (built): in ms the 40-character poster name truncates (`Nur Ais…`) and the tier keeps priority — the tier is the
     trust signal; the full name is in VoiceOver and the detail.
-  - 43B (answered, not built yet): the server returns a located-bounty total so 「+N 更远」 is exact from the first page —
-    the number reads as a fact. Until the follow-up task after Task 14 builds it, the first page counts unloaded
-    bounties without a place as farther (`+43` for 42).
+  - 43B (built in Task 15): the RPC returns the count of located bounties beyond 2 km on the first page, so 「+N 更远」
+    is exact from the first page — the number reads as a fact. Before it, `bounty_board_worst` read `+43` for 42.
+    Ruling: the count beyond 2 km, not a located total, because `located − in range` is wrong when page 1 is all
+    within 2 km.
   - 44A (built): the applied detail's pinned area clamps 你写的：… to 3 lines — the area stays bounded; with a
-    40-character name it takes about a quarter of the screen.
+    40-character name it takes about 30% of the screen (`bounty_board_worst` 08-detail-applied, ms).
 
 ### Task 1 (privacy migration)
 
