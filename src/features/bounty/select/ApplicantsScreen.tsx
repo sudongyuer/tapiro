@@ -40,7 +40,7 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
   const blocking = useBlockPerson('applicant');
   const footer =
     view.footer?.state === 'ready' && blocking.state === 'busy'
-      ? { state: 'disabled' as const, others: view.footer.others }
+      ? { state: 'disabled' as const, others: view.footer.others, applicant: view.footer.applicant }
       : view.footer;
 
   if (view.body === 'gone') {

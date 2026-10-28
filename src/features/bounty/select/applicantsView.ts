@@ -6,7 +6,7 @@ import type { Applicant } from './types';
 export type ApplicantsBody = 'gone' | 'closed' | 'done' | 'loading' | 'failed' | 'empty' | 'list';
 
 export type FooterView =
-  | { state: 'disabled' | 'busy'; others: number }
+  | { state: 'disabled' | 'busy'; others: number; applicant?: Applicant }
   | { state: 'ready'; applicant: Applicant; others: number };
 
 export type NoticeReason = Exclude<SendFailure, 'gone' | 'closed'>;

@@ -14,7 +14,7 @@ DEPS = ['src/features/bounty/select/', 'src/features/bounty/block/', 'src/ui/Hol
         'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py']
 SCENE = 'bounty-applicants'
 BUDGET = 360
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBlock', 'failOnce']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '6000']
 LONG_PRESS_S = 1.2
 TITLE = 'bounty-applicants-title'
 
@@ -82,6 +82,8 @@ ui.capture('05-hana-gone')
 ui.tap(row_id(AIMAN))
 hold_reads(ui, ui.t('bounty.select.hold.label', name='Aiman'))
 confirm_block(AIMAN, 'Aiman')
+mid = hold_reads(ui, ui.t('bounty.select.hold.label', name='Aiman'))
+assert mid.get('enabled') is False, f'the hold button is live while the block is in flight: {mid}'
 ui.gone(row_id(AIMAN), timeout=30)
 hold = hold_reads(ui, ui.t('bounty.select.hold.none'))
 assert hold.get('enabled') is False, f'the hold button stays enabled after the checked row was blocked: {hold}'

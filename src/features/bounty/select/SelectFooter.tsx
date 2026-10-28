@@ -26,8 +26,7 @@ export function SelectFooter({
   useEffect(() => {
     if (noticeText) AccessibilityInfo.announceForAccessibility(noticeText);
   }, [noticeText]);
-  const name =
-    footer?.state === 'ready' ? (footer.applicant.name ?? t('bounty.post.unknownName')) : null;
+  const name = footer?.applicant ? (footer.applicant.name ?? t('bounty.post.unknownName')) : null;
   const hint =
     footer?.others === 0
       ? t('bounty.select.hold.hintAlone')

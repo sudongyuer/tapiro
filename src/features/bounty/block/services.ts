@@ -7,7 +7,7 @@ import { createSupabaseBlockService } from './blockService';
 import { createFixtureBlockService } from './fixtureBlockService';
 import type { BlockService } from './types';
 
-const VERIFY_WRITE_DELAY_MS = 6000;
+const VERIFY_WRITE_DELAY_MS = 2500;
 
 const fixturePeople = () => {
   const people = new Map<string, string | null>();
@@ -20,7 +20,7 @@ const fixturePeople = () => {
 const fixture = uiVerify
   ? createFixtureBlockService({
       people: fixturePeople(),
-      writeDelayMs: VERIFY_WRITE_DELAY_MS,
+      writeDelayMs: Number(uiVerifyArgument('uiVerifyBlockDelayMs')) || VERIFY_WRITE_DELAY_MS,
       failOnce: uiVerifyArgument('uiVerifyBlock') === 'failOnce',
     })
   : null;
