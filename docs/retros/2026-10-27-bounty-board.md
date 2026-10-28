@@ -1,8 +1,8 @@
 ---
-branch: feat/bounty-board
+branch: feat/bounty-board-ui
 date: 2026-10-27
-pr:
-status: running
+pr: "#18 (4a, branch feat/bounty-board) and 4b"
+status: complete before PR
 ---
 
 # Retro: bounty step 4 board and place picker
