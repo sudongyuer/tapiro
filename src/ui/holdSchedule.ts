@@ -29,3 +29,31 @@ export function holdCrossing(previous: number, next: number) {
   }
   return { impacts, complete: previous < 1 && next >= 1 };
 }
+
+export type HoldTrack = { holding: boolean; completed: boolean; progress: number };
+
+export const HOLD_IDLE: HoldTrack = { holding: false, completed: false, progress: 0 };
+
+export function holdPress(track: HoldTrack) {
+  'worklet';
+  const from = track.completed ? 0 : track.progress;
+  return { from, track: { holding: true, completed: false, progress: from } };
+}
+
+export function holdRelease(track: HoldTrack): HoldTrack {
+  'worklet';
+  return { ...track, holding: false };
+}
+
+export function holdFrame(track: HoldTrack, next: number) {
+  'worklet';
+  if (!track.holding) {
+    return { track: { ...track, progress: next }, impacts: [] as HoldImpact[], complete: false };
+  }
+  const { impacts, complete } = holdCrossing(track.progress, next);
+  return {
+    track: { holding: true, completed: track.completed || complete, progress: next },
+    impacts,
+    complete,
+  };
+}

@@ -2,11 +2,16 @@ import { describe, expect, test } from 'bun:test';
 
 import {
   HOLD_FILL_MS,
+  HOLD_IDLE,
   HOLD_PRESS_IMPACT,
   holdCrossing,
   holdFillMs,
+  holdFrame,
+  holdPress,
+  holdRelease,
   holdRunBackMs,
   type HoldImpact,
+  type HoldTrack,
 } from './holdSchedule';
 
 function run(frames: number[]) {
@@ -59,22 +64,101 @@ describe('haptics', () => {
   });
 });
 
-describe('complete', () => {
-  test('a release at any time before full never completes', () => {
-    for (let ms = 0; ms < HOLD_FILL_MS; ms += 50) {
-      const held = linearHold(ms);
-      const released = [...held, held.at(-1)! / 2, 0];
-      expect(run(released).completes).toBe(0);
+type Step = { press: true } | { release: true } | { frame: number };
+
+function session(steps: Step[], start: HoldTrack = HOLD_IDLE) {
+  let track = start;
+  let completes = 0;
+  const starts: number[] = [];
+  for (const step of steps) {
+    if ('press' in step) {
+      const pressed = holdPress(track);
+      track = pressed.track;
+      starts.push(pressed.from);
+    } else if ('release' in step) {
+      track = holdRelease(track);
+    } else {
+      const framed = holdFrame(track, step.frame);
+      track = framed.track;
+      if (framed.complete) completes++;
     }
-    expect(run(linearHold(999)).completes).toBe(0);
+  }
+  return { completes, starts, track };
+}
+
+const frames = (...values: number[]): Step[] => values.map((frame) => ({ frame }));
+
+describe('complete', () => {
+  test('a release at any time before full never completes, even if a late frame reaches full', () => {
+    for (let ms = 0; ms < HOLD_FILL_MS; ms += 50) {
+      const reached = ms / HOLD_FILL_MS;
+      const steps: Step[] = [{ press: true }, ...frames(reached / 2, reached), { release: true }];
+      expect(session([...steps, ...frames(1, 0.5, 0)]).completes).toBe(0);
+    }
   });
 
   test('fires once when the fill reaches full, even if the finger stays down', () => {
-    expect(run([...linearHold(1000), 1, 1, 1]).completes).toBe(1);
+    expect(session([{ press: true }, ...frames(0.5, 1, 1, 1)]).completes).toBe(1);
   });
 
   test('a fill that resumes after a partial run-back still completes once', () => {
-    expect(run([0, 0.4, 0.2, 0.6, 1, 1]).completes).toBe(1);
+    const steps: Step[] = [
+      { press: true },
+      ...frames(0.4),
+      { release: true },
+      ...frames(0.2),
+      { press: true },
+      ...frames(0.6, 1),
+    ];
+    const result = session(steps);
+    expect(result.starts).toEqual([0, 0.2]);
+    expect(result.completes).toBe(1);
+  });
+
+  test('after a completed hold, a re-press during the run-back starts from empty', () => {
+    const steps: Step[] = [
+      { press: true },
+      ...frames(1),
+      { release: true },
+      ...frames(0.8),
+      { press: true },
+      ...frames(0.1, 0.2),
+      { release: true },
+    ];
+    const result = session(steps);
+    expect(result.starts).toEqual([0, 0]);
+    expect(result.completes).toBe(1);
+  });
+
+  test('after a completed hold, a quick re-press cannot complete again from the run-back', () => {
+    const steps: Step[] = [
+      { press: true },
+      ...frames(1),
+      { release: true },
+      ...frames(0.95),
+      { press: true },
+      ...frames(0.05),
+      { release: true },
+    ];
+    expect(session(steps).completes).toBe(1);
+  });
+
+  test('a second full hold after a completed one completes again', () => {
+    const steps: Step[] = [
+      { press: true },
+      ...frames(1),
+      { release: true },
+      ...frames(0),
+      { press: true },
+      ...frames(0.5, 1),
+    ];
+    expect(session(steps).completes).toBe(2);
+  });
+
+  test('haptics fire only while holding', () => {
+    let track = holdPress(HOLD_IDLE).track;
+    track = holdRelease(track);
+    expect(holdFrame(track, 0.5).impacts).toEqual([]);
   });
 });
 

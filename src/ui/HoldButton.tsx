@@ -6,27 +6,31 @@ import {
   StyleSheet,
   View,
   type AccessibilityActionEvent,
+  type LayoutChangeEvent,
 } from 'react-native';
 import Animated, {
   Easing,
-  Extrapolation,
-  interpolate,
   ReduceMotion,
   useAnimatedReaction,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { scheduleOnRN } from 'react-native-worklets';
+import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { AppText } from './AppText';
 import {
+  HOLD_IDLE,
   HOLD_PRESS_IMPACT,
-  holdCrossing,
   holdFillMs,
+  holdFrame,
+  holdPress,
+  holdRelease,
   holdRunBackMs,
   type HoldImpact,
+  type HoldTrack,
 } from './holdSchedule';
 import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
@@ -47,6 +51,8 @@ export type HoldButtonProps = {
 
 const HEIGHT = 64;
 const ACTIONS = [{ name: 'activate' as const }];
+const NEVER = ReduceMotion.Never;
+const RUN_BACK_EASING = Easing.out(Easing.cubic);
 const IMPACTS: Record<HoldImpact, Haptics.ImpactFeedbackStyle> = {
   light: Haptics.ImpactFeedbackStyle.Light,
   medium: Haptics.ImpactFeedbackStyle.Medium,
@@ -71,8 +77,10 @@ export function HoldButton({
   const { color } = useTheme();
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(state === 'busy' ? 1 : 0);
-  const holdingOnUI = useSharedValue(false);
+  const width = useSharedValue(0);
+  const track = useSharedValue<HoldTrack>(HOLD_IDLE);
   const pressing = useRef(false);
+  const mounted = useRef(true);
   const [holding, setHolding] = useState(false);
   const completeRef = useRef(onComplete);
 
@@ -80,40 +88,58 @@ export function HoldButton({
     completeRef.current = onComplete;
   }, [onComplete]);
 
-  const complete = useCallback(() => completeRef.current(), []);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
-  const runBack = useCallback(() => {
-    progress.set(
-      withTiming(0, {
-        duration: holdRunBackMs(reduceMotion),
-        easing: Easing.out(Easing.cubic),
-        reduceMotion: ReduceMotion.Never,
-      }),
-    );
-  }, [progress, reduceMotion]);
+  const complete = useCallback(() => {
+    if (mounted.current) completeRef.current();
+  }, []);
 
-  const release = useCallback(() => {
-    pressing.current = false;
-    holdingOnUI.set(false);
-    setHolding(false);
-  }, [holdingOnUI]);
+  const release = useCallback(
+    (runBack: boolean) => {
+      pressing.current = false;
+      setHolding(false);
+      const backMs = holdRunBackMs(reduceMotion);
+      scheduleOnUI(() => {
+        'worklet';
+        track.set(holdRelease(track.get()));
+        if (runBack) {
+          progress.set(
+            withTiming(0, {
+              duration: backMs,
+              easing: RUN_BACK_EASING,
+              reduceMotion: NEVER,
+            }),
+          );
+        }
+      });
+    },
+    [progress, reduceMotion, track],
+  );
 
   useEffect(() => {
     if (state === 'busy') {
-      progress.set(1);
+      scheduleOnUI(() => {
+        'worklet';
+        track.set(holdRelease(track.get()));
+        progress.set(1);
+      });
       return;
     }
-    if (state === 'disabled' && pressing.current) release();
-    if (!pressing.current) runBack();
-  }, [state, progress, release, runBack]);
+    if (!pressing.current || state === 'disabled') release(true);
+  }, [state, progress, track, release]);
 
   useAnimatedReaction(
     () => progress.get(),
-    (next, previous) => {
-      if (previous === null || !holdingOnUI.get()) return;
-      const crossing = holdCrossing(previous, next);
-      for (const kind of crossing.impacts) scheduleOnRN(impact, kind);
-      if (crossing.complete) scheduleOnRN(complete);
+    (next) => {
+      const framed = holdFrame(track.get(), next);
+      track.set(framed.track);
+      for (const kind of framed.impacts) scheduleOnRN(impact, kind);
+      if (framed.complete) scheduleOnRN(complete);
     },
     [complete],
   );
@@ -121,23 +147,28 @@ export function HoldButton({
   const pressIn = () => {
     if (state !== 'ready') return;
     pressing.current = true;
-    holdingOnUI.set(true);
     setHolding(true);
     impact(HOLD_PRESS_IMPACT);
-    // The fill is progress, not decoration: it keeps its pace under Reduce Motion.
-    progress.set(
-      withTiming(1, {
-        duration: holdFillMs(progress.get()),
-        easing: Easing.linear,
-        reduceMotion: ReduceMotion.Never,
-      }),
-    );
+    scheduleOnUI(() => {
+      'worklet';
+      const pressed = holdPress(track.get());
+      track.set(pressed.track);
+      // The fill is progress, not decoration: it keeps its pace under Reduce Motion.
+      progress.set(
+        withSequence(
+          withTiming(pressed.from, { duration: 0, reduceMotion: NEVER }),
+          withTiming(1, {
+            duration: holdFillMs(pressed.from),
+            easing: Easing.linear,
+            reduceMotion: NEVER,
+          }),
+        ),
+      );
+    });
   };
 
   const pressOut = () => {
-    if (!pressing.current) return;
-    release();
-    if (state !== 'busy') runBack();
+    if (pressing.current) release(state !== 'busy');
   };
 
   const activate = (event: AccessibilityActionEvent) => {
@@ -146,28 +177,40 @@ export function HoldButton({
     }
   };
 
-  const fillStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: progress.get() }] }));
-  const onFillStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(progress.get(), [0.45, 0.55], [0, 1], Extrapolation.CLAMP),
+  const measure = (event: LayoutChangeEvent) => width.set(event.nativeEvent.layout.width);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    opacity: width.get() > 0 ? 1 : 0,
+    transform: [{ translateX: (progress.get() - 1) * width.get() }],
   }));
-  const onTrackStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(progress.get(), [0.45, 0.55], [1, 0], Extrapolation.CLAMP),
+  const fillContentStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: (1 - progress.get()) * width.get() }],
   }));
 
   const busy = state === 'busy';
   const text = busy ? busyLabel : holding ? holdingLabel : label;
 
+  const content = (tone: '--color-on-hold-track' | '--color-on-hold-fill') => (
+    <>
+      {busy ? <ActivityIndicator color={color(tone)} /> : null}
+      <AppText variant="body" style={[styles.label, { color: color(tone) }]}>
+        {text}
+      </AppText>
+    </>
+  );
+
   return (
     <View style={styles.wrap}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={text}
+        accessibilityLabel={busy ? busyLabel : label}
         accessibilityHint={accessibilityHint}
         accessibilityState={{ disabled: state === 'disabled', busy }}
         accessibilityActions={ACTIONS}
         onAccessibilityAction={activate}
         onPressIn={pressIn}
         onPressOut={pressOut}
+        onLayout={measure}
         testID={testID}
         style={[
           styles.track,
@@ -175,19 +218,13 @@ export function HoldButton({
           state === 'disabled' && styles.disabled,
         ]}
       >
+        <View style={styles.layer}>{content('--color-on-hold-track')}</View>
         <Animated.View
-          style={[styles.fill, { backgroundColor: color('--color-hold-fill') }, fillStyle]}
-        />
-        <Animated.View style={[styles.layer, onTrackStyle]}>
-          <AppText variant="body" style={[styles.label, { color: color('--color-on-hold-track') }]}>
-            {text}
-          </AppText>
-        </Animated.View>
-        <Animated.View style={[styles.layer, styles.overlay, onFillStyle]}>
-          {busy ? <ActivityIndicator color={color('--color-on-hold-fill')} /> : null}
-          <AppText variant="body" style={[styles.label, { color: color('--color-on-hold-fill') }]}>
-            {text}
-          </AppText>
+          style={[styles.clip, { backgroundColor: color('--color-hold-fill') }, fillStyle]}
+        >
+          <Animated.View style={[styles.layer, styles.clip, fillContentStyle]}>
+            {content('--color-on-hold-fill')}
+          </Animated.View>
         </Animated.View>
       </Pressable>
       {hint ? (
@@ -213,7 +250,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
   },
-  fill: { ...StyleSheet.absoluteFill, transformOrigin: 'left' },
+  clip: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
   layer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -222,7 +259,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: vars['--space-5'],
     paddingVertical: vars['--space-3'],
   },
-  overlay: StyleSheet.absoluteFill,
   label: { fontWeight: '700', textAlign: 'center' },
   disabled: { opacity: 0.4 },
   hint: { textAlign: 'center' },
