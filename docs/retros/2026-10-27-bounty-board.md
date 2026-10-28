@@ -57,6 +57,7 @@ status: running
     Done: the sheet reads the native state on cursor moves, focus loss and send. Done (follow-up): every field now uses
     `src/ui/SyncedTextField` (synced on text, selection and focus change; `sync()` at submit); ESLint
     `no-restricted-imports` bans a direct `TextField` import, and `bounty_post_form` asserts a 20-key burst reads 20/60.
+    That burst passed with the selection and focus sync removed, so it guards the wiring only, not the drop itself.
 12. Task 11: `bounty_apply` looked for the send spinner after a 1.2 s fixture write, but an AXe tap plus the next
     `describe-ui` take about 2.5 s, so the spinner had come and gone. Tag `verify-timing`. Done: the verify fixture's
     `apply`/`withdraw` take 2.5 s. Candidate: a shared constant for "an assertable progress window" in verify fixtures.

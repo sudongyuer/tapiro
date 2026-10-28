@@ -23,7 +23,8 @@ BUDGET = 240
 # platform control, so it is checked against its own size instead of being restyled. Text fields report a 22 pt
 # frame; bounty.typed taps 9 pt outside it, inside the 44 pt frame the form gives them, so typing proves the target.
 SYSTEM_MENU_ROW = 34
-# `axe type` sends the burst with no delay between keys, the input that made the last key arrive without onTextChange.
+# A 20-key `axe type` burst with no delay between keys; the counter must read every key. It guards the field's
+# wiring: with the selection and focus sync removed it still passed (2026-10-28), so it does not reproduce the drop.
 BURST = '12345678901234567890'
 
 ui = UI(*sys.argv[1:])

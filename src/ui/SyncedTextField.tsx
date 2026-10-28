@@ -7,7 +7,6 @@ type NativeState = NonNullable<TextFieldProps['text']>;
 
 export type SyncedText = {
   state: NativeState;
-  get: () => string;
   sync: () => string;
   set: (text: string) => void;
 };
@@ -18,10 +17,7 @@ export function useSyncedText(initial: string, onChange: (text: string) => void)
   const sync = useMemo(() => createTextSync(state, start), [state, start]);
   useLayoutEffect(() => sync.listen(onChange));
   useEffect(() => sync.attach(), [sync]);
-  return useMemo(
-    () => ({ state, get: () => state.get(), sync: sync.sync, set: sync.set }),
-    [state, sync],
-  );
+  return useMemo(() => ({ state, sync: sync.sync, set: sync.set }), [state, sync]);
 }
 
 type Props = Omit<TextFieldProps, 'text' | 'onTextChange' | 'onSelectionChange'> & {
