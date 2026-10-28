@@ -86,3 +86,15 @@ status: running
     (Task 13: three rounds of 290–380 k each) and opus re-reviews. Every main-session turn also re-reads the whole context.
     Tag `token-cost`. Candidates: start a fresh main session per PR, resuming from the ledger; give scoped re-reviews of
     test-only diffs to sonnet; batch fix rounds so a case is reworked once.
+19. The user corrected the check selection: 「检查不要每次傻乎乎的全量检查…要思考」. Cases were chosen mechanically.
+    `--affected` selected all 72 cases after a runner change (79 min serial), fix rounds reran 5–7 cases for a
+    one-file change, and the planned milestone ran every case in dark, en and ms whatever had changed. Cost: hours of
+    Simulator time per step. Root cause: no rule maps a kind of change to the checks it needs; `DEPS` only maps paths.
+    Tag `check-selection`. Candidate: a decision table in AGENTS.md Pace, applied before every run, with the selection
+    and its reason written in the report:
+    - logic-only change: unit tests only;
+    - a screen's layout or copy changes: that screen's cases in zh-Hans light, plus ms when its copy can be long;
+    - a change to colours, tokens or a surface over other content: that screen's cases plus dark;
+    - new or changed copy keys: en for those cases;
+    - runner or driver changes: the runner's unit tests, smoke, and one case per touched helper — not every case;
+    - motion: one appearance, with video.
