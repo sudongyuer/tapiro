@@ -23,11 +23,13 @@ const ROW = frame({ maxWidth: Infinity, minHeight: vars['--touch-min'] });
 export function AppliedActions({
   name,
   note,
+  current,
   state,
   withdraw,
 }: {
   name: string;
   note: string | null;
+  current: boolean;
   state: WithdrawState;
   withdraw: () => Promise<void>;
 }) {
@@ -66,12 +68,18 @@ export function AppliedActions({
         </AppText>
       ) : null}
       <Host matchContents={{ vertical: true }} style={styles.host}>
-        {state.kind === 'busy' ? (
+        {state.kind === 'busy' || !current ? (
           <ProgressView
             modifiers={[
               ROW,
-              accessibilityLabel(t('bounty.detail.withdrawing')),
-              accessibilityIdentifier('bounty-detail-withdrawing'),
+              accessibilityLabel(
+                t(state.kind === 'busy' ? 'bounty.detail.withdrawing' : 'bounty.detail.loading'),
+              ),
+              accessibilityIdentifier(
+                state.kind === 'busy'
+                  ? 'bounty-detail-withdrawing'
+                  : 'bounty-detail-withdraw-loading',
+              ),
             ]}
           />
         ) : (

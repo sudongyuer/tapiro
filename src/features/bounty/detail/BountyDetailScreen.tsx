@@ -167,6 +167,7 @@ function DetailActions({
       <AppliedActions
         name={name}
         note={view.note}
+        current={current}
         state={withdrawal.state}
         withdraw={withdrawal.withdraw}
       />
