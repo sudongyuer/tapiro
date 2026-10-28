@@ -14,8 +14,12 @@ BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 JIE, HANA, AIMAN = (f'bounty-applicant-fixture-applicant-{name}' for name in ('jie', 'hana', 'aiman'))
 HOLD = 'bounty-select-hold'
-CHECK_BAND = 44
+CHECK_SIZE = 17
+CHECK_INSET = 18
+CHECK_TOP = (6, 40)
+CHECK_SLACK = 4
 CHECK_MIN = 12
+CHECK_SPAN = (8, CHECK_SIZE + CHECK_SLACK)
 FOOTER_PAD = 12
 
 ui = UI(*sys.argv[1:])
@@ -37,12 +41,13 @@ def hold_reads(expected):
 
 def check_ink(shot, row, cutoff):
     f = row['frame']
-    height = min(f['y'] + f['height'], cutoff) - f['y']
-    if height <= 0:
-        return 0
-    band = {'x': f['x'] + f['width'] - CHECK_BAND, 'y': f['y'], 'width': CHECK_BAND, 'height': height}
-    found = ink_box(shot, band, token('--color-accent', ui.appearance), 40)
-    return found['count'] if found else 0
+    right = f['x'] + f['width'] - CHECK_INSET + CHECK_SLACK
+    left = right - CHECK_SIZE - 2 * CHECK_SLACK
+    top, bottom = f['y'] + CHECK_TOP[0], min(f['y'] + CHECK_TOP[1], cutoff)
+    if bottom <= top:
+        return None
+    box = {'x': left, 'y': top, 'width': right - left, 'height': bottom - top}
+    return ink_box(shot, box, token('--color-accent', ui.appearance), 40)
 
 
 def assert_checked(name, chosen):
@@ -50,9 +55,14 @@ def assert_checked(name, chosen):
     shot = ui.snap(name)
     cutoff = ui.element(HOLD)['frame']['y'] - FOOTER_PAD
     for row in rows():
-        ink = check_ink(shot, row, cutoff)
+        found = check_ink(shot, row, cutoff)
+        ink = found['count'] if found else 0
+        print(f'{name}: {row["AXUniqueId"]} check box ink {found}')
         if row['AXUniqueId'] == chosen:
             assert ink >= CHECK_MIN, f'{chosen} has no accent checkmark ({ink} px)'
+            for side in ('width', 'height'):
+                assert CHECK_SPAN[0] <= found[side] <= CHECK_SPAN[1], \
+                    f'the ink on {chosen} is {found[side]:.1f} pt {side}, not a {CHECK_SIZE} pt checkmark: {found}'
         else:
             assert ink < CHECK_MIN, f'{row["AXUniqueId"]} still shows a checkmark ({ink} px) while {chosen} is chosen'
     return shot
