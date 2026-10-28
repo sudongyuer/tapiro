@@ -184,6 +184,17 @@ class UI:
     def tap_point(self, x, y):
         self.axe('tap', '-x', str(round(x)), '-y', str(round(y)), '--post-delay', '0.5')
 
+    def press(self, identifier, seconds):
+        f = self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
+                         f'{identifier} never settled')['frame']
+        self.press_at(f, seconds)
+        return f
+
+    def press_at(self, f, seconds):
+        x, y = round(f['x'] + f['width'] / 2), round(f['y'] + f['height'] / 2)
+        self.axe('touch', '-x', str(x), '-y', str(y), '--down', '--up', '--delay', str(seconds),
+                 timeout=seconds + 20)
+
     def swipe(self, start, end, duration=0.5):
         self.axe('swipe', '--start-x', str(round(start[0])), '--start-y', str(round(start[1])),
                  '--end-x', str(round(end[0])), '--end-y', str(round(end[1])), '--duration', str(duration))

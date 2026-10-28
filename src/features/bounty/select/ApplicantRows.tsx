@@ -40,9 +40,11 @@ const NO_INSETS = listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 });
 export function ApplicantsHeader({
   detail,
   status,
+  done = false,
 }: {
   detail: BountyDetail | null;
   status: string;
+  done?: boolean;
 }) {
   const { t, language } = useI18n();
   const reward = detail ? ringgit(detail.rewardSen, language) : null;
@@ -68,11 +70,11 @@ export function ApplicantsHeader({
         ) : null}
         <Text
           modifiers={[
-            font({ textStyle: 'subheadline' }),
-            secondary,
+            done ? font({ textStyle: 'headline' }) : font({ textStyle: 'subheadline' }),
+            done ? primary : secondary,
             multilineTextAlignment('center'),
             wraps,
-            accessibilityIdentifier('bounty-applicants-status'),
+            accessibilityIdentifier(done ? 'bounty-select-done' : 'bounty-applicants-status'),
           ]}
         >
           {status}

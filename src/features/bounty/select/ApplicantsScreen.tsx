@@ -1,6 +1,7 @@
 import { ProgressView, Section } from '@expo/ui/swift-ui';
 import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/modifiers';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
@@ -8,18 +9,33 @@ import { SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
 import { malaysiaClock } from '../board/malaysiaClock';
+import { selectedHelper } from './applicantsController';
 import { ApplicantSection, ApplicantsHeader, StateRow } from './ApplicantRows';
 import { applicantsView } from './applicantsView';
+import { SelectedSummary } from './SelectedSummary';
 import { SelectFooter } from './SelectFooter';
-import { statusCopy } from './selectCopy';
-import { statusLine } from './selectState';
+import { doneTitle, raceBody, statusCopy } from './selectCopy';
+import { statusLine, type SendState } from './selectState';
 import { useApplicants } from './useApplicants';
+
+function useRaceAlert(send: SendState, acknowledge: () => void) {
+  const { t } = useI18n();
+  const shown = useRef<SendState | null>(null);
+  useEffect(() => {
+    if (send.kind !== 'raced' || shown.current === send) return;
+    shown.current = send;
+    Alert.alert(t('bounty.select.race.title'), raceBody(send.helper?.name ?? null, t), [
+      { text: t('bounty.select.race.ok'), onPress: acknowledge },
+    ]);
+  }, [send, acknowledge, t]);
+}
 
 export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => void }) {
   const { t } = useI18n();
   const model = useApplicants(id);
   const view = applicantsView(model, new Date());
-  const { list, chosen } = model.select;
+  const { list, chosen, send } = model.select;
+  useRaceAlert(send, model.acknowledgeRace);
 
   if (view.body === 'gone') {
     return (
@@ -38,6 +54,7 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
   }
 
   const detail = model.detail.kind === 'ready' ? model.detail.detail : null;
+  const helper = selectedHelper(model);
   const retry = {
     label: t('bounty.select.retry'),
     onPress: () => void model.retry(),
@@ -46,7 +63,11 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
 
   return (
     <SheetFrame testID="bounty-applicants" pinnedAbove="tabBar">
-      <ApplicantsHeader detail={detail} status={statusCopy(statusLine(list), t)} />
+      {view.body === 'done' ? (
+        <ApplicantsHeader detail={detail} status={doneTitle(helper, t)} done />
+      ) : (
+        <ApplicantsHeader detail={detail} status={statusCopy(statusLine(list), t)} />
+      )}
       {view.stale ? (
         <StateRow>
           <InlineState
@@ -84,6 +105,8 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
             testID="bounty-applicants-empty"
           />
         </StateRow>
+      ) : view.body === 'done' ? (
+        <SelectedSummary helper={helper} detail={model.detail} onRetry={() => void model.retry()} />
       ) : view.body === 'loading' ? (
         <Section>
           <ProgressView
@@ -96,12 +119,8 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
       ) : (
         <ApplicantSection applicants={view.applicants} chosen={chosen} onChoose={model.chose} />
       )}
-      {view.footer ? (
-        <SelectFooter
-          footer={view.footer}
-          onHold={() => void model.send()}
-          onAccessibilityActivate={() => void model.send()}
-        />
+      {view.footer || view.notice ? (
+        <SelectFooter footer={view.footer} notice={view.notice} onHold={() => void model.send()} />
       ) : null}
     </SheetFrame>
   );

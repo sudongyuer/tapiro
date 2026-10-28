@@ -79,13 +79,56 @@ describe('applicantsView', () => {
     });
   });
 
-  test('a send in flight is busy with the applicant being sent', () => {
+  test('a send in flight is busy', () => {
     const shown = view({
       list: ready([JIE, HANA]),
       chosen: 'jie',
       send: { kind: 'sending', applicantId: 'jie' },
     });
-    expect(shown.footer).toEqual({ state: 'busy', applicant: JIE, others: 1 });
+    expect(shown.footer).toEqual({ state: 'busy', others: 1 });
+    expect(shown.notice).toBeNull();
+  });
+
+  test('a send stays busy while a reload drops the applicant being sent', () => {
+    const shown = view({ list: ready([HANA]), send: { kind: 'sending', applicantId: 'jie' } });
+    expect(shown.footer).toEqual({ state: 'busy', others: 0 });
+  });
+
+  test('a lost race keeps the button busy behind the alert', () => {
+    const shown = view({
+      list: ready([{ ...JIE, status: 'selected' }]),
+      send: { kind: 'raced', helper: { id: 'jie', name: '阿杰', tier: 'reliable' } },
+    });
+    expect(shown.body).toBe('list');
+    expect(shown.footer).toEqual({ state: 'busy', others: 0 });
+  });
+
+  test('a failed send shows its notice above the button', () => {
+    for (const reason of ['failed', 'notPending', 'noPayee'] as const) {
+      const shown = view({
+        list: ready([JIE, HANA]),
+        chosen: 'jie',
+        send: { kind: 'failed', reason },
+      });
+      expect(shown.notice).toBe(reason);
+    }
+  });
+
+  test('notPending that empties the list still shows its notice', () => {
+    const shown = view({ list: ready([]), send: { kind: 'failed', reason: 'notPending' } });
+    expect(shown.body).toBe('empty');
+    expect(shown.notice).toBe('notPending');
+  });
+
+  test('closed answered by the server shows the closed state even if the detail still reads open', () => {
+    const shown = view({
+      list: ready([JIE]),
+      chosen: 'jie',
+      send: { kind: 'failed', reason: 'closed' },
+    });
+    expect(shown.body).toBe('closed');
+    expect(shown.footer).toBeNull();
+    expect(shown.notice).toBeNull();
   });
 
   test('a failed send keeps the chosen applicant ready to hold again', () => {
@@ -143,6 +186,17 @@ describe('applicantsView', () => {
     expect(shown.footer).toBeNull();
   });
 
+  test('a selection shows the after-selection state without the list, button or stale notice', () => {
+    const shown = view({
+      list: ready([{ ...JIE, status: 'selected' }], { refreshFailed: true }),
+      send: { kind: 'selected', helperId: 'jie' },
+    });
+    expect(shown.body).toBe('done');
+    expect(shown.applicants).toEqual([]);
+    expect(shown.footer).toBeNull();
+    expect(shown.stale).toBeNull();
+  });
+
   test('an assigned bounty is not closed: it moves to the after-selection state', () => {
     const assigned = {
       kind: 'ready',
@@ -156,7 +210,7 @@ describe('applicantsView', () => {
       },
       assigned,
     );
-    expect(shown.body).toBe('list');
+    expect(shown.body).toBe('done');
     expect(shown.footer).toBeNull();
   });
 

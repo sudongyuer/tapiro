@@ -1,18 +1,22 @@
 import type { BountyDetail } from '../board/types';
 import type { ApplicantsSnapshot } from './applicantsController';
+import type { SendFailure } from './selectState';
 import type { Applicant } from './types';
 
-export type ApplicantsBody = 'gone' | 'closed' | 'loading' | 'failed' | 'empty' | 'list';
+export type ApplicantsBody = 'gone' | 'closed' | 'done' | 'loading' | 'failed' | 'empty' | 'list';
 
 export type FooterView =
-  | { state: 'disabled'; others: number }
-  | { state: 'ready' | 'busy'; applicant: Applicant; others: number };
+  | { state: 'disabled' | 'busy'; others: number }
+  | { state: 'ready'; applicant: Applicant; others: number };
+
+export type NoticeReason = Exclude<SendFailure, 'gone' | 'closed'>;
 
 export type ApplicantsView = {
   body: ApplicantsBody;
   applicants: Applicant[];
   stale: { loadedAt: string; refreshing: boolean } | null;
   footer: FooterView | null;
+  notice: NoticeReason | null;
 };
 
 export function closedForChoosing(detail: BountyDetail, now: Date) {
@@ -23,13 +27,9 @@ export function closedForChoosing(detail: BountyDetail, now: Date) {
 function body({ select, detail }: ApplicantsSnapshot, now: Date): ApplicantsBody {
   const { list } = select;
   if (list.kind === 'gone' || detail.kind === 'gone') return 'gone';
-  if (
-    detail.kind === 'ready' &&
-    select.send.kind !== 'selected' &&
-    closedForChoosing(detail.detail, now)
-  ) {
-    return 'closed';
-  }
+  if (select.send.kind === 'selected') return 'done';
+  if (select.send.kind === 'failed' && select.send.reason === 'closed') return 'closed';
+  if (detail.kind === 'ready' && closedForChoosing(detail.detail, now)) return 'closed';
   if (list.kind === 'loading') return 'loading';
   if (list.kind === 'failed') return 'failed';
   return list.applicants.length === 0 ? 'empty' : 'list';
@@ -38,14 +38,15 @@ function body({ select, detail }: ApplicantsSnapshot, now: Date): ApplicantsBody
 function footer(applicants: Applicant[], snapshot: ApplicantsSnapshot): FooterView | null {
   const { send, chosen } = snapshot.select;
   const others = applicants.length - 1;
-  const find = (id: string) => applicants.find((applicant) => applicant.id === id);
-  if (send.kind === 'sending') {
-    const applicant = find(send.applicantId);
-    return applicant ? { state: 'busy', applicant, others } : null;
-  }
+  if (send.kind === 'sending' || send.kind === 'raced') return { state: 'busy', others };
   if (send.kind !== 'idle' && send.kind !== 'failed') return null;
-  const applicant = chosen === null ? undefined : find(chosen);
+  const applicant = applicants.find((item) => item.id === chosen);
   return applicant ? { state: 'ready', applicant, others } : { state: 'disabled', others };
+}
+
+function notice({ send }: ApplicantsSnapshot['select']): NoticeReason | null {
+  if (send.kind !== 'failed' || send.reason === 'gone' || send.reason === 'closed') return null;
+  return send.reason;
 }
 
 export function applicantsView(snapshot: ApplicantsSnapshot, now: Date): ApplicantsView {
@@ -56,9 +57,10 @@ export function applicantsView(snapshot: ApplicantsSnapshot, now: Date): Applica
     body: shown,
     applicants: shown === 'list' ? applicants : [],
     stale:
-      list.kind === 'ready' && list.refreshFailed && shown !== 'gone' && shown !== 'closed'
+      list.kind === 'ready' && list.refreshFailed && (shown === 'list' || shown === 'empty')
         ? { loadedAt: list.loadedAt, refreshing: list.refreshing }
         : null,
     footer: shown === 'list' ? footer(applicants, snapshot) : null,
+    notice: shown === 'list' || shown === 'empty' ? notice(snapshot.select) : null,
   };
 }
