@@ -33,8 +33,13 @@ def confirm_block(applicant, name):
     ui.labelled(ui.t('bounty.block.confirm.title', name=name))
     ui.labelled(ui.t('bounty.block.confirm.applicantBody', name=name))
     tap_sheet_action(ui, ui.t('bounty.block.confirm.confirm'), TITLE)
+    blocking(applicant)
+
+
+def blocking(applicant):
     busy = ui.element(f'bounty-applicant-blocking-{applicant}', timeout=5)
     assert busy.get('AXLabel') == ui.t('bounty.block.blocking'), busy.get('AXLabel')
+    return busy
 
 
 def hint_reads(count):
@@ -55,8 +60,7 @@ ui.labelled(ui.t('bounty.block.confirm.applicantBody', name='Hana'))
 ui.at_rest()
 ui.capture('02-confirm')
 tap_sheet_action(ui, ui.t('bounty.block.confirm.confirm'), TITLE)
-busy = ui.element(f'bounty-applicant-blocking-{HANA}', timeout=5)
-assert busy.get('AXLabel') == ui.t('bounty.block.blocking'), busy.get('AXLabel')
+blocking(HANA)
 ui.at_rest()
 ui.capture('03-blocking')
 ui.wait_label('bounty-applicants-block-failed', lambda text: ui.t('bounty.block.failed') in text,

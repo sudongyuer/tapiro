@@ -120,12 +120,14 @@ function ApplicantRow({
   applicant,
   chosen,
   blocking,
+  canBlock,
   onChoose,
   onBlock,
 }: {
   applicant: Applicant;
   chosen: boolean;
   blocking: boolean;
+  canBlock: boolean;
   onChoose: (id: string) => void;
   onBlock: (person: BlockedPerson) => void;
 }) {
@@ -188,13 +190,15 @@ function ApplicantRow({
   return (
     <ContextMenu>
       <ContextMenu.Items>
-        <Button
-          label={t('bounty.block.menu', { name })}
-          systemImage="hand.raised"
-          role="destructive"
-          onPress={() => onBlock({ id: applicant.id, name: applicant.name })}
-          testID={`bounty-applicant-block-${applicant.id}`}
-        />
+        {canBlock ? (
+          <Button
+            label={t('bounty.block.menu', { name })}
+            systemImage="hand.raised"
+            role="destructive"
+            onPress={() => onBlock({ id: applicant.id, name: applicant.name })}
+            testID={`bounty-applicant-block-${applicant.id}`}
+          />
+        ) : null}
       </ContextMenu.Items>
       <ContextMenu.Trigger>{row}</ContextMenu.Trigger>
     </ContextMenu>
@@ -205,12 +209,14 @@ export function ApplicantSection({
   applicants,
   chosen,
   blocking,
+  canBlock,
   onChoose,
   onBlock,
 }: {
   applicants: Applicant[];
   chosen: string | null;
   blocking: string | null;
+  canBlock: boolean;
   onChoose: (id: string) => void;
   onBlock: (person: BlockedPerson) => void;
 }) {
@@ -226,6 +232,7 @@ export function ApplicantSection({
           applicant={applicant}
           chosen={applicant.id === chosen}
           blocking={applicant.id === blocking}
+          canBlock={canBlock}
           onChoose={onChoose}
           onBlock={onBlock}
         />

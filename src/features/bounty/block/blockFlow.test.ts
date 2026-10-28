@@ -70,6 +70,17 @@ describe('block flow', () => {
     expect(blocked).toEqual([]);
   });
 
+  test('the target stays on the first person while a second call is ignored', async () => {
+    const { flow, answers } = setup();
+    const first = flow.block('lin');
+    expect(flow.target()).toBe('lin');
+    expect(await flow.block('jie')).toBe(false);
+    expect(flow.target()).toBe('lin');
+    answers.pending[0].resolve('blocked');
+    await first;
+    expect(flow.target()).toBeNull();
+  });
+
   test('a second tap while blocking sends nothing', async () => {
     const { flow, calls } = setup();
     void flow.block('lin');

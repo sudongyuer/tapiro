@@ -9,11 +9,14 @@ export function createBlockFlow(deps: {
   blocked: (posterId: string) => void;
 }) {
   const store = createStore<BlockState>('idle');
+  let target: string | null = null;
   return {
     get: store.get,
     subscribe: store.subscribe,
+    target: () => (store.get() === 'busy' ? target : null),
     async block(posterId: string): Promise<boolean> {
       if (store.get() === 'busy') return false;
+      target = posterId;
       store.set('busy');
       const answer = await deps.service.block(posterId).catch(() => null);
       if (answer === null) {

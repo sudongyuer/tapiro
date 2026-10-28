@@ -315,3 +315,26 @@ describe('sending', () => {
     expect(run(failed, { type: 'chose', id: 'jie' }).send).toEqual({ kind: 'idle' });
   });
 });
+
+describe('a block and a send meeting', () => {
+  test('a row removed by a confirmed block can never be sent', () => {
+    const after = run(chosen('hana'), { type: 'blocked', id: 'hana' }, { type: 'holdCompleted' });
+    expect(after.chosen).toBeNull();
+    expect(after.send).toEqual({ kind: 'idle' });
+    const again = run(after, { type: 'chose', id: 'hana' });
+    expect(again.chosen).toBeNull();
+  });
+
+  test('a block confirmed while a send is in flight leaves the send untouched', () => {
+    const during = run(sending('hana'), { type: 'blocked', id: 'hana' });
+    expect(during.send).toEqual({ kind: 'sending', applicantId: 'hana' });
+    const answered = run(during, { type: 'answered', outcome: { ok: true, helperId: 'hana' } });
+    expect(answered.send).toEqual({ kind: 'selected', helperId: 'hana' });
+  });
+
+  test('a block confirmed for another row during a send keeps the chosen row', () => {
+    const during = run(sending('jie'), { type: 'blocked', id: 'aiman' });
+    expect(during.send).toEqual({ kind: 'sending', applicantId: 'jie' });
+    expect(during.chosen).toBe('jie');
+  });
+});

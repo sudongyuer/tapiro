@@ -38,6 +38,10 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
   const { list, chosen, send } = model.select;
   useRaceAlert(send, model.acknowledgeRace);
   const blocking = useBlockPerson('applicant');
+  const footer =
+    view.footer?.state === 'ready' && blocking.state === 'busy'
+      ? { state: 'disabled' as const, others: view.footer.others }
+      : view.footer;
 
   if (view.body === 'gone') {
     return (
@@ -135,12 +139,13 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
           applicants={view.applicants}
           chosen={chosen}
           blocking={blocking.target}
+          canBlock={blocking.state !== 'busy' && (send.kind === 'idle' || send.kind === 'failed')}
           onChoose={model.chose}
           onBlock={blocking.ask}
         />
       )}
-      {view.footer || view.notice ? (
-        <SelectFooter footer={view.footer} notice={view.notice} onHold={() => void model.send()} />
+      {footer || view.notice ? (
+        <SelectFooter footer={footer} notice={view.notice} onHold={() => void model.send()} />
       ) : null}
     </SheetFrame>
   );

@@ -28,6 +28,7 @@ export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
 
   const ask = useCallback(
     (poster: BlockedPerson) => {
+      if (flow.get() === 'busy') return;
       const name = poster.name ?? t('bounty.post.unknownName');
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -44,8 +45,9 @@ export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
         },
         async (index) => {
           if (index !== 0) return;
-          setTarget(poster.id);
-          if ((await flow.block(poster.id)) && mounted.current) onBlocked?.();
+          const blocking = flow.block(poster.id);
+          setTarget(flow.target());
+          if ((await blocking) && mounted.current) onBlocked?.();
         },
       );
     },
