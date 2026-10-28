@@ -16,10 +16,14 @@ ATTEMPTS_KEY = 'uiVerifySelectAttempts'
 FRAME_GAP_S = 0.03
 COLOUR_SLACK = 30
 EDGE_ROW_FROM_BOTTOM = 12
+DELAY_ARG = '-uiVerifySelectDelayMs'
 SERVICES = Path(__file__).resolve().parents[2] / 'src/features/bounty/select/services.ts'
 
 
-def write_delay_s():
+def write_delay_s(ui=None):
+    args = ui.launch_args if ui else []
+    if DELAY_ARG in args:
+        return int(args[args.index(DELAY_ARG) + 1]) / 1000
     found = re.search(r'VERIFY_WRITE_DELAY_MS = (\d+)', SERVICES.read_text())
     assert found, f'VERIFY_WRITE_DELAY_MS not found in {SERVICES}'
     return int(found.group(1)) / 1000
@@ -86,7 +90,7 @@ def wait_selected(ui, count, timeout=20):
 
 # A select the fixture accepts is recorded only after its write delay, so "none sent" waits past that delay first.
 def assert_none_selected(ui, what):
-    time.sleep(write_delay_s() + 1.5)
+    time.sleep(write_delay_s(ui) + 1.5)
     found = selected_args(ui)
     assert found == [], f'{what} still sent a select: {found}'
 

@@ -17,7 +17,7 @@ function verifySelectService() {
   Settings.set({ [SELECTED_KEY]: '', [ATTEMPTS_KEY]: 0, [SEEN_KEY]: '' });
   return createFixtureSelectService({
     ...fixtureSelectOptions(uiVerifyArgument),
-    writeDelayMs: VERIFY_WRITE_DELAY_MS,
+    writeDelayMs: Number(uiVerifyArgument('uiVerifySelectDelayMs')) || VERIFY_WRITE_DELAY_MS,
     isBlocked: fixtureBlocked,
     onSelected: (accepted) => Settings.set({ [SELECTED_KEY]: JSON.stringify(accepted) }),
     onAttempted: (attempts) => Settings.set({ [ATTEMPTS_KEY]: attempts }),
