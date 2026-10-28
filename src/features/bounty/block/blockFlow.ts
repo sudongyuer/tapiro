@@ -1,23 +1,6 @@
-import type { BlockService, BlockedPerson } from './types';
+import { createStore } from '@/lib/store';
 
-function createStore<T>(initial: T) {
-  let state = initial;
-  const listeners = new Set<() => void>();
-  return {
-    get: () => state,
-    set(next: T) {
-      if (next === state) return;
-      state = next;
-      for (const listener of listeners) listener();
-    },
-    subscribe(listener: () => void) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-  };
-}
+import type { BlockService, BlockedPerson } from './types';
 
 export type BlockState = 'idle' | 'busy' | 'failed';
 

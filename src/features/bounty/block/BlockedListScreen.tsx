@@ -145,31 +145,33 @@ function PersonRow({
 }) {
   const { t } = useI18n();
   const name = person.name ?? t('bounty.post.unknownName');
-  const row = (
-    <HStack
-      spacing={vars['--space-3']}
-      modifiers={[
-        frame({ minHeight: vars['--touch-min'] }),
-        accessibilityElement('combine'),
-        accessibilityIdentifier(`blocked-row-${person.id}`),
-      ]}
-    >
-      <Text>{name}</Text>
-      <Spacer />
-      {unblocking ? (
+  if (unblocking) {
+    return (
+      <HStack spacing={vars['--space-3']} modifiers={[frame({ minHeight: vars['--touch-min'] })]}>
+        <Text modifiers={[accessibilityIdentifier(`blocked-row-${person.id}`)]}>{name}</Text>
+        <Spacer />
         <ProgressView
           modifiers={[
             accessibilityLabel(t('bounty.block.list.unblocking')),
             accessibilityIdentifier(`blocked-unblocking-${person.id}`),
           ]}
         />
-      ) : null}
-    </HStack>
-  );
-  if (unblocking) return row;
+      </HStack>
+    );
+  }
   return (
     <SwipeActions>
-      {row}
+      <HStack
+        spacing={vars['--space-3']}
+        modifiers={[
+          frame({ minHeight: vars['--touch-min'] }),
+          accessibilityElement('combine'),
+          accessibilityIdentifier(`blocked-row-${person.id}`),
+        ]}
+      >
+        <Text>{name}</Text>
+        <Spacer />
+      </HStack>
       <SwipeActions.Actions edge="trailing">
         <Button role="destructive" label={t('bounty.block.list.unblock')} onPress={onUnblock} />
       </SwipeActions.Actions>

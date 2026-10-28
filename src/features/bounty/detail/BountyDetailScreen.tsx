@@ -78,29 +78,32 @@ export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked }: P
         testID="bounty-detail"
         pinnedAbove="tabBar"
         notice={
-          blocking.state === 'failed' ? (
-            <NoticeCard
-              tone="urgent"
-              icon="exclamationmark.circle.fill"
-              title={t('bounty.block.failed')}
-              testID="bounty-detail-block-failed"
-            />
-          ) : notice === 'notPending' ? (
-            <NoticeCard
-              tone="warning"
-              icon="exclamationmark.triangle.fill"
-              title={t('bounty.detail.withdrawNotPending')}
-              testID="bounty-detail-withdraw-stale"
-            />
-          ) : notice === 'stale' && state.kind === 'ready' ? (
-            <NoticeCard
-              tone="warning"
-              icon="exclamationmark.triangle.fill"
-              title={t('bounty.detail.refreshFailed', { time: malaysiaClock(state.loadedAt) })}
-              action={retryAction}
-              testID="bounty-detail-stale"
-            />
-          ) : null
+          <>
+            {notice === 'notPending' ? (
+              <NoticeCard
+                tone="warning"
+                icon="exclamationmark.triangle.fill"
+                title={t('bounty.detail.withdrawNotPending')}
+                testID="bounty-detail-withdraw-stale"
+              />
+            ) : notice === 'stale' && state.kind === 'ready' ? (
+              <NoticeCard
+                tone="warning"
+                icon="exclamationmark.triangle.fill"
+                title={t('bounty.detail.refreshFailed', { time: malaysiaClock(state.loadedAt) })}
+                action={retryAction}
+                testID="bounty-detail-stale"
+              />
+            ) : null}
+            {blocking.state === 'failed' ? (
+              <NoticeCard
+                tone="urgent"
+                icon="exclamationmark.circle.fill"
+                title={t('bounty.block.failed')}
+                testID="bounty-detail-block-failed"
+              />
+            ) : null}
+          </>
         }
       >
         {view && copy ? <DetailHeader view={view} copy={copy} /> : null}

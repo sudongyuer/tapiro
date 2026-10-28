@@ -76,3 +76,8 @@ status: running
     tab to expand the bar first (as `shell_minimise` does). Also, `ActionSheetIOS` without an anchor shows on iOS 26 as
     a centred card with both buttons, not a bottom sheet. Tag `platform-behaviour`. Candidate: a `switch_tab` helper
     in `driver.py` for every case that changes tabs after scrolling 悬赏.
+17. Task 12 review: the detail now has two confirmation styles. 屏蔽 from the toolbar ⋯ uses a `UIAlertController`
+    action sheet (`ActionSheetIOS`), which shows as a centred card because it has no anchor, while 撤回申请 uses a SwiftUI
+    `confirmationDialog`, which shows as a popover from its button. A SwiftUI dialog cannot attach to a
+    `Stack.Toolbar.MenuAction`. Tag `platform-behaviour`. Candidate: a kit helper that anchors an action sheet to a bar
+    item (`popoverPresentationController.sourceItem`).

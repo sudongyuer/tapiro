@@ -70,13 +70,11 @@ function written(state: BoardState, id: string, applied: boolean): BoardState {
 function withoutPoster(state: BoardState, posterId: string): BoardState {
   const generation = state.generation + 1;
   if (state.kind !== 'ready') return { ...state, generation };
-  const rows = state.rows.filter((row) => row.poster.id !== posterId);
-  const removed = state.rows.length - rows.length;
   return {
     ...state,
     generation,
-    rows,
-    total: state.total === null ? null : Math.max(0, state.total - removed),
+    rows: state.rows.filter((row) => row.poster.id !== posterId),
+    total: null,
     page: 'idle',
   };
 }

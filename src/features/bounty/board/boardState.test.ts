@@ -443,7 +443,7 @@ describe('blocking a poster', () => {
     ...(total === undefined ? {} : { total }),
   });
 
-  test('removes that poster’s rows at once and lowers the total', () => {
+  test('removes that poster’s rows at once and hides the count until the reload answers', () => {
     const state = run([
       { type: 'loadStarted' },
       succeed(
@@ -459,7 +459,7 @@ describe('blocking a poster', () => {
       { type: 'blocked', posterId: 'lin' },
     ]);
     expect(ids(state)).toEqual(['b']);
-    expect(boardTotal(state)).toBe(1);
+    expect(boardTotal(state)).toBeNull();
   });
 
   test('a load that started before the block cannot bring the rows back, and a fresh load runs', async () => {

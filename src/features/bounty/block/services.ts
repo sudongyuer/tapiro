@@ -1,5 +1,5 @@
 import { getSupabase } from '@/lib/supabase';
-import { uiVerify } from '@/lib/uiVerify';
+import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
 import { FIXTURE_BOARDS } from '../board/fixtureBoardData';
 import { createSupabaseBlockService } from './blockService';
@@ -17,7 +17,11 @@ const fixturePeople = () => {
 };
 
 const fixture = uiVerify
-  ? createFixtureBlockService({ people: fixturePeople(), writeDelayMs: VERIFY_WRITE_DELAY_MS })
+  ? createFixtureBlockService({
+      people: fixturePeople(),
+      writeDelayMs: VERIFY_WRITE_DELAY_MS,
+      failOnce: uiVerifyArgument('uiVerifyBlock') === 'failOnce',
+    })
   : null;
 
 export const blockService: BlockService =

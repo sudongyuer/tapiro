@@ -126,4 +126,15 @@ describe('fixture block service', () => {
     expect(await service.block('nobody')).toBe('gone');
     expect(await service.list()).toEqual([]);
   });
+
+  test('failOnce fails the first block and the first unblock, then works', async () => {
+    const { service, isBlocked } = createFixtureBlockService({ people, failOnce: true });
+    await expect(service.block('lin')).rejects.toBeDefined();
+    expect(isBlocked('lin')).toBe(false);
+    expect(await service.block('lin')).toBe('blocked');
+    await expect(service.unblock('lin')).rejects.toBeDefined();
+    expect(isBlocked('lin')).toBe(true);
+    await service.unblock('lin');
+    expect(isBlocked('lin')).toBe(false);
+  });
 });
