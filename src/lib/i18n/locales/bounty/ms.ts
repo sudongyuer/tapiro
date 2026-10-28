@@ -248,6 +248,7 @@ const ms: typeof zhHans = {
     yourNote: 'Anda tulis: {{note}}',
     withdraw: 'Tarik Balik Permohonan',
     withdrawFailed: 'Gagal ditarik balik. Cuba lagi.',
+    withdrawing: 'Menarik balik',
     withdrawConfirm: {
       title: 'Tarik balik permohonan?',
       body: '{{name}} tidak akan nampak permohonan anda lagi. Anda boleh mohon semula.',
@@ -283,6 +284,10 @@ const ms: typeof zhHans = {
     closed: 'Ganjaran ini sudah ditutup, jadi tidak boleh dimohon',
     taken: 'Ganjaran ini sudah diambil orang lain, jadi tidak boleh dimohon',
     gone: 'Ganjaran ini sudah tiada',
+    close: 'Tutup',
+    checking: 'Menyemak cara bayaran anda',
+    sending: 'Menghantar',
+    own: 'Ini ganjaran anda sendiri, jadi tidak boleh dimohon',
   },
 };
 

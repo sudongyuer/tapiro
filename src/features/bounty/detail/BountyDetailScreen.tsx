@@ -12,6 +12,7 @@ import { vars } from '@/ui/theme/tokens';
 
 import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
+import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
 import { shownView, type DetailAction, type DetailView } from './detailState';
 import { useDetail } from './useDetail';
@@ -88,6 +89,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
             name={copy.name}
             current={state.kind === 'ready'}
             onApply={() => onApply(id)}
+            reload={() => void retry()}
           />
         </>
       ) : (
@@ -114,27 +116,18 @@ function DetailActions({
   name,
   current,
   onApply,
+  reload,
 }: {
   view: DetailView;
   name: string;
   current: boolean;
   onApply: () => void;
+  reload: () => void;
 }) {
   const { t } = useI18n();
   if (view.action === 'none') return null;
   if (view.action === 'applied') {
-    return (
-      <SheetActions>
-        <AppText
-          variant="body"
-          accessibilityRole="text"
-          testID="bounty-detail-applied"
-          style={styles.applied}
-        >
-          {t('bounty.detail.applied', { name })}
-        </AppText>
-      </SheetActions>
-    );
+    return <AppliedActions id={view.id} name={name} note={view.note} reload={reload} />;
   }
   const reason = REASON[view.action];
   return (
@@ -167,6 +160,5 @@ const styles = StyleSheet.create({
     padding: vars['--space-4'],
     backgroundColor: PlatformColor('systemGroupedBackground'),
   },
-  applied: { fontWeight: '600', textAlign: 'center', paddingVertical: vars['--space-3'] },
   reason: { textAlign: 'center' },
 });

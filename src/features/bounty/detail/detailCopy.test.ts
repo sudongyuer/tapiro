@@ -30,6 +30,7 @@ const VIEW: DetailView = {
   poster: { id: 'p1', name: '小林', tier: 'reliable' },
   description: undefined,
   action: 'apply',
+  note: null,
 };
 
 describe('detailCopy', () => {

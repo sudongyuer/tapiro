@@ -11,8 +11,13 @@ import { createFixtureBoardService, fixtureBoardOptions } from './fixtureBoardSe
 import { createOriginStore } from './originStore';
 import type { BoardService } from './types';
 
+const VERIFY_WRITE_DELAY_MS = 2500;
+
 export const boardService: BoardService = uiVerify
-  ? createFixtureBoardService(fixtureBoardOptions(uiVerifyArgument, uiVerifyFixture))
+  ? createFixtureBoardService({
+      ...fixtureBoardOptions(uiVerifyArgument, uiVerifyFixture),
+      writeDelayMs: VERIFY_WRITE_DELAY_MS,
+    })
   : createSupabaseBoardService(getSupabase());
 
 export const originStore = createOriginStore(Settings, userCleanups);

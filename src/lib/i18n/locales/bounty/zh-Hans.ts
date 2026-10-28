@@ -241,6 +241,7 @@ export default {
     yourNote: '你写的：{{note}}',
     withdraw: '撤回申请',
     withdrawFailed: '没撤回成功，再试一次',
+    withdrawing: '正在撤回',
     withdrawConfirm: {
       title: '撤回申请？',
       body: '撤回后{{name}}看不到你的申请，你还可以再申请。',
@@ -276,5 +277,9 @@ export default {
     closed: '这条悬赏已经关闭了，不能申请',
     taken: '这条悬赏已经有人接了，不能申请',
     gone: '这条悬赏已经不在了',
+    close: '关闭',
+    checking: '正在检查收款方式',
+    sending: '正在发送',
+    own: '这是你自己发的悬赏，不能申请',
   },
 };

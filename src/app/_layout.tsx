@@ -44,6 +44,7 @@ function RootStack() {
         <Stack.Screen name="payee/bank" options={PAGE_SHEET} />
         <Stack.Screen name="payee/qr" options={PAGE_SHEET} />
         <Stack.Screen name="pay/[id]" options={PAGE_SHEET} />
+        <Stack.Screen name="bounty-apply/[id]" options={PAGE_SHEET} />
         <Stack.Screen
           name="bounty-post"
           options={{ presentation: 'pageSheet', headerShown: false }}

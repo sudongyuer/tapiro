@@ -15,6 +15,7 @@ export type DetailView = {
   poster: Person;
   description: string | null | undefined;
   action: DetailAction;
+  note: string | null;
 };
 
 const TAKEN = ['assigned', 'en_route', 'done', 'disputed', 'confirmed'];
@@ -43,6 +44,7 @@ export function viewOfRow(row: BoardRow): DetailView {
     poster: row.poster,
     description: undefined,
     action: row.appliedByMe ? 'applied' : 'apply',
+    note: null,
   };
 }
 
@@ -60,6 +62,7 @@ export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
     poster: detail.poster,
     description: detail.description,
     action: detailAction(detail, now),
+    note: detail.myApplication?.status === 'pending' ? detail.myApplication.note : null,
   };
 }
 
@@ -143,6 +146,7 @@ export function detailReducer(state: DetailState, event: DetailEvent): DetailSta
 export function shownView(state: DetailState, now: Date): DetailView | null {
   if (state.kind === 'ready') return viewOfDetail(withWrite(state.detail, state.write), now);
   if (state.kind === 'gone' || !state.seed) return null;
-  const seed = state.write ? { ...state.seed, appliedByMe: state.write.applied } : state.seed;
-  return viewOfRow(seed);
+  if (!state.write) return viewOfRow(state.seed);
+  const seeded = viewOfRow({ ...state.seed, appliedByMe: state.write.applied });
+  return { ...seeded, note: state.write.applied ? state.write.note : null };
 }

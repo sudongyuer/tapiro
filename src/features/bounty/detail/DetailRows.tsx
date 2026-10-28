@@ -36,6 +36,8 @@ export function DetailHeader({ view, copy }: { view: DetailView; copy: DetailCop
       <VStack spacing={vars['--space-2']} modifiers={[frame({ maxWidth: Infinity })]}>
         <RNHostView matchContents>
           <AppliedSticker
+            id={view.id}
+            surface="detail"
             category={view.category}
             size={STICKER}
             applied={view.action === 'applied'}

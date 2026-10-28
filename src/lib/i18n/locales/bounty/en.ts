@@ -246,6 +246,7 @@ const en: typeof zhHans = {
     yourNote: 'You wrote: {{note}}',
     withdraw: 'Withdraw Application',
     withdrawFailed: 'Couldn’t withdraw. Try again.',
+    withdrawing: 'Withdrawing',
     withdrawConfirm: {
       title: 'Withdraw application?',
       body: '{{name}} won’t see your application after this. You can apply again.',
@@ -281,6 +282,10 @@ const en: typeof zhHans = {
     closed: 'This bounty is closed, so you can’t apply',
     taken: 'Someone has already taken this bounty, so you can’t apply',
     gone: 'This bounty is gone',
+    close: 'Close',
+    checking: 'Checking your payment methods',
+    sending: 'Sending',
+    own: 'This is your own bounty, so you can’t apply',
   },
 };
 

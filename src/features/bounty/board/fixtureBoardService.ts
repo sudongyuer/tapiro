@@ -33,6 +33,7 @@ export type FixtureBoardOptions = {
   detail: DetailMode;
   variant: FixtureVariant;
   now: () => Date;
+  writeDelayMs?: number;
 };
 
 function pick<T extends string>(values: readonly T[], value: string | undefined, fallback: T): T {
@@ -70,6 +71,9 @@ const rounded = (from: Point | null, to: Point | null) =>
   from && to ? Math.max(100, Math.round(distanceM(from, to) / 100) * 100) : null;
 
 const cleanNote = (note: string | null) => note?.replace(/^ +| +$/g, '') || null;
+
+const pause = (ms: number) =>
+  ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
 const mismatch = () => Object.assign(new Error('board_cursor_mismatch'), { code: '22023' });
 
@@ -234,6 +238,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
       return options.variant !== 'empty';
     },
     async apply(id, note) {
+      await pause(options.writeDelayMs ?? 0);
       if (applyFailures > 0) {
         applyFailures -= 1;
         return { ok: false, reason: 'failed' };
@@ -252,6 +257,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
       return { ok: true, note: cleaned };
     },
     async withdraw(id) {
+      await pause(options.writeDelayMs ?? 0);
       const current = applications.get(id);
       if (!current) return { ok: false, reason: 'notPending' };
       applications.set(id, { ...current, status: 'withdrawn' });

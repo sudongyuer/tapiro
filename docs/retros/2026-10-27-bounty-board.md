@@ -51,3 +51,13 @@ status: running
    run's failure with screenshots 03–06 missing; the reviewer caught it by reading `result.json`. Tag `stale-evidence`.
    Candidate: reviews check that each case's `result.json` is `pass` with the reviewed commit, or the runner writes a
    summary the report must quote.
+11. Task 11: the apply note's counter read 19/140 for a 20-character note in two light runs. `@expo/ui` 57's
+   `TextFieldView` posts `onTextChange` only for edits it flags as user-made, so the last keystroke of a fast burst can
+   arrive without an event; the note sent from `onTextChange` alone would have lost that character. Tag `library-quirk`.
+   Done: the sheet reads the native state on cursor moves, focus loss and send. Candidate: the post form's title and
+   description counters use the same `onTextChange`-only pattern and should get the same sync (not changed here).
+12. Task 11: `bounty_apply` looked for the send spinner after a 1.2 s fixture write, but an AXe tap plus the next
+   `describe-ui` take about 2.5 s, so the spinner had come and gone. Tag `verify-timing`. Done: the verify fixture's
+   `apply`/`withdraw` take 2.5 s. Candidate: a shared constant for "an assertable progress window" in verify fixtures.
+13. Task 11: on iPhone (iOS 26) a SwiftUI `confirmationDialog` opened from an inline button is a popover without its
+   cancel button, so a case cannot tap 不撤回; the cancel role is a tap outside. Tag `platform-behaviour`.

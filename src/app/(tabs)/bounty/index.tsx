@@ -22,8 +22,6 @@ import {
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
-const applyTo = (_id: string) => {};
-
 export default function BountyHomeRoute() {
   const user = useSignedInUser();
   return user ? <BountyHome user={user} /> : null;
@@ -90,7 +88,9 @@ function BountyHome({ user }: { user: AccountUser }) {
             board={board}
             onPost={startPost}
             onOpen={(id) => router.push({ pathname: '/bounty/[id]', params: { id } })}
-            onApply={applyTo}
+            onApply={(id) =>
+              router.push({ pathname: '/bounty-apply/[id]', params: { id, from: 'card' } })
+            }
             onPickPlace={() => router.push('/bounty/place')}
           />
         }

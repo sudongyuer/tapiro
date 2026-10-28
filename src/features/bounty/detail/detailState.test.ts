@@ -132,9 +132,9 @@ describe('detailReducer', () => {
   test('applying while the first load is in flight wins over that older answer', () => {
     const loading = run(initialDetail(ROW), { type: 'started', request: 1 });
     const applied = run(loading, { type: 'written', applied: true, note: '我在楼下' });
-    expect(shownView(applied, NOW)?.action).toBe('applied');
+    expect(shownView(applied, NOW)).toMatchObject({ action: 'applied', note: '我在楼下' });
     const answered = run(applied, { type: 'loaded', request: 1, detail: DETAIL, at: AT });
-    expect(shownView(answered, NOW)?.action).toBe('applied');
+    expect(shownView(answered, NOW)).toMatchObject({ action: 'applied', note: '我在楼下' });
     expect(
       answered.kind === 'ready' && withWrite(answered.detail, answered.write).myApplication,
     ).toEqual({ status: 'pending', note: '我在楼下' });
@@ -157,7 +157,7 @@ describe('detailReducer', () => {
       { type: 'written', applied: false, note: null },
       { type: 'loaded', request: 2, detail: pending, at: AT },
     );
-    expect(shownView(ready, NOW)?.action).toBe('apply');
+    expect(shownView(ready, NOW)).toMatchObject({ action: 'apply', note: null });
     expect(keptWrite({ applied: true, note: null, request: 1 }, 2)).toBeNull();
     expect(keptWrite({ applied: true, note: null, request: 2 }, 2)).not.toBeNull();
   });

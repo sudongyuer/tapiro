@@ -37,6 +37,8 @@ export function CardHead({ row, copy, testID }: Part & { row: BoardRow }) {
     <HStack spacing={vars['--space-3']}>
       <RNHostView matchContents>
         <AppliedSticker
+          id={row.id}
+          surface="card"
           category={row.category}
           size={STICKER}
           applied={row.appliedByMe}
