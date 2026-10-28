@@ -121,6 +121,10 @@ def render_cpu_sample():
     return '\n'.join(rows) or 'SimRenderServer and SimRenderingServices are not among the 20 busiest processes'
 
 
+def videos(out):
+    return sorted(out.glob('*.mp4'))
+
+
 def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     started = time.monotonic()
     out.mkdir(parents=True, exist_ok=True)
@@ -165,12 +169,18 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     recorder.send_signal(signal.SIGINT)
     try:
         recorder.wait(timeout=30)
-        stop_all(udid)
-    except (subprocess.TimeoutExpired, AssertionError):
+    except subprocess.TimeoutExpired:
         recorder.kill()
         status, message = 'fail', f'{message}; recorder did not stop'.strip('; ')
-    if not video.exists() or video.stat().st_size == 0:
+    try:
+        stop_all(udid)
+    except AssertionError as error:
+        status, message = 'fail', f'{message}; {error}'.strip('; ')
+    if not video.exists():
         status, message = 'fail', f'{message}; video missing'.strip('; ')
+    empty = [v.name for v in videos(out) if v.stat().st_size == 0]
+    if empty:
+        status, message = 'fail', f'{message}; empty video {", ".join(empty)}'.strip('; ')
     if status == 'pass' and not list(out.glob('*.png')):
         status, message = 'fail', 'no screenshots captured'
     return status, message, round(time.monotonic() - started, 1)
@@ -260,7 +270,7 @@ def main():
                     'status': status, 'message': message,
                     'duration_s': duration, 'commit': sha, 'dirty': dirty, 'xcode': xcode,
                     'device': {'name': DEVICE_NAME, 'udid': udid, 'runtime': runtime},
-                    'app': str(app),
+                    'app': str(app), 'videos': [v.name for v in videos(out)],
                 }, indent=2))
                 print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}')
                 results.append({'status': status, 'message': message})

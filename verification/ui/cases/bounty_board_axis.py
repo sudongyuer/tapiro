@@ -22,8 +22,9 @@ RING_MIN = 70
 RING_WIDTH = 2
 WATCH_S = 5.0
 FRAME_GAP_S = 0.03
-RING_MS = 150 + 1200 + 240
-SPAN_MIN, SPAN_MAX = 0.75, RING_MS / 1000 + 0.25
+RING_HOLD_MS, RING_FADE_OUT_MS, SLACK_MS = 1200, 240, 100
+SPAN_MIN = (RING_HOLD_MS - SLACK_MS) / 1000
+SPAN_MAX = (RING_HOLD_MS + RING_FADE_OUT_MS + SLACK_MS) / 1000
 
 ui = UI(*sys.argv[1:])
 
@@ -65,9 +66,11 @@ def tap_and_watch(target, card_id, tag):
     first, last = lit.index(True), len(lit) - 1 - lit[::-1].index(True)
     assert all(lit[first:last + 1]), f'the ring around {card_id} showed more than once: {counts}'
     assert last < len(lit) - 1, f'the ring around {card_id} is still there at the end of the clip ({counts[-1][1]:.2f}s)'
-    span = counts[last][1] - counts[first][1]
-    assert SPAN_MIN <= span <= SPAN_MAX, \
-        f'the ring around {card_id} showed for {span:.2f}s, expected {SPAN_MIN}-{SPAN_MAX:.2f}s ({RING_MS} ms)'
+    span = counts[last + 1][1] - counts[max(first - 1, 0)][1]
+    assert SPAN_MIN <= span <= SPAN_MAX, (
+        f'the ring around {card_id} lasted {span:.2f}s from the unlit frame before it to the first unlit frame after it, '
+        f'expected {SPAN_MIN:.2f}-{SPAN_MAX:.2f}s (a {RING_HOLD_MS} ms hold plus up to {RING_FADE_OUT_MS} ms of fade, '
+        f'± {SLACK_MS} ms)')
     print(f'{tag} ring span {span:.2f}s')
     return card
 
