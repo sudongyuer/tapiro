@@ -185,10 +185,21 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   `format:check`, `check-specs`, `check-story-map`, pgTAP when SQL changed) and `bun run verify:smoke` (a few core
   cases, zh-Hans light). UI cases for changed screens are still written in the same task, and each new case is run once
   by its author. A milestone (a feature area done, for example payment, bounty or carpool, and before each TestFlight
-  build) runs `bun run verify:ui --affected --base <last milestone> --dark --locales`, then the user's walkthrough;
-  `bun run verify:full` runs when the machine is idle. Reason: Simulator runs dominated each step's time
-  (user, 2026-10-25). Every case declares `DEPS = [...]` path prefixes; shared code (`src/ui/`, `src/lib/`, root layout,
-  Debug scenes, native modules, app config, the runner, `package.json`, `bun.lock`) selects every case.
+  build) runs the selected cases below, then the user's walkthrough; `bun run verify:full` runs when the machine is
+  idle (overnight). Reason: Simulator runs dominated each step's time (user, 2026-10-25). Every case declares
+  `DEPS = [...]` path prefixes.
+- Choose checks from what changed, not from paths alone, and write the selection with its reason in the report.
+  `--affected` lists candidates; it is not the selection. Reason: a runner change selected all 72 cases (79 min) and the
+  planned milestone ran every case in dark, en and ms whatever had changed (user, 2026-10-28).
+  - Logic only: unit tests; no UI case.
+  - A screen's layout or copy: that screen's cases, zh-Hans light; add `ms` when its copy can be long.
+  - Colours, tokens, or a surface drawn over other content: those screens' cases in dark as well.
+  - New or changed copy keys: `en` for the cases that show them.
+  - Runner or driver: the runner's unit tests, smoke, and one case per touched helper.
+  - Motion: one appearance, with video.
+- A fix round reruns only the cases whose code it touched; the rest run once before the PR.
+- When a check itself is unreliable, find out how to measure the behaviour before changing the check. Reason: the axis
+  ring case took three fix rounds, each review finding a deeper timing flaw (2026-10-28).
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside
   cause, record it in the ledger and move on; if not, report what is known and ask.
 

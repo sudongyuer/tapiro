@@ -98,3 +98,12 @@ status: running
     - new or changed copy keys: en for those cases;
     - runner or driver changes: the runner's unit tests, smoke, and one case per touched helper — not every case;
     - motion: one appearance, with video.
+
+## Landed
+
+- Item 19 and the axis case's three rounds: AGENTS.md Pace now chooses checks by kind of change, has fix rounds rerun only
+  the cases they touched, and asks how to measure before reworking an unreliable check.
+- Item 18: a fresh main session per PR, resuming from the ledger; scoped re-reviews of test- or doc-only diffs use a
+  mid-tier model; open questions are restated in full only when first asked and in the user's return summary (user,
+  2026-10-28). These are working habits of the agent session, kept in its memory, not project rules.
+- Item 15 (a lint failure not gating a commit): still a candidate; a pre-commit hook needs the user's agreement on hooks.
