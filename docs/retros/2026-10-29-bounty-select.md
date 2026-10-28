@@ -23,3 +23,6 @@ Started overnight 2026-10-28 with the user's advance approval of every recommend
    only one Simulator-using agent at a time until the runner owns several Simulators.
 4. Task 7's report said `bun test` passed 532; the full suite is 971. The controller reran it. Tag `report-accuracy`.
    The habit of checking result files and counts at the controller holds; no new rule.
+5. Task 7's report claimed a story-map device line it never wrote; the re-review caught it with a grep. Tag
+   `report-accuracy` (second this step, with item 4). Candidate: the report template lists each claimed doc edit with
+   its file:line so the reviewer checks it mechanically.
