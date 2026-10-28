@@ -66,3 +66,13 @@ def apply_pill(shot, card, appearance):
     lower_right = {'x': f['x'] + f['width'] / 2, 'y': f['y'] + f['height'] / 2,
                    'width': f['width'] / 2, 'height': f['height'] / 2}
     return ink_box(shot, lower_right, token('--color-accent', appearance))
+
+
+def distance_text(ui, metres):
+    if metres < 1000:
+        text = ui.t('bounty.board.distance.meters', value=str(round(metres)))
+    else:
+        km = round(metres / 100) / 10
+        value = f'{km:.1f}'.rstrip('0').rstrip('.') if km < 10 else str(round(km))
+        text = ui.t('bounty.board.distance.kilometers', value=value)
+    return text.replace(' ', ' ')

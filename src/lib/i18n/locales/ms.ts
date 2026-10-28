@@ -275,6 +275,7 @@ const ms: Translation = {
       confirm: 'Sahkan siaran',
       placeSearch: 'Pilih Tempat',
       board: 'Papan ganjaran',
+      detail: 'Butiran ganjaran',
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },

@@ -20,14 +20,17 @@ import {
 
 export const BOARD_FAILURES = ['none', 'first', 'refresh', 'page'] as const;
 export const APPLY_MODES = ['ok', 'failOnce', 'taken', 'closed', 'gone'] as const;
+export const DETAIL_MODES = ['ok', 'failOnce', 'gone'] as const;
 
 export type BoardFailure = (typeof BOARD_FAILURES)[number];
 export type ApplyMode = (typeof APPLY_MODES)[number];
+export type DetailMode = (typeof DETAIL_MODES)[number];
 
 export type FixtureBoardOptions = {
   board: BoardFixture;
   fail: BoardFailure;
   apply: ApplyMode;
+  detail: DetailMode;
   variant: FixtureVariant;
   now: () => Date;
 };
@@ -45,6 +48,7 @@ export function fixtureBoardOptions(
     board: pick(BOARDS, argument('uiVerifyBoard'), 'full'),
     fail: pick(BOARD_FAILURES, argument('uiVerifyBoardFail'), 'none'),
     apply: pick(APPLY_MODES, argument('uiVerifyApply'), 'ok'),
+    detail: pick(DETAIL_MODES, argument('uiVerifyDetail'), 'ok'),
     variant,
     now,
   };
@@ -81,6 +85,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
   let firstLoads = 0;
   let pageFailures = options.fail === 'page' ? 1 : 0;
   let applyFailures = options.apply === 'failOnce' ? 1 : 0;
+  let detailFailures = options.detail === 'failOnce' ? 1 : 0;
 
   const slot = (item: FixtureBounty) =>
     item.window
@@ -218,8 +223,12 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
       return after === null ? { items, next, total: list.length } : { items, next };
     },
     async detail(id, point) {
+      if (detailFailures > 0) {
+        detailFailures -= 1;
+        throw new TypeError('Network request failed');
+      }
       const item = bounties.find((candidate) => candidate.id === id);
-      return item ? detailOf(item, point) : 'gone';
+      return item && options.detail !== 'gone' ? detailOf(item, point) : 'gone';
     },
     async hasPayeeMethod() {
       return options.variant !== 'empty';

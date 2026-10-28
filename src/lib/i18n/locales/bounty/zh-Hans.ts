@@ -251,6 +251,12 @@ export default {
     closed: '这条悬赏已经关闭了',
     taken: '这条悬赏已经有人接了',
     more: '更多',
+    title: '悬赏详情',
+    loading: '正在加载这条悬赏',
+    failed: '没加载出来',
+    refreshFailed: '没刷新成功，下面可能不是最新的',
+    retry: '重试',
+    back: '返回',
   },
   apply: {
     title: '申请帮忙',

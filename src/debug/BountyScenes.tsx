@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fixtureUser } from '@/features/account';
 import {
   BountyBoard,
+  BountyDetailScreen,
   PlaceSearchScreen,
   PostConfirm,
   PostForm,
   useBountyBoard,
 } from '@/features/bounty';
+import { uiVerifyArgument } from '@/lib/uiVerify';
 import { vars } from '@/ui/theme/tokens';
 
 function Marker({ name }: { name: string | null }) {
@@ -96,6 +98,22 @@ export function BountyBoardScene({ onReady }: { onReady: () => void }) {
           onPickPlace={() => setLeft('pick-place')}
         />
       </ScrollView>
+      <Marker name={left} />
+    </>
+  );
+}
+
+export function BountyDetailScene({ onReady }: { onReady: () => void }) {
+  const [left, setLeft] = useState<string | null>(null);
+  useEffect(onReady, [onReady]);
+  return (
+    <>
+      <BountyDetailScreen
+        id={uiVerifyArgument('uiVerifyDetailId') ?? 'fixture-bounty-01'}
+        userId={fixtureUser('apple').id}
+        onApply={(id) => setLeft(`apply-${id}`)}
+        onGone={() => setLeft('gone')}
+      />
       <Marker name={left} />
     </>
   );

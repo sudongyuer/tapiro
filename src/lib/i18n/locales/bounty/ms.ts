@@ -258,6 +258,12 @@ const ms: typeof zhHans = {
     closed: 'Ganjaran ini sudah ditutup',
     taken: 'Ganjaran ini sudah diambil orang lain',
     more: 'Lagi',
+    title: 'Ganjaran',
+    loading: 'Memuatkan ganjaran ini',
+    failed: 'Ganjaran ini tidak dapat dimuatkan',
+    refreshFailed: 'Gagal dimuat semula. Ini mungkin bukan yang terkini.',
+    retry: 'Cuba Lagi',
+    back: 'Kembali',
   },
   apply: {
     title: 'Mohon Membantu',

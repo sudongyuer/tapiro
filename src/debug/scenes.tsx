@@ -11,6 +11,7 @@ import {
 import {
   BountyBoardScene,
   BountyConfirmScene,
+  BountyDetailScene,
   BountyPostScene,
   PlaceSearchScene,
 } from './BountyScenes';
@@ -50,6 +51,7 @@ export const scenes: Scene[] = [
   { id: 'bounty-confirm', titleKey: 'debug.bounty.confirm', Component: BountyConfirmScene },
   { id: 'place-search', titleKey: 'debug.bounty.placeSearch', Component: PlaceSearchScene },
   { id: 'bounty-board', titleKey: 'debug.bounty.board', Component: BountyBoardScene },
+  { id: 'bounty-detail', titleKey: 'debug.bounty.detail', Component: BountyDetailScene },
 ];
 
 export function findScene(id: string) {

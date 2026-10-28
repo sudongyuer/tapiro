@@ -9,7 +9,7 @@ import { tierName, tierRank } from '../shared/tierCopy';
 import { formatDistance } from './axis';
 import type { BoardRow } from './types';
 
-function rowTime(row: BoardRow): TimeChoice {
+export function rowTime(row: Pick<BoardRow, 'deadlineAt' | 'startsAt' | 'endsAt'>): TimeChoice {
   if (row.deadlineAt) return { kind: 'deadline', deadlineAt: row.deadlineAt };
   if (row.startsAt && row.endsAt) {
     return { kind: 'window', startsAt: row.startsAt, endsAt: row.endsAt };

@@ -22,7 +22,6 @@ import {
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
-const openBounty = (_id: string) => {};
 const applyTo = (_id: string) => {};
 
 export default function BountyHomeRoute() {
@@ -90,7 +89,7 @@ function BountyHome({ user }: { user: AccountUser }) {
           <BountyBoard
             board={board}
             onPost={startPost}
-            onOpen={openBounty}
+            onOpen={(id) => router.push({ pathname: '/bounty/[id]', params: { id } })}
             onApply={applyTo}
             onPickPlace={() => router.push('/bounty/place')}
           />

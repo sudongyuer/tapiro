@@ -271,6 +271,7 @@ const en: Translation = {
       confirm: 'Confirm post',
       placeSearch: 'Choose a Place',
       board: 'Bounty board',
+      detail: 'Bounty detail',
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },

@@ -402,6 +402,7 @@ Verify launch arguments (fixture services, `uiVerify` only):
 | `-uiVerifyLocation` | `granted` (default, Sunway Pyramid 3.0733, 101.6078), `undetermined` (prompt answers granted), `undeterminedDeny` (prompt answers denied), `denied`, `reduced`, `noFix` | `locationService` |
 | `-uiVerifyBoard` | `full` (default: 12 rows, 9 located incl. 2 beyond 2 km, 3 unlocated, 2 urgent, 1 applied), `one`, `empty`, `worst`, `long` (45 rows, three pages) | `page()` data; filters applied in the fixture with the RPC's rules |
 | `-uiVerifyBoardFail` | `first` (first load fails once), `refresh` (second load fails), `page` (second page fails once) | `page()` failures |
+| `-uiVerifyDetail` | `ok` (default), `failOnce`, `gone` (every id) | `detail()`; the `bounty-detail` scene opens `-uiVerifyDetailId` (default `fixture-bounty-01`) |
 | `-uiVerifyBoardPlace` | `none` (clears), `sunway` (Sunway Geo Residences) | seeds the stored chosen place |
 | `-uiVerifyApply` | `ok` (default), `failOnce`, `taken`, `closed`, `gone` | `apply()`; with `-uiVerifyFixture empty` `hasPayeeMethod()` is false and `apply` rejects `noPayee` |
 | `-uiVerifyPlaces` | `ok` (default: Sunway results), `none`, `fail`, `resolveFail` | the place-search facade wrapper |

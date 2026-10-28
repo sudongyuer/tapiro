@@ -43,17 +43,20 @@ test('launch arguments pick the board, failure and apply mode', () => {
     uiVerifyBoard: 'long',
     uiVerifyBoardFail: 'page',
     uiVerifyApply: 'taken',
+    uiVerifyDetail: 'failOnce',
   };
   expect(fixtureBoardOptions((name) => args[name], 'empty')).toMatchObject({
     board: 'long',
     fail: 'page',
     apply: 'taken',
+    detail: 'failOnce',
     variant: 'empty',
   });
   expect(fixtureBoardOptions(() => 'nonsense', 'demo')).toMatchObject({
     board: 'full',
     fail: 'none',
     apply: 'ok',
+    detail: 'ok',
   });
 });
 
@@ -275,5 +278,14 @@ describe('apply and withdraw', () => {
 
   test('an unknown bounty is gone', async () => {
     expect(await service().detail('missing', null)).toBe('gone');
+  });
+
+  test('the detail fails once, then loads; gone answers gone for every id', async () => {
+    const failing = service({ detail: 'failOnce' });
+    await expect(failing.detail('fixture-bounty-01', null)).rejects.toThrow(
+      'Network request failed',
+    );
+    expect(await failing.detail('fixture-bounty-01', null)).toMatchObject({ title: '帮取快递' });
+    expect(await service({ detail: 'gone' }).detail('fixture-bounty-01', null)).toBe('gone');
   });
 });

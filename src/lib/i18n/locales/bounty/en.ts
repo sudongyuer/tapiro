@@ -256,6 +256,12 @@ const en: typeof zhHans = {
     closed: 'This bounty is closed',
     taken: 'Someone has already taken this bounty',
     more: 'More',
+    title: 'Bounty',
+    loading: 'Loading this bounty',
+    failed: 'Couldn’t load this bounty',
+    refreshFailed: 'Couldn’t refresh. This may be out of date.',
+    retry: 'Try Again',
+    back: 'Back',
   },
   apply: {
     title: 'Offer to Help',
