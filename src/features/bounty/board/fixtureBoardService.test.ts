@@ -207,13 +207,16 @@ describe('failures', () => {
 
 describe('worst', () => {
   test('carries the longest values the board must fit', async () => {
-    const { items } = await service({ board: 'worst' }).page(ME, 'all', null);
+    const board = service({ board: 'worst' });
+    const pages = [await board.page(ME, 'all', null)];
+    while (pages.at(-1)?.next) pages.push(await board.page(ME, 'all', pages.at(-1)!.next));
+    const items = pages.flatMap((page) => page.items);
+    expect(pages[0].total).toBe(45);
+    expect(new Set(items.map((row) => row.id)).size).toBe(45);
     expect(Math.max(...items.map((row) => codePoints(row.title)))).toBe(60);
     expect(Math.max(...items.map((row) => codePoints(row.placeLabel ?? '')))).toBe(80);
     expect(Math.max(...items.map((row) => codePoints(row.poster.name ?? '')))).toBe(40);
-    expect(items.map((row) => row.rewardSen).sort((a, b) => a - b)).toEqual([
-      100, 100, 50000, 50000,
-    ]);
+    expect(new Set(items.map((row) => row.rewardSen))).toEqual(new Set([100, 50000]));
     expect(items.map((row) => row.distanceM)).toContain(100);
     expect(items.map((row) => row.distanceM)).toContain(18_400);
     expect(items.some((row) => row.poster.tier === 'tapir_friend')).toBe(true);

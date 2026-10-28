@@ -68,6 +68,9 @@ scripts that drive the Simulator outside the runner. Do not click or scroll in t
 while a run is in progress: a pointer drag reaches the app as a real touch, and a home case once
 failed because a stray drag scrolled 悬赏 back to the top.
 
+`ocr.find(shot, pattern, within)` reads on-screen text with Vision (`ocr.swift`, compiled to `.verify/ocr` on first
+use) for text inside a single VoiceOver element, such as a board card whose parts have no frames of their own.
+
 Shell and home cases sign in through `reach_home`. `Shot` reads screenshot pixels in points, so
 cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`), the 悬赏令 halo
 (`glow`) and the 小貘 button outline (`assert_tapir_button`).

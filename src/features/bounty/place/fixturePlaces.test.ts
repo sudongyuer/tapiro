@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { PlaceSuggestionsEvent } from 'tapiro-kit';
 
-import { createFixturePlaces, FIXTURE_PLACES, placesFixture } from './fixturePlaces';
+import { createFixturePlaces, FIXTURE_PLACES, placesFixture, WORST_PLACE } from './fixturePlaces';
 
 const now = (run: () => void) => run();
 
@@ -59,6 +59,23 @@ describe('place fixtures', () => {
     expect(await places.resolvePlace(searchId, 'sunway-geo')).toEqual({
       status: 'failed',
       code: 'network',
+    });
+  });
+
+  test('the worst variant lists an 80-code-point place first and resolves it', async () => {
+    const places = createFixturePlaces('ok', now, 'worst');
+    const events: PlaceSuggestionsEvent[] = [];
+    places.addPlaceSuggestionsListener((event) => events.push(event));
+    const searchId = places.startPlaceSearch(null);
+    places.updatePlaceQuery(searchId, 'sunway');
+    const event = events[0];
+    const first = event.status === 'ok' ? event.items[0] : null;
+    expect(first?.id).toBe(WORST_PLACE.id);
+    expect([...(first?.title ?? '')]).toHaveLength(80);
+    expect(event.status === 'ok' && event.items).toHaveLength(FIXTURE_PLACES.length + 1);
+    expect(await places.resolvePlace(searchId, WORST_PLACE.id)).toEqual({
+      status: 'ok',
+      place: WORST_PLACE.place,
     });
   });
 

@@ -5,6 +5,8 @@ import type {
   ResolvedPlace,
 } from 'tapiro-kit';
 
+import type { FixtureVariant } from '@/lib/fixtureVariant';
+
 import type { PlaceFacade } from './placeSearch';
 
 export const PLACES_FIXTURES = ['ok', 'none', 'fail', 'resolveFail'] as const;
@@ -52,13 +54,33 @@ export const FIXTURE_PLACES: FixturePlace[] = [
   },
 ];
 
+const longText = (seed: string, count: number) =>
+  [...seed.repeat(Math.ceil(count / [...seed].length))].slice(0, count).join('');
+
+export const WORST_PLACE: FixturePlace = {
+  id: 'worst-place',
+  title: longText('Sunway Pyramid Convention Centre 旁边的 Sunway Lagoon 正门售票处，', 80),
+  subtitle: longText(
+    '3, Jalan PJS 11/11, Bandar Sunway, 47500 Petaling Jaya, Selangor Darul Ehsan, ',
+    120,
+  ),
+  place: {
+    name: longText('Sunway Pyramid Convention Centre 旁边的 Sunway Lagoon 正门售票处，', 80),
+    latitude: 3.0712,
+    longitude: 101.6066,
+    address: '3, Jalan PJS 11/11, Bandar Sunway, 47500 Petaling Jaya, Selangor Darul Ehsan',
+  },
+};
+
 const FAILED: PlaceResult = { status: 'failed', code: 'network' };
 const EVENT_DELAY_MS = 120;
 
 export function createFixturePlaces(
   fixture: PlacesFixture,
   delay: (run: () => void) => void = (run) => setTimeout(run, EVENT_DELAY_MS),
+  variant: FixtureVariant = 'demo',
 ): PlaceFacade {
+  const places = variant === 'worst' ? [WORST_PLACE, ...FIXTURE_PLACES] : FIXTURE_PLACES;
   const listeners = new Set<(event: PlaceSuggestionsEvent) => void>();
   let sequence = 0;
   let failNext = fixture === 'fail';
@@ -77,7 +99,7 @@ export function createFixturePlaces(
             items:
               fixture === 'none'
                 ? []
-                : FIXTURE_PLACES.map(({ id, title, subtitle }) => ({ id, title, subtitle })),
+                : places.map(({ id, title, subtitle }) => ({ id, title, subtitle })),
           };
       failNext = false;
       delay(() => listeners.forEach((listener) => listener(event)));
@@ -89,7 +111,7 @@ export function createFixturePlaces(
     },
     async resolvePlace(_searchId, suggestionId) {
       if (fixture === 'resolveFail') return FAILED;
-      const match = FIXTURE_PLACES.find((place) => place.id === suggestionId);
+      const match = places.find((place) => place.id === suggestionId);
       return match ? { status: 'ok', place: match.place } : { status: 'failed', code: 'stale' };
     },
     async placeAt() {

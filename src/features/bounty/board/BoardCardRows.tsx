@@ -11,6 +11,7 @@ import {
   lineLimit,
   padding,
   shapes,
+  truncationMode,
 } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
@@ -91,7 +92,7 @@ export function CardWhenWhere({ urgent, copy, testID }: Part & { urgent: boolean
           modifiers={[footnote, urgentInk, accessibilityIdentifier(`${testID}-urgent`)]}
         />
       ) : null}
-      <Text modifiers={[footnote, secondary, lineLimit(3)]}>
+      <Text modifiers={[footnote, secondary, lineLimit(3), truncationMode('middle')]}>
         {copy.when ? (
           <Text
             modifiers={

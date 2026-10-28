@@ -279,6 +279,34 @@ const WORST: FixtureBounty[] = [
   }),
 ];
 
+const WORST_TITLES = [
+  '帮我从 Mid Valley Megamall 带一份晚餐回 Sunway Geo，顺便买两瓶水和一包纸巾，',
+  'Tolong temankan saya ke klinik di Bandar Sunway untuk pemeriksaan kesihatan ',
+];
+const WORST_PLACES = [
+  'Mid Valley Megamall, Lingkaran Syed Putra, Mid Valley City, Kuala Lumpur ',
+  'Klinik Kesihatan Bandar Sunway, Jalan PJS 9/1, Bandar Sunway, Subang Jaya ',
+];
+const WORST_COUNT = 45;
+const WORST_FILLER = WORST_COUNT - 4;
+
+const WORST_FILLERS: FixtureBounty[] = Array.from({ length: WORST_FILLER }, (_, index) => {
+  const n = index + 5;
+  const pick = index % 2;
+  return bounty({
+    id: `fixture-worst-${String(n).padStart(2, '0')}`,
+    title: codePoints(WORST_TITLES[pick], 60),
+    category: BOUNTY_CATEGORIES[index % BOUNTY_CATEGORIES.length],
+    rewardSen: pick === 0 ? 50000 : 100,
+    placeLabel: codePoints(WORST_PLACES[pick], 80),
+    meters: 2100 + 400 * index,
+    bearing: (index * 53) % 360,
+    createdMinutesAgo: 5 + index * 11,
+    applied: index % 7 === 3,
+    poster: LONG_PERSON,
+  });
+});
+
 const LONG_POSTERS = [KOBAYASHI, AISYAH, JIE, WEI_JIE, MEI_LING, HAFIZ, LILY, ARIF];
 const LONG_LOCATED = 40;
 const LONG_COUNT = 45;
@@ -302,6 +330,6 @@ export const FIXTURE_BOARDS: Record<BoardFixture, FixtureBounty[]> = {
   full: FULL,
   one: FULL.slice(3, 4),
   empty: [],
-  worst: WORST,
+  worst: [...WORST, ...WORST_FILLERS],
   long: LONG,
 };

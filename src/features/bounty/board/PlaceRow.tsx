@@ -79,7 +79,7 @@ export function PlaceRow({ chosen, onPick }: { chosen: string | null; onPick: ()
 function RowText({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <View style={styles.text}>
-      <AppText variant="body" numberOfLines={2}>
+      <AppText variant="body" numberOfLines={2} ellipsizeMode="middle">
         {title}
       </AppText>
       <AppText variant="meta" tone="secondaryLabel">
