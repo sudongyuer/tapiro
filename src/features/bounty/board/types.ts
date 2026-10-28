@@ -53,6 +53,7 @@ export type BountyDetail = {
   deadlineAt: string | null;
   expiresAt: string;
   poster: Person;
+  helper: Person | null;
   myApplication: { status: ApplicationStatus; note: string | null } | null;
 };
 

@@ -7,6 +7,7 @@ import { userCleanups } from '@/lib/userCleanups';
 import { fixtureBlocked } from '../block/services';
 import { FIXTURE_PLACES } from '../place/fixturePlaces';
 import { FIXTURE_USER_ID } from '../post/fixtureDrafts';
+import { fixturePosterView } from '../select/services';
 import { createSupabaseBoardService } from './boardService';
 import { createFixtureBoardService, fixtureBoardOptions } from './fixtureBoardService';
 import { createOriginStore, createShownOrigins } from './originStore';
@@ -19,6 +20,7 @@ export const boardService: BoardService = uiVerify
       ...fixtureBoardOptions(uiVerifyArgument, uiVerifyFixture),
       writeDelayMs: VERIFY_WRITE_DELAY_MS,
       isBlocked: fixtureBlocked,
+      posterView: fixturePosterView,
     })
   : createSupabaseBoardService(getSupabase());
 

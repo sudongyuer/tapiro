@@ -8,44 +8,50 @@ import {
   type BoardRow,
   type BountyDetail,
   type Person,
+  type ViewerRole,
 } from './types';
 
 type Body = Record<string, unknown>;
 
-const fail = (what: string): never => {
+export const fail = (what: string): never => {
   throw new Error(`board read returned an unexpected ${what}`);
 };
 
-const body = (value: unknown, what: string): Body =>
+export const body = (value: unknown, what: string): Body =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Body)
     : fail(what);
 
-const text = (value: unknown, what: string): string =>
+export const text = (value: unknown, what: string): string =>
   typeof value === 'string' ? value : fail(what);
 
-const textOrNull = (value: unknown, what: string): string | null =>
+export const textOrNull = (value: unknown, what: string): string | null =>
   value === null || value === undefined ? null : text(value, what);
 
-const count = (value: unknown, what: string): number =>
+export const count = (value: unknown, what: string): number =>
   Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail(what);
 
 const countOrNull = (value: unknown, what: string): number | null =>
   value === null || value === undefined ? null : count(value, what);
 
-const oneOf = <T extends string>(values: readonly T[], value: unknown, what: string): T =>
+export const oneOf = <T extends string>(values: readonly T[], value: unknown, what: string): T =>
   values.find((candidate) => candidate === value) ?? fail(what);
 
 const finite = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 
-function toPerson(value: unknown): Person {
-  const person = body(value, 'poster');
+function toPerson(value: unknown, what = 'poster'): Person {
+  const person = body(value, what);
   return {
-    id: text(person.id, 'poster.id'),
-    name: textOrNull(person.name, 'poster.name'),
-    tier: oneOf(TIERS, person.tier, 'poster.tier'),
+    id: text(person.id, `${what}.id`),
+    name: textOrNull(person.name, `${what}.name`),
+    tier: oneOf(TIERS, person.tier, `${what}.tier`),
   };
+}
+
+function toHelper(value: unknown, role: ViewerRole): Person | null {
+  if (role !== 'poster' && role !== 'helper') return null;
+  return value === null || value === undefined ? null : toPerson(value, 'helper');
 }
 
 export function toBoardRow(value: unknown): BoardRow {
@@ -105,6 +111,7 @@ function toApplication(value: unknown): BountyDetail['myApplication'] {
 
 export function toBountyDetail(value: unknown): BountyDetail {
   const detail = body(value, 'detail');
+  const viewerRole = oneOf(VIEWER_ROLES, detail.viewerRole, 'viewerRole');
   return {
     id: text(detail.id, 'id'),
     title: text(detail.title, 'title'),
@@ -112,7 +119,7 @@ export function toBountyDetail(value: unknown): BountyDetail {
     category: bountyCategory(detail.category) ?? fail('category'),
     rewardSen: count(detail.rewardSen, 'rewardSen'),
     status: text(detail.status, 'status'),
-    viewerRole: oneOf(VIEWER_ROLES, detail.viewerRole, 'viewerRole'),
+    viewerRole,
     place: toPlace(detail.place),
     distanceM: countOrNull(detail.distanceM, 'distanceM'),
     address: textOrNull(detail.address, 'address'),
@@ -121,6 +128,7 @@ export function toBountyDetail(value: unknown): BountyDetail {
     deadlineAt: textOrNull(detail.deadlineAt, 'deadlineAt'),
     expiresAt: text(detail.expiresAt, 'expiresAt'),
     poster: toPerson(detail.poster),
+    helper: toHelper(detail.helper, viewerRole),
     myApplication: toApplication(detail.myApplication),
   };
 }

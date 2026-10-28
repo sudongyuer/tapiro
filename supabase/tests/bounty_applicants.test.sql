@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(13);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -128,6 +128,19 @@ select ok(not has_function_privilege('anon', 'public.bounty_applicants(uuid)', '
 select is(
   (select prosecdef and proconfig = array['search_path=""'] from pg_proc where oid = 'public.bounty_applicants(uuid)'::regprocedure),
   true, 'it stays security definer with an empty search_path'
+);
+
+select pg_temp.act_as(pg_temp.u('a1'));
+select pg_temp.pay(11, 'b2', 'a7', 'marked_paid', pg_temp.pay(10, 'a7', 'b2', 'settled'));
+select is(
+  (select (x ->> 'helpedCount')::integer from jsonb_array_elements(public.bounty_applicants('10000000-0000-0000-0000-000000000001')) x),
+  3, 'a help whose reversal is still open counts as helped'
+);
+update public.payments set state = 'settled', settled_at = now()
+where id = '00000000-0000-0000-0000-000000000011';
+select is(
+  (select (x ->> 'helpedCount')::integer from jsonb_array_elements(public.bounty_applicants('10000000-0000-0000-0000-000000000001')) x),
+  2, 'only a settled reversal removes the help'
 );
 
 select * from finish();

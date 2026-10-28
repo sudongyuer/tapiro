@@ -47,6 +47,7 @@ const DETAIL: BountyDetail = {
   deadlineAt: '2026-10-27T05:00:00.000Z',
   expiresAt: '2026-10-27T05:00:00.000Z',
   poster: { id: 'p1', name: '小林', tier: 'reliable' },
+  helper: null,
   myApplication: null,
 };
 
