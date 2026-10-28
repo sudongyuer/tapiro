@@ -1,15 +1,16 @@
 """Distance axis (27A, 35A, 40A): from 你 the axis marks the located bounties within 2 km as 44 pt stickers labelled with
 their titles and distance, merging neighbours closer than 44 pt; tapping the 1.6 km sticker scrolls 搬两个箱子上楼 from
 below the screen into view and a 2 pt accent ring shows around it once, then goes; 「+2 更远」 does the same for 帮我去 JPJ
-排号. The run video shows the scroll and the ring."""
+排号. The ring is timed from the frame timestamps of a clip recorded around each tap (ring-move.mp4, ring-jpj.mp4)."""
 import re
-import subprocess
 import sys
+import tempfile
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import BOTTOM_CLEAR, in_view, ink_box, screen, visible  # noqa: E402
 from driver import UI, Shot, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from recording import clip, frames  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/board.py']
 BUDGET = 300
@@ -19,19 +20,12 @@ MOVE_CARD = 'bounty-card-fixture-bounty-06'
 JPJ_CARD = 'bounty-card-fixture-bounty-08'
 RING_MIN = 70
 RING_WIDTH = 2
-WATCH_S = 4.0
+WATCH_S = 5.0
+FRAME_GAP_S = 0.03
 RING_MS = 150 + 1200 + 240
 SPAN_MIN, SPAN_MAX = 0.75, RING_MS / 1000 + 0.25
-SAMPLE_GAP_MAX = 0.25
 
 ui = UI(*sys.argv[1:])
-
-
-def frame_shot(index, tag):
-    path = ui.output / f'ring-{tag}-{index:02d}.png'
-    subprocess.run(['xcrun', 'simctl', 'io', ui.udid, 'screenshot', str(path)],
-                   check=True, timeout=20, capture_output=True)
-    return path, time.monotonic()
 
 
 def ring_pixels(shot, f):
@@ -57,22 +51,20 @@ def tap_and_watch(target, card_id, tag):
     assert before['frame']['y'] >= s['height'] - BOTTOM_CLEAR, \
         f'{card_id} is already on screen at y={before["frame"]["y"]} before the tap'
     f = ui.settled(lambda items: by_id(items, target), f'{target} never settled')['frame']
-    ui.axe('tap', '-x', str(round(f['x'] + f['width'] / 2)), '-y', str(round(f['y'] + f['height'] / 2)))
-    started = time.monotonic()
-    shots = []
-    while time.monotonic() - started < WATCH_S:
-        shots.append(frame_shot(len(shots), tag))
+    with clip(ui, f'ring-{tag}') as video:
+        ui.axe('tap', '-x', str(round(f['x'] + f['width'] / 2)), '-y', str(round(f['y'] + f['height'] / 2)))
+        time.sleep(WATCH_S)
     card = ui.settled(lambda items: by_id(items, card_id), f'{card_id} never settled')
     assert in_view(card, screen(ui.read())), f'{card_id} is not in view after the tap: {card["frame"]}'
-    counts = [(ring_pixels(Shot(path, s['width']), card['frame']), at - started) for path, at in shots]
-    print(f'{tag} ring pixels over time: ' + ', '.join(f'{t:.1f}s={c}' for c, t in counts))
-    gaps = [b - a for (_, a), (_, b) in zip(counts, counts[1:])]
-    assert gaps and max(gaps) <= SAMPLE_GAP_MAX, f'screenshots too slow to time the ring: gaps {gaps}'
+    with tempfile.TemporaryDirectory() as tmp:
+        counts = [(ring_pixels(Shot(path, s['width']), card['frame']), at)
+                  for path, at in frames(video, tmp, FRAME_GAP_S)]
+    print(f'{tag} ring pixels by video time: ' + ', '.join(f'{t:.2f}s={c}' for c, t in counts))
     lit = [c >= RING_MIN for c, _ in counts]
     assert any(lit), f'no accent ring around {card_id} after the scroll: {counts}'
     first, last = lit.index(True), len(lit) - 1 - lit[::-1].index(True)
     assert all(lit[first:last + 1]), f'the ring around {card_id} showed more than once: {counts}'
-    assert last < len(lit) - 1, f'the ring around {card_id} is still there {counts[-1][1]:.1f}s after the tap'
+    assert last < len(lit) - 1, f'the ring around {card_id} is still there at the end of the clip ({counts[-1][1]:.2f}s)'
     span = counts[last][1] - counts[first][1]
     assert SPAN_MIN <= span <= SPAN_MAX, \
         f'the ring around {card_id} showed for {span:.2f}s, expected {SPAN_MIN}-{SPAN_MAX:.2f}s ({RING_MS} ms)'

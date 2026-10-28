@@ -11,6 +11,7 @@ guard arguments.count >= 2,
 }
 
 let request = VNRecognizeTextRequest()
+request.revision = VNRecognizeTextRequestRevision3
 request.recognitionLevel = .accurate
 request.recognitionLanguages = ["zh-Hans", "en-US"]
 request.usesLanguageCorrection = false

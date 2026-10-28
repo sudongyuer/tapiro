@@ -18,6 +18,9 @@ SHARED = [
     'verification/ui/run.py',
     'verification/ui/affected.py',
     'verification/ui/breaker.py',
+    'verification/ui/recording.py',
+    'verification/ui/swifttool.py',
+    'verification/ui/frames.swift',
     'verification/ui/build.sh',
     'scripts/export-ui-strings.ts',
 ]

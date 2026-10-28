@@ -2,16 +2,16 @@
 RM 500 sits inside the card beside a title that wraps to two lines; the place line truncates the label but always shows
 the distance (100 m, 1.8 km, 18 km); 申请 stays a 44 pt pill beside the 貘友 poster; the applied card shows 已申请 · 等对方选
 in full; a two-digit 「+N 更远」 fits the axis; the list loads all 45 cards and ends with 没写地点. The detail of the first card and the
-apply sheet with a 140-code-point note fit, and the applied detail keeps 撤回 at 44 pt. Place search lists an
+apply sheet with a 140-code-point note with spaces (`-uiVerifyApplyNote worst`) fit, and the applied detail keeps 撤回 at 44 pt. Place search lists an
 80-code-point place, and choosing it shows the place row with 附近 still visible and 换 at 44 pt."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import count_reads, note_value, send, title_shown  # noqa: E402
-from board import apply_pill, cards, in_view, scroll_down, screen, visible  # noqa: E402
+from board import cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch, search_places  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
+from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
 from ocr import find, lines  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/bounty-apply/',
@@ -26,11 +26,8 @@ def code_points(seed, count):
 
 
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoard', 'worst',
-        '-uiVerifyFixture', 'worst', '-uiVerifyApplyNote',
-        '我就在双威Geo公寓楼下，10分钟内可以到，三个行李箱我用推车搬上23楼，到了给你发消息。我就在双威Geo公寓楼下，10分钟内可以到，三个行'
-        '李箱我用推车搬上23楼，到了给你发消息。我就在双威Geo公寓楼下，10分钟内可以到，三个行李箱我用推车搬上23楼，到了给你发消息。我就在双威']
-NOTE = ARGS[-1]
-assert len(NOTE) == 140, len(NOTE)
+        '-uiVerifyFixture', 'worst', '-uiVerifyApplyNote', 'worst']
+NOTE_MAX = 140
 COUNT = 45
 PILL_MIN = 43.5
 GUTTER = 16
@@ -47,11 +44,26 @@ def card_shot(identifier, name):
     return card, ui.snap(name)
 
 
+READ = {}
+PILL_LANE = 130
+
+
 def assert_in_card(shot, card, pattern, what):
-    found = find(shot, pattern, card['frame'])
-    seen = [line['text'] for line in lines(shot)]
-    assert found, f'{what} ({pattern}) is not shown in full inside {card["AXUniqueId"]}: {seen}'
+    if shot.path not in READ:
+        READ[shot.path] = lines(shot)
+    read = READ[shot.path]
+    found = find(read, pattern, card['frame'])
+    assert found, f'{what} ({pattern}) is not shown in full inside {card["AXUniqueId"]}: {[l["text"] for l in read]}'
     return found[0]
+
+
+def pill_box(shot, card):
+    f = card['frame']
+    lane = {'x': f['x'] + f['width'] - PILL_LANE, 'y': f['y'] + f['height'] / 2,
+            'width': PILL_LANE, 'height': f['height'] / 2}
+    pill = ink_box(shot, lane, token('--color-accent', ui.appearance))
+    assert pill is None or pill['x'] > lane['x'] + 1, f'accent ink reaches the left edge of the 申请 lane: {pill}'
+    return pill
 
 
 def padded(element, pad):
@@ -93,7 +105,7 @@ assert title_lines[1]['y'] >= title_lines[0]['y'] + title_lines[0]['height'] - 2
     f'the title did not wrap to a second line: {title_lines}'
 assert title['x'] + title['width'] <= reward['x'] + 1, f'the title runs under RM 500: {title} / {reward}'
 assert_in_card(shot, first, r'100\s?m', 'the distance 100 m')
-pill = apply_pill(shot, first, ui.appearance)
+pill = pill_box(shot, first)
 assert pill and pill['height'] >= PILL_MIN and pill['width'] >= PILL_MIN, f'申请 is not a 44 pt pill: {pill}'
 assert pill['x'] + pill['width'] <= f['x'] + f['width'], f'申请 runs past the card: {pill} / {f}'
 print(f'top card: RM 500 at x {reward["x"]:.1f}, title ends {title["x"] + title["width"]:.1f}, '
@@ -124,7 +136,7 @@ def scroll_until(done, message):
 scroll_until(lambda items: by_id(items, MIDDLE), f'{MIDDLE} never loaded')
 middle, shot = card_shot(MIDDLE, '03-middle')
 assert_in_card(shot, middle, r'\d+(?:[.,]\d)?\s?km', 'a distance in kilometres')
-assert apply_pill(shot, middle, ui.appearance), 'the middle card shows no 申请'
+assert pill_box(shot, middle), 'the middle card shows no 申请'
 
 scroll_until(lambda items: len(loaded) == COUNT and by_id(items, 'bounty-board-end')
              and in_view(by_id(items, 'bounty-board-end'), screen(items)),
@@ -159,14 +171,20 @@ assert_touch_target(by_id(items, 'bounty-detail-apply'), '申请 in the detail')
 
 ui.tap('bounty-detail-apply')
 title_shown(ui, 'bounty.apply.title')
-ui.wait(lambda items: note_value(items) == NOTE, 'the 140-code-point note is not in the sheet')
-count_reads(ui, 140)
+note_text = ui.wait(lambda items: (lambda v: v if len(v) == NOTE_MAX and ' ' in v else None)(note_value(items)),
+                    'the 140-code-point note with spaces is not in the sheet')
+count_reads(ui, NOTE_MAX)
+items = ui.read()
+field, counter = by_id(items, 'bounty-apply-note'), by_id(items, 'bounty-apply-count')
+assert counter['frame']['y'] >= field['frame']['y'] + field['frame']['height'] - 1, \
+    f'the counter overlaps the note field: {field["frame"]} / {counter["frame"]}'
+assert counter['frame']['y'] + counter['frame']['height'] <= screen(items)['height'], f'the counter is off screen: {counter}'
 ui.at_rest()
 ui.capture('07-apply-note')
 send(ui)
 ui.gone('bounty-apply', timeout=40)
 note = ui.settled(lambda items: by_id(items, 'bounty-detail-note'), 'the applied detail shows no note')
-assert NOTE[:20] in (note.get('AXLabel') or ''), note.get('AXLabel')
+assert note_text[:20] in (note.get('AXLabel') or ''), note.get('AXLabel')
 withdraw = ui.element('bounty-detail-withdraw')
 assert_touch_target(withdraw, '撤回')
 assert withdraw['frame']['y'] >= note['frame']['y'] + note['frame']['height'] - 1, '撤回 overlaps the note'

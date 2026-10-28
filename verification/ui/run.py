@@ -14,6 +14,7 @@ from pathlib import Path
 from affected import SMOKE, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from recording import stop_all
 
 MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
@@ -164,7 +165,8 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     recorder.send_signal(signal.SIGINT)
     try:
         recorder.wait(timeout=30)
-    except subprocess.TimeoutExpired:
+        stop_all(udid)
+    except (subprocess.TimeoutExpired, AssertionError):
         recorder.kill()
         status, message = 'fail', f'{message}; recorder did not stop'.strip('; ')
     if not video.exists() or video.stat().st_size == 0:
