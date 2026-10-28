@@ -879,7 +879,44 @@ Tasks that share files or interfaces; run them in order, never in parallel.
 
 ## Deviations and rulings
 
-Filled in Task 14.
+Collected for the bounty spec's Implementation Record (written when the bounty spec is implemented). One line each, with
+the reason; "cost" is what it costs if the ruling is wrong.
+
+### UI answers
+
+- Q1–Q5, M1, M2 answered 「全推荐」 on 2026-10-27 (docs/KICKOFF.md; spec rows 34A–40A): Q1 B (34, the selected 全部
+  shows `total` from the first page), Q2 A (35, crowded axis stickers merge with a count), Q3 A (36, 添加收款方式 closes
+  the sheet and opens 我的 → 收款方式), Q4 A (37, ⋯ with 屏蔽 only plus a minimal 屏蔽名单), Q5 A (38, full-height
+  `pageSheet`), M1 A (39, tilt 8° and stamp 80 ms later with the success haptic), M2 A (40, ring 150 ms / 1.2 s / 240 ms).
+- Provisional, awaiting user (canvas p05, questions 41–44; the code follows A until answered):
+  - 41A: 「已申请 · 等对方选」 sits on its own row under the poster instead of in place of 申请 — on one row the ms copy
+    plus 很靠谱 clipped the poster name to one glyph and truncated the status; differs from 26A/31A as drawn.
+  - 42A: in ms the 40-character poster name truncates (`Nur Ais…`) and the tier keeps priority — the tier is the trust
+    signal; the full name is in VoiceOver and the detail.
+  - 43A: on the first page 「+N 更远」 counts unloaded bounties without a place as farther (`+43` for 42) — exact once
+    every page is loaded; option B (a server located-total) was recommended by the Task 13 report.
+  - 44A: the applied detail's pinned area clamps 你写的：… to 3 lines — the area stays bounded; with a 40-character name
+    it takes about a quarter of the screen.
+
+### Task 1 (privacy migration)
+
+- `total` returned on the first page before Q1 was answered — cheap and unused if Q1 = A; Q1 then answered B.
+- Non-parties get distance, order and cursor from a stored public point snapped to a 0.001° grid (≈110 m) with its own
+  GiST index; the exact point stays for poster and helper — rounding the distance alone leaks the exact place to moving
+  probes (trilateration). Cost: viewer distances off by up to ~80 m.
+- `invalid_point` maps to failed on the client; the cursor rules were accepted as built.
+
+### Tasks 2–4 (copy, location service, place search)
+
+- Task 2's copy was reviewed together with Task 3 — copy-only diff, speed mode.
+- `bounty.place.placeLabelEmpty` duplicated `post.error.placeEmpty` and was deleted (see Task 5) — one copy of a message.
+- ms `detail.description` stays 「Nota」 — it matches the posting form's ms label for the same field.
+- `bounty.block.*` copy moved from Task 2 to Task 12 and the Q2 merge rule from Task 6 to Task 9 — each lands with its
+  only consumer.
+- Place search: suggestion ids are `<resultSet>.<index>`; `notFound` maps to empty results; `placeSearch.ts`/`places.ts`
+  split. The previous results stay visible while a new query loads (suggestions, not committed data). A repeated
+  identical query fragment answers instead of loading forever (review fix).
+- The location purpose string's base language is `en`, like the camera string.
 
 ### Task 5 (place search and posting place rows)
 
@@ -911,3 +948,99 @@ Filled in Task 14.
   case taps the field.
 - 用当前位置 and result taps are guarded by a ref, and a successful pick keeps the screen locked, so a double tap cannot
   pick twice and pop the sheet. `placePick` is cleared through `userCleanups` on sign-out.
+
+### Task 6 (board service, state, origin)
+
+- `formatDistance` drops a trailing 「.0」 (1000 → 1 km, 1600 → 1.6 km) — 「1.0 km」 reads as machine output.
+- An origin change clears the rows and shows loading — distances from the old point would be stale data shown as current.
+- Generation numbers, the `restarted` flag, `board/services.ts` and the apply slug mapping accepted as built; a refresh
+  re-evaluates the origin; a thrown permission check is not `granted`; foreground reload is gated on focus.
+
+### Task 7 (board in home, filters, states)
+
+- `BountyBoard` takes `board` from `useBountyBoard(user.id)` in the route, so `RefreshControl` shares the state.
+- The refresh-failed notice is an RN `InlineState` warning — `NoticeCard` is SwiftUI-in-Form only.
+- Focus and foreground reloads keep the rows with no indicator; only a pull shows the spinner — a spinner on every tab
+  switch is noise. Cost: a silent refresh.
+- The `one` fixture is 帮忙打印论文 (non-urgent), so 急 on it shows 现在没有急单.
+- A load requested between the loop's exit and its `finally` was dropped (endless spinner); fixed with a test that
+  failed before.
+- Runner: case metadata is read as AST literals (a splat silently dropped `ARGS`), `build.sh` pins `NODE_BINARY`.
+
+### Task 8 (card 26A, paging)
+
+- Applied status on its own row — provisional 41A above.
+- Card internals are hidden from AXe (no accessibility-action modifier in @expo/ui 57.0.24); cases tap by coordinates
+  through `board.py`.
+- Paging on scroll only, page size 20. The stamp keeps −12° as drawn; the ms stamp crossing the card edge was fixed.
+- `TierMark` layoutPriority 0.5 (name 0, 申请 1) and the distance number and unit joined by a no-break space — ms split
+  「1.8 / km」.
+- Parked: en/ms use the same words for the 没写地点的 header and the card's no-place line → en/ms copy review.
+
+### Task 9 (location card, chosen place, axis)
+
+- Reduce Motion cannot be switched with `simctl`, and verify mode cannot draw the system location alert → device checklist.
+- `useBountyBoard({ scroll, content, topInset })` / `scrollHandlers` is the interface Tasks 10–13 build on.
+- `useSelectedUntilReturn` (in `src/ui`) keeps the place row selected through push and return; `PillButton` gained a
+  secondary variant for 先不用's grey fill.
+- 「+N 更远」 is exact once all pages are loaded; before that it is total − in-range − loaded no-place rows — the spec's
+  +N needs a number and the server has no beyond-count (see 43A).
+- A non-navigating tap staying selected happens only in the Debug scene. Mid-swipe selection → device checklist.
+- The ⋯ waits for Task 12 — no control without an action.
+
+### Task 10 (detail 3A)
+
+- The detail distance uses `formatDistance` with 约 (「约 300 m」) — one distance text across card and detail; the 3A
+  drawing showed km.
+- The tab bar stays on the pushed detail — a system push inside a tab keeps it (HIG), as 我的 → 收款方式; the 3A drawing
+  had none.
+- `SheetFrame pinnedAbove="tabBar"`, back title 悬赏令. The refresh-failed state has no UI case (the fixture fails only the
+  first load); `detailState.test.ts` covers it.
+- Parked: a `gone` answer to a superseded request drops the cache entry before the stale check (`useDetail.ts`) — the
+  next load refills it.
+
+### Task 11 (apply, payee block, withdraw, stamp)
+
+- iOS 26 shows the withdraw confirmation as a popover anchored to 撤回申请, cancel = tap outside — system control; differs
+  from the 31A drawing.
+- The stamp motion starts when the card is visible, on the root stack's `onFinishTransitioning`, with a 600 ms fallback
+  — otherwise the 39A tilt played hidden behind the dismissing sheet. The fallback counts from the dismissal start
+  (parked; device checklist).
+- 发送 is disabled above 140 code points — the server would reject the note forever.
+- The `notPending` notice clears on the load after the reload it triggered.
+- 发送 in the native toolbar has no testID (found by label); fixture `apply`/`withdraw` take 2.5 s in verify builds only.
+
+### TextField fix (after Task 11)
+
+- @expo/ui `TextField` dropped the last keystroke of a burst (data loss). Every user (apply, post ×4, payee ×3) now
+  goes through one `src/ui` text field that syncs on text, selection and focus; ESLint `no-restricted-imports` blocks
+  the @expo/ui `TextField` elsewhere.
+- The 20-key burst in `bounty_post_form` stays as a guard although the drop did not reproduce with the fix removed; the
+  sync logic is proven by the `textSync` unit tests.
+- A swipe-down or sign-out unmount does not re-read the field (the blur sync covers swipe-down) — saving in a layout
+  cleanup would leak dropped text into a reset draft. Cost: one dropped last key on swipe-down → device checklist.
+
+### Task 12 (block)
+
+- The swiped 屏蔽名单 row clips the short name — SwiftUI's swipe rendering (the AX frame slides 70 pt) → device checklist.
+- If the poster's account is gone, the detail closes silently as on success — the spec is silent and the board reload
+  drops the bounty anyway. Cost: the user may think the block failed.
+- The poster row has no press handler (37A). Parked Minors: `bounty_block` BUDGET 420, duplicated `PersonRow` modifiers.
+
+### Task 13 (worst case)
+
+- Time and place line and the place row title use middle truncation — tail truncation cut the distance and 附近 first.
+- `bounty_board_axis` times the ring from video frame timestamps (`recording.clip`, `frames.swift`) — screenshot latency
+  made it fail on unchanged code. The runner splits the run video around a case's own clip, and shared verify files
+  are in `affected.SHARED`, so `--affected` selects every case.
+- `-uiVerifyApplyNote worst` seeds a 140-code-point note with spaces (`fixtureNotes.ts`) — NSUserDefaults stops a
+  launch-argument value at the first space.
+- Parked: the dark axis span was checked by analysis only → the milestone run.
+
+### Task 14 (story map, README, gate)
+
+- New criteria `bounty.board.freshness` and `bounty.apply.failure`; foreground refresh has no UI case (verify mode cannot
+  background the app) and is recorded as a gap.
+- The device checklist is the story map's `device:` entries; Task 14 added the precise/When In Use prompt in three
+  languages, reduced-accuracy distances, MapKit search on a real network, Instruments board scrolling with 45 cards, the
+  600 ms stamp fallback, the swipe-down last key and the swiped 屏蔽名单 row.
