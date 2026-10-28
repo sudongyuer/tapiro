@@ -154,10 +154,10 @@ These close small gaps the canvas did not draw, each following an existing decis
     enough to collapse the stage; that is correct behaviour. The board fixture defaults to `full` (12 rows) so shell and
     home cases that scroll keep working.
 
-## Open UI questions (answer before the task named in each)
+## UI questions (answered)
 
-Each has a recommendation (★). Pace rule: no implementation task starts with an open UI question; Tasks 1–4 and 6 have no
-open UI and may start now. These go on the design canvas as drawn options before asking (memory: show first).
+Drawn on the canvas as questions 34–38 (Q1–Q5) and 39–40 (M1–M2). The user answered 「全推荐」 on 2026-10-27: every
+option marked ★ is decided (Q1 B, Q2–Q5 A, M1 A, M2 A).
 
 1. **Count on the 全部 chip** (canvas draws 「全部 12」; the RPC has no total). Blocks Task 1 and Task 7.
    - A Drop the count. No extra query; the canvas count goes.
@@ -213,7 +213,7 @@ without fading).
 - B The ring pulses twice (in 150 / out 240, two cycles), then rests.
 - C The ring appears and stays until the next scroll or tap.
 
-No `withRepeat`, no infinite cycles. Motion is written with `animate-expo` after M1 and M2 are answered.
+No `withRepeat`, no infinite cycles. M1 = A and M2 = A (answered 2026-10-27); written with `animate-expo`.
 
 ## Contracts
 
