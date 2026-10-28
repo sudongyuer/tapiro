@@ -12,11 +12,16 @@ import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser, type AccountUser } from '@/features/account';
 import { BountyBoard, closePostSheet, useBountyBoard, useStartPost } from '@/features/bounty';
-import { HOME_TOP_CHROME, HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
+import {
+  HOME_BOTTOM_CHROME,
+  HOME_TOP_CHROME,
+  HomeScreen,
+  useHomeScroll,
+  useLiveStackState,
+} from '@/features/home';
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
-const TAB_BAR = 49;
 const openBounty = (_id: string) => {};
 const applyTo = (_id: string) => {};
 
@@ -47,7 +52,7 @@ function BountyHome({ user }: { user: AccountUser }) {
     scroll: scrollViewProps.ref,
     content,
     topInset: insets.top + HOME_TOP_CHROME + vars['--space-3'],
-    bottomInset: insets.bottom + TAB_BAR + vars['--space-3'],
+    bottomInset: insets.bottom + HOME_BOTTOM_CHROME + vars['--space-3'],
   });
   const homeScroll = {
     ...scrollViewProps,

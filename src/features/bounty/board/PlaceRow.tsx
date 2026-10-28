@@ -3,7 +3,7 @@ import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
-import { useSelectedUntilReturn } from '@/lib/useSelectedUntilReturn';
+import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 

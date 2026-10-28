@@ -194,6 +194,7 @@ option marked ★ is decided (Q1 B, Q2–Q5 A, M1 A, M2 A).
 | Axis sticker tap → list scrolls to the card and outlines it | continuity | Passed (Decisions "Distance axis"); only on tap | System `scrollTo({ animated })` + an outline ring per M2 |
 | Push detail, push place search, sheets | navigation | System | Native Stack / sheet |
 | Pull to refresh, apply / withdraw progress | status | System | `RefreshControl`; `PillButton loading` |
+| Row selected through push, deselected on return | continuity | System-matching (UI baseline); not a choice | `useSelectedUntilReturn`, 240 ms fade like UIKit's deselect |
 | Chip selection, list replacement on filter change | — | Frequent: no animation | Instant swap |
 | Haptic on apply success | feedback | Not motion; one meaning | `notificationAsync(Success)`, the same meaning as publish success |
 
