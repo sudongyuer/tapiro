@@ -4,7 +4,14 @@ import type { ApplyOutcome } from '../board/types';
 import { createBountyCache } from '../shared/bountyCache';
 import { createJustApplied } from '../shared/justApplied';
 import { createApplyFlow, createWithdrawFlow } from './applyFlow';
-import { applyReducer, canSend, noteCount, noteToSend, withdrawReducer } from './applyState';
+import {
+  applyReducer,
+  canSend,
+  noteCount,
+  noteFits,
+  noteToSend,
+  withdrawReducer,
+} from './applyState';
 import { createNoteDrafts } from './noteDrafts';
 
 function gate<T>() {
@@ -71,6 +78,8 @@ describe('apply flow', () => {
     await first;
     expect(flow.get()).toEqual({ kind: 'sent', note: '我住在隔壁栋' });
     expect(changes).toEqual([{ id: 'b1', applied: true, note: '我住在隔壁栋' }]);
+    expect(just.take('b1', 'card')).toBe(false);
+    just.sheetGone();
     expect(just.take('b1', 'detail')).toBe(false);
     expect(just.take('b1', 'card')).toBe(true);
     expect(just.take('b1', 'card')).toBe(false);
@@ -87,10 +96,11 @@ describe('apply flow', () => {
     expect(flow.get()).toEqual({ kind: 'form', sending: false, reason: 'failed' });
     expect(drafts.get('b1')).toBe('on my way');
     expect(changes).toEqual([]);
+    just.sheetGone();
     expect(just.take('b1', 'card')).toBe(false);
     await Promise.resolve();
     expect(sent).toHaveLength(1);
-    expect(canSend(flow.get())).toBe(true);
+    expect(canSend(flow.get(), '')).toBe(true);
 
     const again = flow.send();
     answers[1]?.open({ ok: true, note: 'on my way' });
@@ -121,11 +131,29 @@ describe('apply flow', () => {
       answers[0]?.open({ ok: false, reason });
       await sending;
       expect(flow.get()).toEqual({ kind: 'form', sending: false, reason });
-      expect(canSend(flow.get())).toBe(false);
+      expect(canSend(flow.get(), '')).toBe(false);
       await flow.send();
       expect(sent).toHaveLength(1);
     });
   }
+
+  test('a note over 140 code points is not sent, even when the field allows it', async () => {
+    const { flow, sent, drafts } = setup();
+    await flow.check();
+    const thumbs = '👍🏽'.repeat(71);
+    expect(noteCount(thumbs)).toBe(142);
+    expect(noteFits(thumbs)).toBe(false);
+    drafts.set('b1', thumbs);
+    expect(canSend(flow.get(), thumbs)).toBe(false);
+    await flow.send();
+    expect(sent).toEqual([]);
+    expect(flow.get()).toEqual({ kind: 'form', sending: false, reason: null });
+    const fits = '👍🏽'.repeat(70);
+    expect(noteFits(fits)).toBe(true);
+    drafts.set('b1', fits);
+    void flow.send();
+    expect(sent).toEqual([fits]);
+  });
 
   test('noPayee from the server switches to the no-payee state', async () => {
     const { flow, answers } = setup();
@@ -134,7 +162,7 @@ describe('apply flow', () => {
     answers[0]?.open({ ok: false, reason: 'noPayee' });
     await sending;
     expect(flow.get().kind).toBe('noPayee');
-    expect(canSend(flow.get())).toBe(false);
+    expect(canSend(flow.get(), '')).toBe(false);
   });
 
   test('an answer without a send in flight is ignored', () => {
@@ -164,6 +192,14 @@ describe('note', () => {
     expect(drafts.get('b1')).toBe('');
     drafts.clear();
     expect(drafts.get('b2')).toBe('');
+  });
+
+  test('a seeded note fills every bounty until that bounty is edited or sent', () => {
+    const drafts = createNoteDrafts('seed');
+    expect(drafts.get('b1')).toBe('seed');
+    drafts.set('b1', '');
+    expect(drafts.get('b1')).toBe('');
+    expect(drafts.get('b2')).toBe('seed');
   });
 });
 
@@ -202,7 +238,7 @@ describe('withdraw flow', () => {
     expect(changes).toEqual([false]);
   });
 
-  test('notPending reloads the detail without marking anything', async () => {
+  test('notPending reloads the detail, marks nothing and says why', async () => {
     const { flow, changes, reloads } = withdrawSetup(async () => ({
       ok: false,
       reason: 'notPending',
@@ -210,7 +246,7 @@ describe('withdraw flow', () => {
     await flow.withdraw();
     expect(reloads()).toBe(1);
     expect(changes).toEqual([]);
-    expect(flow.get().kind).toBe('idle');
+    expect(flow.get().kind).toBe('notPending');
   });
 
   test('a failure shows and is not retried', async () => {

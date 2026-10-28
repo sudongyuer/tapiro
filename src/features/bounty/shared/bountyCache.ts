@@ -2,7 +2,12 @@ import { userCleanups } from '@/lib/userCleanups';
 
 import type { BoardRow, BountyDetail } from '../board/types';
 
-export type ApplicationChange = { id: string; applied: boolean; note: string | null };
+export type ApplicationChange = {
+  id: string;
+  applied: boolean;
+  note: string | null;
+  fromServer?: boolean;
+};
 
 export function createBountyCache() {
   const rows = new Map<string, BoardRow>();
@@ -44,6 +49,12 @@ export function createBountyCache() {
         });
       }
       notify({ id, applied: false, note: null });
+    },
+    settleRow(id: string, applied: boolean) {
+      const row = rows.get(id);
+      if (!row || row.appliedByMe === applied) return;
+      rows.set(id, { ...row, appliedByMe: applied });
+      notify({ id, applied, note: null, fromServer: true });
     },
     onApplicationChange(listener: (change: ApplicationChange) => void) {
       listeners.add(listener);

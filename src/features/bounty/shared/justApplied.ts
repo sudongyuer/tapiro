@@ -3,19 +3,54 @@ import { userCleanups } from '@/lib/userCleanups';
 export type ApplySurface = 'card' | 'detail';
 
 export function createJustApplied() {
-  const pending = new Map<string, ApplySurface>();
+  const pending = new Map<string, { surface: ApplySurface; shown: boolean }>();
+  const listeners = new Set<() => void>();
+  let version = 0;
+
+  function changed() {
+    version += 1;
+    for (const listener of listeners) listener();
+  }
+
   return {
     set(id: string, surface: ApplySurface) {
-      pending.set(id, surface);
+      pending.set(id, { surface, shown: false });
+      changed();
     },
-    has: (id: string, surface: ApplySurface) => pending.get(id) === surface,
+    sheetGone() {
+      let any = false;
+      for (const entry of pending.values()) {
+        if (!entry.shown) {
+          entry.shown = true;
+          any = true;
+        }
+      }
+      if (any) changed();
+    },
+    has: (id: string, surface: ApplySurface) => pending.get(id)?.surface === surface,
+    ready: (id: string, surface: ApplySurface) => {
+      const entry = pending.get(id);
+      return entry?.surface === surface && entry.shown;
+    },
     take(id: string, surface: ApplySurface) {
-      if (pending.get(id) !== surface) return false;
+      const entry = pending.get(id);
+      if (entry?.surface !== surface || !entry.shown) return false;
       pending.delete(id);
       return true;
     },
+    drop(id: string) {
+      if (pending.delete(id)) changed();
+    },
+    version: () => version,
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     clear() {
       pending.clear();
+      changed();
     },
   };
 }

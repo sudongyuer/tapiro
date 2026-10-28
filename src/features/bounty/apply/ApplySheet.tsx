@@ -33,7 +33,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ApplySurface } from '../shared/justApplied';
 import { canSend, NOTE_MAX, noteCount, type ApplyState } from './applyState';
-import { noteDrafts } from './noteDrafts';
+import { noteDrafts } from './services';
 import { posterName, useApply } from './useApply';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -52,8 +52,14 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
   const name = posterName(id) ?? t('bounty.post.unknownName');
   const sending = state.kind === 'form' && state.sending;
   const text = useNativeState(noteDrafts.get(id));
+  const [typed, setTyped] = useState(noteDrafts.get(id));
+  const sync = () => {
+    const current = text.get();
+    noteDrafts.set(id, current);
+    setTyped(current);
+  };
   const submit = () => {
-    noteDrafts.set(id, text.get());
+    sync();
     void send();
   };
 
@@ -68,7 +74,7 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
           onPress={onClose}
         />
       </Stack.Toolbar>
-      <SendItem state={state} onSend={submit} />
+      <SendItem state={state} ready={canSend(state, typed)} onSend={submit} />
       <Host style={styles.host} testID="bounty-apply">
         <Form modifiers={[tint(color('--color-accent'))]}>
           {state.kind === 'checking' ? (
@@ -92,7 +98,13 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
                   testID="bounty-apply-failed"
                 />
               ) : null}
-              <NoteSection id={id} name={name} text={text} locked={sending} />
+              <NoteSection
+                name={name}
+                text={text}
+                count={noteCount(typed)}
+                onSync={sync}
+                locked={sending}
+              />
             </>
           ) : null}
         </Form>
@@ -101,7 +113,15 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
   );
 }
 
-function SendItem({ state, onSend }: { state: ApplyState; onSend: () => void }) {
+function SendItem({
+  state,
+  ready,
+  onSend,
+}: {
+  state: ApplyState;
+  ready: boolean;
+  onSend: () => void;
+}) {
   const { t } = useI18n();
   const { color } = useTheme();
   if (state.kind === 'form' && state.sending) {
@@ -124,7 +144,7 @@ function SendItem({ state, onSend }: { state: ApplyState; onSend: () => void }) 
         variant="prominent"
         tintColor={color('--color-accent')}
         hidden={state.kind !== 'form'}
-        disabled={!canSend(state)}
+        disabled={!ready}
         onPress={onSend}
       >
         {t('bounty.apply.send')}
@@ -136,24 +156,21 @@ function SendItem({ state, onSend }: { state: ApplyState; onSend: () => void }) 
 type NativeText = ReturnType<typeof useNativeState<string>>;
 
 function NoteSection({
-  id,
   name,
   text,
+  count,
+  onSync,
   locked,
 }: {
-  id: string;
   name: string;
   text: NativeText;
+  count: number;
+  onSync: () => void;
   locked: boolean;
 }) {
   const { t } = useI18n();
-  const [typed, setTyped] = useState(noteDrafts.get(id));
-  const sync = () => {
-    const current = text.get();
-    noteDrafts.set(id, current);
-    setTyped(current);
-  };
-  const count = noteCount(typed);
+  const { color } = useTheme();
+  const over = count > NOTE_MAX;
   return (
     <Section
       title={t('bounty.apply.noteLabel', { name })}
@@ -170,11 +187,11 @@ function NoteSection({
         autoFocus
         maxLength={NOTE_MAX}
         placeholder={t('bounty.apply.placeholder')}
-        onTextChange={sync}
+        onTextChange={onSync}
         // TextFieldView drops the change event for an edit it does not flag as user-made (the last
         // keystroke of a fast burst, seen in verify runs); the cursor move after it still arrives.
-        onSelectionChange={sync}
-        onFocusChange={sync}
+        onSelectionChange={onSync}
+        onFocusChange={onSync}
         testID="bounty-apply-note"
         modifiers={[
           lineLimit({ min: 4, max: 8 }),
@@ -186,7 +203,7 @@ function NoteSection({
         <Spacer />
         <Text
           modifiers={[
-            secondary,
+            over ? foregroundStyle(color('--color-urgent')) : secondary,
             monospacedDigit(),
             accessibilityLabel(t('bounty.apply.countLabel', { count, max: NOTE_MAX })),
             accessibilityIdentifier('bounty-apply-count'),

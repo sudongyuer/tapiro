@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useIsFocused } from 'expo-router';
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   ReduceMotion,
@@ -40,6 +40,7 @@ function landed() {
 function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
   const focused = useIsFocused();
   const reduceMotion = useReducedMotion();
+  const revision = useSyncExternalStore(justApplied.subscribe, justApplied.version);
   const final = applied && !justApplied.has(id, surface);
   const tilt = useSharedValue(final ? TILT : 0);
   const stamp = useSharedValue(final ? 1 : 0);
@@ -59,12 +60,11 @@ function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
       scale.set(1);
       return;
     }
-    if (!focused) {
+    if (!focused || !justApplied.take(id, surface)) {
       tilt.set(0);
       stamp.set(0);
       return;
     }
-    justApplied.take(id, surface);
     if (reduceMotion) {
       tilt.set(TILT);
       scale.set(1);
@@ -82,7 +82,7 @@ function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
     tilt.set(withSpring(TILT, SPRING));
     stamp.set(withDelay(STAMP_DELAY_MS, withSpring(1, SPRING), NEVER));
     scale.set(withDelay(STAMP_DELAY_MS, withSpring(1, SPRING), NEVER));
-  }, [applied, focused, reduceMotion, id, surface, tilt, stamp, scale, landing]);
+  }, [applied, focused, reduceMotion, revision, id, surface, tilt, stamp, scale, landing]);
 
   useAnimatedReaction(
     () => landing.get() && scale.get() <= 1,

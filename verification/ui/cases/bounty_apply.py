@@ -1,17 +1,21 @@
-"""Apply 4A from a board card: 申请 opens the full-height sheet titled 申请帮忙 with the note field, a 0/140 counter and the footer naming 小林; typing a note updates the counter by code points; 发送 turns into progress while the request runs, the sheet closes, and the card shows 已申请 · 等对方选 with the 已申请 stamp and no 申请 (the stamp motion is in the video); the detail then reads 已申请 · 等小林选 and 你写的：<note>."""
+"""Apply 4A from a board card: 申请 opens the full-height sheet titled 申请帮忙 with the note field, a 0/140 counter and the footer naming 小林; typing a note updates the counter; a seeded 好👍🏽 reads 3 (code points, not UTF-16 units or graphemes), and 71 👍🏽 read 142/140 with 发送 disabled; 发送 turns into progress while the request runs, the sheet closes, and the card shows 已申请 · 等对方选 with the 已申请 stamp and no 申请 (the stamp motion is in the video); the detail then reads 已申请 · 等小林选 and 你写的：<note>."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import count_reads, has_stamp, open_from_card, send, send_button, type_note  # noqa: E402
 from board import apply_pill  # noqa: E402
+from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py',
-        'verification/ui/apply.py']
-BUDGET = 300
+        'verification/ui/apply.py', 'verification/ui/bounty.py']
+BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 CARD = 'bounty-card-fixture-bounty-01'
 NOTE = 'see you at the lobby'
+OTHER = 'bounty-card-fixture-bounty-02'
+MIXED, MIXED_POINTS = '好👍🏽', 3
+THUMBS = '👍🏽' * 71
 
 ui = UI(*sys.argv[1:])
 
@@ -49,3 +53,17 @@ assert note.get('AXLabel') == ui.t('bounty.detail.yourNote', note=shown), note.g
 assert by_id(ui.read(), 'bounty-detail-apply') is None, 'the detail still offers 申请'
 ui.at_rest()
 ui.capture('03-detail-applied')
+
+relaunch(ui, drop=[], add=['-uiVerifyApplyNote', MIXED])
+open_from_card(ui, OTHER)
+count_reads(ui, MIXED_POINTS)
+assert (by_id(ui.read(), 'bounty-apply-note') or {}).get('AXValue') == MIXED, 'the seeded note is not in the field'
+assert send_button(ui, ui.read()).get('enabled'), '发送 is disabled for a 3 code point note'
+
+relaunch(ui, drop=['-uiVerifyApplyNote', MIXED], add=['-uiVerifyApplyNote', THUMBS])
+open_from_card(ui, OTHER)
+count_reads(ui, 142)
+button = ui.settled(lambda items: send_button(ui, items), '发送 never settled')
+assert not button.get('enabled'), '发送 is enabled for a 142 code point note'
+ui.at_rest()
+ui.capture('04-over-limit')

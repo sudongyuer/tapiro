@@ -70,3 +70,15 @@ test('drop and clear forget rows and details', () => {
   cache.clear();
   expect(cache.row('b1')).toBeNull();
 });
+
+test('settleRow brings a stale row in line with the server and tells the board once', () => {
+  const cache = createBountyCache();
+  const changes: ApplicationChange[] = [];
+  cache.onApplicationChange((change) => changes.push(change));
+  cache.seed([{ ...ROW, appliedByMe: true }]);
+  cache.settleRow('b1', false);
+  cache.settleRow('b1', false);
+  cache.settleRow('missing', false);
+  expect(cache.row('b1')?.appliedByMe).toBe(false);
+  expect(changes).toEqual([{ id: 'b1', applied: false, note: null, fromServer: true }]);
+});

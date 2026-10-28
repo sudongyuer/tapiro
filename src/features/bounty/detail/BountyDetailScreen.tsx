@@ -12,6 +12,7 @@ import { vars } from '@/ui/theme/tokens';
 
 import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
+import { useWithdraw } from '../apply/useApply';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
 import { shownView, type DetailAction, type DetailView } from './detailState';
@@ -27,6 +28,7 @@ type Props = {
 export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
   const { t, language } = useI18n();
   const { state, retry } = useDetail(id, userId);
+  const withdrawal = useWithdraw(id, () => void retry());
 
   if (state.kind === 'gone') {
     return (
@@ -60,7 +62,14 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
       testID="bounty-detail"
       pinnedAbove="tabBar"
       notice={
-        stale ? (
+        withdrawal.state.kind === 'notPending' ? (
+          <NoticeCard
+            tone="warning"
+            icon="exclamationmark.triangle.fill"
+            title={t('bounty.detail.withdrawNotPending')}
+            testID="bounty-detail-withdraw-stale"
+          />
+        ) : stale ? (
           <NoticeCard
             tone="warning"
             icon="exclamationmark.triangle.fill"
@@ -89,7 +98,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
             name={copy.name}
             current={state.kind === 'ready'}
             onApply={() => onApply(id)}
-            reload={() => void retry()}
+            withdrawal={withdrawal}
           />
         </>
       ) : (
@@ -116,18 +125,25 @@ function DetailActions({
   name,
   current,
   onApply,
-  reload,
+  withdrawal,
 }: {
   view: DetailView;
   name: string;
   current: boolean;
   onApply: () => void;
-  reload: () => void;
+  withdrawal: ReturnType<typeof useWithdraw>;
 }) {
   const { t } = useI18n();
   if (view.action === 'none') return null;
   if (view.action === 'applied') {
-    return <AppliedActions id={view.id} name={name} note={view.note} reload={reload} />;
+    return (
+      <AppliedActions
+        name={name}
+        note={view.note}
+        state={withdrawal.state}
+        withdraw={withdrawal.withdraw}
+      />
+    );
   }
   const reason = REASON[view.action];
   return (

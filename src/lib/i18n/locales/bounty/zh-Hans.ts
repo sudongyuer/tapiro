@@ -242,6 +242,7 @@ export default {
     withdraw: '撤回申请',
     withdrawFailed: '没撤回成功，再试一次',
     withdrawing: '正在撤回',
+    withdrawNotPending: '这条申请已经撤回不了了，下面是最新的状态。',
     withdrawConfirm: {
       title: '撤回申请？',
       body: '撤回后{{name}}看不到你的申请，你还可以再申请。',

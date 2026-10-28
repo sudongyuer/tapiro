@@ -47,7 +47,7 @@ export function createApplyFlow(id: string, surface: ApplySurface, deps: Deps) {
       dispatch({ type: 'checked', hasPayee });
     },
     async send() {
-      if (!canSend(state)) return;
+      if (!canSend(state, deps.drafts.get(id))) return;
       dispatch({ type: 'sendStarted' });
       const answer = await deps.service
         .apply(id, noteToSend(deps.drafts.get(id)))

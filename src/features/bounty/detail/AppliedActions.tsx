@@ -16,24 +16,23 @@ import { SheetActions } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { useWithdraw } from '../apply/useApply';
+import type { WithdrawState } from '../apply/applyState';
 
 const ROW = frame({ maxWidth: Infinity, minHeight: vars['--touch-min'] });
 
 export function AppliedActions({
-  id,
   name,
   note,
-  reload,
+  state,
+  withdraw,
 }: {
-  id: string;
   name: string;
   note: string | null;
-  reload: () => void;
+  state: WithdrawState;
+  withdraw: () => Promise<void>;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const { state, withdraw } = useWithdraw(id, reload);
   const [asking, setAsking] = useState(false);
   return (
     <SheetActions>

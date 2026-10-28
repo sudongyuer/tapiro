@@ -4,7 +4,7 @@ import { boardService } from '../board/services';
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied, type ApplySurface } from '../shared/justApplied';
 import { createApplyFlow, createWithdrawFlow } from './applyFlow';
-import { noteDrafts } from './noteDrafts';
+import { noteDrafts } from './services';
 
 export function useApply(id: string, surface: ApplySurface, onSent: () => void) {
   const [flow] = useState(() =>

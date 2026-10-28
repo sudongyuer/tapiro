@@ -1,5 +1,10 @@
+import re
+from pathlib import Path
+
 from board import apply_pill, ink_box, visible
-from driver import by_id, token
+from driver import by_id, tab, token
+
+SERVICES = Path(__file__).resolve().parents[2] / 'src/features/bounty/board/services.ts'
 
 STAMP_REACH = 16
 STAMP_WIDTH = 110
@@ -60,3 +65,19 @@ def stamp_box(ui, shot, f):
 def has_stamp(ui, shot, f):
     found = stamp_box(ui, shot, f)
     return bool(found and found['count'] >= STAMP_MIN)
+
+
+def write_delay_s():
+    found = re.search(r'VERIFY_WRITE_DELAY_MS = (\d+)', SERVICES.read_text())
+    assert found, f'VERIFY_WRITE_DELAY_MS not found in {SERVICES}'
+    return int(found.group(1)) / 1000
+
+
+def switch_tab(ui, identifier, current_label):
+    items = ui.read()
+    if not by_id(items, identifier):
+        minimised = tab(items, current_label)
+        assert minimised, f'neither {identifier} nor the minimised {current_label} tab is shown'
+        f = minimised['frame']
+        ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+    ui.tap(identifier)

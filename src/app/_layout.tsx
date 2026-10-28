@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 import { useAccountStage } from '@/features/account';
+import { applySheetGone } from '@/features/bounty';
 import { I18nProvider } from '@/lib/i18n';
 
 export default function RootLayout() {
@@ -17,10 +18,16 @@ export default function RootLayout() {
 
 const PAGE_SHEET = { presentation: 'pageSheet', headerShown: true } as const;
 
+// A sheet closed from JS is unmounted before its own transitionEnd; the stack reports when the dismissal finished.
+const FINISHED = { onFinishTransitioning: applySheetGone };
+
 function RootStack() {
   const stage = useAccountStage();
   return (
-    <Stack screenOptions={{ headerShown: false, headerTransparent: true }}>
+    <Stack
+      screenOptions={{ headerShown: false, headerTransparent: true }}
+      unstable_nativeProps={FINISHED}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="legal/terms" options={PAGE_SHEET} />
       <Stack.Screen name="legal/privacy" options={PAGE_SHEET} />

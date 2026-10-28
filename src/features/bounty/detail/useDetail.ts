@@ -7,6 +7,7 @@ import { evaluateOrigin } from '../board/originStore';
 import { boardService, originStore } from '../board/services';
 import { originPoint } from '../board/types';
 import { bountyCache } from '../shared/bountyCache';
+import { justApplied } from '../shared/justApplied';
 import { detailReducer, initialDetail, keptWrite, withWrite, type LocalWrite } from './detailState';
 
 export function useDetail(id: string, userId: string) {
@@ -29,12 +30,14 @@ export function useDetail(id: string, userId: string) {
       const answer = await boardService.detail(id, originPoint(origin));
       if (answer === 'gone') {
         bountyCache.drop(id);
+        justApplied.drop(id);
         dispatch({ type: 'gone', request: current });
         return;
       }
       if (current !== request.current) return;
       write.current = keptWrite(write.current, current);
       bountyCache.setDetail(withWrite(answer, write.current));
+      if (!write.current) bountyCache.settleRow(id, answer.myApplication?.status === 'pending');
       dispatch({ type: 'loaded', request: current, detail: answer, at: new Date().toISOString() });
     } catch {
       dispatch({ type: 'failed', request: current });
@@ -48,7 +51,8 @@ export function useDetail(id: string, userId: string) {
   useEffect(
     () =>
       bountyCache.onApplicationChange((change) => {
-        if (change.id !== id) return;
+        if (change.id !== id || change.fromServer) return;
+        if (!change.applied) justApplied.drop(id);
         write.current = { applied: change.applied, note: change.note, request: request.current };
         dispatch({ type: 'written', applied: change.applied, note: change.note });
       }),

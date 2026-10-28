@@ -247,6 +247,7 @@ const en: typeof zhHans = {
     withdraw: 'Withdraw Application',
     withdrawFailed: 'Couldn’t withdraw. Try again.',
     withdrawing: 'Withdrawing',
+    withdrawNotPending: 'This application can no longer be withdrawn. Below is the latest status.',
     withdrawConfirm: {
       title: 'Withdraw application?',
       body: '{{name}} won’t see your application after this. You can apply again.',

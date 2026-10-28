@@ -249,6 +249,8 @@ const ms: typeof zhHans = {
     withdraw: 'Tarik Balik Permohonan',
     withdrawFailed: 'Gagal ditarik balik. Cuba lagi.',
     withdrawing: 'Menarik balik',
+    withdrawNotPending:
+      'Permohonan ini tidak boleh ditarik balik lagi. Di bawah ialah status terkini.',
     withdrawConfirm: {
       title: 'Tarik balik permohonan?',
       body: '{{name}} tidak akan nampak permohonan anda lagi. Anda boleh mohon semula.',

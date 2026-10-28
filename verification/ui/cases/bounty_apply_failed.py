@@ -3,7 +3,7 @@ import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from apply import note_value, open_from_card, send, send_button, type_note  # noqa: E402
+from apply import note_value, open_from_card, send, send_button, type_note, write_delay_s  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
@@ -13,7 +13,7 @@ BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyApply', 'failOnce']
 CARD = 'bounty-card-fixture-bounty-01'
 NOTE = 'i can go now'
-QUIET_S = 3
+QUIET_S = 2 * write_delay_s()
 
 ui = UI(*sys.argv[1:])
 
@@ -32,7 +32,7 @@ notice_reads('bounty.apply.failed')
 items = ui.read()
 assert note_value(items) == shown, f'the note reads {note_value(items)!r} after the failure, expected {shown!r}'
 assert by_id(items, 'bounty-apply-sending') is None, 'progress is still shown after the failure'
-time.sleep(QUIET_S)  # a resend would have answered within this window
+time.sleep(QUIET_S)
 items = ui.read()
 assert by_id(items, 'bounty-apply-failed'), 'the failure notice went away by itself: the send was replayed'
 assert (send_button(ui, items) or {}).get('enabled'), '发送 is not enabled after a failure'

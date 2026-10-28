@@ -20,7 +20,7 @@ export const INITIAL_APPLY: ApplyState = { kind: 'checking' };
 
 const FINAL: readonly ApplyReason[] = ['closed', 'taken', 'gone', 'own'];
 
-export function canSend(state: ApplyState) {
+function canStart(state: ApplyState) {
   return (
     state.kind === 'form' &&
     !state.sending &&
@@ -28,13 +28,17 @@ export function canSend(state: ApplyState) {
   );
 }
 
+export const noteFits = (text: string) => noteCount(text) <= NOTE_MAX;
+
+export const canSend = (state: ApplyState, note: string) => canStart(state) && noteFits(note);
+
 export function applyReducer(state: ApplyState, event: ApplyEvent): ApplyState {
   switch (event.type) {
     case 'checked':
       if (state.kind !== 'checking') return state;
       return event.hasPayee ? { kind: 'form', sending: false, reason: null } : { kind: 'noPayee' };
     case 'sendStarted':
-      return canSend(state) ? { kind: 'form', sending: true, reason: null } : state;
+      return canStart(state) ? { kind: 'form', sending: true, reason: null } : state;
     case 'answered': {
       if (state.kind !== 'form' || !state.sending) return state;
       const { answer } = event;
@@ -52,7 +56,7 @@ export function noteToSend(text: string) {
 
 export const noteCount = (text: string) => codePoints(text.trim());
 
-export type WithdrawState = { kind: 'idle' | 'busy' | 'failed' };
+export type WithdrawState = { kind: 'idle' | 'busy' | 'failed' | 'notPending' };
 
 export type WithdrawEvent =
   | { type: 'started' }
@@ -61,7 +65,6 @@ export type WithdrawEvent =
 export function withdrawReducer(state: WithdrawState, event: WithdrawEvent): WithdrawState {
   if (event.type === 'started') return state.kind === 'busy' ? state : { kind: 'busy' };
   if (state.kind !== 'busy') return state;
-  return event.answer.ok || event.answer.reason === 'notPending'
-    ? { kind: 'idle' }
-    : { kind: 'failed' };
+  if (event.answer.ok) return { kind: 'idle' };
+  return { kind: event.answer.reason };
 }
