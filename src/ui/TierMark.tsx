@@ -2,7 +2,6 @@ import { HStack, RNHostView, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityLabel,
-  fixedSize,
   font,
   foregroundStyle,
   lineLimit,
@@ -15,10 +14,7 @@ const HEAD = 12;
 
 export function TierMark({ label, rank }: { label: string; rank: 1 | 2 | 3 | 4 }) {
   return (
-    <HStack
-      spacing={3}
-      modifiers={[accessibilityElement('ignore'), accessibilityLabel(label), fixedSize()]}
-    >
+    <HStack spacing={3} modifiers={[accessibilityElement('ignore'), accessibilityLabel(label)]}>
       <RNHostView matchContents>
         <View style={styles.heads}>
           {Array.from({ length: rank }, (_, index) => (

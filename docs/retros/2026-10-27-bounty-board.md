@@ -38,3 +38,6 @@ status: running
 7. Task 8: the board case scrolled a card into view with a 36 pt drag; AXe swipes that short never scroll (the drag stays
    under the scroll slop), so ten identical swipes failed. Tag `ui-scroll`. Done: `verification/ui/board.py` drags at
    least 120 pt.
+8. Task 8 fix round: two ms runs of `bounty_board_list` timed out on the first `axe describe-ui` (20 s) while the
+   machine's load average was 217–320 (a VM and LobeHub on top of `ps`); the same build passed once load fell to ~6.
+   Tag `screenshot-timeout`. Outside cause, recorded with the load numbers; no change.

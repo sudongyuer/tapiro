@@ -20,6 +20,9 @@ LONG_TITLE = re.compile(r'长列表悬赏 (\d+)')
 PILL_MIN = 43.5
 URGENT_MIN = 20
 STAMP_MIN = 40
+STAMP_REACH = 16
+TITLE_LEFT = 16 + 48 + 12
+PAGE = 20
 
 ui = UI(*sys.argv[1:])
 sep = re.escape(ui.t('bounty.board.card.separator'))
@@ -45,6 +48,26 @@ def assert_label(card, pattern, name):
 
 def column(f, left, width):
     return {'x': f['x'] + left, 'y': f['y'], 'width': width, 'height': f['height']}
+
+
+def assert_stamp(shot, card, name):
+    f = card['frame']
+    stamp = ink_box(shot, column(f, -STAMP_REACH, STAMP_REACH + 110), token('--color-success', ui.appearance), 40)
+    assert stamp and stamp['count'] >= STAMP_MIN, f'{name} has no 已申请 stamp: {stamp}'
+    assert stamp['x'] >= f['x'], f'{name}: the stamp starts at {stamp["x"]:.1f} pt, left of the card edge {f["x"]} pt'
+    right = stamp['x'] + stamp['width']
+    assert right <= f['x'] + TITLE_LEFT, f'{name}: the stamp reaches {right:.1f} pt, over the title at {f["x"] + TITLE_LEFT} pt'
+    return stamp
+
+
+def long_order(items):
+    numbers = []
+    for card in sorted(cards(items), key=lambda c: c['frame']['y']):
+        found = LONG_TITLE.search(card.get('AXLabel') or '')
+        assert found, f'{card["AXUniqueId"]} reads {card.get("AXLabel")!r}'
+        numbers.append(int(found.group(1)))
+    assert numbers == list(range(1, len(numbers) + 1)), f'long cards repeat or skip: {numbers}'
+    return numbers
 
 
 reach_home(ui)
@@ -81,8 +104,7 @@ assert_label(applied, card_label('accompany', '陪我去银行开户', r'RM\s?15
                                  '阿杰', 'very_reliable', applied=True), 'applied card')
 shot = ui.snap('03-applied')
 af = applied['frame']
-stamp = ink_box(shot, column(af, 0, 90), token('--color-success', ui.appearance), 40)
-assert stamp and stamp['count'] >= STAMP_MIN, f'the applied card has no 已申请 stamp: {stamp}'
+assert_stamp(shot, applied, 'applied card')
 no_pill = apply_pill(shot, applied, ui.appearance)
 assert no_pill is None or no_pill['height'] < 20, f'the applied card still shows 申请: {no_pill}'
 
@@ -97,15 +119,10 @@ ui.tap_point(f['x'] + f['width'] / 2, f['y'] + 30)
 ui.element('bounty-post-scene-open-fixture-bounty-01')
 
 relaunch(ui, drop=[], add=['-uiVerifyBoard', 'long'])
-seen, header_reads, header_shot = {}, 0, False
+loaded, header_reads = [], 0
 for _ in range(60):
     items = ui.read()
-    ids = [c['AXUniqueId'] for c in cards(items)]
-    assert len(ids) == len(set(ids)), f'a card is on screen twice: {ids}'
-    for card in cards(items):
-        found = LONG_TITLE.search(card.get('AXLabel') or '')
-        assert found, f'{card["AXUniqueId"]} reads {card.get("AXLabel")!r}'
-        seen[card['AXUniqueId']] = found.group(0)
+    loaded = long_order(items)
     headers = [i for i in items if i.get('AXUniqueId') == 'bounty-board-unlocated']
     assert len(headers) <= 1, f'没写地点的 appears {len(headers)} times'
     if headers:
@@ -114,27 +131,49 @@ for _ in range(60):
         y = headers[0]['frame']['y']
         last_located = by_id(items, f'bounty-card-fixture-long-{LONG_LOCATED:02d}')
         first_unlocated = by_id(items, f'bounty-card-fixture-long-{LONG_LOCATED + 1:02d}')
-        assert not last_located or last_located['frame']['y'] < y, '没写地点的 sits above a card with a place'
-        assert not first_unlocated or y < first_unlocated['frame']['y'], '没写地点的 sits below the first card without one'
-        if not header_shot and in_view(headers[0], screen(items)):
-            header_shot = True
-            ui.at_rest()
-            ui.capture('05-long-unlocated')
+        assert last_located and last_located['frame']['y'] < y, '没写地点的 sits above a card with a place'
+        assert first_unlocated and y < first_unlocated['frame']['y'], '没写地点的 sits below the first card without one'
     end = by_id(items, 'bounty-board-end')
-    if end and len(seen) == LONG_COUNT and end['frame']['y'] + end['frame']['height'] <= screen(items)['height']:
+    if end and len(loaded) == LONG_COUNT and in_view(end, screen(items)):
         break
     scroll_down(ui, items, 0.45)
-assert len(seen) == LONG_COUNT, f'{len(seen)} cards loaded, expected {LONG_COUNT}'
-assert len(set(seen.values())) == LONG_COUNT, 'two cards share a title'
+assert len(loaded) == LONG_COUNT, f'{len(loaded)} cards loaded, expected {LONG_COUNT}'
 assert header_reads, '没写地点的 never appeared'
 end = ui.element('bounty-board-end')
 assert end.get('AXLabel') == ui.t('bounty.board.state.end'), end.get('AXLabel')
 ui.at_rest()
 ui.capture('06-long-end')
+visible(ui, 'bounty-board-unlocated')
+ui.at_rest()
+ui.capture('05-long-unlocated')
+
+relaunch(ui, drop=[], add=['-uiVerifyBoard', 'long', '-uiVerifyBoardFail', 'page'])
+failed = None
+for _ in range(30):
+    items = ui.read()
+    failed = by_id(items, 'bounty-board-page-failed')
+    if failed:
+        break
+    scroll_down(ui, items, 0.45)
+assert failed, 'a failed second page shows no page-failed footer'
+assert failed.get('AXLabel') == ui.t('bounty.board.state.pageFailed'), failed.get('AXLabel')
+visible(ui, 'bounty-board-page-failed')
+ui.capture('07-page-failed')
+for _ in range(3):
+    items = ui.read()
+    scroll_down(ui, items, 0.45)
+items = ui.read()
+assert by_id(items, 'bounty-board-page-failed'), 'scrolling cleared the failed page footer'
+assert len(long_order(items)) == PAGE, 'scrolling retried the failed page by itself'
+ui.tap('bounty-board-page-retry')
+ui.wait(lambda items: len(long_order(items)) == 2 * PAGE and not by_id(items, 'bounty-board-page-failed'),
+        '重试 did not load the second page')
+
 relaunch(ui, drop=[], add=['-uiVerifyBoard', 'worst'])
 worst = visible(ui, 'bounty-card-fixture-worst-01')
 assert worst['frame']['x'] + worst['frame']['width'] <= screen(ui.read())['width'], 'a worst-case card overflows'
-ui.capture('07-worst')
-visible(ui, 'bounty-card-fixture-worst-02')
-ui.capture('08-worst-applied')
-print(f'PASS: first card copy, urgent colour and clock, 44 pt 申请, stamp, open/apply taps, {len(seen)} unique long cards')
+ui.capture('08-worst')
+worst_applied = visible(ui, 'bounty-card-fixture-worst-02')
+assert_stamp(ui.snap('09-worst-applied'), worst_applied, 'worst applied card')
+print(f'PASS: first card copy, urgent colour and clock, 44 pt 申请, stamp inside the card, open/apply taps, '
+      f'{len(loaded)} long cards in order, page failure and retry')

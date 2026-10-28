@@ -25,6 +25,7 @@ import type { BoardRow } from './types';
 
 const STICKER = 48;
 const AVATAR = 24;
+const NAME_MIN = 40;
 const GAP = ' ';
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const footnote = font({ textStyle: 'footnote' });
@@ -117,7 +118,14 @@ export function CardFoot({
       <RNHostView matchContents>
         <Avatar uri={null} size={AVATAR} label={copy.name} initial={copy.initial} />
       </RNHostView>
-      <Text modifiers={[footnote, secondary, lineLimit(1)]}>
+      <Text
+        modifiers={[
+          footnote,
+          secondary,
+          lineLimit(1),
+          frame({ minWidth: NAME_MIN, alignment: 'leading' }),
+        ]}
+      >
         {t('bounty.board.card.posterName', { name: copy.name })}
       </Text>
       <TierMark label={copy.tier} rank={copy.rank} />

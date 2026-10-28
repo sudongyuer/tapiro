@@ -8,6 +8,9 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 const STAMP_TILT = -12;
+const STAMP_RADIUS = 6;
+const STAMP_TRACKING = 1;
+const STAMP_MIN_SCALE = 0.6;
 
 export function AppliedSticker({
   category,
@@ -28,7 +31,7 @@ export function AppliedSticker({
         <CategorySticker category={category} size={size} />
       </View>
       {applied ? (
-        <View style={[styles.stampLane, { left: -size }]}>
+        <View style={styles.stampLane}>
           <View
             testID={`${testID}-stamp`}
             style={[
@@ -42,6 +45,8 @@ export function AppliedSticker({
             <AppText
               variant="meta"
               numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={STAMP_MIN_SCALE}
               style={[styles.stampText, { color: color('--color-success') }]}
             >
               {t('bounty.stamp')}
@@ -57,16 +62,17 @@ const styles = StyleSheet.create({
   tilted: { transform: [{ rotate: `${vars['--sticker-rotation-max']}deg` }] },
   stampLane: {
     position: 'absolute',
-    right: -vars['--space-1'],
+    left: 0,
+    right: -vars['--space-2'],
     bottom: -vars['--space-1'],
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   stamp: {
     borderWidth: vars['--sticker-border-small'],
-    borderRadius: 6,
+    borderRadius: STAMP_RADIUS,
     borderCurve: 'continuous',
     paddingHorizontal: vars['--space-1'],
     transform: [{ rotate: `${STAMP_TILT}deg` }],
   },
-  stampText: { fontWeight: '800', letterSpacing: 1 },
+  stampText: { fontWeight: '800', letterSpacing: STAMP_TRACKING },
 });
