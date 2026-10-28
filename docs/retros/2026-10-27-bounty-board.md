@@ -67,3 +67,7 @@ status: running
     sliding sheet. A `transitionEnd` listener on the sheet's `Stack.Screen` never fired: a sheet closed from JS is
     unmounted before its own disappear event. The root stack's `unstable_nativeProps.onFinishTransitioning` (react-native-
     screens `RNSScreenStack` `afterTransitions`) fires once the modal dismissal completes. Tag `library-quirk`.
+15. TextField follow-up: the controller's shell had Node 18 first on PATH; `bun run lint` refused with exit 1 (the
+    Node guard worked), but the commit ran anyway because the checks were echoed rather than chained into `git commit`.
+    Lint passed under Homebrew Node and the commit stands. Tag `node-path` (see item 5). Candidate: a pre-commit hook
+    running lint on staged files, so a failed check blocks the commit.
