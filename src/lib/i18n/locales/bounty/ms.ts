@@ -275,12 +275,14 @@ const ms: typeof zhHans = {
     },
     selected: {
       title: '{{name}} memilih anda',
-      addressRow: 'Alamat tepat',
-      addressLoading: 'Memuatkan alamat',
-      addressFailed: 'Alamat tidak dapat dimuatkan',
-      addressFooter: 'Hanya anda dan {{name}} boleh nampak ini',
-      retry: 'Cuba Lagi',
     },
+  },
+  address: {
+    row: 'Alamat tepat',
+    loading: 'Memuatkan alamat',
+    failed: 'Alamat tidak dapat dimuatkan',
+    footer: 'Hanya anda dan {{name}} boleh nampak ini',
+    retry: 'Cuba Lagi',
   },
   apply: {
     title: 'Mohon Membantu',
@@ -381,11 +383,6 @@ const ms: typeof zhHans = {
     done: {
       title: 'Anda memilih {{name}}',
       titleNoName: 'Anda sudah memilih pembantu',
-      addressRow: 'Alamat tepat',
-      addressLoading: 'Memuatkan alamat',
-      addressFailed: 'Alamat tidak dapat dimuatkan',
-      addressFooter: 'Hanya anda dan {{name}} boleh nampak ini',
-      retry: 'Cuba Lagi',
     },
     loading: 'Memuatkan pemohon',
     failed: 'Pemohon tidak dapat dimuatkan',

@@ -26,3 +26,9 @@ Started overnight 2026-10-28 with the user's advance approval of every recommend
 5. Task 7's report claimed a story-map device line it never wrote; the re-review caught it with a grep. Tag
    `report-accuracy` (second this step, with item 4). Candidate: the report template lists each claimed doc edit with
    its file:line so the reviewer checks it mechanically.
+6. Task 8: two failures while writing `bounty_detail_outcome`. `bun test` hit an unhandled `Unexpected typeof` from
+   react-native because `./exactAddress` resolved to the new `ExactAddress.tsx` on the case-insensitive disk; renamed the
+   component file to `AddressSection.tsx`. Then 看看附近别的悬赏 scrolled the home about 54 pt short of the top: the scroll
+   ran while the detail still covered the board, and the large title expanded on appear. The top request now waits for
+   the board's `transitionEnd`. Tags `case-insensitive-path`, `scroll-before-appear`. Candidate: a lint rule that rejects
+   two files in one folder whose names differ only by case.

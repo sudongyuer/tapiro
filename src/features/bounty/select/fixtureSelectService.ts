@@ -28,6 +28,7 @@ export type FixtureSelectOptions = {
   isBlocked?: (applicantId: string) => boolean;
   onSelected?: (accepted: SelectedArgs[]) => void;
   onAttempted?: (attempts: number) => void;
+  onSeen?: (seen: string[]) => void;
 };
 
 const MINUTE_MS = 60_000;
@@ -146,6 +147,7 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
   const seeds = SETS[options.applicants];
   const posted = new Map<string, Posted>();
   const accepted: SelectedArgs[] = [];
+  const seen: string[] = [];
   let loads = 0;
   let attempts = 0;
   let selectFailures = options.select === 'failOnce' ? 1 : 0;
@@ -216,7 +218,10 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
       if (options.select === 'lostAnswer' && first) return { ok: false, reason: 'failed' };
       return { ok: true, helperId: applicantId };
     },
-    async markNotSelectedSeen() {},
+    async markNotSelectedSeen(bountyId) {
+      seen.push(bountyId);
+      options.onSeen?.([...seen]);
+    },
   };
 
   return {

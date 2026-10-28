@@ -133,7 +133,7 @@ export function AppliedSticker({
   const motion = useStampMotion(applied, id, surface);
   return (
     <View style={{ width: size, height: size }} accessible={false}>
-      <Animated.View style={motion.sticker}>
+      <Animated.View testID={`${testID}-sticker`} style={motion.sticker}>
         <CategorySticker category={category} size={size} />
       </Animated.View>
       {applied ? (

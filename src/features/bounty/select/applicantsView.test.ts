@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import type { BountyDetail } from '../board/types';
 import type { ApplicantsSnapshot, DetailLoad } from './applicantsController';
-import { addressView, applicantsView, closedForChoosing } from './applicantsView';
+import { applicantsView, closedForChoosing } from './applicantsView';
 import { INITIAL_SELECT, type ListState, type SelectState } from './selectState';
 import type { Applicant } from './types';
 
@@ -232,36 +232,5 @@ describe('closedForChoosing', () => {
 
   test('a bounty with a helper is not closed for this screen', () => {
     expect(closedForChoosing({ ...DETAIL, status: 'assigned' }, NOW)).toBe(false);
-  });
-});
-
-describe('addressView', () => {
-  const loaded = (address: string | null): DetailLoad => ({
-    kind: 'ready',
-    detail: { ...DETAIL, address },
-    refreshFailed: false,
-  });
-
-  test('a loaded address is shown', () => {
-    expect(addressView(loaded('A 座 12-03'))).toEqual({ kind: 'shown', address: 'A 座 12-03' });
-  });
-
-  test('a bounty published without an exact address has no address row, never a failure', () => {
-    expect(addressView(loaded(null))).toEqual({ kind: 'none' });
-  });
-
-  test('only a failed detail load offers a retry', () => {
-    expect(addressView({ kind: 'failed' })).toEqual({ kind: 'failed' });
-  });
-
-  test('a failed refresh keeps the address it already has', () => {
-    expect(addressView({ kind: 'ready', detail: { ...DETAIL }, refreshFailed: true })).toEqual({
-      kind: 'shown',
-      address: 'A 座 12-03',
-    });
-  });
-
-  test('loading shows progress', () => {
-    expect(addressView({ kind: 'loading' })).toEqual({ kind: 'loading' });
   });
 });

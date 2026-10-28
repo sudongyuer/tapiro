@@ -6,6 +6,7 @@ import {
   detailReducer,
   initialDetail,
   keptWrite,
+  seenMarkDue,
   withWrite,
   shownView,
   type DetailState,
@@ -194,5 +195,112 @@ describe('detailAction', () => {
   test('a seeded row shows 申请 or the applied block from appliedByMe', () => {
     expect(shownView(initialDetail(ROW), NOW)?.action).toBe('apply');
     expect(shownView(initialDetail({ ...ROW, appliedByMe: true }), NOW)?.action).toBe('applied');
+  });
+});
+
+const NOT_SELECTED: BountyDetail = {
+  ...DETAIL,
+  status: 'assigned',
+  viewerRole: 'applicant',
+  myApplication: { status: 'not_selected', note: '我在楼下' },
+};
+
+const SELECTED: BountyDetail = {
+  ...DETAIL,
+  status: 'assigned',
+  viewerRole: 'helper',
+  address: 'A 座 12-03',
+  helper: { id: 'me', name: '林小貘', tier: 'reliable' },
+  myApplication: { status: 'selected', note: null },
+};
+
+describe('outcomes', () => {
+  test('not selected: the outcome block with the note, never the applied stamp', () => {
+    const view = shownView(
+      run(
+        initialDetail(null),
+        { type: 'started', request: 1 },
+        { type: 'loaded', request: 1, detail: NOT_SELECTED, at: AT },
+      ),
+      NOW,
+    );
+    expect(view).toMatchObject({ action: 'notSelected', note: '我在楼下', address: null });
+  });
+
+  test('the helper role is the selected state with the exact address', () => {
+    expect(detailAction(SELECTED, NOW)).toBe('selected');
+    expect(
+      shownView(
+        run(
+          initialDetail(null),
+          { type: 'started', request: 1 },
+          { type: 'loaded', request: 1, detail: SELECTED, at: AT },
+        ),
+        NOW,
+      ),
+    ).toMatchObject({ action: 'selected', address: 'A 座 12-03', note: null });
+  });
+
+  test('only the helper sees an address, even when a detail carries one', () => {
+    const view = shownView(
+      run(
+        initialDetail(null),
+        { type: 'started', request: 1 },
+        { type: 'loaded', request: 1, detail: { ...NOT_SELECTED, address: 'A 座 12-03' }, at: AT },
+      ),
+      NOW,
+    );
+    expect(view?.address).toBeNull();
+    expect(detailAction({ ...DETAIL, viewerRole: 'poster', address: 'A 座 12-03' }, NOW)).toBe(
+      'none',
+    );
+  });
+
+  test('a pending apply write is never shown over a server outcome and is dropped', () => {
+    for (const outcome of [NOT_SELECTED, SELECTED]) {
+      const answered = run(
+        initialDetail(ROW),
+        { type: 'started', request: 1 },
+        { type: 'written', applied: true, note: '新写的' },
+        { type: 'loaded', request: 1, detail: outcome, at: AT },
+      );
+      expect(answered.write).toBeNull();
+      expect(shownView(answered, NOW)?.action).toBe(detailAction(outcome, NOW));
+      expect(withWrite(outcome, { applied: true, note: 'x', request: 1 })).toBe(outcome);
+      expect(withWrite(outcome, { applied: false, note: null, request: 1 })).toBe(outcome);
+    }
+  });
+
+  test('a write after the outcome is shown does not override it', () => {
+    const ready = run(
+      initialDetail(null),
+      { type: 'started', request: 1 },
+      { type: 'loaded', request: 1, detail: NOT_SELECTED, at: AT },
+      { type: 'written', applied: true, note: null },
+    );
+    expect(shownView(ready, NOW)?.action).toBe('notSelected');
+  });
+
+  test('withdrawn keeps the step 4 behaviour', () => {
+    const withdrawn = { ...DETAIL, myApplication: { status: 'withdrawn' as const, note: 'x' } };
+    expect(
+      shownView(
+        run(
+          initialDetail(null),
+          { type: 'started', request: 1 },
+          { type: 'loaded', request: 1, detail: withdrawn, at: AT },
+        ),
+        NOW,
+      ),
+    ).toMatchObject({ action: 'apply', note: null });
+  });
+
+  test('only a loaded not-selected answer is due a seen mark', () => {
+    expect(seenMarkDue(NOT_SELECTED)).toBe(true);
+    expect(seenMarkDue(SELECTED)).toBe(false);
+    expect(seenMarkDue(DETAIL)).toBe(false);
+    expect(seenMarkDue({ ...DETAIL, myApplication: { status: 'pending', note: null } })).toBe(
+      false,
+    );
   });
 });

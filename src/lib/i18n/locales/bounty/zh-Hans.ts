@@ -267,12 +267,14 @@ export default {
     },
     selected: {
       title: '{{name}}选了你',
-      addressRow: '精确地址',
-      addressLoading: '正在加载地址',
-      addressFailed: '地址没加载出来',
-      addressFooter: '只有你和{{name}}看得到',
-      retry: '重试',
     },
+  },
+  address: {
+    row: '精确地址',
+    loading: '正在加载地址',
+    failed: '地址没加载出来',
+    footer: '只有你和{{name}}看得到',
+    retry: '重试',
   },
   apply: {
     title: '申请帮忙',
@@ -369,11 +371,6 @@ export default {
     done: {
       title: '选好了{{name}}',
       titleNoName: '选好了人',
-      addressRow: '精确地址',
-      addressLoading: '正在加载地址',
-      addressFailed: '地址没加载出来',
-      addressFooter: '只有你和{{name}}看得到',
-      retry: '重试',
     },
     loading: '正在加载申请',
     failed: '没加载出来',

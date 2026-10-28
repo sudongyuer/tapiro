@@ -9,10 +9,11 @@ export function useLiveCardsOnScreen() {
   );
 }
 
-export function useHomeReveal(onReveal: () => void) {
-  const latest = useRef(onReveal);
+export function useHomeReveal(onReveal: () => void, onTop: () => void) {
+  const latest = useRef({ onReveal, onTop });
   useEffect(() => {
-    latest.current = onReveal;
-  }, [onReveal]);
-  useEffect(() => homeSignals.revealRequests.subscribe(() => latest.current()), []);
+    latest.current = { onReveal, onTop };
+  }, [onReveal, onTop]);
+  useEffect(() => homeSignals.revealRequests.subscribe(() => latest.current.onReveal()), []);
+  useEffect(() => homeSignals.topRequests.subscribe(() => latest.current.onTop()), []);
 }

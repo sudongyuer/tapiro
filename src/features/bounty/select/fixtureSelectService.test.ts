@@ -238,3 +238,12 @@ describe('select', () => {
     expect(Date.now() - started).toBeGreaterThanOrEqual(25);
   });
 });
+
+test('every not-selected seen mark is recorded, so a case can count them', async () => {
+  let recorded: string[] = [];
+  const { service } = fixture({ onSeen: (seen) => (recorded = seen) });
+  await service.markNotSelectedSeen('b1');
+  expect(recorded).toEqual(['b1']);
+  await service.markNotSelectedSeen('b1');
+  expect(recorded).toEqual(['b1', 'b1']);
+});

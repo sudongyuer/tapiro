@@ -19,6 +19,7 @@ import { BlockMenu } from '../block/BlockMenu';
 import { useBlockPoster } from '../block/hooks';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
+import { NotSelectedActions, SelectedActions, SelectedAddress } from './OutcomeActions';
 import { shownView, type DetailAction, type DetailView } from './detailState';
 import { useDetail } from './useDetail';
 
@@ -28,9 +29,10 @@ type Props = {
   onApply: (id: string) => void;
   onGone: () => void;
   onBlocked: () => void;
+  onBrowse: () => void;
 };
 
-export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked }: Props) {
+export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked, onBrowse }: Props) {
   const { t, language } = useI18n();
   const { state, retry } = useDetail(id, userId);
   const withdrawal = useWithdraw(id, () => void retry());
@@ -118,12 +120,20 @@ export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked }: P
         ) : view && copy ? (
           <>
             <DetailInfo view={view} copy={copy} />
+            {view.action === 'selected' ? (
+              <SelectedAddress
+                name={copy.name}
+                address={view.address}
+                onRetry={() => void retry()}
+              />
+            ) : null}
             <DetailDescription text={view.description} />
             <DetailActions
               view={view}
               name={copy.name}
               current={state.kind === 'ready'}
               onApply={() => onApply(id)}
+              onBrowse={onBrowse}
               withdrawal={withdrawal}
             />
           </>
@@ -152,16 +162,22 @@ function DetailActions({
   name,
   current,
   onApply,
+  onBrowse,
   withdrawal,
 }: {
   view: DetailView;
   name: string;
   current: boolean;
   onApply: () => void;
+  onBrowse: () => void;
   withdrawal: ReturnType<typeof useWithdraw>;
 }) {
   const { t } = useI18n();
   if (view.action === 'none') return null;
+  if (view.action === 'selected') return <SelectedActions name={name} />;
+  if (view.action === 'notSelected') {
+    return <NotSelectedActions name={name} note={view.note} onBrowse={onBrowse} />;
+  }
   if (view.action === 'applied') {
     return (
       <AppliedActions

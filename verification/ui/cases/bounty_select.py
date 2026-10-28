@@ -120,8 +120,8 @@ row = ui.element('bounty-select-done-row')
 assert '阿杰' in (row.get('AXLabel') or ''), f'the chosen row reads {row.get("AXLabel")!r}'
 address = ui.element('bounty-select-done-address')
 assert 'A 座 12-03' in (address.get('AXLabel') or ''), f'the address reads {address.get("AXLabel")!r}'
-assert ui.t('bounty.select.done.addressRow') in address['AXLabel'], address['AXLabel']
-ui.labelled(ui.t('bounty.select.done.addressFooter', name='阿杰'))
+assert ui.t('bounty.address.row') in address['AXLabel'], address['AXLabel']
+ui.labelled(ui.t('bounty.address.footer', name='阿杰'))
 assert_one_selected(ui, JIE)
 assert_attempts(ui, 1)
 ui.at_rest()

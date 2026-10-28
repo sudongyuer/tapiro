@@ -272,12 +272,14 @@ const en: typeof zhHans = {
     },
     selected: {
       title: '{{name}} chose you',
-      addressRow: 'Exact address',
-      addressLoading: 'Loading the address',
-      addressFailed: 'Couldn’t load the address',
-      addressFooter: 'Only you and {{name}} can see this',
-      retry: 'Try Again',
     },
+  },
+  address: {
+    row: 'Exact address',
+    loading: 'Loading the address',
+    failed: 'Couldn’t load the address',
+    footer: 'Only you and {{name}} can see this',
+    retry: 'Try Again',
   },
   apply: {
     title: 'Offer to Help',
@@ -378,11 +380,6 @@ const en: typeof zhHans = {
     done: {
       title: 'You chose {{name}}',
       titleNoName: 'You chose a helper',
-      addressRow: 'Exact address',
-      addressLoading: 'Loading the address',
-      addressFailed: 'Couldn’t load the address',
-      addressFooter: 'Only you and {{name}} can see this',
-      retry: 'Try Again',
     },
     loading: 'Loading applicants',
     failed: 'Couldn’t load applicants',

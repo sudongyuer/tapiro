@@ -1,5 +1,5 @@
 import type { BountyDetail } from '../board/types';
-import type { ApplicantsSnapshot, DetailLoad } from './applicantsController';
+import type { ApplicantsSnapshot } from './applicantsController';
 import type { SendFailure } from './selectState';
 import type { Applicant } from './types';
 
@@ -63,14 +63,4 @@ export function applicantsView(snapshot: ApplicantsSnapshot, now: Date): Applica
     footer: shown === 'list' ? footer(applicants, snapshot) : null,
     notice: shown === 'list' || shown === 'empty' ? notice(snapshot.select) : null,
   };
-}
-
-export type AddressView =
-  { kind: 'loading' } | { kind: 'failed' } | { kind: 'none' } | { kind: 'shown'; address: string };
-
-export function addressView(detail: DetailLoad): AddressView {
-  if (detail.kind === 'loading') return { kind: 'loading' };
-  if (detail.kind !== 'ready') return { kind: 'failed' };
-  const { address } = detail.detail;
-  return address ? { kind: 'shown', address } : { kind: 'none' };
 }
