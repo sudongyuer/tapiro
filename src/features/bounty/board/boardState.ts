@@ -179,22 +179,27 @@ export function createBoardController(
     dispatch(answer);
   }
 
+  let running = false;
+
   async function loadUntilCurrent() {
-    do {
-      reloadAfter = false;
-      if (query) await loadOnce(query.origin, query.filter);
-    } while (reloadAfter);
+    try {
+      do {
+        reloadAfter = false;
+        if (query) await loadOnce(query.origin, query.filter);
+      } while (reloadAfter);
+    } finally {
+      running = false;
+    }
   }
 
   function load(): Promise<void> {
     if (!query) return Promise.resolve();
-    if (inflight) {
+    if (running && inflight) {
       if (loadGeneration !== state.generation) reloadAfter = true;
       return inflight;
     }
-    inflight = loadUntilCurrent().finally(() => {
-      inflight = null;
-    });
+    running = true;
+    inflight = loadUntilCurrent();
     return inflight;
   }
 

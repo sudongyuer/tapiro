@@ -393,6 +393,19 @@ describe('controller', () => {
     expect(ids(board.get().state)).toEqual(['new']);
   });
 
+  test('a query change at any moment after the load answers is not dropped', async () => {
+    for (let ticks = 0; ticks < 6; ticks += 1) {
+      const stub = deferredService();
+      const board = createBoardController(stub.service, () => new Date(AT));
+      void board.setQuery(ME, 'all');
+      stub.pending[0].resolve(page(['old']));
+      for (let tick = 0; tick < ticks; tick += 1) await Promise.resolve();
+      void board.setQuery(ME, 'urgent');
+      await settle();
+      expect(stub.calls.at(-1)).toEqual({ origin: ME, filter: 'urgent', after: null });
+    }
+  });
+
   test('setting the same query again does not reload', async () => {
     const stub = deferredService();
     const board = createBoardController(stub.service, () => new Date(AT));
