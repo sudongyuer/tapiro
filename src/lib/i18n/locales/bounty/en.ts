@@ -264,6 +264,20 @@ const en: typeof zhHans = {
     refreshFailed: 'Couldn’t refresh · this is from {{time}} and may have changed.',
     retry: 'Try Again',
     back: 'Back',
+    notSelected: {
+      title: 'Not chosen this time',
+      body: '{{name}} chose someone else. Your application is closed and doesn’t affect your reliability.',
+      yourNote: 'You wrote',
+      browse: 'Browse Other Bounties Nearby',
+    },
+    selected: {
+      title: '{{name}} chose you',
+      addressRow: 'Exact address',
+      addressLoading: 'Loading the address',
+      addressFailed: 'Couldn’t load the address',
+      addressFooter: 'Only you and {{name}} can see this',
+      retry: 'Try Again',
+    },
   },
   apply: {
     title: 'Offer to Help',
@@ -294,6 +308,8 @@ const en: typeof zhHans = {
       title: 'Block {{name}}?',
       body: 'You won’t see each other’s bounties or be able to apply to them. {{name}} won’t be notified. You can unblock in Me → Blocked.',
       confirm: 'Block',
+      applicantBody:
+        'You won’t see each other’s bounties or be able to apply to them. {{name}} won’t be notified, and {{name}}’s application will disappear from here. You can unblock in Me → Blocked.',
       cancel: 'Don’t Block',
     },
     blocking: 'Blocking',
@@ -311,6 +327,72 @@ const en: typeof zhHans = {
       unblock: 'Unblock',
       unblocking: 'Unblocking',
       unblockFailed: 'Couldn’t unblock. Try again.',
+    },
+  },
+  select: {
+    statusOpen_one: 'Waiting for you to choose · {{count}} applicant',
+    statusOpen_other: 'Waiting for you to choose · {{count}} applicants',
+    statusOpenNoCount: 'Waiting for you to choose',
+    statusEmpty: 'Waiting for applicants',
+    sectionHeader: 'Choose who helps you',
+    footer: 'Only the person you choose can see the exact address.',
+    meta: {
+      helped_one: 'Helped {{count}} time',
+      helped_other: 'Helped {{count}} times',
+      neverHelped: 'Hasn’t helped yet',
+    },
+    hold: {
+      label: 'Hold to choose {{name}}',
+      holding: 'Keep holding…',
+      sending: 'Choosing…',
+      none: 'Choose someone first',
+      hintAlone: 'Hold for about 1 second',
+      hint_one:
+        'Hold for about 1 second. The other {{count}} applicant will see “Not chosen this time”.',
+      hint_other:
+        'Hold for about 1 second. The other {{count}} applicants will see “Not chosen this time”.',
+      a11yHint: 'Hold for about 1 second, or double-tap to confirm',
+    },
+    empty: {
+      title: 'No one has applied yet',
+      body: 'Applicants will show up here. Come back to choose then.',
+    },
+    failure: {
+      failed: 'Couldn’t send. Try again.',
+      notPending:
+        'This applicant withdrew or can’t be chosen. The list is refreshed. Choose again.',
+      noPayee: 'This applicant has no payment method right now, so you can’t choose them yet.',
+      closed: 'This bounty is closed, so you can’t choose anyone.',
+    },
+    race: {
+      title: 'Already chosen',
+      body: 'You already chose {{name}} on another device.',
+      bodyNoName: 'You already chose someone on another device.',
+      ok: 'OK',
+    },
+    confirm: {
+      title: 'Choose {{name}} to help you?',
+      confirm: 'Choose {{name}}',
+      cancel: 'Cancel',
+    },
+    done: {
+      title: 'You chose {{name}}',
+      addressRow: 'Exact address',
+      addressLoading: 'Loading the address',
+      addressFailed: 'Couldn’t load the address',
+      addressFooter: 'Only you and {{name}} can see this',
+      retry: 'Try Again',
+    },
+    loading: 'Loading applicants',
+    failed: 'Couldn’t load applicants',
+    refreshFailed: 'Couldn’t refresh · this is from {{time}}',
+    retry: 'Try Again',
+    closed: 'This bounty is closed',
+    back: 'Back',
+    a11y: {
+      row: '{{name}}, {{tier}}, {{meta}}',
+      note: 'Note: {{note}}',
+      selected: 'Selected',
     },
   },
 };
