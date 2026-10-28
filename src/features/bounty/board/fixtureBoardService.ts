@@ -34,6 +34,7 @@ export type FixtureBoardOptions = {
   variant: FixtureVariant;
   now: () => Date;
   writeDelayMs?: number;
+  isBlocked?: (posterId: string) => boolean;
 };
 
 function pick<T extends string>(values: readonly T[], value: string | undefined, fallback: T): T {
@@ -80,11 +81,11 @@ const mismatch = () => Object.assign(new Error('board_cursor_mismatch'), { code:
 export function createFixtureBoardService(options: FixtureBoardOptions): BoardService {
   const base = options.now().getTime();
   const at = (minutes: number) => new Date(base + minutes * MINUTE_MS).toISOString();
-  const bounties = FIXTURE_BOARDS[options.board];
+  const all = FIXTURE_BOARDS[options.board];
+  const hidden = (item: FixtureBounty) => options.isBlocked?.(item.poster.id) ?? false;
+  const visible = () => all.filter((item) => !hidden(item));
   const applications = new Map<string, { status: 'pending' | 'withdrawn'; note: string | null }>(
-    bounties
-      .filter((item) => item.applied)
-      .map((item) => [item.id, { status: 'pending', note: null }]),
+    all.filter((item) => item.applied).map((item) => [item.id, { status: 'pending', note: null }]),
   );
   let firstLoads = 0;
   let pageFailures = options.fail === 'page' ? 1 : 0;
@@ -145,7 +146,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
   function ordered(here: Point | null, filter: BoardFilter) {
     const byRecency = (a: FixtureBounty, b: FixtureBounty) =>
       a.createdMinutesAgo - b.createdMinutesAgo || b.id.localeCompare(a.id);
-    const listed = bounties.filter((item) => matches(item, filter));
+    const listed = visible().filter((item) => matches(item, filter));
     if (!here) return [...listed].sort(byRecency);
     const located = listed
       .flatMap((item) => (item.point ? [{ item, distance: distanceM(here, item.point) }] : []))
@@ -231,7 +232,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
         detailFailures -= 1;
         throw new TypeError('Network request failed');
       }
-      const item = bounties.find((candidate) => candidate.id === id);
+      const item = visible().find((candidate) => candidate.id === id);
       return item && options.detail !== 'gone' ? detailOf(item, point) : 'gone';
     },
     async hasPayeeMethod() {
@@ -243,7 +244,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
         applyFailures -= 1;
         return { ok: false, reason: 'failed' };
       }
-      if (!bounties.some((item) => item.id === id) || options.apply === 'gone') {
+      if (!visible().some((item) => item.id === id) || options.apply === 'gone') {
         return { ok: false, reason: 'gone' };
       }
       if (options.apply === 'closed' || options.apply === 'taken') {

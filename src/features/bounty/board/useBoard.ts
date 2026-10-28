@@ -2,6 +2,7 @@ import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { blockEvents } from '../shared/blockEvents';
 import { bountyCache } from '../shared/bountyCache';
 import { createBoardController, nearEnd } from './boardState';
 import { boardService } from './services';
@@ -45,6 +46,11 @@ export function useBoard(
       bountyCache.onApplicationChange(({ id, applied }) =>
         applied ? controller.applied(id) : controller.withdrawn(id),
       ),
+    [controller],
+  );
+
+  useEffect(
+    () => blockEvents.onBlocked((posterId) => void controller.blocked(posterId)),
     [controller],
   );
 

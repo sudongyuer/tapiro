@@ -16,14 +16,16 @@ import {
   accessibilityLabel,
   font,
   foregroundStyle,
+  listRowBackground,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { StyleSheet } from 'react-native';
+import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { Avatar } from '@/ui/Avatar';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 const AVATAR_SIZE = 60;
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
@@ -35,6 +37,7 @@ export function MeView({
   stickerCount,
   onOpenStickers,
   onOpenPayee,
+  onOpenBlocked,
   onOpenSettings,
 }: {
   name: string;
@@ -43,6 +46,7 @@ export function MeView({
   stickerCount: number | null;
   onOpenStickers: () => void;
   onOpenPayee: () => void;
+  onOpenBlocked: () => void;
   onOpenSettings: () => void;
 }) {
   const { t } = useI18n();
@@ -74,6 +78,11 @@ export function MeView({
             onPress={onOpenPayee}
             testID="me-payee"
           />
+          <NavRow
+            label={t('bounty.block.list.title')}
+            onPress={onOpenBlocked}
+            testID="me-blocked"
+          />
           <NavRow label={t('account.me.settings')} onPress={onOpenSettings} testID="me-settings" />
         </Section>
       </Form>
@@ -95,8 +104,16 @@ function NavRow({
   testID: string;
 }) {
   const { color } = useTheme();
+  const { selected, select } = useSelectedUntilReturn();
   return (
-    <Button onPress={onPress} testID={testID}>
+    <Button
+      onPress={() => {
+        select();
+        onPress();
+      }}
+      testID={testID}
+      modifiers={selected ? [listRowBackground(PlatformColor('systemGray4'))] : []}
+    >
       <HStack spacing={vars['--space-2']}>
         <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>
           {label}

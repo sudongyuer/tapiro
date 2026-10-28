@@ -16,6 +16,7 @@ export default function BountyDetailRoute() {
         router.push({ pathname: '/bounty-apply/[id]', params: { id: bounty, from: 'detail' } })
       }
       onGone={() => router.back()}
+      onBlocked={() => router.back()}
     />
   );
 }

@@ -4,6 +4,7 @@ import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
+import { fixtureBlocked } from '../block/services';
 import { FIXTURE_PLACES } from '../place/fixturePlaces';
 import { FIXTURE_USER_ID } from '../post/fixtureDrafts';
 import { createSupabaseBoardService } from './boardService';
@@ -17,6 +18,7 @@ export const boardService: BoardService = uiVerify
   ? createFixtureBoardService({
       ...fixtureBoardOptions(uiVerifyArgument, uiVerifyFixture),
       writeDelayMs: VERIFY_WRITE_DELAY_MS,
+      isBlocked: fixtureBlocked,
     })
   : createSupabaseBoardService(getSupabase());
 

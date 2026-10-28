@@ -289,3 +289,19 @@ describe('apply and withdraw', () => {
     expect(await service({ detail: 'gone' }).detail('fixture-bounty-01', null)).toBe('gone');
   });
 });
+
+describe('blocked posters', () => {
+  test('a blocked poster’s bounties leave the board and the detail answers gone', async () => {
+    const blocked = new Set<string>();
+    const board = service({ isBlocked: (id) => blocked.has(id) });
+    const before = await all(board, ME);
+    expect(before.rows.some((row) => row.poster.name === '小林')).toBe(true);
+    blocked.add('fixture-poster-lin');
+    const after = await all(board, ME);
+    expect(after.rows.some((row) => row.poster.name === '小林')).toBe(false);
+    expect(after.rows).toHaveLength(before.rows.length - 1);
+    expect(await board.detail('fixture-bounty-01', null)).toBe('gone');
+    blocked.delete('fixture-poster-lin');
+    expect((await all(board, ME)).rows).toHaveLength(before.rows.length);
+  });
+});

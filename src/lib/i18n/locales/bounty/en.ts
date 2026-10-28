@@ -288,6 +288,31 @@ const en: typeof zhHans = {
     sending: 'Sending',
     own: 'This is your own bounty, so you can’t apply',
   },
+  block: {
+    menu: 'Block {{name}}',
+    confirm: {
+      title: 'Block {{name}}?',
+      body: 'You won’t see each other’s bounties or be able to apply to them. {{name}} won’t be notified. You can unblock in Me → Blocked.',
+      confirm: 'Block',
+      cancel: 'Don’t Block',
+    },
+    blocking: 'Blocking',
+    failed: 'Couldn’t block. Try again.',
+    list: {
+      title: 'Blocked',
+      loading: 'Loading blocked people',
+      failed: 'Couldn’t load blocked people',
+      refreshFailed: 'Couldn’t refresh · showing the last list loaded',
+      retry: 'Try Again',
+      emptyTitle: 'You haven’t blocked anyone',
+      emptyBody: 'To block a poster, tap “⋯” at the top right of a bounty.',
+      footer:
+        'Swipe left on a row to unblock. You’ll see each other’s bounties again, and they won’t be notified.',
+      unblock: 'Unblock',
+      unblocking: 'Unblocking',
+      unblockFailed: 'Couldn’t unblock. Try again.',
+    },
+  },
 };
 
 export default en;

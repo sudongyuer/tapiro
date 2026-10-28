@@ -71,3 +71,8 @@ status: running
     Node guard worked), but the commit ran anyway because the checks were echoed rather than chained into `git commit`.
     Lint passed under Homebrew Node and the commit stands. Tag `node-path` (see item 5). Candidate: a pre-commit hook
     running lint on staged files, so a failed check blocks the commit.
+16. Task 12: the first `bounty_block` run failed on `tab-me never settled`: after scrolling to a card and coming back
+    from the detail, the 悬赏 tab bar is minimised, so `tab-me` is not in the tree. The case now taps the minimised 悬赏
+    tab to expand the bar first (as `shell_minimise` does). Also, `ActionSheetIOS` without an anchor shows on iOS 26 as
+    a centred card with both buttons, not a bottom sheet. Tag `platform-behaviour`. Candidate: a `switch_tab` helper
+    in `driver.py` for every case that changes tabs after scrolling 悬赏.

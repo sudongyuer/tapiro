@@ -16,6 +16,7 @@ export type BoardEvent =
   | { type: 'pageFailed'; generation: number }
   | { type: 'applied'; id: string }
   | { type: 'withdrawn'; id: string }
+  | { type: 'blocked'; posterId: string }
   | { type: 'originChanged' }
   | { type: 'filterChanged' };
 
@@ -66,6 +67,20 @@ function written(state: BoardState, id: string, applied: boolean): BoardState {
   return { ...state, writes, rows: overlaid(state.rows, writes) };
 }
 
+function withoutPoster(state: BoardState, posterId: string): BoardState {
+  const generation = state.generation + 1;
+  if (state.kind !== 'ready') return { ...state, generation };
+  const rows = state.rows.filter((row) => row.poster.id !== posterId);
+  const removed = state.rows.length - rows.length;
+  return {
+    ...state,
+    generation,
+    rows,
+    total: state.total === null ? null : Math.max(0, state.total - removed),
+    page: 'idle',
+  };
+}
+
 export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
   const { generation, writes } = state;
   switch (event.type) {
@@ -80,6 +95,8 @@ export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
       return written(state, event.id, true);
     case 'withdrawn':
       return written(state, event.id, false);
+    case 'blocked':
+      return withoutPoster(state, event.posterId);
     case 'pageStarted':
       return state.kind === 'ready' && state.next !== null && state.page !== 'loading'
         ? { ...state, page: 'loading' }
@@ -252,6 +269,10 @@ export function createBoardController(
     retryPage: () => nextPage('failed'),
     applied: (id: string) => dispatch({ type: 'applied', id }),
     withdrawn: (id: string) => dispatch({ type: 'withdrawn', id }),
+    blocked(posterId: string) {
+      dispatch({ type: 'blocked', posterId });
+      return load();
+    },
   };
 }
 

@@ -15,6 +15,8 @@ import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
 import { detailNotice } from '../apply/applyState';
 import { useWithdraw } from '../apply/useApply';
+import { BlockMenu } from '../block/BlockMenu';
+import { useBlockPoster } from '../block/hooks';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
 import { shownView, type DetailAction, type DetailView } from './detailState';
@@ -25,12 +27,14 @@ type Props = {
   userId: string;
   onApply: (id: string) => void;
   onGone: () => void;
+  onBlocked: () => void;
 };
 
-export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
+export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked }: Props) {
   const { t, language } = useI18n();
   const { state, retry } = useDetail(id, userId);
   const withdrawal = useWithdraw(id, () => void retry());
+  const blocking = useBlockPoster(onBlocked);
   const loadedAt = state.kind === 'ready' ? state.loadedAt : null;
   const { loaded } = withdrawal;
   useEffect(() => {
@@ -65,61 +69,73 @@ export function BountyDetailScreen({ id, userId, onApply, onGone }: Props) {
         : undefined,
   };
 
+  const poster = view && view.poster.id !== userId ? view.poster : null;
+
   return (
-    <SheetFrame
-      testID="bounty-detail"
-      pinnedAbove="tabBar"
-      notice={
-        notice === 'notPending' ? (
+    <>
+      <BlockMenu poster={poster} state={blocking.state} onAsk={blocking.ask} />
+      <SheetFrame
+        testID="bounty-detail"
+        pinnedAbove="tabBar"
+        notice={
+          blocking.state === 'failed' ? (
+            <NoticeCard
+              tone="urgent"
+              icon="exclamationmark.circle.fill"
+              title={t('bounty.block.failed')}
+              testID="bounty-detail-block-failed"
+            />
+          ) : notice === 'notPending' ? (
+            <NoticeCard
+              tone="warning"
+              icon="exclamationmark.triangle.fill"
+              title={t('bounty.detail.withdrawNotPending')}
+              testID="bounty-detail-withdraw-stale"
+            />
+          ) : notice === 'stale' && state.kind === 'ready' ? (
+            <NoticeCard
+              tone="warning"
+              icon="exclamationmark.triangle.fill"
+              title={t('bounty.detail.refreshFailed', { time: malaysiaClock(state.loadedAt) })}
+              action={retryAction}
+              testID="bounty-detail-stale"
+            />
+          ) : null
+        }
+      >
+        {view && copy ? <DetailHeader view={view} copy={copy} /> : null}
+        {failed ? (
           <NoticeCard
-            tone="warning"
-            icon="exclamationmark.triangle.fill"
-            title={t('bounty.detail.withdrawNotPending')}
-            testID="bounty-detail-withdraw-stale"
-          />
-        ) : notice === 'stale' && state.kind === 'ready' ? (
-          <NoticeCard
-            tone="warning"
-            icon="exclamationmark.triangle.fill"
-            title={t('bounty.detail.refreshFailed', { time: malaysiaClock(state.loadedAt) })}
+            tone="urgent"
+            icon="exclamationmark.circle.fill"
+            title={t('bounty.detail.failed')}
             action={retryAction}
-            testID="bounty-detail-stale"
+            testID="bounty-detail-failed"
           />
-        ) : null
-      }
-    >
-      {view && copy ? <DetailHeader view={view} copy={copy} /> : null}
-      {failed ? (
-        <NoticeCard
-          tone="urgent"
-          icon="exclamationmark.circle.fill"
-          title={t('bounty.detail.failed')}
-          action={retryAction}
-          testID="bounty-detail-failed"
-        />
-      ) : view && copy ? (
-        <>
-          <DetailInfo view={view} copy={copy} />
-          <DetailDescription text={view.description} />
-          <DetailActions
-            view={view}
-            name={copy.name}
-            current={state.kind === 'ready'}
-            onApply={() => onApply(id)}
-            withdrawal={withdrawal}
-          />
-        </>
-      ) : (
-        <Section>
-          <ProgressView
-            modifiers={[
-              accessibilityLabel(t('bounty.detail.loading')),
-              accessibilityIdentifier('bounty-detail-loading'),
-            ]}
-          />
-        </Section>
-      )}
-    </SheetFrame>
+        ) : view && copy ? (
+          <>
+            <DetailInfo view={view} copy={copy} />
+            <DetailDescription text={view.description} />
+            <DetailActions
+              view={view}
+              name={copy.name}
+              current={state.kind === 'ready'}
+              onApply={() => onApply(id)}
+              withdrawal={withdrawal}
+            />
+          </>
+        ) : (
+          <Section>
+            <ProgressView
+              modifiers={[
+                accessibilityLabel(t('bounty.detail.loading')),
+                accessibilityIdentifier('bounty-detail-loading'),
+              ]}
+            />
+          </Section>
+        )}
+      </SheetFrame>
+    </>
   );
 }
 

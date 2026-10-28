@@ -19,6 +19,7 @@ export default function Me() {
       stickerCount={stickers.status === 'ready' ? stickers.stickers.length : null}
       onOpenStickers={() => router.push('/me/stickers')}
       onOpenPayee={() => router.push('/me/payee')}
+      onOpenBlocked={() => router.push('/me/blocked')}
       onOpenSettings={() => router.push('/me/settings')}
     />
   );

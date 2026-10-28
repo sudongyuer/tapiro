@@ -433,3 +433,61 @@ describe('controller', () => {
     expect(stub.calls).toHaveLength(1);
   });
 });
+
+describe('blocking a poster', () => {
+  const mixed = (ids: [string, string][], total?: number): BoardPage => ({
+    items: ids.map(([id, poster]) =>
+      row(id, { poster: { id: poster, name: poster, tier: 'reliable' } }),
+    ),
+    next: null,
+    ...(total === undefined ? {} : { total }),
+  });
+
+  test('removes that poster’s rows at once and lowers the total', () => {
+    const state = run([
+      { type: 'loadStarted' },
+      succeed(
+        mixed(
+          [
+            ['a', 'lin'],
+            ['b', 'jie'],
+            ['c', 'lin'],
+          ],
+          3,
+        ),
+      ),
+      { type: 'blocked', posterId: 'lin' },
+    ]);
+    expect(ids(state)).toEqual(['b']);
+    expect(boardTotal(state)).toBe(1);
+  });
+
+  test('a load that started before the block cannot bring the rows back, and a fresh load runs', async () => {
+    const stub = deferredService();
+    const board = createBoardController(stub.service, () => new Date(AT));
+    void board.setQuery(ME, 'all');
+    stub.pending[0].resolve(
+      mixed([
+        ['a', 'lin'],
+        ['b', 'jie'],
+      ]),
+    );
+    await settle();
+    void board.load();
+    expect(stub.calls).toHaveLength(2);
+    void board.blocked('lin');
+    expect(ids(board.get().state)).toEqual(['b']);
+    stub.pending[1].resolve(
+      mixed([
+        ['a', 'lin'],
+        ['b', 'jie'],
+      ]),
+    );
+    await settle();
+    expect(ids(board.get().state)).toEqual(['b']);
+    expect(stub.calls).toHaveLength(3);
+    stub.pending[2].resolve(mixed([['b', 'jie']]));
+    await settle();
+    expect(ids(board.get().state)).toEqual(['b']);
+  });
+});

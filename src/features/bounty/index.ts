@@ -9,4 +9,5 @@ export { BountyBoard } from './board/BountyBoard';
 export { useBountyBoard, type BountyBoardModel } from './board/useBountyBoard';
 export { BountyDetailScreen } from './detail/BountyDetailScreen';
 export { ApplySheet } from './apply/ApplySheet';
+export { BlockedListScreen } from './block/BlockedListScreen';
 export const applySheetGone = () => justApplied.sheetGone();
