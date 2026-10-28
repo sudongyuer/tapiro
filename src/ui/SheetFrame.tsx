@@ -2,7 +2,7 @@ import { Form, Host } from '@expo/ui/swift-ui';
 import { tint } from '@expo/ui/swift-ui/modifiers';
 import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -34,13 +34,17 @@ export function SheetLayer({ children }: { children: ReactNode }) {
   return null;
 }
 
+const VIEW_BOTTOM = { bottom: 'additive' } as const;
+
 export function SheetFrame({
   notice,
   testID,
+  pinnedAbove = 'homeIndicator',
   children,
 }: {
   notice?: ReactNode;
   testID: string;
+  pinnedAbove?: 'homeIndicator' | 'tabBar';
   children: ReactNode;
 }) {
   const { color } = useTheme();
@@ -56,7 +60,12 @@ export function SheetFrame({
           {children}
         </Form>
       </Host>
-      {actions ? (
+      {actions && pinnedAbove === 'tabBar' ? (
+        // The window inset leaves out the tab bar and its accessory; the view's own safe area includes both.
+        <SafeAreaView edges={VIEW_BOTTOM} style={[styles.actions, styles.inTab]}>
+          {actions}
+        </SafeAreaView>
+      ) : actions ? (
         <View style={[styles.actions, { paddingBottom: bottom + vars['--space-2'] }]}>
           {actions}
         </View>
@@ -74,4 +83,5 @@ const styles = StyleSheet.create({
     paddingTop: vars['--space-2'],
     gap: vars['--space-1'],
   },
+  inTab: { paddingBottom: vars['--space-2'] },
 });

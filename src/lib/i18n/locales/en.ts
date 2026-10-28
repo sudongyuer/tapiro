@@ -247,10 +247,6 @@ const en: Translation = {
         chipStudy: 'Find someone to explain calculus',
       },
     },
-    section: {
-      title: 'Bounties you can take',
-      empty: 'Bounties arrive in the next release',
-    },
     strip: {
       label: '{{title}}, {{line}}',
     },
@@ -270,7 +266,13 @@ const en: Translation = {
         deleteBlocked: 'Delete account (unsettled payment)',
       },
     },
-    bounty: { post: 'Post form', confirm: 'Confirm post', placeSearch: 'Choose a Place' },
+    bounty: {
+      post: 'Post form',
+      confirm: 'Confirm post',
+      placeSearch: 'Choose a Place',
+      board: 'Bounty board',
+      detail: 'Bounty detail',
+    },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
     tokens: {

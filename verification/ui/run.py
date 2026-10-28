@@ -1,5 +1,6 @@
 """Run UI verification cases in light and dark on a named Simulator, with screenshots and video."""
 import argparse
+import ast
 import fcntl
 import re
 import json
@@ -13,6 +14,7 @@ from pathlib import Path
 from affected import SMOKE, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from recording import stop_all
 
 MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
@@ -61,15 +63,21 @@ def git_info():
 
 def case_meta(case):
     source = (HERE / 'cases' / f'{case}.py').read_text()
-    scene = re.search(r"^SCENE = '([^']+)'", source, re.M)
-    locales = re.search(r"^LOCALES = \[([^\]]*)\]", source, re.M)
-    extra = re.search(r"^ARGS = \[([^\]]*)\]", source, re.M)
-    budget = re.search(r"^BUDGET = (\d+)$", source, re.M)
+    values = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                name = getattr(target, 'id', None)
+                if name in ('SCENE', 'LOCALES', 'ARGS', 'BUDGET'):
+                    try:
+                        values[name] = ast.literal_eval(node.value)
+                    except ValueError:
+                        sys.exit(f'{case}: {name} must be a literal the runner can read without running the case')
     return (
-        scene.group(1) if scene else None,
-        re.findall(r"'([^']+)'", locales.group(1)) if locales else DEFAULT_LOCALES,
-        re.findall(r"'([^']+)'", extra.group(1)) if extra else [],
-        int(budget.group(1)) if budget else DEFAULT_BUDGET,
+        values.get('SCENE'),
+        list(values.get('LOCALES', DEFAULT_LOCALES)),
+        list(values.get('ARGS', [])),
+        int(values.get('BUDGET', DEFAULT_BUDGET)),
     )
 
 
@@ -111,6 +119,10 @@ def render_cpu_sample():
     last = out.split('PID')[-1]
     rows = [line for line in last.splitlines() if 'SimRenderServer' in line or 'SimRenderingServices' in line]
     return '\n'.join(rows) or 'SimRenderServer and SimRenderingServices are not among the 20 busiest processes'
+
+
+def videos(out):
+    return sorted(out.glob('*.mp4'))
 
 
 def run_case(case, scene, extra, budget, locale, appearance, udid, out):
@@ -160,8 +172,15 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
     except subprocess.TimeoutExpired:
         recorder.kill()
         status, message = 'fail', f'{message}; recorder did not stop'.strip('; ')
-    if not video.exists() or video.stat().st_size == 0:
+    try:
+        stop_all(udid)
+    except AssertionError as error:
+        status, message = 'fail', f'{message}; {error}'.strip('; ')
+    if not video.exists():
         status, message = 'fail', f'{message}; video missing'.strip('; ')
+    empty = [v.name for v in videos(out) if v.stat().st_size == 0]
+    if empty:
+        status, message = 'fail', f'{message}; empty video {", ".join(empty)}'.strip('; ')
     if status == 'pass' and not list(out.glob('*.png')):
         status, message = 'fail', 'no screenshots captured'
     return status, message, round(time.monotonic() - started, 1)
@@ -180,7 +199,7 @@ def main():
     parser.add_argument('--udid')
     parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
-    parser.add_argument('--locale')
+    parser.add_argument('--locale', choices=sorted(REGIONS))
     parser.add_argument('--affected', action='store_true',
                         help='only cases whose DEPS meet the diff against --base plus uncommitted changes; zh-Hans light')
     parser.add_argument('--smoke', action='store_true', help='the fixed smoke set in zh-Hans light')
@@ -236,11 +255,12 @@ def main():
     stopped = None
     run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
-    runs = [(case, scene, run_locales(locales, args.locales or not (tiered or args.cases)), extra, budget)
+    runs = [(case, scene, [args.locale] if args.locale else run_locales(locales, args.locales or not (tiered or args.cases)),
+             extra, budget)
             for case, scene, locales, extra, budget in runs]
     for appearance in appearances:
         for case, scene, locales, extra, budget in runs:
-            for locale in [l for l in locales if args.locale in (None, l)]:
+            for locale in locales:
                 out = Path(args.output) / locale / appearance / case
                 status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
                 failures += status != 'pass'
@@ -250,7 +270,7 @@ def main():
                     'status': status, 'message': message,
                     'duration_s': duration, 'commit': sha, 'dirty': dirty, 'xcode': xcode,
                     'device': {'name': DEVICE_NAME, 'udid': udid, 'runtime': runtime},
-                    'app': str(app),
+                    'app': str(app), 'videos': [v.name for v in videos(out)],
                 }, indent=2))
                 print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}')
                 results.append({'status': status, 'message': message})
@@ -268,6 +288,8 @@ def main():
         print(render_cpu_sample())
         failures += 1
     print(f'Artifacts: {args.output}')
+    if not timings:
+        sys.exit('no case ran')
     sys.exit(1 if failures else 0)
 
 

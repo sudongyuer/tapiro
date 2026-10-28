@@ -1,8 +1,9 @@
-import { Button, HStack, Image, Section, Text, VStack } from '@expo/ui/swift-ui';
+import { Button, HStack, Image, ProgressView, Section, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityHidden,
   accessibilityIdentifier,
+  accessibilityLabel,
   font,
   foregroundStyle,
   listRowBackground,
@@ -29,7 +30,7 @@ export function NoticeCard({
   icon: SFSymbol;
   title: string;
   body?: string;
-  action?: { label: string; onPress: () => void; testID: string };
+  action?: { label: string; onPress: () => void; testID: string; busyLabel?: string };
   testID: string;
 }) {
   const { color } = useTheme();
@@ -53,7 +54,14 @@ export function NoticeCard({
           {body ? <Text modifiers={[font({ textStyle: 'subheadline' })]}>{body}</Text> : null}
         </VStack>
       </HStack>
-      {action ? (
+      {action?.busyLabel ? (
+        <ProgressView
+          modifiers={[
+            accessibilityLabel(action.busyLabel),
+            accessibilityIdentifier(`${action.testID}-busy`),
+          ]}
+        />
+      ) : action ? (
         <Button
           label={action.label}
           onPress={action.onPress}

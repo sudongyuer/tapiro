@@ -1,4 +1,7 @@
+import type { TFunction } from 'i18next';
+
 import { malaysiaDay } from './cost';
+import type { TimeChoice } from './types';
 
 const DAY_MS = 86_400_000;
 
@@ -35,4 +38,24 @@ export function malaysiaDate(iso: string, language: string) {
     day: 'numeric',
     timeZone: 'UTC',
   }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+export function timeLine(time: TimeChoice, t: TFunction, language: string, now: Date) {
+  const when = (parts: TimeParts) =>
+    `${parts.day ? t(`bounty.post.confirm.${parts.day}`) : parts.date} ${parts.clock}`;
+  if (time.kind === 'deadline') {
+    return t('bounty.post.confirm.deadlineAt', {
+      when: when(timeParts(time.deadlineAt, language, now)),
+    });
+  }
+  if (time.kind === 'window') {
+    const start = timeParts(time.startsAt, language, now);
+    const end = timeParts(time.endsAt, language, now);
+    const sameDay = start.date === end.date;
+    return t('bounty.post.confirm.windowAt', {
+      start: when(start),
+      end: sameDay ? end.clock : when(end),
+    });
+  }
+  return null;
 }

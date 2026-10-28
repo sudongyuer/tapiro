@@ -1,11 +1,11 @@
-import { useCallback, useState, type RefObject } from 'react';
+import { useCallback, useState, type ReactElement, type ReactNode, type RefObject } from 'react';
 import {
   PlatformColor,
   ScrollView,
   StyleSheet,
   View,
-  useWindowDimensions,
   type LayoutChangeEvent,
+  type RefreshControlProps,
   type ScrollViewProps,
 } from 'react-native';
 import Animated, {
@@ -27,9 +27,8 @@ import { useLiveItems } from '@/lib/useLiveItems';
 import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
-import { BountySection } from './BountySection';
 import { liveCards, stageLine, stageState } from './homeModel';
-import { HomeStrip, STRIP_ROW } from './HomeStrip';
+import { HomeStrip, STRIP_ROW, STRIP_SHADOW } from './HomeStrip';
 import { LiveCardStack, StackToggle, useCardHeights } from './LiveCardStack';
 import { homeCardDetails } from './services';
 import { followShift, stackHeight, stackLayout } from './stackLayout';
@@ -42,6 +41,9 @@ const BUBBLE_TOP = 18;
 const BEFORE_FIRST_SCROLL = -100000;
 // useHeaderHeight reports the expanded large-title header; the strip hangs under the compact bar (54 pt on iOS 26).
 const COMPACT_BAR = 54;
+const HOME_TOP_CHROME = COMPACT_BAR + STRIP_ROW;
+export const HOME_TOP_CLEAR = HOME_TOP_CHROME + STRIP_SHADOW;
+export const HOME_BOTTOM_CHROME = 49;
 
 export type HomeScreenProps = {
   scrollViewProps: ScrollViewProps & { ref: RefObject<ScrollView | null> };
@@ -50,6 +52,8 @@ export type HomeScreenProps = {
   onToggle: (open: boolean) => void;
   name: string;
   onAsk: () => void;
+  board?: ReactNode;
+  refreshControl?: ReactElement<RefreshControlProps>;
 };
 
 export function HomeScreen({
@@ -59,9 +63,10 @@ export function HomeScreen({
   onToggle,
   name,
   onAsk,
+  board,
+  refreshControl,
 }: HomeScreenProps) {
   const { t } = useI18n();
-  const { height: windowHeight } = useWindowDimensions();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
   const reduceMotion = useReducedMotion();
   const { accessory, issues } = useLiveItems();
@@ -130,8 +135,9 @@ export function HomeScreen({
         ref={attachScroll}
         testID="home-scroll"
         contentInsetAdjustmentBehavior="automatic"
+        refreshControl={refreshControl}
         style={styles.screen}
-        contentContainerStyle={[styles.content, { minHeight: windowHeight * 2 }]}
+        contentContainerStyle={styles.content}
       >
         <MascotStage
           state={state}
@@ -160,7 +166,7 @@ export function HomeScreen({
           {cards.length > 1 ? (
             <StackToggle count={cards.length} open={open} onToggle={onToggle} />
           ) : null}
-          <BountySection />
+          {board}
         </Animated.View>
       </ScrollView>
       <HomeStrip

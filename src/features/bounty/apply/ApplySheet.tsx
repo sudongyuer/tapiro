@@ -1,0 +1,231 @@
+import {
+  Button,
+  Form,
+  Host,
+  HStack,
+  ProgressView,
+  Section,
+  Spacer,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
+import {
+  accessibilityElement,
+  accessibilityIdentifier,
+  accessibilityLabel,
+  disabled,
+  font,
+  foregroundStyle,
+  lineLimit,
+  monospacedDigit,
+  tint,
+} from '@expo/ui/swift-ui/modifiers';
+import { Stack } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+
+import { useI18n } from '@/lib/i18n';
+import { NoticeCard } from '@/ui/NoticeCard';
+import { SyncedTextField, useSyncedText, type SyncedText } from '@/ui/SyncedTextField';
+import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
+
+import type { ApplySurface } from '../shared/justApplied';
+import { canSend, NOTE_MAX, noteCount, type ApplyState } from './applyState';
+import { noteDrafts } from './services';
+import { posterName, useApply } from './useApply';
+
+const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+
+type Props = {
+  id: string;
+  surface: ApplySurface;
+  onClose: () => void;
+  onAddPayee: () => void;
+};
+
+export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  const { state, send } = useApply(id, surface, onClose);
+  const name = posterName(id) ?? t('bounty.post.unknownName');
+  const sending = state.kind === 'form' && state.sending;
+  const [typed, setTyped] = useState(() => noteDrafts.get(id));
+  const note = useSyncedText(typed, (text) => {
+    noteDrafts.set(id, text);
+    setTyped(text);
+  });
+  const submit = () => {
+    note.sync();
+    void send();
+  };
+
+  return (
+    <>
+      <Stack.Screen options={{ title: t('bounty.apply.title'), gestureEnabled: !sending }} />
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button
+          icon="xmark"
+          accessibilityLabel={t('bounty.apply.close')}
+          disabled={sending}
+          onPress={onClose}
+        />
+      </Stack.Toolbar>
+      <SendItem state={state} ready={canSend(state, typed)} onSend={submit} />
+      <Host style={styles.host} testID="bounty-apply">
+        <Form modifiers={[tint(color('--color-accent'))]}>
+          {state.kind === 'checking' ? (
+            <Section>
+              <ProgressView
+                modifiers={[
+                  accessibilityLabel(t('bounty.apply.checking')),
+                  accessibilityIdentifier('bounty-apply-checking'),
+                ]}
+              />
+            </Section>
+          ) : state.kind === 'noPayee' ? (
+            <NoPayee name={name} onAdd={onAddPayee} />
+          ) : state.kind === 'form' ? (
+            <>
+              {state.reason ? (
+                <NoticeCard
+                  tone="urgent"
+                  icon="exclamationmark.circle.fill"
+                  title={t(`bounty.apply.${state.reason}`)}
+                  testID="bounty-apply-failed"
+                />
+              ) : null}
+              <NoteSection name={name} note={note} count={noteCount(typed)} locked={sending} />
+            </>
+          ) : null}
+        </Form>
+      </Host>
+    </>
+  );
+}
+
+function SendItem({
+  state,
+  ready,
+  onSend,
+}: {
+  state: ApplyState;
+  ready: boolean;
+  onSend: () => void;
+}) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  if (state.kind === 'form' && state.sending) {
+    return (
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.View>
+          <ActivityIndicator
+            accessible
+            accessibilityLabel={t('bounty.apply.sending')}
+            testID="bounty-apply-sending"
+            style={styles.sending}
+          />
+        </Stack.Toolbar.View>
+      </Stack.Toolbar>
+    );
+  }
+  return (
+    <Stack.Toolbar placement="right">
+      <Stack.Toolbar.Button
+        variant="prominent"
+        tintColor={color('--color-accent')}
+        hidden={state.kind !== 'form'}
+        disabled={!ready}
+        onPress={onSend}
+      >
+        {t('bounty.apply.send')}
+      </Stack.Toolbar.Button>
+    </Stack.Toolbar>
+  );
+}
+
+function NoteSection({
+  name,
+  note,
+  count,
+  locked,
+}: {
+  name: string;
+  note: SyncedText;
+  count: number;
+  locked: boolean;
+}) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  const over = count > NOTE_MAX;
+  return (
+    <Section
+      title={t('bounty.apply.noteLabel', { name })}
+      footer={
+        <VStack alignment="leading" spacing={vars['--space-1']}>
+          <Text>{t('bounty.apply.footerSeen', { name })}</Text>
+          <Text>{t('bounty.apply.footerWithdraw')}</Text>
+        </VStack>
+      }
+    >
+      <SyncedTextField
+        field={note}
+        axis="vertical"
+        autoFocus
+        maxLength={NOTE_MAX}
+        placeholder={t('bounty.apply.placeholder')}
+        testID="bounty-apply-note"
+        modifiers={[
+          lineLimit({ min: 4, max: 8 }),
+          accessibilityLabel(t('bounty.apply.noteLabel', { name })),
+          disabled(locked),
+        ]}
+      />
+      <HStack>
+        <Spacer />
+        <Text
+          modifiers={[
+            over ? foregroundStyle(color('--color-urgent')) : secondary,
+            monospacedDigit(),
+            accessibilityLabel(t('bounty.apply.countLabel', { count, max: NOTE_MAX })),
+            accessibilityIdentifier('bounty-apply-count'),
+          ]}
+        >
+          {t('bounty.apply.count', { count, max: NOTE_MAX })}
+        </Text>
+      </HStack>
+    </Section>
+  );
+}
+
+function NoPayee({ name, onAdd }: { name: string; onAdd: () => void }) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  return (
+    <Section>
+      <VStack
+        alignment="leading"
+        spacing={vars['--space-2']}
+        modifiers={[
+          accessibilityElement('combine'),
+          accessibilityIdentifier('bounty-apply-no-payee'),
+        ]}
+      >
+        <Text modifiers={[font({ textStyle: 'headline' })]}>{t('bounty.apply.noPayee.title')}</Text>
+        <Text modifiers={[secondary]}>{t('bounty.apply.noPayee.body', { name })}</Text>
+      </VStack>
+      <Button
+        label={t('bounty.apply.noPayee.add')}
+        systemImage="plus"
+        onPress={onAdd}
+        testID="bounty-apply-add-payee"
+        modifiers={[foregroundStyle(color('--color-accent'))]}
+      />
+    </Section>
+  );
+}
+
+const styles = StyleSheet.create({
+  host: { flex: 1 },
+  sending: { minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] },
+});

@@ -384,6 +384,7 @@ Details: docs/specs/2026-10-11-foundation-design.md.
 | `AccessoryStrip` | ad-hoc urgent-item bars               |
 | `StatusBadge`    | status strings and ad-hoc colours     |
 | `TaskCard`       | per-screen card layouts               |
+| `TierMark`       | ad-hoc tier labels (name + 1–4 heads) |
 | `Sticker`        | ad-hoc image borders and shadows      |
 | `MomentScreen`   | per-screen celebration layouts        |
 | `ListState`      | ad-hoc empty / error / loading states |

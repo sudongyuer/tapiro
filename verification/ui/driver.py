@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import struct
@@ -344,14 +345,17 @@ class Shot:
             data = bmp.read_bytes()
         offset = struct.unpack('<I', data[10:14])[0]
         width, height = struct.unpack('<ii', data[18:26])
-        assert struct.unpack('<H', data[28:30])[0] == 32, f'{self.path} did not convert to 32-bit BMP'
+        bits = struct.unpack('<H', data[28:30])[0]
+        assert bits in (24, 32), f'{self.path} converted to {bits}-bit BMP, expected 24 or 32'
         self.data, self.offset, self.width, self.height = data, offset, width, abs(height)
+        self.pixel_bytes = bits // 8
+        self.stride = (width * self.pixel_bytes + 3) & ~3
         self.top_down = height < 0
         self.scale = width / points_wide
 
     def _px(self, x, y):
         row = y if self.top_down else self.height - 1 - y
-        i = self.offset + (row * self.width + x) * 4
+        i = self.offset + row * self.stride + x * self.pixel_bytes
         return self.data[i + 2], self.data[i + 1], self.data[i]
 
     def rgb(self, x, y):
@@ -404,11 +408,19 @@ def assert_colour(shot, f, expected, name, tolerance=6):
     assert close(found, expected, tolerance), f'{name} is {found}, expected {expected}'
 
 
+# The rim, not the dominant colour: glass over varied content has no single dominant pixel, so the head's ink wins.
+def glass_luma(shot, f):
+    cx, cy, r = f['x'] + f['width'] / 2, f['y'] + f['height'] / 2, f['width'] / 2
+    rim = sorted(luma(shot.rgb(cx + r * k * math.cos(a * math.pi / 18), cy + r * k * math.sin(a * math.pi / 18)))
+                 for a in range(36) for k in (0.85, 0.9))
+    return rim[len(rim) // 2]
+
+
 def assert_tapir_button(shot, f, appearance, name):
     snout = {**f, 'width': f['width'] * 0.4}
     outline = shot.count(snout, lambda rgb: luma(rgb) > 235)
     ink = shot.count(f, lambda rgb: luma(rgb) < 60)
-    glass = luma(dominant(shot, f))
+    glass = glass_luma(shot, f)
     print(f'{name}: glass luma {glass:.0f}, {outline} white snout-outline pixels, {ink} ink pixels')
     if appearance == 'dark':
         assert glass < 80, f'{name}: button glass is light ({glass:.0f}) in dark appearance'

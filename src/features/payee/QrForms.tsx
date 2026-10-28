@@ -1,13 +1,4 @@
-import {
-  Button,
-  Form,
-  Host,
-  LabeledContent,
-  Section,
-  Text,
-  TextField,
-  useNativeState,
-} from '@expo/ui/swift-ui';
+import { Button, Form, Host, LabeledContent, Section, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   autocorrectionDisabled,
@@ -23,6 +14,7 @@ import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ClassifiedQr, QrRejection } from './classifyQr';
@@ -157,8 +149,11 @@ export function QrConfirmForm({
       })
     : methodTitle(t, qr);
   const wallet = qr.type === 'alipay' || qr.type === 'wechat' ? qr.type : null;
-  const nameText = useNativeState(initialName);
   const [typedName, setTypedName] = useState(initialName);
+  const nameText = useSyncedText(initialName, (next) => {
+    setTypedName(next);
+    onNameEdit();
+  });
   const trimmed = typedName.trim().replace(/\s+/g, ' ');
   const seen = duitNow
     ? t('payee.qr.seen', { name: duitNow.name, bank: qrBank(duitNow) })
@@ -167,7 +162,7 @@ export function QrConfirmForm({
       : t('payee.qr.seenWallet', { method: methodTitle(t, qr) });
   return (
     <Host style={styles.host} testID="payee-qr-confirm">
-      <SheetChrome title={title} onClose={onClose} onSave={() => onSave(nameText.get())} />
+      <SheetChrome title={title} onClose={onClose} onSave={() => onSave(nameText.sync())} />
       <Form modifiers={[tint(color('--color-accent'))]}>
         {error ? <QrErrorCard error={error} wallet={walletName(t, qr)} /> : null}
         {mismatch ? (
@@ -201,13 +196,9 @@ export function QrConfirmForm({
             title={t(`payee.qr.nameLabel.${wallet}`)}
             footer={<Text>{t(`payee.qr.nameFooter.${wallet}`)}</Text>}
           >
-            <TextField
-              text={nameText}
+            <SyncedTextField
+              field={nameText}
               maxLength={PAYEE_NAME_MAX}
-              onTextChange={(next: string) => {
-                setTypedName(next);
-                onNameEdit();
-              }}
               placeholder={t(`payee.qr.namePlaceholder.${wallet}`)}
               testID="payee-name-input"
               modifiers={[

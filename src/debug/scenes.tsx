@@ -8,7 +8,13 @@ import {
   SettingsScene,
   WelcomeScene,
 } from './AccountScenes';
-import { BountyConfirmScene, BountyPostScene, PlaceSearchScene } from './BountyScenes';
+import {
+  BountyBoardScene,
+  BountyConfirmScene,
+  BountyDetailScene,
+  BountyPostScene,
+  PlaceSearchScene,
+} from './BountyScenes';
 import { DesignTokensScene } from './DesignTokensScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
@@ -44,6 +50,8 @@ export const scenes: Scene[] = [
   { id: 'bounty-post', titleKey: 'debug.bounty.post', Component: BountyPostScene },
   { id: 'bounty-confirm', titleKey: 'debug.bounty.confirm', Component: BountyConfirmScene },
   { id: 'place-search', titleKey: 'debug.bounty.placeSearch', Component: PlaceSearchScene },
+  { id: 'bounty-board', titleKey: 'debug.bounty.board', Component: BountyBoardScene },
+  { id: 'bounty-detail', titleKey: 'debug.bounty.detail', Component: BountyDetailScene },
 ];
 
 export function findScene(id: string) {

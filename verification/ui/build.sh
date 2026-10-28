@@ -13,6 +13,8 @@ if [ ! -d ios/Tapiro.xcworkspace ] || [ ! -f "$STAMP" ] || [ -n "$(find "${NATIV
   CI=1 bunx expo prebuild --platform ios
   touch "$STAMP"
 fi
+# pod install writes the first node on PATH, which can be too old to bundle.
+printf 'export NODE_BINARY=%s\n' "$(PATH=/opt/homebrew/bin:$PATH command -v node)" > ios/.xcode.env.local
 
 # The JS bundle is produced inside the Xcode build phase; the flag must reach it there.
 EXPO_PUBLIC_UI_VERIFY=1 xcodebuild \

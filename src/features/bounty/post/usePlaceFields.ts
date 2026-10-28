@@ -1,14 +1,24 @@
-import { useNativeState } from '@expo/ui/swift-ui';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+
+import { useSyncedText } from '@/ui/SyncedTextField';
 
 import { placePick } from '../place/placePick';
 import { draftStore } from './services';
 import type { DraftPlace } from './types';
 
 export function usePlaceFields(userId: string, place: DraftPlace | null, onChange: () => void) {
-  const label = useNativeState(place?.label ?? '');
-  const address = useNativeState(place?.address ?? '');
+  function edit(patch: Partial<DraftPlace>) {
+    const current = draftStore.load(userId).place;
+    if (!current) return;
+    draftStore.update(userId, { place: { ...current, ...patch } });
+    onChange();
+  }
+
+  const label = useSyncedText(place?.label ?? '', (text) => edit({ label: text }));
+  const address = useSyncedText(place?.address ?? '', (text) =>
+    edit({ address: text === '' ? null : text }),
+  );
   const [focusLabel, setFocusLabel] = useState(false);
 
   useFocusEffect(
@@ -30,13 +40,6 @@ export function usePlaceFields(userId: string, place: DraftPlace | null, onChang
     }, [userId, label, address, onChange]),
   );
 
-  function edit(patch: Partial<DraftPlace>) {
-    const current = draftStore.load(userId).place;
-    if (!current) return;
-    draftStore.update(userId, { place: { ...current, ...patch } });
-    onChange();
-  }
-
   function remove() {
     label.set('');
     address.set('');
@@ -45,5 +48,5 @@ export function usePlaceFields(userId: string, place: DraftPlace | null, onChang
     onChange();
   }
 
-  return { label, address, focusLabel, edit, remove };
+  return { label, address, focusLabel, remove };
 }

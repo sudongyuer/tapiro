@@ -251,10 +251,6 @@ const ms: Translation = {
         chipStudy: 'Cari orang terangkan kalkulus',
       },
     },
-    section: {
-      title: 'Ganjaran yang boleh anda ambil',
-      empty: 'Ganjaran akan tiba dalam keluaran seterusnya',
-    },
     strip: {
       label: '{{title}}, {{line}}',
     },
@@ -274,7 +270,13 @@ const ms: Translation = {
         deleteBlocked: 'Padam akaun (bayaran belum selesai)',
       },
     },
-    bounty: { post: 'Borang ganjaran', confirm: 'Sahkan siaran', placeSearch: 'Pilih Tempat' },
+    bounty: {
+      post: 'Borang ganjaran',
+      confirm: 'Sahkan siaran',
+      placeSearch: 'Pilih Tempat',
+      board: 'Papan ganjaran',
+      detail: 'Butiran ganjaran',
+    },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
     tokens: {

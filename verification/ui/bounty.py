@@ -51,6 +51,13 @@ def typed(ui, identifier, text, shows=None, band=True):
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
 
 
+def burst(ui, identifier, text):
+    f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] - 4, f['y'] - FIELD_BAND)
+    ui.axe('type', text)
+    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
+
+
 def erase(ui, identifier):
     f = ui.element(identifier)['frame']
     ui.tap_point(f['x'] + f['width'] - 2, f['y'] + f['height'] + FIELD_BAND)

@@ -177,6 +177,9 @@ const en: typeof zhHans = {
       km2: '2 km',
       more: '+{{count}} farther',
       label: 'Distance from {{origin}}',
+      mark: '{{titles}}, {{distance}}',
+      titleJoin: '; ',
+      range: '{{from}} to {{to}}',
       moreLabel: '{{count}} more bounties farther away; tap to see',
     },
     location: {
@@ -194,6 +197,7 @@ const en: typeof zhHans = {
     },
     unlocated: 'No place given',
     state: {
+      loading: 'Loading bounties',
       failed: 'Couldn’t load',
       retry: 'Try Again',
       empty: 'No bounties nearby right now',
@@ -220,6 +224,10 @@ const en: typeof zhHans = {
       poster: '{{name}}, {{tier}}',
       applied: 'Applied, waiting for them to choose',
       separator: ', ',
+      urgentLine: 'Urgent · {{time}}',
+      placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
+      posterName: '{{name}} ·',
+      noPlace: 'No place given',
     },
   },
   detail: {
@@ -238,6 +246,8 @@ const en: typeof zhHans = {
     yourNote: 'You wrote: {{note}}',
     withdraw: 'Withdraw Application',
     withdrawFailed: 'Couldn’t withdraw. Try again.',
+    withdrawing: 'Withdrawing',
+    withdrawNotPending: 'This application can no longer be withdrawn. Below is the latest status.',
     withdrawConfirm: {
       title: 'Withdraw application?',
       body: '{{name}} won’t see your application after this. You can apply again.',
@@ -248,6 +258,12 @@ const en: typeof zhHans = {
     closed: 'This bounty is closed',
     taken: 'Someone has already taken this bounty',
     more: 'More',
+    title: 'Bounty',
+    loading: 'Loading this bounty',
+    failed: 'Couldn’t load this bounty',
+    refreshFailed: 'Couldn’t refresh · this is from {{time}} and may have changed.',
+    retry: 'Try Again',
+    back: 'Back',
   },
   apply: {
     title: 'Offer to Help',
@@ -267,6 +283,35 @@ const en: typeof zhHans = {
     closed: 'This bounty is closed, so you can’t apply',
     taken: 'Someone has already taken this bounty, so you can’t apply',
     gone: 'This bounty is gone',
+    close: 'Close',
+    checking: 'Checking your payment methods',
+    sending: 'Sending',
+    own: 'This is your own bounty, so you can’t apply',
+  },
+  block: {
+    menu: 'Block {{name}}',
+    confirm: {
+      title: 'Block {{name}}?',
+      body: 'You won’t see each other’s bounties or be able to apply to them. {{name}} won’t be notified. You can unblock in Me → Blocked.',
+      confirm: 'Block',
+      cancel: 'Don’t Block',
+    },
+    blocking: 'Blocking',
+    failed: 'Couldn’t block. Try again.',
+    list: {
+      title: 'Blocked',
+      loading: 'Loading blocked people',
+      failed: 'Couldn’t load blocked people',
+      refreshFailed: 'Couldn’t refresh · showing the last list loaded',
+      retry: 'Try Again',
+      emptyTitle: 'You haven’t blocked anyone',
+      emptyBody: 'To block a poster, tap “⋯” at the top right of a bounty.',
+      footer:
+        'Swipe left on a row to unblock. You’ll see each other’s bounties again, and they won’t be notified.',
+      unblock: 'Unblock',
+      unblocking: 'Unblocking',
+      unblockFailed: 'Couldn’t unblock. Try again.',
+    },
   },
 };
 

@@ -1,8 +1,8 @@
 ---
-branch: feat/bounty-board
+branch: feat/bounty-board-ui
 date: 2026-10-27
-pr:
-status: running
+pr: "#18 (4a, branch feat/bounty-board) and 4b"
+status: complete before PR
 ---
 
 # Retro: bounty step 4 board and place picker
@@ -22,3 +22,88 @@ status: running
    `app.json`, `plugins/` or `src/lib/i18n/native/` are newer than `ios/Podfile.lock`, or a check that greps the built
    `Info.plist` for every usage key the config declares. Done: `build.sh` prebuilds when a native input (app config,
    lockfiles, plugins, native strings, kit non-TS files) is newer than `ios/.verify-prebuild-stamp`.
+4. Task 7: two verify runs passed without exercising the failure path. `run.py` read `ARGS` with a regex that skipped a
+   `[*BASE, …]` splat, so the launch argument never reached the app and the case silently ran the happy path. Tag
+   `vacuous-check`. Done: `run.py` reads `SCENE`/`LOCALES`/`ARGS`/`BUDGET` with `ast.literal_eval` and exits naming the
+   case when a value is not a literal (all 61 cases parse the same as before).
+5. Task 7: after a prebuild, `pod install` again pointed `ios/.xcode.env.local` at Node 18 and the verify build failed
+   (AGENTS.md "Rules from incidents" already names it, so a written rule did not hold). Tag `stale-prebuild`. Done:
+   `build.sh` writes `NODE_BINARY` from Homebrew Node on every run. Candidate: shorten the AGENTS.md rule to point at
+   `build.sh` once it holds.
+6. Task 8: `bun run verify:ui <case> --locale ms` ran zero cases and exited 0, because a named case runs only zh-Hans
+   unless `--locales` is also given and `--locale` then filters that list to nothing. Tag `vacuous-check`. Candidate:
+   `run.py` exits non-zero when the selection is empty, or `--locale` implies `--locales`.
+   Done: `--locale` runs exactly that locale (choices limited to the three), and a run with no case exits non-zero.
+   Second `vacuous-check` this step (see 4).
+7. Task 8: the board case scrolled a card into view with a 36 pt drag; AXe swipes that short never scroll (the drag stays
+   under the scroll slop), so ten identical swipes failed. Tag `ui-scroll`. Done: `verification/ui/board.py` drags at
+   least 120 pt.
+8. Task 8 fix round: two ms runs of `bounty_board_list` timed out on the first `axe describe-ui` (20 s) while the
+   machine's load average was 217–320 (a VM and LobeHub on top of `ps`); the same build passed once load fell to ~6.
+   Tag `screenshot-timeout`. Outside cause, recorded with the load numbers; no change.
+9. Task 9: after the first `bounty_board_location` run, every `simctl io recordVideo` on `Tapiro Verify` failed with
+   "Host recording is already in progress" (no recorder process left on the host) and every `simctl io screenshot`
+   taken right after an AXe tap or swipe took 5–8 s, so the axis case saw one frame in 5 s and missed the 1.3 s ring.
+   `xcrun simctl shutdown` + `boot` of the verify Simulator cleared both (screenshots back to 0.2 s, recording works).
+   Tag `simulator-state`. Candidate: `run.py` treats "video missing" or a recorder exit code 16 as a Simulator fault and
+   reboots the device once before the next case, instead of reporting it next to an unrelated assertion.
+10. Task 10: the implementer reported the zh-Hans light screenshots as opened, but the result on disk was the mutant
+    run's failure with screenshots 03–06 missing; the reviewer caught it by reading `result.json`. Tag `stale-evidence`.
+    Candidate: reviews check that each case's `result.json` is `pass` with the reviewed commit, or the runner writes a
+    summary the report must quote.
+11. Task 11: the apply note's counter read 19/140 for a 20-character note in two light runs. `@expo/ui` 57's
+    `TextFieldView` posts `onTextChange` only for edits it flags as user-made, so the last keystroke of a fast burst can
+    arrive without an event; the note sent from `onTextChange` alone would have lost that character. Tag `library-quirk`.
+    Done: the sheet reads the native state on cursor moves, focus loss and send. Done (follow-up): every field now uses
+    `src/ui/SyncedTextField` (synced on text, selection and focus change; `sync()` at submit); ESLint
+    `no-restricted-imports` bans a direct `TextField` import, and `bounty_post_form` asserts a 20-key burst reads 20/60.
+    That burst passed with the selection and focus sync removed, so it guards the wiring only, not the drop itself.
+12. Task 11: `bounty_apply` looked for the send spinner after a 1.2 s fixture write, but an AXe tap plus the next
+    `describe-ui` take about 2.5 s, so the spinner had come and gone. Tag `verify-timing`. Done: the verify fixture's
+    `apply`/`withdraw` take 2.5 s. Candidate: a shared constant for "an assertable progress window" in verify fixtures.
+13. Task 11: on iPhone (iOS 26) a SwiftUI `confirmationDialog` opened from an inline button is a popover without its
+    cancel button, so a case cannot tap 不撤回; the cancel role is a tap outside. Tag `platform-behaviour`.
+14. Task 11 review: the stamp started on `useIsFocused`, i.e. when the sheet's dismissal began, so the tilt ran under the
+    sliding sheet. A `transitionEnd` listener on the sheet's `Stack.Screen` never fired: a sheet closed from JS is
+    unmounted before its own disappear event. The root stack's `unstable_nativeProps.onFinishTransitioning` (react-native-
+    screens `RNSScreenStack` `afterTransitions`) fires once the modal dismissal completes. Tag `library-quirk`.
+15. TextField follow-up: the controller's shell had Node 18 first on PATH; `bun run lint` refused with exit 1 (the
+    Node guard worked), but the commit ran anyway because the checks were echoed rather than chained into `git commit`.
+    Lint passed under Homebrew Node and the commit stands. Tag `node-path` (see item 5). Candidate: a pre-commit hook
+    running lint on staged files, so a failed check blocks the commit.
+16. Task 12: the first `bounty_block` run failed on `tab-me never settled`: after scrolling to a card and coming back
+    from the detail, the 悬赏 tab bar is minimised, so `tab-me` is not in the tree. The case now taps the minimised 悬赏
+    tab to expand the bar first (as `shell_minimise` does). Also, `ActionSheetIOS` without an anchor shows on iOS 26 as
+    a centred card with both buttons, not a bottom sheet. Tag `platform-behaviour`. Candidate: a `switch_tab` helper
+    in `driver.py` for every case that changes tabs after scrolling 悬赏.
+17. Task 12 review: the detail now has two confirmation styles. 屏蔽 from the toolbar ⋯ uses a `UIAlertController`
+    action sheet (`ActionSheetIOS`), which shows as a centred card because it has no anchor, while 撤回申请 uses a SwiftUI
+    `confirmationDialog`, which shows as a popover from its button. A SwiftUI dialog cannot attach to a
+    `Stack.Toolbar.MenuAction`. Tag `platform-behaviour`. Candidate: a kit helper that anchors an action sheet to a bar
+    item (`popoverPresentationController.sourceItem`).
+18. The user asked whether token use is large. One main session coordinated Tasks 6–15 across at least one context
+    compaction. Subagents reported roughly 3.2 M tokens after that compaction alone, most of it in implementer fix rounds
+    (Task 13: three rounds of 290–380 k each) and opus re-reviews. Every main-session turn also re-reads the whole context.
+    Tag `token-cost`. Candidates: start a fresh main session per PR, resuming from the ledger; give scoped re-reviews of
+    test-only diffs to sonnet; batch fix rounds so a case is reworked once.
+19. The user corrected the check selection: 「检查不要每次傻乎乎的全量检查…要思考」. Cases were chosen mechanically.
+    `--affected` selected all 72 cases after a runner change (79 min serial), fix rounds reran 5–7 cases for a
+    one-file change, and the planned milestone ran every case in dark, en and ms whatever had changed. Cost: hours of
+    Simulator time per step. Root cause: no rule maps a kind of change to the checks it needs; `DEPS` only maps paths.
+    Tag `check-selection`. Candidate: a decision table in AGENTS.md Pace, applied before every run, with the selection
+    and its reason written in the report:
+    - logic-only change: unit tests only;
+    - a screen's layout or copy changes: that screen's cases in zh-Hans light, plus ms when its copy can be long;
+    - a change to colours, tokens or a surface over other content: that screen's cases plus dark;
+    - new or changed copy keys: en for those cases;
+    - runner or driver changes: the runner's unit tests, smoke, and one case per touched helper — not every case;
+    - motion: one appearance, with video.
+
+## Landed
+
+- Item 19 and the axis case's three rounds: AGENTS.md Pace now chooses checks by kind of change, has fix rounds rerun only
+  the cases they touched, and asks how to measure before reworking an unreliable check.
+- Item 18: a fresh main session per PR, resuming from the ledger; scoped re-reviews of test- or doc-only diffs use a
+  mid-tier model; open questions are restated in full only when first asked and in the user's return summary (user,
+  2026-10-28). These are working habits of the agent session, kept in its memory, not project rules.
+- Item 15 (a lint failure not gating a commit): still a candidate; a pre-commit hook needs the user's agreement on hooks.

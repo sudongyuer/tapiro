@@ -1,4 +1,4 @@
-import { Form, Host, Section, Text, TextField, useNativeState } from '@expo/ui/swift-ui';
+import { Form, Host, Section, Text } from '@expo/ui/swift-ui';
 import {
   autocorrectionDisabled,
   keyboardType,
@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { LoadStateForm } from './LoadState';
@@ -68,16 +69,20 @@ function PhoneForm({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const phoneText = useNativeState(initialPhone);
-  const nameText = useNativeState(initialName);
   const [error, setError] = useState<PhoneError | null>(null);
+  const clearErrors = () => {
+    setError(null);
+    editor.clearSaveFailed();
+  };
+  const phoneText = useSyncedText(initialPhone, clearErrors);
+  const nameText = useSyncedText(initialName, clearErrors);
   const shown = error ?? (editor.saveFailed ? 'saveFailed' : null);
 
   function submit() {
-    const checkedPhone = checkMalaysianMobile(phoneText.get());
+    const checkedPhone = checkMalaysianMobile(phoneText.sync());
     if (!checkedPhone.ok)
       return setError(checkedPhone.reason === 'empty' ? 'phoneEmpty' : 'phoneInvalid');
-    const checkedName = checkPayeeName(nameText.get());
+    const checkedName = checkPayeeName(nameText.sync());
     if (!checkedName.ok)
       return setError(checkedName.reason === 'empty' ? 'nameEmpty' : 'nameInvalid');
     setError(null);
@@ -97,12 +102,8 @@ function PhoneForm({
           />
         ) : null}
         <Section title={t('payee.form.phoneLabel')}>
-          <TextField
-            text={phoneText}
-            onTextChange={() => {
-              setError(null);
-              editor.clearSaveFailed();
-            }}
+          <SyncedTextField
+            field={phoneText}
             placeholder={t('payee.form.phonePlaceholder')}
             testID="payee-phone-input"
             modifiers={[keyboardType('phone-pad'), textContentType('telephoneNumber')]}
@@ -112,13 +113,9 @@ function PhoneForm({
           title={t('payee.form.nameLabel')}
           footer={<Text>{t('payee.form.nameFooter')}</Text>}
         >
-          <TextField
-            text={nameText}
+          <SyncedTextField
+            field={nameText}
             maxLength={PAYEE_NAME_MAX}
-            onTextChange={() => {
-              setError(null);
-              editor.clearSaveFailed();
-            }}
             placeholder={t('payee.form.namePlaceholder')}
             testID="payee-name-input"
             modifiers={[

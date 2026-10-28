@@ -179,6 +179,9 @@ const ms: typeof zhHans = {
       km2: '2 km',
       more: '+{{count}} lebih jauh',
       label: 'Jarak dari {{origin}}',
+      mark: '{{titles}}, {{distance}}',
+      titleJoin: '; ',
+      range: '{{from}} hingga {{to}}',
       moreLabel: '{{count}} lagi ganjaran yang lebih jauh; ketik untuk lihat',
     },
     location: {
@@ -196,6 +199,7 @@ const ms: typeof zhHans = {
     },
     unlocated: 'Tiada tempat',
     state: {
+      loading: 'Memuatkan ganjaran',
       failed: 'Tidak dapat dimuatkan',
       retry: 'Cuba Lagi',
       empty: 'Tiada ganjaran berhampiran buat masa ini',
@@ -222,6 +226,10 @@ const ms: typeof zhHans = {
       poster: '{{name}}, {{tier}}',
       applied: 'Dipohon, menunggu pilihan mereka',
       separator: ', ',
+      urgentLine: 'Segera · {{time}}',
+      placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
+      posterName: '{{name}} ·',
+      noPlace: 'Tiada tempat',
     },
   },
   detail: {
@@ -240,6 +248,9 @@ const ms: typeof zhHans = {
     yourNote: 'Anda tulis: {{note}}',
     withdraw: 'Tarik Balik Permohonan',
     withdrawFailed: 'Gagal ditarik balik. Cuba lagi.',
+    withdrawing: 'Menarik balik',
+    withdrawNotPending:
+      'Permohonan ini tidak boleh ditarik balik lagi. Di bawah ialah status terkini.',
     withdrawConfirm: {
       title: 'Tarik balik permohonan?',
       body: '{{name}} tidak akan nampak permohonan anda lagi. Anda boleh mohon semula.',
@@ -250,6 +261,12 @@ const ms: typeof zhHans = {
     closed: 'Ganjaran ini sudah ditutup',
     taken: 'Ganjaran ini sudah diambil orang lain',
     more: 'Lagi',
+    title: 'Ganjaran',
+    loading: 'Memuatkan ganjaran ini',
+    failed: 'Ganjaran ini tidak dapat dimuatkan',
+    refreshFailed: 'Gagal muat semula · ini data pukul {{time}}, mungkin sudah berubah.',
+    retry: 'Cuba Lagi',
+    back: 'Kembali',
   },
   apply: {
     title: 'Mohon Membantu',
@@ -269,6 +286,35 @@ const ms: typeof zhHans = {
     closed: 'Ganjaran ini sudah ditutup, jadi tidak boleh dimohon',
     taken: 'Ganjaran ini sudah diambil orang lain, jadi tidak boleh dimohon',
     gone: 'Ganjaran ini sudah tiada',
+    close: 'Tutup',
+    checking: 'Menyemak cara bayaran anda',
+    sending: 'Menghantar',
+    own: 'Ini ganjaran anda sendiri, jadi tidak boleh dimohon',
+  },
+  block: {
+    menu: 'Sekat {{name}}',
+    confirm: {
+      title: 'Sekat {{name}}?',
+      body: 'Anda berdua tidak akan nampak ganjaran satu sama lain dan tidak boleh memohonnya. {{name}} tidak akan dimaklumkan. Anda boleh buka sekatan di Saya → Disekat.',
+      confirm: 'Sekat',
+      cancel: 'Jangan Sekat',
+    },
+    blocking: 'Menyekat',
+    failed: 'Gagal disekat. Cuba lagi.',
+    list: {
+      title: 'Disekat',
+      loading: 'Memuatkan senarai disekat',
+      failed: 'Senarai disekat tidak dapat dimuatkan',
+      refreshFailed: 'Tidak dapat dimuat semula · ini senarai yang terakhir dimuatkan',
+      retry: 'Cuba Lagi',
+      emptyTitle: 'Anda belum menyekat sesiapa',
+      emptyBody: 'Untuk menyekat pemasang, ketik “⋯” di penjuru kanan atas sesuatu ganjaran.',
+      footer:
+        'Leret ke kiri pada baris untuk buka sekatan. Anda akan nampak ganjaran satu sama lain semula, dan mereka tidak akan dimaklumkan.',
+      unblock: 'Buka Sekatan',
+      unblocking: 'Membuka sekatan',
+      unblockFailed: 'Gagal buka sekatan. Cuba lagi.',
+    },
   },
 };
 

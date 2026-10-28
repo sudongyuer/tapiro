@@ -16,6 +16,7 @@ export default function MeLayout() {
         options={{ title: t('stickers.book.title'), headerTitle: '' }}
       />
       <Stack.Screen name="payee" options={{ title: t('payee.title') }} />
+      <Stack.Screen name="blocked" options={{ title: t('bounty.block.list.title') }} />
     </Stack>
   );
 }
