@@ -888,15 +888,16 @@ the reason; "cost" is what it costs if the ruling is wrong.
   shows `total` from the first page), Q2 A (35, crowded axis stickers merge with a count), Q3 A (36, 添加收款方式 closes
   the sheet and opens 我的 → 收款方式), Q4 A (37, ⋯ with 屏蔽 only plus a minimal 屏蔽名单), Q5 A (38, full-height
   `pageSheet`), M1 A (39, tilt 8° and stamp 80 ms later with the success haptic), M2 A (40, ring 150 ms / 1.2 s / 240 ms).
-- Provisional, awaiting user (canvas p05, questions 41–44; the code follows A until answered):
-  - 41A: 「已申请 · 等对方选」 sits on its own row under the poster instead of in place of 申请 — on one row the ms copy
-    plus 很靠谱 clipped the poster name to one glyph and truncated the status; differs from 26A/31A as drawn.
-  - 42A: in ms the 40-character poster name truncates (`Nur Ais…`) and the tier keeps priority — the tier is the trust
-    signal; the full name is in VoiceOver and the detail.
-  - 43A: on the first page 「+N 更远」 counts unloaded bounties without a place as farther (`+43` for 42) — exact once
-    every page is loaded; option B (a server located-total) was recommended by the Task 13 report.
-  - 44A: the applied detail's pinned area clamps 你写的：… to 3 lines — the area stays bounded; with a 40-character name
-    it takes about a quarter of the screen.
+- Questions 41–44 (canvas p05) answered 「全推荐」 on 2026-10-28: 41A, 42A, 43B, 44A.
+  - 41A (built): 「已申请 · 等对方选」 sits on its own row under the poster instead of in place of 申请 — on one row the
+    ms copy plus 很靠谱 clipped the poster name to one glyph and truncated the status; differs from 26A/31A as drawn.
+  - 42A (built): in ms the 40-character poster name truncates (`Nur Ais…`) and the tier keeps priority — the tier is the
+    trust signal; the full name is in VoiceOver and the detail.
+  - 43B (answered, not built yet): the server returns a located-bounty total so 「+N 更远」 is exact from the first page —
+    the number reads as a fact. Until the follow-up task after Task 14 builds it, the first page counts unloaded
+    bounties without a place as farther (`+43` for 42).
+  - 44A (built): the applied detail's pinned area clamps 你写的：… to 3 lines — the area stays bounded; with a
+    40-character name it takes about a quarter of the screen.
 
 ### Task 1 (privacy migration)
 
@@ -969,7 +970,7 @@ the reason; "cost" is what it costs if the ruling is wrong.
 
 ### Task 8 (card 26A, paging)
 
-- Applied status on its own row — provisional 41A above.
+- Applied status on its own row — 41A above.
 - Card internals are hidden from AXe (no accessibility-action modifier in @expo/ui 57.0.24); cases tap by coordinates
   through `board.py`.
 - Paging on scroll only, page size 20. The stamp keeps −12° as drawn; the ms stamp crossing the card edge was fixed.
@@ -984,7 +985,7 @@ the reason; "cost" is what it costs if the ruling is wrong.
 - `useSelectedUntilReturn` (in `src/ui`) keeps the place row selected through push and return; `PillButton` gained a
   secondary variant for 先不用's grey fill.
 - 「+N 更远」 is exact once all pages are loaded; before that it is total − in-range − loaded no-place rows — the spec's
-  +N needs a number and the server has no beyond-count (see 43A).
+  +N needs a number and the server has no beyond-count; 43B replaces this with a server located total.
 - A non-navigating tap staying selected happens only in the Debug scene. Mid-swipe selection → device checklist.
 - The ⋯ waits for Task 12 — no control without an action.
 
