@@ -29,7 +29,9 @@ def holds(node, identifier):
 def sheet_items(tree):
     node = {'children': tree}
     while holds(node, 'home-scroll'):
-        node = next(child for child in node.get('children') or [] if holds(child, 'bounty-post-confirm'))
+        inner = [child for child in node.get('children') or [] if holds(child, 'bounty-post-confirm')]
+        assert inner, 'the accessibility tree has no bounty-post-confirm sheet'
+        node = inner[0]
     return list(nodes(node))
 
 
