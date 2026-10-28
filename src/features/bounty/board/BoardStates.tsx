@@ -74,7 +74,15 @@ export function BoardEmpty({
   );
 }
 
-export function BoardStale({ loadedAt, onRetry }: { loadedAt: string; onRetry: () => void }) {
+export function BoardStale({
+  loadedAt,
+  busy,
+  onRetry,
+}: {
+  loadedAt: string;
+  busy: boolean;
+  onRetry: () => void;
+}) {
   const { t } = useI18n();
   return (
     <InlineState
@@ -84,6 +92,7 @@ export function BoardStale({ loadedAt, onRetry }: { loadedAt: string; onRetry: (
         label: t('bounty.board.state.retry'),
         onPress: onRetry,
         testID: 'bounty-board-retry',
+        busy,
       }}
       testID="bounty-board-stale"
     />

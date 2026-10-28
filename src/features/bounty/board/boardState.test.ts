@@ -356,6 +356,43 @@ describe('controller', () => {
     expect(board.get().state.kind).toBe('loading');
   });
 
+  test("a refresh during a running load resolves only with that load's outcome", async () => {
+    const stub = deferredService();
+    const board = createBoardController(stub.service, () => new Date(AT));
+    void board.setQuery(ME, 'all');
+    stub.pending[0].resolve(page(['a']));
+    await settle();
+    void board.load();
+    let done = false;
+    void board.refresh(ME, 'all').then(() => {
+      done = true;
+    });
+    await settle();
+    expect(stub.calls).toHaveLength(2);
+    expect(done).toBe(false);
+    stub.pending[1].reject(new TypeError('Network request failed'));
+    await settle();
+    expect(done).toBe(true);
+    expect(ready(board.get().state).refreshFailed).toBe(true);
+  });
+
+  test('a load waits for the reload a query change queued', async () => {
+    const stub = deferredService();
+    const board = createBoardController(stub.service, () => new Date(AT));
+    let done = false;
+    void board.setQuery(ME, 'all').then(() => {
+      done = true;
+    });
+    void board.setQuery(ME, 'urgent');
+    stub.pending[0].resolve(page(['old']));
+    await settle();
+    expect(done).toBe(false);
+    stub.pending[1].resolve(page(['new']));
+    await settle();
+    expect(done).toBe(true);
+    expect(ids(board.get().state)).toEqual(['new']);
+  });
+
   test('setting the same query again does not reload', async () => {
     const stub = deferredService();
     const board = createBoardController(stub.service, () => new Date(AT));

@@ -161,13 +161,9 @@ export function createBoardController(
     emit();
   }
 
-  async function load() {
-    if (!query) return;
-    if (loadGeneration !== null) {
-      if (loadGeneration !== state.generation) reloadAfter = true;
-      return;
-    }
-    const { origin, filter } = query;
+  let inflight: Promise<void> | null = null;
+
+  async function loadOnce(origin: BoardOrigin, filter: BoardFilter) {
     state = boardReducer(state, { type: 'loadStarted' });
     const generation = state.generation;
     loadGeneration = generation;
@@ -181,10 +177,25 @@ export function createBoardController(
     }
     loadGeneration = null;
     dispatch(answer);
-    if (reloadAfter) {
+  }
+
+  async function loadUntilCurrent() {
+    do {
       reloadAfter = false;
-      await load();
+      if (query) await loadOnce(query.origin, query.filter);
+    } while (reloadAfter);
+  }
+
+  function load(): Promise<void> {
+    if (!query) return Promise.resolve();
+    if (inflight) {
+      if (loadGeneration !== state.generation) reloadAfter = true;
+      return inflight;
     }
+    inflight = loadUntilCurrent().finally(() => {
+      inflight = null;
+    });
+    return inflight;
   }
 
   async function nextPage(from: 'idle' | 'failed') {
@@ -208,7 +219,7 @@ export function createBoardController(
 
   function setQuery(origin: BoardOrigin, filter: BoardFilter, reloadSame: boolean) {
     if (query && sameOrigin(query.origin, origin) && query.filter === filter) {
-      return reloadSame ? load() : undefined;
+      return reloadSame ? load() : Promise.resolve();
     }
     if (query && !sameOrigin(query.origin, origin)) dispatch({ type: 'originChanged' });
     else if (query) dispatch({ type: 'filterChanged' });

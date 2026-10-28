@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { Mascot } from './Mascot';
@@ -10,7 +10,12 @@ import { useTheme } from './theme/useTheme';
 const HEAD = 32;
 const ICON = 22;
 
-export type InlineStateAction = { label: string; onPress: () => void; testID: string };
+export type InlineStateAction = {
+  label: string;
+  onPress: () => void;
+  testID: string;
+  busy?: boolean;
+};
 
 export function InlineState({
   text,
@@ -53,13 +58,19 @@ export function InlineState({
         <PressDim
           accessibilityRole="button"
           accessibilityLabel={action.label}
+          accessibilityState={{ busy: !!action.busy, disabled: !!action.busy }}
+          disabled={action.busy}
           testID={action.testID}
           onPress={action.onPress}
           style={[styles.button, { borderColor: ink }]}
         >
-          <AppText variant="secondary" style={[styles.buttonLabel, { color: ink }]}>
+          <AppText
+            variant="secondary"
+            style={[styles.buttonLabel, { color: ink }, action.busy && styles.hidden]}
+          >
             {action.label}
           </AppText>
+          {action.busy ? <ActivityIndicator color={ink} style={StyleSheet.absoluteFill} /> : null}
         </PressDim>
       ) : null}
     </View>
@@ -99,4 +110,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonLabel: { fontWeight: '600' },
+  hidden: { opacity: 0 },
 });

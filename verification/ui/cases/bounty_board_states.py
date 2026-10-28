@@ -1,9 +1,9 @@
-"""The board under home shows 没加载出来 with no count on the chips and 重试 loads the rows; an empty board offers 发悬赏, which opens the post sheet; a failed pull to refresh keeps the rows under a warning with the data time; an empty 急 filter offers 看全部; the end of the list reads 就这些了. Inline cards sit on the grouped background with a head of at most 32 pt."""
+"""The board under home shows 没加载出来 with no count on the chips and 重试 loads the rows; an empty board offers 发悬赏, which opens the post sheet; a failed pull to refresh keeps the rows under a warning with the data time, and its 重试 recovers; an empty 急 filter offers 看全部; the end of the list reads 就这些了. Inline cards sit on the grouped background with a head of at most 32 pt."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import GROUPED_BACKGROUND, relaunch  # noqa: E402
+from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py']
@@ -14,6 +14,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 FIRST_CARD = 'bounty-card-fixture-bounty-01-title'
 ONE_CARD = 'bounty-card-fixture-bounty-04-title'
 CARD_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
+BEHIND_CARD = {'light': (242, 242, 247), 'dark': (0, 0, 0)}
 HEAD_MAX = 32
 
 ui = UI(*sys.argv[1:])
@@ -41,8 +42,8 @@ def assert_inline_card(shot, message, name):
     f = message['frame']
     y = f['y'] + f['height'] / 2
     behind, fill = shot.rgb(f['x'] - 24, y), shot.rgb(f['x'] - 6, y)
-    assert any(close(behind, colour) for colour in GROUPED_BACKGROUND[ui.appearance]), \
-        f'{name}: behind the card is {behind}, not the grouped background ({ui.appearance})'
+    assert close(behind, BEHIND_CARD[ui.appearance]) and not close(behind, fill), \
+        f'{name}: behind the card is {behind}, not the grouped background {BEHIND_CARD[ui.appearance]}'
     assert close(fill, CARD_FILL[ui.appearance]), f'{name}: card fill is {fill}, expected {CARD_FILL[ui.appearance]}'
     x0, x1 = round((f['x'] - 2) * shot.scale), round((f['x'] + HEAD_MAX + 8) * shot.scale)
     y0, y1 = round(f['y'] * shot.scale), round((f['y'] + f['height']) * shot.scale)
@@ -86,6 +87,8 @@ ui.capture('05-post-sheet')
 
 relaunch(ui, drop=FAIL_FIRST, add=['-uiVerifyBoardFail', 'refresh'])
 ui.element(FIRST_CARD)
+ui.at_rest()
+assert by_id(ui.read(), 'bounty-board-stale') is None, 'the stale notice shows before any pull (a launch load failed)'
 s = screen(ui.read())
 ui.swipe((s['width'] / 2, s['height'] * 0.3), (s['width'] / 2, s['height'] * 0.8), 0.6)
 stale_text = re.compile(ui.pattern('bounty.board.state.stale', time=r'\d{2}:\d{2}'))
@@ -97,6 +100,10 @@ assert by_id(items, 'bounty-board-failed') is None, 'a failed refresh replaced t
 assert_touch_target(ui.element('bounty-board-retry'), 'stale retry button')
 visible('bounty-board-stale')
 ui.capture('06-stale')
+ui.tap('bounty-board-retry')
+ui.gone('bounty-board-stale')
+assert by_id(ui.read(), FIRST_CARD), 'rows vanished after retrying the refresh'
+ui.capture('07-stale-retried')
 
 relaunch(ui, drop=FAIL_FIRST, add=['-uiVerifyBoard', 'one'])
 ui.element(ONE_CARD)
@@ -107,10 +114,10 @@ filtered = ui.wait_label('bounty-board-filter-empty', lambda label: label == ui.
 assert by_id(ui.read(), ONE_CARD) is None, 'the non-urgent row is shown under 急'
 assert chip('bounty-filter-all') == ui.t('bounty.board.filter.all'), f'全部 shows a count while 急 is selected: {chip("bounty-filter-all")}'
 filtered = visible('bounty-board-filter-empty')
-assert_inline_card(ui.snap('07-filter-empty'), filtered, 'filter-empty card')
+assert_inline_card(ui.snap('08-filter-empty'), filtered, 'filter-empty card')
 ui.tap('bounty-board-show-all')
 ui.element(ONE_CARD)
 ui.gone('bounty-board-filter-empty')
 assert chip('bounty-filter-all') == ui.t('bounty.board.filter.allCount', count=1), chip('bounty-filter-all')
-ui.capture('08-show-all')
-print('PASS: failed, retry, end, empty with post, stale refresh, filter-empty and show all')
+ui.capture('09-show-all')
+print('PASS: failed, retry, end, empty with post, stale refresh and its retry, filter-empty and show all')

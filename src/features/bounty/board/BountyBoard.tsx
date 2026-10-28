@@ -42,7 +42,9 @@ function BoardBody({ board, onPost }: { board: BountyBoardModel; onPost: () => v
   if (state.kind === 'failed') return <BoardFailed onRetry={board.retry} />;
   return (
     <>
-      {state.refreshFailed ? <BoardStale loadedAt={state.loadedAt} onRetry={board.retry} /> : null}
+      {state.refreshFailed ? (
+        <BoardStale loadedAt={state.loadedAt} busy={board.retryBusy} onRetry={board.retryRefresh} />
+      ) : null}
       {state.rows.length === 0 ? (
         <BoardEmpty
           filter={board.filter}
