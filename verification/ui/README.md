@@ -55,7 +55,8 @@ Without `-uiVerifyQr` the app uses the device source (expo-image-picker + `scanF
 before each pick, finds the picker cell by the image's tint (Alipay `#b8e4ff`, DuitNow TNG
 `#ffd8a8` light modules) and taps it by coordinates, because the picker runs out of process and
 `axe describe-ui` does not expose its cells. simctl cannot remove photos, so the library grows by
-two images per run; the case does not depend on order or count. The PNGs were made with segno
+two images per run, and the picker lists the oldest first; the case swipes the grid up (at most 30 times, at rest
+between swipes) until a cell with the image's tint is in view, so it does not depend on order or count. The PNGs were made with segno
 1.6.1 (scale 12, border 8); the DuitNow payload is a static TNG code for NURUL AINA BINTI AHMAD
 with a valid CRC. Each run writes
 `result.json` with commit, locale, Xcode, device, `videos` (every `.mp4` in the case folder; an empty one fails the run) and `duration_s` (wall-clock seconds of that
