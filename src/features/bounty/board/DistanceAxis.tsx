@@ -21,14 +21,12 @@ const CLEAR_OF_DOT = DOT / 2 + STICKER / 2 + 2;
 
 export function DistanceAxis({
   rows,
-  total,
   beyondTotal,
   next,
   origin,
   onFocus,
 }: {
   rows: BoardRow[];
-  total: number | null;
   beyondTotal: number | null;
   next: unknown | null;
   origin: 'me' | 'place';
@@ -38,7 +36,7 @@ export function DistanceAxis({
   const { color } = useTheme();
   const [width, setWidth] = useState(0);
   const { marks, firstBeyondId } = axisMarks(rows, width, CLEAR_OF_DOT);
-  const beyond = beyondCount({ rows, total, beyondTotal, next });
+  const beyond = beyondCount({ rows, beyondTotal, next });
   const moreTarget = firstBeyondId ?? rows.findLast((row) => row.distanceM !== null)?.id ?? null;
   const ink = PlatformColor('tertiaryLabel');
   const originName = t(origin === 'me' ? 'bounty.board.axis.you' : 'bounty.board.axis.here');
@@ -66,7 +64,7 @@ export function DistanceAxis({
             </>
           ) : null}
         </View>
-        {beyond > 0 && moreTarget ? (
+        {beyond !== null && beyond > 0 && moreTarget ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bounty.board.axis.moreLabel', { count: beyond })}

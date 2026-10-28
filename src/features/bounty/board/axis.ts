@@ -42,27 +42,18 @@ export function axisMarks(
 
 export function beyondCount({
   rows,
-  total,
   beyondTotal,
   next,
 }: {
   rows: BoardRow[];
-  total: number | null;
   beyondTotal: number | null;
   next: unknown | null;
-}) {
-  let inRange = 0;
-  let beyond = 0;
-  let unlocated = 0;
-  for (const row of rows) {
-    if (row.distanceM === null) unlocated += 1;
-    else if (row.distanceM > AXIS_RANGE_M) beyond += 1;
-    else inRange += 1;
-  }
+}): number | null {
+  const beyond = rows.filter(
+    (row) => row.distanceM !== null && row.distanceM > AXIS_RANGE_M,
+  ).length;
   if (next === null) return beyond;
-  if (beyondTotal !== null) return Math.max(beyond, beyondTotal);
-  if (total === null) return beyond;
-  return Math.max(beyond, total - inRange - unlocated);
+  return beyondTotal === null ? null : Math.max(beyond, beyondTotal);
 }
 
 export function formatDistance(m: number, language: string): string {

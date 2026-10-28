@@ -25,7 +25,6 @@ export function createJustApplied() {
       }
       if (any) changed();
     },
-    has: (id: string, surface: ApplySurface) => pending.get(id)?.surface === surface,
     entry(id: string, surface: ApplySurface): 'none' | 'waiting' | 'ready' {
       const entry = pending.get(id);
       if (entry?.surface !== surface) return 'none';
@@ -37,10 +36,6 @@ export function createJustApplied() {
       entry.shown = true;
       changed();
     },
-    ready: (id: string, surface: ApplySurface) => {
-      const entry = pending.get(id);
-      return entry?.surface === surface && entry.shown;
-    },
     take(id: string, surface: ApplySurface) {
       const entry = pending.get(id);
       if (entry?.surface !== surface || !entry.shown) return false;
@@ -49,6 +44,17 @@ export function createJustApplied() {
     },
     drop(id: string) {
       if (pending.delete(id)) changed();
+    },
+    retainCards(ids: Iterable<string>) {
+      const kept = new Set(ids);
+      let any = false;
+      for (const [id, entry] of pending) {
+        if (entry.surface === 'card' && !kept.has(id)) {
+          pending.delete(id);
+          any = true;
+        }
+      }
+      if (any) changed();
     },
     subscribe(listener: () => void) {
       listeners.add(listener);
@@ -62,6 +68,8 @@ export function createJustApplied() {
     },
   };
 }
+
+export type JustApplied = ReturnType<typeof createJustApplied>;
 
 export const justApplied = createJustApplied();
 

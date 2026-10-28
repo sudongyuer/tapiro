@@ -7,7 +7,7 @@ import { vars } from '@/ui/theme/tokens';
 
 import { BoardCard } from './BoardCard';
 import { BoardEmpty, BoardFailed, BoardFooter, BoardLoading, BoardStale } from './BoardStates';
-import { boardTotal } from './boardState';
+import { boardBody, boardTotal } from './boardState';
 import { DistanceAxis } from './DistanceAxis';
 import { FilterChips } from './FilterChips';
 import { FocusRing } from './FocusRing';
@@ -64,7 +64,6 @@ function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlac
     state.kind === 'ready' && state.rows.length > 0 ? (
       <DistanceAxis
         rows={state.rows}
-        total={state.total}
         beyondTotal={state.beyondTotal}
         next={state.next}
         origin={origin.kind}
@@ -83,6 +82,7 @@ function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlac
 
 function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: BountyBoardModel }) {
   const { state, focus } = board;
+  const body = boardBody(state, board.refreshing);
   if (state.kind === 'loading') return <BoardLoading testID="bounty-board-loading" />;
   if (state.kind === 'failed') return <BoardFailed onRetry={board.retry} />;
   const firstUnlocated = unlocatedFrom(board.origin, state.rows);
@@ -91,7 +91,9 @@ function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: Bount
       {state.refreshFailed ? (
         <BoardStale loadedAt={state.loadedAt} busy={board.retryBusy} onRetry={board.retryRefresh} />
       ) : null}
-      {state.rows.length === 0 ? (
+      {body === 'loading' ? (
+        <BoardLoading testID="bounty-board-loading" />
+      ) : body === 'empty' ? (
         <BoardEmpty
           filter={board.filter}
           onPost={onPost}

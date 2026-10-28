@@ -120,40 +120,39 @@ describe('beyondCount', () => {
 
   test('with every page loaded it counts the loaded rows beyond 2 km', () => {
     const rows = [row('a', 300), row('b', 3400), row('c', 5200), row('d', null)];
-    expect(beyondCount({ rows, total: 4, beyondTotal: 3, next: null })).toBe(2);
+    expect(beyondCount({ rows, beyondTotal: 3, next: null })).toBe(2);
   });
 
   test('with more pages it is the server count of farther bounties', () => {
     const rows = [...located(15, 0), row('far1', 2400), row('far2', 2600)];
-    expect(beyondCount({ rows, total: 45, beyondTotal: 27, next: { id: 'x' } })).toBe(27);
+    expect(beyondCount({ rows, beyondTotal: 27, next: { id: 'x' } })).toBe(27);
   });
 
   test('a first page entirely within 2 km reads the server count, not the rows still to load', () => {
     const rows = located(18, 0);
     expect(rows.every((r) => (r.distanceM ?? 0) <= 2000)).toBe(true);
-    expect(beyondCount({ rows, total: 30, beyondTotal: 0, next: { id: 'x' } })).toBe(0);
-    expect(beyondCount({ rows, total: 30, beyondTotal: 4, next: { id: 'x' } })).toBe(4);
+    expect(beyondCount({ rows, beyondTotal: 0, next: { id: 'x' } })).toBe(0);
+    expect(beyondCount({ rows, beyondTotal: 4, next: { id: 'x' } })).toBe(4);
   });
 
   test('unloaded bounties without a place are not counted as farther', () => {
     const rows = [...located(15, 0), row('far1', 2400), row('far2', 2600)];
-    expect(beyondCount({ rows, total: 45, beyondTotal: 2, next: { id: 'x' } })).toBe(2);
+    expect(beyondCount({ rows, beyondTotal: 2, next: { id: 'x' } })).toBe(2);
   });
 
-  test('without a server count it falls back to total minus the loaded in-range and unlocated rows', () => {
+  test('with more pages and no server count (after a block) it shows no number', () => {
     const rows = [...located(15, 0), row('far1', 2400), row('far2', 2600)];
-    expect(beyondCount({ rows, total: 45, beyondTotal: null, next: { id: 'x' } })).toBe(30);
+    expect(beyondCount({ rows, beyondTotal: null, next: { id: 'x' } })).toBeNull();
   });
 
-  test('without any total (refresh failed or not ready) it counts loaded rows', () => {
-    const rows = [row('a', 2600)];
-    expect(beyondCount({ rows, total: null, beyondTotal: null, next: { id: 'x' } })).toBe(1);
+  test('with every page loaded and no server count it counts the loaded rows', () => {
+    const rows = [row('a', 2600), row('b', 300)];
+    expect(beyondCount({ rows, beyondTotal: null, next: null })).toBe(1);
   });
 
   test('never less than the loaded rows beyond 2 km', () => {
     const rows = [row('a', 2600), row('b', 2700)];
-    expect(beyondCount({ rows, total: 1, beyondTotal: 1, next: { id: 'x' } })).toBe(2);
-    expect(beyondCount({ rows, total: 1, beyondTotal: null, next: { id: 'x' } })).toBe(2);
+    expect(beyondCount({ rows, beyondTotal: 1, next: { id: 'x' } })).toBe(2);
   });
 });
 

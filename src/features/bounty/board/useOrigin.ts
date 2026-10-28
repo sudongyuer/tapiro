@@ -8,6 +8,7 @@ import { sameOrigin } from './boardState';
 import { evaluateOrigin, requestLocation, steadyOrigin, type ChosenPlace } from './originStore';
 import { originStore } from './services';
 import type { BoardOrigin } from './types';
+import { useTabFocus } from './useTabFocus';
 
 type Resolved = { userId: string; origin: BoardOrigin };
 
@@ -39,8 +40,10 @@ export function useOrigin(userId: string) {
   }, [userId]);
 
   useEffect(() => {
-    if (focused) void evaluate();
-  }, [focused, evaluate]);
+    void evaluate();
+  }, [evaluate]);
+
+  useTabFocus(evaluate);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {

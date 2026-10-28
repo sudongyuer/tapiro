@@ -1,3 +1,4 @@
+import type { JustApplied } from '../shared/justApplied';
 import type {
   BoardFilter,
   BoardOrigin,
@@ -112,12 +113,7 @@ export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
         : { kind: 'failed', generation, writes };
     case 'pageSucceeded':
       if (state.kind !== 'ready') return state;
-      if (event.page.restarted) {
-        const restarted = fresh(event.page, event.at, generation, writes);
-        return restarted.kind === 'ready' && event.page.total === undefined
-          ? { ...restarted, total: state.total, beyondTotal: state.beyondTotal }
-          : restarted;
-      }
+      if (event.page.restarted) return fresh(event.page, event.at, generation, writes);
       return {
         ...state,
         rows: [
@@ -134,6 +130,13 @@ export function boardReducer(state: BoardState, event: BoardEvent): BoardState {
 
 export function boardTotal(state: BoardState): number | null {
   return state.kind === 'ready' ? state.total : null;
+}
+
+export function boardBody(state: BoardState, refreshing: boolean) {
+  if (state.kind !== 'ready') return state.kind;
+  if (state.rows.length > 0) return 'rows';
+  const unknown = state.total === null && (refreshing || state.next !== null);
+  return unknown ? 'loading' : 'empty';
 }
 
 export function nearEnd(endY: number, viewportBottom: number, viewportHeight: number) {
@@ -156,9 +159,12 @@ export type BoardSnapshot = { state: BoardState; refreshing: boolean; origin: Bo
 
 type Query = { origin: BoardOrigin; filter: BoardFilter };
 
+type Stamps = Pick<JustApplied, 'drop' | 'retainCards'>;
+
 export function createBoardController(
   service: Pick<BoardService, 'page'>,
   now: () => Date = () => new Date(),
+  stamps?: Stamps,
 ) {
   let state = INITIAL_BOARD;
   let loadGeneration: number | null = null;
@@ -198,6 +204,13 @@ export function createBoardController(
     }
     loadGeneration = null;
     dispatch(answer);
+    if (
+      answer.type === 'loadSucceeded' &&
+      state.kind === 'ready' &&
+      state.generation === generation
+    ) {
+      stamps?.retainCards(state.rows.map((row) => row.id));
+    }
   }
 
   let running = false;
@@ -263,13 +276,19 @@ export function createBoardController(
       };
     },
     setQuery: (origin: BoardOrigin, filter: BoardFilter) => setQuery(origin, filter, false),
-    refresh: (origin: BoardOrigin, filter: BoardFilter) => setQuery(origin, filter, true),
+    async refreshFrom(evaluate: () => Promise<BoardOrigin | null>) {
+      const origin = await evaluate();
+      if (origin && query) await setQuery(origin, query.filter, true);
+    },
     load,
     loadMore: () => nextPage('idle'),
     retryPage: () => nextPage('failed'),
     applied: (id: string) => dispatch({ type: 'applied', id }),
     withdrawn: (id: string) => dispatch({ type: 'withdrawn', id }),
     blocked(posterId: string) {
+      if (state.kind === 'ready') {
+        for (const row of state.rows) if (row.poster.id === posterId) stamps?.drop(row.id);
+      }
       dispatch({ type: 'blocked', posterId });
       return load();
     },

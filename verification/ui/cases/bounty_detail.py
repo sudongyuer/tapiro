@@ -1,9 +1,9 @@
-"""Detail 3A pushed from a board card: tapping the card body opens the detail with the same title and RM 8; the rows read the place with 约 300 m · 精确地址只给选中的人, the deadline with 急 in the urgent colour, and 小林 · 靠谱; 申请 is a 44 pt pinned button above the tab bar; an edge swipe back returns to the board at the same scroll position with the card deselected; a worst row's 500-character description scrolls while 申请 stays put; a failed load shows 没加载出来 with 重试 and no rows, and a gone bounty shows 这条悬赏已经不在了 with 返回."""
+"""Detail 3A pushed from a board card: tapping the card body opens the detail with the same title and RM 8; the rows read the place with 约 300 m · 精确地址只给选中的人, the deadline with 急 in the urgent colour, and 小林 · 靠谱; 申请 is a 44 pt pinned button above the tab bar; an edge swipe back returns to the board at the same scroll position with the card deselected, and from a page-two card of the `long` board it returns to that card with every loaded page kept; a worst row's 500-character description scrolls while 申请 stays put; a failed load shows 没加载出来 with 重试 and no rows, and a gone bounty shows 这条悬赏已经不在了 with 返回."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import distance_text, ink_box, screen, visible  # noqa: E402
+from board import cards, distance_text, ink_box, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, bottom, by_id, close, reach_home, token  # noqa: E402
 
@@ -14,6 +14,8 @@ BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 FIRST = 'bounty-card-fixture-bounty-01'
 WORST = 'bounty-card-fixture-worst-01'
+DEEP = 'bounty-card-fixture-long-25'
+PAGE = 20
 DESCRIPTION_LENGTH = 500
 CARD_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 URGENT_MIN = 20
@@ -84,11 +86,28 @@ f = card['frame']
 fill = shot.rgb(f['x'] + f['width'] - 8, f['y'] + 6)
 assert close(fill, CARD_FILL[ui.appearance], 6), f'the card is still selected after returning: {fill}'
 
+relaunch(ui, drop=[], add=['-uiVerifyBoard', 'long'])
+deep_before = open_card(DEEP)
+s = screen(ui.read())
+ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+ui.gone('bounty-detail-title')
+ui.settled(lambda items: by_id(items, DEEP), 'swiping back from a page-two card did not return to it')
+ui.at_rest()
+items = ui.read()
+deep = by_id(items, DEEP)
+assert deep, 'the page-two card is gone after returning from its detail'
+moved = abs(deep['frame']['y'] - deep_before['y'])
+assert moved <= SAME_PLACE, f'the page-two card moved {moved:.1f} pt after returning from its detail'
+loaded = len(cards(items))
+assert loaded > PAGE, f'returning from the detail cut the board back to {loaded} cards'
+ui.capture('03-returned-page-two')
+print(f'page two: card 25 back at y {deep["frame"]["y"]:.1f} pt with {loaded} cards loaded')
+
 relaunch(ui, drop=[], add=['-uiVerifyBoard', 'worst'])
 open_card(WORST)
 pinned = apply_frame()
 ui.at_rest()
-ui.capture('03-worst-top')
+ui.capture('04-worst-top')
 s = screen(ui.read())
 for _ in range(8):
     found = by_id(ui.read(), 'bounty-detail-description')
@@ -103,7 +122,7 @@ text = label('bounty-detail-description')
 assert len(text) == DESCRIPTION_LENGTH, f'the description reads {len(text)} characters, expected {DESCRIPTION_LENGTH}'
 assert apply_frame() == pinned, '申请 moved while the description scrolled'
 ui.at_rest()
-ui.capture('04-worst-description')
+ui.capture('05-worst-description')
 
 relaunch(ui, drop=[], add=['-uiVerifyScene', 'bounty-detail', '-uiVerifyDetail', 'failOnce'], ready='ui-verify-ready')
 failed = ui.settled(lambda items: by_id(items, 'bounty-detail-failed'), 'a failed load shows no notice')
@@ -112,7 +131,7 @@ items = ui.read()
 for part in ('place', 'time', 'poster', 'description', 'apply'):
     assert by_id(items, f'bounty-detail-{part}') is None, f'a failed load still shows bounty-detail-{part}'
 ui.at_rest()
-ui.capture('05-failed')
+ui.capture('06-failed')
 ui.tap('bounty-detail-retry')
 ui.element('bounty-detail-place')
 ui.gone('bounty-detail-failed')
@@ -126,7 +145,7 @@ gone = ui.settled(lambda items: by_id(items, 'bounty-detail-gone'), 'a gone boun
 assert gone.get('AXLabel') == ui.t('bounty.detail.gone'), gone.get('AXLabel')
 assert by_id(ui.read(), 'bounty-detail-apply') is None, 'a gone bounty still offers 申请'
 ui.at_rest()
-ui.capture('06-gone')
+ui.capture('07-gone')
 back = ui.element('bounty-detail-back')
 assert back.get('AXLabel') == ui.t('bounty.detail.back'), back.get('AXLabel')
 ui.tap('bounty-detail-back')

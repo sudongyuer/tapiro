@@ -4,15 +4,17 @@ import { AppState } from 'react-native';
 
 import { blockEvents } from '../shared/blockEvents';
 import { bountyCache } from '../shared/bountyCache';
+import { justApplied } from '../shared/justApplied';
 import { createBoardController, nearEnd } from './boardState';
 import { boardService } from './services';
 import type { BoardFilter, BoardOrigin } from './types';
+import { useTabFocus } from './useTabFocus';
 
 export function useBoard(
   origin: BoardOrigin | null,
   evaluateOrigin: () => Promise<BoardOrigin | null>,
 ) {
-  const [controller] = useState(() => createBoardController(boardService));
+  const [controller] = useState(() => createBoardController(boardService, undefined, justApplied));
   const [filter, setFilter] = useState<BoardFilter>('all');
   const {
     state,
@@ -30,9 +32,7 @@ export function useBoard(
     if (origin) void controller.setQuery(origin, filter);
   }, [controller, origin, filter]);
 
-  useEffect(() => {
-    if (focused) void controller.load();
-  }, [controller, focused]);
+  useTabFocus(controller.load);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (next) => {
@@ -59,10 +59,10 @@ export function useBoard(
     if (rows) bountyCache.seed(rows);
   }, [rows]);
 
-  const refresh = useCallback(async () => {
-    const next = await evaluateOrigin();
-    if (next) await controller.refresh(next, filter);
-  }, [controller, evaluateOrigin, filter]);
+  const refresh = useCallback(
+    () => controller.refreshFrom(evaluateOrigin),
+    [controller, evaluateOrigin],
+  );
 
   const onViewport = useCallback(
     (boardEndY: number, viewportBottom: number, viewportHeight: number) => {
