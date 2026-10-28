@@ -75,7 +75,7 @@ first = visible(ui, FIRST)
 deadline = ui.pattern('bounty.post.confirm.deadlineAt', when=r'.+? \d{2}:\d{2}')
 assert_label(first, card_label('pickup', '帮取快递', r'RM\s?8', deadline,
                                ui.pattern('bounty.board.card.place', place=re.escape('Sunway Geo 宿舍'),
-                                          distance=re.escape('300 m')),
+                                          distance=r'300\sm'),
                                '小林', 'reliable', urgent=True), 'first card')
 assert first.get('type') == 'Button', f'the card is not one button element: {first.get("type")}'
 for part in ('-title', '-reward', '-apply', '-meta'):
@@ -100,7 +100,7 @@ assert none is None or none['count'] < URGENT_MIN, f'a card that is not urgent s
 applied = visible(ui, APPLIED)
 assert_label(applied, card_label('accompany', '陪我去银行开户', r'RM\s?15', r'.+?',
                                  ui.pattern('bounty.board.card.place', place=re.escape('Maybank Bandar Sunway'),
-                                            distance=re.escape('800 m')),
+                                            distance=r'800\sm'),
                                  '阿杰', 'very_reliable', applied=True), 'applied card')
 shot = ui.snap('03-applied')
 af = applied['frame']

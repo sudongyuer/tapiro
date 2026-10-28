@@ -60,20 +60,25 @@ describe('formatDistance', () => {
 
   test.each(['zh-Hans', 'en', 'ms'])('%s', (language) => {
     expect(cases.map((m) => formatDistance(m, language))).toEqual([
-      '100 m',
-      '950 m',
-      '1 km',
-      '1.6 km',
-      '18 km',
+      '100\u00A0m',
+      '950\u00A0m',
+      '1\u00A0km',
+      '1.6\u00A0km',
+      '18\u00A0km',
     ]);
   });
 
   test('an unknown language falls back to the default copy', () => {
-    expect(formatDistance(1600, 'fr')).toBe('1.6 km');
+    expect(formatDistance(1600, 'fr')).toBe('1.6\u00A0km');
+  });
+
+  test('the number and its unit never wrap apart', () => {
+    expect(formatDistance(1800, 'ms')).toBe('1.8\u00A0km');
+    expect(formatDistance(300, 'zh-Hans')).toBe('300\u00A0m');
   });
 
   test('a whole kilometre drops the trailing zero', () => {
-    expect(formatDistance(2000, 'en')).toBe('2 km');
-    expect(formatDistance(9960, 'en')).toBe('10 km');
+    expect(formatDistance(2000, 'en')).toBe('2\u00A0km');
+    expect(formatDistance(9960, 'en')).toBe('10\u00A0km');
   });
 });

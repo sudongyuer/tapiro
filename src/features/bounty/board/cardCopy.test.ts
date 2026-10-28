@@ -41,13 +41,13 @@ describe('cardCopy', () => {
   test('marks an urgent row with 急 before its deadline and joins place and distance', () => {
     const copy = cardCopy(ROW, t, 'zh-Hans', NOW);
     expect(copy.when).toBe('急 · 今天 16:00 前');
-    expect(copy.place).toBe('Sunway Geo 宿舍\u00a0·\u00a0300 m');
+    expect(copy.place).toBe('Sunway Geo 宿舍\u00a0·\u00a0300\u00a0m');
     expect(copy.reward).toMatch(/^RM\s8$/);
     expect(copy.initial).toBe('林');
     expect(copy.tier).toBe('靠谱');
     expect(copy.rank).toBe(2);
     expect(copy.label).toBe(
-      `代取，帮取快递，赏金 ${RM8}，急，今天 16:00 前，Sunway Geo 宿舍，300 m，小林，靠谱`,
+      `代取，帮取快递，赏金 ${RM8}，急，今天 16:00 前，Sunway Geo 宿舍，300\u00a0m，小林，靠谱`,
     );
   });
 

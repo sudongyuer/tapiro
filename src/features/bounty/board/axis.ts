@@ -36,10 +36,13 @@ export function formatDistance(m: number, language: string): string {
   const { distance } = resources[locale].translation.bounty.board;
   const number = (value: number, digits: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(value);
-  if (m < 1000) return distance.meters.replace('{{value}}', number(Math.round(m), 0));
   const km = Math.round(m / 100) / 10;
-  return distance.kilometers.replace(
-    '{{value}}',
-    km < 10 ? number(km, 1) : number(Math.round(km), 0),
-  );
+  const text =
+    m < 1000
+      ? distance.meters.replace('{{value}}', number(Math.round(m), 0))
+      : distance.kilometers.replace(
+          '{{value}}',
+          km < 10 ? number(km, 1) : number(Math.round(km), 0),
+        );
+  return text.replace(/ /g, '\u00A0');
 }

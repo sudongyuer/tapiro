@@ -5,6 +5,7 @@ import {
   font,
   foregroundStyle,
   lineLimit,
+  type ModifierConfig,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet, View } from 'react-native';
 
@@ -12,9 +13,20 @@ import { Mascot } from './Mascot';
 
 const HEAD = 12;
 
-export function TierMark({ label, rank }: { label: string; rank: 1 | 2 | 3 | 4 }) {
+export function TierMark({
+  label,
+  rank,
+  modifiers = [],
+}: {
+  label: string;
+  rank: 1 | 2 | 3 | 4;
+  modifiers?: ModifierConfig[];
+}) {
   return (
-    <HStack spacing={3} modifiers={[accessibilityElement('ignore'), accessibilityLabel(label)]}>
+    <HStack
+      spacing={3}
+      modifiers={[accessibilityElement('ignore'), accessibilityLabel(label), ...modifiers]}
+    >
       <RNHostView matchContents>
         <View style={styles.heads}>
           {Array.from({ length: rank }, (_, index) => (

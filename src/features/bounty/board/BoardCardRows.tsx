@@ -128,7 +128,7 @@ export function CardFoot({
       >
         {t('bounty.board.card.posterName', { name: copy.name })}
       </Text>
-      <TierMark label={copy.tier} rank={copy.rank} />
+      <TierMark label={copy.tier} rank={copy.rank} modifiers={[layoutPriority(0.5)]} />
       <Spacer minLength={vars['--space-2']} />
       {applied ? null : (
         <Button
