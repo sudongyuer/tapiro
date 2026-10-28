@@ -1,12 +1,15 @@
 import { Stack, useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { RefreshControl } from 'react-native';
+import { RefreshControl, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser, type AccountUser } from '@/features/account';
 import { BountyBoard, closePostSheet, useBountyBoard, useStartPost } from '@/features/bounty';
 import { HomeScreen, useHomeScroll, useLiveStackState } from '@/features/home';
 import { useI18n } from '@/lib/i18n';
+
+const openBounty = (_id: string) => {};
+const applyTo = (_id: string) => {};
 
 export default function BountyHomeRoute() {
   const user = useSignedInUser();
@@ -30,6 +33,14 @@ function BountyHome({ user }: { user: AccountUser }) {
   });
   const { scrollViewProps, onLiveCardsLayout } = useHomeScroll(() => stack.setOpen(true));
   const board = useBountyBoard(user.id);
+  const homeScroll = {
+    ...scrollViewProps,
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollViewProps.onScroll(event);
+      board.paging.onScroll(event);
+    },
+    onContentSizeChange: board.paging.onContentSizeChange,
+  };
 
   return (
     <>
@@ -42,13 +53,15 @@ function BountyHome({ user }: { user: AccountUser }) {
         />
       </Stack.Toolbar>
       <HomeScreen
-        scrollViewProps={scrollViewProps}
+        scrollViewProps={homeScroll}
         onLiveCardsLayout={onLiveCardsLayout}
         open={stack.open}
         onToggle={stack.setOpen}
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
-        board={<BountyBoard board={board} onPost={startPost} />}
+        board={
+          <BountyBoard board={board} onPost={startPost} onOpen={openBounty} onApply={applyTo} />
+        }
         refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}
       />
       <TitleHalo />

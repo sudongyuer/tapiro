@@ -1,20 +1,24 @@
-import { Host } from '@expo/ui/swift-ui';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { Fragment } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
-import { TaskCard } from '@/ui/TaskCard';
 import { vars } from '@/ui/theme/tokens';
 
-import { ringgit } from '../post/blockedReason';
-import { formatDistance } from './axis';
+import { BoardCard } from './BoardCard';
 import { BoardEmpty, BoardFailed, BoardFooter, BoardLoading, BoardStale } from './BoardStates';
 import { boardTotal } from './boardState';
 import { FilterChips } from './FilterChips';
-import type { BoardRow } from './types';
+import type { BoardOrigin, BoardRow } from './types';
 import type { BountyBoardModel } from './useBountyBoard';
 
-export function BountyBoard({ board, onPost }: { board: BountyBoardModel; onPost: () => void }) {
+type Handlers = {
+  onPost: () => void;
+  onOpen: (id: string) => void;
+  onApply: (id: string) => void;
+};
+
+export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBoardModel }) {
   const { t } = useI18n();
   return (
     <View testID="bounty-board" style={styles.board}>
@@ -31,15 +35,16 @@ export function BountyBoard({ board, onPost }: { board: BountyBoardModel; onPost
         total={boardTotal(board.state)}
         onChange={board.setFilter}
       />
-      <BoardBody board={board} onPost={onPost} />
+      <BoardBody board={board} {...handlers} />
     </View>
   );
 }
 
-function BoardBody({ board, onPost }: { board: BountyBoardModel; onPost: () => void }) {
+function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: BountyBoardModel }) {
   const { state } = board;
   if (state.kind === 'loading') return <BoardLoading testID="bounty-board-loading" />;
   if (state.kind === 'failed') return <BoardFailed onRetry={board.retry} />;
+  const firstUnlocated = unlocatedFrom(board.origin, state.rows);
   return (
     <>
       {state.refreshFailed ? (
@@ -54,7 +59,10 @@ function BoardBody({ board, onPost }: { board: BountyBoardModel; onPost: () => v
       ) : (
         <>
           {state.rows.map((row) => (
-            <BoardRowCard key={row.id} row={row} />
+            <Fragment key={row.id}>
+              {row.id === firstUnlocated ? <UnlocatedHeader /> : null}
+              <BoardCard row={row} onOpen={onOpen} onApply={onApply} />
+            </Fragment>
           ))}
           <BoardFooter state={state} onRetryPage={board.retryPage} />
         </>
@@ -63,37 +71,28 @@ function BoardBody({ board, onPost }: { board: BountyBoardModel; onPost: () => v
   );
 }
 
-function BoardRowCard({ row }: { row: BoardRow }) {
-  const { t, language } = useI18n();
-  const reward = ringgit(row.rewardSen, language);
-  const distance = row.distanceM === null ? null : formatDistance(row.distanceM, language);
-  const meta =
-    row.placeLabel && distance
-      ? t('bounty.board.card.place', { place: row.placeLabel, distance })
-      : (row.placeLabel ?? distance);
+function unlocatedFrom(origin: BoardOrigin | null, rows: BoardRow[]) {
+  if (!origin || origin.kind === 'none') return null;
+  return rows.find((row) => row.distanceM === null)?.id ?? null;
+}
+
+function UnlocatedHeader() {
+  const { t } = useI18n();
   return (
-    <View style={styles.card}>
-      <Host matchContents={{ vertical: true }}>
-        <TaskCard
-          category={row.category}
-          title={row.title}
-          meta={meta}
-          reward={reward}
-          rewardLabel={t('bounty.post.confirm.rewardLabel', { amount: reward })}
-          testID={`bounty-card-${row.id}`}
-        />
-      </Host>
-    </View>
+    <AppText
+      variant="meta"
+      tone="secondaryLabel"
+      accessibilityRole="header"
+      testID="bounty-board-unlocated"
+      style={styles.unlocated}
+    >
+      {t('bounty.board.unlocated')}
+    </AppText>
   );
 }
 
 const styles = StyleSheet.create({
   board: { gap: vars['--space-3'], paddingTop: vars['--space-4'] },
   title: { fontWeight: '700', paddingHorizontal: 2 },
-  card: {
-    padding: vars['--space-4'],
-    borderRadius: vars['--radius-card'],
-    borderCurve: 'continuous',
-    backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
-  },
+  unlocated: { paddingHorizontal: vars['--space-4'], paddingTop: vars['--space-2'] },
 });

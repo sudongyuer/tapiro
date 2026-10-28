@@ -216,6 +216,10 @@ export default {
       poster: '{{name}}，{{tier}}',
       applied: '已申请，等对方选',
       separator: '，',
+      urgentLine: '急 · {{time}}',
+      placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
+      posterName: '{{name}} ·',
+      noPlace: '没写地点',
     },
   },
   detail: {

@@ -64,7 +64,7 @@ export function PlaceSearchScene({ onReady }: { onReady: () => void }) {
 
 export function BountyBoardScene({ onReady }: { onReady: () => void }) {
   const board = useBountyBoard(fixtureUser('apple').id);
-  const [posted, setPosted] = useState(false);
+  const [left, setLeft] = useState<string | null>(null);
   useEffect(onReady, [onReady]);
   return (
     <>
@@ -73,11 +73,19 @@ export function BountyBoardScene({ onReady }: { onReady: () => void }) {
         contentInsetAdjustmentBehavior="automatic"
         style={styles.screen}
         contentContainerStyle={styles.content}
+        scrollEventThrottle={16}
+        onScroll={board.paging.onScroll}
+        onContentSizeChange={board.paging.onContentSizeChange}
         refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}
       >
-        <BountyBoard board={board} onPost={() => setPosted(true)} />
+        <BountyBoard
+          board={board}
+          onPost={() => setLeft('post')}
+          onOpen={(id) => setLeft(`open-${id}`)}
+          onApply={(id) => setLeft(`apply-${id}`)}
+        />
       </ScrollView>
-      <Marker name={posted ? 'post' : null} />
+      <Marker name={left} />
     </>
   );
 }

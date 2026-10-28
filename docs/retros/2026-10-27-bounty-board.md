@@ -30,3 +30,9 @@ status: running
    (AGENTS.md "Rules from incidents" already names it, so a written rule did not hold). Tag `stale-prebuild`. Done:
    `build.sh` writes `NODE_BINARY` from Homebrew Node on every run. Candidate: shorten the AGENTS.md rule to point at
    `build.sh` once it holds.
+6. Task 8: `bun run verify:ui <case> --locale ms` ran zero cases and exited 0, because a named case runs only zh-Hans
+   unless `--locales` is also given and `--locale` then filters that list to nothing. Tag `vacuous-check`. Candidate:
+   `run.py` exits non-zero when the selection is empty, or `--locale` implies `--locales`.
+7. Task 8: the board case scrolled a card into view with a 36 pt drag; AXe swipes that short never scroll (the drag stays
+   under the scroll slop), so ten identical swipes failed. Tag `ui-scroll`. Done: `verification/ui/board.py` drags at
+   least 120 pt.

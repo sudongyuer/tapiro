@@ -223,6 +223,10 @@ const ms: typeof zhHans = {
       poster: '{{name}}, {{tier}}',
       applied: 'Dipohon, menunggu pilihan mereka',
       separator: ', ',
+      urgentLine: 'Segera · {{time}}',
+      placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
+      posterName: '{{name}} ·',
+      noPlace: 'Tiada tempat',
     },
   },
   detail: {

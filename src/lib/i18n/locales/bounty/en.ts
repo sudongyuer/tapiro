@@ -221,6 +221,10 @@ const en: typeof zhHans = {
       poster: '{{name}}, {{tier}}',
       applied: 'Applied, waiting for them to choose',
       separator: ', ',
+      urgentLine: 'Urgent · {{time}}',
+      placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
+      posterName: '{{name}} ·',
+      noPlace: 'No place given',
     },
   },
   detail: {
