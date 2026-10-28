@@ -6,10 +6,8 @@ import { draftStore } from './services';
 
 type Text = { get(): string };
 
-// onTextChange can miss the last keystroke when keys arrive faster than SwiftUI's change handler runs; the native
-// values are read back before anything depends on the stored draft, and before the form can disappear. Once the
-// native views are gone, reading them throws (NotFoundException), so the unmount read is best effort; a swipe-down
-// ends editing first, which already synced through the field's blur.
+// Once the native views are gone, reading them throws (NotFoundException), so the unmount read is best effort; a
+// swipe-down ends editing first, which already synced through the field's blur.
 export function useDraftSync(
   userId: string,
   draftId: string,

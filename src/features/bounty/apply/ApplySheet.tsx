@@ -7,8 +7,6 @@ import {
   Section,
   Spacer,
   Text,
-  TextField,
-  useNativeState,
   VStack,
 } from '@expo/ui/swift-ui';
 import {
@@ -28,6 +26,7 @@ import { ActivityIndicator, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { SyncedTextField, useSyncedText, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -51,15 +50,13 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
   const { state, send } = useApply(id, surface, onClose);
   const name = posterName(id) ?? t('bounty.post.unknownName');
   const sending = state.kind === 'form' && state.sending;
-  const text = useNativeState(noteDrafts.get(id));
-  const [typed, setTyped] = useState(noteDrafts.get(id));
-  const sync = () => {
-    const current = text.get();
-    noteDrafts.set(id, current);
-    setTyped(current);
-  };
+  const [typed, setTyped] = useState(() => noteDrafts.get(id));
+  const note = useSyncedText(typed, (text) => {
+    noteDrafts.set(id, text);
+    setTyped(text);
+  });
   const submit = () => {
-    sync();
+    note.sync();
     void send();
   };
 
@@ -98,13 +95,7 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
                   testID="bounty-apply-failed"
                 />
               ) : null}
-              <NoteSection
-                name={name}
-                text={text}
-                count={noteCount(typed)}
-                onSync={sync}
-                locked={sending}
-              />
+              <NoteSection name={name} note={note} count={noteCount(typed)} locked={sending} />
             </>
           ) : null}
         </Form>
@@ -153,19 +144,15 @@ function SendItem({
   );
 }
 
-type NativeText = ReturnType<typeof useNativeState<string>>;
-
 function NoteSection({
   name,
-  text,
+  note,
   count,
-  onSync,
   locked,
 }: {
   name: string;
-  text: NativeText;
+  note: SyncedText;
   count: number;
-  onSync: () => void;
   locked: boolean;
 }) {
   const { t } = useI18n();
@@ -181,17 +168,12 @@ function NoteSection({
         </VStack>
       }
     >
-      <TextField
-        text={text}
+      <SyncedTextField
+        field={note}
         axis="vertical"
         autoFocus
         maxLength={NOTE_MAX}
         placeholder={t('bounty.apply.placeholder')}
-        onTextChange={onSync}
-        // TextFieldView drops the change event for an edit it does not flag as user-made (the last
-        // keystroke of a fast burst, seen in verify runs); the cursor move after it still arrives.
-        onSelectionChange={onSync}
-        onFocusChange={onSync}
         testID="bounty-apply-note"
         modifiers={[
           lineLimit({ min: 4, max: 8 }),

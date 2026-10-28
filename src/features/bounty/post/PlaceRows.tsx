@@ -1,14 +1,4 @@
-import {
-  Button,
-  HStack,
-  Image,
-  Section,
-  Spacer,
-  Text,
-  TextField,
-  type TextFieldRef,
-  useNativeState,
-} from '@expo/ui/swift-ui';
+import { Button, HStack, Image, Section, Spacer, Text, type TextFieldRef } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityHidden,
@@ -21,6 +11,7 @@ import {
 import { useRef } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
 import { AddRow, RemoveRow } from './OptionalRows';
@@ -30,8 +21,6 @@ import { ADDRESS_MAX, codePoints, PLACE_MAX } from './validate';
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 const CHEVRON = 14;
-
-type NativeText = ReturnType<typeof useNativeState<string>>;
 
 export function AddPlaceRow({ onPick }: { onPick: () => void }) {
   const { t } = useI18n();
@@ -51,16 +40,14 @@ export function PlaceSections({
   address,
   focusLabel,
   onPick,
-  onEdit,
   onBlur,
   onRemove,
 }: {
   place: DraftPlace;
-  label: NativeText;
-  address: NativeText;
+  label: SyncedText;
+  address: SyncedText;
   focusLabel: boolean;
   onPick: () => void;
-  onEdit: (patch: Partial<DraftPlace>) => void;
   onBlur: (focused: boolean) => void;
   onRemove: () => void;
 }) {
@@ -97,13 +84,12 @@ export function PlaceSections({
         footer={<Text>{t('bounty.place.labelFooter')}</Text>}
       >
         <FieldRow field={labelField}>
-          <TextField
+          <SyncedTextField
             ref={labelField}
-            text={label}
+            field={label}
             autoFocus={focusLabel}
             maxLength={PLACE_MAX}
             placeholder=""
-            onTextChange={(text) => onEdit({ label: text })}
             onFocusChange={onBlur}
             testID="bounty-post-place-label"
             modifiers={[accessibilityLabel(t('bounty.place.labelTitle'))]}
@@ -125,12 +111,11 @@ export function PlaceSections({
         footer={<Text>{t('bounty.place.addressFooter')}</Text>}
       >
         <FieldRow field={addressField}>
-          <TextField
+          <SyncedTextField
             ref={addressField}
-            text={address}
+            field={address}
             maxLength={ADDRESS_MAX}
             placeholder={t('bounty.place.addressPlaceholder')}
-            onTextChange={(text) => onEdit({ address: text === '' ? null : text })}
             onFocusChange={onBlur}
             testID="bounty-post-address"
             modifiers={[accessibilityLabel(t('bounty.place.addressTitle'))]}

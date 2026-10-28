@@ -1,4 +1,4 @@
-import { Form, Host, Picker, Section, Text, TextField, useNativeState } from '@expo/ui/swift-ui';
+import { Form, Host, Picker, Section, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityLabel,
   autocorrectionDisabled,
@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { BANKS, OTHER_BANK } from '@/lib/acquirers';
@@ -81,15 +82,19 @@ function BankForm({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const accountText = useNativeState(initialAccount);
-  const nameText = useNativeState(initialName);
-  const bankNameText = useNativeState(initialBankName);
   const [bank, setBank] = useState(initialBank);
   const [error, setError] = useState<BankError | null>(null);
+  const clearErrors = () => {
+    setError(null);
+    editor.clearSaveFailed();
+  };
+  const accountText = useSyncedText(initialAccount, clearErrors);
+  const nameText = useSyncedText(initialName, clearErrors);
+  const bankNameText = useSyncedText(initialBankName, clearErrors);
   const shown = error ?? (editor.saveFailed ? 'saveFailed' : null);
 
   function submit() {
-    const checkedBank = checkBank(bank || null, bankNameText.get());
+    const checkedBank = checkBank(bank || null, bankNameText.sync());
     if (!checkedBank.ok)
       return setError(
         checkedBank.reason === 'nameEmpty'
@@ -98,10 +103,10 @@ function BankForm({
             ? 'bankNameInvalid'
             : 'bankEmpty',
       );
-    const checkedAccount = checkAccountNumber(accountText.get());
+    const checkedAccount = checkAccountNumber(accountText.sync());
     if (!checkedAccount.ok)
       return setError(checkedAccount.reason === 'empty' ? 'accountEmpty' : 'accountInvalid');
-    const checkedName = checkPayeeName(nameText.get());
+    const checkedName = checkPayeeName(nameText.sync());
     if (!checkedName.ok)
       return setError(checkedName.reason === 'empty' ? 'nameEmpty' : 'nameInvalid');
     setError(null);
@@ -147,13 +152,9 @@ function BankForm({
             <Text modifiers={[tag(OTHER_BANK)]}>{t('payee.form.otherBank')}</Text>
           </Picker>
           {bank === OTHER_BANK ? (
-            <TextField
-              text={bankNameText}
+            <SyncedTextField
+              field={bankNameText}
               maxLength={PAYEE_NAME_MAX}
-              onTextChange={() => {
-                setError(null);
-                editor.clearSaveFailed();
-              }}
               placeholder={t('payee.form.bankNamePlaceholder')}
               testID="payee-bank-name-input"
               modifiers={[
@@ -162,12 +163,8 @@ function BankForm({
               ]}
             />
           ) : null}
-          <TextField
-            text={accountText}
-            onTextChange={() => {
-              setError(null);
-              editor.clearSaveFailed();
-            }}
+          <SyncedTextField
+            field={accountText}
             placeholder={t('payee.form.accountLabel')}
             testID="payee-account-input"
             modifiers={[keyboardType('numeric')]}
@@ -177,13 +174,9 @@ function BankForm({
           title={t('payee.form.nameLabel')}
           footer={<Text>{t('payee.form.nameFooter')}</Text>}
         >
-          <TextField
-            text={nameText}
+          <SyncedTextField
+            field={nameText}
             maxLength={PAYEE_NAME_MAX}
-            onTextChange={() => {
-              setError(null);
-              editor.clearSaveFailed();
-            }}
             placeholder={t('payee.form.namePlaceholder')}
             testID="payee-name-input"
             modifiers={[

@@ -1,12 +1,12 @@
 """「+」 on 悬赏 opens the 发悬赏 sheet; 下一步 on an empty form shows the first missing field, the category menu lists all
 eight types, a reward of 0 or 501 is out of range, and a valid form reaches 确认发布. The form sits on the grouped
-background and every control it touches is 44 pt."""
+background and every control it touches is 44 pt. A 20-key burst typed with no delay shows 20/60 on the counter."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (  # noqa: E402
-    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, erase,
-    next_step, open_post, reach_confirm, typed,
+    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
+    erase, next_step, open_post, reach_confirm, typed,
 )
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
@@ -23,6 +23,8 @@ BUDGET = 240
 # platform control, so it is checked against its own size instead of being restyled. Text fields report a 22 pt
 # frame; bounty.typed taps 9 pt outside it, inside the 44 pt frame the form gives them, so typing proves the target.
 SYSTEM_MENU_ROW = 34
+# `axe type` sends the burst with no delay between keys, the input that made the last key arrive without onTextChange.
+BURST = '12345678901234567890'
 
 ui = UI(*sys.argv[1:])
 open_post(ui)
@@ -32,8 +34,13 @@ assert_error(ui, 'bounty.post.error.titleEmpty')
 shot = ui.snap('01-error')
 assert_grouped_background(ui, shot, ui.element('bounty-post-form')['frame'], 'form')
 
-typed(ui, 'bounty-post-title', TITLE_TYPED, TITLE_SHOWN)
+burst(ui, 'bounty-post-title', BURST)
 ui.gone('bounty-post-error')
+ui.wait_label('bounty-post-title-count',
+              lambda label: label == ui.t('bounty.post.form.countLabel', count=len(BURST), max=60),
+              f'title counter lost a key of a {len(BURST)}-key burst')
+erase(ui, 'bounty-post-title')
+typed(ui, 'bounty-post-title', TITLE_TYPED, TITLE_SHOWN)
 ui.wait_label('bounty-post-title-count', lambda label: label == ui.t('bounty.post.form.countLabel', count=6, max=60),
               'title counter does not read 6/60')
 next_step(ui)

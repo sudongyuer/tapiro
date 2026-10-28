@@ -1,13 +1,4 @@
-import {
-  Button,
-  DatePicker,
-  HStack,
-  Picker,
-  Spacer,
-  Text,
-  TextField,
-  useNativeState,
-} from '@expo/ui/swift-ui';
+import { Button, DatePicker, HStack, Picker, Spacer, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   accessibilityLabel,
@@ -20,6 +11,7 @@ import {
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { fullRow, ROW_INSETS } from './FieldRow';
@@ -158,16 +150,14 @@ export function TimeRows({ time, onEdit }: { time: TimeChoice; onEdit: Edit }) {
   );
 }
 
-type NativeText = ReturnType<typeof useNativeState<string>>;
-
 export function DescriptionRows({
   description,
-  text,
+  field,
   onBlur,
   onEdit,
 }: {
   description: string | null;
-  text: NativeText;
+  field: SyncedText;
   onBlur: (focused: boolean) => void;
   onEdit: Edit;
 }) {
@@ -181,7 +171,7 @@ export function DescriptionRows({
         testID="bounty-post-add-description"
         onPress={() => {
           setJustAdded(true);
-          text.set('');
+          field.set('');
           onEdit({ description: '' });
         }}
       />
@@ -190,7 +180,7 @@ export function DescriptionRows({
   return (
     <DescriptionField
       description={description}
-      text={text}
+      field={field}
       focus={justAdded}
       onBlur={onBlur}
       onEdit={onEdit}
@@ -200,13 +190,13 @@ export function DescriptionRows({
 
 function DescriptionField({
   description,
-  text,
+  field,
   focus,
   onBlur,
   onEdit,
 }: {
   description: string;
-  text: NativeText;
+  field: SyncedText;
   focus: boolean;
   onBlur: (focused: boolean) => void;
   onEdit: Edit;
@@ -215,13 +205,12 @@ function DescriptionField({
   const count = codePoints(description);
   return (
     <>
-      <TextField
-        text={text}
+      <SyncedTextField
+        field={field}
         axis="vertical"
         autoFocus={focus}
         maxLength={DESCRIPTION_MAX}
         placeholder={t('bounty.post.form.descriptionPlaceholder')}
-        onTextChange={(next) => onEdit({ description: next })}
         onFocusChange={onBlur}
         testID="bounty-post-description"
         modifiers={[

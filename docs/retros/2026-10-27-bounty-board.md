@@ -54,8 +54,9 @@ status: running
 11. Task 11: the apply note's counter read 19/140 for a 20-character note in two light runs. `@expo/ui` 57's
     `TextFieldView` posts `onTextChange` only for edits it flags as user-made, so the last keystroke of a fast burst can
     arrive without an event; the note sent from `onTextChange` alone would have lost that character. Tag `library-quirk`.
-    Done: the sheet reads the native state on cursor moves, focus loss and send. Candidate: the post form's title and
-    description counters use the same `onTextChange`-only pattern and should get the same sync (not changed here).
+    Done: the sheet reads the native state on cursor moves, focus loss and send. Done (follow-up): every field now uses
+    `src/ui/SyncedTextField` (synced on text, selection and focus change; `sync()` at submit); ESLint
+    `no-restricted-imports` bans a direct `TextField` import, and `bounty_post_form` asserts a 20-key burst reads 20/60.
 12. Task 11: `bounty_apply` looked for the send spinner after a 1.2 s fixture write, but an AXe tap plus the next
     `describe-ui` take about 2.5 s, so the spinner had come and gone. Tag `verify-timing`. Done: the verify fixture's
     `apply`/`withdraw` take 2.5 s. Candidate: a shared constant for "an assertable progress window" in verify fixtures.

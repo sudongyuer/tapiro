@@ -8,8 +8,6 @@ import {
   Section,
   Spacer,
   Text,
-  TextField,
-  useNativeState,
   type TextFieldRef,
 } from '@expo/ui/swift-ui';
 import {
@@ -31,6 +29,7 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
 import { CATEGORY_SYMBOLS } from '@/ui/CategorySticker';
+import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
@@ -74,19 +73,19 @@ function PostFormBody({
 }: FormProps & { draft: PostDraft }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const title = useNativeState(draft.title);
-  const reward = useNativeState(draft.rewardText);
-  const description = useNativeState(draft.description ?? '');
+  function edit(patch: Partial<PostDraft>) {
+    draftStore.update(userId, patch);
+    formError.set(null);
+  }
+
+  const title = useSyncedText(draft.title, (text) => edit({ title: text }));
+  const reward = useSyncedText(draft.rewardText, (text) => edit({ rewardText: text }));
+  const description = useSyncedText(draft.description ?? '', (text) => edit({ description: text }));
   const titleField = useRef<TextFieldRef>(null);
   const rewardField = useRef<TextFieldRef>(null);
   const notice = useFormError();
   const clearError = useCallback(() => formError.set(null), []);
   const place = usePlaceFields(userId, draft.place, clearError);
-
-  function edit(patch: Partial<PostDraft>) {
-    draftStore.update(userId, patch);
-    formError.set(null);
-  }
 
   const sync = useDraftSync(userId, draft.id, {
     title,
@@ -138,12 +137,11 @@ function PostFormBody({
         <FormNotice notice={notice} />
         <Section>
           <FieldRow field={titleField}>
-            <TextField
+            <SyncedTextField
               ref={titleField}
-              text={title}
+              field={title}
               maxLength={TITLE_MAX}
               placeholder={t('bounty.post.form.titlePlaceholder')}
-              onTextChange={(text) => edit({ title: text })}
               onFocusChange={onBlur}
               testID="bounty-post-title"
             />
@@ -197,15 +195,14 @@ function PostFormBody({
             <Text>{t('bounty.post.form.reward')}</Text>
             <Spacer />
             <Text modifiers={[secondary]}>{t('bounty.post.form.rewardUnit')}</Text>
-            <TextField
+            <SyncedTextField
               ref={rewardField}
-              text={reward}
+              field={reward}
               maxLength={REWARD_DIGITS}
               placeholder={t('bounty.post.form.rewardPlaceholder', {
                 min: REWARD_MIN_RM,
                 max: REWARD_MAX_RM,
               })}
-              onTextChange={(text) => edit({ rewardText: text })}
               onFocusChange={onBlur}
               testID="bounty-post-reward"
               modifiers={[
@@ -224,7 +221,7 @@ function PostFormBody({
           <TimeRows time={draft.time} onEdit={edit} />
           <DescriptionRows
             description={draft.description}
-            text={description}
+            field={description}
             onBlur={onBlur}
             onEdit={edit}
           />
@@ -237,7 +234,6 @@ function PostFormBody({
             address={place.address}
             focusLabel={place.focusLabel}
             onPick={pickPlace}
-            onEdit={place.edit}
             onBlur={onBlur}
             onRemove={place.remove}
           />
