@@ -5,6 +5,7 @@ import { createUserCleanups } from '@/lib/userCleanups';
 import {
   createOriginStore,
   evaluateOrigin,
+  requestLocation,
   resolveOrigin,
   steadyOrigin,
   type ChosenPlace,
@@ -173,5 +174,22 @@ describe('evaluateOrigin', () => {
       stored,
     );
     expect(asked).toBe(false);
+  });
+});
+
+describe('requestLocation', () => {
+  test('a thrown request resolves as not granted instead of rejecting', async () => {
+    const throwing = {
+      request: async () => {
+        throw new Error('unavailable');
+      },
+    };
+    expect(await requestLocation(throwing)).toBe('undetermined');
+  });
+
+  test('passes the answer through', async () => {
+    expect(
+      await requestLocation({ request: async () => ({ status: 'denied', reduced: false }) }),
+    ).toBe('denied');
   });
 });

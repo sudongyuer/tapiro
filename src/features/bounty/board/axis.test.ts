@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { axisMarks, formatDistance } from './axis';
+import { axisMarks, beyondCount, formatDistance } from './axis';
 import type { BoardRow } from './types';
 
 const row = (id: string, distanceM: number | null): BoardRow => ({
@@ -99,6 +99,42 @@ describe('axisMarks merging', () => {
   test('rows at the same distance keep the RPC order inside the group', () => {
     const { marks } = axisMarks([row('z', 700), row('y', 700), row('x', 100)], 300);
     expect(marks.map((mark) => mark.ids)).toEqual([['x'], ['z', 'y']]);
+  });
+});
+
+describe('axisMarks start', () => {
+  test('a sticker near the origin is drawn clear of the origin dot', () => {
+    const { marks } = axisMarks([row('a', 100), row('b', 1000)], 250, 20);
+    expect(marks.map((mark) => mark.x)).toEqual([20, 125]);
+  });
+
+  test('the shifted mark still merges by its drawn position', () => {
+    const { marks } = axisMarks([row('a', 100), row('b', 400)], 250, 20);
+    expect(marks.map((mark) => mark.ids)).toEqual([['a', 'b']]);
+  });
+});
+
+describe('beyondCount', () => {
+  const located = (n: number, from: number) =>
+    Array.from({ length: n }, (_, i) => row(`r${from + i}`, 200 + (from + i) * 100));
+
+  test('with every page loaded it counts the loaded rows beyond 2 km', () => {
+    const rows = [row('a', 300), row('b', 3400), row('c', 5200), row('d', null)];
+    expect(beyondCount({ rows, total: 4, next: null })).toBe(2);
+  });
+
+  test('with more pages it is total minus the in-range and unlocated rows loaded so far', () => {
+    const rows = [...located(15, 0), row('far1', 2400), row('far2', 2600)];
+    expect(beyondCount({ rows, total: 45, next: { id: 'x' } })).toBe(30);
+  });
+
+  test('without a total (refresh failed or not ready) it counts loaded rows', () => {
+    expect(beyondCount({ rows: [row('a', 2600)], total: null, next: { id: 'x' } })).toBe(1);
+  });
+
+  test('never less than the loaded rows beyond 2 km', () => {
+    const rows = [row('a', 2600), row('b', 2700)];
+    expect(beyondCount({ rows, total: 1, next: { id: 'x' } })).toBe(2);
   });
 });
 

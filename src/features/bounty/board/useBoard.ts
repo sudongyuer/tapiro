@@ -13,7 +13,11 @@ export function useBoard(
 ) {
   const [controller] = useState(() => createBoardController(boardService));
   const [filter, setFilter] = useState<BoardFilter>('all');
-  const { state, refreshing } = useSyncExternalStore(controller.subscribe, controller.get);
+  const {
+    state,
+    refreshing,
+    origin: shownOrigin,
+  } = useSyncExternalStore(controller.subscribe, controller.get);
   const focused = useIsFocused();
   const focusedRef = useRef(focused);
 
@@ -63,6 +67,7 @@ export function useBoard(
 
   return {
     state,
+    shownOrigin,
     refreshing,
     filter,
     setFilter,

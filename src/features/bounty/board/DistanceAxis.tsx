@@ -7,7 +7,7 @@ import { CategorySticker } from '@/ui/CategorySticker';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { axisMarks, type AxisMark } from './axis';
+import { axisMarks, beyondCount, type AxisMark } from './axis';
 import { markLabel } from './axisFocus';
 import type { BoardRow } from './types';
 
@@ -17,20 +17,27 @@ const DOT = 10;
 const LINE = 2;
 const TICK = 8;
 const LANE = TARGET / 2;
+const CLEAR_OF_DOT = DOT / 2 + STICKER / 2 + 2;
 
 export function DistanceAxis({
   rows,
+  total,
+  next,
   origin,
   onFocus,
 }: {
   rows: BoardRow[];
+  total: number | null;
+  next: unknown | null;
   origin: 'me' | 'place';
   onFocus: (id: string) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const [width, setWidth] = useState(0);
-  const { marks, beyond, firstBeyondId } = axisMarks(rows, width);
+  const { marks, firstBeyondId } = axisMarks(rows, width, CLEAR_OF_DOT);
+  const beyond = beyondCount({ rows, total, next });
+  const moreTarget = firstBeyondId ?? rows.findLast((row) => row.distanceM !== null)?.id ?? null;
   const ink = PlatformColor('tertiaryLabel');
   const originName = t(origin === 'me' ? 'bounty.board.axis.you' : 'bounty.board.axis.here');
   const onLayout = (event: LayoutChangeEvent) =>
@@ -57,12 +64,12 @@ export function DistanceAxis({
             </>
           ) : null}
         </View>
-        {beyond > 0 && firstBeyondId ? (
+        {beyond > 0 && moreTarget ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bounty.board.axis.moreLabel', { count: beyond })}
             testID="bounty-axis-more"
-            onPress={() => onFocus(firstBeyondId)}
+            onPress={() => onFocus(moreTarget)}
             style={({ pressed }) => [styles.moreTarget, pressed && styles.pressed]}
           >
             <View style={[styles.more, { borderColor: ink }]}>

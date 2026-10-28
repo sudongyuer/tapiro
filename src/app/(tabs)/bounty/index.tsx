@@ -16,6 +16,7 @@ import { HOME_TOP_CHROME, HomeScreen, useHomeScroll, useLiveStackState } from '@
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
+const TAB_BAR = 49;
 const openBounty = (_id: string) => {};
 const applyTo = (_id: string) => {};
 
@@ -40,9 +41,14 @@ function BountyHome({ user }: { user: AccountUser }) {
     },
   });
   const { scrollViewProps, onLiveCardsLayout } = useHomeScroll(() => stack.setOpen(true));
-  const topInset = useSafeAreaInsets().top + HOME_TOP_CHROME + vars['--space-3'];
+  const insets = useSafeAreaInsets();
   const content = useRef<View>(null);
-  const board = useBountyBoard(user.id, { scroll: scrollViewProps.ref, content, topInset });
+  const board = useBountyBoard(user.id, {
+    scroll: scrollViewProps.ref,
+    content,
+    topInset: insets.top + HOME_TOP_CHROME + vars['--space-3'],
+    bottomInset: insets.bottom + TAB_BAR + vars['--space-3'],
+  });
   const homeScroll = {
     ...scrollViewProps,
     innerViewRef: content as RefObject<View>,

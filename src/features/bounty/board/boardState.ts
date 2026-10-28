@@ -135,7 +135,7 @@ export function sameOrigin(a: BoardOrigin, b: BoardOrigin) {
   );
 }
 
-export type BoardSnapshot = { state: BoardState; refreshing: boolean };
+export type BoardSnapshot = { state: BoardState; refreshing: boolean; origin: BoardOrigin | null };
 
 type Query = { origin: BoardOrigin; filter: BoardFilter };
 
@@ -148,11 +148,15 @@ export function createBoardController(
   let pageBusy = false;
   let reloadAfter = false;
   let query: Query | null = null;
-  let snapshot: BoardSnapshot = { state, refreshing: false };
+  let snapshot: BoardSnapshot = { state, refreshing: false, origin: null };
   const listeners = new Set<() => void>();
 
   function emit() {
-    snapshot = { state, refreshing: loadGeneration !== null && state.kind === 'ready' };
+    snapshot = {
+      state,
+      refreshing: loadGeneration !== null && state.kind === 'ready',
+      origin: query?.origin ?? null,
+    };
     for (const listener of listeners) listener();
   }
 
@@ -226,9 +230,10 @@ export function createBoardController(
     if (query && sameOrigin(query.origin, origin) && query.filter === filter) {
       return reloadSame ? load() : Promise.resolve();
     }
-    if (query && !sameOrigin(query.origin, origin)) dispatch({ type: 'originChanged' });
-    else if (query) dispatch({ type: 'filterChanged' });
+    const previous = query;
     query = { origin, filter };
+    if (previous && !sameOrigin(previous.origin, origin)) dispatch({ type: 'originChanged' });
+    else if (previous) dispatch({ type: 'filterChanged' });
     return load();
   }
 

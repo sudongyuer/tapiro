@@ -62,7 +62,13 @@ function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlac
   }
   const axis =
     state.kind === 'ready' && state.rows.length > 0 ? (
-      <DistanceAxis rows={state.rows} origin={origin.kind} onFocus={board.focus.focus} />
+      <DistanceAxis
+        rows={state.rows}
+        total={state.total}
+        next={state.next}
+        origin={origin.kind}
+        onFocus={board.focus.focus}
+      />
     ) : null;
   return origin.kind === 'place' ? (
     <>

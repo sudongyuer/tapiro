@@ -17,8 +17,12 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 MARK = 'bounty-axis-mark-fixture-bounty-06'
 MOVE_CARD = 'bounty-card-fixture-bounty-06'
 JPJ_CARD = 'bounty-card-fixture-bounty-08'
-RING_MIN = 200
+RING_MIN = 70
+RING_WIDTH = 2
 WATCH_S = 4.0
+RING_MS = 150 + 1200 + 240
+SPAN_MIN, SPAN_MAX = 0.75, RING_MS / 1000 + 0.25
+SAMPLE_GAP_MAX = 0.25
 
 ui = UI(*sys.argv[1:])
 
@@ -36,8 +40,13 @@ def ring_pixels(shot, f):
         {'x': f['x'] - 5, 'y': f['y'] + 24, 'width': 4, 'height': f['height'] - 48},
         {'x': f['x'] + 24, 'y': f['y'] - 5, 'width': f['width'] - 48, 'height': 4},
     ]
-    found = [ink_box(shot, band, accent, 24) for band in bands]
-    return sum(box['count'] for box in found if box)
+    counts = []
+    for band in bands:
+        box = ink_box(shot, band, accent, 24)
+        length = max(band['width'], band['height']) * shot.scale
+        stroke = RING_WIDTH * shot.scale
+        counts.append(box['count'] / (length * stroke) if box else 0)
+    return round(min(counts) * 100)
 
 
 def tap_and_watch(target, card_id, tag):
@@ -57,11 +66,17 @@ def tap_and_watch(target, card_id, tag):
     assert in_view(card, screen(ui.read())), f'{card_id} is not in view after the tap: {card["frame"]}'
     counts = [(ring_pixels(Shot(path, s['width']), card['frame']), at - started) for path, at in shots]
     print(f'{tag} ring pixels over time: ' + ', '.join(f'{t:.1f}s={c}' for c, t in counts))
-    seen = [t for c, t in counts if c >= RING_MIN]
-    assert seen, f'no accent ring around {card_id} after the scroll: {counts}'
-    last_count, last_at = counts[-1]
-    assert last_count < RING_MIN, f'the ring around {card_id} is still there {last_at:.1f}s after the tap'
-    assert counts[-1][1] - seen[0] > 1.0, 'the ring vanished within a second'
+    gaps = [b - a for (_, a), (_, b) in zip(counts, counts[1:])]
+    assert gaps and max(gaps) <= SAMPLE_GAP_MAX, f'screenshots too slow to time the ring: gaps {gaps}'
+    lit = [c >= RING_MIN for c, _ in counts]
+    assert any(lit), f'no accent ring around {card_id} after the scroll: {counts}'
+    first, last = lit.index(True), len(lit) - 1 - lit[::-1].index(True)
+    assert all(lit[first:last + 1]), f'the ring around {card_id} showed more than once: {counts}'
+    assert last < len(lit) - 1, f'the ring around {card_id} is still there {counts[-1][1]:.1f}s after the tap'
+    span = counts[last][1] - counts[first][1]
+    assert SPAN_MIN <= span <= SPAN_MAX, \
+        f'the ring around {card_id} showed for {span:.2f}s, expected {SPAN_MIN}-{SPAN_MAX:.2f}s ({RING_MS} ms)'
+    print(f'{tag} ring span {span:.2f}s')
     return card
 
 

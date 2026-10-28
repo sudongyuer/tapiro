@@ -111,3 +111,13 @@ export async function evaluateOrigin(
   }
   return resolveOrigin({ permission, point, ...stored });
 }
+
+export async function requestLocation(
+  location: Pick<LocationService, 'request'>,
+): Promise<LocationPermission> {
+  try {
+    return (await location.request()).status;
+  } catch {
+    return 'undetermined';
+  }
+}

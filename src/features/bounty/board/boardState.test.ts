@@ -287,6 +287,23 @@ describe('controller', () => {
     expect(stub.calls).toHaveLength(2);
   });
 
+  test('rows loaded for one origin are never published beside another origin', async () => {
+    const stub = deferredService();
+    const board = createBoardController(stub.service, () => new Date(AT));
+    void board.setQuery(ME, 'all');
+    stub.pending[0].resolve(page(['a']));
+    await settle();
+    expect(board.get().origin).toEqual(ME);
+    const seen: { kind: string; origin: unknown }[] = [];
+    const stop = board.subscribe(() =>
+      seen.push({ kind: board.get().state.kind, origin: board.get().origin }),
+    );
+    void board.setQuery(NONE, 'all');
+    stop();
+    expect(seen[0]).toEqual({ kind: 'loading', origin: NONE });
+    expect(seen.every((s) => s.kind !== 'ready' || s.origin === ME)).toBe(true);
+  });
+
   test('a query change during a load reloads once the load answers', async () => {
     const stub = deferredService();
     const board = createBoardController(stub.service, () => new Date(AT));

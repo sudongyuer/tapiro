@@ -5,7 +5,7 @@ import { AppState } from 'react-native';
 import { locationService } from '@/lib/location';
 
 import { sameOrigin } from './boardState';
-import { evaluateOrigin, steadyOrigin, type ChosenPlace } from './originStore';
+import { evaluateOrigin, requestLocation, steadyOrigin, type ChosenPlace } from './originStore';
 import { originStore } from './services';
 import type { BoardOrigin } from './types';
 
@@ -50,7 +50,7 @@ export function useOrigin(userId: string) {
   }, [evaluate]);
 
   const allow = useCallback(async () => {
-    await locationService.request();
+    await requestLocation(locationService);
     await evaluate();
   }, [evaluate]);
 

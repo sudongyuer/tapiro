@@ -49,7 +49,7 @@ export function LocationCard({
         />
         <PillButton
           label={t('bounty.board.location.later')}
-          variant="plain"
+          variant="secondary"
           disabled={busy}
           onPress={onLater}
           testID="bounty-location-later"

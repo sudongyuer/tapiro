@@ -12,6 +12,7 @@ export type AxisMark = { ids: string[]; x: number; category: BountyCategory };
 export function axisMarks(
   rows: BoardRow[],
   widthPt: number,
+  startPt = 0,
 ): { marks: AxisMark[]; beyond: number; firstBeyondId: string | null } {
   const plotted: { id: string; x: number; category: BountyCategory }[] = [];
   let beyond = 0;
@@ -25,7 +26,7 @@ export function axisMarks(
     }
     plotted.push({
       id: row.id,
-      x: (row.distanceM / AXIS_RANGE_M) * widthPt,
+      x: Math.max(startPt, (row.distanceM / AXIS_RANGE_M) * widthPt),
       category: row.category,
     });
   }
@@ -37,6 +38,27 @@ export function axisMarks(
     else marks.push({ ids: [id], x, category });
   }
   return { marks, beyond, firstBeyondId };
+}
+
+export function beyondCount({
+  rows,
+  total,
+  next,
+}: {
+  rows: BoardRow[];
+  total: number | null;
+  next: unknown | null;
+}) {
+  let inRange = 0;
+  let beyond = 0;
+  let unlocated = 0;
+  for (const row of rows) {
+    if (row.distanceM === null) unlocated += 1;
+    else if (row.distanceM > AXIS_RANGE_M) beyond += 1;
+    else inRange += 1;
+  }
+  if (total === null || next === null) return beyond;
+  return Math.max(beyond, total - inRange - unlocated);
 }
 
 export function formatDistance(m: number, language: string): string {

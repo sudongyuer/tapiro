@@ -77,7 +77,11 @@ export function useBountyBoard(userId: string, host: ScrollHost) {
   const paging = usePaging(board.onViewport);
   const focus = useCardFocus(host);
   useBoardPlacePick(choose);
-  const { handlers } = focus;
+  const { handlers, reset } = focus;
+  const loading = board.state.kind !== 'ready';
+  useEffect(() => {
+    reset();
+  }, [reset, board.filter, board.shownOrigin, loading]);
 
   const scrollHandlers = {
     onScroll: (event: ScrollEvent) => {
@@ -94,7 +98,7 @@ export function useBountyBoard(userId: string, host: ScrollHost) {
 
   return {
     ...board,
-    origin,
+    origin: board.shownOrigin,
     pulling,
     pull,
     retryRefresh,

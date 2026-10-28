@@ -66,8 +66,13 @@ export function PlaceSearchScene({ onReady }: { onReady: () => void }) {
 export function BountyBoardScene({ onReady }: { onReady: () => void }) {
   const scroll = useRef<ScrollView>(null);
   const content = useRef<View>(null);
-  const topInset = useSafeAreaInsets().top + vars['--space-3'];
-  const board = useBountyBoard(fixtureUser('apple').id, { scroll, content, topInset });
+  const insets = useSafeAreaInsets();
+  const board = useBountyBoard(fixtureUser('apple').id, {
+    scroll,
+    content,
+    topInset: insets.top + vars['--space-3'],
+    bottomInset: insets.bottom,
+  });
   const [left, setLeft] = useState<string | null>(null);
   useEffect(onReady, [onReady]);
   return (

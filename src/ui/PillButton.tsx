@@ -4,7 +4,7 @@ import { AppText } from './AppText';
 import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
-type Variant = 'primary' | 'destructive' | 'plain';
+type Variant = 'primary' | 'secondary' | 'destructive' | 'plain';
 
 export type PillButtonProps = {
   label: string;
@@ -36,7 +36,9 @@ export function PillButton({
       ? color('--color-accent')
       : variant === 'destructive'
         ? PlatformColor('secondarySystemGroupedBackground')
-        : undefined;
+        : variant === 'secondary'
+          ? PlatformColor('tertiarySystemFill')
+          : undefined;
 
   return (
     <Pressable

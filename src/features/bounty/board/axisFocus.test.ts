@@ -53,22 +53,26 @@ describe('markLabel', () => {
 });
 
 describe('scrollTarget', () => {
+  const frame = {
+    topInset: 160,
+    bottomInset: 83,
+    contentHeight: 3000,
+    viewportHeight: 874,
+  };
+
   test('puts the card under the top chrome', () => {
-    expect(
-      scrollTarget({ cardY: 900, topInset: 160, contentHeight: 3000, viewportHeight: 874 }),
-    ).toBe(740);
+    expect(scrollTarget({ ...frame, cardY: 900 })).toBe(740);
   });
 
-  test('never scrolls past the end of the content', () => {
-    expect(
-      scrollTarget({ cardY: 2900, topInset: 160, contentHeight: 3000, viewportHeight: 874 }),
-    ).toBe(2126);
+  test('stops at the end of the content above the tab bar, never past it', () => {
+    const target = scrollTarget({ ...frame, cardY: 2800 });
+    expect(target).toBe(2209);
+    const cardBottomOnScreen = 2800 + 140 - target;
+    expect(cardBottomOnScreen).toBeLessThanOrEqual(874 - 83);
   });
 
   test('content shorter than the screen does not push the target below zero', () => {
-    expect(
-      scrollTarget({ cardY: 500, topInset: 160, contentHeight: 600, viewportHeight: 874 }),
-    ).toBe(0);
+    expect(scrollTarget({ ...frame, cardY: 500, contentHeight: 600 })).toBe(0);
   });
 });
 

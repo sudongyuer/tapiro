@@ -1,7 +1,9 @@
 import { SymbolView } from 'expo-symbols';
 import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
+import { useSelectedUntilReturn } from '@/lib/useSelectedUntilReturn';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 
@@ -11,6 +13,12 @@ const CHEVRON = 14;
 export function PlaceRow({ chosen, onPick }: { chosen: string | null; onPick: () => void }) {
   const { t } = useI18n();
   const ink = PlatformColor('secondaryLabel');
+  const { selected, select, highlight } = useSelectedUntilReturn();
+  const pick = () => {
+    select();
+    onPick();
+  };
+  const selection = <Animated.View pointerEvents="none" style={[styles.selection, highlight]} />;
   if (chosen === null) {
     const title = t('bounty.board.place.pick');
     const subtitle = t('bounty.board.place.pickSubtitle');
@@ -18,17 +26,23 @@ export function PlaceRow({ chosen, onPick }: { chosen: string | null; onPick: ()
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${title}\n${subtitle}`}
+        accessibilityState={{ selected }}
         testID="bounty-place-row"
-        onPress={onPick}
-        style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+        onPress={pick}
+        style={styles.row}
       >
-        <SymbolView name="mappin.and.ellipse" size={ICON} tintColor={ink} />
-        <RowText title={title} subtitle={subtitle} />
-        <SymbolView
-          name="chevron.right"
-          size={CHEVRON}
-          tintColor={PlatformColor('tertiaryLabel')}
-        />
+        {({ pressed }) => (
+          <>
+            {pressed ? <View style={styles.selection} /> : selection}
+            <SymbolView name="mappin.and.ellipse" size={ICON} tintColor={ink} />
+            <RowText title={title} subtitle={subtitle} />
+            <SymbolView
+              name="chevron.right"
+              size={CHEVRON}
+              tintColor={PlatformColor('tertiaryLabel')}
+            />
+          </>
+        )}
       </Pressable>
     );
   }
@@ -36,6 +50,7 @@ export function PlaceRow({ chosen, onPick }: { chosen: string | null; onPick: ()
   const subtitle = t('bounty.board.place.nearSubtitle');
   return (
     <View style={styles.row}>
+      {selection}
       <View
         accessible
         accessibilityLabel={`${title}\n${subtitle}`}
@@ -48,8 +63,9 @@ export function PlaceRow({ chosen, onPick }: { chosen: string | null; onPick: ()
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('bounty.board.place.change')}
+        accessibilityState={{ selected }}
         testID="bounty-place-change"
-        onPress={onPick}
+        onPress={pick}
         style={({ pressed }) => [styles.change, pressed && styles.pressed]}
       >
         <AppText variant="body" style={styles.changeText}>
@@ -94,4 +110,14 @@ const styles = StyleSheet.create({
   },
   changeText: { fontWeight: '600', textAlign: 'center' },
   pressed: { opacity: vars['--opacity-pressed'] },
+  selection: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: vars['--radius-card'],
+    borderCurve: 'continuous',
+    backgroundColor: PlatformColor('systemGray4'),
+  },
 });

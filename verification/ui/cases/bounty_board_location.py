@@ -6,9 +6,9 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import cards, visible  # noqa: E402
+from board import cards, screen, visible  # noqa: E402
 from bounty import relaunch, search_places  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py']
@@ -18,6 +18,7 @@ RESET = ['-uiVerifyBoardPlace', 'none', '-uiVerifyLocation', 'undetermined']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardPlace', 'none',
         '-uiVerifyLocation', 'undetermined']
 PLACE = 'Sunway Geo Residences'
+CARD_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 DISTANCE = re.compile(r'\d+(?:\.\d)?\s(?:m|km)')
 
 ui = UI(*sys.argv[1:])
@@ -81,6 +82,20 @@ no_axis()
 assert by_id(ui.read(), 'bounty-location-card') is None, 'the card stays after a denied answer'
 ui.at_rest()
 ui.capture('03-denied')
+
+visible(ui, 'bounty-place-row')
+ui.tap('bounty-place-row')
+ui.element('place-search')
+ui.gone('bounty-place-row')
+s = screen(ui.read())
+ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+ui.gone('place-search')
+row = ui.settled(lambda items: by_id(items, 'bounty-place-row'), 'swiping back did not return to the board')
+ui.at_rest()
+shot = ui.snap('03b-returned')
+f = row['frame']
+fill = shot.rgb(f['x'] + f['width'] - 60, f['y'] + 6)
+assert close(fill, CARD_FILL[ui.appearance], 6), f'the row is still selected after returning: {fill}'
 
 visible(ui, 'bounty-place-row')
 ui.tap('bounty-place-row')

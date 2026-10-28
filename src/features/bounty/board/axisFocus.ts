@@ -20,12 +20,15 @@ export function markLabel(rows: BoardRow[], t: TFunction, language: string) {
 export type ScrollFrame = {
   cardY: number;
   topInset: number;
+  bottomInset: number;
   contentHeight: number;
   viewportHeight: number;
 };
 
-export function scrollTarget({ cardY, topInset, contentHeight, viewportHeight }: ScrollFrame) {
-  return Math.min(cardY - topInset, Math.max(0, contentHeight - viewportHeight));
+export function scrollTarget(frame: ScrollFrame) {
+  const { cardY, topInset, bottomInset, contentHeight, viewportHeight } = frame;
+  const end = Math.max(0, contentHeight + bottomInset - viewportHeight);
+  return Math.min(cardY - topInset, end);
 }
 
 export const SETTLED_PT = 1;

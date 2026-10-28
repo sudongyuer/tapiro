@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useReducer, useRef, type RefObject } from 'react';
 import {
   AccessibilityInfo,
   useWindowDimensions,
@@ -10,38 +10,54 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { needsScroll, scrollTarget } from './axisFocus';
+import { cardFocusReducer, NO_FOCUS } from './cardFocusState';
 
 export type ScrollHost = {
   scroll: RefObject<ScrollView | null>;
   content: RefObject<View | null>;
   topInset: number;
+  bottomInset: number;
 };
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
-export function useCardFocus({ scroll, content, topInset }: ScrollHost) {
+// Fabric's scrollTo returns without any scroll event when the target equals the current offset,
+// so a scroll that has not moved by then is treated as settled.
+const STILL_MS = 200;
+
+export function useCardFocus({ scroll, content, topInset, bottomInset }: ScrollHost) {
   const cards = useRef(new Map<string, View>());
   const refs = useRef(new Map<string, (view: View | null) => void>());
-  const pending = useRef<string | null>(null);
   const offset = useRef<number | null>(null);
   const contentHeight = useRef(0);
+  const still = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { height } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
-  const [ring, setRing] = useState<{ id: string; key: number } | null>(null);
+  const [state, dispatch] = useReducer(cardFocusReducer, NO_FOCUS);
+  const { ring } = state;
 
-  const show = useCallback((id: string) => {
-    pending.current = null;
-    setRing((previous) => ({ id, key: (previous?.key ?? 0) + 1 }));
-    const card = cards.current.get(id);
+  useEffect(() => {
+    const card = ring ? cards.current.get(ring.id) : undefined;
     if (card) AccessibilityInfo.sendAccessibilityEvent(card, 'focus');
-  }, []);
+  }, [ring]);
+
+  useEffect(
+    () => () => {
+      if (still.current) clearTimeout(still.current);
+    },
+    [],
+  );
 
   const cardRef = useCallback((id: string) => {
     let ref = refs.current.get(id);
     if (!ref) {
       ref = (view: View | null) => {
-        if (view) cards.current.set(id, view);
-        else cards.current.delete(id);
+        if (view) {
+          cards.current.set(id, view);
+          return;
+        }
+        cards.current.delete(id);
+        dispatch({ type: 'gone', id });
       };
       refs.current.set(id, ref);
     }
@@ -58,44 +74,47 @@ export function useCardFocus({ scroll, content, topInset }: ScrollHost) {
         const target = scrollTarget({
           cardY: y,
           topInset,
+          bottomInset,
           contentHeight: contentHeight.current,
           viewportHeight: height,
         });
         if (!needsScroll(target, offset.current)) {
-          show(id);
+          dispatch({ type: 'show', id });
           return;
         }
-        pending.current = id;
+        dispatch({ type: 'scrolling', id });
         host.scrollTo({ y: target, animated: !reduceMotion });
+        if (still.current) clearTimeout(still.current);
+        still.current = setTimeout(() => dispatch({ type: 'still' }), STILL_MS);
       });
     },
-    [scroll, content, topInset, height, reduceMotion, show],
+    [scroll, content, topInset, bottomInset, height, reduceMotion],
   );
 
-  const clearRing = useCallback((key: number) => {
-    setRing((current) => (current?.key === key ? null : current));
+  const clearRing = useCallback((key: number) => dispatch({ type: 'done', key }), []);
+  const reset = useCallback(() => dispatch({ type: 'reset' }), []);
+
+  const onScroll = useCallback(({ nativeEvent }: ScrollEvent) => {
+    offset.current = nativeEvent.contentOffset.y;
+    dispatch({ type: 'scrolled' });
+  }, []);
+  const onContentSizeChange = useCallback((_width: number, contentH: number) => {
+    contentHeight.current = contentH;
+  }, []);
+  const onScrollBeginDrag = useCallback(() => dispatch({ type: 'dragged' }), []);
+  const onMomentumScrollEnd = useCallback(({ nativeEvent }: ScrollEvent) => {
+    offset.current = nativeEvent.contentOffset.y;
+    dispatch({ type: 'settled' });
   }, []);
 
-  const handlers = {
-    onScroll: useCallback(({ nativeEvent }: ScrollEvent) => {
-      offset.current = nativeEvent.contentOffset.y;
-    }, []),
-    onContentSizeChange: useCallback((_width: number, contentH: number) => {
-      contentHeight.current = contentH;
-    }, []),
-    onScrollBeginDrag: useCallback(() => {
-      pending.current = null;
-    }, []),
-    onMomentumScrollEnd: useCallback(
-      ({ nativeEvent }: ScrollEvent) => {
-        offset.current = nativeEvent.contentOffset.y;
-        if (pending.current) show(pending.current);
-      },
-      [show],
-    ),
+  return {
+    ring,
+    cardRef,
+    focus,
+    clearRing,
+    reset,
+    handlers: { onScroll, onContentSizeChange, onScrollBeginDrag, onMomentumScrollEnd },
   };
-
-  return { ring, cardRef, focus, clearRing, handlers };
 }
 
 export type CardFocus = ReturnType<typeof useCardFocus>;
