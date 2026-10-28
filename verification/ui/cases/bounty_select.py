@@ -8,7 +8,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from choose import (  # noqa: E402
-    HOLD, JIE, analyse, assert_none_selected, assert_one_selected, choose, hold_reads, label_split,
+    HOLD, JIE, analyse, assert_attempts, assert_none_selected, assert_one_selected, choose, hold_reads, label_split,
     row_id,
 )
 from driver import UI, assert_colour, by_id, token  # noqa: E402
@@ -20,6 +20,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded']
 BUDGET = 360
 EARLY_S, FULL_S = 0.4, 1.5
 FILL_S, RUN_BACK_S, SLACK_S = 1.0, 0.2, 0.15
+RUN_BACK_MAX_S = 0.3
 LIT, FULL = 0.03, 0.97
 SPLIT_MIN = 20
 
@@ -57,8 +58,9 @@ assert samples[first][1] < samples[peak][1], 'the gold did not grow during the e
 assert all(samples[i][1] <= samples[i + 1][1] + 0.02 for i in range(first, peak)), 'the gold shrank while held'
 assert last < len(samples) - 1, f'the gold is still showing at the end of the clip ({samples[-1][1]:.2f})'
 back = samples[last + 1][0] - samples[peak][0]
-assert back <= RUN_BACK_S + 2 * SLACK_S, f'the run-back took {back:.2f} s, expected about {RUN_BACK_S} s'
+assert back <= RUN_BACK_MAX_S, f'the run-back took {back:.2f} s, expected about {RUN_BACK_S} s'
 assert_none_selected(ui, f'a {EARLY_S} s hold')
+assert_attempts(ui, 0)
 ui.capture('01-released')
 
 with clip(ui, 'hold-full') as full:
@@ -91,10 +93,13 @@ assert len(partial) >= 2, f'too few frames caught the fill moving: {partial}'
 a, b = partial[0], partial[-1]
 assert samples[b][0] > samples[a][0] and samples[b][1] > samples[a][1] + 0.2, \
     f'the edge did not move right: {samples[a][:2]} then {samples[b][:2]}'
-took = samples[filled][0] - samples[first - 1 if first else first][0]
-assert abs(took - FILL_S) <= 2 * SLACK_S, f'the fill took {took:.2f} s, expected {FILL_S} s'
+# The recorder writes no frames while the screen is still, so the frame before the first lit one can be seconds old;
+# the duration comes from the slope across the frames that caught the edge moving.
+took = (samples[b][0] - samples[a][0]) / (samples[b][1] - samples[a][1])
+assert abs(took - FILL_S) <= 0.1, f'the fill runs at {took:.2f} s per track, expected {FILL_S} s'
 rate = [(samples[i + 1][1] - samples[i][1]) / max(samples[i + 1][0] - samples[i][0], 1e-3) for i in partial[:-1]]
 print(f'fill took {took:.2f} s; rate per s across the partial frames: {[round(r, 2) for r in rate]}')
+assert all(0.7 / FILL_S <= r <= 1.3 / FILL_S for r in rate), f'the fill is not linear: {rate}'
 held = [p for t, p, _ in samples[filled:] if t <= samples[filled][0] + 1.5]
 assert held and min(held) >= FULL, f'the gold ran back during the send: {held}'
 
@@ -118,6 +123,7 @@ assert 'A 座 12-03' in (address.get('AXLabel') or ''), f'the address reads {add
 assert ui.t('bounty.select.done.addressRow') in address['AXLabel'], address['AXLabel']
 ui.labelled(ui.t('bounty.select.done.addressFooter', name='阿杰'))
 assert_one_selected(ui, JIE)
+assert_attempts(ui, 1)
 ui.at_rest()
 ui.capture('03-done')
 print('PASS: early release sends nothing, the fill grows from the left and runs back, the full hold sends once, 选好了阿杰')

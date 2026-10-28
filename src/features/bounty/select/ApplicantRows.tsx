@@ -43,7 +43,7 @@ export function ApplicantsHeader({
   done = false,
 }: {
   detail: BountyDetail | null;
-  status: string;
+  status: string | null;
   done?: boolean;
 }) {
   const { t, language } = useI18n();
@@ -68,17 +68,19 @@ export function ApplicantsHeader({
             </Text>
           </>
         ) : null}
-        <Text
-          modifiers={[
-            done ? font({ textStyle: 'headline' }) : font({ textStyle: 'subheadline' }),
-            done ? primary : secondary,
-            multilineTextAlignment('center'),
-            wraps,
-            accessibilityIdentifier(done ? 'bounty-select-done' : 'bounty-applicants-status'),
-          ]}
-        >
-          {status}
-        </Text>
+        {status === null ? null : (
+          <Text
+            modifiers={[
+              done ? font({ textStyle: 'headline' }) : font({ textStyle: 'subheadline' }),
+              done ? primary : secondary,
+              multilineTextAlignment('center'),
+              wraps,
+              accessibilityIdentifier(done ? 'bounty-select-done' : 'bounty-applicants-status'),
+            ]}
+          >
+            {status}
+          </Text>
+        )}
         {reward ? (
           <Text
             modifiers={[

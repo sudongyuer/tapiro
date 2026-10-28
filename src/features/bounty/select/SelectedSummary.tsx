@@ -18,6 +18,7 @@ import { vars } from '@/ui/theme/tokens';
 import type { Person } from '../board/types';
 import { tierName, tierRank } from '../shared/tierCopy';
 import type { DetailLoad } from './applicantsController';
+import { addressView, type AddressView } from './applicantsView';
 
 const AVATAR = 36;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -46,10 +47,9 @@ function HelperRow({ helper }: { helper: Person }) {
   );
 }
 
-function AddressRow({ detail, onRetry }: { detail: DetailLoad; onRetry: () => void }) {
+function AddressRow({ address, onRetry }: { address: AddressView; onRetry: () => void }) {
   const { t } = useI18n();
-  const label = t('bounty.select.done.addressRow');
-  if (detail.kind === 'loading') {
+  if (address.kind === 'loading') {
     return (
       <HStack spacing={vars['--space-2']} modifiers={[fill]}>
         <ProgressView
@@ -62,8 +62,7 @@ function AddressRow({ detail, onRetry }: { detail: DetailLoad; onRetry: () => vo
       </HStack>
     );
   }
-  const address = detail.kind === 'ready' ? detail.detail.address : null;
-  if (!address) {
+  if (address.kind === 'failed') {
     return (
       <HStack spacing={vars['--space-2']} modifiers={[fill]}>
         <Text
@@ -85,6 +84,7 @@ function AddressRow({ detail, onRetry }: { detail: DetailLoad; onRetry: () => vo
       </HStack>
     );
   }
+  if (address.kind === 'none') return null;
   return (
     <VStack
       alignment="leading"
@@ -95,8 +95,10 @@ function AddressRow({ detail, onRetry }: { detail: DetailLoad; onRetry: () => vo
         accessibilityIdentifier('bounty-select-done-address'),
       ]}
     >
-      <Text modifiers={[font({ textStyle: 'footnote' }), secondary]}>{label}</Text>
-      <Text modifiers={[font({ textStyle: 'body' }), wraps]}>{address}</Text>
+      <Text modifiers={[font({ textStyle: 'footnote' }), secondary]}>
+        {t('bounty.select.done.addressRow')}
+      </Text>
+      <Text modifiers={[font({ textStyle: 'body' }), wraps]}>{address.address}</Text>
     </VStack>
   );
 }
@@ -111,16 +113,18 @@ export function SelectedSummary({
   onRetry: () => void;
 }) {
   const { t } = useI18n();
+  const address = addressView(detail);
+  const name = helper ? (helper.name ?? t('bounty.post.unknownName')) : null;
   return (
     <Section
       footer={
-        helper?.name ? (
-          <Text>{t('bounty.select.done.addressFooter', { name: helper.name })}</Text>
+        name && address.kind === 'shown' ? (
+          <Text>{t('bounty.select.done.addressFooter', { name })}</Text>
         ) : undefined
       }
     >
       {helper ? <HelperRow helper={helper} /> : null}
-      <AddressRow detail={detail} onRetry={onRetry} />
+      <AddressRow address={address} onRetry={onRetry} />
     </Section>
   );
 }

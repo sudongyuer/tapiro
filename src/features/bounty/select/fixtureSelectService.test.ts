@@ -132,6 +132,14 @@ describe('select', () => {
     expect(posterView('b2')).toBeNull();
   });
 
+  test('every call counts as an attempt, rejected ones included', async () => {
+    const attempts: number[] = [];
+    const { service } = fixture({ select: 'noPayee', onAttempted: (n) => attempts.push(n) });
+    await service.select('b1', 'fixture-applicant-jie');
+    await service.select('b1', 'fixture-applicant-jie');
+    expect(attempts).toEqual([1, 2]);
+  });
+
   test('failOnce fails the first send only and records nothing for it', async () => {
     const recorded: SelectedArgs[][] = [];
     const { service } = fixture({ select: 'failOnce', onSelected: (args) => recorded.push(args) });

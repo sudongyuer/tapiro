@@ -66,7 +66,10 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
       {view.body === 'done' ? (
         <ApplicantsHeader detail={detail} status={doneTitle(helper, t)} done />
       ) : (
-        <ApplicantsHeader detail={detail} status={statusCopy(statusLine(list), t)} />
+        <ApplicantsHeader
+          detail={detail}
+          status={view.body === 'closed' ? null : statusCopy(statusLine(list), t)}
+        />
       )}
       {view.stale ? (
         <StateRow>

@@ -12,6 +12,7 @@ BOUNTY = 'fixture-bounty-01'
 HOLD = 'bounty-select-hold'
 JIE, HANA, AIMAN = (f'fixture-applicant-{name}' for name in ('jie', 'hana', 'aiman'))
 SELECTED_KEY = 'uiVerifySelectedArgs'
+ATTEMPTS_KEY = 'uiVerifySelectAttempts'
 FRAME_GAP_S = 0.03
 COLOUR_SLACK = 30
 EDGE_ROW_FROM_BOTTOM = 12
@@ -46,14 +47,32 @@ def release_early(ui, seconds=0.4):
     return ui.press(HOLD, seconds)
 
 
-def selected_args(ui):
+def defaults(ui, key):
     container = subprocess.run(['xcrun', 'simctl', 'get_app_container', ui.udid, BUNDLE_ID, 'data'],
                                capture_output=True, text=True, check=True, timeout=20).stdout.strip()
     plist = Path(container) / 'Library' / 'Preferences' / f'{BUNDLE_ID}.plist'
-    proc = subprocess.run(['plutil', '-extract', SELECTED_KEY, 'raw', '-o', '-', str(plist)],
-                          capture_output=True, text=True)
-    text = proc.stdout.strip() if proc.returncode == 0 else ''
+    proc = subprocess.run(['plutil', '-extract', key, 'raw', '-o', '-', str(plist)], capture_output=True, text=True)
+    return proc.stdout.strip() if proc.returncode == 0 else ''
+
+
+def selected_args(ui):
+    text = defaults(ui, SELECTED_KEY)
     return json.loads(text) if text else []
+
+
+def attempts(ui):
+    text = defaults(ui, ATTEMPTS_KEY)
+    return round(float(text)) if text else 0
+
+
+# Every select call the fixture receives counts, rejected ones included, so an automatic replay shows up here.
+def assert_attempts(ui, expected, timeout=10):
+    deadline = time.monotonic() + timeout
+    while attempts(ui) < expected and time.monotonic() < deadline:
+        time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously
+    time.sleep(1.5)  # a replay would follow the answer
+    found = attempts(ui)
+    assert found == expected, f'the fixture received {found} select calls, expected {expected}'
 
 
 def wait_selected(ui, count, timeout=20):

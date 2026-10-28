@@ -27,6 +27,7 @@ export type FixtureSelectOptions = {
   writeDelayMs?: number;
   isBlocked?: (applicantId: string) => boolean;
   onSelected?: (accepted: SelectedArgs[]) => void;
+  onAttempted?: (attempts: number) => void;
 };
 
 const MINUTE_MS = 60_000;
@@ -138,6 +139,7 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
   const posted = new Map<string, Posted>();
   const accepted: SelectedArgs[] = [];
   let loads = 0;
+  let attempts = 0;
   let selectFailures = options.select === 'failOnce' ? 1 : 0;
 
   function bounty(id: string): Posted {
@@ -176,6 +178,8 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
       return listed.filter((applicant) => !hidden(applicant)).map((item) => ({ ...item }));
     },
     async select(bountyId, applicantId): Promise<SelectOutcome> {
+      attempts += 1;
+      options.onAttempted?.(attempts);
       await pause(options.writeDelayMs ?? 0);
       if (selectFailures > 0) {
         selectFailures -= 1;

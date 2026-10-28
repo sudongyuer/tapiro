@@ -1,4 +1,5 @@
-import { ActionSheetIOS, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
+import { AccessibilityInfo, ActionSheetIOS, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -20,6 +21,11 @@ export function SelectFooter({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const noticeText = notice ? selectFailureCopy(notice, t) : null;
+
+  useEffect(() => {
+    if (noticeText) AccessibilityInfo.announceForAccessibility(noticeText);
+  }, [noticeText]);
   const name =
     footer?.state === 'ready' ? (footer.applicant.name ?? t('bounty.post.unknownName')) : null;
   const hint =
@@ -50,7 +56,7 @@ export function SelectFooter({
           testID="bounty-select-failed"
           style={[styles.notice, { color: color('--color-urgent') }]}
         >
-          {selectFailureCopy(notice, t)}
+          {noticeText}
         </AppText>
       ) : null}
       {footer ? (
