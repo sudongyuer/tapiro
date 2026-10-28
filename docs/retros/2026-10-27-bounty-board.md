@@ -81,3 +81,8 @@ status: running
     `confirmationDialog`, which shows as a popover from its button. A SwiftUI dialog cannot attach to a
     `Stack.Toolbar.MenuAction`. Tag `platform-behaviour`. Candidate: a kit helper that anchors an action sheet to a bar
     item (`popoverPresentationController.sourceItem`).
+18. The user asked whether token use is large. One main session coordinated Tasks 6–15 across at least one context
+    compaction. Subagents reported roughly 3.2 M tokens after that compaction alone, most of it in implementer fix rounds
+    (Task 13: three rounds of 290–380 k each) and opus re-reviews. Every main-session turn also re-reads the whole context.
+    Tag `token-cost`. Candidates: start a fresh main session per PR, resuming from the ledger; give scoped re-reviews of
+    test-only diffs to sonnet; batch fix rounds so a case is reworked once.
