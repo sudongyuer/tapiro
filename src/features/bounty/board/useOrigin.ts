@@ -1,6 +1,4 @@
-import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
 
 import { locationService } from '@/lib/location';
 
@@ -8,7 +6,7 @@ import { sameOrigin } from './boardState';
 import { evaluateOrigin, requestLocation, steadyOrigin, type ChosenPlace } from './originStore';
 import { originStore } from './services';
 import type { BoardOrigin } from './types';
-import { useTabFocus } from './useTabFocus';
+import { useFreshness } from './useFreshness';
 
 type Resolved = { userId: string; origin: BoardOrigin };
 
@@ -17,13 +15,6 @@ export function useOrigin(userId: string) {
   const origin = resolved?.userId === userId ? resolved.origin : null;
   const latest = useRef<Resolved | null>(null);
   const sequence = useRef(0);
-  const focused = useIsFocused();
-  const focusedRef = useRef(focused);
-
-  useEffect(() => {
-    focusedRef.current = focused;
-  }, [focused]);
-
   const evaluate = useCallback(async (): Promise<BoardOrigin | null> => {
     const run = ++sequence.current;
     const next = await evaluateOrigin(locationService, {
@@ -43,14 +34,7 @@ export function useOrigin(userId: string) {
     void evaluate();
   }, [evaluate]);
 
-  useTabFocus(evaluate);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && focusedRef.current) void evaluate();
-    });
-    return () => subscription.remove();
-  }, [evaluate]);
+  useFreshness(evaluate);
 
   const allow = useCallback(async () => {
     await requestLocation(locationService);

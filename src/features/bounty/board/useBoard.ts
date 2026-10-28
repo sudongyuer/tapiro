@@ -1,6 +1,4 @@
-import { useIsFocused } from 'expo-router';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { AppState } from 'react-native';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { blockEvents } from '../shared/blockEvents';
 import { bountyCache } from '../shared/bountyCache';
@@ -8,7 +6,7 @@ import { justApplied } from '../shared/justApplied';
 import { createBoardController, nearEnd } from './boardState';
 import { boardService } from './services';
 import type { BoardFilter, BoardOrigin } from './types';
-import { useTabFocus } from './useTabFocus';
+import { useFreshness } from './useFreshness';
 
 export function useBoard(
   origin: BoardOrigin | null,
@@ -21,25 +19,11 @@ export function useBoard(
     refreshing,
     origin: shownOrigin,
   } = useSyncExternalStore(controller.subscribe, controller.get);
-  const focused = useIsFocused();
-  const focusedRef = useRef(focused);
-
-  useEffect(() => {
-    focusedRef.current = focused;
-  }, [focused]);
-
   useEffect(() => {
     if (origin) void controller.setQuery(origin, filter);
   }, [controller, origin, filter]);
 
-  useTabFocus(controller.load);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active' && focusedRef.current) void controller.load();
-    });
-    return () => subscription.remove();
-  }, [controller]);
+  useFreshness(controller.load);
 
   useEffect(
     () =>
