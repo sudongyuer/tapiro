@@ -146,6 +146,37 @@ describe('select', () => {
     });
   });
 
+  test('lostAnswer commits the first select but answers failed; the list shows the helper', async () => {
+    const recorded: SelectedArgs[][] = [];
+    const { service, posterView } = fixture({
+      select: 'lostAnswer',
+      onSelected: (args) => recorded.push(args),
+    });
+    expect(await service.select('b1', 'fixture-applicant-hana')).toEqual({
+      ok: false,
+      reason: 'failed',
+    });
+    expect(recorded.at(-1)).toEqual([{ bounty: 'b1', applicant: 'fixture-applicant-hana' }]);
+    expect(await list(service)).toEqual([
+      expect.objectContaining({ id: 'fixture-applicant-hana', status: 'selected' }),
+    ]);
+    expect(posterView('b1')?.helper?.name).toBe('Hana');
+    expect(await service.select('b1', 'fixture-applicant-jie')).toEqual({
+      ok: false,
+      reason: 'taken',
+    });
+    expect(await service.select('b1', 'fixture-applicant-hana')).toEqual({
+      ok: true,
+      helperId: 'fixture-applicant-hana',
+    });
+  });
+
+  test('a failed first load still makes the user the poster', async () => {
+    const { service, posterView } = fixture({ fail: 'first' });
+    await expect(service.applicants('b1')).rejects.toThrow('Network');
+    expect(posterView('b1')).toEqual({ helper: null });
+  });
+
   test('taken: another device already chose 阿杰', async () => {
     const recorded: SelectedArgs[][] = [];
     const { service, posterView } = fixture({

@@ -194,27 +194,114 @@ describe('sending', () => {
     expect(run(state, { type: 'answered', outcome: { ok: true, helperId: 'jie' } })).toBe(state);
   });
 
-  test('taken is a lost race; acknowledging it shows the actual helper', () => {
-    const raced = run(sending(), { type: 'answered', outcome: { ok: false, reason: 'taken' } });
-    expect(raced.send).toEqual({ kind: 'raced' });
+  test('taken is a lost race naming the winner; acknowledging it shows that helper', () => {
+    const winner = { id: 'aiman', name: 'Aiman', tier: 'reliable' } as const;
+    const raced = run(sending(), {
+      type: 'answered',
+      outcome: { ok: false, reason: 'taken' },
+      winner,
+    });
+    expect(raced.send).toEqual({ kind: 'raced', helper: winner });
     expect(run(raced, { type: 'holdCompleted' })).toBe(raced);
-    expect(run(raced, { type: 'raceAcknowledged', helperId: 'aiman' }).send).toEqual({
+    expect(run(raced, { type: 'helperKnown', helperId: 'jie' })).toBe(raced);
+    expect(run(raced, { type: 'raceAcknowledged' }).send).toEqual({
       kind: 'selected',
       helperId: 'aiman',
     });
-    expect(run(chosen('jie'), { type: 'raceAcknowledged', helperId: 'aiman' }).send).toEqual({
-      kind: 'idle',
+    expect(run(chosen('jie'), { type: 'raceAcknowledged' }).send).toEqual({ kind: 'idle' });
+  });
+
+  test('a race without a known winner stays selected with the name pending until a load names it', () => {
+    const raced = run(sending(), { type: 'answered', outcome: { ok: false, reason: 'taken' } });
+    expect(raced.send).toEqual({ kind: 'raced', helper: null });
+    const pending = run(raced, { type: 'raceAcknowledged' });
+    expect(pending.send).toEqual({ kind: 'selected', helperId: null });
+    const named = run(
+      pending,
+      { type: 'loadStarted', request: 2 },
+      {
+        type: 'loaded',
+        request: 2,
+        applicants: [applicant('aiman', { status: 'selected' })],
+        at: '10:05',
+      },
+    );
+    expect(named.send).toEqual({ kind: 'selected', helperId: 'aiman' });
+    expect(run(pending, { type: 'helperKnown', helperId: 'aiman' }).send).toEqual({
+      kind: 'selected',
+      helperId: 'aiman',
     });
   });
 
-  test.each(['failed', 'closed', 'notPending', 'noPayee', 'gone'] as const)(
+  test.each(['failed', 'closed', 'notPending', 'noPayee'] as const)(
     '%s fails and keeps the choice',
     (reason) => {
       const state = run(sending('hana'), { type: 'answered', outcome: { ok: false, reason } });
       expect(state.send).toEqual({ kind: 'failed', reason });
       expect(state.chosen).toBe('hana');
+      expect(state.list.kind).toBe('ready');
     },
   );
+
+  test('gone closes the list so it cannot be held again', () => {
+    const state = run(sending('hana'), {
+      type: 'answered',
+      outcome: { ok: false, reason: 'gone' },
+    });
+    expect(state.send).toEqual({ kind: 'failed', reason: 'gone' });
+    expect(state.list).toEqual({ kind: 'gone' });
+    expect(run(state, { type: 'holdCompleted' })).toBe(state);
+  });
+
+  test('a list that already shows a selected helper becomes selected, never a race', () => {
+    const relaunch = ready(applicant('hana', { status: 'selected' }));
+    expect(relaunch.send).toEqual({ kind: 'selected', helperId: 'hana' });
+    const failed = run(sending('hana'), {
+      type: 'answered',
+      outcome: { ok: false, reason: 'failed' },
+    });
+    const reconciled = run(
+      failed,
+      { type: 'loadStarted', request: 2 },
+      {
+        type: 'loaded',
+        request: 2,
+        applicants: [applicant('hana', { status: 'selected' })],
+        at: '10:05',
+      },
+    );
+    expect(reconciled.send).toEqual({ kind: 'selected', helperId: 'hana' });
+  });
+
+  test('a load answering while the send is in flight does not decide it', () => {
+    const state = run(
+      sending('hana'),
+      { type: 'loadStarted', request: 2 },
+      {
+        type: 'loaded',
+        request: 2,
+        applicants: [applicant('jie', { status: 'selected' })],
+        at: '10:05',
+      },
+    );
+    expect(state.send).toEqual({ kind: 'sending', applicantId: 'hana' });
+    expect(run(state, { type: 'helperKnown', helperId: 'jie' }).send).toEqual({
+      kind: 'sending',
+      applicantId: 'hana',
+    });
+  });
+
+  test('a known helper settles an idle or failed send', () => {
+    expect(run(ready(JIE), { type: 'helperKnown', helperId: 'jie' }).send).toEqual({
+      kind: 'selected',
+      helperId: 'jie',
+    });
+    const selected = run(sending('hana'), {
+      type: 'answered',
+      outcome: { ok: true, helperId: 'hana' },
+    });
+    expect(run(selected, { type: 'helperKnown', helperId: 'jie' })).toBe(selected);
+  });
 
   test('after a failure the user can hold again; choosing another row clears the notice', () => {
     const failed = run(sending('hana'), {

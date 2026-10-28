@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import type { Person } from '../board/types';
 import type { SendFailure, StatusLine } from './selectState';
 
 const FAILURE_KEYS = {
@@ -22,3 +23,8 @@ export const statusCopy = (line: StatusLine, t: TFunction) =>
 
 export const raceBody = (name: string | null, t: TFunction) =>
   name === null ? t('bounty.select.race.bodyNoName') : t('bounty.select.race.body', { name });
+
+export const doneTitle = (helper: Person | null, t: TFunction) =>
+  helper?.name
+    ? t('bounty.select.done.title', { name: helper.name })
+    : t('bounty.select.done.titleNoName');

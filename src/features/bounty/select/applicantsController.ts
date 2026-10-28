@@ -1,9 +1,9 @@
 import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { createStore } from '@/lib/store';
 
-import type { BountyDetail } from '../board/types';
+import type { BountyDetail, Person } from '../board/types';
 import { INITIAL_SELECT, selectReducer, type SelectEvent, type SelectState } from './selectState';
-import type { SelectOutcome, SelectService } from './types';
+import { applicantPerson, type SelectOutcome, type SelectService } from './types';
 
 export type DetailLoad =
   | { kind: 'loading' }
@@ -59,6 +59,8 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
   });
   const guard = createInFlightGuard();
   let request = 0;
+  let listAnswers = 0;
+  let detailAnswers = 0;
 
   function dispatch(event: SelectEvent) {
     const current = store.get();
@@ -75,6 +77,7 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
     dispatch({ type: 'loadStarted', request: current });
     try {
       const answer = await deps.service.applicants(bountyId);
+      if (current === request) listAnswers += 1;
       dispatch(
         answer === 'gone'
           ? { type: 'gone', request: current }
@@ -88,11 +91,15 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
   const detail = singleFlight(async () => {
     try {
       const answer = await deps.detail(bountyId);
+      detailAnswers += 1;
       setDetail(
         answer === 'gone'
           ? { kind: 'gone' }
           : { kind: 'ready', detail: answer, refreshFailed: false },
       );
+      if (answer !== 'gone' && answer.helper) {
+        dispatch({ type: 'helperKnown', helperId: answer.helper.id });
+      }
     } catch {
       const shown = store.get().detail;
       setDetail(shown.kind === 'ready' ? { ...shown, refreshFailed: true } : { kind: 'failed' });
@@ -106,6 +113,18 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
   const reload = async () => {
     await Promise.all([applicants.after(), detail.after()]);
   };
+
+  function freshWinner(before: { list: number; detail: number }): Person | null {
+    const { detail: shown, select } = store.get();
+    if (detailAnswers > before.detail && shown.kind === 'ready' && !shown.refreshFailed) {
+      if (shown.detail.helper) return shown.detail.helper;
+    }
+    if (listAnswers > before.list && select.list.kind === 'ready' && !select.list.refreshFailed) {
+      const helper = select.list.applicants.find((applicant) => applicant.status === 'selected');
+      if (helper) return applicantPerson(helper);
+    }
+    return null;
+  }
 
   return {
     get: store.get,
@@ -122,20 +141,21 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
         const outcome = await deps.service
           .select(bountyId, send.applicantId)
           .catch(() => SEND_FAILED);
-        dispatch({ type: 'answered', outcome });
-        if (outcome.ok || (outcome.reason !== 'failed' && outcome.reason !== 'gone')) {
-          await reload();
+        if (outcome.ok || outcome.reason === 'gone') {
+          dispatch({ type: 'answered', outcome });
+          if (outcome.ok) await reload();
+          return;
+        }
+        const before = { list: listAnswers, detail: detailAnswers };
+        await reload();
+        const winner = freshWinner(before);
+        dispatch({ type: 'answered', outcome, winner });
+        if (outcome.reason !== 'taken' && winner) {
+          dispatch({ type: 'helperKnown', helperId: winner.id });
         }
       }),
     acknowledgeRace() {
-      const { detail: shown, select } = store.get();
-      const fromDetail = shown.kind === 'ready' ? (shown.detail.helper?.id ?? null) : null;
-      const fromList =
-        select.list.kind === 'ready'
-          ? (select.list.applicants.find((applicant) => applicant.status === 'selected')?.id ??
-            null)
-          : null;
-      dispatch({ type: 'raceAcknowledged', helperId: fromDetail ?? fromList });
+      dispatch({ type: 'raceAcknowledged' });
     },
     async blocked(id: string) {
       dispatch({ type: 'blocked', id });
@@ -145,3 +165,16 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
 }
 
 export type ApplicantsController = ReturnType<typeof createApplicantsController>;
+
+export function selectedHelper({ select, detail }: ApplicantsSnapshot): Person | null {
+  if (select.send.kind !== 'selected' || select.send.helperId === null) return null;
+  const { helperId } = select.send;
+  const row =
+    select.list.kind === 'ready'
+      ? select.list.applicants.find((applicant) => applicant.id === helperId)
+      : undefined;
+  if (row) return applicantPerson(row);
+  return detail.kind === 'ready' && detail.detail.helper?.id === helperId
+    ? detail.detail.helper
+    : null;
+}

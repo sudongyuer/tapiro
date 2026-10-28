@@ -380,6 +380,7 @@ const ms: typeof zhHans = {
     },
     done: {
       title: 'Anda memilih {{name}}',
+      titleNoName: 'Anda sudah memilih pembantu',
       addressRow: 'Alamat tepat',
       addressLoading: 'Memuatkan alamat',
       addressFailed: 'Alamat tidak dapat dimuatkan',

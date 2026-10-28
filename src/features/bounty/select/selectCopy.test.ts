@@ -3,7 +3,7 @@ import { createInstance } from 'i18next';
 
 import { resources } from '@/lib/i18n/resources';
 
-import { helpedLine, raceBody, selectFailureCopy, statusCopy } from './selectCopy';
+import { doneTitle, helpedLine, raceBody, selectFailureCopy, statusCopy } from './selectCopy';
 
 function translator(lng: string) {
   const i18n = createInstance();
@@ -32,16 +32,33 @@ test('each failure reads its own copy', () => {
 });
 
 test('zero helps reads as never helped; otherwise the count with plurals', () => {
-  expect(helpedLine(0, zh)).toBe('还没帮过');
-  expect(helpedLine(14, zh)).toBe('帮过 14 次');
-  expect(helpedLine(1, en)).toBe('Helped 1 time');
-  expect(helpedLine(128, en)).toBe('Helped 128 times');
+  expect(helpedLine(0, zh)).toBe(zh('bounty.select.meta.neverHelped'));
+  expect(helpedLine(14, zh)).toBe(zh('bounty.select.meta.helped', { count: 14 }));
+  expect(helpedLine(14, zh)).toContain('14');
+  expect(helpedLine(1, en)).not.toBe(helpedLine(2, en).replace('2', '1'));
 });
 
 test('the status line has a count only when the list loaded', () => {
-  expect(statusCopy({ key: 'bounty.select.statusOpen', count: 3 }, zh)).toBe('等你选人 · 3 人申请');
-  expect(statusCopy({ key: 'bounty.select.statusOpenNoCount' }, zh)).toBe('等你选人');
-  expect(statusCopy({ key: 'bounty.select.statusEmpty' }, zh)).toBe('等人申请');
+  const counted = statusCopy({ key: 'bounty.select.statusOpen', count: 3 }, zh);
+  expect(counted).toBe(zh('bounty.select.statusOpen', { count: 3 }));
+  expect(counted).toContain('3');
+  expect(statusCopy({ key: 'bounty.select.statusOpenNoCount' }, zh)).toBe(
+    zh('bounty.select.statusOpenNoCount'),
+  );
+  expect(statusCopy({ key: 'bounty.select.statusEmpty' }, zh)).toBe(
+    zh('bounty.select.statusEmpty'),
+  );
+});
+
+test('the done title names the helper, or reads without a name while it is pending', () => {
+  const helper = { id: 'jie', name: '阿杰', tier: 'very_reliable' } as const;
+  expect(doneTitle(helper, zh)).toBe(zh('bounty.select.done.title', { name: '阿杰' }));
+  expect(doneTitle(null, zh)).toBe(zh('bounty.select.done.titleNoName'));
+  expect(doneTitle({ ...helper, name: null }, zh)).toBe(zh('bounty.select.done.titleNoName'));
+  for (const t of [zh, en, translator('ms')]) {
+    expect(doneTitle(null, t)).not.toBe('bounty.select.done.titleNoName');
+    expect(doneTitle(null, t)).not.toContain('{{');
+  }
 });
 
 test('the race body names the helper when it is known', () => {

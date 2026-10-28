@@ -1,3 +1,4 @@
+import type { Person } from '../board/types';
 import type { Applicant, SelectFailure, SelectOutcome } from './types';
 
 export type ListState =
@@ -18,7 +19,7 @@ export type SendState =
   | { kind: 'idle' }
   | { kind: 'sending'; applicantId: string }
   | { kind: 'failed'; reason: SendFailure }
-  | { kind: 'raced' }
+  | { kind: 'raced'; helper: Person | null }
   | { kind: 'selected'; helperId: string | null };
 
 export type SelectState = {
@@ -35,9 +36,10 @@ export type SelectEvent =
   | { type: 'gone'; request: number }
   | { type: 'chose'; id: string }
   | { type: 'holdCompleted' }
-  | { type: 'answered'; outcome: SelectOutcome }
+  | { type: 'answered'; outcome: SelectOutcome; winner?: Person | null }
+  | { type: 'helperKnown'; helperId: string }
   | { type: 'blocked'; id: string }
-  | { type: 'raceAcknowledged'; helperId: string | null };
+  | { type: 'raceAcknowledged' };
 
 export const INITIAL_SELECT: SelectState = {
   request: 0,
@@ -64,6 +66,21 @@ function failed(list: ListState): ListState {
   return { kind: 'failed', retrying: false };
 }
 
+function settled(state: SelectState, helperId: string): SelectState {
+  const { send } = state;
+  const open =
+    send.kind === 'idle' ||
+    send.kind === 'failed' ||
+    (send.kind === 'selected' && send.helperId === null);
+  return open ? { ...state, send: { kind: 'selected', helperId } } : state;
+}
+
+function reconciled(state: SelectState): SelectState {
+  if (state.list.kind !== 'ready') return state;
+  const helper = state.list.applicants.find((applicant) => applicant.status === 'selected');
+  return helper ? settled(state, helper.id) : state;
+}
+
 export function selectReducer(state: SelectState, event: SelectEvent): SelectState {
   switch (event.type) {
     case 'loadStarted':
@@ -79,7 +96,7 @@ export function selectReducer(state: SelectState, event: SelectEvent): SelectSta
         refreshFailed: false,
       };
       const kept = state.chosen !== null && listed(list, state.chosen);
-      return { ...state, list, chosen: kept ? state.chosen : null };
+      return reconciled({ ...state, list, chosen: kept ? state.chosen : null });
     }
     case 'loadFailed':
       if (event.request !== state.request) return state;
@@ -103,9 +120,21 @@ export function selectReducer(state: SelectState, event: SelectEvent): SelectSta
       if (state.send.kind !== 'sending') return state;
       const { outcome } = event;
       if (outcome.ok) return { ...state, send: { kind: 'selected', helperId: outcome.helperId } };
-      if (outcome.reason === 'taken') return { ...state, send: { kind: 'raced' } };
-      return { ...state, send: { kind: 'failed', reason: outcome.reason } };
+      if (outcome.reason === 'taken') {
+        return { ...state, send: { kind: 'raced', helper: event.winner ?? null } };
+      }
+      if (outcome.reason === 'gone') {
+        return {
+          ...state,
+          list: { kind: 'gone' },
+          chosen: null,
+          send: { kind: 'failed', reason: 'gone' },
+        };
+      }
+      return reconciled({ ...state, send: { kind: 'failed', reason: outcome.reason } });
     }
+    case 'helperKnown':
+      return settled(state, event.helperId);
     case 'blocked': {
       const chosen = state.chosen === event.id ? null : state.chosen;
       if (state.list.kind !== 'ready')
@@ -118,7 +147,7 @@ export function selectReducer(state: SelectState, event: SelectEvent): SelectSta
     }
     case 'raceAcknowledged':
       if (state.send.kind !== 'raced') return state;
-      return { ...state, send: { kind: 'selected', helperId: event.helperId } };
+      return { ...state, send: { kind: 'selected', helperId: state.send.helper?.id ?? null } };
   }
 }
 

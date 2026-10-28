@@ -3,7 +3,15 @@ import { applicantPerson, type Applicant, type SelectOutcome, type SelectService
 
 export const APPLICANT_SETS = ['three', 'none', 'one', 'fifty', 'worst'] as const;
 export const APPLICANTS_FAILURES = ['none', 'first', 'refresh'] as const;
-export const SELECT_MODES = ['ok', 'failOnce', 'taken', 'notPending', 'noPayee', 'closed'] as const;
+export const SELECT_MODES = [
+  'ok',
+  'failOnce',
+  'lostAnswer',
+  'taken',
+  'notPending',
+  'noPayee',
+  'closed',
+] as const;
 
 export type ApplicantSet = (typeof APPLICANT_SETS)[number];
 export type ApplicantsFailure = (typeof APPLICANTS_FAILURES)[number];
@@ -156,6 +164,7 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
 
   const service: SelectService = {
     async applicants(bountyId) {
+      const state = bounty(bountyId);
       loads += 1;
       if (
         (options.fail === 'first' && loads === 1) ||
@@ -163,7 +172,6 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
       ) {
         throw new TypeError('Network request failed');
       }
-      const state = bounty(bountyId);
       const listed = state.helper ? [state.helper] : state.pending;
       return listed.filter((applicant) => !hidden(applicant)).map((item) => ({ ...item }));
     },
@@ -190,8 +198,10 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
         if (options.select === 'noPayee') return { ok: false, reason: 'noPayee' };
         assign(state, applicant);
       }
+      const first = accepted.length === 0;
       accepted.push({ bounty: bountyId, applicant: applicantId });
       options.onSelected?.([...accepted]);
+      if (options.select === 'lostAnswer' && first) return { ok: false, reason: 'failed' };
       return { ok: true, helperId: applicantId };
     },
     async markNotSelectedSeen() {},

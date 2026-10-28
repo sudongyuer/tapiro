@@ -368,6 +368,7 @@ export default {
     },
     done: {
       title: '选好了{{name}}',
+      titleNoName: '选好了人',
       addressRow: '精确地址',
       addressLoading: '正在加载地址',
       addressFailed: '地址没加载出来',

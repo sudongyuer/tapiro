@@ -377,6 +377,7 @@ const en: typeof zhHans = {
     },
     done: {
       title: 'You chose {{name}}',
+      titleNoName: 'You chose a helper',
       addressRow: 'Exact address',
       addressLoading: 'Loading the address',
       addressFailed: 'Couldn’t load the address',

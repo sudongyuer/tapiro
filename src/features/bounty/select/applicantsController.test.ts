@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import type { BountyDetail } from '../board/types';
-import { createApplicantsController } from './applicantsController';
+import { createApplicantsController, selectedHelper } from './applicantsController';
 import type { Applicant, SelectOutcome } from './types';
 
 const applicant = (id: string, patch: Partial<Applicant> = {}): Applicant => ({
@@ -50,6 +50,9 @@ function deferred<T>(): Deferred<T> {
   });
   return { promise, resolve, reject };
 }
+
+const HANA = { id: 'hana', name: 'hana', tier: 'reliable' } as const;
+const JIE = { id: 'jie', name: '阿杰', tier: 'very_reliable' } as const;
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -181,23 +184,68 @@ describe('select', () => {
     expect(h.controller.get().detail).toMatchObject({ detail: { status: 'assigned' } });
   });
 
-  test('a failure keeps the choice and is never replayed by a reload or a later trigger', async () => {
+  test('a failure reloads, keeps the choice and is never replayed by a later trigger', async () => {
     const h = await loaded();
     h.controller.chose('jie');
     const sent = h.controller.select();
     await settle();
     h.selects[0].answer.reject(new TypeError('Network request failed'));
+    await settle();
+    expect(h.controller.get().select.send).toEqual({ kind: 'sending', applicantId: 'jie' });
+    expect(h.lists).toHaveLength(2);
+    h.lists[1].resolve([applicant('jie'), applicant('hana')]);
+    h.details[1].resolve(DETAIL);
     await sent;
     expect(h.controller.get().select.send).toEqual({ kind: 'failed', reason: 'failed' });
     expect(h.controller.get().select.chosen).toBe('jie');
-    expect(h.lists).toHaveLength(1);
     const again = h.controller.load();
-    h.lists[1].resolve([applicant('jie'), applicant('hana')]);
-    h.details[1].resolve(DETAIL);
+    h.lists[2].resolve([applicant('jie'), applicant('hana')]);
+    h.details[2].resolve(DETAIL);
     await again;
     expect(h.selects).toHaveLength(1);
     expect(h.controller.get().select.send).toEqual({ kind: 'failed', reason: 'failed' });
-    expect(h.controller.get().select.chosen).toBe('jie');
+  });
+
+  test('a select that committed but lost its answer reconciles to selected', async () => {
+    const h = await loaded();
+    h.controller.chose('hana');
+    const sent = h.controller.select();
+    await settle();
+    h.selects[0].answer.reject(new TypeError('Network request failed'));
+    await settle();
+    h.lists[1].resolve([applicant('hana', { status: 'selected' })]);
+    h.details[1].resolve({ ...DETAIL, status: 'assigned', helper: HANA });
+    await sent;
+    expect(h.controller.get().select.send).toEqual({ kind: 'selected', helperId: 'hana' });
+    expect(selectedHelper(h.controller.get())).toEqual(HANA);
+    h.controller.chose('jie');
+    await h.controller.select();
+    expect(h.selects).toHaveLength(1);
+  });
+
+  test('a lost answer whose list reload failed reconciles from the detail', async () => {
+    const h = await loaded();
+    h.controller.chose('hana');
+    const sent = h.controller.select();
+    await settle();
+    h.selects[0].answer.reject(new TypeError('Network request failed'));
+    await settle();
+    h.lists[1].reject(new TypeError('Network request failed'));
+    h.details[1].resolve({ ...DETAIL, status: 'assigned', helper: HANA });
+    await sent;
+    expect(h.controller.get().select.send).toEqual({ kind: 'selected', helperId: 'hana' });
+  });
+
+  test('opening an assigned bounty shows it as selected', async () => {
+    const h = await loaded([applicant('hana', { status: 'selected' })]);
+    expect(h.controller.get().select.send).toEqual({ kind: 'selected', helperId: 'hana' });
+    const viaDetail = harness();
+    const done = viaDetail.controller.load();
+    viaDetail.lists[0].reject(new TypeError('Network request failed'));
+    viaDetail.details[0].resolve({ ...DETAIL, status: 'assigned', helper: HANA });
+    await done;
+    expect(viaDetail.controller.get().select.send).toEqual({ kind: 'selected', helperId: 'hana' });
+    expect(selectedHelper(viaDetail.controller.get())).toEqual(HANA);
   });
 
   test('notPending reloads the list after the in-flight load answers', async () => {
@@ -222,37 +270,82 @@ describe('select', () => {
     expect(select.list).toMatchObject({ applicants: [applicant('jie')] });
   });
 
-  test('a lost race reloads, then names the actual helper from the detail', async () => {
+  test('a lost race stays in flight until the reload names the winner', async () => {
     const h = await loaded();
     h.controller.chose('hana');
     const sent = h.controller.select();
     await settle();
     h.selects[0].answer.resolve({ ok: false, reason: 'taken' });
     await settle();
+    expect(h.controller.get().select.send).toEqual({ kind: 'sending', applicantId: 'hana' });
     h.lists[1].resolve([applicant('jie', { status: 'selected' })]);
-    h.details[1].resolve({
-      ...DETAIL,
-      status: 'assigned',
-      helper: { id: 'jie', name: '阿杰', tier: 'very_reliable' },
-    });
+    await settle();
+    expect(h.controller.get().select.send).toEqual({ kind: 'sending', applicantId: 'hana' });
+    h.details[1].resolve({ ...DETAIL, status: 'assigned', helper: JIE });
     await sent;
-    expect(h.controller.get().select.send).toEqual({ kind: 'raced' });
+    expect(h.controller.get().select.send).toEqual({ kind: 'raced', helper: JIE });
     h.controller.acknowledgeRace();
     expect(h.controller.get().select.send).toEqual({ kind: 'selected', helperId: 'jie' });
   });
 
-  test('a lost race whose detail failed takes the helper from the list', async () => {
+  test('a lost race whose detail failed takes the winner from the list', async () => {
     const h = await loaded();
     h.controller.chose('hana');
     const sent = h.controller.select();
     await settle();
     h.selects[0].answer.resolve({ ok: false, reason: 'taken' });
     await settle();
-    h.lists[1].resolve([applicant('jie', { status: 'selected' })]);
+    h.lists[1].resolve([applicant('jie', { name: '阿杰', status: 'selected' })]);
     h.details[1].reject(new TypeError('Network request failed'));
     await sent;
+    expect(h.controller.get().select.send).toEqual({
+      kind: 'raced',
+      helper: { id: 'jie', name: '阿杰', tier: 'reliable' },
+    });
+  });
+
+  test('a lost race never names a helper from a read older than the answer', async () => {
+    const h = await loaded();
+    h.controller.chose('hana');
+    const focus = h.controller.load();
+    const sent = h.controller.select();
+    await settle();
+    h.lists[1].resolve([applicant('jie', { status: 'selected' })]);
+    h.details[1].resolve({ ...DETAIL, status: 'assigned', helper: JIE });
+    await focus;
+    expect(h.controller.get().select.send).toEqual({ kind: 'sending', applicantId: 'hana' });
+    h.selects[0].answer.resolve({ ok: false, reason: 'taken' });
+    await settle();
+    h.lists[2].reject(new TypeError('Network request failed'));
+    h.details[2].reject(new TypeError('Network request failed'));
+    await sent;
+    expect(h.controller.get().select.send).toEqual({ kind: 'raced', helper: null });
+  });
+
+  test('a lost race whose reload failed has no name, and the name stays pending until a load', async () => {
+    const h = await loaded();
+    h.controller.chose('hana');
+    const sent = h.controller.select();
+    await settle();
+    h.selects[0].answer.resolve({ ok: false, reason: 'taken' });
+    await settle();
+    h.lists[1].reject(new TypeError('Network request failed'));
+    h.details[1].reject(new TypeError('Network request failed'));
+    await sent;
+    expect(h.controller.get().select.send).toEqual({ kind: 'raced', helper: null });
     h.controller.acknowledgeRace();
+    expect(h.controller.get().select.send).toEqual({ kind: 'selected', helperId: null });
+    expect(selectedHelper(h.controller.get())).toBeNull();
+    const focus = h.controller.load();
+    h.lists[2].resolve([applicant('jie', { status: 'selected' })]);
+    h.details[2].resolve({ ...DETAIL, status: 'assigned', helper: JIE });
+    await focus;
     expect(h.controller.get().select.send).toEqual({ kind: 'selected', helperId: 'jie' });
+    expect(selectedHelper(h.controller.get())).toEqual({
+      id: 'jie',
+      name: 'jie',
+      tier: 'reliable',
+    });
   });
 
   test('blocked removes the row at once and reloads the list', async () => {
