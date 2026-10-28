@@ -1,4 +1,14 @@
-import { Button, HStack, Image, RNHostView, Section, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Button,
+  ContextMenu,
+  HStack,
+  Image,
+  ProgressView,
+  RNHostView,
+  Section,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityAddTraits,
   accessibilityHidden,
@@ -22,6 +32,7 @@ import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import type { BlockedPerson } from '../block/types';
 import type { BountyDetail } from '../board/types';
 import { ringgit } from '../post/blockedReason';
 import { tierName, tierRank } from '../shared/tierCopy';
@@ -108,11 +119,15 @@ export function StateRow({ children }: { children: ReactElement }) {
 function ApplicantRow({
   applicant,
   chosen,
+  blocking,
   onChoose,
+  onBlock,
 }: {
   applicant: Applicant;
   chosen: boolean;
+  blocking: boolean;
   onChoose: (id: string) => void;
+  onBlock: (person: BlockedPerson) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -126,7 +141,7 @@ function ApplicantRow({
   ]
     .filter(Boolean)
     .join(' ');
-  return (
+  const row = (
     <Button
       onPress={() => onChoose(applicant.id)}
       testID={`bounty-applicant-${applicant.id}`}
@@ -149,28 +164,55 @@ function ApplicantRow({
           <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{meta}</Text>
           {note ? <Text modifiers={[primary, wraps]}>{note}</Text> : null}
         </VStack>
-        <Image
-          systemName="checkmark"
-          size={CHECK}
-          modifiers={[
-            foregroundStyle(chosen ? color('--color-accent') : 'clear'),
-            font({ textStyle: 'body', weight: 'semibold' }),
-            accessibilityHidden(),
-          ]}
-        />
+        {blocking ? (
+          <ProgressView
+            modifiers={[
+              accessibilityLabel(t('bounty.block.blocking')),
+              accessibilityIdentifier(`bounty-applicant-blocking-${applicant.id}`),
+            ]}
+          />
+        ) : (
+          <Image
+            systemName="checkmark"
+            size={CHECK}
+            modifiers={[
+              foregroundStyle(chosen ? color('--color-accent') : 'clear'),
+              font({ textStyle: 'body', weight: 'semibold' }),
+              accessibilityHidden(),
+            ]}
+          />
+        )}
       </HStack>
     </Button>
+  );
+  return (
+    <ContextMenu>
+      <ContextMenu.Items>
+        <Button
+          label={t('bounty.block.menu', { name })}
+          systemImage="hand.raised"
+          role="destructive"
+          onPress={() => onBlock({ id: applicant.id, name: applicant.name })}
+          testID={`bounty-applicant-block-${applicant.id}`}
+        />
+      </ContextMenu.Items>
+      <ContextMenu.Trigger>{row}</ContextMenu.Trigger>
+    </ContextMenu>
   );
 }
 
 export function ApplicantSection({
   applicants,
   chosen,
+  blocking,
   onChoose,
+  onBlock,
 }: {
   applicants: Applicant[];
   chosen: string | null;
+  blocking: string | null;
   onChoose: (id: string) => void;
+  onBlock: (person: BlockedPerson) => void;
 }) {
   const { t } = useI18n();
   return (
@@ -183,7 +225,9 @@ export function ApplicantSection({
           key={applicant.id}
           applicant={applicant}
           chosen={applicant.id === chosen}
+          blocking={applicant.id === blocking}
           onChoose={onChoose}
+          onBlock={onBlock}
         />
       ))}
     </Section>

@@ -128,6 +128,14 @@ const SETS: Record<ApplicantSet, Seed[]> = {
   worst: WORST,
 };
 
+export const FIXTURE_APPLICANT_PEOPLE = [
+  ...new Map(
+    Object.values(SETS)
+      .flat()
+      .map((item) => [item.id, { id: item.id, name: item.name }] as const),
+  ).values(),
+];
+
 const pause = (ms: number) =>
   ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 

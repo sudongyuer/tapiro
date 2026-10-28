@@ -2,6 +2,7 @@ import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
 import { FIXTURE_BOARDS } from '../board/fixtureBoardData';
+import { FIXTURE_APPLICANT_PEOPLE } from '../select/fixtureSelectService';
 import { createSupabaseBlockService } from './blockService';
 import { createFixtureBlockService } from './fixtureBlockService';
 import type { BlockService } from './types';
@@ -13,7 +14,7 @@ const fixturePeople = () => {
   for (const board of Object.values(FIXTURE_BOARDS)) {
     for (const item of board) people.set(item.poster.id, item.poster.name);
   }
-  return [...people].map(([id, name]) => ({ id, name }));
+  return [...[...people].map(([id, name]) => ({ id, name })), ...FIXTURE_APPLICANT_PEOPLE];
 };
 
 const fixture = uiVerify

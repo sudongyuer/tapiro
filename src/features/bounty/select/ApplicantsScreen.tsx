@@ -8,6 +8,7 @@ import { InlineState } from '@/ui/InlineState';
 import { SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
+import { useBlockPerson } from '../block/hooks';
 import { malaysiaClock } from '../board/malaysiaClock';
 import { selectedHelper } from './applicantsController';
 import { ApplicantSection, ApplicantsHeader, StateRow } from './ApplicantRows';
@@ -36,6 +37,7 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
   const view = applicantsView(model, new Date());
   const { list, chosen, send } = model.select;
   useRaceAlert(send, model.acknowledgeRace);
+  const blocking = useBlockPerson('applicant');
 
   if (view.body === 'gone') {
     return (
@@ -81,6 +83,15 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
           />
         </StateRow>
       ) : null}
+      {blocking.state === 'failed' ? (
+        <StateRow>
+          <InlineState
+            tone="warning"
+            text={t('bounty.block.failed')}
+            testID="bounty-applicants-block-failed"
+          />
+        </StateRow>
+      ) : null}
       {view.body === 'closed' ? (
         <StateRow>
           <InlineState
@@ -120,7 +131,13 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
           />
         </Section>
       ) : (
-        <ApplicantSection applicants={view.applicants} chosen={chosen} onChoose={model.chose} />
+        <ApplicantSection
+          applicants={view.applicants}
+          chosen={chosen}
+          blocking={blocking.target}
+          onChoose={model.chose}
+          onBlock={blocking.ask}
+        />
       )}
       {view.footer || view.notice ? (
         <SelectFooter footer={view.footer} notice={view.notice} onHold={() => void model.send()} />
