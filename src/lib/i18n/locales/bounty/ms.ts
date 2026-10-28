@@ -196,6 +196,7 @@ const ms: typeof zhHans = {
     },
     unlocated: 'Tiada tempat',
     state: {
+      loading: 'Memuatkan ganjaran',
       failed: 'Tidak dapat dimuatkan',
       retry: 'Cuba Lagi',
       empty: 'Tiada ganjaran berhampiran buat masa ini',

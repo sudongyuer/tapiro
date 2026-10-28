@@ -189,6 +189,7 @@ export default {
     },
     unlocated: '没写地点的',
     state: {
+      loading: '正在加载悬赏',
       failed: '没加载出来',
       retry: '重试',
       empty: '附近暂时没有悬赏',

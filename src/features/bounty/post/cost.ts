@@ -1,6 +1,6 @@
 import type { CostBase, CostLine, PostStatus } from './types';
 
-const MALAYSIA_OFFSET_MS = 8 * 3_600_000;
+export const MALAYSIA_OFFSET_MS = 8 * 3_600_000;
 
 function base(status: PostStatus): CostBase {
   if (status.freePostsLeft > 0) {

@@ -300,7 +300,7 @@ const LONG: FixtureBounty[] = Array.from({ length: LONG_COUNT }, (_, index) => {
 
 export const FIXTURE_BOARDS: Record<BoardFixture, FixtureBounty[]> = {
   full: FULL,
-  one: FULL.slice(0, 1),
+  one: FULL.slice(3, 4),
   empty: [],
   worst: WORST,
   long: LONG,

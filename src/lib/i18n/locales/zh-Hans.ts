@@ -242,10 +242,6 @@ export default {
         chipStudy: '找人讲微积分',
       },
     },
-    section: {
-      title: '能接的悬赏',
-      empty: '悬赏功能下一阶段上线',
-    },
     strip: {
       label: '{{title}}，{{line}}',
     },
@@ -265,7 +261,7 @@ export default {
         deleteBlocked: '删除账号（有未结清付款）',
       },
     },
-    bounty: { post: '发悬赏表单', confirm: '确认发布', placeSearch: '选地点' },
+    bounty: { post: '发悬赏表单', confirm: '确认发布', placeSearch: '选地点', board: '能接的悬赏' },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
     tokens: {

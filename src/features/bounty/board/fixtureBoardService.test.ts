@@ -174,7 +174,9 @@ describe('paging', () => {
       next: null,
       total: 0,
     });
-    expect((await service({ board: 'one' }).page(ME, 'all', null)).items).toHaveLength(1);
+    const one = await service({ board: 'one' }).page(ME, 'all', null);
+    expect(one.items.map((row) => [row.title, row.urgent])).toEqual([['帮忙打印论文', false]]);
+    expect((await service({ board: 'one' }).page(ME, 'urgent', null)).items).toEqual([]);
   });
 });
 

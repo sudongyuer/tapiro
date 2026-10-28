@@ -1,11 +1,11 @@
-import { useCallback, useState, type RefObject } from 'react';
+import { useCallback, useState, type ReactElement, type ReactNode, type RefObject } from 'react';
 import {
   PlatformColor,
   ScrollView,
   StyleSheet,
   View,
-  useWindowDimensions,
   type LayoutChangeEvent,
+  type RefreshControlProps,
   type ScrollViewProps,
 } from 'react-native';
 import Animated, {
@@ -27,7 +27,6 @@ import { useLiveItems } from '@/lib/useLiveItems';
 import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
-import { BountySection } from './BountySection';
 import { liveCards, stageLine, stageState } from './homeModel';
 import { HomeStrip, STRIP_ROW } from './HomeStrip';
 import { LiveCardStack, StackToggle, useCardHeights } from './LiveCardStack';
@@ -50,6 +49,8 @@ export type HomeScreenProps = {
   onToggle: (open: boolean) => void;
   name: string;
   onAsk: () => void;
+  board?: ReactNode;
+  refreshControl?: ReactElement<RefreshControlProps>;
 };
 
 export function HomeScreen({
@@ -59,9 +60,10 @@ export function HomeScreen({
   onToggle,
   name,
   onAsk,
+  board,
+  refreshControl,
 }: HomeScreenProps) {
   const { t } = useI18n();
-  const { height: windowHeight } = useWindowDimensions();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
   const reduceMotion = useReducedMotion();
   const { accessory, issues } = useLiveItems();
@@ -130,8 +132,9 @@ export function HomeScreen({
         ref={attachScroll}
         testID="home-scroll"
         contentInsetAdjustmentBehavior="automatic"
+        refreshControl={refreshControl}
         style={styles.screen}
-        contentContainerStyle={[styles.content, { minHeight: windowHeight * 2 }]}
+        contentContainerStyle={styles.content}
       >
         <MascotStage
           state={state}
@@ -160,7 +163,7 @@ export function HomeScreen({
           {cards.length > 1 ? (
             <StackToggle count={cards.length} open={open} onToggle={onToggle} />
           ) : null}
-          <BountySection />
+          {board}
         </Animated.View>
       </ScrollView>
       <HomeStrip

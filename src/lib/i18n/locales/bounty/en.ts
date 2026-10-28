@@ -194,6 +194,7 @@ const en: typeof zhHans = {
     },
     unlocated: 'No place given',
     state: {
+      loading: 'Loading bounties',
       failed: 'Couldn’t load',
       retry: 'Try Again',
       empty: 'No bounties nearby right now',

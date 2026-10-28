@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import struct
@@ -404,11 +405,19 @@ def assert_colour(shot, f, expected, name, tolerance=6):
     assert close(found, expected, tolerance), f'{name} is {found}, expected {expected}'
 
 
+# The rim, not the dominant colour: glass over varied content has no single dominant pixel, so the head's ink wins.
+def glass_luma(shot, f):
+    cx, cy, r = f['x'] + f['width'] / 2, f['y'] + f['height'] / 2, f['width'] / 2
+    rim = sorted(luma(shot.rgb(cx + r * k * math.cos(a * math.pi / 18), cy + r * k * math.sin(a * math.pi / 18)))
+                 for a in range(36) for k in (0.85, 0.9))
+    return rim[len(rim) // 2]
+
+
 def assert_tapir_button(shot, f, appearance, name):
     snout = {**f, 'width': f['width'] * 0.4}
     outline = shot.count(snout, lambda rgb: luma(rgb) > 235)
     ink = shot.count(f, lambda rgb: luma(rgb) < 60)
-    glass = luma(dominant(shot, f))
+    glass = glass_luma(shot, f)
     print(f'{name}: glass luma {glass:.0f}, {outline} white snout-outline pixels, {ink} ink pixels')
     if appearance == 'dark':
         assert glass < 80, f'{name}: button glass is light ({glass:.0f}) in dark appearance'

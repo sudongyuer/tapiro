@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { PlatformColor, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { fixtureUser } from '@/features/account';
-import { PlaceSearchScreen, PostConfirm, PostForm } from '@/features/bounty';
+import {
+  BountyBoard,
+  PlaceSearchScreen,
+  PostConfirm,
+  PostForm,
+  useBountyBoard,
+} from '@/features/bounty';
+import { vars } from '@/ui/theme/tokens';
 
 function Marker({ name }: { name: string | null }) {
   return name ? (
@@ -55,4 +62,28 @@ export function PlaceSearchScene({ onReady }: { onReady: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({ marker: { position: 'absolute', width: 1, height: 1 } });
+export function BountyBoardScene({ onReady }: { onReady: () => void }) {
+  const board = useBountyBoard(fixtureUser('apple').id);
+  const [posted, setPosted] = useState(false);
+  useEffect(onReady, [onReady]);
+  return (
+    <>
+      <ScrollView
+        testID="bounty-board-scene"
+        contentInsetAdjustmentBehavior="automatic"
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}
+      >
+        <BountyBoard board={board} onPost={() => setPosted(true)} />
+      </ScrollView>
+      <Marker name={posted ? 'post' : null} />
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  marker: { position: 'absolute', width: 1, height: 1 },
+  screen: { flex: 1, backgroundColor: PlatformColor('systemGroupedBackground') },
+  content: { paddingHorizontal: vars['--space-4'], paddingBottom: vars['--space-7'] },
+});
