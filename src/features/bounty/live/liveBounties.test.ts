@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { createInstance } from 'i18next';
 
 import { resources } from '@/lib/i18n/resources';
+import { sentenceStart, sentenceStartOptions } from '@/lib/i18n/sentenceStart';
 import type { BountyCardKind } from '@/lib/liveItems';
 
 import { timeParts } from '../post/timeText';
@@ -17,8 +18,14 @@ import type { LiveRow, SeenCard } from './types';
 const NOW = new Date('2026-10-29T06:00:00.000Z');
 
 function i18nFor(lng: string) {
-  const i18n = createInstance();
-  i18n.init({ resources, lng, initAsync: false, interpolation: { escapeValue: false } });
+  const i18n = createInstance().use(sentenceStart);
+  i18n.init({
+    ...sentenceStartOptions,
+    resources,
+    lng,
+    initAsync: false,
+    interpolation: { escapeValue: false },
+  });
   return i18n;
 }
 

@@ -3,7 +3,6 @@ import type { TFunction } from 'i18next';
 import type { AccessoryItem, BountyCardDetail, BountyCardKind } from '@/lib/liveItems';
 
 import { timeParts } from '../post/timeText';
-import { sentence } from '../shared/sentence';
 import type { LiveAction, LiveRow, SeenCard } from './types';
 
 export type BountyLiveItem = AccessoryItem & { kind: BountyCardKind; bounty: BountyCardDetail };
@@ -138,7 +137,7 @@ export function liveBountyItem(row: LiveRow, copy: LiveCopy): BountyLiveItem | n
     category: row.category,
     rewardSen: row.rewardSen,
     counterpart: row.counterpartName,
-    line: sentence(found.line),
+    line: found.line,
     target: TARGETS[found.target](row.bountyId),
     ...(actionLabel ? { actionLabel } : {}),
     ...(card ? { oneTime: card, markSeen: () => copy.markSeen(row.bountyId, card) } : {}),

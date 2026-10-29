@@ -49,6 +49,6 @@ status: complete
 | 6 `sick-simulator` | runner | Follow-up: on two command timeouts on one device, reboot it and retry the run once on another device, naming the device in the report. Open as an issue with the PR. |
 | 5 `outside-load` | runner | Folded into 6: a device swap also covers the boot-time load spike. |
 | 4 `native-effect` | review | Kept as practice: the controller opens the screenshot of every native effect; no rule, it held this time. |
-| 1 `untested-seam` | brief | Second occurrence: a brief for two tasks sharing a new contract includes one consumer-side test. Added to the plan template note in this retro; promote to AGENTS.md on a third. |
+| 1 `untested-seam` | brief | Second occurrence: a brief for two tasks sharing a new contract includes one consumer-side test. Recorded here; promote to AGENTS.md on a third. |
 | 3 `prep-gap` | prep | Preparation maps every drawn card to the field that feeds it; first occurrence, recorded only. |
 | 2 `case-authoring` | none | Normal authoring churn. |

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { createInstance } from 'i18next';
 
 import { resources } from '@/lib/i18n/resources';
+import { sentenceStart, sentenceStartOptions } from '@/lib/i18n/sentenceStart';
 
 import {
   createFixtureStatusService,
@@ -25,8 +26,14 @@ import type { StatusDetail, StatusRole } from './types';
 const NOW = new Date(2026, 9, 29, 12, 0);
 
 function copyFor(language: string) {
-  const i18n = createInstance();
-  i18n.init({ resources, lng: language, initAsync: false, interpolation: { escapeValue: false } });
+  const i18n = createInstance().use(sentenceStart);
+  i18n.init({
+    ...sentenceStartOptions,
+    resources,
+    lng: language,
+    initAsync: false,
+    interpolation: { escapeValue: false },
+  });
   return { t: i18n.t, language, now: NOW };
 }
 

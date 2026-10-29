@@ -215,8 +215,8 @@ and the Live Activity (11), 先付 (12).
   state at once. The applicant list now uses `SheetFrame scrollsUnderActions`. `StatusScreen` lost its `onAction` prop.
 - 2026-10-29, Task 8: open: `bounty_select` timed out three times on the `02-sending` screenshot (`simctl io screenshot`
   > 20 s while the clip records), with and without `scrollsUnderActions` (A/B on the same build), at load average 33–40
-  from Spotlight indexing and another agent's `AgentDeviceRunner`; rerun it on an idle machine. `bounty_applicants` and
-  `bounty_select_failed` pass with the pinned bar.
+  > from Spotlight indexing and another agent's `AgentDeviceRunner`; rerun it on an idle machine. `bounty_applicants` and
+  > `bounty_select_failed` pass with the pinned bar.
 - 2026-10-29, Task 9: the selection outcome keys on `detail.status` through one helper (`shared/partyOutcome.ts`):
   `assigned`…`settled` keep 「{poster}选了你」 / 「选好了{name}」, `cancelled` shows 「这单取消了」 (`bounty.status.cancelled`)
   without the address, for the helper, the poster's detail and the applicant screen. 看进度 (`bounty.status.action.view`)
@@ -242,3 +242,4 @@ and the Live Activity (11), 先付 (12).
   user has the system-drawn pinned bar. `pay.assert_pinned` / `bounty.assert_pinned` check the button sits in the
   bottom quarter inside the sheet (it is no longer below the form), `pay.scroll_to` stops at the top of the pinned
   actions, and `bounty_post_no_balance` looks for buttons in the bar instead of under the form.
+- 2026-10-29, controller: `formatRinggit` always writes `RM ` (ms locale data had no space); a sentence whose template opens with an interpolated name starts upper-case through the i18n post-processor `sentenceStart`, replacing the per-call `sentence()` helper. User rulings on the open items: 1A, 2A, 3B (overdue ETA is a story-map gap), 4A (no applicant 「这单过期了」 card), taken as recommended.
