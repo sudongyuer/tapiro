@@ -16,7 +16,7 @@ from recording import clip  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py']
 SCENE = 'bounty-applicants'
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifySelectDelayMs', '9000']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifySelectDelayMs', '20000']
 BUDGET = 360
 EARLY_S, FULL_S = 0.4, 1.5
 FILL_S, RUN_BACK_S, SLACK_S = 1.0, 0.2, 0.15
