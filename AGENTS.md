@@ -162,7 +162,8 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   `en`, the second most used language, until 2026-10-26.
 - Verify builds share one DerivedData per checkout (`.verify/DerivedData`). Never pass a
   per-task `-derivedDataPath`, copy the checkout to a temp directory, or call `simctl create`
-  directly; the runner owns the `Tapiro Verify` Simulator. Reason: the disk incident below.
+  directly; the runner owns the `Tapiro Verify` Simulators (three, one when under 15 GB free).
+  Reason: the disk incident below.
 - Verify mode (`EXPO_PUBLIC_UI_VERIFY=1`) replaces services at their boundary only; it never ships
   enabled.
 - Requirements and acceptance criteria live in `docs/story-map.md`; each criterion names its test

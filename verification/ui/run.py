@@ -5,22 +5,25 @@ import fcntl
 import re
 import json
 import os
+import queue
+import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
 from affected import SMOKE, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from pool import DEFAULT_WORKERS, device_names, worker_count
 from recording import stop_all
 
 MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 DEFAULT_APP = ROOT / '.verify/DerivedData/Build/Products/Release-iphonesimulator/Tapiro.app'
-DEVICE_NAME = 'Tapiro Verify'
 DEVICE_TYPE = 'com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro'
 DEFAULT_LOCALES = ['zh-Hans']
 DEFAULT_BUDGET = 180
@@ -35,17 +38,23 @@ def simctl(*args):
     return sh('xcrun', 'simctl', *args)
 
 
-def resolve_device(udid):
+def resolve_device(name=None, udid=None):
     devices = json.loads(simctl('list', 'devices', 'available', '-j'))['devices']
     for runtime, items in devices.items():
         for device in items:
-            if (udid and device['udid'] == udid) or (not udid and device['name'] == DEVICE_NAME):
-                return device['udid'], runtime
+            if (udid and device['udid'] == udid) or (not udid and device['name'] == name):
+                return device['name'], device['udid'], runtime
     if udid:
         raise SystemExit(f'No available Simulator {udid}')
     runtimes = json.loads(simctl('list', 'runtimes', 'available', '-j'))['runtimes']
     runtime = [r for r in runtimes if r['platform'] == 'iOS'][-1]['identifier']
-    return simctl('create', DEVICE_NAME, DEVICE_TYPE, runtime).strip(), runtime
+    return name, simctl('create', name, DEVICE_TYPE, runtime).strip(), runtime
+
+
+def prepare(device, app):
+    name, udid, runtime = device
+    boot(udid)
+    simctl('install', udid, str(app))
 
 
 def boot(udid):
@@ -196,7 +205,9 @@ def print_timings(timings, total):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', default=str(DEFAULT_APP))
-    parser.add_argument('--udid')
+    parser.add_argument('--udid', help='run on this one Simulator instead of the runner-owned ones')
+    parser.add_argument('--workers', type=int, default=DEFAULT_WORKERS,
+                        help='Simulators to run cases on in parallel; one when disk is low')
     parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
     parser.add_argument('--locale', choices=sorted(REGIONS))
@@ -231,7 +242,7 @@ def main():
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
-        raise SystemExit('Another verify:ui run is driving the Simulator; wait for it to finish.')
+        raise SystemExit('Another verify:ui run is driving the Simulators; wait for it to finish.')
     machine = open(MACHINE_LOCK, 'a+')
     try:
         fcntl.flock(machine, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -243,48 +254,96 @@ def main():
     machine.write(f'{ROOT} pid {os.getpid()} since {time.strftime("%H:%M:%S")}\n')
     machine.flush()
     export_strings()
-    udid, runtime = resolve_device(args.udid)
-    boot(udid)
-    simctl('install', udid, str(app))
-    sha, dirty = git_info()
-    xcode = sh('xcodebuild', '-version').splitlines()[0]
-
-    failures = 0
-    timings = []
-    results = []
-    stopped = None
-    run_started = time.monotonic()
     runs = [(case, *case_meta(case)) for case in cases]
     runs = [(case, scene, [args.locale] if args.locale else run_locales(locales, args.locales or not (tiered or args.cases)),
              extra, budget)
             for case, scene, locales, extra, budget in runs]
-    for appearance in appearances:
-        for case, scene, locales, extra, budget in runs:
-            for locale in locales:
-                out = Path(args.output) / locale / appearance / case
-                status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
-                failures += status != 'pass'
+    jobs = [(appearance, case, scene, locale, extra, budget)
+            for appearance in appearances
+            for case, scene, locales, extra, budget in runs
+            for locale in locales]
+    workers, reason = worker_count(args.workers, len(jobs), shutil.disk_usage(ROOT).free, pinned_udid=bool(args.udid))
+    if reason:
+        print(reason, flush=True)
+    if args.udid:
+        devices = [resolve_device(udid=args.udid)]
+    else:
+        devices = [resolve_device(name) for name in device_names(workers)]
+    errors = []
+    halt = threading.Event()
+
+    def guarded(target, *values):
+        def body():
+            try:
+                target(*values)
+            except BaseException as error:
+                errors.append(error)
+                halt.set()
+        return threading.Thread(target=body)
+
+    print(f'Booting {", ".join(name for name, _, _ in devices)} and installing the app', flush=True)
+    preparing = [guarded(prepare, device, app) for device in devices]
+    for thread in preparing:
+        thread.start()
+    for thread in preparing:
+        thread.join()
+    if errors:
+        raise errors[0]
+    print(f'Running {len(jobs)} runs on {len(devices)} Simulator{"s" if len(devices) > 1 else ""}: '
+          f'{", ".join(name for name, _, _ in devices)}', flush=True)
+    sha, dirty = git_info()
+    xcode = sh('xcodebuild', '-version').splitlines()[0]
+
+    pending = queue.Queue()
+    for job in jobs:
+        pending.put(job)
+    guard = threading.Lock()
+    timings = []
+    stopped = []
+
+    def work(device):
+        name, udid, runtime = device
+        results = []
+        while not halt.is_set():
+            try:
+                appearance, case, scene, locale, extra, budget = pending.get_nowait()
+            except queue.Empty:
+                return
+            out = Path(args.output) / locale / appearance / case
+            status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
+            (out / 'result.json').write_text(json.dumps({
+                'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
+                'status': status, 'message': message,
+                'duration_s': duration, 'commit': sha, 'dirty': dirty, 'xcode': xcode,
+                'device': {'name': name, 'udid': udid, 'runtime': runtime},
+                'app': str(app), 'videos': [v.name for v in videos(out)],
+            }, indent=2))
+            with guard:
                 timings.append((duration, status, locale, appearance, case))
-                (out / 'result.json').write_text(json.dumps({
-                    'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
-                    'status': status, 'message': message,
-                    'duration_s': duration, 'commit': sha, 'dirty': dirty, 'xcode': xcode,
-                    'device': {'name': DEVICE_NAME, 'udid': udid, 'runtime': runtime},
-                    'app': str(app), 'videos': [v.name for v in videos(out)],
-                }, indent=2))
-                print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}')
                 results.append({'status': status, 'message': message})
-                stopped = tripped(results)
-                if stopped:
-                    break
-            if stopped:
-                break
-        if stopped:
-            break
+                print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}'
+                      + (f'  [{name}]' if len(devices) > 1 else ''), flush=True)
+                tripped_class = tripped(results)
+                if tripped_class:
+                    stopped.append(tripped_class)
+                    halt.set()
+
+    run_started = time.monotonic()
+    threads = [guarded(work, device) for device in devices]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    for name, udid, _ in devices[1:]:
+        subprocess.run(['xcrun', 'simctl', 'shutdown', udid], capture_output=True)
+    if errors:
+        raise errors[0]
+    failures = sum(status != 'pass' for _, status, _, _, _ in timings)
+    stopped = stopped[0] if stopped else None
 
     print_timings(timings, time.monotonic() - run_started)
     if stopped:
-        print(f'stopped: 3 consecutive {stopped} timeouts — environment or screen problem')
+        print(f'stopped: 3 consecutive {stopped} timeouts on one Simulator — environment or screen problem')
         print(render_cpu_sample())
         failures += 1
     print(f'Artifacts: {args.output}')
