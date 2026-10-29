@@ -101,6 +101,14 @@ def assert_celebration(ui, *, first, count, title, name, amount, shot_name, cny=
     assert_centred(items, book, scale)
     shot = ui.snap(shot_name)
     assert_slots(shot, book, count, scale)
+    if first:
+        # The landed sticker overlaps the badge's lower left; only badge green or its white ink may show there.
+        b = badge['frame']
+        under = {'x': b['x'] + b['width'] * 0.2, 'y': b['y'] + b['height'] * 0.55, 'width': b['width'] * 0.15,
+                 'height': b['height'] * 0.1}
+        found = dominant(shot, under)
+        badge_ink = (token('--color-paper-green', ui.appearance), token('--color-sticker-border', ui.appearance))
+        assert any(close(found, ink, 14) for ink in badge_ink), f'the sticker covers the first-payment badge: {found}'
     f = book['frame']
     assert_colour(shot, {**f, 'width': f['width'] * 0.6}, token('--color-paper', ui.appearance), 'book paper', 10)
     screen = by_id(items, 'pay-celebration')['frame']

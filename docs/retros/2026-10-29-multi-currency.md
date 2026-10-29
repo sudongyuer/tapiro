@@ -18,3 +18,8 @@ status: running
 3. The account-delete integration test could not reach the gateway: `supabase status` reports 54321 while the gateway
    listens on 55321 (54321 is taken by another app). Worked around with a PATH wrapper, nothing committed. Tag
    `local-port`. Candidate: let the test read `SUPABASE_URL` from the environment before `supabase status`.
+4. The user found the 「第一次收款」 badge drawn under the landed sticker (payment step, unchanged since). The badge
+   lived inside the book while the flying sticker stays in a top layer, and `pay_first_settle` only checked the badge's
+   label, so it passed with the badge hidden. Fixed by drawing the badge in the top layer, plus a pixel check on the
+   overlap that fails on the old screenshot. Tags `vacuous-check`, `layering`. Candidate: an element meant to sit on
+   top of another gets a pixel check where they overlap.

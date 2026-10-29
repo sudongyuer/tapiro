@@ -18,6 +18,7 @@ import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
 import { BookPanel, type SlotCentre } from './BookPanel';
+import { SLOT_HEIGHT } from './BookSlots';
 import { TAPIR_RISE } from './BookTapir';
 import { Headline } from './Headline';
 import {
@@ -28,6 +29,7 @@ import {
   groupPoint,
   targetSlot,
 } from './model';
+import { FirstBadge } from './FirstBadge';
 import { FlyingSticker, Receipt, STICKER_OFFSET } from './ReceiptSticker';
 import { TIMELINE, tween } from './timeline';
 import { useCelebrationClock } from './useCelebrationClock';
@@ -84,6 +86,15 @@ export function Celebration({
     stage && layout && frame && centre
       ? groupPoint(stage, layout, frame.x + centre.x, layout.height - frame.height + centre.y)
       : start;
+  const badge =
+    stage && layout && frame && centre
+      ? groupPoint(
+          stage,
+          layout,
+          frame.x + centre.x - centre.width / 2 + vars['--space-6'],
+          layout.height - frame.height + centre.y - SLOT_HEIGHT / 2 - vars['--space-3'],
+        )
+      : null;
   const bookTitle = t('stickers.book.title');
   const counts: [string, string] | null =
     data.count === null
@@ -144,7 +155,6 @@ export function Celebration({
                   drop={stage && layout ? groupDrop(stage, layout) : height}
                   title={bookTitle}
                   counts={counts}
-                  badge={t('pay.celebrate.badge')}
                   countLabel={counts ? `${bookTitle} ${counts[1]}` : bookTitle}
                   onFrame={setFrame}
                   onTarget={setCentre}
@@ -188,6 +198,15 @@ export function Celebration({
                   dy={end.y - start.y}
                   land={layout?.scale ?? 1}
                   art={stickerArt(data)}
+                />
+              ) : null}
+              {data.first && badge && layout ? (
+                <FirstBadge
+                  clock={clock}
+                  label={t('pay.celebrate.badge')}
+                  x={badge.x}
+                  y={badge.y}
+                  scale={layout.scale}
                 />
               ) : null}
             </View>
