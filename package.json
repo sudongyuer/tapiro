@@ -57,6 +57,7 @@
     "typecheck": "tsc --noEmit",
     "check-specs": "node scripts/check-specs.mjs --dir docs/specs",
     "check-story-map": "node scripts/check-story-map.mjs",
+    "check:size": "node scripts/check-file-size.mjs",
     "test": "bun test",
     "design-check": "node scripts/design-check.mjs",
     "verify:build": "verification/ui/build.sh",
