@@ -23,3 +23,7 @@ board; a decision that contradicts a note needs the user.
   on-device cut-out, a stylised redraw like this needs an image model, so it falls under the AI rules (cloud call
   through an Edge Function, consent, a manual path); a spike decides between on-device cut-out plus a texture
   filter and a cloud redraw.
+- The user also points at CapWords' sticker look as the one wanted (canvas comment on 「CapWords 素材库」, page
+  07, 2026-10-29): a photographed object cut out along its outline, a thick white die-cut border, a soft drop
+  shadow, placed slightly tilted. This matches the spec's on-device cut-out; the DOOD-style redraw above is the
+  second, optional layer the step 9 spike weighs.
