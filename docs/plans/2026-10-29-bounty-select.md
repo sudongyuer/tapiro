@@ -91,17 +91,17 @@ prototype). Built contracts: `supabase/migrations/20261026001200_bounty_flow.sql
 
 ## Decided UI (do not re-ask)
 
-| Item | Decision | Source |
-| --- | --- | --- |
-| Applicant screen | Pushed system screen. Header block: 48 pt sticker, title, status line 「等你选人 · {n} 人申请」, reward (SF Rounded). Section header 「选一个人来帮你」; one grouped row per applicant; section footer 「只有选中的人能看到精确地址。」 | 6A, canvas board 6 |
-| Applicant row | Initial avatar, name, `TierMark`, a second line (content per Q48), the note in 「」 on its own line(s); tapping a row puts the system checkmark on it and moves the hold button's name; one selection at a time | 6A |
-| Hold button | One button pinned at the bottom (pinned area like the detail's `SheetFrame`), 64 pt tall, fully rounded, ink track; label 「按住，选{name}来帮你」; hint under it 「按住约 1 秒；选好后另外 {n} 人会看到「这次没选上」」 (n = applicants − 1; plural forms) | 6A, CraftPick 5 |
-| Holding | Gold fills from left to right; label 「继续按住…」; haptics light → heavy while held; release before full runs the fill back; full → a heavy 「咚」 | CraftPick 5, 6A other states |
-| 50 applicants | Still one list of rows; the button stays pinned | 6A |
-| Lost race | System alert 「已经选好了」 / 「你在另一台设备上已经选了{name}。」 / 好的 | 6A other states |
-| Not selected (applicant) | Detail: the sticker is no longer tilted and the 已申请 stamp is gone; pinned area shows a ≤ 32 pt 小貘 head, 「这次没选上」, 「{poster}选了别人。你的申请已经关掉，不影响靠谱度。」, 「你写的」 with the note, and the button 「看看附近别的悬赏」; tone plain | 6A other states |
-| Long-press block | An applicant row's long-press menu holds 「屏蔽{name}」 in red; confirmed by the system action sheet with the 5A copy | 5A |
-| Hold colour | A dedicated gold token, the one exception to "yellow is never a brand colour" | 12A |
+| Item                     | Decision                                                                                                                                                                                                                                                       | Source                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Applicant screen         | Pushed system screen. Header block: 48 pt sticker, title, status line 「等你选人 · {n} 人申请」, reward (SF Rounded). Section header 「选一个人来帮你」; one grouped row per applicant; section footer 「只有选中的人能看到精确地址。」                        | 6A, canvas board 6           |
+| Applicant row            | Initial avatar, name, `TierMark`, a second line (content per Q48), the note in 「」 on its own line(s); tapping a row puts the system checkmark on it and moves the hold button's name; one selection at a time                                                | 6A                           |
+| Hold button              | One button pinned at the bottom (pinned area like the detail's `SheetFrame`), 64 pt tall, fully rounded, ink track; label 「按住，选{name}来帮你」; hint under it 「按住约 1 秒；选好后另外 {n} 人会看到「这次没选上」」 (n = applicants − 1; plural forms)    | 6A, CraftPick 5              |
+| Holding                  | Gold fills from left to right; label 「继续按住…」; haptics light → heavy while held; release before full runs the fill back; full → a heavy 「咚」                                                                                                            | CraftPick 5, 6A other states |
+| 50 applicants            | Still one list of rows; the button stays pinned                                                                                                                                                                                                                | 6A                           |
+| Lost race                | System alert 「已经选好了」 / 「你在另一台设备上已经选了{name}。」 / 好的                                                                                                                                                                                      | 6A other states              |
+| Not selected (applicant) | Detail: the sticker is no longer tilted and the 已申请 stamp is gone; pinned area shows a ≤ 32 pt 小貘 head, 「这次没选上」, 「{poster}选了别人。你的申请已经关掉，不影响靠谱度。」, 「你写的」 with the note, and the button 「看看附近别的悬赏」; tone plain | 6A other states              |
+| Long-press block         | An applicant row's long-press menu holds 「屏蔽{name}」 in red; confirmed by the system action sheet with the 5A copy                                                                                                                                          | 5A                           |
+| Hold colour              | A dedicated gold token, the one exception to "yellow is never a brand colour"                                                                                                                                                                                  | 12A                          |
 
 ## Rulings made in this plan (overturn by saying so)
 
@@ -128,7 +128,7 @@ These close small gaps the canvas did not draw, each following an existing decis
    the row is gone; if it was the selected row, the selection clears.
 9. **「看看附近别的悬赏」** pops the 悬赏 Stack to the board root and scrolls the board to its top.
 10. **The detail's outcome comes from `myApplication.status`**: `not_selected` → not-selected state; `viewerRole =
-    'helper'` → selected state (Q53); `withdrawn` keeps the step-4 behaviour.
+'helper'` → selected state (Q53); `withdrawn` keeps the step-4 behaviour.
 11. **No count on a failed first load**: the status line shows only 「等你选人」 until the list has loaded.
 12. **The applicant screen for a bounty that is no longer open** (assigned by another device, expired, cancelled) shows
     the after-selection state (Q52) when assigned, else an inline card 「这条悬赏已经关闭了」 with 返回.
@@ -137,30 +137,30 @@ These close small gaps the canvas did not draw, each following an existing decis
 
 Drawn on the canvas as questions 45–54 (details, options and drawings: `questions.md`). ★ marks the recommendation.
 
-| # | Question | Options | ★ | Blocks |
-| --- | --- | --- | --- | --- |
-| 45 | How the poster reaches the applicant list before step 6's live cards | A move the bounty live source forward · B Debug scenes until step 6 · C interim 我的 list | B | 5, 10 |
-| 46 | The hold button before any row is chosen | A disabled 「先选一个人」 · B first row preselected · C hidden until a choice | A | 5, 6 |
-| 47 | The screen while nobody has applied | A inline card, no button · B empty section + disabled button | A | 5 |
-| 48 | The row's second line | A 「帮过 N 次」 only · B also the distance, captured at apply time · C nothing (tier only) | A | 1, 4, 5 |
-| 49 | Gold token values | A flat gold on the ink track, both modes · B the drawn two-stop gradient · C gold track, ink fill | A | 3 |
-| 50 | Fill timing and haptics (motion) | A 1.0 s linear, 4 ticks, heavy at full · B 0.8 s ease-in · C 1.2 s linear, no ticks | A | 3 |
-| 51 | While the choice is sent, and when it fails | A fill stays, 「正在选…」, notice above the button · B system alert per reason | A | 6 |
-| 52 | The poster's screen right after choosing (until step 6) | A same screen turns into 「选好了{name}」 with address · B pop back with a banner | A | 6 |
-| 53 | What the selected applicant sees (until step 6) | A 「{poster}选了你」 + exact address · B plus a 「选中」 stamp · C only the line, no address | A | 8 |
-| 54 | When 「这次没选上」 counts as seen | A when the detail shows it · B on 「知道了」 · C on first display of the home card (step 6) | A | 8 |
+| #   | Question                                                             | Options                                                                                           | ★   | Blocks  |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --- | ------- |
+| 45  | How the poster reaches the applicant list before step 6's live cards | A move the bounty live source forward · B Debug scenes until step 6 · C interim 我的 list         | B   | 5, 10   |
+| 46  | The hold button before any row is chosen                             | A disabled 「先选一个人」 · B first row preselected · C hidden until a choice                     | A   | 5, 6    |
+| 47  | The screen while nobody has applied                                  | A inline card, no button · B empty section + disabled button                                      | A   | 5       |
+| 48  | The row's second line                                                | A 「帮过 N 次」 only · B also the distance, captured at apply time · C nothing (tier only)        | A   | 1, 4, 5 |
+| 49  | Gold token values                                                    | A flat gold on the ink track, both modes · B the drawn two-stop gradient · C gold track, ink fill | A   | 3       |
+| 50  | Fill timing and haptics (motion)                                     | A 1.0 s linear, 4 ticks, heavy at full · B 0.8 s ease-in · C 1.2 s linear, no ticks               | A   | 3       |
+| 51  | While the choice is sent, and when it fails                          | A fill stays, 「正在选…」, notice above the button · B system alert per reason                    | A   | 6       |
+| 52  | The poster's screen right after choosing (until step 6)              | A same screen turns into 「选好了{name}」 with address · B pop back with a banner                 | A   | 6       |
+| 53  | What the selected applicant sees (until step 6)                      | A 「{poster}选了你」 + exact address · B plus a 「选中」 stamp · C only the line, no address      | A   | 8       |
+| 54  | When 「这次没选上」 counts as seen                                   | A when the detail shows it · B on 「知道了」 · C on first display of the home card (step 6)       | A   | 8       |
 
 ## Motion
 
-| Motion | Purpose | Gate | Build |
-| --- | --- | --- | --- |
-| Hold fill, release run-back, haptic ramp | commitment | Passed (spec Motion table, CraftPick 5, 6A); rare and hard to undo | Q50; `HoldButton` in `src/ui` |
-| Push to the applicant list, back, system alert and action sheet | navigation | System | Native Stack, `Alert`, `ConfirmationDialog` |
-| Row checkmark on tap | — | Frequent while comparing applicants: no animation | Instant swap |
-| Long-press lift | — | System context menu | `ContextMenu` |
-| Applicant list reload, row removed after a block | — | Not a moment | Instant, list replaced |
-| Sticker untilts and the stamp disappears (not selected) | — | The applicant learns the outcome on a reload, not by acting; motion would replay a past event | Static final state |
-| 「选好了{name}」 state after success | — | The heavy haptic at full is the feedback; one result, one haptic | Instant swap (Q51 decides the in-flight state) |
+| Motion                                                          | Purpose    | Gate                                                                                          | Build                                          |
+| --------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Hold fill, release run-back, haptic ramp                        | commitment | Passed (spec Motion table, CraftPick 5, 6A); rare and hard to undo                            | Q50; `HoldButton` in `src/ui`                  |
+| Push to the applicant list, back, system alert and action sheet | navigation | System                                                                                        | Native Stack, `Alert`, `ConfirmationDialog`    |
+| Row checkmark on tap                                            | —          | Frequent while comparing applicants: no animation                                             | Instant swap                                   |
+| Long-press lift                                                 | —          | System context menu                                                                           | `ContextMenu`                                  |
+| Applicant list reload, row removed after a block                | —          | Not a moment                                                                                  | Instant, list replaced                         |
+| Sticker untilts and the stamp disappears (not selected)         | —          | The applicant learns the outcome on a reload, not by acting; motion would replay a past event | Static final state                             |
+| 「选好了{name}」 state after success                            | —          | The heavy haptic at full is the feedback; one result, one haptic                              | Instant swap (Q51 decides the in-flight state) |
 
 No `withRepeat`, no infinite cycles. Reduce Motion: per Q50.
 
@@ -196,15 +196,22 @@ No `withRepeat`, no infinite cycles. Reduce Motion: per Q50.
 ```ts
 // src/features/bounty/select/types.ts
 export type Applicant = {
-  id: string; name: string | null; tier: Tier; note: string | null;
-  status: 'pending' | 'selected'; appliedAt: string; helpedCount: number;
+  id: string;
+  name: string | null;
+  tier: Tier;
+  note: string | null;
+  status: 'pending' | 'selected';
+  appliedAt: string;
+  helpedCount: number;
   distanceM?: number | null; // Q48 = B only
 };
 export type SelectFailure = 'taken' | 'closed' | 'notPending' | 'noPayee' | 'gone' | 'failed';
 export type SelectService = {
   applicants(bountyId: string): Promise<Applicant[] | 'gone'>; // throws on failure
-  select(bountyId: string, applicantId: string):
-    Promise<{ ok: true; helperId: string } | { ok: false; reason: SelectFailure }>;
+  select(
+    bountyId: string,
+    applicantId: string,
+  ): Promise<{ ok: true; helperId: string } | { ok: false; reason: SelectFailure }>;
   markNotSelectedSeen(bountyId: string): Promise<void>; // swallows failure; retried on the next display
 };
 // blocked → notPending (the list hides blocked pairs, so the row is gone after the reload)
@@ -214,21 +221,33 @@ export type SelectState = {
   list:
     | { kind: 'loading' }
     | { kind: 'failed'; retrying: boolean }
-    | { kind: 'ready'; applicants: Applicant[]; loadedAt: string; refreshing: boolean; refreshFailed: boolean }
+    | {
+        kind: 'ready';
+        applicants: Applicant[];
+        loadedAt: string;
+        refreshing: boolean;
+        refreshFailed: boolean;
+      }
     | { kind: 'gone' };
-  chosen: string | null;                                   // applicant id with the checkmark
-  send: { kind: 'idle' } | { kind: 'sending'; applicantId: string }
-      | { kind: 'failed'; reason: Exclude<SelectFailure, 'taken'> } | { kind: 'raced' }
-      | { kind: 'selected'; helperId: string };
+  chosen: string | null; // applicant id with the checkmark
+  send:
+    | { kind: 'idle' }
+    | { kind: 'sending'; applicantId: string }
+    | { kind: 'failed'; reason: Exclude<SelectFailure, 'taken'> }
+    | { kind: 'raced' }
+    | { kind: 'selected'; helperId: string };
 };
 // events: loadStarted, loaded(applicants, at), loadFailed, gone, chose(id), holdCompleted, answered(result),
 //         blocked(id), raceAcknowledged
 
 // src/ui/HoldButton.tsx
 export function HoldButton(props: {
-  label: string; holdingLabel: string; busyLabel: string; hint?: string;
+  label: string;
+  holdingLabel: string;
+  busyLabel: string;
+  hint?: string;
   state: 'disabled' | 'ready' | 'busy';
-  onComplete: () => void;            // called once when the fill reaches full
+  onComplete: () => void; // called once when the fill reaches full
   onAccessibilityActivate: () => void; // ruling 7
   testID?: string;
 }): JSX.Element;
@@ -240,50 +259,50 @@ export function HoldButton(props: {
 
 Routes:
 
-| Path | File | Presentation |
-| --- | --- | --- |
+| Path                      | File                                        | Presentation                                                                                                    |
+| ------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `/bounty/applicants/[id]` | `src/app/(tabs)/bounty/applicants/[id].tsx` | Push in the 悬赏 Stack, transparent header with `scrollEdgeEffects`, title hidden (the header block carries it) |
 
 testID pattern:
 
-| Element | testID |
-| --- | --- |
-| Screen / header | `bounty-applicants`, `bounty-applicants-title`, `bounty-applicants-status`, `bounty-applicants-reward` |
-| Rows | `bounty-applicant-<applicantId>`, `-name`, `-tier`, `-meta`, `-note`, `-check` |
-| States | `bounty-applicants-empty`, `bounty-applicants-failed`, `bounty-applicants-stale`, `bounty-applicants-closed`, `bounty-applicants-retry` |
-| Hold | `bounty-select-hold`, `bounty-select-hint`, `bounty-select-failed`, `bounty-select-busy` |
-| After selection | `bounty-select-done`, `bounty-select-done-row`, `bounty-select-done-address` |
-| Detail outcome | `bounty-detail-not-selected`, `bounty-detail-not-selected-note`, `bounty-detail-browse`, `bounty-detail-selected`, `bounty-detail-address` |
+| Element         | testID                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Screen / header | `bounty-applicants`, `bounty-applicants-title`, `bounty-applicants-status`, `bounty-applicants-reward`                                     |
+| Rows            | `bounty-applicant-<applicantId>`, `-name`, `-tier`, `-meta`, `-note`, `-check`                                                             |
+| States          | `bounty-applicants-empty`, `bounty-applicants-failed`, `bounty-applicants-stale`, `bounty-applicants-closed`, `bounty-applicants-retry`    |
+| Hold            | `bounty-select-hold`, `bounty-select-hint`, `bounty-select-failed`, `bounty-select-busy`                                                   |
+| After selection | `bounty-select-done`, `bounty-select-done-row`, `bounty-select-done-address`                                                               |
+| Detail outcome  | `bounty-detail-not-selected`, `bounty-detail-not-selected-note`, `bounty-detail-browse`, `bounty-detail-selected`, `bounty-detail-address` |
 
 Verify launch arguments (fixture services, `uiVerify` only):
 
-| Argument | Values | Effect |
-| --- | --- | --- |
-| `-uiVerifyApplicants` | `three` (default: 阿杰 很靠谱 帮过 14 次 with a note, Hana 新朋友 还没帮过, Aiman 靠谱 帮过 3 次), `none`, `one`, `fifty`, `worst` (40-character names, 140-code-point notes, 貘友, `helpedCount` 128) | `applicants()` data for every bounty id |
-| `-uiVerifyApplicantsFail` | `first`, `refresh` | first load fails once / the second load fails |
-| `-uiVerifySelect` | `ok` (default), `failOnce`, `taken`, `notPending`, `noPayee`, `closed` | `select()`; in verify builds it takes 2.5 s so a case can see the in-flight state |
-| `-uiVerifyDetail` | adds `notSelected`, `selected` | the fixture detail answers with that outcome for `-uiVerifyDetailId` |
+| Argument                  | Values                                                                                                                                                                                                 | Effect                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `-uiVerifyApplicants`     | `three` (default: 阿杰 很靠谱 帮过 14 次 with a note, Hana 新朋友 还没帮过, Aiman 靠谱 帮过 3 次), `none`, `one`, `fifty`, `worst` (40-character names, 140-code-point notes, 貘友, `helpedCount` 128) | `applicants()` data for every bounty id                                           |
+| `-uiVerifyApplicantsFail` | `first`, `refresh`                                                                                                                                                                                     | first load fails once / the second load fails                                     |
+| `-uiVerifySelect`         | `ok` (default), `failOnce`, `taken`, `notPending`, `noPayee`, `closed`                                                                                                                                 | `select()`; in verify builds it takes 2.5 s so a case can see the in-flight state |
+| `-uiVerifyDetail`         | adds `notSelected`, `selected`                                                                                                                                                                         | the fixture detail answers with that outcome for `-uiVerifyDetailId`              |
 
 ## File structure
 
-| Action | Path | Responsibility |
-| --- | --- | --- |
-| Create | `supabase/migrations/20261029000000_bounty_applicants_helped.sql` | `helpedCount` (and Q48 = B's distance) |
-| Create | `supabase/tests/bounty_applicants.test.sql` | Count, order, filters, poster-only, the new key list |
-| Modify | `src/lib/i18n/locales/bounty/{zh-Hans,en,ms}.ts` | `bounty.select.*`, `bounty.detail.selected.*`, `bounty.detail.notSelected.*`, `bounty.block.confirm.applicantBody` |
-| Modify | `src/ui/theme/tokens.ts`, `docs/design-language.md` | 12A tokens (Q49), exception note, `HoldButton` in the component inventory |
-| Create | `src/ui/HoldButton.tsx`, `src/ui/holdSchedule.ts` (+ test) | The hold control |
-| Create | `src/features/bounty/select/{types,selectService,fixtureSelectService,parse,selectState,useApplicants,selectCopy}.ts` (+ tests) | Data, state, freshness, failure copy |
-| Create | `src/features/bounty/select/{ApplicantsScreen,ApplicantRows,SelectFooter,SelectedSummary}.tsx` | 6A screen (each < 300 lines) |
-| Modify | `src/features/bounty/services.ts`, `src/features/bounty/index.ts` | Wire the select service and export the screen |
-| Create | `src/app/(tabs)/bounty/applicants/[id].tsx`; Modify `src/app/(tabs)/bounty/_layout.tsx` | Route |
-| Modify | `src/features/bounty/detail/{detailState,BountyDetailScreen,DetailRows}.ts(x)`; Create `detail/OutcomeActions.tsx` | Selected / not-selected states |
-| Modify | `src/features/bounty/board/{types,parse,fixtureBoardService}.ts` | `helper` on the detail; fixture address and outcomes |
-| Modify | `src/features/bounty/block/{blockFlow,hooks}.ts` | Accept any person, not only the poster |
-| Modify | `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx` | Scene `bounty-applicants` |
-| Create | `verification/ui/select.py`; cases `bounty_applicants`, `bounty_select`, `bounty_select_failed`, `bounty_select_race`, `bounty_applicant_block`, `bounty_detail_outcome`, `bounty_applicants_worst` | Helpers and cases |
-| Modify | `verification/ui/driver.py` | A press-and-hold primitive (Task 6) |
-| Modify | `verification/ui/README.md`, `docs/story-map.md` | Docs |
+| Action | Path                                                                                                                                                                                                | Responsibility                                                                                                     |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Create | `supabase/migrations/20261029000000_bounty_applicants_helped.sql`                                                                                                                                   | `helpedCount` (and Q48 = B's distance)                                                                             |
+| Create | `supabase/tests/bounty_applicants.test.sql`                                                                                                                                                         | Count, order, filters, poster-only, the new key list                                                               |
+| Modify | `src/lib/i18n/locales/bounty/{zh-Hans,en,ms}.ts`                                                                                                                                                    | `bounty.select.*`, `bounty.detail.selected.*`, `bounty.detail.notSelected.*`, `bounty.block.confirm.applicantBody` |
+| Modify | `src/ui/theme/tokens.ts`, `docs/design-language.md`                                                                                                                                                 | 12A tokens (Q49), exception note, `HoldButton` in the component inventory                                          |
+| Create | `src/ui/HoldButton.tsx`, `src/ui/holdSchedule.ts` (+ test)                                                                                                                                          | The hold control                                                                                                   |
+| Create | `src/features/bounty/select/{types,selectService,fixtureSelectService,parse,selectState,useApplicants,selectCopy}.ts` (+ tests)                                                                     | Data, state, freshness, failure copy                                                                               |
+| Create | `src/features/bounty/select/{ApplicantsScreen,ApplicantRows,SelectFooter,SelectedSummary}.tsx`                                                                                                      | 6A screen (each < 300 lines)                                                                                       |
+| Modify | `src/features/bounty/services.ts`, `src/features/bounty/index.ts`                                                                                                                                   | Wire the select service and export the screen                                                                      |
+| Create | `src/app/(tabs)/bounty/applicants/[id].tsx`; Modify `src/app/(tabs)/bounty/_layout.tsx`                                                                                                             | Route                                                                                                              |
+| Modify | `src/features/bounty/detail/{detailState,BountyDetailScreen,DetailRows}.ts(x)`; Create `detail/OutcomeActions.tsx`                                                                                  | Selected / not-selected states                                                                                     |
+| Modify | `src/features/bounty/board/{types,parse,fixtureBoardService}.ts`                                                                                                                                    | `helper` on the detail; fixture address and outcomes                                                               |
+| Modify | `src/features/bounty/block/{blockFlow,hooks}.ts`                                                                                                                                                    | Accept any person, not only the poster                                                                             |
+| Modify | `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx`                                                                                                                                                | Scene `bounty-applicants`                                                                                          |
+| Create | `verification/ui/select.py`; cases `bounty_applicants`, `bounty_select`, `bounty_select_failed`, `bounty_select_race`, `bounty_applicant_block`, `bounty_detail_outcome`, `bounty_applicants_worst` | Helpers and cases                                                                                                  |
+| Modify | `verification/ui/driver.py`                                                                                                                                                                         | A press-and-hold primitive (Task 6)                                                                                |
+| Modify | `verification/ui/README.md`, `docs/story-map.md`                                                                                                                                                    | Docs                                                                                                               |
 
 ## PR split
 
@@ -341,7 +360,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 - [ ] VoiceOver labels: applicant row (name, tier, meta, note, selected state), hold button (label + 「按住约 1 秒，或
       双击确认」 hint).
 - [ ] zh-Hans first, then en, then ms; `bun test src/lib/i18n` passes; commit `feat(bounty): applicant list and
-      selection copy in zh-Hans, en, ms`.
+    selection copy in zh-Hans, en, ms`.
 
 ## Task 3: Hold token and `HoldButton` (Q49, Q50 answered)
 
@@ -363,7 +382,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 - [ ] `HoldButton`: Gesture Handler `Gesture.LongPress().minDuration(0)` (or `Manual` if `LongPress` cannot report
       begin/end without delay; read `node_modules/react-native-gesture-handler` types first) drives a Reanimated shared
       value `progress` 0 → 1 with `withTiming` per Q50; the fill is a full-width view with `transform: [{ scaleX:
-      progress }]` anchored left (`transformOrigin: 'left'`); the label cross-fades from the track label to the fill
+    progress }]` anchored left (`transformOrigin: 'left'`); the label cross-fades from the track label to the fill
       label at 50 % by opacity only; release before 1 runs back per Q50; at 1 `runOnJS(onComplete)` once and the
       heavy impact. Haptic ticks from `holdSchedule` via `runOnJS(Haptics.impactAsync)`. `busy` shows `busyLabel`
       with a spinner and ignores touches; `disabled` uses the disabled appearance and ignores touches.
@@ -421,7 +440,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
       zero applicants per Q47; first-load failure 「没加载出来」 + 重试 (`InlineState`, no count); refresh failure: the
       warning `InlineState` with the data time above the list; closed (ruling 12).
 - [ ] Case `bounty_applicants` (`ARGS -uiVerifySignedIn onboarded`, scene `bounty-applicants`, `LOCALES ['zh-Hans',
-      'ms']`, `DEPS` the select folder, `src/ui/HoldButton.tsx`, the route): three rows in order 阿杰, Hana, Aiman with
+    'ms']`, `DEPS` the select folder, `src/ui/HoldButton.tsx`, the route): three rows in order 阿杰, Hana, Aiman with
       tier text and the Q48 meta; the button shows the Q46 state; tap Hana → check on Hana only and the label reads
       `ui.t('bounty.select.hold.label', name='Hana')`; tap 阿杰 → the check moves (assert Hana unchecked, so the first
       assertion can fail); the hint count reads 2; every row and the button ≥ 44 pt; `-uiVerifyApplicants none` → the
@@ -510,7 +529,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
       verb); the tier keeps its width and the name truncates (42A); the full note is readable; with `fifty` the list
       scrolls to the last row above the pinned button; screenshots top, middle, end.
 - [ ] Fix every break (layout only; copy changes go to the user); re-run; commit `fix(bounty): worst-case applicant
-      list`.
+    list`.
 
 ## Task 10: Story map, README, rulings and the PR gate
 
@@ -518,22 +537,14 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 
 **Steps**
 
-- [ ] `docs/story-map.md` (`bounty.apply`):
-      - `bounty.apply.select` → replace `ui` with `ui:bounty_select`, `ui:bounty_select_race`, add
-        `unit:src/features/bounty/select/selectState.test.ts`, `unit:src/ui/holdSchedule.test.ts`, keep `device`
-        written as `device: 按住时震动由轻到重、满了重重一下（真机）` and the two-session gap
-      - new `bounty.apply.applicants` 「发布者看到所有申请人：名字、靠谱度、帮过几次、那句话，按申请先后；首次加载失败不显示成
-        没人申请」 → `db:supabase/tests/bounty_applicants.test.sql`, `ui:bounty_applicants`,
-        `unit:src/features/bounty/select/selectService.test.ts`
-      - new `bounty.apply.select-failure` 「挑人失败保留选中的人、不自动重发；对方撤回、没有收款方式或悬赏已关闭时说明原因」 →
-        `ui:bounty_select_failed`, `unit:src/features/bounty/select/selectState.test.ts`
-      - new `bounty.apply.outcome` 「没选上的人看到「这次没选上」和不歪的贴纸；选中的人看到「{发布者}选了你」和精确地址」 →
-        `ui:bounty_detail_outcome`, `unit:src/features/bounty/detail/detailState.test.ts`
-      - `bounty.apply.seen` → add `ui:bounty_detail_outcome` (the server mark) and keep `ui` planned for the step 6 card
-      - `bounty.apply.blocked` → add `ui:bounty_applicant_block`
-      - new `bounty.apply.select-worst` 「50 个申请人、40 字名字、140 字留言都排得下，按住按钮不被盖住」 →
-        `ui:bounty_applicants_worst`
-      - with Q45 = B, add `gap: 发布者从首页卡片进入挑人页在第 6 步接上` to `bounty.apply.applicants`
+- [ ] `docs/story-map.md` (`bounty.apply`): - `bounty.apply.select` → replace `ui` with `ui:bounty_select`, `ui:bounty_select_race`, add
+      `unit:src/features/bounty/select/selectState.test.ts`, `unit:src/ui/holdSchedule.test.ts`, keep `device`
+      written as `device: 按住时震动由轻到重、满了重重一下（真机）` and the two-session gap - new `bounty.apply.applicants` 「发布者看到所有申请人：名字、靠谱度、帮过几次、那句话，按申请先后；首次加载失败不显示成
+      没人申请」 → `db:supabase/tests/bounty_applicants.test.sql`, `ui:bounty_applicants`,
+      `unit:src/features/bounty/select/selectService.test.ts` - new `bounty.apply.select-failure` 「挑人失败保留选中的人、不自动重发；对方撤回、没有收款方式或悬赏已关闭时说明原因」 →
+      `ui:bounty_select_failed`, `unit:src/features/bounty/select/selectState.test.ts` - new `bounty.apply.outcome` 「没选上的人看到「这次没选上」和不歪的贴纸；选中的人看到「{发布者}选了你」和精确地址」 →
+      `ui:bounty_detail_outcome`, `unit:src/features/bounty/detail/detailState.test.ts` - `bounty.apply.seen` → add `ui:bounty_detail_outcome` (the server mark) and keep `ui` planned for the step 6 card - `bounty.apply.blocked` → add `ui:bounty_applicant_block` - new `bounty.apply.select-worst` 「50 个申请人、40 字名字、140 字留言都排得下，按住按钮不被盖住」 →
+      `ui:bounty_applicants_worst` - with Q45 = B, add `gap: 发布者从首页卡片进入挑人页在第 6 步接上` to `bounty.apply.applicants`
       Test names exactly as in the files; `node scripts/check-story-map.mjs` passes.
 - [ ] README: the four launch arguments, `uiVerifySelectedArgs`, `driver.press`, and every new case row.
 - [ ] Device checklist entries (story-map `device:`): haptic ramp and the heavy impact; the hold with a thumb while the
@@ -546,37 +557,37 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 
 Tasks that share files or interfaces; run them in order, never in parallel.
 
-| Shared file / interface | Tasks | Rule |
-| --- | --- | --- |
-| Migration and `bounty_applicants` JSON shape | 1 → 4 | Task 4 starts after Task 1 is committed; types copied from the SQL |
-| `apply_to_bounty` signature (only if Q48 = B) | 1 | Step 4's `boardService.apply` and its tests change in Task 1's commit; the apply sheet passes the board origin |
-| `src/lib/i18n/locales/bounty/*` | 2, then small additions in 5–9 | Task 2 adds every foreseeable key; later tasks append, never rename |
-| `src/ui/theme/tokens.ts`, `docs/design-language.md` | 3 | Only Task 3; `design_tokens` case updated there |
-| `src/ui/HoldButton.tsx` (shared path: selects every case) | 3 → 5, 6 | Built once; Tasks 5–6 consume, never fork it |
-| `select/selectState.ts` events | 4 → 5, 6, 7 | Contract fixed in Task 4; Task 7 uses `blocked(id)` |
-| `ApplicantsScreen.tsx`, `ApplicantRows.tsx`, `SelectFooter.tsx` | 5, 6, 7, 9 | 6 adds the hold wiring, 7 the context menu, 9 fixes layout last |
-| `block/blockFlow.ts`, `block/hooks.ts` | 7 | Only Task 7; `bounty_block` (step 4) reruns there |
-| `detail/*`, `board/{types,parse}.ts`, `shared/appliedStamp.tsx` | 8 | Only Task 8; `bounty_detail`, `bounty_apply_detail`, `bounty_withdraw` rerun there |
-| `src/app/(tabs)/bounty/_layout.tsx` | 5 | Adds `applicants/[id]`; keeps the toolbar 「+」 and the step-4 screens untouched |
-| `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx` (shared path) | 3, 5, 8 | Append scenes and fixture outcomes only |
-| `verification/ui/driver.py` (shared path) | 6 | Only Task 6; runner unit tests rerun |
-| `verification/ui/README.md`, `docs/story-map.md` | 10 | Only Task 10 |
-| Step 6 (status screens, live source) running in parallel | — | Do not start step 6 until this PR merges: both change `detail/*` and the 悬赏 `_layout.tsx` |
+| Shared file / interface                                            | Tasks                          | Rule                                                                                                           |
+| ------------------------------------------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Migration and `bounty_applicants` JSON shape                       | 1 → 4                          | Task 4 starts after Task 1 is committed; types copied from the SQL                                             |
+| `apply_to_bounty` signature (only if Q48 = B)                      | 1                              | Step 4's `boardService.apply` and its tests change in Task 1's commit; the apply sheet passes the board origin |
+| `src/lib/i18n/locales/bounty/*`                                    | 2, then small additions in 5–9 | Task 2 adds every foreseeable key; later tasks append, never rename                                            |
+| `src/ui/theme/tokens.ts`, `docs/design-language.md`                | 3                              | Only Task 3; `design_tokens` case updated there                                                                |
+| `src/ui/HoldButton.tsx` (shared path: selects every case)          | 3 → 5, 6                       | Built once; Tasks 5–6 consume, never fork it                                                                   |
+| `select/selectState.ts` events                                     | 4 → 5, 6, 7                    | Contract fixed in Task 4; Task 7 uses `blocked(id)`                                                            |
+| `ApplicantsScreen.tsx`, `ApplicantRows.tsx`, `SelectFooter.tsx`    | 5, 6, 7, 9                     | 6 adds the hold wiring, 7 the context menu, 9 fixes layout last                                                |
+| `block/blockFlow.ts`, `block/hooks.ts`                             | 7                              | Only Task 7; `bounty_block` (step 4) reruns there                                                              |
+| `detail/*`, `board/{types,parse}.ts`, `shared/appliedStamp.tsx`    | 8                              | Only Task 8; `bounty_detail`, `bounty_apply_detail`, `bounty_withdraw` rerun there                             |
+| `src/app/(tabs)/bounty/_layout.tsx`                                | 5                              | Adds `applicants/[id]`; keeps the toolbar 「+」 and the step-4 screens untouched                               |
+| `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx` (shared path) | 3, 5, 8                        | Append scenes and fixture outcomes only                                                                        |
+| `verification/ui/driver.py` (shared path)                          | 6                              | Only Task 6; runner unit tests rerun                                                                           |
+| `verification/ui/README.md`, `docs/story-map.md`                   | 10                             | Only Task 10                                                                                                   |
+| Step 6 (status screens, live source) running in parallel           | —                              | Do not start step 6 until this PR merges: both change `detail/*` and the 悬赏 `_layout.tsx`                    |
 
 ## Not in this plan
 
-| Item | Owning step |
-| --- | --- |
-| Bounty live-item source and home cards (「帮取快递 · 3 人申请，去选」, 「等小林选」, the one-time 「这次没选上」 card), `bountyAction` accessory kind, card-detail types in `src/lib` | Step 6 (unless Q45 = A) |
-| Status screen 7A (timeline), 出发了, ETA strike, 完成, confirm, 「有问题」, cancel after selection | Step 6 |
-| Poster cancels before selecting (closed, refund) and its entry point | Step 6 (with the status screen's ⋯) |
-| The poster's own open bounty detail beyond the applicant screen | Step 6 |
-| 「过期了 · 免费次数已退回」 one-time card | Step 6 (live source) |
-| Push for new applications and selection | Step 11 |
-| Gates and 先付 (applicants below a gate) | Step 12 |
-| Applicant profile screen (tapping an applicant's name) | Not scheduled; canvas item with the profile screen |
-| Chat with the selected helper | Foundation step 7 |
-| Two-session race test in SQL | Known gap (`bounty.apply.select`) |
+| Item                                                                                                                                                                                  | Owning step                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Bounty live-item source and home cards (「帮取快递 · 3 人申请，去选」, 「等小林选」, the one-time 「这次没选上」 card), `bountyAction` accessory kind, card-detail types in `src/lib` | Step 6 (unless Q45 = A)                            |
+| Status screen 7A (timeline), 出发了, ETA strike, 完成, confirm, 「有问题」, cancel after selection                                                                                    | Step 6                                             |
+| Poster cancels before selecting (closed, refund) and its entry point                                                                                                                  | Step 6 (with the status screen's ⋯)                |
+| The poster's own open bounty detail beyond the applicant screen                                                                                                                       | Step 6                                             |
+| 「过期了 · 免费次数已退回」 one-time card                                                                                                                                             | Step 6 (live source)                               |
+| Push for new applications and selection                                                                                                                                               | Step 11                                            |
+| Gates and 先付 (applicants below a gate)                                                                                                                                              | Step 12                                            |
+| Applicant profile screen (tapping an applicant's name)                                                                                                                                | Not scheduled; canvas item with the profile screen |
+| Chat with the selected helper                                                                                                                                                         | Foundation step 7                                  |
+| Two-session race test in SQL                                                                                                                                                          | Known gap (`bounty.apply.select`)                  |
 
 ## Final acceptance
 
@@ -609,7 +620,12 @@ Answered by the user's advance approval of every recommendation (2026-10-28).
 - 53 = A: the selected applicant sees 「{poster}选了你」 and the exact address, no stamp.
 - 54 = A: 「这次没选上」 counts as seen when the detail first loads successfully.
 
-Open for the user (not decided; record the answer here):
+Answered 2026-10-29 (55 = item a, 56 = item b; KICKOFF):
+
+- 55 = A: the ms body drops the clause about the closed application; zh-Hans and en unchanged.
+- 56 = A: in dark mode the tier heads get a 1 pt outline in `--color-mascot-saddle` (`docs/design-language.md`); `bounty_applicants_worst` asserts it at 3:1.
+
+The questions as they were put:
 
 - (a) `bounty.detail.notSelected.body` in `ms` runs to three lines, so the pinned area still covers 说明 (it scrolls behind it; 33-36% of the screen, under the 38% bound). Options: shorten the ms copy, or move the body into the scrolling content (a change to the Q54 pinned area). Source: Task 8 concern 4, Task 9.
 - (b) The mascot tier heads stay dark ink in dark mode at about 1.2:1 against the row (shared with the board's `TierMark`). Options: keep as identity, or change the heads in dark (a `docs/design-language.md` change). Source: Task 9 review, ruling 1.
@@ -696,5 +712,13 @@ Open for the user (not decided; record the answer here):
 ### Device checklist (story-map `device:` entries added or kept in Task 10)
 
 - `bounty.apply.select`: the haptic ramp (light, light, medium, medium, heavy at full); VoiceOver double-tap opens 「选某某来帮你？」 and sends only after confirming; a thumb held while the list scrolls does not start a choice and the fill runs back; Reduce Motion fill and run-back.
-- `bounty.apply.applicants`: VoiceOver reads 「已选中」 on the chosen row.
+- `bounty.apply.applicants`: VoiceOver reads the chosen row as selected (the system wording).
 - `chat.block.entry`: the VoiceOver Actions rotor offers 「屏蔽某某」.
+
+### Final review fixes
+
+- The applicant list refreshes on a pull (`SheetFrame` `onRefresh` → `refreshable`); the rows stay while it loads and a failed pull keeps them under the stale notice. Why: Important 1, ruling 3.
+- A confirmed block raises the list request, so a load that started before it is dropped. Why: Minor 2; the blocked person must not come back.
+- The focus load in `useApplicants` stays. Why: `useFreshness` runs only to catch up after a missed foreground or a tab change, so that effect is the first load and the reload on return from a pushed screen (Minor 3 claim checked, not dead).
+- A board top request made from a pushed screen is dropped when the board blurs before its return transition ends. Why: Minor 5.
+- Parked for step 6: a bounty cancelled after selection still shows 「选好了{name}」 and the address to the poster and 「{poster}选了你」 to the helper; both outcomes must key on `detail.status` (final review Minor 1; no cancel UI before step 6).

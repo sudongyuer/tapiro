@@ -10,7 +10,7 @@ from bounty import tap_sheet_action  # noqa: E402
 from choose import AIMAN, HANA, HOLD, JIE, hold_reads, row_id  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/bounty/select/', 'src/features/bounty/block/', 'src/ui/HoldButton.tsx',
+DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/features/bounty/block/', 'src/ui/HoldButton.tsx',
         'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py']
 SCENE = 'bounty-applicants'
 BUDGET = 360

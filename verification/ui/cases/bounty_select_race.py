@@ -7,7 +7,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from choose import HANA, HOLD, assert_attempts, choose, hold_select  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/bounty/select/', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py']
+DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py']
 SCENE = 'bounty-applicants'
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifySelect', 'taken']
 BUDGET = 240
