@@ -18,6 +18,7 @@ import {
   PlaceSearchScene,
 } from './BountyScenes';
 import { DesignTokensScene } from './DesignTokensScene';
+import { MapSpikeScene } from './MapSpikeScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
 
@@ -60,6 +61,7 @@ export const scenes: Scene[] = [
     Component: BountyApplicantsScene,
   },
   { id: 'bounty-status', titleKey: 'debug.bounty.status', Component: BountyStatusScene },
+  { id: 'map-spike', titleKey: 'debug.bounty.mapSpike', Component: MapSpikeScene },
 ];
 
 export function findScene(id: string) {

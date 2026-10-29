@@ -277,6 +277,7 @@ const ms: Translation = {
       confirm: 'Sahkan siaran',
       placeSearch: 'Pilih Tempat',
       board: 'Papan ganjaran',
+      mapSpike: 'Ujian peta',
       detail: 'Butiran ganjaran',
       applicants: 'Pilih pembantu (pemohon)',
       status: 'Halaman status (keadaan × peranan)',

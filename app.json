@@ -43,7 +43,12 @@
           }
         }
       ],
-      ["expo-secure-store", { "faceIDPermission": false }],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -78,7 +83,8 @@
           "isIosBackgroundLocationEnabled": false
         }
       ],
-      "./plugins/withoutAppleSignInEntitlement"
+      "./plugins/withoutAppleSignInEntitlement",
+      "expo-maps"
     ],
     "experiments": {
       "typedRoutes": true,

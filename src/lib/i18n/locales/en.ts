@@ -273,6 +273,7 @@ const en: Translation = {
       confirm: 'Confirm post',
       placeSearch: 'Choose a Place',
       board: 'Bounty board',
+      mapSpike: 'Map spike',
       detail: 'Bounty detail',
       applicants: 'Choose a helper (applicants)',
       status: 'Status page (state × role)',
