@@ -2,8 +2,8 @@ import type zhHans from './zh-Hans';
 
 const en: typeof zhHans = {
   book: {
-    title: 'Helped out',
-    sub: 'One more each time you help out and get paid',
+    title: 'Done together',
+    sub: 'One more each time a job gets done and paid',
     summary: '{{total}} · {{sub}}',
   },
   count_one: '{{count}} sticker',
@@ -11,7 +11,16 @@ const en: typeof zhHans = {
   cell: '{{title}} · {{date}}',
   empty: {
     title: 'No stickers yet',
-    body: 'Help someone out and get paid, and that errand’s sticker lands here.',
+    body: 'Help someone or get help. Once it’s done and paid, the sticker lands here.',
+  },
+  label: {
+    payee: 'Helped {{name}}',
+    payer: '{{name}} helped me',
+    payeeUnnamed: 'Helped a fellow student',
+    payerUnnamed: 'A fellow student helped me',
+    ride: 'With {{name}}',
+    rideUnnamed: 'With a fellow student',
+    a11y: '{{line1}}, {{title}}, {{date}}',
   },
   loading: 'Loading stickers',
   loadFailed: {
