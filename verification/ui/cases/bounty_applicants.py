@@ -116,11 +116,12 @@ assert by_id(ui.read(), MEI) is None, 'Mei Ling is listed before the pull'
 assert label('bounty-applicants-status') == ui.tn('bounty.select.statusOpen', 3), label('bounty-applicants-status')
 s = screen(ui.read())
 ui.swipe((s['width'] / 2, s['height'] * 0.3), (s['width'] / 2, s['height'] * 0.8), 0.6)
-mei = ui.settled(lambda items: by_id(items, MEI), 'the pull never brought in Mei Ling')
 ui.wait_label('bounty-applicants-status', lambda text: text == ui.tn('bounty.select.statusOpen', 4),
               'the status does not count 4 applicants after the pull')
+ui.at_rest()
+ui.swipe((s['width'] / 2, s['height'] * 0.6), (s['width'] / 2, s['height'] * 0.3), 0.8)
+mei = ui.settled(lambda items: by_id(items, MEI), 'the pull never brought in Mei Ling')
 jie, hana, aiman = rows()
-mei = ui.element(MEI)
 assert jie['frame']['y'] < hana['frame']['y'] < aiman['frame']['y'] < mei['frame']['y'], \
     'after the pull the rows are not in application order'
 expected = ui.t('bounty.select.a11y.row', name='Mei Ling', tier=ui.t('bounty.tier.reliable'),
