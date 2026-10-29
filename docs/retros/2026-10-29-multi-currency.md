@@ -34,3 +34,10 @@ status: running
    - Disjoint tasks now run in parallel worktrees (Task 5 beside Task 4).
    - The runner reboots a stalled device and retries elsewhere (#22, in progress).
    - A file-size check replaces review for the 500-line rule (in progress).
+6. After merging main, `scripts/check-file-size.test.ts` fails 4 of 9 tests only when `bun test` runs from this
+   checkout's root: the spawned `git` and `node` return no output. The same file passes 9/9 from another directory,
+   in the agent's worktree and in CI. There is no `.env`, preload or shim; cause unknown after a 20-minute time-box.
+   Tag `local-env`. Open: rerun on a fresh clone; if it reproduces, pass `cwd: root` and an explicit `env` to the
+   test's spawns.
+7. The bounty locale files outgrew the new size check on the first merge, as predicted in the self-heal retro;
+   split the step-6 sections into `locales/bounty/progress/`. Tag `size-limit` (second).

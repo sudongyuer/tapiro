@@ -1,7 +1,4 @@
 {
   "scripts/design-check.mjs": 546,
-  "src/features/bounty/place/PlaceSearchScreen.tsx": 331,
-  "src/lib/i18n/locales/bounty/en.ts": 595,
-  "src/lib/i18n/locales/bounty/ms.ts": 598,
-  "src/lib/i18n/locales/bounty/zh-Hans.ts": 575
+  "src/features/bounty/place/PlaceSearchScreen.tsx": 331
 }
