@@ -235,6 +235,16 @@ const en: Translation = {
         message: 'Message {{name}}',
         details: 'Details',
       },
+      bounty: {
+        tag: {
+          action: 'Needs you',
+          inProgress: 'In progress',
+          waiting: 'Waiting on them',
+        },
+        line: '{{title}} · {{line}}',
+        label: '{{title}}, {{line}}, reward {{reward}}',
+        details: 'View',
+      },
       calm: {
         tag: 'Nothing pending today',
         morning: 'Good morning, {{name}}',

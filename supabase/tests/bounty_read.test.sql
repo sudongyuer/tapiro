@@ -177,7 +177,7 @@ select is(
     'endsAt', 'deadlineAt', 'expiresAt', 'publishedAt', 'poster', 'events'],
   jsonb_build_object(
     'status', 'open', 'viewerRole', 'poster', 'distanceM', null, 'address', 'Block C, 3-2', 'helper', null,
-    'myApplication', null, 'applicantCount', 2, 'etaAt', null, 'previousEtaAt', null, 'autoConfirmAt', null, 'startLate', false,
+    'myApplication', null, 'applicantCount', 2, 'charge', 'free', 'etaAt', null, 'previousEtaAt', null, 'autoConfirmAt', null, 'startLate', false,
     'issueReason', null, 'payment', null
   ),
   'the poster reads the address and the pending applicant count'
@@ -250,7 +250,10 @@ select is(
   pg_temp.shape(pg_temp.item('a1', 'main')) || ' ' || (pg_temp.item('a1', 'main') ->> 'applicantCount'),
   'poster/bountyAction/choose 2', 'the poster of an open bounty with applicants has a choose action'
 );
-select is(pg_temp.item('b2', 'main'), null, 'a pending application has no live item');
+select is(
+  pg_temp.shape(pg_temp.item('b2', 'main')) || ' ' || (pg_temp.item('b2', 'main') ->> 'status'),
+  'applicant/bountyInProgress open', 'a pending application has an in-progress applicant item'
+);
 
 select pg_temp.act_as(pg_temp.u('a1'));
 select public.block_user(pg_temp.u('d4'));

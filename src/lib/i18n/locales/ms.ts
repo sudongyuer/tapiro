@@ -239,6 +239,16 @@ const ms: Translation = {
         message: 'Mesej {{name}}',
         details: 'Butiran',
       },
+      bounty: {
+        tag: {
+          action: 'Perlu tindakan anda',
+          inProgress: 'Sedang berjalan',
+          waiting: 'Menunggu pihak lain',
+        },
+        line: '{{title}} · {{line}}',
+        label: '{{title}}, {{line}}, ganjaran {{reward}}',
+        details: 'Lihat',
+      },
       calm: {
         tag: 'Tiada urusan tertunggak hari ini',
         morning: 'Selamat pagi, {{name}}',

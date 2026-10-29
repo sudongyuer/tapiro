@@ -230,6 +230,16 @@ export default {
         message: '发消息给 {{name}}',
         details: '详情',
       },
+      bounty: {
+        tag: {
+          action: '要你处理',
+          inProgress: '进行中',
+          waiting: '等对方',
+        },
+        line: '{{title}} · {{line}}',
+        label: '{{title}}，{{line}}，赏金 {{reward}}',
+        details: '看详情',
+      },
       calm: {
         tag: '今天没有待处理的事',
         morning: '早上好，{{name}}',
