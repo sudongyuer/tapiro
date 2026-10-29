@@ -24,10 +24,10 @@ Simulator's runs on their own. Never create Simulators or pass another DerivedDa
 `--affected` collects `git diff --name-only <base>...HEAD`, uncommitted changes and untracked files, and
 picks each case whose `DEPS` prefixes (or its own file) match one, printing why. A change to shared code
 (`affected.SHARED`: `src/ui/`, `src/lib/`, the root layout and index route, the Debug scenes (`src/debug/`, `src/app/debug/`), `modules/`, `plugins/`, `assets/`,
-`app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, recording and Swift tool helpers, build script and string export)
+`app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker test_pool` in `verification/ui` covers the selection (and
+before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal` in `verification/ui` covers the selection (and
 checks that every case declares `DEPS` that match real paths); CI runs it.
 Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:
 a PR run uses zh-Hans, a milestone run (`--locales`, and the full matrix) adds `en` for every case, and `ms` exists
@@ -73,9 +73,15 @@ with a valid CRC. Each run writes
 `result.json` with commit, locale, Xcode, device, `videos` (every `.mp4` in the case folder; an empty one fails the run) and `duration_s` (wall-clock seconds of that
 case, locale and appearance); the runner ends with a per-case timing table and the total, and
 `verify:build` prints its own wall-clock seconds.
-`log.txt` lists every AXe call with its duration; a timeout message adds the median call time,
-which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
-`BUDGET = <seconds>`. Three consecutive runs on one Simulator that fail with the same timeout class (screenshot, `axe <command>`, or the case budget) stop the whole run with a render server CPU sample; `python3 -m unittest test_breaker` in `verification/ui` covers the rule. Only one `verify:ui` run may drive the Simulators at a time; a second run
+`log.txt` starts with the Simulator's name and lists every timed command (AXe calls, screenshots, `simctl appearance` and
+`launch`, the case budget) with its duration, `TIMEOUT` on the ones that timed out, and ends with a `latency on <Simulator>`
+line (count, median, slowest, timeouts); a timeout message adds the median call time, which separates a slow Simulator from
+a stuck screen. A case gets 180 s unless it declares `BUDGET = <seconds>`. Two command timeouts in one run mark that
+Simulator stalled (`heal.py`): the runner prints `STALL`, shuts it down, boots it and reinstalls the app, and retries a
+failed run once on another Simulator (the stalled one only when it is the last left; idle Simulators wait for busy ones
+so a retry has somewhere to go). The first attempt's log is kept as `stalled-log.txt`, `result.json` records
+`stalledDevice` and `retriedOn`, a pass on retry reads `(retried after a stalled device)`, a second stall fails naming
+both Simulators, and the final report lists every stall. Three consecutive attempts on one Simulator that fail with the same timeout class (screenshot, `axe <command>`, or the case budget) stop the whole run with a render server CPU sample; a reboot does not reset that count. `python3 -m unittest test_breaker test_heal` in `verification/ui` covers both rules. Only one `verify:ui` run may drive the Simulators at a time; a second run
 exits instead of interleaving taps with the first. Every run also takes the machine-wide lock `/tmp/ios-ui-verify.lock` shared with other projects' runners and waits while another project holds it, printing the holder. The lock does not cover `verify:build` or
 scripts that drive the Simulator outside the runner. Do not click or scroll in the Simulator window
 while a run is in progress: a pointer drag reaches the app as a real touch, and a home case once

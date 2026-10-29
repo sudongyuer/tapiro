@@ -2,10 +2,8 @@
 import argparse
 import ast
 import fcntl
-import re
 import json
 import os
-import queue
 import shutil
 import signal
 import subprocess
@@ -17,6 +15,8 @@ from pathlib import Path
 from affected import SMOKE, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from heal import Attempt, Scheduler, work
+from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
 from recording import stop_all
 
@@ -27,6 +27,7 @@ DEFAULT_APP = ROOT / '.verify/DerivedData/Build/Products/Release-iphonesimulator
 DEVICE_TYPE = 'com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro'
 DEFAULT_LOCALES = ['zh-Hans']
 DEFAULT_BUDGET = 180
+SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
 
 
@@ -134,12 +135,47 @@ def videos(out):
     return sorted(out.glob('*.mp4'))
 
 
-def run_case(case, scene, extra, budget, locale, appearance, udid, out):
+def heal(device, app):
+    subprocess.run(['xcrun', 'simctl', 'shutdown', device[1]], capture_output=True, timeout=120)
+    prepare(device, app)
+
+
+def simctl_step(label, argv, log):
+    try:
+        timed(label, argv, SIMCTL_TIMEOUT, check=True, out=log.append)
+        return None
+    except subprocess.TimeoutExpired:
+        return f'{label} timed out after {SIMCTL_TIMEOUT} s'
+
+
+def run_script(case, extra, budget, locale, appearance, udid, out, after):
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
+            capture_output=True, text=True, timeout=budget,
+            env={**os.environ, 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
+        )
+    except subprocess.TimeoutExpired as error:
+        message = f'command timed out after {budget} s'
+        case_log = ''.join(p.decode() if isinstance(p, bytes) else p or '' for p in (error.stdout, error.stderr))
+        after += [line(budget, f'case {case}', timed_out=True),
+                  f'--- CPU sample at timeout (top, second sample, %cpu) ---\n{render_cpu_sample()}']
+        axe_calls = sorted(seconds for seconds, label, _ in calls(case_log) if label.startswith('axe '))
+        if axe_calls:
+            message += f'; {len(axe_calls)} axe calls, median {axe_calls[len(axe_calls) // 2]:.1f} s'
+        return 'fail', message, case_log
+    lines = (proc.stdout if proc.returncode == 0 else proc.stderr or proc.stdout).strip().splitlines()
+    return 'pass' if proc.returncode == 0 else 'fail', lines[-1] if lines else '', proc.stdout + proc.stderr
+
+
+def run_case(case, scene, extra, budget, locale, appearance, device, out):
+    name, udid, _ = device
     started = time.monotonic()
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob('*'):
         stale.unlink()
-    simctl('ui', udid, 'appearance', appearance)
+    before, after, case_log = [], [], ''
+    stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
     video = out / 'run.mp4'
     recorder = subprocess.Popen(
@@ -147,32 +183,17 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
     )
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
-    simctl('launch', udid, BUNDLE_ID,
-           '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
-           *(['-uiVerifyScene', scene] if scene else []), *extra)
-    status, message = 'pass', ''
-    try:
-        proc = subprocess.run(
-            [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
-            capture_output=True, text=True, timeout=budget,
-            env={**os.environ, 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
-        )
-        (out / 'log.txt').write_text(proc.stdout + proc.stderr)
-        lines = (proc.stdout if proc.returncode == 0 else proc.stderr or proc.stdout).strip().splitlines()
-        message = lines[-1] if lines else ''
-        if proc.returncode != 0:
-            status = 'fail'
-    except subprocess.TimeoutExpired as error:
-        status, message = 'fail', f'command timed out after {budget} s'
-        partial = ''.join(p.decode() if isinstance(p, bytes) else p or '' for p in (error.stdout, error.stderr))
-        (out / 'log.txt').write_text(f'{partial}\n--- CPU sample at timeout (top, second sample, %cpu) ---\n{render_cpu_sample()}\n')
-        calls = sorted(float(m) for m in re.findall(r'^\s*([\d.]+)s axe ', partial, re.M))
-        if calls:
-            message += f'; {len(calls)} axe calls, median {calls[len(calls) // 2]:.1f} s'
+    stuck = stuck or simctl_step('simctl launch', [
+        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
+        *(['-uiVerifyScene', scene] if scene else []), *extra], before)
+    if stuck:
+        status, message = 'fail', stuck
+    else:
+        status, message, case_log = run_script(case, extra, budget, locale, appearance, udid, out, after)
     if status == 'fail':
         try:
-            subprocess.run(['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
-                           capture_output=True, timeout=60)
+            timed('screenshot failure', ['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],
+                  60, out=after.append)
         except subprocess.TimeoutExpired:
             message += '; failure screenshot timed out after 60 s'
     recorder.send_signal(signal.SIGINT)
@@ -192,7 +213,10 @@ def run_case(case, scene, extra, budget, locale, appearance, udid, out):
         status, message = 'fail', f'{message}; empty video {", ".join(empty)}'.strip('; ')
     if status == 'pass' and not list(out.glob('*.png')):
         status, message = 'fail', 'no screenshots captured'
-    return status, message, round(time.monotonic() - started, 1)
+    log = '\n'.join([f'device: {name} ({udid})', *before, case_log.rstrip('\n'), *after])
+    log += f'\n{summary(name, log)}\n'
+    (out / 'log.txt').write_text(log)
+    return Attempt(status, message, timeouts(log), round(time.monotonic() - started, 1), log)
 
 
 def print_timings(timings, total):
@@ -200,6 +224,54 @@ def print_timings(timings, total):
     for duration, status, locale, appearance, case in timings:
         print(f'{duration:8.1f}  {status:6} {locale:7} {appearance:5} {case}')
     print(f'{total:8.1f}  total ({len(timings)} runs, {int(total // 60)} min {int(total % 60)} s)')
+
+
+class Report:
+    def __init__(self, output, meta, multi, halt):
+        self.output, self.meta, self.multi, self.halt = output, meta, multi, halt
+        self.guard = threading.Lock()
+        self.timings, self.stopped, self.stalls = [], [], []
+        self.results = {}
+
+    def where(self, name):
+        return f'  [{name}]' if self.multi else ''
+
+    def attempted(self, name, job, attempt):
+        with self.guard:
+            results = self.results.setdefault(name, [])
+            results.append({'status': attempt.status, 'message': attempt.message})
+            tripped_class = tripped(results)
+            if tripped_class:
+                self.stopped.append(tripped_class)
+                self.halt.set()
+
+    def stalled(self, name, job, attempt, retrying):
+        appearance, case, _, locale, _, _ = job
+        with self.guard:
+            self.stalls.append(f'{name} ({locale} {appearance} {case}, {attempt.timeouts} command timeouts)')
+            then = 'rebooting it and retrying the run once' if retrying else 'rebooting it'
+            print(f'STALL {name}: {attempt.timeouts} command timeouts in {locale} {appearance} {case}; {then}',
+                  flush=True)
+
+    def finished(self, outcome):
+        appearance, case, _, locale, extra, _ = outcome.job
+        out = self.output / locale / appearance / case
+        name, udid, runtime = self.meta['devices'][outcome.device]
+        if outcome.first:
+            (out / 'stalled-log.txt').write_text(outcome.first.log)
+        (out / 'result.json').write_text(json.dumps({
+            'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
+            'status': outcome.status, 'message': outcome.message,
+            'duration_s': outcome.duration, 'commit': self.meta['sha'], 'dirty': self.meta['dirty'],
+            'xcode': self.meta['xcode'], 'device': {'name': name, 'udid': udid, 'runtime': runtime},
+            'stalledDevice': outcome.stalled_device, 'retriedOn': outcome.retried_on,
+            'app': self.meta['app'], 'videos': [v.name for v in videos(out)],
+        }, indent=2))
+        stalled_note = f'  stalled: {", ".join(outcome.stalled_devices)}' if outcome.stalled_devices else ''
+        with self.guard:
+            self.timings.append((outcome.duration, outcome.status, locale, appearance, case))
+            print(f'{outcome.status.upper():4} {locale:7} {appearance:5} {case}: {outcome.message}'
+                  + self.where(name) + stalled_note, flush=True)
 
 
 def main():
@@ -294,42 +366,18 @@ def main():
     sha, dirty = git_info()
     xcode = sh('xcodebuild', '-version').splitlines()[0]
 
-    pending = queue.Queue()
-    for job in jobs:
-        pending.put(job)
-    guard = threading.Lock()
-    timings = []
-    stopped = []
+    output = Path(args.output)
+    meta = {'sha': sha, 'dirty': dirty, 'xcode': xcode, 'app': str(app),
+            'devices': {device[0]: device for device in devices}}
+    report = Report(output, meta, len(devices) > 1, halt)
+    scheduler = Scheduler(jobs, [name for name, _, _ in devices])
 
-    def work(device):
-        name, udid, runtime = device
-        results = []
-        while not halt.is_set():
-            try:
-                appearance, case, scene, locale, extra, budget = pending.get_nowait()
-            except queue.Empty:
-                return
-            out = Path(args.output) / locale / appearance / case
-            status, message, duration = run_case(case, scene, extra, budget, locale, appearance, udid, out)
-            (out / 'result.json').write_text(json.dumps({
-                'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
-                'status': status, 'message': message,
-                'duration_s': duration, 'commit': sha, 'dirty': dirty, 'xcode': xcode,
-                'device': {'name': name, 'udid': udid, 'runtime': runtime},
-                'app': str(app), 'videos': [v.name for v in videos(out)],
-            }, indent=2))
-            with guard:
-                timings.append((duration, status, locale, appearance, case))
-                results.append({'status': status, 'message': message})
-                print(f'{status.upper():4} {locale:7} {appearance:5} {case}: {message}'
-                      + (f'  [{name}]' if len(devices) > 1 else ''), flush=True)
-                tripped_class = tripped(results)
-                if tripped_class:
-                    stopped.append(tripped_class)
-                    halt.set()
+    def attempt(device, job):
+        appearance, case, scene, locale, extra, budget = job
+        return run_case(case, scene, extra, budget, locale, appearance, device, output / locale / appearance / case)
 
     run_started = time.monotonic()
-    threads = [guarded(work, device) for device in devices]
+    threads = [guarded(work, scheduler, device, attempt, lambda d: heal(d, app), report, halt) for device in devices]
     for thread in threads:
         thread.start()
     for thread in threads:
@@ -338,10 +386,15 @@ def main():
         subprocess.run(['xcrun', 'simctl', 'shutdown', udid], capture_output=True)
     if errors:
         raise errors[0]
+    timings = report.timings
     failures = sum(status != 'pass' for _, status, _, _, _ in timings)
-    stopped = stopped[0] if stopped else None
+    stopped = report.stopped[0] if report.stopped else None
 
     print_timings(timings, time.monotonic() - run_started)
+    if report.stalls:
+        print('stalled Simulators (shut down, rebooted, failed run retried once):')
+        for stall in report.stalls:
+            print(f'  {stall}')
     if stopped:
         print(f'stopped: 3 consecutive {stopped} timeouts on one Simulator — environment or screen problem')
         print(render_cpu_sample())
