@@ -78,7 +78,7 @@ This spec amends the following decisions; their spec bodies stay as history:
 - **`currencies` (reference data)**: `code`, `minor_digits` (MYR 2, CNY 2), `symbol` (RM, ¥) and `enabled`. The client
   ships a mirror for formatting, which a unit test compares against the migration.
 - **`post_limits`**: `(item_kind, currency) → min_minor, max_minor, step_minor`. MYR is RM 1–500 in steps of RM 1.
-  The CNY limit is canvas question 67.
+  CNY is ¥1–800 in steps of ¥1 (67A).
 - **Bounties**: `reward_minor bigint` and `reward_currency`, replacing `reward_sen`. `publish_bounty` checks them
   against `post_limits`.
 - **Payments**:
@@ -108,13 +108,14 @@ This spec amends the following decisions; their spec bodies stay as history:
 
 ## UI/UX and motion
 
-Choices go on the canvas as questions 64–67 before any implementation task starts:
+Answered on the canvas board 「币种 · 第 64–67 题」 (user, 2026-10-29: 「按推荐」):
 
-- **64**: the post form's currency cell (menu on the 「RM」 cell, or a segmented control).
-- **65**: how a ¥ bounty reads on the board, cards and status for a viewer, either original only or original plus
-  ≈ the other currency.
-- **66**: the pay sheet with methods in two currencies, showing each method's amount and the rate line.
-- **67**: the CNY reward limit and step.
+| #   | Choice                                                                                                                                                                                                                                               |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 64A | The 赏金 row's 「RM」 cell becomes a system pull-down 「RM ⌄」 (RM 马来西亚令吉 / ¥ 人民币); the footer follows the currency                                                                                                                         |
+| 65A | The original amount everywhere; the detail and status screens add a small 「约 RM 32.47」 at today's rate, for reference; board and home cards show the original only                                                                                |
+| 66A | The pay sheet header shows the original; each method row shows its own amount; a footer names the BNM rate, its date and that it locked when the payment opened; with no rate, methods in the other currency are disabled with 「暂时不能换算成 RM」 |
+| 67A | ¥ rewards are whole yuan, ¥1–800 (about RM 500)                                                                                                                                                                                                      |
 
 Motion: none new.
 
