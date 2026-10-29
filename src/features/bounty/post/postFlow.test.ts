@@ -101,7 +101,14 @@ describe('post flow', () => {
       {
         ...STATUS,
         blocked: true,
-        unpaid: [{ paymentId: 'p', payeeName: '阿杰', amountSen: 1500, createdAt: '' }],
+        unpaid: [
+          {
+            paymentId: 'p',
+            payeeName: '阿杰',
+            amount: { minor: 1500, currency: 'MYR' as const },
+            createdAt: '',
+          },
+        ],
       },
       { ...STATUS, freePostsLeft: 0, coins: 0 },
     ]) {
@@ -158,7 +165,14 @@ describe('post flow', () => {
       const blocked = {
         ...STATUS,
         blocked: true,
-        unpaid: [{ paymentId: 'p', payeeName: '阿杰', amountSen: 1500, createdAt: '' }],
+        unpaid: [
+          {
+            paymentId: 'p',
+            payeeName: '阿杰',
+            amount: { minor: 1500, currency: 'MYR' as const },
+            createdAt: '',
+          },
+        ],
       };
       const { flow, calls } = setup({
         statuses: [STATUS, blocked],
@@ -212,7 +226,8 @@ describe('post flow', () => {
     expect(calls.done).toBe(1);
     expect(calls.published[0]).toMatchObject({
       id: 'draft-1',
-      reward_sen: 800,
+      reward_minor: 800,
+      reward_currency: 'MYR',
       category: 'pickup',
     });
   });

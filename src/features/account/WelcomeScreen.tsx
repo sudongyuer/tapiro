@@ -8,11 +8,13 @@ import type { ObjectKind } from '@/ui/objectKinds';
 
 import { SignInPanel } from './SignInPanel';
 import { WelcomeHero } from './WelcomeHero';
-import { stickerExampleKey, welcomeLayout } from './welcomeLayout';
+import { stickerExampleKey, stickerExampleValues, welcomeLayout } from './welcomeLayout';
 import { WelcomeSticker } from './WelcomeSticker';
 
 export function WelcomeScreen({ onLayout }: { onLayout?: () => void }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
+  const example = (kind: ObjectKind) =>
+    t(stickerExampleKey(kind), stickerExampleValues(kind, language));
   const window = useWindowDimensions();
   const { top } = useSafeAreaInsets();
   const [panelHeight, setPanelHeight] = useState<number | null>(null);
@@ -21,17 +23,17 @@ export function WelcomeScreen({ onLayout }: { onLayout?: () => void }) {
     panelHeight === null
       ? null
       : welcomeLayout({ width: window.width, height: window.height, panelHeight, topInset: top });
-  const line = picked ? t(stickerExampleKey(picked)) : t('account.welcome.hello');
+  const line = picked ? example(picked) : t('account.welcome.hello');
   return (
     <MomentBackground testID="welcome-screen" onLayout={onLayout}>
       {layout?.stickers.map((sticker) => (
         <WelcomeSticker
           key={sticker.kind}
           sticker={sticker}
-          label={t(stickerExampleKey(sticker.kind))}
+          label={example(sticker.kind)}
           onPress={() => {
             setPicked(sticker.kind);
-            AccessibilityInfo.announceForAccessibility(t(stickerExampleKey(sticker.kind)));
+            AccessibilityInfo.announceForAccessibility(example(sticker.kind));
           }}
         />
       ))}

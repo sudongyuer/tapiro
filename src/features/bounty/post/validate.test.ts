@@ -40,12 +40,19 @@ describe('parseReward', () => {
     ['５', 500],
     ['１２', 1200],
     [' 15 ', 1500],
-  ])('%p → %p sen', (text, sen) => {
-    expect(parseReward(text)).toBe(sen);
+  ])('%p → %p minor in MYR', (text, minor) => {
+    expect(parseReward(text, 'MYR')).toEqual({ minor, currency: 'MYR' });
   });
 
   test.each(['', '0', '00', '501', '1.5', '-5', '5e2', 'RM5', '1 0', '١'])('%p → null', (text) => {
-    expect(parseReward(text)).toBeNull();
+    expect(parseReward(text, 'MYR')).toBeNull();
+  });
+
+  test('CNY follows its own limits, whole yuan from 1 to 800', () => {
+    expect(parseReward('800', 'CNY')).toEqual({ minor: 80000, currency: 'CNY' });
+    expect(parseReward('1', 'CNY')).toEqual({ minor: 100, currency: 'CNY' });
+    expect(parseReward('801', 'CNY')).toBeNull();
+    expect(parseReward('501', 'CNY')).toEqual({ minor: 50100, currency: 'CNY' });
   });
 });
 
@@ -74,7 +81,8 @@ describe('checkDraft', () => {
         id: valid.id,
         title: '帮我取个快递',
         category: 'pickup',
-        reward_sen: 50000,
+        reward_minor: 50000,
+        reward_currency: 'MYR',
         description: 'Shopee 包裹在管理处',
         place_label: 'Sunway Geo',
         latitude: 3.0645,
@@ -94,7 +102,8 @@ describe('checkDraft', () => {
         id: valid.id,
         title: '帮我取个快递',
         category: 'pickup',
-        reward_sen: 100,
+        reward_minor: 100,
+        reward_currency: 'MYR',
         description: null,
         place_label: null,
         latitude: null,

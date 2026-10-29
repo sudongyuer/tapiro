@@ -135,7 +135,7 @@ export function liveBountyItem(row: LiveRow, copy: LiveCopy): BountyLiveItem | n
     bountyId: row.bountyId,
     title: row.title,
     category: row.category,
-    rewardSen: row.rewardSen,
+    reward: row.reward,
     counterpart: row.counterpartName,
     line: found.line,
     target: TARGETS[found.target](row.bountyId),

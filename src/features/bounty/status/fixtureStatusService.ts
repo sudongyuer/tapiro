@@ -22,7 +22,7 @@ import {
   WORST_PLACE,
   WORST_POSTER,
   WORST_REASON,
-  WORST_REWARD_SEN,
+  WORST_REWARD_MINOR,
   WORST_TITLE,
   worstTimes,
   type StatusData,
@@ -313,7 +313,8 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
       title: worst ? WORST_TITLE : '帮取快递',
       description: '取件码 6-2231，放门口就好',
       category: 'pickup',
-      rewardSen: worst ? WORST_REWARD_SEN : 800,
+      reward: { minor: worst ? WORST_REWARD_MINOR : 800, currency: 'MYR' },
+      reference: null,
       status: item.status,
       viewerRole: role,
       place: {

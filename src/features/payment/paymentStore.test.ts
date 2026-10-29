@@ -128,14 +128,19 @@ describe('payment store', () => {
   });
 });
 
+const ringgit = (minor: number) => ({ minor, currency: 'MYR' as const });
+
 describe('live payments', () => {
   test('a due payment is money I owe; a marked-paid one is owed to me, waiting for my confirmation', async () => {
     const items = accessoryItems(payments(await ready()), t);
-    expect(
-      items.map(({ kind, title, sub, amountSen }) => ({ kind, title, sub, amountSen })),
-    ).toEqual([
-      { kind: 'oweMoney', title: '付给阿杰', sub: '帮取快递', amountSen: 1500 },
-      { kind: 'owedToYou', title: '小林说已付你', sub: '帮带一杯咖啡 · 等你确认', amountSen: 800 },
+    expect(items.map(({ kind, title, sub, amount }) => ({ kind, title, sub, amount }))).toEqual([
+      { kind: 'oweMoney', title: '付给阿杰', sub: '帮取快递', amount: ringgit(1500) },
+      {
+        kind: 'owedToYou',
+        title: '小林说已付你',
+        sub: '帮带一杯咖啡 · 等你确认',
+        amount: ringgit(800),
+      },
     ]);
     expect(items[0].payment).toEqual({
       id: FIXTURE_PAYMENT_IDS.owe,

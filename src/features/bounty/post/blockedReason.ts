@@ -1,11 +1,11 @@
-import { formatRinggit } from '@/lib/money';
+import { totalsByCurrency, type Money } from '@/lib/money';
 
 import type { UnpaidSummary } from './types';
 
 const DAY_MS = 86_400_000;
 
 export type BlockedReason =
-  | { kind: 'many'; unpaid: UnpaidSummary[]; totalSen: number }
+  | { kind: 'many'; unpaid: UnpaidSummary[]; totals: Money[] }
   | { kind: 'old'; payment: UnpaidSummary; days: number };
 
 export function blockedReason(
@@ -21,14 +21,10 @@ export function blockedReason(
     return {
       kind: 'many',
       unpaid,
-      totalSen: unpaid.reduce((sum, payment) => sum + payment.amountSen, 0),
+      totals: totalsByCurrency(unpaid.map((payment) => payment.amount)),
     };
   }
   const [payment] = unpaid;
   const days = Math.floor((now.getTime() - Date.parse(payment.createdAt)) / DAY_MS);
   return { kind: 'old', payment, days };
-}
-
-export function ringgit(sen: number, language: string) {
-  return formatRinggit(sen, language).replace(/[.,]00$/, '');
 }

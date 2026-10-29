@@ -94,7 +94,7 @@ describe('full board', () => {
     ]);
     expect(items[0]).toMatchObject({
       title: '帮取快递',
-      rewardSen: 800,
+      reward: { minor: 800, currency: 'MYR' },
       urgent: true,
       placeLabel: 'Sunway Geo 宿舍',
       poster: { name: '小林', tier: 'reliable' },
@@ -227,7 +227,7 @@ describe('worst', () => {
     expect(Math.max(...items.map((row) => codePoints(row.title)))).toBe(60);
     expect(Math.max(...items.map((row) => codePoints(row.placeLabel ?? '')))).toBe(80);
     expect(Math.max(...items.map((row) => codePoints(row.poster.name ?? '')))).toBe(40);
-    expect(new Set(items.map((row) => row.rewardSen))).toEqual(new Set([100, 50000]));
+    expect(new Set(items.map((row) => row.reward.minor))).toEqual(new Set([100, 50000]));
     expect(items.map((row) => row.distanceM)).toContain(100);
     expect(items.map((row) => row.distanceM)).toContain(18_400);
     expect(items.some((row) => row.poster.tier === 'tapir_friend')).toBe(true);

@@ -3,7 +3,13 @@ import { describe, expect, test } from 'bun:test';
 import { resources } from '@/lib/i18n/resources';
 import { OBJECT_KINDS } from '@/ui/objectKinds';
 
-import { heroBottom, POP_STAGGER, stickerExampleKey, welcomeLayout } from './welcomeLayout';
+import {
+  heroBottom,
+  POP_STAGGER,
+  stickerExampleKey,
+  stickerExampleValues,
+  welcomeLayout,
+} from './welcomeLayout';
 
 const PRO_PANEL = { 'zh-Hans': 273, ms: 311 };
 const SE_BOTTOM_PADDING_SAVING = 34 - 20;
@@ -110,8 +116,8 @@ describe('sticker examples', () => {
   });
 
   test('the parcel example matches the design copy', () => {
-    expect(lookup(resources['zh-Hans'].translation, stickerExampleKey('parcel'))).toBe(
-      '帮取快递 · RM 8',
-    );
+    const template = lookup(resources['zh-Hans'].translation, stickerExampleKey('parcel'));
+    const { amount } = stickerExampleValues('parcel', 'zh-Hans');
+    expect(String(template).replace('{{amount}}', amount)).toBe('帮取快递 · RM\u00a08');
   });
 });

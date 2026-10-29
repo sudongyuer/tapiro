@@ -40,7 +40,7 @@ for kind in KINDS:
 wordmark = by_id(items, 'welcome-wordmark')
 assert wordmark and bottom(wordmark) <= panel_top, f'wordmark sits under the panel: {wordmark}'
 label = by_id(items, 'welcome-sticker-parcel').get('AXLabel')
-assert label == ui.t('account.welcome.examples.parcel'), f'parcel sticker reads {label}'
+assert label == ui.t('account.welcome.examples.parcel', amount='RM\u00a08'), f'parcel sticker reads {label}'
 ui.wait_label('welcome-bubble', lambda text: text == ui.t('account.welcome.hello'), 'bubble does not greet')
 
 time.sleep(1)
@@ -61,7 +61,7 @@ assert_colour(shot, {'x': 2, 'y': 230, 'width': 12, 'height': 12},
 
 ui.at_rest()
 ui.axe('tap', '--id', 'welcome-sticker-coffee', '--post-delay', '0.5')
-ui.wait_label('welcome-bubble', lambda text: text == ui.t('account.welcome.examples.coffee'),
+ui.wait_label('welcome-bubble', lambda text: text == ui.t('account.welcome.examples.coffee', amount='RM\u00a05'),
               'bubble did not show the coffee example')
 ui.capture('02-tapped-coffee')
 print('PASS: welcome A settled with stickers, bubble, wordmark and a 44 pt sign-in panel; a tap changes the bubble')

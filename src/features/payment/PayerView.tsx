@@ -13,7 +13,7 @@ import {
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
-import { formatRinggit } from '@/lib/money';
+import { formatMoney, methodCurrency, type Money } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetLayer } from '@/ui/SheetFrame';
@@ -21,27 +21,30 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { secondary } from './formParts';
-import { cnyFen, formatCny, FX_TERMS_URL } from './fx';
+import { convertedAt, FX_TERMS_URL } from './fx';
 import type { SheetAction, SheetData } from './hooks';
 import { MethodDetail, optionTitle } from './MethodDetail';
 import { initialSelection, payOptions, type PayOption } from './payOptions';
 import { ProofSection, type Proof } from './ProofSection';
 import { QrFullScreen } from './QrFullScreen';
 
-const showsCny = (option: PayOption | undefined) =>
-  option?.kind === 'qr' && (option.type === 'alipay' || option.type === 'wechat');
+function referenceFor(option: PayOption | undefined, data: SheetData) {
+  if (!option) return null;
+  const { amount } = data.payment;
+  return convertedAt(amount, methodCurrency(option.type, amount.currency), data.rate, new Date());
+}
 
 export function AmountHeader({
   title,
-  amountSen,
-  cny,
+  money,
+  reference,
 }: {
   title: string;
-  amountSen: number;
-  cny: number | null;
+  money: Money;
+  reference: Money | null;
 }) {
   const { t, language } = useI18n();
-  const amount = formatRinggit(amountSen, language);
+  const amount = formatMoney(money, language);
   return (
     <Section>
       <HStack>
@@ -62,13 +65,13 @@ export function AmountHeader({
             >
               {amount}
             </Text>
-            {cny !== null ? (
+            {reference !== null ? (
               <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>
-                {t('pay.sheet.cny', { amount: formatCny(cny, language) })}
+                {t('pay.sheet.cny', { amount: formatMoney(reference, language) })}
               </Text>
             ) : null}
           </VStack>
-          {cny !== null ? (
+          {reference !== null ? (
             <Link
               label={t('pay.sheet.fxSource')}
               destination={FX_TERMS_URL}
@@ -96,7 +99,7 @@ export function PayerView({
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
 }) {
   const { t } = useI18n();
-  const { payment, methods, rate } = data;
+  const { payment, methods } = data;
   const options = payOptions(methods);
   const [selectedId, setSelectedId] = useState(() => initialSelection(options));
   const [proof, setProof] = useState<Proof>({ status: 'none' });
@@ -104,7 +107,7 @@ export function PayerView({
   const selected = options.find((option) => option.id === selectedId);
   const name = payment.counterpartName;
   const payeeName = selected && selected.kind !== 'cash' ? selected.payeeName : name;
-  const cny = showsCny(selected) ? cnyFen(payment.amountSen, rate, new Date()) : null;
+  const reference = referenceFor(selected, data);
 
   return (
     <>
@@ -121,8 +124,8 @@ export function PayerView({
       ) : null}
       <AmountHeader
         title={t('pay.sheet.payTo', { name })}
-        amountSen={payment.amountSen}
-        cny={cny}
+        money={payment.amount}
+        reference={reference}
       />
       {options.length === 0 ? (
         <NoticeCard

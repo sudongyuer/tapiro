@@ -1,3 +1,4 @@
+import type { Money } from '@/lib/money';
 import type { BountyCategory } from '@/lib/stickers/category';
 
 import type { BountyStatus, PostCharge } from '../status/types';
@@ -18,7 +19,7 @@ export type LiveRow = {
   bountyId: string;
   title: string;
   category: BountyCategory;
-  rewardSen: number;
+  reward: Money;
   role: LiveRole;
   kind: LiveKind;
   action: LiveAction | null;

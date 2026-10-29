@@ -119,7 +119,7 @@ ui.capture('06-unnamed')
 
 relaunch(ui, drop=[*FIRST, *WORST], add=LIVE)
 front = ui.settled(lambda items: by_id(items, 'live-card-bountyAction'), 'the 去确认 card is not in front')
-money = ui.t('home.money', amount='500')
+money = 'RM\u00a0500'
 front_label = front.get('AXLabel') or ''
 assert front_label.startswith(TITLE_START) or TITLE_START in front_label, front_label
 assert money in front_label and HELPER in front_label, front_label

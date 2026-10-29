@@ -2,12 +2,12 @@ import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import type { BountyCardDetail, OwedDetail } from '@/lib/liveItems';
+import { formatMoney, type Money } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { vars } from '@/ui/theme/tokens';
 
-import { moneyText } from '../homeModel';
 import { CardHeader, CardText, Pill } from './cardParts';
 import { useStackedBeside } from './useStackedBeside';
 
@@ -34,7 +34,7 @@ export function BountyCard({ detail }: { detail: BountyCardDetail }) {
       <CardText variant="secondary" ink={ink} muted style={styles.note}>
         {detail.line}
       </CardText>
-      <TitleRow ink={ink} title={detail.title} amountSen={detail.rewardSen} />
+      <TitleRow ink={ink} title={detail.title} amount={detail.reward} />
       {action ? <ActionPill label={action} fill={ink} ink={surface} /> : null}
     </LiveCard>
   );
@@ -52,14 +52,14 @@ export function OwedCard({ detail }: { detail: OwedDetail }) {
       <TitleRow
         ink={ink}
         title={t('home.card.owed.title', { name: detail.payer })}
-        amountSen={detail.amountSen}
+        amount={detail.amount}
       />
     </LiveCard>
   );
 }
 
-function TitleRow({ ink, title, amountSen }: { ink: string; title: string; amountSen: number }) {
-  const { t, language } = useI18n();
+function TitleRow({ ink, title, amount }: { ink: string; title: string; amount: Money }) {
+  const { language } = useI18n();
   const { stacked, onTextLayout } = useStackedBeside(`${language}|${title}`);
   return (
     <View style={[styles.titleRow, stacked && styles.titleStacked]}>
@@ -72,7 +72,7 @@ function TitleRow({ ink, title, amountSen }: { ink: string; title: string; amoun
         {title}
       </CardText>
       <CardText variant="amount-compact" ink={ink} style={stacked && styles.amountStacked}>
-        {t('home.money', { amount: moneyText(amountSen, language) })}
+        {formatMoney(amount, language, { whole: true })}
       </CardText>
     </View>
   );

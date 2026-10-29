@@ -24,10 +24,8 @@ const en: typeof zhHans = {
       category: 'Type',
       categoryPlaceholder: 'Choose',
       reward: 'Reward',
-      rewardUnit: 'RM',
       rewardPlaceholder: '{{min}}–{{max}}',
-      rewardFooter:
-        'Whole ringgit, RM {{min}}–{{max}}. You pay the helper directly when it’s done.',
+      rewardFooter: 'A whole amount, {{min}}–{{max}}. You pay the helper directly when it’s done.',
       detailsHeader: 'Add details · all optional',
       addTime: 'Time',
       addTimeLabel: 'Add a time',
@@ -58,7 +56,7 @@ const en: typeof zhHans = {
       titleTooLong: 'The title can be up to {{max}} characters',
       categoryEmpty: 'Choose a type',
       rewardEmpty: 'Enter a reward',
-      rewardRange: 'The reward is a whole number from RM {{min}} to {{max}}',
+      rewardRange: 'The reward is a whole amount from {{min}} to {{max}}',
       descriptionTooLong: 'The note can be up to {{max}} characters',
       placeEmpty: 'Enter a place name',
       placeTooLong: 'The place name can be up to {{max}} characters',
@@ -422,7 +420,7 @@ const en: typeof zhHans = {
         completed: '{{name}} marks it done',
         confirm: 'You confirm it’s done',
         confirmed: 'You confirmed',
-        paid: 'Pay {{name}} RM {{amount}}',
+        paid: 'Pay {{name}} {{amount}}',
       },
       helper: {
         selected: '{{name}} chose you',
@@ -431,7 +429,7 @@ const en: typeof zhHans = {
         complete: 'Done',
         completed: 'You marked it done',
         confirmed: '{{name}} confirms',
-        paid: 'Get RM {{amount}}',
+        paid: 'Get {{amount}}',
       },
     },
     note: {
@@ -553,7 +551,7 @@ const en: typeof zhHans = {
   },
   confirm: {
     title: 'Confirm {{name}} is done?',
-    body: 'After confirming you can’t report a problem. Next, you pay {{name}} RM {{amount}}.',
+    body: 'After confirming you can’t report a problem. Next, you pay {{name}} {{amount}}.',
     confirm: 'Confirm Done',
     cancel: 'Not Yet',
     sending: 'Confirming',

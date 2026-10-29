@@ -13,7 +13,7 @@ BUTTON_FROM_BOTTOM = 73
 ui = UI(*sys.argv[1:])
 reach_home(ui)
 card = ui.settled(lambda items: by_id(items, 'live-card-oweMoney'), 'pay card missing')
-assert ui.t('home.card.pay.buttonLabel', amount='RM 15') in (card.get('AXLabel') or ''), f'card label {card.get("AXLabel")!r}'
+assert ui.t('home.card.pay.buttonLabel', amount='RM\u00a015') in (card.get('AXLabel') or ''), f'card label {card.get("AXLabel")!r}'
 assert 'Button' in (card.get('role') or '') or 'button' in (card.get('role_description') or ''), card.get('role')
 ui.capture('01-card')
 # The card is one accessibility element whose action opens the sheet; a touch has to land on the 去付款

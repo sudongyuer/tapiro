@@ -78,7 +78,7 @@ function unpaidFor(options: FixturePostOptions): UnpaidSummary[] {
   const oldest = {
     paymentId: FIXTURE_UNPAID_IDS.first,
     payeeName: first[0],
-    amountSen: first[1],
+    amount: { minor: first[1], currency: 'MYR' as const },
     createdAt: ago(options.unpaid === 'old' ? 8 : 3),
   };
   if (options.unpaid === 'old') return [oldest];
@@ -87,7 +87,7 @@ function unpaidFor(options: FixturePostOptions): UnpaidSummary[] {
     {
       paymentId: FIXTURE_UNPAID_IDS.second,
       payeeName: second[0],
-      amountSen: second[1],
+      amount: { minor: second[1], currency: 'MYR' as const },
       createdAt: ago(1),
     },
   ];

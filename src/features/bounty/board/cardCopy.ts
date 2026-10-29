@@ -1,8 +1,8 @@
 import type { TFunction } from 'i18next';
 
 import { nameInitial } from '@/lib/nameInitial';
+import { formatMoney } from '@/lib/money';
 
-import { ringgit } from '../post/blockedReason';
 import { timeLine } from '../post/timeText';
 import type { TimeChoice } from '../post/types';
 import { tierName, tierRank } from '../shared/tierCopy';
@@ -19,7 +19,7 @@ export function rowTime(row: Pick<BoardRow, 'deadlineAt' | 'startsAt' | 'endsAt'
 
 export function cardCopy(row: BoardRow, t: TFunction, language: string, now: Date) {
   const category = t(`bounty.category.${row.category}`);
-  const reward = ringgit(row.rewardSen, language);
+  const reward = formatMoney(row.reward, language, { whole: true });
   const time = timeLine(rowTime(row), t, language, now);
   const distance = row.distanceM === null ? null : formatDistance(row.distanceM, language);
   const when = row.urgent

@@ -212,7 +212,8 @@ describe('supabase auth service', () => {
       id: 'p1',
       title: 'Ride to KLIA',
       counterpartName: 'Aisyah',
-      amountSen: 2500,
+      amountMinor: 2500,
+      currency: 'MYR',
       direction: 'owed' as const,
     };
     const body = JSON.stringify({ error: 'unsettled_payments', payments: [payment, { id: 2 }] });
@@ -223,7 +224,15 @@ describe('supabase auth service', () => {
     expect(await service.deleteAccount()).toEqual({
       ok: false,
       reason: 'blocked',
-      payments: [payment],
+      payments: [
+        {
+          id: 'p1',
+          title: 'Ride to KLIA',
+          counterpartName: 'Aisyah',
+          amount: { minor: 2500, currency: 'MYR' },
+          direction: 'owed',
+        },
+      ],
     });
     expect(signOut).not.toHaveBeenCalled();
   });

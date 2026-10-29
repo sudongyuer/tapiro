@@ -1,9 +1,10 @@
 import type { TFunction } from 'i18next';
 
+import { formatMoney, type Money } from '@/lib/money';
+
 import { malaysiaDate } from '../post/timeText';
 import { codePoints } from '../post/validate';
 import type { SheetCopy } from '../shared/askSheet';
-import { bareAmount } from './statusCopy';
 import { ISSUE_REASON_MAX, type CancelPreview, type PostCharge, type StatusRole } from './types';
 
 type Copy = { t: TFunction; language: string };
@@ -50,10 +51,13 @@ export function closeSheetCopy(
   };
 }
 
-export function confirmSheetCopy(name: string, sen: number, { t, language }: Copy): SheetCopy {
+export function confirmSheetCopy(name: string, reward: Money, { t, language }: Copy): SheetCopy {
   return {
     title: t('bounty.confirm.title', { name }),
-    message: t('bounty.confirm.body', { name, amount: bareAmount(sen, language) }),
+    message: t('bounty.confirm.body', {
+      name,
+      amount: formatMoney(reward, language, { whole: true }),
+    }),
     confirm: t('bounty.confirm.confirm'),
     keep: t('bounty.confirm.cancel'),
   };

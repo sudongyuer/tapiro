@@ -5,7 +5,7 @@ import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
-import { formatRinggit } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
@@ -94,7 +94,7 @@ export function DeleteAccountSheet({
               <AppText variant="secondary" tone="secondaryLabel">
                 {t(`account.delete.payment.${payment.direction}`, {
                   name: payment.counterpartName,
-                  amount: formatRinggit(payment.amountSen, language),
+                  amount: formatMoney(payment.amount, language),
                 })}
               </AppText>
             </View>

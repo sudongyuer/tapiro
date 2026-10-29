@@ -61,23 +61,23 @@ describe('fixtureLiveItems variants', () => {
 });
 
 describe('accessory amounts', () => {
-  test('money items carry integer sen and keep the amount out of the title', () => {
+  test('money items carry an integer minor amount and keep it out of the title', () => {
     for (const variant of ['demo', 'worst', 'one'] as const) {
       const feed = fixtureLiveItems('oweMoney,owedToYou,rideSoon', variant).accessory;
       for (const item of feed) {
         if (item.kind === 'rideSoon') {
-          expect(item.amountSen).toBeUndefined();
+          expect(item.amount).toBeUndefined();
           continue;
         }
-        expect(Number.isInteger(item.amountSen)).toBe(true);
-        expect(item.title).not.toMatch(/RM/);
+        expect(Number.isInteger(item.amount?.minor)).toBe(true);
+        expect(item.title).not.toMatch(/RM|¥/);
       }
     }
   });
 
   test('worst amounts are 12,345.60 and 0.50', () => {
     const feed = fixtureLiveItems('oweMoney,owedToYou', 'worst').accessory;
-    expect(feed.map((item) => item.amountSen)).toEqual([50, 1234560]);
+    expect(feed.map((item) => item.amount?.minor)).toEqual([50, 1234560]);
   });
 });
 
@@ -89,7 +89,7 @@ describe('live item sources', () => {
       id: 'p1',
       kind: 'oweMoney',
       title: '付给阿杰',
-      amountSen: 1500,
+      amount: { minor: 1500, currency: 'MYR' },
       sub: '帮取快递',
     } as const;
     live.setSource('payments', [owe]);
@@ -112,7 +112,7 @@ describe('live item source states', () => {
     id: 'p1',
     kind: 'oweMoney',
     title: '付给阿杰',
-    amountSen: 1500,
+    amount: { minor: 1500, currency: 'MYR' },
     sub: '帮取快递',
   } as const;
 

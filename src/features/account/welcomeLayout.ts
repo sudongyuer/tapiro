@@ -1,3 +1,4 @@
+import { formatMoney, type Money } from '@/lib/money';
 import type { ObjectKind } from '@/ui/objectKinds';
 import { vars } from '@/ui/theme/tokens';
 
@@ -131,6 +132,19 @@ export function heroBottom(layout: WelcomeLayout) {
   );
 }
 
+const EXAMPLE_REWARDS: Partial<Record<ObjectKind, Money>> = {
+  parcel: { minor: 800, currency: 'MYR' },
+  coffee: { minor: 500, currency: 'MYR' },
+  ticket: { minor: 1500, currency: 'MYR' },
+  books: { minor: 2000, currency: 'MYR' },
+  boba: { minor: 600, currency: 'MYR' },
+};
+
 export function stickerExampleKey(kind: ObjectKind) {
   return `account.welcome.examples.${kind}` as const;
+}
+
+export function stickerExampleValues(kind: ObjectKind, language: string) {
+  const reward = EXAMPLE_REWARDS[kind];
+  return { amount: reward ? formatMoney(reward, language, { whole: true }) : '' };
 }

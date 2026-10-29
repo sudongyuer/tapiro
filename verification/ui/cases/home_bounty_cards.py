@@ -35,7 +35,7 @@ stage = ui.settled(lambda items: by_id(items, 'home-stage-live'), 'the live stag
 assert stage.get('AXLabel') == ui.t('home.say.bounty', title='帮取快递', line='3 人申请，去选'), stage.get('AXLabel')
 
 front = ui.settled(lambda items: by_id(items, 'live-card-bountyAction'), 'the 要你处理 card is not in front')
-reward = ui.t('home.money', amount='8')
+reward = 'RM\u00a08'
 assert front.get('AXLabel') == ui.t('home.card.bounty.label', title='帮取快递', line='3 人申请，去选', reward=reward), \
     front.get('AXLabel')
 assert front['frame']['height'] >= 44, front['frame']

@@ -1,10 +1,10 @@
 import type { TFunction } from 'i18next';
 
 import { nameInitial } from '@/lib/nameInitial';
+import { formatMoney } from '@/lib/money';
 
 import { formatDistance } from '../board/axis';
 import { rowTime } from '../board/cardCopy';
-import { ringgit } from '../post/blockedReason';
 import { timeLine } from '../post/timeText';
 import { tierName, tierRank } from '../shared/tierCopy';
 import type { DetailView } from './detailState';
@@ -23,7 +23,7 @@ export function urgentLine(deadlineAt: string | null, t: TFunction, now: Date) {
 }
 
 export function detailCopy(view: DetailView, t: TFunction, language: string, now: Date) {
-  const reward = ringgit(view.rewardSen, language);
+  const reward = formatMoney(view.reward, language, { whole: true });
   const name = view.poster.name ?? t('bounty.post.unknownName');
   return {
     reward,

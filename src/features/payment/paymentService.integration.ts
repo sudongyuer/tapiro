@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createSupabaseStickerService } from '@/lib/stickers/service';
 
 import { createSupabasePaymentService } from './paymentService';
+import { NoRateError, type FxRate } from './types';
 
 const env = Bun.spawnSync(['supabase', 'status', '-o', 'env']).stdout.toString();
 const value = (key: string) => {
@@ -34,7 +35,7 @@ async function signedIn(name: string) {
   return { id: data.user.id, client, service: createSupabasePaymentService(client) };
 }
 
-async function open(payer: string, payee: string, amount: number) {
+async function open(payer: string, payee: string, amount: number, currency = 'MYR') {
   const { data, error } = await admin.rpc('open_payment', {
     kind: 'bounty',
     item: crypto.randomUUID(),
@@ -42,6 +43,7 @@ async function open(payer: string, payee: string, amount: number) {
     payer,
     payee,
     amount,
+    currency,
   });
   if (error) throw error;
   return data as string;
@@ -71,7 +73,14 @@ describe('supabase payment service (local stack)', () => {
   test('pays, undoes, pays with a proof and settles through the RPCs', async () => {
     const id = await open(poster.id, helper.id, 1500);
     const [listed] = await poster.service.list(poster.id);
-    expect(listed).toMatchObject({ id, role: 'payer', counterpartName: 'Helper', state: 'due' });
+    expect(listed).toMatchObject({
+      id,
+      role: 'payer',
+      counterpartName: 'Helper',
+      state: 'due',
+      amount: { minor: 1500, currency: 'MYR' },
+      paid: null,
+    });
     expect(listed.reference).toMatch(/^TP-[A-HJ-NP-Z2-9]{4}$/);
 
     const methods = await poster.service.methodsOf(helper.id);
@@ -97,6 +106,7 @@ describe('supabase payment service (local stack)', () => {
       state: 'marked_paid',
       proofPath: path,
       counterpartName: 'Poster',
+      paid: { minor: 1500, currency: 'MYR' },
     });
     const proof = await helper.client.storage.from('payment-proofs').download(path);
     expect(proof.error).toBeNull();
@@ -121,11 +131,34 @@ describe('supabase payment service (local stack)', () => {
     expect((await poster.service.get(poster.id, id))?.state).toBe('due');
   });
 
-  test('reads the latest BNM rate', async () => {
-    const { error } = await admin
-      .from('fx_rates')
-      .upsert({ rate_date: '2026-10-23', session: '1700', rm_per_cny: 0.6122 });
+  test('marking a yuan payment paid by DuitNow without a locked rate fails as no rate', async () => {
+    const week = new Date(Date.now() - 8 * 86_400_000).toISOString().slice(0, 10);
+    const cleared = await admin.from('fx_rates').delete().gte('rate_date', week);
+    expect(cleared.error).toBeNull();
+    const id = await open(poster.id, helper.id, 1000, 'CNY');
+    const marking = poster.service.markPaid(id, methodId, null);
+    await expect(marking).rejects.toBeInstanceOf(NoRateError);
+    expect((await poster.service.get(poster.id, id))?.state).toBe('due');
+  });
+
+  test('reads the latest BNM rate for the pair in either order', async () => {
+    const { error } = await admin.from('fx_rates').upsert({
+      base: 'CNY',
+      quote: 'MYR',
+      rate_date: '2026-10-23',
+      source: 'bnm',
+      session: '1700',
+      quote_per_base: 0.6122,
+    });
     expect(error).toBeNull();
-    expect(await poster.service.latestRate()).toEqual({ rateDate: '2026-10-23', rmPerCny: 0.6122 });
+    const rate: FxRate = {
+      base: 'CNY',
+      quote: 'MYR',
+      quotePerBase: 0.6122,
+      rateDate: '2026-10-23',
+      source: 'bnm',
+    };
+    expect(await poster.service.latestRate('MYR', 'CNY')).toEqual(rate);
+    expect(await poster.service.latestRate('CNY', 'MYR')).toEqual(rate);
   });
 });

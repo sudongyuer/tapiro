@@ -1,10 +1,12 @@
+import type { CurrencyCode, Money } from '@/lib/money';
 import type { BountyCategory } from '@/lib/stickers/category';
 
 export type PublishArgs = {
   id: string;
   title: string;
   category: BountyCategory;
-  reward_sen: number;
+  reward_minor: number;
+  reward_currency: CurrencyCode;
   description: string | null;
   place_label: string | null;
   latitude: number | null;
@@ -65,7 +67,7 @@ export type DraftError = (typeof DRAFT_ERRORS)[number];
 export type UnpaidSummary = {
   paymentId: string;
   payeeName: string;
-  amountSen: number;
+  amount: Money;
   createdAt: string;
 };
 

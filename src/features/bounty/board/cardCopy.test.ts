@@ -4,7 +4,6 @@ import { createInstance } from 'i18next';
 import { LANGUAGES } from '@/lib/i18n/languages';
 import { resources } from '@/lib/i18n/resources';
 
-import { ringgit } from '../post/blockedReason';
 import { cardCopy } from './cardCopy';
 import type { BoardRow } from './types';
 
@@ -15,7 +14,8 @@ const ROW: BoardRow = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 800,
+  reward: { minor: 800, currency: 'MYR' },
+  reference: null,
   placeLabel: 'Sunway Geo 宿舍',
   stickerPath: null,
   startsAt: null,
@@ -35,7 +35,7 @@ function translator(lng: string) {
 }
 
 const t = translator('zh-Hans');
-const RM8 = ringgit(800, 'zh-Hans');
+const RM8 = 'RM\u00a08';
 
 describe('cardCopy', () => {
   test('marks an urgent row with 急 before its deadline and joins place and distance', () => {

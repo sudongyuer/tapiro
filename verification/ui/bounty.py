@@ -15,6 +15,7 @@ CONFIRM_TITLE = 'bounty.post.confirm.title'
 CATEGORIES = ['pickup', 'buy', 'queue', 'handle', 'move', 'accompany', 'study', 'other']
 EMPTY_DRAFT = ['-uiVerifyBountyDraft', 'none']
 REWARD_RANGE = {'min': 1, 'max': 500}
+REWARD_RANGE_TEXT = {'min': 'RM\u00a01', 'max': 'RM\u00a0500'}
 GROUPED_BACKGROUND = {'light': [(242, 242, 247)], 'dark': [(0, 0, 0), (28, 28, 30)]}
 
 

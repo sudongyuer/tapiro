@@ -1,7 +1,8 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
+import { convertUp, methodCurrency, type Money } from '@/lib/money';
 import type { PayeeDetails, PayeeMethod } from '@/lib/payeeMethods';
 
-import type { Payment, PaymentService } from './types';
+import { NoRateError, type FxRate, type Payment, type PaymentService } from './types';
 
 export const FIXTURE_USER_ID = '00000000-0000-4000-8000-000000000001';
 export const FIXTURE_PAYMENT_IDS = {
@@ -121,6 +122,18 @@ function malaysiaToday() {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
 }
 
+const ringgit = (minor: number): Money => ({ minor, currency: 'MYR' });
+
+function fixtureRate(): FxRate {
+  return {
+    base: 'CNY',
+    quote: 'MYR',
+    quotePerBase: 0.6122,
+    rateDate: malaysiaToday(),
+    source: 'bnm',
+  };
+}
+
 export function createFixturePaymentService(
   options: FixturePaymentOptions,
   proofImage: () => Promise<string | null> = async () => 'file:///fixture/proof.png',
@@ -136,7 +149,8 @@ export function createFixturePaymentService(
       category: 'pickup',
       id: FIXTURE_PAYMENT_IDS.owe,
       title: items.owe[0],
-      amountSen: items.owe[1],
+      amount: ringgit(items.owe[1]),
+      paid: null,
       reference: 'TP-8K2Q',
       state: 'due',
       role: 'payer',
@@ -150,7 +164,8 @@ export function createFixturePaymentService(
       ...owed,
       id: FIXTURE_PAYMENT_IDS.owed,
       title: items.owed[0],
-      amountSen: items.owed[1],
+      amount: ringgit(items.owed[1]),
+      paid: ringgit(items.owed[1]),
       reference: 'TP-3MZ7',
       state: 'marked_paid',
       role: 'payee',
@@ -164,7 +179,8 @@ export function createFixturePaymentService(
       ...owed,
       id: FIXTURE_PAYMENT_IDS.owedCash,
       title: items.owed[0],
-      amountSen: items.owed[1],
+      amount: ringgit(items.owed[1]),
+      paid: null,
       reference: 'TP-W4HN',
       state: 'due',
       role: 'payee',
@@ -214,8 +230,12 @@ export function createFixturePaymentService(
       if (userId === FIXTURE_USER_ID) return ownMethods;
       return [];
     },
-    async latestRate() {
-      return options.rate ? { rateDate: malaysiaToday(), rmPerCny: 0.6122 } : null;
+    async latestRate(currency, other) {
+      const rate = fixtureRate();
+      const pair = [rate.base, rate.quote];
+      return options.rate && pair.includes(currency) && pair.includes(other) && currency !== other
+        ? rate
+        : null;
     },
     async uploadProof(paymentId) {
       return `${paymentId}/fixture-proof.jpg`;
@@ -231,8 +251,18 @@ export function createFixturePaymentService(
       const method = payeeMethods.find((candidate) => candidate.id === methodId);
       if (payment.role !== 'payer' || payment.state !== 'due' || !method || method.type === 'cash')
         throw new Error('cannot mark paid');
+      const currency = methodCurrency(method.type, payment.amount.currency);
+      const rate = fixtureRate();
+      const paid =
+        currency === payment.amount.currency
+          ? payment.amount
+          : options.rate
+            ? convertUp(payment.amount, rate.quotePerBase, rate.base, rate.quote)
+            : null;
+      if (!paid) throw new NoRateError();
       update(paymentId, {
         state: 'marked_paid',
+        paid,
         methodType: method.type,
         proofPath,
         markedPaidAt: new Date().toISOString(),
@@ -243,7 +273,13 @@ export function createFixturePaymentService(
       const payment = find(paymentId);
       if (payment.role !== 'payer' || payment.state !== 'marked_paid')
         throw new Error('cannot undo');
-      update(paymentId, { state: 'due', methodType: null, proofPath: null, markedPaidAt: null });
+      update(paymentId, {
+        state: 'due',
+        methodType: null,
+        proofPath: null,
+        markedPaidAt: null,
+        paid: null,
+      });
     },
     async confirm(paymentId) {
       const payment = find(paymentId);
@@ -253,7 +289,11 @@ export function createFixturePaymentService(
         !(payment.state === 'marked_paid' || (payment.state === 'due' && cash))
       )
         throw new Error('cannot confirm');
-      update(paymentId, { state: 'settled', methodType: payment.methodType ?? 'cash' });
+      update(paymentId, {
+        state: 'settled',
+        methodType: payment.methodType ?? 'cash',
+        paid: payment.paid ?? payment.amount,
+      });
       const stickerCount = earnSticker({
         paymentId,
         itemKind: payment.itemKind,

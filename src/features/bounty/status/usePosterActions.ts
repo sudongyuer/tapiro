@@ -24,7 +24,7 @@ export function usePosterActions(bountyId: string, act: Act, onPay: (paymentId: 
     async (detail: StatusDetail) => {
       const name = counterpartName(detail, 'poster') ?? t('bounty.post.unknownName');
       const result = await askThenSend(
-        () => askSheet(confirmSheetCopy(name, detail.rewardSen, { t, language }), false),
+        () => askSheet(confirmSheetCopy(name, detail.reward, { t, language }), false),
         () => act('confirm', () => statusService.confirm(bountyId)),
       );
       if (result?.ok) onPay(result.value.paymentId);

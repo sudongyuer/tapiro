@@ -5,7 +5,7 @@ import { errorKey } from './errorCopy';
 import type { FormNotice as Notice } from './useDraft';
 
 export function FormNotice({ notice }: { notice: Notice | null }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   if (notice === null) return null;
   if (notice === 'alreadySent') {
     return (
@@ -17,7 +17,7 @@ export function FormNotice({ notice }: { notice: Notice | null }) {
       />
     );
   }
-  const shown = errorKey(notice);
+  const shown = errorKey(notice, language);
   return (
     <NoticeCard
       tone="urgent"

@@ -1,3 +1,5 @@
+import type { Money } from '@/lib/money';
+
 import type { BountyEvent, EventKind, StatusDetail, StatusRole } from './types';
 
 export const STEP_IDS = ['selected', 'started', 'completed', 'confirmed', 'payment'] as const;
@@ -30,7 +32,7 @@ export type LineKey =
 
 export type CopyParams = {
   name?: string | null;
-  sen?: number;
+  amount?: Money;
   at?: string;
   reason?: string;
 };
@@ -233,7 +235,7 @@ export function timeline(detail: StatusDetail, role: StatusRole): Timeline {
       state,
       at: event?.at ?? null,
       key: stepKey(id, role, state),
-      params: { name, sen: detail.rewardSen },
+      params: { name, amount: detail.reward },
       lines: linesFor(detail, role, id),
     };
   });

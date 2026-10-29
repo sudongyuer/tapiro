@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import { formatRinggitParts } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
 
 import { timeParts } from '../post/timeText';
 import { counterpartName, statusSummary, type TimelineLine, type TimelineStep } from './timeline';
@@ -46,15 +46,12 @@ export function lineText(line: TimelineLine, copy: CopyContext) {
   });
 }
 
-export function bareAmount(sen: number, language: string) {
-  const { whole, cents } = formatRinggitParts(sen, language);
-  return /^[.,]00$/.test(cents) ? whole : `${whole}${cents}`;
-}
-
 export function stepText(step: TimelineStep, copy: CopyContext) {
   return copy.t(step.key, {
     name: shownName(step.params.name, copy.t),
-    amount: bareAmount(step.params.sen ?? 0, copy.language),
+    amount: step.params.amount
+      ? formatMoney(step.params.amount, copy.language, { whole: true })
+      : '',
   });
 }
 

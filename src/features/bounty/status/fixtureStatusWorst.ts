@@ -24,7 +24,7 @@ export const WORST_REASON = codePoints(
   'Kotak bungkusan remuk dan dua cawan di dalamnya pecah. 快递盒子压坏了，里面的两个杯子碎了，另外少了一包纸巾，麻烦你回去问一下店家。',
   140,
 );
-export const WORST_REWARD_SEN = 50000;
+export const WORST_REWARD_MINOR = 50000;
 export const WORST_PLACE = codePoints('Sunway Geo Residences A 座大堂旁边的便利店门口，', 80);
 export const WORST_ADDRESS = codePoints(
   'Sunway Geo Residences, Block B, Level 23, Unit 23-07, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor ',

@@ -7,7 +7,8 @@ describe('parseUnsettledPayments', () => {
     id: 'p',
     title: 't',
     counterpartName: 'n',
-    amountSen: 0,
+    amountMinor: 0,
+    currency: 'MYR',
     direction: 'owe' as const,
   };
 
@@ -16,14 +17,24 @@ describe('parseUnsettledPayments', () => {
       parseUnsettledPayments({
         payments: [
           valid,
-          { ...valid, amountSen: 1.5 },
-          { ...valid, amountSen: -1 },
+          { ...valid, amountMinor: 1.5 },
+          { ...valid, amountMinor: -1 },
+          { ...valid, currency: 'USD' },
+          { ...valid, currency: undefined },
           { ...valid, direction: 'sideways' },
           { ...valid, title: undefined },
           null,
         ],
       }),
-    ).toEqual([valid]);
+    ).toEqual([
+      {
+        id: 'p',
+        title: 't',
+        counterpartName: 'n',
+        amount: { minor: 0, currency: 'MYR' },
+        direction: 'owe',
+      },
+    ]);
   });
 
   test('anything else yields no items', () => {

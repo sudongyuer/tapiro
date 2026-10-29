@@ -1,11 +1,12 @@
+import { CURRENCIES, POST_LIMITS, type CurrencyCode, type Money } from '@/lib/money';
+
 import type { DraftError, PostDraft, PublishArgs, TimeChoice } from './types';
 
 export const TITLE_MAX = 60;
 export const DESCRIPTION_MAX = 500;
 export const PLACE_MAX = 80;
 export const ADDRESS_MAX = 120;
-export const REWARD_MIN_RM = 1;
-export const REWARD_MAX_RM = 500;
+export const POST_CURRENCY: CurrencyCode = 'MYR';
 export const TIME_AHEAD_MS = 30 * 24 * 3_600_000;
 
 type Checked<T> = { ok: true; value: T } | { ok: false; error: DraftError };
@@ -17,13 +18,27 @@ export function codePoints(text: string) {
   return [...text].length;
 }
 
-export function parseReward(text: string): number | null {
+export function rewardLimits(currency: CurrencyCode) {
+  const { minMinor, maxMinor, stepMinor } = POST_LIMITS.bounty[currency];
+  const unit = 10 ** CURRENCIES[currency].minorDigits;
+  return {
+    min: { minor: minMinor, currency } satisfies Money,
+    max: { minor: maxMinor, currency } satisfies Money,
+    step: stepMinor,
+    minMajor: minMinor / unit,
+    maxMajor: maxMinor / unit,
+  };
+}
+
+export function parseReward(text: string, currency: CurrencyCode): Money | null {
   const digits = text
     .trim()
     .replace(/[０-９]/g, (digit) => String(digit.charCodeAt(0) - FULL_WIDTH_ZERO));
   if (!/^[0-9]+$/.test(digits)) return null;
-  const rm = Number(digits);
-  return rm >= REWARD_MIN_RM && rm <= REWARD_MAX_RM ? rm * 100 : null;
+  const minor = Number(digits) * 10 ** CURRENCIES[currency].minorDigits;
+  const { min, max, step } = rewardLimits(currency);
+  const fits = minor >= min.minor && minor <= max.minor && (minor - min.minor) % step === 0;
+  return fits ? { minor, currency } : null;
 }
 
 function future(iso: string, now: Date): Checked<string> {
@@ -68,8 +83,8 @@ export function checkDraft(
   if (codePoints(title) > TITLE_MAX) return { ok: false, error: 'titleTooLong' };
   if (!draft.category) return { ok: false, error: 'categoryEmpty' };
   if (draft.rewardText.trim() === '') return { ok: false, error: 'rewardEmpty' };
-  const rewardSen = parseReward(draft.rewardText);
-  if (rewardSen === null) return { ok: false, error: 'rewardRange' };
+  const reward = parseReward(draft.rewardText, POST_CURRENCY);
+  if (reward === null) return { ok: false, error: 'rewardRange' };
   const time = checkTime(draft.time, now);
   if (!time.ok) return time;
   const description = optionalText(draft.description);
@@ -92,7 +107,8 @@ export function checkDraft(
       id: draft.id,
       title,
       category: draft.category,
-      reward_sen: rewardSen,
+      reward_minor: reward.minor,
+      reward_currency: reward.currency,
       description,
       place_label: placeLabel,
       latitude: place ? place.latitude : null,

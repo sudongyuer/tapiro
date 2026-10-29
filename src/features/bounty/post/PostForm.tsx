@@ -27,6 +27,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { CURRENCIES } from '@/lib/money';
 import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
 import { CATEGORY_SYMBOLS } from '@/ui/CategorySticker';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
@@ -43,10 +44,12 @@ import { useDraftSync } from './useDraftSync';
 import { usePlaceFields } from './usePlaceFields';
 import { useHintFocus } from './useStartPost';
 import { useSentCheck } from './useSentCheck';
-import { codePoints, checkDraft, REWARD_MAX_RM, REWARD_MIN_RM, TITLE_MAX } from './validate';
+import { rewardRangeValues } from './errorCopy';
+import { codePoints, checkDraft, POST_CURRENCY, rewardLimits, TITLE_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
-const REWARD_DIGITS = String(REWARD_MAX_RM).length;
+const REWARD = rewardLimits(POST_CURRENCY);
+const REWARD_DIGITS = String(REWARD.maxMajor).length;
 const REWARD_FIELD_WIDTH = 96;
 
 type FormProps = {
@@ -71,7 +74,7 @@ function PostFormBody({
   onClose,
   onPickPlace,
 }: FormProps & { draft: PostDraft }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { color } = useTheme();
   function edit(patch: Partial<PostDraft>) {
     draftStore.update(userId, patch);
@@ -163,11 +166,7 @@ function PostFormBody({
           </FieldRow>
         </Section>
         <Section
-          footer={
-            <Text>
-              {t('bounty.post.form.rewardFooter', { min: REWARD_MIN_RM, max: REWARD_MAX_RM })}
-            </Text>
-          }
+          footer={<Text>{t('bounty.post.form.rewardFooter', rewardRangeValues(language))}</Text>}
         >
           <Picker
             label={t('bounty.post.form.category')}
@@ -194,14 +193,14 @@ function PostFormBody({
           <FieldRow field={rewardField}>
             <Text>{t('bounty.post.form.reward')}</Text>
             <Spacer />
-            <Text modifiers={[secondary]}>{t('bounty.post.form.rewardUnit')}</Text>
+            <Text modifiers={[secondary]}>{CURRENCIES[POST_CURRENCY].symbol}</Text>
             <SyncedTextField
               ref={rewardField}
               field={reward}
               maxLength={REWARD_DIGITS}
               placeholder={t('bounty.post.form.rewardPlaceholder', {
-                min: REWARD_MIN_RM,
-                max: REWARD_MAX_RM,
+                min: REWARD.minMajor,
+                max: REWARD.maxMajor,
               })}
               onFocusChange={onBlur}
               testID="bounty-post-reward"

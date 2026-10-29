@@ -20,7 +20,7 @@ export default {
     failed: 'That didn’t work. Check your connection and try again.',
     payTo: 'Pay {{name}}',
     amountLabel: 'Amount {{amount}}',
-    cny: 'About ¥{{amount}} (for reference)',
+    cny: 'About {{amount}} (for reference)',
     fxSource: 'Rate source: Bank Negara Malaysia',
     fxSourceHint: 'Opens Bank Negara Malaysia’s dataset terms of use',
     methodsHeader: 'Payment method',
@@ -99,7 +99,7 @@ export default {
   },
   celebrate: {
     top: '{{title}} · {{name}} has paid',
-    cny: '≈ ¥{{amount}} · Bank Negara Malaysia middle rate',
+    cny: '≈ {{amount}} · Bank Negara Malaysia middle rate',
     first: {
       title: 'Your first payment is in!',
       body: 'This errand’s sticker is now in your sticker book.',

@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
-import { formatRinggit } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
 import { stickerStore } from '@/lib/stickers';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
@@ -18,7 +18,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { Celebration, type CelebrationData } from './celebration/Celebration';
 import { ActionButton, secondary, TextSection } from './formParts';
-import { cnyFen } from './fx';
+import { pairedReference } from './fx';
 import { usePaymentList, usePaySheet, type SheetData } from './hooks';
 import { AmountHeader, PayerView } from './PayerView';
 import { PayeeView } from './PayeeView';
@@ -74,8 +74,8 @@ export function PaySheet({
       previous,
       title: payment.title,
       name: payment.counterpartName,
-      amountSen: payment.amountSen,
-      cnyFen: cnyFen(payment.amountSen, rate, new Date()),
+      amount: payment.amount,
+      reference: pairedReference(payment.amount, rate, new Date()),
       itemKind: payment.itemKind,
       category: payment.category,
     });
@@ -151,7 +151,7 @@ function SheetBody({
   const { t, language } = useI18n();
   const { payment } = data;
   const name = payment.counterpartName;
-  const amount = formatRinggit(payment.amountSen, language);
+  const amount = formatMoney(payment.amount, language);
 
   if (payment.state === 'settled') return <Settled data={data} />;
   if (payment.role === 'payee')
@@ -170,8 +170,8 @@ function SheetBody({
     <>
       <AmountHeader
         title={t('pay.sheet.payTo', { name })}
-        amountSen={payment.amountSen}
-        cny={null}
+        money={payment.amount}
+        reference={null}
       />
       <TextSection
         title={t('pay.sheet.waiting.title', { name })}
@@ -208,7 +208,7 @@ function SheetBody({
 function Settled({ data }: { data: SheetData }) {
   const { t, language } = useI18n();
   const { color } = useTheme();
-  const amount = formatRinggit(data.payment.amountSen, language);
+  const amount = formatMoney(data.payment.amount, language);
   return (
     <Section>
       <HStack

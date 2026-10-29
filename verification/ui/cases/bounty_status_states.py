@@ -107,7 +107,7 @@ for key in ('bounty.status.note.eta', 'bounty.eta.previous', 'bounty.eta.changed
     assert re.search(ui.pattern(key, time=CLOCK, name='阿杰'), started), f'{key} missing from {started!r}'
 assert started.endswith(state('done')), started
 assert step('completed').endswith(state('current')), step('completed')
-paid = ui.t('bounty.status.step.poster.paid', name='阿杰', amount='8')
+paid = ui.t('bounty.status.step.poster.paid', name='阿杰', amount='RM\u00a08')
 assert step('payment').startswith(paid), f'the pay step reads {step("payment")!r}, expected {paid!r}'
 items = ui.read()
 assert not any((i.get('AXUniqueId') or '').startswith('bounty-status-action-') for i in items), \

@@ -33,7 +33,7 @@ assert by_id(ui.read(), 'pay-not-received') is None, '还没收到 still offered
 assert_pinned(ui, 'pay-confirm', '已收到')
 ui.capture('02-nudged')
 ui.tap('pay-confirm')
-assert_celebration(ui, first=False, count=2, title='帮带一杯咖啡', name='小林', amount=r'RM\s?8\.00', shot_name='03-routine', cny=r'13\.07')
+assert_celebration(ui, first=False, count=2, title='帮带一杯咖啡', name='小林', amount=r'RM\s?8\.00', shot_name='03-routine', cny=r'¥\s?13\.07')
 ui.tap('pay-celebration-done')
 ui.gone('pay-celebration')
 settled = ui.element('pay-settled')

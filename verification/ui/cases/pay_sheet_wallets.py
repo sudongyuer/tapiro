@@ -23,7 +23,7 @@ alipay = next(i for i in items if (i.get('AXUniqueId') or '').startswith('pay-me
 assert_touch_target(alipay, 'Alipay row')
 ui.tap(alipay['AXUniqueId'])
 ui.element('pay-qr-image')
-cny = ui.wait_label('pay-amount', lambda label: re.search(ui.pattern('pay.sheet.cny', amount=r'2[0-9]\.[0-9]{2}'), label), 'CNY reference missing')
+cny = ui.wait_label('pay-amount', lambda label: re.search(ui.pattern('pay.sheet.cny', amount=r'¥\s?2[0-9]\.[0-9]{2}'), label), 'CNY reference missing')
 assert by_id(ui.read(), 'pay-fx-source'), 'BNM source link missing'
 ui.capture('02-alipay')
 save = scroll_to(ui, 'pay-qr-save')

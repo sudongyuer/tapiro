@@ -21,7 +21,7 @@ const VIEW: DetailView = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 800,
+  reward: { minor: 800, currency: 'MYR' },
   placeLabel: 'Sunway Geo 宿舍',
   distanceM: 300,
   startsAt: null,

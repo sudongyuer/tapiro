@@ -1,9 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { isCurrencyCode, toMoney } from '@/lib/money';
 import { toMethod, type PayeeMethodRow, type PayeeType } from '@/lib/payeeMethods';
 import { bountyCategory } from '@/lib/stickers/category';
 
-import type { Payment, PaymentService, PaymentState } from './types';
+import {
+  NoRateError,
+  type FxRate,
+  type Payment,
+  type PaymentService,
+  type PaymentState,
+} from './types';
 
 export const PROOF_BUCKET = 'payment-proofs';
 
@@ -12,7 +19,10 @@ export type PaymentRow = {
   item_kind: 'bounty' | 'ride';
   category: string | null;
   title: string;
-  amount_sen: number;
+  amount_minor: number;
+  currency: string;
+  paid_minor: number | null;
+  paid_currency: string | null;
   reference: string;
   state: PaymentState;
   payer_id: string | null;
@@ -31,14 +41,17 @@ export function toPayment(
   names: Readonly<Record<string, string>>,
 ): Payment | null {
   const role = row.payer_id === userId ? 'payer' : row.payee_id === userId ? 'payee' : null;
-  if (!role) return null;
+  const amount = toMoney(row.amount_minor, row.currency);
+  if (!role || !amount) return null;
+  const paid = row.paid_minor === null ? null : toMoney(row.paid_minor, row.paid_currency);
   const counterpartId = role === 'payer' ? row.payee_id : row.payer_id;
   return {
     id: row.id,
     itemKind: row.item_kind,
     category: bountyCategory(row.category),
     title: row.title,
-    amountSen: row.amount_sen,
+    amount,
+    paid,
     reference: row.reference,
     state: row.state,
     role,
@@ -59,7 +72,33 @@ function unwrap<T extends { error: unknown }>(result: T) {
 }
 
 const COLUMNS =
-  'id, item_kind, category, title, amount_sen, reference, state, payer_id, payee_id, method_type, proof_path, nudged_at, marked_paid_at, created_at, reverses';
+  'id, item_kind, category, title, amount_minor, currency, paid_minor, paid_currency, reference, state, payer_id, payee_id, method_type, proof_path, nudged_at, marked_paid_at, created_at, reverses';
+
+type RateRow = {
+  base: string;
+  quote: string;
+  quote_per_base: number | string;
+  rate_date: string;
+  source: string;
+};
+
+export function toFxRate(row: RateRow): FxRate | null {
+  const quotePerBase = Number(row.quote_per_base);
+  if (!isCurrencyCode(row.base) || !isCurrencyCode(row.quote) || !(quotePerBase > 0)) return null;
+  return {
+    base: row.base,
+    quote: row.quote,
+    quotePerBase,
+    rateDate: row.rate_date,
+    source: row.source,
+  };
+}
+
+const isNoRate = (error: unknown) =>
+  typeof error === 'object' &&
+  error !== null &&
+  (error as { code?: unknown }).code === '55000' &&
+  (error as { message?: unknown }).message === 'no_rate';
 
 export type ReadFile = (uri: string) => Promise<ArrayBuffer>;
 
@@ -122,16 +161,20 @@ export function createSupabasePaymentService(
       );
       return (data ?? []).flatMap((row) => toMethod(row) ?? []);
     },
-    async latestRate() {
+    async latestRate(currency, other) {
+      const pair = [currency, other];
       const { data } = unwrap(
         await db()
           .from('fx_rates')
-          .select('rate_date, rm_per_cny')
+          .select('base, quote, quote_per_base, rate_date, source')
+          .in('base', pair)
+          .in('quote', pair)
           .order('rate_date', { ascending: false })
-          .limit(1),
+          .limit(1)
+          .returns<RateRow[]>(),
       );
       const row = data?.[0];
-      return row ? { rateDate: row.rate_date, rmPerCny: Number(row.rm_per_cny) } : null;
+      return row ? toFxRate(row) : null;
     },
     async uploadProof(paymentId, fileUri) {
       const extension = /\.png$/i.test(fileUri) ? 'png' : 'jpg';
@@ -153,7 +196,13 @@ export function createSupabasePaymentService(
       return data.signedUrl;
     },
     async markPaid(paymentId, methodId, proofPath) {
-      await rpc('mark_payment_paid', { payment: paymentId, method: methodId, proof: proofPath });
+      const { error } = await db().rpc('mark_payment_paid', {
+        payment: paymentId,
+        method: methodId,
+        proof: proofPath,
+      });
+      if (isNoRate(error)) throw new NoRateError();
+      if (error) throw error;
     },
     async undo(paymentId) {
       await rpc('undo_marked_paid', { payment: paymentId });

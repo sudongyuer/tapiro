@@ -22,13 +22,13 @@ export default {
       subline: '取快递、排队、拼车回 YC，同学之间互相帮一把',
       terms: '继续即表示同意<terms>《用户协议》</terms>和<privacy>《隐私政策》</privacy>',
       examples: {
-        parcel: '帮取快递 · RM 8',
-        coffee: '帮带咖啡 · RM 5',
-        ticket: '帮排队取号 · RM 15',
-        books: '讲微积分 · RM 20',
+        parcel: '帮取快递 · {{amount}}',
+        coffee: '帮带咖啡 · {{amount}}',
+        ticket: '帮排队取号 · {{amount}}',
+        books: '讲微积分 · {{amount}}',
         umbrella: '借把伞 · 顺路',
         car: '17:00 回 YC · 差 1 人',
-        boba: '帮买奶茶 · RM 6',
+        boba: '帮买奶茶 · {{amount}}',
       },
     },
     name: {
@@ -147,7 +147,6 @@ export default {
       label: '{{title}}，{{sub}}',
       withMore: '{{sub}} · 还有 {{count}} 件',
       hint: '回到悬赏，摊开进行中的卡片',
-      money: 'RM',
     },
     ask: {
       title: '问小貘',
@@ -193,7 +192,6 @@ export default {
       collapseHint: '把卡片叠起来',
       peekHint: '摊开全部卡片',
     },
-    money: 'RM {{amount}}',
     soon: '这一步还没开放',
     card: {
       waiting: { tag: '等对方确认' },
@@ -279,7 +277,7 @@ export default {
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',
-      reward: 'RM 15',
+      reward: '{{amount}}',
       statusOpen: '待接单',
       statusActive: '进行中',
       statusPending: '待确认',
@@ -287,7 +285,7 @@ export default {
       statusUrgent: '紧急',
       accept: '接单',
       posted: '悬赏贴出去啦',
-      liveSample: '付给阿杰 RM 15',
+      liveSample: '付给阿杰 {{amount}}',
       mascot: '小貘',
       hold: '按住，选阿杰来帮你',
       holdHolding: '继续按住…',

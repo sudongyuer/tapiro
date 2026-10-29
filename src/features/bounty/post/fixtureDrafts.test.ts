@@ -37,7 +37,7 @@ describe('fixture drafts', () => {
     const draft = fixtureDraft('one', 'id', MORNING)!;
     expect(draft).toMatchObject({ rewardText: '1', description: null, time: { kind: 'none' } });
     const checked = checkDraft(draft, MORNING);
-    expect(checked.ok && checked.args.reward_sen).toBe(100);
+    expect(checked.ok && checked.args.reward_minor).toBe(100);
   });
 
   test('worst sits on every limit and still validates', () => {
@@ -56,6 +56,6 @@ describe('fixture drafts', () => {
       expect(end.getDate()).not.toBe(start.getDate());
     }
     const checked = checkDraft(draft, MORNING);
-    expect(checked.ok && checked.args.reward_sen).toBe(50000);
+    expect(checked.ok && checked.args.reward_minor).toBe(50000);
   });
 });

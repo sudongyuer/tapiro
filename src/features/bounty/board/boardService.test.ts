@@ -10,7 +10,8 @@ const ROW = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 800,
+  rewardMinor: 800,
+  rewardCurrency: 'MYR',
   placeLabel: 'Sunway Geo 宿舍',
   stickerPath: null,
   startsAt: null,
@@ -23,12 +24,20 @@ const ROW = {
   poster: { id: 'p1', name: '小林', tier: 'reliable' },
 } as const;
 
+const { rewardMinor, rewardCurrency, ...ROW_REST } = ROW;
+const PARSED = {
+  ...ROW_REST,
+  reward: { minor: rewardMinor, currency: rewardCurrency },
+  reference: null,
+};
+
 const DETAIL = {
   id: 'b1',
   title: '帮取快递',
   description: null,
   category: 'pickup',
-  rewardSen: 800,
+  rewardMinor: 800,
+  rewardCurrency: 'MYR',
   status: 'open',
   viewerRole: 'viewer',
   place: { label: 'Sunway Geo 宿舍' },
@@ -75,7 +84,11 @@ describe('page', () => {
   test('passes the arguments in the RPC names and parses the page', async () => {
     const stub = stubClient(() => ok({ items: [ROW], next: null, total: 1 }));
     const service = createSupabaseBoardService(stub.client);
-    expect(await service.page(ME, 'urgent', null)).toEqual({ items: [ROW], next: null, total: 1 });
+    expect(await service.page(ME, 'urgent', null)).toEqual({
+      items: [PARSED],
+      next: null,
+      total: 1,
+    });
     await service.page({ kind: 'none', reason: 'denied' }, 'all', { kind: 'recent' });
     expect(stub.calls).toEqual([
       {
@@ -104,7 +117,7 @@ describe('page', () => {
   test('carries the farther count and rejects a malformed one', async () => {
     const located = stubClient(() => ok({ items: [ROW], next: null, total: 3, beyondTotal: 2 }));
     expect(await createSupabaseBoardService(located.client).page(ME, 'all', null)).toEqual({
-      items: [ROW],
+      items: [PARSED],
       next: null,
       total: 3,
       beyondTotal: 2,
@@ -122,7 +135,12 @@ describe('page', () => {
         : rejected('board_cursor_mismatch', '22023'),
     );
     const answer = await createSupabaseBoardService(stub.client).page(ME, 'all', { id: 'x' });
-    expect(answer).toEqual({ items: [ROW], next: { kind: 'distance' }, total: 9, restarted: true });
+    expect(answer).toEqual({
+      items: [PARSED],
+      next: { kind: 'distance' },
+      total: 9,
+      restarted: true,
+    });
     expect(stub.calls.map((call) => (call.args as { page_after: unknown }).page_after)).toEqual([
       { id: 'x' },
       null,
@@ -145,6 +163,12 @@ describe('page', () => {
     ['an RPC error', () => rejected('invalid_board_query', '22023')],
     ['a network error', () => Promise.reject(new TypeError('Network request failed'))],
     ['a malformed row', () => ok({ items: [{ ...ROW, poster: { id: 'p1', tier: 'gold' } }] })],
+    ['an unknown currency', () => ok({ items: [{ ...ROW, rewardCurrency: 'USD' }] })],
+    ['a fractional reward', () => ok({ items: [{ ...ROW, rewardMinor: 8.5 }] })],
+    [
+      'a reference without its rate date',
+      () => ok({ items: [{ ...ROW, reference: { minor: 1307, currency: 'CNY' } }] }),
+    ],
     ['a missing items list', () => ok({ next: null })],
   ])('%s throws', async (_label, answer) => {
     const stub = stubClient(answer);
@@ -169,6 +193,17 @@ describe('detail', () => {
     expect(stub.calls).toEqual([
       { name: 'bounty_detail', args: { bounty: 'b1', latitude: 3.0733, longitude: 101.6078 } },
     ]);
+  });
+
+  test("carries the reward with its currency and today's reference", async () => {
+    const reference = { minor: 48980, currency: 'MYR', rateDate: '2026-10-28' };
+    const stub = stubClient(() =>
+      ok({ ...DETAIL, rewardMinor: 80000, rewardCurrency: 'CNY', reference }),
+    );
+    expect(await createSupabaseBoardService(stub.client).detail('b1', null)).toMatchObject({
+      reward: { minor: 80000, currency: 'CNY' },
+      reference,
+    });
   });
 
   test('the helper is read for the poster and the helper only', async () => {

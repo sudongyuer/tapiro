@@ -20,7 +20,7 @@ export default {
     failed: 'Tidak berjaya. Semak sambungan dan cuba lagi.',
     payTo: 'Bayar {{name}}',
     amountLabel: 'Jumlah {{amount}}',
-    cny: 'Kira-kira ¥{{amount}} (rujukan)',
+    cny: 'Kira-kira {{amount}} (rujukan)',
     fxSource: 'Sumber kadar: Bank Negara Malaysia',
     fxSourceHint: 'Membuka terma penggunaan set data Bank Negara Malaysia',
     methodsHeader: 'Cara bayaran',
@@ -99,7 +99,7 @@ export default {
   },
   celebrate: {
     top: '{{title}} · {{name}} telah membayar',
-    cny: '≈ ¥{{amount}} · Kadar tengah Bank Negara Malaysia',
+    cny: '≈ {{amount}} · Kadar tengah Bank Negara Malaysia',
     first: {
       title: 'Bayaran pertama anda sudah diterima!',
       body: 'Pelekat tugasan ini sudah ditampal dalam buku pelekat anda.',

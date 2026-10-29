@@ -6,10 +6,11 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
+import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { blockedReason, ringgit } from './blockedReason';
+import { blockedReason } from './blockedReason';
 import { costLine } from './cost';
 import type { StatusState } from './postFlow';
 import { malaysiaDate } from './timeText';
@@ -68,7 +69,7 @@ function BlockedNotice({ status }: { status: PostStatus }) {
             .map((payment) =>
               t('bounty.post.blocked.item', {
                 name: payment.payeeName,
-                amount: ringgit(payment.amountSen, language),
+                amount: formatMoney(payment.amount, language, { whole: true }),
               }),
             )
             .join(t('bounty.post.blocked.separator')),
@@ -76,7 +77,7 @@ function BlockedNotice({ status }: { status: PostStatus }) {
       : reason?.kind === 'old'
         ? t('bounty.post.blocked.old', {
             name: reason.payment.payeeName,
-            amount: ringgit(reason.payment.amountSen, language),
+            amount: formatMoney(reason.payment.amount, language, { whole: true }),
             days: reason.days,
           })
         : undefined;

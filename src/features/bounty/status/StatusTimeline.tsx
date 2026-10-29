@@ -17,11 +17,11 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
+import { formatMoney } from '@/lib/money';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { ringgit } from '../post/blockedReason';
 import {
   etaChangedText,
   lineText,
@@ -51,7 +51,7 @@ const ICONS: Record<StepState, SFSymbol> = {
 
 export function StatusHeader({ detail }: { detail: StatusDetail }) {
   const { t, language } = useI18n();
-  const reward = ringgit(detail.rewardSen, language);
+  const reward = formatMoney(detail.reward, language, { whole: true });
   const summary = summaryText(detail, detail.viewerRole, t);
   return (
     <Section modifiers={[listRowBackground('clear')]}>

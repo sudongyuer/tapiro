@@ -4,7 +4,7 @@ import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import type { AccessoryKind } from '@/lib/liveItems';
-import { formatRinggit } from '@/lib/money';
+import { CURRENCIES, formatMoney } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import type { TokenName } from '@/ui/theme/tokens';
 import { vars } from '@/ui/theme/tokens';
@@ -47,7 +47,7 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
   const spokenSub =
     more > 0 ? t('shell.accessory.withMore', { sub: item.sub, count: more }) : item.sub;
   const inline = placement === 'inline';
-  const amount = item.amountSen === undefined ? null : formatRinggit(item.amountSen, language);
+  const amount = item.amount === undefined ? null : formatMoney(item.amount, language);
   const spokenTitle = amount ? `${item.title} ${amount}` : item.title;
 
   return (
@@ -59,7 +59,11 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
       onPress={onPress}
       style={({ pressed }) => [styles.row, inline && styles.inline, pressed && styles.pressed]}
     >
-      <Glyph kind={item.kind} size={GLYPH_SIZE[placement]} />
+      <Glyph
+        kind={item.kind}
+        unit={item.amount ? CURRENCIES[item.amount.currency].symbol : null}
+        size={GLYPH_SIZE[placement]}
+      />
       <View style={styles.text}>
         <AppText variant="secondary" style={styles.title} numberOfLines={1}>
           {item.title}
@@ -93,8 +97,7 @@ function MorePill({ count }: { count: number }) {
   );
 }
 
-function Glyph({ kind, size }: { kind: AccessoryKind; size: number }) {
-  const { t } = useI18n();
+function Glyph({ kind, unit, size }: { kind: AccessoryKind; unit: string | null; size: number }) {
   const { color } = useTheme();
   const { fill, ink, symbol } = GLYPHS[kind];
   return (
@@ -108,7 +111,7 @@ function Glyph({ kind, size }: { kind: AccessoryKind; size: number }) {
         <SymbolView name={symbol} size={size * 0.45} tintColor={color(ink)} />
       ) : (
         <AppText variant="meta" style={[styles.money, { color: color(ink) }]}>
-          {t('shell.accessory.money')}
+          {unit}
         </AppText>
       )}
     </View>

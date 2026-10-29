@@ -17,7 +17,7 @@ export default {
     failed: '没成功，请检查网络后再试一次。',
     payTo: '付给{{name}}',
     amountLabel: '金额 {{amount}}',
-    cny: '约 ¥{{amount}}（参考）',
+    cny: '约 {{amount}}（参考）',
     fxSource: '汇率来源：Bank Negara Malaysia',
     fxSourceHint: '打开 Bank Negara Malaysia 的数据使用条款',
     methodsHeader: '付款方式',
@@ -93,7 +93,7 @@ export default {
   },
   celebrate: {
     top: '{{title}} · {{name}}已付清',
-    cny: '约 ¥{{amount}} · 马来西亚国家银行中间价',
+    cny: '约 {{amount}} · 马来西亚国家银行中间价',
     first: { title: '第一次收到钱！', body: '这一单的贴纸已经贴进你的贴纸本。' },
     routine: { title: '又帮成一单', body: '第 {{count}} 张贴纸贴好了。' },
     unknownBody: '这一单的贴纸贴进了你的贴纸本。',

@@ -20,7 +20,8 @@ const ROW = {
   bountyId: 'b1',
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 1500,
+  rewardMinor: 1500,
+  rewardCurrency: 'MYR',
   role: 'applicant',
   kind: 'bountyInProgress',
   action: null,
@@ -56,7 +57,11 @@ describe('bounty_live_items', () => {
     }));
     const rows = await stub.service.list();
     expect(stub.calls).toEqual([{ name: 'bounty_live_items', args: undefined }]);
-    expect(rows[0]).toEqual(ROW as never);
+    const { rewardMinor, rewardCurrency, ...rest } = ROW;
+    expect(rows[0]).toEqual({
+      ...rest,
+      reward: { minor: rewardMinor, currency: rewardCurrency },
+    } as never);
     expect(rows[1]).toMatchObject({
       role: 'poster',
       kind: 'oneTime',
@@ -72,6 +77,9 @@ describe('bounty_live_items', () => {
     await expect(
       stubClient(() => ({ data: [{ ...ROW, kind: 'other' }], error: null })).service.list(),
     ).rejects.toThrow('kind');
+    await expect(
+      stubClient(() => ({ data: [{ ...ROW, rewardCurrency: 'USD' }], error: null })).service.list(),
+    ).rejects.toThrow('reward');
     await expect(stubClient(() => ({ data: null, error: null })).service.list()).rejects.toThrow();
   });
 });

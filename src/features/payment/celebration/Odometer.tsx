@@ -1,7 +1,7 @@
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-import { formatRinggit, formatRinggitParts } from '@/lib/money';
+import { moneyParts, type Money } from '@/lib/money';
 import { typeStyle, vars, type TypeRole } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -48,18 +48,17 @@ function Column({
 }
 
 export function Odometer({
-  amountSen,
+  amount,
   language,
   clock,
 }: {
-  amountSen: number;
+  amount: Money;
   language: string;
   clock: Clock;
 }) {
   const { color } = useTheme();
   const ink = color('--color-success');
-  const { whole, cents } = formatRinggitParts(amountSen, language);
-  const unit = formatRinggit(amountSen, language).replace(/[-\d.,\s]/g, '');
+  const { symbol: unit, whole, fraction: cents } = moneyParts(amount, language);
   const marks = [
     ...glyphs(whole).map((glyph) => ({ glyph, big: true })),
     ...glyphs(cents).map((glyph) => ({ glyph, big: false })),

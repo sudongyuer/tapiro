@@ -86,7 +86,7 @@ def reason_field():
 
 summary('bounty.status.summary.poster.done')
 ui.tap('bounty-status-action-confirm')
-sheet_reads(ui.t('bounty.confirm.title', name='阿杰'), ui.t('bounty.confirm.body', name='阿杰', amount='8'))
+sheet_reads(ui.t('bounty.confirm.title', name='阿杰'), ui.t('bounty.confirm.body', name='阿杰', amount='RM\u00a08'))
 ui.capture('01-confirm-sheet')
 assert not sent('confirm_bounty'), 'confirm_bounty was sent before the sheet was answered'
 tap_sheet_action(ui, ui.t('bounty.confirm.confirm'), 'bounty-status-action-confirm')

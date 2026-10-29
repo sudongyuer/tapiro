@@ -24,10 +24,8 @@ const ms: typeof zhHans = {
       category: 'Jenis',
       categoryPlaceholder: 'Pilih',
       reward: 'Ganjaran',
-      rewardUnit: 'RM',
       rewardPlaceholder: '{{min}}–{{max}}',
-      rewardFooter:
-        'Nombor bulat, RM {{min}}–{{max}}. Anda bayar terus kepada pembantu selepas siap.',
+      rewardFooter: 'Nombor bulat, {{min}}–{{max}}. Anda bayar terus kepada pembantu selepas siap.',
       detailsHeader: 'Tambah butiran · semua pilihan',
       addTime: 'Masa',
       addTimeLabel: 'Tambah masa',
@@ -58,7 +56,7 @@ const ms: typeof zhHans = {
       titleTooLong: 'Tajuk paling banyak {{max}} aksara',
       categoryEmpty: 'Pilih satu jenis',
       rewardEmpty: 'Masukkan ganjaran',
-      rewardRange: 'Ganjaran ialah nombor bulat RM {{min}}–{{max}}',
+      rewardRange: 'Ganjaran ialah nombor bulat {{min}}–{{max}}',
       descriptionTooLong: 'Nota paling banyak {{max}} aksara',
       placeEmpty: 'Masukkan nama tempat',
       placeTooLong: 'Nama tempat paling banyak {{max}} aksara',
@@ -425,7 +423,7 @@ const ms: typeof zhHans = {
         completed: '{{name}} tandakan siap',
         confirm: 'Anda sahkan siap',
         confirmed: 'Anda sudah sahkan',
-        paid: 'Bayar {{name}} RM {{amount}}',
+        paid: 'Bayar {{name}} {{amount}}',
       },
       helper: {
         selected: '{{name}} memilih anda',
@@ -434,7 +432,7 @@ const ms: typeof zhHans = {
         complete: 'Siap',
         completed: 'Anda tandakan siap',
         confirmed: '{{name}} sahkan',
-        paid: 'Terima RM {{amount}}',
+        paid: 'Terima {{amount}}',
       },
     },
     note: {
@@ -556,7 +554,7 @@ const ms: typeof zhHans = {
   },
   confirm: {
     title: 'Sahkan {{name}} sudah siap?',
-    body: 'Selepas disahkan, anda tidak boleh laporkan masalah lagi. Seterusnya, bayar {{name}} RM {{amount}}.',
+    body: 'Selepas disahkan, anda tidak boleh laporkan masalah lagi. Seterusnya, bayar {{name}} {{amount}}.',
     confirm: 'Sahkan Siap',
     cancel: 'Belum Lagi',
     sending: 'Mengesahkan',

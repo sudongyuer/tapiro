@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (  # noqa: E402
-    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
+    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
     erase, next_step, open_post, reach_confirm, typed,
 )
 from driver import UI, assert_touch_target, by_id  # noqa: E402
@@ -62,7 +62,7 @@ assert_error(ui, 'bounty.post.error.rewardEmpty')
 for wrong in ('0', '501'):
     typed(ui, 'bounty-post-reward', wrong)
     next_step(ui)
-    assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE)
+    assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE_TEXT)
     erase(ui, 'bounty-post-reward')
 typed(ui, 'bounty-post-reward', '8')
 

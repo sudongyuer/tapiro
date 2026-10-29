@@ -11,13 +11,12 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
-import { formatRinggit } from '@/lib/money';
+import { formatMoney, type Money } from '@/lib/money';
 import { stickerArt, type Sticker, type StickerKind } from '@/lib/stickers';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
-import { formatCny } from '../fx';
 import { BookPanel, type SlotCentre } from './BookPanel';
 import { TAPIR_RISE } from './BookTapir';
 import { Headline } from './Headline';
@@ -42,8 +41,8 @@ export type CelebrationData = {
   previous: Sticker[] | null;
   title: string;
   name: string;
-  amountSen: number;
-  cnyFen: number | null;
+  amount: Money;
+  reference: Money | null;
   itemKind: StickerKind;
   category: string | null;
 };
@@ -66,7 +65,7 @@ export function Celebration({
   const [centre, setCentre] = useState<SlotCentre | null>(null);
   const [stage, setStage] = useState<LayoutRectangle | null>(null);
   const [headlineHeight, setHeadlineHeight] = useState<number | null>(null);
-  const amount = formatRinggit(data.amountSen, language);
+  const amount = formatMoney(data.amount, language);
   const announcement = t('pay.celebrate.announce', { amount, title: data.title, name: data.name });
   const layout =
     stage && frame && headlineHeight !== null
@@ -118,12 +117,12 @@ export function Celebration({
                   <Headline
                     clock={clock}
                     top={t('pay.celebrate.top', { title: data.title, name: data.name })}
-                    amountSen={data.amountSen}
+                    amount={data.amount}
                     language={language}
                     cny={
-                      data.cnyFen === null
+                      data.reference === null
                         ? null
-                        : t('pay.celebrate.cny', { amount: formatCny(data.cnyFen, language) })
+                        : t('pay.celebrate.cny', { amount: formatMoney(data.reference, language) })
                     }
                     title={t(
                       data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title',

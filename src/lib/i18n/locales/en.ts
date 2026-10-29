@@ -25,13 +25,13 @@ const en: Translation = {
       terms:
         'By continuing, you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.',
       examples: {
-        parcel: 'Pick up a parcel · RM 8',
-        coffee: 'Bring a coffee · RM 5',
-        ticket: 'Take a queue number · RM 15',
-        books: 'Explain calculus · RM 20',
+        parcel: 'Pick up a parcel · {{amount}}',
+        coffee: 'Bring a coffee · {{amount}}',
+        ticket: 'Take a queue number · {{amount}}',
+        books: 'Explain calculus · {{amount}}',
         umbrella: 'Lend an umbrella · on the way',
         car: '17:00 to YC · 1 more seat',
-        boba: 'Buy bubble tea · RM 6',
+        boba: 'Buy bubble tea · {{amount}}',
       },
     },
     name: {
@@ -152,7 +152,6 @@ const en: Translation = {
       label: '{{title}}, {{sub}}',
       withMore: '{{sub}} · {{count}} more',
       hint: 'Opens Bounties and fans out your live cards',
-      money: 'RM',
     },
     ask: {
       title: 'Ask Tapir',
@@ -198,7 +197,6 @@ const en: Translation = {
       collapseHint: 'Stacks the cards again',
       peekHint: 'Spreads out all cards',
     },
-    money: 'RM {{amount}}',
     soon: 'This step isn’t available yet',
     card: {
       waiting: { tag: 'Waiting to be confirmed' },
@@ -284,7 +282,7 @@ const en: Translation = {
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',
-      reward: 'RM 15',
+      reward: '{{amount}}',
       statusOpen: 'Open',
       statusActive: 'In progress',
       statusPending: 'To confirm',
@@ -292,7 +290,7 @@ const en: Translation = {
       statusUrgent: 'Urgent',
       accept: 'Accept',
       posted: 'Your bounty is posted',
-      liveSample: 'Pay Ah Kit RM 15',
+      liveSample: 'Pay Ah Kit {{amount}}',
       mascot: 'Tapir mascot',
       hold: 'Hold to choose Ah Kit',
       holdHolding: 'Keep holding…',

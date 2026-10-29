@@ -84,13 +84,18 @@ describe('close sheet copy (58A)', () => {
 });
 
 test('the confirm sheet states the amount (62A)', () => {
-  expect(confirmSheetCopy('阿杰', 800, zh)).toEqual({
+  expect(confirmSheetCopy('阿杰', { minor: 800, currency: 'MYR' }, zh)).toEqual({
     title: '确认阿杰做完了？',
-    message: '确认后就不能再说有问题了，接着付给阿杰 RM 8。',
+    message: '确认后就不能再说有问题了，接着付给阿杰 RM\u00a08。',
     confirm: '确认完成',
     keep: '再看看',
   });
-  expect(confirmSheetCopy('阿杰', 1250, zh).message).toContain('RM 12.50');
+  expect(confirmSheetCopy('阿杰', { minor: 1250, currency: 'MYR' }, zh).message).toContain(
+    'RM\u00a012.50',
+  );
+  expect(confirmSheetCopy('阿杰', { minor: 5000, currency: 'CNY' }, zh).message).toContain(
+    '¥\u00a050',
+  );
 });
 
 describe('issue reason', () => {

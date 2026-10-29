@@ -8,7 +8,7 @@ export function accessoryFor(payment: Payment, t: TFunction): AccessoryItem | nu
   const name = payment.counterpartName;
   const base = {
     id: payment.id,
-    amountSen: payment.amountSen,
+    amount: payment.amount,
     payment: { id: payment.id, counterpart: name, note: payment.title },
   };
   if (payment.role === 'payer') {

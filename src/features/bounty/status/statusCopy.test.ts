@@ -12,14 +12,7 @@ import {
   type StatusScenario,
 } from './fixtureStatusService';
 import { WORST_REASON, type StatusData } from './fixtureStatusWorst';
-import {
-  bareAmount,
-  etaChangedText,
-  lineText,
-  stepLabel,
-  stepText,
-  summaryText,
-} from './statusCopy';
+import { etaChangedText, lineText, stepLabel, stepText, summaryText } from './statusCopy';
 import { timeline } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
 
@@ -99,9 +92,8 @@ describe('status copy', () => {
   test('the payment step names the amount once', async () => {
     const poster = await detailOf('confirmed', 'poster');
     const helper = await detailOf('confirmed', 'helper');
-    expect(stepText(timeline(poster, 'poster').steps[4], zh)).toBe('付给阿杰 RM 8');
-    expect(stepText(timeline(helper, 'helper').steps[4], zh)).toBe('收 RM 8');
-    expect(bareAmount(1250, 'en')).toBe('12.50');
+    expect(stepText(timeline(poster, 'poster').steps[4], zh)).toBe('付给阿杰 RM\u00a08');
+    expect(stepText(timeline(helper, 'helper').steps[4], zh)).toBe('收 RM\u00a08');
   });
 
   test('the step label names its state', async () => {
