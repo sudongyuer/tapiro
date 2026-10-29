@@ -37,9 +37,11 @@ overturned: pending
 
 ## Candidates (first occurrence, not yet generalised)
 
-- `unrun-case`: a plan that writes cases in one task and runs them in a later batch lets case bugs pile up for the
-  batch. Pace already says each new case is run once by its author; the plan's "write; do not run" overrode it. Next
-  plan: "write; run once in zh-Hans light" for each new case, and the batch keeps the locale and look matrix.
+- `unrun-case`: case bugs written in Tasks 4 and 6 surfaced only in the batch (one fix round, three bugs in
+  `home_settled_card`). This is the cost the user chose on 2026-10-29 (「每次做完一个比较大的feature再验证」), traded
+  for no per-task Simulator time; it stays. Cheaper mitigation for next time: a task that writes a case also runs
+  `python3 -m py_compile` and checks its launch arguments against the fixture parsers, so only real UI behaviour
+  is left for the batch.
 - Peeks: tapping `live-card-peek-*` by id lands on the front card whenever the front card is taller than the strip;
   `home_bounty_cards` already taps the strip's bottom edge. Second time this tap missed (step 6 retro item 2). Candidate:
   a `tap_peek(ui, index)` helper in `driver.py`.
@@ -56,3 +58,10 @@ overturned: pending
 - The kit owns the landing haptic and the Reduce Motion fade; JS only orders collect → flight → card exit → dismiss,
   which is a pure function with five unit tests.
 - One background batch per locale or look, three Simulators, no timeouts.
+
+- `vacuous-check` (third, after the multi-currency retro items 4 and 8): the controller's screenshot review found
+  line 1 of a payer label truncated to 「Nurul Aisyah…」, losing 「帮我」, so the label no longer said who helped whom.
+  `sticker_book_labels` passed because it compares line heights and VoiceOver text, not what is drawn. Fixed with
+  middle truncation (「Nurul…ah帮我」); rerun and screenshot confirmed. Third occurrence: the
+  `ios-ui-verify` skill should say that truncation and overlap need an OCR or pixel check on the drawn text; that is
+  cross-project, so it is put to the user.

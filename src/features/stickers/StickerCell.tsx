@@ -45,7 +45,7 @@ export function StickerCell({
         <AppText
           variant="meta"
           numberOfLines={1}
-          ellipsizeMode="tail"
+          ellipsizeMode="middle"
           style={[styles.line1, { color: color('--color-on-paper') }]}
         >
           {label.line1}

@@ -307,3 +307,4 @@ so the card does not flip live (11), 先付 (12).
 - 2026-10-29 (Task 6): the strip form behind another card is the stack's built back face reading 「{title} · 办成了」;
   the sticker is not hung and the 「收进贴纸本」 button is disabled while the card is behind. No `home_*` case's feed
   changed: `-uiVerifySettled` defaults to `none`, so only `home_settled_card` shows the card.
+- 2026-10-30, controller: line 1 of a sticker label truncates in the middle, so a long name keeps 「帮我」 / the far end (「Nurul…ah帮我」); tail truncation hid who helped whom.
