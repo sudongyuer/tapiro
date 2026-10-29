@@ -2,13 +2,13 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 
 import { useI18n } from '@/lib/i18n';
+import type { RideDetail } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { CarArt } from '@/ui/StickerArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import type { RideDetail } from '../homeModel';
 import { CardHeader, CardText, Pill } from './cardParts';
 import { useStackedBeside } from './useStackedBeside';
 

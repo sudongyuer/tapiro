@@ -571,12 +571,10 @@ const en: typeof zhHans = {
       enRoute: 'On your way · tap Done when you arrive',
       done: 'Waiting for {{name}} · auto-confirms {{date}}',
       disputed: '{{name}} reported a problem',
-      confirmed: 'Waiting for payment',
     },
     applicant: {
       waiting: 'Waiting for {{name}} to choose',
       notSelected: 'Not chosen this time',
-      expired: 'This bounty expired',
     },
     action: {
       choose: 'Choose',

@@ -11,4 +11,5 @@ export { BountyDetailScreen } from './detail/BountyDetailScreen';
 export { ApplicantsScreen } from './select/ApplicantsScreen';
 export { ApplySheet } from './apply/ApplySheet';
 export { BlockedListScreen } from './block/BlockedListScreen';
+export { useLiveBounties } from './live/useLiveBounties';
 export const applySheetGone = () => justApplied.sheetGone();

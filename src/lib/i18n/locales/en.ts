@@ -184,7 +184,7 @@ const en: Translation = {
       pay: 'You have a payment to make',
       rideMinutes: 'Leaving in {{count}} min, don’t be late',
       owedNamed: '{{name}} says they paid you — check it',
-      progressNamed: '{{name}} is helping you — message them anytime',
+      bounty: '{{title}} · {{line}}',
       live: 'Something’s in progress, I’m keeping an eye on it',
       calm: 'Nothing on today… post a bounty?',
     },
@@ -228,12 +228,6 @@ const en: Translation = {
       owed: {
         tag: 'Confirm',
         title: '{{name}} says they paid you',
-      },
-      progress: {
-        tag: 'Your post · in progress',
-        helper: '{{name}} took it',
-        message: 'Message {{name}}',
-        details: 'Details',
       },
       bounty: {
         tag: {

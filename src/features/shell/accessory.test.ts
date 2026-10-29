@@ -51,8 +51,17 @@ describe('pickMostUrgent', () => {
 
   test('priorities follow the spec order', () => {
     expect(
-      (['oweMoney', 'rideSoon', 'owedToYou', 'bountyInProgress'] as const).map(accessoryPriority),
-    ).toEqual([1, 2, 3, 4]);
+      (
+        [
+          'oweMoney',
+          'rideSoon',
+          'owedToYou',
+          'bountyAction',
+          'bountyInProgress',
+          'waitingConfirm',
+        ] as const
+      ).map(accessoryPriority),
+    ).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });
 

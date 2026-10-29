@@ -1,4 +1,11 @@
-import { useCallback, useState, type ReactElement, type ReactNode, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   PlatformColor,
   ScrollView,
@@ -27,7 +34,7 @@ import { useLiveItems } from '@/lib/useLiveItems';
 import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
-import { liveCards, stageLine, stageState } from './homeModel';
+import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
 import { HomeStrip, STRIP_ROW, STRIP_SHADOW } from './HomeStrip';
 import { LiveCardStack, StackToggle, useCardHeights } from './LiveCardStack';
 import { homeCardDetails } from './services';
@@ -44,6 +51,8 @@ const COMPACT_BAR = 54;
 const HOME_TOP_CHROME = COMPACT_BAR + STRIP_ROW;
 export const HOME_TOP_CLEAR = HOME_TOP_CHROME + STRIP_SHADOW;
 export const HOME_BOTTOM_CHROME = 49;
+
+const markShownOneTime = createSeenMarks();
 
 export type HomeScreenProps = {
   scrollViewProps: ScrollViewProps & { ref: RefObject<ScrollView | null> };
@@ -78,6 +87,10 @@ export function HomeScreen({
   const layout = stackLayout(heights);
   const progress = useStackProgress(open);
   const extra = layout.fannedHeight - layout.stackedHeight;
+
+  useEffect(() => {
+    if (ready) markShownOneTime(shownOneTimeCards(cards, open));
+  });
 
   const { ref, ...scrollProps } = scrollViewProps;
   const animatedRef = useAnimatedRef<ScrollView>();

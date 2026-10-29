@@ -555,12 +555,10 @@ export default {
       enRoute: '你在路上 · 到了点完成',
       done: '等{{name}}确认 · {{date}} 自动确认',
       disputed: '{{name}}说有问题',
-      confirmed: '等对方付款',
     },
     applicant: {
       waiting: '等{{name}}选',
       notSelected: '这次没选上',
-      expired: '这单过期了',
     },
     action: {
       choose: '去选人',

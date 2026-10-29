@@ -175,3 +175,16 @@ waitingConfirm` (9A).
 
 Settlement art and the payer-side sticker (step 7), map (8), photo stickers and fly-to-stack (9), AI drafting (10), push
 and the Live Activity (11), 先付 (12).
+
+## Deviations and rulings
+
+- 2026-10-29, Task 3: `BountyCardDetail.kind` also allows `waitingConfirm`, so the 9A 等对方 rows rank last;
+  `ProgressDetail` and `ProgressCard` were removed rather than moved (only the fixture used them); `home.say.bounty` added,
+  `home.card.progress.*` removed.
+- 2026-10-29, controller: 15A's 「等对方付款」 comes from the built payments source (`pay.live.waiting` while the payment is
+  `due`); the bounty source publishes no helper card at `confirmed`, so the two never show the same thing twice.
+- 2026-10-29, controller: the applicant's 「这单过期了」 card is dropped for v1: expiry does not mark applications and
+  `mark_bounty_seen('expired')` is the poster's. When a bounty expires, the applicant's 「等{name}选」 card disappears and
+  the detail shows it closed.
+- 2026-10-29, controller: a failed seen mark rejects (`liveStore.markSeen` throws), which is the signal home uses to retry
+  on the next display.

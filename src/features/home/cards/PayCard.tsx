@@ -3,13 +3,14 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import type { PayDetail } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
 
-import { moneyParts, moneyText, type PayDetail } from '../homeModel';
+import { moneyParts, moneyText } from '../homeModel';
 import { CardText, Pill } from './cardParts';
 
 const BUTTON_HEIGHT = 52;

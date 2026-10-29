@@ -574,12 +574,10 @@ const ms: typeof zhHans = {
       enRoute: 'Dalam perjalanan · ketik Siap bila sampai',
       done: 'Menunggu {{name}} · sah automatik {{date}}',
       disputed: '{{name}} laporkan masalah',
-      confirmed: 'Menunggu bayaran',
     },
     applicant: {
       waiting: 'Menunggu {{name}} memilih',
       notSelected: 'Tidak dipilih kali ini',
-      expired: 'Ganjaran ini tamat tempoh',
     },
     action: {
       choose: 'Pilih',

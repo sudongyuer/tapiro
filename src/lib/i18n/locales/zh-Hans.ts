@@ -179,7 +179,7 @@ export default {
       pay: '有一笔钱要付，别忘了',
       rideMinutes: '{{count}} 分钟后出发，别迟到',
       owedNamed: '{{name}}说付你了，去确认一下',
-      progressNamed: '{{name}}在帮你，有事发消息',
+      bounty: '{{title}} · {{line}}',
       live: '有事在进行，小貘帮你盯着',
       calm: '今天没事…要发个悬赏吗',
     },
@@ -223,12 +223,6 @@ export default {
       owed: {
         tag: '等你确认',
         title: '{{name}}说已付你',
-      },
-      progress: {
-        tag: '你发的 · 进行中',
-        helper: '{{name}} 接了',
-        message: '发消息给 {{name}}',
-        details: '详情',
       },
       bounty: {
         tag: {
