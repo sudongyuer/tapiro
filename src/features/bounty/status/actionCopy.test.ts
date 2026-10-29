@@ -94,7 +94,7 @@ test('the confirm sheet states the amount (62A)', () => {
     'RM\u00a012.50',
   );
   expect(confirmSheetCopy('阿杰', { minor: 5000, currency: 'CNY' }, zh).message).toContain(
-    '¥\u00a050',
+    '付给阿杰 ¥50。',
   );
 });
 

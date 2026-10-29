@@ -6,7 +6,6 @@ import {
   Label,
   Picker,
   Section,
-  Spacer,
   Text,
   type TextFieldRef,
 } from '@expo/ui/swift-ui';
@@ -14,10 +13,7 @@ import {
   accessibilityIdentifier,
   accessibilityLabel,
   foregroundStyle,
-  frame,
-  keyboardType,
   monospacedDigit,
-  multilineTextAlignment,
   pickerStyle,
   tag,
   tint,
@@ -27,7 +23,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
-import { CURRENCIES } from '@/lib/money';
+import type { CurrencyCode } from '@/lib/money';
 import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
 import { CATEGORY_SYMBOLS } from '@/ui/CategorySticker';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
@@ -44,13 +40,11 @@ import { useDraftSync } from './useDraftSync';
 import { usePlaceFields } from './usePlaceFields';
 import { useHintFocus } from './useStartPost';
 import { useSentCheck } from './useSentCheck';
-import { rewardRangeValues } from './errorCopy';
-import { codePoints, checkDraft, POST_CURRENCY, rewardLimits, TITLE_MAX } from './validate';
+import { rewardRangeText } from './errorCopy';
+import { RewardRow } from './RewardRow';
+import { codePoints, checkDraft, TITLE_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
-const REWARD = rewardLimits(POST_CURRENCY);
-const REWARD_DIGITS = String(REWARD.maxMajor).length;
-const REWARD_FIELD_WIDTH = 96;
 
 type FormProps = {
   userId: string;
@@ -85,7 +79,6 @@ function PostFormBody({
   const reward = useSyncedText(draft.rewardText, (text) => edit({ rewardText: text }));
   const description = useSyncedText(draft.description ?? '', (text) => edit({ description: text }));
   const titleField = useRef<TextFieldRef>(null);
-  const rewardField = useRef<TextFieldRef>(null);
   const notice = useFormError();
   const clearError = useCallback(() => formError.set(null), []);
   const place = usePlaceFields(userId, draft.place, clearError);
@@ -106,6 +99,15 @@ function PostFormBody({
   const onBlur = (focused: boolean) => {
     if (!focused) sync();
   };
+
+  function chooseCurrency(currency: CurrencyCode) {
+    sync();
+    const shown = formError.get();
+    draftStore.update(userId, { currency });
+    const checked = checkDraft(draftStore.load(userId), new Date());
+    const recheck = shown !== null && shown !== 'alreadySent';
+    formError.set(recheck && !checked.ok ? checked.error : null);
+  }
 
   function next() {
     sync();
@@ -137,7 +139,7 @@ function PostFormBody({
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
       <Form modifiers={[tint(color('--color-accent'))]}>
-        <FormNotice notice={notice} />
+        <FormNotice notice={notice} currency={draft.currency} />
         <Section>
           <FieldRow field={titleField}>
             <SyncedTextField
@@ -166,7 +168,13 @@ function PostFormBody({
           </FieldRow>
         </Section>
         <Section
-          footer={<Text>{t('bounty.post.form.rewardFooter', rewardRangeValues(language))}</Text>}
+          footer={
+            <Text modifiers={[accessibilityIdentifier('bounty-post-reward-footer')]}>
+              {t('bounty.post.form.rewardFooter', {
+                range: rewardRangeText(language, draft.currency),
+              })}
+            </Text>
+          }
         >
           <Picker
             label={t('bounty.post.form.category')}
@@ -190,28 +198,12 @@ function PostFormBody({
               />
             ))}
           </Picker>
-          <FieldRow field={rewardField}>
-            <Text>{t('bounty.post.form.reward')}</Text>
-            <Spacer />
-            <Text modifiers={[secondary]}>{CURRENCIES[POST_CURRENCY].symbol}</Text>
-            <SyncedTextField
-              ref={rewardField}
-              field={reward}
-              maxLength={REWARD_DIGITS}
-              placeholder={t('bounty.post.form.rewardPlaceholder', {
-                min: REWARD.minMajor,
-                max: REWARD.maxMajor,
-              })}
-              onFocusChange={onBlur}
-              testID="bounty-post-reward"
-              modifiers={[
-                keyboardType('numeric'),
-                multilineTextAlignment('trailing'),
-                frame({ width: REWARD_FIELD_WIDTH }),
-                accessibilityLabel(t('bounty.post.form.reward')),
-              ]}
-            />
-          </FieldRow>
+          <RewardRow
+            field={reward}
+            currency={draft.currency}
+            onCurrency={chooseCurrency}
+            onBlur={onBlur}
+          />
         </Section>
         <Section
           header={<Text>{t('bounty.post.form.detailsHeader')}</Text>}

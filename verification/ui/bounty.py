@@ -15,7 +15,9 @@ CONFIRM_TITLE = 'bounty.post.confirm.title'
 CATEGORIES = ['pickup', 'buy', 'queue', 'handle', 'move', 'accompany', 'study', 'other']
 EMPTY_DRAFT = ['-uiVerifyBountyDraft', 'none']
 REWARD_RANGE = {'min': 1, 'max': 500}
-REWARD_RANGE_TEXT = {'min': 'RM\u00a01', 'max': 'RM\u00a0500'}
+REWARD_RANGES = {'MYR': REWARD_RANGE, 'CNY': {'min': 1, 'max': 800}}
+REWARD_RANGE_TEXT = {'range': 'RM\u00a01–500'}
+CNY_RANGE_TEXT = {'range': '¥1–800'}
 GROUPED_BACKGROUND = {'light': [(242, 242, 247)], 'dark': [(0, 0, 0), (28, 28, 30)]}
 
 
@@ -27,14 +29,14 @@ def open_post(ui):
 
 def placeholders(ui):
     return {
-        'bounty-post-title': ui.t('bounty.post.form.titlePlaceholder'),
-        'bounty-post-reward': ui.t('bounty.post.form.rewardPlaceholder', **REWARD_RANGE),
+        'bounty-post-title': {ui.t('bounty.post.form.titlePlaceholder')},
+        'bounty-post-reward': {ui.t('bounty.post.form.rewardPlaceholder', **limits) for limits in REWARD_RANGES.values()},
     }
 
 
 def field_text(ui, items, identifier):
     shown = (by_id(items, identifier) or {}).get('AXValue') or ''
-    return '' if shown == placeholders(ui).get(identifier) else shown
+    return '' if shown in placeholders(ui).get(identifier, ()) else shown
 
 
 def value(ui, identifier):
@@ -180,11 +182,11 @@ def dismiss_hint(ui):
     ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.post.hint.later') for i in items), 'the hint stayed')
 
 
-def assert_preview(ui, title, amount):
-    reward = re.compile(rf'RM\s?{re.escape(amount)}$')
+def assert_preview(ui, title, amount, symbol='RM'):
+    reward = re.compile(rf'{re.escape(symbol)}\s?{re.escape(amount)}$')
     text = ui.wait_label('bounty-post-preview-text', lambda label: title in label, f'the preview does not show {title!r}')
     found = ui.wait_label('bounty-post-preview-reward', lambda label: bool(reward.search(label)),
-                          f'the preview reward is not RM {amount}')
+                          f'the preview reward is not {symbol} {amount}')
     return text, found
 
 

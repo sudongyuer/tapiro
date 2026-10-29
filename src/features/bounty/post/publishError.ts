@@ -4,6 +4,7 @@ const BY_MESSAGE: Readonly<Record<string, PublishFailure>> = {
   publish_blocked: 'blocked',
   no_balance: 'noBalance',
   invalid_bounty: 'invalid',
+  invalid_reward: 'invalidReward',
   post_already_sent: 'alreadySent',
 };
 

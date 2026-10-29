@@ -5,7 +5,9 @@ import { join } from 'node:path';
 import {
   CURRENCIES,
   convertUp,
+  defaultCurrency,
   formatMoney,
+  formatMoneyRange,
   methodCurrency,
   moneyParts,
   POST_LIMITS,
@@ -42,7 +44,14 @@ describe('mirrors of the money schema', () => {
       Object.fromEntries(
         rows.map(([code, digits, symbol]) => [code, { minorDigits: Number(digits), symbol }]),
       ),
-    ).toEqual(CURRENCIES);
+    ).toEqual(
+      Object.fromEntries(
+        Object.entries(CURRENCIES).map(([code, { minorDigits, symbol }]) => [
+          code,
+          { minorDigits, symbol },
+        ]),
+      ),
+    );
   });
 
   test('POST_LIMITS matches the post_limits rows', () => {
@@ -84,33 +93,63 @@ describe.each(LOCALES)('formatMoney in %s', (locale) => {
     expect(normalized(format(-1250))).toBe('-RM 12.50');
   });
 
-  test('CNY shows ¥, a non-breaking space and two decimals', () => {
+  test('CNY shows ¥ with no space and two decimals', () => {
     const format = (minor: number) => formatMoney(cny(minor), locale);
-    expect(format(2450)).toBe('¥\u00a024.50');
-    expect(format(80000)).toBe('¥\u00a0800.00');
-    expect(normalized(format(100000))).toBe('¥ 1,000.00');
+    expect(format(2451)).toBe('¥24.51');
+    expect(format(80000)).toBe('¥800.00');
+    expect(normalized(format(100000))).toBe('¥1,000.00');
+    expect(format(-2450)).toBe('-¥24.50');
   });
 
   test('whole drops a zero fraction and never rounds a real one', () => {
     expect(formatMoney(myr(800), locale, { whole: true })).toBe('RM\u00a08');
     expect(formatMoney(myr(850), locale, { whole: true })).toBe('RM\u00a08.50');
-    expect(normalized(formatMoney(cny(100000), locale, { whole: true }))).toBe('¥ 1,000');
-    expect(formatMoney(cny(1), locale, { whole: true })).toBe('¥\u00a00.01');
+    expect(formatMoney(cny(5000), locale, { whole: true })).toBe('¥50');
+    expect(normalized(formatMoney(cny(100000), locale, { whole: true }))).toBe('¥1,000');
+    expect(formatMoney(cny(1), locale, { whole: true })).toBe('¥0.01');
+  });
+
+  test('formatMoneyRange shows the symbol once, then min–max', () => {
+    expect(formatMoneyRange(myr(100), myr(50000), locale)).toBe('RM\u00a01–500');
+    expect(formatMoneyRange(cny(100), cny(80000), locale)).toBe('¥1–800');
+    expect(formatMoneyRange(myr(150), myr(250), locale)).toBe('RM\u00a01.50–2.50');
   });
 
   test('moneyParts splits the symbol, the whole part and the fraction', () => {
     expect(moneyParts(myr(1234560), locale)).toEqual({
       symbol: 'RM',
+      gap: '\u00a0',
       whole: '12,345',
       fraction: '.60',
     });
-    expect(moneyParts(cny(50), locale)).toEqual({ symbol: '¥', whole: '0', fraction: '.50' });
-    expect(moneyParts(myr(-1250), locale)).toEqual({ symbol: 'RM', whole: '-12', fraction: '.50' });
+    expect(moneyParts(cny(50), locale)).toEqual({
+      symbol: '¥',
+      gap: '',
+      whole: '0',
+      fraction: '.50',
+    });
+    expect(moneyParts(myr(-1250), locale)).toEqual({
+      symbol: 'RM',
+      gap: '\u00a0',
+      whole: '-12',
+      fraction: '.50',
+    });
     expect(moneyParts(myr(1500), locale, { whole: true })).toEqual({
       symbol: 'RM',
+      gap: '\u00a0',
       whole: '15',
       fraction: '',
     });
+  });
+});
+
+describe('defaultCurrency', () => {
+  test('uses the region currency when it is offered, else MYR', () => {
+    expect(defaultCurrency('CNY')).toBe('CNY');
+    expect(defaultCurrency('MYR')).toBe('MYR');
+    expect(defaultCurrency('USD')).toBe('MYR');
+    expect(defaultCurrency(null)).toBe('MYR');
+    expect(defaultCurrency(undefined)).toBe('MYR');
   });
 });
 

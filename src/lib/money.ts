@@ -1,8 +1,8 @@
 import type { PayeeType } from './payeeMethods';
 
 export const CURRENCIES = {
-  MYR: { minorDigits: 2, symbol: 'RM' },
-  CNY: { minorDigits: 2, symbol: '¥' },
+  MYR: { minorDigits: 2, symbol: 'RM', spaced: true },
+  CNY: { minorDigits: 2, symbol: '¥', spaced: false },
 } as const;
 
 export type CurrencyCode = keyof typeof CURRENCIES;
@@ -34,7 +34,8 @@ export function toMoney(minor: unknown, currency: unknown): Money | null {
 // spells MYR as the ISO code in zh-Hans and en, so digits come from a plain number format and the symbol from the
 // currencies mirror.
 export function moneyParts(money: Money, locale: string, { whole = false } = {}) {
-  const { minorDigits, symbol } = CURRENCIES[money.currency];
+  const { minorDigits, symbol, spaced } = CURRENCIES[money.currency];
+  const gap = spaced ? '\u00a0' : '';
   const scale = 10 ** minorDigits;
   const digits = whole && money.minor % scale === 0 ? 0 : minorDigits;
   const text = new Intl.NumberFormat(locale, {
@@ -44,14 +45,24 @@ export function moneyParts(money: Money, locale: string, { whole = false } = {})
   const match = digits > 0 ? /^(.*)([.,]\d+)$/.exec(text) : null;
   const sign = money.minor < 0 ? '-' : '';
   return match
-    ? { symbol, whole: `${sign}${match[1]}`, fraction: match[2] }
-    : { symbol, whole: `${sign}${text}`, fraction: '' };
+    ? { symbol, gap, whole: `${sign}${match[1]}`, fraction: match[2] }
+    : { symbol, gap, whole: `${sign}${text}`, fraction: '' };
 }
 
 export function formatMoney(money: Money, locale: string, options: { whole?: boolean } = {}) {
-  const { symbol, whole, fraction } = moneyParts(money, locale, options);
+  const { symbol, gap, whole, fraction } = moneyParts(money, locale, options);
   const sign = whole.startsWith('-') ? '-' : '';
-  return `${sign}${symbol}\u00a0${whole.slice(sign.length)}${fraction}`;
+  return `${sign}${symbol}${gap}${whole.slice(sign.length)}${fraction}`;
+}
+
+export function formatMoneyRange(min: Money, max: Money, locale: string) {
+  const from = moneyParts(min, locale, { whole: true });
+  const to = moneyParts(max, locale, { whole: true });
+  return `${from.symbol}${from.gap}${from.whole}${from.fraction}–${to.whole}${to.fraction}`;
+}
+
+export function defaultCurrency(regionCurrency: string | null | undefined): CurrencyCode {
+  return isCurrencyCode(regionCurrency) ? regionCurrency : 'MYR';
 }
 
 const RATE_DIGITS = 8;

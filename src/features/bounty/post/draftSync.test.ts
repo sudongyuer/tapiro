@@ -8,6 +8,7 @@ const STORED: PostDraft = {
   title: 'Parce',
   category: 'pickup',
   rewardText: '8',
+  currency: 'MYR',
   description: null,
   time: { kind: 'none' },
   place: null,

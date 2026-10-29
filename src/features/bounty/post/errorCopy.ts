@@ -1,11 +1,10 @@
-import { formatMoney } from '@/lib/money';
+import { formatMoneyRange, type CurrencyCode } from '@/lib/money';
 
 import type { DraftError } from './types';
 import {
   ADDRESS_MAX,
   DESCRIPTION_MAX,
   PLACE_MAX,
-  POST_CURRENCY,
   rewardLimits,
   TIME_AHEAD_MS,
   TITLE_MAX,
@@ -20,18 +19,15 @@ const MAX: Partial<Record<DraftError, number>> = {
 
 export const TIME_AHEAD_DAYS = TIME_AHEAD_MS / 86_400_000;
 
-export function rewardRangeValues(language: string, currency = POST_CURRENCY) {
+export function rewardRangeText(language: string, currency: CurrencyCode) {
   const { min, max } = rewardLimits(currency);
-  return {
-    min: formatMoney(min, language, { whole: true }),
-    max: formatMoney(max, language, { whole: true }),
-  };
+  return formatMoneyRange(min, max, language);
 }
 
-export function errorKey(error: DraftError, language: string) {
+export function errorKey(error: DraftError, language: string, currency: CurrencyCode) {
   const values =
     error === 'rewardRange'
-      ? rewardRangeValues(language)
+      ? { range: rewardRangeText(language, currency) }
       : { max: MAX[error] ?? 0, days: TIME_AHEAD_DAYS };
   return { key: `bounty.post.error.${error}` as const, values };
 }

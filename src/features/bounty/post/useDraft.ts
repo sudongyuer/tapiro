@@ -18,7 +18,7 @@ export function useDraft(userId: string) {
 }
 
 export function resetDraft(userId: string) {
-  draftStore.clear(userId);
+  draftStore.reset(userId);
   formError.set(null);
   return draftStore.load(userId);
 }

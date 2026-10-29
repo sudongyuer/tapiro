@@ -21,7 +21,7 @@ export function PayCard({ detail }: { detail: PayDetail }) {
   const paint = useLiveCardPaint('pay');
   const ink = paint.ink;
   const amount = formatMoney(detail.amount, language, { whole: true });
-  const { symbol, whole, fraction } = moneyParts(detail.amount, language);
+  const { symbol, gap, whole, fraction } = moneyParts(detail.amount, language);
   return (
     <LiveCard tone="pay" hanging={<CategorySticker category={detail.category} size={78} />}>
       <Pill ink={ink} dot={paint.urgentDot}>
@@ -34,7 +34,7 @@ export function PayCard({ detail }: { detail: PayDetail }) {
         {t('home.card.pay.title', { name: detail.payee })}
       </CardText>
       <CardText variant="amount" ink={ink} style={styles.amount}>
-        {`${symbol}\u00a0${whole}`}
+        {`${symbol}${gap}${whole}`}
         <AppText variant="moment-title" style={[styles.cents, { color: ink }]}>
           {fraction}
         </AppText>

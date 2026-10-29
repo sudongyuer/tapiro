@@ -6,7 +6,6 @@ export const TITLE_MAX = 60;
 export const DESCRIPTION_MAX = 500;
 export const PLACE_MAX = 80;
 export const ADDRESS_MAX = 120;
-export const POST_CURRENCY: CurrencyCode = 'MYR';
 export const TIME_AHEAD_MS = 30 * 24 * 3_600_000;
 
 type Checked<T> = { ok: true; value: T } | { ok: false; error: DraftError };
@@ -83,7 +82,7 @@ export function checkDraft(
   if (codePoints(title) > TITLE_MAX) return { ok: false, error: 'titleTooLong' };
   if (!draft.category) return { ok: false, error: 'categoryEmpty' };
   if (draft.rewardText.trim() === '') return { ok: false, error: 'rewardEmpty' };
-  const reward = parseReward(draft.rewardText, POST_CURRENCY);
+  const reward = parseReward(draft.rewardText, draft.currency);
   if (reward === null) return { ok: false, error: 'rewardRange' };
   const time = checkTime(draft.time, now);
   if (!time.ok) return time;

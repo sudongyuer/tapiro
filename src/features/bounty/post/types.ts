@@ -41,6 +41,7 @@ export type PostDraft = {
   title: string;
   category: BountyCategory | null;
   rewardText: string;
+  currency: CurrencyCode;
   description: string | null;
   time: TimeChoice;
   place: DraftPlace | null;
@@ -88,7 +89,8 @@ export type CostBase =
 export type CostLine =
   CostBase | { kind: 'blocked'; unpaid: UnpaidSummary[]; under: CostBase['kind'] };
 
-export type PublishFailure = 'blocked' | 'noBalance' | 'invalid' | 'alreadySent' | 'failed';
+export type PublishFailure =
+  'blocked' | 'noBalance' | 'invalid' | 'invalidReward' | 'alreadySent' | 'failed';
 
 export type PublishOutcome =
   { ok: true; result: PublishResult } | { ok: false; reason: PublishFailure };

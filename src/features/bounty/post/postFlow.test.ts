@@ -19,6 +19,7 @@ const DRAFT: PostDraft = {
   title: '帮我取个快递',
   category: 'pickup',
   rewardText: '8',
+  currency: 'MYR',
   description: null,
   time: { kind: 'none' },
   place: null,
@@ -204,6 +205,15 @@ describe('post flow', () => {
     await flow.publish();
     expect(flow.get().rejected).toBe('invalid');
     expect(calls.cleared).toBe(0);
+  });
+
+  test('a server invalid_reward answer returns to the form with the range error and keeps the draft', async () => {
+    const { flow, calls } = setup({ outcomes: [{ ok: false, reason: 'invalidReward' }] });
+    await flow.load();
+    await flow.publish();
+    expect(calls.invalid).toEqual(['rewardRange']);
+    expect(calls.cleared).toBe(0);
+    expect(flow.get()).toMatchObject({ busy: false, rejected: null });
   });
 
   test('an already-sent answer clears the draft and says so, without publishing again', async () => {

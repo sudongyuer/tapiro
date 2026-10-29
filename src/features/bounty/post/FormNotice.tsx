@@ -1,10 +1,17 @@
 import { useI18n } from '@/lib/i18n';
+import type { CurrencyCode } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 
 import { errorKey } from './errorCopy';
 import type { FormNotice as Notice } from './useDraft';
 
-export function FormNotice({ notice }: { notice: Notice | null }) {
+export function FormNotice({
+  notice,
+  currency,
+}: {
+  notice: Notice | null;
+  currency: CurrencyCode;
+}) {
   const { t, language } = useI18n();
   if (notice === null) return null;
   if (notice === 'alreadySent') {
@@ -17,7 +24,7 @@ export function FormNotice({ notice }: { notice: Notice | null }) {
       />
     );
   }
-  const shown = errorKey(notice, language);
+  const shown = errorKey(notice, language, currency);
   return (
     <NoticeCard
       tone="urgent"

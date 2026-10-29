@@ -14,7 +14,7 @@ function stubClient(answer: (name: string, args: unknown) => Answer | Promise<ne
       return answer(name, args);
     },
   } as unknown as SupabaseClient;
-  return { service: createSupabaseStatusService(client), calls };
+  return { service: createSupabaseStatusService(client, () => 'CNY'), calls };
 }
 
 const ok = (data: unknown): Answer => ({ data, error: null });
@@ -66,12 +66,14 @@ const ROW = {
 };
 
 describe('detail', () => {
-  test('calls bounty_detail with the bounty only and parses the status keys', async () => {
+  test('calls bounty_detail with the bounty and the reference currency and parses the status keys', async () => {
     const stub = stubClient(() =>
       ok({ ...ROW, charge: 'coin', payment: { id: 'pay1', state: 'marked_paid' } }),
     );
     const detail = await stub.service.detail('b1');
-    expect(stub.calls).toEqual([{ name: 'bounty_detail', args: { bounty: 'b1' } }]);
+    expect(stub.calls).toEqual([
+      { name: 'bounty_detail', args: { bounty: 'b1', reference_currency: 'CNY' } },
+    ]);
     expect(detail).toMatchObject({
       id: 'b1',
       status: 'en_route',
@@ -260,7 +262,10 @@ for (const { name, rpc, run, args, data, value, wrong } of CASES) {
     });
 
     test('without a client it fails instead of throwing', async () => {
-      expect(await run(createSupabaseStatusService(null))).toEqual({ ok: false, reason: 'failed' });
+      expect(await run(createSupabaseStatusService(null, () => 'CNY'))).toEqual({
+        ok: false,
+        reason: 'failed',
+      });
     });
   });
 }

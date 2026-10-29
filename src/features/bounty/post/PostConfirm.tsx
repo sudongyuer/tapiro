@@ -23,7 +23,7 @@ import { useTimeLine } from './timeLine';
 import type { PostDraft } from './types';
 import { formError, useDraft } from './useDraft';
 import { usePostFlow } from './usePostFlow';
-import { parseReward, POST_CURRENCY } from './validate';
+import { parseReward } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
@@ -104,7 +104,7 @@ export function PostConfirm({ userId, onPublished, onPay, onBack }: ConfirmProps
 function Preview({ draft }: { draft: PostDraft }) {
   const { t, language } = useI18n();
   const time = useTimeLine(draft.time);
-  const reward = parseReward(draft.rewardText, POST_CURRENCY);
+  const reward = parseReward(draft.rewardText, draft.currency);
   const firstLine = draft.description?.trim().split('\n')[0] ?? '';
   const place = draft.place?.label.trim() || null;
   const address = draft.place?.address?.trim() || null;
