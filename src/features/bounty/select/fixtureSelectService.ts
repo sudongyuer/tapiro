@@ -13,7 +13,10 @@ export const SELECT_MODES = [
   'closed',
 ] as const;
 
+export const POSTED_STATES = ['open', 'assigned', 'cancelled'] as const;
+
 export type ApplicantSet = (typeof APPLICANT_SETS)[number];
+export type PostedState = (typeof POSTED_STATES)[number];
 export type ApplicantsFailure = (typeof APPLICANTS_FAILURES)[number];
 export type SelectMode = (typeof SELECT_MODES)[number];
 
@@ -23,6 +26,7 @@ export type FixtureSelectOptions = {
   applicants: ApplicantSet;
   fail: ApplicantsFailure;
   select: SelectMode;
+  posted?: PostedState;
   now: () => Date;
   writeDelayMs?: number;
   isBlocked?: (applicantId: string) => boolean;
@@ -44,6 +48,7 @@ export function fixtureSelectOptions(
     applicants: pick(APPLICANT_SETS, argument('uiVerifyApplicants'), 'three'),
     fail: pick(APPLICANTS_FAILURES, argument('uiVerifyApplicantsFail'), 'none'),
     select: pick(SELECT_MODES, argument('uiVerifySelect'), 'ok'),
+    posted: pick(POSTED_STATES, argument('uiVerifyPosted'), 'open'),
     now,
   };
 }
@@ -146,6 +151,8 @@ const pause = (ms: number) =>
 
 type Posted = { pending: Applicant[]; helper: Applicant | null; later: Seed[] };
 
+export type PosterView = { helper: Person | null; status: 'open' | 'assigned' | 'cancelled' };
+
 export function createFixtureSelectService(options: FixtureSelectOptions) {
   const base = options.now().getTime();
   const seeds = SETS[options.applicants];
@@ -168,6 +175,8 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
       helper: null,
       later: [...(LATER[options.applicants] ?? [])],
     };
+    const first = fresh.pending[0];
+    if (options.posted && options.posted !== 'open' && first) assign(fresh, first);
     posted.set(id, fresh);
     return fresh;
   }
@@ -238,10 +247,14 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
 
   return {
     service,
-    posterView(bountyId: string): { helper: Person | null } | null {
+    posterView(bountyId: string): PosterView | null {
       const state = posted.get(bountyId);
       if (!state) return null;
-      return { helper: state.helper ? applicantPerson(state.helper) : null };
+      if (!state.helper) return { helper: null, status: 'open' };
+      return {
+        helper: applicantPerson(state.helper),
+        status: options.posted === 'cancelled' ? 'cancelled' : 'assigned',
+      };
     },
   };
 }

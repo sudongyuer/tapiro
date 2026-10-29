@@ -120,11 +120,13 @@ export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
           <>
             <StatusHeader detail={detail} />
             <StatusTimeline detail={detail} now={new Date()} />
-            <AddressSection
-              address={addressView({ kind: 'ready', detail })}
-              name={counterpartName(detail, role)}
-              testID="bounty-status-address"
-            />
+            {detail.status === 'cancelled' ? null : (
+              <AddressSection
+                address={addressView({ kind: 'ready', detail })}
+                name={counterpartName(detail, role)}
+                testID="bounty-status-address"
+              />
+            )}
             <PinnedActions actions={actions.pinned} role={role} state={action} onAction={run} />
             <SheetLayer>
               <EtaSheet

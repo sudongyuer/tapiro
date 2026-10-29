@@ -177,7 +177,7 @@ describe('applicantsView', () => {
   test('a closed bounty shows the closed card instead of the rows and the button', () => {
     const closed = {
       kind: 'ready',
-      detail: { ...DETAIL, status: 'cancelled' },
+      detail: { ...DETAIL, status: 'closed' },
       refreshFailed: false,
     } as const;
     const shown = view({ list: ready([JIE, HANA]), chosen: 'jie' }, closed);
@@ -212,6 +212,41 @@ describe('applicantsView', () => {
     );
     expect(shown.body).toBe('done');
     expect(shown.footer).toBeNull();
+  });
+
+  const selected = {
+    list: ready([{ ...JIE, status: 'selected' as const }]),
+    send: { kind: 'selected', helperId: 'jie' } as const,
+  };
+  const at = (status: string): DetailLoad => ({
+    kind: 'ready',
+    detail: { ...DETAIL, status, helper: { id: 'jie', name: 'jie', tier: 'reliable' } },
+    refreshFailed: false,
+  });
+
+  test.each(['assigned', 'en_route', 'done', 'disputed', 'confirmed', 'settled'])(
+    '%s keeps 选好了 and offers 看进度',
+    (status) => {
+      const shown = view(selected, at(status));
+      expect(shown.body).toBe('done');
+      expect(shown.progress).toBe(true);
+    },
+  );
+
+  test('cancelled after selection drops 选好了 and still offers 看进度', () => {
+    const shown = view(selected, at('cancelled'));
+    expect(shown.body).toBe('cancelled');
+    expect(shown.footer).toBeNull();
+    expect(shown.progress).toBe(true);
+  });
+
+  test('a selection made here waits for the detail before offering 看进度', () => {
+    expect(view(selected, { kind: 'loading' })).toMatchObject({ body: 'done', progress: false });
+    expect(view(selected)).toMatchObject({ body: 'done', progress: false });
+  });
+
+  test('an open bounty offers no 看进度', () => {
+    expect(view({ list: ready([JIE]) }).progress).toBe(false);
   });
 
   test('a failed detail does not hide a loaded list', () => {

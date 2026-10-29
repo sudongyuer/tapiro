@@ -116,6 +116,7 @@ export function BountyDetailScene({ onReady }: { onReady: () => void }) {
         onGone={() => setLeft('gone')}
         onBlocked={() => setLeft('blocked')}
         onBrowse={() => setLeft('browse')}
+        onProgress={(id) => setLeft(`progress-${id}`)}
       />
       <Marker name={left} />
     </>

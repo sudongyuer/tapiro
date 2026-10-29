@@ -217,3 +217,11 @@ and the Live Activity (11), 先付 (12).
   > 20 s while the clip records), with and without `scrollsUnderActions` (A/B on the same build), at load average 33–40
   from Spotlight indexing and another agent's `AgentDeviceRunner`; rerun it on an idle machine. `bounty_applicants` and
   `bounty_select_failed` pass with the pinned bar.
+- 2026-10-29, Task 9: the selection outcome keys on `detail.status` through one helper (`shared/partyOutcome.ts`):
+  `assigned`…`settled` keep 「{poster}选了你」 / 「选好了{name}」, `cancelled` shows 「这单取消了」 (`bounty.status.cancelled`)
+  without the address, for the helper, the poster's detail and the applicant screen. 看进度 (`bounty.status.action.view`)
+  is a primary pill in the pinned actions (no push row exists on these screens, so the stays-selected rule does not
+  apply); the poster's detail shows only 看进度 while underway (no 「选好了」 line, as before). On the applicant screen
+  看进度 appears once the loaded detail reads past `open`, so right after a select it follows the reload. The detail now
+  uses `SheetFrame scrollsUnderActions`. New fixture arguments: `-uiVerifyDetail selectedCancelled`,
+  `-uiVerifyPosted open|assigned|cancelled`; new case `bounty_applicants_progress`.

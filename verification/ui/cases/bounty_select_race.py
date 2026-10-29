@@ -1,6 +1,6 @@
 """Lost race (ruling 6, 52A): with -uiVerifySelect taken another device already chose 阿杰, so holding on Hana shows the
 system alert 已经选好了 naming 阿杰 (read from the reloaded detail) over the busy button; 好的 turns the screen into
-选好了阿杰 with 阿杰 as one row and the address, and the fixture received exactly one select call."""
+选好了阿杰 with 阿杰 as one row, the address and 看进度 pinned, and the fixture received exactly one select call."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -31,6 +31,8 @@ assert 'A 座 12-03' in (address.get('AXLabel') or ''), f'the address reads {add
 items = ui.read()
 assert by_id(items, HOLD) is None, 'the hold button is still shown after the race'
 assert by_id(items, f'bounty-applicant-{HANA}') is None, 'the applicant list is still shown after the race'
+progress = ui.element('bounty-applicants-progress')
+assert progress.get('AXLabel') == ui.t('bounty.status.action.view'), progress.get('AXLabel')
 assert_attempts(ui, 1)
 ui.at_rest()
 ui.capture('02-race-done')

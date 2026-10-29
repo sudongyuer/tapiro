@@ -115,7 +115,7 @@ describe('select', () => {
     const { service, posterView } = fixture({ onSelected: (args) => recorded.push(args) });
     expect(posterView('b1')).toBeNull();
     await list(service);
-    expect(posterView('b1')).toEqual({ helper: null });
+    expect(posterView('b1')).toEqual({ helper: null, status: 'open' });
     expect(await service.select('b1', 'fixture-applicant-jie')).toEqual({
       ok: true,
       helperId: 'fixture-applicant-jie',
@@ -137,9 +137,21 @@ describe('select', () => {
     ]);
     expect(posterView('b1')).toEqual({
       helper: { id: 'fixture-applicant-jie', name: '阿杰', tier: 'very_reliable' },
+      status: 'assigned',
     });
     expect(posterView('b2')).toBeNull();
   });
+
+  test.each(['assigned', 'cancelled'] as const)(
+    'posted %s starts with 阿杰 chosen and reports that status',
+    async (state) => {
+      const { service, posterView } = fixture({ posted: state });
+      expect(await list(service)).toEqual([
+        expect.objectContaining({ id: 'fixture-applicant-jie', status: 'selected' }),
+      ]);
+      expect(posterView('b1')).toMatchObject({ helper: { name: '阿杰' }, status: state });
+    },
+  );
 
   test('every call counts as an attempt, rejected ones included', async () => {
     const attempts: number[] = [];
@@ -191,7 +203,7 @@ describe('select', () => {
   test('a failed first load still makes the user the poster', async () => {
     const { service, posterView } = fixture({ fail: 'first' });
     await expect(service.applicants('b1')).rejects.toThrow('Network');
-    expect(posterView('b1')).toEqual({ helper: null });
+    expect(posterView('b1')).toEqual({ helper: null, status: 'open' });
   });
 
   test('taken: another device already chose 阿杰', async () => {

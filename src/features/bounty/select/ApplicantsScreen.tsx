@@ -5,7 +5,8 @@ import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
-import { SheetFrame } from '@/ui/SheetFrame';
+import { PillButton } from '@/ui/PillButton';
+import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
 import { useBlockPerson } from '../block/hooks';
@@ -33,7 +34,15 @@ function useRaceAlert(send: SendState, acknowledge: () => void) {
   }, [send, acknowledge, t]);
 }
 
-export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => void }) {
+export function ApplicantsScreen({
+  id,
+  onBack,
+  onProgress,
+}: {
+  id: string;
+  onBack: () => void;
+  onProgress: () => void;
+}) {
   const { t } = useI18n();
   const model = useApplicants(id);
   const { list, chosen, send } = model.select;
@@ -94,7 +103,13 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
         ) : (
           <ApplicantsHeader
             detail={detail}
-            status={view.body === 'closed' ? null : statusCopy(statusLine(list), t)}
+            status={
+              view.body === 'closed'
+                ? null
+                : view.body === 'cancelled'
+                  ? t('bounty.status.cancelled')
+                  : statusCopy(statusLine(list), t)
+            }
           />
         )}
         {view.stale ? (
@@ -162,7 +177,7 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
             detail={model.detail}
             onRetry={() => void model.retry()}
           />
-        ) : view.body === 'loading' ? (
+        ) : view.body === 'cancelled' ? null : view.body === 'loading' ? (
           <Section>
             <ProgressView
               modifiers={[
@@ -183,6 +198,14 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
         )}
         {footer || view.notice ? (
           <SelectFooter footer={footer} notice={view.notice} onHold={() => void model.send()} />
+        ) : view.progress ? (
+          <SheetActions>
+            <PillButton
+              label={t('bounty.status.action.view')}
+              onPress={onProgress}
+              testID="bounty-applicants-progress"
+            />
+          </SheetActions>
         ) : null}
       </SheetFrame>
     </>

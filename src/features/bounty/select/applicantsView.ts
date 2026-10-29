@@ -1,9 +1,11 @@
 import type { BountyDetail } from '../board/types';
+import { partyOutcome, showsProgress } from '../shared/partyOutcome';
 import type { ApplicantsSnapshot } from './applicantsController';
 import type { SendFailure } from './selectState';
 import type { Applicant } from './types';
 
-export type ApplicantsBody = 'gone' | 'closed' | 'done' | 'loading' | 'failed' | 'empty' | 'list';
+export type ApplicantsBody =
+  'gone' | 'closed' | 'cancelled' | 'done' | 'loading' | 'failed' | 'empty' | 'list';
 
 export type FooterView =
   | { state: 'disabled' | 'busy'; others: number; applicant?: Applicant }
@@ -17,6 +19,7 @@ export type ApplicantsView = {
   stale: { loadedAt: string; refreshing: boolean } | null;
   footer: FooterView | null;
   notice: NoticeReason | null;
+  progress: boolean;
 };
 
 export function closedForChoosing(detail: BountyDetail, now: Date) {
@@ -28,6 +31,9 @@ function body({ select, detail }: ApplicantsSnapshot, now: Date, closed: boolean
   const { list } = select;
   if (list.kind === 'gone' || detail.kind === 'gone') return 'gone';
   if (closed) return 'closed';
+  if (detail.kind === 'ready' && partyOutcome(detail.detail.status) === 'cancelled') {
+    return 'cancelled';
+  }
   if (select.send.kind === 'selected') return 'done';
   if (select.send.kind === 'failed' && select.send.reason === 'closed') return 'closed';
   if (detail.kind === 'ready' && closedForChoosing(detail.detail, now)) return 'closed';
@@ -67,5 +73,9 @@ export function applicantsView(
         : null,
     footer: shown === 'list' ? footer(applicants, snapshot) : null,
     notice: shown === 'list' || shown === 'empty' ? notice(snapshot.select) : null,
+    progress:
+      (shown === 'done' || shown === 'cancelled') &&
+      snapshot.detail.kind === 'ready' &&
+      showsProgress(snapshot.detail.detail.viewerRole, snapshot.detail.detail.status),
   };
 }

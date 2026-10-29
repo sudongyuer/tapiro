@@ -9,6 +9,7 @@ import {
   seenMarkDue,
   withWrite,
   shownView,
+  viewOfDetail,
   type DetailState,
 } from './detailState';
 
@@ -214,6 +215,14 @@ const SELECTED: BountyDetail = {
   myApplication: { status: 'selected', note: null },
 };
 
+const POSTER: BountyDetail = {
+  ...DETAIL,
+  status: 'assigned',
+  viewerRole: 'poster',
+  address: 'A 座 12-03',
+  helper: { id: 'me', name: '林小貘', tier: 'reliable' },
+};
+
 describe('outcomes', () => {
   test('not selected: the outcome block with the note, never the applied stamp', () => {
     const view = shownView(
@@ -293,6 +302,52 @@ describe('outcomes', () => {
         NOW,
       ),
     ).toMatchObject({ action: 'apply', note: null });
+  });
+
+  const STATUSES = ['assigned', 'en_route', 'done', 'disputed', 'confirmed', 'settled'];
+
+  test.each(STATUSES)('%s: the helper sees 选了你 with the address and 看进度', (status) => {
+    expect(viewOfDetail({ ...SELECTED, status }, NOW)).toMatchObject({
+      action: 'selected',
+      address: 'A 座 12-03',
+      progress: true,
+    });
+  });
+
+  test.each(STATUSES)('%s: the poster sees 看进度 and no outcome line', (status) => {
+    expect(viewOfDetail({ ...POSTER, status }, NOW)).toMatchObject({
+      action: 'none',
+      progress: true,
+    });
+  });
+
+  test('cancelled after selection: both parties see 这单取消了 and 看进度, never 选了你', () => {
+    for (const party of [SELECTED, POSTER]) {
+      expect(viewOfDetail({ ...party, status: 'cancelled' }, NOW)).toMatchObject({
+        action: 'cancelled',
+        address: null,
+        progress: true,
+      });
+    }
+  });
+
+  test('an open bounty gives the poster no 看进度', () => {
+    expect(viewOfDetail({ ...POSTER, status: 'open', helper: null }, NOW)).toMatchObject({
+      action: 'none',
+      progress: false,
+    });
+  });
+
+  test('applicants and viewers never see 看进度', () => {
+    expect(viewOfDetail(NOT_SELECTED, NOW).progress).toBe(false);
+    expect(viewOfDetail({ ...NOT_SELECTED, status: 'cancelled' }, NOW)).toMatchObject({
+      action: 'notSelected',
+      progress: false,
+    });
+    expect(viewOfDetail({ ...DETAIL, status: 'cancelled' }, NOW)).toMatchObject({
+      action: 'closed',
+      progress: false,
+    });
   });
 
   test('only a loaded not-selected answer is due a seen mark', () => {
