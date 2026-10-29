@@ -1,14 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+import { localSupabase } from '../../../scripts/local-supabase';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 function localStack() {
-  const out = Bun.spawnSync(['supabase', 'status', '-o', 'env']).stdout.toString();
-  const value = (key: string) => out.match(new RegExp(`^${key}="([^"]+)"`, 'm'))?.[1];
-  const url = value('API_URL');
-  const anonKey = value('ANON_KEY');
-  const serviceKey = value('SERVICE_ROLE_KEY');
-  if (!url || !anonKey || !serviceKey) throw new Error('Local Supabase is not running');
-  return { url, anonKey, serviceKey };
+  return {
+    url: localSupabase('API_URL'),
+    anonKey: localSupabase('ANON_KEY'),
+    serviceKey: localSupabase('SERVICE_ROLE_KEY'),
+  };
 }
 
 const { url, anonKey, serviceKey } = localStack();

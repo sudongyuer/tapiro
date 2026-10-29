@@ -295,6 +295,8 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   `supabase start`).
 - `bun run test:stack` runs the `*.integration.ts` tests against the running stack and served
   functions: `account-delete` (user A deletes itself, user B is untouched, calls without a user
-  token are rejected) and the app's profile service under RLS.
+  token are rejected) and the app's profile service under RLS. The tests read the URL and keys from
+  `supabase status`; set `SUPABASE_LOCAL_API_URL` (and `SUPABASE_LOCAL_ANON_KEY`, `SUPABASE_LOCAL_SERVICE_ROLE_KEY`)
+  when the gateway listens on another port than the one `supabase status` reports (`scripts/local-supabase.ts`).
 - Request handling lives in `handler.ts` (no Deno APIs), unit-tested by `bun test`; `index.ts` wires
   Deno and the service-role client and is excluded from `tsc`.
