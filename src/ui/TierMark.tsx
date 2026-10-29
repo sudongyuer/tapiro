@@ -30,7 +30,7 @@ export function TierMark({
       <RNHostView matchContents>
         <View style={styles.heads}>
           {Array.from({ length: rank }, (_, index) => (
-            <Mascot key={index} variant="front" size={HEAD} />
+            <Mascot key={index} variant="front" size={HEAD} darkOutline />
           ))}
         </View>
       </RNHostView>

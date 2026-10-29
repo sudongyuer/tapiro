@@ -8,6 +8,7 @@ export type MascotVariant = 'side' | 'front';
 export type MascotEyes = 'open' | 'asleep';
 
 const ART_SCALE = 0.6;
+const DARK_OUTLINE = 1;
 
 const SIDE_TRUNK = 'M46 82 C36 86 27 93 21 103 C17 111 23 117 31 113 C37 109 45 105 56 102 Z';
 
@@ -15,16 +16,26 @@ export type MascotProps = {
   variant: MascotVariant;
   size: number;
   outlined?: boolean;
+  darkOutline?: boolean;
   eyes?: MascotEyes;
 };
 
-export function Mascot({ variant, size, outlined = false, eyes = 'open' }: MascotProps) {
+export function Mascot({
+  variant,
+  size,
+  outlined = false,
+  darkOutline = false,
+  eyes = 'open',
+}: MascotProps) {
   const { theme, color } = useTheme();
   const paint = mascotPaint(theme);
   const border = size >= 48 ? vars['--sticker-border'] : vars['--sticker-border-small'];
+  const extra = (width: number) => (2 * width * 64) / (size * ART_SCALE);
   const sticker = outlined
-    ? { color: color('--color-sticker-border'), extra: (2 * border * 64) / (size * ART_SCALE) }
-    : null;
+    ? { color: color('--color-sticker-border'), extra: extra(border) }
+    : darkOutline && theme === 'dark'
+      ? { color: paint.rim, extra: extra(DARK_OUTLINE) }
+      : null;
   return (
     <Svg
       width={size}

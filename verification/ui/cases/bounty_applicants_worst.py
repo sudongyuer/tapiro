@@ -5,8 +5,8 @@ Choosing the Latin and the CJK applicant names them on the hold button in at mos
 copy intact (the name truncates in the middle). With 50 applicants the list scrolls to row 50 above the pinned button
 (top, middle and end). RM 1 fits the header. Holding selects the Latin applicant and the chosen row keeps one line. In
 the detail, the not-selected pinned area with a 40-character poster and a 140-code-point note stays under 38% of the
-screen (44A precedent); 选了你 names the long poster. In dark the tier text keeps 4.5:1 against the row, measured from
-pixels; the tier heads stay dark ink in both appearances by design, so the case does not measure them."""
+screen (44A precedent); 选了你 names the long poster. In dark the tier text keeps 4.5:1 against the row and the tier
+heads carry their saddle outline (56A) at 3:1 or more, both measured from pixels."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -17,7 +17,8 @@ from driver import UI, assert_touch_target, by_id, dominant, reach_home  # noqa:
 from ocr import find, lines  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/detail/', 'src/features/bounty/board/',
-        'src/features/bounty/shared/', 'src/ui/HoldButton.tsx', 'src/ui/TierMark.tsx', 'src/app/(tabs)/bounty/',
+        'src/features/bounty/shared/', 'src/ui/HoldButton.tsx', 'src/ui/TierMark.tsx', 'src/ui/Mascot.tsx',
+        'src/app/(tabs)/bounty/',
         'verification/ui/choose.py', 'verification/ui/board.py', 'verification/ui/ocr.py']
 SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']
@@ -38,6 +39,10 @@ INK_CONTRAST = 1.5
 TIER_GAP_PT = 6
 TIER_SLACK_PT = 2
 NAME_LINE_PT = 36
+NON_TEXT_CONTRAST_MIN = 3
+HEAD_PITCH_PT = 13
+HEAD_RANK = 4
+HEAD_OUTLINE_MIN_PT2 = 12
 REFERENCE = f'{ROW}04'
 
 ui = UI(*sys.argv[1:])
@@ -101,6 +106,12 @@ def assert_row(shot, read, identifier):
         ratio = tier_text_contrast(shot, f, helped[0]['y'])
         print(f'{identifier}: dark tier text contrast {ratio:.2f}:1')
         assert ratio >= TEXT_CONTRAST_MIN, f'the tier text in {identifier} is {ratio:.2f}:1 in dark'
+        area, outline = head_outline(shot, f, f['y'] + NAME_LINE_PT)
+        print(f'{identifier}: dark tier heads {area:.1f} pt2 of ink at {NON_TEXT_CONTRAST_MIN}:1 or more, '
+              f'outline {outline:.2f}:1')
+        assert area >= HEAD_RANK * HEAD_OUTLINE_MIN_PT2, \
+            f'the tier heads in {identifier} have {area:.1f} pt2 of ink at 3:1 in dark: no saddle outline'
+        assert outline >= NON_TEXT_CONTRAST_MIN, f'the tier head outline in {identifier} is {outline:.2f}:1 in dark'
     return row
 
 
@@ -134,7 +145,7 @@ def tier_text_contrast(shot, f, meta_y):
 
 # The tier is the rightmost run of ink on the name line whose gaps stay under TIER_GAP_PT (heads 1 pt apart, text 3 pt
 # after them); the name ends at least 8 pt to its left. A truncated tier is narrower than the short-name reference row.
-def tier_span(shot, f, bottom, lane=CHECK_LANE_PT):
+def tier_bounds(shot, f, bottom, lane=CHECK_LANE_PT):
     band = {'x': f['x'] + 40, 'y': f['y'] + 4, 'width': f['width'] - 40 - lane, 'height': bottom - f['y'] - 4}
     background = dominant(shot, band)
     x0, x1 = round(band['x'] * shot.scale), round((band['x'] + band['width']) * shot.scale)
@@ -150,7 +161,26 @@ def tier_span(shot, f, bottom, lane=CHECK_LANE_PT):
             gap += 1
             if gap > TIER_GAP_PT * shot.scale:
                 break
-    return (right - left + 1) / shot.scale
+    return {'left': x0 + left, 'right': x0 + right, 'y0': y0, 'y1': y1, 'background': background}
+
+
+def tier_span(shot, f, bottom, lane=CHECK_LANE_PT):
+    bounds = tier_bounds(shot, f, bottom, lane)
+    return (bounds['right'] - bounds['left'] + 1) / shot.scale
+
+
+# Non-text contrast of the heads (WCAG 1.4.11): the heads are the first HEAD_RANK * HEAD_PITCH_PT of the tier. Without the
+# saddle outline only the eye whites and ear rims reach 3:1 (a few pt2 per head); the outline adds a 1 pt ring.
+def head_outline(shot, f, bottom):
+    bounds = tier_bounds(shot, f, bottom)
+    background = bounds['background']
+    x1 = bounds['left'] + round((HEAD_RANK * HEAD_PITCH_PT - 1) * shot.scale)
+    light = [contrast(shot._px(x, y), background) for x in range(bounds['left'], x1)
+             for y in range(bounds['y0'], bounds['y1'])]
+    light = sorted(ratio for ratio in light if ratio >= NON_TEXT_CONTRAST_MIN)
+    if not light:
+        return 0, 0
+    return len(light) / shot.scale ** 2, light[len(light) // 2]
 
 
 def assert_hold(name, shot_name):

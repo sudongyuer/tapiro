@@ -129,6 +129,10 @@ The hold button's track is the accent; the gold fill appears only while the user
 | `--color-mascot-snout`   | `#3A3742`   |             | 小貘 front-view snout           |
 | `--color-moment-chip`    | `#FFFFFFBF` | `#FFFFFF1A` | Info chip on moment screens     |
 
+In dark mode only, the 12 pt tier heads (`TierMark`, on the board, the detail and the applicant rows) add a 1 pt
+outer outline in `--color-mascot-saddle`, so the dark ink head keeps at least 3:1 against the dark grouped
+background. Light mode and every other mascot drawing are unchanged. Source: user, question 56A (2026-10-28).
+
 ### Live cards, stage and categories
 
 Dark mode keeps the pastel surfaces (decision D2): cards and stage stay light on the dark
@@ -168,20 +172,20 @@ background and their text stays dark ink. The only exception is the pay card, wh
 Paper surfaces of the settlement celebration and the sticker book. They are paper, so dark mode keeps the same
 values, as it does for stickers.
 
-| Token                    | Light       | Use                                                       |
-| ------------------------ | ----------- | --------------------------------------------------------- |
-| `--color-paper`          | `#FFFDF8`   | Sticker book page in the celebration                      |
-| `--color-paper-line`     | `#EDE7DA`   | Ruled lines on the page                                   |
-| `--color-paper-slot`     | `#D6D1C6`   | Dashed outline of an empty slot, binding dots             |
-| `--color-paper-landed`   | `#187A5014` | Fill of the slot a sticker just landed in                 |
-| `--color-on-paper`       | `#25232B`   | Text on paper and on the receipt                          |
-| `--color-on-paper-muted` | `#6C6C70`   | Secondary text on paper, the receipt and sticker labels   |
-| `--color-receipt`        | `#FFFFFF`   | Receipt card the sticker is peeled from; sticker labels   |
-| `--color-paper-green`    | `#187A50`   | Green on paper: 第一次收款 badge fill, receipt amount     |
-| `--color-glow`           | `#3ECF8E8C` | Glow centre when a sticker lands                          |
-| `--color-glow-clear`     | `#3ECF8E00` | Glow edge                                                 |
+| Token                    | Light       | Use                                                        |
+| ------------------------ | ----------- | ---------------------------------------------------------- |
+| `--color-paper`          | `#FFFDF8`   | Sticker book page in the celebration                       |
+| `--color-paper-line`     | `#EDE7DA`   | Ruled lines on the page                                    |
+| `--color-paper-slot`     | `#D6D1C6`   | Dashed outline of an empty slot, binding dots              |
+| `--color-paper-landed`   | `#187A5014` | Fill of the slot a sticker just landed in                  |
+| `--color-on-paper`       | `#25232B`   | Text on paper and on the receipt                           |
+| `--color-on-paper-muted` | `#6C6C70`   | Secondary text on paper, the receipt and sticker labels    |
+| `--color-receipt`        | `#FFFFFF`   | Receipt card the sticker is peeled from; sticker labels    |
+| `--color-paper-green`    | `#187A50`   | Green on paper: 第一次收款 badge fill, receipt amount      |
+| `--color-glow`           | `#3ECF8E8C` | Glow centre when a sticker lands                           |
+| `--color-glow-clear`     | `#3ECF8E00` | Glow edge                                                  |
 | `--color-shine`          | `#FFFFFFB3` | Centre of the shine that sweeps the sticker and the amount |
-| `--color-shine-clear`    | `#FFFFFF00` | Shine edge                                                |
+| `--color-shine-clear`    | `#FFFFFF00` | Shine edge                                                 |
 
 ### Object stickers
 
@@ -189,23 +193,23 @@ The welcome screen's die-cut objects (parcel, coffee, queue ticket, books, umbre
 tea). They are artwork, so dark mode keeps the same fills and the white die-cut border; the
 outline is `--color-sticker-border` and dark lines use `--color-on-sticker`.
 
-| Token                          | Light     | Use                                        |
-| ------------------------------ | --------- | ------------------------------------------ |
-| `--color-object-cardboard`     | `#C8925A` | Parcel box                                 |
-| `--color-object-cardboard-lid` | `#DDA874` | Parcel lid                                 |
-| `--color-object-tape`          | `#EBD3A8` | Parcel tape, coffee sleeve                 |
-| `--color-object-coffee`        | `#7A4E35` | Coffee cup and handle                      |
-| `--color-object-roast`         | `#3B2F2A` | Coffee lid, tapioca pearls                 |
-| `--color-object-red`           | `#D2412C` | Ticket number, top book                    |
-| `--color-object-grey`          | `#C7C7CC` | Ticket rule, hubcaps                       |
-| `--color-object-blue`          | `#1D6FD1` | Book                                       |
-| `--color-object-green`         | `#187A50` | Book                                       |
-| `--color-object-orange`        | `#E8833A` | Book                                       |
-| `--color-object-violet`        | `#6D4AFF` | Umbrella canopy                            |
-| `--color-object-coral`         | `#E8604C` | Car body, straw                            |
-| `--color-object-glass`         | `#BFE3F5` | Car windows                                |
-| `--color-object-milk-tea`      | `#EFD9B4` | Milk-tea cup                               |
-| `--color-object-cream`         | `#F3EFE6` | Milk-tea lid                               |
+| Token                          | Light     | Use                        |
+| ------------------------------ | --------- | -------------------------- |
+| `--color-object-cardboard`     | `#C8925A` | Parcel box                 |
+| `--color-object-cardboard-lid` | `#DDA874` | Parcel lid                 |
+| `--color-object-tape`          | `#EBD3A8` | Parcel tape, coffee sleeve |
+| `--color-object-coffee`        | `#7A4E35` | Coffee cup and handle      |
+| `--color-object-roast`         | `#3B2F2A` | Coffee lid, tapioca pearls |
+| `--color-object-red`           | `#D2412C` | Ticket number, top book    |
+| `--color-object-grey`          | `#C7C7CC` | Ticket rule, hubcaps       |
+| `--color-object-blue`          | `#1D6FD1` | Book                       |
+| `--color-object-green`         | `#187A50` | Book                       |
+| `--color-object-orange`        | `#E8833A` | Book                       |
+| `--color-object-violet`        | `#6D4AFF` | Umbrella canopy            |
+| `--color-object-coral`         | `#E8604C` | Car body, straw            |
+| `--color-object-glass`         | `#BFE3F5` | Car windows                |
+| `--color-object-milk-tea`      | `#EFD9B4` | Milk-tea cup               |
+| `--color-object-cream`         | `#F3EFE6` | Milk-tea lid               |
 
 ### Sign in with Google
 
@@ -213,16 +217,16 @@ Google's branding guidelines fix these values (developers.google.com/identity/br
 light and dark themes, standard-colour G). They are not Tapiro colours and are used only by the
 Google sign-in button.
 
-| Token                   | Light     | Dark      | Use                     |
-| ----------------------- | --------- | --------- | ----------------------- |
-| `--color-google-fill`   | `#FFFFFF` | `#131314` | Button fill             |
-| `--color-google-stroke` | `#747775` | `#8E918F` | 1 pt inside stroke      |
-| `--color-google-label`  | `#1F1F1F` | `#E3E3E3` | Button label            |
-| `--color-google-blue`   | `#4285F4` |           | G logo                  |
-| `--color-google-green`  | `#34A853` |           | G logo                  |
-| `--color-google-yellow` | `#FBBC05` |           | G logo                  |
-| `--color-google-red`    | `#EA4335` |           | G logo                  |
-| `--google-stroke-width` | `1`       |           | Stroke width in points  |
+| Token                   | Light     | Dark      | Use                    |
+| ----------------------- | --------- | --------- | ---------------------- |
+| `--color-google-fill`   | `#FFFFFF` | `#131314` | Button fill            |
+| `--color-google-stroke` | `#747775` | `#8E918F` | 1 pt inside stroke     |
+| `--color-google-label`  | `#1F1F1F` | `#E3E3E3` | Button label           |
+| `--color-google-blue`   | `#4285F4` |           | G logo                 |
+| `--color-google-green`  | `#34A853` |           | G logo                 |
+| `--color-google-yellow` | `#FBBC05` |           | G logo                 |
+| `--color-google-red`    | `#EA4335` |           | G logo                 |
+| `--google-stroke-width` | `1`       |           | Stroke width in points |
 
 The stage hill is drawn in the screen background (`systemGroupedBackground`), so the stage meets
 the page in both appearances.
@@ -293,20 +297,20 @@ The reward and the primary action wrap rather than truncate at any size.
 
 ## Spacing, radius, targets
 
-| Token            | Value |
-| ---------------- | ----- |
-| `--space-1`      | `4`   |
-| `--space-2`      | `8`   |
-| `--space-3`      | `12`  |
-| `--space-4`      | `16`  |
-| `--space-5`      | `20`  |
-| `--space-6`      | `24`  |
-| `--space-7`      | `32`  |
-| `--radius-chip`  | `12`  |
-| `--radius-card`  | `18`  |
-| `--radius-sheet` | `24`  |
-| `--radius-pill`  | `999` |
-| `--touch-min`    | `44`  |
+| Token               | Value |
+| ------------------- | ----- |
+| `--space-1`         | `4`   |
+| `--space-2`         | `8`   |
+| `--space-3`         | `12`  |
+| `--space-4`         | `16`  |
+| `--space-5`         | `20`  |
+| `--space-6`         | `24`  |
+| `--space-7`         | `32`  |
+| `--radius-chip`     | `12`  |
+| `--radius-card`     | `18`  |
+| `--radius-sheet`    | `24`  |
+| `--radius-pill`     | `999` |
+| `--touch-min`       | `44`  |
 | `--opacity-pressed` | `0.7` |
 
 Radii are continuous corners. Buttons are pills.
