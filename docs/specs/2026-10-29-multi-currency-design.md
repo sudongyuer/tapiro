@@ -1,8 +1,8 @@
 ---
 title: Money in any currency (RM and ¥ first)
-status: proposed
+status: approved
 created: 2026-10-29
-approved:
+approved: 2026-10-29
 implemented:
 supersedes:
 superseded-by:

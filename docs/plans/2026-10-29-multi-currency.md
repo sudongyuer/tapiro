@@ -4,7 +4,7 @@
 > with checkboxes. Only one Simulator-using agent runs at a time. When all tasks are done, run `spec-lifecycle`
 > (full record: this spec is implemented by this plan alone) before the PR.
 
-**Status:** waiting for spec approval. UI questions 64–67 answered 2026-10-29 (「按推荐」); canvas page 06, board
+**Status:** ready (spec approved 2026-10-29, 「批准」). UI questions 64–67 answered 2026-10-29 (「按推荐」); canvas page 06, board
 「币种 · 第 64–67 题」.
 
 **Goal:**
