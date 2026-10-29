@@ -272,6 +272,7 @@ export default {
       board: '能接的悬赏',
       detail: '悬赏详情',
       applicants: '选人（申请人列表）',
+      status: '进度页（状态 × 身份）',
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },

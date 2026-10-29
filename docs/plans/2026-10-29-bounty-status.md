@@ -188,3 +188,6 @@ and the Live Activity (11), 先付 (12).
   the detail shows it closed.
 - 2026-10-29, controller: a failed seen mark rejects (`liveStore.markSeen` throws), which is the signal home uses to retry
   on the next display.
+- 2026-10-29, Task 6: the status screen shows times in device time (as the home live cards); the detail and applicant
+  screens keep `malaysiaClock`. Open: the pinned action area cuts the list's last rows and square-clips its corners
+  (screenshot 02-poster-done); fixed in Task 7.

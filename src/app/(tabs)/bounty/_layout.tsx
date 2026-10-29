@@ -38,6 +38,15 @@ export default function BountyLayout() {
         }}
       />
       <Stack.Screen
+        name="status/[id]"
+        options={{
+          headerTitle: '',
+          headerBackTitle: t('shell.home.title'),
+          headerLargeTitleEnabled: false,
+          scrollEdgeEffects: { top: 'automatic' },
+        }}
+      />
+      <Stack.Screen
         name="place"
         options={{ title: t('bounty.board.place.pick'), headerLargeTitleEnabled: false }}
       />

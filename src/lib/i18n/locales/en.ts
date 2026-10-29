@@ -277,6 +277,7 @@ const en: Translation = {
       board: 'Bounty board',
       detail: 'Bounty detail',
       applicants: 'Choose a helper (applicants)',
+      status: 'Status page (state × role)',
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },

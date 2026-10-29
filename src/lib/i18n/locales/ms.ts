@@ -281,6 +281,7 @@ const ms: Translation = {
       board: 'Papan ganjaran',
       detail: 'Butiran ganjaran',
       applicants: 'Pilih pembantu (pemohon)',
+      status: 'Halaman status (keadaan × peranan)',
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },

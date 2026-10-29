@@ -9,6 +9,7 @@ export { BountyBoard } from './board/BountyBoard';
 export { useBountyBoard, type BountyBoardModel } from './board/useBountyBoard';
 export { BountyDetailScreen } from './detail/BountyDetailScreen';
 export { ApplicantsScreen } from './select/ApplicantsScreen';
+export { StatusScreen } from './status/StatusScreen';
 export { ApplySheet } from './apply/ApplySheet';
 export { BlockedListScreen } from './block/BlockedListScreen';
 export { useLiveBounties } from './live/useLiveBounties';

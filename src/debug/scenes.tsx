@@ -14,6 +14,7 @@ import {
   BountyConfirmScene,
   BountyDetailScene,
   BountyPostScene,
+  BountyStatusScene,
   PlaceSearchScene,
 } from './BountyScenes';
 import { DesignTokensScene } from './DesignTokensScene';
@@ -58,6 +59,7 @@ export const scenes: Scene[] = [
     titleKey: 'debug.bounty.applicants',
     Component: BountyApplicantsScene,
   },
+  { id: 'bounty-status', titleKey: 'debug.bounty.status', Component: BountyStatusScene },
 ];
 
 export function findScene(id: string) {

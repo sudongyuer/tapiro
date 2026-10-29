@@ -140,6 +140,24 @@ export function BountyApplicantsScene({ onReady }: { onReady: () => void }) {
   return null;
 }
 
+export function BountyStatusScene({ onReady }: { onReady: () => void }) {
+  const router = useRouter();
+  const pushed = useRef(false);
+  useEffect(() => {
+    if (pushed.current) return;
+    pushed.current = true;
+    router.push(
+      {
+        pathname: '/bounty/status/[id]',
+        params: { id: uiVerifyArgument('uiVerifyDetailId') ?? 'fixture-bounty-01' },
+      },
+      { withAnchor: true },
+    );
+    onReady();
+  }, [router, onReady]);
+  return null;
+}
+
 const styles = StyleSheet.create({
   marker: { position: 'absolute', width: 1, height: 1 },
   screen: { flex: 1, backgroundColor: PlatformColor('systemGroupedBackground') },
