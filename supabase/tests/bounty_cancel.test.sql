@@ -106,7 +106,7 @@ create temp table charges_before as select count(*) as n from public.post_charge
 
 select is(
   pg_temp.call('preview-helper', '00000000-0000-0000-0000-0000000000b2', 'bounty_cancel_preview', 'helper-first'),
-  '{"offender": "self", "waiverAvailable": true}'::jsonb, 'the helper is told the cancel counts against them with a waiver'
+  '{"offender": "self", "waiverAvailable": true, "waiverBackAt": null}'::jsonb, 'the helper is told the cancel counts against them with a waiver'
 );
 select is(
   pg_temp.call('helper-first', '00000000-0000-0000-0000-0000000000b2', 'cancel_bounty', 'helper-first'),
@@ -126,7 +126,7 @@ select is(
   row('cancelled', 'selected')::text, 'the bounty is cancelled and the application stays selected'
 );
 select is(
-  pg_temp.call('preview-second', '00000000-0000-0000-0000-0000000000b2', 'bounty_cancel_preview', 'helper-second'),
+  pg_temp.call('preview-second', '00000000-0000-0000-0000-0000000000b2', 'bounty_cancel_preview', 'helper-second') - 'waiverBackAt',
   '{"offender": "self", "waiverAvailable": false}'::jsonb, 'the next preview shows the waiver is used'
 );
 select is(
@@ -146,15 +146,15 @@ select is(pg_temp.no_shows('poster-en-route'), array['A waived'], 'the no-show i
 create temp table footprint_before as select pg_temp.footprint() as f;
 select is(
   pg_temp.call('preview-31', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview', 'late-31'),
-  '{"offender": "other", "waiverAvailable": null}'::jsonb,
+  '{"offender": "other", "waiverAvailable": null, "waiverBackAt": null}'::jsonb,
   '31 minutes after the start the preview names the helper'
 );
 select is(
-  pg_temp.call('preview-29', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview', 'late-29'),
+  pg_temp.call('preview-29', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview', 'late-29') - 'waiverBackAt',
   '{"offender": "self", "waiverAvailable": false}'::jsonb, '29 minutes after the start the preview names the poster'
 );
 select is(
-  pg_temp.call('preview-none', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview', 'no-start'),
+  pg_temp.call('preview-none', '00000000-0000-0000-0000-0000000000a1', 'bounty_cancel_preview', 'no-start') - 'waiverBackAt',
   '{"offender": "self", "waiverAvailable": false}'::jsonb, 'without a start time the preview names the poster'
 );
 select is(pg_temp.footprint(), (select f from footprint_before), 'previews write nothing');
@@ -258,7 +258,7 @@ update public.reputation_events set created_at = now() - interval '61 days'
 where kind = 'no_show' and item_id = pg_temp.fx('helper-first');
 select is(
   pg_temp.call('preview-later', '00000000-0000-0000-0000-0000000000b2', 'bounty_cancel_preview', 'helper-later'),
-  '{"offender": "self", "waiverAvailable": true}'::jsonb,
+  '{"offender": "self", "waiverAvailable": true, "waiverBackAt": null}'::jsonb,
   'a waiver used 61 days ago is available again although counted no-shows are recent'
 );
 select is(

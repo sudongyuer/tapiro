@@ -19,7 +19,7 @@ import { BlockMenu } from '../block/BlockMenu';
 import { useBlockPoster } from '../block/hooks';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
-import { NotSelectedActions, SelectedActions, SelectedAddress } from './OutcomeActions';
+import { NotSelectedActions, PartyActions, SelectedAddress } from './OutcomeActions';
 import { shownView, type DetailAction, type DetailView } from './detailState';
 import { useDetail } from './useDetail';
 
@@ -30,9 +30,18 @@ type Props = {
   onGone: () => void;
   onBlocked: () => void;
   onBrowse: () => void;
+  onProgress: (id: string) => void;
 };
 
-export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked, onBrowse }: Props) {
+export function BountyDetailScreen({
+  id,
+  userId,
+  onApply,
+  onGone,
+  onBlocked,
+  onBrowse,
+  onProgress,
+}: Props) {
   const { t, language } = useI18n();
   const { state, retry } = useDetail(id, userId);
   const withdrawal = useWithdraw(id, () => void retry());
@@ -78,7 +87,6 @@ export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked, onB
       <BlockMenu poster={poster} state={blocking.state} onAsk={blocking.ask} />
       <SheetFrame
         testID="bounty-detail"
-        pinnedAbove="tabBar"
         notice={
           <>
             {notice === 'notPending' ? (
@@ -130,6 +138,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked, onB
               current={state.kind === 'ready'}
               onApply={() => onApply(id)}
               onBrowse={onBrowse}
+              onProgress={() => onProgress(id)}
               withdrawal={withdrawal}
             />
           </>
@@ -159,6 +168,7 @@ function DetailActions({
   current,
   onApply,
   onBrowse,
+  onProgress,
   withdrawal,
 }: {
   view: DetailView;
@@ -166,11 +176,19 @@ function DetailActions({
   current: boolean;
   onApply: () => void;
   onBrowse: () => void;
+  onProgress: () => void;
   withdrawal: ReturnType<typeof useWithdraw>;
 }) {
   const { t } = useI18n();
-  if (view.action === 'none') return null;
-  if (view.action === 'selected') return <SelectedActions name={name} />;
+  if (view.action === 'none' || view.action === 'selected' || view.action === 'cancelled') {
+    return (
+      <PartyActions
+        outcome={view.action === 'none' ? null : view.action}
+        name={name}
+        onProgress={view.progress ? onProgress : null}
+      />
+    );
+  }
   if (view.action === 'notSelected') {
     return <NotSelectedActions name={name} note={view.note} onBrowse={onBrowse} />;
   }

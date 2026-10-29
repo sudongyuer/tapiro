@@ -29,6 +29,22 @@ describe('fixtureLiveItems', () => {
   });
 });
 
+describe('bounty fixtures', () => {
+  test('bounty cards are opt-in and carry their detail; only one-time cards get the seen hook', async () => {
+    expect(fixtureLiveItems(undefined).accessory.some((item) => item.kind === 'bountyAction')).toBe(
+      false,
+    );
+    const seen: string[] = [];
+    const feed = fixtureLiveItems('bountyAction,bountyOneTime', 'demo', async (id) => {
+      seen.push(id);
+    }).accessory;
+    expect(feed.map((item) => item.bounty?.kind)).toEqual(['waitingConfirm', 'bountyAction']);
+    expect(feed[1].bounty?.markSeen).toBeUndefined();
+    await feed[0].bounty?.markSeen?.();
+    expect(seen).toEqual(['fixture-bounty-02']);
+  });
+});
+
 describe('fixtureLiveItems variants', () => {
   test('worst keeps the selected kinds and ids and raises the badge past 99', () => {
     const demo = fixtureLiveItems('oweMoney,rideSoon');

@@ -18,6 +18,9 @@ export default function BountyDetailRoute() {
       }
       onGone={() => router.back()}
       onBlocked={() => router.back()}
+      onProgress={(bounty) =>
+        router.push({ pathname: '/bounty/status/[id]', params: { id: bounty } })
+      }
       onBrowse={() => {
         homeSignals.requestTop();
         router.dismissTo('/bounty');

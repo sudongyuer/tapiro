@@ -351,6 +351,15 @@ describe('outcomes and the poster view', () => {
     });
   });
 
+  test('selectedCancelled: the chosen helper of a bounty cancelled after selection', async () => {
+    expect(await detailOf(service({ detail: 'selectedCancelled' }))).toMatchObject({
+      status: 'cancelled',
+      viewerRole: 'helper',
+      helper: FIXTURE_ME,
+      myApplication: { status: 'selected' },
+    });
+  });
+
   test('selected: the helper sees the address and themselves as helper', async () => {
     const board = service({ detail: 'selected' });
     expect(await detailOf(board)).toMatchObject({
@@ -390,7 +399,10 @@ describe('outcomes and the poster view', () => {
     let helper: Person | null = null;
     let posted = false;
     const board = service({
-      posterView: (id) => (posted && id === 'fixture-bounty-01' ? { helper } : null),
+      posterView: (id) =>
+        posted && id === 'fixture-bounty-01'
+          ? { helper, status: helper ? 'assigned' : 'open' }
+          : null,
     });
     expect(await detailOf(board)).toMatchObject({ viewerRole: 'viewer', address: null });
     posted = true;

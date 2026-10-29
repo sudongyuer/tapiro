@@ -1,5 +1,5 @@
 """With a free post left, the confirm screen previews the draft (title, RM 8), reads 本月免费 · 还剩 2/3, and pins 发出去
-below the form; 发出去 closes the sheet back to 悬赏 and the next 「+」 opens an empty form. The video shows the tap."""
+at the bottom over the list; 发出去 closes the sheet back to 悬赏 and the next 「+」 opens an empty form. The video shows the tap."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))

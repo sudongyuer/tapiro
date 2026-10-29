@@ -1,7 +1,5 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
-import { FIXTURE_ACCESSORY } from '@/lib/liveItems';
-
-import type { CardDetail } from './homeModel';
+import { FIXTURE_ACCESSORY, type CardDetail } from '@/lib/liveItems';
 
 const DEMO_DETAILS: Readonly<Record<string, CardDetail>> = {
   [FIXTURE_ACCESSORY.oweMoney.id]: {
@@ -31,14 +29,6 @@ const DEMO_DETAILS: Readonly<Record<string, CardDetail>> = {
     amountSen: 800,
     note: '帮带一杯咖啡 · 今天下午',
     category: 'buy',
-  },
-  [FIXTURE_ACCESSORY.bountyInProgress.id]: {
-    kind: 'bountyInProgress',
-    helper: 'Aiman',
-    when: '今晚 8 点 · 线上',
-    title: '讲一下微积分作业',
-    amountSen: 2000,
-    category: 'study',
   },
 };
 
@@ -71,14 +61,6 @@ const WORST_DETAILS: Readonly<Record<string, CardDetail>> = {
     note: '帮忙在 Sunway Pyramid 的 ZUS Coffee 带一杯 Spanish Latte（少冰、燕麦奶）· 今天下午 3:15',
     category: 'buy',
   },
-  [FIXTURE_ACCESSORY.bountyInProgress.id]: {
-    kind: 'bountyInProgress',
-    helper: 'Christopher Alexander Montgomery III',
-    when: '明天下午 2:30 · Sunway University Library Level 3 讨论室 3.14',
-    title: 'MAT2023 Calculus II 第 7 次作业：Taylor 级数和分部积分 Q3–Q9（周五 23:59 截止）',
-    amountSen: 125000,
-    category: 'study',
-  },
 };
 
 const ONE_DETAILS: Readonly<Record<string, CardDetail>> = {
@@ -109,14 +91,6 @@ const ONE_DETAILS: Readonly<Record<string, CardDetail>> = {
     amountSen: 100,
     note: '咖啡',
     category: 'buy',
-  },
-  [FIXTURE_ACCESSORY.bountyInProgress.id]: {
-    kind: 'bountyInProgress',
-    helper: 'Jo',
-    when: '今晚',
-    title: '讲题',
-    amountSen: 100,
-    category: 'study',
   },
 };
 

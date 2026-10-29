@@ -1,34 +1,41 @@
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import type { BountyCardDetail, OwedDetail } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { vars } from '@/ui/theme/tokens';
 
-import { moneyText, type OwedDetail, type ProgressDetail } from '../homeModel';
+import { moneyText } from '../homeModel';
 import { CardHeader, CardText, Pill } from './cardParts';
 import { useStackedBeside } from './useStackedBeside';
 
-export function ProgressCard({ detail }: { detail: ProgressDetail }) {
+const TAG = {
+  bountyAction: 'home.card.bounty.tag.action',
+  bountyInProgress: 'home.card.bounty.tag.inProgress',
+  waitingConfirm: 'home.card.bounty.tag.waiting',
+} as const;
+
+export function BountyCard({ detail }: { detail: BountyCardDetail }) {
   const { t } = useI18n();
-  const { ink, surface } = useLiveCardPaint('progress');
+  const tone = detail.kind === 'waitingConfirm' ? 'calm' : 'progress';
+  const { ink, surface, urgentDot } = useLiveCardPaint(tone);
+  const action = detail.kind === 'bountyAction' ? detail.actionLabel : undefined;
   return (
-    <LiveCard tone="progress" hanging={<CategorySticker category={detail.category} size={52} />}>
-      <CardHeader left={<Pill ink={ink}>{t('home.card.progress.tag')}</Pill>} />
+    <LiveCard tone={tone} hanging={<CategorySticker category={detail.category} size={52} />}>
+      <CardHeader
+        left={
+          <Pill ink={ink} dot={detail.kind === 'bountyAction' ? urgentDot : undefined}>
+            {t(TAG[detail.kind])}
+          </Pill>
+        }
+      />
       <CardText variant="secondary" ink={ink} muted style={styles.note}>
-        {`${detail.when} · ${t('home.card.progress.helper', { name: detail.helper })}`}
+        {detail.line}
       </CardText>
-      <TitleRow ink={ink} title={detail.title} amountSen={detail.amountSen} />
-      <View style={styles.actions}>
-        <InertAction
-          label={t('home.card.progress.message', { name: detail.helper })}
-          fill={ink}
-          ink={surface}
-          wide
-        />
-        <InertAction label={t('home.card.progress.details')} ink={ink} />
-      </View>
+      <TitleRow ink={ink} title={detail.title} amountSen={detail.rewardSen} />
+      {action ? <ActionPill label={action} fill={ink} ink={surface} /> : null}
     </LiveCard>
   );
 }
@@ -71,34 +78,10 @@ function TitleRow({ ink, title, amountSen }: { ink: string; title: string; amoun
   );
 }
 
-function InertAction({
-  label,
-  ink,
-  fill,
-  wide = false,
-}: {
-  label: string;
-  ink: string;
-  fill?: string;
-  wide?: boolean;
-}) {
-  const { t } = useI18n();
+function ActionPill({ label, ink, fill }: { label: string; ink: string; fill: string }) {
   return (
-    <View
-      accessible
-      accessibilityRole="button"
-      accessibilityState={{ disabled: true }}
-      accessibilityLabel={label}
-      accessibilityHint={t('home.soon')}
-      style={[styles.action, wide && styles.wide]}
-    >
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          styles.actionFill,
-          fill ? { backgroundColor: fill } : [styles.faint, { backgroundColor: ink }],
-        ]}
-      />
+    <View style={styles.action}>
+      <View style={[StyleSheet.absoluteFill, styles.actionFill, { backgroundColor: fill }]} />
       <AppText variant="secondary" numberOfLines={1} style={[styles.actionText, { color: ink }]}>
         {label}
       </AppText>
@@ -119,8 +102,8 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontWeight: '700' },
   titleFull: { fontWeight: '700' },
   amountStacked: { textAlign: 'right' },
-  actions: { flexDirection: 'row', gap: vars['--space-2'], marginTop: vars['--space-4'] },
   action: {
+    marginTop: vars['--space-4'],
     minHeight: vars['--touch-min'],
     paddingHorizontal: vars['--space-4'],
     borderRadius: vars['--radius-pill'],
@@ -128,8 +111,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  wide: { flex: 1 },
   actionFill: { borderRadius: vars['--radius-pill'] },
-  faint: { opacity: 0.08 },
   actionText: { fontWeight: '700' },
 });

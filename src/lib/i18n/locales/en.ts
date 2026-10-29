@@ -184,7 +184,7 @@ const en: Translation = {
       pay: 'You have a payment to make',
       rideMinutes: 'Leaving in {{count}} min, don’t be late',
       owedNamed: '{{name}} says they paid you — check it',
-      progressNamed: '{{name}} is helping you — message them anytime',
+      bounty: '{{title}} · {{line}}',
       live: 'Something’s in progress, I’m keeping an eye on it',
       calm: 'Nothing on today… post a bounty?',
     },
@@ -229,11 +229,15 @@ const en: Translation = {
         tag: 'Confirm',
         title: '{{name}} says they paid you',
       },
-      progress: {
-        tag: 'Your post · in progress',
-        helper: '{{name}} took it',
-        message: 'Message {{name}}',
-        details: 'Details',
+      bounty: {
+        tag: {
+          action: 'Needs you',
+          inProgress: 'In progress',
+          waiting: 'Waiting on them',
+        },
+        line: '{{title}} · {{line}}',
+        label: '{{title}}, {{line}}, reward {{reward}}',
+        details: 'View',
       },
       calm: {
         tag: 'Nothing pending today',
@@ -273,6 +277,7 @@ const en: Translation = {
       board: 'Bounty board',
       detail: 'Bounty detail',
       applicants: 'Choose a helper (applicants)',
+      status: 'Status page (state × role)',
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },

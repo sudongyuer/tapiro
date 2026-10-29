@@ -2,6 +2,7 @@ import { useRouter, useSegments } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import { useSignedInUser } from '@/features/account';
+import { useLiveBounties } from '@/features/bounty';
 import { useLivePayments } from '@/features/payment';
 import {
   UrgentAccessory,
@@ -25,6 +26,7 @@ export default function TabsLayout() {
   const router = useRouter();
   const userId = useSignedInUser()?.id ?? null;
   useLivePayments(userId);
+  useLiveBounties(userId);
   useLiveStickers(userId);
   const location = useTabLocation(useSegments());
   const feed = useLiveItems();

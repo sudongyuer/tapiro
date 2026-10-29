@@ -1,8 +1,9 @@
 """The applicant's two outcomes in the detail (53A, 54A). Not selected: 这次没选上 with 小林选了别人…, 你写的 with the note,
 no 已申请 stamp and the sticker untilted (its rotated frame is as narrow as the sticker, while the applied fixture's tilted
 sticker is wider); the fixture recorded exactly one seen mark for the bounty after the load; 看看附近别的悬赏 pops to the
-board and scrolls it back to the top. Selected: 小林选了你 pinned, and the exact address A 座 12-03 in a grouped row with
-the footer naming 小林."""
+board and scrolls it back to the top. Selected: 小林选了你 and 看进度 pinned (at least 44 pt), and the exact address
+A 座 12-03 in a grouped row with the footer naming 小林; 看进度 pushes the helper's status screen (该出发了). Cancelled after
+selection: 这单取消了 and 看进度 pinned, without 小林选了你 or the address; 看进度 pushes the status screen reading 这单取消了."""
 import json
 import sys
 import time
@@ -19,6 +20,8 @@ DEPS = ['src/features/bounty/', 'src/app/(tabs)/bounty/', 'src/features/home/use
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyDetail', 'notSelected']
+FIRST = ['-uiVerifyDetail', 'notSelected']
+HELPER = ['-uiVerifyBountyRole', 'helper']
 BOUNTY = 'fixture-bounty-01'
 CARD = f'bounty-card-{BOUNTY}'
 TILTED_CARD = 'bounty-card-fixture-bounty-03'
@@ -58,6 +61,19 @@ def stamp_ink(name):
     shot = ui.snap(name)
     assert_grouped_background(ui, shot, {'x': 0, 'y': title['y'], 'width': 12, 'height': title['height']}, name)
     return ink_box(shot, band, token('--color-success', ui.appearance), 40)
+
+
+def progress_to_status(summary_key, shot):
+    button = ui.element('bounty-detail-progress')
+    assert button.get('AXLabel') == ui.t('bounty.status.action.view'), button.get('AXLabel')
+    assert_touch_target(button, ui.t('bounty.status.action.view'))
+    ui.at_rest()
+    ui.tap('bounty-detail-progress')
+    ui.wait_label('bounty-status-summary', lambda text: text == ui.t(summary_key),
+                  f'看进度 did not push the status screen reading {ui.t(summary_key)}')
+    ui.element('bounty-status-step-selected')
+    ui.at_rest()
+    ui.capture(shot)
 
 
 def back_to_board():
@@ -119,7 +135,7 @@ tilted = ui.element(STICKER)['frame']
 assert tilted['width'] >= STICKER_PT + TILT_GROWTH, f'the applied fixture sticker is not tilted, so the check is moot: {tilted}'
 back_to_board()
 
-relaunch(ui, drop=['-uiVerifyDetail', 'notSelected'], add=['-uiVerifyDetail', 'selected'])
+relaunch(ui, drop=FIRST, add=['-uiVerifyDetail', 'selected', *HELPER])
 open_detail(CARD)
 ui.wait_label('bounty-detail-selected', lambda text: text == ui.t('bounty.detail.selected.title', name='小林'),
               'the detail never shows 小林选了你')
@@ -133,4 +149,20 @@ for absent in ('bounty-detail-stamp', 'bounty-detail-not-selected', 'bounty-deta
 ui.at_rest()
 stamp_ink('03-selected')
 assert seen_marks() == [], f'a selected detail recorded a not-selected seen mark: {seen_marks()}'
-print('PASS: 这次没选上 untilted without a stamp, one seen mark, back to the board top; 小林选了你 with A 座 12-03')
+progress_to_status('bounty.status.summary.helper.assigned', '04-selected-status')
+
+relaunch(ui, drop=FIRST, add=['-uiVerifyDetail', 'selectedCancelled', *HELPER, '-uiVerifyBountyStatus', 'cancelled'])
+open_detail(CARD)
+ui.wait_label('bounty-detail-cancelled', lambda text: text == ui.t('bounty.status.cancelled'),
+              'the cancelled detail never shows 这单取消了')
+items = ui.read()
+for absent in ('bounty-detail-selected', 'bounty-detail-address', 'bounty-detail-apply', 'bounty-detail-stamp'):
+    assert by_id(items, absent) is None, f'{absent} is shown on a detail cancelled after selection'
+assert not any((item.get('AXLabel') or '') == ui.t('bounty.detail.selected.title', name='小林') for item in items), \
+    '小林选了你 is still shown after the cancel'
+ui.at_rest()
+ui.capture('05-cancelled')
+progress_to_status('bounty.status.summary.helper.cancelled', '06-cancelled-status')
+assert by_id(ui.read(), 'bounty-status-address') is None, 'the status screen shows the address after a cancel'
+print('PASS: 这次没选上 untilted without a stamp, one seen mark, back to the board top; 小林选了你 with A 座 12-03 and '
+      '看进度; cancelled after selection shows 这单取消了 and 看进度 to the status screen without the address')

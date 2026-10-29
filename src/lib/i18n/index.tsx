@@ -6,6 +6,7 @@ import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next
 import { FALLBACK_LANGUAGE, LANGUAGES, isLanguage, type Language } from './languages';
 import { resolveLanguage } from './resolve';
 import { resources } from './resources';
+import { sentenceStart, sentenceStartOptions } from './sentenceStart';
 import { readStoredLanguage, writeStoredLanguage } from './storage';
 
 export { LANGUAGES, type Language } from './languages';
@@ -14,13 +15,17 @@ const i18next = createInstance();
 
 export function initI18n() {
   if (i18next.isInitialized) return i18next;
-  i18next.use(initReactI18next).init({
-    resources,
-    lng: resolveLanguage({ stored: readStoredLanguage(), systemLocales: getLocales() }),
-    fallbackLng: FALLBACK_LANGUAGE,
-    initAsync: false,
-    interpolation: { escapeValue: false },
-  });
+  i18next
+    .use(initReactI18next)
+    .use(sentenceStart)
+    .init({
+      ...sentenceStartOptions,
+      resources,
+      lng: resolveLanguage({ stored: readStoredLanguage(), systemLocales: getLocales() }),
+      fallbackLng: FALLBACK_LANGUAGE,
+      initAsync: false,
+      interpolation: { escapeValue: false },
+    });
   return i18next;
 }
 

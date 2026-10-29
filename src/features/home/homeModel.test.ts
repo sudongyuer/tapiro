@@ -1,24 +1,47 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { AccessoryItem, AccessoryKind } from '@/lib/liveItems';
+import {
+  accessoryPriority,
+  type AccessoryItem,
+  type AccessoryKind,
+  type BountyCardDetail,
+  type CardDetail,
+} from '@/lib/liveItems';
 
 import {
+  createSeenMarks,
   liveCards,
   moneyParts,
   moneyText,
+  shownOneTimeCards,
   stageLine,
   stageState,
-  type CardDetail,
 } from './homeModel';
 
 const PRIORITY: AccessoryKind[] = ['oweMoney', 'rideSoon', 'owedToYou', 'bountyInProgress'];
 const priority = (kind: AccessoryKind) => PRIORITY.indexOf(kind) + 1;
 
+const bounty = (kind: BountyCardDetail['kind'], extra: Partial<BountyCardDetail> = {}) => {
+  const detail: BountyCardDetail = {
+    kind,
+    role: 'poster',
+    bountyId: `b-${kind}`,
+    title: '帮取快递',
+    category: 'pickup',
+    rewardSen: 800,
+    counterpart: '阿杰',
+    line: '阿杰在路上 · 17:40 到',
+    target: `/bounty/status/b-${kind}`,
+    ...extra,
+  };
+  return { id: `b-${kind}`, kind, title: detail.title, sub: detail.line, bounty: detail };
+};
+
 const item = (kind: AccessoryKind): AccessoryItem => ({ id: kind, kind, title: kind, sub: '' });
 const owe = item('oweMoney');
 const ride = item('rideSoon');
 const owed = item('owedToYou');
-const progress = item('bountyInProgress');
+const progress = bounty('bountyInProgress');
 
 const DETAILS: Record<string, CardDetail> = {
   oweMoney: {
@@ -43,14 +66,6 @@ const DETAILS: Record<string, CardDetail> = {
     riders: [],
   },
   owedToYou: { kind: 'owedToYou', payer: '小林', amountSen: 800, note: '', category: 'buy' },
-  bountyInProgress: {
-    kind: 'bountyInProgress',
-    helper: 'Aiman',
-    when: '',
-    title: '',
-    amountSen: 2000,
-    category: 'study',
-  },
 };
 
 describe('stageState', () => {
@@ -98,14 +113,17 @@ describe('stageLine', () => {
       count: 8,
     });
     expect(stageLine(liveCards([progress], DETAILS, priority))).toEqual({
-      key: 'progressNamed',
-      name: 'Aiman',
+      key: 'bounty',
+      title: '帮取快递',
+      line: '阿杰在路上 · 17:40 到',
     });
   });
 
   test('falls back to a plain line without detail', () => {
     expect(stageLine(liveCards([owe], {}, priority))).toEqual({ key: 'pay' });
-    expect(stageLine(liveCards([progress], {}, priority))).toEqual({ key: 'live' });
+    expect(stageLine(liveCards([item('bountyInProgress')], {}, priority))).toEqual({
+      key: 'live',
+    });
     expect(stageLine(liveCards([], {}, priority))).toEqual({ key: 'calm' });
   });
 });
@@ -186,5 +204,92 @@ describe('payments that are not known', () => {
     expect(liveCards([ride], DETAILS, priority, issues).map((card) => card.kind)).toEqual([
       'rideSoon',
     ]);
+  });
+});
+
+describe('bounty cards', () => {
+  const action = bounty('bountyAction', { line: '3 人申请，去选', actionLabel: '去选人' });
+  const waiting = bounty('waitingConfirm', { line: '等人申请' });
+
+  test('a bounty that needs you ranks after money owed to you and before one in progress', () => {
+    const cards = liveCards(
+      [waiting, progress, action, owed, ride, owe],
+      DETAILS,
+      accessoryPriority,
+    );
+    expect(cards.map((card) => card.kind)).toEqual([
+      'oweMoney',
+      'rideSoon',
+      'owedToYou',
+      'bountyAction',
+      'bountyInProgress',
+      'waitingConfirm',
+    ]);
+  });
+
+  test('each bounty card carries the detail its item published', () => {
+    const [card] = liveCards([action], {}, accessoryPriority);
+    expect('detail' in card && card.detail).toBe(action.bounty);
+  });
+
+  test('a front bounty card puts its title and step on the stage', () => {
+    expect(stageLine(liveCards([waiting, action], {}, accessoryPriority))).toEqual({
+      key: 'bounty',
+      title: '帮取快递',
+      line: '3 人申请，去选',
+    });
+  });
+});
+
+describe('one-time cards', () => {
+  const oneTime = (id: string, markSeen: () => Promise<void>) =>
+    bounty('waitingConfirm', { bountyId: id, oneTime: 'not_selected', markSeen });
+
+  test('only the front card counts as shown while stacked; every card once fanned out', () => {
+    const seen = async () => undefined;
+    const cards = liveCards(
+      [bounty('bountyAction'), { ...oneTime('x', seen), id: 'x' }],
+      {},
+      accessoryPriority,
+    );
+    expect(shownOneTimeCards(cards, false)).toEqual([]);
+    expect(shownOneTimeCards(cards, true).map((card) => card.id)).toEqual(['x']);
+  });
+
+  test('marks a shown card once per launch across renders and redisplays', async () => {
+    const calls: string[] = [];
+    const card = { ...oneTime('x', async () => void calls.push('x')), id: 'x' };
+    const mark = createSeenMarks();
+    const shown = shownOneTimeCards(liveCards([card], {}, accessoryPriority), false);
+    mark(shown);
+    mark(shown);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    mark([]);
+    mark(shown);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(calls).toEqual(['x']);
+  });
+
+  test('a failed mark is retried on the next display, not while it stays shown', async () => {
+    let attempts = 0;
+    const card = {
+      ...oneTime('y', async () => {
+        attempts += 1;
+        if (attempts === 1) throw new Error('offline');
+      }),
+      id: 'y',
+    };
+    const mark = createSeenMarks();
+    const shown = shownOneTimeCards(liveCards([card], {}, accessoryPriority), false);
+    mark(shown);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    mark(shown);
+    expect(attempts).toBe(1);
+    mark([]);
+    mark(shown);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    mark([]);
+    mark(shown);
+    expect(attempts).toBe(2);
   });
 });

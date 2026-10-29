@@ -1,49 +1,12 @@
-import type { AccessoryItem, AccessoryKind, SourceIssue } from '@/lib/liveItems';
+import type {
+  AccessoryItem,
+  AccessoryKind,
+  BountyCardDetail,
+  CardDetail,
+  SourceIssue,
+} from '@/lib/liveItems';
 import { formatRinggitParts } from '@/lib/money';
-import type { StickerCategory } from '@/ui/CategorySticker';
 import type { StageState } from '@/ui/MascotStage';
-
-export type PayDetail = {
-  kind: 'oweMoney';
-  paymentId: string | null;
-  payee: string;
-  amountSen: number;
-  note: string;
-  category: StickerCategory;
-};
-
-export type RideDetail = {
-  kind: 'rideSoon';
-  departAt: string;
-  route: string;
-  countdown: string;
-  minutesLeft: number;
-  seats: string;
-  youBook: boolean;
-  meet: string;
-  destination: string;
-  progress: number;
-  riders: readonly string[];
-};
-
-export type OwedDetail = {
-  kind: 'owedToYou';
-  payer: string;
-  amountSen: number;
-  note: string;
-  category: StickerCategory;
-};
-
-export type ProgressDetail = {
-  kind: 'bountyInProgress';
-  helper: string;
-  when: string;
-  title: string;
-  amountSen: number;
-  category: StickerCategory;
-};
-
-export type CardDetail = PayDetail | RideDetail | OwedDetail | ProgressDetail;
 
 export type LiveCardModel =
   | { kind: 'calm'; id: 'calm' }
@@ -84,7 +47,7 @@ function sortedCards(
     .map((item, index) => ({ item, index }))
     .sort((a, b) => priority(a.item.kind) - priority(b.item.kind) || a.index - b.index)
     .map(({ item }) => {
-      const detail = details[item.id] ?? paymentDetail(item);
+      const detail = details[item.id] ?? paymentDetail(item) ?? item.bounty;
       return {
         kind: item.kind,
         id: item.id,
@@ -126,7 +89,7 @@ export type StageLine =
   | { key: 'pay' }
   | { key: 'rideMinutes'; count: number }
   | { key: 'owedNamed'; name: string }
-  | { key: 'progressNamed'; name: string }
+  | { key: 'bounty'; title: string; line: string }
   | { key: 'live' }
   | { key: 'calm' };
 
@@ -142,8 +105,10 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
       return { key: 'rideMinutes', count: detail.minutesLeft };
     case 'owedToYou':
       return { key: 'owedNamed', name: detail.payer };
+    case 'bountyAction':
     case 'bountyInProgress':
-      return { key: 'progressNamed', name: detail.helper };
+    case 'waitingConfirm':
+      return { key: 'bounty', title: detail.title, line: detail.line };
     default:
       return front.kind === 'oweMoney' ? { key: 'pay' } : { key: 'live' };
   }
@@ -156,4 +121,42 @@ export function moneyParts(amountSen: number, locale: string) {
 export function moneyText(amountSen: number, locale: string) {
   const { whole, cents } = moneyParts(amountSen, locale);
   return cents === '.00' ? whole : `${whole}${cents}`;
+}
+
+export function bountyDetail(card: LiveCardModel): BountyCardDetail | null {
+  if (!('detail' in card) || !card.detail) return null;
+  const { detail } = card;
+  return detail.kind === 'bountyAction' ||
+    detail.kind === 'bountyInProgress' ||
+    detail.kind === 'waitingConfirm'
+    ? detail
+    : null;
+}
+
+export type SeenCard = { id: string; markSeen: () => Promise<void> };
+
+export function shownOneTimeCards(cards: readonly LiveCardModel[], open: boolean): SeenCard[] {
+  return (open ? cards : cards.slice(0, 1)).flatMap((card) => {
+    const detail = bountyDetail(card);
+    return detail?.oneTime && detail.markSeen ? [{ id: card.id, markSeen: detail.markSeen }] : [];
+  });
+}
+
+export function createSeenMarks() {
+  const marked = new Set<string>();
+  const pending = new Set<string>();
+  let shown = new Set<string>();
+  return (cards: readonly SeenCard[]) => {
+    for (const { id, markSeen } of cards) {
+      if (shown.has(id) || marked.has(id) || pending.has(id)) continue;
+      pending.add(id);
+      markSeen()
+        .then(
+          () => marked.add(id),
+          () => undefined,
+        )
+        .finally(() => pending.delete(id));
+    }
+    shown = new Set(cards.map((card) => card.id));
+  };
 }

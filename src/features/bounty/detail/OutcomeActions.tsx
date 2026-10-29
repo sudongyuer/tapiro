@@ -23,18 +23,43 @@ export function SelectedAddress({ name, address }: { name: string; address: stri
   );
 }
 
-export function SelectedActions({ name }: { name: string }) {
+function ProgressButton({ onProgress }: { onProgress: () => void }) {
   const { t } = useI18n();
   return (
+    <PillButton
+      label={t('bounty.status.action.view')}
+      onPress={onProgress}
+      testID="bounty-detail-progress"
+    />
+  );
+}
+
+export function PartyActions({
+  outcome,
+  name,
+  onProgress,
+}: {
+  outcome: 'selected' | 'cancelled' | null;
+  name: string;
+  onProgress: (() => void) | null;
+}) {
+  const { t } = useI18n();
+  if (outcome === null && onProgress === null) return null;
+  return (
     <SheetActions>
-      <AppText
-        variant="body"
-        accessibilityRole="text"
-        testID="bounty-detail-selected"
-        style={styles.selected}
-      >
-        {t('bounty.detail.selected.title', { name })}
-      </AppText>
+      {outcome ? (
+        <AppText
+          variant="body"
+          accessibilityRole="text"
+          testID={`bounty-detail-${outcome}`}
+          style={styles.selected}
+        >
+          {outcome === 'selected'
+            ? t('bounty.detail.selected.title', { name })
+            : t('bounty.status.cancelled')}
+        </AppText>
+      ) : null}
+      {onProgress ? <ProgressButton onProgress={onProgress} /> : null}
     </SheetActions>
   );
 }

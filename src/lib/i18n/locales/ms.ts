@@ -188,7 +188,7 @@ const ms: Translation = {
       pay: 'Ada bayaran yang perlu dibuat',
       rideMinutes: 'Bertolak dalam {{count}} minit, jangan lewat',
       owedNamed: '{{name}} kata dah bayar anda — semak',
-      progressNamed: '{{name}} sedang membantu — hantar mesej bila-bila',
+      bounty: '{{title}} · {{line}}',
       live: 'Ada urusan berjalan, Tapir tolong perhatikan',
       calm: 'Tiada apa hari ini… mahu siarkan ganjaran?',
     },
@@ -233,11 +233,15 @@ const ms: Translation = {
         tag: 'Perlu disahkan',
         title: '{{name}} kata dah bayar anda',
       },
-      progress: {
-        tag: 'Siaran anda · sedang berjalan',
-        helper: '{{name}} ambil',
-        message: 'Mesej {{name}}',
-        details: 'Butiran',
+      bounty: {
+        tag: {
+          action: 'Perlu tindakan anda',
+          inProgress: 'Sedang berjalan',
+          waiting: 'Menunggu pihak lain',
+        },
+        line: '{{title}} · {{line}}',
+        label: '{{title}}, {{line}}, ganjaran {{reward}}',
+        details: 'Lihat',
       },
       calm: {
         tag: 'Tiada urusan tertunggak hari ini',
@@ -277,6 +281,7 @@ const ms: Translation = {
       board: 'Papan ganjaran',
       detail: 'Butiran ganjaran',
       applicants: 'Pilih pembantu (pemohon)',
+      status: 'Halaman status (keadaan × peranan)',
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },

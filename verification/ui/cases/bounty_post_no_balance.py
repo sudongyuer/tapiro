@@ -47,6 +47,7 @@ ui.capture('01-no-balance')
 assert_preview(ui, DEMO_TITLE, '8')
 items = sheet_items(json.loads(ui.axe('describe-ui')))
 sheet = by_id(items, 'bounty-post-confirm')['frame']
-below = [i for i in items if i.get('type') == 'Button' and i['frame']['y'] >= sheet['y'] + sheet['height'] - 1]
-assert [i.get('AXUniqueId') for i in below] == ['bounty-post-publish'], f'unexpected actions under the form: {below}'
+bar = button['frame']['y'] - 1
+below = [i for i in items if i.get('type') == 'Button' and bar <= i['frame']['y'] <= sheet['y'] + sheet['height']]
+assert [i.get('AXUniqueId') for i in below] == ['bounty-post-publish'], f'unexpected actions in the pinned bar: {below}'
 print('PASS: no balance shows the notice and a disabled 需要 1 貘币 without a purchase')

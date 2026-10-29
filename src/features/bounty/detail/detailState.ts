@@ -1,7 +1,8 @@
 import type { BoardRow, BountyDetail, Person } from '../board/types';
+import { partyOutcome, showsProgress } from '../shared/partyOutcome';
 
 export type DetailAction =
-  'apply' | 'applied' | 'closed' | 'taken' | 'selected' | 'notSelected' | 'none';
+  'apply' | 'applied' | 'closed' | 'taken' | 'selected' | 'cancelled' | 'notSelected' | 'none';
 
 export type DetailView = {
   id: string;
@@ -18,9 +19,8 @@ export type DetailView = {
   action: DetailAction;
   note: string | null;
   address: string | null;
+  progress: boolean;
 };
-
-const TAKEN = ['assigned', 'en_route', 'done', 'disputed', 'confirmed'];
 
 export const hasOutcome = (detail: BountyDetail) =>
   detail.viewerRole === 'helper' ||
@@ -28,11 +28,12 @@ export const hasOutcome = (detail: BountyDetail) =>
   detail.myApplication?.status === 'not_selected';
 
 export function detailAction(detail: BountyDetail, now: Date): DetailAction {
-  if (detail.viewerRole === 'helper') return 'selected';
+  const outcome = partyOutcome(detail.status);
+  if (detail.viewerRole === 'helper') return outcome ?? 'none';
   if (detail.myApplication?.status === 'not_selected') return 'notSelected';
-  if (detail.viewerRole === 'poster') return 'none';
+  if (detail.viewerRole === 'poster') return outcome === 'cancelled' ? 'cancelled' : 'none';
   if (detail.myApplication?.status === 'pending') return 'applied';
-  if (TAKEN.includes(detail.status)) return 'taken';
+  if (outcome === 'selected') return 'taken';
   if (detail.status === 'open' && new Date(detail.expiresAt).getTime() > now.getTime()) {
     return 'apply';
   }
@@ -55,6 +56,7 @@ export function viewOfRow(row: BoardRow): DetailView {
     action: row.appliedByMe ? 'applied' : 'apply',
     note: null,
     address: null,
+    progress: false,
   };
 }
 
@@ -78,6 +80,7 @@ export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
         ? (detail.myApplication?.note ?? null)
         : null,
     address: action === 'selected' ? detail.address : null,
+    progress: showsProgress(detail.viewerRole, detail.status),
   };
 }
 

@@ -23,7 +23,14 @@ import {
 
 export const BOARD_FAILURES = ['none', 'first', 'refresh', 'page'] as const;
 export const APPLY_MODES = ['ok', 'failOnce', 'taken', 'closed', 'gone'] as const;
-export const DETAIL_MODES = ['ok', 'failOnce', 'gone', 'notSelected', 'selected'] as const;
+export const DETAIL_MODES = [
+  'ok',
+  'failOnce',
+  'gone',
+  'notSelected',
+  'selected',
+  'selectedCancelled',
+] as const;
 export const DEFAULT_DETAIL_ID = 'fixture-bounty-01';
 export const FIXTURE_ADDRESS = 'A 座 12-03';
 export const FIXTURE_ME: Person = { id: FIXTURE_USER_ID, name: '林小貘', tier: 'reliable' };
@@ -50,7 +57,7 @@ export type FixtureBoardOptions = {
   now: () => Date;
   writeDelayMs?: number;
   isBlocked?: (posterId: string) => boolean;
-  posterView?: (id: string) => { helper: Person | null } | null;
+  posterView?: (id: string) => { helper: Person | null; status: string } | null;
 };
 
 function pick<T extends string>(values: readonly T[], value: string | undefined, fallback: T): T {
@@ -175,7 +182,9 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
 
   function outcome(item: FixtureBounty) {
     if (item.id !== options.detailId) return null;
-    return options.detail === 'selected' || options.detail === 'notSelected'
+    return options.detail === 'selected' ||
+      options.detail === 'notSelected' ||
+      options.detail === 'selectedCancelled'
       ? options.detail
       : null;
   }
@@ -184,9 +193,9 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
     const shown = outcome(item);
     const note =
       application?.note ?? (options.board === 'worst' ? WORST_OUTCOME_NOTE : OUTCOME_NOTE);
-    if (shown === 'selected') {
+    if (shown === 'selected' || shown === 'selectedCancelled') {
       return {
-        status: 'assigned',
+        status: shown === 'selected' ? 'assigned' : 'cancelled',
         viewerRole: 'helper',
         address: FIXTURE_ADDRESS,
         helper: FIXTURE_ME,
@@ -205,7 +214,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
     const poster = options.posterView?.(item.id) ?? null;
     if (poster) {
       return {
-        status: poster.helper ? 'assigned' : 'open',
+        status: poster.status,
         viewerRole: 'poster',
         address: FIXTURE_ADDRESS,
         helper: poster.helper,

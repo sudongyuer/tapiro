@@ -179,7 +179,7 @@ export default {
       pay: '有一笔钱要付，别忘了',
       rideMinutes: '{{count}} 分钟后出发，别迟到',
       owedNamed: '{{name}}说付你了，去确认一下',
-      progressNamed: '{{name}}在帮你，有事发消息',
+      bounty: '{{title}} · {{line}}',
       live: '有事在进行，小貘帮你盯着',
       calm: '今天没事…要发个悬赏吗',
     },
@@ -224,11 +224,15 @@ export default {
         tag: '等你确认',
         title: '{{name}}说已付你',
       },
-      progress: {
-        tag: '你发的 · 进行中',
-        helper: '{{name}} 接了',
-        message: '发消息给 {{name}}',
-        details: '详情',
+      bounty: {
+        tag: {
+          action: '要你处理',
+          inProgress: '进行中',
+          waiting: '等对方',
+        },
+        line: '{{title}} · {{line}}',
+        label: '{{title}}，{{line}}，赏金 {{reward}}',
+        details: '看详情',
       },
       calm: {
         tag: '今天没有待处理的事',
@@ -268,6 +272,7 @@ export default {
       board: '能接的悬赏',
       detail: '悬赏详情',
       applicants: '选人（申请人列表）',
+      status: '进度页（状态 × 身份）',
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },

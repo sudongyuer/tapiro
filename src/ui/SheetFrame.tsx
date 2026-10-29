@@ -1,8 +1,8 @@
-import { Form, Host } from '@expo/ui/swift-ui';
+import { Form, Host, RNHostView } from '@expo/ui/swift-ui';
 import { refreshable, tint } from '@expo/ui/swift-ui/modifiers';
 import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
+import { PinnedBar } from 'tapiro-kit';
 
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -34,49 +34,41 @@ export function SheetLayer({ children }: { children: ReactNode }) {
   return null;
 }
 
-const VIEW_BOTTOM = { bottom: 'additive' } as const;
-
 export function SheetFrame({
   notice,
   testID,
-  pinnedAbove = 'homeIndicator',
   onRefresh,
   children,
 }: {
   notice?: ReactNode;
   testID: string;
-  pinnedAbove?: 'homeIndicator' | 'tabBar';
   onRefresh?: () => Promise<void>;
   children: ReactNode;
 }) {
   const { color } = useTheme();
-  const { bottom } = useSafeAreaInsets();
   const [actions, setActions] = useState<ReactNode>(null);
   const [layers, setLayers] = useState<ReactNode>(null);
   const [slots] = useState<Slots>(() => ({ actions: setActions, layers: setLayers }));
+  const form = (
+    <Form
+      modifiers={[tint(color('--color-accent')), ...(onRefresh ? [refreshable(onRefresh)] : [])]}
+    >
+      {notice}
+      {children}
+    </Form>
+  );
   return (
     <SlotContext.Provider value={slots}>
       <Host style={styles.form} testID={testID}>
-        <Form
-          modifiers={[
-            tint(color('--color-accent')),
-            ...(onRefresh ? [refreshable(onRefresh)] : []),
-          ]}
-        >
-          {notice}
-          {children}
-        </Form>
+        <PinnedBar>
+          {form}
+          {actions ? (
+            <RNHostView matchContents={{ vertical: true }}>
+              <View style={styles.actions}>{actions}</View>
+            </RNHostView>
+          ) : null}
+        </PinnedBar>
       </Host>
-      {actions && pinnedAbove === 'tabBar' ? (
-        // The window inset leaves out the tab bar and its accessory; the view's own safe area includes both.
-        <SafeAreaView edges={VIEW_BOTTOM} style={[styles.actions, styles.inTab]}>
-          {actions}
-        </SafeAreaView>
-      ) : actions ? (
-        <View style={[styles.actions, { paddingBottom: bottom + vars['--space-2'] }]}>
-          {actions}
-        </View>
-      ) : null}
       {layers}
     </SlotContext.Provider>
   );
@@ -85,10 +77,9 @@ export function SheetFrame({
 const styles = StyleSheet.create({
   form: { flex: 1 },
   actions: {
-    backgroundColor: PlatformColor('systemGroupedBackground'),
     paddingHorizontal: vars['--space-6'],
     paddingTop: vars['--space-2'],
+    paddingBottom: vars['--space-2'],
     gap: vars['--space-1'],
   },
-  inTab: { paddingBottom: vars['--space-2'] },
 });

@@ -116,6 +116,7 @@ export function BountyDetailScene({ onReady }: { onReady: () => void }) {
         onGone={() => setLeft('gone')}
         onBlocked={() => setLeft('blocked')}
         onBrowse={() => setLeft('browse')}
+        onProgress={(id) => setLeft(`progress-${id}`)}
       />
       <Marker name={left} />
     </>
@@ -131,6 +132,24 @@ export function BountyApplicantsScene({ onReady }: { onReady: () => void }) {
     router.push(
       {
         pathname: '/bounty/applicants/[id]',
+        params: { id: uiVerifyArgument('uiVerifyDetailId') ?? 'fixture-bounty-01' },
+      },
+      { withAnchor: true },
+    );
+    onReady();
+  }, [router, onReady]);
+  return null;
+}
+
+export function BountyStatusScene({ onReady }: { onReady: () => void }) {
+  const router = useRouter();
+  const pushed = useRef(false);
+  useEffect(() => {
+    if (pushed.current) return;
+    pushed.current = true;
+    router.push(
+      {
+        pathname: '/bounty/status/[id]',
         params: { id: uiVerifyArgument('uiVerifyDetailId') ?? 'fixture-bounty-01' },
       },
       { withAnchor: true },

@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
@@ -10,12 +10,12 @@ import { PressDim } from '@/ui/PressDim';
 import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { OwedCard, ProgressCard } from './cards/BountyCard';
+import { BountyCard, OwedCard } from './cards/BountyCard';
 import { CalmCard, FallbackCard } from './cards/CalmCard';
 import { PayCard } from './cards/PayCard';
 import { RideCard } from './cards/RideCard';
 import { UnavailableCard } from './cards/UnavailableCard';
-import type { LiveCardModel } from './homeModel';
+import { bountyDetail, moneyText, type LiveCardModel } from './homeModel';
 import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
 
 const MAX_Z = 10;
@@ -24,6 +24,7 @@ const TONE: Record<LiveCardModel['kind'], LiveCardTone> = {
   oweMoney: 'pay',
   rideSoon: 'ride',
   owedToYou: 'progress',
+  bountyAction: 'progress',
   bountyInProgress: 'progress',
   waitingConfirm: 'calm',
   calm: 'calm',
@@ -122,8 +123,9 @@ function StackedCard({
   onToggle,
   onCardLayout,
 }: StackedCardProps) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const router = useRouter();
+  const bounty = bountyDetail(card);
   const behind = index > 0 && !open;
   const hidden = !stacked.visible && !open;
   const motion = useAnimatedStyle(() => ({
@@ -134,15 +136,27 @@ function StackedCard({
     ],
   }));
   const face = useAnimatedStyle(() => ({ opacity: index > 0 ? 1 - progress.value : 0 }));
-  const peek =
-    card.kind === 'calm'
+  const peek = bounty
+    ? t('home.card.bounty.line', { title: bounty.title, line: bounty.line })
+    : card.kind === 'calm'
       ? ''
       : card.kind === 'unavailable'
         ? t('home.card.unavailable.title')
         : card.item.title;
   const paymentId =
     card.kind === 'calm' || card.kind === 'unavailable' ? undefined : card.item.payment?.id;
-  const openPayment = () => paymentId && router.push(`/pay/${paymentId}`);
+  const openTarget = paymentId
+    ? () => router.push(`/pay/${paymentId}`)
+    : bounty
+      ? () => router.push(bounty.target as Href, { withAnchor: true })
+      : undefined;
+  const label = bounty
+    ? t('home.card.bounty.label', {
+        title: bounty.title,
+        line: bounty.line,
+        reward: t('home.money', { amount: moneyText(bounty.rewardSen, language) }),
+      })
+    : undefined;
   const ownButton = card.kind === 'oweMoney';
 
   return (
@@ -166,17 +180,18 @@ function StackedCard({
       ) : (
         <View
           accessible={card.kind !== 'calm' && card.kind !== 'unavailable'}
-          accessibilityRole={paymentId ? 'button' : undefined}
-          accessibilityActions={paymentId ? [{ name: 'activate' }] : undefined}
-          onAccessibilityAction={paymentId ? openPayment : undefined}
+          accessibilityRole={openTarget ? 'button' : undefined}
+          accessibilityLabel={label}
+          accessibilityActions={openTarget ? [{ name: 'activate' }] : undefined}
+          onAccessibilityAction={openTarget}
           testID={
             card.kind === 'calm' || card.kind === 'unavailable'
               ? undefined
               : `live-card-${card.kind}`
           }
         >
-          {paymentId && !ownButton ? (
-            <PressDim onPress={openPayment}>
+          {openTarget && !ownButton ? (
+            <PressDim onPress={openTarget}>
               <CardBody card={card} name={name} onAsk={onAsk} />
             </PressDim>
           ) : (
@@ -200,8 +215,10 @@ function CardBody({ card, name, onAsk }: { card: LiveCardModel; name: string; on
       return <RideCard detail={detail} />;
     case 'owedToYou':
       return <OwedCard detail={detail} />;
+    case 'bountyAction':
     case 'bountyInProgress':
-      return <ProgressCard detail={detail} />;
+    case 'waitingConfirm':
+      return <BountyCard detail={detail} />;
     default:
       return <FallbackCard item={item} />;
   }
