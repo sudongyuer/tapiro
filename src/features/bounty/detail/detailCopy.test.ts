@@ -31,6 +31,7 @@ const VIEW: DetailView = {
   description: undefined,
   action: 'apply',
   note: null,
+  address: null,
 };
 
 describe('detailCopy', () => {

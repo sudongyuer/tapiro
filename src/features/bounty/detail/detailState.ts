@@ -1,6 +1,7 @@
 import type { BoardRow, BountyDetail, Person } from '../board/types';
 
-export type DetailAction = 'apply' | 'applied' | 'closed' | 'taken' | 'none';
+export type DetailAction =
+  'apply' | 'applied' | 'closed' | 'taken' | 'selected' | 'notSelected' | 'none';
 
 export type DetailView = {
   id: string;
@@ -16,12 +17,20 @@ export type DetailView = {
   description: string | null | undefined;
   action: DetailAction;
   note: string | null;
+  address: string | null;
 };
 
 const TAKEN = ['assigned', 'en_route', 'done', 'disputed', 'confirmed'];
 
+export const hasOutcome = (detail: BountyDetail) =>
+  detail.viewerRole === 'helper' ||
+  detail.myApplication?.status === 'selected' ||
+  detail.myApplication?.status === 'not_selected';
+
 export function detailAction(detail: BountyDetail, now: Date): DetailAction {
-  if (detail.viewerRole === 'poster' || detail.viewerRole === 'helper') return 'none';
+  if (detail.viewerRole === 'helper') return 'selected';
+  if (detail.myApplication?.status === 'not_selected') return 'notSelected';
+  if (detail.viewerRole === 'poster') return 'none';
   if (detail.myApplication?.status === 'pending') return 'applied';
   if (TAKEN.includes(detail.status)) return 'taken';
   if (detail.status === 'open' && new Date(detail.expiresAt).getTime() > now.getTime()) {
@@ -45,10 +54,12 @@ export function viewOfRow(row: BoardRow): DetailView {
     description: undefined,
     action: row.appliedByMe ? 'applied' : 'apply',
     note: null,
+    address: null,
   };
 }
 
 export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
+  const action = detailAction(detail, now);
   return {
     id: detail.id,
     title: detail.title,
@@ -61,8 +72,12 @@ export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
     deadlineAt: detail.deadlineAt,
     poster: detail.poster,
     description: detail.description,
-    action: detailAction(detail, now),
-    note: detail.myApplication?.status === 'pending' ? detail.myApplication.note : null,
+    action,
+    note:
+      action === 'applied' || action === 'notSelected'
+        ? (detail.myApplication?.note ?? null)
+        : null,
+    address: action === 'selected' ? detail.address : null,
   };
 }
 
@@ -99,7 +114,7 @@ export const keptWrite = (write: LocalWrite | null, answered: number) =>
   write && write.request >= answered ? write : null;
 
 export function withWrite(detail: BountyDetail, write: LocalWrite | null): BountyDetail {
-  if (!write) return detail;
+  if (!write || hasOutcome(detail)) return detail;
   if (write.applied) return { ...detail, myApplication: { status: 'pending', note: write.note } };
   return {
     ...detail,
@@ -127,7 +142,7 @@ export function detailReducer(state: DetailState, event: DetailEvent): DetailSta
   if (event.type === 'loaded') {
     return {
       request: state.request,
-      write: keptWrite(write, event.request),
+      write: hasOutcome(event.detail) ? null : keptWrite(write, event.request),
       kind: 'ready',
       detail: event.detail,
       loadedAt: event.at,
@@ -150,3 +165,6 @@ export function shownView(state: DetailState, now: Date): DetailView | null {
   const seeded = viewOfRow({ ...state.seed, appliedByMe: state.write.applied });
   return { ...seeded, note: state.write.applied ? state.write.note : null };
 }
+
+export const seenMarkDue = (detail: BountyDetail) =>
+  detail.viewerRole !== 'helper' && detail.myApplication?.status === 'not_selected';

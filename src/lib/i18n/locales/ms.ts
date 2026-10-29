@@ -276,6 +276,7 @@ const ms: Translation = {
       placeSearch: 'Pilih Tempat',
       board: 'Papan ganjaran',
       detail: 'Butiran ganjaran',
+      applicants: 'Pilih pembantu (pemohon)',
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
@@ -292,6 +293,10 @@ const ms: Translation = {
       posted: 'Ganjaran anda telah disiarkan',
       liveSample: 'Bayar Ah Kit RM 15',
       mascot: 'Maskot tapir',
+      hold: 'Tahan untuk pilih Ah Kit',
+      holdHolding: 'Terus tahan…',
+      holdBusy: 'Memilih…',
+      holdHint: 'Tahan kira-kira 1 saat',
     },
   },
 };

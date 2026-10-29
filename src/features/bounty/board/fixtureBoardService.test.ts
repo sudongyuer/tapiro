@@ -4,10 +4,12 @@ import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
 
 import {
   createFixtureBoardService,
+  FIXTURE_ADDRESS,
+  FIXTURE_ME,
   fixtureBoardOptions,
   type FixtureBoardOptions,
 } from './fixtureBoardService';
-import type { BoardFilter, BoardOrigin, BoardRow, BoardService } from './types';
+import type { BoardFilter, BoardOrigin, BoardRow, BoardService, Person } from './types';
 
 const NOW = new Date('2026-10-27T04:00:00.000Z');
 const ME: BoardOrigin = { kind: 'me', point: SUNWAY_PYRAMID };
@@ -315,5 +317,101 @@ describe('blocked posters', () => {
     expect(await board.detail('fixture-bounty-01', null)).toBe('gone');
     blocked.delete('fixture-poster-lin');
     expect((await all(board, ME)).rows).toHaveLength(before.rows.length);
+  });
+});
+
+describe('outcomes and the poster view', () => {
+  const detailOf = async (board: BoardService, id = 'fixture-bounty-01') => {
+    const answer = await board.detail(id, null);
+    if (answer === 'gone') throw new Error('gone');
+    return answer;
+  };
+
+  test('the detail id comes from the launch arguments', () => {
+    const args: Record<string, string> = { uiVerifyDetail: 'selected', uiVerifyDetailId: 'x' };
+    expect(fixtureBoardOptions((name) => args[name], 'demo')).toMatchObject({
+      detail: 'selected',
+      detailId: 'x',
+    });
+    expect(fixtureBoardOptions(() => undefined, 'demo').detailId).toBe('fixture-bounty-01');
+  });
+
+  test('a viewer and an applicant get no address and no helper', async () => {
+    const board = service();
+    expect(await detailOf(board)).toMatchObject({
+      viewerRole: 'viewer',
+      address: null,
+      helper: null,
+    });
+    await board.apply('fixture-bounty-01', null);
+    expect(await detailOf(board)).toMatchObject({
+      viewerRole: 'applicant',
+      address: null,
+      helper: null,
+    });
+  });
+
+  test('selected: the helper sees the address and themselves as helper', async () => {
+    const board = service({ detail: 'selected' });
+    expect(await detailOf(board)).toMatchObject({
+      status: 'assigned',
+      viewerRole: 'helper',
+      address: FIXTURE_ADDRESS,
+      helper: FIXTURE_ME,
+      myApplication: { status: 'selected' },
+    });
+    expect(await detailOf(board, 'fixture-bounty-02')).toMatchObject({
+      viewerRole: 'viewer',
+      address: null,
+      helper: null,
+    });
+  });
+
+  test('notSelected: the applicant sees the outcome with the note and no address', async () => {
+    const detail = await detailOf(service({ detail: 'notSelected' }));
+    expect(detail).toMatchObject({
+      status: 'assigned',
+      viewerRole: 'applicant',
+      address: null,
+      helper: null,
+      myApplication: { status: 'not_selected' },
+    });
+    expect(detail.myApplication?.note).toBeTruthy();
+  });
+
+  test('the worst board gives the not-selected outcome a 140-code-point note', async () => {
+    const board = service({ board: 'worst', detail: 'notSelected', detailId: 'fixture-worst-02' });
+    const detail = await detailOf(board, 'fixture-worst-02');
+    expect(detail.myApplication?.status).toBe('not_selected');
+    expect(codePoints(detail.myApplication?.note ?? '')).toBe(140);
+  });
+
+  test('the poster sees the address, and the helper once one is chosen', async () => {
+    let helper: Person | null = null;
+    let posted = false;
+    const board = service({
+      posterView: (id) => (posted && id === 'fixture-bounty-01' ? { helper } : null),
+    });
+    expect(await detailOf(board)).toMatchObject({ viewerRole: 'viewer', address: null });
+    posted = true;
+    expect(await detailOf(board)).toMatchObject({
+      status: 'open',
+      viewerRole: 'poster',
+      address: FIXTURE_ADDRESS,
+      helper: null,
+      myApplication: null,
+    });
+    helper = { id: 'fixture-applicant-jie', name: '阿杰', tier: 'very_reliable' };
+    expect(await detailOf(board)).toMatchObject({
+      status: 'assigned',
+      viewerRole: 'poster',
+      address: FIXTURE_ADDRESS,
+      helper,
+    });
+    expect(await detailOf(board, 'fixture-bounty-02')).toMatchObject({
+      viewerRole: 'viewer',
+      address: null,
+      helper: null,
+    });
   });
 });

@@ -1,6 +1,7 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 import type { Point } from '@/lib/location/types';
 
+import { FIXTURE_USER_ID } from '../post/fixtureDrafts';
 import { AXIS_RANGE_M } from './axis';
 import { PAGE_SIZE } from './boardService';
 import {
@@ -17,11 +18,23 @@ import {
   type BoardRow,
   type BoardService,
   type BountyDetail,
+  type Person,
 } from './types';
 
 export const BOARD_FAILURES = ['none', 'first', 'refresh', 'page'] as const;
 export const APPLY_MODES = ['ok', 'failOnce', 'taken', 'closed', 'gone'] as const;
-export const DETAIL_MODES = ['ok', 'failOnce', 'gone'] as const;
+export const DETAIL_MODES = ['ok', 'failOnce', 'gone', 'notSelected', 'selected'] as const;
+export const DEFAULT_DETAIL_ID = 'fixture-bounty-01';
+export const FIXTURE_ADDRESS = 'A 座 12-03';
+export const FIXTURE_ME: Person = { id: FIXTURE_USER_ID, name: '林小貘', tier: 'reliable' };
+const OUTCOME_NOTE = '我下午三点前都在宿舍，可以顺路帮你拿上来。';
+const WORST_OUTCOME_NOTE = [
+  ...'Saya di lobi Sunway Geo Residences sekarang, boleh sampai dalam 10 minit dengan troli. '.repeat(
+    2,
+  ),
+]
+  .slice(0, 140)
+  .join('');
 
 export type BoardFailure = (typeof BOARD_FAILURES)[number];
 export type ApplyMode = (typeof APPLY_MODES)[number];
@@ -32,10 +45,12 @@ export type FixtureBoardOptions = {
   fail: BoardFailure;
   apply: ApplyMode;
   detail: DetailMode;
+  detailId: string;
   variant: FixtureVariant;
   now: () => Date;
   writeDelayMs?: number;
   isBlocked?: (posterId: string) => boolean;
+  posterView?: (id: string) => { helper: Person | null } | null;
 };
 
 function pick<T extends string>(values: readonly T[], value: string | undefined, fallback: T): T {
@@ -52,6 +67,7 @@ export function fixtureBoardOptions(
     fail: pick(BOARD_FAILURES, argument('uiVerifyBoardFail'), 'none'),
     apply: pick(APPLY_MODES, argument('uiVerifyApply'), 'ok'),
     detail: pick(DETAIL_MODES, argument('uiVerifyDetail'), 'ok'),
+    detailId: argument('uiVerifyDetailId') ?? DEFAULT_DETAIL_ID,
     variant,
     now,
   };
@@ -157,20 +173,69 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
     return [...located, ...unlocated];
   }
 
+  function outcome(item: FixtureBounty) {
+    if (item.id !== options.detailId) return null;
+    return options.detail === 'selected' || options.detail === 'notSelected'
+      ? options.detail
+      : null;
+  }
+
+  function party(item: FixtureBounty, application: BountyDetail['myApplication']) {
+    const shown = outcome(item);
+    const note =
+      application?.note ?? (options.board === 'worst' ? WORST_OUTCOME_NOTE : OUTCOME_NOTE);
+    if (shown === 'selected') {
+      return {
+        status: 'assigned',
+        viewerRole: 'helper',
+        address: FIXTURE_ADDRESS,
+        helper: FIXTURE_ME,
+        myApplication: { status: 'selected', note },
+      } as const;
+    }
+    if (shown === 'notSelected') {
+      return {
+        status: 'assigned',
+        viewerRole: 'applicant',
+        address: null,
+        helper: null,
+        myApplication: { status: 'not_selected', note },
+      } as const;
+    }
+    const poster = options.posterView?.(item.id) ?? null;
+    if (poster) {
+      return {
+        status: poster.helper ? 'assigned' : 'open',
+        viewerRole: 'poster',
+        address: FIXTURE_ADDRESS,
+        helper: poster.helper,
+        myApplication: null,
+      } as const;
+    }
+    return {
+      status: 'open',
+      viewerRole: application ? 'applicant' : 'viewer',
+      address: null,
+      helper: null,
+      myApplication: application,
+    } as const;
+  }
+
   function detailOf(item: FixtureBounty, here: Point | null): BountyDetail {
     const row = toRow(item, here);
-    const application = applications.get(item.id) ?? null;
+    const stored = applications.get(item.id);
+    const roles = party(item, stored ? { ...stored } : null);
     return {
       id: row.id,
       title: row.title,
       description: item.description,
       category: row.category,
       rewardSen: row.rewardSen,
-      status: 'open',
-      viewerRole: application ? 'applicant' : 'viewer',
+      status: roles.status,
+      viewerRole: roles.viewerRole,
       place: row.placeLabel === null ? null : { label: row.placeLabel },
       distanceM: row.distanceM,
-      address: null,
+      address: roles.address,
       startsAt: row.startsAt,
       endsAt: row.endsAt,
       deadlineAt: row.deadlineAt,
@@ -181,7 +246,8 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
         ),
       ).toISOString(),
       poster: row.poster,
-      myApplication: application ? { ...application } : null,
+      helper: roles.helper,
+      myApplication: roles.myApplication,
     };
   }
 

@@ -4,6 +4,7 @@ import { PlatformColor, Pressable, ScrollView, StyleSheet, View } from 'react-na
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { HoldButton } from '@/ui/HoldButton';
 import { Mascot } from '@/ui/Mascot';
 import { typeRoles, vars, type TokenName } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -20,6 +21,8 @@ const STICKERS = [
   'study',
   'other',
 ] as const;
+
+const noop = () => undefined;
 
 const STATUSES: { labelKey: ParseKeys; symbol: SFSymbol; color: TokenName | null }[] = [
   { labelKey: 'debug.tokens.statusOpen', symbol: 'circle', color: null },
@@ -52,6 +55,26 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
       contentContainerStyle={styles.content}
       onLayout={onReady}
     >
+      <HoldButton
+        label={t('debug.tokens.hold')}
+        holdingLabel={t('debug.tokens.holdHolding')}
+        busyLabel={t('debug.tokens.holdBusy')}
+        hint={t('debug.tokens.holdHint')}
+        state="ready"
+        onComplete={noop}
+        onAccessibilityActivate={noop}
+        testID="tokens-hold-button"
+      />
+      <HoldButton
+        label={t('debug.tokens.hold')}
+        holdingLabel={t('debug.tokens.holdHolding')}
+        busyLabel={t('debug.tokens.holdBusy')}
+        state="busy"
+        onComplete={noop}
+        onAccessibilityActivate={noop}
+        testID="tokens-hold-busy"
+      />
+
       <View style={styles.card}>
         {STAGES.map((stage) => (
           <View

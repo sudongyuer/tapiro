@@ -171,6 +171,25 @@ describe('detail', () => {
     ]);
   });
 
+  test('the helper is read for the poster and the helper only', async () => {
+    const helper = { id: 'h1', name: '阿杰', tier: 'very_reliable' } as const;
+    const read = async (viewerRole: string) => {
+      const stub = stubClient(() => ok({ ...DETAIL, viewerRole, helper }));
+      const detail = await createSupabaseBoardService(stub.client).detail('b1', null);
+      return detail === 'gone' ? 'gone' : detail.helper;
+    };
+    expect(await read('poster')).toEqual(helper);
+    expect(await read('helper')).toEqual(helper);
+    expect(await read('applicant')).toBeNull();
+    expect(await read('viewer')).toBeNull();
+    const malformed = stubClient(() =>
+      ok({ ...DETAIL, viewerRole: 'poster', helper: { id: 'h1', name: '阿杰', tier: 'gold' } }),
+    );
+    await expect(createSupabaseBoardService(malformed.client).detail('b1', null)).rejects.toThrow(
+      'helper.tier',
+    );
+  });
+
   test('bounty_not_found reads as gone; other errors throw', async () => {
     const gone = stubClient(() => rejected('bounty_not_found', 'P0002'));
     expect(await createSupabaseBoardService(gone.client).detail('b1', null)).toBe('gone');

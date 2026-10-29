@@ -267,6 +267,7 @@ export default {
       placeSearch: '选地点',
       board: '能接的悬赏',
       detail: '悬赏详情',
+      applicants: '选人（申请人列表）',
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
@@ -283,6 +284,10 @@ export default {
       posted: '悬赏贴出去啦',
       liveSample: '付给阿杰 RM 15',
       mascot: '小貘',
+      hold: '按住，选阿杰来帮你',
+      holdHolding: '继续按住…',
+      holdBusy: '正在选…',
+      holdHint: '按住约 1 秒',
     },
   },
 };

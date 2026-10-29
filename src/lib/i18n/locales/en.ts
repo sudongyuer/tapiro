@@ -272,6 +272,7 @@ const en: Translation = {
       placeSearch: 'Choose a Place',
       board: 'Bounty board',
       detail: 'Bounty detail',
+      applicants: 'Choose a helper (applicants)',
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
@@ -288,6 +289,10 @@ const en: Translation = {
       posted: 'Your bounty is posted',
       liveSample: 'Pay Ah Kit RM 15',
       mascot: 'Tapir mascot',
+      hold: 'Hold to choose Ah Kit',
+      holdHolding: 'Keep holding…',
+      holdBusy: 'Choosing…',
+      holdHint: 'Hold for about 1 second',
     },
   },
 };

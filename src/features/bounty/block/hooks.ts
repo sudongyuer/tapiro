@@ -9,12 +9,15 @@ import { createBlockFlow, createBlockList } from './blockFlow';
 import { blockService } from './services';
 import type { BlockedPerson } from './types';
 
-export function useBlockPoster(onBlocked: () => void) {
+export type BlockKind = 'poster' | 'applicant';
+
+export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
   const { t } = useI18n();
   const [flow] = useState(() =>
     createBlockFlow({ service: blockService, blocked: blockEvents.blocked }),
   );
   const state = useSyncExternalStore(flow.subscribe, flow.get);
+  const [target, setTarget] = useState<string | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -25,24 +28,37 @@ export function useBlockPoster(onBlocked: () => void) {
 
   const ask = useCallback(
     (poster: BlockedPerson) => {
+      if (flow.get() === 'busy') return;
       const name = poster.name ?? t('bounty.post.unknownName');
       ActionSheetIOS.showActionSheetWithOptions(
         {
           title: t('bounty.block.confirm.title', { name }),
-          message: t('bounty.block.confirm.body', { name }),
+          message: t(
+            kind === 'applicant'
+              ? 'bounty.block.confirm.applicantBody'
+              : 'bounty.block.confirm.body',
+            { name },
+          ),
           options: [t('bounty.block.confirm.confirm'), t('bounty.block.confirm.cancel')],
           destructiveButtonIndex: 0,
           cancelButtonIndex: 1,
         },
         async (index) => {
-          if (index === 0 && (await flow.block(poster.id)) && mounted.current) onBlocked();
+          if (index !== 0) return;
+          const blocking = flow.block(poster.id);
+          setTarget(flow.target());
+          if ((await blocking) && mounted.current) onBlocked?.();
         },
       );
     },
-    [flow, onBlocked, t],
+    [flow, kind, onBlocked, t],
   );
 
-  return { state, ask };
+  return { state, ask, target: state === 'busy' ? target : null };
+}
+
+export function useBlockPoster(onBlocked: () => void) {
+  return useBlockPerson('poster', onBlocked);
 }
 
 export function useBlockList() {

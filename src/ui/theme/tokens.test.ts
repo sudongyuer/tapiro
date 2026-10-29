@@ -36,6 +36,17 @@ describe('accent', () => {
   });
 });
 
+test('hold labels are readable on the track and on the gold fill in both themes', () => {
+  const pairs = [
+    ['--color-on-hold-track', '--color-hold-track'],
+    ['--color-on-hold-fill', '--color-hold-fill'],
+  ] as const;
+  for (const [text, fill] of pairs) {
+    expect(contrastRatio(vars[text], vars[fill])).toBeGreaterThanOrEqual(MIN);
+    expect(contrastRatio(dark(text), dark(fill))).toBeGreaterThanOrEqual(MIN);
+  }
+});
+
 describe('status colours are text-safe', () => {
   const statuses = ['--color-urgent', '--color-success', '--color-warning'] as const;
 

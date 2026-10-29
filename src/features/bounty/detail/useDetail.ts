@@ -6,9 +6,18 @@ import { locationService } from '@/lib/location';
 import { detailOrigin, evaluateOrigin } from '../board/originStore';
 import { boardService, originStore, shownOrigins } from '../board/services';
 import { originPoint } from '../board/types';
+import { selectService } from '../select/services';
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied } from '../shared/justApplied';
-import { detailReducer, initialDetail, keptWrite, withWrite, type LocalWrite } from './detailState';
+import {
+  detailReducer,
+  hasOutcome,
+  initialDetail,
+  keptWrite,
+  seenMarkDue,
+  withWrite,
+  type LocalWrite,
+} from './detailState';
 
 export function useDetail(id: string, userId: string) {
   const [state, dispatch] = useReducer(detailReducer, id, (key) =>
@@ -16,6 +25,7 @@ export function useDetail(id: string, userId: string) {
   );
   const request = useRef(0);
   const write = useRef<LocalWrite | null>(null);
+  const seen = useRef(false);
   const gone = state.kind === 'gone';
   const focused = useIsFocused();
 
@@ -37,10 +47,16 @@ export function useDetail(id: string, userId: string) {
         return;
       }
       if (current !== request.current) return;
-      write.current = keptWrite(write.current, current);
+      const settled = hasOutcome(answer);
+      if (settled) justApplied.drop(id);
+      write.current = settled ? null : keptWrite(write.current, current);
       bountyCache.setDetail(withWrite(answer, write.current));
       if (!write.current) bountyCache.settleRow(id, answer.myApplication?.status === 'pending');
       dispatch({ type: 'loaded', request: current, detail: answer, at: new Date().toISOString() });
+      if (seenMarkDue(answer) && !seen.current) {
+        seen.current = true;
+        void selectService.markNotSelectedSeen(id);
+      }
     } catch {
       dispatch({ type: 'failed', request: current });
     }

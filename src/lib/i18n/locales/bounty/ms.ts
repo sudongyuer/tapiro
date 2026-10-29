@@ -267,6 +267,22 @@ const ms: typeof zhHans = {
     refreshFailed: 'Gagal muat semula · ini data pukul {{time}}, mungkin sudah berubah.',
     retry: 'Cuba Lagi',
     back: 'Kembali',
+    notSelected: {
+      title: 'Tidak dipilih kali ini',
+      body: '{{name}} memilih orang lain. Ini tidak menjejaskan kebolehpercayaan anda.',
+      yourNote: 'Anda tulis',
+      browse: 'Lihat Ganjaran Lain Berdekatan',
+    },
+    selected: {
+      title: '{{name}} memilih anda',
+    },
+  },
+  address: {
+    row: 'Alamat tepat',
+    loading: 'Memuatkan alamat',
+    failed: 'Alamat tidak dapat dimuatkan',
+    footer: 'Hanya anda dan {{name}} boleh nampak ini',
+    retry: 'Cuba Lagi',
   },
   apply: {
     title: 'Mohon Membantu',
@@ -297,6 +313,8 @@ const ms: typeof zhHans = {
       title: 'Sekat {{name}}?',
       body: 'Anda berdua tidak akan nampak ganjaran satu sama lain dan tidak boleh memohonnya. {{name}} tidak akan dimaklumkan. Anda boleh buka sekatan di Saya → Disekat.',
       confirm: 'Sekat',
+      applicantBody:
+        'Anda berdua tidak akan nampak ganjaran satu sama lain dan tidak boleh memohonnya. {{name}} tidak akan dimaklumkan dan permohonan {{name}} akan hilang dari sini. Anda boleh buka sekatan di Saya → Disekat.',
       cancel: 'Jangan Sekat',
     },
     blocking: 'Menyekat',
@@ -314,6 +332,66 @@ const ms: typeof zhHans = {
       unblock: 'Buka Sekatan',
       unblocking: 'Membuka sekatan',
       unblockFailed: 'Gagal buka sekatan. Cuba lagi.',
+    },
+  },
+  select: {
+    statusOpen_one: 'Menunggu anda memilih · {{count}} pemohon',
+    statusOpen_other: 'Menunggu anda memilih · {{count}} pemohon',
+    statusOpenNoCount: 'Menunggu anda memilih',
+    statusEmpty: 'Menunggu pemohon',
+    sectionHeader: 'Pilih siapa yang membantu anda',
+    footer: 'Hanya orang yang dipilih boleh nampak alamat tepat.',
+    meta: {
+      helped_one: 'Pernah membantu {{count}} kali',
+      helped_other: 'Pernah membantu {{count}} kali',
+      neverHelped: 'Belum pernah membantu',
+    },
+    hold: {
+      label: 'Tahan untuk pilih {{name}}',
+      holding: 'Terus tahan…',
+      sending: 'Memilih…',
+      none: 'Pilih seseorang dahulu',
+      hintAlone: 'Tahan kira-kira 1 saat',
+      hint_one:
+        'Tahan kira-kira 1 saat. {{count}} pemohon lain akan nampak “Tidak dipilih kali ini”.',
+      hint_other:
+        'Tahan kira-kira 1 saat. {{count}} pemohon lain akan nampak “Tidak dipilih kali ini”.',
+      a11yHint: 'Tahan kira-kira 1 saat, atau ketik dua kali untuk mengesahkan',
+    },
+    empty: {
+      title: 'Belum ada pemohon',
+      body: 'Pemohon akan muncul di sini. Datang semula untuk memilih.',
+    },
+    failure: {
+      failed: 'Gagal dihantar. Cuba lagi.',
+      notPending:
+        'Pemohon ini sudah menarik balik atau tidak boleh dipilih. Senarai sudah dimuat semula. Pilih sekali lagi.',
+      noPayee: 'Pemohon ini tiada cara bayaran buat masa ini, jadi belum boleh dipilih.',
+    },
+    race: {
+      title: 'Sudah dipilih',
+      body: '{{name}} sudah dipilih untuk ganjaran ini.',
+      bodyNoName: 'Seseorang sudah dipilih untuk ganjaran ini.',
+      ok: 'OK',
+    },
+    confirm: {
+      title: 'Pilih {{name}} untuk membantu anda?',
+      confirm: 'Pilih {{name}}',
+      cancel: 'Batal',
+    },
+    done: {
+      title: 'Anda memilih {{name}}',
+      titleNoName: 'Anda sudah memilih pembantu',
+    },
+    loading: 'Memuatkan pemohon',
+    failed: 'Pemohon tidak dapat dimuatkan',
+    refreshFailed: 'Gagal muat semula · ini data pukul {{time}}',
+    retry: 'Cuba Lagi',
+    closed: 'Ganjaran ini sudah ditutup',
+    back: 'Kembali',
+    a11y: {
+      row: '{{name}}, {{tier}}, {{meta}}',
+      note: 'Nota: {{note}}',
     },
   },
 };

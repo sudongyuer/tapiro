@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 
+import { createBlockEvents } from '../shared/blockEvents';
+import {
+  INITIAL_SELECT,
+  selectReducer,
+  type SelectEvent,
+  type SelectState,
+} from '../select/selectState';
 import { createBlockFlow, createBlockList } from './blockFlow';
 import type { BlockOutcome, BlockService, BlockedPerson } from './types';
 
@@ -63,11 +70,84 @@ describe('block flow', () => {
     expect(blocked).toEqual([]);
   });
 
+  test('the target stays on the first person while a second call is ignored', async () => {
+    const { flow, answers } = setup();
+    const first = flow.block('lin');
+    expect(flow.target()).toBe('lin');
+    expect(await flow.block('jie')).toBe(false);
+    expect(flow.target()).toBe('lin');
+    answers.pending[0].resolve('blocked');
+    await first;
+    expect(flow.target()).toBeNull();
+  });
+
   test('a second tap while blocking sends nothing', async () => {
     const { flow, calls } = setup();
     void flow.block('lin');
     expect(await flow.block('lin')).toBe(false);
     expect(calls).toEqual(['lin']);
+  });
+});
+
+describe('block from the applicant list', () => {
+  const HANA: BlockedPerson = { id: 'fixture-applicant-hana', name: 'Hana' };
+
+  function wired() {
+    const answers = deferred<BlockOutcome>();
+    const events = createBlockEvents();
+    const select = { state: INITIAL_SELECT };
+    const dispatch = (event: SelectEvent) => {
+      select.state = selectReducer(select.state, event);
+    };
+    events.onBlocked((id) => dispatch({ type: 'blocked', id, request: 2 }));
+    const flow = createBlockFlow({
+      service: { block: () => answers.next() },
+      blocked: events.blocked,
+    });
+    const ready: SelectEvent[] = [
+      { type: 'loadStarted', request: 1 },
+      {
+        type: 'loaded',
+        request: 1,
+        at: '2026-10-29T00:00:00Z',
+        applicants: ['jie', HANA.id].map((id) => ({
+          id,
+          name: id,
+          tier: 'reliable',
+          helpedCount: 0,
+          note: null,
+          status: 'pending',
+          appliedAt: '2026-10-29T00:00:00Z',
+        })),
+      },
+      { type: 'chose', id: HANA.id },
+    ];
+    for (const event of ready) dispatch(event);
+    return { flow, answers, select };
+  }
+
+  const rows = (state: SelectState) =>
+    state.list.kind === 'ready' ? state.list.applicants.map((row) => row.id) : [];
+
+  test('the row stays while blocking and leaves with its check once the server answers', async () => {
+    const { flow, answers, select } = wired();
+    const done = flow.block(HANA.id);
+    expect(rows(select.state)).toContain(HANA.id);
+    expect(select.state.chosen).toBe(HANA.id);
+    answers.pending[0].resolve('blocked');
+    expect(await done).toBe(true);
+    expect(rows(select.state)).toEqual(['jie']);
+    expect(select.state.chosen).toBeNull();
+  });
+
+  test('a failure keeps the row and the check', async () => {
+    const { flow, answers, select } = wired();
+    const done = flow.block(HANA.id);
+    answers.pending[0].reject(new TypeError('Network request failed'));
+    expect(await done).toBe(false);
+    expect(flow.get()).toBe('failed');
+    expect(rows(select.state)).toEqual(['jie', HANA.id]);
+    expect(select.state.chosen).toBe(HANA.id);
   });
 });
 

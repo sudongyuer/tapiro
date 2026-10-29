@@ -36,6 +36,7 @@ const DETAIL: BountyDetail = {
   deadlineAt: null,
   expiresAt: '2026-11-03T03:00:00.000Z',
   poster: ROW.poster,
+  helper: null,
   myApplication: null,
 };
 

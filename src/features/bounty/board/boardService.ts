@@ -24,9 +24,9 @@ const APPLY_FAILURES: Readonly<Record<string, ApplyFailure>> = {
   own_bounty: 'own',
 };
 
-const NOT_FOUND = 'P0002';
+export const NOT_FOUND = 'P0002';
 
-function slug(error: unknown) {
+export function slug(error: unknown) {
   if (typeof error !== 'object' || error === null) return { message: undefined, code: undefined };
   const { message, code } = error as { message?: unknown; code?: unknown };
   return {

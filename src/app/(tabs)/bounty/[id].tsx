@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useSignedInUser } from '@/features/account';
 import { BountyDetailScreen } from '@/features/bounty';
+import { homeSignals } from '@/lib/homeSignals';
 
 export default function BountyDetailRoute() {
   const router = useRouter();
@@ -17,6 +18,10 @@ export default function BountyDetailRoute() {
       }
       onGone={() => router.back()}
       onBlocked={() => router.back()}
+      onBrowse={() => {
+        homeSignals.requestTop();
+        router.dismissTo('/bounty');
+      }}
     />
   );
 }
