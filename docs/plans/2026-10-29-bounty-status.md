@@ -1,9 +1,10 @@
 # Bounty step 6: status screens, the bounty live-item source, 出发了 / ETA / 完成 / confirm / 有问题 / cancel
 
-> **For agentic workers:** this file is the preparation draft. Tasks are written after the UI questions below are
-> answered; do not start implementation from it yet.
+> **For agentic workers:** execute task by task (superpowers `subagent-driven-development` if available). Track steps
+> with checkboxes. Only one Simulator-using agent runs at a time. When all tasks are done, run `spec-lifecycle` before
+> the PR (only "Deviations and rulings" is updated; the bounty spec is implemented after step 12).
 
-**Status:** preparation. UI questions 57–63 are on the canvas (page 05, 「悬赏 · 状态页 · 第 57–63 题」).
+**Status:** ready. UI questions 57–63 answered 2026-10-29 (「按推荐」); canvas page 05, 「悬赏 · 状态页 · 第 57–63 题」.
 
 **Goal:** Both sides of a selected bounty follow it on one 7A status screen (vertical timeline, actions pinned at the
 bottom), reached from a home live card. The helper taps 出发了, changes the expected arrival (the old time struck
@@ -11,7 +12,7 @@ through) and taps 完成; the poster confirms (which opens the built pay sheet) 
 side cancels after selection through the 8A action sheet whose copy follows `bounty_cancel_preview`. The bounty
 live-item source registers with `setSource` and publishes one card per bounty with the new `bountyAction` kind (9A).
 
-**Built contracts (no SQL expected):** `start_bounty`, `update_eta`, `complete_bounty`, `confirm_bounty`,
+**Built contracts (one small migration, Task 1):** `start_bounty`, `update_eta`, `complete_bounty`, `confirm_bounty`,
 `report_bounty_problem`, `cancel_bounty`, `bounty_cancel_preview`, `close_bounty` (poster, while `open`),
 `bounty_detail`, `my_bounties`, `bounty_live_items`, `mark_bounty_seen` (`supabase/migrations/20261026001200_bounty_flow.sql`,
 `20261026001300_bounty_cancel.sql`, `20261027000300_bounty_read.sql`).
@@ -40,7 +41,7 @@ live-item source registers with `setSource` and publishes one card per bounty wi
 2. Step 5 parked: a bounty cancelled after selection still shows 「选好了{name}」 / 「{poster}选了你」; both must key on
    `detail.status`. Fixed in this step.
 
-## UI questions (open)
+## UI questions (answered 2026-10-29: 「按推荐」, 57A 58A 59B 60A 61A 62A 63A)
 
 Drawn on the canvas as questions 57–63. ★ marks the recommendation.
 
@@ -55,8 +56,112 @@ Drawn on the canvas as questions 57–63. ★ marks the recommendation.
 | 63  | The applicant's pending card 「等小林选」               | A add it (one migration to `bounty_live_items`) · B no card; the board's 已申请 stamp is enough                                     | A   |
 
 Drawing notes (for the tasks, not separate questions): 59B's picker starts at now + 30 min; 58's action sheet says what
-comes back, from `bounty_cancel_preview` (this month's free post, or the 貘币); 62's pay sheet on the canvas is a stand-in
-for the built one.
+comes back (this month's free post, or the 貘币), from the charge Task 1 adds to `bounty_detail`; 62's pay sheet on the
+canvas is a stand-in for the built one.
+
+## Rulings made in this plan (overturn by saying so)
+
+1. **The status screen is `/bounty/status/[id]`** in the 悬赏 Stack, pushed from the home card (`withAnchor`, like the
+   detail) and from the detail or the applicant screen once the viewer is a party (poster or selected helper) and the
+   status is past `open`. Header title empty, back to 悬赏.
+2. **Timeline steps** (both roles, 7A board): 选好了{helper} › {helper}出发了 (with ETA) › {helper}点完成 › 你确认完成 /
+   {poster}确认 › 付给{helper} RM n / 收 RM n. `disputed` shows the reason under 点完成 with the orange mark; the step
+   order never changes. Times come from `events`; the ETA line from `etaAt` / `previousEtaAt`.
+3. **Refresh** on screen focus, app foreground and pull; no polling. A failed refresh keeps the screen under a warning
+   notice with the time of the data; a first-load failure shows the load-failed card, never an empty timeline.
+4. **Actions never replay**: each RPC shows progress in its button until it answers; on failure an inline notice
+   「没发出去，再试一次」 and the button returns. The server's idempotent replies (`confirm_bounty`, `cancel_bounty`,
+   `close_bounty` return the earlier outcome) count as success.
+5. **8A copy** comes from `bounty_cancel_preview`: `offender = other` → 「{name}过了约定时间 30 分钟还没出发，现在取消记在
+   {name}那边」; `self` with `waiverAvailable` → the waiver line; `self` without → counted, with the date the waiver comes
+   back (`waiverBackAt`, Task 1). The helper's title is 「不帮了？」, the poster's 「取消这单？」.
+6. **Home cards** render in `src/features/home` from types in `src/lib/liveItems.ts` (`BountyCardDetail` beside the moved
+   `ProgressDetail` and siblings); the bounty feature only publishes items and details. A card tap pushes by path
+   (`/bounty/status/[id]`, `/bounty/applicants/[id]`, `/bounty/[id]`), so home imports nothing from bounty.
+7. **One-time cards** call `mark_bounty_seen` when the card is first rendered in the front of the stack or the expanded
+   list, once per launch; a failed mark is retried on the next display, never in a loop.
+
+## Contracts
+
+- `bounty_live_items()` (Task 1 adds): applicant rows with `role = 'applicant'`, `kind = 'bountyInProgress'`,
+  `card = null`, `status = 'open'` for a pending application on an open bounty (not blocked). Ranked with 等对方.
+- `bounty_detail(...)` (Task 1 adds): `charge` (`'free'` / `'coin'`) for the poster while `open`.
+- `bounty_cancel_preview(...)` (Task 1 adds): `waiverBackAt` (when the used waiver's 60 days end) when
+  `waiverAvailable = false`.
+- Typed RPC reasons the client maps: `invalid_transition` → refresh and show 「这单的状态变了」; `not_helper` /
+  `not_poster` → load-failed; network → 「没发出去，再试一次」.
+- Accessory kinds after this step: `oweMoney › rideSoon › owedToYou › bountyAction › bountyInProgress ›
+waitingConfirm` (9A).
+
+## Tasks
+
+### Task 1: SQL — pending applicant card, close charge, waiver date (63A, 58A, 8A)
+
+- [ ] Migration `supabase/migrations/20261029000100_bounty_status_reads.sql`: replace `bounty_live_items`,
+      `bounty_detail` (the privacy version in `20261027000500`) and `bounty_cancel_preview` with the three additions.
+- [ ] pgTAP in `supabase/tests/`: an applicant sees one pending row and loses it on select (then the `not_selected`
+      card) and on withdraw; a blocked pair sees none; `charge` only for the poster while open; `waiverBackAt` set only
+      when the waiver is used.
+- [ ] `supabase test db` passes.
+
+### Task 2: Copy in three languages
+
+- [ ] Keys under `bounty.status.*`, `bounty.live.*`, `bounty.cancel.*`, `bounty.close.*`, `bounty.eta.*`,
+      `bounty.issue.*`, `home.card.bounty.*`, zh-Hans first from the canvas boards (7A, 8A, 9A table, Q57–63), then en
+      and ms. `src/lib/i18n/resources.test.ts` passes.
+
+### Task 3: Live-item contract and home cards (9A, 57A, 63A)
+
+- [ ] Move `ProgressDetail` and siblings to `src/lib/liveItems.ts`; add `bountyAction` and `BountyCardDetail` (role,
+      status, title, category, reward, counterpart, line, action label, target path, one-time flag).
+- [ ] `src/features/home`: a bounty card per item, the action pill on `bountyAction`, tap → target path; the strip
+      line for the front bounty card; one-time cards per ruling 7. Unit tests on ordering and stage lines.
+- [ ] Update the home cases whose feed changes (`home_*`), run them once.
+
+### Task 4: Bounty live source
+
+- [ ] `src/features/bounty/live/`: service (Supabase `bounty_live_items` and a fixture with every 9A row), store,
+      `liveItems.setSource('bounties', …)` with status and retry, mapping to items with copy via `t()`. Unit tests on
+      the mapping for every row of the 9A table.
+
+### Task 5: Status service and timeline model
+
+- [ ] `src/features/bounty/status/`: service wrapping `bounty_detail`, `start_bounty`, `update_eta`,
+      `complete_bounty`, `confirm_bounty`, `report_bounty_problem`, `cancel_bounty`, `bounty_cancel_preview`,
+      `close_bounty`, with typed results; a fixture service with every state; a pure `timeline(detail, role)` per ruling 2
+      and `statusActions(detail, role)`; reducer for in-flight and failure states. Unit tests for every state × role.
+
+### Task 6: Status screen 7A
+
+- [ ] Route `src/app/(tabs)/bounty/status/[id].tsx`, screen with summary, timeline, address section (built), pinned
+      actions; refresh per ruling 3. Debug scenes for every state × role. UI case `bounty_status_states` (zh-Hans light,
+      `ms` in LOCALES), run once.
+
+### Task 7: Helper actions — 出发 with ETA, change ETA, 完成 (59B, 60A, 61A)
+
+- [ ] ETA sheet (`pageSheet` medium detent, system wheel `DateTimePicker` from `@expo/ui`, default now + 30 min,
+      「好」); 出发 calls `start_bounty(eta)`; 「改预计到达时间」 reuses the sheet with `update_eta`; the strike motion
+      (opacity + translate, Reduce Motion: no motion). 完成 one tap with the success haptic. UI case
+      `bounty_status_helper` with video for the ETA change, run once.
+
+### Task 8: Poster actions — 确认完成, 有问题, cancel and close (62A, 8A, 58A)
+
+- [ ] 确认完成: `ConfirmationDialog` with the amount → `confirm_bounty` → push `/pay/[paymentId]`. 有问题: sheet with a
+      multi-line reason (≤ 140) → `report_bounty_problem`. Cancel after selection (both roles, ⋯ menu): preview →
+      action sheet per ruling 5 → `cancel_bounty`. Close before selection: applicant list ⋯ → 「关掉这单」 → action sheet
+      with the charge → `close_bounty`. UI case `bounty_status_poster`, run once.
+
+### Task 9: Detail and applicant screens key on status; links to the status screen
+
+- [ ] The parked step-5 fix: 「选好了{name}」 and 「{poster}选了你」 only while the status is `assigned` or later and not
+      `cancelled`; a cancelled bounty shows 「这单取消了」. Parties see 「看进度」 to the status screen. Update
+      `bounty_detail_outcome` and the applicant cases, run them.
+
+### Task 10: Worst case, story map, PR gate
+
+- [ ] `break-ui` on the status screen and the bounty home cards (long names, long reasons, ms); fix what breaks.
+- [ ] `docs/story-map.md` criteria for 7A, 8A, 9A, 57A–63A with their tests; `check-story-map` passes.
+- [ ] Fast checks, `verify:smoke`, retro, `spec-lifecycle` (Deviations only), PR.
 
 ## Motion
 
