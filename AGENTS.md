@@ -143,7 +143,7 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
 
 ## Checks
 
-- Before commit: `bunx expo lint <files>`, `bunx tsc --noEmit`, `bun run format:check` (the same
+- Before commit: `bun run lint:changed <base>`, `bunx tsc --noEmit`, `bun run format:check` (the same
   command CI runs; run it after any scripted edit to JSON or config).
 - Logic tests run with `bun test`. UI work runs `node scripts/design-check.mjs`; tokens live only in
   `docs/design-language.md` and `src/ui/theme/tokens.ts`, and product code never uses raw colours,
@@ -226,5 +226,8 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
 - Keep the root `ThemeProvider` in `src/app/_layout.tsx`, and every case asserts appearance with
   pixels. Reason: removing it left the navigation bar white in dark mode while all AX
   assertions passed; only a screenshot showed it.
-- Run lint through `bun run lint -- <files>` (checks Node >= 20.19.4 first). Reason: under Node 18
-  `bunx expo lint` prints an "outdated" notice and exits 0 without linting, a false pass.
+- Lint changed files with `bun run lint:changed <base>` (default `origin/main`): it lists committed, staged, unstaged
+  and new files since the base, puts Homebrew Node first and runs `bun run lint`, which checks Node >= 20.19.4. Do not
+  build file lists in the shell. Reasons: under Node 18 `bunx expo lint` exits 0 without linting, a false pass; shell
+  constructs such as zsh `${(f)...}` arrays cannot be parsed by the permission check and stop every agent for approval
+  (2026-10-29).

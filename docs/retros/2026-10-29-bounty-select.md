@@ -37,3 +37,8 @@ Started overnight 2026-10-28 with the user's advance approval of every recommend
    the one-line name by the position of the 帮过 line, which OCR reads in both appearances, and reads the tier in light
    only. Tag `ocr-dark-secondary`. Candidate: a note in `verification/ui/README.md` that OCR on secondary text in dark is
    unreliable, so a case asserts layout through AX frames or a primary-ink line.
+8. The user asked why permission prompts kept appearing: agents built changed-file lists for lint with zsh constructs
+   (`files=(${(f)"$(git diff …)"})`), which the permission check cannot parse ("Dangerous rm operation not ruled out"),
+   so each one stopped for approval. The cause was the controller's instruction to lint only changed files without a
+   tool to do it. Tag `unparseable-shell`. Done: `bun run lint:changed <base>` (scripts/lint-changed.mjs) and AGENTS.md
+   points to it; dispatch prompts use it from now on.
