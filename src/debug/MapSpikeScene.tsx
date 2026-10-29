@@ -6,8 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { pointAt } from '@/features/bounty/board/fixtureBoardData';
 import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
+import { uiVerifyArgument } from '@/lib/uiVerify';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
+
+const BARE = uiVerifyArgument('spikeBare') === '1';
 
 const PINS = [
   { id: 'b01', art: 'pickup', meters: 300, bearing: 160, title: '帮取快递' },
@@ -62,7 +65,7 @@ export function MapSpikeScene({ onReady }: { onReady: () => void }) {
 
   const annotations = useMemo(
     () =>
-      loaded
+      loaded && !BARE
         ? PINS.map((pin) => ({
             id: pin.id,
             coordinates: pointAt(SUNWAY_PYRAMID, pin.meters, pin.bearing),
@@ -85,7 +88,7 @@ export function MapSpikeScene({ onReady }: { onReady: () => void }) {
         style={StyleSheet.absoluteFill}
         cameraPosition={{ coordinates: SUNWAY_PYRAMID, zoom: 14.5 }}
         annotations={annotations}
-        properties={{ isMyLocationEnabled: true, selectionEnabled: false }}
+        properties={{ isMyLocationEnabled: true, selectionEnabled: false, emphasis: BARE ? ('MUTED' as AppleMaps.MapProperties['emphasis']) : undefined }}
         uiSettings={{ compassEnabled: false, myLocationButtonEnabled: false }}
         onAnnotationClick={(event) => {
           setTaps((count) => count + 1);
@@ -100,6 +103,7 @@ export function MapSpikeScene({ onReady }: { onReady: () => void }) {
           push(`camera z${event.zoom.toFixed(1)}`);
         }}
       />
+      {BARE ? null : (
       <View style={[styles.panel, { top: insets.top + vars['--space-2'] }]} pointerEvents="box-none">
         <AppText variant="meta" testID="map-spike-status" accessible>
           {`pins ${annotations.length} · firstCamera ${firstCamera ?? '-'}ms · annTaps ${taps} · mapTaps ${mapTaps}`}
@@ -139,6 +143,7 @@ export function MapSpikeScene({ onReady }: { onReady: () => void }) {
           </Pressable>
         </View>
       </View>
+      )}
     </View>
   );
 }
