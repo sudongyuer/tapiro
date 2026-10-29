@@ -68,7 +68,7 @@ export function ApplicantsScreen({ id, onBack }: { id: string; onBack: () => voi
   };
 
   return (
-    <SheetFrame testID="bounty-applicants" pinnedAbove="tabBar">
+    <SheetFrame testID="bounty-applicants" pinnedAbove="tabBar" onRefresh={model.refresh}>
       {view.body === 'done' ? (
         <ApplicantsHeader detail={detail} status={doneTitle(helper, t)} done />
       ) : (

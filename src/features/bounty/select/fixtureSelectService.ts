@@ -1,7 +1,7 @@
 import type { Person, Tier } from '../board/types';
 import { applicantPerson, type Applicant, type SelectOutcome, type SelectService } from './types';
 
-export const APPLICANT_SETS = ['three', 'none', 'one', 'fifty', 'worst'] as const;
+export const APPLICANT_SETS = ['three', 'none', 'one', 'fifty', 'worst', 'grows'] as const;
 export const APPLICANTS_FAILURES = ['none', 'first', 'refresh'] as const;
 export const SELECT_MODES = [
   'ok',
@@ -67,6 +67,7 @@ const JIE = seed(
 );
 const HANA = seed('fixture-applicant-hana', 'Hana', 'new_friend', 0);
 const AIMAN = seed('fixture-applicant-aiman', 'Aiman', 'reliable', 3);
+const MEI = seed('fixture-applicant-mei', 'Mei Ling', 'reliable', 5);
 
 const exactly = (text: string, length: number) =>
   [...text.repeat(length)].slice(0, length).join('');
@@ -127,11 +128,14 @@ const SETS: Record<ApplicantSet, Seed[]> = {
   one: [JIE],
   fifty: FIFTY,
   worst: WORST,
+  grows: [JIE, HANA, AIMAN],
 };
+
+const LATER: Partial<Record<ApplicantSet, Seed[]>> = { grows: [MEI] };
 
 export const FIXTURE_APPLICANT_PEOPLE = [
   ...new Map(
-    Object.values(SETS)
+    [...Object.values(SETS), ...Object.values(LATER)]
       .flat()
       .map((item) => [item.id, { id: item.id, name: item.name }] as const),
   ).values(),
@@ -140,7 +144,7 @@ export const FIXTURE_APPLICANT_PEOPLE = [
 const pause = (ms: number) =>
   ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
-type Posted = { pending: Applicant[]; helper: Applicant | null };
+type Posted = { pending: Applicant[]; helper: Applicant | null; later: Seed[] };
 
 export function createFixtureSelectService(options: FixtureSelectOptions) {
   const base = options.now().getTime();
@@ -162,6 +166,7 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
         appliedAt: new Date(base - (seeds.length - index) * MINUTE_MS).toISOString(),
       })),
       helper: null,
+      later: [...(LATER[options.applicants] ?? [])],
     };
     posted.set(id, fresh);
     return fresh;
@@ -183,6 +188,13 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
         (options.fail === 'refresh' && loads === 2)
       ) {
         throw new TypeError('Network request failed');
+      }
+      if (loads > 1 && !state.helper && state.later.length > 0) {
+        const at = options.now().toISOString();
+        state.pending.push(
+          ...state.later.map((item) => ({ ...item, status: 'pending' as const, appliedAt: at })),
+        );
+        state.later = [];
       }
       const listed = state.helper ? [state.helper] : state.pending;
       return listed.filter((applicant) => !hidden(applicant)).map((item) => ({ ...item }));

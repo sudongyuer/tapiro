@@ -92,6 +92,15 @@ describe('applicants', () => {
     expect(await list(refresh)).toHaveLength(3);
   });
 
+  test('grows: a fourth applicant, Mei Ling, applies before the second load', async () => {
+    const { service } = fixture({ applicants: 'grows' });
+    expect((await list(service)).map((row) => row.name)).toEqual(['阿杰', 'Hana', 'Aiman']);
+    const second = await list(service);
+    expect(second.map((row) => row.name)).toEqual(['阿杰', 'Hana', 'Aiman', 'Mei Ling']);
+    expect(second[3]).toMatchObject({ status: 'pending', appliedAt: NOW.toISOString() });
+    expect(await list(service)).toHaveLength(4);
+  });
+
   test('blocked applicants are hidden', async () => {
     const rows = await list(
       fixture({ isBlocked: (id) => id === 'fixture-applicant-hana' }).service,

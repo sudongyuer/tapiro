@@ -144,6 +144,24 @@ describe('loading', () => {
     expect(detail).toEqual({ kind: 'ready', detail: DETAIL, refreshFailed: true });
   });
 
+  test('a pull keeps the rows on screen while it loads, then shows a new applicant', async () => {
+    const h = await loaded();
+    const pull = h.controller.load();
+    expect(h.controller.get().select.list).toMatchObject({
+      kind: 'ready',
+      refreshing: true,
+      applicants: [applicant('jie'), applicant('hana')],
+    });
+    h.lists[1].resolve([applicant('jie'), applicant('hana'), applicant('mei')]);
+    h.details[1].resolve(DETAIL);
+    await pull;
+    expect(h.controller.get().select.list).toMatchObject({
+      kind: 'ready',
+      refreshing: false,
+      applicants: [applicant('jie'), applicant('hana'), applicant('mei')],
+    });
+  });
+
   test('gone from either read is gone', async () => {
     const h = harness();
     const done = h.controller.load();
@@ -357,5 +375,25 @@ describe('select', () => {
     h.lists[1].resolve([applicant('jie')]);
     await done;
     expect(h.controller.get().select.list).toMatchObject({ applicants: [applicant('jie')] });
+  });
+
+  test('a load that started before the block never brings the blocked row back', async () => {
+    const h = await loaded();
+    const refresh = h.controller.load();
+    expect(h.lists).toHaveLength(2);
+    const done = h.controller.blocked('hana');
+    h.lists[1].resolve([applicant('jie'), applicant('hana')]);
+    h.details[1].resolve(DETAIL);
+    await settle();
+    const ids = () => {
+      const { list } = h.controller.get().select;
+      return list.kind === 'ready' ? list.applicants.map((row) => row.id) : null;
+    };
+    expect(ids()).toEqual(['jie']);
+    expect(h.lists).toHaveLength(3);
+    h.lists[2].resolve([applicant('jie')]);
+    await Promise.all([refresh, done]);
+    expect(ids()).toEqual(['jie']);
+    expect(h.controller.get().select.list).toMatchObject({ refreshing: false });
   });
 });

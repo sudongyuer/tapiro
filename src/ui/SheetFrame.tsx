@@ -1,5 +1,5 @@
 import { Form, Host } from '@expo/ui/swift-ui';
-import { tint } from '@expo/ui/swift-ui/modifiers';
+import { refreshable, tint } from '@expo/ui/swift-ui/modifiers';
 import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,11 +40,13 @@ export function SheetFrame({
   notice,
   testID,
   pinnedAbove = 'homeIndicator',
+  onRefresh,
   children,
 }: {
   notice?: ReactNode;
   testID: string;
   pinnedAbove?: 'homeIndicator' | 'tabBar';
+  onRefresh?: () => Promise<void>;
   children: ReactNode;
 }) {
   const { color } = useTheme();
@@ -55,7 +57,12 @@ export function SheetFrame({
   return (
     <SlotContext.Provider value={slots}>
       <Host style={styles.form} testID={testID}>
-        <Form modifiers={[tint(color('--color-accent'))]}>
+        <Form
+          modifiers={[
+            tint(color('--color-accent')),
+            ...(onRefresh ? [refreshable(onRefresh)] : []),
+          ]}
+        >
           {notice}
           {children}
         </Form>
