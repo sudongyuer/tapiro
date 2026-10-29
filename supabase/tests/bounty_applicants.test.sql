@@ -35,11 +35,11 @@ declare
   pid uuid := ('00000000-0000-0000-0000-00000000' || lpad(n::text, 4, '0'))::uuid;
 begin
   insert into public.payments (
-    id, item_kind, item_id, title, payer_id, payee_id, amount_sen, reference, state,
+    id, item_kind, item_id, title, payer_id, payee_id, amount_minor, currency, reference, state,
     method_type, marked_paid_at, settled_at, reverses
   )
   values (
-    pid, 'bounty', gen_random_uuid(), '帮忙', pg_temp.u(payer), pg_temp.u(payee), 500,
+    pid, 'bounty', gen_random_uuid(), '帮忙', pg_temp.u(payer), pg_temp.u(payee), 500, 'MYR',
     'TP-AAAA', st,
     case when st = 'due' then null else 'cash'::public.payee_method_type end,
     case when st in ('marked_paid', 'settled') then now() end,
@@ -60,7 +60,7 @@ select pg_temp.pay(8, 'a7', 'e5', 'due');
 
 insert into public.coin_ledger (user_id, reason, delta) values (pg_temp.u('a1'), 'help_settled', 1);
 select pg_temp.act_as(pg_temp.u('a1'));
-select public.publish_bounty('10000000-0000-0000-0000-000000000001', '帮取快递', 'pickup', 500, null, 'KL Sentral', 3.1340, 101.6860, 'Block C, 3-2');
+select public.publish_bounty('10000000-0000-0000-0000-000000000001', '帮取快递', 'pickup', 500, 'MYR', null, 'KL Sentral', 3.1340, 101.6860, 'Block C, 3-2');
 
 select pg_temp.act_as(pg_temp.u('e5'));
 select public.apply_to_bounty('10000000-0000-0000-0000-000000000001', 'B note');

@@ -1,7 +1,14 @@
 export const BNM_RATES_URL = 'https://api.bnm.gov.my/public/exchange-rate';
 export const BNM_ACCEPT = 'application/vnd.BNM.API.v1+json';
 
-export type DailyRate = { rateDate: string; session: string; rmPerCny: number };
+export type DailyRate = {
+  base: 'CNY';
+  quote: 'MYR';
+  rateDate: string;
+  source: 'bnm';
+  session: string;
+  quotePerBase: number;
+};
 
 export type FxRateDeps = {
   authorized(token: string): boolean;
@@ -25,7 +32,14 @@ export function parseBnmCny(body: unknown): DailyRate | null {
   if (typeof unit !== 'number' || unit <= 0) return null;
   if (typeof middle !== 'number' || !(middle > 0)) return null;
   if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
-  return { rateDate: date, session, rmPerCny: middle / unit };
+  return {
+    base: 'CNY',
+    quote: 'MYR',
+    rateDate: date,
+    source: 'bnm',
+    session,
+    quotePerBase: middle / unit,
+  };
 }
 
 const json = (status: number, body: unknown) =>

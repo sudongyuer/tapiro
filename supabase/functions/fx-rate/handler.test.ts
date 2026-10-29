@@ -21,9 +21,12 @@ function deps(overrides: Partial<FxRateDeps> = {}) {
 describe('parseBnmCny', () => {
   test('reads the CNY middle rate from a recorded BNM response', () => {
     expect(parseBnmCny(recorded)).toEqual({
+      base: 'CNY',
+      quote: 'MYR',
       rateDate: '2026-10-23',
+      source: 'bnm',
       session: '1700',
-      rmPerCny: 0.6122,
+      quotePerBase: 0.6122,
     });
   });
 
@@ -32,7 +35,7 @@ describe('parseBnmCny', () => {
       meta: { session: '1200' },
       data: [{ currency_code: 'CNY', unit: 100, rate: { date: '2026-10-24', middle_rate: 61.5 } }],
     };
-    expect(parseBnmCny(body)?.rmPerCny).toBeCloseTo(0.615, 6);
+    expect(parseBnmCny(body)?.quotePerBase).toBeCloseTo(0.615, 6);
   });
 
   test('rejects a response without CNY or with a missing rate', () => {
@@ -53,9 +56,12 @@ describe('handleFxRate', () => {
     const res = await handleFxRate(post('service'), d);
     expect(res.status).toBe(200);
     expect(d.store).toHaveBeenCalledWith({
+      base: 'CNY',
+      quote: 'MYR',
       rateDate: '2026-10-23',
+      source: 'bnm',
       session: '1700',
-      rmPerCny: 0.6122,
+      quotePerBase: 0.6122,
     });
   });
 

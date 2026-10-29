@@ -2,14 +2,16 @@ export type UnsettledPayment = {
   id: string;
   title: string;
   counterpartName: string;
-  amountSen: number;
+  amountMinor: number;
+  currency: string;
   direction: 'owe' | 'owed';
 };
 
 export type UnsettledRow = {
   id: string;
   title: string;
-  amount_sen: number;
+  amount_minor: number;
+  currency: string;
   payer_id: string | null;
   payee_id: string | null;
 };
@@ -26,7 +28,8 @@ export function toUnsettledPayments(
       id: row.id,
       title: row.title,
       counterpartName: (counterpart && names[counterpart]) || '',
-      amountSen: row.amount_sen,
+      amountMinor: row.amount_minor,
+      currency: row.currency,
       direction: owe ? 'owe' : 'owed',
     };
   });
@@ -36,14 +39,16 @@ export type ActiveBounty = {
   id: string;
   title: string;
   counterpartName: string;
-  amountSen: number;
+  amountMinor: number;
+  currency: string;
   role: 'poster' | 'helper';
 };
 
 export type ActiveBountyRow = {
   id: string;
   title: string;
-  reward_sen: number;
+  reward_minor: number;
+  reward_currency: string;
   role: 'poster' | 'helper';
   counterpart_id: string | null;
 };
@@ -56,7 +61,8 @@ export function toActiveBounties(
     id: row.id,
     title: row.title,
     counterpartName: (row.counterpart_id && names[row.counterpart_id]) || '',
-    amountSen: row.reward_sen,
+    amountMinor: row.reward_minor,
+    currency: row.reward_currency,
     role: row.role,
   }));
 }

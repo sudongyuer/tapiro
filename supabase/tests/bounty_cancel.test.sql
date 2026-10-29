@@ -26,7 +26,7 @@ begin
   values ('00000000-0000-0000-0000-0000000000a1', 'help_settled', 1);
   perform pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
   perform public.publish_bounty(
-    item, '帮取快递', 'pickup', 500, starts_at => case when starts_ago is not null then now() + interval '1 hour' end
+    item, '帮取快递', 'pickup', 500, 'MYR', starts_at => case when starts_ago is not null then now() + interval '1 hour' end
   );
   update public.bounties set starts_at = now() - starts_ago where id = item and starts_ago is not null;
   perform pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');

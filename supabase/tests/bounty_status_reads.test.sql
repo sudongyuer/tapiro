@@ -37,7 +37,7 @@ declare
 begin
   insert into public.coin_ledger (user_id, reason, delta) values (pg_temp.u('a1'), 'help_settled', 1);
   perform pg_temp.act_as(pg_temp.u('a1'));
-  perform public.publish_bounty(item, '帮取快递', 'pickup', 500, null, 'KL Sentral', 3.1340, 101.6860, 'Block C, 3-2');
+  perform public.publish_bounty(item, '帮取快递', 'pickup', 500, 'MYR', null, 'KL Sentral', 3.1340, 101.6860, 'Block C, 3-2');
   foreach applicant in array applicants loop
     perform pg_temp.act_as(pg_temp.u(applicant));
     perform public.apply_to_bounty(item);

@@ -22,7 +22,7 @@ begin
   values ('00000000-0000-0000-0000-0000000000a1', 'help_settled', 1);
   perform pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
   perform public.publish_bounty(
-    item, '帮取快递', 'pickup', 500, starts_at => now() + interval '1 hour',
+    item, '帮取快递', 'pickup', 500, 'MYR', starts_at => now() + interval '1 hour',
     deadline_at => case when with_deadline then now() + interval '1 day' end
   );
   if state <> 'open' then
@@ -93,7 +93,7 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select public.complete_bounty(pg_temp.fx('redo'));
 select public.open_payment(
   'bounty', pg_temp.fx('done-broken'), '帮取快递', '00000000-0000-0000-0000-0000000000a1',
-  '00000000-0000-0000-0000-0000000000b2', 500
+  '00000000-0000-0000-0000-0000000000b2', 500, 'MYR'
 );
 
 select is(
@@ -143,9 +143,9 @@ select is(
   array['auto_confirmed done confirmed job'], 'with one auto_confirmed event and no actor'
 );
 select is(
-  (select array_agg(row(payer_id, payee_id, amount_sen, state::text, category::text)::text) from public.payments
+  (select array_agg(row(payer_id, payee_id, amount_minor, currency, state::text, category::text)::text) from public.payments
    where item_kind = 'bounty' and item_id = pg_temp.fx('done-old')),
-  array[row('00000000-0000-0000-0000-0000000000a1'::uuid, '00000000-0000-0000-0000-0000000000b2'::uuid, 500, 'due',
+  array[row('00000000-0000-0000-0000-0000000000a1'::uuid, '00000000-0000-0000-0000-0000000000b2'::uuid, 500, 'MYR', 'due',
     'pickup')::text],
   'and one due payment with the category'
 );

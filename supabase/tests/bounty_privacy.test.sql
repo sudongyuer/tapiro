@@ -32,10 +32,10 @@ create function pg_temp.bounty(
   helper uuid default null
 ) returns uuid language sql as $$
   insert into public.bounties (
-    id, poster_id, helper_id, title, category, reward_sen, place, place_label, expires_at, status, created_at
+    id, poster_id, helper_id, title, category, reward_minor, reward_currency, place, place_label, expires_at, status, created_at
   )
   values (
-    pg_temp.b(n), pg_temp.u('a1'), helper, '帮取快递', 'pickup', 500,
+    pg_temp.b(n), pg_temp.u('a1'), helper, '帮取快递', 'pickup', 500, 'MYR',
     case when lat is not null then
       extensions.st_setsrid(extensions.st_makepoint(lng, lat), 4326)::extensions.geography
     end,

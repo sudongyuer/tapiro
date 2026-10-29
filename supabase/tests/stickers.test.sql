@@ -19,8 +19,8 @@ values ('00000000-0000-0000-0000-0000000000b2', 'cash'), ('00000000-0000-0000-00
 create temp table ids (name text primary key, id uuid);
 grant all on ids to authenticated;
 insert into ids values
-  ('parcel', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200, item_category => 'pickup')),
-  ('ride', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 850));
+  ('parcel', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200, 'MYR', item_category => 'pickup')),
+  ('ride', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 850, 'MYR'));
 
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
@@ -99,7 +99,7 @@ select is(
 
 reset role;
 insert into ids values
-  ('help', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500, item_category => 'queue'));
+  ('help', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500, 'MYR', item_category => 'queue'));
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select is(
@@ -124,8 +124,8 @@ select throws_ok(
   '23514', null, 'a sticker category is one of the eight slugs'
 );
 insert into ids values
-  ('pre', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 600)),
-  ('old', public.open_payment('ride', gen_random_uuid(), '拼车去 Sunway', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700));
+  ('pre', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 600, 'MYR')),
+  ('old', public.open_payment('ride', gen_random_uuid(), '拼车去 Sunway', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700, 'MYR'));
 insert into public.stickers (owner_id, payment_id, role, item_kind, title)
 values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'pre'), 'payee', 'bounty', '帮忙排队');
 set local role authenticated;
@@ -157,9 +157,9 @@ select is(
   'the backfill leaves the settled reverse payment without a sticker'
 );
 insert into ids values
-  ('gone', public.open_payment('bounty', gen_random_uuid(), '帮忙搬宿舍', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 2000, item_category => 'move'));
+  ('gone', public.open_payment('bounty', gen_random_uuid(), '帮忙搬宿舍', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 2000, 'MYR', item_category => 'move'));
 insert into ids values
-  ('orphan', public.open_payment('bounty', gen_random_uuid(), '帮忙拿外卖', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 900));
+  ('orphan', public.open_payment('bounty', gen_random_uuid(), '帮忙拿外卖', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR'));
 update public.payments set state = 'settled', settled_at = now(), method_type = 'cash'
 where id = (select id from ids where name = 'gone');
 delete from auth.users where id = '00000000-0000-0000-0000-0000000000d4';

@@ -23,9 +23,9 @@ $$;
 create function pg_temp.bounty(
   id uuid, state public.bounty_status default 'open', helper uuid default null
 ) returns uuid language sql as $$
-  insert into public.bounties (id, poster_id, helper_id, title, category, reward_sen, expires_at, status, done_at)
+  insert into public.bounties (id, poster_id, helper_id, title, category, reward_minor, reward_currency, expires_at, status, done_at)
   values (
-    id, '00000000-0000-0000-0000-0000000000a1', helper, '帮取快递', 'pickup', 500, now() + interval '7 days', state,
+    id, '00000000-0000-0000-0000-0000000000a1', helper, '帮取快递', 'pickup', 500, 'MYR', now() + interval '7 days', state,
     case when state in ('done', 'disputed') then now() end
   )
   returning id;

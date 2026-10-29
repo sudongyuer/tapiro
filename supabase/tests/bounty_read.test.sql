@@ -47,7 +47,7 @@ declare
 begin
   insert into public.coin_ledger (user_id, reason, delta) values (pg_temp.u(poster), 'help_settled', 1);
   perform pg_temp.act_as(pg_temp.u(poster));
-  perform public.publish_bounty(item, '帮取快递', 'pickup', 500, null, 'KL Sentral', 3.1340, 101.6860, 'Block C, 3-2');
+  perform public.publish_bounty(item, '帮取快递', 'pickup', 500, 'MYR', null, 'KL Sentral', 3.1340, 101.6860, 'Block C, 3-2');
   foreach applicant in array applicants loop
     perform pg_temp.act_as(pg_temp.u(applicant));
     perform public.apply_to_bounty(item, case applicant when 'b2' then '我可以' when 'd4' then '我也行' end);
@@ -139,12 +139,12 @@ select 'ride', gen_random_uuid(), pg_temp.u('e5'), 'free', public.malaysia_month
 select pg_temp.post('coin_expiring', 'e5', array[]::text[]);
 update public.bounties set expires_at = now() - interval '1 minute' where id = pg_temp.fx('coin_expiring');
 select private.run_bounty_jobs(now());
-insert into public.bounties (id, poster_id, title, category, reward_sen, expires_at, status, status_changed_at)
-select gen_random_uuid(), pg_temp.u('c3'), '旧的悬赏', 'other', 500, now(), 'closed', now() - make_interval(mins => i)
+insert into public.bounties (id, poster_id, title, category, reward_minor, reward_currency, expires_at, status, status_changed_at)
+select gen_random_uuid(), pg_temp.u('c3'), '旧的悬赏', 'other', 500, 'MYR', now(), 'closed', now() - make_interval(mins => i)
 from generate_series(1, 21) as i;
 insert into fx values ('old_confirmed', gen_random_uuid());
-insert into public.bounties (id, poster_id, title, category, reward_sen, expires_at, status, status_changed_at)
-values (pg_temp.fx('old_confirmed'), pg_temp.u('c3'), '还没付', 'other', 500, now(), 'confirmed', now() - interval '1 day');
+insert into public.bounties (id, poster_id, title, category, reward_minor, reward_currency, expires_at, status, status_changed_at)
+values (pg_temp.fx('old_confirmed'), pg_temp.u('c3'), '还没付', 'other', 500, 'MYR', now(), 'confirmed', now() - interval '1 day');
 
 set local role authenticated;
 
@@ -173,12 +173,12 @@ select is(
   'poster.tier equals reputation_tier of the poster'
 );
 select is(
-  pg_temp.detail('a1', 'main') - array['id', 'title', 'description', 'category', 'rewardSen', 'place', 'startsAt',
+  pg_temp.detail('a1', 'main') - array['id', 'title', 'description', 'category', 'rewardMinor', 'rewardCurrency', 'place', 'startsAt',
     'endsAt', 'deadlineAt', 'expiresAt', 'publishedAt', 'poster', 'events'],
   jsonb_build_object(
     'status', 'open', 'viewerRole', 'poster', 'distanceM', null, 'address', 'Block C, 3-2', 'helper', null,
     'myApplication', null, 'applicantCount', 2, 'charge', 'free', 'etaAt', null, 'previousEtaAt', null, 'autoConfirmAt', null, 'startLate', false,
-    'issueReason', null, 'payment', null
+    'issueReason', null, 'payment', null, 'reference', null
   ),
   'the poster reads the address and the pending applicant count'
 );
@@ -205,7 +205,7 @@ select throws_ok(
 );
 
 select is(
-  pg_temp.mine('a1', 'posted', 'main') - array['id', 'title', 'category', 'rewardSen', 'placeLabel', 'startsAt',
+  pg_temp.mine('a1', 'posted', 'main') - array['id', 'title', 'category', 'rewardMinor', 'rewardCurrency', 'placeLabel', 'startsAt',
     'deadlineAt', 'expiresAt'],
   '{"status": "open", "applicantCount": 2, "applicationStatus": null, "counterpartName": null}'::jsonb,
   'the poster''s list holds the bounty with two applicants'
@@ -487,7 +487,7 @@ select throws_ok(
 );
 
 reset role;
-create temp table fns as select unnest(array['public.bounty_detail(uuid, double precision, double precision)',
+create temp table fns as select unnest(array['public.bounty_detail(uuid, double precision, double precision, text)',
   'public.my_bounties()', 'public.bounty_applicants(uuid)', 'public.bounty_live_items()', 'public.mark_bounty_seen(uuid, public.bounty_seen_card)']) f;
 select is(
   (select count(*) from fns where has_function_privilege('anon', f, 'execute')), 0::bigint,

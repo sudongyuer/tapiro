@@ -86,6 +86,7 @@ describe('account-delete (local stack)', () => {
       payer: a.id,
       payee: b.id,
       amount: 1500,
+      currency: 'MYR',
     });
     expect(opened.error).toBeNull();
     const blocked = await post({ Authorization: `Bearer ${a.token}`, apikey: anonKey });
@@ -96,7 +97,8 @@ describe('account-delete (local stack)', () => {
         id: opened.data,
         title: '帮取快递',
         counterpartName: 'user-b',
-        amountSen: 1500,
+        amountMinor: 1500,
+        currency: 'MYR',
         direction: 'owe',
       },
     ]);
@@ -159,7 +161,8 @@ describe('account-delete with bounties (local stack)', () => {
         id,
         title: '帮取快递',
         category: 'pickup',
-        reward_sen: 500,
+        reward_minor: 500,
+        reward_currency: 'MYR',
       });
       await call(helper.client, 'apply_to_bounty', { bounty: id });
     }
@@ -181,7 +184,8 @@ describe('account-delete with bounties (local stack)', () => {
           id: assigned,
           title: '帮取快递',
           counterpartName: 'helper',
-          amountSen: 500,
+          amountMinor: 500,
+          currency: 'MYR',
           role: 'poster',
         },
       ],
@@ -193,7 +197,8 @@ describe('account-delete with bounties (local stack)', () => {
         id: assigned,
         title: '帮取快递',
         counterpartName: 'poster',
-        amountSen: 500,
+        amountMinor: 500,
+        currency: 'MYR',
         role: 'helper',
       },
     ]);

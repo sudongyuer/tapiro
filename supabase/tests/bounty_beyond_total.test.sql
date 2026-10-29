@@ -32,12 +32,12 @@ create function pg_temp.bounty(
   minutes integer default null
 ) returns uuid language sql as $$
   insert into public.bounties (
-    id, poster_id, helper_id, title, category, reward_sen, place, place_label, expires_at, status, created_at,
+    id, poster_id, helper_id, title, category, reward_minor, reward_currency, place, place_label, expires_at, status, created_at,
     starts_at, ends_at
   )
   values (
     pg_temp.b(n), pg_temp.u(poster),
-    case when state <> 'open' then pg_temp.u('d4') end, '帮取快递', 'pickup', 500,
+    case when state <> 'open' then pg_temp.u('d4') end, '帮取快递', 'pickup', 500, 'MYR',
     case when lat is not null then
       extensions.st_setsrid(extensions.st_makepoint(lng, lat), 4326)::extensions.geography
     end,

@@ -39,7 +39,7 @@ $$;
 create function pg_temp.settled_payment(kind public.payment_item_kind, payer uuid, payee uuid) returns uuid
 language plpgsql as $$
 declare
-  opened uuid := public.open_payment(kind, gen_random_uuid(), '帮取快递', payer, payee, 1000);
+  opened uuid := public.open_payment(kind, gen_random_uuid(), '帮取快递', payer, payee, 1000, 'MYR');
 begin
   update public.payments set state = 'settled', settled_at = now(), method_type = 'cash' where id = opened;
   return opened;
@@ -398,7 +398,7 @@ select is(
 
 insert into ids values
   ('ride', pg_temp.settled_payment('ride', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7')),
-  ('due', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7', 500));
+  ('due', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a7', 500, 'MYR'));
 insert into ids values ('reverse', public.open_reverse_payment((select id from ids where name = 'help1')));
 update public.payments set state = 'settled', settled_at = now(), method_type = 'cash'
 where id = (select id from ids where name = 'reverse');
@@ -445,8 +445,8 @@ select is(
 
 insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000b8', 'cash');
 insert into ids values
-  ('settle1', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000b8', 1000)),
-  ('settle2', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000b8', 500));
+  ('settle1', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000b8', 1000, 'MYR')),
+  ('settle2', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000b8', 500, 'MYR'));
 insert into counts values ('b8_before', pg_temp.coins_of('00000000-0000-0000-0000-0000000000b8'));
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b8');
