@@ -1,12 +1,12 @@
 ---
 branch: feat/bounty-settle-art
 date: 2026-10-30
-pr: not opened yet
+pr: bounty step 7
 title: 7 settlement art
-escaped: pending
+escaped: 0
 rework: 1
 interventions: 0
-overturned: pending
+overturned: 0
 ---
 
 # Retro: bounty step 7, the payer's sticker and 「一起办成的事」
