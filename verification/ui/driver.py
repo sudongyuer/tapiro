@@ -10,6 +10,8 @@ import subprocess
 import time
 from pathlib import Path
 
+from latency import timed
+
 BUNDLE_ID = 'app.tapiro'
 TRANSITION_ERROR = 'No translation object returned for simulator'
 
@@ -76,9 +78,7 @@ class UI:
         return found.group(1)
 
     def axe(self, *args, timeout=20):
-        started = time.monotonic()
-        proc = subprocess.run(['axe', *args, '--udid', self.udid], text=True, capture_output=True, timeout=timeout)
-        print(f'{time.monotonic() - started:5.1f}s axe {" ".join(args)}', file=sys.stderr, flush=True)
+        proc = timed(f'axe {" ".join(args)}', ['axe', *args, '--udid', self.udid], timeout, text=True)
         error = proc.stderr.strip() or proc.stdout.strip()
         if proc.returncode != 0 or proc.stdout.startswith('Error:'):
             raise AxeError(f'axe {" ".join(args)} failed: {error}')
@@ -209,18 +209,15 @@ class UI:
         self.axe('key-sequence', '--keycodes', ','.join(['42'] * times))
 
     def capture(self, name):
-        subprocess.run(
-            ['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(self.output / f'{name}.png')],
-            check=True, timeout=20, capture_output=True,
-        )
+        timed(f'screenshot {name}', ['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(self.output / f'{name}.png')],
+              20, check=True)
         (self.output / f'{name}.json').write_text(self.axe('describe-ui'))
         return self.output / f'{name}.png'
 
     def frame_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'f.png'
-            subprocess.run(['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(path)],
-                           check=True, timeout=20, capture_output=True)
+            timed('screenshot frame', ['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(path)], 20, check=True)
             return path.read_bytes()
 
     def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0):
