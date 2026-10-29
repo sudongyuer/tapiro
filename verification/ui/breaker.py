@@ -1,6 +1,7 @@
 import re
 
 STREAK = 3
+STALL_TIMEOUTS = 2
 
 
 def timeout_class(message):
@@ -20,3 +21,7 @@ def tripped(results, streak=STREAK):
         return None
     classes = {timeout_class(r['message']) if r['status'] == 'fail' else None for r in tail}
     return classes.pop() if len(classes) == 1 else None
+
+
+def stalled(timeouts, threshold=STALL_TIMEOUTS):
+    return timeouts >= threshold

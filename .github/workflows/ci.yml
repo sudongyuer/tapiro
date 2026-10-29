@@ -29,7 +29,7 @@ jobs:
       - run: node scripts/design-check.mjs
       - run: node scripts/check-specs.mjs --dir docs/specs
       - run: node scripts/check-story-map.mjs
-      - run: python3 -m unittest test_affected test_breaker test_pool
+      - run: python3 -m unittest test_affected test_breaker test_pool test_heal
         working-directory: verification/ui
       - run: node scripts/expo-doctor-ci.mjs
       - run: bunx expo export --platform ios --output-dir dist
