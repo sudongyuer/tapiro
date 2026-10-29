@@ -8,11 +8,6 @@ import { RideCard } from './RideCard';
 import { SettledCard } from './SettledCard';
 import { UnavailableCard } from './UnavailableCard';
 
-function collectSettled(stickerId: string) {
-  void collectSticker(stickerId);
-  dismissSettled(stickerId);
-}
-
 export function CardBody({
   card,
   behind,
@@ -43,7 +38,8 @@ export function CardBody({
         <SettledCard
           detail={detail}
           behind={behind}
-          onCollect={() => collectSettled(detail.stickerId)}
+          onCollect={() => void collectSticker(detail.stickerId)}
+          onLeave={() => dismissSettled(detail.stickerId)}
         />
       );
     default:
