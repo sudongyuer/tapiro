@@ -133,7 +133,7 @@ These close small gaps the canvas did not draw, each following an existing decis
 12. **The applicant screen for a bounty that is no longer open** (assigned by another device, expired, cancelled) shows
     the after-selection state (Q52) when assigned, else an inline card 「这条悬赏已经关闭了」 with 返回.
 
-## UI questions (open)
+## UI questions (answered 2026-10-28; see Deviations and rulings)
 
 Drawn on the canvas as questions 45–54 (details, options and drawings: `questions.md`). ★ marks the recommendation.
 
@@ -586,8 +586,8 @@ Tasks that share files or interfaces; run them in order, never in parallel.
       `bounty_detail_outcome`, `bounty_applicants_worst` each ran once (zh-Hans light) with screenshots and the
       `bounty_select` video opened; the reruns named in Pre-flight conflicts ran once; `verify:smoke` passes. Dark, `en`
       and `ms` run at the bounty milestone.
-- [ ] Device checklist entries added (Task 10).
-- [ ] Answers to 45–54 and the build's deviations recorded below for the bounty spec's Implementation Record.
+- [x] Device checklist entries added (Task 10).
+- [x] Answers to 45–54 and the build's deviations recorded below for the bounty spec's Implementation Record.
 
 ## Deviations and rulings
 
@@ -596,4 +596,105 @@ the reason; "cost" is what it costs if the ruling is wrong.
 
 ### UI answers
 
-- 45–54: not answered yet.
+Answered by the user's advance approval of every recommendation (2026-10-28).
+
+- 45 = B: Debug scenes reach the applicant list until step 6. The card-to-list entry is a recorded gap on `bounty.apply.applicants`.
+- 46 = A: the hold button reads 「先选一个人」 and is disabled until a row is chosen.
+- 47 = A: no applicants shows one inline card and no button.
+- 48 = A: the row's second line is 「帮过 N 次」 only; no distance and no change to `apply_to_bounty`.
+- 49 = A: flat gold on the ink track in both modes (`--color-hold-track`, `--color-hold-fill` and their on-colours).
+- 50 = A: 1.0 s linear fill, four haptic ticks, heavy at full.
+- 51 = A: the fill stays, the button reads 「正在选…」, and a failure notice sits above the button.
+- 52 = A: the same screen turns into 「选好了{name}」 with the address.
+- 53 = A: the selected applicant sees 「{poster}选了你」 and the exact address, no stamp.
+- 54 = A: 「这次没选上」 counts as seen when the detail first loads successfully.
+
+Open for the user (not decided; record the answer here):
+
+- (a) `bounty.detail.notSelected.body` in `ms` runs to three lines, so the pinned area still covers 说明 (it scrolls behind it; 33-36% of the screen, under the 38% bound). Options: shorten the ms copy, or move the body into the scrolling content (a change to the Q54 pinned area). Source: Task 8 concern 4, Task 9.
+- (b) The mascot tier heads stay dark ink in dark mode at about 1.2:1 against the row (shared with the board's `TierMark`). Options: keep as identity, or change the heads in dark (a `docs/design-language.md` change). Source: Task 9 review, ruling 1.
+
+### Task 1: server
+
+- An unsettled payment reversal still counts as helped; only a settled reversal removes it. Why: the help happened until it is reversed. Cost: the count is one too high during a dispute. Pinned by two pgTAP assertions added in Task 4.
+- A settled payment reversed by a settled reversal row, and payer-side settles, do not count. Why: `helpedCount` is help received as payee. Mutation-killed (6 SQL mutants).
+- Ordering is by application time (`created_at`), not by id. Why: the screen lists applicants in application order.
+
+### Task 2: copy
+
+- `select.race.*` no longer says 「在另一台设备上」; it reads 「这条悬赏已经选了{name}」. Why: `taken` also follows a lost answer and a retry on the same device (commit 7c64f07).
+- ms uses one payment term (`cara bayaran`) and zh `notPending` uses a plainer tone. Why: matches the neighbouring apply copy.
+- `select.done.*` and `detail.selected.*` address keys were merged into one `bounty.address.*` block in Task 8. Why: one component renders the address on both screens.
+
+### Task 3: hold button and gold token
+
+- Input is `Pressable` press-in/out, not Gesture Handler. Why: the root layout has no `GestureHandlerRootView`, and adding one touches every case. Cost: no drag-off cancel nuance; a scroll that takes the touch fires press-out, so the fill runs back.
+- The gold is a clip container moved by `translateX`, not `scaleX`, with the label drawn twice (on-track and on-fill). Why: the label must stay ink on gold left of the edge and white or cream right of it at every progress; only transforms animate.
+- After a completed hold, a re-press starts from 0, so a quick re-press during the run-back cannot complete twice. Why: a second `onComplete` would be a replayed write.
+- The hint testID is `bounty-select-hold-hint` (not the plan's `bounty-select-hint`). Why: it derives from the button's testID.
+- Haptics: Light at press, Light at 25 %, Medium at 50 % and 75 %, Heavy at 100 % (controller ruling). Why: Q50 A.
+- With Reduce Motion the fill runs as usual and the run-back is 0 ms. Why: the fill is the commitment feedback, not decoration. Device item below.
+
+### Task 4: service and state
+
+- Every non-ok select answer except `gone` reloads the list and the detail, and the send stays `sending` until that reload answers. Why: a lost answer must reconcile to the real state without replaying the write. Cost: a read that hangs keeps the spinner until the service times out.
+- `raced` names the winner only from a read newer than the answer; otherwise it uses the nameless copy. Why: a stale name would mislead.
+- `selected.helperId: null` means selected with the name still pending; the next load fills it, and `doneTitle` falls back to 「选好了人」. Why: never show an empty name.
+- `BountyDetail.helper` and its parser were built here, not in Task 8. Why: the fixture detail needed it.
+- The fixture gives the poster the address before selection, as `bounty_detail` does. Why: mirrors the server; not visible on the applicant screen.
+- `uiVerifySelectedArgs` is a JSON array of `{bounty, applicant}`. Why: a case can assert exactly one select.
+- A new `applicantsController.ts` holds the store and controller. Why: testable without React.
+
+### Task 5: applicant screen
+
+- The checkmark is proven by pixels in its own 17 pt box, and the `isSelected` trait is not readable by axe. Why: axe reports no traits. Device item: VoiceOver reads 「已选中」.
+- The route needs `unstable_settings.initialRouteName: 'index'` and the scene pushes with `withAnchor`. Why: otherwise the pushed screen has no back button.
+- `useApplicants` returned `select` twice and shadowed the state; the action is now `send`. Why: bug found while wiring.
+- The empty card joins title and body with a newline. Why: `InlineState` takes one text.
+
+### Task 6: choosing
+
+- The VoiceOver confirm uses `ActionSheetIOS`, the same as the block confirmation, not a SwiftUI `ConfirmationDialog`. Why: the hold button is an RN `Pressable`; a dialog needs a SwiftUI trigger.
+- The helper is `verification/ui/choose.py`, not `select.py`. Why: a `select.py` shadows the standard library and breaks every case.
+- `SCENE` and `ARGS` are literals in each case. Why: `run.py` reads them with `ast.literal_eval`.
+- The busy state keeps the id `bounty-select-hold` with the label 正在选…. Why: one button, one identity.
+- The done footer 「只有你和{name}看得到」 shows only next to a shown address and a known name. Why: no nameless variant was approved.
+- A loaded detail with no address shows no address row (not a failure); only a failed detail shows 重试. Why: never show an absent address as a load failure.
+- A closed bounty shows no live status line or count. Why: a closed bounty is not waiting for a choice.
+- The fixture counts every select call (`uiVerifySelectAttempts`). Why: a case can prove nothing was replayed.
+- Fill timing is measured from the slope of frames that caught the edge moving. Why: the recorder writes no frames while the screen is still.
+- Parked: busy re-press is proven by unit tests only (an `axe touch` costs about 1.2 s); `raced{helper: null}` does not reload after 好的; a reload that hangs keeps `sending`.
+
+### Task 7: block from the list
+
+- No 屏蔽 menu while a block is in flight or while a select is sending, raced or selected; the hold is disabled while a block is in flight and keeps the chosen name. Why: block and select must not race. Cost: a poster waits a moment to block during a send.
+- The createBlockFlow owns the target and ignores a second block while busy. Why: the spinner must stay on the first person.
+- `bounty_applicant_block` blocks Hana unchosen, then Aiman chosen. Why: a person can be blocked once.
+- The fixture block delay is 2.5 s for everyone and `-uiVerifyBlockDelayMs 6000` for this case. Why: the shared default must not slow `bounty_block`.
+- No VoiceOver custom action: `@expo/ui` has no SwiftUI accessibility-action modifier, so the ContextMenu item is reached through the Actions rotor. Device item below.
+- Parked: failure-card dismissal; the progress frame is asserted through the AX label, not a screenshot; the profile-page entry is a gap on `chat.block.entry`.
+
+### Task 8: outcomes in the detail
+
+- 「看看附近别的悬赏」 is the primary pill and goes back to the board top through `homeSignals.requestTop()` and `dismissTo('/bounty')`. Why: ruling 9. A top request made while the detail still covers the board waits for the board's `transitionEnd` (it landed 54 pt short before).
+- The seen mark fires from `useDetail` on the first successful not-selected load per mount; a failed mark is swallowed. Why: only the load path knows the load succeeded (Q54 A). The server mark is idempotent.
+- A server outcome wins over a local apply write and drops `justApplied`. Why: a stamp must never play over an outcome.
+- The selected pinned area is one line, no mascot (Q53 A).
+- Tilt of the not-selected sticker is asserted from the rotated view's AX frame, not an ink box. Why: the tilted fixture is a different sticker shape.
+- Parked: the seed view can show 已申请 briefly before an outcome loads; the accessory's `requestReveal` does not wait for the board and may land short if tapped while a detail is pushed.
+
+### Task 9: worst case
+
+- Applicant names are one line (`lineLimit(1)`) with the tier fixed (42A); the hold label wraps to two lines and truncates the name in the middle. Why: the verb at both ends stays whole.
+- 「你写的」 runs inline before the note, clamped to 3 lines. Why: keeps the not-selected pinned area at 33-36% of the screen (case bound 38%).
+- Dark tier text is asserted at 4.5:1 from pixels (measured 4.68:1). The tier heads are not asserted. Why: the heads stay dark ink by design; see open item (b).
+- Light-mode tier and meta text use the system hierarchical secondary and measure 3.13:1 on small glyphs. Kept. Why: the HIG baseline; the user can overrule.
+- The disabled hold label is exempt from contrast (WCAG 1.4.3 inactive controls); opacity 0.4 matches `PillButton`.
+- `-uiVerifySelectDelayMs` sets a per-case select delay; `bounty_select` uses 20000. Why: `simctl io screenshot` during a clip recording took up to about 8 s. Cost: if it fails again, take the 02-sending screenshot outside the clip.
+- Parked: the `bounty-detail` testID exists twice (the share check depends on the Host coming first); the tier-width check cannot see a cut head in dark; ms body copy (open item a).
+
+### Device checklist (story-map `device:` entries added or kept in Task 10)
+
+- `bounty.apply.select`: the haptic ramp (light, light, medium, medium, heavy at full); VoiceOver double-tap opens 「选某某来帮你？」 and sends only after confirming; a thumb held while the list scrolls does not start a choice and the fill runs back; Reduce Motion fill and run-back.
+- `bounty.apply.applicants`: VoiceOver reads 「已选中」 on the chosen row.
+- `chat.block.entry`: the VoiceOver Actions rotor offers 「屏蔽某某」.
