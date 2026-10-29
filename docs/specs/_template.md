@@ -31,9 +31,9 @@ issues, or measurements. One or two paragraphs.>
 
 ## Decisions
 
-| Decision | Choice | Why | Alternatives considered |
-| --- | --- | --- | --- |
-| <topic> | <what we will do> | <reason> | <A: …, B: …> |
+| Decision | Choice            | Why      | Alternatives considered |
+| -------- | ----------------- | -------- | ----------------------- |
+| <topic>  | <what we will do> | <reason> | <A: …, B: …>            |
 
 ## Data flow and ownership
 
@@ -42,8 +42,8 @@ A small diagram if a linear description is hard to follow.>
 
 ## Errors and degradation
 
-| Failure | User sees | System does |
-| --- | --- | --- |
+| Failure                                | User sees          | System does                  |
+| -------------------------------------- | ------------------ | ---------------------------- |
 | <offline / rejected / timeout / empty> | <message or state> | <retry, fallback, no replay> |
 
 ## UI/UX and motion
@@ -53,15 +53,15 @@ A small diagram if a linear description is hard to follow.>
 
 ### Screens and states
 
-| Screen | Design board | States to cover |
-| --- | --- | --- |
+| Screen   | Design board        | States to cover                                                              |
+| -------- | ------------------- | ---------------------------------------------------------------------------- |
 | <screen> | <canvas board name> | <empty, one, many, loading, error, long copy (ms), largest text, light/dark> |
 
 ### Motion
 
-| Motion | Purpose (one word) | Trigger | Duration token | Haptic / sound | Reduce Motion |
-| --- | --- | --- | --- | --- | --- |
-| <what moves> | <why> | <user action or event> | <--duration-*> | <none / light / sound> | <fallback> |
+| Motion       | Purpose (one word) | Trigger                | Duration token | Haptic / sound         | Reduce Motion |
+| ------------ | ------------------ | ---------------------- | -------------- | ---------------------- | ------------- |
+| <what moves> | <why>              | <user action or event> | <--duration-*> | <none / light / sound> | <fallback>    |
 
 ## Known limits
 

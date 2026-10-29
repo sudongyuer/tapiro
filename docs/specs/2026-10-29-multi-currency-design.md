@@ -1,12 +1,12 @@
 ---
 title: Money in any currency (RM and ¥ first)
-status: approved
+status: implemented
 created: 2026-10-29
 approved: 2026-10-29
-implemented:
+implemented: 2026-10-30
 supersedes:
 superseded-by:
-pr:
+pr: https://github.com/sudongyuer/tapiro/pull/25
 ---
 
 <!-- Builds on: foundation (payment, fx) and bounty specs; amends their "amount in RM" decisions (listed under
@@ -153,3 +153,82 @@ Motion: none new.
 - UI cases: the post form in CNY; a ¥ bounty on the board and status; the pay sheet converted and without a rate, in
   zh-Hans and ms.
 - Design QA: screenshots beside boards 64–66.
+
+## Implementation Record (2026-10-30)
+
+PR: [#25](https://github.com/sudongyuer/tapiro/pull/25) · Branch `feat/multi-currency`, commits 19d7662..0608763 (plan:
+`docs/plans/2026-10-29-multi-currency.md`, Tasks 1–6).
+
+### What was built
+
+- **Schema**:
+  - `currencies` (MYR, CNY) and `post_limits` (bounty: RM 1–500, ¥1–800, whole units).
+  - Money columns are `*_minor` + `*_currency`, existing rows backfilled to MYR.
+  - `fx_rates` keyed by `(base, quote, rate_date, source)` with BNM rows migrated; `method_currency()`.
+  - Evidence: `supabase/migrations/20261029000200_money_schema.sql` (19d7662).
+- **Payments**:
+  - `open_payment` locks the rate at open, or leaves it null with no rate ≤ 7 days old.
+  - `payment_detail` returns one amount per payee method.
+  - `mark_payment_paid` records `paid_minor`/`paid_currency` and rejects `no_rate`; reversals use the paid amount.
+  - `bounty_detail` returns the payment's locked conversion.
+  - Evidence: `20261029000300_money_payments.sql`, `20261029000500_money_payment_conversion.sql` (19d7662, 0608763).
+- **Client money type**:
+  - `Money`, `formatMoney`/`formatMoneyRange` (RM spaced, ¥ not) and `convertUp`, all in `src/lib/money.ts`.
+  - The `CURRENCIES`/`POST_LIMITS` mirrors are tested against the migration.
+  - No locale string contains `RM` or `¥` (`src/lib/i18n/resources.test.ts`).
+  - Evidence: 8c72121.
+- **64A, 67A**:
+  - The 赏金 row's system pull-down 「RM ⌄」; limits, footer and errors per currency.
+  - Default from `getLocales()[0].currencyCode`, then the last choice kept in the draft.
+  - Evidence: `src/features/bounty/post/RewardRow.tsx`, `src/lib/deviceCurrency.ts` (2d1c411).
+- **65A**: the original amount everywhere. The detail and status headers add 「约 RM x」 from today's rate, then from
+  the payment's locked rate once a payment exists. Evidence: `src/features/bounty/shared/rewardText.ts` (ba812e8,
+  0608763).
+- **66A**:
+  - Each method row shows its own amount, with a footer naming the locked BNM rate and date.
+  - With no rate, methods needing a conversion are disabled; a payee with no method in the currency gets the
+    no-method card.
+  - The payee and celebration show the paid amount, plus the original when it differs.
+  - Evidence: fbb01f7.
+
+### Deviations from the design
+
+- **Rate column names**: `quote_per_base` / `rate_quote_per_base` instead of the plan's `rate`; the name states the
+  direction.
+- **RPC names**: `mark_payment_paid` keeps its name, and `payment_detail` is new.
+- **`reference_currency` parameter**: the board and detail reads take it, because the server cannot know the device's
+  currency.
+- **Celebration reference**: it uses the locked rate (Ruling 3), so the day-rate `latestRate` path was removed.
+- **Rate wording**: the rate reads 「¥1 = RM 0.6122」, with non-breaking spaces so the equation never splits (it split
+  in ms during break-ui).
+- **Default currency**: 3A's default is the device currency only when it is enabled; else MYR.
+
+### Verification
+
+- **pgTAP**: 1003 tests in 24 files, including `money.test.sql` (47) and `bounty_payment_conversion.test.sql` (8).
+- **`bun test`**: 1392 pass. The 4 failures in `scripts/check-file-size.test.ts` fail only from this checkout's
+  root, and pass from any other directory and in CI (retro item 6).
+- **Other checks**: `tsc`, `lint:changed`, `format:check`, design-check, `check-story-map`, `check-file-size` and
+  `check-specs` pass.
+- **UI, one batch run at the end** (45 runs, all pass, no stalled device):
+  - 17 cases in zh-Hans light, 16 in ms, 6 in en, 6 in dark, plus smoke.
+  - New cases: `bounty_post_currency`, `bounty_cny_display`, `pay_sheet_converted`, `pay_sheet_no_rate`,
+    `pay_sheet_no_method`, `money_worst`.
+- **Design QA**: screenshots beside boards 64–66 are in the PR.
+
+### Bugs fixed during implementation
+
+- **Rate equation split in ms**: in ms the rate footer broke between 「¥1 =」 and 「RM 0.6122」. Cause: plain spaces
+  around 「=」. Fix: non-breaking spaces, with a unit test that fails on the old string (0608763).
+- **Post form range text**: it read 「RM 1–RM 500」. Cause: each bound was formatted with its symbol. Fix:
+  `formatMoneyRange` writes one symbol (2d1c411).
+- **The first-payment badge under the landed sticker**: found by the user, built in the payment step. Cause: the
+  badge lived inside the book while the sticker flies in a top layer. Fix: the badge is drawn in the top layer, and
+  `pay_first_settle` gained a pixel check on the overlap (d2a4aeb).
+
+### Known limits
+
+- Only pairs with MYR have a rate source (BNM).
+- Cash is assumed to be in the item's currency.
+- Carpool follows this model when built.
+- `pay.sheet.worst` (RM 12,345.60) remains a story-map gap.

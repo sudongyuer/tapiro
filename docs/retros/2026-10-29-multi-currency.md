@@ -2,7 +2,12 @@
 branch: feat/multi-currency
 date: 2026-10-29
 pr: multi-currency
-status: running
+title: Money in any currency
+status: complete
+escaped: 1
+rework: 2
+interventions: 2
+overturned: 0
 ---
 
 # Retro: money in any currency
@@ -34,6 +39,7 @@ status: running
    - Disjoint tasks now run in parallel worktrees (Task 5 beside Task 4).
    - The runner reboots a stalled device and retries elsewhere (#22, in progress).
    - A file-size check replaces review for the 500-line rule (in progress).
+
 6. After merging main, `scripts/check-file-size.test.ts` fails 4 of 9 tests only when `bun test` runs from this
    checkout's root: the spawned `git` and `node` return no output. The same file passes 9/9 from another directory,
    in the agent's worktree and in CI. There is no `.env`, preload or shim; cause unknown after a 20-minute time-box.
@@ -45,3 +51,26 @@ status: running
    `pay_sheet_converted` passed in ms: the label check reads the AX text, which has no line breaks. Fixed with
    non-breaking spaces around 「=」 and a unit test that fails on a plain space in the equation. Tag `vacuous-check`
    (second, after 4). Candidate: a text that must stay on one line gets a unit check on its spaces, not a label check.
+
+## Outcome
+
+- **Numbers**: 16 commits over 2.8 h of commits; 6 tasks; one batch UI run of 45 runs, all passing, no stalled device.
+- **Escaped (1)**: the first-payment badge hidden under the sticker, from the payment step, found by the user.
+- **Rework (2)**:
+  - the 1081-line migration was split;
+  - the ms rate footer broke, found by break-ui before the PR.
+- **Interventions (2)**:
+  - the currency direction, a product choice for the user;
+  - 「效率还是太低」, a process correction.
+- **Overturned**: none.
+
+## Actions (decided for you)
+
+| Candidate                       | Layer           | Action                                                                                                       |
+| ------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
+| 5 `slow-verify`, `serial-tasks` | rule + practice | Tasks write cases and the feature runs them once (AGENTS.md Pace); disjoint tasks run in parallel worktrees  |
+| 3, 6 `sick-simulator`           | runner          | #24: a stalled device reboots and the run retries elsewhere                                                  |
+| 2, 7 `size-limit`               | CI check        | #24: `check:size` with an allowlist that can only shrink; the bounty locale files were split                 |
+| 4, 8 `vacuous-check`            | case            | Pixel checks where layering or wrapping matters; a third occurrence promotes this to the ios-ui-verify skill |
+| 1 `pgtap-snapshot`              | none yet        | Recorded; a second occurrence adds a note to `supabase/README.md`                                            |
+| 3 `local-port`, 6 `local-env`   | none yet        | Recorded; reproduce on a fresh clone before changing tests                                                   |
