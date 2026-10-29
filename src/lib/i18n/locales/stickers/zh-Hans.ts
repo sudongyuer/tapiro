@@ -6,7 +6,6 @@ export default {
   },
   count_one: '{{count}} 张',
   count_other: '{{count}} 张',
-  cell: '{{title}} · {{date}}',
   empty: {
     title: '还没有贴纸',
     body: '帮别人或找人帮忙，办成一单、钱结清后，贴纸会贴到这里。',

@@ -6,6 +6,8 @@ import { EarnedSticker } from '@/ui/EarnedSticker';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import type { CellLabel } from './cellLabel';
+
 const ROTATIONS = [-5, 4, -3, 6, -4, 3, -6];
 export const CELL_ART = 92;
 
@@ -18,14 +20,14 @@ export function StickerCell({
   sticker: Sticker;
   index: number;
   date: string;
-  label: string;
+  label: CellLabel;
 }) {
   const { color } = useTheme();
   return (
     <View
       style={styles.cell}
       accessible
-      accessibilityLabel={label}
+      accessibilityLabel={label.a11y}
       testID={`sticker-cell-${index}`}
     >
       <View style={{ transform: [{ rotate: `${ROTATIONS[index % ROTATIONS.length]}deg` }] }}>
@@ -42,10 +44,19 @@ export function StickerCell({
       >
         <AppText
           variant="meta"
-          numberOfLines={2}
-          style={[styles.title, { color: color('--color-on-paper') }]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.line1, { color: color('--color-on-paper') }]}
         >
-          {sticker.title}
+          {label.line1}
+        </AppText>
+        <AppText
+          variant="meta"
+          numberOfLines={2}
+          ellipsizeMode="tail"
+          style={[styles.title, { color: color('--color-on-paper-muted') }]}
+        >
+          {label.title}
         </AppText>
       </View>
       <AppText variant="meta" style={styles.date}>
@@ -67,6 +78,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 2,
   },
-  title: { fontWeight: '800', textAlign: 'center' },
+  line1: { fontWeight: '800', textAlign: 'center' },
+  title: { textAlign: 'center' },
   date: { color: PlatformColor('secondaryLabel') },
 });

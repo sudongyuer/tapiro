@@ -9,6 +9,7 @@ import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
+import { cellLabel } from './cellLabel';
 import { StickerCell } from './StickerCell';
 
 const COLUMNS = 3;
@@ -111,7 +112,7 @@ export function StickerBook({ userId }: { userId: string }) {
                       sticker={sticker}
                       index={index}
                       date={date}
-                      label={t('stickers.cell', { title: sticker.title, date })}
+                      label={cellLabel(sticker, date, t)}
                     />
                   );
                 })}

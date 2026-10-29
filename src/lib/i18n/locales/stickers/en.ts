@@ -8,7 +8,6 @@ const en: typeof zhHans = {
   },
   count_one: '{{count}} sticker',
   count_other: '{{count}} stickers',
-  cell: '{{title}} · {{date}}',
   empty: {
     title: 'No stickers yet',
     body: 'Help someone or get help. Once it’s done and paid, the sticker lands here.',

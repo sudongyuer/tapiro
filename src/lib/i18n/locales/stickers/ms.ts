@@ -8,7 +8,6 @@ const ms: typeof zhHans = {
   },
   count_one: '{{count}} pelekat',
   count_other: '{{count}} pelekat',
-  cell: '{{title}} · {{date}}',
   empty: {
     title: 'Belum ada pelekat',
     body: 'Bantu atau dibantu. Setelah selesai dan dibayar, pelekatnya ditampal di sini.',
