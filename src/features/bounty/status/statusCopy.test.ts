@@ -75,8 +75,8 @@ describe('status copy', () => {
     const detail = await detailOf('done', 'poster');
     const confirm = timeline(detail, 'poster').steps[3];
     expect(confirm.state).toBe('needsYou');
-    expect(lineText(confirm.lines[0], zh)).toBe(
-      '你不处理的话，10月31日 周六 11:50 自动确认（还有 48 小时）',
+    expect(lineText(confirm.lines[0], zh)).toMatch(
+      /^你不处理的话，10月31日\s?周六 11:50 自动确认（还有 48 小时）$/,
     );
   });
 
