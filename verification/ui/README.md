@@ -15,15 +15,19 @@ bun run verify:ui design_tokens --appearance dark   # named cases run zh-Hans; a
 bun run verify:clean
 ```
 
-The runner uses a named Simulator, `Tapiro Verify` (iPhone 17 Pro, newest iOS runtime), and
-creates it once if missing; never create Simulators or pass another DerivedData path yourself.
+The runner owns three named Simulators, `Tapiro Verify`, `Tapiro Verify 2` and `Tapiro Verify 3` (iPhone 17 Pro,
+newest iOS runtime), creates each once if missing, and hands the runs to them from one queue; `--workers N` sets how many
+it uses, and `--udid` runs on one given Simulator. Before booting more than one it checks that the disk holding the
+checkout has at least 15 GB free and otherwise runs on `Tapiro Verify` alone, printing why (`pool.py`,
+`python3 -m unittest test_pool`). The extra Simulators shut down when the run ends. The breaker below counts each
+Simulator's runs on their own. Never create Simulators or pass another DerivedData path yourself.
 `--affected` collects `git diff --name-only <base>...HEAD`, uncommitted changes and untracked files, and
 picks each case whose `DEPS` prefixes (or its own file) match one, printing why. A change to shared code
 (`affected.SHARED`: `src/ui/`, `src/lib/`, the root layout and index route, the Debug scenes (`src/debug/`, `src/app/debug/`), `modules/`, `plugins/`, `assets/`,
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, recording and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker` in `verification/ui` covers the selection (and
+before TestFlight. `python3 -m unittest test_affected test_breaker test_pool` in `verification/ui` covers the selection (and
 checks that every case declares `DEPS` that match real paths); CI runs it.
 Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:
 a PR run uses zh-Hans, a milestone run (`--locales`, and the full matrix) adds `en` for every case, and `ms` exists
@@ -68,7 +72,7 @@ case, locale and appearance); the runner ends with a per-case timing table and t
 `verify:build` prints its own wall-clock seconds.
 `log.txt` lists every AXe call with its duration; a timeout message adds the median call time,
 which separates a slow Simulator from a stuck screen. A case gets 180 s unless it declares
-`BUDGET = <seconds>`. Three consecutive runs that fail with the same timeout class (screenshot, `axe <command>`, or the case budget) stop the whole run with a render server CPU sample; `python3 -m unittest test_breaker` in `verification/ui` covers the rule. Only one `verify:ui` run may drive the Simulator at a time; a second run
+`BUDGET = <seconds>`. Three consecutive runs on one Simulator that fail with the same timeout class (screenshot, `axe <command>`, or the case budget) stop the whole run with a render server CPU sample; `python3 -m unittest test_breaker` in `verification/ui` covers the rule. Only one `verify:ui` run may drive the Simulators at a time; a second run
 exits instead of interleaving taps with the first. Every run also takes the machine-wide lock `/tmp/ios-ui-verify.lock` shared with other projects' runners and waits while another project holds it, printing the holder. The lock does not cover `verify:build` or
 scripts that drive the Simulator outside the runner. Do not click or scroll in the Simulator window
 while a run is in progress: a pointer drag reaches the app as a real touch, and a home case once
