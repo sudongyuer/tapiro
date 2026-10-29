@@ -134,6 +134,7 @@ const en: typeof zhHans = {
     tapir_friend: 'Tapir Friend',
   },
   stamp: 'Applied',
+  reference: 'About {{amount}}',
   place: {
     title: 'Choose a Place',
     prompt: 'Choose a place',

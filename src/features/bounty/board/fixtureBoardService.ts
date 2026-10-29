@@ -154,7 +154,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
       title: item.title,
       category: item.category,
       reward: item.reward,
-      reference: null,
+      reference: item.reference,
       placeLabel: item.placeLabel,
       stickerPath: null,
       startsAt: range ? at(range.startInMinutes) : null,

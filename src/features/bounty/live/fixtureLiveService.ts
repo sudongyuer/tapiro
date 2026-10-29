@@ -1,3 +1,4 @@
+import { CNY_REWARD } from '../board/fixtureBoardData';
 import {
   nextMorning,
   STATUS_DATA,
@@ -101,6 +102,7 @@ function worstRow(row: LiveRow, now: Date): LiveRow {
 function fixtureData(row: LiveRow, data: StatusData, now: Date): LiveRow {
   if (data === 'worst') return worstRow(row, now);
   if (data === 'unnamed') return { ...row, counterpartName: null };
+  if (data === 'cny') return { ...row, reward: CNY_REWARD };
   return row;
 }
 

@@ -136,6 +136,7 @@ const ms: typeof zhHans = {
     tapir_friend: 'Kawan Tapir',
   },
   stamp: 'Dipohon',
+  reference: 'Kira-kira {{amount}}',
   place: {
     title: 'Pilih Tempat',
     prompt: 'Pilih satu tempat',

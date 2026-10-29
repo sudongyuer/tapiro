@@ -62,6 +62,27 @@ test('launch arguments pick the board, failure and apply mode', () => {
   });
 });
 
+describe('cny board', () => {
+  test('two ¥ bounties, one with an RM reference and one without, ahead of two RM ones', async () => {
+    const board = service({ board: 'cny', detailId: 'fixture-cny-01' });
+    const { items } = await board.page(ME, 'all', null);
+    expect(items.map((row) => [row.id, row.reward.currency, row.reference?.minor ?? null])).toEqual(
+      [
+        ['fixture-bounty-01', 'MYR', null],
+        ['fixture-cny-01', 'CNY', 3247],
+        ['fixture-bounty-02', 'MYR', null],
+        ['fixture-cny-02', 'CNY', null],
+      ],
+    );
+    const detail = await board.detail('fixture-cny-01', SUNWAY_PYRAMID);
+    expect(detail).toMatchObject({
+      reward: { minor: 5000, currency: 'CNY' },
+      reference: { minor: 3247, currency: 'MYR' },
+    });
+    expect(await board.detail('fixture-cny-02', SUNWAY_PYRAMID)).toMatchObject({ reference: null });
+  });
+});
+
 describe('full board', () => {
   test('12 rows: 9 located with 2 beyond 2 km, 3 unlocated, 2 urgent, 1 applied', async () => {
     const page = await service().page(ME, 'all', null);

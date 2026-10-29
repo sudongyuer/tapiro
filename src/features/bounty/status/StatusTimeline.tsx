@@ -17,13 +17,13 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import {
   etaChangedText,
+  headerReward,
   lineText,
   statusClock,
   stepLabel,
@@ -51,7 +51,7 @@ const ICONS: Record<StepState, SFSymbol> = {
 
 export function StatusHeader({ detail }: { detail: StatusDetail }) {
   const { t, language } = useI18n();
-  const reward = formatMoney(detail.reward, language, { whole: true });
+  const reward = headerReward(detail, t, language);
   const summary = summaryText(detail, detail.viewerRole, t);
   return (
     <Section modifiers={[listRowBackground('clear')]}>
@@ -81,15 +81,28 @@ export function StatusHeader({ detail }: { detail: StatusDetail }) {
             {summary}
           </Text>
         ) : null}
-        <Text
-          modifiers={[
-            font({ size: vars['--text-reward'], weight: 'heavy', design: 'rounded' }),
-            accessibilityLabel(t('bounty.post.confirm.rewardLabel', { amount: reward })),
-            accessibilityIdentifier('bounty-status-reward'),
-          ]}
-        >
-          {reward}
-        </Text>
+        <VStack spacing={vars['--space-1']}>
+          <Text
+            modifiers={[
+              font({ size: vars['--text-reward'], weight: 'heavy', design: 'rounded' }),
+              accessibilityLabel(reward.rewardLabel),
+              accessibilityIdentifier('bounty-status-reward'),
+            ]}
+          >
+            {reward.reward}
+          </Text>
+          {reward.reference ? (
+            <Text
+              modifiers={[
+                font({ textStyle: 'footnote' }),
+                secondary,
+                accessibilityIdentifier('bounty-status-reference'),
+              ]}
+            >
+              {reward.reference}
+            </Text>
+          ) : null}
+        </VStack>
       </VStack>
     </Section>
   );

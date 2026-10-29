@@ -12,11 +12,19 @@ import {
   type StatusScenario,
 } from './fixtureStatusService';
 import { WORST_REASON, type StatusData } from './fixtureStatusWorst';
-import { etaChangedText, lineText, stepLabel, stepText, summaryText } from './statusCopy';
+import {
+  etaChangedText,
+  headerReward,
+  lineText,
+  stepLabel,
+  stepText,
+  summaryText,
+} from './statusCopy';
 import { timeline } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
 
 const NOW = new Date(2026, 9, 29, 12, 0);
+const REFERENCE = { minor: 3247, currency: 'MYR', rateDate: '2026-10-28' } as const;
 
 function copyFor(language: string) {
   const i18n = createInstance().use(sentenceStart);
@@ -162,5 +170,29 @@ describe('status copy', () => {
     const ms = copyFor('ms');
     expect(summaryText(detail, 'poster', ms.t)).toBe('Pihak lain dalam perjalanan');
     expect(stepText(timeline(detail, 'poster').steps[1], ms)).toBe('Pihak lain bertolak');
+  });
+});
+
+describe('header reward', () => {
+  test("a ¥ bounty shows today's RM reference until a payment exists, then nothing", async () => {
+    const before = headerReward(await detailOf('done', 'poster', 'cny'), zh.t, zh.language);
+    expect(before).toEqual({
+      reward: '¥50',
+      rewardLabel: '赏金 ¥50',
+      reference: '约 RM\u00a032.47',
+    });
+    const paid = await detailOf('markedPaid', 'poster', 'cny');
+    expect(paid.reference).toBeNull();
+    expect(headerReward({ ...paid, reference: REFERENCE }, zh.t, zh.language)).toMatchObject({
+      reward: '¥50',
+      reference: null,
+    });
+  });
+
+  test('the payment step names the amount in the reward currency', async () => {
+    const detail = await detailOf('confirmed', 'poster', 'cny');
+    const texts = timeline(detail, 'poster').steps.map((step) => stepText(step, zh));
+    expect(texts.some((text) => text.includes('¥50'))).toBe(true);
+    expect(texts.some((text) => text.includes('RM'))).toBe(false);
   });
 });

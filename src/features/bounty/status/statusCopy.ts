@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { formatMoney } from '@/lib/money';
 
 import { timeParts } from '../post/timeText';
+import { rewardText } from '../shared/rewardText';
 import { counterpartName, statusSummary, type TimelineLine, type TimelineStep } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
 
@@ -80,4 +81,8 @@ export function stepLabel(step: TimelineStep, parts: (string | null)[], copy: Co
     label: parts.filter(Boolean).join(separator),
     state: copy.t(`bounty.status.a11y.${step.state}`),
   });
+}
+
+export function headerReward(detail: StatusDetail, t: TFunction, language: string) {
+  return rewardText(detail.reward, detail.payment ? null : detail.reference, t, language);
 }

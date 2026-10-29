@@ -1,11 +1,11 @@
 import type { Point } from '@/lib/location/types';
 import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
-import type { Money } from '@/lib/money';
+import type { Money, MoneyReference } from '@/lib/money';
 import { BOUNTY_CATEGORIES, type BountyCategory } from '@/lib/stickers/category';
 
 import type { Person, Tier } from './types';
 
-export const BOARDS = ['full', 'one', 'empty', 'worst', 'long'] as const;
+export const BOARDS = ['full', 'one', 'empty', 'worst', 'long', 'cny'] as const;
 export type BoardFixture = (typeof BOARDS)[number];
 
 export type FixtureBounty = {
@@ -13,6 +13,7 @@ export type FixtureBounty = {
   title: string;
   category: BountyCategory;
   reward: Money;
+  reference: MoneyReference | null;
   placeLabel: string | null;
   point: Point | null;
   description: string | null;
@@ -63,8 +64,9 @@ const XIAOYU = person('fixture-poster-xiaoyu', '小雨', 'very_reliable');
 
 type Spec = Omit<
   FixtureBounty,
-  'point' | 'description' | 'window' | 'deadlineInMinutes' | 'applied'
+  'point' | 'reference' | 'description' | 'window' | 'deadlineInMinutes' | 'applied'
 > & {
+  reference?: MoneyReference;
   meters?: number;
   bearing?: number;
   description?: string;
@@ -76,6 +78,7 @@ type Spec = Omit<
 function bounty(spec: Spec): FixtureBounty {
   const { meters, bearing = 0, ...rest } = spec;
   return {
+    reference: null,
     description: null,
     window: null,
     deadlineInMinutes: null,
@@ -327,10 +330,45 @@ const LONG: FixtureBounty[] = Array.from({ length: LONG_COUNT }, (_, index) => {
   });
 });
 
+export const CNY_REWARD: Money = { minor: 5000, currency: 'CNY' };
+export const CNY_REFERENCE: MoneyReference = {
+  minor: 3247,
+  currency: 'MYR',
+  rateDate: '2026-10-28',
+};
+
+const CNY: FixtureBounty[] = [
+  bounty({
+    id: 'fixture-cny-01',
+    title: '帮我带一盒月饼',
+    category: 'buy',
+    reward: CNY_REWARD,
+    reference: CNY_REFERENCE,
+    placeLabel: 'Sunway Pyramid LG',
+    meters: 400,
+    bearing: 60,
+    description: '要双黄白莲蓉的，放 A 座大堂就好。',
+    createdMinutesAgo: 8,
+    poster: XIAOYU,
+  }),
+  bounty({
+    id: 'fixture-cny-02',
+    title: '帮我寄一份文件回国',
+    category: 'handle',
+    reward: { minor: 3000, currency: 'CNY' },
+    placeLabel: 'Pos Malaysia Bandar Sunway',
+    meters: 700,
+    bearing: 200,
+    createdMinutesAgo: 20,
+    poster: JIE,
+  }),
+];
+
 export const FIXTURE_BOARDS: Record<BoardFixture, FixtureBounty[]> = {
   full: FULL,
   one: FULL.slice(3, 4),
   empty: [],
   worst: [...WORST, ...WORST_FILLERS],
   long: LONG,
+  cny: [...CNY, ...FULL.slice(0, 2)],
 };

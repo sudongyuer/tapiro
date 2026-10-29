@@ -130,6 +130,7 @@ export default {
     tapir_friend: '貘友',
   },
   stamp: '已申请',
+  reference: '约 {{amount}}',
   place: {
     title: '选地点',
     prompt: '选一个地方',

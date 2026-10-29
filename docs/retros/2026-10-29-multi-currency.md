@@ -23,3 +23,14 @@ status: running
    label, so it passed with the badge hidden. Fixed by drawing the badge in the top layer, plus a pixel check on the
    overlap that fails on the old screenshot. Tags `vacuous-check`, `layering`. Candidate: an element meant to sit on
    top of another gets a pixel check where they overlap.
+5. The user said throughput is too low (「效率还是太低」). Measured from the session's task durations:
+   - Simulator runs and reruns took over half of each 25–70 min task.
+   - One stalled Simulator cost about an hour.
+   - Tasks ran one at a time because each needed the Simulator.
+   - The first pinned-bar approach was redone (about 20 min).
+
+   Tags `slow-verify`, `serial-tasks`, `sick-simulator` (fourth). Changes:
+   - Tasks write cases and the feature runs them once (AGENTS.md Pace, f7ac024).
+   - Disjoint tasks now run in parallel worktrees (Task 5 beside Task 4).
+   - The runner reboots a stalled device and retries elsewhere (#22, in progress).
+   - A file-size check replaces review for the 500-line rule (in progress).
