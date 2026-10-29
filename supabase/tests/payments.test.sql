@@ -22,25 +22,25 @@ values ('00000000-0000-4000-8000-0000000000c1', '00000000-0000-0000-0000-0000000
 create temp table ids (name text primary key, id uuid);
 grant all on ids to authenticated;
 insert into ids values
-  ('one', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1500)),
-  ('two', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 800)),
-  ('chen', public.open_payment('ride', gen_random_uuid(), 'KLIA', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c3', 2500));
+  ('one', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1500, 'MYR')),
+  ('two', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 800, 'MYR')),
+  ('chen', public.open_payment('ride', gen_random_uuid(), 'KLIA', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c3', 2500, 'MYR'));
 
 select matches((select reference from public.payments where id = (select id from ids where name = 'one')), '^TP-[A-HJ-NP-Z2-9]{4}$', 'reference is TP- plus four characters without 0/O/1/I');
 select is((select state::text from public.payments where id = (select id from ids where name = 'one')), 'due', 'a new payment is due');
 select is((select kind::text from public.payment_events where payment_id = (select id from ids where name = 'one')), 'opened', 'opening logs an event');
 select throws_ok(
-  format($$insert into public.payments (item_kind, item_id, title, payer_id, payee_id, amount_sen, reference)
-    values ('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 100, %L)$$,
+  format($$insert into public.payments (item_kind, item_id, title, payer_id, payee_id, amount_minor, currency, reference)
+    values ('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 100, 'MYR', %L)$$,
     (select reference from public.payments where id = (select id from ids where name = 'one'))),
   '23505', null, 'a reference is unique among the payee''s unsettled payments'
 );
 select throws_ok(
-  $$select public.open_payment('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a1', 100)$$,
+  $$select public.open_payment('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a1', 100, 'MYR')$$,
   '23514', null, 'payer and payee are two people'
 );
 select throws_ok(
-  $$select public.open_payment('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 0)$$,
+  $$select public.open_payment('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 0, 'MYR')$$,
   '23514', null, 'the amount is positive'
 );
 
@@ -50,12 +50,12 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select is((select count(*) from public.payments), 3::bigint, 'the payer reads their payments');
 select is((select count(*) from public.payment_events), 3::bigint, 'the payer reads their payment events');
 select throws_ok(
-  $$select public.open_payment('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 100)$$,
+  $$select public.open_payment('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 100, 'MYR')$$,
   '42501', null, 'a client cannot open a payment'
 );
 select throws_ok(
-  $$insert into public.payments (item_kind, item_id, title, payer_id, payee_id, amount_sen, reference)
-    values ('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 100, 'TP-AAAA')$$,
+  $$insert into public.payments (item_kind, item_id, title, payer_id, payee_id, amount_minor, currency, reference)
+    values ('bounty', gen_random_uuid(), 'x', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 100, 'MYR', 'TP-AAAA')$$,
   '42501', null, 'a client cannot insert a payment'
 );
 select throws_ok(
@@ -195,8 +195,8 @@ select throws_ok(
 );
 insert into ids values ('reverse', public.open_reverse_payment((select id from ids where name = 'one')));
 select is(
-  (select row(payer_id, payee_id, amount_sen, reverses) from public.payments where id = (select id from ids where name = 'reverse')),
-  row('00000000-0000-0000-0000-0000000000b2'::uuid, '00000000-0000-0000-0000-0000000000a1'::uuid, 1500, (select id from ids where name = 'one')),
+  (select row(payer_id, payee_id, amount_minor, currency, reverses) from public.payments where id = (select id from ids where name = 'reverse')),
+  row('00000000-0000-0000-0000-0000000000b2'::uuid, '00000000-0000-0000-0000-0000000000a1'::uuid, 1500::bigint, 'MYR'::char(3), (select id from ids where name = 'one')),
   'a reverse payment has the helper pay the poster back the same amount'
 );
 select is(
@@ -216,7 +216,7 @@ select is(
   'the helper sees no methods of a poster who has none'
 );
 reset role;
-insert into ids values ('proofed', public.open_payment('bounty', gen_random_uuid(), '排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 600));
+insert into ids values ('proofed', public.open_payment('bounty', gen_random_uuid(), '排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 600, 'MYR'));
 
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
@@ -292,39 +292,39 @@ select is((select proof_path from public.payments where id = (select id from ids
 
 insert into ids values ('coffee', public.open_payment(
   'bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900,
-  item_category => 'buy'
+  'MYR', item_category => 'buy'
 ));
 select is(
   (select category::text from public.payments where id = (select id from ids where name = 'coffee')), 'buy',
   'a bounty payment stores its category'
 );
 select throws_ok(
-  format($$select public.open_payment('bounty', %L, '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)$$,
+  format($$select public.open_payment('bounty', %L, '帮带咖啡', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR')$$,
     (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
   '23505', 'payment_exists', 'an item holds one forward payment'
 );
 select lives_ok(
-  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)$$,
+  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR')$$,
     (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
   'the same item id under the other kind opens'
 );
 select lives_ok(
-  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c3', 900)$$,
+  format($$select public.open_payment('ride', %L, '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c3', 900, 'MYR')$$,
     (select item_id from public.payments where id = (select id from ids where name = 'coffee'))),
   'a ride opens one payment per rider'
 );
 select throws_ok(
-  $$select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, item_category => 'parcel')$$,
+  $$select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR', item_category => 'parcel')$$,
   '23514', null, 'a category outside the eight slugs is rejected'
 );
 select throws_ok(
-  $$select public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, item_category => 'pickup')$$,
+  $$select public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR', item_category => 'pickup')$$,
   '23514', null, 'a ride payment carries no category'
 );
 select is(
   has_function_privilege(
     'authenticated',
-    'public.open_payment(public.payment_item_kind, uuid, text, uuid, uuid, integer, uuid, public.bounty_category)',
+    'public.open_payment(public.payment_item_kind, uuid, text, uuid, uuid, bigint, text, uuid, public.bounty_category)',
     'execute'
   ),
   false, 'a client cannot execute open_payment'

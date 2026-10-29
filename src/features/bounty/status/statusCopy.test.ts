@@ -13,8 +13,8 @@ import {
 } from './fixtureStatusService';
 import { WORST_REASON, type StatusData } from './fixtureStatusWorst';
 import {
-  bareAmount,
   etaChangedText,
+  headerReward,
   lineText,
   stepLabel,
   stepText,
@@ -24,6 +24,7 @@ import { timeline } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
 
 const NOW = new Date(2026, 9, 29, 12, 0);
+const REFERENCE = { minor: 3247, currency: 'MYR', rateDate: '2026-10-28' } as const;
 
 function copyFor(language: string) {
   const i18n = createInstance().use(sentenceStart);
@@ -99,9 +100,8 @@ describe('status copy', () => {
   test('the payment step names the amount once', async () => {
     const poster = await detailOf('confirmed', 'poster');
     const helper = await detailOf('confirmed', 'helper');
-    expect(stepText(timeline(poster, 'poster').steps[4], zh)).toBe('付给阿杰 RM 8');
-    expect(stepText(timeline(helper, 'helper').steps[4], zh)).toBe('收 RM 8');
-    expect(bareAmount(1250, 'en')).toBe('12.50');
+    expect(stepText(timeline(poster, 'poster').steps[4], zh)).toBe('付给阿杰 RM\u00a08');
+    expect(stepText(timeline(helper, 'helper').steps[4], zh)).toBe('收 RM\u00a08');
   });
 
   test('the step label names its state', async () => {
@@ -170,5 +170,31 @@ describe('status copy', () => {
     const ms = copyFor('ms');
     expect(summaryText(detail, 'poster', ms.t)).toBe('Pihak lain dalam perjalanan');
     expect(stepText(timeline(detail, 'poster').steps[1], ms)).toBe('Pihak lain bertolak');
+  });
+});
+
+describe('header reward', () => {
+  test("a ¥ bounty shows today's RM reference until a payment exists, then the locked one", async () => {
+    const before = headerReward(await detailOf('done', 'poster', 'cny'), zh.t, zh.language);
+    expect(before).toEqual({
+      reward: '¥50',
+      rewardLabel: '赏金 ¥50',
+      reference: '约 RM\u00a032.47',
+    });
+    const paid = await detailOf('markedPaid', 'poster', 'cny');
+    expect(paid.reference).toBeNull();
+    expect(headerReward({ ...paid, reference: REFERENCE }, zh.t, zh.language)).toMatchObject({
+      reward: '¥50',
+      reference: '约 RM\u00a030.61',
+    });
+    const unconverted = { ...paid, payment: { ...paid.payment!, converted: null } };
+    expect(headerReward(unconverted, zh.t, zh.language).reference).toBeNull();
+  });
+
+  test('the payment step names the amount in the reward currency', async () => {
+    const detail = await detailOf('confirmed', 'poster', 'cny');
+    const texts = timeline(detail, 'poster').steps.map((step) => stepText(step, zh));
+    expect(texts.some((text) => text.includes('¥50'))).toBe(true);
+    expect(texts.some((text) => text.includes('RM'))).toBe(false);
   });
 });

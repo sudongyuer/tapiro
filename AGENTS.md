@@ -186,8 +186,10 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   collect cases into a separate task at the end.
 - UI checks run at milestones, not per PR. Every PR runs the fast checks (`bun test`, `tsc`, lint on changed files,
   `format:check`, `check-specs`, `check-story-map`, pgTAP when SQL changed) and `bun run verify:smoke` (a few core
-  cases, zh-Hans light). UI cases for changed screens are still written in the same task, and each new case is run once
-  by its author. A milestone (a feature area done, for example payment, bounty or carpool, and before each TestFlight
+  cases, zh-Hans light). UI cases for changed screens are still written in the same task, but tasks do not run them:
+  the feature's cases (new and changed, chosen as below) run once, together, when the feature's last task is done, and
+  a fix round reruns only what it touched. Reason: per-task runs and reruns repeated the slowest step (user,
+  2026-10-29). A milestone (a feature area done, for example payment, bounty or carpool, and before each TestFlight
   build) runs the selected cases below, then the user's walkthrough; `bun run verify:full` runs when the machine is
   idle (overnight). Reason: Simulator runs dominated each step's time (user, 2026-10-25). Every case declares
   `DEPS = [...]` path prefixes.
@@ -200,7 +202,6 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   - New or changed copy keys: `en` for the cases that show them.
   - Runner or driver: the runner's unit tests, smoke, and one case per touched helper.
   - Motion: one appearance, with video.
-- A fix round reruns only the cases whose code it touched; the rest run once before the PR.
 - When a check itself is unreliable, find out how to measure the behaviour before changing the check. Reason: the axis
   ring case took three fix rounds, each review finding a deeper timing flaw (2026-10-28).
 - Time-box an intermittent failure to 20 minutes. If `log.txt` and the recording show an outside

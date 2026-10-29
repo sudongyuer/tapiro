@@ -36,7 +36,7 @@ begin
   insert into public.coin_ledger (user_id, reason, delta)
   values ('00000000-0000-0000-0000-0000000000a1', 'help_settled', 1);
   perform pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
-  perform public.publish_bounty(item, '帮取快递', 'pickup', 500);
+  perform public.publish_bounty(item, '帮取快递', 'pickup', 500, 'MYR');
   perform pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
   perform public.apply_to_bounty(item, '我可以');
   perform pg_temp.act_as('00000000-0000-0000-0000-0000000000d4');
@@ -423,9 +423,9 @@ select is(
   'confirming answers confirmed with the payment'
 );
 select is(
-  (select row(pg_temp.who(payer_id), pg_temp.who(payee_id), amount_sen, title, category::text, state::text, reverses)::text
+  (select row(pg_temp.who(payer_id), pg_temp.who(payee_id), amount_minor, currency, title, category::text, state::text, reverses)::text
    from public.payments where item_kind = 'bounty' and item_id = pg_temp.fx('confirm')),
-  row('A', 'B', 500, '帮取快递', 'pickup', 'due', null::uuid)::text,
+  row('A', 'B', 500, 'MYR', '帮取快递', 'pickup', 'due', null::uuid)::text,
   'one forward payment from the poster to the helper for the reward with the title and category'
 );
 select is(

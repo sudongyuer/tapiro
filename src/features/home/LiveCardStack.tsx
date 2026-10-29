@@ -4,6 +4,7 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
+import { formatMoney } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { useLiveCardPaint, type LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
@@ -15,7 +16,7 @@ import { CalmCard, FallbackCard } from './cards/CalmCard';
 import { PayCard } from './cards/PayCard';
 import { RideCard } from './cards/RideCard';
 import { UnavailableCard } from './cards/UnavailableCard';
-import { bountyDetail, moneyText, type LiveCardModel } from './homeModel';
+import { bountyDetail, type LiveCardModel } from './homeModel';
 import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
 
 const MAX_Z = 10;
@@ -154,7 +155,7 @@ function StackedCard({
     ? t('home.card.bounty.label', {
         title: bounty.title,
         line: bounty.line,
-        reward: t('home.money', { amount: moneyText(bounty.rewardSen, language) }),
+        reward: formatMoney(bounty.reward, language, { whole: true }),
       })
     : undefined;
   const ownButton = card.kind === 'oweMoney';

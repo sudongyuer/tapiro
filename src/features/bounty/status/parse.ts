@@ -1,4 +1,4 @@
-import { body, fail, oneOf, text, textOrNull, toBountyDetail } from '../board/parse';
+import { body, fail, money, oneOf, text, textOrNull, toBountyDetail } from '../board/parse';
 import {
   BOUNTY_STATUSES,
   EVENT_ACTORS,
@@ -34,12 +34,20 @@ function toEvent(value: unknown): BountyEvent {
   };
 }
 
+function toConverted(converted: Record<string, unknown>) {
+  return money(converted.minor, converted.currency, 'payment.converted');
+}
+
 function toPayment(value: unknown): StatusDetail['payment'] {
   if (absent(value)) return null;
   const payment = body(value, 'payment');
   return {
     id: text(payment.id, 'payment.id'),
     state: oneOf(PAYMENT_STATES, payment.state, 'payment.state'),
+    amount: money(payment.amountMinor, payment.currency, 'payment.amount'),
+    converted: absent(payment.converted)
+      ? null
+      : toConverted(body(payment.converted, 'payment.converted')),
   };
 }
 

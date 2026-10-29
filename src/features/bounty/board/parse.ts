@@ -1,3 +1,4 @@
+import { toMoney, type Money, type MoneyReference } from '@/lib/money';
 import { bountyCategory } from '@/lib/stickers/category';
 
 import {
@@ -37,6 +38,23 @@ const countOrNull = (value: unknown, what: string): number | null =>
 export const oneOf = <T extends string>(values: readonly T[], value: unknown, what: string): T =>
   values.find((candidate) => candidate === value) ?? fail(what);
 
+export const money = (minor: unknown, currency: unknown, what: string): Money =>
+  toMoney(minor, currency) ?? fail(what);
+
+export function reward(row: Body): Money {
+  const value = money(row.rewardMinor, row.rewardCurrency, 'reward');
+  return value.minor >= 0 ? value : fail('reward');
+}
+
+function toReference(value: unknown): MoneyReference | null {
+  if (value === null || value === undefined) return null;
+  const reference = body(value, 'reference');
+  return {
+    ...money(reference.minor, reference.currency, 'reference'),
+    rateDate: text(reference.rateDate, 'reference.rateDate'),
+  };
+}
+
 const finite = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 
@@ -60,7 +78,8 @@ export function toBoardRow(value: unknown): BoardRow {
     id: text(row.id, 'id'),
     title: text(row.title, 'title'),
     category: bountyCategory(row.category) ?? fail('category'),
-    rewardSen: count(row.rewardSen, 'rewardSen'),
+    reward: reward(row),
+    reference: toReference(row.reference),
     placeLabel: textOrNull(row.placeLabel, 'placeLabel'),
     stickerPath: textOrNull(row.stickerPath, 'stickerPath'),
     startsAt: textOrNull(row.startsAt, 'startsAt'),
@@ -117,7 +136,8 @@ export function toBountyDetail(value: unknown): BountyDetail {
     title: text(detail.title, 'title'),
     description: textOrNull(detail.description, 'description'),
     category: bountyCategory(detail.category) ?? fail('category'),
-    rewardSen: count(detail.rewardSen, 'rewardSen'),
+    reward: reward(detail),
+    reference: toReference(detail.reference),
     status: text(detail.status, 'status'),
     viewerRole,
     place: toPlace(detail.place),

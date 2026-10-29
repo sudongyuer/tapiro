@@ -1,10 +1,11 @@
+import { CNY_REWARD } from '../board/fixtureBoardData';
 import {
   nextMorning,
   STATUS_DATA,
   WORST_HELPER,
   WORST_POSTER,
   WORST_REASON,
-  WORST_REWARD_SEN,
+  WORST_REWARD_MINOR,
   WORST_TITLE,
   type StatusData,
 } from '../status/fixtureStatusWorst';
@@ -67,7 +68,7 @@ export const fixtureLiveBountyId = (row: LiveFixtureRow) => `fixture-live-${row}
 const BASE: Omit<LiveRow, 'bountyId' | 'role' | 'kind' | 'status'> = {
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 1500,
+  reward: { minor: 1500, currency: 'MYR' },
   action: null,
   card: null,
   counterpartName: '阿杰',
@@ -90,7 +91,7 @@ function worstRow(row: LiveRow, now: Date): LiveRow {
   return {
     ...row,
     title: WORST_TITLE,
-    rewardSen: WORST_REWARD_SEN,
+    reward: { minor: WORST_REWARD_MINOR, currency: 'MYR' },
     counterpartName: row.counterpartName ? name : null,
     startsAt: row.startLate ? row.startsAt : later(row.startsAt),
     etaAt: later(row.etaAt),
@@ -101,6 +102,7 @@ function worstRow(row: LiveRow, now: Date): LiveRow {
 function fixtureData(row: LiveRow, data: StatusData, now: Date): LiveRow {
   if (data === 'worst') return worstRow(row, now);
   if (data === 'unnamed') return { ...row, counterpartName: null };
+  if (data === 'cny') return { ...row, reward: CNY_REWARD };
   return row;
 }
 

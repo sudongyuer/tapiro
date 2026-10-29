@@ -4,13 +4,16 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createSupabaseBoardService } from './boardService';
 import type { BoardOrigin } from './types';
 
+const region = () => 'CNY' as const;
+
 type Answer = { data?: unknown; error?: unknown; count?: number | null };
 
 const ROW = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 800,
+  rewardMinor: 800,
+  rewardCurrency: 'MYR',
   placeLabel: 'Sunway Geo 宿舍',
   stickerPath: null,
   startsAt: null,
@@ -23,12 +26,20 @@ const ROW = {
   poster: { id: 'p1', name: '小林', tier: 'reliable' },
 } as const;
 
+const { rewardMinor, rewardCurrency, ...ROW_REST } = ROW;
+const PARSED = {
+  ...ROW_REST,
+  reward: { minor: rewardMinor, currency: rewardCurrency },
+  reference: null,
+};
+
 const DETAIL = {
   id: 'b1',
   title: '帮取快递',
   description: null,
   category: 'pickup',
-  rewardSen: 800,
+  rewardMinor: 800,
+  rewardCurrency: 'MYR',
   status: 'open',
   viewerRole: 'viewer',
   place: { label: 'Sunway Geo 宿舍' },
@@ -74,8 +85,12 @@ const rejected = (message: string, code = '55000'): Answer => ({
 describe('page', () => {
   test('passes the arguments in the RPC names and parses the page', async () => {
     const stub = stubClient(() => ok({ items: [ROW], next: null, total: 1 }));
-    const service = createSupabaseBoardService(stub.client);
-    expect(await service.page(ME, 'urgent', null)).toEqual({ items: [ROW], next: null, total: 1 });
+    const service = createSupabaseBoardService(stub.client, region);
+    expect(await service.page(ME, 'urgent', null)).toEqual({
+      items: [PARSED],
+      next: null,
+      total: 1,
+    });
     await service.page({ kind: 'none', reason: 'denied' }, 'all', { kind: 'recent' });
     expect(stub.calls).toEqual([
       {
@@ -86,6 +101,7 @@ describe('page', () => {
           board_filter: 'urgent',
           page_after: null,
           page_size: 20,
+          reference_currency: 'CNY',
         },
       },
       {
@@ -96,6 +112,7 @@ describe('page', () => {
           board_filter: 'all',
           page_after: { kind: 'recent' },
           page_size: 20,
+          reference_currency: 'CNY',
         },
       },
     ]);
@@ -103,15 +120,15 @@ describe('page', () => {
 
   test('carries the farther count and rejects a malformed one', async () => {
     const located = stubClient(() => ok({ items: [ROW], next: null, total: 3, beyondTotal: 2 }));
-    expect(await createSupabaseBoardService(located.client).page(ME, 'all', null)).toEqual({
-      items: [ROW],
+    expect(await createSupabaseBoardService(located.client, region).page(ME, 'all', null)).toEqual({
+      items: [PARSED],
       next: null,
       total: 3,
       beyondTotal: 2,
     });
     const malformed = stubClient(() => ok({ items: [ROW], next: null, total: 3, beyondTotal: -1 }));
     await expect(
-      createSupabaseBoardService(malformed.client).page(ME, 'all', null),
+      createSupabaseBoardService(malformed.client, region).page(ME, 'all', null),
     ).rejects.toThrow('beyondTotal');
   });
 
@@ -121,8 +138,15 @@ describe('page', () => {
         ? ok({ items: [ROW], next: { kind: 'distance' }, total: 9 })
         : rejected('board_cursor_mismatch', '22023'),
     );
-    const answer = await createSupabaseBoardService(stub.client).page(ME, 'all', { id: 'x' });
-    expect(answer).toEqual({ items: [ROW], next: { kind: 'distance' }, total: 9, restarted: true });
+    const answer = await createSupabaseBoardService(stub.client, region).page(ME, 'all', {
+      id: 'x',
+    });
+    expect(answer).toEqual({
+      items: [PARSED],
+      next: { kind: 'distance' },
+      total: 9,
+      restarted: true,
+    });
     expect(stub.calls.map((call) => (call.args as { page_after: unknown }).page_after)).toEqual([
       { id: 'x' },
       null,
@@ -136,7 +160,7 @@ describe('page', () => {
       return rejected('board_cursor_mismatch', '22023');
     });
     await expect(
-      createSupabaseBoardService(stub.client).page(ME, 'all', { id: 'x' }),
+      createSupabaseBoardService(stub.client, region).page(ME, 'all', { id: 'x' }),
     ).rejects.toBeDefined();
     expect(calls).toBe(2);
   });
@@ -145,16 +169,22 @@ describe('page', () => {
     ['an RPC error', () => rejected('invalid_board_query', '22023')],
     ['a network error', () => Promise.reject(new TypeError('Network request failed'))],
     ['a malformed row', () => ok({ items: [{ ...ROW, poster: { id: 'p1', tier: 'gold' } }] })],
+    ['an unknown currency', () => ok({ items: [{ ...ROW, rewardCurrency: 'USD' }] })],
+    ['a fractional reward', () => ok({ items: [{ ...ROW, rewardMinor: 8.5 }] })],
+    [
+      'a reference without its rate date',
+      () => ok({ items: [{ ...ROW, reference: { minor: 1307, currency: 'CNY' } }] }),
+    ],
     ['a missing items list', () => ok({ next: null })],
   ])('%s throws', async (_label, answer) => {
     const stub = stubClient(answer);
     await expect(
-      createSupabaseBoardService(stub.client).page(ME, 'all', null),
+      createSupabaseBoardService(stub.client, region).page(ME, 'all', null),
     ).rejects.toBeDefined();
   });
 
   test('without a client the page fails', async () => {
-    await expect(createSupabaseBoardService(null).page(ME, 'all', null)).rejects.toThrow(
+    await expect(createSupabaseBoardService(null, region).page(ME, 'all', null)).rejects.toThrow(
       'Supabase is not configured',
     );
   });
@@ -163,19 +193,33 @@ describe('page', () => {
 describe('detail', () => {
   test('passes the bounty and point and keeps the label-only place', async () => {
     const stub = stubClient(() => ok(DETAIL));
-    const detail = await createSupabaseBoardService(stub.client).detail('b1', POINT);
+    const detail = await createSupabaseBoardService(stub.client, region).detail('b1', POINT);
     expect(detail).toMatchObject({ id: 'b1', place: { label: 'Sunway Geo 宿舍' }, distanceM: 300 });
     expect(detail === 'gone' ? null : detail.place).toEqual({ label: 'Sunway Geo 宿舍' });
     expect(stub.calls).toEqual([
-      { name: 'bounty_detail', args: { bounty: 'b1', latitude: 3.0733, longitude: 101.6078 } },
+      {
+        name: 'bounty_detail',
+        args: { bounty: 'b1', latitude: 3.0733, longitude: 101.6078, reference_currency: 'CNY' },
+      },
     ]);
+  });
+
+  test("carries the reward with its currency and today's reference", async () => {
+    const reference = { minor: 48980, currency: 'MYR', rateDate: '2026-10-28' };
+    const stub = stubClient(() =>
+      ok({ ...DETAIL, rewardMinor: 80000, rewardCurrency: 'CNY', reference }),
+    );
+    expect(await createSupabaseBoardService(stub.client, region).detail('b1', null)).toMatchObject({
+      reward: { minor: 80000, currency: 'CNY' },
+      reference,
+    });
   });
 
   test('the helper is read for the poster and the helper only', async () => {
     const helper = { id: 'h1', name: '阿杰', tier: 'very_reliable' } as const;
     const read = async (viewerRole: string) => {
       const stub = stubClient(() => ok({ ...DETAIL, viewerRole, helper }));
-      const detail = await createSupabaseBoardService(stub.client).detail('b1', null);
+      const detail = await createSupabaseBoardService(stub.client, region).detail('b1', null);
       return detail === 'gone' ? 'gone' : detail.helper;
     };
     expect(await read('poster')).toEqual(helper);
@@ -185,17 +229,17 @@ describe('detail', () => {
     const malformed = stubClient(() =>
       ok({ ...DETAIL, viewerRole: 'poster', helper: { id: 'h1', name: '阿杰', tier: 'gold' } }),
     );
-    await expect(createSupabaseBoardService(malformed.client).detail('b1', null)).rejects.toThrow(
-      'helper.tier',
-    );
+    await expect(
+      createSupabaseBoardService(malformed.client, region).detail('b1', null),
+    ).rejects.toThrow('helper.tier');
   });
 
   test('bounty_not_found reads as gone; other errors throw', async () => {
     const gone = stubClient(() => rejected('bounty_not_found', 'P0002'));
-    expect(await createSupabaseBoardService(gone.client).detail('b1', null)).toBe('gone');
+    expect(await createSupabaseBoardService(gone.client, region).detail('b1', null)).toBe('gone');
     const broken = stubClient(() => rejected('invalid_point', '22023'));
     await expect(
-      createSupabaseBoardService(broken.client).detail('b1', null),
+      createSupabaseBoardService(broken.client, region).detail('b1', null),
     ).rejects.toBeDefined();
   });
 });
@@ -203,7 +247,7 @@ describe('detail', () => {
 describe('hasPayeeMethod', () => {
   test('reads the head count of payee_methods', async () => {
     const some = stubClient(() => ({ data: null, error: null, count: 2 }));
-    expect(await createSupabaseBoardService(some.client).hasPayeeMethod()).toBe(true);
+    expect(await createSupabaseBoardService(some.client, region).hasPayeeMethod()).toBe(true);
     expect(some.calls).toEqual([
       {
         name: 'from:payee_methods',
@@ -211,21 +255,25 @@ describe('hasPayeeMethod', () => {
       },
     ]);
     const none = stubClient(() => ({ data: null, error: null, count: 0 }));
-    expect(await createSupabaseBoardService(none.client).hasPayeeMethod()).toBe(false);
+    expect(await createSupabaseBoardService(none.client, region).hasPayeeMethod()).toBe(false);
   });
 
   test('an error or a missing count throws instead of reading as none', async () => {
     const failed = stubClient(() => ({ data: null, error: { message: 'boom' }, count: null }));
-    await expect(createSupabaseBoardService(failed.client).hasPayeeMethod()).rejects.toBeDefined();
+    await expect(
+      createSupabaseBoardService(failed.client, region).hasPayeeMethod(),
+    ).rejects.toBeDefined();
     const missing = stubClient(() => ({ data: null, error: null, count: null }));
-    await expect(createSupabaseBoardService(missing.client).hasPayeeMethod()).rejects.toBeDefined();
+    await expect(
+      createSupabaseBoardService(missing.client, region).hasPayeeMethod(),
+    ).rejects.toBeDefined();
   });
 });
 
 describe('apply', () => {
   test('passes the bounty and note and returns the stored note', async () => {
     const stub = stubClient(() => ok({ status: 'pending', note: '我在楼下' }));
-    expect(await createSupabaseBoardService(stub.client).apply('b1', '我在楼下 ')).toEqual({
+    expect(await createSupabaseBoardService(stub.client, region).apply('b1', '我在楼下 ')).toEqual({
       ok: true,
       note: '我在楼下',
     });
@@ -245,7 +293,7 @@ describe('apply', () => {
     ['something_else', 'failed'],
   ])('%s maps to %s', async (message, reason) => {
     const stub = stubClient(() => rejected(message));
-    expect(await createSupabaseBoardService(stub.client).apply('b1', null)).toEqual({
+    expect(await createSupabaseBoardService(stub.client, region).apply('b1', null)).toEqual({
       ok: false,
       reason,
     } as never);
@@ -253,12 +301,12 @@ describe('apply', () => {
 
   test('a network error or an unexpected answer is failed', async () => {
     const network = stubClient(() => Promise.reject(new TypeError('Network request failed')));
-    expect(await createSupabaseBoardService(network.client).apply('b1', null)).toEqual({
+    expect(await createSupabaseBoardService(network.client, region).apply('b1', null)).toEqual({
       ok: false,
       reason: 'failed',
     });
     const odd = stubClient(() => ok({ status: 'selected' }));
-    expect(await createSupabaseBoardService(odd.client).apply('b1', null)).toEqual({
+    expect(await createSupabaseBoardService(odd.client, region).apply('b1', null)).toEqual({
       ok: false,
       reason: 'failed',
     });
@@ -268,15 +316,17 @@ describe('apply', () => {
 describe('withdraw', () => {
   test('withdraws, maps not_pending, and fails on a network error', async () => {
     const done = stubClient(() => ok({ status: 'withdrawn' }));
-    expect(await createSupabaseBoardService(done.client).withdraw('b1')).toEqual({ ok: true });
+    expect(await createSupabaseBoardService(done.client, region).withdraw('b1')).toEqual({
+      ok: true,
+    });
     expect(done.calls).toEqual([{ name: 'withdraw_application', args: { bounty: 'b1' } }]);
     const late = stubClient(() => rejected('not_pending'));
-    expect(await createSupabaseBoardService(late.client).withdraw('b1')).toEqual({
+    expect(await createSupabaseBoardService(late.client, region).withdraw('b1')).toEqual({
       ok: false,
       reason: 'notPending',
     });
     const network = stubClient(() => Promise.reject(new TypeError('Network request failed')));
-    expect(await createSupabaseBoardService(network.client).withdraw('b1')).toEqual({
+    expect(await createSupabaseBoardService(network.client, region).withdraw('b1')).toEqual({
       ok: false,
       reason: 'failed',
     });

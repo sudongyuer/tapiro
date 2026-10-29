@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { CURRENCIES } from '@/lib/money';
+
 import { LANGUAGES } from './languages';
 import { resources } from './resources';
 
@@ -45,4 +47,15 @@ describe('resources', () => {
       expect(JSON.stringify(resources[code].translation)).not.toContain('""');
     }
   });
+
+  test.each(LANGUAGES.map((language) => language.code))(
+    '%s has no currency symbol inside a string',
+    (code) => {
+      const symbols = Object.values(CURRENCIES).map(({ symbol }) => symbol);
+      const found = entries(resources[code].translation).filter(([, text]) =>
+        symbols.some((symbol) => text.includes(symbol)),
+      );
+      expect(found).toEqual([]);
+    },
+  );
 });

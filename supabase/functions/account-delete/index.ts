@@ -19,7 +19,7 @@ const admin = createClient(
 async function findUnsettledPayments(userId: string): Promise<UnsettledPayment[]> {
   const { data, error } = await admin
     .from('payments')
-    .select('id, title, amount_sen, payer_id, payee_id')
+    .select('id, title, amount_minor, currency, payer_id, payee_id')
     .neq('state', 'settled')
     .or(`payer_id.eq.${userId},payee_id.eq.${userId}`)
     .order('created_at')

@@ -4,8 +4,8 @@ import { nameInitial } from '@/lib/nameInitial';
 
 import { formatDistance } from '../board/axis';
 import { rowTime } from '../board/cardCopy';
-import { ringgit } from '../post/blockedReason';
 import { timeLine } from '../post/timeText';
+import { rewardText } from '../shared/rewardText';
 import { tierName, tierRank } from '../shared/tierCopy';
 import type { DetailView } from './detailState';
 
@@ -23,11 +23,9 @@ export function urgentLine(deadlineAt: string | null, t: TFunction, now: Date) {
 }
 
 export function detailCopy(view: DetailView, t: TFunction, language: string, now: Date) {
-  const reward = ringgit(view.rewardSen, language);
   const name = view.poster.name ?? t('bounty.post.unknownName');
   return {
-    reward,
-    rewardLabel: t('bounty.post.confirm.rewardLabel', { amount: reward }),
+    ...rewardText(view.reward, view.reference, t, language),
     time: timeLine(rowTime(view), t, language, now),
     urgent: urgentLine(view.deadlineAt, t, now),
     placeHint:

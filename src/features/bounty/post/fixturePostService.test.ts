@@ -24,7 +24,8 @@ const args = (id: string): PublishArgs => ({
   id,
   title: '帮我取个快递',
   category: 'pickup',
-  reward_sen: 800,
+  reward_minor: 800,
+  reward_currency: 'MYR',
   description: null,
   place_label: null,
   latitude: null,
@@ -99,7 +100,7 @@ describe('status', () => {
     const status = await createFixturePostService(options({ unpaid: 'two' })).status();
     expect(status.blocked).toBe(true);
     expect(
-      status.unpaid.map(({ paymentId, payeeName, amountSen }) => [paymentId, payeeName, amountSen]),
+      status.unpaid.map(({ paymentId, payeeName, amount }) => [paymentId, payeeName, amount.minor]),
     ).toEqual([
       [FIXTURE_UNPAID_IDS.first, '阿杰', 1500],
       [FIXTURE_UNPAID_IDS.second, 'Lily', 600],
@@ -118,7 +119,7 @@ describe('status', () => {
       options({ unpaid: 'two', variant: 'worst' }),
     ).status();
     expect(status.unpaid.every((item) => item.payeeName.length >= 39)).toBe(true);
-    expect(status.unpaid[0].amountSen).toBe(1234560);
+    expect(status.unpaid[0].amount).toEqual({ minor: 1234560, currency: 'MYR' });
   });
 
   test('status fail throws once, then loads', async () => {

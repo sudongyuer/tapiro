@@ -1,4 +1,5 @@
 import type { FixtureVariant } from './fixtureVariant';
+import type { Money } from './money';
 import type { BountyCategory } from './stickers';
 import { createStore } from './store';
 
@@ -16,7 +17,7 @@ export type PayDetail = {
   kind: 'oweMoney';
   paymentId: string | null;
   payee: string;
-  amountSen: number;
+  amount: Money;
   note: string;
   category: BountyCategory;
 };
@@ -38,7 +39,7 @@ export type RideDetail = {
 export type OwedDetail = {
   kind: 'owedToYou';
   payer: string;
-  amountSen: number;
+  amount: Money;
   note: string;
   category: BountyCategory;
 };
@@ -52,7 +53,7 @@ export type BountyCardDetail = {
   bountyId: string;
   title: string;
   category: BountyCategory;
-  rewardSen: number;
+  reward: Money;
   counterpart: string | null;
   line: string;
   actionLabel?: string;
@@ -67,7 +68,7 @@ export type AccessoryItem = {
   id: string;
   kind: AccessoryKind;
   title: string;
-  amountSen?: number;
+  amount?: Money;
   sub: string;
   payment?: { id: string; counterpart: string; note: string };
   bounty?: BountyCardDetail;
@@ -168,7 +169,7 @@ const DEMO_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
     bountyId: 'fixture-bounty-01',
     title: '帮取快递',
     category: 'pickup',
-    rewardSen: 800,
+    reward: { minor: 800, currency: 'MYR' },
     counterpart: null,
     line: '3 人申请，去选',
     actionLabel: '去选人',
@@ -180,7 +181,7 @@ const DEMO_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
     bountyId: 'fixture-bounty-04',
     title: '讲一下微积分作业',
     category: 'study',
-    rewardSen: 2000,
+    reward: { minor: 2000, currency: 'MYR' },
     counterpart: 'Aiman',
     line: 'Aiman在路上 · 20:00 到',
     target: '/bounty/status/fixture-bounty-04',
@@ -191,7 +192,7 @@ const DEMO_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
     bountyId: 'fixture-bounty-03',
     title: '搬桌子',
     category: 'move',
-    rewardSen: 1500,
+    reward: { minor: 1500, currency: 'MYR' },
     counterpart: null,
     line: '等人申请',
     target: '/bounty/applicants/fixture-bounty-03',
@@ -202,7 +203,7 @@ const DEMO_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
     bountyId: 'fixture-bounty-02',
     title: '帮带奶茶',
     category: 'buy',
-    rewardSen: 600,
+    reward: { minor: 600, currency: 'MYR' },
     counterpart: '小林',
     line: '这次没选上',
     target: '/bounty/fixture-bounty-02',
@@ -216,7 +217,7 @@ const WORST_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
   bountyAction: {
     ...DEMO_BOUNTY.bountyAction,
     title: '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便买两杯 Tealive 珍珠奶茶',
-    rewardSen: 1234560,
+    reward: { minor: 1234560, currency: 'MYR' },
     counterpart: LONG_NAME,
     line: `${LONG_NAME}说做完了 · 去确认`,
     actionLabel: '去确认',
@@ -224,14 +225,14 @@ const WORST_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
   bountyInProgress: {
     ...DEMO_BOUNTY.bountyInProgress,
     title: 'MAT2023 Calculus II 第 7 次作业：Taylor 级数和分部积分 Q3–Q9（周五 23:59 截止）',
-    rewardSen: 125000,
+    reward: { minor: 125000, currency: 'MYR' },
     counterpart: LONG_NAME,
     line: `${LONG_NAME}在路上 · 23:45 到`,
   },
   bountyWaiting: {
     ...DEMO_BOUNTY.bountyWaiting,
     title: '帮忙把两张书桌从 Sunway Geo Residences 搬到 Pangsapuri Vista Harmoni Blok C',
-    rewardSen: 50,
+    reward: { minor: 50, currency: 'MYR' },
     line: '等人申请',
   },
   bountyOneTime: {
@@ -245,17 +246,21 @@ const ONE_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
   bountyAction: {
     ...DEMO_BOUNTY.bountyAction,
     title: '取件',
-    rewardSen: 100,
+    reward: { minor: 100, currency: 'MYR' },
     line: '1 人申请，去选',
   },
   bountyInProgress: {
     ...DEMO_BOUNTY.bountyInProgress,
     title: '讲题',
-    rewardSen: 100,
+    reward: { minor: 100, currency: 'MYR' },
     counterpart: 'Jo',
     line: 'Jo在路上 · 9:05 到',
   },
-  bountyWaiting: { ...DEMO_BOUNTY.bountyWaiting, title: '搬', rewardSen: 100 },
+  bountyWaiting: {
+    ...DEMO_BOUNTY.bountyWaiting,
+    title: '搬',
+    reward: { minor: 100, currency: 'MYR' },
+  },
   bountyOneTime: { ...DEMO_BOUNTY.bountyOneTime, title: '奶茶', counterpart: 'J' },
 };
 
@@ -280,7 +285,7 @@ export const FIXTURE_ACCESSORY: Record<FixtureName, AccessoryItem> = {
     id: 'fixture-owe',
     kind: 'oweMoney',
     title: '付给阿杰',
-    amountSen: 1500,
+    amount: { minor: 1500, currency: 'MYR' },
     sub: '帮取快递',
   },
   rideSoon: {
@@ -293,7 +298,7 @@ export const FIXTURE_ACCESSORY: Record<FixtureName, AccessoryItem> = {
     id: 'fixture-owed',
     kind: 'owedToYou',
     title: '小林说已付你',
-    amountSen: 800,
+    amount: { minor: 800, currency: 'MYR' },
     sub: '帮带一杯咖啡 · 等你确认',
   },
   ...bountyItems(DEMO_BOUNTY),
@@ -303,7 +308,7 @@ const WORST_ACCESSORY: Record<FixtureName, AccessoryItem> = {
   oweMoney: {
     ...FIXTURE_ACCESSORY.oweMoney,
     title: '付给Wan Nurul Aisyah binti Wan Abdul Rahman',
-    amountSen: 1234560,
+    amount: { minor: 1234560, currency: 'MYR' },
     sub: '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便买两杯 Tealive',
   },
   rideSoon: {
@@ -314,7 +319,7 @@ const WORST_ACCESSORY: Record<FixtureName, AccessoryItem> = {
   owedToYou: {
     ...FIXTURE_ACCESSORY.owedToYou,
     title: '陈美玲 (Tan Mei Ling) 说已付你',
-    amountSen: 50,
+    amount: { minor: 50, currency: 'MYR' },
     sub: '帮忙在 Sunway Pyramid 的 ZUS Coffee 带一杯 Spanish Latte · 等你确认',
   },
   ...bountyItems(WORST_BOUNTY),
@@ -324,7 +329,7 @@ const ONE_ACCESSORY: Record<FixtureName, AccessoryItem> = {
   oweMoney: {
     ...FIXTURE_ACCESSORY.oweMoney,
     title: '付给Jo',
-    amountSen: 50,
+    amount: { minor: 50, currency: 'MYR' },
     sub: '取件',
   },
   rideSoon: {
@@ -335,7 +340,7 @@ const ONE_ACCESSORY: Record<FixtureName, AccessoryItem> = {
   owedToYou: {
     ...FIXTURE_ACCESSORY.owedToYou,
     title: 'J 说已付你',
-    amountSen: 100,
+    amount: { minor: 100, currency: 'MYR' },
     sub: '咖啡',
   },
   ...bountyItems(ONE_BOUNTY),

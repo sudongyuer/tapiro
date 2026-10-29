@@ -1,8 +1,9 @@
 import type { TFunction } from 'i18next';
 
-import { formatRinggitParts } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
 
 import { timeParts } from '../post/timeText';
+import { rewardText } from '../shared/rewardText';
 import { counterpartName, statusSummary, type TimelineLine, type TimelineStep } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
 
@@ -46,15 +47,12 @@ export function lineText(line: TimelineLine, copy: CopyContext) {
   });
 }
 
-export function bareAmount(sen: number, language: string) {
-  const { whole, cents } = formatRinggitParts(sen, language);
-  return /^[.,]00$/.test(cents) ? whole : `${whole}${cents}`;
-}
-
 export function stepText(step: TimelineStep, copy: CopyContext) {
   return copy.t(step.key, {
     name: shownName(step.params.name, copy.t),
-    amount: bareAmount(step.params.sen ?? 0, copy.language),
+    amount: step.params.amount
+      ? formatMoney(step.params.amount, copy.language, { whole: true })
+      : '',
   });
 }
 
@@ -83,4 +81,13 @@ export function stepLabel(step: TimelineStep, parts: (string | null)[], copy: Co
     label: parts.filter(Boolean).join(separator),
     state: copy.t(`bounty.status.a11y.${step.state}`),
   });
+}
+
+export function headerReward(detail: StatusDetail, t: TFunction, language: string) {
+  return rewardText(
+    detail.reward,
+    detail.payment ? detail.payment.converted : detail.reference,
+    t,
+    language,
+  );
 }

@@ -1,6 +1,6 @@
 import { bountyCategory } from '@/lib/stickers/category';
 
-import { body, count, fail, oneOf, text, textOrNull } from '../board/parse';
+import { body, count, fail, oneOf, reward, text, textOrNull } from '../board/parse';
 import { BOUNTY_STATUSES, POST_CHARGES } from '../status/types';
 import { LIVE_ACTIONS, LIVE_KINDS, LIVE_ROLES, SEEN_CARDS, type LiveRow } from './types';
 
@@ -17,7 +17,7 @@ export function toLiveRow(value: unknown): LiveRow {
     bountyId: text(row.bountyId, 'bountyId'),
     title: text(row.title, 'title'),
     category: bountyCategory(row.category) ?? fail('category'),
-    rewardSen: count(row.rewardSen, 'rewardSen'),
+    reward: reward(row),
     role: oneOf(LIVE_ROLES, row.role, 'role'),
     kind: oneOf(LIVE_KINDS, row.kind, 'kind'),
     action: oneOfOrNull(LIVE_ACTIONS, row.action, 'action'),

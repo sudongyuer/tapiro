@@ -25,7 +25,8 @@ const payment: UnsettledPayment = {
   id: 'p1',
   title: 'Ride to KLIA',
   counterpartName: 'Aisyah',
-  amountSen: 2500,
+  amountMinor: 2500,
+  currency: 'MYR',
   direction: 'owe',
 };
 
@@ -33,7 +34,8 @@ const bounty: ActiveBounty = {
   id: 'b1',
   title: '帮取快递',
   counterpartName: '阿杰',
-  amountSen: 500,
+  amountMinor: 500,
+  currency: 'MYR',
   role: 'poster',
 };
 
@@ -120,14 +122,56 @@ describe('handleAccountDelete', () => {
 describe('toUnsettledPayments', () => {
   test('names the counterpart and the direction from the deleting user', () => {
     const rows = [
-      { id: 'p1', title: '帮取快递', amount_sen: 1500, payer_id: USER, payee_id: 'helper' },
-      { id: 'p2', title: 'KLIA', amount_sen: 2500, payer_id: 'rider', payee_id: USER },
-      { id: 'p3', title: 'Gone', amount_sen: 100, payer_id: null, payee_id: USER },
+      {
+        id: 'p1',
+        title: '帮取快递',
+        amount_minor: 1500,
+        currency: 'MYR',
+        payer_id: USER,
+        payee_id: 'helper',
+      },
+      {
+        id: 'p2',
+        title: 'KLIA',
+        amount_minor: 2500,
+        currency: 'MYR',
+        payer_id: 'rider',
+        payee_id: USER,
+      },
+      {
+        id: 'p3',
+        title: 'Gone',
+        amount_minor: 100,
+        currency: 'MYR',
+        payer_id: null,
+        payee_id: USER,
+      },
     ];
     expect(toUnsettledPayments(USER, rows, { helper: '阿杰', rider: 'Aisyah' })).toEqual([
-      { id: 'p1', title: '帮取快递', counterpartName: '阿杰', amountSen: 1500, direction: 'owe' },
-      { id: 'p2', title: 'KLIA', counterpartName: 'Aisyah', amountSen: 2500, direction: 'owed' },
-      { id: 'p3', title: 'Gone', counterpartName: '', amountSen: 100, direction: 'owed' },
+      {
+        id: 'p1',
+        title: '帮取快递',
+        counterpartName: '阿杰',
+        amountMinor: 1500,
+        currency: 'MYR',
+        direction: 'owe',
+      },
+      {
+        id: 'p2',
+        title: 'KLIA',
+        counterpartName: 'Aisyah',
+        amountMinor: 2500,
+        currency: 'MYR',
+        direction: 'owed',
+      },
+      {
+        id: 'p3',
+        title: 'Gone',
+        counterpartName: '',
+        amountMinor: 100,
+        currency: 'MYR',
+        direction: 'owed',
+      },
     ]);
   });
 });
@@ -138,21 +182,37 @@ describe('toActiveBounties', () => {
       {
         id: 'b1',
         title: '帮取快递',
-        reward_sen: 500,
+        reward_minor: 500,
+        reward_currency: 'MYR',
         role: 'poster' as const,
         counterpart_id: 'helper',
       },
       {
         id: 'b2',
         title: '代买早餐',
-        reward_sen: 800,
+        reward_minor: 800,
+        reward_currency: 'MYR',
         role: 'helper' as const,
         counterpart_id: null,
       },
     ];
     expect(toActiveBounties(rows, { helper: '阿杰' })).toEqual([
-      { id: 'b1', title: '帮取快递', counterpartName: '阿杰', amountSen: 500, role: 'poster' },
-      { id: 'b2', title: '代买早餐', counterpartName: '', amountSen: 800, role: 'helper' },
+      {
+        id: 'b1',
+        title: '帮取快递',
+        counterpartName: '阿杰',
+        amountMinor: 500,
+        currency: 'MYR',
+        role: 'poster',
+      },
+      {
+        id: 'b2',
+        title: '代买早餐',
+        counterpartName: '',
+        amountMinor: 800,
+        currency: 'MYR',
+        role: 'helper',
+      },
     ]);
   });
 });

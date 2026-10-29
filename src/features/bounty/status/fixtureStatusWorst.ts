@@ -1,6 +1,15 @@
-import type { Person } from '../board/types';
+import { convertUp, type Money, type MoneyReference } from '@/lib/money';
 
-export const STATUS_DATA = ['demo', 'worst', 'unnamed'] as const;
+import {
+  CNY_REFERENCE,
+  CNY_REWARD,
+  WORST_CNY_REFERENCE,
+  WORST_CNY_REWARD,
+} from '../board/fixtureBoardData';
+import type { Person } from '../board/types';
+import type { PaymentState, StatusPayment } from './types';
+
+export const STATUS_DATA = ['demo', 'worst', 'unnamed', 'cny', 'worstCny'] as const;
 export type StatusData = (typeof STATUS_DATA)[number];
 
 const codePoints = (seed: string, count: number) =>
@@ -24,7 +33,37 @@ export const WORST_REASON = codePoints(
   'Kotak bungkusan remuk dan dua cawan di dalamnya pecah. 快递盒子压坏了，里面的两个杯子碎了，另外少了一包纸巾，麻烦你回去问一下店家。',
   140,
 );
-export const WORST_REWARD_SEN = 50000;
+export const WORST_REWARD_MINOR = 50000;
+
+export const isWorstData = (data: StatusData) => data === 'worst' || data === 'worstCny';
+
+export function statusReward(data: StatusData): Money {
+  if (data === 'cny') return CNY_REWARD;
+  if (data === 'worstCny') return WORST_CNY_REWARD;
+  return { minor: data === 'worst' ? WORST_REWARD_MINOR : 800, currency: 'MYR' };
+}
+
+export function statusReference(data: StatusData, paid: boolean): MoneyReference | null {
+  if (paid) return null;
+  if (data === 'cny') return CNY_REFERENCE;
+  return data === 'worstCny' ? WORST_CNY_REFERENCE : null;
+}
+
+export const CNY_LOCKED_RATE = 0.6122;
+
+export const statusPayment = (
+  id: string,
+  state: PaymentState,
+  data: StatusData,
+): StatusPayment => ({
+  id,
+  state,
+  amount: statusReward(data),
+  converted:
+    data === 'cny' || data === 'worstCny'
+      ? convertUp(statusReward(data), CNY_LOCKED_RATE, 'CNY', 'MYR')
+      : null,
+});
 export const WORST_PLACE = codePoints('Sunway Geo Residences A 座大堂旁边的便利店门口，', 80);
 export const WORST_ADDRESS = codePoints(
   'Sunway Geo Residences, Block B, Level 23, Unit 23-07, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor ',

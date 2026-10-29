@@ -35,6 +35,7 @@ describe('draft store', () => {
       title: '',
       category: null,
       rewardText: '',
+      currency: 'MYR',
       description: null,
       time: { kind: 'none' },
       place: null,
@@ -88,6 +89,56 @@ describe('draft store', () => {
     const next = drafts.load('a');
     expect(next.id).toBe('draft-2');
     expect(next.title).toBe('');
+  });
+
+  test('a new draft takes the default currency; reset keeps the last choice, clear forgets it', () => {
+    const memory = memoryStorage();
+    let region: 'MYR' | 'CNY' = 'CNY';
+    const drafts = createDraftStore(
+      memory.storage,
+      ids(),
+      () => NOW,
+      () => region,
+    );
+    expect(drafts.load('a').currency).toBe('CNY');
+    region = 'MYR';
+    drafts.update('a', { title: '帮我取个快递', rewardText: '50', currency: 'CNY' });
+    drafts.reset('a');
+    const fresh = drafts.load('a');
+    expect(fresh).toMatchObject({ id: 'draft-2', title: '', rewardText: '', currency: 'CNY' });
+    expect(drafts.isEmpty(fresh)).toBe(true);
+    expect(
+      createDraftStore(
+        memory.storage,
+        ids(),
+        () => NOW,
+        () => region,
+      ).load('a'),
+    ).toMatchObject({ id: 'draft-2', currency: 'CNY' });
+    drafts.clear('a');
+    expect(drafts.load('a').currency).toBe('MYR');
+  });
+
+  test('a stored draft from before currencies takes the default currency', () => {
+    const memory = memoryStorage({
+      a: {
+        id: 'old',
+        title: '取快递',
+        category: 'pickup',
+        rewardText: '8',
+        description: null,
+        time: { kind: 'none' },
+        place: null,
+        updatedAt: NOW.toISOString(),
+      },
+    });
+    const drafts = createDraftStore(
+      memory.storage,
+      ids(),
+      () => NOW,
+      () => 'CNY',
+    );
+    expect(drafts.load('a')).toMatchObject({ id: 'old', rewardText: '8', currency: 'CNY' });
   });
 
   test('drafts are per user', () => {
@@ -165,6 +216,7 @@ describe('draft store', () => {
       title: '帮我取个快递',
       category: 'pickup',
       rewardText: '8',
+      currency: 'CNY',
       description: '在管理处',
       time: { kind: 'window', startsAt: '2026-10-28T01:00:00Z', endsAt: '2026-10-28T03:00:00Z' },
       place: { label: 'Sunway Geo', latitude: 3.06, longitude: 101.6, address: null },

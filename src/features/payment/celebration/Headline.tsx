@@ -1,6 +1,7 @@
 import { PlatformColor, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
+import type { Money } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -14,7 +15,7 @@ import type { Clock } from './useCelebrationClock';
 export function Headline({
   clock,
   top,
-  amountSen,
+  amount,
   language,
   cny,
   title,
@@ -23,7 +24,7 @@ export function Headline({
 }: {
   clock: Clock;
   top: string;
-  amountSen: number;
+  amount: Money;
   language: string;
   cny: string | null;
   title: string;
@@ -54,7 +55,7 @@ export function Headline({
           {top}
         </AppText>
         <View style={styles.amount}>
-          <Odometer amountSen={amountSen} language={language} clock={clock} />
+          <Odometer amount={amount} language={language} clock={clock} />
           <Shine clock={clock} segment={TIMELINE.amountShine} travel={260} skew />
         </View>
         {cny ? (

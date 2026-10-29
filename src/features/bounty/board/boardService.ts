@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Point } from '@/lib/location/types';
+import type { CurrencyCode } from '@/lib/money';
 
 import { toBoardPage, toBountyDetail } from './parse';
 import {
@@ -40,7 +41,10 @@ const coordinates = (point: Point | null) => ({
   longitude: point?.longitude ?? null,
 });
 
-export function createSupabaseBoardService(client: SupabaseClient | null): BoardService {
+export function createSupabaseBoardService(
+  client: SupabaseClient | null,
+  referenceCurrency: () => CurrencyCode,
+): BoardService {
   const db = () => {
     if (!client) throw new Error('Supabase is not configured');
     return client;
@@ -52,6 +56,7 @@ export function createSupabaseBoardService(client: SupabaseClient | null): Board
       board_filter: filter,
       page_after: after,
       page_size: PAGE_SIZE,
+      reference_currency: referenceCurrency(),
     });
     if (error) throw error;
     return toBoardPage(data);
@@ -70,6 +75,7 @@ export function createSupabaseBoardService(client: SupabaseClient | null): Board
       const { data, error } = await db().rpc('bounty_detail', {
         bounty: id,
         ...coordinates(point),
+        reference_currency: referenceCurrency(),
       });
       if (error) {
         const { message, code } = slug(error);

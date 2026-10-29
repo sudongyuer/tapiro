@@ -9,12 +9,12 @@ import { Stack, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { TaskCard } from '@/ui/TaskCard';
 
-import { ringgit } from './blockedReason';
 import { costLine, payTarget } from './cost';
 import { CostSection } from './CostSection';
 import { canPublish, type FlowState } from './postFlow';
@@ -104,12 +104,12 @@ export function PostConfirm({ userId, onPublished, onPay, onBack }: ConfirmProps
 function Preview({ draft }: { draft: PostDraft }) {
   const { t, language } = useI18n();
   const time = useTimeLine(draft.time);
-  const rewardSen = parseReward(draft.rewardText);
+  const reward = parseReward(draft.rewardText, draft.currency);
   const firstLine = draft.description?.trim().split('\n')[0] ?? '';
   const place = draft.place?.label.trim() || null;
   const address = draft.place?.address?.trim() || null;
-  if (!draft.category || rewardSen === null) return null;
-  const reward = ringgit(rewardSen, language);
+  if (!draft.category || reward === null) return null;
+  const amount = formatMoney(reward, language, { whole: true });
   const meta = place && time ? t('bounty.post.confirm.meta', { place, time }) : (place ?? time);
   return (
     <>
@@ -118,8 +118,8 @@ function Preview({ draft }: { draft: PostDraft }) {
           category={draft.category}
           title={draft.title.trim()}
           meta={meta}
-          reward={reward}
-          rewardLabel={t('bounty.post.confirm.rewardLabel', { amount: reward })}
+          reward={amount}
+          rewardLabel={t('bounty.post.confirm.rewardLabel', { amount })}
           testID="bounty-post-preview"
         />
       </Section>

@@ -1,11 +1,11 @@
 """「+」 on 悬赏 opens the 发悬赏 sheet; 下一步 on an empty form shows the first missing field, the category menu lists all
-eight types, a reward of 0 or 501 is out of range, and a valid form reaches 确认发布. The form sits on the grouped
+eight types, the footer reads 「整数，RM 1–500。…」, a reward of 0 or 501 is out of range, and a valid form reaches 确认发布. The form sits on the grouped
 background and every control it touches is 44 pt. A 20-key burst typed with no delay shows 20/60 on the counter."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (  # noqa: E402
-    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
+    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
     erase, next_step, open_post, reach_confirm, typed,
 )
 from driver import UI, assert_touch_target, by_id  # noqa: E402
@@ -59,10 +59,12 @@ ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.post.form.categor
 
 next_step(ui)
 assert_error(ui, 'bounty.post.error.rewardEmpty')
+ui.wait_label('bounty-post-reward-footer', lambda label: label == ui.t('bounty.post.form.rewardFooter', **REWARD_RANGE_TEXT),
+              'the reward footer does not read the RM range')
 for wrong in ('0', '501'):
     typed(ui, 'bounty-post-reward', wrong)
     next_step(ui)
-    assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE)
+    assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE_TEXT)
     erase(ui, 'bounty-post-reward')
 typed(ui, 'bounty-post-reward', '8')
 

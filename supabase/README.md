@@ -28,7 +28,8 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
       "id": "…",
       "title": "Ride to KLIA",
       "counterpartName": "Aisyah",
-      "amountSen": 2500,
+      "amountMinor": 2500,
+      "currency": "MYR",
       "direction": "owe"
     }
   ],
@@ -37,19 +38,20 @@ cascades), 401 without a user token, and 409 when deletion is blocked:
       "id": "…",
       "title": "帮取快递",
       "counterpartName": "阿杰",
-      "amountSen": 500,
+      "amountMinor": 500,
+      "currency": "MYR",
       "role": "poster"
     }
   ]
 }
 ```
 
-`amountSen` is the amount in sen (RM × 100, integer); `direction` is `owe` when the deleting user
+`amountMinor` is the amount in the minor unit of `currency` (an ISO 4217 code from `currencies`); `direction` is `owe` when the deleting user
 pays the counterpart and `owed` when the counterpart pays them. The app drops items that do not
 match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` reads every payment the user is
 payer or payee of that is not settled; `findActiveBounties` lists, through `active_bounties_of(uid)`
 (service role), the bounties the user posts or helps on that are `assigned`, `en_route`, `done` or
-`disputed`, with `amountSen` the reward and `role` `poster` or `helper`. Either list blocks the
+`disputed`, with `amountMinor` and `currency` the reward and `role` `poster` or `helper`. Either list blocks the
 deletion; the error stays `unsettled_payments` so the shipped app treats a bounty-only answer as
 blocked (it does not list `bounties` yet). A failed check answers 500 and deletes nothing.
 
@@ -67,6 +69,26 @@ still has an account its missing sticker. Clients read their own rows and change
 `payment_events` row, and `settled` is the event steps 5–6 build on. A payer reads the payee's
 `payee_methods` while a payment between them is unsettled. Proofs live in the private
 `payment-proofs` bucket under `<payment id>/`.
+
+### Money
+
+Every amount is an integer in its currency's minor unit plus a `char(3)` code that references `currencies`
+(`code`, `minor_digits`, `symbol`, `enabled`; MYR and CNY). `post_limits (item_kind, currency)` holds `min_minor`,
+`max_minor` and `step_minor`; a bounty insert or reward change outside them raises `23514 invalid_reward`, and
+`publish_bounty(id, title, category, reward_minor, reward_currency, …)` raises `22023 invalid_reward` for those and
+for an unknown or disabled currency. `fx_rates (base, quote, rate_date, source)` holds `quote_per_base`; BNM
+writes `(CNY, MYR, date, bnm)`. A rate is fresh when its `rate_date` is at most 7 days before today in Malaysia.
+`method_currency(type, item_currency)`: DuitNow and bank are MYR, Alipay and WeChat CNY, cash the item's currency.
+
+`open_payment(kind, item, item_title, payer, payee, amount, currency, reversing, item_category)` locks the newest
+fresh rate between `currency` and another enabled currency into `rate_quote_per_base`, `rate_base`, `rate_quote`,
+`rate_date` and `rate_source`, or leaves all five null; neither they nor `currency` change afterwards (`22023`).
+Conversions round up (`ceil`) to the target's minor unit. `payment_detail(payment)` (parties only) returns
+`{ id, amountMinor, currency, rate: { base, quote, quotePerBase, date, source } | null, paidMinor, paidCurrency,
+methods: [{ method, type, currency, amountMinor | null }] }`; the payer gets `methods` only while unsettled. An
+`amountMinor` is null when the method needs a conversion and no rate is locked, and `mark_payment_paid` then raises
+`55000 no_rate`; otherwise it writes `paid_minor` and `paid_currency`. A cash settle from `due` records the original
+amount. A reverse payment pays back `paid_minor` in `paid_currency`.
 
 `confirm_payment_received(payment)` (authenticated, payee only) settles and, for a forward payment,
 in the same transaction writes a sticker for the payee (`payee`) and for the payer (`payer`, when the
@@ -189,7 +211,9 @@ between the applicant and the poster), `viewer` (an `open` bounty, no block), or
 and the helper get that derived status (`private.bounty_status_for`); everyone else reads the stored `confirmed`, as
 payment state is the parties' business. A deleted poster or helper (possible on `confirmed`) reads as `null`.
 
-- `bounty_detail(bounty)`: the bounty with derived `status`, `viewerRole`, `place` (label, latitude, longitude),
+- `bounty_detail(bounty, latitude, longitude, reference_currency)`: the bounty with `rewardMinor`, `rewardCurrency`,
+  `reference` (the reward at today's fresh rate in `reference_currency` as `{ minor, currency, rateDate }`, null for
+  the same or a disabled currency, without a fresh rate, or once the forward payment exists), derived `status`, `viewerRole`, `place` (label, latitude, longitude),
   `poster` `{ id, name, tier }` and `myApplication`. Only the poster and the helper get `helper`, `etaAt`,
   `previousEtaAt`, `autoConfirmAt`, `startLate`, `issueReason` (latest 「有问题」 reason while `disputed`), `payment` `{ id, state }` and `events`
   (with `applied` / `withdrawn` filtered as in `bounty_events`, `actor` as `poster`, `helper` or null). `address`
@@ -217,9 +241,9 @@ read bounties only through the RPCs.
 
 ### Board: `nearby_bounties`
 
-`nearby_bounties(latitude, longitude, board_filter, page_after, page_size)` (authenticated, `security invoker`, so
-RLS still applies) returns `{ items, next }`. Each item has `id`, `title`, `category`, `rewardSen`, `placeLabel`,
-`stickerPath`, `startsAt`, `endsAt`, `deadlineAt`, `urgent`, `distanceM`, `appliedByMe` and `createdAt`. The response
+`nearby_bounties(latitude, longitude, board_filter, page_after, page_size, reference_currency)` (authenticated, `security invoker`, so
+RLS still applies) returns `{ items, next }`. Each item has `id`, `title`, `category`, `rewardMinor`, `rewardCurrency`,
+`reference` (as in `bounty_detail`), `placeLabel`, `stickerPath`, `startsAt`, `endsAt`, `deadlineAt`, `urgent`, `distanceM`, `appliedByMe` and `createdAt`. The response
 never carries the exact address (`bounty_addresses`, readable only by the poster and helper) or coordinates. The place
 point itself is public by design: `bounties_select` lets any signed-in user read `bounties.place`, and `distanceM`
 from several points locates it too. Only `open` bounties before `expires_at` are listed, never the viewer's
@@ -249,7 +273,7 @@ own and never one whose poster and viewer are blocked in either direction.
 
 ## Scheduled functions
 
-`fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` (17:30 Malaysia time);
+`fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` as `(CNY, MYR, date, bnm)` (17:30 Malaysia time);
 `payment-proof-cleanup` removes proofs 30 days after settlement. Both are called by pg_cron through
 `call_edge_function`, which needs the Vault secrets `project_url` and `service_role_key` in each
 environment; without them the jobs post nothing.

@@ -1,5 +1,6 @@
 import { Settings } from 'react-native';
 
+import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -24,7 +25,7 @@ function verifyStatusService() {
 export const statusFixture = uiVerify ? verifyStatusService() : null;
 
 export const statusService: StatusService =
-  statusFixture?.service ?? createSupabaseStatusService(getSupabase());
+  statusFixture?.service ?? createSupabaseStatusService(getSupabase(), deviceCurrency);
 
 export const issueDrafts = createNoteDrafts();
 

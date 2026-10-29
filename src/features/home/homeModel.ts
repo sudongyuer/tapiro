@@ -5,7 +5,6 @@ import type {
   CardDetail,
   SourceIssue,
 } from '@/lib/liveItems';
-import { formatRinggitParts } from '@/lib/money';
 import type { StageState } from '@/ui/MascotStage';
 
 export type LiveCardModel =
@@ -58,14 +57,14 @@ function sortedCards(
 }
 
 function paymentDetail(item: AccessoryItem): CardDetail | undefined {
-  const { payment, amountSen } = item;
-  if (!payment || amountSen === undefined) return undefined;
+  const { payment, amount } = item;
+  if (!payment || amount === undefined) return undefined;
   if (item.kind === 'oweMoney')
     return {
       kind: 'oweMoney',
       paymentId: payment.id,
       payee: payment.counterpart,
-      amountSen,
+      amount,
       note: payment.note,
       category: 'other',
     };
@@ -73,7 +72,7 @@ function paymentDetail(item: AccessoryItem): CardDetail | undefined {
     return {
       kind: 'owedToYou',
       payer: payment.counterpart,
-      amountSen,
+      amount,
       note: payment.note,
       category: 'other',
     };
@@ -112,15 +111,6 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
     default:
       return front.kind === 'oweMoney' ? { key: 'pay' } : { key: 'live' };
   }
-}
-
-export function moneyParts(amountSen: number, locale: string) {
-  return formatRinggitParts(amountSen, locale);
-}
-
-export function moneyText(amountSen: number, locale: string) {
-  const { whole, cents } = moneyParts(amountSen, locale);
-  return cents === '.00' ? whole : `${whole}${cents}`;
 }
 
 export function bountyDetail(card: LiveCardModel): BountyCardDetail | null {

@@ -19,6 +19,7 @@ const DRAFT: PostDraft = {
   title: '帮我取个快递',
   category: 'pickup',
   rewardText: '8',
+  currency: 'MYR',
   description: null,
   time: { kind: 'none' },
   place: null,
@@ -101,7 +102,14 @@ describe('post flow', () => {
       {
         ...STATUS,
         blocked: true,
-        unpaid: [{ paymentId: 'p', payeeName: '阿杰', amountSen: 1500, createdAt: '' }],
+        unpaid: [
+          {
+            paymentId: 'p',
+            payeeName: '阿杰',
+            amount: { minor: 1500, currency: 'MYR' as const },
+            createdAt: '',
+          },
+        ],
       },
       { ...STATUS, freePostsLeft: 0, coins: 0 },
     ]) {
@@ -158,7 +166,14 @@ describe('post flow', () => {
       const blocked = {
         ...STATUS,
         blocked: true,
-        unpaid: [{ paymentId: 'p', payeeName: '阿杰', amountSen: 1500, createdAt: '' }],
+        unpaid: [
+          {
+            paymentId: 'p',
+            payeeName: '阿杰',
+            amount: { minor: 1500, currency: 'MYR' as const },
+            createdAt: '',
+          },
+        ],
       };
       const { flow, calls } = setup({
         statuses: [STATUS, blocked],
@@ -192,6 +207,15 @@ describe('post flow', () => {
     expect(calls.cleared).toBe(0);
   });
 
+  test('a server invalid_reward answer returns to the form with the range error and keeps the draft', async () => {
+    const { flow, calls } = setup({ outcomes: [{ ok: false, reason: 'invalidReward' }] });
+    await flow.load();
+    await flow.publish();
+    expect(calls.invalid).toEqual(['rewardRange']);
+    expect(calls.cleared).toBe(0);
+    expect(flow.get()).toMatchObject({ busy: false, rejected: null });
+  });
+
   test('an already-sent answer clears the draft and says so, without publishing again', async () => {
     const { flow, calls, draft } = setup({ outcomes: [{ ok: false, reason: 'alreadySent' }] });
     await flow.load();
@@ -212,7 +236,8 @@ describe('post flow', () => {
     expect(calls.done).toBe(1);
     expect(calls.published[0]).toMatchObject({
       id: 'draft-1',
-      reward_sen: 800,
+      reward_minor: 800,
+      reward_currency: 'MYR',
       category: 'pickup',
     });
   });

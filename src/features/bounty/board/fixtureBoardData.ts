@@ -1,17 +1,19 @@
 import type { Point } from '@/lib/location/types';
 import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
+import type { Money, MoneyReference } from '@/lib/money';
 import { BOUNTY_CATEGORIES, type BountyCategory } from '@/lib/stickers/category';
 
 import type { Person, Tier } from './types';
 
-export const BOARDS = ['full', 'one', 'empty', 'worst', 'long'] as const;
+export const BOARDS = ['full', 'one', 'empty', 'worst', 'long', 'cny'] as const;
 export type BoardFixture = (typeof BOARDS)[number];
 
 export type FixtureBounty = {
   id: string;
   title: string;
   category: BountyCategory;
-  rewardSen: number;
+  reward: Money;
+  reference: MoneyReference | null;
   placeLabel: string | null;
   point: Point | null;
   description: string | null;
@@ -62,8 +64,9 @@ const XIAOYU = person('fixture-poster-xiaoyu', '小雨', 'very_reliable');
 
 type Spec = Omit<
   FixtureBounty,
-  'point' | 'description' | 'window' | 'deadlineInMinutes' | 'applied'
+  'point' | 'reference' | 'description' | 'window' | 'deadlineInMinutes' | 'applied'
 > & {
+  reference?: MoneyReference;
   meters?: number;
   bearing?: number;
   description?: string;
@@ -75,6 +78,7 @@ type Spec = Omit<
 function bounty(spec: Spec): FixtureBounty {
   const { meters, bearing = 0, ...rest } = spec;
   return {
+    reference: null,
     description: null,
     window: null,
     deadlineInMinutes: null,
@@ -89,7 +93,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-01',
     title: '帮取快递',
     category: 'pickup',
-    rewardSen: 800,
+    reward: { minor: 800, currency: 'MYR' },
     placeLabel: 'Sunway Geo 宿舍',
     meters: 300,
     bearing: 160,
@@ -102,7 +106,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-02',
     title: '帮我买杯奶茶',
     category: 'buy',
-    rewardSen: 500,
+    reward: { minor: 500, currency: 'MYR' },
     placeLabel: 'Sunway Pyramid LG',
     meters: 500,
     bearing: 40,
@@ -114,7 +118,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-03',
     title: '陪我去银行开户',
     category: 'accompany',
-    rewardSen: 1500,
+    reward: { minor: 1500, currency: 'MYR' },
     placeLabel: 'Maybank Bandar Sunway',
     meters: 800,
     bearing: 250,
@@ -127,7 +131,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-04',
     title: '帮忙打印论文',
     category: 'handle',
-    rewardSen: 600,
+    reward: { minor: 600, currency: 'MYR' },
     placeLabel: 'Sunway University 图书馆',
     meters: 900,
     bearing: 300,
@@ -139,7 +143,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-05',
     title: '教我微积分',
     category: 'study',
-    rewardSen: 3000,
+    reward: { minor: 3000, currency: 'MYR' },
     placeLabel: 'Sunway College',
     meters: 1200,
     bearing: 200,
@@ -151,7 +155,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-06',
     title: '搬两个箱子上楼',
     category: 'move',
-    rewardSen: 2000,
+    reward: { minor: 2000, currency: 'MYR' },
     placeLabel: 'Sunway Monash 宿舍',
     meters: 1600,
     bearing: 120,
@@ -162,7 +166,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-07',
     title: '帮我取外卖',
     category: 'pickup',
-    rewardSen: 400,
+    reward: { minor: 400, currency: 'MYR' },
     placeLabel: 'Sunway Geo Avenue',
     meters: 1900,
     bearing: 170,
@@ -174,7 +178,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-08',
     title: '帮我去 JPJ 排号',
     category: 'queue',
-    rewardSen: 2500,
+    reward: { minor: 2500, currency: 'MYR' },
     placeLabel: 'JPJ Padang Jawa',
     meters: 3400,
     bearing: 280,
@@ -185,7 +189,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-09',
     title: '帮我搬一个书架',
     category: 'move',
-    rewardSen: 1000,
+    reward: { minor: 1000, currency: 'MYR' },
     placeLabel: 'IKEA Damansara',
     meters: 5200,
     bearing: 330,
@@ -196,7 +200,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-10',
     title: '帮我抢演唱会门票',
     category: 'queue',
-    rewardSen: 5000,
+    reward: { minor: 5000, currency: 'MYR' },
     placeLabel: null,
     createdMinutesAgo: 5,
     poster: JASON,
@@ -205,7 +209,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-11',
     title: '借一个充电宝',
     category: 'other',
-    rewardSen: 300,
+    reward: { minor: 300, currency: 'MYR' },
     placeLabel: null,
     createdMinutesAgo: 45,
     poster: SITI,
@@ -214,7 +218,7 @@ const FULL: FixtureBounty[] = [
     id: 'fixture-bounty-12',
     title: '帮我拍几张毕业照',
     category: 'other',
-    rewardSen: 2000,
+    reward: { minor: 2000, currency: 'MYR' },
     placeLabel: null,
     window: { startInMinutes: 2880, minutes: 120 },
     createdMinutesAgo: 200,
@@ -229,12 +233,19 @@ const LONG_NAME = codePoints('Nur Aisyah Humaira binti Mohd Khairuddin ', 40);
 const LONG_PERSON = person('fixture-poster-long', LONG_NAME, 'tapir_friend');
 const LONG_DESCRIPTION = codePoints('包裹有点重，麻烦小心拿，到了楼下给我发消息，我下来接。', 500);
 
+export const WORST_CNY_REWARD: Money = { minor: 80000, currency: 'CNY' };
+export const WORST_CNY_REFERENCE: MoneyReference = {
+  minor: 48980,
+  currency: 'MYR',
+  rateDate: '2026-10-28',
+};
+
 const WORST: FixtureBounty[] = [
   bounty({
     id: 'fixture-worst-01',
     title: codePoints('帮我从 Sunway Pyramid 搬三个很重的行李箱到宿舍二十三楼，', 60),
     category: 'move',
-    rewardSen: 50000,
+    reward: { minor: 50000, currency: 'MYR' },
     placeLabel: codePoints('Sunway Geo Residences A 座大堂旁边的便利店门口，', 80),
     meters: 100,
     bearing: 90,
@@ -247,7 +258,7 @@ const WORST: FixtureBounty[] = [
     id: 'fixture-worst-02',
     title: codePoints('Tolong ambilkan bungkusan saya di pejabat pos Bandar Sunway ', 60),
     category: 'pickup',
-    rewardSen: 100,
+    reward: { minor: 100, currency: 'MYR' },
     placeLabel: codePoints('Pejabat Pos Bandar Sunway, Jalan PJS 11/28, Subang Jaya ', 80),
     meters: 1800,
     bearing: 30,
@@ -260,7 +271,8 @@ const WORST: FixtureBounty[] = [
     id: 'fixture-worst-03',
     title: codePoints('帮我去 JPJ 排号续驾照，人很多可能要排三个小时，', 60),
     category: 'queue',
-    rewardSen: 50000,
+    reward: WORST_CNY_REWARD,
+    reference: WORST_CNY_REFERENCE,
     placeLabel: codePoints('Jabatan Pengangkutan Jalan Padang Jawa, Shah Alam ', 80),
     meters: 18_400,
     bearing: 300,
@@ -271,7 +283,7 @@ const WORST: FixtureBounty[] = [
     id: 'fixture-worst-04',
     title: codePoints('没写地点也没写时间的悬赏，标题刚好六十个字，', 60),
     category: 'other',
-    rewardSen: 100,
+    reward: { minor: 100, currency: 'MYR' },
     placeLabel: null,
     description: LONG_DESCRIPTION,
     createdMinutesAgo: 1,
@@ -297,7 +309,7 @@ const WORST_FILLERS: FixtureBounty[] = Array.from({ length: WORST_FILLER }, (_, 
     id: `fixture-worst-${String(n).padStart(2, '0')}`,
     title: codePoints(WORST_TITLES[pick], 60),
     category: BOUNTY_CATEGORIES[index % BOUNTY_CATEGORIES.length],
-    rewardSen: pick === 0 ? 50000 : 100,
+    reward: { minor: pick === 0 ? 50000 : 100, currency: 'MYR' },
     placeLabel: codePoints(WORST_PLACES[pick], 80),
     meters: 2100 + 400 * index,
     bearing: (index * 53) % 360,
@@ -318,7 +330,7 @@ const LONG: FixtureBounty[] = Array.from({ length: LONG_COUNT }, (_, index) => {
     id: `fixture-long-${String(n).padStart(2, '0')}`,
     title: `长列表悬赏 ${n}`,
     category: BOUNTY_CATEGORIES[index % BOUNTY_CATEGORIES.length],
-    rewardSen: 100 * (5 + (index % 20)),
+    reward: { minor: 100 * (5 + (index % 20)), currency: 'MYR' },
     placeLabel: located ? `Sunway 第 ${n} 栋` : null,
     ...(located ? { meters: 150 + 120 * index, bearing: (index * 37) % 360 } : {}),
     createdMinutesAgo: 3 + index * 7,
@@ -326,10 +338,45 @@ const LONG: FixtureBounty[] = Array.from({ length: LONG_COUNT }, (_, index) => {
   });
 });
 
+export const CNY_REWARD: Money = { minor: 5000, currency: 'CNY' };
+export const CNY_REFERENCE: MoneyReference = {
+  minor: 3247,
+  currency: 'MYR',
+  rateDate: '2026-10-28',
+};
+
+const CNY: FixtureBounty[] = [
+  bounty({
+    id: 'fixture-cny-01',
+    title: '帮我带一盒月饼',
+    category: 'buy',
+    reward: CNY_REWARD,
+    reference: CNY_REFERENCE,
+    placeLabel: 'Sunway Pyramid LG',
+    meters: 400,
+    bearing: 60,
+    description: '要双黄白莲蓉的，放 A 座大堂就好。',
+    createdMinutesAgo: 8,
+    poster: XIAOYU,
+  }),
+  bounty({
+    id: 'fixture-cny-02',
+    title: '帮我寄一份文件回国',
+    category: 'handle',
+    reward: { minor: 3000, currency: 'CNY' },
+    placeLabel: 'Pos Malaysia Bandar Sunway',
+    meters: 700,
+    bearing: 200,
+    createdMinutesAgo: 20,
+    poster: JIE,
+  }),
+];
+
 export const FIXTURE_BOARDS: Record<BoardFixture, FixtureBounty[]> = {
   full: FULL,
   one: FULL.slice(3, 4),
   empty: [],
   worst: [...WORST, ...WORST_FILLERS],
   long: LONG,
+  cny: [...CNY, ...FULL.slice(0, 2)],
 };

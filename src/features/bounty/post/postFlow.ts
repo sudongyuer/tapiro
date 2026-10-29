@@ -11,7 +11,10 @@ export type StatusState =
 export type FlowState = {
   status: StatusState;
   busy: boolean;
-  rejected: Exclude<PublishFailure, 'blocked' | 'noBalance' | 'alreadySent'> | null;
+  rejected: Exclude<
+    PublishFailure,
+    'blocked' | 'noBalance' | 'alreadySent' | 'invalidReward'
+  > | null;
 };
 
 export type FlowDeps = {
@@ -67,6 +70,11 @@ export function createPostFlow(deps: FlowDeps) {
         deps.clearDraft();
         patch({ busy: false });
         handlers.onAlreadySent();
+        return;
+      }
+      if (reason === 'invalidReward') {
+        patch({ busy: false });
+        handlers.onInvalid('rewardRange');
         return;
       }
       if (reason === 'blocked' || reason === 'noBalance') {

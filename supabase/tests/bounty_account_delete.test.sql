@@ -29,7 +29,7 @@ declare
 begin
   perform pg_temp.act_as(poster);
   perform public.publish_bounty(
-    item, '帮取快递', 'pickup', 500,
+    item, '帮取快递', 'pickup', 500, 'MYR',
     place_label => 'Sunway', latitude => 3.07, longitude => 101.6, address => address
   );
   if helper is not null then
@@ -68,7 +68,7 @@ create function pg_temp.fx(n text) returns uuid language sql as $$
 $$;
 
 create function pg_temp.active(uid uuid) returns text[] language sql as $$
-  select coalesce(array_agg(concat_ws(' ', f.name, a.role, a.counterpart_id, a.status, a.reward_sen, a.title)
+  select coalesce(array_agg(concat_ws(' ', f.name, a.role, a.counterpart_id, a.status, a.reward_minor, a.reward_currency, a.title)
     order by f.name), '{}')
   from public.active_bounties_of(uid) a join fx f on f.id = a.id;
 $$;
@@ -93,22 +93,22 @@ select is(
 
 select is(
   pg_temp.active('00000000-0000-0000-0000-0000000000a1'),
-  array['assigned poster 00000000-0000-0000-0000-0000000000b2 assigned 500 帮取快递'],
+  array['assigned poster 00000000-0000-0000-0000-0000000000b2 assigned 500 MYR 帮取快递'],
   'the poster''s active list holds only the assigned bounty, with the helper as counterpart'
 );
 
 select is(
   pg_temp.active('00000000-0000-0000-0000-0000000000b2'),
-  array['assigned helper 00000000-0000-0000-0000-0000000000a1 assigned 500 帮取快递'],
+  array['assigned helper 00000000-0000-0000-0000-0000000000a1 assigned 500 MYR 帮取快递'],
   'the helper''s active list holds only the assigned bounty, with the poster as counterpart'
 );
 
 select is(
   pg_temp.active('00000000-0000-0000-0000-0000000000e5'),
   array[
-    'disputed helper 00000000-0000-0000-0000-0000000000c3 disputed 500 帮取快递',
-    'done helper 00000000-0000-0000-0000-0000000000c3 done 500 帮取快递',
-    'en_route helper 00000000-0000-0000-0000-0000000000c3 en_route 500 帮取快递'
+    'disputed helper 00000000-0000-0000-0000-0000000000c3 disputed 500 MYR 帮取快递',
+    'done helper 00000000-0000-0000-0000-0000000000c3 done 500 MYR 帮取快递',
+    'en_route helper 00000000-0000-0000-0000-0000000000c3 en_route 500 MYR 帮取快递'
   ],
   'en_route, done and disputed are active; the confirmed bounty E posted is not'
 );
@@ -306,7 +306,7 @@ select is(
 
 select is(
   pg_temp.active('00000000-0000-0000-0000-0000000000a1'),
-  array['assigned poster 00000000-0000-0000-0000-0000000000b2 assigned 500 帮取快递'],
+  array['assigned poster 00000000-0000-0000-0000-0000000000b2 assigned 500 MYR 帮取快递'],
   'other users'' active bounties are untouched'
 );
 

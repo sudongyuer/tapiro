@@ -1,3 +1,5 @@
+import type { Money, MoneyReference } from '@/lib/money';
+
 import type { BoardRow, BountyDetail, Person } from '../board/types';
 import { partyOutcome, showsProgress } from '../shared/partyOutcome';
 
@@ -8,7 +10,8 @@ export type DetailView = {
   id: string;
   title: string;
   category: BountyDetail['category'];
-  rewardSen: number;
+  reward: Money;
+  reference: MoneyReference | null;
   placeLabel: string | null;
   distanceM: number | null;
   startsAt: string | null;
@@ -45,7 +48,8 @@ export function viewOfRow(row: BoardRow): DetailView {
     id: row.id,
     title: row.title,
     category: row.category,
-    rewardSen: row.rewardSen,
+    reward: row.reward,
+    reference: row.reference,
     placeLabel: row.placeLabel,
     distanceM: row.distanceM,
     startsAt: row.startsAt,
@@ -66,7 +70,8 @@ export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
     id: detail.id,
     title: detail.title,
     category: detail.category,
-    rewardSen: detail.rewardSen,
+    reward: detail.reward,
+    reference: detail.reference,
     placeLabel: detail.place?.label ?? null,
     distanceM: detail.distanceM,
     startsAt: detail.startsAt,

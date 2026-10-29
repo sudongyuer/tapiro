@@ -109,9 +109,9 @@ select is(
 );
 
 insert into ids values
-  ('paid', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200)),
-  ('late', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 800)),
-  ('orphan', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 850));
+  ('paid', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200, 'MYR')),
+  ('late', public.open_payment('bounty', gen_random_uuid(), '帮带咖啡', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 800, 'MYR')),
+  ('orphan', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000b2', 850, 'MYR'));
 update public.payments
 set created_at = now() - interval '2 days', marked_paid_at = now() - interval '1 day', method_type = 'cash',
     state = 'settled', settled_at = now()
@@ -181,7 +181,7 @@ select is(
 
 insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000b2', 'cash');
 insert into ids values
-  ('client', public.open_payment('bounty', gen_random_uuid(), '帮带饭', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700));
+  ('client', public.open_payment('bounty', gen_random_uuid(), '帮带饭', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700, 'MYR'));
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select public.confirm_payment_received((select id from ids where name = 'client'));
@@ -201,8 +201,8 @@ select is(
 
 insert into ids values ('ride', gen_random_uuid());
 insert into ids values
-  ('rider_a', public.open_payment('ride', (select id from ids where name = 'ride'), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900)),
-  ('rider_c', public.open_payment('ride', (select id from ids where name = 'ride'), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 900));
+  ('rider_a', public.open_payment('ride', (select id from ids where name = 'ride'), '拼车回 YC', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR')),
+  ('rider_c', public.open_payment('ride', (select id from ids where name = 'ride'), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 900, 'MYR'));
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select public.confirm_payment_received((select id from ids where name = 'rider_a'));

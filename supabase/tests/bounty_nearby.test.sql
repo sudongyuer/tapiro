@@ -25,10 +25,10 @@ create function pg_temp.bounty(
   helper uuid default null
 ) returns uuid language sql as $$
   insert into public.bounties (
-    id, poster_id, helper_id, title, category, reward_sen, place, place_label, expires_at, status, done_at, created_at
+    id, poster_id, helper_id, title, category, reward_minor, reward_currency, place, place_label, expires_at, status, done_at, created_at
   )
   values (
-    id, poster, helper, '帮取快递', 'pickup', 500,
+    id, poster, helper, '帮取快递', 'pickup', 500, 'MYR',
     case when lat is not null then
       extensions.st_setsrid(extensions.st_makepoint(lng, lat), 4326)::extensions.geography
     end,
@@ -205,7 +205,7 @@ select is(
      (select r -> 'items' -> 0 from results where name = 'near')) as k),
   array[
     'appliedByMe', 'category', 'createdAt', 'deadlineAt', 'distanceM', 'endsAt', 'id', 'placeLabel', 'poster',
-    'rewardSen', 'startsAt', 'stickerPath', 'title', 'urgent'
+    'reference', 'rewardCurrency', 'rewardMinor', 'startsAt', 'stickerPath', 'title', 'urgent'
   ],
   'a card carries only the board fields'
 );

@@ -1,5 +1,6 @@
 import { Settings } from 'react-native';
 
+import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -24,7 +25,12 @@ export const postService: PostService = uiVerify
   ? verifyPostService()
   : createSupabasePostService(getSupabase());
 
-export const draftStore = createDraftStore(settingsDraftStorage, newDraftId);
+export const draftStore = createDraftStore(
+  settingsDraftStorage,
+  newDraftId,
+  () => new Date(),
+  deviceCurrency,
+);
 
 userCleanups.register((userId) => draftStore.clear(userId));
 

@@ -11,14 +11,15 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
-import { formatRinggit } from '@/lib/money';
+import { formatMoney, type Money } from '@/lib/money';
 import { stickerArt, type Sticker, type StickerKind } from '@/lib/stickers';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
-import { formatCny } from '../fx';
+import type { CelebrationNote } from '../amounts';
 import { BookPanel, type SlotCentre } from './BookPanel';
+import { SLOT_HEIGHT } from './BookSlots';
 import { TAPIR_RISE } from './BookTapir';
 import { Headline } from './Headline';
 import {
@@ -29,6 +30,7 @@ import {
   groupPoint,
   targetSlot,
 } from './model';
+import { FirstBadge } from './FirstBadge';
 import { FlyingSticker, Receipt, STICKER_OFFSET } from './ReceiptSticker';
 import { TIMELINE, tween } from './timeline';
 import { useCelebrationClock } from './useCelebrationClock';
@@ -42,8 +44,8 @@ export type CelebrationData = {
   previous: Sticker[] | null;
   title: string;
   name: string;
-  amountSen: number;
-  cnyFen: number | null;
+  amount: Money;
+  note: CelebrationNote;
   itemKind: StickerKind;
   category: string | null;
 };
@@ -66,7 +68,7 @@ export function Celebration({
   const [centre, setCentre] = useState<SlotCentre | null>(null);
   const [stage, setStage] = useState<LayoutRectangle | null>(null);
   const [headlineHeight, setHeadlineHeight] = useState<number | null>(null);
-  const amount = formatRinggit(data.amountSen, language);
+  const amount = formatMoney(data.amount, language);
   const announcement = t('pay.celebrate.announce', { amount, title: data.title, name: data.name });
   const layout =
     stage && frame && headlineHeight !== null
@@ -85,6 +87,15 @@ export function Celebration({
     stage && layout && frame && centre
       ? groupPoint(stage, layout, frame.x + centre.x, layout.height - frame.height + centre.y)
       : start;
+  const badge =
+    stage && layout && frame && centre
+      ? groupPoint(
+          stage,
+          layout,
+          frame.x + centre.x - centre.width / 2 + vars['--space-6'],
+          layout.height - frame.height + centre.y - SLOT_HEIGHT / 2 - vars['--space-3'],
+        )
+      : null;
   const bookTitle = t('stickers.book.title');
   const counts: [string, string] | null =
     data.count === null
@@ -118,12 +129,12 @@ export function Celebration({
                   <Headline
                     clock={clock}
                     top={t('pay.celebrate.top', { title: data.title, name: data.name })}
-                    amountSen={data.amountSen}
+                    amount={data.amount}
                     language={language}
                     cny={
-                      data.cnyFen === null
-                        ? null
-                        : t('pay.celebrate.cny', { amount: formatCny(data.cnyFen, language) })
+                      data.note
+                        ? t(data.note.key, { amount: formatMoney(data.note.amount, language) })
+                        : null
                     }
                     title={t(
                       data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title',
@@ -145,7 +156,6 @@ export function Celebration({
                   drop={stage && layout ? groupDrop(stage, layout) : height}
                   title={bookTitle}
                   counts={counts}
-                  badge={t('pay.celebrate.badge')}
                   countLabel={counts ? `${bookTitle} ${counts[1]}` : bookTitle}
                   onFrame={setFrame}
                   onTarget={setCentre}
@@ -189,6 +199,15 @@ export function Celebration({
                   dy={end.y - start.y}
                   land={layout?.scale ?? 1}
                   art={stickerArt(data)}
+                />
+              ) : null}
+              {data.first && badge && layout ? (
+                <FirstBadge
+                  clock={clock}
+                  label={t('pay.celebrate.badge')}
+                  x={badge.x}
+                  y={badge.y}
+                  scale={layout.scale}
                 />
               ) : null}
             </View>

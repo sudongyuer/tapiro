@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { blockedReason, ringgit } from './blockedReason';
+import { blockedReason } from './blockedReason';
 
 const NOW = new Date('2026-10-27T09:00:00.000Z');
 const ago = (days: number) => new Date(NOW.getTime() - days * 86_400_000).toISOString();
@@ -13,21 +13,38 @@ describe('blocked reason', () => {
   test('two or more unpaid name the count and the total, oldest first as given', () => {
     const reason = blockedReason(
       [
-        { paymentId: 'a', payeeName: '阿杰', amountSen: 1500, createdAt: ago(3) },
-        { paymentId: 'b', payeeName: 'Lily', amountSen: 600, createdAt: ago(1) },
+        {
+          paymentId: 'a',
+          payeeName: '阿杰',
+          amount: { minor: 1500, currency: 'MYR' },
+          createdAt: ago(3),
+        },
+        {
+          paymentId: 'b',
+          payeeName: 'Lily',
+          amount: { minor: 600, currency: 'MYR' },
+          createdAt: ago(1),
+        },
       ],
       NOW,
       '对方',
     );
     expect(reason?.kind).toBe('many');
     if (reason?.kind !== 'many') return;
-    expect(reason.totalSen).toBe(2100);
+    expect(reason).toMatchObject({ totals: [{ minor: 2100, currency: 'MYR' }] });
     expect(reason.unpaid.map((payment) => payment.payeeName)).toEqual(['阿杰', 'Lily']);
   });
 
   test('one old payment names its whole days unpaid', () => {
     const reason = blockedReason(
-      [{ paymentId: 'a', payeeName: '阿杰', amountSen: 1500, createdAt: ago(8.5) }],
+      [
+        {
+          paymentId: 'a',
+          payeeName: '阿杰',
+          amount: { minor: 1500, currency: 'MYR' },
+          createdAt: ago(8.5),
+        },
+      ],
       NOW,
       '对方',
     );
@@ -36,15 +53,17 @@ describe('blocked reason', () => {
 
   test('a payee without a name is named with the fallback', () => {
     const reason = blockedReason(
-      [{ paymentId: 'a', payeeName: '  ', amountSen: 1500, createdAt: ago(8) }],
+      [
+        {
+          paymentId: 'a',
+          payeeName: '  ',
+          amount: { minor: 1500, currency: 'MYR' },
+          createdAt: ago(8),
+        },
+      ],
       NOW,
       '对方',
     );
     expect(reason).toMatchObject({ kind: 'old', payment: { payeeName: '对方' } });
-  });
-
-  test('whole ringgit drop the cents, others keep them', () => {
-    expect(ringgit(1500, 'zh-Hans')).toBe('RM\u00a015');
-    expect(ringgit(1234560, 'en')).toBe('RM\u00a012,345.60');
   });
 });

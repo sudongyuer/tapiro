@@ -14,7 +14,7 @@ function stubClient(answer: (name: string, args: unknown) => Answer | Promise<ne
       return answer(name, args);
     },
   } as unknown as SupabaseClient;
-  return { service: createSupabaseStatusService(client), calls };
+  return { service: createSupabaseStatusService(client, () => 'CNY'), calls };
 }
 
 const ok = (data: unknown): Answer => ({ data, error: null });
@@ -40,7 +40,8 @@ const ROW = {
   title: '帮取快递',
   description: null,
   category: 'pickup',
-  rewardSen: 800,
+  rewardMinor: 800,
+  rewardCurrency: 'MYR',
   status: 'en_route',
   viewerRole: 'poster',
   place: null,
@@ -64,13 +65,21 @@ const ROW = {
   events: [EVENT],
 };
 
+const PAYMENT = {
+  id: 'pay1',
+  state: 'marked_paid',
+  amountMinor: 5000,
+  currency: 'CNY',
+  converted: { minor: 3061, currency: 'MYR' },
+};
+
 describe('detail', () => {
-  test('calls bounty_detail with the bounty only and parses the status keys', async () => {
-    const stub = stubClient(() =>
-      ok({ ...ROW, charge: 'coin', payment: { id: 'pay1', state: 'marked_paid' } }),
-    );
+  test('calls bounty_detail with the bounty and the reference currency and parses the status keys', async () => {
+    const stub = stubClient(() => ok({ ...ROW, charge: 'coin', payment: PAYMENT }));
     const detail = await stub.service.detail('b1');
-    expect(stub.calls).toEqual([{ name: 'bounty_detail', args: { bounty: 'b1' } }]);
+    expect(stub.calls).toEqual([
+      { name: 'bounty_detail', args: { bounty: 'b1', reference_currency: 'CNY' } },
+    ]);
     expect(detail).toMatchObject({
       id: 'b1',
       status: 'en_route',
@@ -81,10 +90,22 @@ describe('detail', () => {
       autoConfirmAt: null,
       startLate: false,
       issueReason: null,
-      payment: { id: 'pay1', state: 'marked_paid' },
+      payment: {
+        id: 'pay1',
+        state: 'marked_paid',
+        amount: { minor: 5000, currency: 'CNY' },
+        converted: { minor: 3061, currency: 'MYR' },
+      },
       charge: 'coin',
       events: [EVENT],
     });
+  });
+
+  test('a payment without a locked rate has no conversion', async () => {
+    const detail = await stubClient(() =>
+      ok({ ...ROW, payment: { ...PAYMENT, converted: null } }),
+    ).service.detail('b1');
+    expect(detail).toMatchObject({ payment: { converted: null } });
   });
 
   test('charge is null when the server has not added it yet', async () => {
@@ -114,7 +135,9 @@ describe('detail', () => {
     ['event.kind', { ...ROW, events: [{ ...EVENT, kind: 'teleported' }] }],
     ['event.actor', { ...ROW, events: [{ ...EVENT, actor: 'stranger' }] }],
     ['event.at', { ...ROW, events: [{ ...EVENT, at: null }] }],
-    ['payment.state', { ...ROW, payment: { id: 'p', state: 'lost' } }],
+    ['payment.state', { ...ROW, payment: { ...PAYMENT, state: 'lost' } }],
+    ['payment.amount', { ...ROW, payment: { ...PAYMENT, currency: 'USD' } }],
+    ['payment.converted', { ...ROW, payment: { ...PAYMENT, converted: { minor: 1.5 } } }],
     ['charge', { ...ROW, charge: 'cash' }],
     ['etaAt', { ...ROW, etaAt: 5 }],
   ])('a malformed %s rejects', async (what, bad) => {
@@ -259,7 +282,10 @@ for (const { name, rpc, run, args, data, value, wrong } of CASES) {
     });
 
     test('without a client it fails instead of throwing', async () => {
-      expect(await run(createSupabaseStatusService(null))).toEqual({ ok: false, reason: 'failed' });
+      expect(await run(createSupabaseStatusService(null, () => 'CNY'))).toEqual({
+        ok: false,
+        reason: 'failed',
+      });
     });
   });
 }

@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { formatMoney, moneyParts } from '@/lib/money';
 import type { PayDetail } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
 import { CategorySticker } from '@/ui/CategorySticker';
@@ -10,7 +11,6 @@ import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
 
-import { moneyParts, moneyText } from '../homeModel';
 import { CardText, Pill } from './cardParts';
 
 const BUTTON_HEIGHT = 52;
@@ -20,8 +20,8 @@ export function PayCard({ detail }: { detail: PayDetail }) {
   const router = useRouter();
   const paint = useLiveCardPaint('pay');
   const ink = paint.ink;
-  const amount = t('home.money', { amount: moneyText(detail.amountSen, language) });
-  const { whole, cents } = moneyParts(detail.amountSen, language);
+  const amount = formatMoney(detail.amount, language, { whole: true });
+  const { symbol, gap, whole, fraction } = moneyParts(detail.amount, language);
   return (
     <LiveCard tone="pay" hanging={<CategorySticker category={detail.category} size={78} />}>
       <Pill ink={ink} dot={paint.urgentDot}>
@@ -34,9 +34,9 @@ export function PayCard({ detail }: { detail: PayDetail }) {
         {t('home.card.pay.title', { name: detail.payee })}
       </CardText>
       <CardText variant="amount" ink={ink} style={styles.amount}>
-        {t('home.money', { amount: whole })}
+        {`${symbol}${gap}${whole}`}
         <AppText variant="moment-title" style={[styles.cents, { color: ink }]}>
-          {cents}
+          {fraction}
         </AppText>
       </CardText>
       <PressDim

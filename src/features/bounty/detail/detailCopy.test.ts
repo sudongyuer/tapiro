@@ -21,7 +21,8 @@ const VIEW: DetailView = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
-  rewardSen: 800,
+  reward: { minor: 800, currency: 'MYR' },
+  reference: null,
   placeLabel: 'Sunway Geo 宿舍',
   distanceM: 300,
   startsAt: null,
@@ -44,6 +45,23 @@ describe('detailCopy', () => {
     expect(copy.name).toBe('小林');
     expect(copy.tier).toBe('靠谱');
     expect(copy.reward).toMatch(/^RM\s8$/);
+    expect(copy.reference).toBeNull();
+  });
+
+  test('a ¥ bounty reads ¥50 with the RM reference below', () => {
+    const copy = detailCopy(
+      {
+        ...VIEW,
+        reward: { minor: 5000, currency: 'CNY' },
+        reference: { minor: 3247, currency: 'MYR', rateDate: '2026-10-28' },
+      },
+      t,
+      'zh-Hans',
+      NOW,
+    );
+    expect(copy.reward).toBe('¥50');
+    expect(copy.rewardLabel).toBe('赏金 ¥50');
+    expect(copy.reference).toBe('约 RM\u00a032.47');
   });
 
   test('shows the place alone without a distance, and no 急 for a far deadline', () => {

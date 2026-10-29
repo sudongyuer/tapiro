@@ -54,15 +54,24 @@ export function DetailHeader({ view, copy }: { view: DetailView; copy: DetailCop
         >
           {view.title}
         </Text>
-        <Text
-          modifiers={[
-            font({ size: vars['--text-reward'], weight: 'heavy', design: 'rounded' }),
-            accessibilityLabel(copy.rewardLabel),
-            accessibilityIdentifier('bounty-detail-reward'),
-          ]}
-        >
-          {copy.reward}
-        </Text>
+        <VStack spacing={vars['--space-1']}>
+          <Text
+            modifiers={[
+              font({ size: vars['--text-reward'], weight: 'heavy', design: 'rounded' }),
+              accessibilityLabel(copy.rewardLabel),
+              accessibilityIdentifier('bounty-detail-reward'),
+            ]}
+          >
+            {copy.reward}
+          </Text>
+          {copy.reference ? (
+            <Text
+              modifiers={[footnote, secondary, accessibilityIdentifier('bounty-detail-reference')]}
+            >
+              {copy.reference}
+            </Text>
+          ) : null}
+        </VStack>
       </VStack>
     </Section>
   );

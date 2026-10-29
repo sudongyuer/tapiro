@@ -15,7 +15,12 @@ const BLOCKED: PostStatus = {
   ...STATUS,
   blocked: true,
   unpaid: [
-    { paymentId: 'p', payeeName: '阿杰', amountSen: 1500, createdAt: '2026-10-19T09:00:00.000Z' },
+    {
+      paymentId: 'p',
+      payeeName: '阿杰',
+      amount: { minor: 1500, currency: 'MYR' },
+      createdAt: '2026-10-19T09:00:00.000Z',
+    },
   ],
 };
 

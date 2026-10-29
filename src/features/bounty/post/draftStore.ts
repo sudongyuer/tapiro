@@ -1,3 +1,4 @@
+import { isCurrencyCode, type CurrencyCode } from '@/lib/money';
 import { bountyCategory } from '@/lib/stickers/category';
 
 import type { DraftPlace, PostDraft, TimeChoice } from './types';
@@ -7,7 +8,7 @@ export type DraftStorage = {
   write(userId: string, draft: PostDraft | null): void;
 };
 
-type DraftFields = Omit<PostDraft, 'id' | 'updatedAt'>;
+type DraftFields = Omit<PostDraft, 'id' | 'updatedAt' | 'currency'>;
 
 const BLANK: DraftFields = {
   title: '',
@@ -49,7 +50,7 @@ function toPlace(value: unknown): DraftPlace | null | undefined {
   };
 }
 
-export function toDraft(value: unknown): PostDraft | null {
+export function toDraft(value: unknown, fallbackCurrency: CurrencyCode = 'MYR'): PostDraft | null {
   if (typeof value !== 'object' || value === null) return null;
   const draft = value as Record<string, unknown>;
   const category = draft.category === null ? null : bountyCategory(draft.category);
@@ -73,6 +74,7 @@ export function toDraft(value: unknown): PostDraft | null {
     title: draft.title,
     category,
     rewardText: draft.rewardText,
+    currency: isCurrencyCode(draft.currency) ? draft.currency : fallbackCurrency,
     description: draft.description,
     time,
     place,
@@ -86,6 +88,7 @@ export function createDraftStore(
   storage: DraftStorage,
   newId: () => string,
   now: () => Date = () => new Date(),
+  defaultCurrency: () => CurrencyCode = () => 'MYR',
 ) {
   let current: { userId: string; draft: PostDraft } | null = null;
   const listeners = new Set<() => void>();
@@ -98,19 +101,19 @@ export function createDraftStore(
 
   function stored(userId: string) {
     try {
-      return toDraft(storage.read(userId));
+      return toDraft(storage.read(userId), defaultCurrency());
     } catch {
       return null;
     }
   }
 
+  function blankDraft(currency: CurrencyCode): PostDraft {
+    return { ...BLANK, currency, id: newId(), updatedAt: now().toISOString() };
+  }
+
   function load(userId: string): PostDraft {
     if (current?.userId === userId) return current.draft;
-    const draft = stored(userId) ?? {
-      ...BLANK,
-      id: newId(),
-      updatedAt: now().toISOString(),
-    };
+    const draft = stored(userId) ?? blankDraft(defaultCurrency());
     current = { userId, draft };
     return draft;
   }
@@ -125,6 +128,11 @@ export function createDraftStore(
         id: base.id,
         updatedAt: now().toISOString(),
       };
+      storage.write(userId, draft);
+      set({ userId, draft });
+    },
+    reset(userId: string) {
+      const draft = blankDraft(load(userId).currency);
       storage.write(userId, draft);
       set({ userId, draft });
     },

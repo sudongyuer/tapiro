@@ -1,4 +1,5 @@
 import type { Point } from '@/lib/location/types';
+import type { Money, MoneyReference } from '@/lib/money';
 import type { BountyCategory } from '@/lib/stickers/category';
 
 export const TIERS = ['new_friend', 'reliable', 'very_reliable', 'tapir_friend'] as const;
@@ -10,7 +11,8 @@ export type BoardRow = {
   id: string;
   title: string;
   category: BountyCategory;
-  rewardSen: number;
+  reward: Money;
+  reference: MoneyReference | null;
   placeLabel: string | null;
   stickerPath: string | null;
   startsAt: string | null;
@@ -42,7 +44,8 @@ export type BountyDetail = {
   title: string;
   description: string | null;
   category: BountyCategory;
-  rewardSen: number;
+  reward: Money;
+  reference: MoneyReference | null;
   status: string;
   viewerRole: ViewerRole;
   place: { label: string; latitude?: number; longitude?: number } | null;

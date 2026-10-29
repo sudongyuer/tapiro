@@ -17,8 +17,8 @@ $$;
 create function pg_temp.bounty(
   id uuid, poster uuid, state public.bounty_status default 'open', helper uuid default null
 ) returns uuid language sql as $$
-  insert into public.bounties (id, poster_id, helper_id, title, category, reward_sen, expires_at, status)
-  values (id, poster, helper, '帮取快递', 'pickup', 500, now() + interval '7 days', state)
+  insert into public.bounties (id, poster_id, helper_id, title, category, reward_minor, reward_currency, expires_at, status)
+  values (id, poster, helper, '帮取快递', 'pickup', 500, 'MYR', now() + interval '7 days', state)
   returning id;
 $$;
 
@@ -35,89 +35,89 @@ select ok(
 );
 
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), 't', 'pickup', 99, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), 't', 'pickup', 99, 'MYR', now() + interval '1 day')$$,
   '23514', null, 'a reward under RM 1 is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), 't', 'pickup', 50001, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), 't', 'pickup', 50001, 'MYR', now() + interval '1 day')$$,
   '23514', null, 'a reward over RM 500 is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), 't', 'pickup', 150, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), 't', 'pickup', 150, 'MYR', now() + interval '1 day')$$,
   '23514', null, 'a reward that is not whole ringgit is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), repeat('题', 61), 'pickup', 500, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), repeat('题', 61), 'pickup', 500, 'MYR', now() + interval '1 day')$$,
   '23514', null, 'a 61-character title is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, place, place_label)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day',
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, place, place_label)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day',
       extensions.st_setsrid(extensions.st_makepoint(101.6067, 3.0733), 4326)::extensions.geography, repeat('地', 81))$$,
   '23514', null, 'an 81-character place label is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, description)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day', repeat('述', 501))$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, description)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day', repeat('述', 501))$$,
   '23514', null, 'a 501-character description is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), 't', 'parcel', 500, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), 't', 'parcel', 500, 'MYR', now() + interval '1 day')$$,
   '23514', null, 'a category outside the eight is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, place)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day',
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, place)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day',
       extensions.st_setsrid(extensions.st_makepoint(101.6067, 3.0733), 4326)::extensions.geography)$$,
   '23514', null, 'a place without a label is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, starts_at, ends_at)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day',
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, starts_at, ends_at)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day',
       now() + interval '2 hours', now() + interval '1 hour')$$,
   '23514', null, 'an end before the start is rejected'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, payment_timing)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day', 'before')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, payment_timing)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day', 'before')$$,
   '23514', null, 'paying before is not offered yet'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, gate)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day', 'reliable')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, gate)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day', 'reliable')$$,
   '23514', null, 'a reputation gate is not offered yet'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, helper_id)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day', '00000000-0000-0000-0000-0000000000b2')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, helper_id)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day', '00000000-0000-0000-0000-0000000000b2')$$,
   '23514', null, 'an open bounty has no helper'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, status)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day', 'assigned')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, status)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day', 'assigned')$$,
   '23514', null, 'an assigned bounty has a helper'
 );
 select throws_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, status, helper_id)
-    values (gen_random_uuid(), 't', 'pickup', 500, now() + interval '1 day', 'done', '00000000-0000-0000-0000-0000000000b2')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, status, helper_id)
+    values (gen_random_uuid(), 't', 'pickup', 500, 'MYR', now() + interval '1 day', 'done', '00000000-0000-0000-0000-0000000000b2')$$,
   '23514', null, 'a done bounty records when it was done'
 );
 
 select lives_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at, description, place, place_label)
-    values ('10000000-0000-0000-0000-000000000001', repeat('题', 60), 'pickup', 100, now() + interval '1 day',
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at, description, place, place_label)
+    values ('10000000-0000-0000-0000-000000000001', repeat('题', 60), 'pickup', 100, 'MYR', now() + interval '1 day',
       repeat('述', 500), extensions.st_setsrid(extensions.st_makepoint(101.6067, 3.0733), 4326)::extensions.geography,
       repeat('地', 80))$$,
   'RM 1, a 60-character title, an 80-character label and a 500-character description are accepted'
 );
 select lives_ok(
-  $$insert into public.bounties (id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), 't', 'other', 50000, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), 't', 'other', 50000, 'MYR', now() + interval '1 day')$$,
   'RM 500 is accepted'
 );
 select throws_ok(
@@ -317,8 +317,8 @@ select is(
 
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select throws_ok(
-  $$insert into public.bounties (id, poster_id, title, category, reward_sen, expires_at)
-    values (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', 't', 'pickup', 500, now() + interval '1 day')$$,
+  $$insert into public.bounties (id, poster_id, title, category, reward_minor, reward_currency, expires_at)
+    values (gen_random_uuid(), '00000000-0000-0000-0000-0000000000a1', 't', 'pickup', 500, 'MYR', now() + interval '1 day')$$,
   '42501', null, 'a client cannot insert a bounty'
 );
 select throws_ok($$update public.bounties set status = 'closed'$$, '42501', null, 'a client cannot update a bounty');

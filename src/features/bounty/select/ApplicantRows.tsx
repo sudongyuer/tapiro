@@ -28,6 +28,7 @@ import type { ReactElement } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
+import { formatMoney } from '@/lib/money';
 import { Avatar } from '@/ui/Avatar';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { TierMark } from '@/ui/TierMark';
@@ -36,7 +37,6 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { BlockedPerson } from '../block/types';
 import type { BountyDetail } from '../board/types';
-import { ringgit } from '../post/blockedReason';
 import { tierName, tierRank } from '../shared/tierCopy';
 import { helpedLine } from './selectCopy';
 import type { Applicant } from './types';
@@ -60,7 +60,7 @@ export function ApplicantsHeader({
   done?: boolean;
 }) {
   const { t, language } = useI18n();
-  const reward = detail ? ringgit(detail.rewardSen, language) : null;
+  const reward = detail ? formatMoney(detail.reward, language, { whole: true }) : null;
   return (
     <Section modifiers={[listRowBackground('clear')]}>
       <VStack spacing={vars['--space-2']} modifiers={[frame({ maxWidth: Infinity })]}>

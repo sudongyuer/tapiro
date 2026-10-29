@@ -278,6 +278,17 @@ describe('fallbacks and hidden rows', () => {
     expect(liveBountyItem(enRoute, copy())?.sub).toBe(`${name}在路上 · 明天 09:30 到`);
   });
 
+  test('a ¥ bounty keeps its currency on the home card', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterAssigned'],
+      failFirstLoad: false,
+      data: 'cny',
+      now: () => NOW,
+    });
+    const [row] = await service.list();
+    expect(liveBountyItem(row, copy())?.bounty.reward).toEqual({ minor: 5000, currency: 'CNY' });
+  });
+
   test('copy follows the language', async () => {
     const item = liveBountyItem(await base('posterApplicants'), copy([], 'en'));
     expect(item?.bounty.actionLabel).toBe(i18nFor('en').t('bounty.live.action.choose'));

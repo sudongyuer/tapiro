@@ -3,6 +3,7 @@ import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { PlatformColor, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { formatMoney, type Money } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { HoldButton } from '@/ui/HoldButton';
 import { Mascot } from '@/ui/Mascot';
@@ -23,6 +24,7 @@ const STICKERS = [
 ] as const;
 
 const noop = () => undefined;
+const SAMPLE_AMOUNT: Money = { minor: 1500, currency: 'MYR' };
 
 const STATUSES: { labelKey: ParseKeys; symbol: SFSymbol; color: TokenName | null }[] = [
   { labelKey: 'debug.tokens.statusOpen', symbol: 'circle', color: null },
@@ -46,7 +48,8 @@ const STATUSES: { labelKey: ParseKeys; symbol: SFSymbol; color: TokenName | null
 
 export function DesignTokensScene({ onReady }: { onReady: () => void }) {
   const { color } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
+  const amount = formatMoney(SAMPLE_AMOUNT, language, { whole: true });
 
   return (
     <ScrollView
@@ -86,7 +89,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
           >
             <Mascot variant={stage === 'calm' ? 'front' : 'side'} size={56} />
             <AppText variant="body" style={{ color: color('--color-on-stage') }}>
-              {t('debug.tokens.liveSample')}
+              {t('debug.tokens.liveSample', { amount })}
             </AppText>
           </View>
         ))}
@@ -111,7 +114,9 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
       <View style={styles.card}>
         {typeRoles.map((role) => (
           <AppText key={role} variant={role} testID={`tokens-type-${role}`}>
-            {role === 'reward' ? t('debug.tokens.reward') : t('debug.tokens.roleSample', { role })}
+            {role === 'reward'
+              ? t('debug.tokens.reward', { amount })
+              : t('debug.tokens.roleSample', { role })}
           </AppText>
         ))}
       </View>
@@ -156,7 +161,7 @@ export function DesignTokensScene({ onReady }: { onReady: () => void }) {
             style={[styles.liveCard, { backgroundColor: color(`--color-card-${card}`) }]}
           >
             <AppText variant="body" style={{ color: color(`--color-on-card-${card}`) }}>
-              {t('debug.tokens.liveSample')}
+              {t('debug.tokens.liveSample', { amount })}
             </AppText>
           </View>
         ))}

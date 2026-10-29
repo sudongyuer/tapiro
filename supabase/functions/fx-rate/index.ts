@@ -18,12 +18,15 @@ Deno.serve((req) =>
     async store(rate) {
       const { error } = await admin.from('fx_rates').upsert(
         {
+          base: rate.base,
+          quote: rate.quote,
           rate_date: rate.rateDate,
+          source: rate.source,
           session: rate.session,
-          rm_per_cny: rate.rmPerCny,
+          quote_per_base: rate.quotePerBase,
           fetched_at: new Date().toISOString(),
         },
-        { onConflict: 'rate_date' },
+        { onConflict: 'base,quote,rate_date,source' },
       );
       if (error) throw error;
     },

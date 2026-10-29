@@ -126,16 +126,47 @@ describe('payment store', () => {
     await store.run(FIXTURE_USER_ID, () => store.service.undo(FIXTURE_PAYMENT_IDS.owe));
     expect(payments(store)[0]).toMatchObject({ state: 'due', methodType: null });
   });
+
+  test('a yuan payment paid by DuitNow at the locked rate records the ringgit paid', async () => {
+    const store = await ready({ currency: 'CNY' });
+    const phone = (await store.service.methodsOf('fixture-payee')).find(
+      (method) => method.type === 'duitnow_id',
+    );
+    await store.run(FIXTURE_USER_ID, () =>
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null),
+    );
+    expect(payments(store)[0]).toMatchObject({
+      amount: { minor: 5000, currency: 'CNY' },
+      paid: { minor: 3061, currency: 'MYR' },
+    });
+  });
+
+  test('without a locked rate a conversion fails as no rate and the payment stays due', async () => {
+    const store = await ready({ currency: 'CNY', rate: false, mix: 'duitnow' });
+    const detail = await store.service.detail(FIXTURE_PAYMENT_IDS.owe);
+    expect(detail.rate).toBeNull();
+    expect(detail.methods.map((method) => method.amount)).toEqual([null]);
+    const marked = await store.run(FIXTURE_USER_ID, () =>
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, detail.methods[0].methodId, null),
+    );
+    expect(marked.ok).toBe(false);
+    expect(payments(store)[0]).toMatchObject({ state: 'due', paid: null });
+  });
 });
+
+const ringgit = (minor: number) => ({ minor, currency: 'MYR' as const });
 
 describe('live payments', () => {
   test('a due payment is money I owe; a marked-paid one is owed to me, waiting for my confirmation', async () => {
     const items = accessoryItems(payments(await ready()), t);
-    expect(
-      items.map(({ kind, title, sub, amountSen }) => ({ kind, title, sub, amountSen })),
-    ).toEqual([
-      { kind: 'oweMoney', title: '付给阿杰', sub: '帮取快递', amountSen: 1500 },
-      { kind: 'owedToYou', title: '小林说已付你', sub: '帮带一杯咖啡 · 等你确认', amountSen: 800 },
+    expect(items.map(({ kind, title, sub, amount }) => ({ kind, title, sub, amount }))).toEqual([
+      { kind: 'oweMoney', title: '付给阿杰', sub: '帮取快递', amount: ringgit(1500) },
+      {
+        kind: 'owedToYou',
+        title: '小林说已付你',
+        sub: '帮带一杯咖啡 · 等你确认',
+        amount: ringgit(800),
+      },
     ]);
     expect(items[0].payment).toEqual({
       id: FIXTURE_PAYMENT_IDS.owe,

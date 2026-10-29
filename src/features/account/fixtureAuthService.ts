@@ -24,7 +24,7 @@ export const fixtureUnsettledPayment: UnsettledPayment = {
   id: '00000000-0000-4000-8000-0000000000a1',
   title: '帮忙从 Mid Valley 带一份奶茶',
   counterpartName: '陈嘉欣',
-  amountSen: 1250,
+  amount: { minor: 1250, currency: 'MYR' },
   direction: 'owe',
 };
 

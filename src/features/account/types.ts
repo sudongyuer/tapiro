@@ -1,3 +1,5 @@
+import type { Money } from '@/lib/money';
+
 export type AuthProvider = 'apple' | 'google';
 
 export const AUTH_PROVIDERS: readonly AuthProvider[] = ['apple', 'google'];
@@ -23,7 +25,7 @@ export type UnsettledPayment = {
   id: string;
   title: string;
   counterpartName: string;
-  amountSen: number;
+  amount: Money;
   direction: 'owe' | 'owed';
 };
 

@@ -1,3 +1,4 @@
+import type { CurrencyCode, Money } from '@/lib/money';
 import type { PayeeMethod, PayeeType } from '@/lib/payeeMethods';
 import type { BountyCategory } from '@/lib/stickers/category';
 
@@ -10,7 +11,8 @@ export type Payment = {
   itemKind: 'bounty' | 'ride';
   category: BountyCategory | null;
   title: string;
-  amountSen: number;
+  amount: Money;
+  paid: Money | null;
   reference: string;
   state: PaymentState;
   role: PaymentRole;
@@ -24,7 +26,29 @@ export type Payment = {
   reverses: string | null;
 };
 
-export type FxRate = { rateDate: string; rmPerCny: number };
+export type FxRate = {
+  base: CurrencyCode;
+  quote: CurrencyCode;
+  quotePerBase: number;
+  rateDate: string;
+  source: string;
+};
+
+export type MethodAmount = {
+  methodId: string;
+  type: PayeeType;
+  currency: CurrencyCode;
+  amount: Money | null;
+};
+
+export type PaymentDetail = { rate: FxRate | null; methods: MethodAmount[] };
+
+export class NoRateError extends Error {
+  constructor() {
+    super('no_rate');
+    this.name = 'NoRateError';
+  }
+}
 
 export type SettleResult = { firstSettled: boolean; stickerCount: number | null };
 
@@ -32,7 +56,7 @@ export type PaymentService = {
   list(userId: string): Promise<Payment[]>;
   get(userId: string, id: string): Promise<Payment | null>;
   methodsOf(userId: string): Promise<PayeeMethod[]>;
-  latestRate(): Promise<FxRate | null>;
+  detail(paymentId: string): Promise<PaymentDetail>;
   uploadProof(paymentId: string, fileUri: string): Promise<string>;
   removeProof(path: string): Promise<void>;
   proofUrl(path: string): Promise<string>;

@@ -8,15 +8,7 @@ import {
   type CardDetail,
 } from '@/lib/liveItems';
 
-import {
-  createSeenMarks,
-  liveCards,
-  moneyParts,
-  moneyText,
-  shownOneTimeCards,
-  stageLine,
-  stageState,
-} from './homeModel';
+import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
 
 const PRIORITY: AccessoryKind[] = ['oweMoney', 'rideSoon', 'owedToYou', 'bountyInProgress'];
 const priority = (kind: AccessoryKind) => PRIORITY.indexOf(kind) + 1;
@@ -28,7 +20,7 @@ const bounty = (kind: BountyCardDetail['kind'], extra: Partial<BountyCardDetail>
     bountyId: `b-${kind}`,
     title: '帮取快递',
     category: 'pickup',
-    rewardSen: 800,
+    reward: { minor: 800, currency: 'MYR' },
     counterpart: '阿杰',
     line: '阿杰在路上 · 17:40 到',
     target: `/bounty/status/b-${kind}`,
@@ -48,7 +40,7 @@ const DETAILS: Record<string, CardDetail> = {
     kind: 'oweMoney',
     paymentId: null,
     payee: '阿杰',
-    amountSen: 1500,
+    amount: { minor: 1500, currency: 'MYR' },
     note: '',
     category: 'pickup',
   },
@@ -65,7 +57,13 @@ const DETAILS: Record<string, CardDetail> = {
     progress: 0.4,
     riders: [],
   },
-  owedToYou: { kind: 'owedToYou', payer: '小林', amountSen: 800, note: '', category: 'buy' },
+  owedToYou: {
+    kind: 'owedToYou',
+    payer: '小林',
+    amount: { minor: 800, currency: 'MYR' },
+    note: '',
+    category: 'buy',
+  },
 };
 
 describe('stageState', () => {
@@ -128,30 +126,13 @@ describe('stageLine', () => {
   });
 });
 
-describe('money', () => {
-  test.each(['zh-Hans', 'en', 'ms'])('splits whole and cents with separators in %s', (locale) => {
-    expect(moneyParts(1500, locale)).toEqual({ whole: '15', cents: '.00' });
-    expect(moneyParts(50, locale)).toEqual({ whole: '0', cents: '.50' });
-    expect(moneyParts(0, locale)).toEqual({ whole: '0', cents: '.00' });
-    expect(moneyParts(1234560, locale)).toEqual({ whole: '12,345', cents: '.60' });
-    expect(moneyParts(125000, locale)).toEqual({ whole: '1,250', cents: '.00' });
-  });
-
-  test('short text drops zero cents only', () => {
-    expect(moneyText(1500, 'en')).toBe('15');
-    expect(moneyText(1550, 'en')).toBe('15.50');
-    expect(moneyText(125000, 'zh-Hans')).toBe('1,250');
-    expect(moneyText(1234560, 'ms')).toBe('12,345.60');
-  });
-});
-
 describe('payment-driven cards', () => {
   const paid = (kind: AccessoryKind): AccessoryItem => ({
     id: `p-${kind}`,
     kind,
     title: kind,
     sub: '',
-    amountSen: 1500,
+    amount: { minor: 1500, currency: 'MYR' },
     payment: { id: `p-${kind}`, counterpart: '阿杰', note: '帮取快递' },
   });
 
@@ -161,7 +142,7 @@ describe('payment-driven cards', () => {
       kind: 'oweMoney',
       paymentId: 'p-oweMoney',
       payee: '阿杰',
-      amountSen: 1500,
+      amount: { minor: 1500, currency: 'MYR' },
       note: '帮取快递',
       category: 'other',
     });

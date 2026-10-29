@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { toMoney } from '@/lib/money';
 import { isUnpaid } from '@/lib/unpaid';
 
 import { toFailure } from './publishError';
@@ -8,7 +9,8 @@ import type { PostService, PostStatus, PublishResult, UnpaidSummary } from './ty
 type UnpaidRow = {
   id: string;
   payee_id: string | null;
-  amount_sen: number;
+  amount_minor: number;
+  currency: string;
   state: 'due' | 'marked_paid' | 'settled' | 'disputed';
   nudged_at: string | null;
   created_at: string;
@@ -56,7 +58,7 @@ export function createSupabasePostService(client: SupabaseClient | null): PostSe
     const { data } = unwrap(
       await db()
         .from('payments')
-        .select('id, payee_id, amount_sen, state, nudged_at, created_at')
+        .select('id, payee_id, amount_minor, currency, state, nudged_at, created_at')
         .eq('payer_id', userId)
         .in('state', ['due', 'marked_paid'])
         .order('created_at')
@@ -75,12 +77,16 @@ export function createSupabasePostService(client: SupabaseClient | null): PostSe
       );
       for (const profile of profiles.data ?? []) names[profile.id] = profile.display_name;
     }
-    return rows.map((row) => ({
-      paymentId: row.id,
-      payeeName: (row.payee_id && names[row.payee_id]) || '',
-      amountSen: row.amount_sen,
-      createdAt: row.created_at,
-    }));
+    return rows.map((row) => {
+      const amount = toMoney(row.amount_minor, row.currency);
+      if (!amount) throw new Error('payments returned an unknown currency');
+      return {
+        paymentId: row.id,
+        payeeName: (row.payee_id && names[row.payee_id]) || '',
+        amount,
+        createdAt: row.created_at,
+      };
+    });
   }
 
   return {

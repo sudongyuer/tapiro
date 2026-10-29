@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import type { CurrencyCode } from '@/lib/money';
+
 import { NOT_FOUND, slug } from '../board/boardService';
 import { body, fail, text, textOrNull } from '../board/parse';
 import { toCancelOutcome, toCancelPreview, toRefund, toStatusDetail } from './parse';
@@ -21,7 +23,10 @@ function answered(value: unknown, status: string) {
   return answer.status === status ? answer : fail('answer.status');
 }
 
-export function createSupabaseStatusService(client: SupabaseClient | null): StatusService {
+export function createSupabaseStatusService(
+  client: SupabaseClient | null,
+  referenceCurrency: () => CurrencyCode,
+): StatusService {
   const db = () => {
     if (!client) throw new Error('Supabase is not configured');
     return client;
@@ -49,7 +54,10 @@ export function createSupabaseStatusService(client: SupabaseClient | null): Stat
 
   return {
     async detail(bountyId) {
-      const { data, error } = await db().rpc('bounty_detail', { bounty: bountyId });
+      const { data, error } = await db().rpc('bounty_detail', {
+        bounty: bountyId,
+        reference_currency: referenceCurrency(),
+      });
       if (error) {
         const { message, code } = slug(error);
         if ((message && UNAVAILABLE.has(message)) || code === NOT_FOUND) return 'unavailable';

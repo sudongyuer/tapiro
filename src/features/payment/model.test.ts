@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test';
 
 import type { PayeeMethod } from '@/lib/payeeMethods';
 
-import { cnyFen, formatCny, freshRate } from './fx';
 import { confirmedLink, initialSelection, payOptions, WALLET_LINKS } from './payOptions';
 import { isReference, newReference, REFERENCE_ALPHABET } from './reference';
 import { availableActions, nextState, sheetTitleKey } from './stateMachine';
@@ -139,23 +138,5 @@ describe('pay options', () => {
     expect(Object.values(WALLET_LINKS).every((link) => !link.confirmed)).toBe(true);
     expect(confirmedLink('alipay')).toBeNull();
     expect(confirmedLink(null)).toBeNull();
-  });
-});
-
-describe('CNY reference', () => {
-  const rate = { rateDate: '2026-10-23', rmPerCny: 0.6122 };
-  const now = new Date('2026-10-25T10:00:00+08:00');
-
-  test('converts RM to yuan at the daily rate and rounds to the fen', () => {
-    expect(cnyFen(1500, rate, now)).toBe(2450);
-    expect(cnyFen(1, rate, now)).toBe(2);
-    expect(formatCny(2450, 'zh-Hans')).toBe('24.50');
-    expect(formatCny(201_656_250, 'en')).toBe('2,016,562.50');
-  });
-
-  test('hides the reference when no rate is newer than 7 days', () => {
-    expect(freshRate(rate, new Date('2026-10-29T23:00:00+08:00'))).toEqual(rate);
-    expect(freshRate(rate, new Date('2026-10-30T00:00:01+08:00'))).toBeNull();
-    expect(cnyFen(1500, null, now)).toBeNull();
   });
 });

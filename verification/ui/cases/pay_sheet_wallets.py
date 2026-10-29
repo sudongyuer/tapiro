@@ -1,4 +1,4 @@
-"""With Alipay, WeChat and TNG codes the sheet lists them in that order with none chosen; choosing Alipay shows RM with 约 ¥（参考） and the BNM source, the QR, the name check and 存到相册 (no confirmed app link, so no open), which saves and shows the 扫一扫 → 相册 hint; 用另一台手机扫 shows the code full screen."""
+"""With Alipay, WeChat and TNG codes the sheet lists them in that order with none chosen; Alipay and WeChat rows show ¥ at the locked rate and TNG shows RM 15.00, with the locked-rate footer and the BNM source; choosing Alipay shows the QR, the name check and 存到相册 (no confirmed app link, so no open), which saves and shows the 扫一扫 → 相册 hint; 用另一台手机扫 shows the code full screen."""
 import re
 import sys
 
@@ -18,13 +18,18 @@ items = ui.read()
 kinds = [m.split('-')[0] for m in method_ids(items)]
 assert kinds == ['alipay', 'wechat', 'duitnow_qr'], f'method order {kinds}'
 assert by_id(items, 'pay-mark-paid') is None, 'mark paid shown before a method is chosen'
+rows = {(i.get('AXUniqueId') or '').split('-')[2]: i.get('AXLabel') or '' for i in items if (i.get('AXUniqueId') or '').startswith('pay-method-')}
+assert re.search(r'¥\s?24\.51', rows['alipay']) and re.search(r'¥\s?24\.51', rows['wechat']), rows
+assert re.search(r'RM\s?15\.00', rows['duitnow_qr']), rows
+assert '¥' not in (amount.get('AXLabel') or ''), 'the header shows a converted amount'
+footer = by_id(items, 'pay-rate-footer')
+assert footer and re.search(ui.pattern('pay.sheet.rateFooter', date=r'.+', rate=r'RM\s?1\s=\s¥1\.6335'), footer.get('AXLabel') or ''), footer
+assert by_id(items, 'pay-fx-source'), 'BNM source link missing'
 ui.capture('01-pick')
 alipay = next(i for i in items if (i.get('AXUniqueId') or '').startswith('pay-method-alipay'))
 assert_touch_target(alipay, 'Alipay row')
 ui.tap(alipay['AXUniqueId'])
 ui.element('pay-qr-image')
-cny = ui.wait_label('pay-amount', lambda label: re.search(ui.pattern('pay.sheet.cny', amount=r'2[0-9]\.[0-9]{2}'), label), 'CNY reference missing')
-assert by_id(ui.read(), 'pay-fx-source'), 'BNM source link missing'
 ui.capture('02-alipay')
 save = scroll_to(ui, 'pay-qr-save')
 assert_touch_target(save, 'save button')
@@ -39,4 +44,4 @@ ui.element('pay-qr-full-image')
 ui.capture('04-full-screen')
 ui.tap('pay-qr-full-done')
 ui.gone('pay-qr-full-image')
-print('PASS: wallets first, CNY reference, save to Photos and full-screen code')
+print('PASS: wallets first with their own amounts, the locked rate, save to Photos and full-screen code')

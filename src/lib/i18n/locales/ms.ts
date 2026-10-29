@@ -25,13 +25,13 @@ const ms: Translation = {
       terms:
         'Dengan meneruskan, anda bersetuju dengan <terms>Terma Penggunaan</terms> dan <privacy>Dasar Privasi</privacy>.',
       examples: {
-        parcel: 'Ambil bungkusan · RM 8',
-        coffee: 'Belikan kopi · RM 5',
-        ticket: 'Ambil nombor giliran · RM 15',
-        books: 'Ajar kalkulus · RM 20',
+        parcel: 'Ambil bungkusan · {{amount}}',
+        coffee: 'Belikan kopi · {{amount}}',
+        ticket: 'Ambil nombor giliran · {{amount}}',
+        books: 'Ajar kalkulus · {{amount}}',
         umbrella: 'Pinjam payung · sehala',
         car: '17:00 ke YC · perlu 1 lagi',
-        boba: 'Belikan teh boba · RM 6',
+        boba: 'Belikan teh boba · {{amount}}',
       },
     },
     name: {
@@ -153,7 +153,6 @@ const ms: Translation = {
       label: '{{title}}, {{sub}}',
       withMore: '{{sub}} · {{count}} lagi',
       hint: 'Buka Ganjaran dan kembangkan kad semasa anda',
-      money: 'RM',
     },
     ask: {
       title: 'Tanya Tapir',
@@ -202,7 +201,6 @@ const ms: Translation = {
       collapseHint: 'Menyusun semula kad',
       peekHint: 'Membentangkan semua kad',
     },
-    money: 'RM {{amount}}',
     soon: 'Langkah ini belum dibuka',
     card: {
       waiting: { tag: 'Menunggu pengesahan' },
@@ -288,7 +286,7 @@ const ms: Translation = {
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',
-      reward: 'RM 15',
+      reward: '{{amount}}',
       statusOpen: 'Terbuka',
       statusActive: 'Sedang berjalan',
       statusPending: 'Menunggu pengesahan',
@@ -296,7 +294,7 @@ const ms: Translation = {
       statusUrgent: 'Segera',
       accept: 'Terima',
       posted: 'Ganjaran anda telah disiarkan',
-      liveSample: 'Bayar Ah Kit RM 15',
+      liveSample: 'Bayar Ah Kit {{amount}}',
       mascot: 'Maskot tapir',
       hold: 'Tahan untuk pilih Ah Kit',
       holdHolding: 'Terus tahan…',

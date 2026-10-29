@@ -37,7 +37,8 @@ const draft = (patch: Partial<PublishArgs> = {}): PublishArgs => ({
   id: crypto.randomUUID(),
   title: '帮我取个快递',
   category: 'pickup',
-  reward_sen: 800,
+  reward_minor: 800,
+  reward_currency: 'MYR',
   description: 'Shopee 包裹在 Sunway Geo 管理处',
   place_label: null,
   latitude: null,
@@ -97,14 +98,15 @@ describe('supabase post service (local stack)', () => {
         payer: poster.id,
         payee: payee.id,
         amount,
+        currency: 'MYR',
       });
       if (error) throw error;
     }
     const status = await poster.service.status();
     expect(status.blocked).toBe(true);
-    expect(status.unpaid.map(({ payeeName, amountSen }) => [payeeName, amountSen])).toEqual([
-      ['Payee', 1500],
-      ['Payee', 600],
+    expect(status.unpaid.map(({ payeeName, amount }) => [payeeName, amount])).toEqual([
+      ['Payee', { minor: 1500, currency: 'MYR' }],
+      ['Payee', { minor: 600, currency: 'MYR' }],
     ]);
     expect(await poster.service.publish(draft())).toEqual({ ok: false, reason: 'blocked' });
   });

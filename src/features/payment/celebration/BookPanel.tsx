@@ -40,7 +40,6 @@ export function BookPanel({
   drop,
   title,
   counts,
-  badge,
   countLabel,
   onFrame,
   onTarget,
@@ -52,7 +51,6 @@ export function BookPanel({
   drop: number;
   title: string;
   counts: [string, string] | null;
-  badge: string;
   countLabel: string;
   onFrame: (frame: LayoutRectangle) => void;
   onTarget: (centre: SlotCentre) => void;
@@ -81,15 +79,6 @@ export function BookPanel({
   const roll = useAnimatedStyle(() => ({
     transform: [{ translateY: -line * tween(clock.value, TIMELINE.count, 0, 1) }],
   }));
-  const pop = useAnimatedStyle(() => {
-    const { start, duration, curve } = TIMELINE.badge;
-    const t = clock.value;
-    const at = (values: number[]) => keyframes(t, start, duration, [0, 0.6, 1], values, curve);
-    return {
-      opacity: at([0, 1, 1]),
-      transform: [{ scale: at([0.2, 1.12, 1]) }, { rotate: `${at([-30, 6, -8])}deg` }],
-    };
-  });
   const centre = grid ? slotCentre(grid, target) : null;
   return (
     <Animated.View
@@ -165,31 +154,6 @@ export function BookPanel({
             <Confetti clock={clock} count={first ? 16 : 10} />
           </View>
         ) : null}
-        {first && centre ? (
-          <Animated.View
-            style={[
-              styles.badge,
-              {
-                left: centre.x - centre.width / 2 + vars['--space-6'],
-                top: centre.y - SLOT_HEIGHT / 2 - vars['--space-3'],
-                backgroundColor: color('--color-paper-green'),
-                borderColor: color('--color-sticker-border'),
-                shadowColor: color('--color-sticker-shadow'),
-              },
-              pop,
-            ]}
-            testID="pay-celebration-badge"
-            accessible
-            accessibilityLabel={badge}
-          >
-            <AppText
-              variant="meta"
-              style={[styles.heavy, { color: color('--color-sticker-border') }]}
-            >
-              {badge}
-            </AppText>
-          </Animated.View>
-        ) : null}
       </Animated.View>
     </Animated.View>
   );
@@ -238,14 +202,4 @@ const styles = StyleSheet.create({
   bold: { fontWeight: '700', textAlign: 'right' },
   count: { overflow: 'hidden' },
   burst: { position: 'absolute' },
-  badge: {
-    position: 'absolute',
-    borderWidth: 2.5,
-    borderRadius: vars['--radius-chip'],
-    paddingHorizontal: vars['--space-2'],
-    paddingVertical: 2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 3,
-  },
 });

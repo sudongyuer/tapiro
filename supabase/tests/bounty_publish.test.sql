@@ -76,7 +76,7 @@ insert into counts values ('a_free', pg_temp.free_left('00000000-0000-0000-0000-
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 insert into results
-select 'p1', public.publish_bounty('30000000-0000-0000-0000-000000000001', '  帮取快递  ', 'pickup', 500);
+select 'p1', public.publish_bounty('30000000-0000-0000-0000-000000000001', '  帮取快递  ', 'pickup', 500, 'MYR');
 reset role;
 
 select is(
@@ -114,7 +114,7 @@ set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 insert into results
 select 'p2', public.publish_bounty(
-  '30000000-0000-0000-0000-000000000002', '排队买奶茶', 'queue', 1000,
+  '30000000-0000-0000-0000-000000000002', '排队买奶茶', 'queue', 1000, 'MYR',
   description => '   ', place_label => ' Sunway Pyramid ', latitude => 3.0733, longitude => 101.6067,
   address => ' Block C, 12-3 ', deadline_at => now() + interval '2 days'
 );
@@ -139,14 +139,14 @@ select is(
   'a blank description is stored as null'
 );
 
-select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500);
-select public.open_payment('bounty', gen_random_uuid(), '排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500);
+select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500, 'MYR');
+select public.open_payment('bounty', gen_random_uuid(), '排队', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500, 'MYR');
 insert into snapshots values ('blocked', pg_temp.totals());
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000c3');
 select is(public.publish_blocked(), true, 'two unpaid payments block the payer from publishing');
 select throws_ok(
-  $$select public.publish_bounty('30000000-0000-0000-0000-000000000003', '帮取快递', 'pickup', 500)$$,
+  $$select public.publish_bounty('30000000-0000-0000-0000-000000000003', '帮取快递', 'pickup', 500, 'MYR')$$,
   '55000', 'publish_blocked', 'a blocked poster cannot publish'
 );
 reset role;
@@ -156,7 +156,7 @@ select pg_temp.drain('00000000-0000-0000-0000-0000000000d4');
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000d4');
 select throws_ok(
-  $$select public.publish_bounty('30000000-0000-0000-0000-000000000004', '帮取快递', 'pickup', 500,
+  $$select public.publish_bounty('30000000-0000-0000-0000-000000000004', '帮取快递', 'pickup', 500, 'MYR',
     place_label => 'Sunway', latitude => 3.0733, longitude => 101.6067, address => 'Block C')$$,
   '55000', 'no_balance', 'without a free post or a coin the publish is rejected'
 );
@@ -171,7 +171,7 @@ insert into counts values ('e_coins', pg_temp.coins_of('00000000-0000-0000-0000-
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
 insert into results
-select 'p5', public.publish_bounty('30000000-0000-0000-0000-000000000005', '帮搬家', 'move', 2000);
+select 'p5', public.publish_bounty('30000000-0000-0000-0000-000000000005', '帮搬家', 'move', 2000, 'MYR');
 reset role;
 select is((select r ->> 'charge' from results where name = 'p5'), 'coin', 'a fourth post this month is paid with a coin');
 select is(
@@ -183,7 +183,7 @@ insert into snapshots values ('replay', pg_temp.totals());
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select is(
-  public.publish_bounty('30000000-0000-0000-0000-000000000001', '  帮取快递  ', 'pickup', 500),
+  public.publish_bounty('30000000-0000-0000-0000-000000000001', '  帮取快递  ', 'pickup', 500, 'MYR'),
   (select r from results where name = 'p1'), 'replaying a publish returns the first answer'
 );
 reset role;
@@ -191,7 +191,7 @@ select is(pg_temp.totals(), (select v from snapshots where name = 'replay'), 'a 
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select throws_ok(
-  $$select public.publish_bounty('30000000-0000-0000-0000-000000000001', '帮取快递', 'pickup', 500)$$,
+  $$select public.publish_bounty('30000000-0000-0000-0000-000000000001', '帮取快递', 'pickup', 500, 'MYR')$$,
   '22023', 'invalid_bounty', 'another poster cannot publish under a taken id'
 );
 
@@ -200,54 +200,54 @@ insert into snapshots values ('invalid', pg_temp.totals());
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, place_label => 'Sunway', latitude => 3.0733)$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', place_label => 'Sunway', latitude => 3.0733)$$,
   '22023', 'invalid_bounty', 'a latitude without a longitude is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, latitude => 3.0733, longitude => 101.6067)$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', latitude => 3.0733, longitude => 101.6067)$$,
   '22023', 'invalid_bounty', 'a place without a label is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, place_label => 'Sunway')$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', place_label => 'Sunway')$$,
   '22023', 'invalid_bounty', 'a label without a place is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, address => 'Block C')$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', address => 'Block C')$$,
   '22023', 'invalid_bounty', 'an address without a place is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, latitude => 91, longitude => 101.6067,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', latitude => 91, longitude => 101.6067,
     place_label => 'Sunway')$$,
   '22023', 'invalid_bounty', 'a latitude outside the globe is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, starts_at => now() - interval '1 minute')$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', starts_at => now() - interval '1 minute')$$,
   '22023', 'invalid_bounty', 'a start in the past is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR',
     starts_at => now() + interval '1 hour', ends_at => now() - interval '1 minute')$$,
   '22023', 'invalid_bounty', 'an end in the past is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, deadline_at => now() - interval '1 minute')$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', deadline_at => now() - interval '1 minute')$$,
   '22023', 'invalid_bounty', 'a deadline in the past is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, deadline_at => now() + interval '31 days')$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', deadline_at => now() + interval '31 days')$$,
   '22023', 'invalid_bounty', 'a deadline more than 30 days out is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, starts_at => now() + interval '31 days')$$,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', starts_at => now() + interval '31 days')$$,
   '22023', 'invalid_bounty', 'a start more than 30 days out is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500,
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR',
     starts_at => now() + interval '2 days', deadline_at => now() + interval '1 day')$$,
   '22023', 'invalid_bounty', 'a deadline before the start is rejected'
 );
 select throws_ok(
-  $$select public.publish_bounty(gen_random_uuid(), repeat('题', 61), 'pickup', 500)$$,
+  $$select public.publish_bounty(gen_random_uuid(), repeat('题', 61), 'pickup', 500, 'MYR')$$,
   '23514', null, 'a 61-character title is rejected by the table'
 );
 reset role;
@@ -311,10 +311,10 @@ select throws_ok(
   $$select public.close_bounty(gen_random_uuid())$$, 'P0002', 'bounty_not_found', 'closing an unknown bounty is rejected'
 );
 reset role;
-insert into public.bounties (id, poster_id, helper_id, title, category, reward_sen, expires_at, status)
+insert into public.bounties (id, poster_id, helper_id, title, category, reward_minor, reward_currency, expires_at, status)
 values
   ('30000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2',
-   '帮取快递', 'pickup', 500, now() + interval '7 days', 'assigned');
+   '帮取快递', 'pickup', 500, 'MYR', now() + interval '7 days', 'assigned');
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select throws_ok(
@@ -349,7 +349,7 @@ select throws_ok(
 );
 
 select is(
-  has_function_privilege('anon', 'public.publish_bounty(uuid, text, public.bounty_category, integer, text, text, double precision, double precision, text, timestamptz, timestamptz, timestamptz)', 'execute'),
+  has_function_privilege('anon', 'public.publish_bounty(uuid, text, public.bounty_category, bigint, text, text, text, double precision, double precision, text, timestamptz, timestamptz, timestamptz)', 'execute'),
   false, 'anon cannot publish'
 );
 select is(has_function_privilege('anon', 'public.close_bounty(uuid)', 'execute'), false, 'anon cannot close');

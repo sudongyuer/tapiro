@@ -12,6 +12,7 @@ const draft = (time: TimeChoice): PostDraft => ({
   title: '取快递',
   category: 'pickup',
   rewardText: '8',
+  currency: 'MYR',
   description: null,
   time,
   place: null,

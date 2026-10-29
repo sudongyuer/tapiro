@@ -12,6 +12,7 @@ const valid: PostDraft = {
   title: '帮我取个快递',
   category: 'pickup',
   rewardText: '8',
+  currency: 'MYR',
   description: null,
   time: { kind: 'none' },
   place: null,
@@ -40,12 +41,19 @@ describe('parseReward', () => {
     ['５', 500],
     ['１２', 1200],
     [' 15 ', 1500],
-  ])('%p → %p sen', (text, sen) => {
-    expect(parseReward(text)).toBe(sen);
+  ])('%p → %p minor in MYR', (text, minor) => {
+    expect(parseReward(text, 'MYR')).toEqual({ minor, currency: 'MYR' });
   });
 
   test.each(['', '0', '00', '501', '1.5', '-5', '5e2', 'RM5', '1 0', '١'])('%p → null', (text) => {
-    expect(parseReward(text)).toBeNull();
+    expect(parseReward(text, 'MYR')).toBeNull();
+  });
+
+  test('CNY follows its own limits, whole yuan from 1 to 800', () => {
+    expect(parseReward('800', 'CNY')).toEqual({ minor: 80000, currency: 'CNY' });
+    expect(parseReward('1', 'CNY')).toEqual({ minor: 100, currency: 'CNY' });
+    expect(parseReward('801', 'CNY')).toBeNull();
+    expect(parseReward('501', 'CNY')).toEqual({ minor: 50100, currency: 'CNY' });
   });
 });
 
@@ -74,7 +82,8 @@ describe('checkDraft', () => {
         id: valid.id,
         title: '帮我取个快递',
         category: 'pickup',
-        reward_sen: 50000,
+        reward_minor: 50000,
+        reward_currency: 'MYR',
         description: 'Shopee 包裹在管理处',
         place_label: 'Sunway Geo',
         latitude: 3.0645,
@@ -94,7 +103,8 @@ describe('checkDraft', () => {
         id: valid.id,
         title: '帮我取个快递',
         category: 'pickup',
-        reward_sen: 100,
+        reward_minor: 100,
+        reward_currency: 'MYR',
         description: null,
         place_label: null,
         latitude: null,
@@ -136,6 +146,21 @@ describe('checkDraft', () => {
     expect(errorOf({ rewardText: '0' })).toBe('rewardRange');
     expect(errorOf({ rewardText: '501' })).toBe('rewardRange');
     expect(errorOf({ rewardText: '1.5' })).toBe('rewardRange');
+  });
+
+  test('a yuan reward follows the CNY limits and carries its currency', () => {
+    expect(errorOf({ currency: 'CNY', rewardText: '0' })).toBe('rewardRange');
+    expect(errorOf({ currency: 'CNY', rewardText: '801' })).toBe('rewardRange');
+    for (const [text, minor] of [
+      ['1', 100],
+      ['501', 50100],
+      ['800', 80000],
+    ] as const) {
+      expect(checkDraft({ ...valid, currency: 'CNY', rewardText: text }, NOW)).toMatchObject({
+        ok: true,
+        args: { reward_minor: minor, reward_currency: 'CNY' },
+      });
+    }
   });
 
   test('description', () => {

@@ -18,13 +18,13 @@ const status = (patch: Partial<PostStatus>): PostStatus => ({
 const lily: UnpaidSummary = {
   paymentId: 'payment-lily',
   payeeName: 'Lily',
-  amountSen: 600,
+  amount: { minor: 600, currency: 'MYR' },
   createdAt: '2026-10-25T00:00:00Z',
 };
 const jie: UnpaidSummary = {
   paymentId: 'payment-jie',
   payeeName: '阿杰',
-  amountSen: 1500,
+  amount: { minor: 1500, currency: 'MYR' },
   createdAt: '2026-10-20T00:00:00Z',
 };
 

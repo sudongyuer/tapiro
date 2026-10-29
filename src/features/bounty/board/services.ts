@@ -1,5 +1,6 @@
 import { Settings } from 'react-native';
 
+import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -22,7 +23,7 @@ export const boardService: BoardService = uiVerify
       isBlocked: fixtureBlocked,
       posterView: fixturePosterView,
     })
-  : createSupabaseBoardService(getSupabase());
+  : createSupabaseBoardService(getSupabase(), deviceCurrency);
 
 export const originStore = createOriginStore(Settings, userCleanups);
 

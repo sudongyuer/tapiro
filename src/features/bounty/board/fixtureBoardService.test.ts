@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
+import { formatMoney } from '@/lib/money';
 
 import {
   createFixtureBoardService,
@@ -62,6 +63,27 @@ test('launch arguments pick the board, failure and apply mode', () => {
   });
 });
 
+describe('cny board', () => {
+  test('two ¥ bounties, one with an RM reference and one without, ahead of two RM ones', async () => {
+    const board = service({ board: 'cny', detailId: 'fixture-cny-01' });
+    const { items } = await board.page(ME, 'all', null);
+    expect(items.map((row) => [row.id, row.reward.currency, row.reference?.minor ?? null])).toEqual(
+      [
+        ['fixture-bounty-01', 'MYR', null],
+        ['fixture-cny-01', 'CNY', 3247],
+        ['fixture-bounty-02', 'MYR', null],
+        ['fixture-cny-02', 'CNY', null],
+      ],
+    );
+    const detail = await board.detail('fixture-cny-01', SUNWAY_PYRAMID);
+    expect(detail).toMatchObject({
+      reward: { minor: 5000, currency: 'CNY' },
+      reference: { minor: 3247, currency: 'MYR' },
+    });
+    expect(await board.detail('fixture-cny-02', SUNWAY_PYRAMID)).toMatchObject({ reference: null });
+  });
+});
+
 describe('full board', () => {
   test('12 rows: 9 located with 2 beyond 2 km, 3 unlocated, 2 urgent, 1 applied', async () => {
     const page = await service().page(ME, 'all', null);
@@ -94,7 +116,7 @@ describe('full board', () => {
     ]);
     expect(items[0]).toMatchObject({
       title: '帮取快递',
-      rewardSen: 800,
+      reward: { minor: 800, currency: 'MYR' },
       urgent: true,
       placeLabel: 'Sunway Geo 宿舍',
       poster: { name: '小林', tier: 'reliable' },
@@ -227,7 +249,10 @@ describe('worst', () => {
     expect(Math.max(...items.map((row) => codePoints(row.title)))).toBe(60);
     expect(Math.max(...items.map((row) => codePoints(row.placeLabel ?? '')))).toBe(80);
     expect(Math.max(...items.map((row) => codePoints(row.poster.name ?? '')))).toBe(40);
-    expect(new Set(items.map((row) => row.rewardSen))).toEqual(new Set([100, 50000]));
+    expect(new Set(items.map((row) => formatMoney(row.reward, 'en')))).toEqual(
+      new Set(['RM\u00a01.00', 'RM\u00a0500.00', '¥800.00']),
+    );
+    expect(items.find((row) => row.reward.currency === 'CNY')?.reference?.minor).toBe(48980);
     expect(items.map((row) => row.distanceM)).toContain(100);
     expect(items.map((row) => row.distanceM)).toContain(18_400);
     expect(items.some((row) => row.poster.tier === 'tapir_friend')).toBe(true);

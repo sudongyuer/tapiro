@@ -1,4 +1,4 @@
-"""A payee with only a DuitNow phone has that row preselected; the number and the TP- reference each copy with 已复制 feedback, the bank hint says 打开你的银行 App，选 DuitNow, and there is no CNY line."""
+"""A payee with only a DuitNow phone has that row preselected; the number and the TP- reference each copy with 已复制 feedback, the bank hint says 打开你的银行 App，选 DuitNow, and with nothing to convert there is no ¥ amount and no rate footer."""
 import re
 import sys
 
@@ -13,9 +13,10 @@ LOCALES = ['zh-Hans', 'ms']
 
 ui = UI(*sys.argv[1:])
 amount = open_sheet(ui)
-assert '¥' not in (amount.get('AXLabel') or ''), 'CNY line shown for DuitNow'
+assert '¥' not in (amount.get('AXLabel') or ''), 'a ¥ amount shown for DuitNow'
 items = ui.read()
 assert [m.split('-')[0] for m in method_ids(items)] == ['duitnow_id'], method_ids(items)
+assert by_id(items, 'pay-rate-footer') is None, 'a rate footer is shown with nothing converted'
 number = ui.element('pay-number-value')
 assert '+60 12-345 6789' in (number.get('AXLabel') or ''), number.get('AXLabel')
 ui.capture('01-preselected')

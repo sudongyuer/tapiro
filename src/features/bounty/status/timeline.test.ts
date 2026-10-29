@@ -97,8 +97,8 @@ describe('timeline', () => {
     ]);
     const settledPoster = timeline(await detailOf('settled', 'poster'), 'poster').steps;
     expect(settledPoster[3].key).toBe('bounty.status.step.poster.confirmed');
-    expect(poster[0].params).toEqual({ name: '阿杰', sen: 800 });
-    expect(helper[0].params).toEqual({ name: '小林', sen: 800 });
+    expect(poster[0].params).toEqual({ name: '阿杰', amount: { minor: 800, currency: 'MYR' } });
+    expect(helper[0].params).toEqual({ name: '小林', amount: { minor: 800, currency: 'MYR' } });
   });
 
   test('done steps carry their event time; current and upcoming steps have none', async () => {
@@ -275,7 +275,7 @@ describe('statusActions', () => {
 
   test('a disputed payment lets both sides open the pay sheet', async () => {
     const detail = await detailOf('confirmed', 'helper');
-    const disputed = { ...detail, payment: { id: 'p', state: 'disputed' as const } };
+    const disputed = { ...detail, payment: { ...detail.payment!, state: 'disputed' as const } };
     expect(statusActions(disputed, 'helper').pinned).toEqual(['pay']);
     expect(statusActions(disputed, 'poster').pinned).toEqual(['pay']);
   });
