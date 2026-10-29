@@ -4,13 +4,8 @@ import { useCallback, useState } from 'react';
 import type { EtaMode, EtaRequest } from './EtaSheet';
 import { defaultEta } from './etaTime';
 import { statusService } from './services';
-import type { ActionId } from './statusState';
-import type { ActionResult, StatusDetail } from './types';
-
-type Act = <T>(
-  action: ActionId,
-  call: () => Promise<ActionResult<T>>,
-) => Promise<ActionResult<T> | null>;
+import type { StatusDetail } from './types';
+import type { Act } from './usePosterActions';
 
 export function useHelperActions(bountyId: string, act: Act) {
   const [request, setRequest] = useState<EtaRequest | null>(null);

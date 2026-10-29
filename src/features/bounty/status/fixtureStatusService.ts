@@ -1,6 +1,7 @@
 import type { Person } from '../board/types';
 import {
   ISSUE_REASON_MAX,
+  POST_CHARGES,
   type ActionFailure,
   type ActionResult,
   type BountyEvent,
@@ -44,6 +45,8 @@ export type FixtureStatusOptions = {
   load: StatusLoad;
   waiver: StatusWaiver;
   failFirst?: string;
+  charge?: PostCharge;
+  paymentId?: string;
   now: () => Date;
   writeDelayMs?: number;
   onCalled?: (calls: StatusCall[]) => void;
@@ -68,6 +71,8 @@ export function fixtureStatusOptions(
     load: pick(STATUS_LOADS, argument('uiVerifyBountyStatusLoad'), 'ok'),
     waiver: pick(STATUS_WAIVERS, argument('uiVerifyBountyWaiver'), 'available'),
     failFirst: argument('uiVerifyBountyStatusFail'),
+    charge: pick(POST_CHARGES, argument('uiVerifyBountyCharge'), 'free'),
+    paymentId: argument('uiVerifyBountyPaymentId'),
     now,
   };
 }
@@ -115,7 +120,9 @@ const event = (
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
-function seedBounty(id: string, scenario: StatusScenario, now: number): Bounty {
+type Seed = { scenario: StatusScenario; charge: PostCharge; paymentId: string };
+
+function seedBounty(id: string, { scenario, charge, paymentId }: Seed, now: number): Bounty {
   const published = event('published', now - 2 * HOUR_MS, 'poster', null, 'open');
   const selected = event('selected', now - HOUR_MS, 'poster', 'open', 'assigned');
   const base: Bounty = {
@@ -141,7 +148,7 @@ function seedBounty(id: string, scenario: StatusScenario, now: number): Bounty {
   const paid = (state: PaymentState, status: BountyStatus): Bounty => ({
     ...base,
     status,
-    payment: { id: FIXTURE_PAYMENT_ID, state },
+    payment: { id: paymentId, state },
     events: [
       ...base.events,
       started,
@@ -151,7 +158,7 @@ function seedBounty(id: string, scenario: StatusScenario, now: number): Bounty {
   });
   switch (scenario) {
     case 'open':
-      return { ...base, status: 'open', charge: 'free', events: [published] };
+      return { ...base, status: 'open', charge, events: [published] };
     case 'assigned':
       return base;
     case 'assignedLate':
@@ -239,6 +246,8 @@ const pause = (ms: number) =>
 export function createFixtureStatusService(options: FixtureStatusOptions) {
   const base = options.now().getTime();
   const { role } = options;
+  const paymentId = options.paymentId ?? FIXTURE_PAYMENT_ID;
+  const seed: Seed = { scenario: options.scenario, charge: options.charge ?? 'free', paymentId };
   const bounties = new Map<string, Bounty>();
   const calls: StatusCall[] = [];
   let loads = 0;
@@ -248,7 +257,7 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
   function bounty(id: string): Bounty {
     const known = bounties.get(id);
     if (known) return known;
-    const fresh = seedBounty(id, options.scenario, base);
+    const fresh = seedBounty(id, seed, base);
     bounties.set(id, fresh);
     return fresh;
   }
@@ -382,9 +391,9 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
           return ok({ paymentId: item.payment.id });
         }
         if (item.status !== 'done' && item.status !== 'disputed') return no('changed');
-        item.payment = { id: FIXTURE_PAYMENT_ID, state: 'due' };
+        item.payment = { id: paymentId, state: 'due' };
         move(item, 'confirmed', event('confirmed', now, 'poster', item.status, 'confirmed'));
-        return ok({ paymentId: FIXTURE_PAYMENT_ID });
+        return ok({ paymentId });
       }),
     reportProblem: (bountyId, reason) =>
       act('report_bounty_problem', bountyId, { reason }, (item, now) => {

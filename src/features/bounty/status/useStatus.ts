@@ -49,7 +49,11 @@ export function useStatus(bountyId: string) {
   useFreshness(load);
 
   const act = useCallback(
-    async <T>(action: ActionId, call: () => Promise<ActionResult<T>>) => {
+    async <T>(
+      action: ActionId,
+      call: () => Promise<ActionResult<T>>,
+      options: { reload?: boolean } = {},
+    ) => {
       const now = latest.current;
       if (sending.current || now.load.kind !== 'ready' || actionLocked(now.action)) return null;
       sending.current = true;
@@ -59,9 +63,16 @@ export function useStatus(bountyId: string) {
         dispatch({
           type: 'actionAnswered',
           action,
-          outcome: result.ok ? { ok: true } : { ok: false, reason: result.reason },
+          outcome: result.ok
+            ? { ok: true, quiet: options.reload === false }
+            : { ok: false, reason: result.reason },
         });
-        if (result.ok || result.reason === 'changed') void load();
+        if (
+          (result.ok && options.reload !== false) ||
+          (!result.ok && result.reason === 'changed')
+        ) {
+          void load();
+        }
         return result;
       } finally {
         sending.current = false;

@@ -1,29 +1,53 @@
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
-import { AccessibilityInfo, StyleSheet } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions } from '@/ui/SheetFrame';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { actionLocked, type ActionState } from './statusState';
 import { actionKey, type StatusAction, type StatusActions } from './timeline';
 import type { StatusRole } from './types';
 
+function menuProgress(state: ActionState) {
+  if (state.kind !== 'sending' && state.kind !== 'settling') return null;
+  if (state.action === 'cancelPreview') return 'bounty.cancel.checking' as const;
+  if (state.action === 'cancel') return 'bounty.cancel.sending' as const;
+  return null;
+}
+
 export function StatusMenu({
   actions,
   role,
-  locked,
+  state,
   onAction,
 }: {
   actions: StatusAction[];
   role: StatusRole;
-  locked: boolean;
+  state: ActionState;
   onAction: (action: StatusAction) => void;
 }) {
   const { t } = useI18n();
+  const locked = actionLocked(state);
+  const busy = menuProgress(state);
+  if (busy) {
+    return (
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.View>
+          <ActivityIndicator
+            accessible
+            accessibilityLabel={t(busy)}
+            testID="bounty-status-menu-busy"
+            style={styles.busy}
+          />
+        </Stack.Toolbar.View>
+      </Stack.Toolbar>
+    );
+  }
   return (
     <Stack.Toolbar placement="right">
       <Stack.Toolbar.Menu
@@ -97,4 +121,5 @@ export function PinnedActions({
 
 const styles = StyleSheet.create({
   notice: { textAlign: 'center' },
+  busy: { minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] },
 });

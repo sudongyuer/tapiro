@@ -11,27 +11,26 @@ import { vars } from '@/ui/theme/tokens';
 import { AddressSection } from '../shared/AddressSection';
 import { addressView } from '../shared/exactAddress';
 import { EtaSheet } from './EtaSheet';
+import { IssueSheet } from './IssueSheet';
 import { PinnedActions, StatusMenu } from './StatusActions';
-import { actionLocked } from './statusState';
 import { statusClock } from './statusCopy';
 import { StatusHeader, StatusTimeline } from './StatusTimeline';
 import { counterpartName, statusActions, type StatusAction } from './timeline';
 import { useHelperActions } from './useHelperActions';
+import { usePosterActions } from './usePosterActions';
 import { useStatus } from './useStatus';
-
-export type RoutedAction = Extract<StatusAction, 'confirm' | 'reportIssue' | 'cancel'>;
 
 export type StatusScreenProps = {
   id: string;
   onBack: () => void;
   onPay: (paymentId: string) => void;
-  onAction?: (action: RoutedAction) => void;
 };
 
-export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps) {
+export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
   const { t, language } = useI18n();
   const { state, refresh, act } = useStatus(id);
   const helper = useHelperActions(id, act);
+  const poster = usePosterActions(id, act, onPay);
   const { load, action } = state;
 
   if (load.kind === 'failed' && load.reason === 'unavailable') {
@@ -63,9 +62,11 @@ export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps)
         if (detail.payment) onPay(detail.payment.id);
         return;
       case 'confirm':
+        return void poster.confirm(detail);
       case 'reportIssue':
+        return poster.issue.show();
       case 'cancel':
-        return onAction?.(chosen);
+        return void poster.cancel(detail);
     }
   };
   const retry = (busy: boolean) => ({
@@ -77,7 +78,7 @@ export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps)
 
   return (
     <>
-      <StatusMenu actions={actions.menu} role={role} locked={actionLocked(action)} onAction={run} />
+      <StatusMenu actions={actions.menu} role={role} state={action} onAction={run} />
       <SheetFrame
         testID="bounty-status"
         pinnedAbove="tabBar"
@@ -132,6 +133,13 @@ export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps)
                 name={detail.poster.name ?? t('bounty.post.unknownName')}
                 onConfirm={helper.confirmEta}
                 onClose={helper.closeEta}
+              />
+              <IssueSheet
+                bountyId={id}
+                open={poster.issue.open}
+                name={counterpartName(detail, role) ?? t('bounty.post.unknownName')}
+                onSend={(reason) => void poster.issue.send(reason)}
+                onClose={poster.issue.close}
               />
             </SheetLayer>
           </>

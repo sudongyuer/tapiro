@@ -24,9 +24,10 @@ export function closedForChoosing(detail: BountyDetail, now: Date) {
   return detail.status === 'open' && new Date(detail.expiresAt).getTime() <= now.getTime();
 }
 
-function body({ select, detail }: ApplicantsSnapshot, now: Date): ApplicantsBody {
+function body({ select, detail }: ApplicantsSnapshot, now: Date, closed: boolean): ApplicantsBody {
   const { list } = select;
   if (list.kind === 'gone' || detail.kind === 'gone') return 'gone';
+  if (closed) return 'closed';
   if (select.send.kind === 'selected') return 'done';
   if (select.send.kind === 'failed' && select.send.reason === 'closed') return 'closed';
   if (detail.kind === 'ready' && closedForChoosing(detail.detail, now)) return 'closed';
@@ -49,8 +50,12 @@ function notice({ send }: ApplicantsSnapshot['select']): NoticeReason | null {
   return send.reason;
 }
 
-export function applicantsView(snapshot: ApplicantsSnapshot, now: Date): ApplicantsView {
-  const shown = body(snapshot, now);
+export function applicantsView(
+  snapshot: ApplicantsSnapshot,
+  now: Date,
+  closedHere = false,
+): ApplicantsView {
+  const shown = body(snapshot, now, closedHere);
   const { list } = snapshot.select;
   const applicants = list.kind === 'ready' ? list.applicants : [];
   return {

@@ -171,6 +171,19 @@ describe('actions', () => {
     expect(shownDetail(done)?.status).toBe('en_route');
   });
 
+  test('a quiet success (the cancel preview) frees the menu without waiting for a reload', () => {
+    const state = run(
+      ready(),
+      { type: 'actionStarted', action: 'cancelPreview' },
+      { type: 'actionAnswered', action: 'cancelPreview', outcome: { ok: true, quiet: true } },
+    );
+    expect(state.action).toEqual({ kind: 'idle' });
+    expect(run(state, { type: 'actionStarted', action: 'cancel' }).action).toEqual({
+      kind: 'sending',
+      action: 'cancel',
+    });
+  });
+
   test('a load requested before the answer does not release a settling action', () => {
     const state = run(
       ready(),

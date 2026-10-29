@@ -2,7 +2,9 @@ import { Settings } from 'react-native';
 
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
+import { userCleanups } from '@/lib/userCleanups';
 
+import { createNoteDrafts } from '../apply/noteDrafts';
 import { createFixtureStatusService, fixtureStatusOptions } from './fixtureStatusService';
 import { createSupabaseStatusService } from './statusService';
 import type { StatusService } from './types';
@@ -23,3 +25,7 @@ export const statusFixture = uiVerify ? verifyStatusService() : null;
 
 export const statusService: StatusService =
   statusFixture?.service ?? createSupabaseStatusService(getSupabase());
+
+export const issueDrafts = createNoteDrafts();
+
+userCleanups.register(() => issueDrafts.clear());

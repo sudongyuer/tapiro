@@ -506,6 +506,8 @@ export default {
       '{{name}}已经选了你，现在退出算一次放鸽子。你 60 天内还有 1 次豁免，这次用掉它，不记录。',
     countedHelper:
       '{{name}}已经选了你，现在退出会记一次放鸽子（60 天豁免已经用过，{{date}} 恢复）。',
+    countedPosterUndated: '你已经选了{{name}}，现在取消会记一次放鸽子（60 天豁免已经用过）。',
+    countedHelperUndated: '{{name}}已经选了你，现在退出会记一次放鸽子（60 天豁免已经用过）。',
     otherLate: '{{name}}过了约定时间 30 分钟还没出发，现在取消记在{{name}}那边，不算你放鸽子。',
     confirmPoster: '取消这单',
     confirmHelper: '不帮了',

@@ -201,3 +201,19 @@ and the Live Activity (11), 先付 (12).
 - 2026-10-29, Task 7: helper actions run inside `StatusScreen` (they need `act`); the route keeps only navigation
   callbacks, and `onAction` carries `confirm` / `reportIssue` / `cancel` until Task 8. The ETA sheet is `@expo/ui`
   `BottomSheet` (medium detent, wheel `DatePicker`); in 改预计到达时间 「好」 stays disabled until the time changes.
+- 2026-10-29, Task 8: 确认完成, the cancel sheet and 关掉这单 use the system action sheet through `ActionSheetIOS` (as
+  选人 and 屏蔽 do), not `@expo/ui` `ConfirmationDialog`: they open from an RN pill inside the kit's pinned bar and from
+  the ⋯ toolbar menu, and neither can host a SwiftUI trigger view.
+- 2026-10-29, Task 8: 有问题 is an `@expo/ui` `BottomSheet` (large detent, inline title 发给{name}, 取消 / 发送 in the
+  toolbar); 发送 closes it and the progress shows in 有问题, like the ETA sheet. The reason is kept per bounty in memory
+  (cleared on sign-out) from the first keystroke until the server accepts it, so a failed send reopens with the text.
+- 2026-10-29, Task 8: while the cancel preview or `cancel_bounty` (or 关掉这单) is in flight the ⋯ becomes a spinner
+  labelled 正在查看取消后会怎样 / 正在取消 / 正在关掉; the preview runs through `act` without a reload (`cancelPreview`).
+  A used waiver without `waiverBackAt` reads `bounty.cancel.counted{Poster,Helper}Undated` (new keys).
+- 2026-10-29, Task 8: the applicant list reads `charge` with `bounty_detail` when 关掉这单 is tapped (its board detail
+  does not carry it); a bounty no longer open shows 这单的状态变了 and reloads. After a close the list shows its closed
+  state at once. The applicant list now uses `SheetFrame scrollsUnderActions`. `StatusScreen` lost its `onAction` prop.
+- 2026-10-29, Task 8: open: `bounty_select` timed out three times on the `02-sending` screenshot (`simctl io screenshot`
+  > 20 s while the clip records), with and without `scrollsUnderActions` (A/B on the same build), at load average 33–40
+  from Spotlight indexing and another agent's `AgentDeviceRunner`; rerun it on an idle machine. `bounty_applicants` and
+  `bounty_select_failed` pass with the pinned bar.

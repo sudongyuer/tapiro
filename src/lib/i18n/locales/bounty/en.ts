@@ -519,6 +519,10 @@ const en: typeof zhHans = {
       '{{name}} already chose you, so pulling out now counts as a no-show. You have 1 waiver left for 60 days; this uses it and nothing is recorded.',
     countedHelper:
       '{{name}} already chose you, so pulling out now records a no-show (your 60-day waiver is used; it comes back on {{date}}).',
+    countedPosterUndated:
+      'You already chose {{name}}, so cancelling now records a no-show (your 60-day waiver is used).',
+    countedHelperUndated:
+      '{{name}} already chose you, so pulling out now records a no-show (your 60-day waiver is used).',
     otherLate:
       '{{name}} is 30 minutes past the agreed time and hasn’t left. If you cancel now, it counts against {{name}}, not you.',
     confirmPoster: 'Cancel Bounty',

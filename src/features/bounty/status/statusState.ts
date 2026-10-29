@@ -12,7 +12,7 @@ export type LoadState =
       refreshFailed: boolean;
     };
 
-export type ActionId = StatusAction | 'close';
+export type ActionId = StatusAction | 'close' | 'cancelPreview';
 
 export type ActionState =
   | { kind: 'idle' }
@@ -32,7 +32,7 @@ export type StatusEvent =
   | {
       type: 'actionAnswered';
       action: ActionId;
-      outcome: { ok: true } | { ok: false; reason: ActionFailure };
+      outcome: { ok: true; quiet?: boolean } | { ok: false; reason: ActionFailure };
     }
   | { type: 'noticeDismissed' };
 
@@ -71,6 +71,7 @@ function answered(
   outcome: Extract<StatusEvent, { type: 'actionAnswered' }>['outcome'],
 ): StatusState {
   if (outcome.ok) {
+    if (outcome.quiet) return { ...state, action: { kind: 'idle' } };
     return { ...state, action: { kind: 'settling', action, after: state.request } };
   }
   switch (outcome.reason) {

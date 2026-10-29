@@ -522,6 +522,10 @@ const ms: typeof zhHans = {
       '{{name}} sudah memilih anda, jadi tarik diri sekarang dikira sebagai mungkir janji. Anda ada 1 pengecualian dalam 60 hari; ia akan digunakan dan tiada rekod.',
     countedHelper:
       '{{name}} sudah memilih anda, jadi tarik diri sekarang direkodkan sebagai mungkir janji (pengecualian 60 hari sudah digunakan; kembali pada {{date}}).',
+    countedPosterUndated:
+      'Anda sudah memilih {{name}}, jadi batal sekarang direkodkan sebagai mungkir janji (pengecualian 60 hari sudah digunakan).',
+    countedHelperUndated:
+      '{{name}} sudah memilih anda, jadi tarik diri sekarang direkodkan sebagai mungkir janji (pengecualian 60 hari sudah digunakan).',
     otherLate:
       '{{name}} sudah lewat 30 minit dan belum bertolak. Jika anda batal sekarang, ia dikira atas {{name}}, bukan anda.',
     confirmPoster: 'Batalkan Ganjaran',
