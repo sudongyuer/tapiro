@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test';
 
 import type { PayeeMethod } from '@/lib/payeeMethods';
 
-import { convertedAt, freshRate, pairedReference } from './fx';
 import { confirmedLink, initialSelection, payOptions, WALLET_LINKS } from './payOptions';
 import { isReference, newReference, REFERENCE_ALPHABET } from './reference';
 import { availableActions, nextState, sheetTitleKey } from './stateMachine';
@@ -139,34 +138,5 @@ describe('pay options', () => {
     expect(Object.values(WALLET_LINKS).every((link) => !link.confirmed)).toBe(true);
     expect(confirmedLink('alipay')).toBeNull();
     expect(confirmedLink(null)).toBeNull();
-  });
-});
-
-describe('reference in the other currency', () => {
-  const rate = {
-    base: 'CNY' as const,
-    quote: 'MYR' as const,
-    quotePerBase: 0.6122,
-    rateDate: '2026-10-23',
-    source: 'bnm',
-  };
-  const now = new Date('2026-10-25T10:00:00+08:00');
-  const ringgit = (minor: number) => ({ minor, currency: 'MYR' as const });
-
-  test('converts RM to yuan at the daily rate and rounds up to the fen', () => {
-    expect(convertedAt(ringgit(1500), 'CNY', rate, now)).toEqual({ minor: 2451, currency: 'CNY' });
-    expect(convertedAt(ringgit(1), 'CNY', rate, now)).toEqual({ minor: 2, currency: 'CNY' });
-    expect(pairedReference(ringgit(800), rate, now)).toEqual({ minor: 1307, currency: 'CNY' });
-  });
-
-  test("shows no reference in the amount's own currency", () => {
-    expect(convertedAt(ringgit(1500), 'MYR', rate, now)).toBeNull();
-  });
-
-  test('hides the reference when no rate is newer than 7 days', () => {
-    expect(freshRate(rate, new Date('2026-10-29T23:00:00+08:00'))).toEqual(rate);
-    expect(freshRate(rate, new Date('2026-10-30T00:00:01+08:00'))).toBeNull();
-    expect(convertedAt(ringgit(1500), 'CNY', null, now)).toBeNull();
-    expect(pairedReference(ringgit(1500), null, now)).toBeNull();
   });
 });

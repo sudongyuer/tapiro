@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
-import { CURRENCY_CODES, type CurrencyCode } from '@/lib/money';
 import type { PayeeMethod } from '@/lib/payeeMethods';
 
 import { paymentStore } from './services';
-import type { FxRate, Payment, PaymentService, SettleResult } from './types';
+import type { Payment, PaymentDetail, SettleResult } from './types';
 
 export function useLivePayments(userId: string | null) {
   useEffect(() => {
@@ -25,7 +24,7 @@ export function usePaymentList() {
   return useSyncExternalStore(paymentStore.subscribe, paymentStore.getSnapshot);
 }
 
-export type SheetData = { payment: Payment; methods: PayeeMethod[]; rate: FxRate | null };
+export type SheetData = { payment: Payment; methods: PayeeMethod[]; detail: PaymentDetail };
 
 export type SheetState =
   | { status: 'loading' }
@@ -35,21 +34,16 @@ export type SheetState =
 
 export type SheetAction = 'markPaid' | 'undo' | 'confirm' | 'notReceived';
 
-function rateFor(service: PaymentService, currency: CurrencyCode) {
-  const other = CURRENCY_CODES.find((code) => code !== currency);
-  return other ? service.latestRate(currency, other).catch(() => null) : Promise.resolve(null);
-}
-
 async function loadSheet(userId: string, paymentId: string): Promise<SheetState> {
   const { service } = paymentStore;
   const payment = await service.get(userId, paymentId);
   if (!payment) return { status: 'missing' };
   const owner = payment.role === 'payer' ? payment.counterpartId : userId;
-  const [methods, rate] = await Promise.all([
+  const [methods, detail] = await Promise.all([
     owner && payment.state !== 'settled' ? service.methodsOf(owner) : Promise.resolve([]),
-    rateFor(service, payment.amount.currency),
+    service.detail(paymentId),
   ]);
-  return { status: 'ready', payment, methods, rate };
+  return { status: 'ready', payment, methods, detail };
 }
 
 export function usePaySheet(userId: string, paymentId: string) {
