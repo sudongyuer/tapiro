@@ -19,3 +19,21 @@ export function createRestingOffset() {
     get: () => resting,
   };
 }
+
+export function createTopRequest() {
+  let pending = false;
+  return {
+    request(focused: boolean) {
+      pending = !focused;
+      return focused;
+    },
+    shown(closing: boolean) {
+      if (closing || !pending) return false;
+      pending = false;
+      return true;
+    },
+    left() {
+      pending = false;
+    },
+  };
+}

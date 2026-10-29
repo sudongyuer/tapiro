@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { createRestingOffset, liveCardsOnScreen } from './homeScroll';
+import { createRestingOffset, createTopRequest, liveCardsOnScreen } from './homeScroll';
 
 const HEADER = 158;
 const RESTING = -HEADER;
@@ -31,5 +31,28 @@ describe('createRestingOffset', () => {
     resting.recordDragStart(RESTING);
     resting.recordDragStart(340);
     expect(resting.get()).toBe(RESTING);
+  });
+});
+
+describe('createTopRequest', () => {
+  test('a request on the shown board scrolls at once and leaves nothing pending', () => {
+    const top = createTopRequest();
+    expect(top.request(true)).toBe(true);
+    expect(top.shown(false)).toBe(false);
+  });
+
+  test('a request from a pushed screen scrolls once, when the board has appeared', () => {
+    const top = createTopRequest();
+    expect(top.request(false)).toBe(false);
+    expect(top.shown(true)).toBe(false);
+    expect(top.shown(false)).toBe(true);
+    expect(top.shown(false)).toBe(false);
+  });
+
+  test('a return that never finished does not scroll a later return', () => {
+    const top = createTopRequest();
+    top.request(false);
+    top.left();
+    expect(top.shown(false)).toBe(false);
   });
 });

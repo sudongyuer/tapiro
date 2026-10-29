@@ -11,7 +11,7 @@ import { useHeaderHeight } from 'expo-router/react-navigation';
 import { homeSignals } from '@/lib/homeSignals';
 import { useHomeReveal } from '@/lib/useHomeSignals';
 
-import { createRestingOffset, liveCardsOnScreen } from './homeScroll';
+import { createRestingOffset, createTopRequest, liveCardsOnScreen } from './homeScroll';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -22,7 +22,7 @@ export function useHomeScroll(onReveal?: () => void) {
   const liveCardsBottom = useRef(0);
   const [resting] = useState(createRestingOffset);
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
-  const topPending = useRef(false);
+  const [top] = useState(createTopRequest);
 
   useEffect(() => {
     header.current = headerHeight;
@@ -42,22 +42,23 @@ export function useHomeScroll(onReveal?: () => void) {
       onReveal?.();
     },
     () => {
-      if (navigation.isFocused()) toTop();
-      else topPending.current = true;
+      if (top.request(navigation.isFocused())) toTop();
     },
   );
 
   // Scrolling while a pushed screen is still covering the board lands short of the top: the large title
   // expands on appear and shifts the content, so a request from a pushed screen waits for the board to appear.
-  useEffect(
-    () =>
-      navigation.addListener('transitionEnd', (event) => {
-        if (event.data.closing || !topPending.current) return;
-        topPending.current = false;
-        toTop();
-      }),
-    [navigation, toTop],
-  );
+  // A board that blurs before that transition ends (an interrupted return) drops the request.
+  useEffect(() => {
+    const offEnd = navigation.addListener('transitionEnd', (event) => {
+      if (top.shown(event.data.closing)) toTop();
+    });
+    const offBlur = navigation.addListener('blur', top.left);
+    return () => {
+      offEnd();
+      offBlur();
+    };
+  }, [navigation, toTop, top]);
 
   return {
     scrollViewProps: {
