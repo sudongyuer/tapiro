@@ -11,11 +11,7 @@ import { PressDim } from '@/ui/PressDim';
 import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { BountyCard, OwedCard } from './cards/BountyCard';
-import { CalmCard, FallbackCard } from './cards/CalmCard';
-import { PayCard } from './cards/PayCard';
-import { RideCard } from './cards/RideCard';
-import { UnavailableCard } from './cards/UnavailableCard';
+import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
 import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
 
@@ -160,6 +156,7 @@ function StackedCard({
       })
     : undefined;
   const ownButton = card.kind === 'oweMoney';
+  const grouped = card.kind !== 'calm' && card.kind !== 'unavailable' && card.kind !== 'settled';
 
   return (
     <Animated.View
@@ -176,54 +173,30 @@ function StackedCard({
           testID={`live-card-peek-${index}`}
           onPress={() => onToggle(true)}
         >
-          <CardBody card={card} name={name} onAsk={onAsk} />
+          <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
           <BackFace tone={TONE[card.kind]} label={peek} style={face} />
         </PressDim>
       ) : (
         <View
-          accessible={card.kind !== 'calm' && card.kind !== 'unavailable'}
+          accessible={grouped}
           accessibilityRole={openTarget ? 'button' : undefined}
           accessibilityLabel={label}
           accessibilityActions={openTarget ? [{ name: 'activate' }] : undefined}
           onAccessibilityAction={openTarget}
-          testID={
-            card.kind === 'calm' || card.kind === 'unavailable'
-              ? undefined
-              : `live-card-${card.kind}`
-          }
+          testID={grouped ? `live-card-${card.kind}` : undefined}
         >
           {openTarget && !ownButton ? (
             <PressDim onPress={openTarget}>
-              <CardBody card={card} name={name} onAsk={onAsk} />
+              <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
             </PressDim>
           ) : (
-            <CardBody card={card} name={name} onAsk={onAsk} />
+            <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
           )}
           {index > 0 ? <BackFace tone={TONE[card.kind]} label={peek} style={face} /> : null}
         </View>
       )}
     </Animated.View>
   );
-}
-
-function CardBody({ card, name, onAsk }: { card: LiveCardModel; name: string; onAsk: () => void }) {
-  if (card.kind === 'calm') return <CalmCard name={name} onAsk={onAsk} />;
-  if (card.kind === 'unavailable') return <UnavailableCard issue={card.issue} />;
-  const { detail, item } = card;
-  switch (detail?.kind) {
-    case 'oweMoney':
-      return <PayCard detail={detail} />;
-    case 'rideSoon':
-      return <RideCard detail={detail} />;
-    case 'owedToYou':
-      return <OwedCard detail={detail} />;
-    case 'bountyAction':
-    case 'bountyInProgress':
-    case 'waitingConfirm':
-      return <BountyCard detail={detail} />;
-    default:
-      return <FallbackCard item={item} />;
-  }
 }
 
 function BackFace({

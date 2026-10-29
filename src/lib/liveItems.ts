@@ -89,6 +89,15 @@ export type AccessoryItem = {
 
 export const MONEY_KINDS: readonly AccessoryKind[] = ['oweMoney', 'owedToYou'];
 
+// The tab-bar accessory is for things that need you; a settled card is good news that waits on home (2026-10-29).
+export const HOME_ONLY_KINDS = ['settled'] as const;
+export type TabAccessoryKind = Exclude<AccessoryKind, (typeof HOME_ONLY_KINDS)[number]>;
+export type TabAccessoryItem = AccessoryItem & { kind: TabAccessoryKind };
+
+export function inTabAccessory(item: AccessoryItem): item is TabAccessoryItem {
+  return !(HOME_ONLY_KINDS as readonly AccessoryKind[]).includes(item.kind);
+}
+
 export function accessoryPriority(kind: AccessoryKind) {
   return ACCESSORY_KINDS.indexOf(kind) + 1;
 }

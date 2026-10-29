@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
+  ACCESSORY_KINDS,
   accessoryPriority,
   type AccessoryItem,
   type AccessoryKind,
@@ -32,7 +33,25 @@ describe('pickMostUrgent', () => {
       item('ride', 'rideSoon'),
       item('owe', 'oweMoney'),
     ]);
-    expect(result).toEqual({ item: item('owe', 'oweMoney'), more: 3 });
+    expect(result?.item.id).toBe('owe');
+    expect(result?.more).toBe(3);
+  });
+
+  test('a settled card never takes the accessory and is not counted in more', () => {
+    expect(pickMostUrgent([item('done', 'settled')])).toBeNull();
+    const result = pickMostUrgent([
+      item('done', 'settled'),
+      item('waiting', 'waitingConfirm'),
+      item('progress', 'bountyInProgress'),
+    ]);
+    expect(result?.item.id).toBe('progress');
+    expect(result?.more).toBe(1);
+  });
+
+  test('with every kind present the accessory shows money owed and counts the rest but settled', () => {
+    const result = pickMostUrgent([...ACCESSORY_KINDS].reverse().map((kind) => item(kind, kind)));
+    expect(result?.item.kind).toBe('oweMoney');
+    expect(result?.more).toBe(ACCESSORY_KINDS.length - 2);
   });
 
   test('a ride within the hour beats money owed to you', () => {

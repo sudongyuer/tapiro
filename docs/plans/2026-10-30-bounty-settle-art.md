@@ -300,3 +300,10 @@ so the card does not flip live (11), 先付 (12).
   stays hidden after a landing; the card is removed by JS. The Debug scene `sticker-flight` needs
   `-uiVerifySignedIn onboarded` and opens `/bounty/debug-flight`, a debug-only route inside the 悬赏 tab, because
   the flight needs the tab bar on screen.
+- 2026-10-29 (Task 6): the 已结清 card stays out of the tab-bar accessory. Ruling 2 ranks it in the stack, and neither
+  the plan nor the board places it in the accessory; the accessory is for things that need you, and a settled card is
+  good news that waits on home. `HOME_ONLY_KINDS` in `src/lib/liveItems.ts` keeps it out, and it is not counted in
+  「还有 n 件」. Overturn by saying so.
+- 2026-10-29 (Task 6): the strip form behind another card is the stack's built back face reading 「{title} · 办成了」;
+  the sticker is not hung and the 「收进贴纸本」 button is disabled while the card is behind. No `home_*` case's feed
+  changed: `-uiVerifySettled` defaults to `none`, so only `home_settled_card` shows the card.

@@ -89,6 +89,8 @@ export type StageLine =
   | { key: 'rideMinutes'; count: number }
   | { key: 'owedNamed'; name: string }
   | { key: 'bounty'; title: string; line: string }
+  | { key: 'settled'; name: string }
+  | { key: 'settledUnnamed' }
   | { key: 'live' }
   | { key: 'calm' };
 
@@ -108,6 +110,10 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
     case 'bountyInProgress':
     case 'waitingConfirm':
       return { key: 'bounty', title: detail.title, line: detail.line };
+    case 'settled':
+      return detail.counterpart
+        ? { key: 'settled', name: detail.counterpart }
+        : { key: 'settledUnnamed' };
     default:
       return front.kind === 'oweMoney' ? { key: 'pay' } : { key: 'live' };
   }
