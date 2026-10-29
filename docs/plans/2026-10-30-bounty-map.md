@@ -28,12 +28,12 @@ G10–G13 (page 02), 「真实地图 M2」 (page 05, `SpecVisual3`).
 
 ## Spike: `expo-maps` on SDK 57 (2026-10-29)
 
-Branch `spike/expo-maps` (commit `8c62300`, never merged): `bunx expo install expo-maps` installed `expo-maps@57.0.4` and
+Branch `spike/expo-maps` (commits `8c62300` and `dd67505`, never merged): `bunx expo install expo-maps` installed `expo-maps@57.0.4` and
 added its config plugin. A Debug scene `map-spike` puts ten fixture bounties around Sunway Pyramid as sticker images.
 The images are 150 px PNGs drawn by a CoreGraphics script with the category colour, the SF Symbol and a white die-cut
 border. The scene logs every event with its time since mount. Built with `bun run verify:build` (265 s from a clean
 worktree) and driven with AXe on `Tapiro Verify` (iPhone 17 Pro, iOS 26). Screenshots:
-`/private/tmp/claude-501/-Users-sudongyu-work-tapiro/239e5a54-cf0e-4063-8e59-7e739e506b2b/scratchpad/spike-map-0{1..5}-*.png`,
+`/private/tmp/claude-501/-Users-sudongyu-work-tapiro/239e5a54-cf0e-4063-8e59-7e739e506b2b/scratchpad/spike-map-0{1..6}-*.png`,
 and on the canvas board.
 
 **Verdict: go, with caveats.** `AppleMaps.View` with image annotations is enough. No RN view has to be rendered to an
@@ -174,7 +174,8 @@ motion, the views swap at once, and the peek card fades over 150 ms with no move
 5. **Origin marker.** Origin `me` uses `isMyLocationEnabled` (MapKit's own dot). Origin `place` is a system `Marker`
    (SF Symbol `mappin`, title 「这里」, the 29A label), drawn as a marker, not a sticker, so it never looks like a
    bounty.
-6. **Map style.** `emphasis: MUTED` so the stickers lead, `selectionEnabled: false` so MapKit's POI cards never open,
+6. **Map style.** `emphasis: MUTED` so the stickers lead (spike screenshot 06; the `AppleMaps` namespace does not export the
+   emphasis enum, so pass `'MUTED'` typed as `AppleMaps.MapProperties['emphasis']`), `selectionEnabled: false` so MapKit's POI cards never open,
    compass and pitch toggle off, and the map's colour scheme follows the app. No decorative RN overlay on the map
    (AGENTS.md); the peek card is a real card, not an imitation of glass.
 7. **View memory.** Keys `tapiro.boardView.<userId>` (`list` / `map`) and `tapiro.boardViewHint.<userId>` (`1` once
