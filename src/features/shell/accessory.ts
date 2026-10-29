@@ -1,13 +1,19 @@
-import { accessoryPriority, type AccessoryItem } from '@/lib/liveItems';
+import {
+  accessoryPriority,
+  inTabAccessory,
+  type AccessoryItem,
+  type TabAccessoryItem,
+} from '@/lib/liveItems';
 
-export type MostUrgent = { item: AccessoryItem; more: number };
+export type MostUrgent = { item: TabAccessoryItem; more: number };
 
 export function pickMostUrgent(items: readonly AccessoryItem[]): MostUrgent | null {
-  let best: AccessoryItem | null = null;
-  for (const item of items) {
+  const shown = items.filter(inTabAccessory);
+  let best: TabAccessoryItem | null = null;
+  for (const item of shown) {
     if (!best || accessoryPriority(item.kind) < accessoryPriority(best.kind)) best = item;
   }
-  return best ? { item: best, more: items.length - 1 } : null;
+  return best ? { item: best, more: shown.length - 1 } : null;
 }
 
 export function accessoryVisible({

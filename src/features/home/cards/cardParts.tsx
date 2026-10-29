@@ -1,3 +1,4 @@
+import { SymbolView, type SFSymbol } from 'expo-symbols';
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type TextStyle } from 'react-native';
 
@@ -13,11 +14,22 @@ export function CardText({
   return <AppText {...rest} style={[{ color: ink }, muted && styles.muted, style as TextStyle]} />;
 }
 
-export function Pill({ ink, children, dot }: { ink: string; children: string; dot?: string }) {
+export function Pill({
+  ink,
+  children,
+  dot,
+  symbol,
+}: {
+  ink: string;
+  children: string;
+  dot?: string;
+  symbol?: SFSymbol;
+}) {
   return (
     <View style={styles.pill}>
       <View style={[StyleSheet.absoluteFill, styles.pillFill, { backgroundColor: ink }]} />
       {dot ? <View style={[styles.dot, { backgroundColor: dot }]} /> : null}
+      {symbol ? <SymbolView name={symbol} size={PILL_SYMBOL} tintColor={ink} /> : null}
       <AppText variant="meta" numberOfLines={1} style={[styles.pillText, { color: ink }]}>
         {children}
       </AppText>
@@ -33,6 +45,8 @@ export function CardHeader({ left, right }: { left: ReactNode; right?: ReactNode
     </View>
   );
 }
+
+const PILL_SYMBOL = 15;
 
 const styles = StyleSheet.create({
   muted: { opacity: MUTED_TEXT_OPACITY },

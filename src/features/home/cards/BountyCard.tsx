@@ -58,7 +58,7 @@ export function OwedCard({ detail }: { detail: OwedDetail }) {
   );
 }
 
-function TitleRow({ ink, title, amount }: { ink: string; title: string; amount: Money }) {
+export function TitleRow({ ink, title, amount }: { ink: string; title: string; amount: Money }) {
   const { language } = useI18n();
   const { stacked, onTextLayout } = useStackedBeside(`${language}|${title}`);
   return (
