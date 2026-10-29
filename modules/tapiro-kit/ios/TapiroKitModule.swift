@@ -1,4 +1,5 @@
 import ExpoModulesCore
+import UIKit
 
 public final class TapiroKitModule: Module {
   private let places = PlaceSearch()
@@ -49,6 +50,16 @@ public final class TapiroKitModule: Module {
         places.placeAt(latitude: latitude, longitude: longitude) { promise.resolve($0) }
       }
     }.runOnQueue(.main)
+
+    AsyncFunction("flyToTab") { [weak self] (options: StickerFlightOptions, promise: Promise) in
+      MainActor.assumeIsolated {
+        guard let source = self?.appContext?.findView(withTag: options.viewTag, ofType: UIView.self) else {
+          return promise.resolve(["landed": false])
+        }
+        StickerFlight.fly(source: source, options: options) { promise.resolve(["landed": $0]) }
+      }
+    }.runOnQueue(.main)
+
   }
 
   // Sync functions run on the JS thread; ids are minted there so JS gets them synchronously, and the MapKit work is

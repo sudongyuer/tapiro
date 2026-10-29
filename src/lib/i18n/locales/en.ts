@@ -291,6 +291,12 @@ const en: Translation = {
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
+    flight: {
+      title: 'Sticker flight to Me',
+      fly: 'Fly to Me',
+      flyReduced: 'Fly (Reduce Motion)',
+      reset: 'Put the sticker back',
+    },
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',

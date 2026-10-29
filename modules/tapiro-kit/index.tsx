@@ -17,6 +17,13 @@ export type PlaceResult =
   | { status: 'ok'; place: ResolvedPlace }
   | { status: 'notFound' | 'failed'; code?: 'network' | 'unknown' | 'stale' };
 
+export type StickerFlightOptions = {
+  viewTag: number;
+  tabId: string;
+  reduceMotion: boolean;
+};
+export type StickerFlightResult = { landed: boolean };
+
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
 };
@@ -28,6 +35,7 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   endPlaceSearch(searchId: string): void;
   resolvePlace(searchId: string, suggestionId: string): Promise<PlaceResult>;
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
+  flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
 }
 
 const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
@@ -73,3 +81,9 @@ export function placeAt(point: PlacePoint): Promise<PlaceResult> {
 export function endPlaceSearch(searchId: string): void {
   kit.endPlaceSearch(searchId);
 }
+
+export const StickerFlight = {
+  flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult> {
+    return kit.flyToTab(options);
+  },
+};

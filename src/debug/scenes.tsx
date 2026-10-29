@@ -18,6 +18,7 @@ import {
   PlaceSearchScene,
 } from './BountyScenes';
 import { DesignTokensScene } from './DesignTokensScene';
+import { FlightRedirect } from './FlightScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
 
@@ -60,6 +61,7 @@ export const scenes: Scene[] = [
     Component: BountyApplicantsScene,
   },
   { id: 'bounty-status', titleKey: 'debug.bounty.status', Component: BountyStatusScene },
+  { id: 'sticker-flight', titleKey: 'debug.flight.title', Component: FlightRedirect },
 ];
 
 export function findScene(id: string) {
