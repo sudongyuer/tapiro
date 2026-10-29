@@ -14,6 +14,8 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
+import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
+
 import { useI18n } from '@/lib/i18n';
 import { CategorySticker } from '@/ui/CategorySticker';
 import { vars } from '@/ui/theme/tokens';
@@ -31,6 +33,7 @@ import {
 } from './statusCopy';
 import { timeline, type StepState, type TimelineStep } from './timeline';
 import type { StatusDetail } from './types';
+import { useEtaFlip } from './useEtaFlip';
 
 const STICKER = 48;
 const ICON = 20;
@@ -92,13 +95,17 @@ export function StatusHeader({ detail }: { detail: StatusDetail }) {
   );
 }
 
+type LineMotion = Partial<Record<TimelineStep['lines'][number]['kind'], ModifierConfig[]>>;
+
 function StepRow({
   step,
   extra,
+  motion,
   copy,
 }: {
   step: TimelineStep;
   extra: string | null;
+  motion: LineMotion;
   copy: CopyContext;
 }) {
   const { color } = useTheme();
@@ -158,6 +165,7 @@ function StepRow({
                 ? [strikethrough({ isActive: true, pattern: 'solid' }), tertiary]
                 : []),
               wraps,
+              ...(motion[line.kind] ?? []),
               accessibilityIdentifier(`bounty-status-line-${line.kind}`),
             ]}
           >
@@ -187,6 +195,8 @@ export function StatusTimeline({ detail, now }: { detail: StatusDetail; now: Dat
   const role = detail.viewerRole;
   const { steps } = timeline(detail, role);
   const changed = etaChangedText(detail, role, copy);
+  const flip = useEtaFlip(detail.status === 'en_route' ? detail.etaAt : null);
+  const motion: LineMotion = { eta: flip.eta, etaPrevious: flip.previous };
   return (
     <Section title={t('bounty.status.progress')}>
       {steps.map((step) => (
@@ -194,6 +204,7 @@ export function StatusTimeline({ detail, now }: { detail: StatusDetail; now: Dat
           key={step.id}
           step={step}
           extra={step.id === 'started' ? changed : null}
+          motion={step.id === 'started' ? motion : {}}
           copy={copy}
         />
       ))}

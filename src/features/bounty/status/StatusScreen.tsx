@@ -5,28 +5,33 @@ import { PlatformColor, StyleSheet, View } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
 import { NoticeCard } from '@/ui/NoticeCard';
-import { SheetFrame } from '@/ui/SheetFrame';
+import { SheetFrame, SheetLayer } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
 import { AddressSection } from '../shared/AddressSection';
 import { addressView } from '../shared/exactAddress';
+import { EtaSheet } from './EtaSheet';
 import { PinnedActions, StatusMenu } from './StatusActions';
 import { actionLocked } from './statusState';
 import { statusClock } from './statusCopy';
 import { StatusHeader, StatusTimeline } from './StatusTimeline';
 import { counterpartName, statusActions, type StatusAction } from './timeline';
+import { useHelperActions } from './useHelperActions';
 import { useStatus } from './useStatus';
+
+export type RoutedAction = Extract<StatusAction, 'confirm' | 'reportIssue' | 'cancel'>;
 
 export type StatusScreenProps = {
   id: string;
   onBack: () => void;
   onPay: (paymentId: string) => void;
-  onAction?: (action: Exclude<StatusAction, 'pay'>) => void;
+  onAction?: (action: RoutedAction) => void;
 };
 
 export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps) {
   const { t, language } = useI18n();
-  const { state, refresh } = useStatus(id);
+  const { state, refresh, act } = useStatus(id);
+  const helper = useHelperActions(id, act);
   const { load, action } = state;
 
   if (load.kind === 'failed' && load.reason === 'unavailable') {
@@ -45,11 +50,23 @@ export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps)
   const role = detail?.viewerRole ?? 'poster';
   const actions = detail ? statusActions(detail, role) : { pinned: [], menu: [] };
   const run = (chosen: StatusAction) => {
-    if (chosen === 'pay') {
-      if (detail?.payment) onPay(detail.payment.id);
-      return;
+    if (!detail) return;
+    switch (chosen) {
+      case 'start':
+        return helper.openEta('start', detail);
+      case 'changeEta':
+        return helper.openEta('change', detail);
+      case 'complete':
+      case 'completeAgain':
+        return void helper.complete(chosen);
+      case 'pay':
+        if (detail.payment) onPay(detail.payment.id);
+        return;
+      case 'confirm':
+      case 'reportIssue':
+      case 'cancel':
+        return onAction?.(chosen);
     }
-    onAction?.(chosen);
   };
   const retry = (busy: boolean) => ({
     label: t('bounty.status.retry'),
@@ -64,6 +81,7 @@ export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps)
       <SheetFrame
         testID="bounty-status"
         pinnedAbove="tabBar"
+        scrollsUnderActions
         onRefresh={refresh}
         notice={
           <>
@@ -107,6 +125,15 @@ export function StatusScreen({ id, onBack, onPay, onAction }: StatusScreenProps)
               testID="bounty-status-address"
             />
             <PinnedActions actions={actions.pinned} role={role} state={action} onAction={run} />
+            <SheetLayer>
+              <EtaSheet
+                request={helper.eta.request}
+                open={helper.eta.open}
+                name={detail.poster.name ?? t('bounty.post.unknownName')}
+                onConfirm={helper.confirmEta}
+                onClose={helper.closeEta}
+              />
+            </SheetLayer>
           </>
         ) : (
           <Section>

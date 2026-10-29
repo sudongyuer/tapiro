@@ -43,6 +43,7 @@ export type FixtureStatusOptions = {
   role: StatusRole;
   load: StatusLoad;
   waiver: StatusWaiver;
+  failFirst?: string;
   now: () => Date;
   writeDelayMs?: number;
   onCalled?: (calls: StatusCall[]) => void;
@@ -66,6 +67,7 @@ export function fixtureStatusOptions(
     role: pick(STATUS_ROLES, argument('uiVerifyBountyRole'), 'poster'),
     load: pick(STATUS_LOADS, argument('uiVerifyBountyStatusLoad'), 'ok'),
     waiver: pick(STATUS_WAIVERS, argument('uiVerifyBountyWaiver'), 'available'),
+    failFirst: argument('uiVerifyBountyStatusFail'),
     now,
   };
 }
@@ -241,6 +243,7 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
   const calls: StatusCall[] = [];
   let loads = 0;
   let nextFailure: NextFailure | null = null;
+  let failFirst = options.failFirst;
 
   function bounty(id: string): Bounty {
     const known = bounties.get(id);
@@ -299,6 +302,10 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
   ): Promise<ActionResult<T>> {
     record(name, bountyId, args);
     await pause(options.writeDelayMs ?? 0);
+    if (failFirst === name) {
+      failFirst = undefined;
+      return no('failed');
+    }
     const failure = consumeFailure();
     if (failure) return { ok: false, reason: failure };
     return run(bounty(bountyId), options.now().getTime());

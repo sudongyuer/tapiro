@@ -49,6 +49,22 @@ test('launch arguments pick the scenario, role, load and waiver', () => {
   });
 });
 
+test('a failFirst launch argument fails the first call of that RPC only, then it goes through', async () => {
+  const { service } = fixture({
+    ...fixtureStatusOptions(
+      (name) => (name === 'uiVerifyBountyStatusFail' ? 'complete_bounty' : undefined),
+      () => NOW,
+    ),
+    scenario: 'enRoute',
+    role: 'helper',
+  });
+  expect(await service.complete('b1')).toEqual({ ok: false, reason: 'failed' });
+  expect((await read(service)).status).toBe('en_route');
+  const again = await service.complete('b1');
+  expect(again.ok).toBe(true);
+  expect((await read(service)).status).toBe('done');
+});
+
 describe('scenarios', () => {
   test.each(STATUS_SCENARIOS.filter((scenario) => scenario !== 'open'))(
     '%s reads for both roles with the same status',

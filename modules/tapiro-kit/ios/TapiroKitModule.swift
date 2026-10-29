@@ -10,6 +10,8 @@ public final class TapiroKitModule: Module {
 
     View(TitleHaloView.self) {}
 
+    View(PinnedBarView.self)
+
     // Errors become a null result so JS gets a typed outcome instead of an untyped exception.
     AsyncFunction("qrImageFile") { (payload: String, points: Int) -> String? in
       guard !payload.isEmpty, points > 0, points <= 1024 else { return nil }

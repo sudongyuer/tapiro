@@ -3,7 +3,8 @@
 the line, unlike the ETA line above it), 阿杰 … 改了时间, the 点完成 step current, no pinned button and the ⋯ menu.
 Poster, done: 等你确认, the confirm step needs you with the auto-confirm date and 47–48 hours left, and 确认完成 and 有问题
 pinned below the list, at least 44 pt. Helper, disputed: 小林说有问题, the 完成 step needs you with the poster's reason
-and the 48-hour line, and 处理好了，再点完成 pinned. A first-load failure shows only the load-failed card, and 重试 brings
+and the 48-hour line, and 处理好了，再点完成 pinned. Scrolled to the end, the pay step and the rows below it stay above the
+pinned actions, which float over the list with the system scroll edge effect. A first-load failure shows only the load-failed card, and 重试 brings
 the timeline. A failed pull keeps the timeline under the refresh notice with the time of the data."""
 import re
 import sys
@@ -16,7 +17,8 @@ from ocr import lines  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/shared/', 'src/features/bounty/post/timeText.ts',
         'src/ui/NoticeCard.tsx', 'src/ui/PillButton.tsx',
-        'src/ui/SheetFrame.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'verification/ui/ocr.py']
+        'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
+        'verification/ui/ocr.py']
 SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
@@ -24,6 +26,7 @@ FIRST = ['-uiVerifyBountyStatus', 'enRouteChanged', '-uiVerifyBountyRole', 'post
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'enRouteChanged', '-uiVerifyBountyRole', 'poster']
 REASON = '快递盒子压坏了，里面的杯子碎了一个'
 CLOCK = r'\d{1,2}[:.]\d{2}'
+LIST_ROWS = ('bounty-status-step-', 'bounty-status-address')
 STRUCK_SHARE = 0.6
 INK_CONTRAST = 40
 
@@ -64,10 +67,15 @@ def longest_run(shot, box):
 
 
 def ocr_line(read, key):
-    pattern = re.compile(ui.pattern(key, time=CLOCK).replace('\\ ', r'\s*'))
+    pattern = re.compile(ui.pattern(key, time=CLOCK).replace('\\ ', r'[\s\-–]*'))
     found = [line for line in read if pattern.search(line['text'])]
     assert found, f'no line matching {pattern.pattern!r} in {[line["text"] for line in read]}'
     return found[0]
+
+
+def list_bottom(items):
+    rows = [i for i in items if (i.get('AXUniqueId') or '').startswith(LIST_ROWS)]
+    return max(rows, key=lambda i: i['frame']['y'] + i['frame']['height'])
 
 
 def assert_pinned_below(identifier, name):
@@ -75,9 +83,19 @@ def assert_pinned_below(identifier, name):
     button, form = by_id(items, identifier), by_id(items, 'bounty-status')
     assert button and form, f'{name} or the status list is missing'
     assert_touch_target(button, name)
-    assert button['frame']['y'] >= form['frame']['y'] + form['frame']['height'] - 1, \
-        f'{name} is inside the list, not pinned below it: {button["frame"]}'
-    return button
+    s = screen(items)
+    for _ in range(3):
+        ui.swipe((s['width'] / 2, s['height'] * 0.6), (s['width'] / 2, s['height'] * 0.2), 0.4)
+    ui.at_rest()
+    items = ui.read()
+    pinned = min(i['frame']['y'] for i in items if (i.get('AXUniqueId') or '').startswith('bounty-status-action-'))
+    last = list_bottom(items)
+    bottom = last['frame']['y'] + last['frame']['height']
+    assert bottom <= pinned, f'{last.get("AXUniqueId")} ends at {bottom}, under the pinned actions at {pinned}'
+    payment = by_id(items, 'bounty-status-step-payment')
+    assert payment and payment['frame']['y'] + payment['frame']['height'] <= pinned, \
+        f'the pay step is not above the pinned actions: {payment and payment["frame"]}, pinned at {pinned}'
+    return by_id(items, identifier)
 
 
 started = step('started')
@@ -112,11 +130,13 @@ confirm = step('confirmed')
 auto = ui.pattern('bounty.status.note.autoConfirmPoster_other', date='.+', count='4[78]')
 assert re.search(auto, confirm), f'no auto-confirm line in {confirm!r}'
 assert confirm.endswith(state('needsYou')), confirm
-first = assert_pinned_below('bounty-status-action-confirm', '确认完成')
-second = assert_pinned_below('bounty-status-action-reportIssue', '有问题')
+assert_pinned_below('bounty-status-action-confirm', '确认完成')
+assert_pinned_below('bounty-status-action-reportIssue', '有问题')
+items = ui.read()
+first, second = by_id(items, 'bounty-status-action-confirm'), by_id(items, 'bounty-status-action-reportIssue')
 assert first.get('AXLabel') == ui.t('bounty.status.action.confirm'), first.get('AXLabel')
 assert second.get('AXLabel') == ui.t('bounty.status.action.problem'), second.get('AXLabel')
-assert first['frame']['y'] < second['frame']['y'], '确认完成 is not above 有问题'
+assert first['frame']['y'] < second['frame']['y'], f'确认完成 is not above 有问题: {first["frame"]} {second["frame"]}'
 ui.at_rest()
 ui.capture('02-poster-done')
 

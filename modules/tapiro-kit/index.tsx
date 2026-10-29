@@ -1,4 +1,5 @@
 import { NativeModule, requireNativeModule, requireNativeView } from 'expo';
+import type { ReactNode } from 'react';
 import type { ViewProps } from 'react-native';
 
 export type PlacePoint = { latitude: number; longitude: number };
@@ -27,6 +28,12 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   endPlaceSearch(searchId: string): void;
   resolvePlace(searchId: string, suggestionId: string): Promise<PlaceResult>;
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
+}
+
+const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
+
+export function PinnedBar({ children }: { children: ReactNode }) {
+  return <NativePinnedBar>{children}</NativePinnedBar>;
 }
 
 const NativeTitleHalo = requireNativeView<ViewProps>('TapiroKit', 'TitleHaloView');

@@ -191,3 +191,13 @@ and the Live Activity (11), 先付 (12).
 - 2026-10-29, Task 6: the status screen shows times in device time (as the home live cards); the detail and applicant
   screens keep `malaysiaClock`. Open: the pinned action area cuts the list's last rows and square-clips its corners
   (screenshot 02-poster-done); fixed in Task 7.
+- 2026-10-29, Task 7: the pinned-action fix is opt-in (`SheetFrame scrollsUnderActions`, used by the status screen only):
+  the actions and the failure line render inside the kit's SwiftUI `PinnedBar`, an `RNHostView` in
+  `safeAreaBar(edge: .bottom)`, so the Form insets by the bar's real height and the system draws the bottom scroll edge
+  effect under it. The detail, applicant, post and pay sheets keep the old layout until their cases are rerun.
+- 2026-10-29, Task 7: the ETA strike motion uses SwiftUI's `animation` modifier (offset −8 pt + opacity, ease-out 220 ms,
+  skipped under Reduce Motion), not Reanimated: the timeline is SwiftUI Text in a Form, and an RN row in `RNHostView`
+  is measured at its unwrapped width (`src/ui/TaskCard.tsx`).
+- 2026-10-29, Task 7: helper actions run inside `StatusScreen` (they need `act`); the route keeps only navigation
+  callbacks, and `onAction` carries `confirm` / `reportIssue` / `cancel` until Task 8. The ETA sheet is `@expo/ui`
+  `BottomSheet` (medium detent, wheel `DatePicker`); in 改预计到达时间 「好」 stays disabled until the time changes.
