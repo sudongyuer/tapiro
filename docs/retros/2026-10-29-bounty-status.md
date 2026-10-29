@@ -26,7 +26,10 @@ status: running
    hold) with load average 124 while two Simulators booted. Tags `outside-load`, `screenshot-timeout` (second, after
    item 2 and Task 8's `bounty_select`). Candidate: the runner waits for load to settle after booting extra Simulators
    before handing out jobs.
-6. `bounty_select` times out on its `02-sending` screenshot (`simctl io screenshot` > 20 s while the clip records) on
-   every run on this branch at load 10–40, and identically with `ApplicantsScreen` and `applicantsView` restored to
-   `origin/main` (controller A/B, same build otherwise). Not caused by step 6; the other three applicant cases pass on one
-   Simulator. Tag `screenshot-timeout`. Open: find what in the hold's busy state stalls the screenshot (measure first).
+6. `bounty_select` timed out on its `02-sending` screenshot on every run, identically with the applicant screen restored
+   to `origin/main`; later `bounty_detail_outcome`, `bounty_select_race` and `bounty_detail` timed out too (screenshot,
+   swipe), all on `Tapiro Verify` (1F1AA09D). On `Tapiro Verify 2` all four passed at once; idle screenshots on the
+   stuck device took 0.2 s, so it stalls only under a run. The A/B blamed the code's absence correctly but the device was
+   never swapped, costing about an hour across Task 8, Task 9 and the controller. Tags `screenshot-timeout` (third),
+   `sick-simulator`. Candidate: the runner's breaker, on two command timeouts on one device, shuts that Simulator down,
+   reboots it, and retries the run once on another device, reporting which device stalled.
