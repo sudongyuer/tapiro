@@ -258,6 +258,19 @@ describe('fallbacks and hidden rows', () => {
     expect(item?.bounty.actionLabel).toBeUndefined();
   });
 
+  test('a start or arrival on another day carries its day', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterAssigned', 'posterEnRoute'],
+      failFirstLoad: false,
+      data: 'worst',
+      now: () => NOW,
+    });
+    const [assigned, enRoute] = await service.list();
+    const name = 'Muhammad Hafiz Haikal bin Mohd Yusof Ali';
+    expect(liveBountyItem(assigned, copy())?.sub).toBe(`${name}接了 · 明天 09:30 前出发`);
+    expect(liveBountyItem(enRoute, copy())?.sub).toBe(`${name}在路上 · 明天 09:30 到`);
+  });
+
   test('copy follows the language', async () => {
     const item = liveBountyItem(await base('posterApplicants'), copy([], 'en'));
     expect(item?.bounty.actionLabel).toBe(i18nFor('en').t('bounty.live.action.choose'));

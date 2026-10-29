@@ -87,8 +87,6 @@ export function BountyDetailScreen({
       <BlockMenu poster={poster} state={blocking.state} onAsk={blocking.ask} />
       <SheetFrame
         testID="bounty-detail"
-        pinnedAbove="tabBar"
-        scrollsUnderActions
         notice={
           <>
             {notice === 'notPending' ? (

@@ -442,6 +442,8 @@ const ms: typeof zhHans = {
       departByPoster: 'Janji bertolak sebelum {{time}}',
       late_one: 'Janji bertolak sebelum {{time}}, sudah lewat {{count}} minit',
       late_other: 'Janji bertolak sebelum {{time}}, sudah lewat {{count}} minit',
+      lateHours_one: 'Janji bertolak sebelum {{time}}, sudah lewat {{count}} jam',
+      lateHours_other: 'Janji bertolak sebelum {{time}}, sudah lewat {{count}} jam',
       eta: 'Dijangka tiba {{time}}',
       saidDone: '{{name}} kata sudah siap · {{time}}',
       autoConfirmPoster_one:

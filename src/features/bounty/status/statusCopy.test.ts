@@ -10,6 +10,7 @@ import {
   STATUS_SCENARIOS,
   type StatusScenario,
 } from './fixtureStatusService';
+import { WORST_REASON, type StatusData } from './fixtureStatusWorst';
 import {
   bareAmount,
   etaChangedText,
@@ -31,12 +32,17 @@ function copyFor(language: string) {
 
 const zh = copyFor('zh-Hans');
 
-async function detailOf(scenario: StatusScenario, role: StatusRole): Promise<StatusDetail> {
+async function detailOf(
+  scenario: StatusScenario,
+  role: StatusRole,
+  data: StatusData = 'demo',
+): Promise<StatusDetail> {
   const { service } = createFixtureStatusService({
     scenario,
     role,
     load: 'ok',
     waiver: 'available',
+    data,
     now: () => NOW,
   });
   const detail = await service.detail('b1');
@@ -119,5 +125,43 @@ describe('status copy', () => {
         }
       }
     }
+  });
+
+  test('a time on another day carries its day, a time today only the clock', async () => {
+    const assigned = await detailOf('assigned', 'helper', 'worst');
+    const depart = timeline(assigned, 'helper').steps[1].lines[0];
+    expect(lineText(depart, zh)).toMatch(/^约好 11月1日.* 09:30 前出发，出门时点下面$/);
+    const enRoute = await detailOf('enRouteChanged', 'poster', 'worst');
+    const lines = timeline(enRoute, 'poster').steps[1].lines.map((line) => lineText(line, zh));
+    expect(lines).toEqual(['预计 明天 09:30 到', '原来是 12:10']);
+  });
+
+  test('a start missed by hours counts hours, not minutes', async () => {
+    const late = await detailOf('assignedLate', 'poster', 'worst');
+    const line = timeline(late, 'poster').steps[1].lines[0];
+    expect(lineText(line, zh)).toMatch(/^约好 10月27日.* 12:00 前出发，已过 48 小时$/);
+    const demo = await detailOf('assignedLate', 'poster');
+    expect(lineText(timeline(demo, 'poster').steps[1].lines[0], zh)).toBe(
+      '约好 11:20 前出发，已过 40 分钟',
+    );
+  });
+
+  test('the worst case keeps the whole reason and both long names', async () => {
+    const detail = await detailOf('disputed', 'helper', 'worst');
+    const reason = timeline(detail, 'helper').steps[2].lines[0];
+    expect([...WORST_REASON].length).toBe(140);
+    expect(lineText(reason, zh)).toBe(`「${WORST_REASON}」`);
+    expect(summaryText(detail, 'helper', zh.t)).toBe(
+      'Wan Nurul Aisyah binti Wan Abdul Rahman说有问题',
+    );
+  });
+
+  test('a counterpart without a name reads as 对方', async () => {
+    const detail = await detailOf('enRoute', 'poster', 'unnamed');
+    expect(summaryText(detail, 'poster', zh.t)).toBe('对方在路上');
+    expect(stepText(timeline(detail, 'poster').steps[0], zh)).toBe('选好了对方');
+    const ms = copyFor('ms');
+    expect(summaryText(detail, 'poster', ms.t)).toBe('Pihak lain dalam perjalanan');
+    expect(stepText(timeline(detail, 'poster').steps[1], ms)).toBe('Pihak lain bertolak');
   });
 });

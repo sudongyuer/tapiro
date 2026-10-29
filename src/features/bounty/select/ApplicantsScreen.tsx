@@ -92,12 +92,7 @@ export function ApplicantsScreen({
   return (
     <>
       <CloseMenu shown={open} state={closing.state} onClose={() => void closing.close()} />
-      <SheetFrame
-        testID="bounty-applicants"
-        pinnedAbove="tabBar"
-        scrollsUnderActions
-        onRefresh={model.refresh}
-      >
+      <SheetFrame testID="bounty-applicants" onRefresh={model.refresh}>
         {view.body === 'done' ? (
           <ApplicantsHeader detail={detail} status={doneTitle(helper, t)} done />
         ) : (

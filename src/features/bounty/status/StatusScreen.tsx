@@ -81,8 +81,6 @@ export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
       <StatusMenu actions={actions.menu} role={role} state={action} onAction={run} />
       <SheetFrame
         testID="bounty-status"
-        pinnedAbove="tabBar"
-        scrollsUnderActions
         onRefresh={refresh}
         notice={
           <>

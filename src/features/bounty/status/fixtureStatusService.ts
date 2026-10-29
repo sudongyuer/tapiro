@@ -15,6 +15,18 @@ import {
   type StatusRole,
   type StatusService,
 } from './types';
+import {
+  STATUS_DATA,
+  WORST_ADDRESS,
+  WORST_HELPER,
+  WORST_PLACE,
+  WORST_POSTER,
+  WORST_REASON,
+  WORST_REWARD_SEN,
+  WORST_TITLE,
+  worstTimes,
+  type StatusData,
+} from './fixtureStatusWorst';
 
 export const STATUS_SCENARIOS = [
   'open',
@@ -44,6 +56,7 @@ export type FixtureStatusOptions = {
   role: StatusRole;
   load: StatusLoad;
   waiver: StatusWaiver;
+  data?: StatusData;
   failFirst?: string;
   charge?: PostCharge;
   paymentId?: string;
@@ -70,6 +83,7 @@ export function fixtureStatusOptions(
     role: pick(STATUS_ROLES, argument('uiVerifyBountyRole'), 'poster'),
     load: pick(STATUS_LOADS, argument('uiVerifyBountyStatusLoad'), 'ok'),
     waiver: pick(STATUS_WAIVERS, argument('uiVerifyBountyWaiver'), 'available'),
+    data: pick(STATUS_DATA, argument('uiVerifyBountyStatusData'), 'demo'),
     failFirst: argument('uiVerifyBountyStatusFail'),
     charge: pick(POST_CHARGES, argument('uiVerifyBountyCharge'), 'free'),
     paymentId: argument('uiVerifyBountyPaymentId'),
@@ -120,9 +134,18 @@ const event = (
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
-type Seed = { scenario: StatusScenario; charge: PostCharge; paymentId: string };
+type Seed = { scenario: StatusScenario; charge: PostCharge; paymentId: string; data: StatusData };
 
-function seedBounty(id: string, { scenario, charge, paymentId }: Seed, now: number): Bounty {
+function seedBounty(id: string, seed: Seed, now: number): Bounty {
+  const item = seedScenario(id, seed, now);
+  return seed.data === 'worst' ? worstTimes(item, seed.scenario, now) : item;
+}
+
+function seedScenario(
+  id: string,
+  { scenario, charge, paymentId, data }: Seed,
+  now: number,
+): Bounty {
   const published = event('published', now - 2 * HOUR_MS, 'poster', null, 'open');
   const selected = event('selected', now - HOUR_MS, 'poster', 'open', 'assigned');
   const base: Bounty = {
@@ -213,7 +236,7 @@ function seedBounty(id: string, { scenario, charge, paymentId }: Seed, now: numb
           started,
           completed(now - 30 * MINUTE_MS),
           event('problem_reported', now - 10 * MINUTE_MS, 'poster', 'done', 'disputed', {
-            reason: FIXTURE_REASON,
+            reason: data === 'worst' ? WORST_REASON : FIXTURE_REASON,
           }),
         ],
       };
@@ -247,7 +270,18 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
   const base = options.now().getTime();
   const { role } = options;
   const paymentId = options.paymentId ?? FIXTURE_PAYMENT_ID;
-  const seed: Seed = { scenario: options.scenario, charge: options.charge ?? 'free', paymentId };
+  const data = options.data ?? 'demo';
+  const seed: Seed = {
+    scenario: options.scenario,
+    charge: options.charge ?? 'free',
+    paymentId,
+    data,
+  };
+  const worst = data === 'worst';
+  const unnamed = (person: Person): Person =>
+    data === 'unnamed' ? { ...person, name: null } : person;
+  const poster = unnamed(worst ? WORST_POSTER : FIXTURE_POSTER);
+  const helper = unnamed(worst ? WORST_HELPER : FIXTURE_HELPER);
   const bounties = new Map<string, Bounty>();
   const calls: StatusCall[] = [];
   let loads = 0;
@@ -276,21 +310,25 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
   function toDetail(item: Bounty): StatusDetail {
     return {
       id: item.id,
-      title: '帮取快递',
+      title: worst ? WORST_TITLE : '帮取快递',
       description: '取件码 6-2231，放门口就好',
       category: 'pickup',
-      rewardSen: 800,
+      rewardSen: worst ? WORST_REWARD_SEN : 800,
       status: item.status,
       viewerRole: role,
-      place: { label: 'Sunway Geo 宿舍', latitude: 3.0645, longitude: 101.6094 },
+      place: {
+        label: worst ? WORST_PLACE : 'Sunway Geo 宿舍',
+        latitude: 3.0645,
+        longitude: 101.6094,
+      },
       distanceM: null,
-      address: 'Sunway Geo Residences, Block B, 23-07',
+      address: worst ? WORST_ADDRESS : 'Sunway Geo Residences, Block B, 23-07',
       startsAt: item.startsAt,
       endsAt: null,
       deadlineAt: null,
       expiresAt: iso(base + 7 * DAY_MS),
-      poster: FIXTURE_POSTER,
-      helper: item.status === 'open' ? null : FIXTURE_HELPER,
+      poster,
+      helper: item.status === 'open' ? null : helper,
       myApplication: null,
       etaAt: item.etaAt,
       previousEtaAt: item.previousEtaAt,

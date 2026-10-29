@@ -439,6 +439,8 @@ const en: typeof zhHans = {
       departByPoster: 'Agreed to leave by {{time}}',
       late_one: 'Agreed to leave by {{time}}, {{count}} minute ago',
       late_other: 'Agreed to leave by {{time}}, {{count}} minutes ago',
+      lateHours_one: 'Agreed to leave by {{time}}, {{count}} hour ago',
+      lateHours_other: 'Agreed to leave by {{time}}, {{count}} hours ago',
       eta: 'Arriving around {{time}}',
       saidDone: '{{name}} says it’s done · {{time}}',
       autoConfirmPoster_one:

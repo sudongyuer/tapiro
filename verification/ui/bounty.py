@@ -162,7 +162,8 @@ def assert_pinned(ui, identifier, name):
     assert button and sheet, f'{name} or the confirm sheet is missing'
     assert_touch_target(button, name)
     f, form = button['frame'], sheet['frame']
-    assert f['y'] >= form['y'] + form['height'] - 1, f'{name} is inside the form, not pinned below it: {f}'
+    assert f['y'] + f['height'] <= form['y'] + form['height'] + 1, f'{name} is below the sheet: {f}, sheet {form}'
+    assert f['y'] > form['y'] + form['height'] * 0.75, f'{name} is not pinned in the bottom part of the sheet: {f}'
     return button
 
 

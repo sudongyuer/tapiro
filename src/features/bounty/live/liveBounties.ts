@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import type { AccessoryItem, BountyCardDetail, BountyCardKind } from '@/lib/liveItems';
 
 import { timeParts } from '../post/timeText';
+import { sentence } from '../shared/sentence';
 import type { LiveAction, LiveRow, SeenCard } from './types';
 
 export type BountyLiveItem = AccessoryItem & { kind: BountyCardKind; bounty: BountyCardDetail };
@@ -20,14 +21,15 @@ const ACTION_LABEL = {
 
 type Line = { line: string; target: 'applicants' | 'status' | 'detail' };
 
-function clock(iso: string, copy: LiveCopy) {
-  return timeParts(iso, copy.language, copy.now).clock;
-}
-
 function when(iso: string, copy: LiveCopy) {
   const parts = timeParts(iso, copy.language, copy.now);
   const day = parts.day ? copy.t(`bounty.post.confirm.${parts.day}`) : parts.date;
   return `${day} ${parts.clock}`;
+}
+
+function clock(iso: string, copy: LiveCopy) {
+  const parts = timeParts(iso, copy.language, copy.now);
+  return parts.day === 'today' ? parts.clock : when(iso, copy);
 }
 
 function posterLine(row: LiveRow, name: string, copy: LiveCopy): Line | null {
@@ -136,12 +138,12 @@ export function liveBountyItem(row: LiveRow, copy: LiveCopy): BountyLiveItem | n
     category: row.category,
     rewardSen: row.rewardSen,
     counterpart: row.counterpartName,
-    line: found.line,
+    line: sentence(found.line),
     target: TARGETS[found.target](row.bountyId),
     ...(actionLabel ? { actionLabel } : {}),
     ...(card ? { oneTime: card, markSeen: () => copy.markSeen(row.bountyId, card) } : {}),
   };
-  return { id: row.bountyId, kind, title: row.title, sub: found.line, bounty };
+  return { id: row.bountyId, kind, title: row.title, sub: bounty.line, bounty };
 }
 
 export function liveBountyItems(rows: readonly LiveRow[], copy: LiveCopy) {

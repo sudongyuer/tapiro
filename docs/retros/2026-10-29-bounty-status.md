@@ -2,7 +2,7 @@
 branch: feat/bounty-status
 date: 2026-10-29
 pr: step 6
-status: running
+status: complete
 ---
 
 # Retro: bounty step 6, status screens and the live source
@@ -33,3 +33,22 @@ status: running
    never swapped, costing about an hour across Task 8, Task 9 and the controller. Tags `screenshot-timeout` (third),
    `sick-simulator`. Candidate: the runner's breaker, on two command timeouts on one device, shuts that Simulator down,
    reboots it, and retries the run once on another device, reporting which device stalled.
+
+## Outcome
+
+- Quality: four defects found by screenshot review or worst-case data rather than by assertions (pinned area cutting the
+  list, no bottom edge effect with the failure line over a row, times without a day, late counts in thousands of
+  minutes); all fixed with checks that can fail.
+- Time: about an hour went to one stuck Simulator (item 6), read three times as outside load or a known issue.
+- Interventions: none from the user after 「按推荐」; every task ran from the plan.
+
+## Actions
+
+| Candidate | Layer | Action |
+| --- | --- | --- |
+| 6 `sick-simulator` | runner | Follow-up: on two command timeouts on one device, reboot it and retry the run once on another device, naming the device in the report. Open as an issue with the PR. |
+| 5 `outside-load` | runner | Folded into 6: a device swap also covers the boot-time load spike. |
+| 4 `native-effect` | review | Kept as practice: the controller opens the screenshot of every native effect; no rule, it held this time. |
+| 1 `untested-seam` | brief | Second occurrence: a brief for two tasks sharing a new contract includes one consumer-side test. Added to the plan template note in this retro; promote to AGENTS.md on a third. |
+| 3 `prep-gap` | prep | Preparation maps every drawn card to the field that feeds it; first occurrence, recorded only. |
+| 2 `case-authoring` | none | Normal authoring churn. |

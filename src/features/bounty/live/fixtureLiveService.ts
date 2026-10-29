@@ -1,3 +1,13 @@
+import {
+  nextMorning,
+  STATUS_DATA,
+  WORST_HELPER,
+  WORST_POSTER,
+  WORST_REASON,
+  WORST_REWARD_SEN,
+  WORST_TITLE,
+  type StatusData,
+} from '../status/fixtureStatusWorst';
 import type { LiveBountyService, LiveRow, SeenCard } from './types';
 
 export const LIVE_FIXTURE_ROWS = [
@@ -25,6 +35,7 @@ export type SeenCall = { bountyId: string; card: SeenCard };
 export type FixtureLiveOptions = {
   rows: readonly LiveFixtureRow[];
   failFirstLoad: boolean;
+  data?: StatusData;
   now: () => Date;
   onSeen?: (calls: SeenCall[]) => void;
 };
@@ -46,6 +57,7 @@ export function fixtureLiveOptions(
   return {
     rows: fixtureLiveRowIds(argument('uiVerifyBountyLive')),
     failFirstLoad: argument('uiVerifyBountyLiveFail') === '1',
+    data: STATUS_DATA.find((value) => value === argument('uiVerifyBountyLiveData')) ?? 'demo',
     now,
   };
 }
@@ -70,6 +82,27 @@ const BASE: Omit<LiveRow, 'bountyId' | 'role' | 'kind' | 'status'> = {
 };
 
 const REASON = '快递盒子压坏了，里面的杯子碎了一个';
+
+function worstRow(row: LiveRow, now: Date): LiveRow {
+  const later = (at: string | null) =>
+    at ? new Date(nextMorning(now.getTime())).toISOString() : null;
+  const name = row.role === 'poster' ? WORST_HELPER.name : WORST_POSTER.name;
+  return {
+    ...row,
+    title: WORST_TITLE,
+    rewardSen: WORST_REWARD_SEN,
+    counterpartName: row.counterpartName ? name : null,
+    startsAt: row.startLate ? row.startsAt : later(row.startsAt),
+    etaAt: later(row.etaAt),
+    issueReason: row.issueReason ? WORST_REASON : null,
+  };
+}
+
+function fixtureData(row: LiveRow, data: StatusData, now: Date): LiveRow {
+  if (data === 'worst') return worstRow(row, now);
+  if (data === 'unnamed') return { ...row, counterpartName: null };
+  return row;
+}
 
 function fixtureRow(row: LiveFixtureRow, now: Date): LiveRow {
   const at = (ms: number) => new Date(now.getTime() + ms).toISOString();
@@ -197,7 +230,7 @@ export function createFixtureLiveService(options: FixtureLiveOptions): LiveBount
       if (options.failFirstLoad && loads === 1) throw new Error('fixture live items failed');
       const now = options.now();
       return options.rows
-        .map((row) => fixtureRow(row, now))
+        .map((row) => fixtureData(fixtureRow(row, now), options.data ?? 'demo', now))
         .filter((row) => !(row.card && seen.has(`${row.bountyId}:${row.card}`)));
     },
     async markSeen(bountyId, card) {

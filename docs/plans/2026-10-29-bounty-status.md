@@ -225,3 +225,20 @@ and the Live Activity (11), 先付 (12).
   看进度 appears once the loaded detail reads past `open`, so right after a select it follows the reload. The detail now
   uses `SheetFrame scrollsUnderActions`. New fixture arguments: `-uiVerifyDetail selectedCancelled`,
   `-uiVerifyPosted open|assigned|cancelled`; new case `bounty_applicants_progress`.
+- 2026-10-29, Task 10 (break-ui): the worst case uses the schema's limits, not RM 9999: `reward_sen` is at most 50000
+  (RM 500), titles 60 code points, display names 40, the issue reason 140. New fixture arguments
+  `-uiVerifyBountyStatusData demo|worst|unnamed` and `-uiVerifyBountyLiveData demo|worst|unnamed`
+  (`status/fixtureStatusWorst.ts`); new case `bounty_status_worst` (`LOCALES` with `ms`).
+- 2026-10-29, Task 10: broke and fixed: (1) every status and live-card time showed only the clock, so a departure three
+  days ahead, an ETA tomorrow or a step done yesterday read as today; `statusClock` and the live `clock` now add the day
+  (明天 / the date) when it is not today. (2) A start missed by two days read 已过 2880 分钟; from 60 minutes the late
+  line counts hours (`bounty.status.note.lateHours`, new key in three languages). (3) In `ms` (and `en`) a missing
+  counterpart started the sentence lower-case (「pihak lain dalam perjalanan」); status and live-card lines now start
+  upper-case (`shared/sentence.ts`). Long names, the 140-code-point reason, the 60-code-point title and RM 500 held up.
+  Open, not fixed: the header reward reads `RM500` in `ms` while the timeline and cards read `RM 500` (two formatters,
+  `ringgit` vs the `RM {{amount}}` copy); the same lower-case fallback name exists on the applicant, detail and
+  block screens; an ETA already past shows as 预计 … 到 with no late mark.
+- 2026-10-29, Task 10: the post confirm and pay sheets now use `SheetFrame scrollsUnderActions`, so every `SheetFrame`
+  user has the system-drawn pinned bar. `pay.assert_pinned` / `bounty.assert_pinned` check the button sits in the
+  bottom quarter inside the sheet (it is no longer below the form), `pay.scroll_to` stops at the top of the pinned
+  actions, and `bounty_post_no_balance` looks for buttons in the bar instead of under the form.

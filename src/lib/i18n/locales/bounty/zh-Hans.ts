@@ -430,6 +430,8 @@ export default {
       departByPoster: '约好 {{time}} 前出发',
       late_one: '约好 {{time}} 前出发，已过 {{count}} 分钟',
       late_other: '约好 {{time}} 前出发，已过 {{count}} 分钟',
+      lateHours_one: '约好 {{time}} 前出发，已过 {{count}} 小时',
+      lateHours_other: '约好 {{time}} 前出发，已过 {{count}} 小时',
       eta: '预计 {{time}} 到',
       saidDone: '{{name}}说做完了 · {{time}}',
       autoConfirmPoster_one: '你不处理的话，{{date}} 自动确认（还有 {{count}} 小时）',

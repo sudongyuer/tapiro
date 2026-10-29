@@ -6,15 +6,22 @@ def find(items, prefix):
     return [i for i in items if (i.get('AXUniqueId') or '').startswith(prefix)]
 
 
+PINNED = ('pay-mark-paid', 'pay-confirm', 'pay-not-received')
+
+
+def pinned_top(items, sheet):
+    tops = [i['frame']['y'] for i in items if (i.get('AXUniqueId') or '') in PINNED]
+    return min(tops) if tops else sheet['y'] + sheet['height']
+
+
 def scroll_to(ui, identifier, tries=6):
-    """Form rows below the fold are not in the accessibility tree until scrolled into view, and a row clipped by
-    the pinned bottom button is in the tree but a tap on it lands on the button."""
+    """Form rows below the fold are not in the accessibility tree until scrolled into view, and a row under the
+    pinned actions bar is in the tree but a tap on it lands on the bar."""
     for _ in range(tries):
         items = ui.read()
         found = by_id(items, identifier)
-        sheet = by_id(items, 'pay-sheet')
-        f = sheet['frame']
-        if found and found['frame']['y'] + found['frame']['height'] <= f['y'] + f['height']:
+        f = by_id(items, 'pay-sheet')['frame']
+        if found and found['frame']['y'] + found['frame']['height'] <= pinned_top(items, f):
             return found
         x = f['x'] + f['width'] / 2
         ui.swipe((x, f['y'] + f['height'] * 0.75), (x, f['y'] + f['height'] * 0.3), 0.4)
@@ -36,8 +43,8 @@ def assert_pinned(ui, identifier, name):
     assert button and sheet, f'{name} or the sheet is missing'
     assert_touch_target(button, name)
     f, form = button['frame'], sheet['frame']
-    assert f['y'] >= form['y'] + form['height'] - 1, f'{name} is inside the form, not pinned below it: {f}'
-    assert f['y'] > form['y'] + form['height'] * 0.75, f'{name} is not in the bottom part of the sheet: {f}'
+    assert f['y'] + f['height'] <= form['y'] + form['height'] + 1, f'{name} is below the sheet: {f}, sheet {form}'
+    assert f['y'] > form['y'] + form['height'] * 0.75, f'{name} is not pinned in the bottom part of the sheet: {f}'
     return button
 
 

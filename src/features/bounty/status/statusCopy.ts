@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { formatRinggitParts } from '@/lib/money';
 
 import { timeParts } from '../post/timeText';
+import { sentence } from '../shared/sentence';
 import { counterpartName, statusSummary, type TimelineLine, type TimelineStep } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
 
@@ -11,13 +12,15 @@ const HOUR_MS = 60 * MINUTE_MS;
 
 export type CopyContext = { t: TFunction; language: string; now: Date };
 
-export const statusClock = (iso: string, { language, now }: CopyContext) =>
-  timeParts(iso, language, now).clock;
-
 function statusWhen(iso: string, copy: CopyContext) {
   const parts = timeParts(iso, copy.language, copy.now);
   const day = parts.day ? copy.t(`bounty.post.confirm.${parts.day}`) : parts.date;
   return `${day} ${parts.clock}`;
+}
+
+export function statusClock(iso: string, copy: CopyContext) {
+  const parts = timeParts(iso, copy.language, copy.now);
+  return parts.day === 'today' ? parts.clock : statusWhen(iso, copy);
 }
 
 const shownName = (name: string | null | undefined, t: TFunction) =>
@@ -33,13 +36,17 @@ function lineCount(line: TimelineLine, now: Date) {
 
 export function lineText(line: TimelineLine, copy: CopyContext) {
   const { at, name, reason } = line.params;
-  const count = lineCount(line, copy.now);
-  return copy.t(line.key, {
-    name: shownName(name, copy.t),
-    reason: reason ?? '',
-    ...(at ? { time: statusClock(at, copy), date: statusWhen(at, copy) } : {}),
-    ...(count === undefined ? {} : { count }),
-  });
+  const minutes = lineCount(line, copy.now);
+  const hours = line.kind === 'late' && minutes !== undefined && minutes >= 60;
+  const count = hours ? Math.floor(minutes / 60) : minutes;
+  return sentence(
+    copy.t(hours ? 'bounty.status.note.lateHours' : line.key, {
+      name: shownName(name, copy.t),
+      reason: reason ?? '',
+      ...(at ? { time: statusClock(at, copy), date: statusWhen(at, copy) } : {}),
+      ...(count === undefined ? {} : { count }),
+    }),
+  );
 }
 
 export function bareAmount(sen: number, language: string) {
@@ -48,10 +55,12 @@ export function bareAmount(sen: number, language: string) {
 }
 
 export function stepText(step: TimelineStep, copy: CopyContext) {
-  return copy.t(step.key, {
-    name: shownName(step.params.name, copy.t),
-    amount: bareAmount(step.params.sen ?? 0, copy.language),
-  });
+  return sentence(
+    copy.t(step.key, {
+      name: shownName(step.params.name, copy.t),
+      amount: bareAmount(step.params.sen ?? 0, copy.language),
+    }),
+  );
 }
 
 export function etaChangedText(detail: StatusDetail, role: StatusRole, copy: CopyContext) {
@@ -60,17 +69,16 @@ export function etaChangedText(detail: StatusDetail, role: StatusRole, copy: Cop
   if (!changed) return null;
   const time = statusClock(changed.at, copy);
   if (changed.actor === role) return copy.t('bounty.eta.changedSelf', { time });
-  return copy.t('bounty.eta.changed', {
-    name: shownName(counterpartName(detail, role), copy.t),
-    time,
-  });
+  return sentence(
+    copy.t('bounty.eta.changed', { name: shownName(counterpartName(detail, role), copy.t), time }),
+  );
 }
 
 export function summaryText(detail: StatusDetail, role: StatusRole, t: TFunction) {
   if (detail.status === 'closed') return t('bounty.select.closed');
   const summary = statusSummary(detail, role);
   if (!summary) return null;
-  return t(summary.key, { name: shownName(summary.params.name, t) });
+  return sentence(t(summary.key, { name: shownName(summary.params.name, t) }));
 }
 
 export function stepLabel(step: TimelineStep, parts: (string | null)[], copy: CopyContext) {
