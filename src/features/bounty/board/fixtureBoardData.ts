@@ -233,6 +233,13 @@ const LONG_NAME = codePoints('Nur Aisyah Humaira binti Mohd Khairuddin ', 40);
 const LONG_PERSON = person('fixture-poster-long', LONG_NAME, 'tapir_friend');
 const LONG_DESCRIPTION = codePoints('包裹有点重，麻烦小心拿，到了楼下给我发消息，我下来接。', 500);
 
+export const WORST_CNY_REWARD: Money = { minor: 80000, currency: 'CNY' };
+export const WORST_CNY_REFERENCE: MoneyReference = {
+  minor: 48980,
+  currency: 'MYR',
+  rateDate: '2026-10-28',
+};
+
 const WORST: FixtureBounty[] = [
   bounty({
     id: 'fixture-worst-01',
@@ -264,7 +271,8 @@ const WORST: FixtureBounty[] = [
     id: 'fixture-worst-03',
     title: codePoints('帮我去 JPJ 排号续驾照，人很多可能要排三个小时，', 60),
     category: 'queue',
-    reward: { minor: 50000, currency: 'MYR' },
+    reward: WORST_CNY_REWARD,
+    reference: WORST_CNY_REFERENCE,
     placeLabel: codePoints('Jabatan Pengangkutan Jalan Padang Jawa, Shah Alam ', 80),
     meters: 18_400,
     bearing: 300,

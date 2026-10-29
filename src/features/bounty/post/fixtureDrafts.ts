@@ -1,7 +1,7 @@
 import type { PostDraft } from './types';
 
 export const FIXTURE_USER_ID = '00000000-0000-4000-8000-000000000001';
-export const FIXTURE_DRAFTS = ['none', 'demo', 'one', 'worst'] as const;
+export const FIXTURE_DRAFTS = ['none', 'demo', 'one', 'worst', 'worstCny'] as const;
 export type FixtureDraftName = (typeof FIXTURE_DRAFTS)[number];
 
 const HOUR_MS = 3_600_000;
@@ -68,13 +68,14 @@ export function fixtureDraft(name: string | undefined, id: string, now: Date): P
       updatedAt: now.toISOString(),
     };
   }
-  if (name === 'worst') {
+  if (name === 'worst' || name === 'worstCny') {
+    const cny = name === 'worstCny';
     return {
       id,
       title: WORST_TITLE,
       category: 'other',
-      rewardText: '500',
-      currency: 'MYR',
+      rewardText: cny ? '800' : '500',
+      currency: cny ? 'CNY' : 'MYR',
       description: WORST_DESCRIPTION,
       time: { kind: 'window', ...worstWindow(now) },
       place: null,

@@ -136,11 +136,11 @@ function malaysiaToday() {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
 }
 
-function fixtureRate(): FxRate {
+function fixtureRate(variant: FixtureVariant): FxRate {
   return {
     base: 'CNY',
     quote: 'MYR',
-    quotePerBase: 0.6122,
+    quotePerBase: variant === 'worst' ? 0.61224567 : 0.6122,
     rateDate: malaysiaToday(),
     source: 'bnm',
   };
@@ -153,7 +153,7 @@ export function createFixturePaymentService(
   const people = PEOPLE[options.variant];
   const items = ITEMS[options.variant];
   const currency = options.currency ?? 'MYR';
-  const locked = options.rate ? fixtureRate() : null;
+  const locked = options.rate ? fixtureRate(options.variant) : null;
   const priced = (kind: 'owe' | 'owed'): Money =>
     currency === 'MYR'
       ? { minor: items[kind][1], currency }

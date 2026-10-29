@@ -31,6 +31,6 @@ export function rateText(rate: FxRate, from: CurrencyCode, locale: string) {
   const one = new Intl.NumberFormat(locale).format(1);
   return {
     date,
-    rate: `${withSymbol(from, one)} = ${withSymbol(to, fixed.format(perUnit))}`,
+    rate: `${withSymbol(from, one)}\u00a0=\u00a0${withSymbol(to, fixed.format(perUnit))}`,
   };
 }

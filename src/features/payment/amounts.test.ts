@@ -107,10 +107,17 @@ describe('locked rate', () => {
   test('names the rate from the original currency with its date, per locale', () => {
     expect(rateText(RATE, 'CNY', 'zh-Hans')).toEqual({
       date: '2026年10月28日',
-      rate: '¥1 = RM 0.6494',
+      rate: '¥1\u00a0=\u00a0RM 0.6494',
     });
-    expect(rateText(RATE, 'MYR', 'en')?.rate).toBe('RM 1 = ¥1.5399');
+    expect(rateText(RATE, 'MYR', 'en')?.rate).toBe('RM 1\u00a0=\u00a0¥1.5399');
     expect(rateText(RATE, 'CNY', 'ms')?.date).toBe('28 Oktober 2026');
+  });
+
+  test('the rate equation never breaks across lines', () => {
+    for (const locale of ['zh-Hans', 'en', 'ms']) {
+      expect(rateText(RATE, 'CNY', locale)?.rate).not.toMatch(/ /);
+      expect(rateText(RATE, 'MYR', locale)?.rate).not.toMatch(/ /);
+    }
   });
 });
 

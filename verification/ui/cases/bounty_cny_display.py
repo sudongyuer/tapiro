@@ -1,8 +1,8 @@
 """A ¥ bounty keeps its own currency everywhere (65A). Home: the in-progress live card reads ¥50 and no RM. Board: the
 ¥50 card reads ¥50 with no 约 line, beside a ¥30 card and RM cards. Detail pushed from the ¥50 card: ¥50 with 约 RM 32.47
 on its own line below, read after the amount. The ¥30 bounty has no fresh rate: its detail shows ¥30 and no 约 line.
-Status, poster, assigned: ¥50 and 约 RM 32.47 below it. Once a payment exists the 约 line is gone (the markedPaid fixture), because
-the status read carries no locked rate, and the pay step reads ¥50."""
+Status, poster, assigned: ¥50 and 约 RM 32.47 below it. Once a payment exists (the markedPaid fixture) the 约 line shows the
+payment's locked conversion, RM 30.61 at ¥1 = RM 0.6122, instead of today's rate, and the pay step reads ¥50."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -23,6 +23,7 @@ NO_RATE_CARD = 'bounty-card-fixture-cny-02'
 YUAN = '¥50'
 NO_RATE_YUAN = '¥30'
 REFERENCE = 'RM 32.47'
+LOCKED = 'RM 30.61'
 
 ui = UI(*sys.argv[1:])
 
@@ -36,12 +37,12 @@ def assert_reward(prefix, amount):
     assert text == ui.t('bounty.post.confirm.rewardLabel', amount=amount), f'{prefix}-reward reads {text!r}'
 
 
-def assert_reference_below(prefix):
+def assert_reference_below(prefix, amount=REFERENCE):
     items = ui.read()
     reward = by_id(items, f'{prefix}-reward')
     reference = by_id(items, f'{prefix}-reference')
     assert reference, f'{prefix} shows no 约 line'
-    assert reference.get('AXLabel') == ui.t('bounty.reference', amount=REFERENCE), reference.get('AXLabel')
+    assert reference.get('AXLabel') == ui.t('bounty.reference', amount=amount), reference.get('AXLabel')
     assert reference['frame']['y'] >= reward['frame']['y'] + reward['frame']['height'] - 1, \
         f'the 约 line {reference["frame"]} is not below the amount {reward["frame"]}'
     assert items.index(reward) < items.index(reference), 'VoiceOver reaches the 约 line before the amount'
@@ -90,6 +91,6 @@ ui.capture('05-status')
 relaunch(ui, drop=HOME, add=[*status, '-uiVerifyBountyStatus', 'markedPaid'], ready='bounty-status-step-payment')
 assert_reward('bounty-status', YUAN)
 assert YUAN in label('bounty-status-step-payment'), label('bounty-status-step-payment')
-assert by_id(ui.read(), 'bounty-status-reference') is None, 'the status shows today\'s 约 line after the payment opened'
+assert_reference_below('bounty-status', LOCKED)
 ui.at_rest()
 ui.capture('06-status-paid')

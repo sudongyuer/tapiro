@@ -23,6 +23,8 @@ import {
   WORST_POSTER,
   WORST_REASON,
   WORST_TITLE,
+  isWorstData,
+  statusPayment,
   statusReference,
   statusReward,
   worstTimes,
@@ -139,7 +141,7 @@ type Seed = { scenario: StatusScenario; charge: PostCharge; paymentId: string; d
 
 function seedBounty(id: string, seed: Seed, now: number): Bounty {
   const item = seedScenario(id, seed, now);
-  return seed.data === 'worst' ? worstTimes(item, seed.scenario, now) : item;
+  return isWorstData(seed.data) ? worstTimes(item, seed.scenario, now) : item;
 }
 
 function seedScenario(
@@ -172,7 +174,7 @@ function seedScenario(
   const paid = (state: PaymentState, status: BountyStatus): Bounty => ({
     ...base,
     status,
-    payment: { id: paymentId, state },
+    payment: statusPayment(paymentId, state, data),
     events: [
       ...base.events,
       started,
@@ -237,7 +239,7 @@ function seedScenario(
           started,
           completed(now - 30 * MINUTE_MS),
           event('problem_reported', now - 10 * MINUTE_MS, 'poster', 'done', 'disputed', {
-            reason: data === 'worst' ? WORST_REASON : FIXTURE_REASON,
+            reason: isWorstData(data) ? WORST_REASON : FIXTURE_REASON,
           }),
         ],
       };
@@ -278,7 +280,7 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
     paymentId,
     data,
   };
-  const worst = data === 'worst';
+  const worst = isWorstData(data);
   const unnamed = (person: Person): Person =>
     data === 'unnamed' ? { ...person, name: null } : person;
   const poster = unnamed(worst ? WORST_POSTER : FIXTURE_POSTER);
@@ -431,7 +433,7 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
           return ok({ paymentId: item.payment.id });
         }
         if (item.status !== 'done' && item.status !== 'disputed') return no('changed');
-        item.payment = { id: paymentId, state: 'due' };
+        item.payment = statusPayment(paymentId, 'due', data);
         move(item, 'confirmed', event('confirmed', now, 'poster', item.status, 'confirmed'));
         return ok({ paymentId });
       }),

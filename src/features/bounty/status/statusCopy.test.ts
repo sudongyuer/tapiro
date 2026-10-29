@@ -174,7 +174,7 @@ describe('status copy', () => {
 });
 
 describe('header reward', () => {
-  test("a ¥ bounty shows today's RM reference until a payment exists, then nothing", async () => {
+  test("a ¥ bounty shows today's RM reference until a payment exists, then the locked one", async () => {
     const before = headerReward(await detailOf('done', 'poster', 'cny'), zh.t, zh.language);
     expect(before).toEqual({
       reward: '¥50',
@@ -185,8 +185,10 @@ describe('header reward', () => {
     expect(paid.reference).toBeNull();
     expect(headerReward({ ...paid, reference: REFERENCE }, zh.t, zh.language)).toMatchObject({
       reward: '¥50',
-      reference: null,
+      reference: '约 RM\u00a030.61',
     });
+    const unconverted = { ...paid, payment: { ...paid.payment!, converted: null } };
+    expect(headerReward(unconverted, zh.t, zh.language).reference).toBeNull();
   });
 
   test('the payment step names the amount in the reward currency', async () => {

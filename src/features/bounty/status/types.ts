@@ -1,3 +1,5 @@
+import type { Money } from '@/lib/money';
+
 import type { BountyDetail } from '../board/types';
 
 export const BOUNTY_STATUSES = [
@@ -53,6 +55,13 @@ export type BountyEvent = {
   reason: string | null;
 };
 
+export type StatusPayment = {
+  id: string;
+  state: PaymentState;
+  amount: Money;
+  converted: Money | null;
+};
+
 export type StatusDetail = Omit<BountyDetail, 'status' | 'viewerRole'> & {
   status: BountyStatus;
   viewerRole: StatusRole;
@@ -61,7 +70,7 @@ export type StatusDetail = Omit<BountyDetail, 'status' | 'viewerRole'> & {
   autoConfirmAt: string | null;
   startLate: boolean;
   issueReason: string | null;
-  payment: { id: string; state: PaymentState } | null;
+  payment: StatusPayment | null;
   charge: PostCharge | null;
   events: BountyEvent[];
 };

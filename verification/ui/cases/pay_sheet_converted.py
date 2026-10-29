@@ -32,7 +32,7 @@ assert phone.get('enabled') is not False, 'DuitNow is disabled despite the locke
 ui.capture('01-converted')
 ui.tap(phone['AXUniqueId'])
 footer = scroll_to(ui, 'pay-rate-footer')
-rate = r'¥1 = RM\s?0\.6122'
+rate = r'¥1\s=\sRM\s?0\.6122'
 assert re.search(ui.pattern('pay.sheet.rateFooter', date=r'.+', rate=rate), footer.get('AXLabel') or ''), footer.get('AXLabel')
 assert by_id(ui.read(), 'pay-fx-source'), 'BNM source link missing'
 ui.capture('02-rate-footer')

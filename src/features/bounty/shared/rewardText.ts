@@ -1,13 +1,8 @@
 import type { TFunction } from 'i18next';
 
-import { formatMoney, type Money, type MoneyReference } from '@/lib/money';
+import { formatMoney, type Money } from '@/lib/money';
 
-export function rewardText(
-  reward: Money,
-  reference: MoneyReference | null,
-  t: TFunction,
-  language: string,
-) {
+export function rewardText(reward: Money, reference: Money | null, t: TFunction, language: string) {
   const amount = formatMoney(reward, language, { whole: true });
   const shown = reference && reference.currency !== reward.currency ? reference : null;
   return {

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
+import { formatMoney } from '@/lib/money';
 
 import {
   createFixtureBoardService,
@@ -248,7 +249,10 @@ describe('worst', () => {
     expect(Math.max(...items.map((row) => codePoints(row.title)))).toBe(60);
     expect(Math.max(...items.map((row) => codePoints(row.placeLabel ?? '')))).toBe(80);
     expect(Math.max(...items.map((row) => codePoints(row.poster.name ?? '')))).toBe(40);
-    expect(new Set(items.map((row) => row.reward.minor))).toEqual(new Set([100, 50000]));
+    expect(new Set(items.map((row) => formatMoney(row.reward, 'en')))).toEqual(
+      new Set(['RM\u00a01.00', 'RM\u00a0500.00', '¥800.00']),
+    );
+    expect(items.find((row) => row.reward.currency === 'CNY')?.reference?.minor).toBe(48980);
     expect(items.map((row) => row.distanceM)).toContain(100);
     expect(items.map((row) => row.distanceM)).toContain(18_400);
     expect(items.some((row) => row.poster.tier === 'tapir_friend')).toBe(true);

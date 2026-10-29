@@ -23,7 +23,7 @@ assert re.search(r'¥\s?24\.51', rows['alipay']) and re.search(r'¥\s?24\.51', r
 assert re.search(r'RM\s?15\.00', rows['duitnow_qr']), rows
 assert '¥' not in (amount.get('AXLabel') or ''), 'the header shows a converted amount'
 footer = by_id(items, 'pay-rate-footer')
-assert footer and re.search(ui.pattern('pay.sheet.rateFooter', date=r'.+', rate=r'RM\s?1 = ¥1\.6335'), footer.get('AXLabel') or ''), footer
+assert footer and re.search(ui.pattern('pay.sheet.rateFooter', date=r'.+', rate=r'RM\s?1\s=\s¥1\.6335'), footer.get('AXLabel') or ''), footer
 assert by_id(items, 'pay-fx-source'), 'BNM source link missing'
 ui.capture('01-pick')
 alipay = next(i for i in items if (i.get('AXUniqueId') or '').startswith('pay-method-alipay'))

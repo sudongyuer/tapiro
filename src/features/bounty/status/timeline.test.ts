@@ -275,7 +275,7 @@ describe('statusActions', () => {
 
   test('a disputed payment lets both sides open the pay sheet', async () => {
     const detail = await detailOf('confirmed', 'helper');
-    const disputed = { ...detail, payment: { id: 'p', state: 'disputed' as const } };
+    const disputed = { ...detail, payment: { ...detail.payment!, state: 'disputed' as const } };
     expect(statusActions(disputed, 'helper').pinned).toEqual(['pay']);
     expect(statusActions(disputed, 'poster').pinned).toEqual(['pay']);
   });

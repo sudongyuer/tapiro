@@ -41,3 +41,7 @@ status: running
    test's spawns.
 7. The bounty locale files outgrew the new size check on the first merge, as predicted in the self-heal retro;
    split the step-6 sections into `locales/bounty/progress/`. Tag `size-limit` (second).
+8. Task 6's break-ui run found the rate footer splitting 「¥1 =」 from 「RM 0.6122」 across lines in ms, while
+   `pay_sheet_converted` passed in ms: the label check reads the AX text, which has no line breaks. Fixed with
+   non-breaking spaces around 「=」 and a unit test that fails on a plain space in the equation. Tag `vacuous-check`
+   (second, after 4). Candidate: a text that must stay on one line gets a unit check on its spaces, not a label check.

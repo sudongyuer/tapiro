@@ -84,5 +84,10 @@ export function stepLabel(step: TimelineStep, parts: (string | null)[], copy: Co
 }
 
 export function headerReward(detail: StatusDetail, t: TFunction, language: string) {
-  return rewardText(detail.reward, detail.payment ? null : detail.reference, t, language);
+  return rewardText(
+    detail.reward,
+    detail.payment ? detail.payment.converted : detail.reference,
+    t,
+    language,
+  );
 }

@@ -108,6 +108,14 @@ describe('scenarios', () => {
     expect((await read(fixture({ scenario: 'confirmed' }).service)).payment).toEqual({
       id: FIXTURE_PAYMENT_ID,
       state: 'due',
+      amount: { minor: 800, currency: 'MYR' },
+      converted: null,
+    });
+    expect(
+      (await read(fixture({ scenario: 'confirmed', data: 'cny' }).service)).payment,
+    ).toMatchObject({
+      amount: { minor: 5000, currency: 'CNY' },
+      converted: { minor: 3061, currency: 'MYR' },
     });
     expect((await read(fixture({ scenario: 'markedPaid' }).service)).payment?.state).toBe(
       'marked_paid',
@@ -204,7 +212,7 @@ describe('poster transitions', () => {
       ok: true,
       value: { paymentId: FIXTURE_PAYMENT_ID },
     });
-    expect((await read(service)).payment).toEqual({ id: FIXTURE_PAYMENT_ID, state: 'due' });
+    expect((await read(service)).payment).toMatchObject({ id: FIXTURE_PAYMENT_ID, state: 'due' });
   });
 
   test('a blank or 141-character reason is invalid', async () => {
