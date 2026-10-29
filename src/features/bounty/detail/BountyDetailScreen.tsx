@@ -121,11 +121,7 @@ export function BountyDetailScreen({ id, userId, onApply, onGone, onBlocked, onB
           <>
             <DetailInfo view={view} copy={copy} />
             {view.action === 'selected' ? (
-              <SelectedAddress
-                name={copy.name}
-                address={view.address}
-                onRetry={() => void retry()}
-              />
+              <SelectedAddress name={copy.name} address={view.address} />
             ) : null}
             <DetailDescription text={view.description} />
             <DetailActions

@@ -364,7 +364,6 @@ const en: typeof zhHans = {
       notPending:
         'This applicant withdrew or can’t be chosen. The list is refreshed. Choose again.',
       noPayee: 'This applicant has no payment method right now, so you can’t choose them yet.',
-      closed: 'This bounty is closed, so you can’t choose anyone.',
     },
     race: {
       title: 'Already chosen',
@@ -390,7 +389,6 @@ const en: typeof zhHans = {
     a11y: {
       row: '{{name}}, {{tier}}, {{meta}}',
       note: 'Note: {{note}}',
-      selected: 'Selected',
     },
   },
 };

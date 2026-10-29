@@ -1,17 +1,16 @@
 import type { TFunction } from 'i18next';
 
 import type { Person } from '../board/types';
-import type { SendFailure, StatusLine } from './selectState';
+import type { NoticeReason } from './applicantsView';
+import type { StatusLine } from './selectState';
 
 const FAILURE_KEYS = {
   failed: 'bounty.select.failure.failed',
   notPending: 'bounty.select.failure.notPending',
   noPayee: 'bounty.select.failure.noPayee',
-  closed: 'bounty.select.failure.closed',
-  gone: 'bounty.detail.gone',
-} as const satisfies Record<SendFailure, string>;
+} as const satisfies Record<NoticeReason, string>;
 
-export const selectFailureCopy = (reason: SendFailure, t: TFunction) => t(FAILURE_KEYS[reason]);
+export const selectFailureCopy = (reason: NoticeReason, t: TFunction) => t(FAILURE_KEYS[reason]);
 
 export const helpedLine = (helpedCount: number, t: TFunction) =>
   helpedCount === 0

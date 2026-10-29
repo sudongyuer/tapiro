@@ -269,7 +269,7 @@ const ms: typeof zhHans = {
     back: 'Kembali',
     notSelected: {
       title: 'Tidak dipilih kali ini',
-      body: '{{name}} memilih orang lain. Permohonan anda sudah ditutup dan tidak menjejaskan kebolehpercayaan anda.',
+      body: '{{name}} memilih orang lain. Ini tidak menjejaskan kebolehpercayaan anda.',
       yourNote: 'Anda tulis',
       browse: 'Lihat Ganjaran Lain Berdekatan',
     },
@@ -367,7 +367,6 @@ const ms: typeof zhHans = {
       notPending:
         'Pemohon ini sudah menarik balik atau tidak boleh dipilih. Senarai sudah dimuat semula. Pilih sekali lagi.',
       noPayee: 'Pemohon ini tiada cara bayaran buat masa ini, jadi belum boleh dipilih.',
-      closed: 'Ganjaran ini sudah ditutup, jadi tiada sesiapa boleh dipilih.',
     },
     race: {
       title: 'Sudah dipilih',
@@ -393,7 +392,6 @@ const ms: typeof zhHans = {
     a11y: {
       row: '{{name}}, {{tier}}, {{meta}}',
       note: 'Nota: {{note}}',
-      selected: 'Dipilih',
     },
   },
 };

@@ -13,20 +13,11 @@ import { AddressSection } from '../shared/AddressSection';
 const HEAD = 32;
 const NOTE_LINES = 3;
 
-export function SelectedAddress({
-  name,
-  address,
-  onRetry,
-}: {
-  name: string;
-  address: string | null;
-  onRetry: () => void;
-}) {
+export function SelectedAddress({ name, address }: { name: string; address: string | null }) {
   return (
     <AddressSection
       address={addressView({ kind: 'ready', detail: { address } })}
       name={name}
-      onRetry={onRetry}
       testID="bounty-detail-address"
     />
   );

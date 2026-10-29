@@ -19,8 +19,6 @@ test('each failure reads its own copy', () => {
     failed: 'bounty.select.failure.failed',
     notPending: 'bounty.select.failure.notPending',
     noPayee: 'bounty.select.failure.noPayee',
-    closed: 'bounty.select.failure.closed',
-    gone: 'bounty.detail.gone',
   } as const;
   for (const [reason, key] of Object.entries(keys) as [keyof typeof keys, string][]) {
     expect(selectFailureCopy(reason, zh)).toBe(zh(key as never));
@@ -28,7 +26,7 @@ test('each failure reads its own copy', () => {
   }
   expect(
     new Set(Object.keys(keys).map((reason) => selectFailureCopy(reason as never, zh))).size,
-  ).toBe(5);
+  ).toBe(3);
 });
 
 test('zero helps reads as never helped; otherwise the count with plurals', () => {

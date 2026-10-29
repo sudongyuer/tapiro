@@ -25,7 +25,7 @@ function AddressRow({
   testID,
 }: {
   address: AddressView;
-  onRetry: () => void;
+  onRetry?: () => void;
   testID: string;
 }) {
   const { t } = useI18n();
@@ -48,12 +48,14 @@ function AddressRow({
         <Text modifiers={[secondary, fill, wraps, accessibilityIdentifier(`${testID}-failed`)]}>
           {t('bounty.address.failed')}
         </Text>
-        <Button
-          label={t('bounty.address.retry')}
-          onPress={onRetry}
-          testID={`${testID}-retry`}
-          modifiers={[frame({ minHeight: vars['--touch-min'] })]}
-        />
+        {onRetry ? (
+          <Button
+            label={t('bounty.address.retry')}
+            onPress={onRetry}
+            testID={`${testID}-retry`}
+            modifiers={[frame({ minHeight: vars['--touch-min'] })]}
+          />
+        ) : null}
       </HStack>
     );
   }
@@ -81,7 +83,7 @@ export function AddressSection({
 }: {
   address: AddressView;
   name: string | null;
-  onRetry: () => void;
+  onRetry?: () => void;
   testID: string;
   children?: ReactNode;
 }) {
