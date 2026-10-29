@@ -99,7 +99,7 @@ describe('block from the applicant list', () => {
     const dispatch = (event: SelectEvent) => {
       select.state = selectReducer(select.state, event);
     };
-    events.onBlocked((id) => dispatch({ type: 'blocked', id }));
+    events.onBlocked((id) => dispatch({ type: 'blocked', id, request: 2 }));
     const flow = createBlockFlow({
       service: { block: () => answers.next() },
       blocked: events.blocked,

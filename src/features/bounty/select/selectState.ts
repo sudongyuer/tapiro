@@ -38,7 +38,7 @@ export type SelectEvent =
   | { type: 'holdCompleted' }
   | { type: 'answered'; outcome: SelectOutcome; winner?: Person | null }
   | { type: 'helperKnown'; helperId: string }
-  | { type: 'blocked'; id: string }
+  | { type: 'blocked'; id: string; request: number }
   | { type: 'raceAcknowledged' };
 
 export const INITIAL_SELECT: SelectState = {
@@ -136,14 +136,11 @@ export function selectReducer(state: SelectState, event: SelectEvent): SelectSta
     case 'helperKnown':
       return settled(state, event.helperId);
     case 'blocked': {
+      const request = Math.max(state.request, event.request);
       const chosen = state.chosen === event.id ? null : state.chosen;
-      if (state.list.kind !== 'ready')
-        return chosen === state.chosen ? state : { ...state, chosen };
+      if (state.list.kind !== 'ready') return { ...state, request, chosen };
       const applicants = state.list.applicants.filter((applicant) => applicant.id !== event.id);
-      if (applicants.length === state.list.applicants.length && chosen === state.chosen) {
-        return state;
-      }
-      return { ...state, list: { ...state.list, applicants }, chosen };
+      return { ...state, request, list: { ...state.list, applicants }, chosen };
     }
     case 'raceAcknowledged':
       if (state.send.kind !== 'raced') return state;

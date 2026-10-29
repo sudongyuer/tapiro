@@ -158,12 +158,35 @@ describe('choosing', () => {
   });
 
   test('blocked removes the row and clears the check only when it was chosen', () => {
-    const other = run(chosen('jie'), { type: 'blocked', id: 'hana' });
+    const other = run(chosen('jie'), { type: 'blocked', id: 'hana', request: 9 });
     expect(other.list).toMatchObject({ applicants: [JIE, AIMAN] });
     expect(other.chosen).toBe('jie');
-    const same = run(chosen('hana'), { type: 'blocked', id: 'hana' });
+    const same = run(chosen('hana'), { type: 'blocked', id: 'hana', request: 9 });
     expect(same.list).toMatchObject({ applicants: [JIE, AIMAN] });
     expect(same.chosen).toBeNull();
+  });
+
+  test('a list answer requested before the block is dropped', () => {
+    const refreshing = run(ready(JIE, HANA, AIMAN), { type: 'loadStarted', request: 2 });
+    const blocked = run(refreshing, { type: 'blocked', id: 'hana', request: 3 });
+    const stale = run(blocked, {
+      type: 'loaded',
+      request: 2,
+      applicants: [JIE, HANA, AIMAN],
+      at: '10:05',
+    });
+    expect(stale.list).toMatchObject({ applicants: [JIE, AIMAN], loadedAt: '10:00' });
+    const next = run(
+      stale,
+      { type: 'loadStarted', request: 4 },
+      {
+        type: 'loaded',
+        request: 4,
+        applicants: [JIE],
+        at: '10:06',
+      },
+    );
+    expect(next.list).toMatchObject({ applicants: [JIE], loadedAt: '10:06' });
   });
 });
 
@@ -318,7 +341,11 @@ describe('sending', () => {
 
 describe('a block and a send meeting', () => {
   test('a row removed by a confirmed block can never be sent', () => {
-    const after = run(chosen('hana'), { type: 'blocked', id: 'hana' }, { type: 'holdCompleted' });
+    const after = run(
+      chosen('hana'),
+      { type: 'blocked', id: 'hana', request: 9 },
+      { type: 'holdCompleted' },
+    );
     expect(after.chosen).toBeNull();
     expect(after.send).toEqual({ kind: 'idle' });
     const again = run(after, { type: 'chose', id: 'hana' });
@@ -326,14 +353,14 @@ describe('a block and a send meeting', () => {
   });
 
   test('a block confirmed while a send is in flight leaves the send untouched', () => {
-    const during = run(sending('hana'), { type: 'blocked', id: 'hana' });
+    const during = run(sending('hana'), { type: 'blocked', id: 'hana', request: 9 });
     expect(during.send).toEqual({ kind: 'sending', applicantId: 'hana' });
     const answered = run(during, { type: 'answered', outcome: { ok: true, helperId: 'hana' } });
     expect(answered.send).toEqual({ kind: 'selected', helperId: 'hana' });
   });
 
   test('a block confirmed for another row during a send keeps the chosen row', () => {
-    const during = run(sending('jie'), { type: 'blocked', id: 'aiman' });
+    const during = run(sending('jie'), { type: 'blocked', id: 'aiman', request: 9 });
     expect(during.send).toEqual({ kind: 'sending', applicantId: 'jie' });
     expect(during.chosen).toBe('jie');
   });

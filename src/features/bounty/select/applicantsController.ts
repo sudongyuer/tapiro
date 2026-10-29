@@ -158,7 +158,7 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
       dispatch({ type: 'raceAcknowledged' });
     },
     async blocked(id: string) {
-      dispatch({ type: 'blocked', id });
+      dispatch({ type: 'blocked', id, request: ++request });
       await applicants.after();
     },
   };
