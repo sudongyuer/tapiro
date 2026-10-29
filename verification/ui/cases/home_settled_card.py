@@ -24,7 +24,7 @@ DEPS = [
     'verification/ui/bounty.py',
 ]
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySettled', 'one', '-uiVerifySignedIn', 'onboarded']
+ARGS = ['-uiVerifySettled', 'one', '-uiVerifyShellFeed', 'none', '-uiVerifySignedIn', 'onboarded']
 COLLECTED_KEY = 'uiVerifySettledCollected'
 
 ui = UI(*sys.argv[1:])
@@ -59,7 +59,8 @@ def assert_card(card, button, name):
 
 def no_accessory_on_me(more_than=None):
     ui.tap('tab-me')
-    found = ui.settled(lambda items: items if by_id(items, 'tab-me') else None, '我的 never settled')
+    ui.settled(lambda items: by_id(items, 'tab-me'), '我的 never settled')
+    found = ui.read()
     shown = accessory(found)
     if more_than is None:
         assert shown is None, f'the accessory shows for a settled card: {shown and shown.get("AXLabel")}'
@@ -95,7 +96,7 @@ assert by_id(ui.read(), 'live-card-settled') is None, 'the collected card is sti
 ui.wait(lambda items: collected() == ['fixture-settled-0'] or None, f'collects are {collected()}', timeout=15)
 ui.snap('03-collected')
 
-relaunch(ui, drop=['-uiVerifySettled', 'one'], add=['-uiVerifySettled', 'behind', '-uiVerifyShellFeed', 'oweMoney'])
+relaunch(ui, drop=ARGS[:4], add=['-uiVerifySettled', 'behind', '-uiVerifyShellFeed', 'oweMoney'])
 ui.settled(lambda items: by_id(items, 'home-stage-urgent'), 'the urgent stage never settled')
 ui.settled(lambda items: by_id(items, 'live-card-oweMoney'), 'the 欠钱 card is not in front')
 items = ui.read()
@@ -105,14 +106,15 @@ assert by_id(items, 'live-card-settled') is None, 'the settled card is in front 
 assert by_id(items, 'settled-card-collect') is None, 'the strip exposes its 收进贴纸本 button'
 ui.snap('04-behind')
 no_accessory_on_me(more_than=0)
-ui.tap('live-card-peek-1')
+peek = ui.settled(lambda items: by_id(items, 'live-card-peek-1'), 'the strip never settled')['frame']
+ui.tap_point(peek['x'] + peek['width'] / 2, peek['y'] + peek['height'] - 8)
 ui.wait_label('live-cards-toggle', lambda label: label == ui.t('home.stack.collapse'), 'the strip did not fan out')
 card = ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the settled card did not fan out')
 assert card.get('AXLabel') == card_label('帮买奶茶', 'Lily', 'RM 8'), card.get('AXLabel')
 assert_card(card, ui.element('settled-card-collect'), 'behind')
 ui.snap('06-behind-fanned')
 
-relaunch(ui, drop=['-uiVerifySettled', 'behind', '-uiVerifyShellFeed', 'oweMoney'], add=['-uiVerifySettled', 'two'])
+relaunch(ui, drop=ARGS[:2], add=['-uiVerifySettled', 'two'])
 stage = ui.settled(lambda items: by_id(items, 'home-stage-live'), 'the live stage never settled')
 assert stage.get('AXLabel') == ui.t('home.say.settled', name='Lily'), stage.get('AXLabel')
 card = ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the first settled card is not in front')
@@ -131,7 +133,7 @@ ui.wait(lambda items: collected() == ['fixture-settled-0'] or None, f'collects a
 assert by_id(ui.read(), 'live-cards-toggle') is None, 'the toggle stayed with one card left'
 ui.snap('08-two-one-left')
 
-relaunch(ui, drop=['-uiVerifySettled', 'two'], add=['-uiVerifySettled', 'worst'])
+relaunch(ui, drop=ARGS[:2], add=['-uiVerifySettled', 'worst'])
 card = ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the worst settled card is not in front')
 assert_card(card, ui.element('settled-card-collect'), 'worst')
 toggle = ui.element('live-cards-toggle')
