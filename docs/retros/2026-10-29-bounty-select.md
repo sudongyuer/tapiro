@@ -1,8 +1,8 @@
 ---
 branch: feat/bounty-select
 date: 2026-10-29
-pr:
-status: running
+pr: step 5
+status: complete before PR
 ---
 
 # Retro: bounty step 5, applicant selection
@@ -42,3 +42,9 @@ Started overnight 2026-10-28 with the user's advance approval of every recommend
    so each one stopped for approval. The cause was the controller's instruction to lint only changed files without a
    tool to do it. Tag `unparseable-shell`. Done: `bun run lint:changed <base>` (scripts/lint-changed.mjs) and AGENTS.md
    points to it; dispatch prompts use it from now on.
+
+## Landed
+
+- Item 8: `bun run lint:changed <base>` and the AGENTS.md lint rule (17e3b70).
+- Item 3: one Simulator-using agent at a time; the runner owning several Simulators is the next PR (user choice A).
+- Items 1, 2, 4, 5 and 7: kept as candidates; none repeated a third time.
