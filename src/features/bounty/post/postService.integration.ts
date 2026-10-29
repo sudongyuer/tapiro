@@ -3,13 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 
 import { createSupabasePostService } from './postService';
 import type { PublishArgs } from './types';
+import { localSupabase } from '../../../../scripts/local-supabase';
 
-const env = Bun.spawnSync(['supabase', 'status', '-o', 'env']).stdout.toString();
-const value = (key: string) => {
-  const found = env.match(new RegExp(`^${key}="([^"]+)"`, 'm'))?.[1];
-  if (!found) throw new Error('Local Supabase is not running');
-  return found;
-};
+const value = localSupabase;
 
 const admin = createClient(value('API_URL'), value('SERVICE_ROLE_KEY'), {
   auth: { persistSession: false },
