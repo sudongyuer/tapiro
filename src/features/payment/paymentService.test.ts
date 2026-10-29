@@ -3,8 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
   createSupabasePaymentService,
-  toFxRate,
   toPayment,
+  toPaymentDetail,
   type PaymentRow,
 } from './paymentService';
 import { NoRateError } from './types';
@@ -74,23 +74,76 @@ describe('payment rows', () => {
   });
 });
 
-describe('fx rates', () => {
-  test('maps a rate row and rejects an unknown pair', () => {
-    const rate = {
-      base: 'CNY',
-      quote: 'MYR',
-      quote_per_base: '0.61220000',
-      rate_date: '2026-10-23',
-      source: 'bnm',
-    };
-    expect(toFxRate(rate)).toEqual({
-      base: 'CNY',
-      quote: 'MYR',
-      quotePerBase: 0.6122,
-      rateDate: '2026-10-23',
-      source: 'bnm',
+describe('payment detail', () => {
+  const detail = {
+    id: 'payment-1',
+    amountMinor: 5000,
+    currency: 'CNY',
+    rate: { base: 'CNY', quote: 'MYR', quotePerBase: 0.6494, date: '2026-10-28', source: 'bnm' },
+    paidMinor: null,
+    paidCurrency: null,
+    methods: [
+      { method: 'm-1', type: 'duitnow_id', currency: 'MYR', amountMinor: 3247 },
+      { method: 'm-2', type: 'alipay', currency: 'CNY', amountMinor: 5000 },
+    ],
+  };
+
+  test('maps the locked rate and each method amount', () => {
+    expect(toPaymentDetail(detail)).toEqual({
+      rate: {
+        base: 'CNY',
+        quote: 'MYR',
+        quotePerBase: 0.6494,
+        rateDate: '2026-10-28',
+        source: 'bnm',
+      },
+      methods: [
+        {
+          methodId: 'm-1',
+          type: 'duitnow_id',
+          currency: 'MYR',
+          amount: { minor: 3247, currency: 'MYR' },
+        },
+        {
+          methodId: 'm-2',
+          type: 'alipay',
+          currency: 'CNY',
+          amount: { minor: 5000, currency: 'CNY' },
+        },
+      ],
     });
-    expect(toFxRate({ ...rate, base: 'USD' })).toBeNull();
+  });
+
+  test('no locked rate leaves the converted method without an amount', () => {
+    const parsed = toPaymentDetail({
+      ...detail,
+      rate: null,
+      methods: [{ method: 'm-1', type: 'duitnow_id', currency: 'MYR', amountMinor: null }],
+    });
+    expect(parsed).toEqual({
+      rate: null,
+      methods: [{ methodId: 'm-1', type: 'duitnow_id', currency: 'MYR', amount: null }],
+    });
+  });
+
+  test('rejects an unknown currency or method type instead of guessing', () => {
+    const method = detail.methods[0];
+    expect(toPaymentDetail({ ...detail, methods: [{ ...method, currency: 'USD' }] })).toBeNull();
+    expect(toPaymentDetail({ ...detail, methods: [{ ...method, type: 'paypal' }] })).toBeNull();
+    expect(toPaymentDetail({ ...detail, rate: { ...detail.rate, base: 'USD' } })).toBeNull();
+    expect(toPaymentDetail(null)).toBeNull();
+  });
+
+  test('the service reads payment_detail and fails on an unreadable answer', async () => {
+    const reading = (data: unknown) =>
+      createSupabasePaymentService({
+        rpc: async (name: string) => ({
+          data: name === 'payment_detail' ? data : null,
+          error: null,
+        }),
+      } as unknown as SupabaseClient).detail('payment-1');
+    expect((await reading(detail)).methods).toHaveLength(2);
+    await expect(reading({ methods: 'none' })).rejects.toBeDefined();
   });
 });
 

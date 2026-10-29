@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createSupabaseStickerService } from '@/lib/stickers/service';
 
 import { createSupabasePaymentService } from './paymentService';
-import { NoRateError, type FxRate } from './types';
+import { NoRateError } from './types';
 
 const env = Bun.spawnSync(['supabase', 'status', '-o', 'env']).stdout.toString();
 const value = (key: string) => {
@@ -141,24 +141,32 @@ describe('supabase payment service (local stack)', () => {
     expect((await poster.service.get(poster.id, id))?.state).toBe('due');
   });
 
-  test('reads the latest BNM rate for the pair in either order', async () => {
+  test('a yuan payment locks the BNM rate at open and prices each method', async () => {
+    const today = new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
     const { error } = await admin.from('fx_rates').upsert({
       base: 'CNY',
       quote: 'MYR',
-      rate_date: '2026-10-23',
+      rate_date: today,
       source: 'bnm',
       session: '1700',
-      quote_per_base: 0.6122,
+      quote_per_base: 0.6494,
     });
     expect(error).toBeNull();
-    const rate: FxRate = {
-      base: 'CNY',
-      quote: 'MYR',
-      quotePerBase: 0.6122,
-      rateDate: '2026-10-23',
-      source: 'bnm',
-    };
-    expect(await poster.service.latestRate('MYR', 'CNY')).toEqual(rate);
-    expect(await poster.service.latestRate('CNY', 'MYR')).toEqual(rate);
+    const id = await open(poster.id, helper.id, 5000, 'CNY');
+    const detail = await poster.service.detail(id);
+    expect(detail.rate).toMatchObject({ base: 'CNY', quote: 'MYR', quotePerBase: 0.6494 });
+    expect(detail.methods).toEqual([
+      {
+        methodId,
+        type: 'duitnow_id',
+        currency: 'MYR',
+        amount: { minor: 3247, currency: 'MYR' },
+      },
+    ]);
+    await poster.service.markPaid(id, methodId, null);
+    expect((await helper.service.get(helper.id, id))?.paid).toEqual({
+      minor: 3247,
+      currency: 'MYR',
+    });
   });
 });

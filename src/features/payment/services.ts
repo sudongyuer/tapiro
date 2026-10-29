@@ -1,4 +1,5 @@
 import { initI18n } from '@/lib/i18n';
+import { isCurrencyCode } from '@/lib/money';
 import { earnFixtureSticker } from '@/lib/stickers';
 import { getSupabase } from '@/lib/supabase';
 import { liveItems } from '@/lib/useLiveItems';
@@ -16,6 +17,7 @@ import { createPaymentStore } from './paymentStore';
 
 const mixArgument = uiVerifyArgument('uiVerifyPayMethods');
 const mix: PayMethodMix = PAY_METHOD_MIXES.find((value) => value === mixArgument) ?? 'all';
+const currencyArgument = uiVerifyArgument('uiVerifyPayCurrency');
 
 export const paymentStore = createPaymentStore(
   uiVerify
@@ -25,6 +27,7 @@ export const paymentStore = createPaymentStore(
           feed: uiVerifyArgument('uiVerifyShellFeed'),
           mix,
           rate: uiVerifyArgument('uiVerifyFx') !== 'none',
+          currency: isCurrencyCode(currencyArgument) ? currencyArgument : 'MYR',
           failFirstLoad: uiVerifyArgument('uiVerifyPaymentsFail') === '1',
           earnSticker: earnFixtureSticker,
         },

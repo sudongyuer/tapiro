@@ -126,6 +126,32 @@ describe('payment store', () => {
     await store.run(FIXTURE_USER_ID, () => store.service.undo(FIXTURE_PAYMENT_IDS.owe));
     expect(payments(store)[0]).toMatchObject({ state: 'due', methodType: null });
   });
+
+  test('a yuan payment paid by DuitNow at the locked rate records the ringgit paid', async () => {
+    const store = await ready({ currency: 'CNY' });
+    const phone = (await store.service.methodsOf('fixture-payee')).find(
+      (method) => method.type === 'duitnow_id',
+    );
+    await store.run(FIXTURE_USER_ID, () =>
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null),
+    );
+    expect(payments(store)[0]).toMatchObject({
+      amount: { minor: 5000, currency: 'CNY' },
+      paid: { minor: 3061, currency: 'MYR' },
+    });
+  });
+
+  test('without a locked rate a conversion fails as no rate and the payment stays due', async () => {
+    const store = await ready({ currency: 'CNY', rate: false, mix: 'duitnow' });
+    const detail = await store.service.detail(FIXTURE_PAYMENT_IDS.owe);
+    expect(detail.rate).toBeNull();
+    expect(detail.methods.map((method) => method.amount)).toEqual([null]);
+    const marked = await store.run(FIXTURE_USER_ID, () =>
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, detail.methods[0].methodId, null),
+    );
+    expect(marked.ok).toBe(false);
+    expect(payments(store)[0]).toMatchObject({ state: 'due', paid: null });
+  });
 });
 
 const ringgit = (minor: number) => ({ minor, currency: 'MYR' as const });

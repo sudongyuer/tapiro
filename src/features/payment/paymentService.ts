@@ -1,13 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { isCurrencyCode, toMoney } from '@/lib/money';
-import { toMethod, type PayeeMethodRow, type PayeeType } from '@/lib/payeeMethods';
+import { PAYEE_TYPES, toMethod, type PayeeMethodRow, type PayeeType } from '@/lib/payeeMethods';
 import { bountyCategory } from '@/lib/stickers/category';
 
 import {
   NoRateError,
   type FxRate,
+  type MethodAmount,
   type Payment,
+  type PaymentDetail,
   type PaymentService,
   type PaymentState,
 } from './types';
@@ -74,24 +76,37 @@ function unwrap<T extends { error: unknown }>(result: T) {
 const COLUMNS =
   'id, item_kind, category, title, amount_minor, currency, paid_minor, paid_currency, reference, state, payer_id, payee_id, method_type, proof_path, nudged_at, marked_paid_at, created_at, reverses';
 
-type RateRow = {
-  base: string;
-  quote: string;
-  quote_per_base: number | string;
-  rate_date: string;
-  source: string;
-};
+type Json = Record<string, unknown>;
 
-export function toFxRate(row: RateRow): FxRate | null {
-  const quotePerBase = Number(row.quote_per_base);
-  if (!isCurrencyCode(row.base) || !isCurrencyCode(row.quote) || !(quotePerBase > 0)) return null;
-  return {
-    base: row.base,
-    quote: row.quote,
-    quotePerBase,
-    rateDate: row.rate_date,
-    source: row.source,
-  };
+const isObject = (value: unknown): value is Json =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+function toLockedRate(value: unknown): FxRate | null | undefined {
+  if (value === null) return null;
+  if (!isObject(value)) return undefined;
+  const quotePerBase = Number(value.quotePerBase);
+  const { base, quote, date, source } = value;
+  if (!isCurrencyCode(base) || !isCurrencyCode(quote) || !(quotePerBase > 0)) return undefined;
+  if (typeof date !== 'string' || typeof source !== 'string') return undefined;
+  return { base, quote, quotePerBase, rateDate: date, source };
+}
+
+function toMethodAmount(value: unknown): MethodAmount | null {
+  if (!isObject(value)) return null;
+  const { method, type, currency, amountMinor } = value;
+  if (typeof method !== 'string' || !isCurrencyCode(currency)) return null;
+  if (!PAYEE_TYPES.includes(type as PayeeType)) return null;
+  const amount = amountMinor === null ? null : toMoney(amountMinor, currency);
+  if (amountMinor !== null && !amount) return null;
+  return { methodId: method, type: type as PayeeType, currency, amount };
+}
+
+export function toPaymentDetail(value: unknown): PaymentDetail | null {
+  if (!isObject(value) || !Array.isArray(value.methods)) return null;
+  const rate = toLockedRate(value.rate ?? null);
+  if (rate === undefined) return null;
+  const methods = value.methods.map(toMethodAmount);
+  return methods.every((method) => method !== null) ? { rate, methods } : null;
 }
 
 const isNoRate = (error: unknown) =>
@@ -161,20 +176,10 @@ export function createSupabasePaymentService(
       );
       return (data ?? []).flatMap((row) => toMethod(row) ?? []);
     },
-    async latestRate(currency, other) {
-      const pair = [currency, other];
-      const { data } = unwrap(
-        await db()
-          .from('fx_rates')
-          .select('base, quote, quote_per_base, rate_date, source')
-          .in('base', pair)
-          .in('quote', pair)
-          .order('rate_date', { ascending: false })
-          .limit(1)
-          .returns<RateRow[]>(),
-      );
-      const row = data?.[0];
-      return row ? toFxRate(row) : null;
+    async detail(paymentId) {
+      const detail = toPaymentDetail(await rpc('payment_detail', { payment: paymentId }));
+      if (!detail) throw new Error('unreadable payment detail');
+      return detail;
     },
     async uploadProof(paymentId, fileUri) {
       const extension = /\.png$/i.test(fileUri) ? 'png' : 'jpg';

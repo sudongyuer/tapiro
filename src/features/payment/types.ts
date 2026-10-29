@@ -34,6 +34,15 @@ export type FxRate = {
   source: string;
 };
 
+export type MethodAmount = {
+  methodId: string;
+  type: PayeeType;
+  currency: CurrencyCode;
+  amount: Money | null;
+};
+
+export type PaymentDetail = { rate: FxRate | null; methods: MethodAmount[] };
+
 export class NoRateError extends Error {
   constructor() {
     super('no_rate');
@@ -47,7 +56,7 @@ export type PaymentService = {
   list(userId: string): Promise<Payment[]>;
   get(userId: string, id: string): Promise<Payment | null>;
   methodsOf(userId: string): Promise<PayeeMethod[]>;
-  latestRate(currency: CurrencyCode, other: CurrencyCode): Promise<FxRate | null>;
+  detail(paymentId: string): Promise<PaymentDetail>;
   uploadProof(paymentId: string, fileUri: string): Promise<string>;
   removeProof(path: string): Promise<void>;
   proofUrl(path: string): Promise<string>;

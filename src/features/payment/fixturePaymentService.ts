@@ -1,8 +1,14 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
-import { convertUp, methodCurrency, type Money } from '@/lib/money';
+import { convertUp, methodCurrency, type CurrencyCode, type Money } from '@/lib/money';
 import type { PayeeDetails, PayeeMethod } from '@/lib/payeeMethods';
 
-import { NoRateError, type FxRate, type Payment, type PaymentService } from './types';
+import {
+  NoRateError,
+  type FxRate,
+  type Payment,
+  type PaymentDetail,
+  type PaymentService,
+} from './types';
 
 export const FIXTURE_USER_ID = '00000000-0000-4000-8000-000000000001';
 export const FIXTURE_PAYMENT_IDS = {
@@ -38,6 +44,13 @@ const ITEMS: Record<FixtureVariant, { owe: [string, number]; owed: [string, numb
     owed: ['帮忙在 Sunway Pyramid 的 ZUS Coffee 带一杯 Spanish Latte', 50],
   },
   one: { owe: ['取件', 50], owed: ['咖啡', 100] },
+};
+
+const YUAN: Record<FixtureVariant, { owe: number; owed: number }> = {
+  demo: { owe: 5000, owed: 800 },
+  empty: { owe: 5000, owed: 800 },
+  worst: { owe: 80000, owed: 100 },
+  one: { owe: 100, owed: 100 },
 };
 
 const ALIPAY = 'https://qr.alipay.com/fkx19396xyzqnoabcdlfe7d';
@@ -103,6 +116,7 @@ export type FixturePaymentOptions = {
   feed: string | undefined;
   mix: PayMethodMix;
   rate: boolean;
+  currency?: CurrencyCode;
   failFirstLoad?: boolean;
   earnSticker?: EarnSticker;
 };
@@ -122,8 +136,6 @@ function malaysiaToday() {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
 }
 
-const ringgit = (minor: number): Money => ({ minor, currency: 'MYR' });
-
 function fixtureRate(): FxRate {
   return {
     base: 'CNY',
@@ -140,6 +152,14 @@ export function createFixturePaymentService(
 ): PaymentService {
   const people = PEOPLE[options.variant];
   const items = ITEMS[options.variant];
+  const currency = options.currency ?? 'MYR';
+  const locked = options.rate ? fixtureRate() : null;
+  const priced = (kind: 'owe' | 'owed'): Money =>
+    currency === 'MYR'
+      ? { minor: items[kind][1], currency }
+      : { minor: YUAN[options.variant][kind], currency };
+  const owedPaid = priced('owed');
+  const owedByPhone = locked && convertUp(owedPaid, locked.quotePerBase, locked.base, locked.quote);
   const opened = new Date(Date.now() - 10 * 60_000).toISOString();
   const common = { itemKind: 'bounty' as const, nudgedAt: null, createdAt: opened, reverses: null };
   const owed = { ...common, category: 'buy' as const };
@@ -149,7 +169,7 @@ export function createFixturePaymentService(
       category: 'pickup',
       id: FIXTURE_PAYMENT_IDS.owe,
       title: items.owe[0],
-      amount: ringgit(items.owe[1]),
+      amount: priced('owe'),
       paid: null,
       reference: 'TP-8K2Q',
       state: 'due',
@@ -164,14 +184,14 @@ export function createFixturePaymentService(
       ...owed,
       id: FIXTURE_PAYMENT_IDS.owed,
       title: items.owed[0],
-      amount: ringgit(items.owed[1]),
-      paid: ringgit(items.owed[1]),
+      amount: owedPaid,
+      paid: currency === 'MYR' ? owedPaid : (owedByPhone ?? owedPaid),
       reference: 'TP-3MZ7',
       state: 'marked_paid',
       role: 'payee',
       counterpartId: PAYER_ID,
       counterpartName: people.payer,
-      methodType: 'duitnow_id',
+      methodType: currency === 'MYR' || owedByPhone ? 'duitnow_id' : 'alipay',
       proofPath: `${FIXTURE_PAYMENT_IDS.owed}/proof.jpg`,
       markedPaidAt: opened,
     },
@@ -179,7 +199,7 @@ export function createFixturePaymentService(
       ...owed,
       id: FIXTURE_PAYMENT_IDS.owedCash,
       title: items.owed[0],
-      amount: ringgit(items.owed[1]),
+      amount: owedPaid,
       paid: null,
       reference: 'TP-W4HN',
       state: 'due',
@@ -214,6 +234,26 @@ export function createFixturePaymentService(
     catalog[id] = { ...find(id), ...change };
   }
 
+  function payIn(amount: Money, type: PayeeMethod['type']) {
+    const target = methodCurrency(type, amount.currency);
+    if (target === amount.currency) return amount;
+    return locked ? convertUp(amount, locked.quotePerBase, locked.base, locked.quote) : null;
+  }
+
+  function detailOf(payment: Payment): PaymentDetail {
+    const methods =
+      payment.role === 'payee' ? ownMethods : payment.state === 'settled' ? [] : payeeMethods;
+    return {
+      rate: locked,
+      methods: methods.map((method) => ({
+        methodId: method.id,
+        type: method.type,
+        currency: methodCurrency(method.type, payment.amount.currency),
+        amount: payIn(payment.amount, method.type),
+      })),
+    };
+  }
+
   return {
     async list() {
       if (failLoad) {
@@ -230,12 +270,8 @@ export function createFixturePaymentService(
       if (userId === FIXTURE_USER_ID) return ownMethods;
       return [];
     },
-    async latestRate(currency, other) {
-      const rate = fixtureRate();
-      const pair = [rate.base, rate.quote];
-      return options.rate && pair.includes(currency) && pair.includes(other) && currency !== other
-        ? rate
-        : null;
+    async detail(paymentId) {
+      return detailOf(find(paymentId));
     },
     async uploadProof(paymentId) {
       return `${paymentId}/fixture-proof.jpg`;
@@ -251,14 +287,7 @@ export function createFixturePaymentService(
       const method = payeeMethods.find((candidate) => candidate.id === methodId);
       if (payment.role !== 'payer' || payment.state !== 'due' || !method || method.type === 'cash')
         throw new Error('cannot mark paid');
-      const currency = methodCurrency(method.type, payment.amount.currency);
-      const rate = fixtureRate();
-      const paid =
-        currency === payment.amount.currency
-          ? payment.amount
-          : options.rate
-            ? convertUp(payment.amount, rate.quotePerBase, rate.base, rate.quote)
-            : null;
+      const paid = payIn(payment.amount, method.type);
       if (!paid) throw new NoRateError();
       update(paymentId, {
         state: 'marked_paid',

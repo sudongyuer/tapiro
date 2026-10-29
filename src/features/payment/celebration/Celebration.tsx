@@ -17,6 +17,7 @@ import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
+import type { CelebrationNote } from '../amounts';
 import { BookPanel, type SlotCentre } from './BookPanel';
 import { SLOT_HEIGHT } from './BookSlots';
 import { TAPIR_RISE } from './BookTapir';
@@ -44,7 +45,7 @@ export type CelebrationData = {
   title: string;
   name: string;
   amount: Money;
-  reference: Money | null;
+  note: CelebrationNote;
   itemKind: StickerKind;
   category: string | null;
 };
@@ -131,9 +132,9 @@ export function Celebration({
                     amount={data.amount}
                     language={language}
                     cny={
-                      data.reference === null
-                        ? null
-                        : t('pay.celebrate.cny', { amount: formatMoney(data.reference, language) })
+                      data.note
+                        ? t(data.note.key, { amount: formatMoney(data.note.amount, language) })
+                        : null
                     }
                     title={t(
                       data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title',

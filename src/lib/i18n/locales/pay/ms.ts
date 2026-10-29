@@ -20,7 +20,12 @@ export default {
     failed: 'Tidak berjaya. Semak sambungan dan cuba lagi.',
     payTo: 'Bayar {{name}}',
     amountLabel: 'Jumlah {{amount}}',
-    cny: 'Kira-kira {{amount}} (rujukan)',
+    original: 'Asalnya {{amount}}',
+    rateFooter:
+      'Ditukar pada kadar tengah BNM {{date}}, {{rate}}, dikunci semasa bayaran ini dibuka',
+    noRate: 'Belum boleh ditukar ke {{currency}}',
+    noCurrency: '{{name}} belum ada cara menerima {{currency}}',
+    currencyName: { MYR: 'ringgit', CNY: 'yuan' },
     fxSource: 'Sumber kadar: Bank Negara Malaysia',
     fxSourceHint: 'Membuka terma penggunaan set data Bank Negara Malaysia',
     methodsHeader: 'Cara bayaran',
