@@ -286,3 +286,17 @@ Mascot level and its UI (foundation step 6), map (8), photo stickers and the DOO
 so the card does not flip live (11), 先付 (12).
 
 ## Deviations and rulings
+
+- 2026-10-29, Task 5 (spike): the 我的 item frame is readable. Under NativeTabs on iOS 26 the item is a
+  `_UITabButton` whose `accessibilityIdentifier` is the trigger's `testID` (`tab-me`); the kit aims at its icon
+  (`UIImageView`, 26 × 25 pt at x 256, y 802 on iPhone 17 Pro). The planned fallback (4th of 4 slots in the tab bar's
+  bounds) would be wrong: the bar's bounds also hold the 问小貘 search tab (x 319–381), so the 4th quarter lands on it.
+  So the API takes `tabId` instead of `tabIndex`, has no computed fallback, and resolves `{ landed: false }` when the
+  item is missing or hidden (minimized bar, hidden bar).
+- 2026-10-29, Task 5: `StickerFlight.flyToTab({ viewTag, tabId, reduceMotion })` plays the light impact itself at
+  landing, and the Reduce Motion fade (200 ms, sticker snapshot in place) also runs in the kit and resolves
+  `{ landed: true }`. Task 7 therefore plays no haptic of its own and does not fade the sticker; it fades only the card.
+  On `{ landed: false }` nothing was touched, so Task 7 plays the haptic and the card fade itself. The source view
+  stays hidden after a landing; the card is removed by JS. The Debug scene `sticker-flight` needs
+  `-uiVerifySignedIn onboarded` and opens `/bounty/debug-flight`, a debug-only route inside the 悬赏 tab, because
+  the flight needs the tab bar on screen.

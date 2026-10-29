@@ -274,6 +274,12 @@ export default {
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
+    flight: {
+      title: '贴纸飞向我的',
+      fly: '飞到「我的」',
+      flyReduced: '飞（减弱动态效果）',
+      reset: '放回贴纸',
+    },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',

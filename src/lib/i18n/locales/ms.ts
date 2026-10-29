@@ -283,6 +283,12 @@ const ms: Translation = {
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
+    flight: {
+      title: 'Pelekat terbang ke Saya',
+      fly: 'Terbang ke Saya',
+      flyReduced: 'Terbang (Kurangkan Gerakan)',
+      reset: 'Letak semula pelekat',
+    },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',
