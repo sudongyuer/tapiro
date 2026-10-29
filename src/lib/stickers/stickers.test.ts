@@ -11,7 +11,16 @@ import { createStickerStore } from './store';
 const USER = 'user-1';
 
 function sticker(id: string, earnedAt: string, itemKind: Sticker['itemKind'] = 'bounty'): Sticker {
-  return { id, paymentId: `p-${id}`, itemKind, category: null, title: id, earnedAt };
+  return {
+    id,
+    paymentId: `p-${id}`,
+    role: 'payee',
+    itemKind,
+    category: null,
+    title: id,
+    earnedAt,
+    counterpartName: null,
+  };
 }
 
 describe('sticker art', () => {

@@ -26,6 +26,7 @@ const TONE: Record<LiveCardModel['kind'], LiveCardTone> = {
   rideSoon: 'ride',
   owedToYou: 'progress',
   bountyAction: 'progress',
+  settled: 'progress',
   bountyInProgress: 'progress',
   waitingConfirm: 'calm',
   calm: 'calm',

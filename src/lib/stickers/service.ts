@@ -1,39 +1,35 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { newestFirst, type Sticker, type StickerKind, type StickerService } from './model';
+import {
+  newestFirst,
+  STICKER_KINDS,
+  STICKER_ROLES,
+  type Sticker,
+  type StickerService,
+} from './model';
+import { body, oneOf, rows, text, textOrNull } from './parse';
 
-type StickerRow = {
-  id: string;
-  payment_id: string;
-  item_kind: StickerKind;
-  category: string | null;
-  title: string;
-  earned_at: string;
-};
-
-export function toSticker(row: StickerRow): Sticker {
+export function toSticker(value: unknown): Sticker {
+  const row = body(value, 'sticker');
   return {
-    id: row.id,
-    paymentId: row.payment_id,
-    itemKind: row.item_kind,
-    category: row.category,
-    title: row.title,
-    earnedAt: row.earned_at,
+    id: text(row.id, 'id'),
+    paymentId: text(row.paymentId, 'paymentId'),
+    role: oneOf(STICKER_ROLES, row.role, 'role'),
+    itemKind: oneOf(STICKER_KINDS, row.itemKind, 'itemKind'),
+    category: textOrNull(row.category, 'category'),
+    title: text(row.title, 'title'),
+    earnedAt: text(row.earnedAt, 'earnedAt'),
+    counterpartName: textOrNull(row.counterpartName, 'counterpartName'),
   };
 }
 
 export function createSupabaseStickerService(client: SupabaseClient | null): StickerService {
   return {
-    async list(userId) {
+    async list() {
       if (!client) throw new Error('Supabase is not configured');
-      const { data, error } = await client
-        .from('stickers')
-        .select('id, payment_id, item_kind, category, title, earned_at')
-        .eq('owner_id', userId)
-        .order('earned_at', { ascending: false })
-        .returns<StickerRow[]>();
+      const { data, error } = await client.rpc('sticker_book');
       if (error) throw error;
-      return newestFirst((data ?? []).map(toSticker));
+      return newestFirst(rows(data, 'sticker book', toSticker));
     },
   };
 }

@@ -46,7 +46,7 @@ function sortedCards(
     .map((item, index) => ({ item, index }))
     .sort((a, b) => priority(a.item.kind) - priority(b.item.kind) || a.index - b.index)
     .map(({ item }) => {
-      const detail = details[item.id] ?? paymentDetail(item) ?? item.bounty;
+      const detail = details[item.id] ?? paymentDetail(item) ?? item.bounty ?? item.settled;
       return {
         kind: item.kind,
         id: item.id,

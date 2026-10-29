@@ -1,7 +1,11 @@
 export { earnFixtureSticker, stickerStore } from './instance';
 export { BOUNTY_CATEGORIES, bountyCategory } from './category';
 export type { BountyCategory } from './category';
+export { collect as collectSticker, dismissSettled } from './live';
+export { stickerLabel } from './label';
+export type { StickerLabel } from './label';
 export { newestFirst, stickerArt } from './model';
-export type { Sticker, StickerArt, StickerKind } from './model';
+export type { Sticker, StickerArt, StickerKind, StickerRole } from './model';
+export type { CollectResult } from './settled';
 export type { StickerState } from './store';
 export { useLiveStickers, useStickers } from './useStickers';

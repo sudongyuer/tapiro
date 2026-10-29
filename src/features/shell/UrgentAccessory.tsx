@@ -26,6 +26,11 @@ const GLYPHS: Record<AccessoryKind, { fill: TokenName; ink: TokenName; symbol: S
       ink: '--color-on-card-progress',
       symbol: 'exclamationmark',
     },
+    settled: {
+      fill: '--color-card-progress',
+      ink: '--color-on-card-progress',
+      symbol: 'checkmark',
+    },
     bountyInProgress: {
       fill: '--color-sticker-handle',
       ink: '--color-on-sticker',
