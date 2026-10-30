@@ -4,10 +4,11 @@ import { useI18n } from '@/lib/i18n';
 import type { BountyCardDetail, OwedDetail } from '@/lib/liveItems';
 import { formatMoney, type Money } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArtSticker } from '@/ui/HandArt';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { vars } from '@/ui/theme/tokens';
 
+import { ArtArrival } from './ArtArrival';
 import { CardHeader, CardText, Pill } from './cardParts';
 import { useStackedBeside } from './useStackedBeside';
 
@@ -23,7 +24,14 @@ export function BountyCard({ detail }: { detail: BountyCardDetail }) {
   const { ink, surface, urgentDot } = useLiveCardPaint(tone);
   const action = detail.kind === 'bountyAction' ? detail.actionLabel : undefined;
   return (
-    <LiveCard tone={tone} hanging={<CategorySticker category={detail.category} size={52} />}>
+    <LiveCard
+      tone={tone}
+      hanging={
+        <ArtArrival bountyId={detail.bountyId}>
+          <HandArtSticker source={detail} size={52} />
+        </ArtArrival>
+      }
+    >
       <CardHeader
         left={
           <Pill ink={ink} dot={detail.kind === 'bountyAction' ? urgentDot : undefined}>
@@ -44,7 +52,10 @@ export function OwedCard({ detail }: { detail: OwedDetail }) {
   const { t } = useI18n();
   const { ink } = useLiveCardPaint('progress');
   return (
-    <LiveCard tone="progress" hanging={<CategorySticker category={detail.category} size={52} />}>
+    <LiveCard
+      tone="progress"
+      hanging={<HandArtSticker source={{ ...detail, title: detail.note }} size={52} />}
+    >
       <CardHeader left={<Pill ink={ink}>{t('home.card.owed.tag')}</Pill>} />
       <CardText variant="secondary" ink={ink} muted style={styles.note}>
         {detail.note}

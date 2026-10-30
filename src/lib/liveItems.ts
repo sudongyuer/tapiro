@@ -1,6 +1,7 @@
 import type { FixtureVariant } from './fixtureVariant';
 import type { Money } from './money';
-import type { BountyCategory, StickerArt } from './stickers';
+import type { HandArtId } from './handArt';
+import type { BountyCategory } from './stickers';
 import { createStore } from './store';
 
 export const ACCESSORY_KINDS = [
@@ -67,7 +68,7 @@ export type SettledDetail = {
   kind: 'settled';
   stickerId: string;
   paymentId: string;
-  art: StickerArt;
+  art: HandArtId;
   title: string;
   counterpart: string | null;
   amount: Money;

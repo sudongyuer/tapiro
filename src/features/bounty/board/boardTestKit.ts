@@ -4,6 +4,7 @@ export const row = (id: string, patch: Partial<BoardRow> = {}): BoardRow => ({
   id,
   title: `title ${id}`,
   category: 'pickup',
+  art: null,
   reward: { minor: 800, currency: 'MYR' },
   reference: null,
   placeLabel: null,

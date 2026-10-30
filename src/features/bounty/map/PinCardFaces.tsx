@@ -3,7 +3,7 @@ import { type AccessibilityActionEvent, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArtSticker } from '@/ui/HandArt';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
@@ -58,7 +58,7 @@ export function CardFront({ row, copy, summaryRef, onFlip, onApply, onOpen }: Fa
         style={styles.summary}
       >
         <View style={styles.head}>
-          <CategorySticker category={row.category} size={STICKER} />
+          <HandArtSticker source={row} size={STICKER} />
           <View style={styles.headText}>
             <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
               {copy.category}

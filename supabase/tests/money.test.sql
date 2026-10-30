@@ -1,5 +1,5 @@
 begin;
-select plan(47);
+select plan(48);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -123,7 +123,7 @@ set local role authenticated;
 select is(
   pg_temp.board('d4', 'cny800', 'MYR') - array['id', 'title', 'category', 'placeLabel', 'stickerPath', 'startsAt',
     'endsAt', 'deadlineAt', 'urgent', 'distanceM', 'appliedByMe', 'createdAt', 'poster', 'point'],
-  jsonb_build_object('rewardMinor', 80000, 'rewardCurrency', 'CNY',
+  jsonb_build_object('rewardMinor', 80000, 'rewardCurrency', 'CNY', 'art', null,
     'reference', jsonb_build_object('minor', 48980, 'currency', 'MYR', 'rateDate', pg_temp.today() - 1)),
   'the board shows ¥800 with today''s MYR reference'
 );
@@ -304,10 +304,10 @@ select is(pg_temp.board('d4', 'cny800', 'MYR') -> 'reference', 'null'::jsonb, 'n
 reset role;
 insert into fx values ('done', gen_random_uuid());
 insert into public.bounties (
-  id, poster_id, helper_id, title, category, reward_minor, reward_currency, expires_at, status, done_at
+  id, poster_id, helper_id, title, category, reward_minor, reward_currency, expires_at, status, done_at, art
 )
 values (pg_temp.fx('done'), pg_temp.u('a1'), pg_temp.u('b2'), '帮取快递', 'pickup', 5000, 'CNY',
-  now() + interval '7 days', 'done', now());
+  now() + interval '7 days', 'done', now(), 'parcel');
 insert into public.fx_rates (base, quote, rate_date, source, quote_per_base)
 values ('CNY', 'MYR', pg_temp.today(), 'bnm', 0.6122);
 set local role authenticated;
@@ -320,6 +320,9 @@ select is(
 select is(
   public.bounty_detail(pg_temp.fx('done'), reference_currency => 'MYR') -> 'reference', 'null'::jsonb,
   'once a payment exists the detail shows no reference'
+);
+select is(
+  public.payment_detail(pg_temp.fx('paid')) ->> 'art', 'parcel', 'a payment detail carries its bounty''s art'
 );
 
 reset role;

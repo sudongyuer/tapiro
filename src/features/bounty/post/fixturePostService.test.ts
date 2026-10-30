@@ -24,6 +24,7 @@ const args = (id: string): PublishArgs => ({
   id,
   title: '帮我取个快递',
   category: 'pickup',
+  art: null,
   reward_minor: 800,
   reward_currency: 'MYR',
   description: null,

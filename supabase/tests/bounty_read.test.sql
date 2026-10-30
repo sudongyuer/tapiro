@@ -1,5 +1,5 @@
 begin;
-select plan(72);
+select plan(74);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -178,7 +178,7 @@ select is(
   jsonb_build_object(
     'status', 'open', 'viewerRole', 'poster', 'distanceM', null, 'address', 'Block C, 3-2', 'helper', null,
     'myApplication', null, 'applicantCount', 2, 'charge', 'free', 'etaAt', null, 'previousEtaAt', null, 'autoConfirmAt', null, 'startLate', false,
-    'issueReason', null, 'payment', null, 'reference', null
+    'issueReason', null, 'payment', null, 'reference', null, 'art', null
   ),
   'the poster reads the address and the pending applicant count'
 );
@@ -207,7 +207,7 @@ select throws_ok(
 select is(
   pg_temp.mine('a1', 'posted', 'main') - array['id', 'title', 'category', 'rewardMinor', 'rewardCurrency', 'placeLabel', 'startsAt',
     'deadlineAt', 'expiresAt'],
-  '{"status": "open", "applicantCount": 2, "applicationStatus": null, "counterpartName": null}'::jsonb,
+  '{"status": "open", "applicantCount": 2, "applicationStatus": null, "counterpartName": null, "art": null}'::jsonb,
   'the poster''s list holds the bounty with two applicants'
 );
 select is(
@@ -217,6 +217,20 @@ select is(
   pg_temp.mine('b2', 'applied', 'main') ->> 'counterpartName', 'Alice Tan', 'the applicant''s counterpart is the poster'
 );
 select is(pg_temp.mine('c3', 'applied', 'main'), null, 'a user who did not apply has no applied row');
+
+reset role;
+update public.bounties set art = 'parcel' where id = pg_temp.fx('main');
+set local role authenticated;
+select is(
+  array[pg_temp.detail('c3', 'main') ->> 'art', pg_temp.mine('a1', 'posted', 'main') ->> 'art',
+    pg_temp.item('a1', 'main') ->> 'art'],
+  array['parcel', 'parcel', 'parcel'], 'the detail, the list and the live item carry the bounty''s art'
+);
+reset role;
+update public.bounties set art = null where id = pg_temp.fx('main');
+set local role authenticated;
+select is(pg_temp.item('a1', 'main') -> 'art', 'null'::jsonb, 'a live item without art reads it as null');
+select pg_temp.act_as(pg_temp.u('c3'));
 select is(
   (select count(*) from jsonb_array_elements((select public.my_bounties() -> 'posted')) x
    where x ->> 'id' = pg_temp.fx('confirmed')::text),

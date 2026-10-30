@@ -20,6 +20,7 @@ const ROW = {
   bountyId: 'b1',
   title: '帮取快递',
   category: 'pickup',
+  art: 'parcel',
   rewardMinor: 1500,
   rewardCurrency: 'MYR',
   role: 'applicant',

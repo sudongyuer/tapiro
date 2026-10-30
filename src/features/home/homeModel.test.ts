@@ -228,7 +228,7 @@ describe('settled cards (68A, 70A)', () => {
     kind: 'settled',
     stickerId: id,
     paymentId: `p-${id}`,
-    art: { kind: 'category', category: 'pickup' },
+    art: 'parcel',
     title: '帮取快递',
     counterpart,
     amount: { minor: 800, currency: 'MYR' },

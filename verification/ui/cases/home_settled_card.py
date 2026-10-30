@@ -20,7 +20,7 @@ DEPS = [
     'src/lib/stickers/',
     'src/app/(tabs)/_layout.tsx',
     'src/ui/LiveCard.tsx',
-    'src/ui/EarnedSticker.tsx',
+    'src/ui/HandArt.tsx',
     'verification/ui/bounty.py',
 ]
 LOCALES = ['zh-Hans', 'ms']

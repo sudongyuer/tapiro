@@ -1,4 +1,4 @@
-"""With no stickers, 我的 shows 一起办成的事 · 0 张, and the sticker book 一起办成的事 shows the full-size 小貘 with 还没有贴纸 and how to earn one instead of a grid."""
+"""With no stickers, 我的 shows 一起办成的事 · 0 张, and the sticker book 一起办成的事 shows the full-size 小貘 with 还没有贴纸 and how to earn one instead of the cards."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -19,7 +19,8 @@ assert title.get('AXLabel') == ui.t('stickers.book.title'), title
 items = ui.read()
 labels = [i.get('AXLabel') for i in items]
 assert ui.t('stickers.empty.title') in labels and ui.t('stickers.empty.body') in labels, labels
-assert by_id(items, 'sticker-cell-0') is None, 'an empty book shows a sticker'
+assert by_id(items, 'sticker-card-0') is None, 'an empty book shows a card'
+assert by_id(items, 'sticker-book-view') is None, 'an empty book shows the 卡堆 / 月历 switch'
 count = by_id(items, 'sticker-book-count')
 assert count and count.get('AXLabel') == ui.t('stickers.book.summary', total=ui.tn('stickers.count', 0), sub=ui.t('stickers.book.sub')), count
 ui.capture('01-empty')

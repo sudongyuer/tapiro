@@ -1,12 +1,15 @@
-"""Each sticker in 一起办成的事 is labelled who helped whom, then the title (71A, 72A): 帮{name} for a payee, {name}帮我 for a payer, 和{name} for a ride, 帮一位同学 / 一位同学帮我 when the counterpart is gone. With 40-code-point names and 120-code-point titles, line 1 stays on one line and the title stops at two, so every row is the same height; VoiceOver still reads the full name and title."""
+"""Each done card in 一起办成的事 says who helped whom, then the title (71A, 72A): 帮{name} for a payee, {name}帮我 for a
+payer, 和{name} for a ride, 帮一位同学 / 一位同学帮我 when the counterpart is gone. With 40-code-point names and
+120-code-point titles every card keeps the same height (the caption shrinks to one line, the title stops at two), and
+VoiceOver reads the date, the full name and the full title."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id, reach_home  # noqa: E402
+from driver import UI, reach_home  # noqa: E402
 
 DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/']
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'worst']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'worst', '-uiVerifyBookView', 'stack']
 
 WORST_NAME = 'Nurul Aisyah binti Wan Abdul Rahman Shah'
 WORST_TITLE = '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便在 Sunway Pyramid 的 ZUS Coffee 买两杯 Spanish Latte，再送到 Universiti Malaya Kolej 宿舍楼'
@@ -24,26 +27,22 @@ EXPECTED = [
 reach_home(ui)
 ui.tap('tab-me')
 ui.tap('me-stickers')
-ui.element('sticker-cell-0')
-items = ui.read()
-cells = [by_id(items, f'sticker-cell-{index}') for index in range(len(EXPECTED))]
-ui.capture('01-labels')
-if not all(cells):
-    sheet = by_id(items, 'sticker-book')['frame']
-    x = sheet['x'] + sheet['width'] / 2
-    ui.swipe((x, sheet['y'] + sheet['height'] * 0.6), (x, sheet['y'] + sheet['height'] * 0.3), 0.4)
-    later = ui.read()
-    cells = [cell or by_id(later, f'sticker-cell-{index}') for index, cell in enumerate(cells)]
-    ui.capture('02-labels-scrolled')
-assert all(cells), f'missing cells: {[i for i, cell in enumerate(cells) if not cell]}'
+heights = []
+for index, (line1, title) in enumerate(EXPECTED):
+    card = ui.wait_label(
+        f'sticker-card-{index}',
+        lambda label, line1=line1, title=title: line1 in label and title in label,
+        f'card {index} does not read {line1!r} and its title',
+    )
+    label = card.get('AXLabel') or ''
+    assert label.index(line1) > 0, f'card {index} does not read its date first: {label!r}'
+    heights.append(card['frame']['height'])
+    if index in (0, 3):
+        ui.capture(f'0{index + 1}-card-{index}')
+    f = card['frame']
+    y = f['y'] + f['height'] / 2
+    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.3)
 
-for index, ((line1, title), cell) in enumerate(zip(EXPECTED, cells)):
-    label = cell.get('AXLabel') or ''
-    prefix = ui.t('stickers.label.a11y', line1=line1, title=title, date='')
-    assert label.startswith(prefix), f'cell {index} reads {label!r}, expected it to start with {prefix!r}'
-    assert len(label) > len(prefix), f'cell {index} does not read its date: {label!r}'
-
-named, unnamed = cells[0]['frame']['height'], cells[3]['frame']['height']
-print(f'row heights: worst names {named:.1f}, no names {unnamed:.1f}')
-assert abs(named - unnamed) <= 1, f'the row with 40-code-point names is {named - unnamed:.1f} pt taller: line 1 wraps or the title exceeds two lines'
-print('PASS: sticker labels say who helped whom and stay within one line plus two')
+print(f'card heights: {heights}')
+assert max(heights) - min(heights) <= 1, f'cards differ in height: {heights}'
+print('PASS: done cards say who helped whom, read the date first and keep one height')

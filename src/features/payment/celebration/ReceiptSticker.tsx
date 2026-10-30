@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-import type { StickerArt } from '@/lib/stickers';
+import type { HandArtId } from '@/lib/handArt';
 import { AppText } from '@/ui/AppText';
-import { EarnedSticker } from '@/ui/EarnedSticker';
+import { HandArt } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -88,7 +88,7 @@ export function FlyingSticker({
   dx: number;
   dy: number;
   land: number;
-  art: StickerArt;
+  art: HandArtId;
 }) {
   const { color } = useTheme();
   const flyX = useAnimatedStyle(() => ({
@@ -154,7 +154,7 @@ export function FlyingSticker({
             <Animated.View style={[styles.art, squash]}>
               <Animated.View style={lift}>
                 <View style={styles.clip}>
-                  <EarnedSticker art={art} width={ART_WIDTH} />
+                  <HandArt id={art} size={ART_WIDTH} />
                   <Shine clock={clock} segment={TIMELINE.stickerShine} travel={220} />
                 </View>
                 <Animated.View

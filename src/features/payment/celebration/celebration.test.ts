@@ -25,6 +25,7 @@ const earlier = (id: string): Sticker => ({
   role: 'payee',
   itemKind: 'bounty',
   category: null,
+  art: null,
   title: id,
   earnedAt: '2026-10-01T00:00:00Z',
   counterpartName: null,

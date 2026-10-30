@@ -93,6 +93,8 @@ export const vars = {
 
   '--font-sans': 'System',
   '--font-rounded': 'ui-rounded',
+  '--font-hand-han': 'LongCang-Regular',
+  '--font-hand-latin': 'Caveat',
 
   '--text-wordmark': 48,
   '--text-wordmark--line-height': 56,
@@ -116,6 +118,12 @@ export const vars = {
   '--text-secondary--line-height': 20,
   '--text-meta': 13,
   '--text-meta--line-height': 18,
+  '--text-hand-caption': 30,
+  '--text-hand-caption--line-height': 34,
+  '--text-hand-date': 22,
+  '--text-hand-date--line-height': 26,
+  '--text-hand-month': 40,
+  '--text-hand-month--line-height': 44,
 
   '--space-1': 4,
   '--space-2': 8,

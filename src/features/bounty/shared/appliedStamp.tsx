@@ -15,9 +15,9 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
-import type { BountyCategory } from '@/lib/stickers/category';
+import type { ArtSource } from '@/lib/handArt';
 import { AppText } from '@/ui/AppText';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -116,14 +116,14 @@ function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
 export function AppliedSticker({
   id,
   surface,
-  category,
+  art,
   size,
   applied,
   testID,
 }: {
   id: string;
   surface: ApplySurface;
-  category: BountyCategory;
+  art: ArtSource;
   size: number;
   applied: boolean;
   testID: string;
@@ -134,7 +134,7 @@ export function AppliedSticker({
   return (
     <View style={{ width: size, height: size }} accessible={false}>
       <Animated.View testID={`${testID}-sticker`} style={motion.sticker}>
-        <CategorySticker category={category} size={size} />
+        <HandArtSticker source={art} size={size} />
       </Animated.View>
       {applied ? (
         <View style={styles.stampLane}>

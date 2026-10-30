@@ -477,3 +477,25 @@ section holds the per-task rulings).
 - Limits: the Debug scene `bounty-map` keeps its refresh spinner after an instant failure (the home board does not);
   labels hidden when zoomed out still appear in the accessibility tree. Device lines in `docs/story-map.md`
   (`bounty.board.map-pin`, `bounty.board.map-no-origin`) are not yet run.
+
+## Implementation Record (2026-10-30, step 9 only)
+
+Status stays `approved`: steps 10 and later are not built. Plan: `docs/plans/2026-10-30-bounty-hand-art.md` (its
+Rulings section holds the overnight decisions).
+
+- Changed: step 9 is hand-drawn intent art, not photo → die-cut stickers (90A, owner 2026-10-30). Every bounty shows
+  one crayon illustration from a fixed set of 12 (`assets/hand-art/`, mirrored in `modules/tapiro-kit/ios/HandArt/`
+  for map pins), chosen from the title by keyword tables in three languages (`src/lib/handArt/`), with 换一张 in the
+  post form. Photos stay plain attachments. Spike: branch `spike/photo-sticker`, not merged.
+- Changed: the set is rendered from hand-drawn SVGs (`scripts/hand-art/drawings.mjs`, `render.mjs`), not generated
+  by `qwen-image` (91A): no model key existed. `scripts/hand-art/generate.mjs` holds the model-agnostic prompt for the
+  same 12 ids and replaces the PNGs later without code changes.
+- Added: `bounties.art` (nullable slug) is stored at publish and returned by every read that returns the category;
+  payment and sticker reads take it from the bounty. Migrations `supabase/migrations/20261030000200_bounty_art.sql`, `…210_bounty_art_bounty_reads.sql` and `…220_bounty_art_board_and_book.sql`,
+  pgTAP in `bounty_publish`, `bounty_read`, `bounty_board_point`, `money`, `stickers`.
+- Changed: the publish fly-to-stack (94A) lands on the poster's new live card on the bounty home, not on the board:
+  the board never lists the poster's own bounties (`nearby_bounties` excludes them). `src/features/home/cards/ArtArrival.tsx`.
+- Changed: 「一起办成的事」 is a card stack with a 卡堆 / 月历 switch (95A, 96A), replacing step 7's three-column grid;
+  captions use Long Cang / Caveat (97A). Cases `sticker_book`, `sticker_book_labels`, `sticker_book_calendar`.
+- Limits: celebration G keeps its book-page choreography and now shows hand art; it does not animate into the card
+  stack. The arrival motion and the pins are device lines in `docs/story-map.md`.

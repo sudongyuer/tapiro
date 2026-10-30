@@ -64,12 +64,15 @@ describe('sticker book read', () => {
       role: 'payer',
       itemKind: 'bounty',
       category: 'buy',
+      art: 'tea',
       title: '帮买奶茶',
       earnedAt: '2026-10-29T04:00:00Z',
       counterpartName: 'Lily',
     };
     expect(toSticker(row)).toEqual(row as Sticker);
     expect(toSticker({ ...row, counterpartName: null }).counterpartName).toBeNull();
+    expect(toSticker({ ...row, art: 7 }).art).toBeNull();
+    expect(toSticker({ ...row, art: undefined }).art).toBeNull();
   });
 
   test('an unknown role fails the read instead of guessing', () => {

@@ -8,6 +8,7 @@ import {
 import { Stack, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
+import { handArtFor } from '@/lib/handArt';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -115,7 +116,7 @@ function Preview({ draft }: { draft: PostDraft }) {
     <>
       <Section>
         <TaskCard
-          category={draft.category}
+          art={handArtFor(draft)}
           title={draft.title.trim()}
           meta={meta}
           reward={amount}

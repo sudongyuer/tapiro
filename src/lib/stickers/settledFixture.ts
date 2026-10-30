@@ -80,6 +80,7 @@ export function createFixtureSettledService({
   const rows = () =>
     SEEDS[fixture].map((seed, index) => ({
       ...seed,
+      art: null,
       stickerId: fixtureSettledStickerId(index),
       paymentId: `fixture-settled-payment-${index}`,
       earnedAt: new Date(now().getTime() - (index + 1) * HOUR_MS).toISOString(),

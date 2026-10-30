@@ -20,7 +20,7 @@ DEPS = [
     'src/lib/stickers/',
     'src/lib/uiVerify.ts',
     'src/ui/LiveCard.tsx',
-    'src/ui/EarnedSticker.tsx',
+    'src/ui/HandArt.tsx',
     'modules/tapiro-kit/',
     'verification/ui/recording.py',
 ]

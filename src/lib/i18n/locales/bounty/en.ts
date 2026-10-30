@@ -19,6 +19,8 @@ const en: typeof zhHans = {
     cancel: 'Cancel',
     next: 'Next',
     form: {
+      art: 'Picture: {{name}}',
+      swapArt: 'Another Picture',
       titlePlaceholder: 'What do you need? One line',
       count: '{{count}}/{{max}}',
       countLabel: '{{count}} of {{max}} characters',

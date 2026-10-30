@@ -33,7 +33,8 @@ Everything else uses platform defaults. Do not imitate a native control the plat
 3. **System colours first.** Backgrounds, labels and separators use iOS semantic colours
    (`PlatformColor`); only the colours below are hand-written.
 4. **Status is colour + shape.** A state is never carried by colour alone.
-5. **Type is semantic.** Every text node uses a role below. No raw font sizes, no bundled fonts.
+5. **Type is semantic.** Every text node uses a role below. No raw font sizes; the only bundled fonts are the
+   two handwritten caption faces (Typography).
 6. **Only tokens.** No raw hex or font sizes outside `src/ui/theme/tokens.ts`.
 7. **The mascot can appear anywhere, at the size the screen class allows.** Everyday screens
    show the 小貘 character only as a small head (≤ 32 pt) with an expression; moment screens show
@@ -260,38 +261,49 @@ One component renders status everywhere (`src/ui/StatusBadge`).
 
 ## Typography
 
-System fonts only; nothing is bundled. Chinese renders in PingFang SC, Latin in SF Pro,
+System fonts everywhere except the handwritten captions (97A, 2026-10-30): the done card, the month
+calendar and their share image write the date and the one-line caption in Long Cang (Chinese) or Caveat (English and
+Malay), both OFL and bundled through the `expo-font` config plugin. Characters a face lacks fall back per glyph.
+Chinese renders in PingFang SC, Latin in SF Pro,
 numerals for money and counts in SF Rounded (`fontFamily: 'ui-rounded'`). Sizes are the iOS
 Dynamic Type defaults at the Large setting (Apple HIG, Typography → Specifications) and scale
 with the user's text size. Acceptance runs at Large; there are no separate layouts for
 accessibility sizes.
 
-| Token                                | Value | Role                                                |
-| ------------------------------------ | ----- | --------------------------------------------------- |
-| `--font-sans`                        |       | System (PingFang SC / SF Pro)                       |
-| `--font-rounded`                     |       | SF Rounded, numerals only                           |
-| `--text-wordmark`                    | `48`  | Tapiro wordmark, rounded heavy, white outline       |
-| `--text-wordmark--line-height`       | `56`  |                                                     |
-| `--text-amount-hero`                 | `62`  | Celebration amount, rounded heavy, white outline    |
-| `--text-amount-hero--line-height`    | `66`  |                                                     |
-| `--text-amount`                      | `48`  | Live-card amount and countdown, rounded heavy       |
-| `--text-amount--line-height`         | `52`  |                                                     |
-| `--text-amount-compact`              | `36`  | Amount beside a card title, rounded heavy           |
-| `--text-amount-compact--line-height` | `40`  |                                                     |
-| `--text-large-title`                 | `34`  | Tab root titles (Large Title, bold)                 |
-| `--text-large-title--line-height`    | `41`  |                                                     |
-| `--text-moment-title`                | `28`  | Moment screen title (Title 1, heavy, white outline) |
-| `--text-moment-title--line-height`   | `34`  |                                                     |
-| `--text-reward`                      | `22`  | Reward amount, rounded heavy (Title 2)              |
-| `--text-reward--line-height`         | `28`  |                                                     |
-| `--text-title`                       | `20`  | Section and sheet titles (Title 3, semibold)        |
-| `--text-title--line-height`          | `25`  |                                                     |
-| `--text-body`                        | `17`  | Content, list primary text, inputs (Body)           |
-| `--text-body--line-height`           | `22`  |                                                     |
-| `--text-secondary`                   | `15`  | Row subtitles, places (Subhead)                     |
-| `--text-secondary--line-height`      | `20`  |                                                     |
-| `--text-meta`                        | `13`  | Time, poster, footers (Footnote)                    |
-| `--text-meta--line-height`           | `18`  |                                                     |
+| Token                                | Value              | Role                                                |
+| ------------------------------------ | ------------------ | --------------------------------------------------- |
+| `--font-sans`                        |                    | System (PingFang SC / SF Pro)                       |
+| `--font-rounded`                     |                    | SF Rounded, numerals only                           |
+| `--font-hand-han`                    | `LongCang-Regular` | Handwritten captions in zh-Hans                     |
+| `--font-hand-latin`                  | `Caveat`           | Handwritten captions in en and ms                   |
+| `--text-wordmark`                    | `48`               | Tapiro wordmark, rounded heavy, white outline       |
+| `--text-wordmark--line-height`       | `56`               |                                                     |
+| `--text-amount-hero`                 | `62`               | Celebration amount, rounded heavy, white outline    |
+| `--text-amount-hero--line-height`    | `66`               |                                                     |
+| `--text-amount`                      | `48`               | Live-card amount and countdown, rounded heavy       |
+| `--text-amount--line-height`         | `52`               |                                                     |
+| `--text-amount-compact`              | `36`               | Amount beside a card title, rounded heavy           |
+| `--text-amount-compact--line-height` | `40`               |                                                     |
+| `--text-large-title`                 | `34`               | Tab root titles (Large Title, bold)                 |
+| `--text-large-title--line-height`    | `41`               |                                                     |
+| `--text-moment-title`                | `28`               | Moment screen title (Title 1, heavy, white outline) |
+| `--text-moment-title--line-height`   | `34`               |                                                     |
+| `--text-reward`                      | `22`               | Reward amount, rounded heavy (Title 2)              |
+| `--text-reward--line-height`         | `28`               |                                                     |
+| `--text-title`                       | `20`               | Section and sheet titles (Title 3, semibold)        |
+| `--text-title--line-height`          | `25`               |                                                     |
+| `--text-body`                        | `17`               | Content, list primary text, inputs (Body)           |
+| `--text-body--line-height`           | `22`               |                                                     |
+| `--text-secondary`                   | `15`               | Row subtitles, places (Subhead)                     |
+| `--text-secondary--line-height`      | `20`               |                                                     |
+| `--text-meta`                        | `13`               | Time, poster, footers (Footnote)                    |
+| `--text-meta--line-height`           | `18`               |                                                     |
+| `--text-hand-caption`                | `30`               | Done-card caption, handwritten                      |
+| `--text-hand-caption--line-height`   | `34`               |                                                     |
+| `--text-hand-date`                   | `22`               | Done-card date, handwritten                         |
+| `--text-hand-date--line-height`      | `26`               |                                                     |
+| `--text-hand-month`                  | `40`               | Month-calendar heading, handwritten                 |
+| `--text-hand-month--line-height`     | `44`               |                                                     |
 
 The reward and the primary action wrap rather than truncate at any size.
 
@@ -325,8 +337,11 @@ Radii are continuous corners. Buttons are pills.
 | `--sticker-shadow-blur`  | `6`   | Shadow radius                          |
 | `--sticker-rotation-max` | `8`   | Degrees; rotate between 2 and this     |
 
-- Flat fills, no outline strokes. Photo → subject cut-out (VisionKit) when available;
-  otherwise the task type's sticker icon.
+- **Hand art (step 9, 92A/93A).** Every bounty sticker is a crayon illustration from one fixed set
+  (`assets/hand-art/<id>.png`, mirrored in the kit for map pins): thick wobbly ink-brown outline, flat fills with
+  crayon grain, baked-in white die-cut border. The id comes from the bounty (chosen in the post form) or from its
+  title and category (`src/lib/handArt`). The set is generated by `scripts/hand-art/`; the prompt there is the
+  source of truth and replaces the PNGs under the same ids. No photo stickers in v1 (90A).
 - Stickers never wrap buttons, text or navigation.
 
 ## Mascot

@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import { formatMoney, moneyParts } from '@/lib/money';
 import type { PayDetail } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArtSticker } from '@/ui/HandArt';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
@@ -23,7 +23,10 @@ export function PayCard({ detail }: { detail: PayDetail }) {
   const amount = formatMoney(detail.amount, language, { whole: true });
   const { symbol, gap, whole, fraction } = moneyParts(detail.amount, language);
   return (
-    <LiveCard tone="pay" hanging={<CategorySticker category={detail.category} size={78} />}>
+    <LiveCard
+      tone="pay"
+      hanging={<HandArtSticker source={{ ...detail, title: detail.note }} size={78} />}
+    >
       <Pill ink={ink} dot={paint.urgentDot}>
         {t('home.card.pay.tag')}
       </Pill>

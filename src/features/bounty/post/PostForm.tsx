@@ -25,12 +25,14 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import type { CurrencyCode } from '@/lib/money';
 import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
+import { handArtFor } from '@/lib/handArt';
 import { CATEGORY_SYMBOLS } from '@/ui/categoryArt';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
 import { FormNotice } from './FormNotice';
+import { ArtRows, useShownArt } from './PostArt';
 import { DescriptionRows, TimeRows } from './OptionalRows';
 import { AddPlaceRow, PlaceSections } from './PlaceRows';
 import { draftStore } from './services';
@@ -75,7 +77,13 @@ function PostFormBody({
     formError.set(null);
   }
 
-  const title = useSyncedText(draft.title, (text) => edit({ title: text }));
+  const title = useSyncedText(draft.title, (text) => {
+    const current = draftStore.load(userId);
+    const auto = (title: string) => handArtFor({ ...current, art: null, title: title.trim() });
+    const moved = current.art !== null && auto(current.title) !== auto(text);
+    edit(moved ? { title: text, art: null } : { title: text });
+  });
+  const art = useShownArt(draft);
   const reward = useSyncedText(draft.rewardText, (text) => edit({ rewardText: text }));
   const description = useSyncedText(draft.description ?? '', (text) => edit({ description: text }));
   const titleField = useRef<TextFieldRef>(null);
@@ -166,6 +174,7 @@ function PostFormBody({
               {t('bounty.post.form.count', { count: codePoints(draft.title), max: TITLE_MAX })}
             </Text>
           </FieldRow>
+          <ArtRows id={art} onSwap={(next) => edit({ art: next })} />
         </Section>
         <Section
           footer={

@@ -11,6 +11,7 @@ const valid: PostDraft = {
   id: '6f1c2a40-5d3b-4c8e-9a7f-0b1d2e3f4a5b',
   title: '帮我取个快递',
   category: 'pickup',
+  art: null,
   rewardText: '8',
   currency: 'MYR',
   description: null,
@@ -82,6 +83,7 @@ describe('checkDraft', () => {
         id: valid.id,
         title: '帮我取个快递',
         category: 'pickup',
+        art: 'parcel',
         reward_minor: 50000,
         reward_currency: 'MYR',
         description: 'Shopee 包裹在管理处',
@@ -96,6 +98,13 @@ describe('checkDraft', () => {
     });
   });
 
+  test('the art sent is the one shown: a chosen art wins, else the title resolves it', () => {
+    const chosen = checkDraft({ ...valid, art: 'car' }, NOW);
+    expect(chosen.ok && chosen.args.art).toBe('car');
+    const tea = checkDraft({ ...valid, title: '帮我带杯奶茶', category: 'buy' }, NOW);
+    expect(tea.ok && tea.args.art).toBe('tea');
+  });
+
   test('absent optional fields are null', () => {
     expect(checkDraft({ ...valid, rewardText: '1' }, NOW)).toEqual({
       ok: true,
@@ -103,6 +112,7 @@ describe('checkDraft', () => {
         id: valid.id,
         title: '帮我取个快递',
         category: 'pickup',
+        art: 'parcel',
         reward_minor: 100,
         reward_currency: 'MYR',
         description: null,

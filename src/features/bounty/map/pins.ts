@@ -1,3 +1,4 @@
+import { handArtFor } from '@/lib/handArt';
 import type { Point } from '@/lib/location/types';
 import { formatMoney } from '@/lib/money';
 import type { BountyCategory } from '@/lib/stickers/category';
@@ -67,7 +68,7 @@ export function mapPins(
       a11yLabel: row.appliedByMe
         ? [said, t('bounty.board.card.applied')].join(t('bounty.board.card.separator'))
         : said,
-      art: categoryArt(row.category, theme),
+      art: categoryArt(row.category, theme, handArtFor(row)),
       fan: { index, of: groups.get(key) ?? 1 },
       applied: row.appliedByMe && !held.has(row.id),
       stamp,

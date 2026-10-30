@@ -1,16 +1,31 @@
-"""我的 shows 一起办成的事 · 7 张 above 收款方式; the row pushes the sticker book: outlined title 一起办成的事, count line with the new subtitle, seven worst-case stickers (each labelled who helped whom, then the title; bounty → its category sticker, ride → car, checked by the art's colours) in three columns newest first."""
+"""我的 shows 一起办成的事 · 7 张 above 收款方式; the row pushes the book (95A, 96A): outlined title, count line, a native
+卡堆 / 月历 switch on 卡堆, and the worst-case stickers as a stack of done cards, newest on top. Each card reads date,
+who helped whom, then the title; its hand art is drawn (colourful pixels in the art area), the first card (a coffee
+errand) draws the milk-tea cup and the third (a ride) draws the red car. Swiping turns the cards and the position
+line follows."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
 
 WORST_NAME = 'Nurul Aisyah binti Wan Abdul Rahman Shah'
 WORST_TITLE = '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便在 Sunway Pyramid 的 ZUS Coffee 买两杯 Spanish Latte，再送到 Universiti Malaya Kolej 宿舍楼'
+RIDE_TITLE = 'Pangsapuri Vista Harmoni Blok C → KLIA2 Terminal Ketibaan Antarabangsa'
 
-DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/', 'src/features/account/']
+DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/', 'src/features/account/', 'assets/hand-art/']
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'worst']
-ART_MIN = 3000
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'worst', '-uiVerifyBookView', 'stack']
+ART_HEIGHT = 200
+COLOURFUL_MIN = 4000
+
+
+def colourful(rgb):
+    return max(rgb) - min(rgb) > 40
+
+
+def red(rgb):
+    return rgb[0] > 170 and rgb[1] < 120 and rgb[2] < 120
+
 
 ui = UI(*sys.argv[1:])
 reach_home(ui)
@@ -32,36 +47,42 @@ assert title.get('AXLabel') == ui.t('stickers.book.title'), title
 count = ui.element('sticker-book-count')
 expected = ui.t('stickers.book.summary', total=ui.tn('stickers.count', 7), sub=ui.t('stickers.book.sub'))
 assert count.get('AXLabel') == expected, count
-items = ui.read()
-cells = [by_id(items, f'sticker-cell-{index}') for index in range(3)]
-assert all(cells), 'the first row of stickers is missing'
-first = ui.t('stickers.label.a11y', line1=ui.t('stickers.label.payee', name=WORST_NAME), title=WORST_TITLE, date='')
-assert (cells[0].get('AXLabel') or '').startswith(first), cells[0].get('AXLabel')
-assert len({round(cell['frame']['y']) for cell in cells}) == 1, 'the first three stickers are not one row'
-assert cells[0]['frame']['x'] < cells[1]['frame']['x'] < cells[2]['frame']['x'], 'columns out of order'
-shot = ui.snap('02-book')
+ui.element('sticker-book-view')
+ui.labelled(ui.t('stickers.book.view.stack'))
+ui.labelled(ui.t('stickers.book.view.calendar'))
+ui.element('sticker-stack')
+card = ui.element('sticker-card-0')
+label = card.get('AXLabel') or ''
+for part in (ui.t('stickers.label.payee', name=WORST_NAME), WORST_TITLE):
+    assert part in label, f'the top card does not read {part!r}: {label!r}'
+position = ui.element('sticker-stack-position')
+assert ui.t('stickers.card.position', index=1, total=7) in (position.get('AXLabel') or ''), position
+shot = ui.snap('02-stack')
 
 
-def art_pixels(cell, name):
-    f = cell['frame']
-    art = {'x': f['x'], 'y': f['y'], 'width': f['width'], 'height': min(f['height'], 100)}
-    colour = token(name, ui.appearance)
-    return shot.count(art, lambda rgb: close(rgb, colour))
+def art(f):
+    return {'x': f['x'], 'y': f['y'], 'width': f['width'], 'height': ART_HEIGHT}
 
 
-ART = [('--color-sticker-other', 'other category'), ('--color-sticker-buy', 'buy category'), ('--color-object-coral', 'car')]
-counts = [[art_pixels(cell, name) for name, _ in ART] for cell in cells]
-print(f'art pixels per cell (other, buy, car): {counts}')
-for index, (_, label) in enumerate(ART):
-    own = counts[index][index]
-    assert own > ART_MIN, f'cell {index} does not draw the {label} sticker ({own} pixels)'
-    for other in range(3):
-        if other != index:
-            assert counts[other][index] < own / 10, f'cell {other} shows {label} colours ({counts[other][index]} pixels)'
-sheet = by_id(items, 'sticker-book')['frame']
-x = sheet['x'] + sheet['width'] / 2
-ui.swipe((x, sheet['y'] + sheet['height'] * 0.8), (x, sheet['y'] + sheet['height'] * 0.2), 0.4)
-last = ui.element('sticker-cell-6')
-assert '排队续签' in (last.get('AXLabel') or ''), last.get('AXLabel')
-ui.capture('03-bottom')
-print('PASS: the 我的 row and the sticker book list seven stickers newest first')
+top_art = art(card['frame'])
+drawn = shot.count(top_art, colourful)
+top_red = shot.count(top_art, red)
+print(f'top card: {drawn} colourful pixels, {top_red} red')
+assert drawn > COLOURFUL_MIN, f'the top card draws no hand art ({drawn} colourful pixels)'
+
+f = card['frame']
+y = f['y'] + f['height'] / 2
+for _ in range(2):
+    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.3)
+ride = ui.wait_label('sticker-card-2', lambda text: RIDE_TITLE in text, 'the third card is not the ride')
+ui.wait_label(
+    'sticker-stack-position',
+    lambda text: ui.t('stickers.card.position', index=3, total=7) in text,
+    'the position line does not follow the swipe',
+)
+ride_shot = ui.snap('03-ride')
+car_red = ride_shot.count(art(ride['frame']), red)
+print(f'ride card: {car_red} red pixels')
+assert car_red > max(1500, top_red * 4), f'the ride card does not draw the red car ({car_red} red pixels)'
+assert by_id(ui.read(), 'sticker-calendar') is None, 'the calendar shows on 卡堆'
+print('PASS: the book opens on a stack of hand-drawn done cards, newest first, and swipes through them')

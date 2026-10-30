@@ -30,7 +30,7 @@ import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
 import { formatMoney } from '@/lib/money';
 import { Avatar } from '@/ui/Avatar';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArtSticker } from '@/ui/HandArt';
 import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -67,7 +67,7 @@ export function ApplicantsHeader({
         {detail ? (
           <>
             <RNHostView matchContents>
-              <CategorySticker category={detail.category} size={STICKER} />
+              <HandArtSticker source={detail} size={STICKER} />
             </RNHostView>
             <Text
               modifiers={[

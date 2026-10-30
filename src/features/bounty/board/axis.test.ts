@@ -7,6 +7,7 @@ const row = (id: string, distanceM: number | null): BoardRow => ({
   id,
   title: id,
   category: 'move',
+  art: null,
   reward: { minor: 800, currency: 'MYR' },
   reference: null,
   placeLabel: distanceM === null ? null : 'Sunway',
@@ -35,9 +36,9 @@ describe('axisMarks', () => {
   test('marks located rows within 2 km at their distance along the width, nearest first', () => {
     const { marks } = axisMarks(rows, 300);
     expect(marks).toEqual([
-      { ids: ['near'], x: 45, category: 'move' },
-      { ids: ['mid'], x: 240, category: 'move' },
-      { ids: ['edge'], x: 300, category: 'move' },
+      { ids: ['near'], x: 45, art: 'move' },
+      { ids: ['mid'], x: 240, art: 'move' },
+      { ids: ['edge'], x: 300, art: 'move' },
     ]);
   });
 
@@ -77,10 +78,10 @@ describe('axisMarks merging', () => {
       260,
     );
     expect(marks).toEqual([
-      { ids: ['a', 'b'], x: 39, category: 'pickup' },
-      { ids: ['c', 'd'], x: 104, category: 'accompany' },
-      { ids: ['e'], x: 156, category: 'study' },
-      { ids: ['f', 'g'], x: 208, category: 'move' },
+      { ids: ['a', 'b'], x: 39, art: 'parcel' },
+      { ids: ['c', 'd'], x: 104, art: 'accompany' },
+      { ids: ['e'], x: 156, art: 'study' },
+      { ids: ['f', 'g'], x: 208, art: 'move' },
     ]);
   });
 

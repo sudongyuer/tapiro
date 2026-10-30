@@ -1,5 +1,5 @@
 begin;
-select plan(52);
+select plan(56);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -116,7 +116,7 @@ insert into results
 select 'p2', public.publish_bounty(
   '30000000-0000-0000-0000-000000000002', '排队买奶茶', 'queue', 1000, 'MYR',
   description => '   ', place_label => ' Sunway Pyramid ', latitude => 3.0733, longitude => 101.6067,
-  address => ' Block C, 12-3 ', deadline_at => now() + interval '2 days'
+  address => ' Block C, 12-3 ', deadline_at => now() + interval '2 days', art => 'tea'
 );
 select is(
   (select address from public.bounty_addresses where bounty_id = '30000000-0000-0000-0000-000000000002'), 'Block C, 12-3',
@@ -137,6 +137,12 @@ select is(
 select is(
   (select description from public.bounties where id = '30000000-0000-0000-0000-000000000002'), null,
   'a blank description is stored as null'
+);
+select is(
+  array(select art from public.bounties where id in (
+    '30000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002'
+  ) order by id),
+  array[null, 'tea'], 'the chosen art is stored and an omitted art is null'
 );
 
 select public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000a1', 500, 'MYR');
@@ -185,6 +191,10 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select is(
   public.publish_bounty('30000000-0000-0000-0000-000000000001', '  帮取快递  ', 'pickup', 500, 'MYR'),
   (select r from results where name = 'p1'), 'replaying a publish returns the first answer'
+);
+select throws_ok(
+  $$select public.publish_bounty('30000000-0000-0000-0000-000000000001', '  帮取快递  ', 'pickup', 500, 'MYR', art => 'parcel')$$,
+  '55000', 'post_already_sent', 'a replay with a different art is not the first publish'
 );
 reset role;
 select is(pg_temp.totals(), (select v from snapshots where name = 'replay'), 'a replayed publish writes nothing');
@@ -245,6 +255,14 @@ select throws_ok(
   $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR',
     starts_at => now() + interval '2 days', deadline_at => now() + interval '1 day')$$,
   '22023', 'invalid_bounty', 'a deadline before the start is rejected'
+);
+select throws_ok(
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', art => 'Tea')$$,
+  '22023', 'invalid_bounty', 'an art that is not a lower-case slug is rejected'
+);
+select throws_ok(
+  $$select public.publish_bounty(gen_random_uuid(), 't', 'pickup', 500, 'MYR', art => repeat('a', 33))$$,
+  '22023', 'invalid_bounty', 'an art longer than 32 characters is rejected'
 );
 select throws_ok(
   $$select public.publish_bounty(gen_random_uuid(), repeat('题', 61), 'pickup', 500, 'MYR')$$,
@@ -349,7 +367,7 @@ select throws_ok(
 );
 
 select is(
-  has_function_privilege('anon', 'public.publish_bounty(uuid, text, public.bounty_category, bigint, text, text, text, double precision, double precision, text, timestamptz, timestamptz, timestamptz)', 'execute'),
+  has_function_privilege('anon', 'public.publish_bounty(uuid, text, public.bounty_category, bigint, text, text, text, double precision, double precision, text, timestamptz, timestamptz, timestamptz, text)', 'execute'),
   false, 'anon cannot publish'
 );
 select is(has_function_privilege('anon', 'public.close_bounty(uuid)', 'execute'), false, 'anon cannot close');

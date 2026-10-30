@@ -20,6 +20,7 @@ const JSON_ROW = {
   paymentId: 'p1',
   itemKind: 'bounty',
   category: 'buy',
+  art: 'tea',
   title: '帮买奶茶',
   earnedAt: '2026-10-29T04:00:00Z',
   counterpartName: 'Lily',
@@ -68,7 +69,7 @@ describe('settled card mapping', () => {
       kind: 'settled',
       stickerId: 's1',
       paymentId: 'p1',
-      art: { kind: 'category', category: 'buy' },
+      art: 'tea',
       title: '帮买奶茶',
       counterpart: 'Lily',
       amount: { minor: 3000, currency: 'CNY' },
@@ -83,12 +84,18 @@ describe('settled card mapping', () => {
     );
     expect(item.sub).toBe('帮买奶茶 · 对方确认收到了');
     expect(item.settled.counterpart).toBeNull();
-    expect(item.settled.art).toEqual({ kind: 'car' });
+    expect(item.settled.art).toBe('car');
   });
 
   test('an amount in an unknown currency fails the read rather than showing a wrong sum', () => {
     expect(() => toSettledRow({ ...JSON_ROW, amount: { minor: 3000, currency: 'USD' } })).toThrow();
     expect(() => toSettledRow({ ...JSON_ROW, amount: null })).toThrow();
+  });
+
+  test('the bounty art passes through, and a missing or malformed one reads as null', () => {
+    expect(toSettledRow(JSON_ROW).art).toBe('tea');
+    expect(toSettledRow({ ...JSON_ROW, art: null }).art).toBeNull();
+    expect(toSettledRow({ ...JSON_ROW, art: ['tea'] }).art).toBeNull();
   });
 });
 

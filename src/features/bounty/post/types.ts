@@ -1,3 +1,4 @@
+import type { HandArtId } from '@/lib/handArt';
 import type { CurrencyCode, Money } from '@/lib/money';
 import type { BountyCategory } from '@/lib/stickers/category';
 
@@ -15,6 +16,7 @@ export type PublishArgs = {
   starts_at: string | null;
   ends_at: string | null;
   deadline_at: string | null;
+  art: string | null;
 };
 
 export type PublishResult = {
@@ -40,6 +42,7 @@ export type PostDraft = {
   id: string;
   title: string;
   category: BountyCategory | null;
+  art: HandArtId | null;
   rewardText: string;
   currency: CurrencyCode;
   description: string | null;

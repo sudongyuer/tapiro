@@ -14,6 +14,7 @@ const ROW: BoardRow = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
+  art: null,
   reward: { minor: 800, currency: 'MYR' },
   reference: null,
   placeLabel: 'Sunway Geo 宿舍',

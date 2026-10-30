@@ -1,3 +1,4 @@
+import { handArtFor } from '@/lib/handArt';
 import { CURRENCIES, POST_LIMITS, type CurrencyCode, type Money } from '@/lib/money';
 
 import type { DraftError, PostDraft, PublishArgs, TimeChoice } from './types';
@@ -106,6 +107,7 @@ export function checkDraft(
       id: draft.id,
       title,
       category: draft.category,
+      art: handArtFor({ art: draft.art, category: draft.category, title }),
       reward_minor: reward.minor,
       reward_currency: reward.currency,
       description,

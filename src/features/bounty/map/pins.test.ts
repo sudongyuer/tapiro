@@ -50,15 +50,23 @@ describe('mapPins', () => {
     expect(pin.point).toEqual(A);
   });
 
-  test('art is the category sticker colour, ink and symbol', () => {
+  test('art is the category colour and ink with the bounty hand art', () => {
     const [light] = pins([row('a', { point: A, category: 'pickup' })]);
     expect(light.art).toEqual({
       color: '#C89B62',
       ink: '#25232B',
       symbol: 'tray.and.arrow.down.fill',
+      image: 'parcel',
     });
-    const [dark] = pins([row('a', { point: A, category: 'study' })], 'dark');
-    expect(dark.art).toEqual({ color: '#F0C9DA', ink: '#25232B', symbol: 'book.fill' });
+    const [dark] = pins([row('a', { point: A, category: 'study', title: '帮带杯奶茶' })], 'dark');
+    expect(dark.art).toEqual({
+      color: '#F0C9DA',
+      ink: '#25232B',
+      symbol: 'book.fill',
+      image: 'tea',
+    });
+    const [stored] = pins([row('a', { point: A, category: 'study', art: 'car' })]);
+    expect(stored.art.image).toBe('car');
   });
 
   test('ids and the first page fan indexes stay stable when a page is appended', () => {

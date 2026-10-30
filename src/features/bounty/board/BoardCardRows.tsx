@@ -40,7 +40,7 @@ export function CardHead({ row, copy, testID }: Part & { row: BoardRow }) {
         <AppliedSticker
           id={row.id}
           surface="card"
-          category={row.category}
+          art={row}
           size={STICKER}
           applied={row.appliedByMe}
           testID={testID}

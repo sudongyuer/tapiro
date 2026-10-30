@@ -12,6 +12,7 @@ const ROW = {
   id: 'b1',
   title: '帮取快递',
   category: 'pickup',
+  art: 'parcel',
   rewardMinor: 800,
   rewardCurrency: 'MYR',
   placeLabel: 'Sunway Geo 宿舍',

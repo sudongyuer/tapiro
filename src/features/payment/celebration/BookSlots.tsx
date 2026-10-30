@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { stickerArt } from '@/lib/stickers';
-import { EarnedSticker } from '@/ui/EarnedSticker';
+import { HandArt } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -101,7 +101,7 @@ function CardArt({ card, index }: { card: BookCard; index: number }) {
   if (card.kind !== 'sticker') return null;
   return (
     <View style={{ transform: [{ rotate: `${index % 2 ? 6 : -6}deg` }] }}>
-      <EarnedSticker art={stickerArt(card.sticker)} width={SLOT_ART} />
+      <HandArt id={stickerArt(card.sticker)} size={SLOT_ART} />
     </View>
   );
 }

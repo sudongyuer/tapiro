@@ -33,6 +33,7 @@ const draft = (patch: Partial<PublishArgs> = {}): PublishArgs => ({
   id: crypto.randomUUID(),
   title: '帮我取个快递',
   category: 'pickup',
+  art: null,
   reward_minor: 800,
   reward_currency: 'MYR',
   description: 'Shopee 包裹在 Sunway Geo 管理处',
