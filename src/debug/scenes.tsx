@@ -19,6 +19,7 @@ import {
 } from './BountyScenes';
 import { DesignTokensScene } from './DesignTokensScene';
 import { FlightRedirect } from './FlightScene';
+import { MapKitScene } from './MapKitScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { SignInScene } from './SignInScene';
 
@@ -62,6 +63,7 @@ export const scenes: Scene[] = [
   },
   { id: 'bounty-status', titleKey: 'debug.bounty.status', Component: BountyStatusScene },
   { id: 'sticker-flight', titleKey: 'debug.flight.title', Component: FlightRedirect },
+  { id: 'map-kit', titleKey: 'debug.map.title', Component: MapKitScene },
 ];
 
 export function findScene(id: string) {

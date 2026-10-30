@@ -293,6 +293,13 @@ export default {
       flyReduced: '飞（减弱动态效果）',
       reset: '放回贴纸',
     },
+    map: {
+      title: '地图贴纸',
+      near: '看近处',
+      far: '看远处',
+      me: '从我这里',
+      place: '从这里',
+    },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',
