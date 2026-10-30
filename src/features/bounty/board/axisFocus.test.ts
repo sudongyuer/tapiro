@@ -25,6 +25,7 @@ const row = (title: string, distanceM: number): BoardRow => ({
   deadlineAt: null,
   urgent: false,
   distanceM,
+  point: null,
   appliedByMe: false,
   createdAt: '2026-10-27T03:00:00.000Z',
   poster: { id: 'p', name: '小林', tier: 'reliable' },

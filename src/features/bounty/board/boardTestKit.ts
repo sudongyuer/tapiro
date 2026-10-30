@@ -13,6 +13,7 @@ export const row = (id: string, patch: Partial<BoardRow> = {}): BoardRow => ({
   deadlineAt: null,
   urgent: false,
   distanceM: null,
+  point: null,
   appliedByMe: false,
   createdAt: '2026-10-27T03:00:00.000Z',
   poster: { id: 'poster', name: '小林', tier: 'reliable' },
