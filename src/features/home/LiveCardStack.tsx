@@ -1,7 +1,14 @@
 import { useRouter, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
@@ -16,6 +23,19 @@ import { bountyDetail, type LiveCardModel } from './homeModel';
 import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
 
 const MAX_Z = 10;
+const RESTACK = { duration: 420, easing: Easing.bezier(0.2, 0.9, 0.3, 1) };
+const LEAVE = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
+
+function leaveUp() {
+  'worklet';
+  return {
+    initialValues: { opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }] },
+    animations: {
+      opacity: withTiming(0, LEAVE),
+      transform: [{ translateY: withTiming(-24, LEAVE) }, { scale: withTiming(0.92, LEAVE) }],
+    },
+  };
+}
 
 const TONE: Record<LiveCardModel['kind'], LiveCardTone> = {
   oweMoney: 'pay',
@@ -116,6 +136,7 @@ function StackedCard({
   fanned,
   open,
   progress,
+  ready,
   name,
   onAsk,
   onToggle,
@@ -126,14 +147,26 @@ function StackedCard({
   const bounty = bountyDetail(card);
   const behind = index > 0 && !open;
   const hidden = !stacked.visible && !open;
+  const y = useSharedValue(stacked.y);
+  const scale = useSharedValue(stacked.scale);
+  const faceShown = useSharedValue(index > 0 ? 1 : 0);
+  const wasReady = useRef(ready);
+  useEffect(() => {
+    const animate = wasReady.current && ready;
+    wasReady.current = ready;
+    y.set(animate ? withTiming(stacked.y, RESTACK) : stacked.y);
+    scale.set(animate ? withTiming(stacked.scale, RESTACK) : stacked.scale);
+    const face = index > 0 ? 1 : 0;
+    faceShown.set(animate ? withTiming(face, RESTACK) : face);
+  }, [ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
   const motion = useAnimatedStyle(() => ({
     opacity: stacked.visible ? 1 : progress.value,
     transform: [
-      { translateY: interpolate(progress.value, [0, 1], [stacked.y, fanned.y]) },
-      { scale: interpolate(progress.value, [0, 1], [stacked.scale, fanned.scale]) },
+      { translateY: interpolate(progress.value, [0, 1], [y.get(), fanned.y]) },
+      { scale: interpolate(progress.value, [0, 1], [scale.get(), fanned.scale]) },
     ],
   }));
-  const face = useAnimatedStyle(() => ({ opacity: index > 0 ? 1 - progress.value : 0 }));
+  const face = useAnimatedStyle(() => ({ opacity: faceShown.get() * (1 - progress.value) }));
   const peek = bounty
     ? t('home.card.bounty.line', { title: bounty.title, line: bounty.line })
     : card.kind === 'calm'
@@ -161,6 +194,7 @@ function StackedCard({
   return (
     <Animated.View
       onLayout={onCardLayout(card.id)}
+      exiting={card.kind === 'settled' ? leaveUp : undefined}
       accessibilityElementsHidden={hidden}
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
       style={[styles.card, { zIndex: MAX_Z - index }, motion]}
@@ -192,7 +226,7 @@ function StackedCard({
           ) : (
             <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
           )}
-          {index > 0 ? <BackFace tone={TONE[card.kind]} label={peek} style={face} /> : null}
+          <BackFace tone={TONE[card.kind]} label={peek} style={face} />
         </View>
       )}
     </Animated.View>

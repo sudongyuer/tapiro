@@ -56,7 +56,9 @@ public final class TapiroKitModule: Module {
         guard let source = self?.appContext?.findView(withTag: options.viewTag, ofType: UIView.self) else {
           return promise.resolve(["landed": false])
         }
-        StickerFlight.fly(source: source, options: options) { promise.resolve(["landed": $0]) }
+        let anchor = options.anchorTag == 0
+          ? nil : self?.appContext?.findView(withTag: options.anchorTag, ofType: UIView.self)
+        StickerFlight.fly(source: source, anchor: anchor, options: options) { promise.resolve(["landed": $0]) }
       }
     }.runOnQueue(.main)
 

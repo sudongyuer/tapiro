@@ -213,6 +213,7 @@ const ms: Translation = {
         headline: 'Berjaya! Ini pelekat anda',
         collect: 'Simpan ke buku pelekat',
         collected: 'Disimpan ke buku pelekat',
+        badge: '+1',
         strip: '{{title}} · Selesai',
         a11y: 'Langsai, {{line}}, {{amount}}',
       },

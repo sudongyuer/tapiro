@@ -31,9 +31,9 @@ export function SettledCard({
   const { ink, surface, darkSurface } = useLiveCardPaint('progress');
   const success = token('--color-success', darkSurface ? 'dark' : 'light') as string;
   const amount = formatMoney(detail.amount, language, { whole: true });
-  const { sticker, style, collect, collecting } = useSettledCollect({ onCollect, onLeave });
+  const { sticker, card, style, collect, collecting } = useSettledCollect({ onCollect, onLeave });
   return (
-    <Animated.View style={style}>
+    <Animated.View ref={card} collapsable={false} style={style}>
       <LiveCard
         tone="progress"
         hanging={

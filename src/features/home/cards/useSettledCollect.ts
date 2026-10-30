@@ -14,19 +14,15 @@ import { StickerFlight } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { uiVerifyReduceMotion } from '@/lib/uiVerify';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import { runSettledCollect, type SettledExit } from './settledCollect';
 
 const ME_TAB_ID = 'tab-me';
-const EASE_ENTER = Easing.bezier(0.23, 1, 0.32, 1);
-const EXIT = {
-  leave: { duration: 220, easing: EASE_ENTER, reduceMotion: ReduceMotion.Never, rise: 8 },
-  fade: {
-    duration: 200,
-    easing: Easing.bezier(0, 0, 0.58, 1),
-    reduceMotion: ReduceMotion.Never,
-    rise: 0,
-  },
+const FADE = {
+  duration: 200,
+  easing: Easing.bezier(0, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.Never,
 } as const;
 
 export function useSettledCollect({
@@ -37,32 +33,39 @@ export function useSettledCollect({
   onLeave: () => void;
 }) {
   const { t } = useI18n();
+  const { color } = useTheme();
   const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
   const sticker = useRef<View>(null);
+  const card = useRef<View>(null);
   const started = useRef(false);
   const [collecting, setCollecting] = useState(false);
   const opacity = useSharedValue(1);
-  const lift = useSharedValue(0);
-  const style = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ translateY: lift.get() }],
-  }));
+  const style = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
+  // A landed card leaves through the stack's exiting animation, so the next card can rise while it goes.
   const exit = (kind: SettledExit) =>
-    new Promise<void>((resolve) => {
-      const { rise, ...timing } = EXIT[kind];
-      lift.set(withTiming(rise, timing));
-      opacity.set(
-        withTiming(0, timing, () => {
-          scheduleOnRN(resolve);
-        }),
-      );
-    });
+    kind === 'leave'
+      ? Promise.resolve()
+      : new Promise<void>((resolve) => {
+          opacity.set(
+            withTiming(0, FADE, () => {
+              scheduleOnRN(resolve);
+            }),
+          );
+        });
 
   const fly = () => {
     const viewTag = findNodeHandle(sticker.current);
     if (viewTag === null) return Promise.resolve({ landed: false });
-    return StickerFlight.flyToTab({ viewTag, tabId: ME_TAB_ID, reduceMotion });
+    return StickerFlight.flyToTab({
+      viewTag,
+      anchorTag: findNodeHandle(card.current) ?? undefined,
+      tabId: ME_TAB_ID,
+      reduceMotion,
+      badge: t('home.card.settled.badge'),
+      badgeColor: color('--color-paper-green'),
+      badgeInk: color('--color-sticker-border'),
+    });
   };
 
   const collect = () => {
@@ -85,5 +88,5 @@ export function useSettledCollect({
     );
   };
 
-  return { sticker, style, collect, collecting };
+  return { sticker, card, style, collect, collecting };
 }

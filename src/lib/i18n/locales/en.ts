@@ -209,6 +209,7 @@ const en: Translation = {
         headline: 'Done! Here’s your sticker',
         collect: 'Add to Sticker Book',
         collected: 'Added to Sticker Book',
+        badge: '+1',
         strip: '{{title}} · Done',
         a11y: 'Settled, {{line}}, {{amount}}',
       },

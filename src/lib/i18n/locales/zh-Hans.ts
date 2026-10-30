@@ -204,6 +204,7 @@ export default {
         headline: '办成了，贴纸给你',
         collect: '收进贴纸本',
         collected: '已收进贴纸本',
+        badge: '+1',
         strip: '{{title}} · 办成了',
         a11y: '已结清，{{line}}，{{amount}}',
       },

@@ -308,3 +308,10 @@ so the card does not flip live (11), 先付 (12).
   the sticker is not hung and the 「收进贴纸本」 button is disabled while the card is behind. No `home_*` case's feed
   changed: `-uiVerifySettled` defaults to `none`, so only `home_settled_card` shows the card.
 - 2026-10-30, controller: line 1 of a sticker label truncates in the middle, so a long name keeps 「帮我」 / the far end (「Nurul…ah帮我」); tail truncation hid who helped whom.
+- 2026-10-30, Q73 redone after the owner tried the flight on the Simulator (「感觉很一般」): the owner picked ①A ②A ③A ④A on
+  an interactive canvas board (「收贴纸动效 · 可交互」). The sticker lifts to the card centre at 120 pt with a shadow
+  (spring 300 ms, damping 0.72) and holds 250 ms; it is thrown on a quadratic arc that peaks 110 pt above, spinning
+  330° and shrinking to 24 pt over 600 ms; at landing the 我的 icon presses to 0.76 and springs back, and a 「+1」 badge
+  (`home.card.settled.badge`, `--color-paper-green`) shows for about 1 s. The card leaves through the stack's
+  exiting animation (up 24 pt, scale 0.92, fade, 320 ms) while the stack restacks over 420 ms, and the card behind
+  fades its strip, so there is no blank card between the two. `flyToTab` takes `anchorTag` and the badge fields.

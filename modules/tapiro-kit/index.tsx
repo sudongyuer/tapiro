@@ -19,8 +19,12 @@ export type PlaceResult =
 
 export type StickerFlightOptions = {
   viewTag: number;
+  anchorTag?: number;
   tabId: string;
   reduceMotion: boolean;
+  badge?: string;
+  badgeColor?: string;
+  badgeInk?: string;
 };
 export type StickerFlightResult = { landed: boolean };
 
