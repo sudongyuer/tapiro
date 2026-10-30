@@ -2,8 +2,8 @@
 location denied and no place there is no map and no pin, only 选一个地方, which asks for a place; a chosen place shows
 the place row, the map with its 「这里」 marker and the pins; a first-load failure shows 没加载出来 in the map's place,
 never a map or a count, and 重试 brings the pins; an empty 急 filter keeps the map with no pins under 看全部; on the home
-board in map view a failed pull keeps the pins under the stale notice above the map (the Debug scene's refresh spinner
-does not end after an instant failure, so this step runs on the production screen); a failed next page turns the more chip into 后面的没加载出来 · 重试, which
+board in map view a failed pull keeps the pins under the stale notice above the map; in the Debug scene the refresh
+spinner ends after an instant failure (the chips return to rest); a failed next page turns the more chip into 后面的没加载出来 · 重试, which
 recovers."""
 import re
 import sys
@@ -126,5 +126,14 @@ ui.wait_label('bounty-map-more', lambda label: label == ui.t('bounty.board.map.m
                                                              count=5),
               'retrying the page did not load it')
 ui.capture('08-page-retried')
+open_scene(ui, *ME, '-uiVerifyBoardFail', 'refresh', drop=NO_ORIGIN, ready=pin_id(FIRST))
+map_at_rest(ui)
+rest_y = ui.element('bounty-filter-all')['frame']['y']
+s = ui.read()[0]['frame']
+ui.swipe((s['width'] / 2, s['height'] * PULL[0]), (s['width'] / 2, s['height'] * PULL[1]), 0.6)
+ui.wait(lambda items: by_id(items, 'bounty-filter-all')
+        and abs(by_id(items, 'bounty-filter-all')['frame']['y'] - rest_y) <= 2,
+        'the refresh spinner did not end after an instant failure: the chips stay pulled down', timeout=8)
+ui.capture('09-scene-refresh-ended')
 print('PASS: no origin, chosen place with 这里, first-load failure and retry, empty filter over the map, stale, '
-      'failed page')
+      'failed page, and the scene spinner ends after an instant failure')

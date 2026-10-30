@@ -16,7 +16,9 @@ function useTracked(run: () => Promise<void>) {
     try {
       await run();
     } finally {
-      setBusy(false);
+      // An instant answer would batch true and false into one render; RefreshControl then never sees the change and
+      // keeps spinning.
+      requestAnimationFrame(() => setBusy(false));
     }
   }, [run]);
   return [busy, start] as const;

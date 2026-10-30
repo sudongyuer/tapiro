@@ -31,6 +31,9 @@ STRUCK_SHARE = 0.6
 INK_CONTRAST = 40
 
 ui = UI(*sys.argv[1:])
+# Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
+DAY = rf"(?:(?:{re.escape(ui.t('bounty.post.confirm.today'))}|{re.escape(ui.t('bounty.post.confirm.tomorrow'))})\s?)?"
+CLOCK = DAY + CLOCK
 
 
 def step(identifier):
