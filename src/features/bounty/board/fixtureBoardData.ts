@@ -5,7 +5,7 @@ import { BOUNTY_CATEGORIES, type BountyCategory } from '@/lib/stickers/category'
 
 import type { Person, Tier } from './types';
 
-export const BOARDS = ['full', 'one', 'empty', 'worst', 'long', 'cny'] as const;
+export const BOARDS = ['full', 'one', 'empty', 'worst', 'long', 'cny', 'crowded'] as const;
 export type BoardFixture = (typeof BOARDS)[number];
 
 export type FixtureBounty = {
@@ -47,6 +47,14 @@ export function pointAt(origin: Point, meters: number, bearingDegrees: number): 
   return { latitude: deg(lat2), longitude: deg(lon2) };
 }
 
+const GRID_DEGREES = 0.001;
+
+export function snapPoint(point: Point): Point {
+  const snap = (value: number) =>
+    Number((Math.round(value / GRID_DEGREES) * GRID_DEGREES).toFixed(3));
+  return { latitude: snap(point.latitude), longitude: snap(point.longitude) };
+}
+
 const person = (id: string, name: string, tier: Tier): Person => ({ id, name, tier });
 
 const KOBAYASHI = person('fixture-poster-lin', '小林', 'reliable');
@@ -69,6 +77,7 @@ type Spec = Omit<
   reference?: MoneyReference;
   meters?: number;
   bearing?: number;
+  at?: Point;
   description?: string;
   window?: FixtureBounty['window'];
   deadlineInMinutes?: number;
@@ -76,7 +85,7 @@ type Spec = Omit<
 };
 
 function bounty(spec: Spec): FixtureBounty {
-  const { meters, bearing = 0, ...rest } = spec;
+  const { meters, bearing = 0, at, ...rest } = spec;
   return {
     reference: null,
     description: null,
@@ -84,7 +93,7 @@ function bounty(spec: Spec): FixtureBounty {
     deadlineInMinutes: null,
     applied: false,
     ...rest,
-    point: meters === undefined ? null : pointAt(SUNWAY_PYRAMID, meters, bearing),
+    point: at ?? (meters === undefined ? null : pointAt(SUNWAY_PYRAMID, meters, bearing)),
   };
 }
 
@@ -372,6 +381,56 @@ const CNY: FixtureBounty[] = [
   }),
 ];
 
+export const CROWDED_CELL: Point = { latitude: 3.074, longitude: 101.608 };
+export const CROWDED_CORNER: Point = { latitude: 3.0725, longitude: 101.6105 };
+
+const CROWDED_POSTERS = [
+  KOBAYASHI,
+  AISYAH,
+  JIE,
+  WEI_JIE,
+  MEI_LING,
+  HAFIZ,
+  LILY,
+  ARIF,
+  SITI,
+  XIAOYU,
+];
+const CROWDED_CELL_OFFSETS: [number, number][] = [
+  [0.0003, -0.0003],
+  [0.0003, 0.0003],
+  [-0.0003, -0.0003],
+  [-0.0003, 0.0003],
+  [0, 0.0001],
+  [0.0001, 0],
+];
+const CROWDED_CORNER_OFFSETS: [number, number][] = [
+  [0.00005, 0.00005],
+  [0.00005, -0.00005],
+  [-0.00005, 0.00005],
+  [-0.00005, -0.00005],
+];
+
+const crowded = (origin: Point, offsets: [number, number][], first: number) =>
+  offsets.map(([north, east], index) => {
+    const n = first + index;
+    return bounty({
+      id: `fixture-crowded-${String(n).padStart(2, '0')}`,
+      title: `同一栋楼的悬赏 ${n}`,
+      category: BOUNTY_CATEGORIES[(n - 1) % BOUNTY_CATEGORIES.length],
+      reward: { minor: 100 * (4 + n), currency: 'MYR' },
+      placeLabel: `Sunway Pyramid ${n} 号门`,
+      at: { latitude: origin.latitude + north, longitude: origin.longitude + east },
+      createdMinutesAgo: 4 + n * 6,
+      poster: CROWDED_POSTERS[(n - 1) % CROWDED_POSTERS.length],
+    });
+  });
+
+const CROWDED: FixtureBounty[] = [
+  ...crowded(CROWDED_CELL, CROWDED_CELL_OFFSETS, 1),
+  ...crowded(CROWDED_CORNER, CROWDED_CORNER_OFFSETS, 7),
+];
+
 export const FIXTURE_BOARDS: Record<BoardFixture, FixtureBounty[]> = {
   full: FULL,
   one: FULL.slice(3, 4),
@@ -379,4 +438,5 @@ export const FIXTURE_BOARDS: Record<BoardFixture, FixtureBounty[]> = {
   worst: [...WORST, ...WORST_FILLERS],
   long: LONG,
   cny: [...CNY, ...FULL.slice(0, 2)],
+  crowded: CROWDED,
 };

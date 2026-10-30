@@ -20,6 +20,7 @@ export type BoardRow = {
   deadlineAt: string | null;
   urgent: boolean;
   distanceM: number | null;
+  point: Point | null;
   appliedByMe: boolean;
   createdAt: string;
   poster: Person;

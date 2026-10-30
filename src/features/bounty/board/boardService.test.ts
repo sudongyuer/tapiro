@@ -21,6 +21,7 @@ const ROW = {
   deadlineAt: '2026-10-27T05:00:00+00:00',
   urgent: true,
   distanceM: 300,
+  point: { latitude: 3.074, longitude: 101.608 },
   appliedByMe: false,
   createdAt: '2026-10-27T03:50:00+00:00',
   poster: { id: 'p1', name: '小林', tier: 'reliable' },
@@ -176,6 +177,11 @@ describe('page', () => {
       () => ok({ items: [{ ...ROW, reference: { minor: 1307, currency: 'CNY' } }] }),
     ],
     ['a missing items list', () => ok({ next: null })],
+    ['a row without its point key', () => ok({ items: [{ ...ROW, point: undefined }] })],
+    [
+      'an out-of-range point',
+      () => ok({ items: [{ ...ROW, point: { latitude: 91, longitude: 101.608 } }] }),
+    ],
   ])('%s throws', async (_label, answer) => {
     const stub = stubClient(answer);
     await expect(

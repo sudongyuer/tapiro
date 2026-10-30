@@ -1,3 +1,4 @@
+import type { Point } from '@/lib/location/types';
 import { toMoney, type Money, type MoneyReference } from '@/lib/money';
 import { bountyCategory } from '@/lib/stickers/category';
 
@@ -58,6 +59,20 @@ function toReference(value: unknown): MoneyReference | null {
 const finite = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 
+const coordinate = (value: unknown, limit: number, what: string): number =>
+  typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= limit
+    ? value
+    : fail(what);
+
+function toPoint(value: unknown): Point | null {
+  if (value === null) return null;
+  const point = body(value, 'point');
+  return {
+    latitude: coordinate(point.latitude, 90, 'point.latitude'),
+    longitude: coordinate(point.longitude, 180, 'point.longitude'),
+  };
+}
+
 function toPerson(value: unknown, what = 'poster'): Person {
   const person = body(value, what);
   return {
@@ -87,6 +102,7 @@ export function toBoardRow(value: unknown): BoardRow {
     deadlineAt: textOrNull(row.deadlineAt, 'deadlineAt'),
     urgent: row.urgent === true,
     distanceM: countOrNull(row.distanceM, 'distanceM'),
+    point: toPoint(row.point),
     appliedByMe: row.appliedByMe === true,
     createdAt: text(row.createdAt, 'createdAt'),
     poster: toPerson(row.poster),

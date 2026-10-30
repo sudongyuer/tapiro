@@ -25,7 +25,7 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import type { CurrencyCode } from '@/lib/money';
 import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
-import { CATEGORY_SYMBOLS } from '@/ui/CategorySticker';
+import { CATEGORY_SYMBOLS } from '@/ui/categoryArt';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
