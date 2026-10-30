@@ -8,6 +8,7 @@ import {
   SettingsScene,
   WelcomeScene,
 } from './AccountScenes';
+import { BoardMapScene } from './BoardMapScene';
 import {
   BountyApplicantsScene,
   BountyBoardScene,
@@ -64,6 +65,7 @@ export const scenes: Scene[] = [
   { id: 'bounty-status', titleKey: 'debug.bounty.status', Component: BountyStatusScene },
   { id: 'sticker-flight', titleKey: 'debug.flight.title', Component: FlightRedirect },
   { id: 'map-kit', titleKey: 'debug.map.title', Component: MapKitScene },
+  { id: 'bounty-map', titleKey: 'debug.bounty.map', Component: BoardMapScene },
 ];
 
 export function findScene(id: string) {

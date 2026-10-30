@@ -290,6 +290,7 @@ const ms: Translation = {
       confirm: 'Sahkan siaran',
       placeSearch: 'Pilih Tempat',
       board: 'Papan ganjaran',
+      map: 'Ganjaran di peta',
       detail: 'Butiran ganjaran',
       applicants: 'Pilih pembantu (pemohon)',
       status: 'Halaman status (keadaan × peranan)',

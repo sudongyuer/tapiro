@@ -55,7 +55,7 @@ final class BountyPinView: MKAnnotationView {
   private static let border: CGFloat = 3
   private static let farScale: CGFloat = 0.42
   private static let selectedScale: CGFloat = 1.12
-  private static let fanRadius: CGFloat = 10
+  private static let fanRadius: CGFloat = 26
   private static let labelTilt: CGFloat = -4 * .pi / 180
   private static let labelOverlap: CGFloat = 6
   private static let labelPadding = CGSize(width: 7, height: 3)

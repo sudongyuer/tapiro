@@ -286,6 +286,7 @@ const en: Translation = {
       confirm: 'Confirm post',
       placeSearch: 'Choose a Place',
       board: 'Bounty board',
+      map: 'Bounties on the map',
       detail: 'Bounty detail',
       applicants: 'Choose a helper (applicants)',
       status: 'Status page (state × role)',
