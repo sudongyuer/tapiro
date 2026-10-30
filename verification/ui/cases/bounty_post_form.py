@@ -6,9 +6,9 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (  # noqa: E402
     CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
-    erase, next_step, open_post, reach_confirm, typed,
+    erase, form_scroll_to, next_step, open_post, reach_confirm, typed,
 )
-from driver import UI, assert_touch_target, by_id  # noqa: E402
+from driver import UI, assert_touch_target  # noqa: E402
 
 DEPS = [
     'src/features/bounty/',
@@ -68,8 +68,7 @@ for wrong in ('0', '501'):
     erase(ui, 'bounty-post-reward')
 typed(ui, 'bounty-post-reward', '8')
 
-items = ui.read()
-assert_touch_target(by_id(items, 'bounty-post-clear'), '清空草稿')
+assert_touch_target(form_scroll_to(ui, 'bounty-post-clear'), '清空草稿')
 ui.capture('03-filled')
 reach_confirm(ui)
 ui.capture('04-confirm')
