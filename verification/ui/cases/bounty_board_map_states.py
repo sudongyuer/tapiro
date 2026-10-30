@@ -1,27 +1,32 @@
 """Map view states (Debug scene `bounty-map`, the production BoardMapBody; the board switch lands in Task 5): with
 location denied and no place there is no map and no pin, only 选一个地方, which asks for a place; a chosen place shows
 the place row, the map with its 「这里」 marker and the pins; a first-load failure shows 没加载出来 in the map's place,
-never a map or a count, and 重试 brings the pins; an empty 急 filter keeps the map with no pins under 看全部; a failed
-refresh keeps the pins under the stale notice; a failed next page turns the more chip into 后面的没加载出来 · 重试, which
+never a map or a count, and 重试 brings the pins; an empty 急 filter keeps the map with no pins under 看全部; on the home
+board in map view a failed pull keeps the pins under the stale notice above the map (the Debug scene's refresh spinner
+does not end after an instant failure, so this step runs on the production screen); a failed next page turns the more chip into 后面的没加载出来 · 重试, which
 recovers."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close  # noqa: E402
 from map import CARD_FILL, MAP, open_scene, pin_id, pins  # noqa: E402
 
-DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx',
+DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx', 'src/features/home/',
+        'src/app/(tabs)/', 'verification/ui/bounty.py',
         'modules/tapiro-kit/ios/BountyMapView.swift', 'verification/ui/map.py']
 SCENE = 'bounty-map'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
 NO_ORIGIN = ['-uiVerifyBoardPlace', 'none', '-uiVerifyLocation', 'denied']
-ARGS = ['-uiVerifySignedIn', 'onboarded', *NO_ORIGIN]
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBoardPlace', 'none', '-uiVerifyLocation', 'denied']
 ME = ['-uiVerifyBoardPlace', 'none']
 FIRST = 'fixture-bounty-01'
 ONE = 'fixture-bounty-04'
 PAGE = 20
+PULL = (0.25, 0.85)
+HOME_MAP = ['-uiVerifyShellFeed', 'none', '-uiVerifyBoardView', 'map']
 
 ui = UI(*sys.argv[1:])
 
@@ -88,17 +93,20 @@ ui.tap('bounty-board-show-all')
 ui.element(pin_id(ONE))
 ui.gone('bounty-board-filter-empty')
 
-open_scene(ui, *ME, '-uiVerifyBoardFail', 'refresh', drop=NO_ORIGIN, ready=pin_id(FIRST))
+relaunch(ui, drop=NO_ORIGIN, add=[*ME, *HOME_MAP, '-uiVerifyBoardFail', 'refresh'], ready=pin_id(FIRST))
 ui.at_rest()
-assert by_id(ui.read(), 'bounty-board-stale') is None, 'the stale notice shows before any pull'
-chips = ui.element('bounty-filter-all')['frame']
-ui.swipe((chips['x'] + 40, chips['y'] + 10), (chips['x'] + 40, chips['y'] + 300), 0.6)
+items = ui.read()
+assert by_id(items, 'bounty-board-stale') is None, 'the stale notice shows before any pull'
+s = items[0]['frame']
+ui.swipe((s['width'] / 2, s['height'] * PULL[0]), (s['width'] / 2, s['height'] * PULL[1]), 0.6)
 stale_text = re.compile(ui.pattern('bounty.board.state.stale', time=r'\d{2}:\d{2}'))
 ui.wait_label('bounty-board-stale', lambda label: bool(stale_text.fullmatch(label)),
               'a failed refresh shows no stale notice with a time')
 items = ui.read()
 assert by_id(items, pin_id(FIRST)), 'pins vanished after a failed refresh'
 assert by_id(items, 'bounty-board-failed') is None, 'a failed refresh replaced the map with the failed card'
+stale = by_id(items, 'bounty-board-stale')['frame']
+assert stale['y'] + stale['height'] <= by_id(items, MAP)['frame']['y'] + 1, 'the stale notice is not above the map'
 ui.at_rest()
 ui.capture('06-stale')
 ui.tap('bounty-board-retry')
