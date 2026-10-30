@@ -43,6 +43,9 @@ shown = pins(items)
 assert len(shown) >= NEAR_PINS, f'only {len(shown)} pins are on the map: {[p["AXUniqueId"] for p in shown]}'
 assert pin_title(ui, first.get('AXLabel') or '') == FIRST_TITLE, first.get('AXLabel')
 assert re.search(r'RM\s?8$', first['AXLabel']), f'the pin does not end with RM 8: {first["AXLabel"]!r}'
+stray = [i.get('AXLabel') for i in items
+         if i.get('type') == 'StaticText' and i.get('AXLabel') in {ui.t('bounty.stamp'), ui.t('bounty.category.pickup')}]
+assert not stray, f'pin labels leak to VoiceOver as separate text, hidden stamps included: {stray}'
 ui.capture('01-pins')
 
 before, front = first_card()

@@ -143,6 +143,8 @@ final class BountyPinView: MKAnnotationView {
 
     isAccessibilityElement = true
     accessibilityTraits = .button
+    labelText.isAccessibilityElement = false
+    stampText.isAccessibilityElement = false
 
     registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) { (view: BountyPinView, _) in
       view.layoutPin()
