@@ -6,9 +6,9 @@ import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
 import { useI18n } from '@/lib/i18n';
 import type { BountyCategory } from '@/lib/stickers';
 import { AppText } from '@/ui/AppText';
-import { CATEGORY_SYMBOLS } from '@/ui/CategorySticker';
+import { categoryArt } from '@/ui/categoryArt';
 import { PillButton } from '@/ui/PillButton';
-import { vars, type TokenName } from '@/ui/theme/tokens';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 type Fixture = {
@@ -44,7 +44,7 @@ function offset(north: number, east: number) {
 
 export function MapKitScene({ onReady }: { onReady: () => void }) {
   const { t } = useI18n();
-  const { color } = useTheme();
+  const { theme } = useTheme();
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const [event, setEvent] = useState('-');
   const [originKind, setOriginKind] = useState<'me' | 'place'>('place');
@@ -67,11 +67,7 @@ export function MapKitScene({ onReady }: { onReady: () => void }) {
         title: fixture.title,
         reward: fixture.reward,
       }),
-      art: {
-        color: color(`--color-sticker-${fixture.category}` as TokenName),
-        ink: color('--color-on-sticker'),
-        symbol: CATEGORY_SYMBOLS[fixture.category],
-      },
+      art: categoryArt(fixture.category, theme),
       fan: SHARED.has(fixture.id)
         ? { index: fixture.id === 'p1' ? 0 : 1, of: SHARED.size }
         : { index: 0, of: 1 },
