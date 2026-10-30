@@ -373,3 +373,11 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
 - 2026-10-30, Task 3 → Task 6: a 10 pt fan left the lower of two same-point stickers almost hidden, so the fan radius
   becomes 26 pt (each sticker shows enough to be tapped). The origin marker sits under the stickers. `onRegionChange`
   fires when a user gesture starts and carries no payload.
+- 2026-10-30, Task 5: `-uiVerifyBoardView` omitted now seeds `list`, and `keep` keeps the stored view, because Simulator
+  settings persist between cases and a map saved by one case would open every later home case on the map.
+  `-uiVerifyHintMs` holds 「记住了」 longer for the memory case. In map view the list's scroll paging is off; only the
+  Q79 chip loads pages. Accepted.
+- 2026-10-30, Task 6: the card's back face shows time, place and poster, not a note: `nearby_bounties` returns no
+  description. `BoardMap` takes `height` and `radiusM` beyond the contract; `BoardMapBody` holds the ruling 9 states
+  and `BountyBoard` renders it in map view. MapKit lists each pin twice in the AX tree, so cases tap pins by position
+  (`verification/ui/map.py`). Accepted.

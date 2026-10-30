@@ -11,7 +11,7 @@ import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 
-import { BoardMap } from '../map/BoardMap';
+import { BoardMapBody } from '../map/BoardMapBody';
 import { BoardCard } from './BoardCard';
 import { BoardEmpty, BoardFailed, BoardFooter, BoardLoading, BoardStale } from './BoardStates';
 import { boardBody, boardTotal } from './boardState';
@@ -72,8 +72,9 @@ export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBo
   );
 }
 
-function MapBody({ board, onOpen, onApply, onPickPlace }: Handlers & { board: BountyBoardModel }) {
-  const { origin, state } = board;
+function MapBody({ board, ...handlers }: Handlers & { board: BountyBoardModel }) {
+  const { origin } = board;
+  const { onPickPlace } = handlers;
   if (!origin) return <BoardLoading testID="bounty-board-loading" />;
   if (origin.kind === 'none') {
     return <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />;
@@ -81,15 +82,7 @@ function MapBody({ board, onOpen, onApply, onPickPlace }: Handlers & { board: Bo
   return (
     <>
       <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />
-      <BoardMap
-        rows={state.kind === 'ready' ? state.rows : []}
-        origin={origin}
-        state={state}
-        onOpen={onOpen}
-        onApply={onApply}
-        onPickPlace={onPickPlace}
-        onShowMore={() => void board.loadMore()}
-      />
+      <BoardMapBody board={board} {...handlers} />
     </>
   );
 }
