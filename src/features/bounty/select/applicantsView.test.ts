@@ -27,6 +27,7 @@ const DETAIL: BountyDetail = {
   title: '帮取快递',
   description: null,
   category: 'pickup',
+  art: null,
   reward: { minor: 800, currency: 'MYR' },
   reference: null,
   status: 'open',

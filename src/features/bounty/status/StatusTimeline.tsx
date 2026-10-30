@@ -17,7 +17,7 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -57,7 +57,7 @@ export function StatusHeader({ detail }: { detail: StatusDetail }) {
     <Section modifiers={[listRowBackground('clear')]}>
       <VStack spacing={vars['--space-2']} modifiers={[frame({ maxWidth: Infinity })]}>
         <RNHostView matchContents>
-          <CategorySticker category={detail.category} size={STICKER} />
+          <HandArtSticker source={detail} size={STICKER} />
         </RNHostView>
         <Text
           modifiers={[

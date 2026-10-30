@@ -3,7 +3,7 @@ import { PlatformColor, Pressable, StyleSheet, View, type LayoutChangeEvent } fr
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArt } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -138,7 +138,7 @@ function AxisSticker({
         pressed && styles.pressed,
       ]}
     >
-      <CategorySticker category={mark.category} size={STICKER} />
+      <HandArt id={mark.art} size={STICKER} />
       {mark.ids.length > 1 ? (
         <View style={[styles.count, { backgroundColor: color('--color-accent') }]}>
           <AppText variant="meta" style={[styles.countText, { color: color('--color-on-accent') }]}>

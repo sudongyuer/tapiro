@@ -19,6 +19,7 @@ export type LiveRow = {
   bountyId: string;
   title: string;
   category: BountyCategory;
+  art: string | null;
   reward: Money;
   role: LiveRole;
   kind: LiveKind;

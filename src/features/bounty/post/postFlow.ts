@@ -2,7 +2,14 @@ import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { createStore } from '@/lib/store';
 
 import { costLine } from './cost';
-import type { DraftError, PostDraft, PostService, PostStatus, PublishFailure } from './types';
+import type {
+  DraftError,
+  PostDraft,
+  PostService,
+  PostStatus,
+  PublishFailure,
+  PublishResult,
+} from './types';
 import { checkDraft } from './validate';
 
 export type StatusState =
@@ -25,7 +32,7 @@ export type FlowDeps = {
 };
 
 export type PublishHandlers = {
-  onPublished: () => void;
+  onPublished: (result: PublishResult) => void;
   onInvalid: (error: DraftError) => void;
   onAlreadySent: () => void;
 };
@@ -62,7 +69,7 @@ export function createPostFlow(deps: FlowDeps) {
       if (outcome.ok) {
         deps.clearDraft();
         patch({ busy: false });
-        handlers.onPublished();
+        handlers.onPublished(outcome.result);
         return;
       }
       const { reason } = outcome;

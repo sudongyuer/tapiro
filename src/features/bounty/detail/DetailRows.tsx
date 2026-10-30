@@ -38,7 +38,7 @@ export function DetailHeader({ view, copy }: { view: DetailView; copy: DetailCop
           <AppliedSticker
             id={view.id}
             surface="detail"
-            category={view.category}
+            art={view}
             size={STICKER}
             applied={view.action === 'applied'}
             testID="bounty-detail"

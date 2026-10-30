@@ -18,6 +18,8 @@ export default {
     cancel: '取消',
     next: '下一步',
     form: {
+      art: '配图：{{name}}',
+      swapArt: '换一张',
       titlePlaceholder: '要帮什么忙？一句话说清楚',
       count: '{{count}}/{{max}}',
       countLabel: '已写 {{count}} 个字，最多 {{max}} 个',

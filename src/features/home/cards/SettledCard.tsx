@@ -5,7 +5,7 @@ import { useI18n } from '@/lib/i18n';
 import type { SettledDetail } from '@/lib/liveItems';
 import { formatMoney } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
-import { EarnedSticker } from '@/ui/EarnedSticker';
+import { HandArt } from '@/ui/HandArt';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
 import { token, vars } from '@/ui/theme/tokens';
@@ -39,7 +39,7 @@ export function SettledCard({
         hanging={
           behind ? undefined : (
             <View ref={sticker} collapsable={false}>
-              <EarnedSticker art={detail.art} width={STICKER_WIDTH} />
+              <HandArt id={detail.art} size={STICKER_WIDTH} />
             </View>
           )
         }

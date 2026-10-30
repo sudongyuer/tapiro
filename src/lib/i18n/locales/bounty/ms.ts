@@ -19,6 +19,8 @@ const ms: typeof zhHans = {
     cancel: 'Batal',
     next: 'Seterusnya',
     form: {
+      art: 'Gambar: {{name}}',
+      swapArt: 'Tukar Gambar',
       titlePlaceholder: 'Perlukan bantuan apa? Satu ayat',
       count: '{{count}}/{{max}}',
       countLabel: '{{count}} daripada {{max}} aksara',

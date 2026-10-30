@@ -316,6 +316,7 @@ export function createFixtureStatusService(options: FixtureStatusOptions) {
       title: worst ? WORST_TITLE : '帮取快递',
       description: '取件码 6-2231，放门口就好',
       category: 'pickup',
+      art: null,
       reward: statusReward(data),
       reference: statusReference(data, item.payment !== null),
       status: item.status,

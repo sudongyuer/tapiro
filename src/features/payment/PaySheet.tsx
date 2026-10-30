@@ -78,6 +78,7 @@ export function PaySheet({
       note: celebrationNote(payment, detail.rate),
       itemKind: payment.itemKind,
       category: payment.category,
+      art: detail.art,
     });
   }
 

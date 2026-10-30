@@ -19,6 +19,14 @@
     "plugins": [
       "expo-router",
       [
+        "expo-font",
+        {
+          "ios": {
+            "fonts": ["./assets/fonts/LongCang-Regular.ttf", "./assets/fonts/Caveat.ttf"]
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",
@@ -43,7 +51,12 @@
           }
         }
       ],
-      ["expo-secure-store", { "faceIDPermission": false }],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-image-picker",
         {

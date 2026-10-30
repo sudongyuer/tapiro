@@ -11,6 +11,7 @@ export type BoardRow = {
   id: string;
   title: string;
   category: BountyCategory;
+  art: string | null;
   reward: Money;
   reference: MoneyReference | null;
   placeLabel: string | null;
@@ -45,6 +46,7 @@ export type BountyDetail = {
   title: string;
   description: string | null;
   category: BountyCategory;
+  art: string | null;
   reward: Money;
   reference: MoneyReference | null;
   status: string;

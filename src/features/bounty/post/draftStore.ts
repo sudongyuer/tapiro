@@ -1,3 +1,4 @@
+import { handArtId } from '@/lib/handArt';
 import { isCurrencyCode, type CurrencyCode } from '@/lib/money';
 import { bountyCategory } from '@/lib/stickers/category';
 
@@ -13,6 +14,7 @@ type DraftFields = Omit<PostDraft, 'id' | 'updatedAt' | 'currency'>;
 const BLANK: DraftFields = {
   title: '',
   category: null,
+  art: null,
   rewardText: '',
   description: null,
   time: { kind: 'none' },
@@ -73,6 +75,7 @@ export function toDraft(value: unknown, fallbackCurrency: CurrencyCode = 'MYR'):
     id: draft.id,
     title: draft.title,
     category,
+    art: handArtId(draft.art),
     rewardText: draft.rewardText,
     currency: isCurrencyCode(draft.currency) ? draft.currency : fallbackCurrency,
     description: draft.description,

@@ -41,7 +41,7 @@ export type MethodAmount = {
   amount: Money | null;
 };
 
-export type PaymentDetail = { rate: FxRate | null; methods: MethodAmount[] };
+export type PaymentDetail = { rate: FxRate | null; methods: MethodAmount[]; art: string | null };
 
 export class NoRateError extends Error {
   constructor() {

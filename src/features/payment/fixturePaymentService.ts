@@ -246,6 +246,7 @@ export function createFixturePaymentService(
       payment.role === 'payee' ? ownMethods : payment.state === 'settled' ? [] : payeeMethods;
     return {
       rate: locked,
+      art: null,
       methods: methods.map((method) => ({
         methodId: method.id,
         type: method.type,

@@ -17,6 +17,9 @@ export const text = (value: unknown, what: string): string =>
 export const textOrNull = (value: unknown, what: string): string | null =>
   value === null || value === undefined ? null : text(value, what);
 
+export const artOrNull = (value: unknown): string | null =>
+  typeof value === 'string' && value !== '' ? value : null;
+
 export const oneOf = <T extends string>(values: readonly T[], value: unknown, what: string): T =>
   values.find((candidate) => candidate === value) ?? fail(what);
 

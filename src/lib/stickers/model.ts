@@ -1,4 +1,6 @@
-import { bountyCategory, type BountyCategory } from './category';
+import { handArtFor, type HandArtId } from '@/lib/handArt';
+
+import { bountyCategory } from './category';
 
 export type StickerKind = 'bounty' | 'ride';
 export const STICKER_KINDS: readonly StickerKind[] = ['bounty', 'ride'];
@@ -12,18 +14,17 @@ export type Sticker = {
   role: StickerRole;
   itemKind: StickerKind;
   category: string | null;
+  art: string | null;
   title: string;
   earnedAt: string;
   counterpartName: string | null;
 };
 
-export type StickerArt =
-  { kind: 'car' } | { kind: 'mascot' } | { kind: 'category'; category: BountyCategory };
-
-export function stickerArt(sticker: Pick<Sticker, 'itemKind' | 'category'>): StickerArt {
-  if (sticker.itemKind === 'ride') return { kind: 'car' };
-  const category = bountyCategory(sticker.category);
-  return category ? { kind: 'category', category } : { kind: 'mascot' };
+export function stickerArt(
+  sticker: Pick<Sticker, 'itemKind' | 'category' | 'art' | 'title'>,
+): HandArtId {
+  if (sticker.itemKind === 'ride') return 'car';
+  return handArtFor({ ...sticker, category: bountyCategory(sticker.category) });
 }
 
 export function newestFirst<T extends { id: string; earnedAt: string }>(stickers: readonly T[]) {

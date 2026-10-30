@@ -5,7 +5,7 @@ import { StickerFlight } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
-import { CategorySticker } from '@/ui/CategorySticker';
+import { HandArt } from '@/ui/HandArt';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
@@ -30,7 +30,7 @@ export function FlightScene({ onReady }: { onReady: () => void }) {
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
       <View key={round} style={styles.stage}>
         <View ref={sticker} collapsable={false} testID="flight-sticker">
-          <CategorySticker category="pickup" size={96} />
+          <HandArt id="parcel" size={96} />
         </View>
       </View>
       <PillButton label={t('debug.flight.fly')} testID="flight-fly" onPress={() => fly(false)} />

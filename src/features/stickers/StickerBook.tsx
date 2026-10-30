@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { ActivityIndicator, PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
-import { useStickers, type Sticker } from '@/lib/stickers';
+import { useStickers } from '@/lib/stickers';
 import { AppText } from '@/ui/AppText';
 import { InkText } from '@/ui/InkText';
 import { Mascot } from '@/ui/Mascot';
@@ -9,22 +10,23 @@ import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
-import { cellLabel } from './cellLabel';
-import { StickerCell } from './StickerCell';
+import { bookViewStore, initialBookView } from './bookView';
+import type { BookView } from './bookViewStore';
+import { BookSwitch } from './BookSwitch';
+import { CardStack } from './CardStack';
+import { MonthCalendar } from './MonthCalendar';
 
-const COLUMNS = 3;
 const EMPTY_MASCOT = 150;
 
-function rows(stickers: Sticker[]) {
-  return Array.from({ length: Math.ceil(stickers.length / COLUMNS) }, (_, row) =>
-    stickers.slice(row * COLUMNS, row * COLUMNS + COLUMNS),
-  );
-}
-
 export function StickerBook({ userId }: { userId: string }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const view = useStickers(userId);
-  const day = new Intl.DateTimeFormat(language, { month: 'numeric', day: 'numeric' });
+  const [shape, setShape] = useState<BookView>(() => initialBookView(userId));
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const choose = (next: BookView) => {
+    bookViewStore.setView(userId, next);
+    setShape(next);
+  };
   const sub = t('stickers.book.sub');
 
   return (
@@ -85,7 +87,7 @@ export function StickerBook({ userId }: { userId: string }) {
             </AppText>
           </View>
         ) : (
-          <View style={styles.grid}>
+          <View style={styles.book}>
             {view.status === 'stale' ? (
               <View style={styles.stale} testID="sticker-book-stale">
                 <AppText variant="secondary" tone="secondaryLabel" style={styles.center}>
@@ -99,25 +101,18 @@ export function StickerBook({ userId }: { userId: string }) {
                 />
               </View>
             ) : null}
-            {rows(view.stickers).map((row, rowIndex) => (
-              <View key={rowIndex} style={styles.row}>
-                {Array.from({ length: COLUMNS }, (_, column) => {
-                  const sticker = row[column];
-                  const index = rowIndex * COLUMNS + column;
-                  if (!sticker) return <View key={column} style={styles.filler} />;
-                  const date = day.format(new Date(sticker.earnedAt));
-                  return (
-                    <StickerCell
-                      key={sticker.id}
-                      sticker={sticker}
-                      index={index}
-                      date={date}
-                      label={cellLabel(sticker, date, t)}
-                    />
-                  );
-                })}
-              </View>
-            ))}
+            <BookSwitch view={shape} onChoose={choose} />
+            {shape === 'stack' ? (
+              <CardStack key={focusId ?? 'top'} stickers={view.stickers} focusId={focusId} />
+            ) : (
+              <MonthCalendar
+                stickers={view.stickers}
+                onOpen={(id) => {
+                  setFocusId(id);
+                  choose('stack');
+                }}
+              />
+            )}
           </View>
         )}
       </ScrollView>
@@ -140,8 +135,6 @@ const styles = StyleSheet.create({
     paddingTop: vars['--space-7'],
     paddingHorizontal: vars['--space-5'],
   },
-  grid: { gap: vars['--space-6'] - 2 },
-  row: { flexDirection: 'row', gap: vars['--space-2'] },
-  filler: { flex: 1 },
+  book: { gap: vars['--space-5'] },
   stale: { alignItems: 'center', gap: vars['--space-1'] },
 });

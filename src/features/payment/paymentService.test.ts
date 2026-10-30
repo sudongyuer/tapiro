@@ -82,6 +82,7 @@ describe('payment detail', () => {
     rate: { base: 'CNY', quote: 'MYR', quotePerBase: 0.6494, date: '2026-10-28', source: 'bnm' },
     paidMinor: null,
     paidCurrency: null,
+    art: 'parcel',
     methods: [
       { method: 'm-1', type: 'duitnow_id', currency: 'MYR', amountMinor: 3247 },
       { method: 'm-2', type: 'alipay', currency: 'CNY', amountMinor: 5000 },
@@ -111,7 +112,13 @@ describe('payment detail', () => {
           amount: { minor: 5000, currency: 'CNY' },
         },
       ],
+      art: 'parcel',
     });
+  });
+
+  test('an art that is not a non-empty string reads as null', () => {
+    expect(toPaymentDetail({ ...detail, art: 42 })?.art).toBeNull();
+    expect(toPaymentDetail({ ...detail, art: '' })?.art).toBeNull();
   });
 
   test('no locked rate leaves the converted method without an amount', () => {
@@ -123,6 +130,7 @@ describe('payment detail', () => {
     expect(parsed).toEqual({
       rate: null,
       methods: [{ methodId: 'm-1', type: 'duitnow_id', currency: 'MYR', amount: null }],
+      art: 'parcel',
     });
   });
 

@@ -11,9 +11,9 @@ import {
   lineLimit,
 } from '@expo/ui/swift-ui/modifiers';
 
-import type { BountyCategory } from '@/lib/stickers';
+import type { HandArtId } from '@/lib/handArt';
 
-import { CategorySticker } from './CategorySticker';
+import { HandArt } from './HandArt';
 import { vars } from './theme/tokens';
 
 const STICKER = 44;
@@ -22,7 +22,7 @@ const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 // SwiftUI layout, not RN: an RN row inside RNHostView in a Form row was measured at its unwrapped width, so a
 // long title pushed the reward out of the card.
 export function TaskCard({
-  category,
+  art,
   title,
   meta,
   reward,
@@ -30,7 +30,7 @@ export function TaskCard({
   titleLines = 2,
   testID,
 }: {
-  category: BountyCategory;
+  art: HandArtId;
   title: string;
   meta: string | null;
   reward: string;
@@ -41,7 +41,7 @@ export function TaskCard({
   return (
     <HStack spacing={vars['--space-3']}>
       <RNHostView matchContents>
-        <CategorySticker category={category} size={STICKER} />
+        <HandArt id={art} size={STICKER} />
       </RNHostView>
       <VStack
         alignment="leading"

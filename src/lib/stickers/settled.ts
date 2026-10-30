@@ -4,13 +4,14 @@ import type { AccessoryItem, SettledDetail } from '@/lib/liveItems';
 import type { Money } from '@/lib/money';
 
 import { stickerArt, STICKER_KINDS, type StickerKind } from './model';
-import { body, money, oneOf, rows, text, textOrNull } from './parse';
+import { artOrNull, body, money, oneOf, rows, text, textOrNull } from './parse';
 
 export type SettledRow = {
   stickerId: string;
   paymentId: string;
   itemKind: StickerKind;
   category: string | null;
+  art: string | null;
   title: string;
   earnedAt: string;
   counterpartName: string | null;
@@ -33,6 +34,7 @@ export function toSettledRow(value: unknown): SettledRow {
     paymentId: text(row.paymentId, 'paymentId'),
     itemKind: oneOf(STICKER_KINDS, row.itemKind, 'itemKind'),
     category: textOrNull(row.category, 'category'),
+    art: artOrNull(row.art),
     title: text(row.title, 'title'),
     earnedAt: text(row.earnedAt, 'earnedAt'),
     counterpartName: textOrNull(row.counterpartName, 'counterpartName'),

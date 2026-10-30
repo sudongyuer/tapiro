@@ -48,6 +48,7 @@ export type CelebrationData = {
   note: CelebrationNote;
   itemKind: StickerKind;
   category: string | null;
+  art: string | null;
 };
 
 export function Celebration({

@@ -16,6 +16,7 @@ const row = (title: string, distanceM: number): BoardRow => ({
   id: title,
   title,
   category: 'move',
+  art: null,
   reward: { minor: 800, currency: 'MYR' },
   reference: null,
   placeLabel: 'Sunway',

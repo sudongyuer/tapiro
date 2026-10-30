@@ -33,7 +33,7 @@ export type BountyMapPin = {
   point: PlacePoint;
   label: string;
   a11yLabel: string;
-  art: { color: string; ink: string; symbol: string };
+  art: { color: string; ink: string; symbol: string; image: string };
   fan: { index: number; of: number };
   applied?: boolean;
   stamp?: { text: string; ink: string; fill: string };

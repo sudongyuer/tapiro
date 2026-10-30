@@ -102,6 +102,7 @@ const ARGS: PublishArgs = {
   id: '6f1c2a40-5d3b-4c8e-9a7f-0b1d2e3f4a5b',
   title: '帮我取个快递',
   category: 'pickup',
+  art: null,
   reward_minor: 800,
   reward_currency: 'MYR',
   description: null,

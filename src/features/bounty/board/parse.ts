@@ -1,6 +1,7 @@
 import type { Point } from '@/lib/location/types';
 import { toMoney, type Money, type MoneyReference } from '@/lib/money';
 import { bountyCategory } from '@/lib/stickers/category';
+import { artOrNull } from '@/lib/stickers/parse';
 
 import {
   APPLICATION_STATUSES,
@@ -93,6 +94,7 @@ export function toBoardRow(value: unknown): BoardRow {
     id: text(row.id, 'id'),
     title: text(row.title, 'title'),
     category: bountyCategory(row.category) ?? fail('category'),
+    art: artOrNull(row.art),
     reward: reward(row),
     reference: toReference(row.reference),
     placeLabel: textOrNull(row.placeLabel, 'placeLabel'),
@@ -152,6 +154,7 @@ export function toBountyDetail(value: unknown): BountyDetail {
     title: text(detail.title, 'title'),
     description: textOrNull(detail.description, 'description'),
     category: bountyCategory(detail.category) ?? fail('category'),
+    art: artOrNull(detail.art),
     reward: reward(detail),
     reference: toReference(detail.reference),
     status: text(detail.status, 'status'),

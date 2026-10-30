@@ -84,6 +84,7 @@ export function createFixtureStickerService(fixture: StickerFixture) {
     role: seed.role,
     itemKind: seed.kind,
     category: seed.category ?? null,
+    art: null,
     title: seed.title,
     earnedAt: earned(index),
     counterpartName: seed.name,
@@ -97,6 +98,7 @@ export function createFixtureStickerService(fixture: StickerFixture) {
         stickers.unshift({
           id: `fixture-sticker-${input.paymentId}`,
           ...input,
+          art: null,
           role: 'payee',
           counterpartName,
           earnedAt: new Date().toISOString(),

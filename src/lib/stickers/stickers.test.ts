@@ -17,6 +17,7 @@ function sticker(id: string, earnedAt: string, itemKind: Sticker['itemKind'] = '
     role: 'payee',
     itemKind,
     category: null,
+    art: null,
     title: id,
     earnedAt,
     counterpartName: null,
@@ -24,17 +25,19 @@ function sticker(id: string, earnedAt: string, itemKind: Sticker['itemKind'] = '
 }
 
 describe('sticker art', () => {
-  test('a ride earns a car sticker; a bounty with a category earns its category sticker; without one, a 小貘 sticker', () => {
-    expect(stickerArt({ itemKind: 'ride', category: null })).toEqual({ kind: 'car' });
-    expect(stickerArt({ itemKind: 'bounty', category: 'move' })).toEqual({
-      kind: 'category',
-      category: 'move',
-    });
-    expect(stickerArt({ itemKind: 'bounty', category: null })).toEqual({ kind: 'mascot' });
+  test('a ride earns the car; a bounty earns its stored art, else the art its title and category resolve to', () => {
+    const bounty = { itemKind: 'bounty', art: null, title: '帮带一杯咖啡' } as const;
+    expect(stickerArt({ itemKind: 'ride', category: null, art: null, title: '拼车' })).toBe('car');
+    expect(stickerArt({ ...bounty, category: 'buy', art: 'medicine' })).toBe('medicine');
+    expect(stickerArt({ ...bounty, category: 'buy' })).toBe('tea');
+    expect(stickerArt({ ...bounty, category: 'move', title: 'xyz' })).toBe('move');
+    expect(stickerArt({ ...bounty, category: null, title: 'xyz' })).toBe('other');
   });
 
-  test('an unknown category from the server falls back to the 小貘 sticker', () => {
-    expect(stickerArt({ itemKind: 'bounty', category: 'parcel' })).toEqual({ kind: 'mascot' });
+  test('an unknown category from the server falls back to the title, then the cat', () => {
+    expect(stickerArt({ itemKind: 'bounty', category: 'parcel', art: null, title: 'xyz' })).toBe(
+      'other',
+    );
     expect(bountyCategory('Pickup')).toBeNull();
     expect(bountyCategory('pickup')).toBe('pickup');
   });

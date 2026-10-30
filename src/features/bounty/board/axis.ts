@@ -1,20 +1,20 @@
 import { FALLBACK_LANGUAGE, isLanguage } from '@/lib/i18n/languages';
 import { resources } from '@/lib/i18n/resources';
-import type { BountyCategory } from '@/lib/stickers/category';
+import { handArtFor, type HandArtId } from '@/lib/handArt';
 
 import type { BoardRow } from './types';
 
 export const AXIS_RANGE_M = 2000;
 export const AXIS_MERGE_PT = 44;
 
-export type AxisMark = { ids: string[]; x: number; category: BountyCategory };
+export type AxisMark = { ids: string[]; x: number; art: HandArtId };
 
 export function axisMarks(
   rows: BoardRow[],
   widthPt: number,
   startPt = 0,
 ): { marks: AxisMark[]; beyond: number; firstBeyondId: string | null } {
-  const plotted: { id: string; x: number; category: BountyCategory }[] = [];
+  const plotted: { id: string; x: number; art: HandArtId }[] = [];
   let beyond = 0;
   let firstBeyondId: string | null = null;
   for (const row of rows) {
@@ -27,15 +27,15 @@ export function axisMarks(
     plotted.push({
       id: row.id,
       x: Math.max(startPt, (row.distanceM / AXIS_RANGE_M) * widthPt),
-      category: row.category,
+      art: handArtFor(row),
     });
   }
   plotted.sort((a, b) => a.x - b.x);
   const marks: AxisMark[] = [];
-  for (const { id, x, category } of plotted) {
+  for (const { id, x, art } of plotted) {
     const last = marks.at(-1);
     if (last && x - last.x < AXIS_MERGE_PT) last.ids.push(id);
-    else marks.push({ ids: [id], x, category });
+    else marks.push({ ids: [id], x, art });
   }
   return { marks, beyond, firstBeyondId };
 }

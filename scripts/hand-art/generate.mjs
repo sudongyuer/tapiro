@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { Buffer } from 'node:buffer';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -14,10 +15,20 @@ export const STYLES = {
 };
 
 export const SUBJECTS = {
-  'pickup.parcel': 'a closed cardboard parcel box with a strip of packing tape and a small label',
-  'buy.tea': 'a takeaway cup of brown-sugar bubble milk tea with tapioca pearls and a red straw',
-  'accompany.hospital':
+  parcel: 'a closed cardboard parcel box with a strip of packing tape and a small label',
+  tea: 'a takeaway cup of brown-sugar bubble milk tea with tapioca pearls and a red straw',
+  bag: 'a green reusable shopping bag with a loaf of bread and a red apple peeking out',
+  food: 'a blue takeaway rice bowl with rice, a fried egg, a green leaf and a pair of chopsticks',
+  medicine:
+    'a white pharmacy pill bottle with a green cross label next to one red-and-yellow capsule',
+  queue: 'a student waiting in line beside a big paper queue-number ticket',
+  document: 'a sheet of paper form with a few lines, a red round stamp and a blue paper clip',
+  move: 'two stacked cardboard moving boxes on a hand trolley',
+  study: 'an open textbook with a yellow pencil resting across the pages',
+  accompany:
     'two students walking side by side, one holding a small bag, toward a little clinic door with a red cross',
+  car: 'a small red hatchback car seen from the side with three passengers inside',
+  other: 'a friendly orange cat sitting and smiling',
 };
 
 export const NEGATIVE =
@@ -64,7 +75,7 @@ async function main() {
     options: {
       out: { type: 'string' },
       model: { type: 'string', default: 'qwen-image-2.1-pro' },
-      styles: { type: 'string', default: Object.keys(STYLES).join(',') },
+      styles: { type: 'string', default: 'crayon' },
       subjects: { type: 'string', default: Object.keys(SUBJECTS).join(',') },
       seed: { type: 'string', default: '7' },
     },
@@ -79,7 +90,7 @@ async function main() {
       const started = Date.now();
       try {
         const url = await generate(credentials, values.model, prompt, Number(values.seed));
-        const file = join(values.out, `${style}-${subject}.png`);
+        const file = join(values.out, `${subject}.png`);
         writeFileSync(file, Buffer.from(await (await fetch(url)).arrayBuffer()));
         log.push({ style, subject, file, ms: Date.now() - started, prompt });
         console.log(`ok ${style} ${subject} ${Date.now() - started} ms`);

@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(11);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -42,6 +42,7 @@ select pg_temp.bounty('60000000-0000-0000-0000-000000000002', '00000000-0000-000
 select pg_temp.bounty('60000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000d4', 3.07337, 101.60784);
 insert into public.blocks (blocker_id, blocked_id)
 values ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-0000000000d4');
+update public.bounties set art = 'parcel' where id = '60000000-0000-0000-0000-000000000001';
 
 create temp table snapped as
 select extensions.st_y(p) as latitude, extensions.st_x(p) as longitude
@@ -56,6 +57,11 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 insert into results select 'near', public.nearby_bounties(latitude => 3.0733, longitude => 101.6078);
 insert into results select 'recent', public.nearby_bounties();
 
+select is(
+  array[pg_temp.item('near', '60000000-0000-0000-0000-000000000001') -> 'art',
+    pg_temp.item('recent', '60000000-0000-0000-0000-000000000002') -> 'art'],
+  array['"parcel"', 'null']::jsonb[], 'a board card carries its bounty''s art, null when none was chosen'
+);
 select is(
   (select array_agg(k order by k) from jsonb_object_keys(pg_temp.item('near', '60000000-0000-0000-0000-000000000001') -> 'point') as k),
   array['latitude', 'longitude'], 'a placed bounty carries a point with latitude and longitude only'

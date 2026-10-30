@@ -7,7 +7,7 @@ import {
   type Sticker,
   type StickerService,
 } from './model';
-import { body, oneOf, rows, text, textOrNull } from './parse';
+import { artOrNull, body, oneOf, rows, text, textOrNull } from './parse';
 
 export function toSticker(value: unknown): Sticker {
   const row = body(value, 'sticker');
@@ -17,6 +17,7 @@ export function toSticker(value: unknown): Sticker {
     role: oneOf(STICKER_ROLES, row.role, 'role'),
     itemKind: oneOf(STICKER_KINDS, row.itemKind, 'itemKind'),
     category: textOrNull(row.category, 'category'),
+    art: artOrNull(row.art),
     title: text(row.title, 'title'),
     earnedAt: text(row.earnedAt, 'earnedAt'),
     counterpartName: textOrNull(row.counterpartName, 'counterpartName'),

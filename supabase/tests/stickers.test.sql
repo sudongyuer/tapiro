@@ -1,5 +1,5 @@
 begin;
-select plan(43);
+select plan(44);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -199,9 +199,12 @@ values
 delete from public.fx_rates;
 insert into public.fx_rates (base, quote, rate_date, source, quote_per_base)
 values ('CNY', 'MYR', (now() at time zone 'Asia/Kuala_Lumpur')::date, 'bnm', 0.5);
+insert into public.bounties (id, poster_id, title, category, reward_minor, reward_currency, expires_at, art)
+values ('70000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000e5', '帮买奶茶', 'buy', 1500, 'MYR',
+  now() + interval '7 days', 'tea');
 insert into ids values
-  ('tea', public.open_payment('bounty', gen_random_uuid(), '帮买奶茶', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 1500, 'MYR', item_category => 'buy')),
-  ('fresh', public.open_payment('ride', gen_random_uuid(), '拼车去 KLCC', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 800, 'MYR')),
+  ('tea', public.open_payment('bounty', '70000000-0000-0000-0000-000000000001', '帮买奶茶', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 1500, 'MYR', item_category => 'buy')),
+  ('fresh', public.open_payment('ride', '70000000-0000-0000-0000-000000000001', '拼车去 KLCC', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 800, 'MYR')),
   ('stale', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 600, 'MYR', item_category => 'queue')),
   ('late', public.open_payment('bounty', gen_random_uuid(), '帮搬箱子', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 900, 'MYR', item_category => 'move')),
   ('ghost', public.open_payment('bounty', gen_random_uuid(), '帮拿外卖', '00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-0000000000f6', 700, 'MYR', item_category => 'pickup'));
@@ -228,7 +231,7 @@ select public.confirm_payment_received((select id from ids where name = 'ghost')
 
 select is(
   pg_temp.book_of('tea'),
-  '{"role": "payee", "itemKind": "bounty", "category": "buy", "title": "帮买奶茶", "counterpartName": "Erin"}'::jsonb,
+  '{"role": "payee", "itemKind": "bounty", "category": "buy", "art": "tea", "title": "帮买奶茶", "counterpartName": "Erin"}'::jsonb,
   'the payee''s book row names the payer'
 );
 select is((select count(*) from public.settled_cards()), 0::bigint, 'the payee gets no settled card');
@@ -240,13 +243,13 @@ select throws_ok(
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
 select is(
   pg_temp.book_of('tea'),
-  '{"role": "payer", "itemKind": "bounty", "category": "buy", "title": "帮买奶茶", "counterpartName": "Faiz"}'::jsonb,
+  '{"role": "payer", "itemKind": "bounty", "category": "buy", "art": "tea", "title": "帮买奶茶", "counterpartName": "Faiz"}'::jsonb,
   'the payer''s book row names the payee'
 );
 select is(
   pg_temp.card_of('tea'),
   jsonb_build_object(
-    'paymentId', (select id from ids where name = 'tea'), 'itemKind', 'bounty', 'category', 'buy', 'title', '帮买奶茶',
+    'paymentId', (select id from ids where name = 'tea'), 'itemKind', 'bounty', 'category', 'buy', 'art', 'tea', 'title', '帮买奶茶',
     'counterpartName', 'Faiz', 'amount', '{"minor": 3000, "currency": "CNY"}'::jsonb
   ),
   'a settle shows the payer a card with the amount in the currency paid, not the item''s RM'
@@ -279,7 +282,7 @@ set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000f6');
 select is(
   pg_temp.book_of('ghost'),
-  '{"role": "payee", "itemKind": "bounty", "category": "pickup", "title": "帮拿外卖", "counterpartName": null}'::jsonb,
+  '{"role": "payee", "itemKind": "bounty", "category": "pickup", "art": null, "title": "帮拿外卖", "counterpartName": null}'::jsonb,
   'a deleted counterpart reads as no name'
 );
 select public.confirm_payment_received((select id from ids where name = 'fresh'));
@@ -295,6 +298,9 @@ select results_eq(
   $$select (c ->> 'paymentId')::uuid from public.settled_cards() c$$,
   $$select id from ids where name = 'fresh'$$,
   'only the fresh settle shows: the 8-day-old and the backfilled settles leave no card'
+);
+select is(
+  pg_temp.card_of('fresh') -> 'art', 'null'::jsonb, 'a ride card has no art, even when its id matches a bounty'
 );
 reset role;
 select is(

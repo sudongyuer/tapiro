@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { isCurrencyCode, toMoney } from '@/lib/money';
 import { PAYEE_TYPES, toMethod, type PayeeMethodRow, type PayeeType } from '@/lib/payeeMethods';
 import { bountyCategory } from '@/lib/stickers/category';
+import { artOrNull } from '@/lib/stickers/parse';
 
 import {
   NoRateError,
@@ -106,7 +107,9 @@ export function toPaymentDetail(value: unknown): PaymentDetail | null {
   const rate = toLockedRate(value.rate ?? null);
   if (rate === undefined) return null;
   const methods = value.methods.map(toMethodAmount);
-  return methods.every((method) => method !== null) ? { rate, methods } : null;
+  return methods.every((method) => method !== null)
+    ? { rate, methods, art: artOrNull(value.art) }
+    : null;
 }
 
 const isNoRate = (error: unknown) =>

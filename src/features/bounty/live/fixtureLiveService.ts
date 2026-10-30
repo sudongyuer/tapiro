@@ -68,6 +68,7 @@ export const fixtureLiveBountyId = (row: LiveFixtureRow) => `fixture-live-${row}
 const BASE: Omit<LiveRow, 'bountyId' | 'role' | 'kind' | 'status'> = {
   title: '帮取快递',
   category: 'pickup',
+  art: null,
   reward: { minor: 1500, currency: 'MYR' },
   action: null,
   card: null,

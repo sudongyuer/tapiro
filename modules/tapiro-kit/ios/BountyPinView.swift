@@ -11,6 +11,7 @@ struct MapPinArt: Record {
   @Field var color: String = ""
   @Field var ink: String = ""
   @Field var symbol: String = ""
+  @Field var image: String = ""
 }
 
 struct MapPinFan: Record {
@@ -161,11 +162,17 @@ final class BountyPinView: MKAnnotationView {
     stampText.attributedText = NSAttributedString(
       string: pin.stamp.text, attributes: [.kern: 1, .foregroundColor: UIColor(hex: pin.stamp.ink)])
     discView.backgroundColor = UIColor(hex: pin.art.color)
-    symbolView.image = UIImage(
-      systemName: pin.art.symbol,
-      withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
-    )
-    symbolView.tintColor = UIColor(hex: pin.art.ink)
+    if let art = HandArtImages.image(pin.art.image, side: Self.disc) {
+      symbolView.image = art
+      symbolView.contentMode = .scaleAspectFit
+    } else {
+      symbolView.image = UIImage(
+        systemName: pin.art.symbol,
+        withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+      )
+      symbolView.contentMode = .center
+      symbolView.tintColor = UIColor(hex: pin.art.ink)
+    }
     labelText.textColor = UIColor(hex: pin.art.ink)
     labelText.text = pin.label
     accessibilityLabel = pin.a11yLabel
@@ -198,7 +205,7 @@ final class BountyPinView: MKAnnotationView {
     bounds = CGRect(origin: .zero, size: size)
     content.frame = bounds
     discView.frame = CGRect(x: (width - Self.disc) / 2, y: height - Self.disc, width: Self.disc, height: Self.disc)
-    symbolView.frame = discView.bounds
+    symbolView.frame = discView.bounds.insetBy(dx: 1, dy: 1)
     labelCard.frame = CGRect(x: (width - card.width) / 2, y: Self.labelMargin, width: card.width, height: card.height)
     labelText.frame = labelCard.bounds.insetBy(dx: Self.labelPadding.width, dy: Self.labelPadding.height)
     labelCard.layer.shadowPath = UIBezierPath(roundedRect: labelCard.bounds, cornerRadius: 7).cgPath
