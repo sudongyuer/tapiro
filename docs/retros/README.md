@@ -12,3 +12,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-10-26 | celebration G + book   | pending         | 1             | design rework (5 canvas rounds)             | 2                       | pending            |
 | 2026-10-29 | verify on 3 Simulators | 0               | 0             | ~2 min (first boot of two new Simulators)   | 0                       | 0                  |
 | 2026-10-30 | 7 settlement art       | pending         | 1             | ~20 min (authoring the flight case)         | 0                       | pending            |
+| 2026-10-30 | 9 hand-drawn art       | pending         | 1             | ~5 min (headless Chrome hang)               | 2 (design stage)        | pending            |

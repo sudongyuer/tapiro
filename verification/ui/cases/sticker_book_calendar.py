@@ -1,6 +1,6 @@
 """月历 (86C, 96A): the native 卡堆 / 月历 switch turns the book into this month's calendar; the choice survives a
 relaunch. Days with a done errand show its hand art and read the date, the count and the titles; empty days show only
-the number. The month line counts 7 done. Tapping 帮取快递's day switches back to 卡堆 with that card in front."""
+the number. The month line counts 7 done, and its handwritten heading reads in light and dark. Tapping 帮取快递's day switches back to 卡堆 with that card in front."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -63,6 +63,9 @@ blank = shot.count(empty['frame'], lambda rgb: max(rgb) - min(rgb) > 40)
 print(f'colourful pixels: done day {drawn}, empty day {blank}')
 assert drawn > COLOURFUL_MIN, f'the done day draws no hand art ({drawn})'
 assert blank < 20, f'an empty day draws something ({blank})'
+ink = shot.count(month['frame'], (lambda rgb: max(rgb) > 200) if ui.appearance == 'dark' else (lambda rgb: max(rgb) < 80))
+print(f'month heading ink pixels: {ink}')
+assert ink > 200, f'the handwritten month heading does not contrast with the {ui.appearance} background ({ink})'
 
 ui.tap(parcel['AXUniqueId'])
 ui.element('sticker-stack')

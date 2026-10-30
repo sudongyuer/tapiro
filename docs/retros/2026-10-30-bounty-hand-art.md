@@ -1,10 +1,10 @@
 ---
 branch: feat/bounty-hand-art
 date: 2026-10-30
-pr: not opened yet
+pr: bounty step 9
 title: 9 hand-drawn intent art
 escaped: 0
-rework: 0
+rework: 1
 interventions: 2
 overturned: 0
 ---
@@ -23,7 +23,7 @@ Started at the design stage; the overnight implementation session (2026-10-30 â†
 | Quality   | Acceptance criteria with no covering test and no device mark    | 0; `bounty.post.photo` is an explicit gap (90A)                                                                                                                    |
 | Speed     | Wall-clock from first commit to PR                              | Plan 10:13, implementation commit 10:39 local; the UI batch and PR follow (see PR)                                                                                 |
 | Speed     | Wasted time by class                                            | About 5 min: headless Chrome hung once while rendering the PNGs (`chrome-headless-hang`), fixed with a per-image timeout and a file check instead of the exit code |
-| Speed     | Rework rounds                                                   | Pending the UI batch                                                                                                                                               |
+| Speed     | Rework rounds                                                   | 1: the dark screenshot showed the handwritten month heading in black on the dark page; the case passed                                                             |     |
 | Autonomy  | Avoidable interventions                                         | 0 overnight                                                                                                                                                        |
 | Autonomy  | Rulings made / overturned                                       | 12 rulings in the plan, taken on â˜…; overturned: pending review                                                                                                     |
 | Loop      | Minutes spent on this retro                                     | 10                                                                                                                                                                 |
@@ -65,3 +65,7 @@ Started at the design stage; the overnight implementation session (2026-10-30 â†
    found after 15 min; left for a daytime look.
 9. **Headless Chrome hung on one of 12 screenshots** (tag `chrome-headless-hang`): the first render exited non-zero
    with output written, the second hung past 120 s. `render.mjs` now gives each image 30 s and checks the file.
+10. **A dark-mode defect passed its case** (tag `vacuous-appearance`). `HandText` set no colour, so the calendar's
+    month heading rendered black on the dark page; `sticker_book_calendar` passed in dark because it checked the art,
+    not the heading. Found by opening the screenshots (AGENTS.md: open them before reporting). Fixes: `HandText` now
+    always sets the label colour (structure), and the case counts the heading's ink against the appearance (check).

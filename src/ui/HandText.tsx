@@ -1,4 +1,4 @@
-import { Text, type TextProps } from 'react-native';
+import { PlatformColor, Text, type TextProps } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 
@@ -20,5 +20,7 @@ export type HandTextProps = TextProps & { hand: HandRole };
 
 export function HandText({ hand, style, ...rest }: HandTextProps) {
   const { language } = useI18n();
-  return <Text {...rest} style={[handFont(language, hand), style]} />;
+  return (
+    <Text {...rest} style={[handFont(language, hand), { color: PlatformColor('label') }, style]} />
+  );
 }
