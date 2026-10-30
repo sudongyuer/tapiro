@@ -6,6 +6,7 @@ import Animated, {
   LayoutAnimationConfig,
   ReduceMotion,
 } from 'react-native-reanimated';
+import type { BountyMapCamera } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -31,6 +32,7 @@ type Handlers = {
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
   onPickPlace: () => void;
+  onExpandMap?: (camera: BountyMapCamera | null) => void;
 };
 
 export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBoardModel }) {
@@ -82,7 +84,7 @@ function MapBody({ board, ...handlers }: Handlers & { board: BountyBoardModel })
   return (
     <>
       <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />
-      <BoardMapBody board={board} {...handlers} />
+      <BoardMapBody board={board} {...handlers} onExpand={handlers.onExpandMap} />
     </>
   );
 }

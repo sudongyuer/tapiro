@@ -209,6 +209,8 @@ const en: typeof zhHans = {
       more: '{{shown}} / {{total}} on the map · Show {{count}} More',
       pin: '{{title}}, {{reward}}',
       details: 'View Details',
+      expand: 'Expand Map',
+      close: 'Close Map',
     },
     state: {
       loading: 'Loading bounties',

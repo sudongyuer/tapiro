@@ -1,3 +1,5 @@
+import type { BountyMapCamera } from 'tapiro-kit';
+
 import { BoardEmpty, BoardFailed, BoardLoading, BoardStale } from '../board/BoardStates';
 import { boardBody } from '../board/boardState';
 import type { BountyBoardModel } from '../board/useBountyBoard';
@@ -8,6 +10,7 @@ type Handlers = {
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
   onPickPlace: () => void;
+  onExpand?: (camera: BountyMapCamera | null) => void;
   radiusM?: number;
 };
 
@@ -43,6 +46,7 @@ export function BoardMapBody({
         onApply={handlers.onApply}
         onPickPlace={handlers.onPickPlace}
         onShowMore={showMore}
+        onExpand={handlers.onExpand}
         radiusM={radiusM}
       />
     </>

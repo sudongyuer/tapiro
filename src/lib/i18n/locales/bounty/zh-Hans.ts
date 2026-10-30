@@ -206,6 +206,8 @@ export default {
       more: '地图上 {{shown}} / {{total}} · 再显示 {{count}} 个',
       pin: '{{title}}，{{reward}}',
       details: '看详情',
+      expand: '全屏看地图',
+      close: '关闭地图',
     },
     state: {
       loading: '正在加载悬赏',

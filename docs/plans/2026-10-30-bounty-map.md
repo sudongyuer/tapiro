@@ -381,3 +381,16 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
   description. `BoardMap` takes `height` and `radiusM` beyond the contract; `BoardMapBody` holds the ruling 9 states
   and `BountyBoard` renders it in map view. MapKit lists each pin twice in the AX tree, so cases tap pins by position
   (`verification/ui/map.py`). Accepted.
+- 2026-10-30, 85A (owner 2026-10-30): the embedded map gets a full-screen map. Rulings: (a) the cover is the root
+  Stack route `bounty-map` with `presentation: 'fullScreenModal'` (system transition, no custom motion), closed by a
+  system `xmark` toolbar button; (b) both maps read one board: the home screen publishes its live `useBountyBoard` model
+  through `map/boardLink.ts` and the cover renders it, so filters, pages and applied changes are the same state, not a
+  copy; (c) 看详情 on the cover dismisses the cover and then pushes the detail in the 悬赏 tab stack, because the detail
+  lives in the tab's stack and a push inside a modal would lose the tab bar and the back path to the board; 申请 opens
+  the apply sheet over the cover; (d) the cover opens on the embedded map's current camera: the kit reports
+  `onCameraChange { latitude, longitude, radiusM }` (half the short edge) after each region change, and the cover uses
+  it while the origin is unchanged, else the origin camera; (e) the expand button and the location button are drawn in
+  the kit (`UIButton.Configuration.glass()` with `arrow.up.left.and.arrow.down.right`; `MKUserTrackingButton` bound to
+  the `MKMapView` in a glass capsule), the latter only for origin `me`; a tracking-mode change closes the card like a
+  pan; (f) the cover keeps the 32A states as floating cards under the chips, and the card is placed inside the area
+  between the chips and the bottom safe area; pull-to-refresh stays on the home page only.

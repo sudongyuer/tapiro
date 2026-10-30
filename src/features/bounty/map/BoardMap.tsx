@@ -1,7 +1,12 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BountyMapView, type BountyMapPinPress } from 'tapiro-kit';
+import {
+  BountyMapView,
+  type BountyMapCamera,
+  type BountyMapPinPress,
+  type BountyMapRegion,
+} from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
@@ -18,6 +23,7 @@ import { mapPins } from './pins';
 
 const MAP_CHROME = 270;
 const MAP_MIN = 320;
+const COVER_CHIP_INSET = vars['--touch-min'] + vars['--space-4'] * 2;
 
 export type BoardMapProps = {
   rows: BoardRow[];
@@ -29,6 +35,8 @@ export type BoardMapProps = {
   onShowMore: () => void;
   height?: number;
   radiusM?: number;
+  onExpand?: (camera: BountyMapCamera | null) => void;
+  cover?: { top: number; bottom: number; start: BountyMapCamera | null };
 };
 
 type OpenCard = { id: string; x: number; y: number; key: number; closing: boolean };
@@ -70,6 +78,8 @@ export function BoardMap({
   onShowMore,
   height,
   radiusM = AXIS_RANGE_M,
+  onExpand,
+  cover,
 }: BoardMapProps) {
   const { t, language } = useI18n();
   const { theme } = useTheme();
@@ -80,18 +90,13 @@ export function BoardMap({
   const located = origin && origin.kind !== 'none' ? origin : null;
   const latitude = located?.point.latitude;
   const longitude = located?.point.longitude;
-  const camera = useMemo(
-    () =>
-      latitude === undefined || longitude === undefined
-        ? null
-        : {
-            originKey: `${located?.kind}:${latitude},${longitude}:${radiusM}`,
-            latitude,
-            longitude,
-            radiusM,
-          },
-    [located?.kind, latitude, longitude, radiusM],
-  );
+  const start = cover?.start;
+  const camera = useMemo(() => {
+    if (latitude === undefined || longitude === undefined) return null;
+    const originKey = `${located?.kind}:${latitude},${longitude}:${radiusM}`;
+    return start?.originKey === originKey ? start : { originKey, latitude, longitude, radiusM };
+  }, [located?.kind, latitude, longitude, radiusM, start]);
+  const region = useRef<BountyMapRegion | null>(null);
 
   if (state.kind === 'loading') return <BoardLoading testID="bounty-board-loading" />;
   if (state.kind === 'failed' || !located || !camera) return null;
@@ -100,9 +105,23 @@ export function BoardMap({
   const chip = moreChip(state, PAGE_SIZE);
   const onLayout = ({ nativeEvent }: LayoutChangeEvent) =>
     setSize({ width: nativeEvent.layout.width, height: nativeEvent.layout.height });
+  const expand = onExpand
+    ? () => {
+        close();
+        onExpand(region.current && { ...region.current, originKey: camera.originKey });
+      }
+    : undefined;
+  const cardArea = size && {
+    width: size.width,
+    height: size.height - (cover?.top ?? 0) - (cover?.bottom ?? 0),
+  };
 
   return (
-    <View testID="bounty-map" style={[styles.map, { height: mapHeight }]} onLayout={onLayout}>
+    <View
+      testID="bounty-map"
+      style={cover ? StyleSheet.absoluteFill : [styles.map, { height: mapHeight }]}
+      onLayout={onLayout}
+    >
       <BountyMapView
         style={StyleSheet.absoluteFill}
         testID="bounty-map-view"
@@ -117,24 +136,38 @@ export function BoardMap({
         onPinPress={open}
         onMapPress={close}
         onRegionChange={close}
+        onCameraChange={(next) => {
+          region.current = next;
+        }}
+        expandLabel={onExpand ? t('bounty.board.map.expand') : undefined}
+        onExpand={expand}
+        locateButton={!!cover && located.kind === 'me'}
       />
       {chip ? (
-        <View pointerEvents="box-none" style={styles.chip}>
+        <View
+          pointerEvents="box-none"
+          style={[styles.chip, cover && { ...styles.coverChip, bottom: cover.bottom }]}
+        >
           <MoreChip chip={chip} onPress={onShowMore} />
         </View>
       ) : null}
-      {card && row && size ? (
-        <PinCard
-          key={card.key}
-          row={row}
-          pin={card}
-          map={size}
-          closing={card.closing}
-          onGone={() => gone(card.key)}
-          onClose={close}
-          onApply={onApply}
-          onOpen={onOpen}
-        />
+      {card && row && cardArea ? (
+        <View
+          pointerEvents="box-none"
+          style={[styles.cardArea, { top: cover?.top ?? 0, height: cardArea.height }]}
+        >
+          <PinCard
+            key={card.key}
+            row={row}
+            pin={{ x: card.x, y: card.y - (cover?.top ?? 0) }}
+            map={cardArea}
+            closing={card.closing}
+            onGone={() => gone(card.key)}
+            onClose={close}
+            onApply={onApply}
+            onOpen={onOpen}
+          />
+        </View>
       ) : null}
     </View>
   );
@@ -149,4 +182,6 @@ const styles = StyleSheet.create({
     bottom: vars['--space-3'],
     alignItems: 'center',
   },
+  coverChip: { left: COVER_CHIP_INSET, right: COVER_CHIP_INSET },
+  cardArea: { position: 'absolute', left: 0, right: 0 },
 });

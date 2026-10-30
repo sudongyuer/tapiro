@@ -39,6 +39,7 @@ export type BountyMapPin = {
 export type BountyMapOrigin = PlacePoint & { kind: 'me' | 'place'; title: string };
 export type BountyMapCamera = PlacePoint & { originKey: string; radiusM: number };
 export type BountyMapPinPress = { id: string; x: number; y: number };
+export type BountyMapRegion = PlacePoint & { radiusM: number };
 export type BountyMapViewProps = {
   pins: BountyMapPin[];
   selectedId?: string;
@@ -47,6 +48,10 @@ export type BountyMapViewProps = {
   onPinPress(event: BountyMapPinPress): void;
   onMapPress(): void;
   onRegionChange(): void;
+  onCameraChange?(region: BountyMapRegion): void;
+  expandLabel?: string;
+  onExpand?(): void;
+  locateButton?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -74,18 +79,28 @@ export function PinnedBar({ children }: { children: ReactNode }) {
 const NativeTitleHalo = requireNativeView<ViewProps>('TapiroKit', 'TitleHaloView');
 
 const NativeBountyMap = requireNativeView<
-  Omit<BountyMapViewProps, 'onPinPress' | 'selectedId'> & {
+  Omit<BountyMapViewProps, 'onPinPress' | 'selectedId' | 'onCameraChange' | 'expandLabel'> & {
     selectedId: string | null;
+    expandLabel: string | null;
     onPinPress(event: NativeSyntheticEvent<BountyMapPinPress>): void;
+    onCameraChange(event: NativeSyntheticEvent<BountyMapRegion>): void;
   }
 >('TapiroKit', 'BountyMapView');
 
-export function BountyMapView({ onPinPress, selectedId, ...props }: BountyMapViewProps) {
+export function BountyMapView({
+  onPinPress,
+  onCameraChange,
+  selectedId,
+  expandLabel,
+  ...props
+}: BountyMapViewProps) {
   return (
     <NativeBountyMap
       {...props}
       selectedId={selectedId ?? null}
+      expandLabel={expandLabel ?? null}
       onPinPress={(event) => onPinPress(event.nativeEvent)}
+      onCameraChange={(event) => onCameraChange?.(event.nativeEvent)}
     />
   );
 }

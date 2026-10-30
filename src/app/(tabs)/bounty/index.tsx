@@ -11,7 +11,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TitleHalo } from 'tapiro-kit';
 
 import { useProfile, useSignedInUser, type AccountUser } from '@/features/account';
-import { BountyBoard, closePostSheet, useBountyBoard, useStartPost } from '@/features/bounty';
+import {
+  BountyBoard,
+  boardLink,
+  closePostSheet,
+  useBountyBoard,
+  usePublishBoard,
+  useStartPost,
+} from '@/features/bounty';
 import {
   HOME_BOTTOM_CHROME,
   HOME_TOP_CLEAR,
@@ -51,6 +58,7 @@ function BountyHome({ user }: { user: AccountUser }) {
     topInset: insets.top + HOME_TOP_CLEAR + vars['--space-3'],
     bottomInset: insets.bottom + HOME_BOTTOM_CHROME + vars['--space-3'],
   });
+  usePublishBoard(board, startPost);
   const homeScroll = {
     ...scrollViewProps,
     innerViewRef: content as RefObject<View>,
@@ -92,6 +100,10 @@ function BountyHome({ user }: { user: AccountUser }) {
               router.push({ pathname: '/bounty-apply/[id]', params: { id, from: 'card' } })
             }
             onPickPlace={() => router.push('/bounty/place')}
+            onExpandMap={(camera) => {
+              boardLink.expandFrom(camera);
+              router.push('/bounty-map');
+            }}
           />
         }
         refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}

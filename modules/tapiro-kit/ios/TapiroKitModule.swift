@@ -14,11 +14,13 @@ public final class TapiroKitModule: Module {
     View(PinnedBarView.self)
 
     View(BountyMapView.self) {
-      Events("onPinPress", "onMapPress", "onRegionChange")
+      Events("onPinPress", "onMapPress", "onRegionChange", "onCameraChange", "onExpand")
       Prop("pins") { (view: BountyMapView, pins: [MapPinRecord]) in view.setPins(pins) }
       Prop("selectedId") { (view: BountyMapView, id: String?) in view.setSelectedId(id) }
       Prop("origin") { (view: BountyMapView, origin: MapOriginRecord?) in view.setOrigin(origin) }
       Prop("camera") { (view: BountyMapView, camera: MapCameraRecord) in view.setCamera(camera) }
+      Prop("expandLabel") { (view: BountyMapView, label: String?) in view.setExpandLabel(label) }
+      Prop("locateButton") { (view: BountyMapView, shown: Bool?) in view.setLocateButton(shown ?? false) }
     }
 
     // Errors become a null result so JS gets a typed outcome instead of an untyped exception.

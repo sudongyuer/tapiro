@@ -22,8 +22,15 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
   let onPinPress = EventDispatcher()
   let onMapPress = EventDispatcher()
   let onRegionChange = EventDispatcher()
+  let onCameraChange = EventDispatcher()
+  let onExpand = EventDispatcher()
+
+  private static let control: CGFloat = 44
+  private static let controlMargin: CGFloat = 12
 
   private let map = MKMapView()
+  private var expandButton: UIButton?
+  private var locateButton: UIView?
   private var annotations: [String: BountyPinAnnotation] = [:]
   private var originAnnotation: OriginAnnotation?
   private var selectedId: String?
@@ -67,6 +74,7 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
   override func layoutSubviews() {
     super.layoutSubviews()
     map.frame = bounds
+    layoutControls()
     if let camera = pendingCamera, bounds.width > 0, bounds.height > 0 {
       pendingCamera = nil
       move(to: camera, animated: appliedOriginKey != nil)
@@ -120,6 +128,72 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
       title: origin.title)
     originAnnotation = annotation
     map.addAnnotation(annotation)
+  }
+
+  func setExpandLabel(_ label: String?) {
+    guard let label else {
+      expandButton?.removeFromSuperview()
+      expandButton = nil
+      return
+    }
+    let button = expandButton ?? makeExpandButton()
+    button.accessibilityLabel = label
+  }
+
+  func setLocateButton(_ shown: Bool) {
+    guard shown else {
+      locateButton?.removeFromSuperview()
+      locateButton = nil
+      return
+    }
+    guard locateButton == nil else { return }
+    let glass = UIVisualEffectView(effect: UIGlassEffect(style: .regular))
+    glass.cornerConfiguration = .capsule()
+    let tracking = MKUserTrackingButton(mapView: map)
+    tracking.accessibilityIdentifier = "bounty-map-locate"
+    glass.contentView.addSubview(tracking)
+    tracking.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      tracking.centerXAnchor.constraint(equalTo: glass.contentView.centerXAnchor),
+      tracking.centerYAnchor.constraint(equalTo: glass.contentView.centerYAnchor),
+    ])
+    addSubview(glass)
+    locateButton = glass
+    setNeedsLayout()
+  }
+
+  private func makeExpandButton() -> UIButton {
+    var configuration = UIButton.Configuration.glass()
+    configuration.image = UIImage(systemName: "arrow.up.left.and.arrow.down.right")
+    configuration.cornerStyle = .capsule
+    let button = UIButton(configuration: configuration)
+    button.accessibilityIdentifier = "bounty-map-expand"
+    button.addAction(UIAction { [weak self] _ in self?.onExpand([:]) }, for: .primaryActionTriggered)
+    addSubview(button)
+    expandButton = button
+    setNeedsLayout()
+    return button
+  }
+
+  private func layoutControls() {
+    let side = Self.control
+    let margin = Self.controlMargin
+    if let expandButton {
+      expandButton.frame = CGRect(x: bounds.width - margin - side, y: margin, width: side, height: side)
+    }
+    if let locateButton {
+      let inset = safeAreaInsets
+      locateButton.frame = CGRect(
+        x: bounds.width - inset.right - margin - side,
+        y: bounds.height - inset.bottom - margin - side,
+        width: side,
+        height: side)
+    }
+  }
+
+  override func safeAreaInsetsDidChange() {
+    super.safeAreaInsetsDidChange()
+    setNeedsLayout()
   }
 
   func setCamera(_ camera: MapCameraRecord) {
@@ -231,11 +305,18 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
     report(touched ?? view)
   }
 
+  func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+    onRegionChange([:])
+  }
+
   func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
     updateZoomLevel(animated: true)
   }
 
   func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
     updateZoomLevel(animated: true)
+    guard bounds.width > 0 else { return }
+    let center = mapView.region.center
+    onCameraChange(["latitude": center.latitude, "longitude": center.longitude, "radiusM": shortEdgeMeters() / 2])
   }
 }
