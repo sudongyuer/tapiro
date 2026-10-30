@@ -204,7 +204,7 @@ select is(
   (select array_agg(k order by k) from jsonb_object_keys(
      (select r -> 'items' -> 0 from results where name = 'near')) as k),
   array[
-    'appliedByMe', 'category', 'createdAt', 'deadlineAt', 'distanceM', 'endsAt', 'id', 'placeLabel', 'poster',
+    'appliedByMe', 'category', 'createdAt', 'deadlineAt', 'distanceM', 'endsAt', 'id', 'placeLabel', 'point', 'poster',
     'reference', 'rewardCurrency', 'rewardMinor', 'startsAt', 'stickerPath', 'title', 'urgent'
   ],
   'a card carries only the board fields'

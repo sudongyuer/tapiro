@@ -122,7 +122,7 @@ select throws_ok(
 set local role authenticated;
 select is(
   pg_temp.board('d4', 'cny800', 'MYR') - array['id', 'title', 'category', 'placeLabel', 'stickerPath', 'startsAt',
-    'endsAt', 'deadlineAt', 'urgent', 'distanceM', 'appliedByMe', 'createdAt', 'poster'],
+    'endsAt', 'deadlineAt', 'urgent', 'distanceM', 'appliedByMe', 'createdAt', 'poster', 'point'],
   jsonb_build_object('rewardMinor', 80000, 'rewardCurrency', 'CNY',
     'reference', jsonb_build_object('minor', 48980, 'currency', 'MYR', 'rateDate', pg_temp.today() - 1)),
   'the board shows ¥800 with today''s MYR reference'
