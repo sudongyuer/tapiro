@@ -292,6 +292,9 @@ const en: Translation = {
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
+    photoSticker: {
+      title: 'Photo sticker spike',
+    },
     flight: {
       title: 'Sticker flight to Me',
       fly: 'Fly to Me',

@@ -20,6 +20,7 @@ import {
 import { DesignTokensScene } from './DesignTokensScene';
 import { FlightRedirect } from './FlightScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
+import { PhotoStickerScene } from './PhotoStickerScene';
 import { SignInScene } from './SignInScene';
 
 export type Scene = {
@@ -62,6 +63,7 @@ export const scenes: Scene[] = [
   },
   { id: 'bounty-status', titleKey: 'debug.bounty.status', Component: BountyStatusScene },
   { id: 'sticker-flight', titleKey: 'debug.flight.title', Component: FlightRedirect },
+  { id: 'photo-sticker', titleKey: 'debug.photoSticker.title', Component: PhotoStickerScene },
 ];
 
 export function findScene(id: string) {

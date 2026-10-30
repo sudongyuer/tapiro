@@ -62,6 +62,13 @@ public final class TapiroKitModule: Module {
       }
     }.runOnQueue(.main)
 
+    AsyncFunction("photoSticker") { (options: PhotoStickerOptions) -> [String: Any] in
+      PhotoSticker.make(options)
+    }
+
+    AsyncFunction("imagePlaygroundProbe") { (prompt: String, style: String, imageUri: String?) async -> [String: Any] in
+      await ImagePlaygroundProbe.run(prompt: prompt, style: style, imageUri: imageUri)
+    }
   }
 
   // Sync functions run on the JS thread; ids are minted there so JS gets them synchronously, and the MapKit work is

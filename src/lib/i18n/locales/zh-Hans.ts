@@ -287,6 +287,9 @@ export default {
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
+    photoSticker: {
+      title: '照片贴纸实验',
+    },
     flight: {
       title: '贴纸飞向我的',
       fly: '飞到「我的」',

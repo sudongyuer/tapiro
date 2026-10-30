@@ -27,6 +27,26 @@ export type StickerFlightOptions = {
   badgeInk?: string;
 };
 export type StickerFlightResult = { landed: boolean };
+export type PhotoStickerOptions = {
+  uri: string;
+  border?: 'dilate' | 'contour';
+  maxSide?: number;
+  cpuOnly?: boolean;
+};
+export type PhotoStickerResult =
+  | {
+      status: 'ok';
+      uri: string;
+      width: number;
+      height: number;
+      bytes: number;
+      instances: number;
+      visionMs: number;
+      totalMs: number;
+      inputWidth: number;
+      inputHeight: number;
+    }
+  | { status: 'failed'; code: string; message: string };
 
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
@@ -40,6 +60,12 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   resolvePlace(searchId: string, suggestionId: string): Promise<PlaceResult>;
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
+  photoSticker(options: PhotoStickerOptions): Promise<PhotoStickerResult>;
+  imagePlaygroundProbe(
+    prompt: string,
+    style: string,
+    imageUri: string | null,
+  ): Promise<Record<string, unknown>>;
 }
 
 const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
@@ -91,3 +117,15 @@ export const StickerFlight = {
     return kit.flyToTab(options);
   },
 };
+
+export function photoSticker(options: PhotoStickerOptions): Promise<PhotoStickerResult> {
+  return kit.photoSticker(options);
+}
+
+export function imagePlaygroundProbe(
+  prompt: string,
+  style: 'animation' | 'illustration' | 'sketch',
+  imageUri: string | null,
+): Promise<Record<string, unknown>> {
+  return kit.imagePlaygroundProbe(prompt, style, imageUri);
+}
