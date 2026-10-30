@@ -109,6 +109,7 @@ export type EarnSticker = (input: {
   itemKind: Payment['itemKind'];
   category: Payment['category'];
   title: string;
+  counterpartName: string;
 }) => number | null;
 
 export type FixturePaymentOptions = {
@@ -328,6 +329,7 @@ export function createFixturePaymentService(
         itemKind: payment.itemKind,
         category: payment.category,
         title: payment.title,
+        counterpartName: payment.counterpartName,
       });
       return { firstSettled: stickerCount === 1, stickerCount };
     },

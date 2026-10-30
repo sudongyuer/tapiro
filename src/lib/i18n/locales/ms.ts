@@ -187,6 +187,8 @@ const ms: Translation = {
       pay: 'Ada bayaran yang perlu dibuat',
       rideMinutes: 'Bertolak dalam {{count}} minit, jangan lewat',
       owedNamed: '{{name}} kata dah bayar anda — semak',
+      settled: '{{name}} dah terima duit, urusan selesai!',
+      settledUnnamed: 'Duit dah diterima, urusan selesai!',
       bounty: '{{title}} · {{line}}',
       live: 'Ada urusan berjalan, Tapir tolong perhatikan',
       calm: 'Tiada apa hari ini… mahu siarkan ganjaran?',
@@ -204,6 +206,17 @@ const ms: Translation = {
     soon: 'Langkah ini belum dibuka',
     card: {
       waiting: { tag: 'Menunggu pengesahan' },
+      settled: {
+        tag: 'Langsai',
+        line: '{{title}} · {{name}} sahkan terima',
+        lineUnnamed: '{{title}} · Penerimaan disahkan',
+        headline: 'Berjaya! Ini pelekat anda',
+        collect: 'Simpan ke buku pelekat',
+        collected: 'Disimpan ke buku pelekat',
+        badge: '+1',
+        strip: '{{title}} · Selesai',
+        a11y: 'Langsai, {{line}}, {{amount}}',
+      },
       unavailable: {
         title: 'Bayaran anda tidak dapat dimuatkan',
         body: 'Kami belum tahu sama ada anda berhutang atau seseorang sudah membayar anda.',
@@ -283,6 +296,12 @@ const ms: Translation = {
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
+    flight: {
+      title: 'Pelekat terbang ke Saya',
+      fly: 'Terbang ke Saya',
+      flyReduced: 'Terbang (Kurangkan Gerakan)',
+      reset: 'Letak semula pelekat',
+    },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',

@@ -22,10 +22,12 @@ import { ease, keyframes, TIMELINE, TOTAL } from './timeline';
 const earlier = (id: string): Sticker => ({
   id,
   paymentId: `p-${id}`,
+  role: 'payee',
   itemKind: 'bounty',
   category: null,
   title: id,
   earnedAt: '2026-10-01T00:00:00Z',
+  counterpartName: null,
 });
 
 const describeSlot = (slot: BookSlot) =>

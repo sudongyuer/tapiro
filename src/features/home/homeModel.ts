@@ -46,7 +46,7 @@ function sortedCards(
     .map((item, index) => ({ item, index }))
     .sort((a, b) => priority(a.item.kind) - priority(b.item.kind) || a.index - b.index)
     .map(({ item }) => {
-      const detail = details[item.id] ?? paymentDetail(item) ?? item.bounty;
+      const detail = details[item.id] ?? paymentDetail(item) ?? item.bounty ?? item.settled;
       return {
         kind: item.kind,
         id: item.id,
@@ -89,6 +89,8 @@ export type StageLine =
   | { key: 'rideMinutes'; count: number }
   | { key: 'owedNamed'; name: string }
   | { key: 'bounty'; title: string; line: string }
+  | { key: 'settled'; name: string }
+  | { key: 'settledUnnamed' }
   | { key: 'live' }
   | { key: 'calm' };
 
@@ -108,6 +110,10 @@ export function stageLine(cards: readonly LiveCardModel[]): StageLine {
     case 'bountyInProgress':
     case 'waitingConfirm':
       return { key: 'bounty', title: detail.title, line: detail.line };
+    case 'settled':
+      return detail.counterpart
+        ? { key: 'settled', name: detail.counterpart }
+        : { key: 'settledUnnamed' };
     default:
       return front.kind === 'oweMoney' ? { key: 'pay' } : { key: 'live' };
   }

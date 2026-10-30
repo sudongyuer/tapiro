@@ -26,6 +26,16 @@ class Transition(AxeError):
 
 STRINGS = Path(__file__).resolve().parents[2] / '.verify/ui-strings.json'
 INTERPOLATION = re.compile(r'\{\{\s*(\w+)\s*\}\}')
+HAN = '\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff'
+LATIN_THEN_HAN = re.compile(rf'([A-Za-z])(?=[{HAN}])')
+HAN_THEN_LATIN = re.compile(rf'([{HAN}])(?=[A-Za-z])')
+
+
+# Mirrors src/lib/i18n/latinSpacing.ts, so an expected string matches what the app renders.
+def latin_spacing(locale, text):
+    if not locale.startswith('zh'):
+        return text
+    return HAN_THEN_LATIN.sub(r'\1 ', LATIN_THEN_HAN.sub(r'\1 ', text))
 
 
 def load_strings():
@@ -59,13 +69,18 @@ class UI:
         table = self.strings[locale]
         if key not in table:
             raise KeyError(f'no UI string {key!r} for {locale}')
-        return INTERPOLATION.sub(lambda m: str(values[m.group(1)]), table[key])
+        return latin_spacing(locale, INTERPOLATION.sub(lambda m: str(values[m.group(1)]), table[key]))
 
     def pattern(self, key, **patterns):
-        marks = {name: f'PATTERN{index}X' for index, name in enumerate(patterns)}
-        escaped = re.escape(self.t(key, **marks))
+        marks = {name: f'\x00{index}\x00' for index, name in enumerate(patterns)}
+        text = self.t(key, **marks)
+        escaped = re.escape(text)
         for name, mark in marks.items():
-            escaped = escaped.replace(mark, patterns[name])
+            at = text.find(mark)
+            before = at > 0 and re.match(f'[{HAN}]', text[at - 1])
+            after = at >= 0 and re.match(f'[{HAN}]', text[at + len(mark) : at + len(mark) + 1] or 'x')
+            value = (' ?' if before else '') + patterns[name] + (' ?' if after else '')
+            escaped = escaped.replace(re.escape(mark), value)
         return escaped
 
     def other_locale(self):

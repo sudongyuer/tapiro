@@ -84,6 +84,7 @@ const FALLBACK_TONE: Record<AccessoryItem['kind'], LiveCardTone> = {
   rideSoon: 'ride',
   owedToYou: 'progress',
   bountyAction: 'progress',
+  settled: 'progress',
   bountyInProgress: 'progress',
   waitingConfirm: 'calm',
 };
@@ -93,6 +94,7 @@ const FALLBACK_TAG = {
   rideSoon: 'home.stage.live',
   owedToYou: 'home.card.owed.tag',
   bountyAction: 'home.card.bounty.tag.action',
+  settled: 'home.card.settled.tag',
   bountyInProgress: 'home.stage.live',
   waitingConfirm: 'home.card.waiting.tag',
 } as const;

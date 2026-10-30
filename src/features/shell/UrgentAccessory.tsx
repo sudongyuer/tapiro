@@ -3,7 +3,7 @@ import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
-import type { AccessoryKind } from '@/lib/liveItems';
+import type { TabAccessoryKind } from '@/lib/liveItems';
 import { CURRENCIES, formatMoney } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import type { TokenName } from '@/ui/theme/tokens';
@@ -12,31 +12,33 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { MostUrgent } from './accessory';
 
-const GLYPHS: Record<AccessoryKind, { fill: TokenName; ink: TokenName; symbol: SFSymbol | null }> =
-  {
-    oweMoney: { fill: '--color-card-pay', ink: '--color-on-card-pay', symbol: null },
-    rideSoon: { fill: '--color-card-ride', ink: '--color-on-card-ride', symbol: 'car.fill' },
-    owedToYou: {
-      fill: '--color-card-progress',
-      ink: '--color-on-card-progress',
-      symbol: 'arrow.down.left',
-    },
-    bountyAction: {
-      fill: '--color-card-progress',
-      ink: '--color-on-card-progress',
-      symbol: 'exclamationmark',
-    },
-    bountyInProgress: {
-      fill: '--color-sticker-handle',
-      ink: '--color-on-sticker',
-      symbol: 'hourglass',
-    },
-    waitingConfirm: {
-      fill: '--color-card-calm',
-      ink: '--color-on-card-calm',
-      symbol: 'clock',
-    },
-  };
+const GLYPHS: Record<
+  TabAccessoryKind,
+  { fill: TokenName; ink: TokenName; symbol: SFSymbol | null }
+> = {
+  oweMoney: { fill: '--color-card-pay', ink: '--color-on-card-pay', symbol: null },
+  rideSoon: { fill: '--color-card-ride', ink: '--color-on-card-ride', symbol: 'car.fill' },
+  owedToYou: {
+    fill: '--color-card-progress',
+    ink: '--color-on-card-progress',
+    symbol: 'arrow.down.left',
+  },
+  bountyAction: {
+    fill: '--color-card-progress',
+    ink: '--color-on-card-progress',
+    symbol: 'exclamationmark',
+  },
+  bountyInProgress: {
+    fill: '--color-sticker-handle',
+    ink: '--color-on-sticker',
+    symbol: 'hourglass',
+  },
+  waitingConfirm: {
+    fill: '--color-card-calm',
+    ink: '--color-on-card-calm',
+    symbol: 'clock',
+  },
+};
 
 const GLYPH_SIZE = { regular: 36, inline: 28 } as const;
 
@@ -97,7 +99,15 @@ function MorePill({ count }: { count: number }) {
   );
 }
 
-function Glyph({ kind, unit, size }: { kind: AccessoryKind; unit: string | null; size: number }) {
+function Glyph({
+  kind,
+  unit,
+  size,
+}: {
+  kind: TabAccessoryKind;
+  unit: string | null;
+  size: number;
+}) {
   const { color } = useTheme();
   const { fill, ink, symbol } = GLYPHS[kind];
   return (

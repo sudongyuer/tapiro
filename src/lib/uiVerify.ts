@@ -17,3 +17,5 @@ export const uiVerifyScene = uiVerifyArgument('uiVerifyScene');
 export const uiVerifyFixture = fixtureVariant(uiVerifyArgument('uiVerifyFixture'));
 
 export const uiVerifySignedIn = signedInLaunch(uiVerifyArgument('uiVerifySignedIn'));
+
+export const uiVerifyReduceMotion = uiVerifyArgument('uiVerifyReduceMotion') === '1';

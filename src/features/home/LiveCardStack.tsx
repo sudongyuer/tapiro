@@ -1,7 +1,14 @@
 import { useRouter, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
@@ -11,21 +18,31 @@ import { PressDim } from '@/ui/PressDim';
 import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { BountyCard, OwedCard } from './cards/BountyCard';
-import { CalmCard, FallbackCard } from './cards/CalmCard';
-import { PayCard } from './cards/PayCard';
-import { RideCard } from './cards/RideCard';
-import { UnavailableCard } from './cards/UnavailableCard';
+import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
 import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
 
 const MAX_Z = 10;
+const RESTACK = { duration: 420, easing: Easing.bezier(0.2, 0.9, 0.3, 1) };
+const LEAVE = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
+
+function leaveUp() {
+  'worklet';
+  return {
+    initialValues: { opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }] },
+    animations: {
+      opacity: withTiming(0, LEAVE),
+      transform: [{ translateY: withTiming(-24, LEAVE) }, { scale: withTiming(0.92, LEAVE) }],
+    },
+  };
+}
 
 const TONE: Record<LiveCardModel['kind'], LiveCardTone> = {
   oweMoney: 'pay',
   rideSoon: 'ride',
   owedToYou: 'progress',
   bountyAction: 'progress',
+  settled: 'progress',
   bountyInProgress: 'progress',
   waitingConfirm: 'calm',
   calm: 'calm',
@@ -119,6 +136,7 @@ function StackedCard({
   fanned,
   open,
   progress,
+  ready,
   name,
   onAsk,
   onToggle,
@@ -129,14 +147,26 @@ function StackedCard({
   const bounty = bountyDetail(card);
   const behind = index > 0 && !open;
   const hidden = !stacked.visible && !open;
+  const y = useSharedValue(stacked.y);
+  const scale = useSharedValue(stacked.scale);
+  const faceShown = useSharedValue(index > 0 ? 1 : 0);
+  const wasReady = useRef(ready);
+  useEffect(() => {
+    const animate = wasReady.current && ready;
+    wasReady.current = ready;
+    y.set(animate ? withTiming(stacked.y, RESTACK) : stacked.y);
+    scale.set(animate ? withTiming(stacked.scale, RESTACK) : stacked.scale);
+    const face = index > 0 ? 1 : 0;
+    faceShown.set(animate ? withTiming(face, RESTACK) : face);
+  }, [ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
   const motion = useAnimatedStyle(() => ({
     opacity: stacked.visible ? 1 : progress.value,
     transform: [
-      { translateY: interpolate(progress.value, [0, 1], [stacked.y, fanned.y]) },
-      { scale: interpolate(progress.value, [0, 1], [stacked.scale, fanned.scale]) },
+      { translateY: interpolate(progress.value, [0, 1], [y.get(), fanned.y]) },
+      { scale: interpolate(progress.value, [0, 1], [scale.get(), fanned.scale]) },
     ],
   }));
-  const face = useAnimatedStyle(() => ({ opacity: index > 0 ? 1 - progress.value : 0 }));
+  const face = useAnimatedStyle(() => ({ opacity: faceShown.get() * (1 - progress.value) }));
   const peek = bounty
     ? t('home.card.bounty.line', { title: bounty.title, line: bounty.line })
     : card.kind === 'calm'
@@ -159,10 +189,12 @@ function StackedCard({
       })
     : undefined;
   const ownButton = card.kind === 'oweMoney';
+  const grouped = card.kind !== 'calm' && card.kind !== 'unavailable' && card.kind !== 'settled';
 
   return (
     <Animated.View
       onLayout={onCardLayout(card.id)}
+      exiting={card.kind === 'settled' ? leaveUp : undefined}
       accessibilityElementsHidden={hidden}
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
       style={[styles.card, { zIndex: MAX_Z - index }, motion]}
@@ -175,54 +207,30 @@ function StackedCard({
           testID={`live-card-peek-${index}`}
           onPress={() => onToggle(true)}
         >
-          <CardBody card={card} name={name} onAsk={onAsk} />
+          <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
           <BackFace tone={TONE[card.kind]} label={peek} style={face} />
         </PressDim>
       ) : (
         <View
-          accessible={card.kind !== 'calm' && card.kind !== 'unavailable'}
+          accessible={grouped}
           accessibilityRole={openTarget ? 'button' : undefined}
           accessibilityLabel={label}
           accessibilityActions={openTarget ? [{ name: 'activate' }] : undefined}
           onAccessibilityAction={openTarget}
-          testID={
-            card.kind === 'calm' || card.kind === 'unavailable'
-              ? undefined
-              : `live-card-${card.kind}`
-          }
+          testID={grouped ? `live-card-${card.kind}` : undefined}
         >
           {openTarget && !ownButton ? (
             <PressDim onPress={openTarget}>
-              <CardBody card={card} name={name} onAsk={onAsk} />
+              <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
             </PressDim>
           ) : (
-            <CardBody card={card} name={name} onAsk={onAsk} />
+            <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
           )}
-          {index > 0 ? <BackFace tone={TONE[card.kind]} label={peek} style={face} /> : null}
+          <BackFace tone={TONE[card.kind]} label={peek} style={face} />
         </View>
       )}
     </Animated.View>
   );
-}
-
-function CardBody({ card, name, onAsk }: { card: LiveCardModel; name: string; onAsk: () => void }) {
-  if (card.kind === 'calm') return <CalmCard name={name} onAsk={onAsk} />;
-  if (card.kind === 'unavailable') return <UnavailableCard issue={card.issue} />;
-  const { detail, item } = card;
-  switch (detail?.kind) {
-    case 'oweMoney':
-      return <PayCard detail={detail} />;
-    case 'rideSoon':
-      return <RideCard detail={detail} />;
-    case 'owedToYou':
-      return <OwedCard detail={detail} />;
-    case 'bountyAction':
-    case 'bountyInProgress':
-    case 'waitingConfirm':
-      return <BountyCard detail={detail} />;
-    default:
-      return <FallbackCard item={item} />;
-  }
 }
 
 function BackFace({

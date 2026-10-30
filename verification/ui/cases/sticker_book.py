@@ -1,8 +1,11 @@
-"""我的 shows 我帮过的忙 · 7 张 above 收款方式; the row pushes the sticker book: outlined title, count line, seven worst-case stickers (long titles wrap to two lines, ride → car, bounty → its category sticker, checked by the art's colours) in three columns newest first, and system back returns to 我的."""
+"""我的 shows 一起办成的事 · 7 张 above 收款方式; the row pushes the sticker book: outlined title 一起办成的事, count line with the new subtitle, seven worst-case stickers (each labelled who helped whom, then the title; bounty → its category sticker, ride → car, checked by the art's colours) in three columns newest first."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
+
+WORST_NAME = 'Nurul Aisyah binti Wan Abdul Rahman Shah'
+WORST_TITLE = '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便在 Sunway Pyramid 的 ZUS Coffee 买两杯 Spanish Latte，再送到 Universiti Malaya Kolej 宿舍楼'
 
 DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/', 'src/features/account/']
 LOCALES = ['zh-Hans', 'ms']
@@ -32,7 +35,8 @@ assert count.get('AXLabel') == expected, count
 items = ui.read()
 cells = [by_id(items, f'sticker-cell-{index}') for index in range(3)]
 assert all(cells), 'the first row of stickers is missing'
-assert (cells[0].get('AXLabel') or '').startswith('帮忙从 Mid Valley Megamall'), cells[0].get('AXLabel')
+first = ui.t('stickers.label.a11y', line1=ui.t('stickers.label.payee', name=WORST_NAME), title=WORST_TITLE, date='')
+assert (cells[0].get('AXLabel') or '').startswith(first), cells[0].get('AXLabel')
 assert len({round(cell['frame']['y']) for cell in cells}) == 1, 'the first three stickers are not one row'
 assert cells[0]['frame']['x'] < cells[1]['frame']['x'] < cells[2]['frame']['x'], 'columns out of order'
 shot = ui.snap('02-book')
@@ -45,9 +49,9 @@ def art_pixels(cell, name):
     return shot.count(art, lambda rgb: close(rgb, colour))
 
 
-ART = [('--color-sticker-other', 'other category'), ('--color-object-coral', 'car'), ('--color-sticker-study', 'study category')]
+ART = [('--color-sticker-other', 'other category'), ('--color-sticker-buy', 'buy category'), ('--color-object-coral', 'car')]
 counts = [[art_pixels(cell, name) for name, _ in ART] for cell in cells]
-print(f'art pixels per cell (other, car, study): {counts}')
+print(f'art pixels per cell (other, buy, car): {counts}')
 for index, (_, label) in enumerate(ART):
     own = counts[index][index]
     assert own > ART_MIN, f'cell {index} does not draw the {label} sticker ({own} pixels)'

@@ -1,5 +1,4 @@
 """A later settle (seven stickers already) plays the same celebration without the badge: 又帮成一单, the five most recent stickers shift one slot forward while the book rises into one centred group with the headline, sticker 8 lands in the first slot, the count rolls 7 → 8 (video); 看看贴纸本 opens the sticker book with the new sticker first."""
-import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -31,7 +30,8 @@ count = ui.wait_label(
     'the sticker book does not count 8 stickers',
 )
 first = ui.element('sticker-cell-0')
-assert re.match(re.escape('帮带一杯咖啡'), first.get('AXLabel') or ''), first.get('AXLabel')
+prefix = ui.t('stickers.label.a11y', line1=ui.t('stickers.label.payee', name='小林'), title='帮带一杯咖啡', date='')
+assert (first.get('AXLabel') or '').startswith(prefix), first.get('AXLabel')
 assert by_id(ui.read(), 'sticker-cell-1'), 'earlier stickers missing'
 ui.capture('02-book')
 print('PASS: a later settle celebrates without the badge and the book lists the new sticker first')

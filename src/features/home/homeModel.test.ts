@@ -6,6 +6,7 @@ import {
   type AccessoryKind,
   type BountyCardDetail,
   type CardDetail,
+  type SettledDetail,
 } from '@/lib/liveItems';
 
 import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
@@ -219,6 +220,71 @@ describe('bounty cards', () => {
       title: '帮取快递',
       line: '3 人申请，去选',
     });
+  });
+});
+
+describe('settled cards (68A, 70A)', () => {
+  const settledDetail = (id: string, counterpart: string | null): SettledDetail => ({
+    kind: 'settled',
+    stickerId: id,
+    paymentId: `p-${id}`,
+    art: { kind: 'category', category: 'pickup' },
+    title: '帮取快递',
+    counterpart,
+    amount: { minor: 800, currency: 'MYR' },
+    line: '帮取快递 · 阿杰确认收到了',
+  });
+  const settled = (id: string, counterpart: string | null = '阿杰'): AccessoryItem => ({
+    id: `settled-${id}`,
+    kind: 'settled',
+    title: '帮取快递 · 办成了',
+    amount: { minor: 800, currency: 'MYR' },
+    sub: '帮取快递 · 阿杰确认收到了',
+    settled: settledDetail(id, counterpart),
+  });
+
+  test('with every kind present, settled ranks after the cards that need you and before in-progress and 等对方', () => {
+    const cards = liveCards(
+      [bounty('waitingConfirm'), progress, settled('a'), bounty('bountyAction'), owed, ride, owe],
+      DETAILS,
+      accessoryPriority,
+    );
+    expect(cards.map((card) => card.kind)).toEqual([
+      'oweMoney',
+      'rideSoon',
+      'owedToYou',
+      'bountyAction',
+      'settled',
+      'bountyInProgress',
+      'waitingConfirm',
+    ]);
+  });
+
+  test('two settles make two cards in feed order, each with its own detail', () => {
+    const cards = liveCards([progress, settled('a'), settled('b')], {}, accessoryPriority);
+    expect(cards.map((card) => card.id)).toEqual(['settled-a', 'settled-b', progress.id]);
+    expect(cards.map((card) => ('detail' in card ? card.detail?.kind : null))).toEqual([
+      'settled',
+      'settled',
+      'bountyInProgress',
+    ]);
+  });
+
+  test('a front settled card names the payee on the stage, or says 对方 without a name', () => {
+    expect(stageLine(liveCards([progress, settled('a')], {}, accessoryPriority))).toEqual({
+      key: 'settled',
+      name: '阿杰',
+    });
+    expect(stageLine(liveCards([settled('a', null)], {}, accessoryPriority))).toEqual({
+      key: 'settledUnnamed',
+    });
+  });
+
+  test('a settled card behind money owed leaves the stage to the payment', () => {
+    expect(stageLine(liveCards([settled('a'), owe], DETAILS, accessoryPriority)).key).toBe(
+      'payNamed',
+    );
+    expect(stageState([settled('a')])).toBe('live');
   });
 });
 

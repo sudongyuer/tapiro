@@ -178,6 +178,8 @@ export default {
       pay: '有一笔钱要付，别忘了',
       rideMinutes: '{{count}} 分钟后出发，别迟到',
       owedNamed: '{{name}}说付你了，去确认一下',
+      settled: '{{name}}收到钱了，这单办成啦',
+      settledUnnamed: '对方收到钱了，这单办成啦',
       bounty: '{{title}} · {{line}}',
       live: '有事在进行，小貘帮你盯着',
       calm: '今天没事…要发个悬赏吗',
@@ -195,6 +197,17 @@ export default {
     soon: '这一步还没开放',
     card: {
       waiting: { tag: '等对方确认' },
+      settled: {
+        tag: '已结清',
+        line: '{{title}} · {{name}}确认收到了',
+        lineUnnamed: '{{title}} · 对方确认收到了',
+        headline: '办成了，贴纸给你',
+        collect: '收进贴纸本',
+        collected: '已收进贴纸本',
+        badge: '+1',
+        strip: '{{title}} · 办成了',
+        a11y: '已结清，{{line}}，{{amount}}',
+      },
       unavailable: {
         title: '付款信息没加载出来',
         body: '没法确定你现在欠不欠钱，或别人有没有付你。',
@@ -274,6 +287,12 @@ export default {
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
+    flight: {
+      title: '贴纸飞向我的',
+      fly: '飞到「我的」',
+      flyReduced: '飞（减弱动态效果）',
+      reset: '放回贴纸',
+    },
     tokens: {
       title: '设计令牌',
       roleSample: '{{role}} 悬赏令',

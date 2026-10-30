@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
 import { stickerStore } from './instance';
+import { settledStore } from './live';
 import type { Sticker } from './model';
 
 export type StickersView =
@@ -26,4 +27,5 @@ export function useStickers(userId: string | null): StickersView {
 
 export function useLiveStickers(userId: string | null) {
   useEffect(() => stickerStore.follow(userId, AppState), [userId]);
+  useEffect(() => settledStore.follow(userId, AppState), [userId]);
 }

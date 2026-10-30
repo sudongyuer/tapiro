@@ -183,6 +183,8 @@ const en: Translation = {
       pay: 'You have a payment to make',
       rideMinutes: 'Leaving in {{count}} min, don’t be late',
       owedNamed: '{{name}} says they paid you — check it',
+      settled: '{{name}} got the money — all done!',
+      settledUnnamed: 'They got the money — all done!',
       bounty: '{{title}} · {{line}}',
       live: 'Something’s in progress, I’m keeping an eye on it',
       calm: 'Nothing on today… post a bounty?',
@@ -200,6 +202,17 @@ const en: Translation = {
     soon: 'This step isn’t available yet',
     card: {
       waiting: { tag: 'Waiting to be confirmed' },
+      settled: {
+        tag: 'Settled',
+        line: '{{title}} · {{name}} confirmed payment',
+        lineUnnamed: '{{title}} · Payment confirmed',
+        headline: 'Done! Here’s your sticker',
+        collect: 'Add to Sticker Book',
+        collected: 'Added to Sticker Book',
+        badge: '+1',
+        strip: '{{title}} · Done',
+        a11y: 'Settled, {{line}}, {{amount}}',
+      },
       unavailable: {
         title: 'Couldn’t load your payments',
         body: 'We can’t tell yet whether you owe money or someone paid you.',
@@ -279,6 +292,12 @@ const en: Translation = {
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
+    flight: {
+      title: 'Sticker flight to Me',
+      fly: 'Fly to Me',
+      flyReduced: 'Fly (Reduce Motion)',
+      reset: 'Put the sticker back',
+    },
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',

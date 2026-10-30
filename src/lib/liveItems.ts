@@ -1,6 +1,6 @@
 import type { FixtureVariant } from './fixtureVariant';
 import type { Money } from './money';
-import type { BountyCategory } from './stickers';
+import type { BountyCategory, StickerArt } from './stickers';
 import { createStore } from './store';
 
 export const ACCESSORY_KINDS = [
@@ -8,6 +8,7 @@ export const ACCESSORY_KINDS = [
   'rideSoon',
   'owedToYou',
   'bountyAction',
+  'settled',
   'bountyInProgress',
   'waitingConfirm',
 ] as const;
@@ -62,7 +63,18 @@ export type BountyCardDetail = {
   markSeen?: () => Promise<void>;
 };
 
-export type CardDetail = PayDetail | RideDetail | OwedDetail | BountyCardDetail;
+export type SettledDetail = {
+  kind: 'settled';
+  stickerId: string;
+  paymentId: string;
+  art: StickerArt;
+  title: string;
+  counterpart: string | null;
+  amount: Money;
+  line: string;
+};
+
+export type CardDetail = PayDetail | RideDetail | OwedDetail | BountyCardDetail | SettledDetail;
 
 export type AccessoryItem = {
   id: string;
@@ -72,9 +84,19 @@ export type AccessoryItem = {
   sub: string;
   payment?: { id: string; counterpart: string; note: string };
   bounty?: BountyCardDetail;
+  settled?: SettledDetail;
 };
 
 export const MONEY_KINDS: readonly AccessoryKind[] = ['oweMoney', 'owedToYou'];
+
+// The tab-bar accessory is for things that need you; a settled card is good news that waits on home (2026-10-29).
+export const HOME_ONLY_KINDS = ['settled'] as const;
+export type TabAccessoryKind = Exclude<AccessoryKind, (typeof HOME_ONLY_KINDS)[number]>;
+export type TabAccessoryItem = AccessoryItem & { kind: TabAccessoryKind };
+
+export function inTabAccessory(item: AccessoryItem): item is TabAccessoryItem {
+  return !(HOME_ONLY_KINDS as readonly AccessoryKind[]).includes(item.kind);
+}
 
 export function accessoryPriority(kind: AccessoryKind) {
   return ACCESSORY_KINDS.indexOf(kind) + 1;

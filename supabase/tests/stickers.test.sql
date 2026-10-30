@@ -1,5 +1,5 @@
 begin;
-select plan(28);
+select plan(43);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -183,6 +183,123 @@ delete from auth.users where id = '00000000-0000-0000-0000-0000000000b2';
 select is(
   (select count(*) from public.stickers where owner_id = '00000000-0000-0000-0000-0000000000b2'), 0::bigint,
   'deleting the account deletes its stickers'
+);
+
+reset role;
+insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
+values
+  ('00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'e@example.com', '{"full_name":"Erin"}'),
+  ('00000000-0000-0000-0000-0000000000f6', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'f@example.com', '{"full_name":"Faiz"}'),
+  ('00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'g@example.com', '{"full_name":"Gwen"}'),
+  ('00000000-0000-0000-0000-0000000000a8', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'h@example.com', '{"full_name":"Hana"}');
+insert into public.payee_methods (id, user_id, type, display_name, qr_payload)
+values
+  ('00000000-0000-4000-8000-0000000000f1', '00000000-0000-0000-0000-0000000000f6', 'alipay', 'Faiz', 'https://qr.alipay.com/faiz'),
+  ('00000000-0000-4000-8000-0000000000f2', '00000000-0000-0000-0000-0000000000f6', 'cash', null, null);
+delete from public.fx_rates;
+insert into public.fx_rates (base, quote, rate_date, source, quote_per_base)
+values ('CNY', 'MYR', (now() at time zone 'Asia/Kuala_Lumpur')::date, 'bnm', 0.5);
+insert into ids values
+  ('tea', public.open_payment('bounty', gen_random_uuid(), '帮买奶茶', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 1500, 'MYR', item_category => 'buy')),
+  ('fresh', public.open_payment('ride', gen_random_uuid(), '拼车去 KLCC', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 800, 'MYR')),
+  ('stale', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 600, 'MYR', item_category => 'queue')),
+  ('late', public.open_payment('bounty', gen_random_uuid(), '帮搬箱子', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 900, 'MYR', item_category => 'move')),
+  ('ghost', public.open_payment('bounty', gen_random_uuid(), '帮拿外卖', '00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-0000000000f6', 700, 'MYR', item_category => 'pickup'));
+
+create function pg_temp.card_of(n text) returns jsonb language sql as $$
+  select c - 'stickerId' - 'earnedAt' from public.settled_cards() c
+  where c ->> 'paymentId' = (select id from ids where name = n)::text;
+$$;
+create function pg_temp.book_of(n text) returns jsonb language sql as $$
+  select b - 'id' - 'earnedAt' - 'paymentId' from public.sticker_book() b
+  where b ->> 'paymentId' = (select id from ids where name = n)::text;
+$$;
+create function pg_temp.payer_sticker(n text) returns uuid language sql as $$
+  select s.id from public.stickers s
+  where s.payment_id = (select id from ids where name = n) and s.role = 'payer';
+$$;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
+select public.mark_payment_paid((select id from ids where name = 'tea'), '00000000-0000-4000-8000-0000000000f1');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000f6');
+select public.confirm_payment_received((select id from ids where name = 'tea'));
+select public.confirm_payment_received((select id from ids where name = 'ghost'));
+
+select is(
+  pg_temp.book_of('tea'),
+  '{"role": "payee", "itemKind": "bounty", "category": "buy", "title": "帮买奶茶", "counterpartName": "Erin"}'::jsonb,
+  'the payee''s book row names the payer'
+);
+select is((select count(*) from public.settled_cards()), 0::bigint, 'the payee gets no settled card');
+select throws_ok(
+  format('select public.collect_sticker(%L)', (select s.id from public.stickers s join ids on ids.id = s.payment_id where ids.name = 'tea')),
+  'P0002', 'sticker_not_found', 'a payee row cannot be collected'
+);
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
+select is(
+  pg_temp.book_of('tea'),
+  '{"role": "payer", "itemKind": "bounty", "category": "buy", "title": "帮买奶茶", "counterpartName": "Faiz"}'::jsonb,
+  'the payer''s book row names the payee'
+);
+select is(
+  pg_temp.card_of('tea'),
+  jsonb_build_object(
+    'paymentId', (select id from ids where name = 'tea'), 'itemKind', 'bounty', 'category', 'buy', 'title', '帮买奶茶',
+    'counterpartName', 'Faiz', 'amount', '{"minor": 3000, "currency": "CNY"}'::jsonb
+  ),
+  'a settle shows the payer a card with the amount in the currency paid, not the item''s RM'
+);
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a8');
+select is((select count(*) from public.sticker_book()), 0::bigint, 'another user reads nothing from the book');
+select is((select count(*) from public.settled_cards()), 0::bigint, 'another user reads no settled cards');
+select throws_ok(
+  format('select public.collect_sticker(%L)', pg_temp.payer_sticker('tea')),
+  'P0002', 'sticker_not_found', 'another user cannot collect the payer''s sticker'
+);
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
+select is(public.collect_sticker(pg_temp.payer_sticker('tea')), '{"collected": true}'::jsonb, 'the payer collects the sticker');
+select is(pg_temp.card_of('tea'), null, 'a collected sticker leaves no card');
+reset role;
+update public.stickers set collected_at = '2026-10-01 00:00+00' where id = pg_temp.payer_sticker('tea');
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
+select is(public.collect_sticker(pg_temp.payer_sticker('tea')), '{"collected": true}'::jsonb, 'collecting again succeeds');
+reset role;
+select is(
+  (select collected_at from public.stickers where id = pg_temp.payer_sticker('tea')), '2026-10-01 00:00+00'::timestamptz,
+  'collecting again keeps the first collected time'
+);
+
+delete from auth.users where id = '00000000-0000-0000-0000-0000000000a7';
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000f6');
+select is(
+  pg_temp.book_of('ghost'),
+  '{"role": "payee", "itemKind": "bounty", "category": "pickup", "title": "帮拿外卖", "counterpartName": null}'::jsonb,
+  'a deleted counterpart reads as no name'
+);
+select public.confirm_payment_received((select id from ids where name = 'fresh'));
+select public.confirm_payment_received((select id from ids where name = 'stale'));
+reset role;
+update public.stickers set earned_at = now() - interval '8 days' where id = pg_temp.payer_sticker('stale');
+update public.payments set state = 'settled', settled_at = now() - interval '1 day', method_type = 'cash'
+where id = (select id from ids where name = 'late');
+select public.award_missing_stickers();
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
+select results_eq(
+  $$select (c ->> 'paymentId')::uuid from public.settled_cards() c$$,
+  $$select id from ids where name = 'fresh'$$,
+  'only the fresh settle shows: the 8-day-old and the backfilled settles leave no card'
+);
+reset role;
+select is(
+  (select collected_at is not null from public.stickers where id = pg_temp.payer_sticker('stale')), true,
+  'reading the cards marks a payer sticker older than 7 days collected'
 );
 
 select * from finish();
