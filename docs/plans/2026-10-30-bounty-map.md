@@ -5,8 +5,11 @@
 > last task runs the selection once (Pace, 2026-10-29). When all tasks are done, run `spec-lifecycle` before the PR (only
 > "Deviations and rulings" is updated; the bounty spec is implemented after step 12).
 
-**Status:** waiting for the user. UI questions 75–83 were drawn on 2026-10-29 while the user was asleep; canvas page 05,
-board 「【待定】悬赏 · 地图 · 第 75–83 题」. Implementation does not start until they are answered.
+**Status:** ready. Answered 2026-10-30: 75A, 79A–82A as drawn; 76A, 77B, 78A, 83A on the redrawn interactive board
+「地图交互 · 可交互 · 第 76–78、83 题重画」 after the owner's reference video (board 「【参考】地图交互 · 用户给的视频」, page 05).
+The owner chose the kit's own MapKit view over `expo-maps` (2026-10-30, 「地图 A」), because the video's pins grow labels,
+change with zoom and open a card in place, which `expo-maps`' fixed 50 pt image annotations cannot do. The owner
+approved returning the snapped ~110 m point on the board (gap 1).
 
 **Goal:** Beside 「能接的悬赏」 two die-cut stickers switch the board between the list and a real Apple map. The map shows
 each located bounty as its category sticker around the user (or the chosen place). Tapping a sticker shows the bounty
@@ -36,7 +39,12 @@ worktree) and driven with AXe on `Tapiro Verify` (iPhone 17 Pro, iOS 26). Screen
 `/private/tmp/claude-501/-Users-sudongyu-work-tapiro/239e5a54-cf0e-4063-8e59-7e739e506b2b/scratchpad/spike-map-0{1..6}-*.png`,
 and on the canvas board.
 
-**Verdict: go, with caveats.** `AppleMaps.View` with image annotations is enough. No RN view has to be rendered to an
+**Superseded 2026-10-30.** The spike's verdict held for the 2026-10-29 questions; the owner's video asks for pins that
+grow, carry a die-cut label, shrink to dots when zoomed out and open a card in place, which the fixed 50 pt image
+annotations below cannot draw. The map moves to the kit (the spec's named fallback). Caveats 1–10 no longer apply; the
+findings on Info.plist, location and tiles still do.
+
+**Verdict (2026-10-29): go, with caveats.** `AppleMaps.View` with image annotations is enough. No RN view has to be rendered to an
 image, and the MapKit fallback in the kit is not needed for v1.
 
 What works:
@@ -102,8 +110,8 @@ Blockers: none.
   and V4 were rejected (page 99 「G · 列表/地图怎么切」).
 - **View memory (G13).** The last view is stored on the device and restored on launch, with 「记住了」 under the title the
   first time it is restored as the map.
-- **Real Apple map (M2)** through `expo-maps` `AppleMaps`, stickers as image annotations, the user's position shown. No
-  route or turn-by-turn (Known limits). The spike confirmed it (verdict above).
+- **Real Apple map (M2)** drawn by the kit (`modules/tapiro-kit`, MapKit `MKMapView`), stickers as custom annotation
+  views, the user's position shown. No route or turn-by-turn (Known limits). Owner, 2026-10-30.
 - **A pin leads to the 3A detail and to 申请** (Goals, 3A, G12). How (card first or push) is Q76.
 - **Location denied:** no map pins until a place is chosen (Errors table). How the map area looks then is Q81.
 - **Bounties without a place** never appear on the map (Client: 「not placed on the axis or map」).
@@ -132,7 +140,7 @@ Blockers: none.
    draws live tiles, so screenshots of the map area differ between runs. Cases assert pins through the AX tree and
    pixels only on our own surfaces (switch, peek card, chips), never on tiles.
 
-## UI questions (drawn 2026-10-29; waiting for the user)
+## UI questions (drawn 2026-10-29; answered 2026-10-30)
 
 Drawn on the canvas as questions 75–83. ★ marks the recommendation.
 
@@ -148,36 +156,41 @@ Drawn on the canvas as questions 75–83. ★ marks the recommendation.
 | 82  | Switch and view change motion (Reduce Motion)  | A the selected sticker springs to −8° and 1.12× (perceptual 350 ms, damping 0.75), list and map cross-fade 200 ms · B the same sticker spring, views swap instantly · C sticker eases over 180 ms, views swap instantly                                                    | A   |
 | 83  | Peek card in and out                           | A slides up 16 pt and fades in 220 ms ease-out, out 160 ms; a new pin swaps the content in place without re-entering · B no motion · C spring from the pin                                                                                                                 | A   |
 
+**Answers.** 75A, 79A, 80A, 81A, 82A as above. Redrawn after the video and answered on the interactive board:
+
+| #   | Answer                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 76  | A: the pin grows into a card in place, with a tail pointing at the pin; the map does not move. The card has 申请; the back face links to 3A |
+| 77  | B: a white die-cut label on top of each sticker names the category (代取, 代买 …); VoiceOver reads 「{title}，{reward}」                    |
+| 78  | A: zoomed out, stickers shrink to small dots and the labels hide; near pins overlap (no count, no merge)                                    |
+| 83  | A: the card springs out of the pin (about 380 ms, slight overshoot); tapping the card flips it to the back face                             |
+
 Every option of Q82 and Q83 keeps the same Reduce Motion path: the selected sticker is drawn tilted and scaled with no
 motion, the views swap at once, and the peek card fades over 150 ms with no movement.
 
 ## Rulings made in this plan (overturn by saying so)
 
-1. **Map stickers are bundled square PNGs.** `scripts/render-map-stickers.swift` draws, for each of the eight
-   categories, a normal sticker (art inside a white die-cut border, tilt ±6–8°, soft shadow) and a selected one (the same
-   art with a 3 pt ring in `--color-on-sticker`). It also draws a stack sticker for groups, which carries the count as
-   annotation `text`. Each sticker is 150 × 150 px, @3x of the fixed 50 pt frame. Colours come from `tokens.ts` through a
-   JSON export, so no raw colour enters product code. The PNGs are committed under
-   `assets/map-stickers/`, and the script is rerun when a sticker token changes; a unit test fails when a category has
-   no image. 代取 uses the parcel art drawn in the same script. Photo stickers (step 9) slot in as `useImage(url)`
-   later.
-2. **One annotation per coordinate, always.** Rows that share a snapped point are merged before grouping (spike caveat
-   6), whatever Q78 says about larger groups. Annotation ids are `pin:<bountyId>` for one bounty and
-   `group:<lat>,<lng>` for a merge.
-3. **Tap handling.** On `onAnnotationClick` the client opens the pin (per Q76) and calls `selectAnnotation(undefined)`
-   so the next tap fires again. `onMapClick` is acted on (closing the peek card) only if no annotation click arrives
-   within 700 ms. The client never calls `selectAnnotation(id)`, because it echoes a click; it marks the selected pin
-   by giving it the selected image and moves the camera with `setCameraPosition`.
+1. **The kit draws the pins.** A native `BountyMapView` (Expo view in `modules/tapiro-kit`, `MKMapView`) draws each pin
+   as a custom `MKAnnotationView`: a round sticker (category colour and SF Symbol, the S1 tile art, inside a white
+   border with a soft shadow) and, above it, a die-cut label with the category name (77B). JS passes the art (colour
+   hex from tokens, symbol name, ink hex) and the strings, so no raw colour or copy lives in Swift. Photo stickers
+   (step 9) later pass an image URL instead of a symbol.
+2. **Zoom levels (78A).** Above a span of about 3 km on the short edge the stickers scale to 0.42 and the labels fade
+   (200 ms, Reduce Motion: instant); below it they return. No clustering and no counts. Pins that share a snapped point
+   are fanned out on a 10 pt ring by `centerOffset`, so each stays tappable; `displayPriority` is required so MapKit
+   never hides one.
+3. **Taps are native.** `didSelect` reports `onPinPress { id, x, y }` with the pin's top centre in the view's
+   coordinates and deselects at once, so the next tap fires again. A tap on empty map (a tap gesture that ignores
+   annotation views) reports `onMapPress`; a pan or zoom by the user reports `onRegionChange`. The card closes on
+   either.
 4. **Camera.** The initial camera centres on the origin at the zoom that shows 2 km to the nearest edge, the axis range
    (`AXIS_RANGE_M`). The camera is not remembered; only the view is. A new origin (place chosen, or `me` after
-   permission) recentres the map. The `cameraPosition` prop is set once per origin (spike caveat 10).
-5. **Origin marker.** Origin `me` uses `isMyLocationEnabled` (MapKit's own dot). Origin `place` is a system `Marker`
-   (SF Symbol `mappin`, title 「这里」, the 29A label), drawn as a marker, not a sticker, so it never looks like a
-   bounty.
-6. **Map style.** `emphasis: MUTED` so the stickers lead (spike screenshot 06; the `AppleMaps` namespace does not export the
-   emphasis enum, so pass `'MUTED'` typed as `AppleMaps.MapProperties['emphasis']`), `selectionEnabled: false` so MapKit's POI cards never open,
-   compass and pitch toggle off, and the map's colour scheme follows the app. No decorative RN overlay on the map
-   (AGENTS.md); the peek card is a real card, not an imitation of glass.
+   permission) recentres the map: the `camera` prop carries an `originKey`, and the view moves only when it changes.
+5. **Origin marker.** Origin `me` uses `showsUserLocation` (MapKit's own dot). Origin `place` is a system
+   `MKMarkerAnnotationView` (glyph `mappin`, title 「这里」, the 29A label), never a sticker.
+6. **Map style.** `MKStandardMapConfiguration(emphasisStyle: .muted)` so the stickers lead, points of interest
+   excluded, no compass or pitch, and the colour scheme follows the app. The card is a real RN card, not an imitation
+   of glass (AGENTS.md).
 7. **View memory.** Keys `tapiro.boardView.<userId>` (`list` / `map`) and `tapiro.boardViewHint.<userId>` (`1` once
    「记住了」 has shown) in the origin store's settings, cleared through the same `UserCleanups`. 「记住了」 shows under the
    title the first time a launch restores the map, until the first scroll or 4 s, whichever is first, then never again.
@@ -203,25 +216,24 @@ motion, the views swap at once, and the peek card fades over 150 ms with no move
   fixture rows carry their snapped `pointAt(...)` values.
 - `src/features/bounty/board/viewStore.ts`: `boardView(userId): 'list' | 'map'` (default `list`),
   `setBoardView(userId, view)`, `hintShown(userId)`, `markHintShown(userId)`, registered with `UserCleanups`.
-- `src/features/bounty/map/pins.ts` (pure, unit tested):
-  `mapPins(rows, camera: { latitude, longitude, latitudeDelta, longitudeDelta }, viewport: { width, height }, minGapPt = 44)`
-  returns `MapPin[]`, where `MapPin` is `{ id, point, kind: 'one' | 'group', rowIds, category, label }`. Rows without a
-  point are dropped. Same-point rows are always one pin. Q78A merges by screen distance in Web Mercator at the camera
-  span. `label` is the visible and VoiceOver title per Q77: 「{title} · {reward}」 for one bounty, 「{n} 个悬赏」 for a
-  group.
-- `src/features/bounty/map/stickerImages.ts`: `stickerImage(category, selected)` and `groupImage()` return the bundled
-  `require(...)`; `useStickerImages()` loads each image once with `useImage` and shares it (the Rive rule's spirit:
-  load once).
+- `src/features/bounty/map/pins.ts` (pure, unit tested): `mapPins(rows, t)` returns `MapPin[]`, where `MapPin` is
+  `{ id, point, rowId, label, a11yLabel, art: { color, ink, symbol }, fan: { index, of } }`. Rows without a point are
+  dropped; rows that share a point get their fan index; `label` is the category name (77B) and `a11yLabel` is
+  「{title}，{reward}」.
+- Kit facade (`modules/tapiro-kit/index.tsx`): `BountyMapView` props
+  `{ pins: MapPin[], selectedId?: string, origin: { latitude, longitude, kind: 'me' | 'place', title } | null,
+camera: { originKey, latitude, longitude, radiusM }, onPinPress, onMapPress, onRegionChange }`.
 - `BoardMap` (`src/features/bounty/map/BoardMap.tsx`) props:
   `{ rows, origin, state, onOpen(id), onApply(id), onPickPlace(), onShowMore() }`. `BountyBoard` renders it in map
-  view. Tapping the peek card's body calls `onOpen`, which pushes `/bounty/[id]` (3A). 申请 calls `onApply` (the built
-  apply route).
+  view. The pin card (76A) is RN, drawn over the kit view at the reported pin point: the front shows the category art,
+  title, meta line, reward and 申请 (the built apply route via `onApply`); tapping the card flips it (83A) to the back,
+  which shows the note when the board row has one and 「看详情」, which calls `onOpen` and pushes `/bounty/[id]` (3A).
 
 ## Tasks
 
 Parallel groups: **Tasks 1, 2, 3 and 4 can run in parallel.** Their files are disjoint: SQL; locale files; the
-sticker script and PNGs; and `package.json` / `app.json` plus the board types, parse, fixtures, view store and
-`map/pins.ts`. Each consumes only the contracts above, never another task's code. **Then Tasks 5 and 6 run in
+kit map view (`modules/tapiro-kit`, its facade entry and a Debug scene); and the board types, parse, fixtures, view store
+and `map/pins.ts`. Each consumes only the contracts above, never another task's code. **Then Tasks 5 and 6 run in
 parallel.** Task 6 owns `src/features/bounty/map/*` and Task 5 owns `BountyBoard.tsx`, the title row and the scenes;
 Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then Task 8.**
 
@@ -239,26 +251,29 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
   - `bounty.board.view.list` / `map` / `a11y`;
   - `bounty.board.remembered` 「记住了」;
   - `bounty.board.map.more` (Q79A chip, with counts);
-  - `bounty.board.map.pin` (「{{title}} · {{reward}}」), `bounty.board.map.group` (「{{count}} 个悬赏」);
+  - `bounty.board.map.pin` (VoiceOver, 「{{title}}，{{reward}}」); the label on a pin reuses the built category names;
+  - `bounty.board.map.details` 「看详情」 (the card's back face);
   - `bounty.board.map.here` 「这里」 (reuses the 29A label if one exists).
 - [ ] `src/lib/i18n/resources.test.ts` passes.
 
-### Task 3: Map sticker images (ruling 1, gap 3)
+### Task 3: The kit map view (rulings 1–6)
 
-- [ ] `scripts/render-map-stickers.swift` (CoreGraphics + SF Symbols, as in the spike) and a token export it reads.
-      Write the eight normal, eight selected and one group PNGs to `assets/map-stickers/`, all square.
-- [ ] `src/features/bounty/map/stickerImages.ts` with a unit test that every category has both images.
+- [ ] `modules/tapiro-kit/ios/BountyMapView.swift` (+ pin view file): the `MKMapView` with the muted style, the camera
+      rule, the origin marker, pins as custom annotation views with the label, the zoom levels and fan offsets, native
+      tap handling and the three events. Register it through the module facade; run `pod install` in `ios/` after
+      adding the files (AGENTS.md).
+- [ ] Each pin view is an accessibility element: label from `a11yLabel`, trait button, identifier `map-pin-<rowId>`.
+- [ ] A Debug scene `map-kit` with ten fixture pins around Sunway Pyramid (two sharing a point), to check by hand and to
+      host the motion case later.
 
-### Task 4: Install, data and pin logic (gaps 1, 4, 5)
+### Task 4: Data and pin logic (gaps 1, 4, 5)
 
-- [ ] `bunx expo install expo-maps` (pin the version the install chooses), keep the plugin without options, then
-      `prettier --write app.json`.
 - [ ] `BoardRow.point` in `types.ts` and `parse.ts`; fixture rows carry their snapped points; parse tests for a bad
       point.
 - [ ] `viewStore.ts` with tests (default, set, hint once, cleared on sign-out).
-- [ ] `map/pins.ts` with tests: same-point merge, 44 pt grouping at two zooms, rows without a point dropped, labels
-      for one and for a group, and stable ids across pages.
-- [ ] Fixture: `-uiVerifyBoard crowded` (six bounties in one 0.001° cell and four within 30 m) for grouping, and
+- [ ] `map/pins.ts` with tests: rows without a point dropped, same-point fan indexes, labels and a11y labels, art from
+      the category, stable ids across pages.
+- [ ] Fixture: `-uiVerifyBoard crowded` (six bounties in one 0.001° cell and four within 30 m) and
       `-uiVerifyBoardView list|map` seeding the stored view at launch (omitted: kept, for the relaunch check).
 
 ### Task 5: V2 switch, view memory and 「记住了」 (decided V2, G13; Q80, Q81; rulings 7, 8)
@@ -273,30 +288,27 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
       `bounty_board_view_memory` (relaunch restores the map; 「记住了」 the first time only; `en`). Update the
       `bounty_board_*` cases whose title row changes. Write them; do not run them.
 
-### Task 6: The map (Q75–Q79; rulings 2–6, 9–11)
+### Task 6: The map and its pin card (Q75–Q79, 76A, 77B, 78A; rulings 2–6, 9–11)
 
-- [ ] `BoardMap`:
-  - `AppleMaps.View` with the stable camera prop (ruling 4) and the origin marker (ruling 5);
-  - pins from `mapPins` on every `onCameraMove`;
-  - tap handling per ruling 3;
-  - the peek card per Q76 (the built `BoardCard` inside a card container, tokens only);
-  - the Q79 chip calling `onShowMore` (the board's next page);
-  - the ruling 9 states.
+- [ ] `BoardMap`: the kit `BountyMapView` with pins from `mapPins`, the selected pin, the origin and camera; the RN pin
+      card at the reported point (placed above the pin, kept inside the map's bounds, the tail at the pin), closed on
+      `onMapPress` and `onRegionChange`; the Q79 chip calling `onShowMore`; the ruling 9 states.
 - [ ] Measure on the Simulator with `-uiVerifyBoard long` (45 bounties): pan and zoom for 10 s, note any hitch. Indicative
       only; record it in the report.
 - [ ] Cases:
-  - `bounty_board_map`: pins found by AX label, tap a pin, peek card, 申请 opens the apply sheet, card body pushes
-    3A, tap empty map closes the card. Assert the card with pixels, not the tiles.
-  - `bounty_board_map_crowded`: same-spot group, paging or zoom per Q78.
+  - `bounty_board_map`: pins found by AX label, tap a pin, the card, 申请 opens the apply sheet, flip and 「看详情」
+    pushes 3A, tap empty map closes the card. Assert the card with pixels, not the tiles.
+  - `bounty_board_map_crowded`: six pins in one cell are each tappable; zoomed out the labels hide.
   - `bounty_board_map_states`: no origin, chosen place with 「这里」, first-load failure, empty filter, stale.
-  - `bounty_board_map_worst`: `worst` titles under pins and in the peek card; `LOCALES` with `ms`.
+  - `bounty_board_map_worst`: `worst` titles in the card and VoiceOver labels; `LOCALES` with `ms`.
 
   Write them; do not run them.
 
 ### Task 7: Motion (Q82, Q83)
 
-- [ ] With `animate-expo`: the switch sticker spring and the list/map cross-fade (Q82), and the peek card in, out and
-      swap (Q83), each on Reanimated transforms and opacity only. Reduce Motion as stated under the questions.
+- [ ] With `animate-expo`: the switch sticker spring and the list/map cross-fade (Q82); the pin card springs out of the
+      pin (scale from 0.18 at the tail, about 380 ms, slight overshoot) and out in 160 ms, and flips with a 500 ms
+      `rotateY` on two faces (83A), each on Reanimated transforms and opacity only. Reduce Motion as stated under the questions.
 - [ ] Case `bounty_board_view_motion` with video: one switch each way and one peek card in and out. Write it; do not
       run it.
 
@@ -318,33 +330,35 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
 
 - [ ] `break-ui` on the map and the switch: 60-code-point titles under pins; RM 500 and ¥800 labels; 45 bounties; ten in
       one cell; no place; `ms`; dark. Fix what breaks.
-- [ ] Device checklist (`device`): tap-to-card latency (spike measured about 510 ms on the Simulator), pan and zoom with
-      45 pins in Instruments, the user dot with Precise Location off.
+- [ ] Device checklist (`device`): tap-to-card latency, pan and zoom with 45 pins in Instruments, the user dot with
+      Precise Location off.
 - [ ] Update `docs/story-map.md`: `bounty.board.map` names its cases. Add `bounty.board.map.pin` (peek card and 申请),
       `bounty.board.map.crowded`, `bounty.board.map.no-origin`, `bounty.board.view-memory`, and the device lines.
       `node scripts/check-story-map.mjs` passes.
 - [ ] Run the fast checks (`bun test`, `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`,
       `check-specs`, `check-story-map`, `supabase test db`) and `verify:smoke`.
-- [ ] Retro, then `spec-lifecycle` (Deviations only), then the PR. The PR states the snapped-point disclosure
-      (gap 1) and links the spike branch.
+- [ ] Retro, then `spec-lifecycle` (Deviations only: the kit map instead of `expo-maps`), then the PR. The PR states the
+      snapped-point disclosure (gap 1, approved by the owner 2026-10-30) and links the spike branch.
 
 ## Motion
 
-| Motion                                   | Purpose                      | Gate                                                      | Build                                                                             |
-| ---------------------------------------- | ---------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Selected switch sticker tilts and scales | feedback (which is chosen)   | Decided by V2; at most a few times a day                  | Q82: Reanimated spring on rotate + scale; Reduce Motion: static tilt and scale    |
-| List ↔ map                               | preventing a jarring change  | A whole region swaps; only under Q82A                     | 200 ms opacity cross-fade; Reduce Motion: instant                                 |
-| Peek card in / out / swap                | spatial (where it came from) | Frequent while browsing, so short and swap-in-place (Q83) | Q83: translateY 16 pt + opacity 220 ms in, 160 ms out; Reduce Motion: 150 ms fade |
-| Camera moves (recentre, zoom to group)   | spatial                      | System                                                    | MapKit's own animation through `setCameraPosition`; no custom motion              |
-| Pins appearing on load or regroup        | —                            | Data arriving; animating would delay reading              | No motion                                                                         |
-| 「记住了」 hint                          | —                            | Once ever                                                 | No motion: it appears with the board and is removed after 4 s or the first scroll |
+| Motion                                   | Purpose                      | Gate                                               | Build                                                                             |
+| ---------------------------------------- | ---------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Selected switch sticker tilts and scales | feedback (which is chosen)   | Decided by V2; at most a few times a day           | Q82: Reanimated spring on rotate + scale; Reduce Motion: static tilt and scale    |
+| List ↔ map                               | preventing a jarring change  | A whole region swaps; only under Q82A              | 200 ms opacity cross-fade; Reduce Motion: instant                                 |
+| Pin card in / out                        | spatial (where it came from) | Chosen by the owner on the interactive board (83A) | Spring from the pin, about 380 ms, out 160 ms; Reduce Motion: 150 ms fade         |
+| Pin card flip                            | spatial (front and back)     | Only on a tap on the card (83A)                    | `rotateY` 500 ms on two faces; Reduce Motion: cross-fade 150 ms                   |
+| Pins at zoom-level change                | spatial (near or far)        | System-driven by the zoom (78A)                    | Native, 200 ms scale and label fade; Reduce Motion: instant                       |
+| Camera moves (recentre, zoom to group)   | spatial                      | System                                             | MapKit's own animation through `setCameraPosition`; no custom motion              |
+| Pins appearing on load                   | —                            | Data arriving; animating would delay reading       | No motion                                                                         |
+| 「记住了」 hint                          | —                            | Once ever                                          | No motion: it appears with the board and is removed after 4 s or the first scroll |
 
 ## Not in this plan
 
 - Route, directions or Look Around (Known limits).
 - An area query, 「搜索这一片」 or a camera memory, unless Q79 chooses B or C.
-- Native clustering or the MapKit fallback in the kit (not needed after the spike).
-- Photo stickers on pins (step 9; they will load as `useImage(url)`).
+- Clustering or counts on pins (78A).
+- Photo stickers on pins (step 9; the kit pin takes an image URL then).
 - Rides on the map (carpool spec).
 - Live pin updates (push and Realtime, step 11).
 
