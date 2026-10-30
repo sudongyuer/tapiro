@@ -94,7 +94,10 @@ print(f'first card: clock {clock["count"]} px, 申请 {pill["width"]:.1f} x {pil
 
 plain = visible(ui, PLAIN)
 shot = ui.snap('02-plain')
-none = ink_box(shot, column(plain['frame'], 14, plain['frame']['width'] - 28), urgent, 40)
+# Only the time line: hand art (the tea's red straw) carries colours close to the urgent token.
+line = {**column(plain['frame'], 14, plain['frame']['width'] - 28), 'y': plain['frame']['y'] + words['y'] - f['y'] - 4,
+        'height': words['height'] + 8}
+none = ink_box(shot, line, urgent, 40)
 assert none is None or none['count'] < URGENT_MIN, f'a card that is not urgent shows the urgent colour: {none}'
 
 applied = visible(ui, APPLIED)

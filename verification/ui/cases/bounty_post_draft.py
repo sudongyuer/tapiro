@@ -3,7 +3,7 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import CANCEL, TITLE_SHOWN, TITLE_TYPED, close_sheet_by_swipe, open_post, relaunch, tap_sheet_action, typed, value  # noqa: E402
+from bounty import CANCEL, TITLE_SHOWN, TITLE_TYPED, close_sheet_by_swipe, form_scroll_to, open_post, relaunch, tap_sheet_action, typed, value  # noqa: E402
 from driver import UI  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py']
@@ -40,6 +40,7 @@ open_post(ui)
 assert_kept('a relaunch')
 ui.capture('02-after-relaunch')
 
+form_scroll_to(ui, 'bounty-post-clear')
 ui.tap('bounty-post-clear')
 tap_sheet_action(ui, ui.t('bounty.post.form.clearConfirm.confirm'), 'bounty-post-clear')
 ui.wait(lambda items: value(ui, 'bounty-post-title') == '' and value(ui, 'bounty-post-reward') == '',

@@ -22,8 +22,16 @@ ui = UI(*sys.argv[1:])
 
 
 def menu_for(applicant, name):
-    ui.settled(lambda items: by_id(items, row_id(applicant)), f'{name} row never settled')
-    ui.press(row_id(applicant), LONG_PRESS_S)
+    # The 没屏蔽成功 notice can push the row under the pinned hold button; scroll it clear before the long press.
+    for _ in range(4):
+        row = ui.settled(lambda items: by_id(items, row_id(applicant)), f'{name} row never settled')['frame']
+        hold = ui.element(HOLD)['frame']
+        clear = hold['y'] - 8 - row['y']
+        if clear >= min(row['height'], 44):
+            break
+        x = row['x'] + row['width'] / 2
+        ui.swipe((x, hold['y'] - 20), (x, hold['y'] - 20 - (row['height'] - clear) - 40), 0.4)
+    ui.press_at({**row, 'height': min(row['height'], clear)}, LONG_PRESS_S)
     return ui.labelled(ui.t('bounty.block.menu', name=name))
 
 
@@ -91,6 +99,9 @@ assert by_id(ui.read(), row_id(JIE)), '阿杰 left with Aiman'
 ui.at_rest()
 ui.capture('06-checked-blocked')
 
+# Scrolling in menu_for minimises the tab bar; scrolling back up brings it back.
+f = ui.element(HOLD)['frame']
+ui.swipe((f['x'] + f['width'] / 2, f['y'] * 0.45), (f['x'] + f['width'] / 2, f['y'] * 0.9), 0.4)
 ui.tap('tab-me')
 ui.tap('me-blocked')
 ui.element('blocked-screen')
