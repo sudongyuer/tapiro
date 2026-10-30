@@ -1,7 +1,7 @@
 ---
 branch: feat/bounty-hand-art
 date: 2026-10-30
-pr: bounty step 9
+pr: '33'
 title: 9 hand-drawn intent art
 escaped: 0
 rework: 1
@@ -69,3 +69,6 @@ Started at the design stage; the overnight implementation session (2026-10-30 â†
     month heading rendered black on the dark page; `sticker_book_calendar` passed in dark because it checked the art,
     not the heading. Found by opening the screenshots (AGENTS.md: open them before reporting). Fixes: `HandText` now
     always sets the label colour (structure), and the case counts the heading's ink against the appearance (check).
+11. **CI caught a 706-line migration** (tag `size-check-untracked`). `check:size` ran locally before the migration was
+    committed, and it only reads tracked files, so it said ok. The migration is now three files at function boundaries.
+    Candidate fix: `check-file-size.mjs` also reads untracked files that are not ignored, as `lint:changed` does.

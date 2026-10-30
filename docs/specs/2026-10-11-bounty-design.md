@@ -491,7 +491,7 @@ Rulings section holds the overnight decisions).
   by `qwen-image` (91A): no model key existed. `scripts/hand-art/generate.mjs` holds the model-agnostic prompt for the
   same 12 ids and replaces the PNGs later without code changes.
 - Added: `bounties.art` (nullable slug) is stored at publish and returned by every read that returns the category;
-  payment and sticker reads take it from the bounty. Migration `supabase/migrations/20261030000200_bounty_art.sql`,
+  payment and sticker reads take it from the bounty. Migrations `supabase/migrations/20261030000200_bounty_art.sql`, `…210_bounty_art_bounty_reads.sql` and `…220_bounty_art_board_and_book.sql`,
   pgTAP in `bounty_publish`, `bounty_read`, `bounty_board_point`, `money`, `stickers`.
 - Changed: the publish fly-to-stack (94A) lands on the poster's new live card on the bounty home, not on the board:
   the board never lists the poster's own bounties (`nearby_bounties` excludes them). `src/features/home/cards/ArtArrival.tsx`.
