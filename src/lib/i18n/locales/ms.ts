@@ -302,6 +302,13 @@ const ms: Translation = {
       flyReduced: 'Terbang (Kurangkan Gerakan)',
       reset: 'Letak semula pelekat',
     },
+    map: {
+      title: 'Pelekat peta',
+      near: 'Zum masuk',
+      far: 'Zum keluar',
+      me: 'Dari saya',
+      place: 'Dari sini',
+    },
     tokens: {
       title: 'Token reka bentuk',
       roleSample: 'Ganjaran {{role}}',

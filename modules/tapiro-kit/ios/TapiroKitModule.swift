@@ -13,6 +13,14 @@ public final class TapiroKitModule: Module {
 
     View(PinnedBarView.self)
 
+    View(BountyMapView.self) {
+      Events("onPinPress", "onMapPress", "onRegionChange")
+      Prop("pins") { (view: BountyMapView, pins: [MapPinRecord]) in view.setPins(pins) }
+      Prop("selectedId") { (view: BountyMapView, id: String?) in view.setSelectedId(id) }
+      Prop("origin") { (view: BountyMapView, origin: MapOriginRecord?) in view.setOrigin(origin) }
+      Prop("camera") { (view: BountyMapView, camera: MapCameraRecord) in view.setCamera(camera) }
+    }
+
     // Errors become a null result so JS gets a typed outcome instead of an untyped exception.
     AsyncFunction("qrImageFile") { (payload: String, points: Int) -> String? in
       guard !payload.isEmpty, points > 0, points <= 1024 else { return nil }

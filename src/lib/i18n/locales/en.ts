@@ -298,6 +298,13 @@ const en: Translation = {
       flyReduced: 'Fly (Reduce Motion)',
       reset: 'Put the sticker back',
     },
+    map: {
+      title: 'Map stickers',
+      near: 'Zoom in',
+      far: 'Zoom out',
+      me: 'From me',
+      place: 'From here',
+    },
     tokens: {
       title: 'Design tokens',
       roleSample: '{{role}} bounty',
