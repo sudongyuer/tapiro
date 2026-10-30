@@ -363,3 +363,13 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
 - Live pin updates (push and Realtime, step 11).
 
 ## Deviations and rulings
+
+- 2026-10-30, Task 3: the zoom threshold is half the short edge over 3 km (so the 2 km initial camera shows labels and
+  about 1.5× out shows dots); ruling 2's 3 km on the short edge would open on dots. Accepted.
+- 2026-10-30, Task 3: rotation is off as well as compass and pitch: without a compass a rotated map cannot be turned
+  back to north. Accepted.
+- 2026-10-30, Task 3: the sticker border, label ground (white) and shadow (black) are drawn in Swift, as `StickerFlight`
+  and `TitleHalo` already do; JS passes the category colour and ink. Accepted on that precedent.
+- 2026-10-30, Task 3 → Task 6: a 10 pt fan left the lower of two same-point stickers almost hidden, so the fan radius
+  becomes 26 pt (each sticker shows enough to be tapped). The origin marker sits under the stickers. `onRegionChange`
+  fires when a user gesture starts and carries no payload.
