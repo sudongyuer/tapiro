@@ -671,6 +671,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ride.create.seats  | 2–6 个座位，默认 4 个                                  | unit, ui |
 | ride.create.places | 出发点和目的地是常用地点、小貘记得的地点或地图上选的点 | ui       |
 | ride.create.refund | 没人加入就取消或过期时退回貘币或免费名额               | unit, db |
+| ride.create.payee  | 发起人没有收款方式不能发；欠款被限制时不能发           | db, ui   |
 
 ### ride.join 加入和集合
 
@@ -695,13 +696,13 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[carpool](specs/2026-10-11-carpool-design.md)
 
-| 验收 id                  | 行为                                                       | 覆盖   |
-| ------------------------ | ---------------------------------------------------------- | ------ |
-| ride.split.equal         | 默认按上车的人（含组织者）平分，每份往上取整到 RM 0.10     | unit   |
-| ride.split.edit          | 组织者可以改每个人的金额；乘客可以点「金额不对」           | ui, db |
-| ride.split.receipt       | 拍 Grab 收据，小貘起草分账，组织者确认（按用量扣小貘体力） | ui     |
-| ride.split.pay           | 每个乘客用付款弹窗付给组织者，组织者逐个确认收到           | ui, db |
-| ride.split.live-activity | 实时活动分凑人、集合、上车、到了四段                       | device |
+| 验收 id                  | 行为                                                                           | 覆盖   |
+| ------------------------ | ------------------------------------------------------------------------------ | ------ |
+| ride.split.equal         | 默认按上车的人（含组织者）平分，每份往上取整到 0.1 个货币单位（RM 0.10、¥0.1） | unit   |
+| ride.split.edit          | 组织者可以改每个人的金额；乘客可以点「金额不对」                               | ui, db |
+| ride.split.receipt       | 拍 Grab 收据，小貘起草分账，组织者确认（按用量扣小貘体力）                     | ui     |
+| ride.split.pay           | 每个乘客用付款弹窗付给组织者，组织者逐个确认收到                               | ui, db |
+| ride.split.live-activity | 实时活动分凑人、集合、上车、到了四段                                           | device |
 
 ## 消息
 
