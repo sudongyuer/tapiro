@@ -1,5 +1,5 @@
 from bounty import relaunch
-from driver import by_id, close
+from driver import Shot, by_id, close
 
 SCENE = 'bounty-map'
 MAP = 'bounty-map-view'
@@ -56,10 +56,24 @@ def location_dots(items):
             and LOCATION_SIDE[0] <= i['frame']['height'] <= LOCATION_SIDE[1] and contains(m['frame'], *centre(i['frame']))]
 
 
+def masked(shot, frames):
+    data = bytearray(shot.data)
+    for f in frames:
+        x0, x1 = max(0, round(f['x'] * shot.scale)), min(shot.width, round((f['x'] + f['width']) * shot.scale))
+        y0, y1 = max(0, round(f['y'] * shot.scale)), min(shot.height, round((f['y'] + f['height']) * shot.scale))
+        for y in range(y0, y1):
+            row = y if shot.top_down else shot.height - 1 - y
+            start = shot.offset + row * shot.stride + x0 * shot.pixel_bytes
+            data[start:start + max(0, x1 - x0) * shot.pixel_bytes] = bytes(max(0, x1 - x0) * shot.pixel_bytes)
+    return bytes(data)
+
+
 def map_at_rest(ui, message='the screen never came to rest'):
+    items = ui.read()
     halos = [{'x': f['x'] - HALO, 'y': f['y'] - HALO, 'width': f['width'] + 2 * HALO, 'height': f['height'] + 2 * HALO}
-             for f in location_dots(ui.read())]
-    ui.at_rest(message, ignore=halos)
+             for f in location_dots(items)]
+    points = items[0]['frame']['width']
+    ui.at_rest(message, convert=lambda path: masked(Shot(path, points), halos))
 
 
 def pin_title(ui, label):

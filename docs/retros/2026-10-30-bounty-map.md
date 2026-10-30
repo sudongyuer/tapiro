@@ -5,7 +5,7 @@ pr: bounty step 8
 title: 8 map view
 escaped: 0
 rework: 1
-interventions: 0
+interventions: 1
 overturned: 0
 ---
 
@@ -47,3 +47,7 @@ passed 7 of 11 cases; the 4 map failures were 2 product bugs (`pin-hit-test`, `t
 - `at-rest-location-dot` (second time): the dark `bounty_board_map` run failed "never came to rest" on the same
   breathing user-location dot, half hidden behind a pin. Moved down a layer: `UI.at_rest(ignore=...)` masks given
   frames, and `map.map_at_rest` masks MapKit's location dot, used by every map case.
+- `ui-ruling-unasked`: plan ruling 10 decided on its own that an applied bounty's pin keeps its normal sticker (only the
+  card says 已申请), while the list tilts the sticker and stamps it. The owner asked during the walkthrough whether the
+  map marks applied bounties. A visible state difference between list and map is a UI choice: it belonged on the canvas
+  with the other map questions, not in the rulings.
