@@ -79,6 +79,10 @@ export function PinCard({
     shadowColor: color('--color-sticker-shadow'),
   };
   const live = measured && !closing;
+  const tailAt = {
+    left: placed.tailX - TAIL_SIDE / 2,
+    top: placed.side === 'above' ? height - TAIL_SIDE / 2 - 1 : -TAIL_SIDE / 2 + 1,
+  };
 
   return (
     <Animated.View
@@ -97,17 +101,7 @@ export function PinCard({
         motion.card,
       ]}
     >
-      <View
-        pointerEvents="none"
-        style={[
-          styles.tail,
-          surface,
-          { left: placed.tailX - TAIL_SIDE / 2 },
-          placed.side === 'above'
-            ? { top: height - TAIL_SIDE / 2 - 1 }
-            : { top: -TAIL_SIDE / 2 + 1 },
-        ]}
-      />
+      <View pointerEvents="none" style={[styles.tail, styles.tailShadow, surface, tailAt]} />
       <Face
         shown={!flipped}
         anchor={placed.side === 'above' ? styles.bottom : styles.top}
@@ -128,6 +122,10 @@ export function PinCard({
       >
         <CardBack {...handlers} summaryRef={backRef} />
       </Face>
+      <View
+        pointerEvents="none"
+        style={[styles.tail, { backgroundColor: surface.backgroundColor }, tailAt]}
+      />
     </Animated.View>
   );
 }
@@ -186,6 +184,8 @@ const styles = StyleSheet.create({
     height: TAIL_SIDE,
     borderRadius: 3,
     transform: [{ rotate: '45deg' }],
+  },
+  tailShadow: {
     shadowOpacity: 1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
