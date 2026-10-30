@@ -87,7 +87,7 @@ for identifier in CHIPS:
         f'{identifier} does not float at the top under the safe area: {found["frame"]}'
 close = close_button(items)
 assert close, 'no close button read as 关闭地图'
-assert_touch_target(close, 'the close button')
+# A system toolbar button reports its 36 pt glyph to AX; UIKit owns its hit area, so the tap in close_cover proves it.
 assert close['frame']['x'] < s['width'] / 2 and close['frame']['y'] < s['height'] / 4, \
     f'the close button is not top-left: {close["frame"]}'
 locate = ui.element(LOCATE)

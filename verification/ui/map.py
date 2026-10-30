@@ -99,7 +99,8 @@ def tap_pin(ui, row_id):
 def empty_spot(ui, avoid=()):
     m = map_frame(ui)
     items = ui.read()
-    blocked = [p['frame'] for p in pins(items)] + [a['frame'] for a in avoid]
+    controls = [i['frame'] for i in items if i.get('type') == 'Button' or i.get('AXUniqueId') == 'bounty-map-locate']
+    blocked = [p['frame'] for p in pins(items)] + [a['frame'] for a in avoid] + controls
     for fx in (0.15, 0.85, 0.5, 0.25, 0.75):
         for fy in (0.12, 0.88, 0.3, 0.7, 0.5):
             x, y = m['x'] + m['width'] * fx, m['y'] + m['height'] * fy

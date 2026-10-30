@@ -76,12 +76,14 @@ assert (applied_pin.get('AXLabel') or '').endswith(applied_said), \
 stamped = stamp_ink(shot, applied_pin)
 print(f'applied pin stamp: {stamped} success px')
 assert stamped >= STAMP_MIN, f'the applied pin wears no 已申请 stamp ({stamped} success px)'
-for pin in pins(items):
-    if pin['AXUniqueId'] == pin_id(APPLIED) or overlaps(stamp_area(pin), stamp_area(applied_pin)):
-        continue
-    assert not (pin.get('AXLabel') or '').endswith(applied_said), f'{pin["AXUniqueId"]} reads as applied'
+applied = [pin for pin in pins(items) if (pin.get('AXLabel') or '').endswith(applied_said)]
+unstamped = [pin for pin in pins(items) if pin not in applied
+             and not any(overlaps(stamp_area(pin), stamp_area(other)) for other in applied)]
+assert unstamped, 'no unapplied pin stands clear of the stamps, so the no-stamp check would prove nothing'
+for pin in unstamped:
     stray = stamp_ink(shot, pin)
-    assert stray <= STAMP_STRAY, f'{pin["AXUniqueId"]} carries a stamp ({stray} success px)'
+    assert stray <= STAMP_STRAY, f'{pin["AXUniqueId"]} is not applied but carries a stamp ({stray} success px)'
+print(f'{len(applied)} pins read as applied, {len(unstamped)} clear unapplied pins carry no stamp')
 
 tap_pin(ui, TOP)
 map_at_rest(ui)

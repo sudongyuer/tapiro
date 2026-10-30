@@ -4,7 +4,7 @@ date: 2026-10-30
 pr: bounty step 8
 title: 8 map view
 escaped: 0
-rework: 1
+rework: 2
 interventions: 1
 overturned: 0
 ---
@@ -51,3 +51,10 @@ passed 7 of 11 cases; the 4 map failures were 2 product bugs (`pin-hit-test`, `t
   card says 已申请), while the list tilts the sticker and stamps it. The owner asked during the walkthrough whether the
   map marks applied bounties. A visible state difference between list and map is a UI choice: it belonged on the canvas
   with the other map questions, not in the rulings.
+- `fixture-assumed`: the 84A worst case asserted that only `fixture-worst-02` is applied, but the generated worst rows
+  mark every seventh row applied (02, 08, 15). Written without running (Simulator in use). Fixed to "stamped iff read as
+  applied", with a guard that at least one clear unapplied pin is checked.
+- `system-control-size`: the 85A case asserted 44 pt on the system toolbar close button; AX reports its 36 pt glyph,
+  while UIKit draws and hit-tests the 44 pt glass circle. System controls are proved by tapping them, not by AX size.
+- Two cases written blind, two rounds: a case written without a run carries its guesses into the first run. Cost one
+  rerun; no product defect.
