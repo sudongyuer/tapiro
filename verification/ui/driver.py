@@ -229,18 +229,18 @@ class UI:
         (self.output / f'{name}.json').write_text(self.axe('describe-ui'))
         return self.output / f'{name}.png'
 
-    def frame_bytes(self):
+    def frame_bytes(self, convert=Path.read_bytes):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'f.png'
             timed('screenshot frame', ['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(path)], 20, check=True)
-            return path.read_bytes()
+            return convert(path)
 
-    def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0):
+    def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0, convert=Path.read_bytes):
         deadline = time.monotonic() + timeout
         previous = None
         while time.monotonic() < deadline:
             try:
-                current = self.frame_bytes()
+                current = self.frame_bytes(convert)
             except subprocess.TimeoutExpired:
                 previous = None
                 continue

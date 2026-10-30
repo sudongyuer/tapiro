@@ -29,6 +29,7 @@ const ROW: BoardRow = {
   deadlineAt: '2026-10-27T05:00:00.000Z',
   urgent: true,
   distanceM: 300,
+  point: null,
   appliedByMe: false,
   createdAt: '2026-10-27T03:00:00.000Z',
   poster: { id: 'p1', name: '小林', tier: 'reliable' },

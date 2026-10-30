@@ -281,6 +281,7 @@ export default {
       confirm: '确认发布',
       placeSearch: '选地点',
       board: '能接的悬赏',
+      map: '地图上的悬赏',
       detail: '悬赏详情',
       applicants: '选人（申请人列表）',
       status: '进度页（状态 × 身份）',
@@ -292,6 +293,13 @@ export default {
       fly: '飞到「我的」',
       flyReduced: '飞（减弱动态效果）',
       reset: '放回贴纸',
+    },
+    map: {
+      title: '地图贴纸',
+      near: '看近处',
+      far: '看远处',
+      me: '从我这里',
+      place: '从这里',
     },
     tokens: {
       title: '设计令牌',

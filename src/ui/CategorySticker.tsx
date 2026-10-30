@@ -1,24 +1,14 @@
-import { SymbolView, type SFSymbol } from 'expo-symbols';
+import { SymbolView } from 'expo-symbols';
 import { StyleSheet, View } from 'react-native';
 
 import type { BountyCategory } from '@/lib/stickers';
 
+import { CATEGORY_SYMBOLS, categoryColorToken } from './categoryArt';
 import { ParcelArt, StickerShadow } from './StickerArt';
-import { vars, type TokenName } from './theme/tokens';
+import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
 export type StickerCategory = BountyCategory;
-
-export const CATEGORY_SYMBOLS: Record<StickerCategory, SFSymbol> = {
-  pickup: 'tray.and.arrow.down.fill',
-  buy: 'bag.fill',
-  queue: 'person.3.fill',
-  handle: 'doc.text.fill',
-  move: 'shippingbox.fill',
-  accompany: 'figure.walk',
-  study: 'book.fill',
-  other: 'ellipsis',
-};
 
 export function CategorySticker({ category, size }: { category: StickerCategory; size: number }) {
   const { color } = useTheme();
@@ -42,7 +32,7 @@ export function CategorySticker({ category, size }: { category: StickerCategory;
             borderRadius: tile * 0.28,
             borderWidth: border,
             borderColor: color('--color-sticker-border'),
-            backgroundColor: color(`--color-sticker-${category}` as TokenName),
+            backgroundColor: color(categoryColorToken(category)),
           },
         ]}
       >

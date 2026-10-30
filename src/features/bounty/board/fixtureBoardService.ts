@@ -8,6 +8,7 @@ import {
   BOARDS,
   BUSY_WINDOW,
   FIXTURE_BOARDS,
+  snapPoint,
   type BoardFixture,
   type FixtureBounty,
 } from './fixtureBoardData';
@@ -162,6 +163,7 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
       deadlineAt: item.deadlineInMinutes === null ? null : at(item.deadlineInMinutes),
       urgent: urgent(item),
       distanceM: rounded(here, item.point),
+      point: item.point && snapPoint(item.point),
       appliedByMe: applications.get(item.id)?.status === 'pending',
       createdAt: at(-item.createdMinutesAgo),
       poster: item.poster,

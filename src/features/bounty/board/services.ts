@@ -13,6 +13,7 @@ import { createSupabaseBoardService } from './boardService';
 import { createFixtureBoardService, fixtureBoardOptions } from './fixtureBoardService';
 import { createOriginStore, createShownOrigins } from './originStore';
 import type { BoardService } from './types';
+import { createViewStore, seedBoardView } from './viewStore';
 
 const VERIFY_WRITE_DELAY_MS = 2500;
 
@@ -28,6 +29,10 @@ export const boardService: BoardService = uiVerify
 export const originStore = createOriginStore(Settings, userCleanups);
 
 export const shownOrigins = createShownOrigins(userCleanups);
+
+export const viewStore = createViewStore(Settings, userCleanups);
+
+if (uiVerify) seedBoardView(viewStore, FIXTURE_USER_ID, uiVerifyArgument('uiVerifyBoardView'));
 
 const seededPlace = uiVerifyArgument('uiVerifyBoardPlace');
 if (uiVerify && seededPlace === 'none') originStore.clear(FIXTURE_USER_ID);

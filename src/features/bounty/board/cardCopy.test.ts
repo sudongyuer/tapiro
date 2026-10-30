@@ -23,6 +23,7 @@ const ROW: BoardRow = {
   deadlineAt: at(16),
   urgent: true,
   distanceM: 300,
+  point: null,
   appliedByMe: false,
   createdAt: at(14),
   poster: { id: 'p1', name: '小林', tier: 'reliable' },

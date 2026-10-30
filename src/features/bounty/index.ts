@@ -14,3 +14,5 @@ export { ApplySheet } from './apply/ApplySheet';
 export { BlockedListScreen } from './block/BlockedListScreen';
 export { useLiveBounties } from './live/useLiveBounties';
 export const applySheetGone = () => justApplied.sheetGone();
+export { BoardMapCover } from './map/BoardMapCover';
+export { boardLink, useLinkedBoard, usePublishBoard } from './map/boardLink';

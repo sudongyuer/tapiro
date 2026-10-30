@@ -201,6 +201,19 @@ const ms: typeof zhHans = {
       change: 'Tukar',
     },
     unlocated: 'Tiada tempat',
+    view: {
+      list: 'Senarai',
+      map: 'Peta',
+      a11y: 'Paparan',
+    },
+    remembered: 'Diingati',
+    map: {
+      more: '{{shown}} / {{total}} di peta · Tunjuk {{count}} lagi',
+      pin: '{{title}}, {{reward}}',
+      details: 'Lihat Butiran',
+      expand: 'Besarkan Peta',
+      close: 'Tutup Peta',
+    },
     state: {
       loading: 'Memuatkan ganjaran',
       failed: 'Tidak dapat dimuatkan',

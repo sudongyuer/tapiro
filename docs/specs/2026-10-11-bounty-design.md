@@ -451,3 +451,29 @@ with image annotations for stickers on SDK 57; if it cannot render them acceptab
 `modules/tapiro-kit`.
 
 <!-- After implementation, spec-lifecycle appends "## Implementation Record (YYYY-MM-DD)" below. -->
+
+## Implementation Record (2026-10-30, step 8 only)
+
+Status stays `approved`: steps 9 and later are not built. Plan: `docs/plans/2026-10-30-bounty-map.md` (its Deviations
+section holds the per-task rulings).
+
+- Changed: the map is the kit's MapKit `MKMapView` (`modules/tapiro-kit/ios/BountyMapView.swift`,
+  `BountyPinView.swift`, commit `6e94c2b`), not `expo-maps`. This is the fallback named in Open questions; the
+  owner's reference video asks for pins that grow, carry a die-cut label, shrink to dots and open a card in place,
+  which `expo-maps`' fixed image annotations cannot draw (plan, "Spike", branch `spike/expo-maps`). Owner, 2026-10-30
+  (answer A).
+- Changed: a pin opens a card that grows out of the pin and flips to 看详情 and 申请 (76A, 83A), then pushes 3A; the
+  spec said "a detail card with 申请". `src/features/bounty/map/PinCard.tsx`, case `bounty_board_map`.
+- Added: `nearby_bounties` returns each row's snapped `place_public` point (about 110 m), the precision the board's
+  distance already used. Owner approved the disclosure, 2026-10-30. Migration
+  `supabase/migrations/20261030000100_board_point.sql`, test `supabase/tests/bounty_board_point.test.sql`.
+- Added: zoomed out past 6 km the stickers become dots without labels (78A); same-point bounties fan on a 26 pt ring.
+  Case `bounty_board_map_crowded`.
+- Added: an applied bounty's pin tilts about 8° and wears the list's 已申请 stamp; VoiceOver reads the state after the
+  reward (84A, owner 2026-10-30, commit `87c1f91`). Case `bounty_board_map_worst`.
+- Added: an expand button opens the map full screen with close, floating filter chips, the system location button and
+  the same card and 申请 (85A, owner 2026-10-30, commit `fbb75f4`, route `src/app/bounty-map.tsx`). Case
+  `bounty_board_map_fullscreen`.
+- Limits: the Debug scene `bounty-map` keeps its refresh spinner after an instant failure (the home board does not);
+  labels hidden when zoomed out still appear in the accessibility tree. Device lines in `docs/story-map.md`
+  (`bounty.board.map-pin`, `bounty.board.map-no-origin`) are not yet run.

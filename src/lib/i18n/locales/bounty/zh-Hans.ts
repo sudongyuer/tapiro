@@ -196,6 +196,19 @@ export default {
       change: '换',
     },
     unlocated: '没写地点的',
+    view: {
+      list: '列表',
+      map: '地图',
+      a11y: '显示方式',
+    },
+    remembered: '记住了',
+    map: {
+      more: '地图上 {{shown}} / {{total}} · 再显示 {{count}} 个',
+      pin: '{{title}}，{{reward}}',
+      details: '看详情',
+      expand: '全屏看地图',
+      close: '关闭地图',
+    },
     state: {
       loading: '正在加载悬赏',
       failed: '没加载出来',

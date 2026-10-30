@@ -290,6 +290,7 @@ const ms: Translation = {
       confirm: 'Sahkan siaran',
       placeSearch: 'Pilih Tempat',
       board: 'Papan ganjaran',
+      map: 'Ganjaran di peta',
       detail: 'Butiran ganjaran',
       applicants: 'Pilih pembantu (pemohon)',
       status: 'Halaman status (keadaan × peranan)',
@@ -301,6 +302,13 @@ const ms: Translation = {
       fly: 'Terbang ke Saya',
       flyReduced: 'Terbang (Kurangkan Gerakan)',
       reset: 'Letak semula pelekat',
+    },
+    map: {
+      title: 'Pelekat peta',
+      near: 'Zum masuk',
+      far: 'Zum keluar',
+      me: 'Dari saya',
+      place: 'Dari sini',
     },
     tokens: {
       title: 'Token reka bentuk',

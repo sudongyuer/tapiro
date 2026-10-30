@@ -5,6 +5,7 @@ import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { placePick } from '../place/placePick';
 import { shownOrigins } from './services';
 import { useBoard } from './useBoard';
+import { useBoardView } from './useBoardView';
 import { useCardFocus, type ScrollHost } from './useCardFocus';
 import { useOrigin } from './useOrigin';
 
@@ -81,6 +82,8 @@ export function useBountyBoard(userId: string, host: ScrollHost) {
   const [allowing, allowLocation] = useTracked(allow);
   const paging = usePaging(board.onViewport);
   const focus = useCardFocus(host);
+  const view = useBoardView(userId, host);
+  const paged = view.current === 'list';
   useBoardPlacePick(choose);
   const { handlers, reset } = focus;
   const loading = board.state.kind !== 'ready';
@@ -90,14 +93,18 @@ export function useBountyBoard(userId: string, host: ScrollHost) {
 
   const scrollHandlers = {
     onScroll: (event: ScrollEvent) => {
-      paging.onScroll(event);
+      if (paged) paging.onScroll(event);
       handlers.onScroll(event);
+      view.handlers.onScroll(event);
     },
     onContentSizeChange: (width: number, height: number) => {
-      paging.onContentSizeChange(width, height);
+      if (paged) paging.onContentSizeChange(width, height);
       handlers.onContentSizeChange(width, height);
     },
-    onScrollBeginDrag: handlers.onScrollBeginDrag,
+    onScrollBeginDrag: () => {
+      handlers.onScrollBeginDrag();
+      view.handlers.onScrollBeginDrag();
+    },
     onMomentumScrollEnd: handlers.onMomentumScrollEnd,
   };
 
@@ -113,6 +120,7 @@ export function useBountyBoard(userId: string, host: ScrollHost) {
     dismissLocation: dismiss,
     scrollHandlers,
     focus,
+    view,
   };
 }
 

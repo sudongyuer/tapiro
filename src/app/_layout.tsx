@@ -53,6 +53,10 @@ function RootStack() {
         <Stack.Screen name="pay/[id]" options={PAGE_SHEET} />
         <Stack.Screen name="bounty-apply/[id]" options={PAGE_SHEET} />
         <Stack.Screen
+          name="bounty-map"
+          options={{ presentation: 'fullScreenModal', headerShown: true, title: '' }}
+        />
+        <Stack.Screen
           name="bounty-post"
           options={{ presentation: 'pageSheet', headerShown: false }}
         />
