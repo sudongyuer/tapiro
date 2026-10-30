@@ -469,6 +469,11 @@ section holds the per-task rulings).
   `supabase/migrations/20261030000100_board_point.sql`, test `supabase/tests/bounty_board_point.test.sql`.
 - Added: zoomed out past 6 km the stickers become dots without labels (78A); same-point bounties fan on a 26 pt ring.
   Case `bounty_board_map_crowded`.
+- Added: an applied bounty's pin tilts about 8° and wears the list's 已申请 stamp; VoiceOver reads the state after the
+  reward (84A, owner 2026-10-30, commit `87c1f91`). Case `bounty_board_map_worst`.
+- Added: an expand button opens the map full screen with close, floating filter chips, the system location button and
+  the same card and 申请 (85A, owner 2026-10-30, commit `fbb75f4`, route `src/app/bounty-map.tsx`). Case
+  `bounty_board_map_fullscreen`.
 - Limits: the Debug scene `bounty-map` keeps its refresh spinner after an instant failure (the home board does not);
   labels hidden when zoomed out still appear in the accessibility tree. Device lines in `docs/story-map.md`
   (`bounty.board.map-pin`, `bounty.board.map-no-origin`) are not yet run.

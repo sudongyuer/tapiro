@@ -21,6 +21,7 @@ passed 7 of 11 cases; the 4 map failures were 2 product bugs (`pin-hit-test`, `t
 
 - `verification/ui/build.sh` keeps the full log and prints the `error:` lines on failure (`build-log-tail`).
 - The kit pin hit-tests only its drawn parts (`pin-hit-test`).
+- Every map case waits with `map_at_rest`, which masks the location dot (`at-rest-location-dot`).
 
 ## Candidates (first occurrence, not yet generalised)
 
@@ -45,8 +46,8 @@ passed 7 of 11 cases; the 4 map failures were 2 product bugs (`pin-hit-test`, `t
   the same script on the same kind of fixture, run from the shell or from a one-off `bun test` probe, prints the
   finding. CI passes. Not from this branch (it also fails on `main`); time-boxed, cause unknown.
 - `at-rest-location-dot` (second time): the dark `bounty_board_map` run failed "never came to rest" on the same
-  breathing user-location dot, half hidden behind a pin. Moved down a layer: `UI.at_rest(ignore=...)` masks given
-  frames, and `map.map_at_rest` masks MapKit's location dot, used by every map case.
+  breathing user-location dot, half hidden behind a pin. Moved down a layer: `UI.at_rest(convert=...)` compares a
+  transformed frame, and `map.map_at_rest` masks MapKit's location dot with it, used by every map case.
 - `ui-ruling-unasked`: plan ruling 10 decided on its own that an applied bounty's pin keeps its normal sticker (only the
   card says 已申请), while the list tilts the sticker and stamps it. The owner asked during the walkthrough whether the
   map marks applied bounties. A visible state difference between list and map is a UI choice: it belonged on the canvas
