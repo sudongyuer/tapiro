@@ -27,3 +27,9 @@ board; a decision that contradicts a note needs the user.
   07, 2026-10-29): a photographed object cut out along its outline, a thick white die-cut border, a soft drop
   shadow, placed slightly tilted. This matches the spec's on-device cut-out; the DOOD-style redraw above is the
   second, optional layer the step 9 spike weighs.
+- Step 9 outcome (user, 2026-10-30, 90A): no photo stickers in v1. A real photo next to a hand-drawn illustration reads
+  as two styles, and dim indoor photos look grey; photos stay plain attachments on the detail screen. Every bounty
+  instead gets a crayon illustration (93A) from a fixed set, chosen from its title.
+- Later (user, 2026-10-30): a fast model draws a per-bounty 意境 sticker from the task description. The fixed set is
+  its fallback; the stored `bounties.art` slot is where a generated image id will go. "The prompt is the asset":
+  `scripts/hand-art/generate.mjs` keeps one model-agnostic prompt so another model gives a similar set.

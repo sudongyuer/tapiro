@@ -4,7 +4,7 @@
 > cases but do not run them; the last task runs the selection once (Pace, 2026-10-29). When all tasks are done, run
 > `spec-lifecycle` before the PR (only "Deviations and rulings" is updated; the bounty spec is implemented after step 12).
 
-**Status:** draft. Answered: 86 ABCDE, 87 1, 88 A, 90 A, 91 A, 92 A, 94 A, 95 A, 96 A, 97 A (2026-10-30). 93 A
+**Status:** done (2026-10-31, overnight). Was draft. Answered: 86 ABCDE, 87 1, 88 A, 90 A, 91 A, 92 A, 94 A, 95 A, 96 A, 97 A (2026-10-30). 93 A
 (2026-10-30). Ready to start.
 
 **Goal:** Every bounty gets a hand-drawn illustration chosen from its intent. It appears as the poster types the title
@@ -62,23 +62,42 @@ sticker book (2026-10-26)」. Product notes: Stickers. Spike: `docs/research/202
 5. **The settle celebration already plays for the payee** (celebration G) and the payer gets the green 「已结清」 card
    (10A). The done card (86B) must join those moments, not add a third. Asked as 95.
 
-## Tasks (draft; final after 92–97)
+## Tasks (final)
 
-1. **Art set.** `scripts/hand-art/generate.mjs` calls the model with one style prompt and the sub-intent list, writes
-   candidates to a scratch folder, and a canvas board shows them for picking (93). Picked images go to
-   `assets/hand-art/<id>.png` (512 px, transparent) and, if 92 includes pins, the kit's asset catalog. The key is read
-   from the shell environment, never from a committed file.
-2. **Intent resolver.** `src/lib/handArt/` maps `(category, title, locale)` to an art id with keyword tables for
-   zh-Hans, en and ms. Unit tests cover every sub-intent in all three locales, the category fallback and `other`.
-3. **`HandArt` component** replacing the S1 tiles wherever 92 says: `StickerArt` gains `{ kind: 'hand'; id }`;
-   `CategorySticker`, `EarnedSticker`, the home cards and the map pin read it.
-4. **Publish (86A).** The post form shows the art for the title as it is typed; 换一张 cycles the sub-intents of the
-   category; on publish the art flies into the board's stack (motion asked as 94).
-5. **Done card stack (86B)** per 95.
-6. **Month calendar (86C)** per 96.
-7. **Fonts and copy** per 97; every new string in zh-Hans, en and ms.
-8. **Run the selected UI cases once**, update `docs/story-map.md`, the spec record, product notes (Stickers: 90A and the
-   later per-bounty generation), and open the PR.
+1. **Art set.** 12 drawings (the canvas 8 plus bag, food, medicine, document) in `scripts/hand-art/drawings.mjs`,
+   rendered by `render.mjs` (headless Chrome) to `assets/hand-art/<id>.png` (512 px, transparent, white die-cut border
+   baked in) and the kit's `modules/tapiro-kit/ios/HandArt/`. `generate.mjs` prompts the same ids.
+2. **Intent resolver.** `src/lib/handArt/`: 17 sub-intents, keyword tables in zh-Hans, en, ms; stored art, then title
+   (chosen category first), then category drawing, then the cat.
+3. **Stored art.** `bounties.art` + `publish_bounty(art)`; every read returning the category returns `art`.
+4. **`HandArt` everywhere** (92A): the tiles, `EarnedSticker` and `CategorySticker` are gone; pins draw the PNG.
+5. **Publish (86A, 94A).** Art row and 换一张 under the title; the shown art is published; it lands on the new home card.
+6. **Card stack (95A)** and **month calendar (96A)** in 「一起办成的事」, native segmented switch, remembered.
+7. **Fonts (97A)**, tokens, copy in three languages.
+8. **UI cases** `bounty_post_art`, `sticker_book`, `sticker_book_labels`, `sticker_book_calendar`, updated
+   `pay_settle_routine`, `sticker_book_empty`; story map, spec record, retro, PR.
+
+## Rulings (overnight, 2026-10-30 → 31; taken on the owner's behalf, recommended option each time)
+
+1. The art is stored per bounty (`bounties.art`), because 换一张 must survive publishing; payments and stickers read
+   it from the bounty instead of copying it.
+2. Publishing stores the art that was shown, chosen or automatic, so a later keyword change never redraws an old bounty.
+3. 换一张 walks the whole set of 12, not only the category's drawings: most categories have one to three.
+4. Keywords from all three languages apply whatever the app language (titles mix Chinese, English and Malay); a match
+   in the chosen category wins over other categories.
+5. Four extra drawings (bag, food, medicine, document) so 买 and 办事 have their own; the grain is softer than the
+   canvas so 512 px fills read solid.
+6. Map pins keep the category-colour disc (it is all that is left when zoomed out to dots) and draw the art inside it.
+7. 94A lands on the poster's new live card on the bounty home: the board never lists your own bounties. Motion
+   (decided for you, finite, transforms and opacity): the art drops from 140 pt above at 1.6× and −14°, a spring of
+   600 ms with damping 0.55, 300 ms after the sheet closes; Reduce Motion fades in over 200 ms. In the form the art
+   arrives with a 240 ms fade and scale 0.88 → 1 and −4° → 0; Reduce Motion skips it.
+8. 95A: celebration G keeps its choreography; the book it opens is now the stack, newest on top.
+9. 96A: the calendar starts on Monday, a day shows its newest errand's art, and tapping a day switches to 卡堆 at that
+   card (卡堆 is then remembered).
+10. The card's handwritten line is who helped whom (shrinks to one line); the title stays in the system font, two lines.
+11. Caveat ships as Google's variable font; captions use weight 700.
+12. After 换一张, editing the title back to automatic happens only when the title's meaning (its automatic art) changes.
 
 ## Open questions (canvas, page 05)
 
