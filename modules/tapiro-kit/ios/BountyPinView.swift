@@ -18,6 +18,12 @@ struct MapPinFan: Record {
   @Field var of: Int = 1
 }
 
+struct MapPinStamp: Record {
+  @Field var text: String = ""
+  @Field var ink: String = ""
+  @Field var fill: String = ""
+}
+
 struct MapPinRecord: Record {
   @Field var id: String = ""
   @Field var point: MapPointRecord = MapPointRecord()
@@ -25,6 +31,8 @@ struct MapPinRecord: Record {
   @Field var a11yLabel: String = ""
   @Field var art: MapPinArt = MapPinArt()
   @Field var fan: MapPinFan = MapPinFan()
+  @Field var applied: Bool = false
+  @Field var stamp: MapPinStamp = MapPinStamp()
 }
 
 final class BountyPinAnnotation: NSObject, MKAnnotation {
@@ -60,16 +68,29 @@ final class BountyPinView: MKAnnotationView {
   private static let labelOverlap: CGFloat = 6
   private static let labelPadding = CGSize(width: 7, height: 3)
   private static let labelMargin: CGFloat = 6
+  private static let appliedTilt: CGFloat = 8 * .pi / 180
+  private static let stampTilt: CGFloat = -12 * .pi / 180
+  private static let stampFrom: CGFloat = 1.4
+  private static let stampDelay: TimeInterval = 0.08
+  private static let stampFade: TimeInterval = 0.15
+  private static let stampBorder: CGFloat = 2
+  private static let stampRadius: CGFloat = 6
+  private static let stampPadding: CGFloat = 4
+  private static let stampDrop: CGFloat = 4
+  private static let stampShift: CGFloat = 4
 
   private let content = UIView()
   private let discView = UIView()
   private let symbolView = UIImageView()
   private let labelCard = UIView()
   private let labelText = UILabel()
+  private let stampView = UIView()
+  private let stampText = UILabel()
 
   private(set) var pinId = ""
   private var far = false
   private var chosen = false
+  private var applied = false
   var onActivate: ((BountyPinView) -> Void)?
 
   override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
@@ -102,7 +123,20 @@ final class BountyPinView: MKAnnotationView {
     labelText.adjustsFontForContentSizeCategory = true
     labelCard.addSubview(labelText)
 
+    stampView.layer.borderWidth = Self.stampBorder
+    stampView.layer.cornerRadius = Self.stampRadius
+    stampView.layer.cornerCurve = .continuous
+    stampView.alpha = 0
+    stampText.font = UIFontMetrics(forTextStyle: .footnote)
+      .scaledFont(for: .systemFont(ofSize: 13, weight: .heavy))
+    stampText.adjustsFontForContentSizeCategory = true
+    stampText.adjustsFontSizeToFitWidth = true
+    stampText.minimumScaleFactor = 0.6
+    stampText.textAlignment = .center
+    stampView.addSubview(stampText)
+
     content.addSubview(discView)
+    content.addSubview(stampView)
     content.addSubview(labelCard)
     addSubview(content)
 
@@ -119,7 +153,13 @@ final class BountyPinView: MKAnnotationView {
   }
 
   func configure(_ pin: MapPinRecord, far: Bool, selected: Bool) {
+    let lands = pin.id == pinId && pin.applied && !applied && window != nil
     pinId = pin.id
+    applied = pin.applied
+    stampView.layer.borderColor = UIColor(hex: pin.stamp.ink).cgColor
+    stampView.backgroundColor = UIColor(hex: pin.stamp.fill)
+    stampText.attributedText = NSAttributedString(
+      string: pin.stamp.text, attributes: [.kern: 1, .foregroundColor: UIColor(hex: pin.stamp.ink)])
     discView.backgroundColor = UIColor(hex: pin.art.color)
     symbolView.image = UIImage(
       systemName: pin.art.symbol,
@@ -135,6 +175,7 @@ final class BountyPinView: MKAnnotationView {
     chosen = selected
     zPriority = selected ? .max : .defaultUnselected
     applyLook()
+    if lands { land() }
   }
 
   private var fan = MapPinFan()
@@ -152,6 +193,8 @@ final class BountyPinView: MKAnnotationView {
 
     content.transform = .identity
     labelCard.transform = .identity
+    discView.transform = .identity
+    stampView.transform = .identity
     bounds = CGRect(origin: .zero, size: size)
     content.frame = bounds
     discView.frame = CGRect(x: (width - Self.disc) / 2, y: height - Self.disc, width: Self.disc, height: Self.disc)
@@ -160,10 +203,59 @@ final class BountyPinView: MKAnnotationView {
     labelText.frame = labelCard.bounds.insetBy(dx: Self.labelPadding.width, dy: Self.labelPadding.height)
     labelCard.layer.shadowPath = UIBezierPath(roundedRect: labelCard.bounds, cornerRadius: 7).cgPath
     labelCard.transform = CGAffineTransform(rotationAngle: Self.labelTilt)
+    layoutStamp()
 
     let ring = ringOffset(self.fan)
     centerOffset = CGPoint(x: ring.x, y: ring.y - (height - Self.disc) / 2)
     applyLook()
+  }
+
+  private func layoutStamp() {
+    let text = stampText.intrinsicContentSize
+    let lane = Self.disc + Self.stampShift * 2
+    let size = CGSize(width: min(lane, ceil(text.width) + Self.stampPadding * 2), height: ceil(text.height))
+    let disc = discView.frame
+    stampView.frame = CGRect(
+      x: disc.midX + Self.stampShift - size.width / 2,
+      y: disc.maxY + Self.stampDrop - size.height,
+      width: size.width,
+      height: size.height)
+    stampText.frame = stampView.bounds.insetBy(dx: Self.stampPadding, dy: 0)
+  }
+
+  private var tilt: CGAffineTransform {
+    applied ? CGAffineTransform(rotationAngle: Self.appliedTilt) : .identity
+  }
+
+  private var stampAlpha: CGFloat { applied && !far ? 1 : 0 }
+
+  private func land() {
+    let stampTurn = CGAffineTransform(rotationAngle: Self.stampTilt)
+    if UIAccessibility.isReduceMotionEnabled {
+      stampView.alpha = 0
+      UIView.animate(withDuration: Self.stampFade, delay: 0, options: [.allowUserInteraction]) {
+        self.stampView.alpha = self.stampAlpha
+      } completion: { _ in
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+      }
+      return
+    }
+    discView.transform = .identity
+    stampView.alpha = 0
+    stampView.transform = stampTurn.scaledBy(x: Self.stampFrom, y: Self.stampFrom)
+    let spring = { UISpringTimingParameters(mass: 1, stiffness: 220, damping: 14, initialVelocity: .zero) }
+    let turn = UIViewPropertyAnimator(duration: 0, timingParameters: spring())
+    turn.isUserInteractionEnabled = true
+    turn.addAnimations { self.discView.transform = self.tilt }
+    turn.startAnimation()
+    let stamp = UIViewPropertyAnimator(duration: 0, timingParameters: spring())
+    stamp.isUserInteractionEnabled = true
+    stamp.addAnimations {
+      self.stampView.transform = stampTurn
+      self.stampView.alpha = self.stampAlpha
+    }
+    stamp.addCompletion { _ in UINotificationFeedbackGenerator().notificationOccurred(.success) }
+    stamp.startAnimation(afterDelay: Self.stampDelay)
   }
 
   private func ringOffset(_ fan: MapPinFan) -> CGPoint {
@@ -210,6 +302,9 @@ final class BountyPinView: MKAnnotationView {
     content.transform = CGAffineTransform(translationX: 0, y: pivot).scaledBy(x: scale, y: scale)
       .translatedBy(x: 0, y: -pivot)
     labelCard.alpha = far ? 0 : 1
+    discView.transform = tilt
+    stampView.transform = CGAffineTransform(rotationAngle: Self.stampTilt)
+    stampView.alpha = stampAlpha
   }
 
   var topCenter: CGPoint {
@@ -235,8 +330,10 @@ final class BountyPinView: MKAnnotationView {
   override func prepareForReuse() {
     super.prepareForReuse()
     onActivate = nil
+    pinId = ""
     far = false
     chosen = false
+    applied = false
   }
 }
 

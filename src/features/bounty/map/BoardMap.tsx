@@ -20,6 +20,7 @@ import { moreChip } from './mapLayout';
 import { MoreChip } from './MoreChip';
 import { PinCard } from './PinCard';
 import { mapPins } from './pins';
+import { useStampHold } from './useStampHold';
 
 const MAP_CHROME = 270;
 const MAP_MIN = 320;
@@ -86,7 +87,11 @@ export function BoardMap({
   const mapHeight = useMapHeight(height);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const { card, open, close, gone } = useOpenCard();
-  const pins = useMemo(() => mapPins(rows, t, language, theme), [rows, t, language, theme]);
+  const held = useStampHold(rows);
+  const pins = useMemo(
+    () => mapPins(rows, t, language, theme, held),
+    [rows, t, language, theme, held],
+  );
   const located = origin && origin.kind !== 'none' ? origin : null;
   const latitude = located?.point.latitude;
   const longitude = located?.point.longitude;

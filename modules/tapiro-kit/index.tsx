@@ -35,6 +35,8 @@ export type BountyMapPin = {
   a11yLabel: string;
   art: { color: string; ink: string; symbol: string };
   fan: { index: number; of: number };
+  applied?: boolean;
+  stamp?: { text: string; ink: string; fill: string };
 };
 export type BountyMapOrigin = PlacePoint & { kind: 'me' | 'place'; title: string };
 export type BountyMapCamera = PlacePoint & { originKey: string; radiusM: number };

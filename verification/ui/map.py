@@ -65,6 +65,9 @@ def map_at_rest(ui, message='the screen never came to rest'):
 def pin_title(ui, label):
     template = ui.t('bounty.board.map.pin', title='TITLE', reward='REWARD')
     sep = template[len('TITLE'):template.index('REWARD')]
+    applied = ui.t('bounty.board.card.separator') + ui.t('bounty.board.card.applied')
+    if label.endswith(applied):
+        label = label[:-len(applied)]
     return label.rsplit(sep, 1)[0]
 
 

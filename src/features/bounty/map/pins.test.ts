@@ -97,4 +97,33 @@ describe('mapPins', () => {
       4,
     );
   });
+
+  test('an applied pin wears the stamp and VoiceOver reads the applied state after the reward', () => {
+    const [applied, open] = pins([
+      row('a', { point: A, title: '帮取快递', appliedByMe: true }),
+      row('b', { point: B }),
+    ]);
+    expect(applied.applied).toBe(true);
+    expect(applied.a11yLabel).toBe(
+      ['bounty.board.map.pin|帮取快递|RM\u00a08', 'name:bounty.board.card.applied'].join(
+        'name:bounty.board.card.separator',
+      ),
+    );
+    expect(applied.stamp).toEqual({ text: 'name:bounty.stamp', ink: '#187A50', fill: '#FFFFFF' });
+    expect(open.applied).toBe(false);
+    expect(open.a11yLabel).not.toContain('applied');
+  });
+
+  test('a held pin waits unstamped while VoiceOver already reads it as applied', () => {
+    const [pin] = mapPins(
+      [row('a', { point: A, appliedByMe: true })],
+      t,
+      'zh-Hans',
+      'dark',
+      new Set(['a']),
+    );
+    expect(pin.applied).toBe(false);
+    expect(pin.a11yLabel).toContain('name:bounty.board.card.applied');
+    expect(pin.stamp.ink).toBe('#3ECF8E');
+  });
 });

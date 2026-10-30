@@ -394,3 +394,13 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
   the `MKMapView` in a glass capsule), the latter only for origin `me`; a tracking-mode change closes the card like a
   pan; (f) the cover keeps the 32A states as floating cards under the chips, and the card is placed inside the area
   between the chips and the bottom safe area; pull-to-refresh stays on the home page only.
+- 2026-10-30, 84A (owner 2026-10-30) overturns ruling 10: an applied pin (`row.appliedByMe`) matches the list card.
+  The kit's `BountyPinView` tilts the disc 8° (`--sticker-rotation-max`, the list's direction) and draws the list's
+  「已申请」 stamp (`bounty.stamp`, border and text `--color-success`, fill `--color-receipt`, -12°, 2 pt border) under
+  it; JS passes `applied` and `stamp { text, ink, fill }` on each `BountyMapPin`. The label tab keeps its own tilt and
+  stays readable; fan offsets and the disc-and-label hit test are unchanged (the stamp takes no touches); zoomed-out
+  dots keep the tilt but show no stamp. VoiceOver appends `bounty.board.card.applied` after the reward with the list
+  card's separator. Motion copies the list's once-only landing: `useStampHold` holds the stamp while the apply sheet's
+  `justApplied` entry (surface `card`) is waiting, then the pin springs to 8° and the stamp scales in from 1.4 after
+  80 ms (stiffness 220, damping 14) with a success haptic; Reduce Motion fades the stamp in 150 ms. The map takes the
+  entry, so the list does not replay it later.
