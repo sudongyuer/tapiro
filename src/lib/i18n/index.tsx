@@ -6,6 +6,7 @@ import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next
 import { FALLBACK_LANGUAGE, LANGUAGES, isLanguage, type Language } from './languages';
 import { resolveLanguage } from './resolve';
 import { resources } from './resources';
+import { latinSpacing } from './latinSpacing';
 import { sentenceStart, sentenceStartOptions } from './sentenceStart';
 import { readStoredLanguage, writeStoredLanguage } from './storage';
 
@@ -18,8 +19,10 @@ export function initI18n() {
   i18next
     .use(initReactI18next)
     .use(sentenceStart)
+    .use(latinSpacing)
     .init({
       ...sentenceStartOptions,
+      postProcess: [...sentenceStartOptions.postProcess, 'latinSpacing'],
       resources,
       lng: resolveLanguage({ stored: readStoredLanguage(), systemLocales: getLocales() }),
       fallbackLng: FALLBACK_LANGUAGE,

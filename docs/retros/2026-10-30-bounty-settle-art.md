@@ -38,6 +38,11 @@ overturned: 0
 
 ## Candidates (first occurrence, not yet generalised)
 
+- `midnight-clock`: run at 23:50, `bounty_status_states` and `bounty_status_helper` failed because the ETA crossed
+  midnight and the app correctly wrote 「预计 明天 00:15 到」 while the cases match the bare `HH:MM` (evidence: both
+  failure messages carry 「明天」). Not caused by this branch. Fix in the cases: build the expected time with the same
+  day-prefix rule, or pin the fixture clock.
+
 - `motion-unseen`: a motion question answered from text options was overturned once seen. Next time, motion options
   are drawn as an interactive canvas board (one artboard, options as pills, replay and ×4 slow) before the task starts.
 
@@ -69,3 +74,5 @@ overturned: 0
   middle truncation (「Nurul…ah帮我」); rerun and screenshot confirmed. Third occurrence: the
   `ios-ui-verify` skill should say that truncation and overlap need an OCR or pixel check on the drawn text; that is
   cross-project, so it is put to the user.
+  Generalised 2026-10-30 (owner chose 2A): the `ios-ui-verify` skill now asserts truncation and overlap on the
+  screenshot (OCR or pixels).
