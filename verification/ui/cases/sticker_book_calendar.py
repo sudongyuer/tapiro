@@ -10,7 +10,7 @@ from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
 DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/', 'verification/ui/bounty.py']
 LOCALES = ['zh-Hans', 'ms']
 SEED = ['-uiVerifyBookView', 'stack']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'seven', *SEED]
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'seven', '-uiVerifyBookView', 'stack']
 DAY = 'sticker-calendar-day-'
 COLOURFUL_MIN = 300
 
