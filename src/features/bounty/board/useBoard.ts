@@ -64,6 +64,7 @@ export function useBoard(
     refresh,
     retry: controller.load,
     retryPage: controller.retryPage,
+    loadMore: controller.loadMore,
     onViewport,
   };
 }
