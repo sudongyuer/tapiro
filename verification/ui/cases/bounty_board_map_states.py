@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close  # noqa: E402
-from map import CARD_FILL, MAP, open_scene, pin_id, pins  # noqa: E402
+from map import CARD_FILL, MAP, map_at_rest, open_scene, pin_id, pins  # noqa: E402
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx', 'src/features/home/',
         'src/app/(tabs)/', 'verification/ui/bounty.py',
@@ -49,7 +49,7 @@ def assert_inline_fill(shot, element, name):
 ui.element('ui-verify-ready')
 row = ui.wait_label('bounty-place-row', lambda label: ui.t('bounty.board.place.pick') in label,
                     'no 选一个地方 row without a location or place')
-ui.at_rest()
+map_at_rest(ui)
 assert_no_map(ui.read(), 'no origin')
 ui.capture('01-no-origin')
 ui.tap('bounty-place-row')
@@ -60,7 +60,7 @@ near = ui.t('bounty.board.place.near', place='Sunway Geo Residences')
 ui.wait_label('bounty-place-row', lambda label: near in label, f'the place row does not read {near!r}')
 here = ui.labelled(ui.t('bounty.board.axis.here'))
 assert here['frame']['width'] > 0, '「这里」 marker has no frame'
-ui.at_rest()
+map_at_rest(ui)
 ui.capture('02-chosen-place')
 
 open_scene(ui, *ME, '-uiVerifyBoardFail', 'first', drop=NO_ORIGIN, ready='bounty-board-failed')
@@ -87,14 +87,14 @@ assert not pins(items), 'pins are shown under an empty filter'
 empty = ui.element('bounty-board-filter-empty')
 assert empty['frame']['y'] + empty['frame']['height'] <= by_id(items, MAP)['frame']['y'] + 1, \
     'the empty card is not above the map'
-ui.at_rest()
+map_at_rest(ui)
 ui.capture('05-filter-empty')
 ui.tap('bounty-board-show-all')
 ui.element(pin_id(ONE))
 ui.gone('bounty-board-filter-empty')
 
 relaunch(ui, drop=NO_ORIGIN, add=[*ME, *HOME_MAP, '-uiVerifyBoardFail', 'refresh'], ready=pin_id(FIRST))
-ui.at_rest()
+map_at_rest(ui)
 items = ui.read()
 assert by_id(items, 'bounty-board-stale') is None, 'the stale notice shows before any pull'
 s = items[0]['frame']
@@ -107,7 +107,7 @@ assert by_id(items, pin_id(FIRST)), 'pins vanished after a failed refresh'
 assert by_id(items, 'bounty-board-failed') is None, 'a failed refresh replaced the map with the failed card'
 stale = by_id(items, 'bounty-board-stale')['frame']
 assert stale['y'] + stale['height'] <= by_id(items, MAP)['frame']['y'] + 1, 'the stale notice is not above the map'
-ui.at_rest()
+map_at_rest(ui)
 ui.capture('06-stale')
 ui.tap('bounty-board-retry')
 ui.gone('bounty-board-stale')

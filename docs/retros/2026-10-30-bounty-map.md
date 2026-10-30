@@ -44,3 +44,6 @@ passed 7 of 11 cases; the 4 map failures were 2 product bugs (`pin-hit-test`, `t
 - `local-file-size-test`: `bun test` fails the 4 `check-file-size` fixture tests locally (exit 1, empty output) while
   the same script on the same kind of fixture, run from the shell or from a one-off `bun test` probe, prints the
   finding. CI passes. Not from this branch (it also fails on `main`); time-boxed, cause unknown.
+- `at-rest-location-dot` (second time): the dark `bounty_board_map` run failed "never came to rest" on the same
+  breathing user-location dot, half hidden behind a pin. Moved down a layer: `UI.at_rest(ignore=...)` masks given
+  frames, and `map.map_at_rest` masks MapKit's location dot, used by every map case.

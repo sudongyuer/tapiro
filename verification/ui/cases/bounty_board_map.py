@@ -11,7 +11,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from apply import title_shown  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from map import (BACK, FRONT, assert_card_surface, assert_tail, centre, close_card, face_box, inside,  # noqa: E402
-                 map_frame, open_scene, pin_id, pin_title, pins, tap_pin)
+                 map_at_rest, map_frame, open_scene, pin_id, pin_title, pins, tap_pin)
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx',
         'modules/tapiro-kit/ios/BountyMapView.swift', 'modules/tapiro-kit/ios/BountyPinView.swift',
@@ -29,10 +29,10 @@ ui = UI(*sys.argv[1:])
 
 def first_card():
     open_scene(ui, ready=pin_id(FIRST))
-    ui.at_rest()
+    map_at_rest(ui)
     before = ui.settled(lambda items: by_id(items, pin_id(FIRST)), 'the first pin never settled')
     front = tap_pin(ui, FIRST)
-    ui.at_rest()
+    map_at_rest(ui)
     return before, front
 
 
@@ -72,7 +72,7 @@ details = ui.element('map-card-details')
 assert details.get('AXLabel') == ui.t('bounty.board.map.details'), details.get('AXLabel')
 assert_touch_target(details, '看详情')
 assert_touch_target(ui.element('map-card-back-apply'), '申请 on the back')
-ui.at_rest()
+map_at_rest(ui)
 back_face = face_box(ui, BACK, ['map-card-details', 'map-card-back-apply'])
 assert_card_surface(ui, ui.snap('04-card-back'), back_face, 'card back')
 ui.tap(BACK)

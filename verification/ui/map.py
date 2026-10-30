@@ -9,6 +9,8 @@ CARD_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 CARD_PADDING = 16
 DISC = 44
 WHITE = 250
+LOCATION_SIDE = (36, 48)
+HALO = 24
 
 
 def open_scene(ui, *args, ready=None, drop=()):
@@ -43,6 +45,21 @@ def inside(f, outer, slack=1):
 
 def contains(f, x, y, pad=0):
     return f['x'] - pad <= x <= f['x'] + f['width'] + pad and f['y'] - pad <= y <= f['y'] + f['height'] + pad
+
+
+def location_dots(items):
+    m = by_id(items, MAP)
+    if not m:
+        return []
+    return [i['frame'] for i in items if i.get('type') == 'GenericElement' and not i.get('AXUniqueId')
+            and LOCATION_SIDE[0] <= i['frame']['width'] <= LOCATION_SIDE[1]
+            and LOCATION_SIDE[0] <= i['frame']['height'] <= LOCATION_SIDE[1] and contains(m['frame'], *centre(i['frame']))]
+
+
+def map_at_rest(ui, message='the screen never came to rest'):
+    halos = [{'x': f['x'] - HALO, 'y': f['y'] - HALO, 'width': f['width'] + 2 * HALO, 'height': f['height'] + 2 * HALO}
+             for f in location_dots(ui.read())]
+    ui.at_rest(message, ignore=halos)
 
 
 def pin_title(ui, label):

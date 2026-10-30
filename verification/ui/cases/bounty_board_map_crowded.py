@@ -8,7 +8,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
-from map import FRONT, MAP, centre, close_card, contains, label_white, open_scene, pin_id, pin_title, pins  # noqa: E402
+from map import (FRONT, centre, close_card, label_white, location_dots, map_at_rest, open_scene,  # noqa: E402
+                 pin_id, pin_title, pins)
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/fixtureBoardData.ts', 'src/debug/BoardMapScene.tsx',
         'modules/tapiro-kit/ios/BountyMapView.swift', 'modules/tapiro-kit/ios/BountyPinView.swift',
@@ -24,7 +25,6 @@ LABEL_WIDTH = 44
 CLEARANCE = 3
 DOT_REACH = 14
 WHITE = 250
-LOCATION_SIDE = (36, 48)
 FAN_MIN = 20
 
 ui = UI(*sys.argv[1:])
@@ -72,11 +72,7 @@ def uncovered_point(row_id, found):
 
 
 def location_dot(items):
-    m = by_id(items, MAP)['frame']
-    found = [i['frame'] for i in items if i.get('type') == 'GenericElement' and not i.get('AXUniqueId')
-             and LOCATION_SIDE[0] <= i['frame']['width'] <= LOCATION_SIDE[1]
-             and LOCATION_SIDE[0] <= i['frame']['height'] <= LOCATION_SIDE[1] and contains(m, *centre(i['frame']))]
-    return [(*centre(f), max(f['width'], f['height']) / 2 + DOT_REACH / 2) for f in found]
+    return [(*centre(f), max(f['width'], f['height']) / 2 + DOT_REACH / 2) for f in location_dots(items)]
 
 
 def masked_white(shot, f, dots):
@@ -103,7 +99,7 @@ def open_by_point(row_id, x, y, title):
 
 ui.element('ui-verify-ready')
 ui.settled(lambda items: by_id(items, pin_id(CELL[0])), 'the crowded pins never appeared')
-ui.at_rest()
+map_at_rest(ui)
 cell = frames(CELL)
 discs = {i: (centre(f['frame'])[0], f['frame']['y'] + f['frame']['height'] - DISC / 2) for i, f in cell.items()}
 mx = sum(x for x, _ in discs.values()) / len(discs)

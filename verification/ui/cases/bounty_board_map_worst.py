@@ -8,8 +8,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from map import (BACK, FRONT, close_card, face_box, inside, map_frame, pin_id, pin_title, pins,  # noqa: E402
-                 tap_pin)
+from map import (BACK, FRONT, close_card, face_box, inside, map_at_rest, map_frame, pin_id, pin_title,  # noqa: E402
+                 pins, tap_pin)
 from ocr import find, lines  # noqa: E402
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/fixtureBoardData.ts', 'src/debug/BoardMapScene.tsx',
@@ -39,7 +39,7 @@ def in_card(shot, box, pattern, what):
 
 ui.element('ui-verify-ready')
 ui.settled(lambda items: by_id(items, pin_id(TOP)), 'the worst pins never appeared')
-ui.at_rest()
+map_at_rest(ui)
 items = ui.read()
 m = map_frame(ui)
 for pin in pins(items):
@@ -49,7 +49,7 @@ for pin in pins(items):
 ui.capture('01-pins')
 
 tap_pin(ui, TOP)
-ui.at_rest()
+map_at_rest(ui)
 apply = ui.element('map-card-apply')
 assert_touch_target(apply, '申请 on the worst card')
 face = face_box(ui, FRONT, ['map-card-apply'])
@@ -62,7 +62,7 @@ assert title['y'] + title['height'] <= reward['y'] + 1 or title['x'] + title['wi
 
 ui.tap(FRONT)
 ui.settled(lambda items: by_id(items, BACK), 'the worst card never flipped')
-ui.at_rest()
+map_at_rest(ui)
 items = ui.read()
 details, back_apply = by_id(items, 'map-card-details'), by_id(items, 'map-card-back-apply')
 assert details and back_apply, 'the back lost 看详情 or 申请'
@@ -79,7 +79,7 @@ close_card(ui)
 
 ui.settled(lambda items: by_id(items, pin_id(APPLIED)), 'the applied pin is not on the map')
 tap_pin(ui, APPLIED)
-ui.at_rest()
+map_at_rest(ui)
 items = ui.read()
 assert by_id(items, 'map-card-apply') is None, 'the applied card still offers 申请'
 applied = ui.element('map-card-applied')

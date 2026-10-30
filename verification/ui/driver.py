@@ -229,18 +229,19 @@ class UI:
         (self.output / f'{name}.json').write_text(self.axe('describe-ui'))
         return self.output / f'{name}.png'
 
-    def frame_bytes(self):
+    def frame_bytes(self, ignore=(), points=None):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'f.png'
             timed('screenshot frame', ['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(path)], 20, check=True)
-            return path.read_bytes()
+            return Shot(path, points).masked(ignore) if ignore else path.read_bytes()
 
-    def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0):
+    def at_rest(self, message='the screen never came to rest', timeout=90, gap=1.0, ignore=()):
         deadline = time.monotonic() + timeout
         previous = None
+        points = self.read()[0]['frame']['width'] if ignore else None
         while time.monotonic() < deadline:
             try:
-                current = self.frame_bytes()
+                current = self.frame_bytes(ignore, points)
             except subprocess.TimeoutExpired:
                 previous = None
                 continue
@@ -395,6 +396,19 @@ class Shot:
 
     def count(self, f, predicate, pad=0):
         return sum(1 for rgb in self.pixels(f, pad) if predicate(rgb))
+
+    def masked(self, frames):
+        data = bytearray(self.data)
+        for f in frames:
+            x0, x1 = max(0, round(f['x'] * self.scale)), min(self.width, round((f['x'] + f['width']) * self.scale))
+            y0, y1 = max(0, round(f['y'] * self.scale)), min(self.height, round((f['y'] + f['height']) * self.scale))
+            if x1 <= x0:
+                continue
+            for y in range(y0, y1):
+                row = y if self.top_down else self.height - 1 - y
+                start = self.offset + row * self.stride + x0 * self.pixel_bytes
+                data[start:start + (x1 - x0) * self.pixel_bytes] = bytes((x1 - x0) * self.pixel_bytes)
+        return bytes(data)
 
 
 def glow(shot, f, background, pad=4):
