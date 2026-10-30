@@ -382,7 +382,7 @@ const CNY: FixtureBounty[] = [
 ];
 
 export const CROWDED_CELL: Point = { latitude: 3.074, longitude: 101.608 };
-export const CROWDED_CORNER: Point = { latitude: 3.0725, longitude: 101.6105 };
+export const CROWDED_CORNER: Point = { latitude: 3.0545, longitude: 101.6085 };
 
 const CROWDED_POSTERS = [
   KOBAYASHI,
