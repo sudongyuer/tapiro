@@ -14,10 +14,11 @@ DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verifi
         'verification/ui/board.py']
 BUDGET = 360
 SEED = ['-uiVerifyBoardView', 'list']
-PLACE_ARGS = ['-uiVerifyBoardPlace', 'sunway']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', *PLACE_ARGS, *SEED]
+PLACE_ARGS = ['-uiVerifyBoardPlace', 'sunway', '-uiVerifyLocation', 'denied']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardPlace', 'sunway',
+        '-uiVerifyLocation', 'denied', '-uiVerifyBoardView', 'list']
 PLACE = 'Sunway Geo Residences'
-ANCHOR = 'bounty-card-fixture-bounty-01'
+ANCHOR = 'bounty-axis'
 UNDER_STRIP = 48
 KEPT = 3
 SELECTED_RATIO = 3
@@ -70,7 +71,7 @@ assert_selected('01-list', 'list')
 anchor_y = visible(ui, ANCHOR)['frame']['y']
 items = ui.read()
 switch = by_id(items, 'bounty-view-map')
-assert switch and in_view(switch, screen(items), top_clear(items)), 'the switch and the first card do not fit on one screen'
+assert switch and in_view(switch, screen(items), top_clear(items)), 'the switch and the axis do not fit on one screen'
 title_before = by_id(items, 'bounty-board-title')['frame']['y']
 assert title_before > top_clear(items) + UNDER_STRIP, \
     f'the title already sits under the strip ({title_before:.1f} pt), so the scroll home cannot be seen'
