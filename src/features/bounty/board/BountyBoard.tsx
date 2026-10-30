@@ -1,13 +1,21 @@
 import { Fragment } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LayoutAnimationConfig,
+  ReduceMotion,
+} from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 
+import { BoardMap } from '../map/BoardMap';
 import { BoardCard } from './BoardCard';
 import { BoardEmpty, BoardFailed, BoardFooter, BoardLoading, BoardStale } from './BoardStates';
 import { boardBody, boardTotal } from './boardState';
+import { BoardTitleRow } from './BoardTitleRow';
 import { DistanceAxis } from './DistanceAxis';
 import { FilterChips } from './FilterChips';
 import { FocusRing } from './FocusRing';
@@ -15,6 +23,8 @@ import { LocationCard } from './LocationCard';
 import { PlaceRow } from './PlaceRow';
 import type { BoardOrigin, BoardRow } from './types';
 import type { BountyBoardModel } from './useBountyBoard';
+
+const CROSS_FADE_MS = 200;
 
 type Handlers = {
   onPost: () => void;
@@ -24,29 +34,75 @@ type Handlers = {
 };
 
 export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBoardModel }) {
-  const { t } = useI18n();
+  const { view } = board;
+  const reduce = view.reduceMotion ? ReduceMotion.Always : ReduceMotion.System;
   return (
     <View testID="bounty-board" style={styles.board}>
-      <AppText
-        variant="title"
-        accessibilityRole="header"
-        testID="bounty-board-title"
-        style={styles.title}
-      >
-        {t('bounty.board.title')}
-      </AppText>
+      <BoardTitleRow
+        view={view.current}
+        hint={view.hint}
+        reduceMotion={view.reduceMotion}
+        onChoose={view.choose}
+        onTitle={view.attachTitle}
+      />
       <FilterChips
         filter={board.filter}
         total={boardTotal(board.state)}
         onChange={board.setFilter}
       />
-      <OriginBar board={board} onPickPlace={handlers.onPickPlace} />
-      <BoardBody board={board} {...handlers} />
+      <LayoutAnimationConfig skipEntering>
+        <Animated.View
+          key={view.current}
+          entering={FadeIn.duration(CROSS_FADE_MS).reduceMotion(reduce)}
+          exiting={FadeOut.duration(CROSS_FADE_MS).reduceMotion(reduce)}
+          testID={`bounty-board-${view.current}-view`}
+          style={styles.body}
+        >
+          {view.current === 'map' ? (
+            <MapBody board={board} {...handlers} />
+          ) : (
+            <>
+              <OriginBar board={board} axis onPickPlace={handlers.onPickPlace} />
+              <BoardBody board={board} {...handlers} />
+            </>
+          )}
+        </Animated.View>
+      </LayoutAnimationConfig>
     </View>
   );
 }
 
-function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlace: () => void }) {
+function MapBody({ board, onOpen, onApply, onPickPlace }: Handlers & { board: BountyBoardModel }) {
+  const { origin, state } = board;
+  if (!origin) return <BoardLoading testID="bounty-board-loading" />;
+  if (origin.kind === 'none') {
+    return <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />;
+  }
+  return (
+    <>
+      <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />
+      <BoardMap
+        rows={state.kind === 'ready' ? state.rows : []}
+        origin={origin}
+        state={state}
+        onOpen={onOpen}
+        onApply={onApply}
+        onPickPlace={onPickPlace}
+        onShowMore={() => void board.loadMore()}
+      />
+    </>
+  );
+}
+
+function OriginBar({
+  board,
+  axis: withAxis,
+  onPickPlace,
+}: {
+  board: BountyBoardModel;
+  axis: boolean;
+  onPickPlace: () => void;
+}) {
   const { origin, state } = board;
   if (!origin) return null;
   if (origin.kind === 'none') {
@@ -61,7 +117,7 @@ function OriginBar({ board, onPickPlace }: { board: BountyBoardModel; onPickPlac
     );
   }
   const axis =
-    state.kind === 'ready' && state.rows.length > 0 ? (
+    withAxis && state.kind === 'ready' && state.rows.length > 0 ? (
       <DistanceAxis
         rows={state.rows}
         beyondTotal={state.beyondTotal}
@@ -150,6 +206,6 @@ function UnlocatedHeader() {
 
 const styles = StyleSheet.create({
   board: { gap: vars['--space-3'], paddingTop: vars['--space-4'] },
-  title: { fontWeight: '700', paddingHorizontal: 2 },
+  body: { gap: vars['--space-3'] },
   unlocated: { paddingHorizontal: vars['--space-4'], paddingTop: vars['--space-2'] },
 });

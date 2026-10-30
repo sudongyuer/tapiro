@@ -75,12 +75,23 @@ describe('seedBoardView', () => {
     expect(store.boardView('a')).toBe('list');
   });
 
-  test('omitted or unknown arguments keep what is stored', () => {
+  test('only keep leaves what is stored', () => {
     const store = createViewStore(memorySettings());
     store.setBoardView('a', 'map');
     store.markHintShown('a');
-    for (const seeded of [undefined, '', 'grid']) seedBoardView(store, 'a', seeded);
+    seedBoardView(store, 'a', 'keep');
     expect(store.boardView('a')).toBe('map');
     expect(store.hintShown('a')).toBe(true);
+  });
+
+  test('omitted or unknown arguments seed the list, so a stored map never leaks into the next run', () => {
+    for (const seeded of [undefined, '', 'grid']) {
+      const store = createViewStore(memorySettings());
+      store.setBoardView('a', 'map');
+      store.markHintShown('a');
+      seedBoardView(store, 'a', seeded);
+      expect(store.boardView('a')).toBe('list');
+      expect(store.hintShown('a')).toBe(false);
+    }
   });
 });

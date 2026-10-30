@@ -33,8 +33,7 @@ export function createViewStore(settings: SettingsLike, cleanups?: UserCleanups)
 export type ViewStore = ReturnType<typeof createViewStore>;
 
 export function seedBoardView(store: ViewStore, userId: string, seeded: string | undefined) {
-  const view = BOARD_VIEWS.find((candidate) => candidate === seeded);
-  if (!view) return;
+  if (seeded === 'keep') return;
   store.clear(userId);
-  store.setBoardView(userId, view);
+  store.setBoardView(userId, BOARD_VIEWS.find((candidate) => candidate === seeded) ?? 'list');
 }
