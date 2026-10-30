@@ -199,6 +199,17 @@ const en: typeof zhHans = {
       change: 'Change',
     },
     unlocated: 'No place given',
+    view: {
+      list: 'List',
+      map: 'Map',
+      a11y: 'View',
+    },
+    remembered: 'Remembered',
+    map: {
+      more: '{{shown}} / {{total}} on the map · Show {{count}} More',
+      pin: '{{title}}, {{reward}}',
+      details: 'View Details',
+    },
     state: {
       loading: 'Loading bounties',
       failed: 'Couldn’t load',
