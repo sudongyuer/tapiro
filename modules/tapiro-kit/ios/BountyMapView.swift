@@ -31,6 +31,7 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
   private var appliedOriginKey: String?
   private var pendingCamera: MapCameraRecord?
   private weak var mapTap: UITapGestureRecognizer?
+  private weak var touchedPin: BountyPinView?
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -176,9 +177,13 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
 
   func gestureRecognizer(_ recognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
     guard recognizer === mapTap else { return true }
+    touchedPin = nil
     var view = touch.view
     while let current = view, current !== map {
-      if current is MKAnnotationView { return false }
+      if current is MKAnnotationView {
+        touchedPin = current as? BountyPinView
+        return false
+      }
       view = current.superview
     }
     return true
@@ -219,7 +224,11 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
     guard annotation is BountyPinAnnotation, let view = mapView.view(for: annotation) as? BountyPinView else {
       return
     }
-    report(view)
+    // MapKit picks the annotation by its own proximity rule, which on a fanned stack can be a neighbour whose label
+    // sits next to the finger; the view the touch actually hit is the sticker the user sees there.
+    let touched = touchedPin
+    touchedPin = nil
+    report(touched ?? view)
   }
 
   func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {

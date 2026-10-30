@@ -217,11 +217,14 @@ final class BountyPinView: MKAnnotationView {
     return CGPoint(x: frame.midX, y: frame.minY)
   }
 
+  // Fanned neighbours are 26 pt apart, so the transparent corners of a pin's bounds would swallow taps meant for the
+  // sticker beside it; only the drawn disc and label take touches.
   override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-    guard far else { return super.point(inside: point, with: event) }
     let center = discView.convert(CGPoint(x: discView.bounds.midX, y: discView.bounds.midY), to: self)
-    let half = Self.disc / 2
-    return CGRect(x: center.x - half, y: center.y - half, width: Self.disc, height: Self.disc).contains(point)
+    let radius = Self.disc / 2 * (far ? Self.farScale : 1) * (chosen ? Self.selectedScale : 1)
+    if hypot(point.x - center.x, point.y - center.y) <= max(radius, Self.disc / 2) { return true }
+    guard !far else { return false }
+    return labelCard.bounds.contains(convert(point, to: labelCard))
   }
 
   override func accessibilityActivate() -> Bool {
