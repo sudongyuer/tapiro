@@ -15,3 +15,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-10-30 | 9 hand-drawn art       | pending         | 1             | ~5 min (headless Chrome hang)               | 2 (design stage)        | pending            |
 | 2026-10-30 | bounty small fixes     | pending         | 0             | ~0                                          | 0                       | 0                  |
 | 2026-10-31 | bounty milestone       | 4 (case bugs)   | 1             | ~0                                          | 0                       | 0                  |
+| 2026-10-31 | realtime + push spec   | pending         | 0             | ~0                                          | 0                       | pending            |
