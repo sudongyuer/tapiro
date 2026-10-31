@@ -18,3 +18,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-10-31 | realtime + push spec   | pending         | 0             | ~0                                          | 0                       | pending            |
 | 2026-10-31 | realtime renumber      | 1               | 1             | ~10 min                                     | 0                       | 0                  |
 | 2026-10-31 | bounty post redo       | pending         | 3             | ~30 min (date-dependent optional case)      | 0                       | pending            |
+| 2026-10-31 | realtime answers       | 0               | 0             | ~0                                          | 0                       | 0                  |
