@@ -1,57 +1,47 @@
-import {
-  Button,
-  ConfirmationDialog,
-  Form,
-  Host,
-  Label,
-  Picker,
-  Section,
-  Text,
-  type TextFieldRef,
-} from '@expo/ui/swift-ui';
+import { Form, Host, Section, Text, type TextFieldRef } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   accessibilityLabel,
   foregroundStyle,
   monospacedDigit,
-  pickerStyle,
-  tag,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, useIsFocused } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import type { CurrencyCode } from '@/lib/money';
-import { BOUNTY_CATEGORIES, bountyCategory } from '@/lib/stickers/category';
-import { handArtFor } from '@/lib/handArt';
-import { CATEGORY_SYMBOLS } from '@/ui/categoryArt';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
+import { CategoryRow } from './CategoryRow';
+import { ClearSection } from './ClearSection';
+import { FieldRow } from './FieldRow';
 import { FormNotice } from './FormNotice';
-import { ArtRows, useShownArt } from './PostArt';
+import { useKindCopy } from './kindCopy';
+import { PostLiveCard } from './PostArt';
 import { DescriptionRows, TimeRows } from './OptionalRows';
 import { AddPlaceRow, PlaceSections } from './PlaceRows';
+import { RewardSection } from './RewardSection';
 import { draftStore } from './services';
+import { titlePatch } from './titleEdit';
 import type { PostDraft } from './types';
-import { formError, resetDraft, useDraft, useFormError } from './useDraft';
+import { formError, useDraft, useFormError } from './useDraft';
 import { useDraftSync } from './useDraftSync';
 import { usePlaceFields } from './usePlaceFields';
 import { useHintFocus } from './useStartPost';
 import { useSentCheck } from './useSentCheck';
-import { rewardRangeText } from './errorCopy';
-import { RewardRow } from './RewardRow';
 import { codePoints, checkDraft, TITLE_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
+const TITLE_COUNT_FROM = TITLE_MAX - 10;
+
 type FormProps = {
   userId: string;
   onNext: () => void;
-  onClose: () => void;
+  onCleared: () => void;
   onPickPlace: () => void;
 };
 
@@ -67,23 +57,20 @@ function PostFormBody({
   userId,
   draft,
   onNext,
-  onClose,
+  onCleared,
   onPickPlace,
 }: FormProps & { draft: PostDraft }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
+  const copy = useKindCopy(draft.category);
   const { color } = useTheme();
   function edit(patch: Partial<PostDraft>) {
     draftStore.update(userId, patch);
     formError.set(null);
   }
 
-  const title = useSyncedText(draft.title, (text) => {
-    const current = draftStore.load(userId);
-    const auto = (title: string) => handArtFor({ ...current, art: null, title: title.trim() });
-    const moved = current.art !== null && auto(current.title) !== auto(text);
-    edit(moved ? { title: text, art: null } : { title: text });
-  });
-  const art = useShownArt(draft);
+  const title = useSyncedText(draft.title, (text) =>
+    edit(titlePatch(draftStore.load(userId), text)),
+  );
   const reward = useSyncedText(draft.rewardText, (text) => edit({ rewardText: text }));
   const description = useSyncedText(draft.description ?? '', (text) => edit({ description: text }));
   const titleField = useRef<TextFieldRef>(null);
@@ -127,16 +114,6 @@ function PostFormBody({
 
   return (
     <Host style={styles.host} testID="bounty-post-form">
-      <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button
-          onPress={() => {
-            sync();
-            onClose();
-          }}
-        >
-          {t('bounty.post.cancel')}
-        </Stack.Toolbar.Button>
-      </Stack.Toolbar>
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
           variant="prominent"
@@ -148,87 +125,70 @@ function PostFormBody({
       </Stack.Toolbar>
       <Form modifiers={[tint(color('--color-accent'))]}>
         <FormNotice notice={notice} currency={draft.currency} />
+        <PostLiveCard draft={draft} onSwap={(art) => edit({ art })} />
         <Section>
           <FieldRow field={titleField}>
             <SyncedTextField
               ref={titleField}
               field={title}
               maxLength={TITLE_MAX}
-              placeholder={t('bounty.post.form.titlePlaceholder')}
+              placeholder={copy.title}
               onFocusChange={onBlur}
               testID="bounty-post-title"
             />
-            <Text
-              modifiers={[
-                secondary,
-                monospacedDigit(),
-                accessibilityLabel(
-                  t('bounty.post.form.countLabel', {
-                    count: codePoints(draft.title),
-                    max: TITLE_MAX,
-                  }),
-                ),
-                accessibilityIdentifier('bounty-post-title-count'),
-              ]}
-            >
-              {t('bounty.post.form.count', { count: codePoints(draft.title), max: TITLE_MAX })}
-            </Text>
-          </FieldRow>
-          <ArtRows id={art} onSwap={(next) => edit({ art: next })} />
-        </Section>
-        <Section
-          footer={
-            <Text modifiers={[accessibilityIdentifier('bounty-post-reward-footer')]}>
-              {t('bounty.post.form.rewardFooter', {
-                range: rewardRangeText(language, draft.currency),
-              })}
-            </Text>
-          }
-        >
-          <Picker
-            label={t('bounty.post.form.category')}
-            selection={draft.category ?? ''}
-            onSelectionChange={(next: string) => {
-              const category = bountyCategory(next);
-              if (category) edit({ category });
-            }}
-            testID="bounty-post-category"
-            modifiers={[pickerStyle('menu'), fullRow, ROW_INSETS]}
-          >
-            {draft.category === null ? (
-              <Text modifiers={[tag('')]}>{t('bounty.post.form.categoryPlaceholder')}</Text>
+            {codePoints(draft.title) >= TITLE_COUNT_FROM ? (
+              <Text
+                modifiers={[
+                  secondary,
+                  monospacedDigit(),
+                  accessibilityLabel(
+                    t('bounty.post.form.countLabel', {
+                      count: codePoints(draft.title),
+                      max: TITLE_MAX,
+                    }),
+                  ),
+                  accessibilityIdentifier('bounty-post-title-count'),
+                ]}
+              >
+                {t('bounty.post.form.count', { count: codePoints(draft.title), max: TITLE_MAX })}
+              </Text>
             ) : null}
-            {BOUNTY_CATEGORIES.map((category) => (
-              <Label
-                key={category}
-                title={t(`bounty.category.${category}`)}
-                systemImage={CATEGORY_SYMBOLS[category]}
-                modifiers={[tag(category)]}
-              />
-            ))}
-          </Picker>
-          <RewardRow
-            field={reward}
-            currency={draft.currency}
-            onCurrency={chooseCurrency}
-            onBlur={onBlur}
+          </FieldRow>
+          <CategoryRow
+            category={draft.category}
+            source={draft.categorySource}
+            onPick={(category) => edit({ category, categorySource: 'chosen' })}
           />
         </Section>
+        <RewardSection
+          field={reward}
+          value={draft.rewardText}
+          currency={draft.currency}
+          category={draft.category}
+          onCurrency={chooseCurrency}
+          onAmount={(text) => {
+            reward.set(text);
+            edit({ rewardText: text });
+          }}
+          onBlur={onBlur}
+        />
         <Section
           header={<Text>{t('bounty.post.form.detailsHeader')}</Text>}
           footer={<Text>{t('bounty.post.form.draftFooter')}</Text>}
         >
-          <TimeRows time={draft.time} onEdit={edit} />
+          <TimeRows time={draft.time} category={draft.category} label={copy.when} onEdit={edit} />
           <DescriptionRows
             description={draft.description}
             field={description}
+            placeholder={copy.description}
             onBlur={onBlur}
             onEdit={edit}
           />
-          {draft.place === null ? <AddPlaceRow onPick={pickPlace} /> : null}
+          {draft.place === null ? <AddPlaceRow label={copy.place} onPick={pickPlace} /> : null}
         </Section>
         {draft.place ? (
           <PlaceSections
+            heading={copy.place}
             place={draft.place}
             label={place.label}
             address={place.address}
@@ -238,47 +198,9 @@ function PostFormBody({
             onRemove={place.remove}
           />
         ) : null}
-        <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} />
+        <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} onCleared={onCleared} />
       </Form>
     </Host>
-  );
-}
-
-function ClearSection({ userId, empty }: { userId: string; empty: boolean }) {
-  const { t } = useI18n();
-  const { color } = useTheme();
-  const [asking, setAsking] = useState(false);
-  if (empty) return null;
-  return (
-    <Section>
-      <ConfirmationDialog
-        title={t('bounty.post.form.clearConfirm.title')}
-        titleVisibility="visible"
-        isPresented={asking}
-        onIsPresentedChange={setAsking}
-      >
-        <ConfirmationDialog.Trigger>
-          <Button
-            label={t('bounty.post.form.clear')}
-            role="destructive"
-            onPress={() => setAsking(true)}
-            testID="bounty-post-clear"
-            modifiers={[foregroundStyle(color('--color-urgent')), fullRow, ROW_INSETS]}
-          />
-        </ConfirmationDialog.Trigger>
-        <ConfirmationDialog.Actions>
-          <Button
-            label={t('bounty.post.form.clearConfirm.confirm')}
-            role="destructive"
-            onPress={() => resetDraft(userId)}
-          />
-          <Button label={t('bounty.post.form.clearConfirm.cancel')} role="cancel" />
-        </ConfirmationDialog.Actions>
-        <ConfirmationDialog.Message>
-          <Text>{t('bounty.post.form.clearConfirm.message')}</Text>
-        </ConfirmationDialog.Message>
-      </ConfirmationDialog>
-    </Section>
   );
 }
 

@@ -26,6 +26,7 @@ const DRAFT: PostDraft = {
   id: 'draft-1',
   title: '帮我取个快递',
   category: 'pickup',
+  categorySource: 'chosen',
   art: null,
   rewardText: '8',
   currency: 'MYR',
