@@ -10,7 +10,7 @@ pr:
 ---
 
 <!-- Builds on: foundation (push row, push_tokens, notify) and bounty (freshness rule). Read by: chat plan Task 3,
-carpool redesign. Canvas: questions 170–174 (151–162 belong to other sessions). Questions 171–174 come from tapiro-86's proposal in canvas thread df5f92ca. -->
+carpool redesign. Canvas: questions 170–175 (151–162 belong to other sessions). Questions 171–175 come from tapiro-86's proposal in canvas thread df5f92ca. -->
 
 ## Problem
 
@@ -65,22 +65,22 @@ message.
 
 ## Events
 
-Bounty kinds (recipients; whether pushed is question 170; the recommended defaults are shown):
+Bounty kinds and their recipients. Push follows question 170 A:
 
-| Kind                   | Recipient                    | Live | Push (recommended) |
-| ---------------------- | ---------------------------- | ---- | ------------------ |
-| `bounty.applied`       | poster                       | yes  | yes                |
-| `bounty.withdrawn`     | poster                       | yes  | no                 |
-| `bounty.selected`      | chosen helper                | yes  | yes                |
-| `bounty.not_selected`  | other applicants             | yes  | no                 |
-| `bounty.started` / ETA | poster                       | yes  | yes                |
-| `bounty.completed`     | poster                       | yes  | yes                |
-| `bounty.issue`         | the other party              | yes  | yes                |
-| `bounty.cancelled`     | the other party / applicants | yes  | yes                |
-| `bounty.expired`       | poster                       | yes  | no                 |
-| `payment.marked_paid`  | payee                        | yes  | yes                |
-| `payment.not_received` | payer                        | yes  | yes                |
-| `payment.settled`      | payer                        | yes  | no                 |
+| Kind                   | Recipient                    | Live | Push |
+| ---------------------- | ---------------------------- | ---- | ---- |
+| `bounty.applied`       | poster                       | yes  | yes  |
+| `bounty.withdrawn`     | poster                       | yes  | no   |
+| `bounty.selected`      | chosen helper                | yes  | yes  |
+| `bounty.not_selected`  | other applicants             | yes  | no   |
+| `bounty.started` / ETA | poster                       | yes  | yes  |
+| `bounty.completed`     | poster                       | yes  | yes  |
+| `bounty.issue`         | the other party              | yes  | yes  |
+| `bounty.cancelled`     | the other party / applicants | yes  | yes  |
+| `bounty.expired`       | poster                       | yes  | no   |
+| `payment.marked_paid`  | payee                        | yes  | yes  |
+| `payment.not_received` | payer                        | yes  | yes  |
+| `payment.settled`      | payer                        | yes  | no   |
 
 Chat adds `chat.message` (members other than the sender; push yes). Carpool adds join request, approve and decline,
 organiser cancel, seat count, ride status, 「我到了」 (riders of that ride; push no, live within seconds) and the
@@ -89,23 +89,27 @@ n−1 settles.
 The recommended push set follows one rule: push when the recipient **must act** (new applicant, chosen, confirm the
 payment) or **is waiting** (helper set off, ETA changed, done, issue, cancelled). Everything else is live-only.
 
-## Open questions (canvas 170–174)
+## Questions (canvas 170–175)
 
-Each is proposed, not decided; ★ marks the recommendation.
+Answered by the user in canvas thread df5f92ca on 2026-10-31 (「同意」 to the five-point proposal):
 
-- **170 Which events push.** ★A must-act and waiting only, grouped per bounty or ride, with quiet hours 23:00–08:00
-  (except the ride you are on); B every event in the table; C must-act only.
-- **171 Where live updates apply.** ★A only where someone is waiting: status page, applicant list, ride meet-up,
-  chat, home cards and badges, while the nearby board stays on the freshness rule (rows never jump under a finger);
-  B every bounty surface, the board included.
-- **172 What a dropped connection shows.** ★A nothing until a refetch fails, then the existing 「几点的数据」 note;
-  B a small 「可能不是最新」 line while disconnected.
-- **173 Time-based reminders** (ride departs in 15 min, ETA passed, payment due). ★A local notifications scheduled on
-  the device, buildable now without the account; B server pushes once the account exists.
-- **174 Live Activity** for bounty `en_route` and ride 集合 instead of a stream of pushes. ★A yes, in the account half
-  (foundation step 9); B pushes only.
-- Not a question for the canvas: push, Live Activity, in-app purchase and TestFlight all wait on the paid Apple
-  Developer account.
+- **170 Which events push: A.** Must-act and waiting only. Pushes are grouped per bounty or ride, with quiet hours
+  23:00–08:00 (except the ride you are on).
+- **171 Where live updates apply: A.** Only where someone is waiting: the status page, the applicant list, the ride
+  meet-up, chat, and home cards and badges. The nearby board stays on the freshness rule.
+- **173 Time-based reminders: A.** Local notifications scheduled on the device, buildable now without the account.
+- **174 Live Activity: A.** For bounty `en_route` and ride 集合, in the account half (foundation step 9).
+
+Still open (★ marks the recommendation):
+
+- **172 What a dropped connection shows: B, pending the user's confirmation.** A small 「可能不是最新」 line
+  while disconnected, which is point 2 of the proposal the user accepted. The earlier recommendation was A: nothing
+  until a refetch fails, then the existing 「几点的数据」 note. tapiro-86 has asked the user in the thread.
+- **175 Polling fallback during ride 集合.** A no, the refetch on reconnect is enough; ★B poll every 15 s while the
+  meet-up screen is open within 15 minutes of departure, because a silent drop there leaves people waiting.
+
+Not a question for the canvas: push, Live Activity, in-app purchase and TestFlight all wait on the paid Apple Developer
+account. That is the user's call.
 
 ## Data flow and ownership
 
@@ -141,7 +145,7 @@ App (src/lib/live/)
 ## UI/UX and motion
 
 The visible parts are small, but they are UI choices. Per Pace they go on the canvas before implementation: question
-170–174 on page 「05 悬赏」.
+170–175 on page 「05 悬赏」.
 
 ### Screens and states
 
