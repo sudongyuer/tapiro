@@ -131,7 +131,7 @@ swap is a repeated tap that the motion gate does not animate; the publish drop (
 
 ## Implementation Record (2026-10-31)
 
-PR: not opened yet · Commits: 7798f9a..01dee29
+PR: not opened yet · Commits: b01d680..3241797
 
 Status stays `proposed` until the owner approves this spec; the canvas choices behind it were approved on 2026-10-31
 (「全 ★」).
@@ -139,14 +139,14 @@ Status stays `proposed` until the owner approves this spec; the canvas choices b
 ### What was built
 
 - Tile screen with six errands and 「都不像，直接写」; a tile writes category, art and `categorySource: 'chosen'`.
-  Evidence: `src/features/bounty/post/PostPick.tsx`, `titleEdit.ts` (`pickPatch`), `src/app/bounty-post/index.tsx` (01dee29)
+  Evidence: `src/features/bounty/post/PostPick.tsx`, `titleEdit.ts` (`pickPatch`), `src/app/bounty-post/index.tsx` (3241797)
 - Per-category hints, suggested ranges, amounts and time picks as data. Evidence: `src/features/bounty/post/postKinds.ts`,
-  `kindCopy.ts`, copy under `bounty.post.kind.*`, `bounty.post.timePick.*` in the three locale files (01dee29)
-- 直接写 guesses the category from the title until a manual choice. Evidence: `titleEdit.ts` (`titlePatch`), `CategoryRow.tsx` (01dee29)
-- Live card at the top of the form, fixed height, art tap swaps. Evidence: `PostArt.tsx` (`PostLiveCard`), `src/ui/TaskCard.tsx` (`kicker`, `placeholder`, `artPress`) (01dee29)
-- Reward section, time quick picks, heading rows. Evidence: `RewardSection.tsx`, `TimePicks.tsx`, `OptionalRows.tsx` (`HeadingRow`, `AddRow`), `PlaceRows.tsx` (01dee29)
-- A kept draft opens the form over the tile screen. Evidence: `src/app/bounty-post/_layout.tsx` (`anchor: 'index'`), `src/app/(tabs)/bounty/index.tsx` (`withAnchor`), `hasPostDraft.ts` (01dee29)
-- Confirm card shows the category line and up to three title lines. Evidence: `PostConfirm.tsx` (01dee29)
+  `kindCopy.ts`, copy under `bounty.post.kind.*`, `bounty.post.timePick.*` in the three locale files (3241797)
+- 直接写 guesses the category from the title until a manual choice. Evidence: `titleEdit.ts` (`titlePatch`), `CategoryRow.tsx` (3241797)
+- Live card at the top of the form, fixed height, art tap swaps. Evidence: `PostArt.tsx` (`PostLiveCard`), `src/ui/TaskCard.tsx` (`kicker`, `placeholder`, `artPress`) (3241797)
+- Reward section, time quick picks, heading rows. Evidence: `RewardSection.tsx`, `TimePicks.tsx`, `OptionalRows.tsx` (`HeadingRow`, `AddRow`), `PlaceRows.tsx` (3241797)
+- A kept draft opens the form over the tile screen. Evidence: `src/app/bounty-post/_layout.tsx` (`anchor: 'index'`), `src/app/(tabs)/bounty/index.tsx` (`withAnchor`), `hasPostDraft.ts` (3241797)
+- Confirm card shows the category line and up to three title lines. Evidence: `PostConfirm.tsx` (3241797)
 
 ### Deviations from the design
 
@@ -158,9 +158,9 @@ Status stays `proposed` until the owner approves this spec; the canvas choices b
 
 ### Bugs fixed during implementation
 
-- **Symptom:** live card art blank after typing. **Root cause:** Reanimated entering keyframe on a re-keyed view inside `RNHostView`. **Fix:** no motion on the card (01dee29)
-- **Symptom:** amount buttons, time picks and 移除 reported 34 pt or 20 pt targets; `controlSize('large')` truncated 「RM 10」. **Root cause:** bordered buttons size to the label. **Fix:** label height `CHIP_LABEL_HEIGHT` (`RewardSection.tsx`) with the regular size (01dee29)
-- **Symptom:** `postSheet.test.ts` failed between tests on Flow syntax. **Root cause:** `postSheet.ts` imported the draft store, which pulls in React Native. **Fix:** `hasPostDraft.ts` (01dee29)
+- **Symptom:** live card art blank after typing. **Root cause:** Reanimated entering keyframe on a re-keyed view inside `RNHostView`. **Fix:** no motion on the card (3241797)
+- **Symptom:** amount buttons, time picks and 移除 reported 34 pt or 20 pt targets; `controlSize('large')` truncated 「RM 10」. **Root cause:** bordered buttons size to the label. **Fix:** label height `CHIP_LABEL_HEIGHT` (`RewardSection.tsx`) with the regular size (3241797)
+- **Symptom:** `postSheet.test.ts` failed between tests on Flow syntax. **Root cause:** `postSheet.ts` imported the draft store, which pulls in React Native. **Fix:** `hasPostDraft.ts` (3241797)
 
 ### Verification
 
