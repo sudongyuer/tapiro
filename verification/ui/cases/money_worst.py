@@ -9,7 +9,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import CNY_RANGE_TEXT, assert_preview, next_step, open_post, relaunch  # noqa: E402
+from bounty import assert_preview, next_step, open_post, relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from pay import find, open_sheet, scroll_to  # noqa: E402
 
@@ -56,8 +56,8 @@ field = assert_inside(items, 'bounty-post-reward', 'reward field')['frame']
 assert abs((field['y'] + field['height'] / 2) - (pull_down['y'] + pull_down['height'] / 2)) <= 12, \
     f'the pull-down {pull_down} and the amount {field} are not on one row'
 assert (by_id(items, 'bounty-post-reward').get('AXValue') or '') == '800', by_id(items, 'bounty-post-reward')
-ui.wait_label('bounty-post-reward-footer', lambda label: label == ui.t('bounty.post.form.rewardFooter', **CNY_RANGE_TEXT),
-              'the footer does not read ¥1–800')
+ui.wait_label('bounty-post-reward-footer', lambda label: label == ui.t('bounty.post.form.rewardFooter'),
+              'the footer is not the plain pay line in ¥')
 ui.capture('01-form-cny-800')
 next_step(ui)
 ui.element('bounty-post-confirm')

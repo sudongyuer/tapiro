@@ -22,14 +22,14 @@ function Marker({ name }: { name: string | null }) {
 }
 
 export function BountyPostScene({ onReady }: { onReady: () => void }) {
-  const [left, setLeft] = useState<'next' | 'close' | 'place' | null>(null);
+  const [left, setLeft] = useState<'next' | 'cleared' | 'place' | null>(null);
   useEffect(onReady, [onReady]);
   return (
     <>
       <PostForm
         userId={fixtureUser('apple').id}
         onNext={() => setLeft('next')}
-        onClose={() => setLeft('close')}
+        onCleared={() => setLeft('cleared')}
         onPickPlace={() => setLeft('place')}
       />
       <Marker name={left} />

@@ -5,7 +5,7 @@ opens), the draft is cleared and the form says 上次那条已经发出去了.""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import DEMO_TITLE, assert_cost, open_confirm, open_post, relaunch, value  # noqa: E402
+from bounty import DEMO_TITLE, assert_cost, close_sheet_by_swipe, open_confirm, open_post, relaunch, value  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
@@ -52,8 +52,7 @@ ui.wait(lambda items: value(ui, 'bounty-post-title') == '' and value(ui, 'bounty
         'the already-sent draft is still in the form')
 ui.capture('04-already-sent-on-publish')
 
-ui.tap_label(ui.t('bounty.post.cancel'))
-ui.gone('bounty-post-form')
+close_sheet_by_swipe(ui)
 relaunch(ui, drop=['-uiVerifyPublish', 'failOnce'], add=['-uiVerifyDraftSent', '1'])
 open_post(ui)
 ui.wait_label('bounty-post-already-sent', lambda label: ui.t('bounty.post.form.alreadySent') in label,
