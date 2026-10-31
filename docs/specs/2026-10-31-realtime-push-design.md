@@ -10,7 +10,7 @@ pr:
 ---
 
 <!-- Builds on: foundation (push row, push_tokens, notify) and bounty (freshness rule). Read by: chat plan Task 3,
-carpool redesign. Canvas: questions 151 and 157–160 (152–156 are the post redo). Questions 157–160 come from tapiro-86's proposal in canvas thread df5f92ca. -->
+carpool redesign. Canvas: questions 170–174 (151–162 belong to other sessions). Questions 171–174 come from tapiro-86's proposal in canvas thread df5f92ca. -->
 
 ## Problem
 
@@ -65,7 +65,7 @@ message.
 
 ## Events
 
-Bounty kinds (recipients; whether pushed is question 151; the recommended defaults are shown):
+Bounty kinds (recipients; whether pushed is question 170; the recommended defaults are shown):
 
 | Kind                   | Recipient                    | Live | Push (recommended) |
 | ---------------------- | ---------------------------- | ---- | ------------------ |
@@ -89,20 +89,20 @@ n−1 settles.
 The recommended push set follows one rule: push when the recipient **must act** (new applicant, chosen, confirm the
 payment) or **is waiting** (helper set off, ETA changed, done, issue, cancelled). Everything else is live-only.
 
-## Open questions (canvas 151, 157–160)
+## Open questions (canvas 170–174)
 
 Each is proposed, not decided; ★ marks the recommendation.
 
-- **151 Which events push.** ★A must-act and waiting only, grouped per bounty or ride, with quiet hours 23:00–08:00
+- **170 Which events push.** ★A must-act and waiting only, grouped per bounty or ride, with quiet hours 23:00–08:00
   (except the ride you are on); B every event in the table; C must-act only.
-- **157 Where live updates apply.** ★A only where someone is waiting: status page, applicant list, ride meet-up,
+- **171 Where live updates apply.** ★A only where someone is waiting: status page, applicant list, ride meet-up,
   chat, home cards and badges, while the nearby board stays on the freshness rule (rows never jump under a finger);
   B every bounty surface, the board included.
-- **158 What a dropped connection shows.** ★A nothing until a refetch fails, then the existing 「几点的数据」 note;
+- **172 What a dropped connection shows.** ★A nothing until a refetch fails, then the existing 「几点的数据」 note;
   B a small 「可能不是最新」 line while disconnected.
-- **159 Time-based reminders** (ride departs in 15 min, ETA passed, payment due). ★A local notifications scheduled on
+- **173 Time-based reminders** (ride departs in 15 min, ETA passed, payment due). ★A local notifications scheduled on
   the device, buildable now without the account; B server pushes once the account exists.
-- **160 Live Activity** for bounty `en_route` and ride 集合 instead of a stream of pushes. ★A yes, in the account half
+- **174 Live Activity** for bounty `en_route` and ride 集合 instead of a stream of pushes. ★A yes, in the account half
   (foundation step 9); B pushes only.
 - Not a question for the canvas: push, Live Activity, in-app purchase and TestFlight all wait on the paid Apple
   Developer account.
@@ -141,21 +141,21 @@ App (src/lib/live/)
 ## UI/UX and motion
 
 The visible parts are small, but they are UI choices. Per Pace they go on the canvas before implementation: question
-151 and later on page 「05 悬赏」.
+170–174 on page 「05 悬赏」.
 
 ### Screens and states
 
 | Screen                                    | Design board | States to cover                                                                    |
 | ----------------------------------------- | ------------ | ---------------------------------------------------------------------------------- |
-| Notification text (zh, en, ms)            | Q151 board   | each push kind; long names and titles (ms); grouped per bounty (thread id)         |
-| Home cards and applicant list on a signal | Q151 board   | a new applicant arrives while the list is open; a card changes state while visible |
+| Notification text (zh, en, ms)            | Q170 board   | each push kind; long names and titles (ms); grouped per bounty (thread id)         |
+| Home cards and applicant list on a signal | Q170 board   | a new applicant arrives while the list is open; a card changes state while visible |
 | Explicit permission prompt moment         | foundation   | after the first post, after the first application                                  |
 
 ### Motion
 
 | Motion                      | Purpose (one word) | Trigger     | Duration token | Haptic / sound | Reduce Motion |
 | --------------------------- | ------------------ | ----------- | -------------- | -------------- | ------------- |
-| A new applicant row appears | Notice             | live signal | question 151   | none           | fade          |
+| A new applicant row appears | Notice             | live signal | question 170   | none           | fade          |
 
 ## Known limits
 
