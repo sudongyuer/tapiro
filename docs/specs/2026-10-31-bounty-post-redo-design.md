@@ -1,12 +1,12 @@
 ---
 title: Posting a bounty, redone (pick first, then a form under a live card)
-status: proposed
+status: implemented
 created: 2026-10-31
-approved:
-implemented:
+approved: 2026-10-31
+implemented: 2026-10-31
 supersedes:
 superseded-by:
-pr:
+pr: https://github.com/sudongyuer/tapiro/pull/40
 ---
 
 <!-- Builds on: docs/specs/2026-10-11-bounty-design.md; amends its UI decisions 1A, 16A–25A listed under
@@ -152,8 +152,8 @@ Status stays `proposed` until the owner approves this spec; the canvas choices b
 
 | Design said                                              | Shipped                                                                                                                         | Why                                                                                                                                        | Confirmed by                              |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| Motion: the card's art keeps the 240 ms arrival keyframe | The card swaps art without motion (Motion section updated before approval)                                                      | The re-keyed entering animation inside the card's `RNHostView` left the new drawing invisible (`bounty_post_art` pixel count 0, run video) | Pending: owner, with this spec's approval |
-| The form keeps 取消 (1A)                                 | The form's top left is the system back 「‹ 要帮什么忙？」; 取消 sits on the tile screen; the sheet still closes by a swipe down | A pushed screen in a native stack gets the back button; HIG keeps one dismiss affordance per screen                                        | Pending: owner, with this spec's approval |
+| Motion: the card's art keeps the 240 ms arrival keyframe | The card swaps art without motion (Motion section updated before approval)                                                      | The re-keyed entering animation inside the card's `RNHostView` left the new drawing invisible (`bounty_post_art` pixel count 0, run video) | Owner, 2026-10-31 (163 A)                 |
+| The form keeps 取消 (1A)                                 | The form's top left is the system back 「‹ 要帮什么忙？」; 取消 sits on the tile screen; the sheet still closes by a swipe down | A pushed screen in a native stack gets the back button; HIG keeps one dismiss affordance per screen                                        | Owner, 2026-10-31 (163 A)                 |
 | The category menu re-hints the form                      | Choosing a category in the form keeps a swapped art; only a tile resets the art                                                 | Publishing must send the art the user chose (`bounty_post_art`)                                                                            | not intent-changing                       |
 
 ### Bugs fixed during implementation
