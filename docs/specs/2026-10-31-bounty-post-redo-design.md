@@ -128,3 +128,49 @@ swap is a repeated tap that the motion gate does not animate; the publish drop (
   `bounty_post_worst`, `bounty_post_draft`, `bounty_post_publish`; zh-Hans light, `ms` for the tile screen and form,
   `en` for new copy keys, dark for the tile screen and the live card.
 - The user's walkthrough on the Simulator.
+
+## Implementation Record (2026-10-31)
+
+PR: not opened yet · Commits: 7798f9a..01dee29
+
+Status stays `proposed` until the owner approves this spec; the canvas choices behind it were approved on 2026-10-31
+(「全 ★」).
+
+### What was built
+
+- Tile screen with six errands and 「都不像，直接写」; a tile writes category, art and `categorySource: 'chosen'`.
+  Evidence: `src/features/bounty/post/PostPick.tsx`, `titleEdit.ts` (`pickPatch`), `src/app/bounty-post/index.tsx` (01dee29)
+- Per-category hints, suggested ranges, amounts and time picks as data. Evidence: `src/features/bounty/post/postKinds.ts`,
+  `kindCopy.ts`, copy under `bounty.post.kind.*`, `bounty.post.timePick.*` in the three locale files (01dee29)
+- 直接写 guesses the category from the title until a manual choice. Evidence: `titleEdit.ts` (`titlePatch`), `CategoryRow.tsx` (01dee29)
+- Live card at the top of the form, fixed height, art tap swaps. Evidence: `PostArt.tsx` (`PostLiveCard`), `src/ui/TaskCard.tsx` (`kicker`, `placeholder`, `artPress`) (01dee29)
+- Reward section, time quick picks, heading rows. Evidence: `RewardSection.tsx`, `TimePicks.tsx`, `OptionalRows.tsx` (`HeadingRow`, `AddRow`), `PlaceRows.tsx` (01dee29)
+- A kept draft opens the form over the tile screen. Evidence: `src/app/bounty-post/_layout.tsx` (`anchor: 'index'`), `src/app/(tabs)/bounty/index.tsx` (`withAnchor`), `hasPostDraft.ts` (01dee29)
+- Confirm card shows the category line and up to three title lines. Evidence: `PostConfirm.tsx` (01dee29)
+
+### Deviations from the design
+
+| Design said                                              | Shipped                                                                                                                         | Why                                                                                                                                        | Confirmed by                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| Motion: the card's art keeps the 240 ms arrival keyframe | The card swaps art without motion (Motion section updated before approval)                                                      | The re-keyed entering animation inside the card's `RNHostView` left the new drawing invisible (`bounty_post_art` pixel count 0, run video) | Pending: owner, with this spec's approval |
+| The form keeps 取消 (1A)                                 | The form's top left is the system back 「‹ 要帮什么忙？」; 取消 sits on the tile screen; the sheet still closes by a swipe down | A pushed screen in a native stack gets the back button; HIG keeps one dismiss affordance per screen                                        | Pending: owner, with this spec's approval |
+| The category menu re-hints the form                      | Choosing a category in the form keeps a swapped art; only a tile resets the art                                                 | Publishing must send the art the user chose (`bounty_post_art`)                                                                            | not intent-changing                       |
+
+### Bugs fixed during implementation
+
+- **Symptom:** live card art blank after typing. **Root cause:** Reanimated entering keyframe on a re-keyed view inside `RNHostView`. **Fix:** no motion on the card (01dee29)
+- **Symptom:** amount buttons, time picks and 移除 reported 34 pt or 20 pt targets; `controlSize('large')` truncated 「RM 10」. **Root cause:** bordered buttons size to the label. **Fix:** label height `CHIP_LABEL_HEIGHT` (`RewardSection.tsx`) with the regular size (01dee29)
+- **Symptom:** `postSheet.test.ts` failed between tests on Flow syntax. **Root cause:** `postSheet.ts` imported the draft store, which pulls in React Native. **Fix:** `hasPostDraft.ts` (01dee29)
+
+### Verification
+
+- `bun test` → 1566 pass, 4 fail; the 4 are `scripts/check-file-size.test.ts`, untouched, failing only in this checkout and passing 9/9 in a clean `origin/main` worktree
+- `bunx tsc --noEmit` → only the pre-existing `TermsLine.tsx` and `LiveCardStack.tsx` errors that `origin/main` has; `bun run lint:changed`, `format:check`, `check:size`, `check-story-map`, `check-specs`, `design-check` → pass
+- `bun run verify:smoke` → 4/4 pass
+- UI cases, zh-Hans light: `bounty_post_pick`, `_form`, `_art`, `_optional`, `_currency`, `_draft`, `_publish`, `_worst`, `_place`, `_failed`, `_unpaid_hint`, `_blocked`, `_coin`, `_no_balance`, `money_worst` → pass (last run of each after its fix); ms light: `_pick`, `_form`, `_optional`, `_art` → pass; dark: `_pick`, `_form` → pass; en: `_pick`, `_form` → pass. Artifacts in `.verify/ui/<locale>/<appearance>/<case>/`
+
+### Known limits
+
+- Suggested ranges are copy, not data (160A); a later question may switch to real medians.
+- Picking the category the title already guessed keeps the 「按标题自动」 mark (the system menu reports no change).
+- The cases after the last code change (chip sizing) reran `_form`, `_currency`, `_optional`, `_pick`; the other post cases last passed before it.
