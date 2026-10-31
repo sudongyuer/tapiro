@@ -1,36 +1,51 @@
-import { Button, DatePicker, HStack, Picker, Spacer, Text } from '@expo/ui/swift-ui';
+import { Button, DatePicker, HStack, Image, Picker, Spacer, Text } from '@expo/ui/swift-ui';
 import {
+  accessibilityElement,
+  accessibilityHidden,
+  accessibilityHint,
   accessibilityIdentifier,
   accessibilityLabel,
+  accessibilityValue,
+  buttonStyle,
+  contentShape,
+  font,
   foregroundStyle,
+  frame,
   lineLimit,
   monospacedDigit,
   pickerStyle,
+  shapes,
   tag,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import type { BountyCategory } from '@/lib/stickers/category';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { fullRow, ROW_INSETS } from './FieldRow';
+import { TimePicks } from './TimePicks';
 import { addedTime, moveStart, switchKind, timeBounds } from './timeChoice';
 import type { PostDraft, TimeChoice } from './types';
 import { codePoints, DESCRIPTION_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const DATE_PARTS: ('date' | 'hourAndMinute')[] = ['date', 'hourAndMinute'];
+const DESCRIPTION_COUNT_FROM = 450;
 
 type Edit = (patch: Partial<PostDraft>) => void;
 
 export function AddRow({
   label,
+  value,
   voiceOver,
   testID,
   onPress,
 }: {
   label: string;
+  value?: string;
   voiceOver: string;
   testID: string;
   onPress: () => void;
@@ -38,55 +53,85 @@ export function AddRow({
   const { color } = useTheme();
   return (
     <Button
-      label={label}
-      systemImage="plus"
       onPress={onPress}
       testID={testID}
       modifiers={[
-        foregroundStyle(color('--color-accent')),
-        accessibilityLabel(voiceOver),
+        accessibilityLabel(label),
+        ...(value ? [accessibilityValue(value)] : []),
+        accessibilityHint(voiceOver),
         fullRow,
         ROW_INSETS,
       ]}
-    />
+    >
+      <HStack spacing={vars['--space-3']} modifiers={[fullRow]}>
+        <Image
+          systemName="plus.circle.fill"
+          modifiers={[foregroundStyle(color('--color-accent')), accessibilityHidden()]}
+        />
+        <Text>{label}</Text>
+        <Spacer />
+        {value ? <Text modifiers={[secondary, lineLimit(1)]}>{value}</Text> : null}
+      </HStack>
+    </Button>
   );
 }
 
-export function RemoveRow({
+export function HeadingRow({
   label,
-  voiceOver,
-  testID,
-  onPress,
+  remove,
 }: {
-  label?: string;
-  voiceOver: string;
-  testID: string;
-  onPress: () => void;
+  label: string;
+  remove: { voiceOver: string; testID: string; onPress: () => void } | null;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   return (
-    <Button
-      label={label ?? t('bounty.post.form.remove')}
-      role="destructive"
-      onPress={onPress}
-      testID={testID}
-      modifiers={[
-        foregroundStyle(color('--color-urgent')),
-        accessibilityLabel(voiceOver),
-        fullRow,
-        ROW_INSETS,
-      ]}
-    />
+    <HStack modifiers={[fullRow, ROW_INSETS]}>
+      <Text modifiers={[font({ textStyle: 'body', weight: 'semibold' })]}>{label}</Text>
+      <Spacer />
+      {remove ? (
+        <Button
+          role="destructive"
+          onPress={remove.onPress}
+          testID={remove.testID}
+          modifiers={[buttonStyle('borderless'), accessibilityLabel(remove.voiceOver)]}
+        >
+          <Text
+            modifiers={[
+              foregroundStyle(color('--color-urgent')),
+              frame({
+                minWidth: vars['--touch-min'],
+                minHeight: vars['--touch-min'],
+                alignment: 'trailing',
+              }),
+              contentShape(shapes.rectangle()),
+            ]}
+          >
+            {t('bounty.post.form.remove')}
+          </Text>
+        </Button>
+      ) : null}
+    </HStack>
   );
 }
 
-export function TimeRows({ time, onEdit }: { time: TimeChoice; onEdit: Edit }) {
+export function TimeRows({
+  time,
+  category,
+  label,
+  onEdit,
+}: {
+  time: TimeChoice;
+  category: BountyCategory | null;
+  label: string;
+  onEdit: Edit;
+}) {
   const { t } = useI18n();
   if (time.kind === 'none') {
     return (
       <AddRow
-        label={t('bounty.post.form.addTime')}
+        label={label}
+        value={t('bounty.post.form.noTime')}
         voiceOver={t('bounty.post.form.addTimeLabel')}
         testID="bounty-post-add-time"
         onPress={() => onEdit({ time: addedTime(new Date()) })}
@@ -96,6 +141,15 @@ export function TimeRows({ time, onEdit }: { time: TimeChoice; onEdit: Edit }) {
   const range = timeBounds(new Date());
   return (
     <>
+      <HeadingRow
+        label={label}
+        remove={{
+          voiceOver: t('bounty.post.form.removeTimeLabel'),
+          testID: 'bounty-post-remove-time',
+          onPress: () => onEdit({ time: { kind: 'none' } }),
+        }}
+      />
+      <TimePicks time={time} category={category} onEdit={onEdit} />
       <Picker
         label={t('bounty.post.form.timeKind')}
         selection={time.kind}
@@ -141,11 +195,6 @@ export function TimeRows({ time, onEdit }: { time: TimeChoice; onEdit: Edit }) {
           />
         </>
       )}
-      <RemoveRow
-        voiceOver={t('bounty.post.form.removeTimeLabel')}
-        testID="bounty-post-remove-time"
-        onPress={() => onEdit({ time: { kind: 'none' } })}
-      />
     </>
   );
 }
@@ -153,11 +202,13 @@ export function TimeRows({ time, onEdit }: { time: TimeChoice; onEdit: Edit }) {
 export function DescriptionRows({
   description,
   field,
+  placeholder,
   onBlur,
   onEdit,
 }: {
   description: string | null;
   field: SyncedText;
+  placeholder: string;
   onBlur: (focused: boolean) => void;
   onEdit: Edit;
 }) {
@@ -177,40 +228,27 @@ export function DescriptionRows({
       />
     );
   }
-  return (
-    <DescriptionField
-      description={description}
-      field={field}
-      focus={justAdded}
-      onBlur={onBlur}
-      onEdit={onEdit}
-    />
-  );
-}
-
-function DescriptionField({
-  description,
-  field,
-  focus,
-  onBlur,
-  onEdit,
-}: {
-  description: string;
-  field: SyncedText;
-  focus: boolean;
-  onBlur: (focused: boolean) => void;
-  onEdit: Edit;
-}) {
-  const { t } = useI18n();
   const count = codePoints(description);
   return (
     <>
+      <HeadingRow
+        label={t('bounty.post.form.description')}
+        remove={
+          description.trim() === ''
+            ? {
+                voiceOver: t('bounty.post.form.removeDescriptionLabel'),
+                testID: 'bounty-post-remove-description',
+                onPress: () => onEdit({ description: null }),
+              }
+            : null
+        }
+      />
       <SyncedTextField
         field={field}
         axis="vertical"
-        autoFocus={focus}
+        autoFocus={justAdded}
         maxLength={DESCRIPTION_MAX}
-        placeholder={t('bounty.post.form.descriptionPlaceholder')}
+        placeholder={placeholder}
         onFocusChange={onBlur}
         testID="bounty-post-description"
         modifiers={[
@@ -219,25 +257,20 @@ function DescriptionField({
           ROW_INSETS,
         ]}
       />
-      <HStack modifiers={[ROW_INSETS]}>
-        <Spacer />
-        <Text
-          modifiers={[
-            secondary,
-            monospacedDigit(),
-            accessibilityLabel(t('bounty.post.form.countLabel', { count, max: DESCRIPTION_MAX })),
-            accessibilityIdentifier('bounty-post-description-count'),
-          ]}
-        >
-          {t('bounty.post.form.count', { count, max: DESCRIPTION_MAX })}
-        </Text>
-      </HStack>
-      {description.trim() === '' ? (
-        <RemoveRow
-          voiceOver={t('bounty.post.form.removeDescriptionLabel')}
-          testID="bounty-post-remove-description"
-          onPress={() => onEdit({ description: null })}
-        />
+      {count >= DESCRIPTION_COUNT_FROM ? (
+        <HStack modifiers={[ROW_INSETS, accessibilityElement('combine')]}>
+          <Spacer />
+          <Text
+            modifiers={[
+              secondary,
+              monospacedDigit(),
+              accessibilityLabel(t('bounty.post.form.countLabel', { count, max: DESCRIPTION_MAX })),
+              accessibilityIdentifier('bounty-post-description-count'),
+            ]}
+          >
+            {t('bounty.post.form.count', { count, max: DESCRIPTION_MAX })}
+          </Text>
+        </HStack>
       ) : null}
     </>
   );

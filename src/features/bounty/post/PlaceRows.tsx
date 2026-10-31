@@ -14,7 +14,7 @@ import { useI18n } from '@/lib/i18n';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 
 import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
-import { AddRow, RemoveRow } from './OptionalRows';
+import { AddRow, HeadingRow } from './OptionalRows';
 import type { DraftPlace } from './types';
 import { ADDRESS_MAX, codePoints, PLACE_MAX } from './validate';
 
@@ -22,11 +22,12 @@ const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 const CHEVRON = 14;
 
-export function AddPlaceRow({ onPick }: { onPick: () => void }) {
+export function AddPlaceRow({ label, onPick }: { label: string; onPick: () => void }) {
   const { t } = useI18n();
   return (
     <AddRow
-      label={t('bounty.place.add')}
+      label={label}
+      value={t('bounty.post.form.noPlace')}
       voiceOver={t('bounty.place.addLabel')}
       testID="bounty-post-add-place"
       onPress={onPick}
@@ -35,6 +36,7 @@ export function AddPlaceRow({ onPick }: { onPick: () => void }) {
 }
 
 export function PlaceSections({
+  heading,
   place,
   label,
   address,
@@ -43,6 +45,7 @@ export function PlaceSections({
   onBlur,
   onRemove,
 }: {
+  heading: string;
   place: DraftPlace;
   label: SyncedText;
   address: SyncedText;
@@ -58,6 +61,14 @@ export function PlaceSections({
   return (
     <>
       <Section>
+        <HeadingRow
+          label={heading}
+          remove={{
+            voiceOver: t('bounty.place.remove'),
+            testID: 'bounty-post-remove-place',
+            onPress: onRemove,
+          }}
+        />
         <Button
           onPress={onPick}
           testID="bounty-post-place"
@@ -121,14 +132,6 @@ export function PlaceSections({
             modifiers={[accessibilityLabel(t('bounty.place.addressTitle'))]}
           />
         </FieldRow>
-      </Section>
-      <Section>
-        <RemoveRow
-          label={t('bounty.place.remove')}
-          voiceOver={t('bounty.place.remove')}
-          testID="bounty-post-remove-place"
-          onPress={onRemove}
-        />
       </Section>
     </>
   );

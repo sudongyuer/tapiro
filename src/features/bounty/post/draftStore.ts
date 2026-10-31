@@ -14,6 +14,7 @@ type DraftFields = Omit<PostDraft, 'id' | 'updatedAt' | 'currency'>;
 const BLANK: DraftFields = {
   title: '',
   category: null,
+  categorySource: null,
   art: null,
   rewardText: '',
   description: null,
@@ -75,6 +76,7 @@ export function toDraft(value: unknown, fallbackCurrency: CurrencyCode = 'MYR'):
     id: draft.id,
     title: draft.title,
     category,
+    categorySource: category === null ? null : draft.categorySource === 'auto' ? 'auto' : 'chosen',
     art: handArtId(draft.art),
     rewardText: draft.rewardText,
     currency: isCurrencyCode(draft.currency) ? draft.currency : fallbackCurrency,

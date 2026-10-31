@@ -38,10 +38,13 @@ export type DraftPlace = {
   address: string | null;
 };
 
+export type CategorySource = 'chosen' | 'auto' | null;
+
 export type PostDraft = {
   id: string;
   title: string;
   category: BountyCategory | null;
+  categorySource: CategorySource;
   art: HandArtId | null;
   rewardText: string;
   currency: CurrencyCode;
