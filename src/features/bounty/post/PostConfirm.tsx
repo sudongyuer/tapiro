@@ -117,7 +117,9 @@ function Preview({ draft }: { draft: PostDraft }) {
       <Section>
         <TaskCard
           art={handArtFor(draft)}
+          kicker={t(`bounty.category.${draft.category}`)}
           title={draft.title.trim()}
+          titleLines={3}
           meta={meta}
           reward={amount}
           rewardLabel={t('bounty.post.confirm.rewardLabel', { amount })}

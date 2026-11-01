@@ -1,9 +1,10 @@
-"""The post draft stays on the device: a typed title and reward survive 取消, a swipe down and an app relaunch, and
-清空草稿 (confirmed in the action sheet) empties the form for good, also after a relaunch."""
+"""The post draft stays on the device: a typed title and reward survive a swipe down and an app relaunch, a kept draft
+opens the form directly (162A), and 清空草稿 (confirmed in the action sheet) returns to the tile screen with an empty
+draft, also after a relaunch."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import CANCEL, TITLE_SHOWN, TITLE_TYPED, close_sheet_by_swipe, form_scroll_to, open_post, relaunch, tap_sheet_action, typed, value  # noqa: E402
+from bounty import TITLE_SHOWN, TITLE_TYPED, close_sheet_by_swipe, form_scroll_to, open_post, relaunch, tap_sheet_action, typed, value  # noqa: E402
 from driver import UI  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py']
@@ -26,11 +27,6 @@ typed(ui, 'bounty-post-title', TITLE_TYPED, TITLE)
 typed(ui, 'bounty-post-reward', REWARD)
 ui.capture('01-typed')
 
-ui.tap_label(ui.t(CANCEL))
-ui.gone('bounty-post-form')
-open_post(ui)
-assert_kept('取消')
-
 close_sheet_by_swipe(ui)
 open_post(ui)
 assert_kept('a swipe down')
@@ -43,11 +39,11 @@ ui.capture('02-after-relaunch')
 form_scroll_to(ui, 'bounty-post-clear')
 ui.tap('bounty-post-clear')
 tap_sheet_action(ui, ui.t('bounty.post.form.clearConfirm.confirm'), 'bounty-post-clear')
-ui.wait(lambda items: value(ui, 'bounty-post-title') == '' and value(ui, 'bounty-post-reward') == '',
-        '清空草稿 did not empty the form')
-ui.gone('bounty-post-clear')
+ui.element('bounty-post-pick')
+ui.gone('bounty-post-form')
 ui.capture('03-cleared')
-ui.tap_label(ui.t(CANCEL))
+ui.tap_label(ui.t('bounty.post.cancel'))
+ui.gone('bounty-post-pick')
 relaunch(ui)
 open_post(ui)
 assert value(ui, 'bounty-post-title') == '' and value(ui, 'bounty-post-reward') == '', 'the cleared draft came back after a relaunch'

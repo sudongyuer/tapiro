@@ -15,23 +15,30 @@ CONFIRM_TITLE = 'bounty.post.confirm.title'
 CATEGORIES = ['pickup', 'buy', 'queue', 'handle', 'move', 'accompany', 'study', 'other']
 EMPTY_DRAFT = ['-uiVerifyBountyDraft', 'none']
 REWARD_RANGE = {'min': 1, 'max': 500}
-REWARD_RANGES = {'MYR': REWARD_RANGE, 'CNY': {'min': 1, 'max': 800}}
 REWARD_RANGE_TEXT = {'range': 'RM\u00a01–500'}
 CNY_RANGE_TEXT = {'range': '¥1–800'}
 GROUPED_BACKGROUND = {'light': [(242, 242, 247)], 'dark': [(0, 0, 0), (28, 28, 30)]}
 
 
-def open_post(ui):
+KINDS = ['pickup', 'buy', 'queue', 'move', 'accompany', 'study']
+
+
+def open_sheet(ui):
     reach_home(ui)
     ui.tap_label(ui.t(OPEN))
+    return ui.wait(lambda items: by_id(items, 'bounty-post-pick') or by_id(items, 'bounty-post-form'),
+                   'neither the tile screen nor the form opened')
+
+
+def open_post(ui, tile=None):
+    if (open_sheet(ui).get('AXUniqueId')) == 'bounty-post-pick':
+        ui.tap(f'bounty-post-pick-{tile}' if tile else 'bounty-post-pick-free')
     return ui.element('bounty-post-form')
 
 
 def placeholders(ui):
-    return {
-        'bounty-post-title': {ui.t('bounty.post.form.titlePlaceholder')},
-        'bounty-post-reward': {ui.t('bounty.post.form.rewardPlaceholder', **limits) for limits in REWARD_RANGES.values()},
-    }
+    titles = {ui.t('bounty.post.form.titlePlaceholder')} | {ui.t(f'bounty.post.kind.{kind}.title') for kind in KINDS}
+    return {'bounty-post-title': titles, 'bounty-post-reward': {'0'}}
 
 
 def field_text(ui, items, identifier):
@@ -44,11 +51,18 @@ def value(ui, identifier):
 
 
 FIELD_BAND = 9
+FULL_ROW = 40
+
+
+def field_point(f, below=False):
+    if f['height'] >= FULL_ROW:
+        return f['x'] + f['width'] - 4, f['y'] + f['height'] / 2
+    return f['x'] + f['width'] - (2 if below else 4), (f['y'] + f['height'] + FIELD_BAND) if below else (f['y'] - FIELD_BAND)
 
 
 def typed(ui, identifier, text, shows=None, band=True):
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
-    ui.tap_point(f['x'] + f['width'] - 4, f['y'] - FIELD_BAND if band else f['y'] + f['height'] / 2)
+    ui.tap_point(*(field_point(f) if band else (f['x'] + f['width'] - 4, f['y'] + f['height'] / 2)))
     ui.type(text)
     shows = shows or text
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
@@ -56,21 +70,21 @@ def typed(ui, identifier, text, shows=None, band=True):
 
 def burst(ui, identifier, text):
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
-    ui.tap_point(f['x'] + f['width'] - 4, f['y'] - FIELD_BAND)
+    ui.tap_point(*field_point(f))
     ui.axe('type', text)
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
 
 
 def erase(ui, identifier):
     f = ui.element(identifier)['frame']
-    ui.tap_point(f['x'] + f['width'] - 2, f['y'] + f['height'] + FIELD_BAND)
+    ui.tap_point(*field_point(f, below=True))
     ui.backspace(len(value(ui, identifier)) + 1)
     ui.wait(lambda items: by_id(items, identifier) and not field_text(ui, items, identifier), f'{identifier} is not empty')
 
 
 def pick_category(ui, slug):
     picker = ui.element('bounty-post-category')['frame']
-    ui.tap_point(picker['x'] + picker['width'] - 60, picker['y'] + picker['height'] / 2)
+    ui.tap_point(picker['x'] + picker['width'] / 2, picker['y'] + picker['height'] / 2)
     ui.tap_label(ui.t(f'bounty.category.{slug}'))
     ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.post.form.categoryPlaceholder') for i in items),
             'category placeholder still shown')

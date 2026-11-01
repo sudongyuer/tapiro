@@ -1,8 +1,8 @@
 ---
 title: Live updates and push notifications (bounty first, then chat and carpool)
-status: proposed
+status: approved
 created: 2026-10-31
-approved:
+approved: 2026-10-31
 implemented:
 supersedes:
 superseded-by:
@@ -100,13 +100,12 @@ Answered by the user in canvas thread df5f92ca on 2026-10-31 (「同意」 to th
 - **173 Time-based reminders: A.** Local notifications scheduled on the device, buildable now without the account.
 - **174 Live Activity: A.** For bounty `en_route` and ride 集合, in the account half (foundation step 9).
 
-Still open (★ marks the recommendation):
+Answered by the user in the main session on 2026-10-31 (「172B 175B」):
 
-- **172 What a dropped connection shows: B, pending the user's confirmation.** A small 「可能不是最新」 line
-  while disconnected, which is point 2 of the proposal the user accepted. The earlier recommendation was A: nothing
-  until a refetch fails, then the existing 「几点的数据」 note. tapiro-86 has asked the user in the thread.
-- **175 Polling fallback during ride 集合.** A no, the refetch on reconnect is enough; ★B poll every 15 s while the
-  meet-up screen is open within 15 minutes of departure, because a silent drop there leaves people waiting.
+- **172 What a dropped connection shows: B.** A small 「可能不是最新」 line while disconnected. A, nothing until a
+  refetch fails, was not chosen.
+- **175 Polling fallback during ride 集合: B.** Poll every 15 s while the meet-up screen is open within 15 minutes of
+  departure, because a silent drop there leaves people waiting.
 
 Not a question for the canvas: push, Live Activity, in-app purchase and TestFlight all wait on the paid Apple Developer
 account. That is the user's call.

@@ -11,6 +11,7 @@ const valid: PostDraft = {
   id: '6f1c2a40-5d3b-4c8e-9a7f-0b1d2e3f4a5b',
   title: '帮我取个快递',
   category: 'pickup',
+  categorySource: 'chosen',
   art: null,
   rewardText: '8',
   currency: 'MYR',

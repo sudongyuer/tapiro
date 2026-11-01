@@ -45,7 +45,8 @@ def open_search():
 open_post(ui)
 ui.wait(lambda items: field_text(ui, items, 'bounty-post-title') == DEMO_TITLE, 'the demo draft is not in the form')
 form_scroll_to(ui, 'bounty-post-add-place')
-ui.wait_label('bounty-post-add-place', lambda label: label == ui.t('bounty.place.addLabel'), '「＋ 地点」 has no label')
+ui.wait_label('bounty-post-add-place', lambda label: label == ui.t('bounty.post.kind.pickup.place'),
+              '「＋ 在哪取」 has no label')
 assert by_id(ui.read(), 'bounty-post-address') is None, 'the address row shows before a place is picked'
 shot = ui.snap('01-no-place')
 assert_grouped_background(ui, shot, ui.element('bounty-post-form')['frame'], 'post form')

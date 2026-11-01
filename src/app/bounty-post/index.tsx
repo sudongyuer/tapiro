@@ -1,18 +1,17 @@
 import { useRouter } from 'expo-router';
 
 import { useSignedInUser } from '@/features/account';
-import { closePostSheet, PostForm } from '@/features/bounty';
+import { closePostSheet, PostPick } from '@/features/bounty';
 
-export default function BountyPostFormRoute() {
+export default function BountyPostPickRoute() {
   const router = useRouter();
   const user = useSignedInUser();
   if (!user) return null;
   return (
-    <PostForm
+    <PostPick
       userId={user.id}
-      onNext={() => router.navigate('/bounty-post/confirm')}
+      onPicked={() => router.push('/bounty-post/form')}
       onClose={closePostSheet}
-      onPickPlace={() => router.push('/bounty-post/place')}
     />
   );
 }

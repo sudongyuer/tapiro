@@ -15,6 +15,7 @@ import {
   BountyBoard,
   boardLink,
   closePostSheet,
+  hasPostDraft,
   useBountyBoard,
   usePublishBoard,
   useStartPost,
@@ -43,7 +44,10 @@ function BountyHome({ user }: { user: AccountUser }) {
     (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user.name ?? '';
   const stack = useLiveStackState();
   const startPost = useStartPost({
-    open: () => router.navigate('/bounty-post'),
+    open: () =>
+      hasPostDraft(user.id)
+        ? router.navigate('/bounty-post/form', { withAnchor: true })
+        : router.navigate('/bounty-post'),
     pay: (paymentId) => {
       closePostSheet();
       router.push({ pathname: '/pay/[id]', params: { id: paymentId } });

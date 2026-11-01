@@ -6,7 +6,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import assert_preview, dismiss_hint, next_step, open_post, relaunch  # noqa: E402
+from bounty import assert_preview, close_sheet_by_swipe, dismiss_hint, next_step, open_post, relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
@@ -75,8 +75,7 @@ assert_actions(['bounty-post-pay', 'bounty-post-publish'])
 ui.capture('04-confirm-bottom')
 
 ui.tap('BackButton')
-ui.tap_label(ui.t('bounty.post.cancel'))
-ui.gone('bounty-post-form')
+close_sheet_by_swipe(ui)
 relaunch(ui, drop=['-uiVerifyBountyDraft', 'worst', '-uiVerifyUnpaid', 'two'], add=['-uiVerifyBountyDraft', 'one'])
 open_post(ui)
 next_step(ui)
