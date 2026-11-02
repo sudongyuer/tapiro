@@ -492,3 +492,62 @@ built in PR 48 (`src/features/ride/split.ts`).
 
 - The lapse runs with the every-minute `ride-jobs` cron, so a lapse lands up to a minute after the 72 h mark; a
   confirmation in that minute is already refused.
+
+## Implementation Record (2026-11-02, step 4)
+
+PR: pending (`feat/carpool-list-create`) · Commits: ddb3765, 331c81a and the records commit. Status stays `approved`: steps
+5–8 remain.
+
+### What was built
+
+- 拼车 tab (`src/app/(tabs)/ride/`, `src/features/ride/RideListScreen.tsx`): 我的拼车 then 可以加入 under 今天 / 明天 / date
+  subheadings (181 A, 182 B), compact tickets (`RideTicket.tsx`, 180 B) with the 每人约 · taken/seats stub, the urgent,
+  request-waiting, 已满 (neutral `--color-card-calm`) and 已申请 markers (`ticket.ts`), the airport line (183 B), the
+  nav-bar ＋ (184 A), the moment empty screen with ＋ hidden (185 A), the first-load error card with ＋ kept and the
+  stale note on a failed refresh (`listState.ts`), 「去过的 · n 趟」 pushing `ride_history` (225), and a placeholder
+  detail route `ride/[id]` that shows only the cached ticket.
+- Create sheet (`src/app/ride-create/`, `src/features/ride/create/`): 去哪儿？ with two recent routes and four tiles
+  (200 A), the form under a pinned live ticket (fixed height), places from the shared place search with the short name
+  from `place_short_names` (201 A, editable ≤ 8), quick times and the system picker with the fixed 集合 line (203 A), the
+  people stepper with 还要 n 人 and the 6-seat hint (202 A), the whole-ride estimate and 每人约 (204 A, 221), 车费怎么分
+  as a system menu (190 A), 航班和行李 opened by an airport destination or tile (205 A), 集合说明 (≤ 140), and the
+  confirm page with the fee line, refund rule, and 去加收款方式 without a payee method (206 A, 230). The draft is kept on
+  the device and the publish id makes a retry answer the first outcome.
+- Services: `rideService.ts` (`nearby_rides`, `my_rides`, `ride_history`, `place_short_names`, post status with the
+  payee count, `publish_ride` with typed failures); verify fixtures (`fixtureRides.ts`, `fixtureRideService.ts`,
+  `fixtureCreate.ts`) and Debug scenes `ride-list`, `ride-form`, `ride-confirm`.
+- Copy: `src/lib/i18n/locales/ride/{zh-Hans,en,ms}.ts`; the old `shell.ride.empty*` placeholder strings are gone.
+
+### Deviations from the design
+
+| Design said                                                     | Shipped                                                                                              | Why                                                                                                   | Confirmed by        |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------- |
+| 「选时间」 is a third capsule                                   | It shows until a time is set; then the 出发 row holds the system compact date and time picker        | The compact picker is the system picker; a second entry would duplicate it                            | not intent-changing |
+| The live ticket sits at the top of the form                     | It is pinned above the scrolling Form                                                                | The board's 「往下滑到底」 frame keeps it in view; an RN view in a Form row mis-measures (TaskCard)    | not intent-changing |
+| Place search rows read 「票上叫「谷中城」」                     | The short name shows under the chosen place in the form, not in the search rows                      | The shared search screen serves bounty too; the form line carries the same information                | not intent-changing |
+| 车费怎么分 menu items carry a one-line explanation              | Titles only                                                                                          | The system menu Picker renders one line per option                                                    | not intent-changing |
+| (not drawn) currency                                            | The device currency (MYR, CNY on China-region devices); no currency menu in the form                 | Bounty's currency menu was not drawn for rides                                                        | not intent-changing |
+| Location denied: 「选一个地方」                                 | The list orders by the current location only when permission is already granted, else by time        | No place chooser was drawn for 拼车; ordering by time is the spec's fallback                          | not intent-changing |
+| 航班起飞 row in the airport group                               | 「加起飞时间」 adds it; the clock is stored as the first such time after departure                    | A flight time is optional; departure-relative storage matches `publish_ride`'s 24 h rule              | not intent-changing |
+| A settled list ticket shows 「你付了」                          | Shows 已结清 only                                                                                    | `my_rides` returns no share; step 6                                                                   | not intent-changing |
+| 已申请 stamp (192 A)                                            | Status line 「已申请 · 等通过」 on the list ticket                                                   | The stamp belongs to the detail (step 5)                                                              | not intent-changing |
+| Pages of 20 with automatic loading                              | Pages of 50 with a 「再看更多」 card                                                                 | Volume is low (spec Known limits)                                                                     | not intent-changing |
+
+### Verification
+
+- `bun test` → 1640+ pass, 0 fail; `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`,
+  `bun run check:size`, `node scripts/design-check.mjs`, `node scripts/check-specs.mjs --dir docs/specs`,
+  `node scripts/check-story-map.mjs` → exit 0.
+- `bun run verify:build` and `bun run verify:smoke` (4 cases) → pass. `ride_list` ran once in zh-Hans light and dark →
+  pass; the screenshot matches RideList1 180 B / 181 A / 182 B / 183 B.
+- Written, not run (Pace, they run after step 7): `ride_list_empty`, `ride_list_failed`, `ride_list_worst`,
+  `ride_history`, `ride_create_pick`, `ride_create_form`, `ride_create_confirm`, `ride_create_payee`,
+  `ride_create_cost`, `ride_create_worst`.
+
+### Notes for step 5
+
+- `bounty.block.*` copy is still in the bounty namespace; step 4 does not use it. Move it before the detail's ⋯ menu.
+- `rideCache` (`services.ts`) holds the last summaries the list loaded; `RideDetailStub` reads it. Replace the stub
+  route `ride/[id]` with the detail, keep the route name.
+- `RideTicket` takes a `TicketView`; `rideTicketView` builds it from a summary plus the viewer's role. The home live
+  card (224) can reuse both.

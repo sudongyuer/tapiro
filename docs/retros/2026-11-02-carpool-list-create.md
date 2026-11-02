@@ -20,7 +20,7 @@ overturned: pending
 | Quality   | Skipped verifications / open device checks / new known limits | 10 of 11 ride cases written but not run (Pace: they run after step 7); device: none new                                    |
 | Quality   | Acceptance criteria with no covering test and no device mark  | ride.create.places (map pin), ride.board.history (24 h stamp, step 6), ride.create.split-mode (detail change, step 5): gaps |
 | Speed     | Wall-clock from first commit to PR                            | see PR; most time went into reading the boards and the bounty post pattern                                                 |
-| Speed     | Wasted time by class                                          | ~10 min tooling (worktree sandbox refused compound shell commands; no `node_modules` in the worktree)                      |
+| Speed     | Wasted time by class                                          | ~20 min: ~10 min tooling (worktree sandbox refused compound shell commands; no `node_modules` in the worktree)                      |
 | Speed     | Rework rounds                                                 | 0                                                                                                                          |
 | Autonomy  | Avoidable interventions                                       | 0                                                                                                                          |
 | Autonomy  | Rulings made / overturned                                     | 15 (spec Implementation Record, step 4 deviations) / pending                                                               |
