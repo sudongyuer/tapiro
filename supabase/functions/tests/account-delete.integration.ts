@@ -188,6 +188,7 @@ describe('account-delete with bounties (local stack)', () => {
           role: 'poster',
         },
       ],
+      rides: [],
     });
     const asHelper = await post({ Authorization: `Bearer ${helper.token}`, apikey: anonKey });
     expect(asHelper.status).toBe(409);

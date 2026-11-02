@@ -67,10 +67,18 @@ export function toActiveBounties(
   }));
 }
 
+export type ActiveRide = {
+  id: string;
+  title: string;
+  role: 'organiser' | 'rider';
+  status: string;
+};
+
 export type AccountDeleteDeps = {
   userIdFromToken(token: string): Promise<string | null>;
   findUnsettledPayments(userId: string): Promise<UnsettledPayment[]>;
   findActiveBounties(userId: string): Promise<ActiveBounty[]>;
+  findActiveRides(userId: string): Promise<ActiveRide[]>;
   deleteUser(userId: string): Promise<void>;
 };
 
@@ -89,16 +97,18 @@ export async function handleAccountDelete(req: Request, deps: AccountDeleteDeps)
 
   let payments: UnsettledPayment[];
   let bounties: ActiveBounty[];
+  let rides: ActiveRide[];
   try {
-    [payments, bounties] = await Promise.all([
+    [payments, bounties, rides] = await Promise.all([
       deps.findUnsettledPayments(userId),
       deps.findActiveBounties(userId),
+      deps.findActiveRides(userId),
     ]);
   } catch {
     return json(500, { error: 'check_failed' });
   }
-  if (payments.length > 0 || bounties.length > 0) {
-    return json(409, { error: 'unsettled_payments', payments, bounties });
+  if (payments.length > 0 || bounties.length > 0 || rides.length > 0) {
+    return json(409, { error: 'unsettled_payments', payments, bounties, rides });
   }
 
   try {

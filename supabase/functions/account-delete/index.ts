@@ -5,6 +5,7 @@ import {
   toActiveBounties,
   toUnsettledPayments,
   type ActiveBounty,
+  type ActiveRide,
   type ActiveBountyRow,
   type UnsettledPayment,
   type UnsettledRow,
@@ -46,6 +47,14 @@ async function findActiveBounties(userId: string): Promise<ActiveBounty[]> {
   return toActiveBounties(rows, names);
 }
 
+async function findActiveRides(userId: string): Promise<ActiveRide[]> {
+  const { data, error } = await admin
+    .rpc('active_rides_of', { uid: userId })
+    .returns<ActiveRide[]>();
+  if (error) throw error;
+  return data ?? [];
+}
+
 async function displayNames(
   candidates: readonly (string | null)[],
   userId: string,
@@ -68,6 +77,7 @@ Deno.serve((req) =>
     },
     findUnsettledPayments,
     findActiveBounties,
+    findActiveRides,
     async deleteUser(userId) {
       const { error } = await admin.auth.admin.deleteUser(userId);
       if (error) throw error;
