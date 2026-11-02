@@ -495,7 +495,7 @@ built in PR 48 (`src/features/ride/split.ts`).
 
 ## Implementation Record (2026-11-02, step 4)
 
-PR: pending (`feat/carpool-list-create`) · Commits: ddb3765, 331c81a and the records commit. Status stays `approved`: steps
+PR: pending (`feat/carpool-list-create`) · Commits: ea0d213, 2009c88, fafc6f0 and this record. Status stays `approved`: steps
 5–8 remain.
 
 ### What was built
@@ -535,7 +535,7 @@ PR: pending (`feat/carpool-list-create`) · Commits: ddb3765, 331c81a and the re
 
 ### Verification
 
-- `bun test` → 1640+ pass, 0 fail; `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`,
+- `bun test` → 1636 pass; the 4 `scripts/check-file-size.test.ts` cases fail only when `bun test` runs inside this sandboxed worktree (the same file passes from outside it and passed in this session's first full run; `scripts/` is unchanged). `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`,
   `bun run check:size`, `node scripts/design-check.mjs`, `node scripts/check-specs.mjs --dir docs/specs`,
   `node scripts/check-story-map.mjs` → exit 0.
 - `bun run verify:build` and `bun run verify:smoke` (4 cases) → pass. `ride_list` ran once in zh-Hans light and dark →

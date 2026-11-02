@@ -35,6 +35,8 @@ overturned: pending
 | 3   | `money-mirror`: `POST_LIMITS` gained the ride rows and the mirror test read only the money migration                                                                                                          | ~2 min  | test scope       | The test now reads every `post_limits` insert it mirrors                                                                            |
 | 4   | `ax-tree-view`: screen ids were first put on plain `View`s, which do not reach the accessibility tree unless `accessible`; moved to the SwiftUI `Host` and the `ScrollView`s before any case ran              | ~3 min  | known rule       | AGENTS already says it (verification README step 3); caught by reading the README before writing cases                             |
 
+| 5   | `sandbox-git-subprocess`: after the verify build, the 4 `scripts/check-file-size.test.ts` cases started failing with empty output whenever `bun test` ran with the worktree as its working directory; a copy of the same test run from the scratchpad passes, the first full run of this session passed, and `scripts/` is unchanged. Evidence points at the agent's worktree isolation intercepting the `git init` / `git ls-files` subprocesses the test spawns in a temp dir | ~15 min | environment      | Recorded; rerun on CI. If it recurs outside agent worktrees, make the test set `GIT_CEILING_DIRECTORIES` and pass `--git-dir`   |
+
 ## Candidates (first occurrence, not yet generalised)
 
 - A check-runner script for sandboxed worktrees (item 1).
