@@ -129,6 +129,8 @@
   `spec-lifecycle` skill to append the Implementation Record, set `status: implemented`,
   and update the index. `node scripts/check-specs.mjs --dir docs/specs` must pass.
 - An overturned design gets a new spec that supersedes the old one; never delete a spec.
+- `docs/status.md` says what is built, in progress, queued and waiting on the owner. A PR that changes any of
+  these updates it. Reason: work must resume from the repo alone on another machine (user, 2026-11-02).
 
 ## Data integrity
 
@@ -215,6 +217,8 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
 
 ## Rules from incidents
 
+- Parallel agents and sessions work in their own `git worktree`; never switch branches in the main checkout. Reason:
+  another session's checkout landed two commits on local `main` (2026-10-31).
 - Keep at least 15 GB free disk before iOS Release builds. Reason: parallel prototype
   builds filled the disk and the working directory was lost (2026-10-04).
 - CI caches CocoaPods. Reason: Rive's `pod install` downloads a 122 MB xcframework and
