@@ -12,7 +12,7 @@ from board import BOTTOM_CLEAR, in_view, ink_box, screen, visible  # noqa: E402
 from driver import UI, Shot, assert_touch_target, by_id, reach_home, token  # noqa: E402
 from recording import clip, frames  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/board.py']
+DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardPlace', 'none']
 MARK = 'bounty-axis-mark-fixture-bounty-06'

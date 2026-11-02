@@ -13,7 +13,7 @@ from map import BACK, FRONT, MAP, close_card, face_box, inside, map_at_rest, pin
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/app/bounty-map.tsx', 'src/app/_layout.tsx',
         'src/app/(tabs)/bounty/', 'src/features/home/', 'modules/tapiro-kit/ios/BountyMapView.swift',
-        'modules/tapiro-kit/ios/BountyPinView.swift', 'verification/ui/map.py', 'verification/ui/board.py']
+        'modules/tapiro-kit/ios/BountyPinView.swift', 'verification/ui/map.py', 'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
 BUDGET = 360
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardPlace', 'none',

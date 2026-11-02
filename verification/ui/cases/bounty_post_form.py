@@ -18,6 +18,8 @@ DEPS = [
     'src/app/bounty-post/',
     'src/app/(tabs)/bounty/',
     'verification/ui/bounty.py',
+    'src/features/place/',
+    'src/features/block/',
 ]
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']

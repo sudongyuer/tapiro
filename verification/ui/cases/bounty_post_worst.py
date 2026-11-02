@@ -10,7 +10,7 @@ from bounty import assert_preview, close_sheet_by_swipe, dismiss_hint, next_step
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx']
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'worst', '-uiVerifyUnpaid', 'two',
         '-uiVerifyFixture', 'worst']

@@ -26,6 +26,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import type { ReactElement } from 'react';
 
+import type { BlockedPerson } from '@/features/block/types';
 import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
 import { formatMoney } from '@/lib/money';
@@ -35,7 +36,6 @@ import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import type { BlockedPerson } from '../block/types';
 import type { BountyDetail } from '../board/types';
 import { tierName, tierRank } from '../shared/tierCopy';
 import { helpedLine } from './selectCopy';

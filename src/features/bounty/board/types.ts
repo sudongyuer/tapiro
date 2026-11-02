@@ -1,3 +1,4 @@
+import type { BoardOrigin } from '@/features/place';
 import type { Point } from '@/lib/location/types';
 import type { Money, MoneyReference } from '@/lib/money';
 import type { BountyCategory } from '@/lib/stickers/category';
@@ -65,12 +66,7 @@ export type BountyDetail = {
 
 export type BoardFilter = 'all' | 'urgent' | 'fits_my_time';
 
-export type NoOriginReason = 'undetermined' | 'declined' | 'denied' | 'noFix';
-
-export type BoardOrigin =
-  | { kind: 'me'; point: Point }
-  | { kind: 'place'; point: Point; label: string }
-  | { kind: 'none'; reason: NoOriginReason };
+export type { BoardOrigin, NoOriginReason } from '@/features/place';
 
 export type LocalWrite = { applied: boolean; generation: number };
 

@@ -14,7 +14,7 @@ from choose import (  # noqa: E402
 from driver import UI, assert_colour, by_id, token  # noqa: E402
 from recording import clip  # noqa: E402
 
-DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py']
+DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-applicants'
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifySelectDelayMs', '20000']
 BUDGET = 360

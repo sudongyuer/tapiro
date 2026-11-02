@@ -3,6 +3,8 @@ import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/m
 import { useEffect } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
+import { BlockMenu } from '@/features/block/BlockMenu';
+import { useBlockPoster } from '@/features/block/hooks';
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { InlineState } from '@/ui/InlineState';
@@ -15,8 +17,6 @@ import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
 import { detailNotice } from '../apply/applyState';
 import { useWithdraw } from '../apply/useApply';
-import { BlockMenu } from '../block/BlockMenu';
-import { useBlockPoster } from '../block/hooks';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
 import { NotSelectedActions, PartyActions, SelectedAddress } from './OutcomeActions';

@@ -2,7 +2,8 @@ import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
-import { placePick } from '../place/placePick';
+import { placePick } from '@/features/place/placePick';
+
 import { shownOrigins } from './services';
 import { useBoard } from './useBoard';
 import { useBoardView } from './useBoardView';

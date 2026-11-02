@@ -8,7 +8,7 @@ from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py',
-        'verification/ui/apply.py', 'verification/ui/bounty.py']
+        'verification/ui/apply.py', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyApply', 'failOnce']
 CARD = 'bounty-card-fixture-bounty-01'

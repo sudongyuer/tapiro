@@ -1,5 +1,5 @@
 begin;
-select plan(44);
+select plan(45);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -20,7 +20,7 @@ create temp table ids (name text primary key, id uuid);
 grant all on ids to authenticated;
 insert into ids values
   ('parcel', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200, 'MYR', item_category => 'pickup')),
-  ('ride', public.open_payment('ride', gen_random_uuid(), '拼车回 YC', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 850, 'MYR'));
+  ('ride', public.open_payment('bounty', gen_random_uuid(), '帮买文具', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 850, 'MYR', item_category => 'buy'));
 
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
@@ -51,8 +51,8 @@ select is(
   'a later settle returns the new count and is not first'
 );
 select is(
-  (select item_kind::text from public.stickers where payment_id = (select id from ids where name = 'ride')), 'ride',
-  'a ride settle earns a ride sticker'
+  (select item_kind::text from public.stickers where payment_id = (select id from ids where name = 'ride')), 'bounty',
+  'a later settle earns a sticker of its own kind'
 );
 
 select throws_ok(
@@ -120,12 +120,12 @@ select throws_ok(
 );
 select throws_ok(
   $$insert into public.stickers (owner_id, payment_id, role, item_kind, category, title)
-    values ('00000000-0000-0000-0000-0000000000a1', (select id from ids where name = 'ride'), 'payer', 'ride', 'parcel', '拼车回 YC')$$,
+    values ('00000000-0000-0000-0000-0000000000a1', (select id from ids where name = 'ride'), 'payer', 'bounty', 'parcel', '帮买文具')$$,
   '23514', null, 'a sticker category is one of the eight slugs'
 );
 insert into ids values
   ('pre', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 600, 'MYR')),
-  ('old', public.open_payment('ride', gen_random_uuid(), '拼车去 Sunway', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700, 'MYR'));
+  ('old', public.open_payment('bounty', gen_random_uuid(), '帮忙带饭', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 700, 'MYR'));
 insert into public.stickers (owner_id, payment_id, role, item_kind, title)
 values ('00000000-0000-0000-0000-0000000000b2', (select id from ids where name = 'pre'), 'payee', 'bounty', '帮忙排队');
 set local role authenticated;
@@ -148,8 +148,8 @@ select is(public.award_missing_stickers(), 2, 'the backfill awards both sides of
 select results_eq(
   $$select owner_id, role::text, item_kind::text, title from public.stickers
     where payment_id = (select id from ids where name = 'old') order by role$$,
-  $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee', 'ride', '拼车去 Sunway'),
-           ('00000000-0000-0000-0000-0000000000a1'::uuid, 'payer', 'ride', '拼车去 Sunway')$$,
+  $$values ('00000000-0000-0000-0000-0000000000b2'::uuid, 'payee', 'bounty', '帮忙带饭'),
+           ('00000000-0000-0000-0000-0000000000a1'::uuid, 'payer', 'bounty', '帮忙带饭')$$,
   'the backfill gives the payee and the payer a sticker each with the payment''s kind and title'
 );
 select is(
@@ -204,7 +204,7 @@ values ('70000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000
   now() + interval '7 days', 'tea');
 insert into ids values
   ('tea', public.open_payment('bounty', '70000000-0000-0000-0000-000000000001', '帮买奶茶', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 1500, 'MYR', item_category => 'buy')),
-  ('fresh', public.open_payment('ride', '70000000-0000-0000-0000-000000000001', '拼车去 KLCC', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 800, 'MYR')),
+  ('fresh', public.open_payment('bounty', gen_random_uuid(), '帮买早餐', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 800, 'MYR', item_category => 'buy')),
   ('stale', public.open_payment('bounty', gen_random_uuid(), '帮忙排队', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 600, 'MYR', item_category => 'queue')),
   ('late', public.open_payment('bounty', gen_random_uuid(), '帮搬箱子', '00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000f6', 900, 'MYR', item_category => 'move')),
   ('ghost', public.open_payment('bounty', gen_random_uuid(), '帮拿外卖', '00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-0000000000f6', 700, 'MYR', item_category => 'pickup'));
@@ -300,9 +300,13 @@ select results_eq(
   'only the fresh settle shows: the 8-day-old and the backfilled settles leave no card'
 );
 select is(
-  pg_temp.card_of('fresh') -> 'art', 'null'::jsonb, 'a ride card has no art, even when its id matches a bounty'
+  pg_temp.card_of('fresh') -> 'art', 'null'::jsonb, 'a card of a bounty that stored no art has no art'
 );
 reset role;
+select is(
+  private.bounty_art('ride', '70000000-0000-0000-0000-000000000001'), null,
+  'a ride never takes a bounty''s art, even when its id matches a bounty'
+);
 select is(
   (select collected_at is not null from public.stickers where id = pg_temp.payer_sticker('stale')), true,
   'reading the cards marks a payer sticker older than 7 days collected'

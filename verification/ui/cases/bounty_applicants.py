@@ -8,7 +8,7 @@ from board import ink_box, screen  # noqa: E402
 from bounty import assert_grouped_background, relaunch  # noqa: E402
 from driver import UI, assert_colour, assert_touch_target, by_id, token  # noqa: E402
 
-DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/']
+DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300

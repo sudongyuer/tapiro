@@ -1,9 +1,10 @@
 import { useIsFocused } from 'expo-router';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
+import { blockEvents } from '@/features/block/blockEvents';
+
 import { boardService } from '../board/services';
 import { useFreshness } from '../board/useFreshness';
-import { blockEvents } from '../shared/blockEvents';
 import { createApplicantsController } from './applicantsController';
 import { selectService } from './services';
 

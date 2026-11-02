@@ -1,9 +1,9 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
+import { placePick } from '@/features/place/placePick';
 import { useSyncedText } from '@/ui/SyncedTextField';
 
-import { placePick } from '../place/placePick';
 import { draftStore } from './services';
 import type { DraftPlace } from './types';
 

@@ -12,7 +12,7 @@ from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
-        'verification/ui/board.py']
+        'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'en']
 BUDGET = 300
 SEED = ['-uiVerifyBoardView', 'list']

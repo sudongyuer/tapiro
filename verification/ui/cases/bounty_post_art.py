@@ -9,7 +9,7 @@ from bounty import pick_category, publish_and_close, published_args, reach_confi
 from driver import UI, assert_touch_target  # noqa: E402
 
 DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'src/lib/handArt/', 'assets/hand-art/',
-        'src/ui/TaskCard.tsx', 'verification/ui/bounty.py']
+        'src/ui/TaskCard.tsx', 'verification/ui/bounty.py', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-uiVerifyPostCost', 'free']
 ART = 'bounty-post-live-art'

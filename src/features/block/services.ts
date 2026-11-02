@@ -1,25 +1,23 @@
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
-import { FIXTURE_BOARDS } from '../board/fixtureBoardData';
-import { FIXTURE_APPLICANT_PEOPLE } from '../select/fixtureSelectService';
 import { createSupabaseBlockService } from './blockService';
 import { createFixtureBlockService } from './fixtureBlockService';
-import type { BlockService } from './types';
+import type { BlockService, BlockedPerson } from './types';
 
 const VERIFY_WRITE_DELAY_MS = 2500;
 
-const fixturePeople = () => {
-  const people = new Map<string, string | null>();
-  for (const board of Object.values(FIXTURE_BOARDS)) {
-    for (const item of board) people.set(item.poster.id, item.poster.name);
+const fixturePeople: BlockedPerson[] = [];
+
+export function addBlockFixturePeople(people: readonly BlockedPerson[]) {
+  for (const person of people) {
+    if (!fixturePeople.some((known) => known.id === person.id)) fixturePeople.push(person);
   }
-  return [...[...people].map(([id, name]) => ({ id, name })), ...FIXTURE_APPLICANT_PEOPLE];
-};
+}
 
 const fixture = uiVerify
   ? createFixtureBlockService({
-      people: fixturePeople(),
+      people: fixturePeople,
       writeDelayMs: Number(uiVerifyArgument('uiVerifyBlockDelayMs')) || VERIFY_WRITE_DELAY_MS,
       failOnce: uiVerifyArgument('uiVerifyBlock') === 'failOnce',
     })

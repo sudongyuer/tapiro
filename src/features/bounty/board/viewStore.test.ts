@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
+import type { SettingsLike } from '@/features/place/originStore';
 import { createUserCleanups } from '@/lib/userCleanups';
 
-import type { SettingsLike } from './originStore';
 import { createViewStore, seedBoardView } from './viewStore';
 
 function memorySettings(): SettingsLike & { values: Map<string, unknown> } {

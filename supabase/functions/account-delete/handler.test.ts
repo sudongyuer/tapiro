@@ -6,6 +6,7 @@ import {
   toUnsettledPayments,
   type AccountDeleteDeps,
   type ActiveBounty,
+  type ActiveRide,
   type UnsettledPayment,
 } from './handler';
 
@@ -16,6 +17,7 @@ function deps(overrides: Partial<AccountDeleteDeps> = {}) {
     userIdFromToken: mock(async (token: string) => (token === 'valid' ? USER : null)),
     findUnsettledPayments: mock(async (): Promise<UnsettledPayment[]> => []),
     findActiveBounties: mock(async (): Promise<ActiveBounty[]> => []),
+    findActiveRides: mock(async (): Promise<ActiveRide[]> => []),
     deleteUser: mock(async () => {}),
     ...overrides,
   };
@@ -38,6 +40,8 @@ const bounty: ActiveBounty = {
   currency: 'MYR',
   role: 'poster',
 };
+
+const ride: ActiveRide = { id: 'r1', title: '双威 → KLIA2', role: 'rider', status: 'gathering' };
 
 function post(token?: string) {
   return new Request('http://localhost/account-delete', {
@@ -70,6 +74,7 @@ describe('handleAccountDelete', () => {
       error: 'unsettled_payments',
       payments: [payment],
       bounties: [],
+      rides: [],
     });
     expect(d.deleteUser).not.toHaveBeenCalled();
   });
@@ -82,6 +87,7 @@ describe('handleAccountDelete', () => {
       error: 'unsettled_payments',
       payments: [],
       bounties: [bounty],
+      rides: [],
     });
     expect(d.deleteUser).not.toHaveBeenCalled();
   });
@@ -97,7 +103,30 @@ describe('handleAccountDelete', () => {
       error: 'unsettled_payments',
       payments: [payment],
       bounties: [bounty],
+      rides: [],
     });
+    expect(d.deleteUser).not.toHaveBeenCalled();
+  });
+
+  test('blocks deletion while a ride is active and names it', async () => {
+    const d = deps({ findActiveRides: mock(async () => [ride]) });
+    const res = await handleAccountDelete(post('valid'), d);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'unsettled_payments',
+      payments: [],
+      bounties: [],
+      rides: [ride],
+    });
+    expect(d.findActiveRides).toHaveBeenCalledWith(USER);
+    expect(d.deleteUser).not.toHaveBeenCalled();
+  });
+
+  test('a failed active-ride check deletes nothing and answers check_failed', async () => {
+    const d = deps({ findActiveRides: mock(async () => Promise.reject(new Error('db'))) });
+    const res = await handleAccountDelete(post('valid'), d);
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'check_failed' });
     expect(d.deleteUser).not.toHaveBeenCalled();
   });
 

@@ -376,3 +376,72 @@ Every UI step writes the UI cases for the screens it changes; the feature's case
 - `break-ui`: 80-character labels, 8-character short names, 6 riders with long names, ¥ and RM totals at the limit, one
   rider.
 - Device: reminders, haptics, 打开 Grab and Apple Maps links.
+
+## Implementation Record (2026-11-02, steps 1–3)
+
+PR: https://github.com/sudongyuer/tapiro/pull/48 · Commits: e27f62b..HEAD on `feat/carpool-foundation`. Status stays `approved`: steps 4–8 remain.
+Plan: `docs/plans/2026-11-02-carpool-foundation.md`.
+
+### What was built
+
+- Step 1, shared modules: place search, place pick, current place and the origin store live in `src/features/place/`
+  (facade `index.ts`); the block client, flow, events, menu and list screen in `src/features/block/`. Bounty imports
+  both; verify-mode block fixture people are registered by bounty (`src/features/bounty/shared/blockFixturePeople.ts`).
+  Evidence: 71b7b4d, 54cc90a.
+- Pure logic: `src/features/place/shortName.ts` (table match, leading-part fallback ≤ 8, airport detection),
+  `src/features/ride/split.ts` (220 A), `perPerson.ts` (221), `rideTimes.ts` (T-30, T-15, +2 h, 24 h). Evidence: 2360d14.
+- Step 2, schema and RLS: `rides` (snapped `start_public` / `dest_public`), `ride_details` (note, plate, eta),
+  `ride_receipts`, `ride_members` (the organiser holds a row), `ride_events`, `place_short_names` with 21 seed patterns,
+  `post_limits` rows for `ride`, bucket `ride-receipts`. Evidence: `supabase/migrations/20261102000000_rides.sql` (df3234c).
+- Transitions: `publish_ride`, `request_ride`, `withdraw_ride_request`, `decide_ride_request`, `ride_leave_preview`,
+  `leave_ride`, `ride_cancel_preview`, `cancel_ride` (a14c8f7); `mark_ride_arrived`, `undo_ride_arrived`,
+  `report_ride_late`, `revise_ride_time`, `update_ride_details`, `set_ride_split_mode`, `depart_ride`,
+  `appeal_ride_no_show`, `confirm_ride_appeal` (2a16466); `reach_ride`, `send_ride_split`, `set_ride_receipt`,
+  `dispute_ride_share`, `change_ride_share`, `ride_paid_states`, the ride branch of `confirm_payment_received` and one
+  car sticker per (owner, ride) (4bb8f5c); `run_ride_jobs` (cron `ride-jobs`, every minute),
+  `ride_receipts_to_delete`, `clear_ride_receipt`, `active_rides_of`, the `auth.users` delete trigger and `rides` in
+  the `account-delete` 409 (78af614).
+- Step 3: `nearby_rides(latitude, longitude, page_after, page_size, reference_currency)`, `my_rides()` (24 h rule),
+  `ride_history()`. Evidence: `supabase/migrations/20261102000500_nearby_rides.sql` (0a6f74e).
+
+### Deviations from the design
+
+| Design said                                                         | Shipped                                                                                                                                                        | Why                                                                                                           | Confirmed by                                                                   |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Carpool events go to the realtime outbox                            | Transitions write `ride_events` only                                                                                                                           | `public.events` does not exist yet (no migration); the kinds are emitted in step 5                            | not intent-changing                                                            |
+| Receipt cleanup with the payment-proof cleanup                      | `ride_receipts_to_delete()` and `clear_ride_receipt()` exist; the Edge Function does not call them yet                                                         | No client can upload a receipt before step 6                                                                  | not intent-changing                                                            |
+| Receipt visible to moderators                                       | Moderators read through the service role                                                                                                                       | No moderator role exists in the schema                                                                        | not intent-changing                                                            |
+| Order by distance, "then same destination"                          | Malaysia day, then snapped start distance, then departure, then id                                                                                             | "Same destination" names no reference point; distance uses the snapped point so ties fall to departure        | not intent-changing                                                            |
+| Equal split rounds up to 0.10                                       | Rounded up, capped at total ÷ (riders) so the organiser's row is never negative                                                                                | Totals under about RM 3 for 6 people would go negative                                                        | not intent-changing                                                            |
+| 每人约 rounds to the nearest unit                                   | Same, never below one unit                                                                                                                                     | Avoids showing RM 0                                                                                           | not intent-changing                                                            |
+| Leaving inside 15 min is a no-show                                  | Member state `left` plus a no-show record (not state `no_show`)                                                                                                | Keeps 我上车了 appeals to unticked boarders only                                                              | not intent-changing                                                            |
+| Appeal: 申诉中, not counted                                         | The no-show row is deleted at appeal; an appeal nobody confirms is never counted                                                                               | The spec has no rejection path                                                                                | pending owner question 233; unchanged until answered (coordinator, 2026-11-02) |
+| Appeals (carried rule, no window given)                             | 我上车了 and its confirmation work for 72 h after the actual 出发, in any later status including `settling` and `closed`                                       | Otherwise the organiser could shut the window by pressing 到了 or sending the split at once (review of PR 48) | coordinator, 2026-11-02                                                        |
+| A confirmed appeal boards the member                                | After the split is sent the split stays as sent: no share, no payment, no sticker for the late boarder                                                         | Reopening a sent split would change other riders' amounts                                                     | coordinator, 2026-11-02                                                        |
+| Driver late: the organiser sets a new time                          | The new time must be later than the current one and within 24 h of the first                                                                                   | An earlier time collapsed 集合 and the 15-minute window (review of PR 48)                                     | coordinator, 2026-11-02                                                        |
+| Members, 集合说明, 车牌 only for the organiser and accepted members | `no_show` and `appealed` members lose them; a confirmed appeal restores them. Declined, withdrawn and left users see a ride only while it is open, like anyone | `is_ride_member` and `has_ride_row` were wider (review of PR 48)                                              | coordinator, 2026-11-02                                                        |
+| One car sticker per boarded person                                  | No sticker when nobody but the organiser boarded, for a Tapiro or a Grab-split ride                                                                            | A ride without riders minted a sticker (review of PR 48)                                                      | coordinator, 2026-11-02                                                        |
+| Sticker per payment (built)                                         | Ride payments earn no per-payment sticker; the ride closes at the last settle and stickers go to every boarded person                                          | Change 30 of this spec; `stickers.test.sql` fixtures moved to bounty payments                                 | spec 218 A / 231                                                               |
+
+### Bugs fixed during implementation
+
+- **Symptom:** `check:size` failed on `20261102000100_ride_join.sql` (507 lines). **Root cause:** the plan's per-task
+  checks omitted `check:size`. **Fix:** no-show helpers moved into the schema migration (d658677).
+
+- **Symptom (review of PR 48):** `confirm_payment_received` locked the payment, then the ride; `change_ride_share` locked the ride, then the payment. **Root cause:** no lock order across the two paths. **Fix:** the settle locks the ride row first. No single-session pgTAP case can show a deadlock, so this fix has no failing test.
+- **Symptom (review of PR 48):** a `depart_ride` replay after 到了 raised `closed`. **Root cause:** the replay check only accepted status `departed`. **Fix:** any later status answers the first boarding. Test: `ride_review.test.sql`.
+
+### Verification
+
+- `supabase test db` on an isolated local stack (`project_id` `tapiro-carpool`) → 32 files, 1294 tests, PASS (after the review fixes; `ride_review.test.sql` failed on the pre-fix migrations at each finding in turn).
+- `bun test` → 1597 pass, 0 fail.
+- `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `bun run check:size`,
+  `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs` → exit 0.
+- Skipped: `verify:smoke` (no screen changed) and `test:stack` (needs the Edge runtime on the shared stack).
+
+### Known limits
+
+- `sticker_book()` and `settled_cards()` join `payments`, so ride stickers do not show in the book yet (step 6).
+- The client payment fixture still earns a per-payment ride sticker (`src/features/payment/fixturePaymentService.ts`); step 6.
+- The app does not list `rides` from the account-delete 409 yet; it treats the answer as blocked.
+- The six `20261102…` migrations ran only on the local stack; nothing was pushed to the hosted project.

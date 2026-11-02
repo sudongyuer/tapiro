@@ -17,7 +17,7 @@ from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/select/', 'src/features/bounty/shared/',
         'src/ui/SheetFrame.tsx', 'src/ui/SyncedTextField.tsx', 'src/ui/PillButton.tsx', 'modules/tapiro-kit/',
-        'src/app/(tabs)/bounty/', 'src/app/pay/', 'verification/ui/bounty.py', 'verification/ui/choose.py']
+        'src/app/(tabs)/bounty/', 'src/app/pay/', 'verification/ui/bounty.py', 'verification/ui/choose.py', 'src/features/block/']
 SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 480

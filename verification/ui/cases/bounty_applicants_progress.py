@@ -10,7 +10,7 @@ from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/',
         'src/features/bounty/status/', 'src/ui/PillButton.tsx', 'src/ui/SheetFrame.tsx', 'src/app/(tabs)/bounty/',
-        'verification/ui/bounty.py']
+        'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-applicants'
 BUDGET = 240
 FIRST = ['-uiVerifyPosted', 'assigned', '-uiVerifyBountyStatus', 'assigned']

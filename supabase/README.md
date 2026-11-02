@@ -51,9 +51,13 @@ pays the counterpart and `owed` when the counterpart pays them. The app drops it
 match this shape and still treats the response as blocked. `findUnsettledPayments` in `functions/account-delete/index.ts` reads every payment the user is
 payer or payee of that is not settled; `findActiveBounties` lists, through `active_bounties_of(uid)`
 (service role), the bounties the user posts or helps on that are `assigned`, `en_route`, `done` or
-`disputed`, with `amountMinor` and `currency` the reward and `role` `poster` or `helper`. Either list blocks the
-deletion; the error stays `unsettled_payments` so the shipped app treats a bounty-only answer as
-blocked (it does not list `bounties` yet). A failed check answers 500 and deletes nothing.
+`disputed`, with `amountMinor` and `currency` the reward and `role` `poster` or `helper`.
+`findActiveRides` lists, through `active_rides_of(uid)`, the rides the user organises with an accepted member (or
+past 出发 and not closed) or rides on as an accepted or boarded member, as `rides: [{ id, title, role, status }]`
+(`role` `organiser` or `rider`). Any list blocks the deletion; the error stays `unsettled_payments` so the shipped
+app treats a bounty- or ride-only answer as blocked (it lists neither yet). The `auth.users` delete triggers enforce
+the same rules, cancel the user's open rides nobody joined and withdraw their requests. A failed check answers 500
+and deletes nothing.
 
 ## Payments
 

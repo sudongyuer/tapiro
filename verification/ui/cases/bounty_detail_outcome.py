@@ -16,7 +16,7 @@ from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E4
 
 DEPS = ['src/features/bounty/', 'src/app/(tabs)/bounty/', 'src/features/home/useHomeScroll.ts',
         'src/lib/homeSignals.ts', 'src/lib/useHomeSignals.ts', 'verification/ui/board.py',
-        'verification/ui/bounty.py', 'verification/ui/choose.py']
+        'verification/ui/bounty.py', 'verification/ui/choose.py', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyDetail', 'notSelected']

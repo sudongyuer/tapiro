@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
-import { blockEvents } from '../shared/blockEvents';
+import { blockEvents } from '@/features/block/blockEvents';
+
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied } from '../shared/justApplied';
 import { createBoardController, nearEnd } from './boardState';
