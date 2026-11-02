@@ -4,7 +4,7 @@ import type { PayeeMethod } from '@/lib/payeeMethods';
 
 import { confirmedLink, initialSelection, payOptions, WALLET_LINKS } from './payOptions';
 import { isReference, newReference, REFERENCE_ALPHABET } from './reference';
-import { availableActions, nextState, sheetTitleKey } from './stateMachine';
+import { availableActions, celebratesSettle, nextState, sheetTitleKey } from './stateMachine';
 
 const base = {
   isDefault: false,
@@ -90,6 +90,9 @@ test('the payee sees 收款 as the sheet title, the payer 付款, and an unknown
   expect(sheetTitleKey('payee')).toBe('pay.sheet.titlePayee');
   expect(sheetTitleKey('payer')).toBe('pay.sheet.title');
   expect(sheetTitleKey(null)).toBeNull();
+  expect(sheetTitleKey('payer', 'ride')).toBe('pay.sheet.titleRide');
+  expect(sheetTitleKey('payee', 'ride')).toBe('pay.sheet.titleRide');
+  expect(sheetTitleKey('payer', 'bounty')).toBe('pay.sheet.title');
 });
 
 describe('reference', () => {
@@ -139,4 +142,12 @@ describe('pay options', () => {
     expect(confirmedLink('alipay')).toBeNull();
     expect(confirmedLink(null)).toBeNull();
   });
+});
+
+test('a ride celebrates only the settle that closes the ride; a bounty celebrates every settle', () => {
+  const settled = { firstSettled: false, stickerCount: 3 };
+  expect(celebratesSettle('bounty', settled)).toBe(true);
+  expect(celebratesSettle('ride', { ...settled, rideSettled: false })).toBe(false);
+  expect(celebratesSettle('ride', settled)).toBe(false);
+  expect(celebratesSettle('ride', { ...settled, rideSettled: true })).toBe(true);
 });

@@ -22,6 +22,22 @@ describe('settle result', () => {
     });
   });
 
+  test('a ride settle says whether it closed the ride; a bounty settle does not', async () => {
+    const earlier = { state: 'settled', firstSettled: false, stickerCount: 0, rideSettled: false };
+    expect(await settling(earlier)).toEqual({
+      firstSettled: false,
+      stickerCount: null,
+      rideSettled: false,
+    });
+    expect(
+      (await settling({ ...earlier, firstSettled: true, stickerCount: 1, rideSettled: true }))
+        .rideSettled,
+    ).toBe(true);
+    expect(
+      await settling({ state: 'settled', firstSettled: true, stickerCount: 1 }),
+    ).not.toHaveProperty('rideSettled');
+  });
+
   test('a missing or malformed count is unknown, never a guessed number', async () => {
     for (const stickerCount of [undefined, null, '3', 2.5, -1, 0]) {
       expect(await settling({ state: 'settled', firstSettled: false, stickerCount })).toEqual({

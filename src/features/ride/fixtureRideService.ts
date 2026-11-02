@@ -68,6 +68,8 @@ function publishedRide(args: PublishRideArgs): MyRide {
     seats: args.seats,
     taken: 1,
     splitMode: args.split_mode,
+    myShare: null,
+    myPaid: null,
     estimate:
       args.estimate_minor === null ? null : { minor: args.estimate_minor, currency: args.currency },
     airport: args.flight_departs_at !== null,

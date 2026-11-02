@@ -66,8 +66,8 @@ ui.at_rest()
 ui.capture('02-sheet')
 tap_bar(ui, 'ride-depart-confirm')
 ui.gone('ride-depart')
-ui.wait_label('ride-detail-ticket', lambda label: (label or '').startswith(ui.t('ride.ticket.departed')),
-              'the ticket never read 已出发')
+ui.wait_label('ride-detail-ticket', lambda label: (label or '').startswith(ui.t('rideSettle.ticket.onboard')),
+              'the ticket never read 车上')
 deadline = time.monotonic() + 10
 while time.monotonic() < deadline and not calls('depart'):
     time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously

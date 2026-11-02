@@ -115,8 +115,12 @@ export function toMyRide(value: unknown): MyRide {
       body.pendingRequests === null || body.pendingRequests === undefined
         ? 0
         : count(body.pendingRequests, 'pendingRequests'),
+    myShare: toMoney(body.myShare, body.currency),
+    myPaid: PAID.find((candidate) => candidate === body.myPaid) ?? null,
   };
 }
+
+const PAID = ['due', 'paid', 'settled'] as const;
 
 const list = (value: unknown, name: string) => {
   if (!Array.isArray(value)) throw new Error(`ride: ${name} is not a list`);

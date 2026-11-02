@@ -26,11 +26,9 @@ const TONE_INK = {
 
 export function FullTicket({
   view,
-  stamp,
   onLayout,
 }: {
   view: FullTicketView;
-  stamp: boolean;
   onLayout?: (event: LayoutChangeEvent) => void;
 }) {
   const { t } = useI18n();
@@ -40,7 +38,9 @@ export function FullTicket({
     <View
       style={[styles.ticket, { backgroundColor: surface }]}
       accessible
-      accessibilityLabel={stamp ? `${t('ride.detail.applied.stamp')}, ${view.a11y}` : view.a11y}
+      accessibilityLabel={
+        view.stamp === 'applied' ? `${t('ride.detail.applied.stamp')}, ${view.a11y}` : view.a11y
+      }
       testID="ride-detail-ticket"
     >
       <View style={styles.head}>
@@ -70,10 +70,17 @@ export function FullTicket({
         </View>
         {view.countdown ? (
           <View style={styles.countdown}>
-            <AppText variant="amount-compact" style={styles.ink}>
-              {view.countdown.number}
-            </AppText>
-            <AppText variant="title" style={[styles.ink, styles.countdownText]} numberOfLines={1}>
+            {view.countdown.number ? (
+              <AppText variant="amount-compact" style={styles.ink} testID="ride-detail-lead-number">
+                {view.countdown.number}
+              </AppText>
+            ) : null}
+            <AppText
+              variant="title"
+              style={[styles.ink, styles.countdownText]}
+              numberOfLines={2}
+              testID="ride-detail-lead"
+            >
               {view.countdown.text}
             </AppText>
           </View>
@@ -93,7 +100,7 @@ export function FullTicket({
             {view.labels}
           </AppText>
         ) : null}
-        <AppliedStamp shown={stamp} />
+        <Stamp kind={view.stamp} />
       </View>
       <Tear />
       <CellRow cells={view.cells} />
@@ -107,10 +114,10 @@ export function FullTicket({
   );
 }
 
-function AppliedStamp({ shown }: { shown: boolean }) {
+function Stamp({ kind }: { kind: FullTicketView['stamp'] }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const landing = useStampLanding(shown, STAMP_TILT);
+  const landing = useStampLanding(kind !== null, STAMP_TILT);
   return (
     <Animated.View
       pointerEvents="none"
@@ -119,10 +126,10 @@ function AppliedStamp({ shown }: { shown: boolean }) {
         { borderColor: color('--color-success'), backgroundColor: color('--color-receipt') },
         landing,
       ]}
-      testID="ride-detail-stamp"
+      testID={kind === 'settled' ? 'ride-detail-stamp-settled' : 'ride-detail-stamp'}
     >
       <AppText variant="secondary" style={[styles.stampText, { color: color('--color-success') }]}>
-        {t('ride.detail.applied.stamp')}
+        {kind === 'settled' ? t('rideSettle.ticket.stamp') : t('ride.detail.applied.stamp')}
       </AppText>
     </Animated.View>
   );

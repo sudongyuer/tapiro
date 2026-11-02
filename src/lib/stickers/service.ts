@@ -13,7 +13,7 @@ export function toSticker(value: unknown): Sticker {
   const row = body(value, 'sticker');
   return {
     id: text(row.id, 'id'),
-    paymentId: text(row.paymentId, 'paymentId'),
+    paymentId: textOrNull(row.paymentId, 'paymentId'),
     role: oneOf(STICKER_ROLES, row.role, 'role'),
     itemKind: oneOf(STICKER_KINDS, row.itemKind, 'itemKind'),
     category: textOrNull(row.category, 'category'),

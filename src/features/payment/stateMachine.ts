@@ -1,4 +1,4 @@
-import type { PaymentRole, PaymentState } from './types';
+import type { Payment, PaymentRole, PaymentState, SettleResult } from './types';
 
 export type PaymentAction = 'markPaid' | 'undo' | 'confirm' | 'notReceived';
 
@@ -33,7 +33,14 @@ export function availableActions(context: Omit<ActionContext, 'methodIsCash'>) {
 
 export const isUnsettled = (state: PaymentState) => state !== 'settled';
 
-export function sheetTitleKey(role: PaymentRole | null) {
+export function sheetTitleKey(
+  role: PaymentRole | null,
+  itemKind: Payment['itemKind'] | null = null,
+) {
   if (role === null) return null;
+  if (itemKind === 'ride') return 'pay.sheet.titleRide' as const;
   return role === 'payee' ? ('pay.sheet.titlePayee' as const) : ('pay.sheet.title' as const);
 }
+
+export const celebratesSettle = (itemKind: Payment['itemKind'], result: SettleResult) =>
+  itemKind !== 'ride' || result.rideSettled === true;

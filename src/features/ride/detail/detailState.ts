@@ -23,7 +23,14 @@ export type DetailAction =
   | 'splitMode'
   | 'depart'
   | 'appeal'
-  | 'confirmAppeal';
+  | 'confirmAppeal'
+  | 'reach'
+  | 'split'
+  | 'dispute'
+  | 'changeShare'
+  | 'confirmReceived'
+  | 'notReceived'
+  | 'collect';
 
 export type ActionState =
   | { kind: 'idle' }

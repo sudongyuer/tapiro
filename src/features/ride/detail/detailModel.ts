@@ -1,4 +1,5 @@
 import { departsAt, expiresAt, gathersAt, NO_SHOW_WINDOW_MS } from '../rideTimes';
+import { settleFooter, type SettleFooter } from './settleModel';
 import type { RideDetail, RideMember } from './types';
 
 const MINUTE = 60_000;
@@ -22,7 +23,7 @@ export type TimelineStep = { key: StepKey; state: StepState; at: number | null; 
 const CURRENT: Partial<Record<DetailPhase, number>> = {
   before: 1,
   meetup: 2,
-  departed: 3,
+  departed: 4,
   arrived: 4,
   settling: 5,
   closed: STEP_KEYS.length,
@@ -129,12 +130,16 @@ export type Footer =
   | { kind: 'applied' }
   | { kind: 'arrive' }
   | { kind: 'arrived'; at: number }
-  | { kind: 'depart'; arrived: number; selfArrived: boolean };
+  | { kind: 'depart'; arrived: number; selfArrived: boolean }
+  | { kind: 'settle'; settle: SettleFooter };
 
-export function footer(ride: RideDetail, now: number): Footer {
+export function footer(ride: RideDetail, now: number, viewerId = ''): Footer {
   const phase = detailPhase(ride, now);
   const open = phase === 'before' || phase === 'meetup';
-  if (!open) return { kind: 'none' };
+  if (!open) {
+    const settle = settleFooter(ride, viewerId);
+    return settle ? { kind: 'settle', settle } : { kind: 'none' };
+  }
   switch (ride.role) {
     case 'viewer':
       return { kind: 'apply', blocked: ride.taken >= ride.seats ? 'full' : null };

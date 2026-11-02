@@ -264,6 +264,7 @@ const en: typeof zhHans = {
       notMember: 'You’re no longer on this ride',
       blocked: 'You blocked this person, so you can’t do that',
       invalid: 'Something you entered isn’t right. Check it and try again',
+      noPayee: 'Add a payment method before splitting the fare',
       transition: 'Things changed; refreshed',
       failed: 'That didn’t work. Try again',
     },

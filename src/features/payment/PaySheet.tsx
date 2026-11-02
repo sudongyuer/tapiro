@@ -24,7 +24,7 @@ import { AmountHeader, PayerView } from './PayerView';
 import { PayeeView } from './PayeeView';
 import type { Proof } from './ProofSection';
 import { SheetFrame } from '@/ui/SheetFrame';
-import { sheetTitleKey } from './stateMachine';
+import { celebratesSettle, sheetTitleKey } from './stateMachine';
 
 export function PaySheet({
   userId,
@@ -45,7 +45,8 @@ export function PaySheet({
   const cached =
     listed.status === 'idle' ? undefined : listed.payments.find(({ id }) => id === paymentId);
   const role = state.status === 'ready' ? state.payment.role : (cached?.role ?? null);
-  const titleKey = sheetTitleKey(role);
+  const itemKind = state.status === 'ready' ? state.payment.itemKind : (cached?.itemKind ?? null);
+  const titleKey = sheetTitleKey(role, itemKind);
   const notice = sheet.failed ? (
     <NoticeCard
       tone="urgent"
@@ -67,7 +68,7 @@ export function PaySheet({
     const result = await sheet.confirm();
     if (!result) return;
     stickerStore.reload(userId);
-    if (payment.reverses !== null) return;
+    if (payment.reverses !== null || !celebratesSettle(payment.itemKind, result)) return;
     setCelebration({
       first: result.firstSettled,
       count: result.stickerCount,

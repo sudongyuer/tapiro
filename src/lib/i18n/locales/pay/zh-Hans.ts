@@ -10,6 +10,7 @@ export default {
   sheet: {
     title: '付款',
     titlePayee: '收款',
+    titleRide: '拼车',
     close: '关闭',
     loading: '正在加载',
     loadFailed: { title: '付款信息没加载出来', body: '请检查网络后重试。' },

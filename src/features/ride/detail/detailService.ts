@@ -3,9 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CurrencyCode } from '@/lib/money';
 
 import { toRideDetail } from './parseDetail';
+import type { RidePhase } from '../types';
 import type {
   CancelPreview,
   NoShowPreview,
+  ReceivedResult,
   RideDetailService,
   RideFailure,
   RideWrite,
@@ -23,7 +25,22 @@ const FAILURES: Readonly<Record<string, RideFailure>> = {
   blocked: 'blocked',
   invalid_ride: 'invalid',
   invalid_transition: 'transition',
+  invalid_split: 'invalid',
+  no_payee_method: 'noPayee',
 };
+
+const RECEIPT_BUCKET = 'ride-receipts';
+const PAYMENT_CODES = new Set(['55000', 'P0002', '42501']);
+const PHASES: readonly RidePhase[] = [
+  'open',
+  'gathering',
+  'departed',
+  'arrived',
+  'settling',
+  'closed',
+  'cancelled',
+  'expired',
+];
 
 export class RideDetailMissing extends Error {}
 
@@ -33,6 +50,30 @@ export function toRideFailure(error: unknown): RideFailure {
   return typeof message === 'string' && Object.hasOwn(FAILURES, message)
     ? FAILURES[message]
     : 'failed';
+}
+
+export function toPaymentFailure(error: unknown): RideFailure {
+  if (typeof error !== 'object' || error === null) return 'failed';
+  const { code } = error as { code?: unknown };
+  return typeof code === 'string' && PAYMENT_CODES.has(code) ? 'transition' : 'failed';
+}
+
+export function toReachedPhase(value: unknown): RidePhase {
+  const status = (value ?? {}) as { status?: unknown };
+  const phase = PHASES.find((candidate) => candidate === status.status);
+  if (!phase) throw new Error('ride: 到了 answered without a status');
+  return phase;
+}
+
+export function toReceived(value: unknown): ReceivedResult {
+  const body = (value ?? {}) as Record<string, unknown>;
+  if (body.state !== 'settled') throw new Error('ride: 已收到 answered without settling');
+  const count = body.stickerCount;
+  return {
+    rideSettled: body.rideSettled === true,
+    firstSettled: body.firstSettled === true,
+    stickerCount: typeof count === 'number' && Number.isInteger(count) && count > 0 ? count : null,
+  };
 }
 
 export function toNoShowPreview(value: unknown): NoShowPreview {
@@ -53,6 +94,9 @@ export function toCancelPreview(value: unknown): CancelPreview {
 export function createSupabaseRideDetailService(
   client: SupabaseClient | null,
   referenceCurrency: () => CurrencyCode,
+  readFile: (uri: string) => Promise<ArrayBuffer> = async () => {
+    throw new Error('no file reader');
+  },
 ): RideDetailService {
   const db = () => {
     if (!client) throw new Error('Supabase is not configured');
@@ -63,10 +107,11 @@ export function createSupabaseRideDetailService(
     name: string,
     args: Record<string, unknown>,
     parse: (data: unknown) => T,
+    failure: (error: unknown) => RideFailure = toRideFailure,
   ): Promise<RideWrite<T>> {
     try {
       const { data, error } = await db().rpc(name, args);
-      if (error) return { ok: false, reason: toRideFailure(error) };
+      if (error) return { ok: false, reason: failure(error) };
       return { ok: true, value: parse(data) };
     } catch (error) {
       return { ok: false, reason: toRideFailure(error) };
@@ -109,5 +154,42 @@ export function createSupabaseRideDetailService(
     depart: (id, boarded) => write('depart_ride', { ride: id, boarded }, done),
     appeal: (id) => write('appeal_ride_no_show', { ride: id }, done),
     confirmAppeal: (id, member) => write('confirm_ride_appeal', { ride: id, member }, done),
+    reach: (id) => write('reach_ride', { ride: id }, toReachedPhase),
+    sendSplit: (id, input) =>
+      write(
+        'send_ride_split',
+        {
+          ride: id,
+          total_minor: input.totalMinor,
+          shares: input.shares,
+          receipt: input.receipt,
+        },
+        done,
+      ),
+    async uploadReceipt(id, fileUri) {
+      const extension = /\.png$/i.test(fileUri) ? 'png' : 'jpg';
+      const path = `${id}/${Date.now()}.${extension}`;
+      const body = await readFile(fileUri);
+      const { error } = await db()
+        .storage.from(RECEIPT_BUCKET)
+        .upload(path, body, { contentType: extension === 'png' ? 'image/png' : 'image/jpeg' });
+      if (error) throw error;
+      return path;
+    },
+    async receiptUrl(path) {
+      const { data, error } = await db().storage.from(RECEIPT_BUCKET).createSignedUrl(path, 300);
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error('no signed url');
+      return data.signedUrl;
+    },
+    dispute: (id, note) => write('dispute_ride_share', { ride: id, note }, done),
+    changeShare: (id, member, minor) =>
+      write('change_ride_share', { ride: id, member, minor }, done),
+    confirmReceived: (_id, paymentId) =>
+      write('confirm_payment_received', { payment: paymentId }, toReceived, toPaymentFailure),
+    notReceived: (_id, paymentId) =>
+      write('report_not_received', { payment: paymentId }, done, toPaymentFailure),
+    collectSticker: (_id, stickerId) =>
+      write('collect_sticker', { sticker: stickerId }, done, toPaymentFailure),
   };
 }

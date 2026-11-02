@@ -10,6 +10,7 @@ export default {
   sheet: {
     title: 'Pay',
     titlePayee: 'Get paid',
+    titleRide: 'Ride',
     close: 'Close',
     loading: 'Loading',
     loadFailed: {

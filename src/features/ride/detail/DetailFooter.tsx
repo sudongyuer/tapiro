@@ -20,6 +20,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { LATE_MINUTES } from '../rideTimes';
 import { malaysiaClock } from '../rideClock';
 import type { Footer } from './detailModel';
+import { SettleFooterBar, type SettleFooterActions } from './SettleFooter';
 import type { LateChoice } from './types';
 
 const ICON = 15;
@@ -32,6 +33,7 @@ export type FooterActions = {
   late: (minutes: LateChoice | null) => void;
   notComing: () => void;
   depart: () => void;
+  settle: SettleFooterActions;
 };
 
 export function DetailFooter({
@@ -65,6 +67,14 @@ export function DetailFooter({
         >
           {error}
         </AppText>
+      ) : null}
+      {footer.kind === 'settle' ? (
+        <SettleFooterBar
+          footer={footer.settle}
+          organiserName={organiserName}
+          busy={busy}
+          actions={actions.settle}
+        />
       ) : null}
       {footer.kind === 'apply' ? (
         <>

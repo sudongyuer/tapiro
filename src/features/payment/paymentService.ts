@@ -219,12 +219,14 @@ export function createSupabasePaymentService(
       const data = (await rpc('confirm_payment_received', { payment: paymentId })) as {
         firstSettled?: unknown;
         stickerCount?: unknown;
+        rideSettled?: unknown;
       } | null;
       const count = data?.stickerCount;
       return {
         firstSettled: data?.firstSettled === true,
         stickerCount:
           typeof count === 'number' && Number.isInteger(count) && count > 0 ? count : null,
+        ...(typeof data?.rideSettled === 'boolean' ? { rideSettled: data.rideSettled } : {}),
       };
     },
     async notReceived(paymentId) {

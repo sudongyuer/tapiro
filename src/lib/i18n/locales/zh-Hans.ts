@@ -2,6 +2,7 @@ import block from './block/zh-Hans';
 import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import ride from './ride/zh-Hans';
+import rideSettle from './rideSettle/zh-Hans';
 import payee from './payee/zh-Hans';
 import stickers from './stickers/zh-Hans';
 
@@ -128,6 +129,7 @@ export default {
   block,
   bounty,
   ride,
+  rideSettle,
   shell: {
     tabs: {
       bounty: '悬赏',

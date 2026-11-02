@@ -28,10 +28,10 @@ const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
 const iso = (time: number) => new Date(time).toISOString();
 
-const KLIN = 'fixture-ride-xiaolin';
-const MING = 'fixture-ride-aming';
-const JIE = 'fixture-ride-ajie';
-const YA = 'fixture-ride-xiaoya';
+export const KLIN = 'fixture-ride-xiaolin';
+export const MING = 'fixture-ride-aming';
+export const JIE = 'fixture-ride-ajie';
+export const YA = 'fixture-ride-xiaoya';
 const WEN = 'fixture-ride-awen';
 
 export const DETAIL_PEOPLE = [
@@ -42,7 +42,7 @@ export const DETAIL_PEOPLE = [
   { id: WEN, name: '阿雯' },
 ];
 
-const LONG_NAME = 'Nurul Aina binti Ahmad Faizal Rahman Wong';
+export const LONG_NAME = 'Nurul Aina binti Ahmad Faizal Rahman Wong';
 const LONG_NOTE =
   '我有一个 28 寸的大箱子和一个登机箱，还有一把吉他，可以放后备箱吗？如果放不下我可以抱着吉他坐后排，麻烦小林确认一下';
 
@@ -50,9 +50,9 @@ function tomorrowAt(now: number, hours: number, minutes: number) {
   return malaysiaTime(malaysiaDayKey(now + DAY), hours, minutes);
 }
 
-type Person = { id: string; name: string; tier?: Tier };
+export type Person = { id: string; name: string; tier?: Tier };
 
-function member(person: Person, patch: Partial<RideMember> = {}): RideMember {
+export function member(person: Person, patch: Partial<RideMember> = {}): RideMember {
   return {
     id: person.id,
     name: person.name,
@@ -103,6 +103,10 @@ function base(now: number, patch: Partial<RideDetail>): RideDetail {
     details: null,
     members: null,
     requests: null,
+    currency: 'MYR',
+    settle: null,
+    myShare: null,
+    sticker: null,
     ...patch,
   };
 }
@@ -179,7 +183,7 @@ function organiserMeetup(now: number, minutesLeft: number): RideDetail {
   });
 }
 
-function departed(now: number, hoursAgo: number, patch: Partial<RideDetail>): RideDetail {
+export function departed(now: number, hoursAgo: number, patch: Partial<RideDetail>): RideDetail {
   const departs = now - hoursAgo * 60 * MINUTE;
   return meetup(now, -hoursAgo * 60, {
     status: 'departed',

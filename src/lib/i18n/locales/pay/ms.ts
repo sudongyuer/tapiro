@@ -10,6 +10,7 @@ export default {
   sheet: {
     title: 'Bayar',
     titlePayee: 'Terima bayaran',
+    titleRide: 'Tumpangan',
     close: 'Tutup',
     loading: 'Memuatkan',
     loadFailed: {

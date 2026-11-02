@@ -95,6 +95,18 @@ export function ticketA11y(
   return parts.filter(Boolean).join(', ');
 }
 
+function shareStub(ride: RideSummary, mine: TicketMine | null, t: TFunction, language: string) {
+  const share = mine?.myShare;
+  if (!share || (ride.status !== 'settling' && ride.status !== 'closed')) return null;
+  const fare =
+    mine.role === 'organiser'
+      ? t('rideSettle.list.yours')
+      : mine.myPaid === 'due'
+        ? t('rideSettle.list.youPay')
+        : t('rideSettle.list.youPaid');
+  return { amount: formatMoney(share, language), fare };
+}
+
 export function rideTicketView(
   ride: RideSummary,
   options: { now: number; mine?: TicketMine | null; showDay: boolean },
@@ -117,10 +129,12 @@ export function rideTicketView(
         ? t('ride.ticket.flight', { time: malaysiaClock(model.airport.flight) })
         : null,
     bags: model.airport?.bags ? t('ride.ticket.bags', { count: model.airport.bags }) : null,
-    amount: model.perPerson
-      ? formatMoney(model.perPerson, language, { whole: true })
-      : t('ride.ticket.noEstimate'),
-    fare: t('ride.ticket.perPerson', { taken: model.taken, seats: model.seats }),
+    ...(shareStub(ride, options.mine ?? null, t, language) ?? {
+      amount: model.perPerson
+        ? formatMoney(model.perPerson, language, { whole: true })
+        : t('ride.ticket.noEstimate'),
+      fare: t('ride.ticket.perPerson', { taken: model.taken, seats: model.seats }),
+    }),
     muted: model.muted,
     placeholder: false,
   };

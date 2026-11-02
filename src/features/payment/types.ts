@@ -50,7 +50,11 @@ export class NoRateError extends Error {
   }
 }
 
-export type SettleResult = { firstSettled: boolean; stickerCount: number | null };
+export type SettleResult = {
+  firstSettled: boolean;
+  stickerCount: number | null;
+  rideSettled?: boolean;
+};
 
 export type PaymentService = {
   list(userId: string): Promise<Payment[]>;

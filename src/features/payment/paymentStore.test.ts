@@ -107,6 +107,22 @@ describe('payment store', () => {
     expect(later).toEqual({ ok: true, value: { firstSettled: false, stickerCount: 2 } });
   });
 
+  test('a ride payment earns no sticker of its own; the ride sticker comes once, at the last settle', async () => {
+    const service = createFixturePaymentService(OPTIONS);
+    expect(await service.confirm(FIXTURE_PAYMENT_IDS.rideOwed)).toEqual({
+      firstSettled: false,
+      stickerCount: null,
+      rideSettled: false,
+    });
+    expect(await service.confirm(FIXTURE_PAYMENT_IDS.rideOwedDue)).toEqual({
+      firstSettled: true,
+      stickerCount: 1,
+      rideSettled: true,
+    });
+    await expect(service.confirm(FIXTURE_PAYMENT_IDS.rideOwed)).rejects.toThrow();
+    expect((await service.confirm(FIXTURE_PAYMENT_IDS.owed)).stickerCount).toBe(2);
+  });
+
   test('marking paid then undoing returns the payment to due', async () => {
     const store = await ready();
     const methods = await store.service.methodsOf('fixture-payee');

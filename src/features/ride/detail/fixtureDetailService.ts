@@ -8,23 +8,29 @@ import {
   fixtureRideDetail,
   type DetailScene,
 } from './fixtureDetails';
+import { settleWrites } from './fixtureSettleWrites';
+import { isSettleScene, settleScene, type SettleScene } from './fixtureSettle';
 import type { RideDetail, RideDetailService, RideFailure, RideMember, RideWrite } from './types';
 
-export const DETAIL_FAILS = ['none', 'first', 'refresh', 'write'] as const;
+export const DETAIL_FAILS = ['none', 'first', 'refresh', 'write', 'receipt'] as const;
 
 export type FixtureDetailOptions = {
-  scene: DetailScene | null;
+  scene: DetailScene | SettleScene | null;
   fail: (typeof DETAIL_FAILS)[number];
   variant: FixtureVariant;
   now: () => number;
   delayMs: number;
+  receiptImage?: () => Promise<string | null>;
 };
 
 export function fixtureDetailOptions(
   argument: (name: string) => string | undefined,
   variant: FixtureVariant,
 ): FixtureDetailOptions {
-  const scene = DETAIL_SCENES.find((candidate) => candidate === argument('uiVerifyRideDetail'));
+  const named = argument('uiVerifyRideDetail');
+  const scene = isSettleScene(named)
+    ? named
+    : DETAIL_SCENES.find((candidate) => candidate === named);
   return {
     scene: scene ?? null,
     fail: DETAIL_FAILS.find((fail) => fail === argument('uiVerifyRideDetailFail')) ?? 'none',
@@ -58,7 +64,12 @@ export function createFixtureRideDetailService(
     if (known) return known;
     const scene = options.scene ?? LIST_SCENES[id];
     if (!scene) throw new RideDetailMissing(id);
-    const detail = { ...fixtureRideDetail(scene, options.now(), options.variant), id };
+    const detail = {
+      ...(isSettleScene(scene)
+        ? settleScene(scene, options.now())
+        : fixtureRideDetail(scene, options.now(), options.variant)),
+      id,
+    };
     rides.set(id, detail.id === 'ride-full' ? { ...detail, taken: detail.seats } : detail);
     return rides.get(id) as RideDetail;
   }
@@ -79,18 +90,24 @@ export function createFixtureRideDetailService(
       members: mapMembers(ride, (m) => (m.id === FIXTURE_VIEWER ? { ...m, ...change } : m)),
     });
 
-  async function write(name: string, args: unknown, apply: () => void): Promise<RideWrite> {
+  async function answer<T>(name: string, args: unknown, apply: () => T): Promise<RideWrite<T>> {
     onCall(name, args);
     await wait();
     if (options.fail === 'write' && !writeFailed) {
       writeFailed = true;
       return { ok: false, reason: 'failed' satisfies RideFailure };
     }
-    apply();
-    return { ok: true, value: null };
+    return { ok: true, value: apply() };
   }
 
+  const write = (name: string, args: unknown, apply: () => void): Promise<RideWrite> =>
+    answer(name, args, () => {
+      apply();
+      return null;
+    });
+
   return {
+    ...settleWrites({ options, current, update, answer, write, wait, onCall }),
     async load(id) {
       loads += 1;
       await wait();
