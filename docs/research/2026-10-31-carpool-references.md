@@ -355,6 +355,31 @@ Defaults drawn on the same board and accepted:
 The application note is new: `docs/specs/2026-10-11-carpool-design.md` has no note on a join request. It goes into the
 superseding carpool spec, with a length limit, alongside 182 B.
 
+Answered for screen ③ (集合): **193 A**, **194 A**, **195 A**, **196 A**, **197 A**, **198 A**, **199 A** (user,
+2026-11-02, 「都按推荐」, after the board 「拼车 · ③ 集合」 on p05r at x 13480, y 260).
+
+- 193 A: at 集合 the ticket turns into a countdown ticket: 「10 分钟后出发」 large, with the cells 集合点 / 车牌 / 到了
+  n/4. The timeline expands the 集合 step. It stays the same page.
+- 194 A: the 集合 step shows a row of avatars: arrived has a green ring and the time, not arrived is dashed, late is
+  yellow.
+- 195 A: 我到了 is manual only and can be undone (「你 06:21 到了 · 撤销」). No location is used.
+- 196 A: a 晚到 button offers 5 / 10 / 15 分钟 or 不来了…; others see a yellow ring with 「晚到 5 分 · 约 06:35」.
+- 197 A: the organiser's 出发 opens a half sheet with everyone who tapped 我到了 pre-ticked; unticked people are shown
+  the no-show (放鸽子) consequence and that they can appeal; the confirm reads 「3 人出发」.
+- 198 A: a 车牌 cell on the ticket, filled by the organiser after calling the car (「VEN 2381 · 白色 Alza」).
+  导航到集合点 is for everyone; 打开 Grab is for the organiser only.
+- 199 A: nothing is shown while connected; 「可能不是最新 · 06:19 的」 appears only when disconnected.
+
+Defaults drawn on the same board and accepted: the member's display name 小雅; RM 19 each with 4 riders; the line about
+the first no-show in 60 days being waived; 打开 Grab for the organiser only.
+
+Additions to the superseding carpool spec, with the application note and 182 B:
+
+- 晚到: a member can report being late (5, 10 or 15 minutes) or 不来了…; `docs/specs/2026-10-11-carpool-design.md` has
+  no late state on `ride_members`.
+- 车牌: an optional plate-and-car field on the ride, set by the organiser after booking; the spec's `rides` has none.
+- 我到了 can be undone; the spec records `arrived_at` once and says nothing about undoing it.
+
 **176.** 拼车调研已完成（BlaBlaCar、Grab、Flighty、Wallet 登机牌、Citymapper），下一步是先定整体方向，再一屏一屏重画。
 拼车的整体样子选哪个方向？
 
