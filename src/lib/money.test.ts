@@ -18,18 +18,22 @@ import {
 import { PAYEE_TYPES } from './payeeMethods';
 
 const LOCALES = ['zh-Hans', 'en', 'ms'];
-const schema = readFileSync(
-  join(import.meta.dir, '../../supabase/migrations/20261029000200_money_schema.sql'),
-  'utf8',
-);
+const migration = (name: string) =>
+  readFileSync(join(import.meta.dir, `../../supabase/migrations/${name}`), 'utf8');
+const schema = migration('20261029000200_money_schema.sql');
+const rides = migration('20261102000000_rides.sql');
 
-function insertedRows(table: string) {
-  const match = new RegExp(`insert into public\\.${table} \\([^)]*\\)\\s*values\\s*([^;]+);`).exec(
-    schema,
+function insertedRows(table: string, source = schema) {
+  const pattern = new RegExp(
+    `insert into public\\.${table} \\([^)]*\\)\\s*values\\s*([^;]+);`,
+    'g',
   );
-  if (!match) throw new Error(`no insert into ${table}`);
-  return [...match[1].matchAll(/\(([^)]*)\)/g)].map((row) =>
-    row[1].split(',').map((cell) => cell.trim().replace(/^'(.*)'$/, '$1')),
+  const matches = [...source.matchAll(pattern)];
+  if (matches.length === 0) throw new Error(`no insert into ${table}`);
+  return matches.flatMap((match) =>
+    [...match[1].matchAll(/\(([^)]*)\)/g)].map((row) =>
+      row[1].split(',').map((cell) => cell.trim().replace(/^'(.*)'$/, '$1')),
+    ),
   );
 }
 
@@ -56,7 +60,10 @@ describe('mirrors of the money schema', () => {
 
   test('POST_LIMITS matches the post_limits rows', () => {
     const limits: Record<string, Record<string, unknown>> = {};
-    for (const [kind, currency, min, max, step] of insertedRows('post_limits')) {
+    for (const [kind, currency, min, max, step] of [
+      ...insertedRows('post_limits'),
+      ...insertedRows('post_limits', rides),
+    ]) {
       limits[kind] = {
         ...limits[kind],
         [currency]: { minMinor: Number(min), maxMinor: Number(max), stepMinor: Number(step) },

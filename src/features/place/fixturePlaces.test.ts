@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'bun:test';
 import type { PlaceSuggestionsEvent } from 'tapiro-kit';
 
-import { createFixturePlaces, FIXTURE_PLACES, placesFixture, WORST_PLACE } from './fixturePlaces';
+import {
+  createFixturePlaces,
+  FIXTURE_PLACES,
+  placesFixture,
+  RIDE_PLACES,
+  WORST_PLACE,
+} from './fixturePlaces';
 
 const now = (run: () => void) => run();
 
@@ -76,6 +82,19 @@ describe('place fixtures', () => {
     expect(await places.resolvePlace(searchId, WORST_PLACE.id)).toEqual({
       status: 'ok',
       place: WORST_PLACE.place,
+    });
+  });
+
+  test('ride adds KLIA2 and Mid Valley after the Sunway places', async () => {
+    const { places, events, searchId } = query('ride');
+    const event = events[0];
+    expect(event.status === 'ok' && event.items.map((item) => item.id).slice(-2)).toEqual([
+      'klia2',
+      'mid-valley',
+    ]);
+    expect(await places.resolvePlace(searchId, 'klia2')).toEqual({
+      status: 'ok',
+      place: RIDE_PLACES[0].place,
     });
   });
 

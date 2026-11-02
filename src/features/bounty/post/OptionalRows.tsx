@@ -25,7 +25,7 @@ import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { fullRow, ROW_INSETS } from './FieldRow';
+import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { TimePicks } from './TimePicks';
 import { addedTime, moveStart, switchKind, timeBounds } from './timeChoice';
 import type { PostDraft, TimeChoice } from './types';

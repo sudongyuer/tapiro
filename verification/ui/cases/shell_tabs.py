@@ -8,7 +8,7 @@ from driver import (UI, TABS, accessory, assert_appearance, assert_tapir_button,
 DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
 
 LOCALES = ['zh-Hans', 'ms']
-SCREENS = {'tab-ride': 'ride-empty', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
+SCREENS = {'tab-ride': 'ride-screen', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])

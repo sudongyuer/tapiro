@@ -45,7 +45,7 @@ import type { BountyCategory } from '@/lib/stickers/category';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 
-import { FieldRow, ROW_INSETS } from './FieldRow';
+import { FieldRow, ROW_INSETS } from '@/ui/FieldRow';
 import { rewardAmounts, rewardSuggestion } from './postKinds';
 import { rewardLimits } from './validate';
 

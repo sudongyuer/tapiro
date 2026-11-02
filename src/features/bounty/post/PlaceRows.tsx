@@ -13,7 +13,7 @@ import { useRef } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 
-import { FieldRow, fullRow, ROW_INSETS } from './FieldRow';
+import { FieldRow, fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { AddRow, HeadingRow } from './OptionalRows';
 import type { DraftPlace } from './types';
 import { ADDRESS_MAX, codePoints, PLACE_MAX } from './validate';

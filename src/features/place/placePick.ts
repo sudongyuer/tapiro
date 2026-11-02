@@ -2,7 +2,7 @@ import type { ResolvedPlace } from 'tapiro-kit';
 
 import { userCleanups } from '@/lib/userCleanups';
 
-export type PlacePurpose = 'post' | 'board';
+export type PlacePurpose = 'post' | 'board' | 'rideStart' | 'rideDest';
 
 export function createPlacePick() {
   const picks = new Map<PlacePurpose, ResolvedPlace>();

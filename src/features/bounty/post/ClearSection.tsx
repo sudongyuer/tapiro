@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { fullRow, ROW_INSETS } from './FieldRow';
+import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { resetDraft } from './useDraft';
 
 export function ClearSection({
