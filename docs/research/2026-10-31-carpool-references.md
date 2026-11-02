@@ -305,7 +305,12 @@ fallback if the ticket does not test well at the 2-line place limit. D waits for
 ## 4. Questions for the owner
 
 Answered: **176 B** (user, 2026-10-31, after the drawn comparison board 「拼车 · 方向 A/B/C 对比 · 第 176 题」 on
-p05r at x 7440, y 260). 177–179 are open.
+p05r at x 7440, y 260).
+
+Answered: **177 B**, **178 B**, **179 A** (user, 2026-10-31 to 2026-11-02). Tapiro splits the fare by default and the
+organiser can tick 「车费已在 Grab 里分好」, which skips the split and only records who boarded. The redesign goes on with
+the composite WeChat-post sample; there are no real screenshots. Daily short trips (回宿舍, 去商场, 回 YC) come first;
+the airport adds optional fields (flight time, large luggage); holiday long-haul is not designed now.
 
 **176.** 拼车调研已完成（BlaBlaCar、Grab、Flighty、Wallet 登机牌、Citymapper），下一步是先定整体方向，再一屏一屏重画。
 拼车的整体样子选哪个方向？

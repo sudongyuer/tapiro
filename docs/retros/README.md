@@ -21,3 +21,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-10-31 | realtime answers       | 0               | 0             | ~0                                          | 0                       | 0                  |
 | 2026-10-31 | carpool research       | pending         | 0             | ~0                                          | 0                       | pending            |
 | 2026-10-31 | realtime approve       | 0               | 0             | ~0                                          | 0                       | 0                  |
+| 2026-11-02 | carpool answers        | 0               | 0             | ~0                                          | 0                       | 0                  |
