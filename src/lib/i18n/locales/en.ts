@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import block from './block/en';
 import bounty from './bounty/en';
 import pay from './pay/en';
 import ride from './ride/en';
@@ -129,6 +130,7 @@ const en: Translation = {
   payee,
   pay,
   stickers,
+  block,
   bounty,
   ride,
   shell: {

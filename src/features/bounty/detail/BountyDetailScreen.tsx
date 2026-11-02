@@ -109,7 +109,7 @@ export function BountyDetailScreen({
               <NoticeCard
                 tone="urgent"
                 icon="exclamationmark.circle.fill"
-                title={t('bounty.block.failed')}
+                title={t('block.failed')}
                 testID="bounty-detail-block-failed"
               />
             ) : null}

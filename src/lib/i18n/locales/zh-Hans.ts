@@ -1,3 +1,4 @@
+import block from './block/zh-Hans';
 import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import ride from './ride/zh-Hans';
@@ -124,6 +125,7 @@ export default {
   payee,
   pay,
   stickers,
+  block,
   bounty,
   ride,
   shell: {

@@ -177,7 +177,7 @@ function ApplicantRow({
         {blocking ? (
           <ProgressView
             modifiers={[
-              accessibilityLabel(t('bounty.block.blocking')),
+              accessibilityLabel(t('block.blocking')),
               accessibilityIdentifier(`bounty-applicant-blocking-${applicant.id}`),
             ]}
           />
@@ -200,7 +200,7 @@ function ApplicantRow({
       <ContextMenu.Items>
         {canBlock ? (
           <Button
-            label={t('bounty.block.menu', { name })}
+            label={t('block.menu', { name })}
             systemImage="hand.raised"
             role="destructive"
             onPress={() => onBlock({ id: applicant.id, name: applicant.name })}
