@@ -32,7 +32,7 @@ unchanged; Data flow and ownership; Implementation order 1–3; Verification. Ev
 
 - Zero comments in SQL and TypeScript unless they explain unexpected behaviour or a hidden invariant.
 - Every RLS-bypassing function is `security definer`, `set search_path = ''`, schema-qualified; `revoke all … from
-  public, anon, authenticated`, then grant `authenticated` (client RPCs, actor from `auth.uid()`) or `service_role`.
+public, anon, authenticated`, then grant `authenticated` (client RPCs, actor from `auth.uid()`) or `service_role`.
 - Tables: RLS on, `revoke all` from clients, narrowest column grant and policy; clients never write a ride table.
 - Typed rejections: SQLSTATE plus slug (below), tested with `throws_ok`.
 - Data integrity: a replayed call returns the first outcome and writes nothing; a failed publish debits nothing.
@@ -47,24 +47,24 @@ unchanged; Data flow and ownership; Implementation order 1–3; Verification. Ev
 
 ## Rejection reasons
 
-| Slug                | SQLSTATE | When                                                                                    |
-| ------------------- | -------- | --------------------------------------------------------------------------------------- |
-| `ride_not_found`    | `P0002`  | No ride with that id                                                                    |
-| `invalid_ride`      | `22023`  | Publish or edit input breaks a rule (labels, short names, points, time, seats, money)   |
-| `post_already_sent` | `55000`  | A publish replay carries different content                                              |
-| `publish_blocked`   | `55000`  | `publish_blocked()` for the organiser                                                   |
-| `no_payee_method`   | `55000`  | The organiser has no payee method (publish, split)                                      |
-| `no_balance`        | `55000`  | From `spend_post`                                                                       |
-| `not_organiser`     | `42501`  | An organiser-only RPC called by someone else                                            |
-| `not_member`        | `42501`  | A member-only RPC called by someone who is not an accepted member                       |
-| `own_ride`          | `22023`  | The organiser requests their own ride, or leaves it                                     |
-| `blocked`           | `42501`  | The caller blocked the other side                                                       |
-| `closed`            | `55000`  | Cancelled, expired or closed ride; or the other side blocked the caller (not revealed)  |
-| `departed`          | `55000`  | The ride has left (出发) and the action needs it before                                  |
-| `full`              | `55000`  | Request or approval on a full ride                                                      |
-| `not_pending`       | `55000`  | Withdraw or decide on a row that is not `requested`; request after decline or leave     |
-| `invalid_transition`| `55000`  | Any other state mismatch                                                                |
-| `invalid_split`     | `22023`  | Split rows do not match the boarded riders, a share ≤ 0, or riders exceed the total     |
+| Slug                 | SQLSTATE | When                                                                                   |
+| -------------------- | -------- | -------------------------------------------------------------------------------------- |
+| `ride_not_found`     | `P0002`  | No ride with that id                                                                   |
+| `invalid_ride`       | `22023`  | Publish or edit input breaks a rule (labels, short names, points, time, seats, money)  |
+| `post_already_sent`  | `55000`  | A publish replay carries different content                                             |
+| `publish_blocked`    | `55000`  | `publish_blocked()` for the organiser                                                  |
+| `no_payee_method`    | `55000`  | The organiser has no payee method (publish, split)                                     |
+| `no_balance`         | `55000`  | From `spend_post`                                                                      |
+| `not_organiser`      | `42501`  | An organiser-only RPC called by someone else                                           |
+| `not_member`         | `42501`  | A member-only RPC called by someone who is not an accepted member                      |
+| `own_ride`           | `22023`  | The organiser requests their own ride, or leaves it                                    |
+| `blocked`            | `42501`  | The caller blocked the other side                                                      |
+| `closed`             | `55000`  | Cancelled, expired or closed ride; or the other side blocked the caller (not revealed) |
+| `departed`           | `55000`  | The ride has left (出发) and the action needs it before                                |
+| `full`               | `55000`  | Request or approval on a full ride                                                     |
+| `not_pending`        | `55000`  | Withdraw or decide on a row that is not `requested`; request after decline or leave    |
+| `invalid_transition` | `55000`  | Any other state mismatch                                                               |
+| `invalid_split`      | `22023`  | Split rows do not match the boarded riders, a share ≤ 0, or riders exceed the total    |
 
 ## Tasks
 
@@ -75,7 +75,7 @@ unchanged; Data flow and ownership; Implementation order 1–3; Verification. Ev
 - [ ] `src/features/place/index.ts` facade; bounty imports `@/features/place` only; `PlaceSearchScreen` exported from
       bounty's index unchanged for the routes.
 - [ ] `bun test` (place and board tests unchanged), `tsc`, lint; commit `refactor(place): move place search and the
-      origin store out of bounty`.
+    origin store out of bounty`.
 
 ### Task 2: shared block module
 
@@ -133,7 +133,7 @@ unchanged; Data flow and ownership; Implementation order 1–3; Verification. Ev
 
 - [ ] `nearby_rides(latitude, longitude, page_after, page_size, reference_currency)`: joinable rides, ordered by
       Malaysia day, then start distance (or departure without a location), then departure, id; cursor `{id,
-      latitude, longitude}`; organiser only, no members. `my_rides()` (24 h rule) and `ride_history()`.
+    latitude, longitude}`; organiser only, no members. `my_rides()` (24 h rule) and `ride_history()`.
 - [ ] pgTAP `ride_nearby.test.sql`. Commit `feat(carpool): nearby rides by day with a cursor`.
 
 ### Task 10: records and PR

@@ -376,3 +376,64 @@ Every UI step writes the UI cases for the screens it changes; the feature's case
 - `break-ui`: 80-character labels, 8-character short names, 6 riders with long names, ¥ and RM totals at the limit, one
   rider.
 - Device: reminders, haptics, 打开 Grab and Apple Maps links.
+
+## Implementation Record (2026-11-02, steps 1–3)
+
+PR: not opened yet · Commits: e27f62b..HEAD on `feat/carpool-foundation`. Status stays `approved`: steps 4–8 remain.
+Plan: `docs/plans/2026-11-02-carpool-foundation.md`.
+
+### What was built
+
+- Step 1, shared modules: place search, place pick, current place and the origin store live in `src/features/place/`
+  (facade `index.ts`); the block client, flow, events, menu and list screen in `src/features/block/`. Bounty imports
+  both; verify-mode block fixture people are registered by bounty (`src/features/bounty/shared/blockFixturePeople.ts`).
+  Evidence: 71b7b4d, 54cc90a.
+- Pure logic: `src/features/place/shortName.ts` (table match, leading-part fallback ≤ 8, airport detection),
+  `src/features/ride/split.ts` (220 A), `perPerson.ts` (221), `rideTimes.ts` (T-30, T-15, +2 h, 24 h). Evidence: 2360d14.
+- Step 2, schema and RLS: `rides` (snapped `start_public` / `dest_public`), `ride_details` (note, plate, eta),
+  `ride_receipts`, `ride_members` (the organiser holds a row), `ride_events`, `place_short_names` with 21 seed patterns,
+  `post_limits` rows for `ride`, bucket `ride-receipts`. Evidence: `supabase/migrations/20261102000000_rides.sql` (df3234c).
+- Transitions: `publish_ride`, `request_ride`, `withdraw_ride_request`, `decide_ride_request`, `ride_leave_preview`,
+  `leave_ride`, `ride_cancel_preview`, `cancel_ride` (a14c8f7); `mark_ride_arrived`, `undo_ride_arrived`,
+  `report_ride_late`, `revise_ride_time`, `update_ride_details`, `set_ride_split_mode`, `depart_ride`,
+  `appeal_ride_no_show`, `confirm_ride_appeal` (2a16466); `reach_ride`, `send_ride_split`, `set_ride_receipt`,
+  `dispute_ride_share`, `change_ride_share`, `ride_paid_states`, the ride branch of `confirm_payment_received` and one
+  car sticker per (owner, ride) (4bb8f5c); `run_ride_jobs` (cron `ride-jobs`, every minute),
+  `ride_receipts_to_delete`, `clear_ride_receipt`, `active_rides_of`, the `auth.users` delete trigger and `rides` in
+  the `account-delete` 409 (78af614).
+- Step 3: `nearby_rides(latitude, longitude, page_after, page_size, reference_currency)`, `my_rides()` (24 h rule),
+  `ride_history()`. Evidence: `supabase/migrations/20261102000500_nearby_rides.sql` (0a6f74e).
+
+### Deviations from the design
+
+| Design said                                    | Shipped                                                                                                               | Why                                                                                                    | Confirmed by                                         |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Carpool events go to the realtime outbox       | Transitions write `ride_events` only                                                                                  | `public.events` does not exist yet (no migration); the kinds are emitted in step 5                     | not intent-changing                                  |
+| Receipt cleanup with the payment-proof cleanup | `ride_receipts_to_delete()` and `clear_ride_receipt()` exist; the Edge Function does not call them yet                | No client can upload a receipt before step 6                                                           | not intent-changing                                  |
+| Receipt visible to moderators                  | Moderators read through the service role                                                                              | No moderator role exists in the schema                                                                 | not intent-changing                                  |
+| Order by distance, "then same destination"     | Malaysia day, then snapped start distance, then departure, then id                                                    | "Same destination" names no reference point; distance uses the snapped point so ties fall to departure | not intent-changing                                  |
+| Equal split rounds up to 0.10                  | Rounded up, capped at total ÷ (riders) so the organiser's row is never negative                                       | Totals under about RM 3 for 6 people would go negative                                                 | not intent-changing                                  |
+| 每人约 rounds to the nearest unit              | Same, never below one unit                                                                                            | Avoids showing RM 0                                                                                    | not intent-changing                                  |
+| Leaving inside 15 min is a no-show             | Member state `left` plus a no-show record (not state `no_show`)                                                       | Keeps 我上车了 appeals to unticked boarders only                                                       | not intent-changing                                  |
+| Appeal: 申诉中, not counted                    | The no-show row is deleted at appeal; an appeal nobody confirms is never counted                                      | The spec has no rejection path                                                                         | not intent-changing; owner may want a rejection rule |
+| Sticker per payment (built)                    | Ride payments earn no per-payment sticker; the ride closes at the last settle and stickers go to every boarded person | Change 30 of this spec; `stickers.test.sql` fixtures moved to bounty payments                          | spec 218 A / 231                                     |
+
+### Bugs fixed during implementation
+
+- **Symptom:** `check:size` failed on `20261102000100_ride_join.sql` (507 lines). **Root cause:** the plan's per-task
+  checks omitted `check:size`. **Fix:** no-show helpers moved into the schema migration (d658677).
+
+### Verification
+
+- `supabase test db` on an isolated local stack (`project_id` `tapiro-carpool`) → 31 files, 1269 tests, PASS.
+- `bun test` → 1597 pass, 0 fail.
+- `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `bun run check:size`,
+  `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs` → exit 0.
+- Skipped: `verify:smoke` (no screen changed) and `test:stack` (needs the Edge runtime on the shared stack).
+
+### Known limits
+
+- `sticker_book()` and `settled_cards()` join `payments`, so ride stickers do not show in the book yet (step 6).
+- The client payment fixture still earns a per-payment ride sticker (`src/features/payment/fixturePaymentService.ts`); step 6.
+- The app does not list `rides` from the account-delete 409 yet; it treats the answer as blocked.
+- The six `20261102…` migrations ran only on the local stack; nothing was pushed to the hosted project.
