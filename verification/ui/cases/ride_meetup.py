@@ -1,5 +1,5 @@
 """集合 for a member at 06:20 (193 A–195 A, 198 A). The ticket becomes the countdown ticket 「10 分钟后出发」 with
-集合点 / 车牌 (小林叫车后填) / 到了 2/4 and the airport cells; 导航到集合点 is shown and 打开 Grab is not (organiser only);
+集合点 (双威, the short name) / 车牌 (小林叫车后填) / 到了 2/4 and the airport cells; 导航到集合点 is shown and 打开 Grab is not (organiser only);
 the timeline's 集合 step reads 2/4 到了 with the avatar row: 小林 and 阿明 with their times, 阿杰 and you 还没到. The bottom
 has 晚到 and 我到了; 我到了 sends mark_ride_arrived once and turns into 「你 hh:mm 到了 · 撤销」 with your avatar timed and
 3/4; 撤销 sends undo_ride_arrived once and brings 我到了 back. Nothing says 「可能不是最新」 while loads succeed (199 A)."""
@@ -52,7 +52,8 @@ ticket = ui.element('ride-detail-ticket')
 text = ticket.get('AXLabel') or ''
 countdown = re.compile(r'(9|10|11) ' + re.escape(ui.tn('ride.detail.countdown', 10)))
 assert countdown.match(text), f'the ticket does not lead with the countdown: {text}'
-for part in (ui.t('ride.detail.cell.platePending', name='小林'), arrived_cell(2), '双威 → KLIA2'):
+for part in (f"{ui.t('ride.detail.cell.point')} 双威", ui.t('ride.detail.cell.platePending', name='小林'),
+             arrived_cell(2), '双威 → KLIA2'):
     assert part in text, f'ticket label misses {part!r}: {text}'
 title = ui.element('ride-detail-meetup-title').get('AXLabel')
 assert title == ui.t('ride.detail.steps.meetupArrived', arrived=2, total=4), title

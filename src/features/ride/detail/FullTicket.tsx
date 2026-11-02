@@ -1,5 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import { PlatformColor, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -8,6 +9,7 @@ import { MUTED_TEXT_OPACITY, token, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { FullTicketView, TicketCell } from './fullTicketView';
+import { useStampLanding } from './useStampLanding';
 
 const NOTCH = 14;
 const STICKER = 52;
@@ -91,7 +93,7 @@ export function FullTicket({
             {view.labels}
           </AppText>
         ) : null}
-        {stamp ? <AppliedStamp /> : null}
+        <AppliedStamp shown={stamp} />
       </View>
       <Tear />
       <CellRow cells={view.cells} />
@@ -105,21 +107,24 @@ export function FullTicket({
   );
 }
 
-function AppliedStamp() {
+function AppliedStamp({ shown }: { shown: boolean }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const landing = useStampLanding(shown, STAMP_TILT);
   return (
-    <View
+    <Animated.View
+      pointerEvents="none"
       style={[
         styles.stamp,
         { borderColor: color('--color-success'), backgroundColor: color('--color-receipt') },
+        landing,
       ]}
       testID="ride-detail-stamp"
     >
       <AppText variant="secondary" style={[styles.stampText, { color: color('--color-success') }]}>
         {t('ride.detail.applied.stamp')}
       </AppText>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -198,7 +203,6 @@ const styles = StyleSheet.create({
     borderRadius: vars['--space-2'],
     borderCurve: 'continuous',
     paddingHorizontal: vars['--space-2'],
-    transform: [{ rotate: `${STAMP_TILT}deg` }],
   },
   stampText: { fontWeight: '800' },
   tear: { height: NOTCH, justifyContent: 'center' },

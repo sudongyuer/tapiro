@@ -114,7 +114,7 @@ export function fullTicketView(
   ];
   const cells = meetup
     ? [
-        cell('point', t('ride.detail.cell.point'), ride.start.label),
+        cell('point', t('ride.detail.cell.point'), ride.start.short),
         plateCell(ride, t),
         cell(
           'arrived',
