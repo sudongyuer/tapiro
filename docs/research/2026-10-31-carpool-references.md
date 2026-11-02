@@ -331,6 +331,30 @@ exclamation mark for 「我发起的 · 1 人申请」.
 risks and step 3–4). The spec is not edited now; a superseding carpool spec will be written once the screens are
 settled.
 
+Answered for screen ② (the detail): **186 A**, **187 A**, **188 A**, **189 A**, **190 A**, **191 A**, **192 A** (user,
+2026-11-02, 「都按推荐」, after the board 「拼车 · ② 详情（车票 + 时间线）」 on p05r at x 11440, y 260).
+
+- 186 A: the full ticket scrolls away with the content, and the nav bar then shows 「双威 → KLIA2」.
+- 187 A: all six phases are listed (发起 → 凑齐 → 集合 → 上车 → 到了 → 结清) with 「现在」 marked; past phases are
+  solid, future ones grey with an estimated time.
+- 188 A: a non-member sees the organiser's avatar plus dashed empty seats; members are hidden from non-members.
+- 189 A: the organiser handles requests on an application card under the ticket (avatar, 靠谱, the applicant's note,
+  拒绝 / 通过).
+- 190 A: 「车费怎么分」 is chosen at creation and can be changed in the detail until departure.
+- 191 A: an airport ride adds two cells to the ticket, 航班起飞 and 大件行李.
+- 192 A: after applying, the ticket carries an 「已申请」 stamp; the bottom shows 「等小林通过」 with 撤回申请.
+
+Defaults drawn on the same board and accepted:
+
+- The primary action changes by role: 申请上车; 我到了 once 集合 starts; the organiser's 「出发 · 勾选谁上了车」.
+- List load failure: a failed refresh keeps the last tickets under a yellow 「下面是 22:05 的」 note with 重试; a
+  first-load failure shows an error card, with the ＋ still visible.
+- Non-members see grey, nameless seats.
+- An application may carry a one-line note.
+
+The application note is new: `docs/specs/2026-10-11-carpool-design.md` has no note on a join request. It goes into the
+superseding carpool spec, with a length limit, alongside 182 B.
+
 **176.** 拼车调研已完成（BlaBlaCar、Grab、Flighty、Wallet 登机牌、Citymapper），下一步是先定整体方向，再一屏一屏重画。
 拼车的整体样子选哪个方向？
 
