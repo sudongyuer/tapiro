@@ -155,7 +155,8 @@ select is(
 
 reset role;
 select is(
-  (select count(*) from public.ride_events), 1::bigint, 'the service role reads ride events'
+  (select count(*) from public.ride_events), 2::bigint,
+  'the service role reads ride events (published, and the withdrawal the block of e5 wrote)'
 );
 
 select * from finish();

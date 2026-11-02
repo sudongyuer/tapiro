@@ -35,7 +35,7 @@ export function BlockedListScreen() {
   const { t } = useI18n();
   const { state, retry, unblock } = useBlockList();
   const retryAction = {
-    label: t('bounty.block.list.retry'),
+    label: t('block.list.retry'),
     onPress: () => void retry(),
     testID: 'blocked-retry',
   };
@@ -48,7 +48,7 @@ export function BlockedListScreen() {
             <ProgressView
               modifiers={[
                 frame({ maxWidth: Infinity, minHeight: vars['--touch-min'] }),
-                accessibilityLabel(t('bounty.block.list.loading')),
+                accessibilityLabel(t('block.list.loading')),
                 accessibilityIdentifier('blocked-loading'),
               ]}
             />
@@ -58,10 +58,10 @@ export function BlockedListScreen() {
           <NoticeCard
             tone="urgent"
             icon="exclamationmark.circle.fill"
-            title={t('bounty.block.list.failed')}
+            title={t('block.list.failed')}
             action={{
               ...retryAction,
-              busyLabel: state.retrying ? t('bounty.block.list.loading') : undefined,
+              busyLabel: state.retrying ? t('block.list.loading') : undefined,
             }}
             testID="blocked-failed"
           />
@@ -90,7 +90,7 @@ function ReadySections({
         <NoticeCard
           tone="warning"
           icon="exclamationmark.triangle.fill"
-          title={t('bounty.block.list.refreshFailed')}
+          title={t('block.list.refreshFailed')}
           action={retryAction}
           testID="blocked-stale"
         />
@@ -99,7 +99,7 @@ function ReadySections({
         <NoticeCard
           tone="urgent"
           icon="exclamationmark.circle.fill"
-          title={t('bounty.block.list.unblockFailed')}
+          title={t('block.list.unblockFailed')}
           testID="blocked-unblock-failed"
         />
       ) : null}
@@ -110,16 +110,14 @@ function ReadySections({
             spacing={vars['--space-1']}
             modifiers={[accessibilityElement('combine'), accessibilityIdentifier('blocked-empty')]}
           >
-            <Text modifiers={[font({ textStyle: 'headline' })]}>
-              {t('bounty.block.list.emptyTitle')}
-            </Text>
+            <Text modifiers={[font({ textStyle: 'headline' })]}>{t('block.list.emptyTitle')}</Text>
             <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>
-              {t('bounty.block.list.emptyBody')}
+              {t('block.list.emptyBody')}
             </Text>
           </VStack>
         </Section>
       ) : (
-        <Section footer={<Text>{t('bounty.block.list.footer')}</Text>}>
+        <Section footer={<Text>{t('block.list.footer')}</Text>}>
           {state.people.map((person) => (
             <PersonRow
               key={person.id}
@@ -152,7 +150,7 @@ function PersonRow({
         <Spacer />
         <ProgressView
           modifiers={[
-            accessibilityLabel(t('bounty.block.list.unblocking')),
+            accessibilityLabel(t('block.list.unblocking')),
             accessibilityIdentifier(`blocked-unblocking-${person.id}`),
           ]}
         />
@@ -173,7 +171,7 @@ function PersonRow({
         <Spacer />
       </HStack>
       <SwipeActions.Actions edge="trailing">
-        <Button role="destructive" label={t('bounty.block.list.unblock')} onPress={onUnblock} />
+        <Button role="destructive" label={t('block.list.unblock')} onPress={onUnblock} />
       </SwipeActions.Actions>
     </SwipeActions>
   );

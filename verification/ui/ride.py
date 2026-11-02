@@ -80,3 +80,12 @@ def open_confirm(ui):
     open_form(ui)
     ui.tap_label(ui.t('ride.create.next'))
     return ui.element('ride-confirm')
+
+
+def tap_bar(ui, identifier):
+    def match(items):
+        found = [i for i in items if i.get('AXUniqueId') == identifier]
+        return next((i for i in found if i.get('type') == 'Button'), found[0] if found else None)
+    # SwiftUI toolbar buttons in a sheet expose the identifier twice (the button and its label), so axe tap --id refuses.
+    f = ui.settled(match, f'{identifier} never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)

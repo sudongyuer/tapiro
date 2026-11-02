@@ -22,7 +22,7 @@ import { DesignTokensScene } from './DesignTokensScene';
 import { FlightRedirect } from './FlightScene';
 import { MapKitScene } from './MapKitScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
-import { RideConfirmScene, RideFormScene, RideListScene } from './RideScenes';
+import { RideConfirmScene, RideDetailScene, RideFormScene, RideListScene } from './RideScenes';
 import { SignInScene } from './SignInScene';
 
 export type Scene = {
@@ -70,6 +70,7 @@ export const scenes: Scene[] = [
   { id: 'ride-list', titleKey: 'debug.ride.list', Component: RideListScene },
   { id: 'ride-form', titleKey: 'debug.ride.form', Component: RideFormScene },
   { id: 'ride-confirm', titleKey: 'debug.ride.confirm', Component: RideConfirmScene },
+  { id: 'ride-detail', titleKey: 'debug.ride.detail', Component: RideDetailScene },
 ];
 
 export function findScene(id: string) {

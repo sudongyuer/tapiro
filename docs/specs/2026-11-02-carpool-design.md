@@ -551,3 +551,101 @@ PR: https://github.com/sudongyuer/tapiro/pull/50 (`feat/carpool-list-create`) ·
   route `ride/[id]` with the detail, keep the route name.
 - `RideTicket` takes a `TicketView`; `rideTicketView` builds it from a summary plus the viewer's role. The home live
   card (224) can reuse both.
+
+## Implementation Record (2026-11-02, step 5)
+
+PR: https://github.com/sudongyuer/tapiro/pull/51 (`feat/carpool-detail-meetup`) · Commits: 17f0b68..HEAD. Status stays `approved`: steps 6–8 remain.
+
+### What was built
+
+- Read: `public.ride_detail(ride, reference_currency)` (`supabase/migrations/20261102000700_ride_detail.sql`) returns
+  the summary plus the viewer's role (`organiser`, `member`, `applicant`, `viewer`, `noShow`), their own status, note,
+  arrival and late time, the phase times (published, filled, departed, reached), the 72 h appeal end, whether their
+  appeal lapsed and the no-show outcome. Members (with arrival, late time and approval time), 车牌 / 预计到 / 集合说明
+  and the exact start point go only to the organiser and accepted or boarded members; requests with notes only to the
+  organiser; everyone else gets the snapped point. It mirrors `rides_select`: a blocked viewer and a non-member of a
+  departed ride get `ride_not_found`. pgTAP `ride_detail.test.sql` (30 tests).
+- Detail (`src/features/ride/detail/`, route `ride/[id]`): the full ticket with the cells and the two airport cells
+  (186 A, 191 A); the nav title 「双威 → KLIA2」 once the ticket scrolls away (186 A); the six-step timeline with 「现在」,
+  past solid and future grey with times, 「约」 for a typed 预计到 (187 A); a non-member's seat row with the organiser,
+  filled-but-hidden seats and dashed empty seats plus the privacy line (188 A); the organiser's application card with
+  tier, note, 拒绝 / 通过 (189 A); 车费怎么分 as a system menu until 出发 (190 A); 申请上车 with an optional note sheet,
+  then the 已申请 stamp, 「等小林通过」 and 撤回申请 behind a confirmation (192 A); the 「⋯」 menu (改出发时间, 车牌和集合说明,
+  取消这趟 for the organiser; 退出这趟 and 屏蔽 for others) with the leave and cancel previews in system action sheets.
+- 集合: the countdown ticket with 集合点 / 车牌 / 到了 n/m (193 A); the avatar row, green with the time, dashed 还没到,
+  yellow 晚到 n 分 then 「说 hh:mm」, and the 「阿杰 hh:mm 说晚到 5 分钟 · 约 hh:mm」 line (194 A, 196 A); 我到了 and
+  「你 hh:mm 到了 · 撤销」 (195 A); 晚到 as a system menu with 5 / 10 / 15 分钟, 不晚到了 and 不来了… (leave flow, 228);
+  导航到集合点 for everyone (Apple Maps `https://maps.apple.com/directions?destination=<lat>,<lng>&mode=walking`,
+  unified Map URLs), 打开 Grab (`grab://open?screenType=MAIN`, research 2026-10-06) and 填车牌 for the organiser
+  (198 A); the boarding sheet with arrivals pre-ticked, the no-show consequence naming the unticked and 「n 人出发」
+  (197 A); the organiser's 「照常走还是取消」 card inside T-15 when seats are empty (carried rule).
+- Appeals: 「你没被勾上车」 with 我上车了 until the 72 h end, 申诉中, 申诉过期了 (lapsed, 233 A) and the closed state; any
+  boarded member sees 「阿杰说已经上车了」 with one-tap 确认上车了.
+- Freshness without the realtime layer (`src/lib/live/` and `public.events` do not exist yet): refetch on focus, on
+  foreground, on pull and after every write; poll every 15 s while the screen is focused at 集合 within 15 minutes of
+  departure (175 B); a failed load keeps the last detail and shows 「可能不是最新 · hh:mm 的」 in the 集合 step (199 A),
+  or 「没刷新成功 · 下面是 hh:mm 的」 with 重试 before 集合.
+- Data integrity: the apply note and the plate / note draft are kept per ride until the write succeeds; a failed write
+  shows 「没成功，再试一次」 and is never replayed; a typed rejection reloads.
+- Shared block copy: `bounty.block.*` moved to `block.*` (`src/lib/i18n/locales/block/`), and its body now names rides.
+- Verify mode: `fixtureDetailService.ts` with scenes `viewer`, `viewerMall`, `applicant`, `organiser`, `member`,
+  `meetup` (06:20), `meetupArrived`, `meetupLate` (06:29), `depart` (06:36), `goOrCancel`, `appealOpen`,
+  `appealPending`, `appealLapsed`, `confirmAppeal`, `worst` (`-uiVerifyRideDetail`), `-uiVerifyRideDetailFail
+  first|refresh|write`, every call recorded in `uiVerifyRideDetailCalls`; Debug scene `ride-detail`.
+
+### Deviations from the design
+
+| Design said                                                                | Shipped                                                                                                                   | Why                                                                                              | Confirmed by        |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------- |
+| 集合 step and 集合点 cell read a pickup spot (「Geo 大堂 Grab 上车点」) | The 集合点 cell reads the start's short name (双威, as on the ticket); the 集合 step reads the full start label; the exact spot goes in 集合说明 | A ride has no pickup-spot field; the full label truncated in the cell (「Sunway G…」) | coordinator, 2026-11-02 |
+| 到了 shows 「约 07:20」                                                    | Shown only when the organiser typed 预计到 (226), else no time                                                            | Tapiro has no route data                                                                          | not intent-changing |
+| Boarding sheet: check circles and a black 「3 人出发」 pill                 | System toggles; 「n 人出发」 is the sheet's confirm button                                                                | Native sheet pattern of the ETA sheet; no imitated controls                                      | not intent-changing |
+| The organiser's 集合 bar has only 出发                                     | A secondary 我到了 sits beside 出发 until the organiser taps it                                                           | 196 A shows the organiser with an arrival time; the server accepts the organiser's 我到了         | not intent-changing |
+| 填车牌 is one text field                                                   | One sheet: 车牌, optional 预计到, 集合说明                                                                               | `update_ride_details` writes all three; 223 and 226 make them the organiser's edits               | not intent-changing |
+| (not drawn) the note field for 申请上车, 改时间, appeal cards, T-15 prompt | Half sheets for the note and the time (later only, ≤ 24 h); cards under the ticket for appeals and 「照常走还是取消」      | Known gaps of this spec; closest board patterns                                                   | not intent-changing |
+| Realtime updates and the carpool event kinds (step 5)                      | Focus / foreground / pull / after-write refetch and the 15 s poll; no ride live source on home, no event kinds            | The shared live layer is not built; the realtime spec's interim behaviour applies                 | not intent-changing |
+| 199 A: the line shows while disconnected                                   | It shows after a failed refresh or poll                                                                                   | Without a channel, a failed load is the only disconnection signal                                 | not intent-changing |
+| The 已申请 stamp (motion candidate) | Motion A: the bounty stamp landing (same values, `detail/useStampLanding.ts`, since features do not import each other), a spring from 1.4 to 1 with a success haptic when it settles, a 150 ms fade under Reduce Motion; only when the stamp appears on screen, not on load. ★ by default, owner may veto | The owner's standing rule takes the ★ option | ★ by default, owner may veto |
+| Replace the stub detail | `RideDetailStub.tsx` deleted | Created by step 4 of this effort | coordinator, 2026-11-02 |
+
+### Verification
+
+- `supabase test db` on an isolated stack (`scripts/db-isolated.sh ride-detail 566`) → 34 files, 1344 tests, PASS.
+- `bun test` → 1667 pass, 4 fail (the known `scripts/check-file-size.test.ts` cases that fail only inside
+  `.claude/worktrees`); `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `bun run check:size`,
+  `node scripts/design-check.mjs`, `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs`
+  → exit 0.
+- `bun run verify:build` and `bun run verify:smoke` (4 cases) → pass. `ride_detail` and `ride_meetup` in zh-Hans light
+  and dark → pass; screenshots match RideDetail1 189 A / 192 A and RideMeetup1 193 A–195 A.
+- Written, not run (Pace, they run after step 7): `ride_detail_organiser`, `ride_detail_worst`, `ride_meetup_late`,
+  `ride_meetup_depart`, `ride_meetup_stale`, `ride_appeal`; `ride_list` now opens the real detail.
+- Device: 打开 Grab and the Apple Maps link (device checklist, `ride.join.plate`).
+
+### Blocks and ride membership (review of PR 51)
+
+Bug: `ride_detail` hid members blocked in either direction from the organiser while `block_user` kept the membership,
+so `depart_ride` recorded the hidden accepted member as a no-show the boarding sheet never named. Decision, ★ by default,
+owner may veto:
+
+- Before 出发 (ride open or gathering), a block between the organiser and an accepted member or an applicant ends the
+  membership: the row becomes `left` (or `withdrawn` for an applicant), the seat frees up, and a `left` / `withdrawn`
+  event with the note `blocked` goes to `ride_events`. It is not a leave: no no-show and no 15-minute penalty. Built as
+  an `after insert` trigger on `public.blocks` (`supabase/migrations/20261102000800_ride_block_membership.sql`), which
+  also backfills blocks made before it.
+- After 出发 a block changes no membership or settlement; the organiser's `ride_detail` lists every member whatever the
+  blocks, so boarding, appeals and the split stay correct. Only future rides are affected.
+- Intentional: a no-show member who blocked the organiser still reads their own ride and appeal state (`noShow` role).
+- The member's 「⋯ → 屏蔽」 sheet says so (`block.confirm.rideBody`, zh-Hans / en / ms).
+- Test: `supabase/tests/ride_block.test.sql` (17). Before the migration 8 failed (the ended memberships, the freed seats,
+  the events, no hidden no-show at 出发, the organiser still listing a member blocked after 出发); the after-出发 guards
+  (status unchanged, appeal, confirmation, 到了, split, payments) pass both before and after by design.
+  `rides_schema.test.sql` now expects the withdrawal its fixture block writes.
+- `supabase test db` (isolated, `db-isolated.sh ride-block 567`) → 35 files, 1361 tests, PASS.
+
+### Notes for step 6
+
+- `ride_detail` has no payment fields yet: add the split, shares, receipt and paid states there (or call
+  `ride_paid_states`) and render 到了 · 分车费 / 结清 in `detail/DetailBody.tsx`; `footer()` in `detailModel.ts` returns
+  `none` after 出发, which is where 「到了 · 分车费」 and 「付给小林 RM x」 go.
+- `timeline()` already marks 到了 and 结清 from `reachedAt` and `settledAt`; the 结清 step body is in `Timeline.tsx`.
+- Writes go through `store.act` (no replay, reload after a typed rejection); drafts through `detail/drafts.ts`.

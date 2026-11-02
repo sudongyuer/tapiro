@@ -134,7 +134,7 @@ export function ApplicantsScreen({
           <StateRow>
             <InlineState
               tone="warning"
-              text={t('bounty.block.failed')}
+              text={t('block.failed')}
               testID="bounty-applicants-block-failed"
             />
           </StateRow>

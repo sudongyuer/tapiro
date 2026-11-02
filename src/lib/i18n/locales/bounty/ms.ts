@@ -404,33 +404,6 @@ const ms: typeof zhHans = {
     sending: 'Menghantar',
     own: 'Ini ganjaran anda sendiri, jadi tidak boleh dimohon',
   },
-  block: {
-    menu: 'Sekat {{name}}',
-    confirm: {
-      title: 'Sekat {{name}}?',
-      body: 'Anda berdua tidak akan nampak ganjaran satu sama lain dan tidak boleh memohonnya. {{name}} tidak akan dimaklumkan. Anda boleh buka sekatan di Saya → Disekat.',
-      confirm: 'Sekat',
-      applicantBody:
-        'Anda berdua tidak akan nampak ganjaran satu sama lain dan tidak boleh memohonnya. {{name}} tidak akan dimaklumkan dan permohonan {{name}} akan hilang dari sini. Anda boleh buka sekatan di Saya → Disekat.',
-      cancel: 'Jangan Sekat',
-    },
-    blocking: 'Menyekat',
-    failed: 'Gagal disekat. Cuba lagi.',
-    list: {
-      title: 'Disekat',
-      loading: 'Memuatkan senarai disekat',
-      failed: 'Senarai disekat tidak dapat dimuatkan',
-      refreshFailed: 'Tidak dapat dimuat semula · ini senarai yang terakhir dimuatkan',
-      retry: 'Cuba Lagi',
-      emptyTitle: 'Anda belum menyekat sesiapa',
-      emptyBody: 'Untuk menyekat pemasang, ketik “⋯” di penjuru kanan atas sesuatu ganjaran.',
-      footer:
-        'Leret ke kiri pada baris untuk buka sekatan. Anda akan nampak ganjaran satu sama lain semula, dan mereka tidak akan dimaklumkan.',
-      unblock: 'Buka Sekatan',
-      unblocking: 'Membuka sekatan',
-      unblockFailed: 'Gagal buka sekatan. Cuba lagi.',
-    },
-  },
   select: {
     statusOpen_one: 'Menunggu anda memilih · {{count}} pemohon',
     statusOpen_other: 'Menunggu anda memilih · {{count}} pemohon',

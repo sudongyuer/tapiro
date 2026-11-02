@@ -32,21 +32,21 @@ def menu_for(applicant, name):
         x = row['x'] + row['width'] / 2
         ui.swipe((x, hold['y'] - 20), (x, hold['y'] - 20 - (row['height'] - clear) - 40), 0.4)
     ui.press_at({**row, 'height': min(row['height'], clear)}, LONG_PRESS_S)
-    return ui.labelled(ui.t('bounty.block.menu', name=name))
+    return ui.labelled(ui.t('block.menu', name=name))
 
 
 def confirm_block(applicant, name):
     menu_for(applicant, name)
-    ui.tap_label(ui.t('bounty.block.menu', name=name))
-    ui.labelled(ui.t('bounty.block.confirm.title', name=name))
-    ui.labelled(ui.t('bounty.block.confirm.applicantBody', name=name))
-    tap_sheet_action(ui, ui.t('bounty.block.confirm.confirm'), TITLE)
+    ui.tap_label(ui.t('block.menu', name=name))
+    ui.labelled(ui.t('block.confirm.title', name=name))
+    ui.labelled(ui.t('block.confirm.applicantBody', name=name))
+    tap_sheet_action(ui, ui.t('block.confirm.confirm'), TITLE)
     blocking(applicant)
 
 
 def blocking(applicant):
     busy = ui.element(f'bounty-applicant-blocking-{applicant}', timeout=5)
-    assert busy.get('AXLabel') == ui.t('bounty.block.blocking'), busy.get('AXLabel')
+    assert busy.get('AXLabel') == ui.t('block.blocking'), busy.get('AXLabel')
     return busy
 
 
@@ -62,16 +62,16 @@ hint_reads(2)
 menu_for(HANA, 'Hana')
 ui.at_rest()
 ui.capture('01-menu')
-ui.tap_label(ui.t('bounty.block.menu', name='Hana'))
-ui.labelled(ui.t('bounty.block.confirm.title', name='Hana'))
-ui.labelled(ui.t('bounty.block.confirm.applicantBody', name='Hana'))
+ui.tap_label(ui.t('block.menu', name='Hana'))
+ui.labelled(ui.t('block.confirm.title', name='Hana'))
+ui.labelled(ui.t('block.confirm.applicantBody', name='Hana'))
 ui.at_rest()
 ui.capture('02-confirm')
-tap_sheet_action(ui, ui.t('bounty.block.confirm.confirm'), TITLE)
+tap_sheet_action(ui, ui.t('block.confirm.confirm'), TITLE)
 blocking(HANA)
 ui.at_rest()
 ui.capture('03-blocking')
-ui.wait_label('bounty-applicants-block-failed', lambda text: ui.t('bounty.block.failed') in text,
+ui.wait_label('bounty-applicants-block-failed', lambda text: ui.t('block.failed') in text,
               'a failed block does not say 没屏蔽成功')
 ui.element(row_id(HANA))
 assert by_id(ui.read(), f'bounty-applicant-blocking-{HANA}') is None, 'the progress stays after the failure'

@@ -9,7 +9,13 @@ import { createBlockFlow, createBlockList } from './blockFlow';
 import { blockService } from './services';
 import type { BlockedPerson } from './types';
 
-export type BlockKind = 'poster' | 'applicant';
+export type BlockKind = 'poster' | 'applicant' | 'rideOrganiser';
+
+const BODY = {
+  poster: 'block.confirm.body',
+  applicant: 'block.confirm.applicantBody',
+  rideOrganiser: 'block.confirm.rideBody',
+} as const;
 
 export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
   const { t } = useI18n();
@@ -32,14 +38,9 @@ export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
       const name = poster.name ?? t('bounty.post.unknownName');
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          title: t('bounty.block.confirm.title', { name }),
-          message: t(
-            kind === 'applicant'
-              ? 'bounty.block.confirm.applicantBody'
-              : 'bounty.block.confirm.body',
-            { name },
-          ),
-          options: [t('bounty.block.confirm.confirm'), t('bounty.block.confirm.cancel')],
+          title: t('block.confirm.title', { name }),
+          message: t(BODY[kind], { name }),
+          options: [t('block.confirm.confirm'), t('block.confirm.cancel')],
           destructiveButtonIndex: 0,
           cancelButtonIndex: 1,
         },

@@ -23,7 +23,7 @@ export function BlockMenu({
         <Stack.Toolbar.View>
           <ActivityIndicator
             accessible
-            accessibilityLabel={t('bounty.block.blocking')}
+            accessibilityLabel={t('block.blocking')}
             testID="bounty-detail-blocking"
             style={styles.busy}
           />
@@ -45,7 +45,7 @@ export function BlockMenu({
             if (poster) onAsk(poster);
           }}
         >
-          {t('bounty.block.menu', { name: poster?.name ?? t('bounty.post.unknownName') })}
+          {t('block.menu', { name: poster?.name ?? t('bounty.post.unknownName') })}
         </Stack.Toolbar.MenuAction>
       </Stack.Toolbar.Menu>
     </Stack.Toolbar>

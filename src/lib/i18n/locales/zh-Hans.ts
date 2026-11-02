@@ -1,3 +1,4 @@
+import block from './block/zh-Hans';
 import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import ride from './ride/zh-Hans';
@@ -124,6 +125,7 @@ export default {
   payee,
   pay,
   stickers,
+  block,
   bounty,
   ride,
   shell: {
@@ -278,6 +280,7 @@ export default {
       list: '拼车列表',
       form: '发起拼车表单',
       confirm: '确认发起拼车',
+      detail: '拼车详情',
     },
     bounty: {
       post: '发悬赏表单',

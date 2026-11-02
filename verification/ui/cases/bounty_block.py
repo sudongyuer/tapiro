@@ -36,16 +36,16 @@ def switch_to(identifier):
 
 def open_menu():
     ui.tap_label(ui.t('bounty.detail.more'))
-    return ui.labelled(ui.t('bounty.block.menu', name=NAME))
+    return ui.labelled(ui.t('block.menu', name=NAME))
 
 
 def confirm_block():
     open_menu()
-    ui.tap_label(ui.t('bounty.block.menu', name=NAME))
-    ui.labelled(ui.t('bounty.block.confirm.title', name=NAME))
-    tap_sheet_action(ui, ui.t('bounty.block.confirm.confirm'), 'bounty-detail-title')
+    ui.tap_label(ui.t('block.menu', name=NAME))
+    ui.labelled(ui.t('block.confirm.title', name=NAME))
+    tap_sheet_action(ui, ui.t('block.confirm.confirm'), 'bounty-detail-title')
     blocking = ui.element('bounty-detail-blocking', timeout=5)
-    assert blocking.get('AXLabel') == ui.t('bounty.block.blocking'), blocking.get('AXLabel')
+    assert blocking.get('AXLabel') == ui.t('block.blocking'), blocking.get('AXLabel')
 
 
 def swipe_row(person, shot):
@@ -53,19 +53,19 @@ def swipe_row(person, shot):
     y = f['y'] + f['height'] / 2
     start = f['x'] + f['width'] - 24
     ui.swipe((start, y), (start - SWIPE, y), duration=0.4)
-    ui.labelled(ui.t('bounty.block.list.unblock'))
+    ui.labelled(ui.t('block.list.unblock'))
     ui.at_rest()
     ui.capture(shot)
 
 
 def unblock_tapped():
-    ui.tap_label(ui.t('bounty.block.list.unblock'))
+    ui.tap_label(ui.t('block.list.unblock'))
     spinner = ui.element(f'blocked-unblocking-{PERSON}', timeout=5)
-    assert spinner.get('AXLabel') == ui.t('bounty.block.list.unblocking'), spinner.get('AXLabel')
+    assert spinner.get('AXLabel') == ui.t('block.list.unblocking'), spinner.get('AXLabel')
 
 
 def sheet_open(items):
-    return any(i.get('AXLabel') == ui.t('bounty.block.confirm.title', name=NAME) for i in items)
+    return any(i.get('AXLabel') == ui.t('block.confirm.title', name=NAME) for i in items)
 
 
 reach_home(ui)
@@ -78,14 +78,14 @@ ui.element('bounty-detail-title')
 
 open_menu()
 ui.capture('01-menu')
-ui.tap_label(ui.t('bounty.block.menu', name=NAME))
-ui.labelled(ui.t('bounty.block.confirm.title', name=NAME))
-ui.labelled(ui.t('bounty.block.confirm.body', name=NAME))
+ui.tap_label(ui.t('block.menu', name=NAME))
+ui.labelled(ui.t('block.confirm.title', name=NAME))
+ui.labelled(ui.t('block.confirm.body', name=NAME))
 ui.at_rest()
 ui.capture('02-confirm')
-cancel = next((i for i in ui.read() if i.get('AXLabel') == ui.t('bounty.block.confirm.cancel')), None)
+cancel = next((i for i in ui.read() if i.get('AXLabel') == ui.t('block.confirm.cancel')), None)
 if cancel:
-    ui.tap_label(ui.t('bounty.block.confirm.cancel'))
+    ui.tap_label(ui.t('block.confirm.cancel'))
 else:
     title = ui.element('bounty-detail-title')['frame']
     ui.tap_point(title['x'] + title['width'] / 2, title['y'] + title['height'] / 2)
@@ -94,7 +94,7 @@ ui.element('bounty-detail-title')
 assert by_id(ui.read(), 'bounty-detail-blocking') is None, '不屏蔽 started a block'
 
 confirm_block()
-ui.wait_label('bounty-detail-block-failed', lambda label: ui.t('bounty.block.failed') in label,
+ui.wait_label('bounty-detail-block-failed', lambda label: ui.t('block.failed') in label,
               'a failed block does not say 没屏蔽成功')
 ui.element('bounty-detail-title')
 ui.labelled(ui.t('bounty.detail.more'))
@@ -112,7 +112,7 @@ ui.capture('04-board-without')
 
 switch_to('tab-me')
 row = ui.element('me-blocked')
-assert row.get('AXLabel') and ui.t('bounty.block.list.title') in row['AXLabel'], row.get('AXLabel')
+assert row.get('AXLabel') and ui.t('block.list.title') in row['AXLabel'], row.get('AXLabel')
 assert_touch_target(row, '屏蔽名单')
 ui.tap('me-blocked')
 ui.element('blocked-screen')
@@ -123,7 +123,7 @@ ui.capture('05-list')
 
 swipe_row(person, '06-swiped')
 unblock_tapped()
-ui.wait_label('blocked-unblock-failed', lambda label: ui.t('bounty.block.list.unblockFailed') in label,
+ui.wait_label('blocked-unblock-failed', lambda label: ui.t('block.list.unblockFailed') in label,
               'a failed 解除 does not say 没解除成功')
 person = ui.wait_label(ROW, lambda label: label == NAME, 'a failed 解除 removed 小林 from the list')
 ui.at_rest()
@@ -131,7 +131,7 @@ ui.capture('07-unblock-failed')
 swipe_row(person, '08-swiped-again')
 unblock_tapped()
 empty = ui.element('blocked-empty', timeout=15)
-assert ui.t('bounty.block.list.emptyTitle') in (empty.get('AXLabel') or ''), empty.get('AXLabel')
+assert ui.t('block.list.emptyTitle') in (empty.get('AXLabel') or ''), empty.get('AXLabel')
 assert by_id(ui.read(), ROW) is None, '小林 is still listed after 解除'
 ui.at_rest()
 ui.capture('09-empty')

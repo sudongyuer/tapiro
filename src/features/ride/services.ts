@@ -1,6 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { Settings } from 'react-native';
 
+import { addBlockFixturePeople } from '@/features/block';
 import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
@@ -10,6 +11,14 @@ import { createRideDraftStore, isEmptyDraft } from './create/draft';
 import { createRecentRoutes } from './create/recentRoutes';
 import { fixtureRecentRoutes, fixtureRideDraft } from './fixtureCreate';
 import { createFixtureRideService, fixtureRideOptions } from './fixtureRideService';
+import { createSupabaseRideDetailService } from './detail/detailService';
+import { applyNotes, detailsDrafts } from './detail/drafts';
+import {
+  createFixtureRideDetailService,
+  fixtureDetailOptions,
+} from './detail/fixtureDetailService';
+import { DETAIL_PEOPLE } from './detail/fixtureDetails';
+import type { RideDetailService } from './detail/types';
 import { createSupabaseRideService } from './rideService';
 import type { RideService, RideSummary, ShortNameRow } from './types';
 
@@ -27,11 +36,32 @@ export const rideService: RideService = uiVerify
   ? verifyRideService()
   : createSupabaseRideService(getSupabase(), deviceCurrency);
 
+const DETAIL_CALLS_KEY = 'uiVerifyRideDetailCalls';
+
+function verifyDetailService() {
+  Settings.set({ [DETAIL_CALLS_KEY]: '[]' });
+  addBlockFixturePeople(DETAIL_PEOPLE);
+  const calls: unknown[] = [];
+  return createFixtureRideDetailService(
+    fixtureDetailOptions(uiVerifyArgument, uiVerifyFixture),
+    (name, args) => {
+      calls.push({ name, args });
+      Settings.set({ [DETAIL_CALLS_KEY]: JSON.stringify(calls) });
+    },
+  );
+}
+
+export const rideDetailService: RideDetailService = uiVerify
+  ? verifyDetailService()
+  : createSupabaseRideDetailService(getSupabase(), deviceCurrency);
+
 export const rideDraftStore = createRideDraftStore(Settings, randomUUID, deviceCurrency);
 
 export const recentRoutes = createRecentRoutes(Settings);
 
 userCleanups.register((userId) => {
+  applyNotes.reset();
+  detailsDrafts.reset();
   rideDraftStore.clear(userId);
   recentRoutes.clear(userId);
 });

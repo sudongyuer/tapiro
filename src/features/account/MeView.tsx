@@ -78,11 +78,7 @@ export function MeView({
             onPress={onOpenPayee}
             testID="me-payee"
           />
-          <NavRow
-            label={t('bounty.block.list.title')}
-            onPress={onOpenBlocked}
-            testID="me-blocked"
-          />
+          <NavRow label={t('block.list.title')} onPress={onOpenBlocked} testID="me-blocked" />
           <NavRow label={t('account.me.settings')} onPress={onOpenSettings} testID="me-settings" />
         </Section>
       </Form>
