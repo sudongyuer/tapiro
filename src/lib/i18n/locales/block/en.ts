@@ -4,6 +4,8 @@ export default {
     title: 'Block {{name}}?',
     body: 'You won’t see each other’s bounties or rides, or be able to join them. {{name}} won’t be notified. You can unblock in Me → Blocked.',
     confirm: 'Block',
+    rideBody:
+      'You won’t see each other’s bounties or rides. You’ll leave this ride if it hasn’t left yet, and it won’t count as a no-show; a ride that has left is unaffected. {{name}} won’t be notified. You can unblock in Me → Blocked.',
     applicantBody:
       'You won’t see each other’s bounties or be able to apply to them. {{name}} won’t be notified, and {{name}}’s application will disappear from here. You can unblock in Me → Blocked.',
     cancel: 'Don’t Block',

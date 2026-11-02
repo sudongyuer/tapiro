@@ -4,6 +4,8 @@ export default {
     title: 'Sekat {{name}}?',
     body: 'Anda berdua tidak akan nampak ganjaran atau tumpangan satu sama lain dan tidak boleh menyertainya. {{name}} tidak akan dimaklumkan. Anda boleh buka sekatan di Saya → Disekat.',
     confirm: 'Sekat',
+    rideBody:
+      'Anda berdua tidak akan nampak ganjaran atau tumpangan satu sama lain. Anda akan keluar dari tumpangan ini jika ia belum bertolak, dan ia tidak dikira tidak hadir; tumpangan yang sudah bertolak tidak terjejas. {{name}} tidak akan dimaklumkan. Anda boleh buka sekatan di Saya → Disekat.',
     applicantBody:
       'Anda berdua tidak akan nampak ganjaran satu sama lain dan tidak boleh memohonnya. {{name}} tidak akan dimaklumkan dan permohonan {{name}} akan hilang dari sini. Anda boleh buka sekatan di Saya → Disekat.',
     cancel: 'Jangan Sekat',

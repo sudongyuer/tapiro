@@ -621,6 +621,27 @@ PR: https://github.com/sudongyuer/tapiro/pull/51 (`feat/carpool-detail-meetup`) 
   `ride_meetup_depart`, `ride_meetup_stale`, `ride_appeal`; `ride_list` now opens the real detail.
 - Device: 打开 Grab and the Apple Maps link (device checklist, `ride.join.plate`).
 
+### Blocks and ride membership (review of PR 51)
+
+Bug: `ride_detail` hid members blocked in either direction from the organiser while `block_user` kept the membership,
+so `depart_ride` recorded the hidden accepted member as a no-show the boarding sheet never named. Decision, ★ by default,
+owner may veto:
+
+- Before 出发 (ride open or gathering), a block between the organiser and an accepted member or an applicant ends the
+  membership: the row becomes `left` (or `withdrawn` for an applicant), the seat frees up, and a `left` / `withdrawn`
+  event with the note `blocked` goes to `ride_events`. It is not a leave: no no-show and no 15-minute penalty. Built as
+  an `after insert` trigger on `public.blocks` (`supabase/migrations/20261102000800_ride_block_membership.sql`), which
+  also backfills blocks made before it.
+- After 出发 a block changes no membership or settlement; the organiser's `ride_detail` lists every member whatever the
+  blocks, so boarding, appeals and the split stay correct. Only future rides are affected.
+- Intentional: a no-show member who blocked the organiser still reads their own ride and appeal state (`noShow` role).
+- The member's 「⋯ → 屏蔽」 sheet says so (`block.confirm.rideBody`, zh-Hans / en / ms).
+- Test: `supabase/tests/ride_block.test.sql` (17). Before the migration 8 failed (the ended memberships, the freed seats,
+  the events, no hidden no-show at 出发, the organiser still listing a member blocked after 出发); the after-出发 guards
+  (status unchanged, appeal, confirmation, 到了, split, payments) pass both before and after by design.
+  `rides_schema.test.sql` now expects the withdrawal its fixture block writes.
+- `supabase test db` (isolated, `db-isolated.sh ride-block 567`) → 35 files, 1361 tests, PASS.
+
 ### Notes for step 6
 
 - `ride_detail` has no payment fields yet: add the split, shares, receipt and paid states there (or call

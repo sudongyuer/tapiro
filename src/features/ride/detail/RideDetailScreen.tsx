@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { useBlockPoster } from '@/features/block';
+import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
 import { vars } from '@/ui/theme/tokens';
@@ -50,7 +50,7 @@ export function RideDetailScreen({
   const organiserName = ride?.organiser?.name ?? t('bounty.post.unknownName');
   const actions = useDetailActions(id, store, organiserName);
   const sheets = useDetailSheets(id, ride, now, actions);
-  const blocking = useBlockPoster(onGone);
+  const blocking = useBlockPerson('rideOrganiser', onGone);
 
   if (load.kind === 'gone') {
     return (
