@@ -166,5 +166,4 @@
 
 ## 下一步
 
-- 阶段 6：foundation 第 1 步（账号）已合并（PR #1）。第 2 步（导航与首屏框架）在 feat/foundation-shell 进行。
-- 待账号：注册 Apple Developer + Expo 后定 Bundle ID，接 EAS Build/Submit → TestFlight。
+当前进度和下一步见 `docs/status.md`。
