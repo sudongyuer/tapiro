@@ -656,57 +656,77 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 故事：作为想拼 Grab 回家的同学，我想看到所有人的拼车，以便找到同路的人。
 - 状态：planned
 - 版本：v1
-- 规格：[carpool](specs/2026-10-11-carpool-design.md)
+- 规格：[carpool](specs/2026-11-02-carpool-design.md)
 
-| 验收 id         | 行为                                                       | 覆盖   |
-| --------------- | ---------------------------------------------------------- | ------ |
-| ride.board.mine | 我的拼车在前，然后是能加入的拼车                           | ui     |
-| ride.board.sort | 所有人可见，出发点近、目的地相同的排前面；按天和目的地筛选 | db, ui |
+| 验收 id            | 行为                                                                                            | 覆盖                         |
+| ------------------ | ----------------------------------------------------------------------------------------------- | ---------------------------- |
+| ride.board.mine    | 同一列表两段：我的拼车在前，然后是可以加入；每趟是一张紧凑车票，票根写每人约和座位              | ui, gap: not built           |
+| ride.board.sort    | 所有人可见，出发点近、目的地相同的排前面；没有筛选标签，按「今天 / 明天」分组                   | db, ui, gap: not built       |
+| ride.board.airport | 机场的票上一行「✈ 航班 起飞 · 🧳 大件行李」                                                     | ui, gap: not built           |
+| ride.board.empty   | 完全没有拼车时是时刻屏（大车贴纸、一句话、发起拼车按钮），导航栏的 ＋ 隐藏                      | ui, gap: not built           |
+| ride.board.failed  | 刷新失败保留上次的票并标「下面是 hh:mm 的」和重试；第一次加载失败显示错误卡片，不显示成没有拼车 | unit, ui, gap: not built     |
+| ride.board.history | 结清的拼车盖章留 24 小时，然后收进「去过的 · n 趟」                                             | unit, db, ui, gap: not built |
 
 ### ride.create 发起拼车
 
 - 故事：作为组织者，我想用一句话、一张微信群截图或一个表单发起拼车，以便很快凑齐人。
 - 状态：planned
 - 版本：v1
-- 规格：[carpool](specs/2026-10-11-carpool-design.md)
+- 规格：[carpool](specs/2026-11-02-carpool-design.md)
 
-| 验收 id            | 行为                                                   | 覆盖     |
-| ------------------ | ------------------------------------------------------ | -------- |
-| ride.create.seats  | 2–6 个座位，默认 4 个                                  | unit, ui |
-| ride.create.places | 出发点和目的地是常用地点、小貘记得的地点或地图上选的点 | ui       |
-| ride.create.refund | 没人加入就取消或过期时退回貘币或免费名额               | unit, db |
-| ride.create.payee  | 发起人没有收款方式不能发；欠款被限制时不能发           | db, ui   |
+| 验收 id                | 行为                                                                                                   | 覆盖                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------ |
+| ride.create.where      | 点 ＋ 先选「去哪儿？」：最近两条路线、回住处 / 去学校 / 去商场 / 去机场 / 都不像，再进实时车票下的表单 | ui, gap: not built       |
+| ride.create.seats      | 「一共几人（含你）」2–6 人，默认 4，下面写「还要 n 人」                                                | unit, ui, gap: not built |
+| ride.create.places     | 出发点和目的地是常用地点、最近用过、搜索或地图上选的点                                                 | ui, gap: not built       |
+| ride.create.short-name | 票上的短名从常用地点叫法表自动填，其它取名称前一段，最多 8 字，可以改                                  | unit, ui, gap: not built |
+| ride.create.airport    | 终点是机场时自动展开航班和行李，其它路线收成「＋ 航班和行李」                                          | unit, ui, gap: not built |
+| ride.create.time       | 快捷时间加系统时间选择器；集合固定在出发前 30 分钟，不能改                                             | unit, ui, gap: not built |
+| ride.create.estimate   | 填整车估价，每人约按人数自动算                                                                         | unit, ui, gap: not built |
+| ride.create.split-mode | 发起时选 Tapiro 平分或车费已在 Grab 里分好，出发前在详情里能改                                         | db, ui, gap: not built   |
+| ride.create.refund     | 没人加入就取消或过期时退回貘币或免费名额                                                               | unit, db, gap: not built |
+| ride.create.payee      | 确认页写发布费和退回规则；没有收款方式时按钮变成「去加收款方式」；欠款被限制时不能发                   | db, ui, gap: not built   |
 
 ### ride.join 加入和集合
 
 - 故事：作为乘客，我想申请加入、到点集合，以便大家准时上车。
 - 状态：planned
 - 版本：v1
-- 规格：[carpool](specs/2026-10-11-carpool-design.md)
+- 规格：[carpool](specs/2026-11-02-carpool-design.md)
 
-| 验收 id            | 行为                                                         | 覆盖     |
-| ------------------ | ------------------------------------------------------------ | -------- |
-| ride.join.request  | 申请加入要组织者同意，满员不再接受                           | db, ui   |
-| ride.join.gather   | 出发前 30 分钟进入集合：集合点、倒计时、「我到了」           | ui       |
-| ride.join.fifteen  | 出发前 15 分钟没满员由组织者决定走不走；这段时间退出算放鸽子 | unit, db |
-| ride.join.boarding | 组织者勾谁上车了；没被勾的人可以申诉，别的乘客一键证明       | ui, db   |
-| ride.join.late     | 司机晚到时旧时间划掉显示新时间                               | ui       |
-| ride.join.expire   | 出发后 2 小时没点出发就过期，不记任何人放鸽子                | unit, db |
+| 验收 id                | 行为                                                                                     | 覆盖                     |
+| ---------------------- | ---------------------------------------------------------------------------------------- | ------------------------ |
+| ride.join.request      | 申请可以留一句话；发起人在申请卡上通过或拒绝；申请后票上盖「已申请」能撤回；满员不再接受 | db, ui, gap: not built   |
+| ride.join.privacy      | 没上车的人只看到发起人和空座位，看不到成员、集合说明和车牌                               | db, ui, gap: not built   |
+| ride.join.gather       | 出发前 30 分钟票变成倒计时票：集合点、车牌、到了 n/人数，集合那步一排头像                | ui, gap: not built       |
+| ride.join.arrived      | 「我到了」只手动，出发前可以撤销                                                         | db, ui, gap: not built   |
+| ride.join.running-late | 「晚到」选 5 / 10 / 15 分钟或不来了，别人看到黄圈和预计时间                              | db, ui, gap: not built   |
+| ride.join.plate        | 发起人叫车后填车牌；导航到集合点人人有，打开 Grab 只有发起人                             | ui, gap: not built       |
+| ride.join.fifteen      | 出发前 15 分钟没满员由组织者决定走不走；这段时间退出算放鸽子                             | unit, db, gap: not built |
+| ride.join.boarding     | 出发弹出勾选单，按了「我到了」的先勾上；没被勾的人可以申诉，别的乘客一键证明             | ui, db, gap: not built   |
+| ride.join.late         | 司机晚到时旧时间划掉显示新时间                                                           | ui, gap: not built       |
+| ride.join.stale        | 连着网时不提示；断网时显示「可能不是最新 · hh:mm 的」                                    | unit, ui, gap: not built |
+| ride.join.expire       | 出发后 2 小时没点出发就过期，不记任何人放鸽子                                            | unit, db, gap: not built |
 
 ### ride.split 分账和付款
 
 - 故事：作为垫付车费的组织者，我想 App 帮我算好每人多少、让大家直接付我，以便不用一个个催。
 - 状态：planned
 - 版本：v1
-- 规格：[carpool](specs/2026-10-11-carpool-design.md)
+- 规格：[carpool](specs/2026-11-02-carpool-design.md)
 
-| 验收 id                  | 行为                                                                           | 覆盖   |
-| ------------------------ | ------------------------------------------------------------------------------ | ------ |
-| ride.split.equal         | 默认按上车的人（含组织者）平分，每份往上取整到 0.1 个货币单位（RM 0.10、¥0.1） | unit   |
-| ride.split.edit          | 组织者可以改每个人的金额；乘客可以点「金额不对」                               | ui, db |
-| ride.split.receipt       | 拍 Grab 收据，小貘起草分账，组织者确认（按用量扣小貘体力）                     | ui     |
-| ride.split.pay           | 每个乘客用付款弹窗付给组织者，组织者逐个确认收到                               | ui, db |
-| ride.split.live-activity | 实时活动分凑人、集合、上车、到了四段                                           | device |
+| 验收 id                  | 行为                                                                                           | 覆盖                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------- |
+| ride.split.arrive        | 只有发起人按「到了 · 分车费」，别人看到「等发起人分车费」                                      | db, ui, gap: not built |
+| ride.split.equal         | 默认按上车的人（含组织者）平分，每份往上取整到 0.1 个货币单位（RM 0.10、¥0.1），多出的归发起人 | unit, gap: not built   |
+| ride.split.edit          | 半屏一人一行，组织者可以改每个人的金额；乘客可以点「金额不对」                                 | ui, db, gap: not built |
+| ride.split.screenshot    | 可以附 Grab 收据截图，车上的人和审核员能看，结清 30 天后删除                                   | db, ui, gap: not built |
+| ride.split.receipt       | 拍 Grab 收据，小貘起草分账，组织者确认（按用量扣小貘体力）                                     | ui, gap: not built     |
+| ride.split.pay           | 乘客从底部「付给发起人 RM x」打开付款弹窗；组织者在结清那步一人一行确认收到                    | ui, db, gap: not built |
+| ride.split.status        | 车上的人互相看得到谁付了；只由 Tapiro 提醒欠款，发起人没有催款按钮                             | db, ui, gap: not built |
+| ride.split.grab          | 车费在 Grab 里分好的那趟，发起人按到了就结清，盖章并每人一张车贴纸                             | db, ui, gap: not built |
+| ride.split.sticker       | 一趟一张车贴纸，最后一笔结清时给每个上车的人；发起人只庆祝一次                                 | db, ui, gap: not built |
+| ride.split.live-activity | 集合阶段的实时活动（realtime 174 A）                                                           | device, gap: not built |
 
 ## 消息
 
