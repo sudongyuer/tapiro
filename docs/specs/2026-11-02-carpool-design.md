@@ -554,7 +554,7 @@ PR: https://github.com/sudongyuer/tapiro/pull/50 (`feat/carpool-list-create`) ·
 
 ## Implementation Record (2026-11-02, step 5)
 
-PR: pending (`feat/carpool-detail-meetup`) · Commits: 17f0b68..HEAD. Status stays `approved`: steps 6–8 remain.
+PR: https://github.com/sudongyuer/tapiro/pull/51 (`feat/carpool-detail-meetup`) · Commits: 17f0b68..HEAD. Status stays `approved`: steps 6–8 remain.
 
 ### What was built
 

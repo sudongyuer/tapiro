@@ -1,7 +1,7 @@
 ---
 branch: feat/carpool-detail-meetup
 date: 2026-11-02
-pr: pending
+pr: https://github.com/sudongyuer/tapiro/pull/51
 title: carpool step 5 (detail and 集合)
 escaped: pending
 rework: 0
