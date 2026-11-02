@@ -456,7 +456,7 @@ Plan: `docs/plans/2026-11-02-carpool-foundation.md`.
 
 ## Implementation Record (2026-11-02, appeal lapse, 233 A)
 
-PR: pending, branch `feat/carpool-appeal-lapse`. Status stays `approved`: steps 4–8 remain. 220 A needed no code; it was
+PR: https://github.com/sudongyuer/tapiro/pull/49, branch `feat/carpool-appeal-lapse`. Status stays `approved`: steps 4–8 remain. 220 A needed no code; it was
 built in PR 48 (`src/features/ride/split.ts`).
 
 ### What was built

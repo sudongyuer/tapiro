@@ -1,7 +1,7 @@
 ---
 branch: feat/carpool-appeal-lapse
 date: 2026-11-02
-pr: carpool appeal lapse
+pr: https://github.com/sudongyuer/tapiro/pull/49
 title: owner answers 220 A and 233 A; unconfirmed appeals lapse after 72 h
 escaped: 0
 rework: 0
@@ -25,11 +25,11 @@ overturned: 0
 
 ## Problems and root causes
 
-| #   | What happened                                                                                                                                       | Root cause class | Change and layer                                                                                                       |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 1   | Second agent needing an isolated Supabase stack (steps 1–3 retro item 1 said "second occurrence → script")                                          | missing tooling  | `scripts/db-isolated.sh <name> <port-prefix>`: scratch copy, own `project_id` and ports, start, `test db`, stop on exit |
-| 2   | The first "before" run aborted on the new column inside an assertion, so it proved nothing about behaviour; rewrote it to count rows instead         | test bug         | none; a fail-before run should fail on assertions, not on missing schema                                               |
-| 3   | A "rejected after 72 h" case already passed before the change (the window check existed); its case fails before only through the assertions after | as designed      | recorded in the spec's Implementation Record                                                                           |
+| #   | What happened                                                                                                                                     | Root cause class | Change and layer                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1   | Second agent needing an isolated Supabase stack (steps 1–3 retro item 1 said "second occurrence → script")                                        | missing tooling  | `scripts/db-isolated.sh <name> <port-prefix>`: scratch copy, own `project_id` and ports, start, `test db`, stop on exit |
+| 2   | The first "before" run aborted on the new column inside an assertion, so it proved nothing about behaviour; rewrote it to count rows instead      | test bug         | none; a fail-before run should fail on assertions, not on missing schema                                                |
+| 3   | A "rejected after 72 h" case already passed before the change (the window check existed); its case fails before only through the assertions after | as designed      | recorded in the spec's Implementation Record                                                                            |
 
 ## Kept (worked well)
 
