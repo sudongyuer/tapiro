@@ -1,13 +1,15 @@
 ---
 title: Carpool (拼车) v1
-status: proposed
+status: superseded
 created: 2026-10-11
 approved:
 implemented:
 supersedes:
-superseded-by:
+superseded-by: 2026-11-02-carpool-design.md
 pr:
 ---
+
+Superseded by [2026-11-02-carpool-design.md](2026-11-02-carpool-design.md) (the ticket redesign, questions 176–232).
 
 <!-- Visual mockups: design canvas https://claude.ai/artifact/34EC3qaCsv1ibJZ4oeGK3o, page 05: 「悬赏与拼车 · 状态流程」,
 「【已定】门槛看得到但锁着 L1 · 真实地图 M2 · 拼车椰糖杏 Y2」, 「交互细节 6 条」 (cells 1 and 2), 「手绘插画 · 可交互」

@@ -380,6 +380,58 @@ Additions to the superseding carpool spec, with the application note and 182 B:
 - 车牌: an optional plate-and-car field on the ride, set by the organiser after booking; the spec's `rides` has none.
 - 我到了 can be undone; the spec records `arrived_at` once and says nothing about undoing it.
 
+Answered for screen ④ (发起拼车): **200 A**, **201 A**, **202 A**, **203 A**, **204 A**, **205 A**, **206 A** (user,
+2026-11-02, 「都按照推荐」, after the board 「拼车 · ④ 发起拼车」 on p05r, `RideCreate1.dc.html`).
+
+- 200 A: ＋ opens 「去哪儿？」 first: the two most recent routes on top (one tap fills start and destination; only the time
+  is left), then the tiles 回住处 / 去学校 / 去商场 / 去机场 / 都不像，直接写; then the form under a live list-style ticket.
+- 201 A: the ticket's short name is filled automatically from a table of common place names (Mid Valley Megamall →
+  谷中城, Sunway Geo → 双威); other places take the leading part of the name. A line 「票上叫「谷中城」· 自动 · 改」 lets
+  the organiser edit it. Search results show the short name too.
+- 202 A: a stepper 「一共几人（含你）」, 2–6, default 4, with 「还要 n 人」 under it.
+- 203 A: three quick picks (今晚 22:00 / 明早 06:30 / 选时间) plus the system date and time picker; 集合 is fixed at 30
+  minutes before departure (「06:00 起集合 · 出发前 30 分钟」) and cannot be edited.
+- 204 A: the organiser enters the whole-ride estimate (「全程约 RM 76」); 「4 人平分，每人约 RM 19」 is computed and follows
+  the seat count.
+- 205 A: the 航班和行李 group (起飞时间, 大件行李 count, 移除) opens automatically when the destination is an airport
+  (KLIA, KLIA2, or the 去机场 tile); otherwise it is a collapsed 「＋ 航班和行李」 row.
+- 206 A: 下一步 opens a confirm page as for bounties: the list ticket, the 出发 / 集合 / 人数 / 车费 rows, the fee line
+  「本月免费 · 还剩 2/3」 and the refund rule, and 「发出去」. Without a payee method the reason is shown and the button
+  becomes 「去加收款方式」.
+
+Defaults drawn on the same board and accepted: the ticket above the form keeps a fixed height while typing (bounty
+152 A); with 6 people the line reads 「还要 5 人 · 记得叫 6 座的车」; 集合说明 sits under 「加点细节 · 都可以不填」; 车费怎么分
+is a system menu defaulting to Tapiro 平分; with the free posts used up the fee line reads 「1 貘币 · 余额 n」.
+
+Answered for screen ⑤ (到了 · 分车费 · 结清): **210 A**, **211 A**, **212 B**, **213 A**, **214 A**, **215 A**, **216 A**,
+**217 A**, **218 A**, **219 A** (user, 2026-11-02, 「都按照推荐」, after the board 「拼车 · ⑤ 到了 · 分车费 · 结清」 on p05r,
+`RideSettle1.dc.html`).
+
+- 210 A: only the organiser presses 「到了 · 分车费」; the others' tickets read 「等小林分车费」, and the home card reminds
+  the organiser.
+- 211 A: a half sheet with the Grab total, then one row per boarded person (the organiser's own row first), each amount
+  editable; shares round up to 0.10 and the line 「多出的 RM 0.10 归你」 states the organiser keeps the extra.
+- 212 B: an optional Grab receipt screenshot (「附 Grab 收据截图 · 可不附」), visible to the riders in the 结清 step and to
+  moderators, deleted 30 days after settling, stored as the payment proofs are.
+- 213 A: the rider's bottom button 「付给小林 RM 24.70」 with 「金额不对」 to its left opens the built payment sheet, titled
+  拼车.
+- 214 A: the organiser confirms receipt per person in rows inside the 结清 step (还没收到 / 已收到; 还没付 for riders who
+  have not paid).
+- 215 A: riders see each other's paid status, one row each.
+- 216 A: only Tapiro reminds (24 h / 72 h; publishing paused at 7 days or 2 unpaid); the rider's ticket reads 「RM 24.70
+  还欠小林 · 已欠 1 天」 with a yellow notice; the organiser has no nudge button and sees 「Tapiro 会在 72 小时再提醒」.
+- 217 A: a ride whose fare was split in Grab settles when the organiser presses 到了: 到了 and 结清 tick together, 结清
+  reads 「在 Grab 里分好了」, the ticket gets the 「已结清」 stamp and everyone who boarded gets one car sticker.
+- 218 A: one car sticker per ride, granted at the last settlement; the organiser sees one celebration, on the last
+  已收到; riders' tickets get the 「已结清」 stamp in place with 「收进贴纸本」. Resolves the old questions 111 and 112.
+- 219 A: a settled ride stays in 我的拼车 for 24 h with its stamp, then moves to a 「去过的 · n 趟」 row at the bottom of
+  the list.
+
+Defaults drawn on the same board and accepted: the organiser's 结清 rows show the method, the time and 「有截图」; the
+rider's ticket cells change to Grab 总价 / 平分 / 你; a settled ticket in the list shows the amount paid with 「你付了」.
+
+All of 176–219 are recorded in the superseding spec `docs/specs/2026-11-02-carpool-design.md`.
+
 **176.** 拼车调研已完成（BlaBlaCar、Grab、Flighty、Wallet 登机牌、Citymapper），下一步是先定整体方向，再一屏一屏重画。
 拼车的整体样子选哪个方向？
 
