@@ -28,3 +28,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-02 | carpool spec v2        | 0               | 0             | ~0                                          | 0                       | 0                  |
 | 2026-11-02 | carpool steps 1–3      | 0               | 1             | ~20 min (isolated stack, two test bugs)     | 0                       | 0                  |
 | 2026-11-02 | carpool appeal lapse   | 0               | 0             | ~5 min (two test bugs)                      | 0                       | 0                  |
+| 2026-11-02 | carpool step 4         | pending         | 0             | ~20 min (sandboxed shell, lint rules)       | 0                       | pending            |

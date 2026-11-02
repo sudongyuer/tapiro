@@ -17,7 +17,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { CategoryRow } from './CategoryRow';
 import { ClearSection } from './ClearSection';
-import { FieldRow } from './FieldRow';
+import { FieldRow } from '@/ui/FieldRow';
 import { FormNotice } from './FormNotice';
 import { useKindCopy } from './kindCopy';
 import { PostLiveCard } from './PostArt';

@@ -168,7 +168,7 @@ export function PlaceSearchScreen({
             testID="place-search-notice"
           />
         ) : null}
-        {purpose === 'post' ? (
+        {purpose !== 'board' ? (
           <Section>
             <PlaceRow
               title={t('bounty.place.current')}

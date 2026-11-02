@@ -161,7 +161,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                    | 行为                                                                             | 覆盖                                                                                      |
 | -------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| shell.tabs.switch          | 四个 Tab 切换页面，拼车和消息先显示空状态                                        | ui:shell_tabs, unit:src/features/shell/tabs.test.ts                                       |
+| shell.tabs.switch          | 四个 Tab 切换页面，消息先显示空状态                                              | ui:shell_tabs, unit:src/features/shell/tabs.test.ts                                       |
 | shell.tabs.badge           | 消息 Tab 显示未读角标，很大的数字封顶显示                                        | ui:shell_tabs, ui:home_worst, unit:src/features/shell/accessory.test.ts#caps large counts |
 | shell.tabs.tapir-button    | 62 pt 的小貘按钮在浅色和深色下都有白色描边                                       | ui:shell_tabs                                                                             |
 | shell.tabs.minimise        | 往下滑悬赏时 Tab 栏缩起（选中的 Tab、内嵌提醒条、48 pt 小貘），点缩起的 Tab 展开 | ui:shell_minimise                                                                         |
@@ -660,12 +660,12 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id            | 行为                                                                                            | 覆盖                                                                                                            |
 | ------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| ride.board.mine    | 同一列表两段：我的拼车在前，然后是可以加入；每趟是一张紧凑车票，票根写每人约和座位              | db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 4                                           |
-| ride.board.sort    | 所有人可见，出发点近、目的地相同的排前面；没有筛选标签，按「今天 / 明天」分组                   | db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 4                                           |
-| ride.board.airport | 机场的票上一行「✈ 航班 起飞 · 🧳 大件行李」                                                     | db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 4                                           |
-| ride.board.empty   | 完全没有拼车时是时刻屏（大车贴纸、一句话、发起拼车按钮），导航栏的 ＋ 隐藏                      | ui, gap: not built                                                                                              |
-| ride.board.failed  | 刷新失败保留上次的票并标「下面是 hh:mm 的」和重试；第一次加载失败显示错误卡片，不显示成没有拼车 | unit, ui, gap: not built                                                                                        |
-| ride.board.history | 结清的拼车盖章留 24 小时，然后收进「去过的 · n 趟」                                             | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 6 |
+| ride.board.mine    | 同一列表两段：我的拼车在前，然后是可以加入；每趟是一张紧凑车票，票根写每人约和座位              | db:supabase/tests/ride_nearby.test.sql, unit:src/features/ride/ticket.test.ts, unit:src/features/ride/parse.test.ts, ui:ride_list |
+| ride.board.sort    | 所有人可见，出发点近、目的地相同的排前面；没有筛选标签，按「今天 / 明天」分组                   | db:supabase/tests/ride_nearby.test.sql, unit:src/features/ride/listState.test.ts#joinable rides group under 今天 / 明天 in server order, ui:ride_list |
+| ride.board.airport | 机场的票上一行「✈ 航班 起飞 · 🧳 大件行李」                                                     | db:supabase/tests/ride_nearby.test.sql, unit:src/features/ride/ticket.test.ts#the airport line shows only the fields that were filled, ui:ride_list, ui:ride_list_worst |
+| ride.board.empty   | 完全没有拼车时是时刻屏（大车贴纸、一句话、发起拼车按钮），导航栏的 ＋ 隐藏                      | unit:src/features/ride/listState.test.ts#the list is empty only with no mine, no joinable and no history, ui:ride_list_empty |
+| ride.board.failed  | 刷新失败保留上次的票并标「下面是 hh:mm 的」和重试；第一次加载失败显示错误卡片，不显示成没有拼车 | unit:src/features/ride/listState.test.ts, ui:ride_list_failed |
+| ride.board.history | 结清的拼车盖章留 24 小时，然后收进「去过的 · n 趟」                                             | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_nearby.test.sql, ui:ride_history, gap: the 24 h stamp on a settled ticket in carpool step 6 |
 
 ### ride.create 发起拼车
 
@@ -676,16 +676,16 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id                | 行为                                                                                                   | 覆盖                                                                                                                             |
 | ---------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| ride.create.where      | 点 ＋ 先选「去哪儿？」：最近两条路线、回住处 / 去学校 / 去商场 / 去机场 / 都不像，再进实时车票下的表单 | ui, gap: not built                                                                                                               |
-| ride.create.seats      | 「一共几人（含你）」2–6 人，默认 4，下面写「还要 n 人」                                                | db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 4                                                              |
-| ride.create.places     | 出发点和目的地是常用地点、最近用过、搜索或地图上选的点                                                 | ui, gap: not built                                                                                                               |
-| ride.create.short-name | 票上的短名从常用地点叫法表自动填，其它取名称前一段，最多 8 字，可以改                                  | unit:src/features/place/shortName.test.ts, db:supabase/tests/rides_schema.test.sql, ui, gap: UI in carpool step 4                |
-| ride.create.airport    | 终点是机场时自动展开航班和行李，其它路线收成「＋ 航班和行李」                                          | unit:src/features/place/shortName.test.ts#airport detection, db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 4 |
-| ride.create.time       | 快捷时间加系统时间选择器；集合固定在出发前 30 分钟，不能改                                             | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_jobs.test.sql, ui, gap: UI in carpool step 4                    |
-| ride.create.estimate   | 填整车估价，每人约按人数自动算                                                                         | unit:src/features/ride/perPerson.test.ts, db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 4                  |
-| ride.create.split-mode | 发起时选 Tapiro 平分或车费已在 Grab 里分好，出发前在详情里能改                                         | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 4                                                            |
+| ride.create.where      | 点 ＋ 先选「去哪儿？」：最近两条路线、回住处 / 去学校 / 去商场 / 去机场 / 都不像，再进实时车票下的表单 | ui:ride_create_pick |
+| ride.create.seats      | 「一共几人（含你）」2–6 人，默认 4，下面写「还要 n 人」                                                | db:supabase/tests/ride_join.test.sql, ui:ride_create_form, ui:ride_create_pick |
+| ride.create.places     | 出发点和目的地是常用地点、最近用过、搜索或地图上选的点                                                 | ui:ride_create_form, ui:ride_create_pick, gap: map pin not offered in the ride place search |
+| ride.create.short-name | 票上的短名从常用地点叫法表自动填，其它取名称前一段，最多 8 字，可以改                                  | unit:src/features/place/shortName.test.ts, db:supabase/tests/rides_schema.test.sql, unit:src/features/ride/create/validate.test.ts, ui:ride_create_form, ui:ride_create_worst |
+| ride.create.airport    | 终点是机场时自动展开航班和行李，其它路线收成「＋ 航班和行李」                                          | unit:src/features/place/shortName.test.ts#airport detection, db:supabase/tests/ride_join.test.sql, ui:ride_create_form, ui:ride_create_pick |
+| ride.create.time       | 快捷时间加系统时间选择器；集合固定在出发前 30 分钟，不能改                                             | unit:src/features/ride/rideTimes.test.ts, unit:src/features/ride/create/draftStore.test.ts#two half-hour picks at least 30 minutes ahead, db:supabase/tests/ride_jobs.test.sql, ui:ride_create_form |
+| ride.create.estimate   | 填整车估价，每人约按人数自动算                                                                         | unit:src/features/ride/perPerson.test.ts, unit:src/features/ride/create/validate.test.ts, db:supabase/tests/ride_nearby.test.sql, ui:ride_create_form, ui:ride_create_confirm |
+| ride.create.split-mode | 发起时选 Tapiro 平分或车费已在 Grab 里分好，出发前在详情里能改                                         | db:supabase/tests/ride_meetup.test.sql, ui:ride_create_confirm, gap: changing it in the detail is carpool step 5 |
 | ride.create.refund     | 没人加入就取消或过期时退回貘币或免费名额                                                               | db:supabase/tests/ride_join.test.sql, db:supabase/tests/ride_jobs.test.sql                                                       |
-| ride.create.payee      | 确认页写发布费和退回规则；没有收款方式时按钮变成「去加收款方式」；欠款被限制时不能发                   | db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 4                                                              |
+| ride.create.payee      | 确认页写发布费和退回规则；没有收款方式时按钮变成「去加收款方式」；欠款被限制时不能发                   | db:supabase/tests/ride_join.test.sql, unit:src/features/ride/create/publishFlow.test.ts, ui:ride_create_payee, ui:ride_create_cost, ui:ride_create_confirm |
 
 ### ride.join 加入和集合
 

@@ -2,6 +2,7 @@ import type { Translation } from '../resources';
 
 import bounty from './bounty/en';
 import pay from './pay/en';
+import ride from './ride/en';
 import payee from './payee/en';
 import stickers from './stickers/en';
 
@@ -129,6 +130,7 @@ const en: Translation = {
   pay,
   stickers,
   bounty,
+  ride,
   shell: {
     tabs: {
       bounty: 'Bounties',
@@ -139,10 +141,6 @@ const en: Translation = {
     },
     home: {
       title: 'Bounties',
-    },
-    ride: {
-      emptyTitle: 'Rides are coming soon',
-      emptyBody: 'Share a car back to YC and split the fare automatically',
     },
     messages: {
       emptyTitle: 'No messages yet',
@@ -280,6 +278,11 @@ const en: Translation = {
         settings: 'Settings (long name)',
         deleteBlocked: 'Delete account (unsettled payment)',
       },
+    },
+    ride: {
+      list: 'Ride list',
+      form: 'Ride form',
+      confirm: 'Confirm ride',
     },
     bounty: {
       post: 'Post form',

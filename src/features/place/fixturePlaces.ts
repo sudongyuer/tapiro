@@ -9,7 +9,7 @@ import type { FixtureVariant } from '@/lib/fixtureVariant';
 
 import type { PlaceFacade } from './placeSearch';
 
-export const PLACES_FIXTURES = ['ok', 'none', 'fail', 'resolveFail'] as const;
+export const PLACES_FIXTURES = ['ok', 'none', 'fail', 'resolveFail', 'ride'] as const;
 export type PlacesFixture = (typeof PLACES_FIXTURES)[number];
 
 export function placesFixture(value: string | undefined): PlacesFixture {
@@ -54,6 +54,31 @@ export const FIXTURE_PLACES: FixturePlace[] = [
   },
 ];
 
+export const RIDE_PLACES: FixturePlace[] = [
+  {
+    id: 'klia2',
+    title: 'KLIA2',
+    subtitle: 'Jalan KLIA 2/1, Sepang',
+    place: {
+      name: 'KLIA2',
+      latitude: 2.7456,
+      longitude: 101.6865,
+      address: 'Jalan KLIA 2/1, 64000 Sepang, Selangor',
+    },
+  },
+  {
+    id: 'mid-valley',
+    title: 'Mid Valley Megamall North Court',
+    subtitle: 'Lingkaran Syed Putra, Mid Valley City',
+    place: {
+      name: 'Mid Valley Megamall North Court',
+      latitude: 3.1185,
+      longitude: 101.6776,
+      address: 'Lingkaran Syed Putra, Mid Valley City, 58000 Kuala Lumpur',
+    },
+  },
+];
+
 const longText = (seed: string, count: number) =>
   [...seed.repeat(Math.ceil(count / [...seed].length))].slice(0, count).join('');
 
@@ -80,7 +105,8 @@ export function createFixturePlaces(
   delay: (run: () => void) => void = (run) => setTimeout(run, EVENT_DELAY_MS),
   variant: FixtureVariant = 'demo',
 ): PlaceFacade {
-  const places = variant === 'worst' ? [WORST_PLACE, ...FIXTURE_PLACES] : FIXTURE_PLACES;
+  const base = fixture === 'ride' ? [...FIXTURE_PLACES, ...RIDE_PLACES] : FIXTURE_PLACES;
+  const places = variant === 'worst' ? [WORST_PLACE, ...base] : base;
   const listeners = new Set<(event: PlaceSuggestionsEvent) => void>();
   let sequence = 0;
   let failNext = fixture === 'fail';

@@ -61,6 +61,10 @@ function RootStack() {
           options={{ presentation: 'pageSheet', headerShown: false }}
         />
         <Stack.Screen
+          name="ride-create"
+          options={{ presentation: 'pageSheet', headerShown: false }}
+        />
+        <Stack.Screen
           name="delete-account"
           options={{
             presentation: 'formSheet',

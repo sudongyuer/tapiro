@@ -13,7 +13,7 @@ import { BOUNTY_CATEGORIES, bountyCategory, type BountyCategory } from '@/lib/st
 import { CATEGORY_SYMBOLS } from '@/ui/categoryArt';
 import { vars } from '@/ui/theme/tokens';
 
-import { fullRow, ROW_INSETS } from './FieldRow';
+import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import type { CategorySource } from './types';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });

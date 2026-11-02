@@ -2,6 +2,7 @@ import type { Translation } from '../resources';
 
 import bounty from './bounty/ms';
 import pay from './pay/ms';
+import ride from './ride/ms';
 import payee from './payee/ms';
 import stickers from './stickers/ms';
 
@@ -129,6 +130,7 @@ const ms: Translation = {
   pay,
   stickers,
   bounty,
+  ride,
   shell: {
     tabs: {
       bounty: 'Ganjaran',
@@ -139,10 +141,6 @@ const ms: Translation = {
     },
     home: {
       title: 'Ganjaran',
-    },
-    ride: {
-      emptyTitle: 'Tumpangan akan dibuka tidak lama lagi',
-      emptyBody: 'Kongsi kereta balik ke YC dan tambang dibahagikan secara automatik',
     },
     messages: {
       emptyTitle: 'Belum ada mesej',
@@ -284,6 +282,11 @@ const ms: Translation = {
         settings: 'Tetapan (nama panjang)',
         deleteBlocked: 'Padam akaun (bayaran belum selesai)',
       },
+    },
+    ride: {
+      list: 'Senarai tumpangan',
+      form: 'Borang tumpangan',
+      confirm: 'Sahkan tumpangan',
     },
     bounty: {
       post: 'Borang ganjaran',

@@ -22,6 +22,7 @@ import { DesignTokensScene } from './DesignTokensScene';
 import { FlightRedirect } from './FlightScene';
 import { MapKitScene } from './MapKitScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
+import { RideConfirmScene, RideFormScene, RideListScene } from './RideScenes';
 import { SignInScene } from './SignInScene';
 
 export type Scene = {
@@ -66,6 +67,9 @@ export const scenes: Scene[] = [
   { id: 'sticker-flight', titleKey: 'debug.flight.title', Component: FlightRedirect },
   { id: 'map-kit', titleKey: 'debug.map.title', Component: MapKitScene },
   { id: 'bounty-map', titleKey: 'debug.bounty.map', Component: BoardMapScene },
+  { id: 'ride-list', titleKey: 'debug.ride.list', Component: RideListScene },
+  { id: 'ride-form', titleKey: 'debug.ride.form', Component: RideFormScene },
+  { id: 'ride-confirm', titleKey: 'debug.ride.confirm', Component: RideConfirmScene },
 ];
 
 export function findScene(id: string) {

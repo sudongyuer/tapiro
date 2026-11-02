@@ -14,7 +14,7 @@ import { useI18n } from '@/lib/i18n';
 import type { BountyCategory } from '@/lib/stickers/category';
 import { vars } from '@/ui/theme/tokens';
 
-import { ROW_INSETS } from './FieldRow';
+import { ROW_INSETS } from '@/ui/FieldRow';
 import { shownPicks } from './postKinds';
 import { CHIP_LABEL_HEIGHT } from './RewardSection';
 import type { PostDraft, TimeChoice } from './types';

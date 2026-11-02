@@ -1,5 +1,6 @@
 import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
+import ride from './ride/zh-Hans';
 import payee from './payee/zh-Hans';
 import stickers from './stickers/zh-Hans';
 
@@ -124,6 +125,7 @@ export default {
   pay,
   stickers,
   bounty,
+  ride,
   shell: {
     tabs: {
       bounty: '悬赏',
@@ -134,10 +136,6 @@ export default {
     },
     home: {
       title: '悬赏令',
-    },
-    ride: {
-      emptyTitle: '拼车马上开放',
-      emptyBody: '一起打车回 YC，自动分账',
     },
     messages: {
       emptyTitle: '还没有消息',
@@ -275,6 +273,11 @@ export default {
         settings: '设置（长名字）',
         deleteBlocked: '删除账号（有未结清付款）',
       },
+    },
+    ride: {
+      list: '拼车列表',
+      form: '发起拼车表单',
+      confirm: '确认发起拼车',
     },
     bounty: {
       post: '发悬赏表单',

@@ -18,6 +18,7 @@ export {
 export {
   isAirport,
   matchPlace,
+  PLACE_KINDS,
   placeKindFor,
   shortNameFor,
   validShortName,

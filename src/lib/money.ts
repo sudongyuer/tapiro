@@ -11,10 +11,16 @@ export type MoneyReference = Money & { rateDate: string };
 
 export type PostLimit = { minMinor: number; maxMinor: number; stepMinor: number };
 
-export const POST_LIMITS: Readonly<Record<'bounty', Readonly<Record<CurrencyCode, PostLimit>>>> = {
+export const POST_LIMITS: Readonly<
+  Record<'bounty' | 'ride', Readonly<Record<CurrencyCode, PostLimit>>>
+> = {
   bounty: {
     MYR: { minMinor: 100, maxMinor: 50000, stepMinor: 100 },
     CNY: { minMinor: 100, maxMinor: 80000, stepMinor: 100 },
+  },
+  ride: {
+    MYR: { minMinor: 100, maxMinor: 100000, stepMinor: 1 },
+    CNY: { minMinor: 100, maxMinor: 160000, stepMinor: 1 },
   },
 };
 

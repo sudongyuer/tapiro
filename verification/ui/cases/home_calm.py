@@ -23,7 +23,7 @@ assert ask['x'] + ask['width'] <= items[0]['frame']['width'], f'home-ask overflo
 assert not any(by_id(items, a) for a in ACCESSORIES), 'accessory shown with no live items'
 
 ui.tap('tab-ride')
-ui.element('ride-empty')
+ui.element('ride-screen')
 ui.wait(lambda items: str(by_id(items, 'tab-ride').get('AXValue')) == '1', '拼车 not selected')
 items = ui.read()
 assert not any(by_id(items, a) for a in ACCESSORIES), 'accessory shown on 拼车 with no live items'
