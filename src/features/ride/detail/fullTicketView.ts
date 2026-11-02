@@ -151,7 +151,7 @@ export function fullTicketView(
     muted: model.muted,
   };
   const parts = [
-    view.countdown?.text,
+    view.countdown ? `${view.countdown.number} ${view.countdown.text}` : null,
     ticketA11y(
       {
         ...view,

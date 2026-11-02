@@ -280,6 +280,7 @@ export default {
       list: '拼车列表',
       form: '发起拼车表单',
       confirm: '确认发起拼车',
+      detail: '拼车详情',
     },
     bounty: {
       post: '发悬赏表单',

@@ -289,6 +289,7 @@ const ms: Translation = {
       list: 'Senarai tumpangan',
       form: 'Borang tumpangan',
       confirm: 'Sahkan tumpangan',
+      detail: 'Butiran tumpangan',
     },
     bounty: {
       post: 'Borang ganjaran',

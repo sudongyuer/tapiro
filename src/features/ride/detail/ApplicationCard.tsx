@@ -63,6 +63,7 @@ export function ApplicationCard({
             <View style={styles.text}>
               <View
                 style={styles.nameRow}
+                testID={`ride-detail-request-name-${request.id}`}
                 accessible
                 accessibilityLabel={t('ride.detail.requests.a11y', {
                   name,

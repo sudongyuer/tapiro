@@ -285,6 +285,7 @@ const en: Translation = {
       list: 'Ride list',
       form: 'Ride form',
       confirm: 'Confirm ride',
+      detail: 'Ride detail',
     },
     bounty: {
       post: 'Post form',

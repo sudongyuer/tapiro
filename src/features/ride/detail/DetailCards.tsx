@@ -15,6 +15,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import type { SplitMode } from '../types';
 
 const ICON = 17;
+const LOCK = 11;
 
 export function Card({
   children,
@@ -204,9 +205,9 @@ export function SplitRow({
 export function PrivacyLine() {
   const { t } = useI18n();
   return (
-    <View style={styles.privacy} testID="ride-detail-privacy">
-      <SymbolView name="lock.fill" size={11} tintColor={PlatformColor('secondaryLabel')} />
-      <AppText variant="meta" tone="secondaryLabel">
+    <View style={styles.privacy}>
+      <SymbolView name="lock.fill" size={LOCK} tintColor={PlatformColor('secondaryLabel')} />
+      <AppText variant="meta" tone="secondaryLabel" testID="ride-detail-privacy">
         {t('ride.detail.privacy')}
       </AppText>
     </View>

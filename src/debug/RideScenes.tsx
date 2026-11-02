@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { fixtureUser } from '@/features/account';
 import { RideConfirm, RideForm, RideListScreen } from '@/features/ride';
+import { uiVerifyArgument } from '@/lib/uiVerify';
 
 function Marker({ name }: { name: string | null }) {
   return name ? <View testID={`ride-scene-${name}`} accessible style={styles.marker} /> : null;
@@ -52,6 +54,24 @@ export function RideConfirmScene({ onReady }: { onReady: () => void }) {
       <Marker name={left} />
     </>
   );
+}
+
+export function RideDetailScene({ onReady }: { onReady: () => void }) {
+  const router = useRouter();
+  const pushed = useRef(false);
+  useEffect(() => {
+    if (pushed.current) return;
+    pushed.current = true;
+    router.push(
+      {
+        pathname: '/ride/[id]',
+        params: { id: uiVerifyArgument('uiVerifyRideDetailId') ?? 'ride-scene' },
+      },
+      { withAnchor: true },
+    );
+    onReady();
+  }, [router, onReady]);
+  return null;
 }
 
 const styles = StyleSheet.create({ marker: { position: 'absolute', width: 1, height: 1 } });

@@ -1,7 +1,7 @@
 """The 拼车 tab (180 B, 181 A, 182 B, 183 B, 184 A): one list with 我的拼车 then the joinable rides under day subheadings,
 each a compact 椰糖杏 ticket with a 每人约 · taken/seats stub. Markers: urgent 「n 分钟后出发 · 集合中」, the organiser's
 「我发起的 · 1 人申请」, a neutral 「已满」 ticket and the airport line 「航班 09:10 起飞 · 2 件大行李」. The nav-bar ＋ is
-shown, 「去过的 · 2 趟」 closes 我的拼车, and a ticket pushes the placeholder detail with the same ticket."""
+shown, 「去过的 · 2 趟」 closes 我的拼车, and a ticket pushes the ride detail with the same route and flight."""
 import re
 import sys
 
@@ -67,4 +67,4 @@ ui.capture('04-detail')
 ui.tap('BackButton')
 ui.element('ride-screen')
 ui.gone('ride-detail')
-print('PASS: sections, markers, airport line, history row, ＋ and the placeholder detail')
+print('PASS: sections, markers, airport line, history row, ＋ and the detail')
