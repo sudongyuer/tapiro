@@ -8,7 +8,7 @@ from bounty import tap_sheet_action  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py', 'verification/ui/apply.py',
-        'verification/ui/bounty.py', 'src/features/place/']
+        'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 CARD = 'bounty-card-fixture-bounty-03'

@@ -13,7 +13,7 @@ from choose import (  # noqa: E402
 )
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'src/features/place/']
+DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-applicants'
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifySelect', 'failOnce']
 BUDGET = 420

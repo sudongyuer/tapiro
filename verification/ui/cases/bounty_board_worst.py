@@ -16,7 +16,7 @@ from ocr import find, lines  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/bounty-apply/',
         'verification/ui/bounty.py', 'verification/ui/board.py', 'verification/ui/apply.py', 'verification/ui/ocr.py',
-        'verification/ui/ocr.swift', 'src/features/place/']
+        'verification/ui/ocr.swift', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 480
 

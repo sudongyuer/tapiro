@@ -7,7 +7,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import TITLE_SHOWN, TITLE_TYPED, close_sheet_by_swipe, form_scroll_to, open_post, relaunch, tap_sheet_action, typed, value  # noqa: E402
 from driver import UI  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'src/features/place/']
+DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 240
 TITLE, REWARD = TITLE_SHOWN, '12'

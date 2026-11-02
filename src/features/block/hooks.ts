@@ -4,7 +4,7 @@ import { ActionSheetIOS } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 
-import { blockEvents } from '../shared/blockEvents';
+import { blockEvents } from './blockEvents';
 import { createBlockFlow, createBlockList } from './blockFlow';
 import { blockService } from './services';
 import type { BlockedPerson } from './types';

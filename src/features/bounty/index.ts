@@ -13,7 +13,7 @@ export { BountyDetailScreen } from './detail/BountyDetailScreen';
 export { ApplicantsScreen } from './select/ApplicantsScreen';
 export { StatusScreen } from './status/StatusScreen';
 export { ApplySheet } from './apply/ApplySheet';
-export { BlockedListScreen } from './block/BlockedListScreen';
+export { BlockedListScreen } from '@/features/block';
 export { useLiveBounties } from './live/useLiveBounties';
 export const applySheetGone = () => justApplied.sheetGone();
 export { BoardMapCover } from './map/BoardMapCover';

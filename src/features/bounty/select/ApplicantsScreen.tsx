@@ -3,13 +3,13 @@ import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/m
 import { useEffect, useRef } from 'react';
 import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
 
+import { useBlockPerson } from '@/features/block/hooks';
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
-import { useBlockPerson } from '../block/hooks';
 import { malaysiaClock } from '../board/malaysiaClock';
 import { selectedHelper } from './applicantsController';
 import { ApplicantSection, ApplicantsHeader, StateRow } from './ApplicantRows';

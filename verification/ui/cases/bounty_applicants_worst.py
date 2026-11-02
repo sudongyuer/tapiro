@@ -19,7 +19,7 @@ from ocr import find, lines  # noqa: E402
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/detail/', 'src/features/bounty/board/',
         'src/features/bounty/shared/', 'src/ui/HoldButton.tsx', 'src/ui/TierMark.tsx', 'src/ui/Mascot.tsx',
         'src/app/(tabs)/bounty/',
-        'verification/ui/choose.py', 'verification/ui/board.py', 'verification/ui/ocr.py', 'src/features/place/']
+        'verification/ui/choose.py', 'verification/ui/board.py', 'verification/ui/ocr.py', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 600

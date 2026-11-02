@@ -1,9 +1,10 @@
 import { Settings } from 'react-native';
 
+import { fixtureBlocked } from '@/features/block/services';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
-import { fixtureBlocked } from '../block/services';
+import '../shared/blockFixturePeople';
 import { createFixtureSelectService, fixtureSelectOptions } from './fixtureSelectService';
 import { createSupabaseSelectService } from './selectService';
 import type { SelectService } from './types';

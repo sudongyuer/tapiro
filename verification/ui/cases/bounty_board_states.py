@@ -7,7 +7,7 @@ from board import screen, visible as board_visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py', 'src/features/place/']
+DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
 FAIL_FIRST = ['-uiVerifyBoardFail', 'first']
