@@ -90,7 +90,7 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
           {t('ride.create.next')}
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
-      <Host style={styles.host}>
+      <Host style={styles.host} testID="ride-form">
         <Form modifiers={[tint(color('--color-accent'))]}>
           {noticeText ? (
             <NoticeCard

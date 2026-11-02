@@ -91,7 +91,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack }: Confirm
       testID="ride-confirm"
     >
       <Stack.Screen options={{ headerBackVisible: !state.busy, gestureEnabled: !state.busy }} />
-      <SheetFrame notice={notice} testID="ride-confirm-form">
+      <SheetFrame notice={notice} testID="ride-confirm">
         <Actions state={state} onPublish={publish} onAddPayee={onAddPayee} />
         <SummarySection draft={draft} now={now} />
         <FeeSection state={state.status} onRetry={flow.load} />

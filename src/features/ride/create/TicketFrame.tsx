@@ -25,7 +25,7 @@ export function TicketFrame({
   const { t } = useI18n();
   const headerHeight = useHeaderHeight();
   return (
-    <View style={[styles.screen, { paddingTop: headerHeight }]} testID={testID}>
+    <View style={[styles.screen, { paddingTop: headerHeight }]}>
       <View style={styles.ticket}>
         <RideTicket view={view} fixed testID={`${testID}-ticket`} />
         {caption ? (

@@ -20,7 +20,7 @@ export function RideEmpty({
 }) {
   const { t } = useI18n();
   return (
-    <MomentBackground testID="ride-screen">
+    <MomentBackground>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.content}
