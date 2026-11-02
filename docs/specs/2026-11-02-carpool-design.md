@@ -495,7 +495,7 @@ built in PR 48 (`src/features/ride/split.ts`).
 
 ## Implementation Record (2026-11-02, step 4)
 
-PR: pending (`feat/carpool-list-create`) · Commits: ea0d213, 2009c88, fafc6f0 and this record. Status stays `approved`: steps
+PR: https://github.com/sudongyuer/tapiro/pull/50 (`feat/carpool-list-create`) · Commits: ea0d213, 2009c88, fafc6f0 and this record. Status stays `approved`: steps
 5–8 remain.
 
 ### What was built

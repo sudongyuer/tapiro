@@ -1,7 +1,7 @@
 ---
 branch: feat/carpool-list-create
 date: 2026-11-02
-pr: pending
+pr: https://github.com/sudongyuer/tapiro/pull/50
 title: carpool step 4 (list and create)
 escaped: pending
 rework: 0
