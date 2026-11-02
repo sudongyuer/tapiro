@@ -1,7 +1,7 @@
 ---
 branch: feat/carpool-foundation
 date: 2026-11-02
-pr: not opened yet
+pr: https://github.com/sudongyuer/tapiro/pull/48
 title: carpool steps 1–3
 escaped: 0
 rework: 0

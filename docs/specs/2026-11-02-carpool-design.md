@@ -379,7 +379,7 @@ Every UI step writes the UI cases for the screens it changes; the feature's case
 
 ## Implementation Record (2026-11-02, steps 1–3)
 
-PR: not opened yet · Commits: e27f62b..HEAD on `feat/carpool-foundation`. Status stays `approved`: steps 4–8 remain.
+PR: https://github.com/sudongyuer/tapiro/pull/48 · Commits: e27f62b..HEAD on `feat/carpool-foundation`. Status stays `approved`: steps 4–8 remain.
 Plan: `docs/plans/2026-11-02-carpool-foundation.md`.
 
 ### What was built
