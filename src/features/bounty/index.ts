@@ -6,7 +6,7 @@ export { PostPick } from './post/PostPick';
 export { useStartPost } from './post/useStartPost';
 export { closePostSheet, registerPostSheet } from './post/postSheet';
 export { hasPostDraft } from './post/hasPostDraft';
-export { PlaceSearchScreen } from './place/PlaceSearchScreen';
+export { PlaceSearchScreen } from '@/features/place';
 export { BountyBoard } from './board/BountyBoard';
 export { useBountyBoard, type BountyBoardModel } from './board/useBountyBoard';
 export { BountyDetailScreen } from './detail/BountyDetailScreen';

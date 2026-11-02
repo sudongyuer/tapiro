@@ -8,7 +8,7 @@ from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
-        'verification/ui/board.py']
+        'verification/ui/board.py', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']

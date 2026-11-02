@@ -9,7 +9,7 @@ from bounty import DEMO_TITLE, field_text, next_step, open_post, relaunch  # noq
 from driver import UI  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx']
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyUnpaid', 'old']
 BUDGET = 240

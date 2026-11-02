@@ -1,17 +1,17 @@
 import { Settings } from 'react-native';
 
+import { FIXTURE_PLACES } from '@/features/place/fixturePlaces';
+import { createOriginStore, createShownOrigins } from '@/features/place/originStore';
 import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
 import { fixtureBlocked } from '../block/services';
-import { FIXTURE_PLACES } from '../place/fixturePlaces';
 import { FIXTURE_USER_ID } from '../post/fixtureDrafts';
 import { fixturePosterView } from '../select/services';
 import { createSupabaseBoardService } from './boardService';
 import { createFixtureBoardService, fixtureBoardOptions } from './fixtureBoardService';
-import { createOriginStore, createShownOrigins } from './originStore';
 import type { BoardService } from './types';
 import { createViewStore, seedBoardView } from './viewStore';
 

@@ -1,3 +1,4 @@
+import { distanceM } from '@/features/place/originStore';
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 import type { Point } from '@/lib/location/types';
 
@@ -12,7 +13,6 @@ import {
   type BoardFixture,
   type FixtureBounty,
 } from './fixtureBoardData';
-import { distanceM } from './originStore';
 import {
   originPoint,
   type BoardFilter,

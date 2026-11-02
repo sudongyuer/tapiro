@@ -6,7 +6,7 @@ from apply import open_from_card, send_button, title_shown  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/(tabs)/', 'verification/ui/board.py',
-        'verification/ui/apply.py']
+        'verification/ui/apply.py', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyFixture', 'empty']

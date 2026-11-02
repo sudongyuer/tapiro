@@ -11,7 +11,7 @@ from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
-        'verification/ui/board.py']
+        'verification/ui/board.py', 'src/features/place/']
 BUDGET = 360
 SEED = ['-uiVerifyBoardView', 'list']
 PLACE_ARGS = ['-uiVerifyBoardPlace', 'sunway', '-uiVerifyLocation', 'denied']

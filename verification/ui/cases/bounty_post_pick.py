@@ -11,7 +11,7 @@ from bounty import KINDS, form_scroll_to, open_sheet, relaunch, tap_sheet_action
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'src/ui/TaskCard.tsx',
-        'verification/ui/bounty.py']
+        'verification/ui/bounty.py', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 240

@@ -15,7 +15,7 @@ from map import CARD_FILL, MAP, map_at_rest, open_scene, pin_id, pins  # noqa: E
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx', 'src/features/home/',
         'src/app/(tabs)/', 'verification/ui/bounty.py',
-        'modules/tapiro-kit/ios/BountyMapView.swift', 'verification/ui/map.py']
+        'modules/tapiro-kit/ios/BountyMapView.swift', 'verification/ui/map.py', 'src/features/place/']
 SCENE = 'bounty-map'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420

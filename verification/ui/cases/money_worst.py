@@ -14,7 +14,7 @@ from driver import UI, assert_touch_target, by_id  # noqa: E402
 from pay import find, open_sheet, scroll_to  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/payment/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/',
-        'src/app/pay/', 'src/lib/money.ts', 'verification/ui/bounty.py', 'verification/ui/pay.py']
+        'src/app/pay/', 'src/lib/money.ts', 'verification/ui/bounty.py', 'verification/ui/pay.py', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'worstCny', '-uiVerifyPostCost', 'free']
 BUDGET = 420

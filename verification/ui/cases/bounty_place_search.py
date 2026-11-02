@@ -7,7 +7,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import assert_grouped_background, relaunch, search_places  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
-DEPS = ['src/features/bounty/place/', 'src/lib/location/', 'verification/ui/bounty.py']
+DEPS = ['src/features/place/', 'src/lib/location/', 'verification/ui/bounty.py']
 SCENE = 'place-search'
 ARGS = ['-uiVerifyPlaces', 'ok']
 PLACES = ['Sunway Geo Residences', 'Sunway University', 'Sunway Pyramid']

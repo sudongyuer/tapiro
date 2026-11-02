@@ -1,6 +1,5 @@
+import type { SettingsLike } from '@/features/place/originStore';
 import type { UserCleanups } from '@/lib/userCleanups';
-
-import type { SettingsLike } from './originStore';
 
 export const BOARD_VIEWS = ['list', 'map'] as const;
 export type BoardView = (typeof BOARD_VIEWS)[number];

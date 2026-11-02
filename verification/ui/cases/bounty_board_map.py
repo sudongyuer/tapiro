@@ -15,7 +15,7 @@ from map import (BACK, FRONT, assert_card_surface, assert_tail, centre, close_ca
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx',
         'modules/tapiro-kit/ios/BountyMapView.swift', 'modules/tapiro-kit/ios/BountyPinView.swift',
-        'verification/ui/map.py', 'verification/ui/apply.py']
+        'verification/ui/map.py', 'verification/ui/apply.py', 'src/features/place/']
 SCENE = 'bounty-map'
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded']

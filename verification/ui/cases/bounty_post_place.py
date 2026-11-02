@@ -12,7 +12,7 @@ from bounty import (DEMO_TITLE, assert_grouped_background, end_editing, field_te
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'src/lib/location/',
-        'verification/ui/bounty.py', 'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx']
+        'verification/ui/bounty.py', 'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyLocation', 'undetermined']
 BUDGET = 300

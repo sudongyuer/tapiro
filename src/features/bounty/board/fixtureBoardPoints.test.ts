@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 
+import { distanceM } from '@/features/place/originStore';
 import { SUNWAY_PYRAMID } from '@/lib/location/fixtureLocationService';
 
 import { BOARDS, FIXTURE_BOARDS, snapPoint } from './fixtureBoardData';
 import { createFixtureBoardService, fixtureBoardOptions } from './fixtureBoardService';
-import { distanceM } from './originStore';
 import type { BoardOrigin } from './types';
 
 const ME: BoardOrigin = { kind: 'me', point: SUNWAY_PYRAMID };

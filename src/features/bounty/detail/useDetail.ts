@@ -1,9 +1,9 @@
 import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 
+import { detailOrigin, evaluateOrigin } from '@/features/place/originStore';
 import { locationService } from '@/lib/location';
 
-import { detailOrigin, evaluateOrigin } from '../board/originStore';
 import { boardService, originStore, shownOrigins } from '../board/services';
 import { originPoint } from '../board/types';
 import { selectService } from '../select/services';

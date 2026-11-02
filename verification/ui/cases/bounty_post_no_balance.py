@@ -9,7 +9,7 @@ from bounty import DEMO_TITLE, assert_cost, assert_pinned, assert_preview, open_
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx']
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyPostCost', 'none']
 

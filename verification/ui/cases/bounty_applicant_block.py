@@ -11,7 +11,7 @@ from choose import AIMAN, HANA, HOLD, JIE, hold_reads, row_id  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/features/bounty/block/', 'src/ui/HoldButton.tsx',
-        'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py']
+        'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py', 'src/features/place/']
 SCENE = 'bounty-applicants'
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '6000']

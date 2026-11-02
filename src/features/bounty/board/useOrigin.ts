@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import {
+  evaluateOrigin,
+  requestLocation,
+  steadyOrigin,
+  type ChosenPlace,
+} from '@/features/place/originStore';
 import { locationService } from '@/lib/location';
 
 import { sameOrigin } from './boardState';
-import { evaluateOrigin, requestLocation, steadyOrigin, type ChosenPlace } from './originStore';
 import { originStore } from './services';
 import type { BoardOrigin } from './types';
 import { useFreshness } from './useFreshness';
