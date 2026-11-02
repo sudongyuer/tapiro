@@ -15,4 +15,14 @@ export {
   type SettingsLike,
   type ShownOrigins,
 } from './originStore';
+export {
+  isAirport,
+  matchPlace,
+  placeKindFor,
+  shortNameFor,
+  validShortName,
+  SHORT_NAME_MAX,
+  type PlaceKind,
+  type ShortNameEntry,
+} from './shortName';
 export type { BoardOrigin, NoOriginReason } from './types';
