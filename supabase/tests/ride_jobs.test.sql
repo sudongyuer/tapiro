@@ -60,7 +60,7 @@ select pg_temp.departs(3, interval '-2 hours -1 minute');
 select pg_temp.departs(4, interval '-3 hours');
 update public.rides set status = 'departed' where id = pg_temp.r(4);
 
-select is(public.run_ride_jobs(), '{"gathering": 1, "expired": 2, "skipped": 0}'::jsonb, 'the job opens 集合 and expires two rides');
+select is(public.run_ride_jobs(), '{"gathering": 1, "expired": 2, "lapsed": 0, "skipped": 0}'::jsonb, 'the job opens 集合 and expires two rides');
 select is(pg_temp.status(1), 'gathering', '30 minutes before departure the ride is at 集合');
 select is(pg_temp.status(2), 'expired', '2 hours after departure without 出发 the ride expires');
 select isnt(
@@ -77,7 +77,7 @@ select is(
   'nobody is a no-show when a ride expires'
 );
 select is(pg_temp.status(4), 'departed', 'a departed ride is left alone');
-select is(public.run_ride_jobs(), '{"gathering": 0, "expired": 0, "skipped": 0}'::jsonb, 'a second run changes nothing');
+select is(public.run_ride_jobs(), '{"gathering": 0, "expired": 0, "lapsed": 0, "skipped": 0}'::jsonb, 'a second run changes nothing');
 select is((select count(*) from cron.job where jobname = 'ride-jobs'), 1::bigint, 'the ride job is scheduled');
 
 update public.rides set status = 'closed', settled_at = now() - interval '31 days' where id = pg_temp.r(4);

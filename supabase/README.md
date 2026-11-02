@@ -5,6 +5,8 @@ Requires Docker and the `supabase` CLI.
 - `bun run db:start` starts the local stack and applies `migrations/`.
 - `bun run db:reset` rebuilds the local database from the migrations and wipes all local data.
 - `bun run db:test` runs the pgTAP tests in `tests/`; the local stack must already be running.
+- `scripts/db-isolated.sh <name> <port-prefix>` (for example `appeal-lapse 565`) runs them on a throwaway stack with its
+  own `project_id` and ports, then stops it; agents in worktrees use this instead of the shared `tapiro` stack.
 
 Studio runs at http://127.0.0.1:54323 and the API at http://127.0.0.1:54321.
 
@@ -121,7 +123,9 @@ Deleting an account removes its blocks in both directions.
 
 `reputation_events` is server-only (RLS on, no client grants); it is the input to the reputation
 tier. A `no_show` is one row per (user, item kind, item); a `settled` event is one row per (user,
-payment), so a driver gets one per rider on the same ride.
+payment), so a driver gets one per rider on the same ride. A ride no-show under a 「我上车了」 appeal has
+`appeal_pending`: the recompute skips it, but it keeps its `created_at` and its waiver. A confirmed appeal deletes the
+row; the `ride-jobs` cron clears the flag when the appeal lapses 72 h after 出发.
 
 - `record_no_show(offender, kind, item)` (service role): returns `waived` when the offender has no
   waived no-show in the last 60 days, `counted` otherwise; a replay for the same item returns the

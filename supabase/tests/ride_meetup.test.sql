@@ -152,8 +152,8 @@ select throws_ok($$select pg_temp.as_user('b2', 'public.appeal_ride_no_show(pg_t
 select is(pg_temp.as_user('d4', $$public.appeal_ride_no_show(pg_temp.r(1))$$), '{"status": "appealed"}'::jsonb, 'an unticked member taps 我上车了');
 reset role;
 select is(
-  (select count(*) from public.reputation_events where user_id = pg_temp.u('d4') and kind = 'no_show'), 0::bigint,
-  'an appeal is not counted while it waits'
+  (select array_agg(appeal_pending) from public.reputation_events where user_id = pg_temp.u('d4') and kind = 'no_show'),
+  array[true], 'an appeal is not counted while it waits'
 );
 set local role authenticated;
 select throws_ok($$select pg_temp.as_user('d4', 'public.confirm_ride_appeal(pg_temp.r(1), pg_temp.u(''d4''))')$$, '42501', 'not_member', 'nobody confirms their own appeal');
