@@ -39,6 +39,10 @@ begin
     case when m.member_id = r.organiser_id then 'payee' else 'payer' end::public.sticker_role, private.ride_title(r)
   from public.ride_members m
   where m.ride_id = ride and m.status = 'boarded'
+    and exists (
+      select 1 from public.ride_members o
+      where o.ride_id = ride and o.status = 'boarded' and o.member_id is distinct from r.organiser_id
+    )
   on conflict (owner_id, item_id) where item_kind = 'ride' do nothing;
 end;
 $$;
@@ -69,11 +73,17 @@ security definer
 set search_path = ''
 as $$
 declare
-  p public.payments := public.locked_payment(payment);
+  p public.payments;
   helped integer;
   total integer;
   ride_closed boolean := false;
 begin
+  -- Ride rows are locked before their payments everywhere (change_ride_share, send_ride_split), so two settles or a
+  -- settle and a share edit on one ride cannot deadlock.
+  perform 1 from public.rides r
+  where r.id = (select q.item_id from public.payments q where q.id = payment and q.item_kind = 'ride')
+  for update;
+  p := public.locked_payment(payment);
   if p.payee_id is distinct from (select auth.uid()) then
     raise exception 'only the payee confirms' using errcode = '42501';
   end if;

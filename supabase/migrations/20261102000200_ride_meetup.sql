@@ -93,7 +93,11 @@ declare
   moved public.ride_status;
 begin
   perform private.require_before_departure(r);
-  if departs is null or departs <= now() or departs > r.depart_at + interval '24 hours' then
+  if departs is null
+    or departs <= now()
+    or departs < private.ride_departs_at(r)
+    or departs > r.depart_at + interval '24 hours'
+  then
     raise exception 'invalid_ride' using errcode = '22023';
   end if;
   if departs is distinct from private.ride_departs_at(r) then
@@ -194,7 +198,7 @@ declare
   missing uuid;
   outcome text;
 begin
-  if r.status = 'departed' and exists (
+  if r.status in ('departed', 'arrived', 'settling', 'closed') and exists (
     select 1 from public.ride_events e where e.ride_id = ride and e.kind = 'departed'
   ) then
     return private.ride_departure_answer(ride);
@@ -228,6 +232,21 @@ begin
 end;
 $$;
 
+-- Counted from the actual 出发, not the ride status, so 到了 or the split cannot close the window early.
+create function private.within_appeal_window(ride uuid) returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((
+    select min(e.created_at) > now() - interval '72 hours'
+    from public.ride_events e where e.ride_id = ride and e.kind = 'departed'
+  ), false);
+$$;
+
+revoke all on function private.within_appeal_window(uuid) from public, anon, authenticated;
+
 -- While an appeal waits for a boarded member, the no-show is not counted, so its reputation row is removed.
 create function public.appeal_ride_no_show(ride uuid) returns jsonb
 language plpgsql
@@ -246,7 +265,7 @@ begin
   if mine.status is distinct from 'no_show' then
     raise exception 'not_member' using errcode = '42501';
   end if;
-  if r.status not in ('departed', 'arrived') then
+  if not private.within_appeal_window(ride) then
     raise exception 'invalid_transition' using errcode = '55000';
   end if;
   update public.ride_members m set status = 'appealed' where m.ride_id = ride and m.member_id = uid;
@@ -274,7 +293,7 @@ begin
   if theirs.status = 'boarded' then
     return jsonb_build_object('status', 'boarded');
   end if;
-  if theirs.status is distinct from 'appealed' or r.status not in ('departed', 'arrived') then
+  if theirs.status is distinct from 'appealed' or not private.within_appeal_window(ride) then
     raise exception 'invalid_transition' using errcode = '55000';
   end if;
   update public.ride_members m set status = 'boarded' where m.ride_id = ride and m.member_id = member;

@@ -210,7 +210,7 @@ set search_path = ''
 as $$
   select exists (
     select 1 from public.ride_members m
-    where m.ride_id = ride and m.member_id = uid and m.status in ('accepted', 'boarded', 'no_show', 'appealed')
+    where m.ride_id = ride and m.member_id = uid and m.status in ('accepted', 'boarded')
   );
 $$;
 
@@ -223,15 +223,6 @@ as $$
   select exists (
     select 1 from public.ride_members m where m.ride_id = ride and m.member_id = uid and m.status = 'boarded'
   );
-$$;
-
-create function private.has_ride_row(ride uuid, uid uuid) returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (select 1 from public.ride_members m where m.ride_id = ride and m.member_id = uid);
 $$;
 
 create function private.ride_organiser(ride uuid) returns uuid
@@ -249,11 +240,9 @@ revoke all on function private.normalise_place(text) from public, anon, authenti
 revoke all on function private.place_kind(text) from public, anon, authenticated;
 revoke all on function private.is_ride_member(uuid, uuid) from public, anon, authenticated;
 revoke all on function private.is_ride_boarded(uuid, uuid) from public, anon, authenticated;
-revoke all on function private.has_ride_row(uuid, uuid) from public, anon, authenticated;
 revoke all on function private.ride_organiser(uuid) from public, anon, authenticated;
 grant execute on function private.is_ride_member(uuid, uuid) to authenticated, service_role;
 grant execute on function private.is_ride_boarded(uuid, uuid) to authenticated, service_role;
-grant execute on function private.has_ride_row(uuid, uuid) to authenticated, service_role;
 grant execute on function private.ride_organiser(uuid) to authenticated, service_role;
 
 create function private.in_no_show_window(r public.rides) returns boolean
@@ -319,7 +308,7 @@ create policy rides_select on public.rides
     or private.is_ride_member(id, (select auth.uid()))
     or (
       not private.is_blocked_between((select auth.uid()), organiser_id)
-      and (status in ('open', 'gathering') or private.has_ride_row(id, (select auth.uid())))
+      and status in ('open', 'gathering')
     )
   );
 

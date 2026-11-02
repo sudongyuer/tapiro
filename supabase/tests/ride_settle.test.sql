@@ -230,8 +230,8 @@ select is(pg_temp.as_user('a1', $$public.reach_ride(pg_temp.r(2))$$), '{"status"
 select is(pg_temp.as_user('a1', $$public.reach_ride(pg_temp.r(3))$$), '{"status": "closed"}'::jsonb, 'an organiser who rode alone has nothing to split');
 reset role;
 select is(
-  (select count(*) from public.stickers where item_kind = 'ride' and item_id = pg_temp.r(3)), 1::bigint,
-  'the lone organiser still gets the car sticker'
+  (select count(*) from public.stickers where item_kind = 'ride' and item_id = pg_temp.r(3)), 0::bigint,
+  'a lone organiser gets no car sticker'
 );
 set local role authenticated;
 select throws_ok(

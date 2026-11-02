@@ -102,12 +102,12 @@ select results_eq(
 set local role authenticated;
 
 select throws_ok($$select pg_temp.as_user('b2', 'public.revise_ride_time(pg_temp.r(1), now() + interval ''1 hour'')')$$, '42501', 'not_organiser', 'only the organiser moves the time');
-select is(pg_temp.as_user('a1', $$public.revise_ride_time(pg_temp.r(1), now() + interval '2 hours')$$) ->> 'status', 'open', 'a later time leaves 集合');
+select is(pg_temp.as_user('a1', $$public.revise_ride_time(pg_temp.r(1), now() + interval '25 minutes')$$) ->> 'status', 'gathering', 'a short delay stays at 集合');
 select ok(
   (select revised_at > depart_at from public.rides where id = pg_temp.r(1)), 'the old time is kept for the strike-through'
 );
 select throws_ok($$select pg_temp.as_user('a1', 'public.revise_ride_time(pg_temp.r(1), now() - interval ''1 minute'')')$$, '22023', 'invalid_ride', 'a past time is refused');
-select is(pg_temp.as_user('a1', $$public.revise_ride_time(pg_temp.r(1), now() + interval '10 minutes')$$) ->> 'status', 'gathering', 'a sooner time returns to 集合');
+select throws_ok($$select pg_temp.as_user('a1', 'public.revise_ride_time(pg_temp.r(1), now() + interval ''21 minutes'')')$$, '22023', 'invalid_ride', 'a time earlier than the current one is refused');
 
 select is(
   pg_temp.as_user('a1', $$public.update_ride_details(pg_temp.r(1), ' VEN 2381 · 白色 Alza ', null, '大堂门口')$$),

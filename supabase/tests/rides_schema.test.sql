@@ -142,8 +142,8 @@ select is((select count(*) from public.ride_receipts), 1::bigint, 'a boarded rid
 select pg_temp.act_as(pg_temp.u('f6'));
 select is((select count(*) from public.ride_receipts), 0::bigint, 'a no-show does not see the receipt');
 select is(
-  (select plate from public.ride_details where ride_id = '10000000-0000-0000-0000-000000000002'), 'WXY 1',
-  'a no-show member still reads the plate'
+  (select count(*) from public.ride_details where ride_id = '10000000-0000-0000-0000-000000000002'), 0::bigint,
+  'a no-show member no longer reads the plate'
 );
 
 select pg_temp.act_as(pg_temp.u('d4'));
