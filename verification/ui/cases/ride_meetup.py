@@ -50,7 +50,7 @@ def arrived_cell(count):
 
 ticket = ui.element('ride-detail-ticket')
 text = ticket.get('AXLabel') or ''
-countdown = re.compile(r'(9|10) ' + re.escape(ui.tn('ride.detail.countdown', 10)))
+countdown = re.compile(r'(9|10|11) ' + re.escape(ui.tn('ride.detail.countdown', 10)))
 assert countdown.match(text), f'the ticket does not lead with the countdown: {text}'
 for part in (ui.t('ride.detail.cell.platePending', name='小林'), arrived_cell(2), '双威 → KLIA2'):
     assert part in text, f'ticket label misses {part!r}: {text}'

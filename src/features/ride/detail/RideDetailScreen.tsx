@@ -42,7 +42,7 @@ export function RideDetailScreen({
   const now = useNow(TICK_MS);
   const { state, store } = useRideDetail(id, now);
   const [titleShown, setTitleShown] = useState(false);
-  const [ticketBottom, setTicketBottom] = useState(Infinity);
+  const [routeBottom, setRouteBottom] = useState(Infinity);
   const [pulling, setPulling] = useState(false);
   const headerHeight = useHeaderHeight();
   const load = state.load;
@@ -106,7 +106,7 @@ export function RideDetailScreen({
         contentContainerStyle={styles.content}
         scrollEventThrottle={32}
         onScroll={(event) => {
-          const past = event.nativeEvent.contentOffset.y + headerHeight > ticketBottom;
+          const past = event.nativeEvent.contentOffset.y + headerHeight > routeBottom;
           if (past !== titleShown) setTitleShown(past);
         }}
         refreshControl={
@@ -165,7 +165,7 @@ export function RideDetailScreen({
             actions={actions}
             onTicketLayout={(event) => {
               const { y, height } = event.nativeEvent.layout;
-              setTicketBottom(y + height);
+              setRouteBottom(vars['--space-2'] + y + height);
             }}
             onEditDetails={sheets.openDetails}
           />

@@ -14,7 +14,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import relaunch, tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from ride import assert_ticket_colour, within_screen  # noqa: E402
+from ride import assert_ticket_colour, tap_bar, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/block/',
         'src/ui/PillButton.tsx', 'src/ui/SyncedTextField.tsx', 'supabase/migrations/20261102000700_ride_detail.sql']
@@ -70,7 +70,7 @@ assert_ticket_colour(ui, shot, ticket, '--color-ride', 'detail ticket')
 
 ui.tap('ride-detail-apply')
 ui.element('ride-apply')
-ui.tap('ride-apply-confirm')
+tap_bar(ui, 'ride-apply-confirm')
 ui.gone('ride-apply')
 ui.wait_label('ride-detail-applied', lambda label: label == ui.t('ride.detail.applied.waiting', name='小林'),
               '等小林通过 never showed')

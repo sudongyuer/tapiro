@@ -12,6 +12,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from ride import tap_bar  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/PillButton.tsx']
 SCENE = 'ride-detail'
@@ -63,7 +64,7 @@ confirm = ui.element('ride-depart-confirm')
 assert confirm.get('AXLabel') == ui.tn('ride.detail.depart.confirm', 3), confirm.get('AXLabel')
 ui.at_rest()
 ui.capture('02-sheet')
-ui.tap('ride-depart-confirm')
+tap_bar(ui, 'ride-depart-confirm')
 ui.gone('ride-depart')
 ui.wait_label('ride-detail-ticket', lambda label: (label or '').startswith(ui.t('ride.ticket.departed')),
               'the ticket never read 已出发')

@@ -39,7 +39,6 @@ export function FullTicket({
       style={[styles.ticket, { backgroundColor: surface }]}
       accessible
       accessibilityLabel={stamp ? `${t('ride.detail.applied.stamp')}, ${view.a11y}` : view.a11y}
-      onLayout={onLayout}
       testID="ride-detail-ticket"
     >
       <View style={styles.head}>
@@ -83,6 +82,7 @@ export function FullTicket({
           adjustsFontSizeToFit
           minimumFontScale={MIN_ROUTE_SCALE}
           style={[styles.ink, styles.route]}
+          onLayout={onLayout}
         >
           {view.route}
         </AppText>
