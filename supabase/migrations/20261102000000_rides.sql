@@ -256,6 +256,41 @@ grant execute on function private.is_ride_boarded(uuid, uuid) to authenticated, 
 grant execute on function private.has_ride_row(uuid, uuid) to authenticated, service_role;
 grant execute on function private.ride_organiser(uuid) to authenticated, service_role;
 
+create function private.in_no_show_window(r public.rides) returns boolean
+language sql
+stable
+set search_path = ''
+as $$
+  select now() >= private.ride_departs_at(r) - interval '15 minutes';
+$$;
+
+create function private.waiver_available(uid uuid) returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select not exists (
+    select 1 from public.reputation_events
+    where user_id = uid and kind = 'no_show' and waived and created_at > now() - interval '60 days'
+  );
+$$;
+
+create function private.ride_no_show_outcome(ride uuid, uid uuid) returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case when e.waived then 'waived' else 'counted' end
+  from public.reputation_events e
+  where e.user_id = uid and e.kind = 'no_show' and e.item_kind = 'ride' and e.item_id = ride;
+$$;
+
+revoke all on function private.in_no_show_window(public.rides) from public, anon, authenticated;
+revoke all on function private.waiver_available(uuid) from public, anon, authenticated;
+revoke all on function private.ride_no_show_outcome(uuid, uuid) from public, anon, authenticated;
+
 alter table public.place_short_names enable row level security;
 alter table public.rides enable row level security;
 alter table public.ride_details enable row level security;

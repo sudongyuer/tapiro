@@ -83,37 +83,6 @@ begin
 end;
 $$;
 
-create function private.in_no_show_window(r public.rides) returns boolean
-language sql
-stable
-set search_path = ''
-as $$
-  select now() >= private.ride_departs_at(r) - interval '15 minutes';
-$$;
-
-create function private.waiver_available(uid uuid) returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select not exists (
-    select 1 from public.reputation_events
-    where user_id = uid and kind = 'no_show' and waived and created_at > now() - interval '60 days'
-  );
-$$;
-
-create function private.ride_no_show_outcome(ride uuid, uid uuid) returns text
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select case when e.waived then 'waived' else 'counted' end
-  from public.reputation_events e
-  where e.user_id = uid and e.kind = 'no_show' and e.item_kind = 'ride' and e.item_id = ride;
-$$;
-
 create function public.publish_ride(
   id uuid,
   start_label text,
@@ -478,9 +447,6 @@ revoke all on function private.log_ride(
 revoke all on function private.set_ride_status(uuid, public.ride_status) from public, anon, authenticated;
 revoke all on function private.ride_taken(uuid) from public, anon, authenticated;
 revoke all on function private.require_before_departure(public.rides) from public, anon, authenticated;
-revoke all on function private.in_no_show_window(public.rides) from public, anon, authenticated;
-revoke all on function private.waiver_available(uuid) from public, anon, authenticated;
-revoke all on function private.ride_no_show_outcome(uuid, uuid) from public, anon, authenticated;
 
 revoke all on function public.publish_ride(
   uuid, text, text, double precision, double precision, text, text, double precision, double precision, timestamptz,
