@@ -694,19 +694,19 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[carpool](specs/2026-11-02-carpool-design.md)
 
-| 验收 id                | 行为                                                                                     | 覆盖                                                                                                            |
-| ---------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| ride.join.request      | 申请可以留一句话；发起人在申请卡上通过或拒绝；申请后票上盖「已申请」能撤回；满员不再接受 | db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 5                                             |
-| ride.join.privacy      | 没上车的人只看到发起人和空座位，看不到成员、集合说明和车牌                               | db:supabase/tests/rides_schema.test.sql, db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 5  |
-| ride.join.gather       | 出发前 30 分钟票变成倒计时票：集合点、车牌、到了 n/人数，集合那步一排头像                | ui, gap: not built                                                                                              |
-| ride.join.arrived      | 「我到了」只手动，出发前可以撤销                                                         | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                           |
-| ride.join.running-late | 「晚到」选 5 / 10 / 15 分钟或不来了，别人看到黄圈和预计时间                              | db:supabase/tests/ride_meetup.test.sql, unit:src/features/ride/rideTimes.test.ts, ui, gap: UI in carpool step 5 |
-| ride.join.plate        | 发起人叫车后填车牌；导航到集合点人人有，打开 Grab 只有发起人                             | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                           |
-| ride.join.fifteen      | 出发前 15 分钟没满员由组织者决定走不走；这段时间退出算放鸽子                             | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 5   |
-| ride.join.boarding     | 出发弹出勾选单，按了「我到了」的先勾上；没被勾的人可以申诉，别的乘客一键证明             | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                           |
-| ride.join.late         | 司机晚到时旧时间划掉显示新时间                                                           | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                           |
-| ride.join.stale        | 连着网时不提示；断网时显示「可能不是最新 · hh:mm 的」                                    | unit, ui, gap: not built                                                                                        |
-| ride.join.expire       | 出发后 2 小时没点出发就过期，不记任何人放鸽子                                            | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_jobs.test.sql                                  |
+| 验收 id                | 行为                                                                                                                       | 覆盖                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| ride.join.request      | 申请可以留一句话；发起人在申请卡上通过或拒绝；申请后票上盖「已申请」能撤回；满员不再接受                                   | db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 5                                                 |
+| ride.join.privacy      | 没上车的人只看到发起人和空座位，看不到成员、集合说明和车牌                                                                 | db:supabase/tests/rides_schema.test.sql, db:supabase/tests/ride_nearby.test.sql, ui, gap: UI in carpool step 5      |
+| ride.join.gather       | 出发前 30 分钟票变成倒计时票：集合点、车牌、到了 n/人数，集合那步一排头像                                                  | ui, gap: not built                                                                                                  |
+| ride.join.arrived      | 「我到了」只手动，出发前可以撤销                                                                                           | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                               |
+| ride.join.running-late | 「晚到」选 5 / 10 / 15 分钟或不来了，别人看到黄圈和预计时间                                                                | db:supabase/tests/ride_meetup.test.sql, unit:src/features/ride/rideTimes.test.ts, ui, gap: UI in carpool step 5     |
+| ride.join.plate        | 发起人叫车后填车牌；导航到集合点人人有，打开 Grab 只有发起人                                                               | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                               |
+| ride.join.fifteen      | 出发前 15 分钟没满员由组织者决定走不走；这段时间退出算放鸽子                                                               | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_join.test.sql, ui, gap: UI in carpool step 5       |
+| ride.join.boarding     | 出发弹出勾选单，按了「我到了」的先勾上；没被勾的人可以申诉，别的乘客一键证明；出发后 72 小时没人证明，申诉失效，放鸽子照算 | db:supabase/tests/ride_meetup.test.sql, db:supabase/tests/ride_appeal_lapse.test.sql, ui, gap: UI in carpool step 5 |
+| ride.join.late         | 司机晚到时旧时间划掉显示新时间                                                                                             | db:supabase/tests/ride_meetup.test.sql, ui, gap: UI in carpool step 5                                               |
+| ride.join.stale        | 连着网时不提示；断网时显示「可能不是最新 · hh:mm 的」                                                                      | unit, ui, gap: not built                                                                                            |
+| ride.join.expire       | 出发后 2 小时没点出发就过期，不记任何人放鸽子                                                                              | unit:src/features/ride/rideTimes.test.ts, db:supabase/tests/ride_jobs.test.sql                                      |
 
 ### ride.split 分账和付款
 

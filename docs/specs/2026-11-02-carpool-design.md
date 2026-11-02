@@ -151,8 +151,10 @@ Every answered question and the defaults drawn on each board. Board names are th
 | 230 ★ default | A Grab-split ride also needs a payee method to publish, since the mode can change until 出发. ★ by default, owner may veto                                                                                           | RideCreate1    |
 | 231 ★ default | Stickers go to everyone who boarded, organiser included; no-shows get none unless an appeal restores them. ★ by default, owner may veto                                                                              | RideSettle1    |
 | 232 ★ default | 我到了 can be undone until 出发, not after. ★ by default, owner may veto                                                                                                                                             | RideMeetup1    |
+| 220 A         | Editing one rider's share leaves the others fixed; the organiser's row is the total minus the others; 发给… is disabled while the others exceed the total. Owner, 2026-11-02                                         | RideSettle1    |
+| 233 A         | An appeal no boarded member confirms within 72 h of the actual 出发 lapses: the no-show counts again, waiver as if no appeal had happened; a confirmed appeal still removes it. Owner, 2026-11-02                    | RideMeetup1    |
 
-Question 220 touches money and is under "Needs the owner"; until answered, its ★ option is the working assumption.
+Questions 220 and 233 touch money or reputation and were answered by the owner on 2026-11-02 (see "Needs the owner").
 
 ## Changes versus the old spec
 
@@ -213,40 +215,46 @@ Each line is a change to `2026-10-11-carpool-design.md`.
 
 ## Rules carried over unchanged
 
-| Rule               | Choice                                                                                                                                                                                                                           |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| What a ride is     | The organiser books and pre-pays one Grab; others split                                                                                                                                                                          |
-| Who sees a ride    | Everyone signed in sees every open ride unless blocked; ordered by start-point distance to the viewer, then same destination; no radius limit                                                                                    |
-| Geo queries        | PostGIS; `nearby_rides(point, cursor)` orders by `<->`; non-members get points snapped to about 110 m                                                                                                                            |
-| Places             | Named places (common, recent, search, map pin), stored as `geography(Point)` plus a label ≤ 80; never raw GPS                                                                                                                    |
-| Seats              | 2–6 total including the organiser, default 4                                                                                                                                                                                     |
-| Fees               | 1 coin, or one of the 3 free posts a month shared with bounties; refunded when the ride is cancelled or expires with no accepted member; publish needs a payee method and is rejected while `publish_blocked()`                  |
-| Joining            | Request to join; organiser accepts or declines; a full or departed ride accepts no requests; a requester can withdraw before acceptance; joining is not blocked by unpaid debts                                                  |
-| Not full at T-15   | The organiser is asked 「照常走还是取消」; the split counts actual riders                                                                                                                                                        |
-| No-show            | A member who leaves inside 15 min before departure, or is not ticked as boarded, is a no-show; one waiver per 60 days; an organiser who cancels after accepting members is a no-show only inside the same window, with no refund |
-| Appeals            | An unticked member taps 「我上车了」; any boarded member confirms in one tap and the no-show is removed; until then 申诉中, not counted                                                                                          |
-| Driver late        | The organiser sets a new time with the bounty ETA sheet (60A); the old time is struck through for everyone                                                                                                                       |
-| Split and rounding | Equal among boarded people including the organiser, each share rounded up to 0.10 of the currency; the organiser receives the few cents over; editable per rider; total within `post_limits` for `ride`                          |
-| Split confirmation | No rider confirmation; 「金额不对」 with an optional note ≤ 140; the organiser edits that rider's amount, which reopens that payment if it is still `due`                                                                        |
-| Payment            | One payment per boarded rider (payer rider, payee organiser), opened when the organiser sends the split; the rate locks then; only the organiser's 已收到 settles                                                                |
-| Time nodes         | 集合 from T-30; a ride with no 出发 expires 2 h after departure and nobody is marked no-show                                                                                                                                     |
-| Text limits        | Place label ≤ 80, short name ≤ 8, meeting note ≤ 140, application note ≤ 140, 「金额不对」 note ≤ 140, plate ≤ 40, large luggage 0–9; enforced by `char_length` / checks and the same `maxLength`                                |
-| Privacy of members | Ride summaries readable by signed-in users unless blocked; members, 集合说明, 车牌 and payment states only by the organiser and accepted members                                                                                 |
-| Unpaid             | Reminders at 24 h and 72 h; publishing blocked after 7 days or 2 open unpaid items                                                                                                                                               |
-| Account deletion   | Blocked while organiser or accepted member of a ride not closed, listed with unsettled payments; requests withdrawn                                                                                                              |
-| Data integrity     | Drafts kept on the device across failures; progress until each RPC answers; never replayed automatically; failed loads never shown as empty                                                                                      |
-| Colour             | 椰糖杏 `--color-ride` for the ticket                                                                                                                                                                                             |
-| Later              | Receipt reading by 问小貘 (step 8, consumes 小貘体力); one group chat per ride kept forever (step 7)                                                                                                                             |
+| Rule               | Choice                                                                                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What a ride is     | The organiser books and pre-pays one Grab; others split                                                                                                                                                                               |
+| Who sees a ride    | Everyone signed in sees every open ride unless blocked; ordered by start-point distance to the viewer, then same destination; no radius limit                                                                                         |
+| Geo queries        | PostGIS; `nearby_rides(point, cursor)` orders by `<->`; non-members get points snapped to about 110 m                                                                                                                                 |
+| Places             | Named places (common, recent, search, map pin), stored as `geography(Point)` plus a label ≤ 80; never raw GPS                                                                                                                         |
+| Seats              | 2–6 total including the organiser, default 4                                                                                                                                                                                          |
+| Fees               | 1 coin, or one of the 3 free posts a month shared with bounties; refunded when the ride is cancelled or expires with no accepted member; publish needs a payee method and is rejected while `publish_blocked()`                       |
+| Joining            | Request to join; organiser accepts or declines; a full or departed ride accepts no requests; a requester can withdraw before acceptance; joining is not blocked by unpaid debts                                                       |
+| Not full at T-15   | The organiser is asked 「照常走还是取消」; the split counts actual riders                                                                                                                                                             |
+| No-show            | A member who leaves inside 15 min before departure, or is not ticked as boarded, is a no-show; one waiver per 60 days; an organiser who cancels after accepting members is a no-show only inside the same window, with no refund      |
+| Appeals            | An unticked member taps 「我上车了」; any boarded member confirms in one tap and the no-show is removed; until then 申诉中, not counted; unconfirmed 72 h after the actual 出发, it lapses and the no-show counts as recorded (233 A) |
+| Driver late        | The organiser sets a new time with the bounty ETA sheet (60A); the old time is struck through for everyone                                                                                                                            |
+| Split and rounding | Equal among boarded people including the organiser, each share rounded up to 0.10 of the currency; the organiser receives the few cents over; editable per rider; total within `post_limits` for `ride`                               |
+| Split confirmation | No rider confirmation; 「金额不对」 with an optional note ≤ 140; the organiser edits that rider's amount, which reopens that payment if it is still `due`                                                                             |
+| Payment            | One payment per boarded rider (payer rider, payee organiser), opened when the organiser sends the split; the rate locks then; only the organiser's 已收到 settles                                                                     |
+| Time nodes         | 集合 from T-30; a ride with no 出发 expires 2 h after departure and nobody is marked no-show                                                                                                                                          |
+| Text limits        | Place label ≤ 80, short name ≤ 8, meeting note ≤ 140, application note ≤ 140, 「金额不对」 note ≤ 140, plate ≤ 40, large luggage 0–9; enforced by `char_length` / checks and the same `maxLength`                                     |
+| Privacy of members | Ride summaries readable by signed-in users unless blocked; members, 集合说明, 车牌 and payment states only by the organiser and accepted members                                                                                      |
+| Unpaid             | Reminders at 24 h and 72 h; publishing blocked after 7 days or 2 open unpaid items                                                                                                                                                    |
+| Account deletion   | Blocked while organiser or accepted member of a ride not closed, listed with unsettled payments; requests withdrawn                                                                                                                   |
+| Data integrity     | Drafts kept on the device across failures; progress until each RPC answers; never replayed automatically; failed loads never shown as empty                                                                                           |
+| Colour             | 椰糖杏 `--color-ride` for the ticket                                                                                                                                                                                                  |
+| Later              | Receipt reading by 问小貘 (step 8, consumes 小貘体力); one group chat per ride kept forever (step 7)                                                                                                                                  |
 
 ## Needs the owner
 
-Only gaps touching money, privacy or a paid service are asked here.
+Only gaps touching money, privacy or a paid service are asked here. Both are answered (owner, 2026-11-02); nothing is
+open.
 
 **220.** 发起人在「到了 · 分车费」里改某个人的金额时，其他人和发起人自己那份怎么变？（211 A 只画了「点金额能单独改」。）
+**Answered A** by the owner, 2026-11-02; already built in PR 48 (`src/features/ride/split.ts`).
 
 - A ★：别人的金额不动，发起人自己那行永远是「总价减去别人」，实时变；别人加起来超过总价时「发给…」按钮变灰。账永远对得上总价，发起人不会多收；改大一个人，发起人自己少出。
 - B：改一个人以后，其余乘客自动重新平分剩下的钱，发起人那份不动。省得发起人算；改一个人会牵动别人，大家看到的数会变。
 - C：不设上限，别人加起来可以超过总价（比如发起人垫了过路费）。最灵活；陌生人之间容易被多收，「金额不对」会变多。
+
+**233.** What happens to a 「我上车了」 appeal that no boarded member confirms? **Answered A** by the owner, 2026-11-02:
+it lapses 72 h after the actual 出发; the no-show then counts again and the 60-day waiver applies as if no appeal had
+happened. A confirmed appeal still removes the no-show.
 
 ## Data flow and ownership
 
@@ -265,8 +273,8 @@ app (拼车 tab, create, detail, sheets) ──RPC──> Supabase (rides, ride_
   ride goes `departed` → `closed` at 到了. Side exits `cancelled`, `expired`. History is `closed` with
   `settled_at` older than 24 h.
 - **`ride_members`**: `requested` (with `note`) → `accepted` | `declined` | `withdrawn`; `accepted` → `left` | `boarded` |
-  `no_show`; `no_show` → `appealed` → `boarded`. `arrived_at` (nullable, cleared on undo), `late_until`, `share`.
-- **`ride_events`**: append-only (arrive, undo, late, revised time, plate, appeal, 「金额不对」 notes, split sent).
+  `no_show`; `no_show` → `appealed` → `boarded` (confirmed) | `no_show` (lapsed after 72 h, 233 A). `arrived_at` (nullable, cleared on undo), `late_until`, `share`.
+- **`ride_events`**: append-only (arrive, undo, late, revised time, plate, appeal, appeal lapse, 「金额不对」 notes, split sent).
 - **`place_short_names`**: seeded by migration: name pattern → short name and place kind (`airport`, `mall`, `campus`,
   `home`); readable by everyone; used by the place search results and the form.
 - **Stickers**: the settle of a ride's last payment (or 到了 on a Grab-split ride) inserts one car sticker per boarded
@@ -324,7 +332,7 @@ Not drawn on the boards. Each either follows a carried rule, takes a ★ default
 
 - Reviews after settlement: foundation step 6; no space reserved (219 board).
 - The 「金额不对」 flow: the rider's note sheet and the organiser's edit are not drawn; the carried rule applies, and the
-  share bound is question 220.
+  share bound is 220 A.
 - Holiday long-haul trips: not designed (179 A).
 - Accessibility sizes: boards are drawn at the default size. Acceptance runs at Large (AGENTS.md); the fixed-height
   ticket keeps system text scaling without separate layouts.
@@ -406,22 +414,22 @@ Plan: `docs/plans/2026-11-02-carpool-foundation.md`.
 
 ### Deviations from the design
 
-| Design said                                                         | Shipped                                                                                                                                                        | Why                                                                                                           | Confirmed by                                                                   |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Carpool events go to the realtime outbox                            | Transitions write `ride_events` only                                                                                                                           | `public.events` does not exist yet (no migration); the kinds are emitted in step 5                            | not intent-changing                                                            |
-| Receipt cleanup with the payment-proof cleanup                      | `ride_receipts_to_delete()` and `clear_ride_receipt()` exist; the Edge Function does not call them yet                                                         | No client can upload a receipt before step 6                                                                  | not intent-changing                                                            |
-| Receipt visible to moderators                                       | Moderators read through the service role                                                                                                                       | No moderator role exists in the schema                                                                        | not intent-changing                                                            |
-| Order by distance, "then same destination"                          | Malaysia day, then snapped start distance, then departure, then id                                                                                             | "Same destination" names no reference point; distance uses the snapped point so ties fall to departure        | not intent-changing                                                            |
-| Equal split rounds up to 0.10                                       | Rounded up, capped at total ÷ (riders) so the organiser's row is never negative                                                                                | Totals under about RM 3 for 6 people would go negative                                                        | not intent-changing                                                            |
-| 每人约 rounds to the nearest unit                                   | Same, never below one unit                                                                                                                                     | Avoids showing RM 0                                                                                           | not intent-changing                                                            |
-| Leaving inside 15 min is a no-show                                  | Member state `left` plus a no-show record (not state `no_show`)                                                                                                | Keeps 我上车了 appeals to unticked boarders only                                                              | not intent-changing                                                            |
-| Appeal: 申诉中, not counted                                         | The no-show row is deleted at appeal; an appeal nobody confirms is never counted                                                                               | The spec has no rejection path                                                                                | pending owner question 233; unchanged until answered (coordinator, 2026-11-02) |
-| Appeals (carried rule, no window given)                             | 我上车了 and its confirmation work for 72 h after the actual 出发, in any later status including `settling` and `closed`                                       | Otherwise the organiser could shut the window by pressing 到了 or sending the split at once (review of PR 48) | coordinator, 2026-11-02                                                        |
-| A confirmed appeal boards the member                                | After the split is sent the split stays as sent: no share, no payment, no sticker for the late boarder                                                         | Reopening a sent split would change other riders' amounts                                                     | coordinator, 2026-11-02                                                        |
-| Driver late: the organiser sets a new time                          | The new time must be later than the current one and within 24 h of the first                                                                                   | An earlier time collapsed 集合 and the 15-minute window (review of PR 48)                                     | coordinator, 2026-11-02                                                        |
-| Members, 集合说明, 车牌 only for the organiser and accepted members | `no_show` and `appealed` members lose them; a confirmed appeal restores them. Declined, withdrawn and left users see a ride only while it is open, like anyone | `is_ride_member` and `has_ride_row` were wider (review of PR 48)                                              | coordinator, 2026-11-02                                                        |
-| One car sticker per boarded person                                  | No sticker when nobody but the organiser boarded, for a Tapiro or a Grab-split ride                                                                            | A ride without riders minted a sticker (review of PR 48)                                                      | coordinator, 2026-11-02                                                        |
-| Sticker per payment (built)                                         | Ride payments earn no per-payment sticker; the ride closes at the last settle and stickers go to every boarded person                                          | Change 30 of this spec; `stickers.test.sql` fixtures moved to bounty payments                                 | spec 218 A / 231                                                               |
+| Design said                                                         | Shipped                                                                                                                                                        | Why                                                                                                           | Confirmed by                                                               |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Carpool events go to the realtime outbox                            | Transitions write `ride_events` only                                                                                                                           | `public.events` does not exist yet (no migration); the kinds are emitted in step 5                            | not intent-changing                                                        |
+| Receipt cleanup with the payment-proof cleanup                      | `ride_receipts_to_delete()` and `clear_ride_receipt()` exist; the Edge Function does not call them yet                                                         | No client can upload a receipt before step 6                                                                  | not intent-changing                                                        |
+| Receipt visible to moderators                                       | Moderators read through the service role                                                                                                                       | No moderator role exists in the schema                                                                        | not intent-changing                                                        |
+| Order by distance, "then same destination"                          | Malaysia day, then snapped start distance, then departure, then id                                                                                             | "Same destination" names no reference point; distance uses the snapped point so ties fall to departure        | not intent-changing                                                        |
+| Equal split rounds up to 0.10                                       | Rounded up, capped at total ÷ (riders) so the organiser's row is never negative                                                                                | Totals under about RM 3 for 6 people would go negative                                                        | not intent-changing                                                        |
+| 每人约 rounds to the nearest unit                                   | Same, never below one unit                                                                                                                                     | Avoids showing RM 0                                                                                           | not intent-changing                                                        |
+| Leaving inside 15 min is a no-show                                  | Member state `left` plus a no-show record (not state `no_show`)                                                                                                | Keeps 我上车了 appeals to unticked boarders only                                                              | not intent-changing                                                        |
+| Appeal: 申诉中, not counted                                         | The no-show row is deleted at appeal; an appeal nobody confirms is never counted                                                                               | The spec has no rejection path                                                                                | superseded by 233 A (owner, 2026-11-02); see the appeal lapse record below |
+| Appeals (carried rule, no window given)                             | 我上车了 and its confirmation work for 72 h after the actual 出发, in any later status including `settling` and `closed`                                       | Otherwise the organiser could shut the window by pressing 到了 or sending the split at once (review of PR 48) | coordinator, 2026-11-02                                                    |
+| A confirmed appeal boards the member                                | After the split is sent the split stays as sent: no share, no payment, no sticker for the late boarder                                                         | Reopening a sent split would change other riders' amounts                                                     | coordinator, 2026-11-02                                                    |
+| Driver late: the organiser sets a new time                          | The new time must be later than the current one and within 24 h of the first                                                                                   | An earlier time collapsed 集合 and the 15-minute window (review of PR 48)                                     | coordinator, 2026-11-02                                                    |
+| Members, 集合说明, 车牌 only for the organiser and accepted members | `no_show` and `appealed` members lose them; a confirmed appeal restores them. Declined, withdrawn and left users see a ride only while it is open, like anyone | `is_ride_member` and `has_ride_row` were wider (review of PR 48)                                              | coordinator, 2026-11-02                                                    |
+| One car sticker per boarded person                                  | No sticker when nobody but the organiser boarded, for a Tapiro or a Grab-split ride                                                                            | A ride without riders minted a sticker (review of PR 48)                                                      | coordinator, 2026-11-02                                                    |
+| Sticker per payment (built)                                         | Ride payments earn no per-payment sticker; the ride closes at the last settle and stickers go to every boarded person                                          | Change 30 of this spec; `stickers.test.sql` fixtures moved to bounty payments                                 | spec 218 A / 231                                                           |
 
 ### Bugs fixed during implementation
 
@@ -445,3 +453,42 @@ Plan: `docs/plans/2026-11-02-carpool-foundation.md`.
 - The client payment fixture still earns a per-payment ride sticker (`src/features/payment/fixturePaymentService.ts`); step 6.
 - The app does not list `rides` from the account-delete 409 yet; it treats the answer as blocked.
 - The six `20261102…` migrations ran only on the local stack; nothing was pushed to the hosted project.
+
+## Implementation Record (2026-11-02, appeal lapse, 233 A)
+
+PR: pending, branch `feat/carpool-appeal-lapse`. Status stays `approved`: steps 4–8 remain. 220 A needed no code; it was
+built in PR 48 (`src/features/ride/split.ts`).
+
+### What was built
+
+- `supabase/migrations/20261102000600_ride_appeal_lapse.sql`: `reputation_events.appeal_pending` (no-show rows only).
+  `appeal_ride_no_show` marks the ride's no-show row pending instead of deleting it; `confirm_ride_appeal` deletes it;
+  `recompute_reputation` skips pending rows. `run_ride_jobs` gains a lapse step: an `appealed` member whose ride
+  departed 72 h or more ago goes back to `no_show`, the row is un-pended with its original `created_at` and `waived`,
+  and one `appeal_lapsed` event (note `counted` or `waived`) is logged; the job result gains `lapsed`. Appeals made
+  before this migration (row already deleted) are backfilled as pending rows from their `no_show` event.
+- Race safety: the lapse locks the member row with `skip locked`, the row `confirm_ride_appeal` also locks, and its
+  update is guarded on `status = 'appealed'`; confirmation and lapse use the same 72 h boundary from the first
+  `departed` event, so at most one of them applies.
+
+### Deviations from the design
+
+| Design said                            | Shipped                                                                                                                        | Why                                                                                     | Confirmed by        |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------- |
+| 申诉中, not counted                    | A pending row is left out of the reputation count but still holds its 60-day waiver; a later no-show while it waits is counted | 233 A: the lapse restores the waiver "as if no appeal had happened"                     | not intent-changing |
+| A confirmed appeal removes the no-show | Removing a waived row frees the waiver for later no-shows; a no-show already counted while the appeal waited stays counted     | Recomputing other items' outcomes after the fact would change answers users already saw | not intent-changing |
+
+### Verification
+
+- `supabase test db` on an isolated stack (`scripts/db-isolated.sh appeal-lapse 565`, `project_id`
+  `tapiro-appeal-lapse`, ports 565xx, stopped after) → 33 files, 1314 tests, PASS. Without the new migration,
+  `ride_appeal_lapse.test.sql` failed at the pending row, the held waiver, the lapse count and the lapsed state, then
+  aborted at `appeal_lapsed`; `ride_jobs.test.sql` and `ride_meetup.test.sql` failed on the new result key and column.
+- The rejected late confirmation (`throws_ok`) also passed before this change; its case fails before through the
+  assertions that follow it (the member stays `appealed`, then lapses).
+- The backfill ran on an empty table only; no pgTAP case can reach it after migrations apply.
+
+### Known limits
+
+- The lapse runs with the every-minute `ride-jobs` cron, so a lapse lands up to a minute after the 72 h mark; a
+  confirmation in that minute is already refused.
