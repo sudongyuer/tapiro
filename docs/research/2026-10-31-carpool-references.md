@@ -312,6 +312,25 @@ organiser can tick 「车费已在 Grab 里分好」, which skips the split and 
 the composite WeChat-post sample; there are no real screenshots. Daily short trips (回宿舍, 去商场, 回 YC) come first;
 the airport adds optional fields (flight time, large luggage); holiday long-haul is not designed now.
 
+Answered for screen ① (the list): **180 B**, **181 A**, **182 B**, **183 B**, **184 A**, **185 A** (user, 2026-11-02,
+all recommended options, after the board 「拼车 · ① 列表」 on p05r at x 9400, y 260).
+
+- 180 B: a compact ticket with a stub on the right showing 每人约 and seats.
+- 181 A: one list with two sections, 我的拼车 then 可以加入.
+- 182 B: no filter chips; day subheadings 今天 / 明天, and an airport ticket carries its own marker.
+- 183 B: airport info as one icon line, 「✈ 航班 09:10 起飞 · 🧳 2 件大行李」.
+- 184 A: 发起拼车 is the nav-bar ＋.
+- 185 A: the empty state is a moment screen (speckled background, big car sticker, one line, black 发起拼车 button), with
+  the ＋ hidden.
+
+Defaults drawn on the same board and not objected to: the large title 「拼车」; a full ride uses the neutral card colour
+with 「已满」 and a crossed-circle icon; urgent red plus a clock for 「8 分钟后出发」; the warning colour plus an
+exclamation mark for 「我发起的 · 1 人申请」.
+
+182 B contradicts the quick-filter chips in `docs/specs/2026-10-11-carpool-design.md` (拼车 tab, "Who sees a ride",
+risks and step 3–4). The spec is not edited now; a superseding carpool spec will be written once the screens are
+settled.
+
 **176.** 拼车调研已完成（BlaBlaCar、Grab、Flighty、Wallet 登机牌、Citymapper），下一步是先定整体方向，再一屏一屏重画。
 拼车的整体样子选哪个方向？
 
