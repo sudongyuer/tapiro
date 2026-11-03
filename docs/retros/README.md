@@ -32,3 +32,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-02 | carpool detail + 集合  | pending         | 0             | ~10 min (worktree guard, tooling)           | 0                       | pending            |
 | 2026-11-02 | carpool step 6         | pending         | 0             | ~10 min (worktree guard, SQL precedence)    | 0                       | pending            |
 | 2026-11-02 | status page            | 0               | 0             | ~0                                          | 1                       | 0                  |
+| 2026-11-03 | carpool step 7         | pending         | 0             | ~25 min (fixture clock, worktree guard)     | 0                       | pending            |

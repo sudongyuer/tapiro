@@ -803,7 +803,7 @@ PR: pending (`feat/carpool-reminders`). Status stays `approved`: the carpool mil
   prompt once, after the first ride published or the first ride request; provisional is read from `ios.status`
   (AGENTS.md), and reminders are scheduled when allowed or provisional, never when denied or undetermined. A tap on a
   ride reminder opens that ride's detail, from a cold start too (`getLastNotificationResponse`, cleared once handled).
-- The owing card (`rideSettle.owe.next` / `.sent`): 「Tapiro 会在明天 10:30 提醒你」 while a pay reminder is scheduled on
+- The owing card (`rideSettle.owe.next` / `.sent`): 「Tapiro 会在 明天 10:30 提醒你」 while a pay reminder is scheduled on
   this device, 「Tapiro 今天 10:30 提醒过你」 once its time has passed, else the old general line.
 - Native: `expo-notifications` 57.0.24; `plugins/withoutPushEntitlement.js` strips the `aps-environment` entitlement
   the package's auto-applied plugin adds, which a free team cannot sign (as for Sign in with Apple). Verify mode
@@ -825,8 +825,21 @@ PR: pending (`feat/carpool-reminders`). Status stays `approved`: the carpool mil
 
 ### Verification
 
-- See the PR body for the run on this branch (pgTAP on an isolated stack, unit tests, UI build, smoke and
-  `ride_settle_owing`).
+- `supabase test db` on an isolated stack (`scripts/db-isolated.sh ride-reminders 571`) → 39 files, 1449 tests, PASS.
+  `ride_event_outbox.test.sql` (32) cannot pass without the migration (no `events`, `push_recordings`,
+  `quiet_until`, `myDueSince` or `eta`).
+- `bun test` → 1735 pass, 4 fail (the known `scripts/check-file-size.test.ts` cases inside `.claude/worktrees`; 0 fail before the iOS build);
+  `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `bun run check:size`,
+  `node scripts/design-check.mjs`, `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs` →
+  exit 0. Unit: `src/lib/notifications/notifications.test.ts` (quiet hours, diff, permission),
+  `src/features/ride/reminders/reminders.test.ts` (time nodes, reschedule, cancel, sign-out, freshness, sent/next).
+- `expo config --type introspect`: no entitlements with `withoutPushEntitlement`; `aps-environment: development`
+  without it.
+- `bun run verify:build` (prebuild with `expo-notifications`) and `bun run verify:smoke` (4 cases) → pass.
+  `ride_settle_owing` in zh-Hans light and dark → pass after the fixture-clock fix (retro #6); the screenshot reads
+  「Tapiro 会在 11月5日 周四 13:58 提醒你。…」.
+- Device (story map `ride.remind.*`): delivery at T-30, T-15, 预计到 and 24 h, the provisional and explicit prompts, and
+  opening a ride from a tap on a cold start. Not run: `test:stack`.
 
 ### Known limits
 

@@ -27,19 +27,32 @@ assert re.search(MONEY + r'24\.70 ' + re.escape(ui.t('rideSettle.ticket.leadOwe'
 assert f"{ui.t('rideSettle.ticket.owed')} {ui.tn('rideSettle.ticket.owedValue', 1)}" in ticket, ticket
 owe = ui.element('ride-settle-owe')
 assert owe, 'the owing card is missing'
-deadline = time.monotonic() + 20
-pay = []
-while time.monotonic() < deadline and not pay:
+
+
+def pay_reminders():
     text = defaults(ui, 'uiVerifyScheduledNotices')
-    pay = [notice for notice in (json.loads(text) if text else []) if notice['id'].endswith((':pay24', ':pay72'))]
-    if not pay:
-        time.sleep(0.5)
-assert [notice['data']['kind'] for notice in pay] == ['ride.pay72'], f'expected only the 72 h reminder, got {pay}'
-clock = datetime.fromtimestamp(pay[0]['at'] / 1000, timezone(timedelta(hours=8))).strftime('%H:%M')
-ui.wait_label('ride-settle-owe-reminder',
-                         lambda label: re.fullmatch(ui.pattern('rideSettle.owe.next', time=r'.+ ' + re.escape(clock)),
-                                                    label or '') is not None,
-                         'the owing card does not name the scheduled reminder time')
+    return [notice for notice in (json.loads(text) if text else []) if notice['id'].endswith((':pay24', ':pay72'))]
+
+
+def clock_of(notice):
+    return datetime.fromtimestamp(notice['at'] / 1000, timezone(timedelta(hours=8))).strftime('%H:%M')
+
+
+# The fixture places the split 25 h 44 min before each load, so a reload moves the 72 h reminder; read both together.
+def names_reminder(label):
+    pay = pay_reminders()
+    seen.append((label, [notice['data']['kind'] for notice in pay]))
+    if [notice['data']['kind'] for notice in pay] != ['ride.pay72']:
+        return False
+    expected = ui.pattern('rideSettle.owe.next', time=r'.+ ' + re.escape(clock_of(pay[0])))
+    return re.fullmatch(expected, label) is not None
+
+
+seen = []
+try:
+    ui.wait_label('ride-settle-owe-reminder', names_reminder, 'the owing card does not name the 72 h reminder')
+except AssertionError:
+    raise AssertionError(f'the owing card does not name the only scheduled reminder (72 h): {seen[-1:]}') from None
 assert ui.element(f'ride-settle-paid-{SELF}').get('AXLabel') == ui.t('rideSettle.paid.due')
 assert by_id(ui.read(), 'ride-detail-pay'), 'the pay button is missing'
 ui.at_rest()
