@@ -1,5 +1,5 @@
 ---
-branch: worktree-agent-a740b86ea9a34580f
+branch: feat/live-push-server
 date: 2026-11-03
 pr: live updates and push, step 1 (server)
 title: Broadcast signals, bounty kinds, push tokens and notify with the recording sender
