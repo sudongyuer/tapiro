@@ -39,6 +39,15 @@ def simctl(*args):
     return sh('xcrun', 'simctl', *args)
 
 
+def newest_runtime(runtimes):
+    # Device-specific runtimes (iOS-27-2-iPhone19-4) list only their own model and cannot create DEVICE_TYPE.
+    fits = [r for r in runtimes if r['platform'] == 'iOS'
+            and any(d['identifier'] == DEVICE_TYPE for d in r.get('supportedDeviceTypes', []))]
+    if not fits:
+        raise SystemExit(f'No available iOS runtime supports {DEVICE_TYPE}')
+    return fits[-1]['identifier']
+
+
 def resolve_device(name=None, udid=None):
     devices = json.loads(simctl('list', 'devices', 'available', '-j'))['devices']
     for runtime, items in devices.items():
@@ -48,7 +57,7 @@ def resolve_device(name=None, udid=None):
     if udid:
         raise SystemExit(f'No available Simulator {udid}')
     runtimes = json.loads(simctl('list', 'runtimes', 'available', '-j'))['runtimes']
-    runtime = [r for r in runtimes if r['platform'] == 'iOS'][-1]['identifier']
+    runtime = newest_runtime(runtimes)
     return name, simctl('create', name, DEVICE_TYPE, runtime).strip(), runtime
 
 
