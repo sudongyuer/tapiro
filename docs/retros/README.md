@@ -38,5 +38,5 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-03 | local quiet hours (235) | 0               | 0             | ~0                                          | 1                       | 1 (PR 57 quiet hours) |
 | 2026-11-03 | owner prefs in AGENTS   | 0               | 0             | ~0                                          | 0                       | 0                     |
 | 2026-11-03 | chat server half        | 0               | 1             | ~5 min (two migration bugs), 1 review round | 0                       | 0                     |
-| 2026-11-03 | realtime + push app     | 0               | 2             | ~2 h (Simulator under load, prefs lag)      | 0                       | 0                     |
+| 2026-11-03 | realtime + push app     | 0               | 3             | ~2 h (Simulator under load, prefs lag)      | 0                       | 0                     |
 | 2026-11-04 | verify keyboard         | 0               | 2             | ~30 min (machine load 40–160)               | 0                       | 0                     |
