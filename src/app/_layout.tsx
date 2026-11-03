@@ -3,6 +3,7 @@ import { useColorScheme } from 'react-native';
 
 import { useAccountStage } from '@/features/account';
 import { applySheetGone } from '@/features/bounty';
+import { useRideReminders } from '@/features/ride';
 import { I18nProvider } from '@/lib/i18n';
 
 export default function RootLayout() {
@@ -23,6 +24,7 @@ const FINISHED = { onFinishTransitioning: applySheetGone };
 
 function RootStack() {
   const stage = useAccountStage();
+  useRideReminders(stage);
   return (
     <Stack
       screenOptions={{ headerShown: false, headerTransparent: true }}

@@ -64,6 +64,28 @@ describe('ride parse', () => {
     expect(member.items[0].pendingRequests).toBe(0);
   });
 
+  test('my_rides carries the due time and 预计到 that reminders are built from', () => {
+    const [owing] = toMyRides({
+      items: [
+        {
+          ...summary,
+          role: 'member',
+          myStatus: 'boarded',
+          myDueSince: '2026-11-04T10:30:00+08:00',
+          eta: '2026-11-04T09:50:00+08:00',
+        },
+      ],
+      historyCount: 0,
+    }).items;
+    expect(owing.myDueSince).toBe('2026-11-04T02:30:00.000Z');
+    expect(owing.eta).toBe('2026-11-04T01:50:00.000Z');
+    const [plain] = toMyRides({
+      items: [{ ...summary, role: 'member', myStatus: 'accepted' }],
+      historyCount: 0,
+    }).items;
+    expect([plain.myDueSince, plain.eta]).toEqual([null, null]);
+  });
+
   test('short-name rows skip incomplete rows', () => {
     expect(
       toShortNameRows([

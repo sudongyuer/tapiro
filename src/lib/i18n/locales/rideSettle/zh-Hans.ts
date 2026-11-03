@@ -91,6 +91,8 @@ export default {
     title_one: '{{amount}} 还欠{{name}} · 已欠 {{count}} 天',
     title_other: '{{amount}} 还欠{{name}} · 已欠 {{count}} 天',
     body: 'Tapiro 会在 24 小时和 72 小时提醒你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。',
+    next: 'Tapiro 会在 {{time}} 提醒你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。',
+    sent: 'Tapiro {{time}} 提醒过你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。',
   },
   sheet: {
     title: '到了 · 分车费',

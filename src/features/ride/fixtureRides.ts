@@ -95,6 +95,8 @@ function demo(now: number, variant: FixtureVariant): RideListData {
     pendingRequests: 0,
     myShare: null,
     myPaid: null,
+    myDueSince: null,
+    eta: null,
   };
   const requests: MyRide = {
     ...ride(
@@ -113,6 +115,8 @@ function demo(now: number, variant: FixtureVariant): RideListData {
     pendingRequests: 1,
     myShare: null,
     myPaid: null,
+    myDueSince: null,
+    eta: null,
   };
   const joinable = [
     ride(
@@ -190,6 +194,8 @@ function settledTicket(now: number): MyRide {
     pendingRequests: 0,
     myShare: { minor: 2_470, currency: 'MYR' },
     myPaid: 'settled',
+    myDueSince: null,
+    eta: null,
   };
 }
 

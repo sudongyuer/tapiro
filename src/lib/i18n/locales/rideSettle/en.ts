@@ -93,6 +93,8 @@ const settle: Translation['rideSettle'] = {
     title_one: '{{amount}} still owed to {{name}} · {{count}} day',
     title_other: '{{amount}} still owed to {{name}} · {{count}} days',
     body: 'Tapiro reminds you at 24 and 72 hours. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.',
+    next: 'Tapiro will remind you {{time}}. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.',
+    sent: 'Tapiro reminded you {{time}}. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.',
   },
   sheet: {
     title: 'Arrived · split the fare',

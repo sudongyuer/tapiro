@@ -13,6 +13,7 @@ import {
 } from '@/features/shell';
 import { homeSignals } from '@/lib/homeSignals';
 import { useI18n } from '@/lib/i18n';
+import { useNoticeRouting } from '@/lib/notifications';
 import { useLiveStickers } from '@/lib/stickers';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
@@ -28,6 +29,11 @@ export default function TabsLayout() {
   useLivePayments(userId);
   useLiveBounties(userId);
   useLiveStickers(userId);
+  useNoticeRouting((data) => {
+    if (data.kind.startsWith('ride.')) {
+      router.push({ pathname: '/ride/[id]', params: { id: data.id } });
+    }
+  }, userId !== null);
   const location = useTabLocation(useSegments());
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();
