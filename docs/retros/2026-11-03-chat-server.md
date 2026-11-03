@@ -4,7 +4,7 @@ date: 2026-11-03
 pr: chat server half (foundation step 7, Task 1)
 title: chat tables, RPCs, thread creation and pgTAP
 escaped: 0
-rework: 0
+rework: 1
 interventions: 0
 overturned: 0
 ---
@@ -29,6 +29,19 @@ overturned: 0
 | 1   | A rider who left could not read the messages sent before leaving in the same transaction: `left_at` used `now()`, messages used `clock_timestamp()` | code             | Membership times use `clock_timestamp()` too; the pgTAP case covers it                                    |
 | 2   | `on conflict (sender_id, client_id)` was ambiguous with the PL/pgSQL parameter `client_id`                                                          | code             | `on conflict on constraint`; caught by the first test run                                                 |
 | 3   | The local Supabase stack is shared by every worktree, so a concurrent agent's `db:reset` can wipe this one's schema mid-run                         | environment      | None needed this time (no collision); rerun `db:reset` before `db:test` if a run fails on a missing table |
+
+## What review caught (round 1)
+
+| #   | Finding                                                                                                                         | Root cause class | Change and layer                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------- |
+| 4   | Important: the left-member boundary had no test that could fail through RLS or the list; one test (repeated select) was vacuous | check design     | Direct `messages` count and `lastMessage` as the rider who left; `ensure_thread` re-entered twice |
+| 5   | Newline-only messages passed `btrim`                                                                                            | code             | Whitespace regex in the check and the function; newline test                                      |
+| 6   | Riders who left saw members who joined later                                                                                    | code             | `joined_at <= left_at` in the policy and `thread_json`; tested                                    |
+| 7   | Unbounded `list_threads`, missing report indexes, no lock on the membership row, unused `uid` parameter                         | code             | Paging, indexes, `for share`, `auth.uid()` inside the helper                                      |
+| 8   | Report snapshot retention left unstated                                                                                         | judgment         | Owner decision pending with ★ 1 year                                                              |
+
+Lesson: for every boundary a policy enforces, assert it through the role that RLS applies to, not only through the
+`security definer` RPC.
 
 ## Notes
 

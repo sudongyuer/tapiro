@@ -21,7 +21,7 @@ create table public.messages (
   thread_id uuid not null references public.threads (id) on delete cascade,
   sender_id uuid not null references auth.users (id) on delete cascade,
   client_id uuid not null,
-  body text not null check (char_length(body) between 1 and 2000 and body = btrim(body)),
+  body text not null check (char_length(body) between 1 and 2000 and body = regexp_replace(body, '^\s+|\s+$', '', 'g')),
   created_at timestamptz not null default clock_timestamp(),
   unique (sender_id, client_id)
 );
@@ -44,6 +44,9 @@ create table public.reports (
 
 create unique index reports_person_once on public.reports (reporter_id, target_id) where message_id is null;
 create index reports_created on public.reports (created_at);
+create index reports_message on public.reports (message_id);
+create index reports_target on public.reports (target_id);
+create index reports_thread on public.reports (thread_id);
 
 alter table public.threads enable row level security;
 alter table public.thread_members enable row level security;
@@ -53,27 +56,27 @@ alter table public.reports enable row level security;
 revoke all on public.threads, public.thread_members, public.messages, public.reports from public, anon, authenticated;
 grant select on public.threads, public.thread_members, public.messages to authenticated;
 
-create function private.thread_visible_until(thread uuid, uid uuid) returns timestamptz
+create function private.thread_visible_until(thread uuid) returns timestamptz
 language sql
 stable
 security definer
 set search_path = ''
 as $$
   select coalesce(m.left_at, 'infinity'::timestamptz) from public.thread_members m
-  where m.thread_id = thread and m.member_id = uid;
+  where m.thread_id = thread and m.member_id = (select auth.uid());
 $$;
 
 create policy threads_select_member on public.threads
   for select to authenticated
-  using (private.thread_visible_until(id, (select auth.uid())) is not null);
+  using (private.thread_visible_until(id) is not null);
 
 create policy thread_members_select_member on public.thread_members
   for select to authenticated
-  using (private.thread_visible_until(thread_id, (select auth.uid())) is not null);
+  using (joined_at <= private.thread_visible_until(thread_id));
 
 create policy messages_select_member on public.messages
   for select to authenticated
-  using (created_at <= private.thread_visible_until(thread_id, (select auth.uid())));
+  using (created_at <= private.thread_visible_until(thread_id));
 
 create function private.ensure_thread(bounty uuid, ride uuid, people uuid[]) returns uuid
 language plpgsql
@@ -100,8 +103,11 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  thread uuid := private.ensure_thread(new.id, null, array[new.poster_id, new.helper_id]);
 begin
-  perform private.ensure_thread(new.id, null, array[new.poster_id, new.helper_id]);
+  update public.thread_members m set left_at = clock_timestamp()
+  where m.thread_id = thread and m.member_id not in (new.poster_id, new.helper_id) and m.left_at is null;
   return new;
 end;
 $$;
@@ -158,7 +164,7 @@ as $$
   );
 $$;
 
-create function private.thread_json(t public.threads, uid uuid) returns jsonb
+create function private.thread_json(t public.threads) returns jsonb
 language sql
 stable
 security definer
@@ -169,7 +175,7 @@ as $$
     'kind', case when t.bounty_id is not null then 'bounty' else 'ride' end,
     'itemId', coalesce(t.bounty_id, t.ride_id),
     'createdAt', t.created_at,
-    'left', (select m.left_at is not null from public.thread_members m where m.thread_id = t.id and m.member_id = uid),
+    'left', private.thread_visible_until(t.id) <> 'infinity'::timestamptz,
     'members', coalesce((
       select jsonb_agg(
         jsonb_build_object(
@@ -179,41 +185,68 @@ as $$
       )
       from public.thread_members m
       left join public.profiles p on p.id = m.member_id
-      where m.thread_id = t.id and m.member_id <> uid
+      where m.thread_id = t.id and m.member_id <> (select auth.uid())
+        and m.joined_at <= private.thread_visible_until(t.id)
     ), '[]'::jsonb)
   );
 $$;
 
-create function public.list_threads() returns jsonb
+create function private.my_threads() returns table (t public.threads, msg public.messages, active_at timestamptz)
 language sql
 stable
 security definer
 set search_path = ''
 as $$
-  with mine as (
-    select t, coalesce(m.left_at, 'infinity'::timestamptz) as until
-    from public.thread_members m
-    join public.threads t on t.id = m.thread_id
-    where m.member_id = (select auth.uid())
-  ),
-  latest as (
-    select mine.t, last.msg
-    from mine
-    left join lateral (
-      select x as msg from public.messages x
-      where x.thread_id = (mine.t).id and x.created_at <= mine.until
-      order by x.created_at desc, x.id desc
-      limit 1
-    ) last on true
+  select t, last.msg, coalesce((last.msg).created_at, t.created_at)
+  from public.thread_members m
+  join public.threads t on t.id = m.thread_id
+  left join lateral (
+    select x as msg from public.messages x
+    where x.thread_id = t.id and x.created_at <= coalesce(m.left_at, 'infinity'::timestamptz)
+    order by x.created_at desc, x.id desc
+    limit 1
+  ) last on true
+  where m.member_id = (select auth.uid());
+$$;
+
+create function public.list_threads(before uuid default null, max_count integer default 50) returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  cursor_at timestamptz;
+  page jsonb;
+  more boolean;
+begin
+  if max_count is null or max_count not between 1 and 100 then
+    raise exception 'invalid_page' using errcode = '22023';
+  end if;
+  if before is not null then
+    select x.active_at into cursor_at from private.my_threads() x where (x.t).id = before;
+    if not found then
+      raise exception 'invalid_page' using errcode = '22023';
+    end if;
+  end if;
+  with numbered as (
+    select x.t, x.msg, row_number() over (order by x.active_at desc, (x.t).id) as n
+    from private.my_threads() x
+    where cursor_at is null or x.active_at < cursor_at or (x.active_at = cursor_at and (x.t).id > before)
+    order by x.active_at desc, (x.t).id
+    limit max_count + 1
   )
-  select jsonb_build_object('items', coalesce((
-    select jsonb_agg(
-      private.thread_json(latest.t, (select auth.uid()))
-        || jsonb_build_object('lastMessage', case when (latest.msg).id is not null then private.message_json(latest.msg) end)
-      order by coalesce((latest.msg).created_at, (latest.t).created_at) desc, (latest.t).id
-    )
-    from latest
-  ), '[]'::jsonb));
+  select
+    coalesce(jsonb_agg(
+      private.thread_json(numbered.t)
+        || jsonb_build_object('lastMessage', case when (numbered.msg).id is not null then private.message_json(numbered.msg) end)
+      order by numbered.n
+    ) filter (where numbered.n <= max_count), '[]'::jsonb),
+    count(*) > max_count
+  into page, more
+  from numbered;
+  return jsonb_build_object('items', page, 'hasMore', more);
+end;
 $$;
 
 create function public.read_thread(thread uuid, before uuid default null, max_count integer default 50)
@@ -224,8 +257,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  uid uuid := (select auth.uid());
-  until timestamptz := private.thread_visible_until(thread, uid);
+  until timestamptz := private.thread_visible_until(thread);
   t public.threads;
   cursor_at timestamptz;
   cursor_id uuid;
@@ -259,7 +291,7 @@ begin
     count(*) > max_count
   into page, more
   from numbered;
-  return jsonb_build_object('thread', private.thread_json(t, uid), 'messages', page, 'hasMore', more);
+  return jsonb_build_object('thread', private.thread_json(t), 'messages', page, 'hasMore', more);
 end;
 $$;
 
@@ -272,7 +304,8 @@ set search_path = ''
 as $$
 declare
   uid uuid := (select auth.uid());
-  cleaned text := btrim(body);
+  cleaned text := regexp_replace(body, '^\s+|\s+$', '', 'g');
+  until timestamptz;
   existing public.messages;
   t public.threads;
   stored public.messages;
@@ -287,10 +320,13 @@ begin
     end if;
     return private.message_json(existing);
   end if;
-  if private.thread_visible_until(thread, uid) is null then
+  select coalesce(m.left_at, 'infinity'::timestamptz) into until from public.thread_members m
+  where m.thread_id = thread and m.member_id = uid
+  for share;
+  if until is null then
     raise exception 'thread_not_found' using errcode = 'P0002';
   end if;
-  if private.thread_visible_until(thread, uid) <> 'infinity'::timestamptz then
+  if until <> 'infinity'::timestamptz then
     raise exception 'not_member' using errcode = '42501';
   end if;
   select * into t from public.threads x where x.id = thread for share;
@@ -347,7 +383,7 @@ begin
   end if;
   if message is not null then
     select * into m from public.messages x where x.id = message;
-    if not found or m.created_at > coalesce(private.thread_visible_until(m.thread_id, uid), '-infinity'::timestamptz) then
+    if not found or m.created_at > coalesce(private.thread_visible_until(m.thread_id), '-infinity'::timestamptz) then
       raise exception 'message_not_found' using errcode = 'P0002';
     end if;
     if target is not null and target <> m.sender_id then
@@ -390,18 +426,19 @@ grant select on private.report_queue to service_role;
 
 insert into private.event_kinds (kind, push) values ('chat.message', true);
 
-revoke all on function private.thread_visible_until(uuid, uuid) from public, anon;
-grant execute on function private.thread_visible_until(uuid, uuid) to authenticated;
+revoke all on function private.thread_visible_until(uuid) from public, anon;
+grant execute on function private.thread_visible_until(uuid) to authenticated;
+revoke all on function private.my_threads() from public, anon, authenticated;
 revoke all on function private.ensure_thread(uuid, uuid, uuid[]) from public, anon, authenticated;
 revoke all on function private.bounty_thread_on_assign() from public, anon, authenticated;
 revoke all on function private.ride_thread_membership() from public, anon, authenticated;
 revoke all on function private.message_json(public.messages) from public, anon, authenticated;
-revoke all on function private.thread_json(public.threads, uuid) from public, anon, authenticated;
-revoke all on function public.list_threads() from public, anon, authenticated;
+revoke all on function private.thread_json(public.threads) from public, anon, authenticated;
+revoke all on function public.list_threads(uuid, integer) from public, anon, authenticated;
 revoke all on function public.read_thread(uuid, uuid, integer) from public, anon, authenticated;
 revoke all on function public.send_message(uuid, uuid, text) from public, anon, authenticated;
 revoke all on function public.report(uuid, uuid, text, text) from public, anon, authenticated;
-grant execute on function public.list_threads() to authenticated;
+grant execute on function public.list_threads(uuid, integer) to authenticated;
 grant execute on function public.read_thread(uuid, uuid, integer) to authenticated;
 grant execute on function public.send_message(uuid, uuid, text) to authenticated;
 grant execute on function public.report(uuid, uuid, text, text) to authenticated;

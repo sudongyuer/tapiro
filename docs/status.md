@@ -47,6 +47,8 @@ Updated: 2026-11-03.
 - Live updates and push, expiry: pending applicants get no signal when a bounty expires. ★ add a live-only
   `bounty.expired` to pending applicants.
 - Carpool defaults marked "★ by default, owner may veto" in the carpool spec are open to veto at the walkthrough.
+- Chat report snapshots (`reports.message_body`) are kept forever today, also after both accounts are deleted. ★ Keep
+  them 1 year, then delete. Defaults for the chat server half are in `docs/plans/2026-10-30-chat.md` Rulings.
 
 ## Resuming on another machine
 

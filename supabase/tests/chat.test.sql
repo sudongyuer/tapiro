@@ -1,10 +1,10 @@
 begin;
-select plan(58);
+select plan(70);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', k || '@example.com', jsonb_build_object('full_name', n)
-from (values ('a1', 'Alice'), ('b2', 'Bob'), ('c3', 'Chen'), ('d4', 'Devi'), ('e5', 'Eli')) v (k, n);
+from (values ('a1', 'Alice'), ('b2', 'Bob'), ('c3', 'Chen'), ('d4', 'Devi'), ('e5', 'Eli'), ('f6', 'Fang')) v (k, n);
 
 insert into public.payee_methods (user_id, type)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, 'cash' from unnest(array['a1', 'b2', 'c3', 'd4']) k;
@@ -70,11 +70,16 @@ select is(
   'the thread members are the poster and the selected helper only'
 );
 
-select pg_temp.act_as(pg_temp.u('a1'));
-select public.select_helper('b0000000-0000-4000-8000-000000000001', pg_temp.u('b2'));
+select is(
+  array[
+    private.ensure_thread('b0000000-0000-4000-8000-000000000001', null, array[pg_temp.u('a1'), pg_temp.u('b2')]),
+    private.ensure_thread('b0000000-0000-4000-8000-000000000001', null, array[pg_temp.u('a1'), pg_temp.u('b2')])
+  ],
+  array[(select bt from fx), (select bt from fx)], 'ensuring the thread again answers with the same thread'
+);
 select is(
   (select count(*) from public.threads where bounty_id = 'b0000000-0000-4000-8000-000000000001'), 1::bigint,
-  'a repeated select keeps one thread'
+  'ensuring the thread again stores no second thread'
 );
 
 select is(
@@ -109,6 +114,10 @@ select throws_ok(
 select throws_ok(
   format('select public.send_message(%L, %L, %L)', (select bt from fx), pg_temp.c(2), '   '),
   '22023', 'invalid_message', 'a blank message is rejected'
+);
+select throws_ok(
+  format('select public.send_message(%L, %L, %L)', (select bt from fx), pg_temp.c(2), E'\n\t\n'),
+  '22023', 'invalid_message', 'a message of only newlines and tabs is rejected'
 );
 select throws_ok(
   format('select public.send_message(%L, %L, %L)', (select bt from fx), pg_temp.c(2), repeat('字', 2001)),
@@ -264,6 +273,7 @@ select public.decide_ride_request('a2000000-0000-4000-8000-000000000001', pg_tem
 select public.decide_ride_request('a2000000-0000-4000-8000-000000000001', pg_temp.u('e5'), false);
 
 create temp table rt as select pg_temp.ride_thread('a2000000-0000-4000-8000-000000000001') as id;
+grant select on rt to authenticated;
 select is(
   pg_temp.members((select id from rt)), array[pg_temp.u('a1'), pg_temp.u('c3'), pg_temp.u('d4')],
   'accepting riders builds one group thread of the organiser and accepted members'
@@ -300,6 +310,67 @@ select throws_ok(
   format('select public.send_message(%L, %L, %L)', (select id from rt), pg_temp.c(13), '我回来了'),
   '42501', 'not_member', 'a rider who left cannot send'
 );
+
+select pg_temp.act_as(pg_temp.u('f6'));
+select public.request_ride('a2000000-0000-4000-8000-000000000001');
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.decide_ride_request('a2000000-0000-4000-8000-000000000001', pg_temp.u('f6'), true);
+
+set local role authenticated;
+select pg_temp.act_as(pg_temp.u('c3'));
+select is(
+  (select count(*) from public.messages), 2::bigint, 'RLS shows a rider who left only the messages before leaving'
+);
+select is(
+  public.list_threads() #>> '{items,0,lastMessage,body}', '收到',
+  'the thread list shows a rider who left the last message before leaving'
+);
+select is(
+  (select count(*) from public.thread_members where member_id = pg_temp.u('f6')), 0::bigint,
+  'RLS hides members who joined after the rider left'
+);
+select is(
+  (select array_agg(m ->> 'name' order by m ->> 'name') from jsonb_array_elements(public.read_thread((select id from rt)) #> '{thread,members}') m),
+  array['Alice', 'Devi'], 'a rider who left sees the roster as it was when they left'
+);
+select pg_temp.act_as(pg_temp.u('a1'));
+select is(
+  (select count(*) from public.thread_members where member_id = pg_temp.u('f6')), 1::bigint,
+  'a current member sees the new rider'
+);
+reset role;
+
+select pg_temp.act_as(pg_temp.u('a1'));
+select is(
+  (select array_agg(i ->> 'kind') from jsonb_array_elements(public.list_threads() -> 'items') i),
+  array['ride', 'bounty'], 'the thread list puts the latest activity first'
+);
+select is(
+  (public.list_threads(max_count => 1) ->> 'hasMore')::boolean, true, 'a full thread page says there is more'
+);
+select is(
+  public.list_threads((select id from rt), 1) #>> '{items,0,kind}', 'bounty', 'the next thread page starts after the cursor'
+);
+select is(
+  (public.list_threads((select id from rt), 1) ->> 'hasMore')::boolean, false, 'the last thread page says there is no more'
+);
+
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.publish_ride(
+  'a2000000-0000-4000-8000-000000000002', 'Sunway Geo', '双威', 3.0733, 101.6078, 'KLIA2', 'KLIA2', 2.7456, 101.7113,
+  now() + interval '5 hours', 6, 'MYR'
+);
+select pg_temp.act_as(pg_temp.u('e5'));
+select public.request_ride('a2000000-0000-4000-8000-000000000002');
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.decide_ride_request('a2000000-0000-4000-8000-000000000002', pg_temp.u('e5'), true);
+select public.block_user(pg_temp.u('e5'));
+select isnt(
+  (select m.left_at from public.thread_members m
+   where m.thread_id = pg_temp.ride_thread('a2000000-0000-4000-8000-000000000002') and m.member_id = pg_temp.u('e5')),
+  null, 'an organiser blocking a rider before departure ends the rider''s thread membership'
+);
+select public.unblock_user(pg_temp.u('e5'));
 
 update public.bounties set status = 'cancelled' where id = 'b0000000-0000-4000-8000-000000000001';
 delete from auth.users where id = pg_temp.u('b2');
