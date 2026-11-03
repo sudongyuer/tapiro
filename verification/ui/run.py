@@ -29,6 +29,11 @@ DEFAULT_BUDGET = 180
 DEFAULT_TIME_ZONE = 'Asia/Kuala_Lumpur'
 SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
+KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
+# With no AppleKeyboards the app derives its keyboards from -AppleLanguages, so zh-Hans gets Pinyin and typed ASCII
+# becomes candidates; on the English keyboard prediction and autocorrection rewrite typed words (klia -> Kline, see you at
+# the lobby -> See lobby). Autocapitalisation stays on. Non-ASCII text is pasted instead.
+KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
 
 
 def sh(*args, **kwargs):
@@ -61,9 +66,21 @@ def resolve_device(name=None, udid=None):
     return name, simctl('create', name, DEVICE_TYPE, runtime).strip(), runtime
 
 
+def keyboard_commands(udid):
+    spawn = ['xcrun', 'simctl', 'spawn', udid, 'defaults', 'write']
+    return [
+        [*spawn, '-g', 'AppleKeyboards', '-array', *KEYBOARDS],
+        [*spawn, KEYBOARD_PREFS, 'KeyboardsCurrentAndNext', '-array', KEYBOARDS[0], KEYBOARDS[0]],
+        [*spawn, KEYBOARD_PREFS, 'KeyboardLastUsed', '-string', KEYBOARDS[0]],
+        *([*spawn, KEYBOARD_PREFS, key, '-bool', 'false'] for key in ('KeyboardPrediction', 'KeyboardAutocorrection')),
+    ]
+
+
 def prepare(device, app):
     name, udid, runtime = device
     boot(udid)
+    for command in keyboard_commands(udid):
+        sh(*command)
     simctl('install', udid, str(app))
 
 

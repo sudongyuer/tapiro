@@ -15,7 +15,7 @@ DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'src/app/(tabs)/bou
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 240
-TITLE_TYPED, TITLE_SHOWN = 'help me', 'Help me'
+TITLE_TYPED, TITLE_SHOWN = 'Help me', 'Help me'
 
 ui = UI(*sys.argv[1:])
 

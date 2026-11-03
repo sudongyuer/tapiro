@@ -27,10 +27,20 @@ picks each case whose `DEPS` prefixes (or its own file) match one, printing why.
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime` in `verification/ui` covers the
+before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime test_keyboard test_ride` in `verification/ui` covers the
 selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
 `ARGS`, `BUDGET` and `TIME_ZONE` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
-only; paste other text with `bounty.paste_into`.
+only; paste other text with `bounty.paste_into`, or seed it through a launch argument such as `-uiVerifyApplyNote`.
+Every time it prepares a Simulator (the owned ones, `--udid`, and after a stall), the runner writes the keyboard
+settings with `simctl spawn <udid> defaults write` (`keyboard_commands` in `run.py`, `python3 -m unittest
+test_keyboard`): global `AppleKeyboards` is US English plus emoji, `com.apple.keyboard.preferences` makes US English
+current (`KeyboardsCurrentAndNext`, `KeyboardLastUsed`) and turns off `KeyboardPrediction` and
+`KeyboardAutocorrection`. A new Simulator has no `AppleKeyboards`, so the app derives its keyboards from
+`-AppleLanguages (zh-Hans)` and gets Pinyin, which turns typed ASCII into candidates; on the English keyboard,
+prediction and autocorrection rewrite words (`klia` became `Kline`). The settings apply to the next app launch without
+a reboot; `simctl erase` drops them, and the next run writes them again. Simulators run headless, so there is no
+hardware keyboard: the software keyboard shows, and AXe's typed keys are not autocapitalised, so type text in the case
+it should read (`Parcel`, not `parcel`).
 Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:
 a PR run uses zh-Hans, a milestone run (`--locales`, and the full matrix) adds `en` for every case, and `ms` exists
 only to catch truncation of the longest copy, so a case that shows long copy declares
