@@ -195,6 +195,22 @@ describe('fixture rows that change on a later load', () => {
     expect(second.map((row) => row.bountyId)).toEqual([fixtureLiveBountyId('posterOpen')]);
     expect(second[0].applicantCount).toBeGreaterThan(0);
   });
+
+  test('loads before the wait keep the first rows, so a launch reload cannot change the card', async () => {
+    let at = NOW.getTime();
+    const service = createFixtureLiveService({
+      rows: ['posterOpen'],
+      next: ['posterApplicants'],
+      nextAfterMs: 8_000,
+      failFirstLoad: false,
+      now: () => new Date(at),
+    });
+    await service.list();
+    at += 5_000;
+    expect((await service.list())[0].applicantCount ?? 0).toBe(0);
+    at += 5_000;
+    expect((await service.list())[0].applicantCount).toBeGreaterThan(0);
+  });
 });
 
 describe('live reloads out of order', () => {

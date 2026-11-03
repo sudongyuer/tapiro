@@ -10,9 +10,12 @@ import { createVerifyTransport, parseLiveScript } from './verifyTransport';
 const DELIVERED_KEY = 'uiVerifyLiveSteps';
 
 function verifyTransport() {
-  Settings.set({ [DELIVERED_KEY]: '[]' });
+  const run = uiVerifyArgument('uiVerifyLiveRun') ?? '';
+  const record = (steps: string[]) =>
+    Settings.set({ [DELIVERED_KEY]: JSON.stringify({ run, steps }) });
+  record([]);
   return createVerifyTransport(parseLiveScript(uiVerifyArgument('uiVerifyLive')), {
-    onDelivered: (labels) => Settings.set({ [DELIVERED_KEY]: JSON.stringify(labels) }),
+    onDelivered: record,
   });
 }
 
