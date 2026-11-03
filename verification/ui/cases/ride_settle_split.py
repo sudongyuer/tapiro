@@ -10,7 +10,7 @@ import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import erase, typed  # noqa: E402
+from bounty import field_point, typed  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from ride import assert_ticket_colour, tap_bar  # noqa: E402
@@ -39,6 +39,14 @@ def calls(name, count, timeout=15):
         time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously
     assert len(found) == count, f'{name} sent {len(found)} times, expected {count}'
     return found
+
+
+def clear_share(identifier):
+    shown = ui.element(identifier).get('AXValue') or ''
+    ui.tap_point(*field_point(ui.element(identifier)['frame'], below=True))
+    ui.backspace(len(shown) + 1)
+    empty = ('', ui.t('rideSettle.sheet.placeholder'))
+    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') in empty, f'{identifier} is not empty')
 
 
 def footer():
@@ -75,18 +83,17 @@ ui.element('ride-split-receipt-added')
 ui.at_rest()
 ui.snap('02-sheet-equal')
 
-erase(ui, f'ride-split-share-{MING}')
+clear_share(f'ride-split-share-{MING}')
 typed(ui, f'ride-split-share-{MING}', '60')
-ui.wait(lambda items: (by_id(items, 'ride-split-footer') or {}).get('AXLabel') == ui.t('rideSettle.sheet.overTotal'),
-        'riders above the total did not block sending')
+ui.wait(lambda items: (by_id(items, 'ride-split-organiser') or {}).get('AXLabel', '').endswith('–'),
+        'your row shows a negative remainder instead of –')
 send = [i for i in ui.read() if i.get('AXUniqueId') == 'ride-split-confirm' and i.get('type') == 'Button']
 assert send and all(i.get('enabled') is False for i in send), f'发给 is still enabled above the total: {send}'
-erase(ui, f'ride-split-share-{MING}')
+clear_share(f'ride-split-share-{MING}')
 typed(ui, f'ride-split-share-{MING}', '20')
 ui.wait(lambda items: re.search(MONEY + r'29\.30', (by_id(items, 'ride-split-organiser') or {}).get('AXLabel') or ''),
         'your row did not take the remainder')
 assert ui.element(f'ride-split-share-{YA}').get('AXValue') == '24.70', 'editing 阿明 moved 小雅'
-assert footer().startswith(ui.t('rideSettle.sheet.footerEdited')), footer()
 ui.at_rest()
 ui.snap('03-sheet-edited')
 

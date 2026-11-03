@@ -36,6 +36,7 @@ describe('the split sheet (211 A, 220 A)', () => {
       shares: { [ming.id]: '60' },
     });
     expect(view.issue).toBe('overTotal');
+    expect(view.organiser).toBeNull();
     expect(toSplitInput(view, null)).toBeNull();
   });
 

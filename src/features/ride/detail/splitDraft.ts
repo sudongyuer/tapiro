@@ -70,8 +70,8 @@ export function splitView(ride: RideDetail, draft: SplitDraft): SplitView {
   });
   const minors = rows.flatMap((row) => (row.share ? [row.share.minor] : []));
   const complete = minors.length === rows.length;
-  const organiser =
-    inRange && complete ? { minor: organiserShare(total.minor, minors), currency } : null;
+  const remainder = inRange && complete ? organiserShare(total.minor, minors) : -1;
+  const organiser = remainder >= 0 ? { minor: remainder, currency } : null;
   const anyEdited = rows.some((row) => row.edited);
   const extraMinor = equal && !anyEdited ? equal.rider - equal.organiser : 0;
   const issue: SplitIssue | null =

@@ -1,5 +1,6 @@
 import { Button, HStack, Section, Spacer, Text, type TextFieldRef } from '@expo/ui/swift-ui';
 import {
+  accessibilityElement,
   accessibilityIdentifier,
   accessibilityLabel,
   font,
@@ -116,6 +117,7 @@ export function SplitSheet({
 }) {
   const { t, language } = useI18n();
   const [draft, setDraft] = useState<SplitDraft | null>(request?.draft ?? null);
+  const [pinned, setPinned] = useState<Record<string, string>>({});
   const current = draft ?? request?.draft ?? null;
   if (!request || !ride || !current) return null;
   const edit = (change: (value: SplitDraft) => SplitDraft) =>
@@ -190,7 +192,12 @@ export function SplitSheet({
           </Text>
         }
       >
-        <HStack modifiers={[accessibilityIdentifier('ride-split-organiser')]}>
+        <HStack
+          modifiers={[
+            accessibilityElement('combine'),
+            accessibilityIdentifier('ride-split-organiser'),
+          ]}
+        >
           <Text>{`${me} · ${t('rideSettle.sheet.you')}`}</Text>
           <Spacer />
           <Text modifiers={[font({ weight: 'semibold', design: 'rounded' })]}>
@@ -200,15 +207,18 @@ export function SplitSheet({
         {view.rows.map((row) => {
           const name = row.name ?? t('bounty.post.unknownName');
           const shown = row.share ? shareText(row.share) : '';
+          // A field keeps its key once its row is edited; remounting it there would drop focus mid-typing.
+          const fieldKey = pinned[row.id] ?? `${row.id}-${shown}`;
           return (
             <MoneyField
-              key={row.edited ? row.id : `${row.id}-${shown}`}
+              key={fieldKey}
               label={row.id === viewerId ? t('ride.detail.you') : name}
               initial={row.edited ? (current.shares[row.id] ?? '') : shown}
               currency={view.currency}
               testID={`ride-split-share-${row.id}`}
               onText={(text) => {
                 if (!row.edited && text === shown) return;
+                if (!pinned[row.id]) setPinned((last) => ({ ...last, [row.id]: fieldKey }));
                 edit((value) => ({ ...value, shares: { ...value.shares, [row.id]: text } }));
               }}
             />

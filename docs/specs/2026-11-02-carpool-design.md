@@ -649,3 +649,81 @@ owner may veto:
   `none` after 出发, which is where 「到了 · 分车费」 and 「付给小林 RM x」 go.
 - `timeline()` already marks 到了 and 结清 from `reachedAt` and `settledAt`; the 结清 step body is in `Timeline.tsx`.
 - Writes go through `store.act` (no replay, reload after a typed rejection); drafts through `detail/drafts.ts`.
+
+## Implementation Record (2026-11-02, step 6)
+
+PR: PR_URL (`feat/carpool-settle`). Status stays `approved`: step 7 and the milestone remain.
+
+### What was built
+
+- Server (`supabase/migrations/20261102000900_ride_settle_reads.sql`): `ride_detail` gains `currency`, `settle`
+  (total, the organiser's remainder, sent time, receipt path and one row per rider with share and paid status;
+  payment id, method, times, proof flag, due-since and the open 「金额不对」 note only for the organiser and that rider),
+  `myShare` and the viewer's ride `sticker`; settle and share go only to the organiser and boarded members.
+  `my_rides` gains `currency`, `myShare` and `myPaid` for the settled ticket. `sticker_book` and `settled_cards` no
+  longer inner-join `payments`: ride stickers reach the book (rider's counterpart is the organiser, the organiser's is
+  the earliest rider who shared the fare) and a rider's settled card carries their own settled payment; a Grab-split
+  ride has no settled card. `change_ride_share` now locks the payment before reading its state. `close_ride` gives no
+  sticker to a member whose appeal was confirmed after the split (no share), as the steps 1–3 record said.
+- Receipt cleanup: `payment-proof-cleanup` sweeps a list of buckets; `ride-receipts` runs through
+  `ride_receipts_to_delete` / `clear_ride_receipt` with the existing daily cron. Nothing was deployed.
+- Client (`src/features/ride/detail/`): 到了 · 分车费 for the organiser only and 「等小林分车费」 for riders (210 A); the
+  split half sheet with the Grab total, the optional receipt, the organiser's remainder row, one editable row per rider
+  and the 「多出的 RM 0.10 归你」 footer, sending blocked while the others exceed the total (211 A, 212 B, 220 A;
+  `splitDraft.ts`); the draft and an uploaded receipt path are kept per ride across failures and reused on retry.
+  The rider's 「付给小林 RM x」 and 金额不对 (note sheet → `dispute_ride_share`); the organiser sees the note on that row with
+  改金额 (`change_ride_share`, due payments only) (213 A, carried rule). The 结清 step: the receipt row (full-screen viewer),
+  the organiser's rows with method, time, 有截图, 看截图 / 还没收到 / 已收到 and the Tapiro reminder footnote (214 A, 216 A);
+  riders see each rider's 已付 / 还没付 (215 A); the owing card 「已欠 n 天」 (216 A). A Grab-split ride settles at 到了
+  (217 A). The settled ticket carries the 已结清 stamp (the step 5 stamp motion, reused) and 你付了; the sticker card
+  offers 收进贴纸本 (`collect_sticker`); the organiser's last 已收到 plays the built celebration once (218 A). The list's
+  settled ticket shows the share with 你付了 / 你出 (219 A).
+- Payment (`src/features/payment/`): the pay sheet is titled 拼车 for ride payments; a ride payment celebrates only the
+  settle that closes the ride (`celebratesSettle`), so a payee who confirms from the pay sheet also celebrates once;
+  `useSettleCelebration` is exported for the ride route, which composes it (features do not import each other). The
+  verify payment fixture holds three ride payments and earns one ride sticker at the last settle, not one per payment.
+- Copy: `rideSettle.*` in zh-Hans, en and ms; `pay.sheet.titleRide`; `ride.detail.errors.noPayee`.
+- Verify: scenes `reach`, `reachRider`, `reachGrab`, `paying`, `paidSome`, `paidSomeRider`, `owing`, `settled`,
+  `settledOrganiser`, `grabSettled`, `settleWorst` (6 riders, 40-character names, RM 1,000.00), `settleCny`
+  (¥1,600.00), `settleOne` (`-uiVerifyRideDetail`), `-uiVerifyRideDetailFail receipt`, list `-uiVerifyRides settled`.
+
+### Deviations from the design
+
+| Design said | Shipped | Why | Confirmed by |
+| --- | --- | --- | --- |
+| 「发给阿明和小雅」 as a black button under the rows | The sheet's toolbar confirm reads 「发给 n 人」; the names are in the footer | Native sheet pattern of the boarding sheet (step 5) | not intent-changing |
+| The home card reminds the organiser to press 到了 (210 A) | Not built | No ride live source on home yet (step 5 record) | not intent-changing |
+| 「Tapiro 今天 07:26 提醒过你」 on the owing card | The card says when Tapiro reminds (24 h, 72 h) and the publishing pause | Reminders are scheduled in step 7; the card shows no reminder that was not sent | not intent-changing |
+| 已收到 for a due payment when the organiser takes cash | 已收到 shows only once the rider said paid | The detail does not know the organiser's methods; the pay sheet still offers cash confirmation | not intent-changing |
+| Riders see each other's paid status | Riders see 已付 for marked-paid and settled alike, without method or time | Least exposure that still answers 215 A | not intent-changing |
+| The 到了 step is 「现在」 once the car leaves | `timeline()` marks 到了 as now from 出发 (was 上车) | RideSettle1 draws 「现在 · 到了？」 at 07:24 | not intent-changing |
+| Organiser's ride sticker names the riders (「和小林、阿明」) | The book names one counterpart: the earliest rider | The sticker label has one name slot | not intent-changing |
+| A Grab-split rider collects from the home settled card | Collected from the ride detail; no home card | A Grab-split ride has no payment amount for the card | not intent-changing |
+
+### Verification
+
+- `supabase test db` on an isolated stack (`scripts/db-isolated.sh carpool-settle 568`) → 36 files, 1408 tests, PASS.
+  Without the new migration (`settle-before 569`), `ride_settle_reads.test.sql` failed 17 of its first 33 tests (settle
+  block, paid status, share, 金额不对 note, sticker book, settled card, ride sticker) and aborted at `collect_sticker`; the
+  late-boarder sticker rule was not reached there and fails by inspection of the old `close_ride`. 「A share marked paid
+  no longer changes」 passes before too: the race it fixes (an edit waiting on the payment row while 我已付款 commits)
+  needs two sessions, which pgTAP cannot run.
+- `bun test` → 1692 pass, 4 fail (the known `scripts/check-file-size.test.ts` cases inside `.claude/worktrees`);
+  `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `bun run check:size`,
+  `node scripts/design-check.mjs`, `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs` →
+  exit 0.
+- `bun run verify:build` and `bun run verify:smoke` (4 cases) → pass. `ride_settle_split` and `ride_settled` in zh-Hans
+  light → pass; screenshots match RideSettle1 210 A (车上 ticket, 「到了？」, one bottom button), 211 A (half sheet,
+  RM 24.70 / 24.70 / your RM 24.60, 「多出的 RM 0.10 归你」), 214 A (0/2 人的钱收到了, receipt row, rows) and 218 A (stamp,
+  你付了 RM 24.70, sticker card, 收进贴纸本).
+- Written, not run (Pace: after step 7): `ride_settle_pay`, `ride_settle_rows`, `ride_settle_owing`, `ride_settle_grab`,
+  `ride_settle_worst`, `ride_list_settled`; `ride_meetup_depart` now expects 车上 after 出发.
+- Not run: `test:stack` (Edge runtime on the shared stack); the cleanup function was not deployed or invoked.
+
+### Notes for step 7
+
+- Owed state for reminders: `ride_detail.settle.riders[].dueSince` (the payment's `created_at`) and `paid`; the
+  24 h / 72 h schedule and the 7-day publishing block come from the foundation payment rules. `owedDays` in
+  `detail/settleModel.ts` is the client's day count.
+- The owing card copy (`rideSettle.owe.body`) describes reminders only; when step 7 records a sent reminder, add its time.
+- The organiser's 到了 reminder on the home card (210 A) waits for the ride live source.

@@ -8,6 +8,7 @@ import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
 
 import { ticketModel } from '../ticket';
+import { displayName } from './Avatars';
 import { paidCount } from './settleModel';
 import { OrganiserRows, RiderRows, type RowBusy, type SettleRowActions } from './SettleRows';
 import { Sub, Title } from './Timeline';
@@ -75,7 +76,9 @@ export function SettleStep({
   onReceipt: () => void;
 }) {
   const { t, language } = useI18n();
-  const name = ride.organiser?.name ?? t('bounty.post.unknownName');
+  const name = ride.organiser
+    ? displayName(ride.organiser, viewerId, t)
+    : t('bounty.post.unknownName');
   if (ride.splitMode === 'grab' && ride.status === 'closed')
     return (
       <>
