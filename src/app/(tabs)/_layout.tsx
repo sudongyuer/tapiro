@@ -13,7 +13,9 @@ import {
 } from '@/features/shell';
 import { homeSignals } from '@/lib/homeSignals';
 import { useI18n } from '@/lib/i18n';
+import { useLive } from '@/lib/live';
 import { useNoticeRouting } from '@/lib/notifications';
+import { usePushRegistration } from '@/lib/push';
 import { useLiveStickers } from '@/lib/stickers';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
@@ -29,11 +31,9 @@ export default function TabsLayout() {
   useLivePayments(userId);
   useLiveBounties(userId);
   useLiveStickers(userId);
-  useNoticeRouting((data) => {
-    if (data.kind.startsWith('ride.')) {
-      router.push({ pathname: '/ride/[id]', params: { id: data.id } });
-    }
-  }, userId !== null);
+  useLive(userId);
+  usePushRegistration(userId);
+  useNoticeRouting((route) => router.push(route), userId !== null);
   const location = useTabLocation(useSegments());
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();

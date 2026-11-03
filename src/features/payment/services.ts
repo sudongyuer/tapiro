@@ -1,4 +1,5 @@
 import { initI18n } from '@/lib/i18n';
+import { live } from '@/lib/live';
 import { isCurrencyCode } from '@/lib/money';
 import { earnFixtureSticker } from '@/lib/stickers';
 import { getSupabase } from '@/lib/supabase';
@@ -52,4 +53,8 @@ function publish() {
 }
 
 paymentStore.subscribe(publish);
+live.on(['payment.'], () => {
+  const state = paymentStore.getSnapshot();
+  if (state.status !== 'idle') void paymentStore.reload(state.userId);
+});
 i18n.on('languageChanged', publish);

@@ -1,5 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
+import { notices } from '@/lib/notifications';
+
 import { boardService } from '../board/services';
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied, type ApplySurface } from '../shared/justApplied';
@@ -25,6 +27,10 @@ export function useApply(id: string, surface: ApplySurface, onSent: () => void) 
   useEffect(() => {
     if (sent) onSent();
   }, [sent, onSent]);
+
+  useEffect(() => {
+    if (sent) void notices.askInContext().catch(() => null);
+  }, [sent]);
 
   return { state, send: flow.send };
 }

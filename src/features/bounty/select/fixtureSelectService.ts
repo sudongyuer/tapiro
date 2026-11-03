@@ -1,7 +1,15 @@
 import type { Person, Tier } from '../board/types';
 import { applicantPerson, type Applicant, type SelectOutcome, type SelectService } from './types';
 
-export const APPLICANT_SETS = ['three', 'none', 'one', 'fifty', 'worst', 'grows'] as const;
+export const APPLICANT_SETS = [
+  'three',
+  'none',
+  'one',
+  'fifty',
+  'worst',
+  'grows',
+  'stream',
+] as const;
 export const APPLICANTS_FAILURES = ['none', 'first', 'refresh'] as const;
 export const SELECT_MODES = [
   'ok',
@@ -33,6 +41,7 @@ export type FixtureSelectOptions = {
   onSelected?: (accepted: SelectedArgs[]) => void;
   onAttempted?: (attempts: number) => void;
   onSeen?: (seen: string[]) => void;
+  onLoaded?: (loads: number) => void;
 };
 
 const MINUTE_MS = 60_000;
@@ -73,6 +82,8 @@ const JIE = seed(
 const HANA = seed('fixture-applicant-hana', 'Hana', 'new_friend', 0);
 const AIMAN = seed('fixture-applicant-aiman', 'Aiman', 'reliable', 3);
 const MEI = seed('fixture-applicant-mei', 'Mei Ling', 'reliable', 5);
+const WEI = seed('fixture-applicant-wei', 'Wei Jie', 'new_friend', 1);
+const SITI = seed('fixture-applicant-siti', 'Siti', 'reliable', 2);
 
 const exactly = (text: string, length: number) =>
   [...text.repeat(length)].slice(0, length).join('');
@@ -134,9 +145,10 @@ const SETS: Record<ApplicantSet, Seed[]> = {
   fifty: FIFTY,
   worst: WORST,
   grows: [JIE, HANA, AIMAN],
+  stream: [JIE, HANA, AIMAN],
 };
 
-const LATER: Partial<Record<ApplicantSet, Seed[]>> = { grows: [MEI] };
+const LATER: Partial<Record<ApplicantSet, Seed[]>> = { grows: [MEI], stream: [MEI, WEI, SITI] };
 
 export const FIXTURE_APPLICANT_PEOPLE = [
   ...new Map(
@@ -192,6 +204,7 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
     async applicants(bountyId) {
       const state = bounty(bountyId);
       loads += 1;
+      options.onLoaded?.(loads);
       if (
         (options.fail === 'first' && loads === 1) ||
         (options.fail === 'refresh' && loads === 2)
@@ -200,10 +213,11 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
       }
       if (loads > 1 && !state.helper && state.later.length > 0) {
         const at = options.now().toISOString();
+        const arriving = options.applicants === 'stream' ? state.later.slice(0, 1) : state.later;
         state.pending.push(
-          ...state.later.map((item) => ({ ...item, status: 'pending' as const, appliedAt: at })),
+          ...arriving.map((item) => ({ ...item, status: 'pending' as const, appliedAt: at })),
         );
-        state.later = [];
+        state.later = state.later.slice(arriving.length);
       }
       const listed = state.helper ? [state.helper] : state.pending;
       return listed.filter((applicant) => !hidden(applicant)).map((item) => ({ ...item }));

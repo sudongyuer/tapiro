@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
 import { accountStage } from './accountStage';
-import { onboardingStore, profileStore } from './services';
+import { accountActions, onboardingStore, profileStore } from './services';
 import type { AccountUser } from './types';
 import { useSession } from './useSession';
 
@@ -24,4 +24,8 @@ export function useProfile(user: AccountUser | null) {
   if (!user || state.status === 'idle' || state.userId !== user.id)
     return { status: 'loading' } as const;
   return state;
+}
+
+export function useSigningOut() {
+  return useSyncExternalStore(accountActions.signingOut.subscribe, accountActions.signingOut.get);
 }

@@ -130,6 +130,7 @@ export function createApplicantsController(bountyId: string, deps: Deps) {
     get: store.get,
     subscribe: store.subscribe,
     load,
+    refetch: reload,
     chose(id: string) {
       dispatch({ type: 'chose', id });
     },

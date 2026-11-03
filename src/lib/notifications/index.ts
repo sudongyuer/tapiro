@@ -1,5 +1,6 @@
 import { Settings } from 'react-native';
 
+import { createStore } from '@/lib/store';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
 import { createFixtureNotices } from './fixtureNotices';
@@ -16,10 +17,28 @@ function verifyNotices() {
   );
 }
 
-export const notices: Notices = uiVerify ? verifyNotices() : nativeNotices;
+const source: Notices = uiVerify ? verifyNotices() : nativeNotices;
+
+export const permissionAnswers = createStore(0);
+
+const answered = () => permissionAnswers.set(permissionAnswers.get() + 1);
+
+export const notices: Notices = {
+  ...source,
+  async askProvisional() {
+    await source.askProvisional();
+    answered();
+  },
+  async askInContext() {
+    const permission = await source.askInContext();
+    answered();
+    return permission;
+  },
+};
 
 export { canSchedule } from './permission';
 export { outsideQuietHours } from './quietHours';
 export { applyNoticeDiff, noticeDiff } from './reconcile';
-export { useNoticeRouting } from './useNoticeRouting';
+export { noticeRoute, type NoticeRoute } from './routes';
+export { useDiscardNoticeTaps, useNoticeRouting } from './useNoticeRouting';
 export type { LocalNotice, NoticeData, NoticePermission, ScheduledNotice } from './types';

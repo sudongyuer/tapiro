@@ -95,30 +95,39 @@ Deploy note for the account half: the hosted project needs Realtime "Allow publi
 
 ### Task 6: `src/lib/live/`
 
-- [ ] One private channel `user:<uid>` per signed-in session after `supabase.realtime.setAuth()`; removed on sign-out
+- [x] One private channel `user:<uid>` per signed-in session after `supabase.realtime.setAuth()`; removed on sign-out
       and unmount. Handlers register by kind prefix; features never open channels.
-- [ ] On `SUBSCRIBED` after a drop, on foreground and on tab focus, refetch what is on screen; a 「可能不是最新」 line
+- [x] On `SUBSCRIBED` after a drop, on foreground and on tab focus, refetch what is on screen; a 「可能不是最新」 line
       while disconnected (172 B).
-- [ ] Verify mode: a fixture emitter (`-uiVerifyLive <script>`) replaces the channel at the boundary.
-- [ ] Unit: dispatch by kind, reconnect refetch, disconnected line.
+- [x] Verify mode: a fixture emitter (`-uiVerifyLive <script>`) replaces the channel at the boundary.
+- [x] Unit: dispatch by kind, reconnect refetch, disconnected line.
 
 ### Task 7: Bounty handlers
 
-- [ ] Home cards, applicant list, status page and payments reload on their kinds; a new applicant row fades in (motion
+- [x] Home cards, applicant list, status page and payments reload on their kinds; a new applicant row fades in (motion
       options offered first, per `animate-expo`).
-- [ ] UI cases: a signal while the applicant list is open; a signal while a home card is on screen.
+- [x] UI cases: a signal while the applicant list is open; a signal while a home card is on screen.
 
 ### Task 8: Tokens, permission, tap routing
 
-- [ ] Register the Expo push token when authorised or provisional (`register_push_token` with the app language);
-      `set_push_language` on a language change; `unregister_push_token` on sign-out and account deletion.
-- [ ] The explicit prompt after the first post or application (foundation).
-- [ ] Tap routing for every kind from `data {kind, id}`, cold start through `getLastNotificationResponseAsync()`.
-- [ ] Unit: routing for every kind; UI case: a tap routes from a recorded notification (`xcrun simctl push`).
+- [x] Register the Expo push token when authorised or provisional (`register_push_token` with the app language);
+      this device registered again on a language change (★). `set_push_language` is now unused; drop it in a later
+      migration (none in this step); `unregister_push_token` on
+      sign-out (account deletion relies on the
+      `on delete cascade`, since no session is left for the RPC). Skipped until the EAS `projectId` exists (step 3).
+- [x] The explicit prompt after the first post or application (foundation).
+- [x] Tap routing for every kind from `data {kind, id}`, cold start through `getLastNotificationResponse()`.
+- [x] Unit: routing for every kind (read from the migrations, `chat.*` to the 消息 tab); UI case: a tap routes from a
+      recorded notification. `xcrun simctl push` cannot tap a banner, so `-uiVerifyNoticeTap` replaces the response at
+      its boundary.
 
 ### Task 9: Ride meet-up polling (175 B)
 
-- [ ] Poll every 15 s while the meet-up screen is open within 15 minutes of departure.
+- [x] Poll every 15 s while the meet-up screen is open within 15 minutes of departure. Already built in carpool step
+      5 (`shouldPoll`, `POLL_MS` in `src/features/ride/detail/detailModel.ts`); nothing to add.
+
+UI cases written in step 2, not yet run (Pace): `live_applicants`, `live_home_card`, `live_notice_tap`,
+`live_push_token`.
 
 After step 2: the feature's UI cases run once together, `spec-lifecycle` appends the Implementation Record and sets
 `implemented`.

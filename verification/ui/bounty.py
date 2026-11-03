@@ -90,7 +90,7 @@ def pick_category(ui, slug):
             'category placeholder still shown')
 
 
-TITLE_TYPED, TITLE_SHOWN = 'parcel', 'Parcel'
+TITLE_TYPED, TITLE_SHOWN = 'Parcel', 'Parcel'
 
 
 def fill_fixed(ui, slug='pickup', reward='8'):

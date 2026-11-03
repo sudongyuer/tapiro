@@ -94,6 +94,23 @@ async function loaded(applicants = [applicant('jie'), applicant('hana')]) {
   return h;
 }
 
+describe('live refetch', () => {
+  test('a signal during a load reads again after it, so a new applicant is not missed', async () => {
+    const h = harness();
+    const first = h.controller.load();
+    const again = h.controller.refetch();
+    h.lists[0].resolve([applicant('jie')]);
+    h.details[0].resolve(DETAIL);
+    await settle();
+    expect(h.lists).toHaveLength(2);
+    h.lists[1].resolve([applicant('jie'), applicant('mei')]);
+    h.details[1].resolve(DETAIL);
+    await Promise.all([first, again]);
+    const { list } = h.controller.get().select;
+    expect(list.kind === 'ready' ? list.applicants.map((a) => a.id) : []).toEqual(['jie', 'mei']);
+  });
+});
+
 describe('loading', () => {
   test('one load reads the list and the detail together', async () => {
     const h = await loaded();

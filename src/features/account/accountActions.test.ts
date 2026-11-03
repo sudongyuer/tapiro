@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { createUserCleanups } from '@/lib/userCleanups';
 
-import { createAccountActions } from './accountActions';
+import { createAccountActions, SIGN_OUT_WAIT_MS } from './accountActions';
 import {
   createFixtureAuthService,
   fixtureUnsettledPayment,
@@ -67,5 +67,66 @@ describe('account actions', () => {
     auth.deleteAccount = () => Promise.reject(new Error('boom'));
     const { actions } = setup(auth);
     expect(await actions.deleteAccount()).toEqual({ ok: false, reason: 'failed' });
+  });
+
+  test('sign-out unregisters the push token while still signed in', async () => {
+    const auth = createFixtureAuthService({ signedInAs: 'apple' });
+    const seen: string[] = [];
+    const actions = createAccountActions({
+      auth,
+      onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
+      profiles: createProfileStore(createFixtureProfileService()),
+      cleanups: createUserCleanups(),
+      beforeSignOut: async () => {
+        seen.push(auth.getState().status);
+      },
+    });
+    await actions.signOut();
+    expect(seen).toEqual(['signedIn']);
+    expect(auth.getState().status).toBe('signedOut');
+  });
+
+  test('a failing unregistration never blocks sign-out', async () => {
+    const auth = createFixtureAuthService({ signedInAs: 'apple' });
+    const actions = createAccountActions({
+      auth,
+      onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
+      profiles: createProfileStore(createFixtureProfileService()),
+      cleanups: createUserCleanups(),
+      beforeSignOut: () => Promise.reject(new Error('offline')),
+    });
+    await actions.signOut();
+    expect(auth.getState().status).toBe('signedOut');
+  });
+
+  test('a hung unregistration is capped at 3 s, and sign-out is busy until it ends', async () => {
+    const auth = createFixtureAuthService({ signedInAs: 'apple' });
+    const pending: { run: () => void; ms: number }[] = [];
+    let seenWait = null as { expired: boolean } | null;
+    const actions = createAccountActions({
+      auth,
+      onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
+      profiles: createProfileStore(createFixtureProfileService()),
+      cleanups: createUserCleanups(),
+      beforeSignOut: (wait) => {
+        seenWait = wait;
+        return new Promise<void>(() => {});
+      },
+      timers: {
+        set: (run, ms) => pending.push({ run, ms }),
+        clear: () => undefined,
+      },
+    });
+    const signingOut = actions.signOut();
+    expect(actions.signingOut.get()).toBe(true);
+    await actions.signOut();
+    expect(pending.map((timer) => timer.ms)).toEqual([SIGN_OUT_WAIT_MS]);
+    expect(auth.getState().status).toBe('signedIn');
+    expect(seenWait).toEqual({ expired: false });
+    pending[0].run();
+    expect(seenWait).toEqual({ expired: true });
+    await signingOut;
+    expect(auth.getState().status).toBe('signedOut');
+    expect(actions.signingOut.get()).toBe(false);
   });
 });

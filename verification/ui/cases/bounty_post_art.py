@@ -29,7 +29,7 @@ ui = UI(*sys.argv[1:])
 open_post(ui)
 wait_art(ui, 'other')
 field_before = ui.element('bounty-post-title')['frame']
-typed(ui, 'bounty-post-title', 'parcel', 'Parcel')
+typed(ui, 'bounty-post-title', 'Parcel')
 art = wait_art(ui, 'parcel')
 field_after = ui.element('bounty-post-title')['frame']
 assert abs(field_after['y'] - field_before['y']) <= 1, f'the title field moved: {field_before} → {field_after}'

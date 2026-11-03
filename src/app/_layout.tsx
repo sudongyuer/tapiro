@@ -5,6 +5,7 @@ import { useAccountStage } from '@/features/account';
 import { applySheetGone } from '@/features/bounty';
 import { useRideReminders } from '@/features/ride';
 import { I18nProvider } from '@/lib/i18n';
+import { useDiscardNoticeTaps } from '@/lib/notifications';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -25,6 +26,7 @@ const FINISHED = { onFinishTransitioning: applySheetGone };
 function RootStack() {
   const stage = useAccountStage();
   useRideReminders(stage);
+  useDiscardNoticeTaps(stage === 'signedOut');
   return (
     <Stack
       screenOptions={{ headerShown: false, headerTransparent: true }}

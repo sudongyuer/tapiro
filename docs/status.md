@@ -30,14 +30,17 @@ Updated: 2026-11-03.
 - Carpool milestone: the `ride_*` UI cases ran (zh-Hans light 27 plus 24 regression cases, dark 7, `en` 27, `ms` 20;
   all pass after #55). Waiting on the owner's Simulator walkthrough and the `ride.remind.*` device checks; then set the
   carpool spec to `implemented`.
-- Live updates and push, step 1 (server; `docs/plans/2026-11-03-realtime-push.md`): Broadcast to `user:<uid>`, bounty
-  and payment kinds, `push_tokens`, the push queue and `notify` with the `RecordingSender`. Next: step 2 (app). The
-  spec's ★ defaults (Decisions) are open to veto.
+- Live updates and push (`docs/plans/2026-11-03-realtime-push.md`): step 1 (server) merged in #62; step 2 (app) is
+  in its PR: `src/lib/live/` (one private channel, reconnect refetch, dispatch by kind, verify emitter), live handlers
+  for home cards, applicants, status, pay sheet and ride detail, the 「可能不是最新」 line, push token registration,
+  the bounty permission moment and tap routing for every kind. Its four `live_*` UI cases are written and run with the
+  feature's milestone run. Then step 3 waits on the paid account; the spec stays `approved` until then.
 
 ## Queue
 
-1. Shared live-update layer, step 2 (app): `docs/specs/2026-10-31-realtime-push-design.md`. Carpool and chat refetch
-   and poll until the app channel exists; the server half is in progress above.
+1. Live updates milestone run: the four `live_*` cases plus the changed applicant, status, ride detail and home cases
+   (zh-Hans light, `ms` for the applicant and home cases, `en` for the new `live.offline` key). Chat Task 3 registers
+   its `chat.*` handlers on `live.on` and replaces the 消息-tab tap route.
 2. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7; server half in progress), 问小貘
    (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
    (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6).
@@ -45,7 +48,9 @@ Updated: 2026-11-03.
 
 ## Owner decisions pending
 
-- Live updates and push: the ★ defaults in the realtime spec's Decisions (bounty kinds, push path, push copy).
+- Live updates and push: the ★ defaults in the realtime spec's Decisions (bounty kinds, push path, push copy; and from
+  step 2 the 「可能不是最新」 line, the new-applicant motion, tap routes, the permission moment, reconnect, handlers and
+  the push token rules).
 - Live updates and push, quiet hours: only the ride you are on is exempt from 23:00–08:00. Should an active bounty
   (`en_route` or `done`) be exempt too? ★ yes, exempt the bounty you are on.
 - Live updates and push, expiry: pending applicants get no signal when a bounty expires. ★ add a live-only

@@ -95,6 +95,7 @@ export default {
       title: '设置',
       language: '语言',
       signOut: '退出登录',
+      signingOut: '正在退出…',
       deleteAccount: '删除账号',
       deleteFooter: '账号删除后无法恢复。',
     },
@@ -132,6 +133,10 @@ export default {
   ride,
   rideReminders,
   rideSettle,
+  live: {
+    offline: '可能不是最新',
+    staleAt: '可能不是最新 · {{time}} 的数据',
+  },
   shell: {
     tabs: {
       bounty: '悬赏',

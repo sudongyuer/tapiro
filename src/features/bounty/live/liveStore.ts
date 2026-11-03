@@ -1,3 +1,5 @@
+import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
+import { createAnswerOrder } from '@/lib/answerOrder';
 import { createStore } from '@/lib/store';
 
 import type { LiveBountyService, LiveRow, SeenCard } from './types';
@@ -6,15 +8,12 @@ export type LiveBountiesState =
   | { status: 'idle' }
   | { status: 'loading' | 'failed' | 'ready' | 'stale'; userId: string; rows: LiveRow[] };
 
-type AppStateSource = {
-  addEventListener: (type: 'change', listener: (state: string) => void) => { remove: () => void };
-};
-
 export function createLiveBountyStore(service: LiveBountyService) {
   const store = createStore<LiveBountiesState>({ status: 'idle' });
   const seen = new Set<string>();
   const marking = new Set<string>();
   let generation = 0;
+  const order = createAnswerOrder();
 
   const isCurrent = (userId: string, at: number) => {
     const state = store.get();
@@ -23,12 +22,14 @@ export function createLiveBountyStore(service: LiveBountyService) {
 
   async function reload(userId: string) {
     const at = generation;
+    const request = order.start();
     try {
       const rows = await service.list();
-      if (isCurrent(userId, at)) store.set({ status: 'ready', userId, rows });
+      const status = order.succeeded(request);
+      if (status && isCurrent(userId, at)) store.set({ status, userId, rows });
     } catch {
       const state = store.get();
-      if (!isCurrent(userId, at) || state.status === 'idle') return;
+      if (!order.failed(request) || !isCurrent(userId, at) || state.status === 'idle') return;
       store.set(
         state.status === 'ready' || state.status === 'stale'
           ? { status: 'stale', userId, rows: state.rows }
@@ -81,10 +82,8 @@ export function createLiveBountyStore(service: LiveBountyService) {
         return () => undefined;
       }
       ensureLoaded(userId);
-      const subscription = appState.addEventListener('change', (next) => {
-        if (next === 'active') reload(userId);
-      });
-      return () => subscription.remove();
+      const subscription = onReturnToForeground(appState, () => reload(userId));
+      return subscription;
     },
   };
 }

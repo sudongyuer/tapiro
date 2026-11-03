@@ -39,3 +39,5 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-03 | owner prefs in AGENTS   | 0               | 0             | ~0                                          | 0                       | 0                     |
 | 2026-11-03 | Expo SDK 58             | pending         | 1             | ~5 min (stale Simulator recording)          | 0                       | 0                     |
 | 2026-11-03 | chat server half        | 0               | 1             | ~5 min (two migration bugs), 1 review round | 0                       | 0                     |
+| 2026-11-03 | realtime + push app     | 0               | 4             | ~2 h (Simulator under load, record order)   | 0                       | 0                     |
+| 2026-11-04 | verify keyboard         | 0               | 2             | ~30 min (machine load 40–160)               | 0                       | 0                     |
