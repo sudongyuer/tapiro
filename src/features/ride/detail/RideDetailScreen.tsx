@@ -44,7 +44,7 @@ export function RideDetailScreen({
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
-  const { state, store } = useRideDetail(id, now);
+  const { state, store } = useRideDetail(id, now, userId);
   const [titleShown, setTitleShown] = useState(false);
   const [routeBottom, setRouteBottom] = useState(Infinity);
   const [pulling, setPulling] = useState(false);

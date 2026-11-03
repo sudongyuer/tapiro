@@ -10,6 +10,8 @@ import { HandArt } from '@/ui/HandArt';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
+import { reminderWhen } from '../reminders/copy';
+import { usePayReminderTimes } from '../reminders/useRideReminders';
 import { displayName } from './Avatars';
 import { Card } from './DetailCards';
 import { myRider, owedDays } from './settleModel';
@@ -27,9 +29,16 @@ export function OweCard({
   now: number;
 }) {
   const { t, language } = useI18n();
+  const reminders = usePayReminderTimes(ride.id, now);
   const mine = myRider(ride, viewerId);
   const days = owedDays(mine, now);
   if (!mine || days === 0 || ride.status !== 'settling') return null;
+  const body =
+    reminders.sentAt !== null
+      ? t('rideSettle.owe.sent', { time: reminderWhen(reminders.sentAt, now, t, language) })
+      : reminders.nextAt !== null
+        ? t('rideSettle.owe.next', { time: reminderWhen(reminders.nextAt, now, t, language) })
+        : t('rideSettle.owe.body');
   return (
     <Card tone="warning" testID="ride-settle-owe">
       <AppText variant="body" style={styles.bold}>
@@ -39,8 +48,8 @@ export function OweCard({
           count: days,
         })}
       </AppText>
-      <AppText variant="meta" tone="secondaryLabel">
-        {t('rideSettle.owe.body')}
+      <AppText variant="meta" tone="secondaryLabel" testID="ride-settle-owe-reminder">
+        {body}
       </AppText>
     </Card>
   );

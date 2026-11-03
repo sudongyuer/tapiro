@@ -93,6 +93,8 @@ const settle: Translation['rideSettle'] = {
     title_one: '{{amount}} masih berhutang kepada {{name}} · {{count}} hari',
     title_other: '{{amount}} masih berhutang kepada {{name}} · {{count}} hari',
     body: 'Tapiro mengingatkan anda pada 24 dan 72 jam. Selepas 7 hari tidak dibayar, atau 2 bayaran belum dibuat, siaran ganjaran dan tumpangan digantung.',
+    next: 'Tapiro akan mengingatkan anda {{time}}. Selepas 7 hari tidak dibayar, atau 2 bayaran belum dibuat, siaran ganjaran dan tumpangan digantung.',
+    sent: 'Tapiro telah mengingatkan anda {{time}}. Selepas 7 hari tidak dibayar, atau 2 bayaran belum dibuat, siaran ganjaran dan tumpangan digantung.',
   },
   sheet: {
     title: 'Sudah sampai · bahagi tambang',

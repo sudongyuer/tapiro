@@ -3,6 +3,7 @@ import { Settings } from 'react-native';
 
 import { addBlockFixturePeople } from '@/features/block';
 import { deviceCurrency } from '@/lib/deviceCurrency';
+import { notices } from '@/lib/notifications';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -20,6 +21,7 @@ import {
 } from './detail/fixtureDetailService';
 import { DETAIL_PEOPLE } from './detail/fixtureDetails';
 import type { RideDetailService } from './detail/types';
+import { createRideReminders } from './reminders/rideReminders';
 import { createSupabaseRideService } from './rideService';
 import type { RideService, RideSummary, ShortNameRow } from './types';
 
@@ -59,6 +61,14 @@ export const rideDetailService: RideDetailService = uiVerify
   ? verifyDetailService()
   : createSupabaseRideDetailService(getSupabase(), deviceCurrency, readReceiptBytes);
 
+export const rideReminders = createRideReminders({
+  permission: notices.permission,
+  scheduler: notices.scheduler,
+  settings: Settings,
+  now: Date.now,
+  fresh: uiVerify,
+});
+
 export const rideDraftStore = createRideDraftStore(Settings, randomUUID, deviceCurrency);
 
 export const recentRoutes = createRecentRoutes(Settings);
@@ -69,6 +79,7 @@ userCleanups.register((userId) => {
   splitDrafts.reset();
   rideDraftStore.clear(userId);
   recentRoutes.clear(userId);
+  void rideReminders.clear();
 });
 
 if (uiVerify) {

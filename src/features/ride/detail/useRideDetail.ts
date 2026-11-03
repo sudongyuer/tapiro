@@ -2,11 +2,15 @@ import { useFocusEffect, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { useI18n } from '@/lib/i18n';
+
+import { fromDetail } from '../reminders/inputs';
+import { syncOneRide } from '../reminders/useRideReminders';
 import { rideDetailService } from '../services';
 import { POLL_MS, shouldPoll } from './detailModel';
 import { createRideDetail } from './detailState';
 
-export function useRideDetail(id: string, now: number) {
+export function useRideDetail(id: string, now: number, userId: string) {
   const [store] = useState(() =>
     createRideDetail({ load: () => rideDetailService.load(id), now: () => Date.now() }),
   );
@@ -30,6 +34,16 @@ export function useRideDetail(id: string, now: number) {
     });
     return () => subscription.remove();
   }, [store]);
+
+  const { t, language } = useI18n();
+  useEffect(() => {
+    const { load } = state;
+    if (load.kind === 'ready' && !load.stale) {
+      void syncOneRide(id, fromDetail(load.detail, userId), t, language);
+    } else if (load.kind === 'gone') {
+      void syncOneRide(id, null, t, language);
+    }
+  }, [state, id, userId, t, language]);
 
   const detail = state.load.kind === 'ready' ? state.load.detail : null;
   const focused = useIsFocused();

@@ -91,7 +91,8 @@
           "isIosBackgroundLocationEnabled": false
         }
       ],
-      "./plugins/withoutAppleSignInEntitlement"
+      "./plugins/withoutAppleSignInEntitlement",
+      "./plugins/withoutPushEntitlement"
     ],
     "experiments": {
       "typedRoutes": true,

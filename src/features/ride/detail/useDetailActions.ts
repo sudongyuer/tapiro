@@ -3,6 +3,7 @@ import { ActionSheetIOS } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 
+import { askThenSync } from '../reminders/useRideReminders';
 import { rideDetailService as service } from '../services';
 import type { SplitMode } from '../types';
 import type { RideDetailStore } from './detailState';
@@ -25,7 +26,7 @@ function ask(options: { title: string; message: string; confirm: string; keep: s
 }
 
 export function useDetailActions(id: string, store: RideDetailStore, organiserName: string) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   return useMemo(() => {
     const noShowText = (preview: NoShowPreview) =>
       preview.noShow
@@ -40,7 +41,10 @@ export function useDetailActions(id: string, store: RideDetailStore, organiserNa
     return {
       async request(note: string | null) {
         const answer = await store.act('request', () => service.request(id, note));
-        if (answer?.ok) applyNotes.clear(id);
+        if (answer?.ok) {
+          applyNotes.clear(id);
+          void askThenSync(t, language);
+        }
         return answer?.ok ?? false;
       },
       async withdraw() {
@@ -98,7 +102,7 @@ export function useDetailActions(id: string, store: RideDetailStore, organiserNa
       confirmAppeal: (member: string) =>
         void store.act('confirmAppeal', () => service.confirmAppeal(id, member), member),
     };
-  }, [id, store, organiserName, t]);
+  }, [id, store, organiserName, t, language]);
 }
 
 export type DetailActions = ReturnType<typeof useDetailActions>;

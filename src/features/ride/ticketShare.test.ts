@@ -35,6 +35,8 @@ function settled(patch: Partial<MyRide> = {}): MyRide {
     pendingRequests: 0,
     myShare: { minor: 2470, currency: 'MYR' },
     myPaid: 'settled',
+    myDueSince: null,
+    eta: null,
     ...patch,
   };
 }

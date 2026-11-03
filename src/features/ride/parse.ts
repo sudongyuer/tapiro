@@ -117,6 +117,8 @@ export function toMyRide(value: unknown): MyRide {
         : count(body.pendingRequests, 'pendingRequests'),
     myShare: toMoney(body.myShare, body.currency),
     myPaid: PAID.find((candidate) => candidate === body.myPaid) ?? null,
+    myDueSince: optionalTime(body.myDueSince, 'myDueSince'),
+    eta: optionalTime(body.eta, 'eta'),
   };
 }
 

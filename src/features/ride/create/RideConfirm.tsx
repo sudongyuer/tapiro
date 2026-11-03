@@ -8,6 +8,7 @@ import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { deviceDecimal } from '@/lib/deviceDecimal';
 
+import { askThenSync } from '../reminders/useRideReminders';
 import { recentRoutes, rideDraftStore, rideService } from '../services';
 import { useNow } from '../useNow';
 import { FeeSection, SummarySection } from './ConfirmParts';
@@ -56,6 +57,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack }: Confirm
         }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         onPublished();
+        void askThenSync(t, language);
       },
       onInvalid: (error) => {
         rideFormError.set(error);

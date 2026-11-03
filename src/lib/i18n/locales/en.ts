@@ -4,6 +4,7 @@ import block from './block/en';
 import bounty from './bounty/en';
 import pay from './pay/en';
 import ride from './ride/en';
+import rideReminders from './rideReminders/en';
 import rideSettle from './rideSettle/en';
 import payee from './payee/en';
 import stickers from './stickers/en';
@@ -134,6 +135,7 @@ const en: Translation = {
   block,
   bounty,
   ride,
+  rideReminders,
   rideSettle,
   shell: {
     tabs: {
