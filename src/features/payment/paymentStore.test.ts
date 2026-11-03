@@ -11,6 +11,7 @@ import {
   type FixturePaymentOptions,
 } from './fixturePaymentService';
 import { accessoryItems } from './livePayments';
+import { sheetFailure } from './stateMachine';
 import { createPaymentStore } from './paymentStore';
 
 const OPTIONS: FixturePaymentOptions = {
@@ -131,12 +132,17 @@ describe('payment store', () => {
     expect(
       (
         await store.run(FIXTURE_USER_ID, () =>
-          store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, cash!.id, null),
+          store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, cash!.id, null, 1500),
         )
       ).ok,
     ).toBe(false);
+    const stale = await store.run(FIXTURE_USER_ID, () =>
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null, 1400),
+    );
+    expect(stale.ok === false && sheetFailure(stale.error)).toBe('amountChanged');
+    expect(payments(store)[0]).toMatchObject({ state: 'due' });
     await store.run(FIXTURE_USER_ID, () =>
-      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null),
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null, 1500),
     );
     expect(payments(store)[0]).toMatchObject({ state: 'marked_paid', methodType: 'duitnow_id' });
     await store.run(FIXTURE_USER_ID, () => store.service.undo(FIXTURE_PAYMENT_IDS.owe));
@@ -149,7 +155,7 @@ describe('payment store', () => {
       (method) => method.type === 'duitnow_id',
     );
     await store.run(FIXTURE_USER_ID, () =>
-      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null),
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, phone!.id, null, 5000),
     );
     expect(payments(store)[0]).toMatchObject({
       amount: { minor: 5000, currency: 'CNY' },
@@ -163,7 +169,7 @@ describe('payment store', () => {
     expect(detail.rate).toBeNull();
     expect(detail.methods.map((method) => method.amount)).toEqual([null]);
     const marked = await store.run(FIXTURE_USER_ID, () =>
-      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, detail.methods[0].methodId, null),
+      store.service.markPaid(FIXTURE_PAYMENT_IDS.owe, detail.methods[0].methodId, null, 5000),
     );
     expect(marked.ok).toBe(false);
     expect(payments(store)[0]).toMatchObject({ state: 'due', paid: null });

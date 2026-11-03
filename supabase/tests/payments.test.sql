@@ -44,6 +44,10 @@ select throws_ok(
   '23514', null, 'the amount is positive'
 );
 
+create function pg_temp.due_minor(payment uuid) returns bigint language sql security definer as $fn$
+  select amount_minor from public.payments where id = payment;
+$fn$;
+
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 
@@ -77,24 +81,24 @@ select is(
 select is(public.publish_blocked(), true, 'two open unpaid payments block publishing');
 
 select throws_ok(
-  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b9')$$,
+  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b9', pg_temp.due_minor((select id from ids where name = 'one')))$$,
   '22023', null, 'cash is not marked paid by the payer'
 );
 select throws_ok(
-  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000c1')$$,
+  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000c1', pg_temp.due_minor((select id from ids where name = 'one')))$$,
   '22023', null, 'the method must belong to the payee'
 );
 select throws_ok(
-  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1', 'someone-else/x.jpg')$$,
+  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor((select id from ids where name = 'one')), 'someone-else/x.jpg')$$,
   '22023', null, 'a proof must sit in the payment''s folder'
 );
 select is(
-  public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1')::text,
+  public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor((select id from ids where name = 'one')))::text,
   'marked_paid', 'the payer marks it paid'
 );
 select is((select method_type::text from public.payments where id = (select id from ids where name = 'one')), 'duitnow_id', 'the chosen method is recorded');
 select throws_ok(
-  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1')$$,
+  $$select public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor((select id from ids where name = 'one')))$$,
   '55000', null, 'marking paid twice is rejected'
 );
 select throws_ok(
@@ -115,7 +119,7 @@ select throws_ok(
   '55000', null, 'undo needs a marked-paid payment'
 );
 select is(
-  public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1')::text,
+  public.mark_payment_paid((select id from ids where name = 'one'), '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor((select id from ids where name = 'one')))::text,
   'marked_paid', 'the payer marks it paid again'
 );
 
@@ -134,7 +138,7 @@ select is(public.publish_blocked(), false, 'someone owing nothing may publish');
 
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 select throws_ok(
-  $$select public.mark_payment_paid((select id from ids where name = 'two'), '00000000-0000-4000-8000-0000000000b1')$$,
+  $$select public.mark_payment_paid((select id from ids where name = 'two'), '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor((select id from ids where name = 'two')))$$,
   '42501', null, 'the payee cannot mark paid'
 );
 select throws_ok(
@@ -236,8 +240,9 @@ select results_eq(
   'the payer deletes an unattached draft while the payment is due'
 );
 select throws_ok(
-  format($$select public.mark_payment_paid(%L, '00000000-0000-4000-8000-0000000000b1', %L)$$,
-    (select id from ids where name = 'proofed'), (select id from ids where name = 'proofed') || '/missing.jpg'),
+  format($$select public.mark_payment_paid(%L, '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor(%L), %L)$$,
+    (select id from ids where name = 'proofed'), (select id from ids where name = 'proofed'),
+    (select id from ids where name = 'proofed') || '/missing.jpg'),
   '22023', null, 'a proof must exist in storage'
 );
 select lives_ok(
@@ -245,7 +250,7 @@ select lives_ok(
   'the payer uploads a proof into the payment''s folder'
 );
 select is(
-  public.mark_payment_paid((select id from ids where name = 'proofed'), '00000000-0000-4000-8000-0000000000b1', (select id from ids where name = 'proofed') || '/proof.jpg')::text,
+  public.mark_payment_paid((select id from ids where name = 'proofed'), '00000000-0000-4000-8000-0000000000b1', pg_temp.due_minor((select id from ids where name = 'proofed')), (select id from ids where name = 'proofed') || '/proof.jpg')::text,
   'marked_paid', 'the payer marks paid with the proof'
 );
 select is(

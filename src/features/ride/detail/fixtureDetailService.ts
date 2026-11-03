@@ -12,7 +12,14 @@ import { settleWrites } from './fixtureSettleWrites';
 import { isSettleScene, settleScene, type SettleScene } from './fixtureSettle';
 import type { RideDetail, RideDetailService, RideFailure, RideMember, RideWrite } from './types';
 
-export const DETAIL_FAILS = ['none', 'first', 'refresh', 'write', 'receipt'] as const;
+export const DETAIL_FAILS = [
+  'none',
+  'first',
+  'refresh',
+  'write',
+  'receipt',
+  'receiptGone',
+] as const;
 
 export type FixtureDetailOptions = {
   scene: DetailScene | SettleScene | null;

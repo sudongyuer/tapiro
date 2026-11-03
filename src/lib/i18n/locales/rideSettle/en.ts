@@ -103,6 +103,7 @@ const settle: Translation['rideSettle'] = {
     receiptAdded: 'Receipt attached',
     receiptRemove: 'Remove',
     receiptUploading: 'Uploading the screenshot…',
+    receiptExpired: 'The screenshot expired. Attach it again.',
     receiptFailed: 'The screenshot didn’t upload. Sending again retries it.',
     you: 'You',
     shareLabel: '{{name}}’s amount',

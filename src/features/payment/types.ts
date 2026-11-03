@@ -50,6 +50,13 @@ export class NoRateError extends Error {
   }
 }
 
+export class AmountChangedError extends Error {
+  constructor() {
+    super('amount_changed');
+    this.name = 'AmountChangedError';
+  }
+}
+
 export type SettleResult = {
   firstSettled: boolean;
   stickerCount: number | null;
@@ -64,7 +71,12 @@ export type PaymentService = {
   uploadProof(paymentId: string, fileUri: string): Promise<string>;
   removeProof(path: string): Promise<void>;
   proofUrl(path: string): Promise<string>;
-  markPaid(paymentId: string, methodId: string, proofPath: string | null): Promise<void>;
+  markPaid(
+    paymentId: string,
+    methodId: string,
+    proofPath: string | null,
+    expectedMinor: number,
+  ): Promise<void>;
   undo(paymentId: string): Promise<void>;
   confirm(paymentId: string): Promise<SettleResult>;
   notReceived(paymentId: string): Promise<void>;

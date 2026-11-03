@@ -3,6 +3,7 @@ import { convertUp, methodCurrency, type CurrencyCode, type Money } from '@/lib/
 import type { PayeeDetails, PayeeMethod } from '@/lib/payeeMethods';
 
 import {
+  AmountChangedError,
   NoRateError,
   type FxRate,
   type Payment,
@@ -341,11 +342,12 @@ export function createFixturePaymentService(
       if (!uri) throw new Error('no fixture proof');
       return uri;
     },
-    async markPaid(paymentId, methodId, proofPath) {
+    async markPaid(paymentId, methodId, proofPath, expectedMinor) {
       const payment = find(paymentId);
       const method = payeeMethods.find((candidate) => candidate.id === methodId);
       if (payment.role !== 'payer' || payment.state !== 'due' || !method || method.type === 'cash')
         throw new Error('cannot mark paid');
+      if (expectedMinor !== payment.amount.minor) throw new AmountChangedError();
       const paid = payIn(payment.amount, method.type);
       if (!paid) throw new NoRateError();
       update(paymentId, {

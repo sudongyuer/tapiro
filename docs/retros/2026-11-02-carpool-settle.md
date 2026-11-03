@@ -35,3 +35,14 @@ overturned: pending
 | Speed     | Rework rounds                                                 | 0                                                                                             |
 | Autonomy  | Avoidable interventions                                       | 0                                                                                             |
 | Loop      | Minutes spent on this retro                                   | ~5                                                                                            |
+
+## Review of PR 53
+
+| #   | Tag               | What happened                                                                                                                       | Root cause class        | Change and layer                                                                                              |
+| --- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 10  | sheet-sync        | The split and 改金额 sheets sent React state without `field.sync()`; every other sheet syncs                                       | pattern not copied      | Fixed; candidate lint rule: a `SheetShell` `onConfirm` that reads a `useSyncedText` field must call `sync()` |
+| 11  | money-two-sided   | `mark_payment_paid` took no expected amount, so a share change during payment was marked paid at the new amount                    | missing contract check  | Fixed at the RPC (typed `amount_changed`)                                                                     |
+| 12  | dead-read         | `ride_paid_states` stayed granted after the client stopped using it and leaked method and time                                       | leftover surface        | Dropped                                                                                                       |
+| 13  | default-claims    | The list stub claimed 你付了 for any non-due state, including unknown                                                               | permissive default      | Fixed; unknown falls back to the estimate                                                                    |
+| 14  | locale-parse      | `parseEstimate` stripped commas, guessing grouping                                                                                   | guessing input          | Device separator only, reject the rest                                                                       |
+| 15  | ui-case-flake     | `ride_settled` once saw 0 `collectSticker` calls in the plist within 10 s although the UI already read 已收进贴纸本; passed on rerun | call-log latency        | Recorded; if it recurs, poll the plist for 20 s like `ride_meetup`                                           |

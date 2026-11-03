@@ -65,6 +65,10 @@ select is(
 );
 
 insert into fx values ('cny800', gen_random_uuid()), ('cny801', gen_random_uuid()), ('myr500', gen_random_uuid());
+create function pg_temp.due_minor(payment uuid) returns bigint language sql security definer as $fn$
+  select amount_minor from public.payments where id = payment;
+$fn$;
+
 set local role authenticated;
 select pg_temp.act_as(pg_temp.u('a1'));
 select is(
@@ -210,7 +214,7 @@ select throws_ok(
 
 select pg_temp.act_as(pg_temp.u('c3'));
 select lives_ok(
-  $$select public.mark_payment_paid(pg_temp.fx('ten'), '00000000-0000-4000-8000-000000000001')$$,
+  $$select public.mark_payment_paid(pg_temp.fx('ten'), '00000000-0000-4000-8000-000000000001', pg_temp.due_minor(pg_temp.fx('ten')))$$,
   'the payer marks it paid by DuitNow'
 );
 select is(
@@ -222,13 +226,13 @@ select is(
   (select row(paid_minor, paid_currency)::text from public.payments where id = pg_temp.fx('ten')), '(,)',
   'undo clears the paid amount'
 );
-select public.mark_payment_paid(pg_temp.fx('ten'), '00000000-0000-4000-8000-000000000002');
+select public.mark_payment_paid(pg_temp.fx('ten'), '00000000-0000-4000-8000-000000000002', pg_temp.due_minor(pg_temp.fx('ten')));
 select is(
   (select paid_minor || ' ' || paid_currency from public.payments where id = pg_temp.fx('ten')), '1000 CNY',
   'paying by Alipay records the original yuan'
 );
 select public.undo_marked_paid(pg_temp.fx('ten'));
-select public.mark_payment_paid(pg_temp.fx('ten'), '00000000-0000-4000-8000-000000000001');
+select public.mark_payment_paid(pg_temp.fx('ten'), '00000000-0000-4000-8000-000000000001', pg_temp.due_minor(pg_temp.fx('ten')));
 select pg_temp.act_as(pg_temp.u('b2'));
 select public.confirm_payment_received(pg_temp.fx('ten'));
 reset role;
@@ -277,11 +281,11 @@ select is(
 );
 select is(public.payment_detail(pg_temp.fx('stale')) -> 'rate', 'null'::jsonb, 'the payment shows no rate');
 select throws_ok(
-  $$select public.mark_payment_paid(pg_temp.fx('stale'), '00000000-0000-4000-8000-000000000001')$$,
+  $$select public.mark_payment_paid(pg_temp.fx('stale'), '00000000-0000-4000-8000-000000000001', pg_temp.due_minor(pg_temp.fx('stale')))$$,
   '55000', 'no_rate', 'a method that needs a conversion is rejected without a locked rate'
 );
 select lives_ok(
-  $$select public.mark_payment_paid(pg_temp.fx('stale'), '00000000-0000-4000-8000-000000000002')$$,
+  $$select public.mark_payment_paid(pg_temp.fx('stale'), '00000000-0000-4000-8000-000000000002', pg_temp.due_minor(pg_temp.fx('stale')))$$,
   'a method in the original currency still pays'
 );
 

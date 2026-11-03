@@ -157,12 +157,12 @@ select pg_temp.act_as(pg_temp.u('e5'));
 select is((select count(*) from storage.objects where bucket_id = 'ride-receipts'), 0::bigint, 'an outsider cannot open the receipt');
 
 select is(
-  jsonb_path_query_array(pg_temp.as_user('c3', $$public.ride_paid_states(pg_temp.r(1))$$), '$.riders[*].state'),
+  jsonb_path_query_array(pg_temp.as_user('c3', $$public.ride_detail(pg_temp.r(1))$$), '$.settle.riders[*].paid'),
   '["due", "due"]'::jsonb, 'riders see each other''s paid state'
 );
-select is(pg_temp.as_user('c3', $$public.ride_paid_states(pg_temp.r(1))$$) -> 'hasReceipt', 'true'::jsonb, 'riders see that a receipt is attached');
-select throws_ok($$select pg_temp.as_user('d4', 'public.ride_paid_states(pg_temp.r(1))')$$, '42501', 'not_member', 'a no-show does not see paid states');
-select throws_ok($$select pg_temp.as_user('e5', 'public.ride_paid_states(pg_temp.r(1))')$$, '42501', 'not_member', 'an outsider does not see paid states');
+select isnt(pg_temp.as_user('c3', $$public.ride_detail(pg_temp.r(1))$$) #>> '{settle,receipt}', null, 'riders see that a receipt is attached');
+select hasnt_function('public', 'ride_paid_states', array['uuid'], 'the old paid-states read with every rider''s method and time is gone');
+select is(pg_temp.as_user('d4', $$public.ride_detail(pg_temp.r(1))$$) -> 'settle', 'null'::jsonb, 'a no-show does not see paid states');
 
 select is(pg_temp.as_user('b2', $$public.dispute_ride_share(pg_temp.r(1), '我只坐到一半')$$), '{"disputed": true, "note": "我只坐到一半"}'::jsonb, 'a rider taps 金额不对 with a note');
 select pg_temp.as_user('b2', $$public.dispute_ride_share(pg_temp.r(1), '我只坐到一半')$$);

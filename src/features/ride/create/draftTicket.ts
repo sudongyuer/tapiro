@@ -1,14 +1,14 @@
 import type { TFunction } from 'i18next';
 
-import { CURRENCIES, formatMoney } from '@/lib/money';
+import { CURRENCIES, formatMoney, type DecimalSeparator } from '@/lib/money';
 
 import { perPersonAbout } from '../perPerson';
 import { emptyAmount, ticketA11y, whenText, type TicketView } from '../ticketView';
 import type { RideDraft } from './draft';
 import { parseEstimate } from './validate';
 
-export function draftPerPerson(draft: RideDraft) {
-  const estimate = parseEstimate(draft.estimateText, draft.currency);
+export function draftPerPerson(draft: RideDraft, decimal: DecimalSeparator = '.') {
+  const estimate = parseEstimate(draft.estimateText, draft.currency, decimal);
   if (!estimate || estimate.minor <= 0) return null;
   const digits = CURRENCIES[draft.currency].minorDigits;
   return { minor: perPersonAbout(estimate.minor, draft.seats, digits), currency: draft.currency };
@@ -31,10 +31,11 @@ export function draftTicketView(
   now: number,
   t: TFunction,
   language: string,
+  decimal: DecimalSeparator = '.',
 ): TicketView {
   const { start, dest } = draft;
   const routed = start !== null && dest !== null;
-  const each = draftPerPerson(draft);
+  const each = draftPerPerson(draft, decimal);
   const view = {
     status: t('ride.ticket.need', { count: draft.seats - 1 }),
     tone: 'plain' as const,

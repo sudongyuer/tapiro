@@ -82,7 +82,7 @@ export function settleTicket(
   }
 
   if (ride.status === 'closed') {
-    const grab = ride.splitMode === 'grab' || !settle;
+    const grab = ride.splitMode === 'grab';
     const settledAt = ride.settledAt ? Date.parse(ride.settledAt) : now;
     const youPaid = !organiser && mine ? money(mine.share) : null;
     return {
@@ -99,14 +99,22 @@ export function settleTicket(
             cell('fare', t('rideSettle.ticket.fare'), t('rideSettle.ticket.fareGrab')),
             cell('reached', t('rideSettle.ticket.reached'), reached ? malaysiaClock(reached) : '–'),
           ]
-        : [
-            settle ? cell('total', t('rideSettle.ticket.total'), money(settle.total)) : null,
-            youPaid
-              ? cell('youPaid', t('rideSettle.ticket.youPaid'), youPaid)
-              : ride.myShare
-                ? cell('yours', t('rideSettle.ticket.yours'), money(ride.myShare))
-                : null,
-          ].filter((item) => item !== null),
+        : !settle
+          ? [
+              cell(
+                'reached',
+                t('rideSettle.ticket.reached'),
+                reached ? malaysiaClock(reached) : '–',
+              ),
+            ]
+          : [
+              cell('total', t('rideSettle.ticket.total'), money(settle.total)),
+              youPaid
+                ? cell('youPaid', t('rideSettle.ticket.youPaid'), youPaid)
+                : ride.myShare
+                  ? cell('yours', t('rideSettle.ticket.yours'), money(ride.myShare))
+                  : null,
+            ].filter((item) => item !== null),
       stamp: true,
     };
   }

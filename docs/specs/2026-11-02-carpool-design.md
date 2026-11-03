@@ -727,3 +727,40 @@ PR: https://github.com/sudongyuer/tapiro/pull/53 (`feat/carpool-settle`). Status
   `detail/settleModel.ts` is the client's day count.
 - The owing card copy (`rideSettle.owe.body`) describes reminders only; when step 7 records a sent reminder, add its time.
 - The organiser's 到了 reminder on the home card (210 A) waits for the ride live source.
+
+### Review of PR 53
+
+Fixed on the same branch; each fix has a test that fails before it unless noted.
+
+- **Stale amounts on send.** The split sheet and 改金额 now read every field with `sync()` on confirm, as the other
+  sheets do; a split that no longer validates after the sync stays open. `syncedDraft` (`detail/splitDraft.ts`) merges
+  the typed text; unit `sending reads the fields as typed`. The component wiring itself has no failing-first test:
+  `bun test` cannot render the SwiftUI fields.
+- **`mark_payment_paid` names the amount** (`supabase/migrations/20261102001000_ride_settle_review.sql`): the payer
+  passes `expected_minor`; a different amount is refused with `amount_changed` (55000, not a retryable code). The pay
+  sheet shows 「金额变了，请重新确认」 and reloads, never retrying. Bounty and ride callers pass the amount they show;
+  bounty behaviour is otherwise unchanged (`payments`, `money` and `stickers` pgTAP files updated to pass it).
+  pgTAP `ride_settle_review.test.sql`; unit `sends the amount the payer saw and maps a changed amount to a typed error`.
+- **`ride_paid_states` dropped**: it leaked each rider's method and settle time; nothing used it. pgTAP
+  `ride_settle.test.sql` (`hasnt_function`).
+- **Settled list ticket.** 你付了 only when the server says paid or settled, 你要付 when due, the estimate wording when
+  the state is missing or unknown; VoiceOver reads 「你付了 RM x」. Unit `ticketShare.test.ts`.
+- **Grab label.** A Tapiro ride the organiser rode alone is no longer labelled 在 Grab 里分. Unit `settleTicketView.test.ts`.
+- **Receipt after cleanup.** Before a retry reuses an uploaded receipt, the app checks the object still exists; if the
+  cleanup removed it, the draft drops it and the sheet says 「截图已过期，请重新附上」; nothing is re-uploaded by itself.
+  `detail/receiptPrep.ts`, unit `receiptPrep.test.ts` (the reuse-without-check logic it replaces returned the stale path).
+- **Decimal separator.** `parseEstimate` reads the device's decimal separator (`expo-localization` `decimalSeparator`,
+  `src/lib/deviceDecimal.ts`) and rejects anything else, grouping commas and spaces included, instead of stripping them.
+  Unit `the device decimal separator`; `validate.test.ts` now expects 「1,000」 to be refused.
+- **Appeal after a close without a split** (231 A): a trigger on `ride_members` gives an appeal confirmed after a
+  Grab-split or lone close the appellant's car sticker, and the organiser theirs if they had none; one per (owner,
+  ride). pgTAP `ride_appeal_sticker.test.sql` (2 of 4 fail before).
+- **Motion ★1 (sticker flying into the book from the detail) and ★2 (a row animating from 已付 to 已收到): no motion.**
+  Settling is rare and the static states read clearly. ★ by default, owner may veto.
+
+Verification after the review: `supabase test db` (isolated, `db-isolated.sh carpool-settle 568`) → 38 files, 1417
+tests, PASS; without `20261102001000_ride_settle_review.sql` the amount checks, the dropped read and the appeal
+stickers fail. `bun test` → 1704 pass, 4 fail (the known worktree `check-file-size` cases); `tsc`, `lint:changed`,
+`format:check`, `check:size`, `design-check`, `check-specs`, `check-story-map` → exit 0. `verify:build`, then
+`ride_settle_split` → pass and `ride_settled` → pass on a rerun (the first run's UI read 已收进贴纸本 but the call log
+plist lagged past 10 s; see the retro).

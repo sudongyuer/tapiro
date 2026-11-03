@@ -1,4 +1,10 @@
-import { CURRENCIES, POST_LIMITS, type CurrencyCode, type Money } from '@/lib/money';
+import {
+  CURRENCIES,
+  POST_LIMITS,
+  type CurrencyCode,
+  type DecimalSeparator,
+  type Money,
+} from '@/lib/money';
 
 import { parseEstimate } from '../create/validate';
 import { equalSplit, organiserShare, splitProblem, type SplitProblem } from '../split';
@@ -6,6 +12,7 @@ import type { RideDetail, SplitInput } from './types';
 
 export type ReceiptDraft =
   | { status: 'none' }
+  | { status: 'expired' }
   | { status: 'picked' | 'uploading' | 'failed'; uri: string }
   | { status: 'uploaded'; uri: string; path: string };
 
@@ -38,17 +45,22 @@ export type SplitView = {
 export const splitRiders = (ride: RideDetail) =>
   (ride.members ?? []).filter((m) => m.status === 'boarded' && !m.organiser);
 
-export function shareText(money: Money) {
+export function shareText(money: Money, decimal: DecimalSeparator = '.') {
   const digits = CURRENCIES[money.currency].minorDigits;
-  return (money.minor / 10 ** digits).toFixed(digits);
+  return (money.minor / 10 ** digits).toFixed(digits).replace('.', decimal);
 }
 
-export function splitView(ride: RideDetail, draft: SplitDraft): SplitView {
+export function splitView(
+  ride: RideDetail,
+  draft: SplitDraft,
+  decimal: DecimalSeparator = '.',
+): SplitView {
   const currency = ride.currency;
   const riders = splitRiders(ride);
   const digits = CURRENCIES[currency].minorDigits;
   const limits = POST_LIMITS.ride[currency];
-  const total = draft.totalText.trim() === '' ? null : parseEstimate(draft.totalText, currency);
+  const total =
+    draft.totalText.trim() === '' ? null : parseEstimate(draft.totalText, currency, decimal);
   const inRange =
     total !== null && total.minor >= limits.minMinor && total.minor <= limits.maxMinor;
   const equal =
@@ -64,7 +76,7 @@ export function splitView(ride: RideDetail, draft: SplitDraft): SplitView {
         edited: false,
       };
     }
-    const parsed = parseEstimate(typed, currency);
+    const parsed = parseEstimate(typed, currency, decimal);
     if (!parsed) badText = true;
     return { id: m.id, name: m.name, share: parsed, edited: true };
   });
@@ -102,4 +114,19 @@ export function toSplitInput(view: SplitView, receipt: string | null): SplitInpu
     shares: view.rows.map((row) => ({ memberId: row.id, minor: row.share?.minor ?? 0 })),
     receipt,
   };
+}
+
+export type TypedSplit = { total: string | null; shares: Record<string, string> };
+
+export function syncedDraft(
+  draft: SplitDraft,
+  rows: readonly { id: string; shown: string; edited: boolean }[],
+  typed: TypedSplit,
+): SplitDraft {
+  const shares = { ...draft.shares };
+  for (const row of rows) {
+    const text = typed.shares[row.id];
+    if (text !== undefined && (row.edited || text !== row.shown)) shares[row.id] = text;
+  }
+  return { ...draft, totalText: typed.total ?? draft.totalText, shares };
 }

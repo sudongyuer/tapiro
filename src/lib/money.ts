@@ -7,6 +7,7 @@ export const CURRENCIES = {
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 export type Money = { minor: number; currency: CurrencyCode };
+export type DecimalSeparator = '.' | ',';
 export type MoneyReference = Money & { rateDate: string };
 
 export type PostLimit = { minMinor: number; maxMinor: number; stepMinor: number };

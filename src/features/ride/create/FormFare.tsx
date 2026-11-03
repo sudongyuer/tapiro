@@ -28,6 +28,7 @@ import { CURRENCIES, formatMoney } from '@/lib/money';
 import { FieldRow } from '@/ui/FieldRow';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
+import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import type { SplitMode } from '../types';
 import { SEATS, type RideDraft } from './draft';
@@ -101,7 +102,7 @@ export function FareSection({
 }) {
   const { t, language } = useI18n();
   const input = useRef<TextFieldRef>(null);
-  const each = draftPerPerson(draft);
+  const each = draftPerPerson(draft, deviceDecimal());
   const footer = each
     ? t('ride.create.form.fareFooter', {
         count: draft.seats,

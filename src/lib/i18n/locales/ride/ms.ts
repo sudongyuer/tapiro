@@ -266,6 +266,7 @@ const ms: typeof zhHans = {
       notMember: 'Anda tidak lagi dalam tumpangan ini',
       blocked: 'Anda telah menyekat orang ini, jadi tidak boleh berbuat begitu',
       invalid: 'Ada maklumat yang tidak betul. Semak dan cuba lagi',
+      receiptExpired: 'Tangkapan skrin telah tamat tempoh. Sila lampirkan semula.',
       noPayee: 'Tambah kaedah pembayaran sebelum membahagi tambang',
       transition: 'Keadaan sudah berubah; sudah dimuat semula',
       failed: 'Tidak berjaya. Cuba lagi',

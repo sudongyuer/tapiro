@@ -2,11 +2,13 @@ import { useMemo } from 'react';
 
 import type { Money } from '@/lib/money';
 import { dismissSettled } from '@/lib/stickers';
+import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { rideDetailService as service } from '../services';
 import type { RidePhase } from '../types';
 import type { RideDetailStore } from './detailState';
 import { disputeNotes, splitDrafts } from './drafts';
+import { prepareReceipt } from './receiptPrep';
 import { splitView, toSplitInput, type SplitDraft } from './splitDraft';
 import type { RideDetail, RideWrite } from './types';
 
@@ -38,20 +40,6 @@ export function useSettleActions(
       return load.kind === 'ready' ? load.detail : null;
     };
 
-    async function upload(draft: SplitDraft): Promise<string | null | 'failed'> {
-      const { receipt } = draft;
-      if (receipt.status === 'none') return null;
-      if (receipt.status === 'uploaded') return receipt.path;
-      try {
-        const path = await service.uploadReceipt(id, receipt.uri);
-        splitDrafts.set(id, { ...draft, receipt: { status: 'uploaded', uri: receipt.uri, path } });
-        return path;
-      } catch {
-        splitDrafts.set(id, { ...draft, receipt: { status: 'failed', uri: receipt.uri } });
-        return 'failed';
-      }
-    }
-
     return {
       async reach(): Promise<RidePhase | null> {
         const answer = await store.act('reach', () => service.reach(id));
@@ -60,9 +48,10 @@ export function useSettleActions(
       async sendSplit(detail: RideDetail, draft: SplitDraft) {
         splitDrafts.set(id, draft);
         const answer = await store.act('split', async (): Promise<RideWrite> => {
-          const path = await upload(draft);
-          if (path === 'failed') return { ok: false, reason: 'failed' };
-          const input = toSplitInput(splitView(detail, draft), path);
+          const prepared = await prepareReceipt(id, draft, service);
+          splitDrafts.set(id, prepared.draft);
+          if (!prepared.ok) return { ok: false, reason: prepared.reason };
+          const input = toSplitInput(splitView(detail, draft, deviceDecimal()), prepared.path);
           if (!input) return { ok: false, reason: 'invalid' };
           return service.sendSplit(id, input);
         });

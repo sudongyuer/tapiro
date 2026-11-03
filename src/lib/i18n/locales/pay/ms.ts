@@ -19,6 +19,7 @@ export default {
     },
     retry: 'Cuba lagi',
     failed: 'Tidak berjaya. Semak sambungan dan cuba lagi.',
+    amountChanged: 'Jumlah telah berubah. Sila semak semula.',
     payTo: 'Bayar {{name}}',
     amountLabel: 'Jumlah {{amount}}',
     original: 'Asalnya {{amount}}',

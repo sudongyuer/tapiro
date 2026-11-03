@@ -104,7 +104,7 @@ describe('ride draft', () => {
   test('the estimate reads whole and decimal amounts', () => {
     expect(parseEstimate('76', 'MYR')).toEqual({ minor: 7600, currency: 'MYR' });
     expect(parseEstimate('24.5', 'MYR')).toEqual({ minor: 2450, currency: 'MYR' });
-    expect(parseEstimate('1,000', 'MYR')).toEqual({ minor: 100000, currency: 'MYR' });
+    expect(parseEstimate('1,000', 'MYR')).toBeNull();
     expect(parseEstimate('12.345', 'MYR')).toBeNull();
     expect(parseEstimate('abc', 'MYR')).toBeNull();
   });

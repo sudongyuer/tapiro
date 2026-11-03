@@ -4,6 +4,7 @@ import { AppState } from 'react-native';
 import type { PayeeMethod } from '@/lib/payeeMethods';
 
 import { paymentStore } from './services';
+import { sheetFailure, type SheetFailure } from './stateMachine';
 import type { Payment, PaymentDetail, SettleResult } from './types';
 
 export function useLivePayments(userId: string | null) {
@@ -50,7 +51,7 @@ export function usePaySheet(userId: string, paymentId: string) {
   const [state, setState] = useState<SheetState>({ status: 'loading' });
   const [version, setVersion] = useState(0);
   const [busy, setBusy] = useState<SheetAction | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<SheetFailure | null>(null);
   const busyRef = useRef(false);
 
   useEffect(() => {
@@ -75,9 +76,9 @@ export function usePaySheet(userId: string, paymentId: string) {
     if (busyRef.current) return null;
     busyRef.current = true;
     setBusy(action);
-    setFailed(false);
+    setFailed(null);
     const result = await paymentStore.run(userId, run);
-    if (!result.ok) setFailed(true);
+    if (!result.ok) setFailed(sheetFailure(result.error));
     setVersion((current) => current + 1);
     busyRef.current = false;
     setBusy(null);
@@ -91,8 +92,8 @@ export function usePaySheet(userId: string, paymentId: string) {
     busy,
     failed,
     retry,
-    markPaid: (methodId: string, proofPath: string | null) =>
-      act('markPaid', () => service.markPaid(paymentId, methodId, proofPath)),
+    markPaid: (methodId: string, proofPath: string | null, expectedMinor: number) =>
+      act('markPaid', () => service.markPaid(paymentId, methodId, proofPath, expectedMinor)),
     undo: () =>
       act('undo', async () => {
         const detached = state.status === 'ready' ? state.payment.proofPath : null;

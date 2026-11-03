@@ -104,6 +104,7 @@ const settle: Translation['rideSettle'] = {
     receiptAdded: 'Resit dilampirkan',
     receiptRemove: 'Buang',
     receiptUploading: 'Memuat naik tangkapan skrin…',
+    receiptExpired: 'Tangkapan skrin telah tamat tempoh. Sila lampirkan semula.',
     receiptFailed: 'Tangkapan skrin tidak dimuat naik. Hantar sekali lagi untuk mencuba semula.',
     you: 'Anda',
     shareLabel: 'Jumlah {{name}}',

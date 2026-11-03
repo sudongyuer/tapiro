@@ -255,6 +255,7 @@ export default {
       notMember: '你已经不在这趟车上了',
       blocked: '你屏蔽了对方，不能操作',
       invalid: '填的内容不对，改一下再试',
+      receiptExpired: '截图已过期，请重新附上',
       noPayee: '先加一个收款方式才能分车费',
       transition: '状态变了，已经刷新',
       failed: '没成功，再试一次',

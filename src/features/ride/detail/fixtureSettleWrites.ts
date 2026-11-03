@@ -60,6 +60,7 @@ export function settleWrites({
   | 'sendSplit'
   | 'uploadReceipt'
   | 'receiptUrl'
+  | 'receiptExists'
   | 'dispute'
   | 'changeShare'
   | 'confirmReceived'
@@ -123,6 +124,10 @@ export function settleWrites({
         throw new Error('fixture: receipt upload failed');
       }
       return `${id}/fixture-receipt.jpg`;
+    },
+    async receiptExists(path) {
+      onCall('receiptExists', { path });
+      return !(options.fail === 'receiptGone');
     },
     async receiptUrl() {
       const uri = (await options.receiptImage?.()) ?? null;

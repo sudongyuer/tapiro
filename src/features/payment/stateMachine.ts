@@ -1,4 +1,10 @@
-import type { Payment, PaymentRole, PaymentState, SettleResult } from './types';
+import {
+  AmountChangedError,
+  type Payment,
+  type PaymentRole,
+  type PaymentState,
+  type SettleResult,
+} from './types';
 
 export type PaymentAction = 'markPaid' | 'undo' | 'confirm' | 'notReceived';
 
@@ -44,3 +50,8 @@ export function sheetTitleKey(
 
 export const celebratesSettle = (itemKind: Payment['itemKind'], result: SettleResult) =>
   itemKind !== 'ride' || result.rideSettled === true;
+
+export type SheetFailure = 'failed' | 'amountChanged';
+
+export const sheetFailure = (error: unknown): SheetFailure =>
+  error instanceof AmountChangedError ? 'amountChanged' : 'failed';

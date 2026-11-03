@@ -101,6 +101,7 @@ export default {
     receiptAdded: '已附收据截图',
     receiptRemove: '不附了',
     receiptUploading: '截图上传中…',
+    receiptExpired: '截图已过期，请重新附上',
     receiptFailed: '截图没传上去。再按一次发送会重新上传。',
     you: '你自己',
     shareLabel: '{{name}}的金额',

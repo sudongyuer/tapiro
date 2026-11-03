@@ -176,6 +176,14 @@ export function createSupabaseRideDetailService(
       if (error) throw error;
       return path;
     },
+    async receiptExists(path) {
+      const slash = path.lastIndexOf('/');
+      const { data, error } = await db()
+        .storage.from(RECEIPT_BUCKET)
+        .list(path.slice(0, slash), { search: path.slice(slash + 1) });
+      if (error) throw error;
+      return (data ?? []).some((object) => object.name === path.slice(slash + 1));
+    },
     async receiptUrl(path) {
       const { data, error } = await db().storage.from(RECEIPT_BUCKET).createSignedUrl(path, 300);
       if (error) throw error;

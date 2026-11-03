@@ -77,6 +77,10 @@ select public.reach_ride(pg_temp.r(1));
 select public.reach_ride(pg_temp.r(2));
 insert into storage.objects (bucket_id, name, owner) values ('ride-receipts', pg_temp.r(1) || '/grab.jpg', pg_temp.u('a1'));
 
+create function pg_temp.due_minor(payment uuid) returns bigint language sql security definer as $fn$
+  select amount_minor from public.payments where id = payment;
+$fn$;
+
 set local role authenticated;
 
 select is(pg_temp.detail('a1', 1) -> 'settle', 'null'::jsonb, 'before the split is sent there is no settle block');
@@ -138,7 +142,7 @@ select is(
 
 select pg_temp.act_as(pg_temp.u('b2'));
 select is(
-  public.mark_payment_paid(pg_temp.payment_of(1, 'b2'), '00000000-0000-4000-8000-0000000000a9')::text, 'marked_paid',
+  public.mark_payment_paid(pg_temp.payment_of(1, 'b2'), '00000000-0000-4000-8000-0000000000a9', pg_temp.due_minor(pg_temp.payment_of(1, 'b2')))::text, 'marked_paid',
   'the rider marks their share paid'
 );
 select throws_ok(

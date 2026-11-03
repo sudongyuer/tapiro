@@ -51,7 +51,7 @@ export function PaySheet({
     <NoticeCard
       tone="urgent"
       icon="exclamationmark.circle.fill"
-      title={t('pay.sheet.failed')}
+      title={t(sheet.failed === 'amountChanged' ? 'pay.sheet.amountChanged' : 'pay.sheet.failed')}
       testID="pay-failed"
     />
   ) : null;
@@ -96,7 +96,8 @@ export function PaySheet({
       }
       setProof({ status: 'uploaded', uri: proof.uri, path });
     }
-    await sheet.markPaid(methodId, path);
+    if (state.status !== 'ready') return;
+    await sheet.markPaid(methodId, path, state.payment.amount.minor);
   }
 
   return (

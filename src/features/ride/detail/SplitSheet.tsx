@@ -8,16 +8,17 @@ import {
   keyboardType,
   multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { CURRENCIES, formatMoney, POST_LIMITS, type CurrencyCode } from '@/lib/money';
 import { FieldRow } from '@/ui/FieldRow';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
+import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { pickReceipt } from './receiptDevice';
 import { SheetShell } from './SheetShell';
-import { shareText, splitView, type SplitDraft, type SplitView } from './splitDraft';
+import { shareText, splitView, syncedDraft, type SplitDraft, type SplitView } from './splitDraft';
 import type { RideDetail } from './types';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -67,17 +68,28 @@ function MoneyField({
   initial,
   currency,
   testID,
+  syncs,
+  syncKey,
   onText,
 }: {
   label: string;
   initial: string;
   currency: CurrencyCode;
   testID: string;
+  syncs: RefObject<Map<string, () => string>>;
+  syncKey: string;
   onText: (text: string) => void;
 }) {
   const { t } = useI18n();
   const ref = useRef<TextFieldRef>(null);
   const field = useSyncedText(initial, onText);
+  useEffect(() => {
+    const map = syncs.current;
+    map.set(syncKey, field.sync);
+    return () => {
+      map.delete(syncKey);
+    };
+  }, [syncs, syncKey, field]);
   return (
     <FieldRow field={ref}>
       <Text>{label}</Text>
@@ -118,6 +130,7 @@ export function SplitSheet({
   const { t, language } = useI18n();
   const [draft, setDraft] = useState<SplitDraft | null>(request?.draft ?? null);
   const [pinned, setPinned] = useState<Record<string, string>>({});
+  const syncs = useRef(new Map<string, () => string>());
   const current = draft ?? request?.draft ?? null;
   if (!request || !ride || !current) return null;
   const edit = (change: (value: SplitDraft) => SplitDraft) =>
@@ -126,7 +139,8 @@ export function SplitSheet({
       onDraft(next);
       return next;
     });
-  const view = splitView(ride, current);
+  const decimal = deviceDecimal();
+  const view = splitView(ride, current, decimal);
   const names = view.rows
     .map((row) => row.name ?? t('bounty.post.unknownName'))
     .join(t('ride.detail.listJoin'));
@@ -140,7 +154,32 @@ export function SplitSheet({
       confirm={t('rideSettle.sheet.send', { count: view.rows.length })}
       confirmDisabled={view.issue !== null}
       testID="ride-split"
-      onConfirm={() => onSend(current)}
+      onConfirm={() => {
+        const read = (key: string) => syncs.current.get(key)?.() ?? null;
+        const next = syncedDraft(
+          current,
+          view.rows.map((row) => ({
+            id: row.id,
+            shown: row.share ? shareText(row.share, decimal) : '',
+            edited: row.edited,
+          })),
+          {
+            total: read('total'),
+            shares: Object.fromEntries(
+              view.rows.flatMap((row) => {
+                const text = read(row.id);
+                return text === null ? [] : [[row.id, text]];
+              }),
+            ),
+          },
+        );
+        if (splitView(ride, next, decimal).issue !== null) {
+          setDraft(next);
+          onDraft(next);
+          return;
+        }
+        onSend(next);
+      }}
       onClose={onClose}
     >
       <Section>
@@ -149,6 +188,8 @@ export function SplitSheet({
           initial={current.totalText}
           currency={view.currency}
           testID="ride-split-total"
+          syncs={syncs}
+          syncKey="total"
           onText={(text) => edit((value) => ({ ...value, totalText: text }))}
         />
       </Section>
@@ -157,11 +198,13 @@ export function SplitSheet({
           <Text modifiers={[accessibilityIdentifier(`ride-split-receipt-${receipt.status}`)]}>
             {receipt.status === 'failed'
               ? t('rideSettle.sheet.receiptFailed')
-              : t('rideSettle.sheet.receiptOptional')}
+              : receipt.status === 'expired'
+                ? t('rideSettle.sheet.receiptExpired')
+                : t('rideSettle.sheet.receiptOptional')}
           </Text>
         }
       >
-        {receipt.status === 'none' ? (
+        {receipt.status === 'none' || receipt.status === 'expired' ? (
           <Button
             label={t('rideSettle.sheet.receiptAdd')}
             systemImage="photo.badge.plus"
@@ -206,7 +249,7 @@ export function SplitSheet({
         </HStack>
         {view.rows.map((row) => {
           const name = row.name ?? t('bounty.post.unknownName');
-          const shown = row.share ? shareText(row.share) : '';
+          const shown = row.share ? shareText(row.share, decimal) : '';
           // A field keeps its key once its row is edited; remounting it there would drop focus mid-typing.
           const fieldKey = pinned[row.id] ?? `${row.id}-${shown}`;
           return (
@@ -216,6 +259,8 @@ export function SplitSheet({
               initial={row.edited ? (current.shares[row.id] ?? '') : shown}
               currency={view.currency}
               testID={`ride-split-share-${row.id}`}
+              syncs={syncs}
+              syncKey={row.id}
               onText={(text) => {
                 if (!row.edited && text === shown) return;
                 if (!pinned[row.id]) setPinned((last) => ({ ...last, [row.id]: fieldKey }));

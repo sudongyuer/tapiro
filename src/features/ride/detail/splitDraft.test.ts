@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
+import { parseEstimate } from '../create/validate';
 import { settleScene } from './fixtureSettle';
-import { emptySplit, shareText, splitView, toSplitInput } from './splitDraft';
+import { emptySplit, shareText, splitView, syncedDraft, toSplitInput } from './splitDraft';
 
 const NOW = Date.UTC(2026, 10, 2, 23, 24);
 const reach = { ...settleScene('reach', NOW), status: 'arrived' as const };
@@ -75,5 +76,47 @@ describe('the split sheet (211 A, 220 A)', () => {
       receipt: 'ride/x.jpg',
     });
     expect(shareText({ minor: 2470, currency: 'MYR' })).toBe('24.70');
+  });
+});
+
+describe('sending reads the fields as typed (review of PR 53)', () => {
+  test('the last keystrokes of the total and of an edited share are what gets sent', () => {
+    const [ming, ya] = reach.members?.filter((m) => m.status === 'boarded' && !m.organiser) ?? [];
+    const draft = { ...emptySplit(), totalText: '7', shares: { [ming.id]: '2' } };
+    const rows = [
+      { id: ming.id, shown: '2', edited: true },
+      { id: ya.id, shown: '', edited: false },
+    ];
+    const next = syncedDraft(draft, rows, {
+      total: '74',
+      shares: { [ming.id]: '20', [ya.id]: '' },
+    });
+    expect(next.totalText).toBe('74');
+    expect(next.shares).toEqual({ [ming.id]: '20' });
+    expect(toSplitInput(splitView(reach, next), null)?.shares).toEqual([
+      { memberId: ming.id, minor: 2000 },
+      { memberId: ya.id, minor: 2470 },
+    ]);
+  });
+
+  test('an untouched share that still shows the equal amount stays equal when the total changes', () => {
+    const [ming] = reach.members?.filter((m) => m.status === 'boarded' && !m.organiser) ?? [];
+    const next = syncedDraft(
+      { ...emptySplit(), totalText: '60' },
+      [{ id: ming.id, shown: '20.00', edited: false }],
+      { total: '74', shares: { [ming.id]: '20.00' } },
+    );
+    expect(next.shares).toEqual({});
+  });
+});
+
+describe('the device decimal separator', () => {
+  test('a comma device reads 74,50 and rejects a point; a point device rejects grouping commas', () => {
+    expect(parseEstimate('74,50', 'MYR', ',')).toEqual({ minor: 7450, currency: 'MYR' });
+    expect(parseEstimate('74.50', 'MYR', ',')).toBeNull();
+    expect(parseEstimate('1,000', 'MYR', '.')).toBeNull();
+    expect(parseEstimate('1 000', 'MYR', '.')).toBeNull();
+    expect(parseEstimate(' 74.5 ', 'MYR', '.')).toEqual({ minor: 7450, currency: 'MYR' });
+    expect(shareText({ minor: 2470, currency: 'MYR' }, ',')).toBe('24,70');
   });
 });

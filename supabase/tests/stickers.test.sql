@@ -22,6 +22,10 @@ insert into ids values
   ('parcel', public.open_payment('bounty', gen_random_uuid(), '帮取快递', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b2', 1200, 'MYR', item_category => 'pickup')),
   ('ride', public.open_payment('bounty', gen_random_uuid(), '帮买文具', '00000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000b2', 850, 'MYR', item_category => 'buy'));
 
+create function pg_temp.due_minor(payment uuid) returns bigint language sql security definer as $fn$
+  select amount_minor from public.payments where id = payment;
+$fn$;
+
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b2');
 
@@ -224,7 +228,7 @@ $$;
 
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000e5');
-select public.mark_payment_paid((select id from ids where name = 'tea'), '00000000-0000-4000-8000-0000000000f1');
+select public.mark_payment_paid((select id from ids where name = 'tea'), '00000000-0000-4000-8000-0000000000f1', pg_temp.due_minor((select id from ids where name = 'tea')));
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000f6');
 select public.confirm_payment_received((select id from ids where name = 'tea'));
 select public.confirm_payment_received((select id from ids where name = 'ghost'));

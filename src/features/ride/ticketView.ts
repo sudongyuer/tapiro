@@ -80,6 +80,7 @@ export function ticketA11y(
   t: TFunction,
   taken: number,
   seats: number,
+  fare?: string,
 ) {
   const parts = [
     t('ride.ticket.a11y', {
@@ -90,7 +91,7 @@ export function ticketA11y(
     }),
     view.flight,
     view.bags,
-    t('ride.ticket.a11yFare', { amount: view.amount, taken, seats }),
+    fare ?? t('ride.ticket.a11yFare', { amount: view.amount, taken, seats }),
   ];
   return parts.filter(Boolean).join(', ');
 }
@@ -101,10 +102,14 @@ function shareStub(ride: RideSummary, mine: TicketMine | null, t: TFunction, lan
   const fare =
     mine.role === 'organiser'
       ? t('rideSettle.list.yours')
-      : mine.myPaid === 'due'
-        ? t('rideSettle.list.youPay')
-        : t('rideSettle.list.youPaid');
-  return { amount: formatMoney(share, language), fare };
+      : mine.myPaid === 'paid' || mine.myPaid === 'settled'
+        ? t('rideSettle.list.youPaid')
+        : mine.myPaid === 'due'
+          ? t('rideSettle.list.youPay')
+          : null;
+  if (!fare) return null;
+  const amount = formatMoney(share, language);
+  return { amount, fare, a11yFare: `${fare} ${amount}` };
 }
 
 export function rideTicketView(
@@ -114,6 +119,7 @@ export function rideTicketView(
   language: string,
 ): TicketView {
   const model = ticketModel(ride, options.now, options.mine ?? null);
+  const stub = shareStub(ride, options.mine ?? null, t, language);
   const time = options.showDay
     ? whenText(model.departs, options.now, t, language)
     : malaysiaClock(model.departs);
@@ -129,14 +135,16 @@ export function rideTicketView(
         ? t('ride.ticket.flight', { time: malaysiaClock(model.airport.flight) })
         : null,
     bags: model.airport?.bags ? t('ride.ticket.bags', { count: model.airport.bags }) : null,
-    ...(shareStub(ride, options.mine ?? null, t, language) ?? {
-      amount: model.perPerson
-        ? formatMoney(model.perPerson, language, { whole: true })
-        : t('ride.ticket.noEstimate'),
-      fare: t('ride.ticket.perPerson', { taken: model.taken, seats: model.seats }),
-    }),
+    ...(stub
+      ? { amount: stub.amount, fare: stub.fare }
+      : {
+          amount: model.perPerson
+            ? formatMoney(model.perPerson, language, { whole: true })
+            : t('ride.ticket.noEstimate'),
+          fare: t('ride.ticket.perPerson', { taken: model.taken, seats: model.seats }),
+        }),
     muted: model.muted,
     placeholder: false,
   };
-  return { ...view, a11y: ticketA11y(view, t, model.taken, model.seats) };
+  return { ...view, a11y: ticketA11y(view, t, model.taken, model.seats, stub?.a11yFare) };
 }

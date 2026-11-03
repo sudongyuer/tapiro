@@ -88,6 +88,7 @@ export type RideFailure =
   | 'blocked'
   | 'invalid'
   | 'noPayee'
+  | 'receiptExpired'
   | 'transition'
   | 'failed';
 
@@ -133,6 +134,7 @@ export type RideDetailService = {
   sendSplit(id: string, input: SplitInput): Promise<RideWrite>;
   uploadReceipt(id: string, fileUri: string): Promise<string>;
   receiptUrl(path: string): Promise<string>;
+  receiptExists(path: string): Promise<boolean>;
   dispute(id: string, note: string | null): Promise<RideWrite>;
   changeShare(id: string, member: string, minor: number): Promise<RideWrite>;
   confirmReceived(id: string, paymentId: string): Promise<RideWrite<ReceivedResult>>;
