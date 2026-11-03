@@ -62,6 +62,22 @@ describe('pushCopy', () => {
     ).toBe('Sunway Geo → KLIA2');
   });
 
+  test('a chat message is titled by its bounty or its ride route, and never shows the message', () => {
+    expect(
+      pushCopy('chat.message', 'zh-Hans', { actorName: 'Bob', subject: { title: '帮取快递' } }),
+    ).toEqual({ title: '帮取快递', body: 'Bob 发来一条消息' });
+    expect(
+      pushCopy('chat.message', 'ms', {
+        actorName: 'Devi',
+        subject: { from: 'Sunway Geo', to: 'KLIA2' },
+      }),
+    ).toEqual({ title: 'Sunway Geo → KLIA2', body: 'Devi menghantar mesej kepada anda' });
+    expect(pushCopy('chat.message', 'en', { actorName: null, subject: {} })).toEqual({
+      title: 'Message',
+      body: 'Someone sent you a message',
+    });
+  });
+
   test('a deleted actor or a missing subject still reads well', () => {
     expect(pushCopy('payment.marked_paid', 'en', { actorName: null, subject: {} })).toEqual({
       title: 'Payment',

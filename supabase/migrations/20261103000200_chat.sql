@@ -424,8 +424,6 @@ order by r.created_at desc;
 revoke all on private.report_queue from public, anon, authenticated;
 grant select on private.report_queue to service_role;
 
-insert into private.event_kinds (kind, push) values ('chat.message', true);
-
 revoke all on function private.thread_visible_until(uuid) from public, anon;
 grant execute on function private.thread_visible_until(uuid) to authenticated;
 revoke all on function private.my_threads() from public, anon, authenticated;

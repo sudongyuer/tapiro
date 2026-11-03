@@ -40,6 +40,12 @@ overturned: 0
 | 7   | Unbounded `list_threads`, missing report indexes, no lock on the membership row, unused `uid` parameter                         | code             | Paging, indexes, `for share`, `auth.uid()` inside the helper                                      |
 | 8   | Report snapshot retention left unstated                                                                                         | judgment         | Owner decision pending with ★ 1 year                                                              |
 
+Round 2 (after #62 merged): the chat branch in `queue_push` and `push_subject`, `notify` copy, and the ride
+quiet-hours exemption. A new `push_kinds.test.sql` inserts one event per push kind and fails when any has no thread
+rule, since `queue_push` only warns. The first threshold in that test (more than 20 kinds) was off by one against
+the 20 kinds that exist; caught on the first run. Adding the push rules took the chat migration to 512 lines;
+`check:size` caught it, and the push rules moved to their own migration.
+
 Lesson: for every boundary a policy enforces, assert it through the role that RLS applies to, not only through the
 `security definer` RPC.
 

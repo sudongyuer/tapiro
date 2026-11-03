@@ -1,5 +1,5 @@
 begin;
-select plan(70);
+select plan(74);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -93,6 +93,14 @@ select is(pg_temp.chat_events('b2', (select bt from fx)), 1::bigint, 'the other 
 select is(pg_temp.chat_events('a1', (select bt from fx)), 0::bigint, 'the sender gets no event');
 select is(
   (select push from public.events where kind = 'chat.message' limit 1), true, 'chat.message events push'
+);
+select is(
+  (select array_agg(q.thread_id) from public.push_queue q where q.kind = 'chat.message' and q.recipient = pg_temp.u('b2')),
+  array['chat:' || (select bt from fx)], 'a chat push is queued once, grouped per thread'
+);
+select is(
+  private.push_subject('chat.message', (select bt from fx)), '{"title": "帮取快递"}'::jsonb,
+  'a bounty thread push is titled by the bounty'
 );
 
 select is(
@@ -285,6 +293,27 @@ select is(
     pg_temp.chat_events('d4', (select id from rt)), pg_temp.chat_events('e5', (select id from rt))],
   array[1, 1, 0, 0]::bigint[], 'a group message reaches each other member once, and not the declined requester'
 );
+select is(
+  private.push_subject('chat.message', (select id from rt)),
+  (select jsonb_build_object('from', r.start_short, 'to', r.dest_short) from public.rides r
+   where r.id = 'a2000000-0000-4000-8000-000000000001'),
+  'a ride thread push is titled by the route'
+);
+
+update public.rides set status = 'gathering' where id = 'a2000000-0000-4000-8000-000000000001';
+insert into public.events (recipient, kind, subject_id, push, created_at)
+values
+  (pg_temp.u('e5'), 'chat.message', (select id from rt), true, '2099-01-01 21:30+00'),
+  (pg_temp.u('b2'), 'chat.message', (select bt from fx), true, '2099-01-01 21:30+00');
+select is(
+  (select array_agg(array[q.thread_id, q.quiet::text, q.send_at::text] order by q.thread_id = 'chat:' || (select bt from fx))
+   from public.push_queue q where q.kind = 'chat.message' and q.send_at > '2090-01-01'),
+  array[
+    array['chat:' || (select id from rt), 'false', '2099-01-01 21:30:00+00'],
+    array['chat:' || (select bt from fx), 'true', '2099-01-02 00:00:00+00']
+  ], 'at 05:30 Malaysia time a gathering ride''s chat pushes now, a bounty chat waits for 08:00'
+);
+update public.rides set status = 'open' where id = 'a2000000-0000-4000-8000-000000000001';
 
 select pg_temp.act_as(pg_temp.u('c3'));
 select public.block_user(pg_temp.u('d4'));
