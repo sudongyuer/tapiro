@@ -802,7 +802,7 @@ PR: pending (`feat/carpool-reminders`). Status stays `approved`: the carpool mil
 - Permission (`src/lib/notifications/`): provisional authorisation when onboarding finishes (no prompt); the explicit
   prompt once, after the first ride published or the first ride request; provisional is read from `ios.status`
   (AGENTS.md), and reminders are scheduled when allowed or provisional, never when denied or undetermined. A tap on a
-  ride reminder opens that ride's detail, from a cold start too (`getLastNotificationResponseAsync`).
+  ride reminder opens that ride's detail, from a cold start too (`getLastNotificationResponse`, cleared once handled).
 - The owing card (`rideSettle.owe.next` / `.sent`): 「Tapiro 会在明天 10:30 提醒你」 while a pay reminder is scheduled on
   this device, 「Tapiro 今天 10:30 提醒过你」 once its time has passed, else the old general line.
 - Native: `expo-notifications` 57.0.24; `plugins/withoutPushEntitlement.js` strips the `aps-environment` entitlement

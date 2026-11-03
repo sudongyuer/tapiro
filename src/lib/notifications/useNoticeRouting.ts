@@ -26,10 +26,11 @@ export function useNoticeRouting(open: (data: NoticeData) => void, ready: boolea
       const key = `${response.notification.request.identifier}:${response.notification.date}`;
       if (handled.current === key) return;
       handled.current = key;
+      Notifications.clearLastNotificationResponse();
       const data = toData(response.notification.request.content.data);
       if (data) latest.current(data);
     };
-    void Notifications.getLastNotificationResponseAsync().then(route);
+    route(Notifications.getLastNotificationResponse());
     const subscription = Notifications.addNotificationResponseReceivedListener(route);
     return () => subscription.remove();
   }, [ready]);
