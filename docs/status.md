@@ -19,6 +19,10 @@ Updated: 2026-11-03.
 
 ## In progress
 
+- Chat (foundation step 7): the server half that questions 117–128 do not decide is built on its branch (threads,
+  members, messages, reports, RPCs, thread creation at bounty `assigned` and ride acceptance, blocks, deletion,
+  `chat.message` events); `docs/plans/2026-10-30-chat.md` Task 1 lists what waits on 117–128.
+
 - Carpool milestone: the `ride_*` UI cases ran (zh-Hans light 27 plus 24 regression cases, dark 7, `en` 27, `ms` 20;
   all pass after #55). Waiting on the owner's Simulator walkthrough and the `ride.remind.*` device checks; then set the
   carpool spec to `implemented`.
@@ -30,7 +34,7 @@ Updated: 2026-11-03.
 
 1. Shared live-update layer, step 2 (app): `docs/specs/2026-10-31-realtime-push-design.md`. Carpool and chat refetch
    and poll until the app channel exists; the server half is in progress above.
-2. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7), 问小貘
+2. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7; server half in progress), 问小貘
    (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
    (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6).
 3. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
