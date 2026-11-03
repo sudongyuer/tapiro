@@ -22,12 +22,14 @@ Updated: 2026-11-03.
 - Carpool milestone: the `ride_*` UI cases ran (zh-Hans light 27 plus 24 regression cases, dark 7, `en` 27, `ms` 20;
   all pass after #55). Waiting on the owner's Simulator walkthrough and the `ride.remind.*` device checks; then set the
   carpool spec to `implemented`.
+- Live updates and push, step 1 (server; `docs/plans/2026-11-03-realtime-push.md`): Broadcast to `user:<uid>`, bounty
+  and payment kinds, `push_tokens`, the push queue and `notify` with the `RecordingSender`. Next: step 2 (app). The
+  spec's ★ defaults (Decisions) are open to veto.
 
 ## Queue
 
-1. Shared live-update layer: `docs/specs/2026-10-31-realtime-push-design.md` (approved, not built). Carpool and chat
-   refetch and poll until it exists. The `public.events` outbox and the recording sender exist (carpool step 7); the
-   channel, the Broadcast trigger, bounty kinds and `push_tokens` do not.
+1. Shared live-update layer, step 2 (app): `docs/specs/2026-10-31-realtime-push-design.md`. Carpool and chat refetch
+   and poll until the app channel exists; the server half is in progress above.
 2. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7), 问小貘
    (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
    (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6).
@@ -35,6 +37,7 @@ Updated: 2026-11-03.
 
 ## Owner decisions pending
 
+- Live updates and push: the ★ defaults in the realtime spec's Decisions (bounty kinds, push path, push copy).
 - Carpool defaults marked "★ by default, owner may veto" in the carpool spec are open to veto at the walkthrough.
 
 ## Resuming on another machine

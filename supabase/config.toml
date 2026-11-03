@@ -297,6 +297,9 @@ verify_jwt = true
 [functions.payment-proof-cleanup]
 verify_jwt = true
 
+[functions.notify]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
