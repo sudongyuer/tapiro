@@ -14,7 +14,7 @@ Updated: 2026-11-03.
 | Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                     |
 | Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                    |
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                         |
-| Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, step 7 reminders and the event outbox (branch `feat/carpool-reminders`) |
+| Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, #54 reminders and the event outbox |
 
 ## In progress
 

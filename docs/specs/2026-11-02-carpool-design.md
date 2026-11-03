@@ -767,7 +767,7 @@ plist lagged past 10 s; see the retro).
 
 ## Implementation Record (2026-11-03, step 7)
 
-PR: pending (`feat/carpool-reminders`). Status stays `approved`: the carpool milestone (UI run and walkthrough) remains.
+PR: https://github.com/sudongyuer/tapiro/pull/54 (`feat/carpool-reminders`). Status stays `approved`: the carpool milestone (UI run and walkthrough) remains.
 
 ### What was built
 

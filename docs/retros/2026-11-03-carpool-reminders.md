@@ -1,7 +1,7 @@
 ---
 branch: feat/carpool-reminders
 date: 2026-11-03
-pr: pending
+pr: https://github.com/sudongyuer/tapiro/pull/54
 title: carpool step 7 (reminders and the carpool event kinds)
 escaped: pending
 rework: 0
