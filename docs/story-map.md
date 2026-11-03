@@ -802,6 +802,25 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | chat.push.delivery    | 真机收到推送，数据放在 body 下面                 | device       |
 | chat.push.off         | 关掉通知后角标和提醒条照样工作                   | ui           |
 
+### chat.live 实时更新和推送的服务器部分
+
+- 故事：作为同学，我想别人申请、挑人、出发、完成或付款时，开着的页面马上变，关着 App 时收到通知，以便不用一直下拉刷新。
+- 状态：building
+- 版本：v1
+- 规格：[realtime-push](specs/2026-10-31-realtime-push-design.md)
+
+| 验收 id               | 行为                                                                                                                                                                                                           | 覆盖                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| chat.live.bounty      | 悬赏的申请、撤回、挑人（没选上的人也收到）、出发、改预计到、完成、反馈问题、确认、取消、关闭（发布者删号关闭的也算，和发布者互相屏蔽的申请人不收）和过期写进服务器事件，收件人对，做的人自己不收               | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.payment     | 悬赏和拼车的付款都发事件：我已付款给收款人，还没收到和已结清给付款人                                                                                                                                           | db:supabase/tests/live_push.test.sql, db:supabase/tests/ride_event_outbox.test.sql                                                |
+| chat.live.signal      | 每条事件发到收件人自己的私有频道 `user:<id>`，只带种类、id 和时间，不带内容                                                                                                                                    | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.topic       | 只能收自己频道的信号，收不到别人的；没登录收不到；客户端读不到事件、推送队列、推送记录和 token                                                                                                                 | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.tokens      | 登录的设备登记推送 token 和 App 语言，换账号时 token 归新账号，一人最多 10 个，改语言全部更新，退出只删自己的                                                                                                  | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.notify      | 该行动或在等的事件才推送，按悬赏或拼车分组，免打扰时段的推送等到 08:00；每台设备用它的语言写好标题和内容（中文里的英文名字和 App 一样加空格），数据只带种类和 id                                               | db:supabase/tests/live_push.test.sql, unit:supabase/functions/notify/handler.test.ts, unit:supabase/functions/notify/copy.test.ts |
+| chat.live.notify-fail | 发送失败记下错误、只重试一次；Expo 说设备没注册就删掉那个 token；没有设备或没有文案的记成 no_device / no_copy，不算发出、不重试；发送中断五分钟后再领一次，第二次还中断就记 stalled 不再发；一条出错不影响别的 | db:supabase/tests/live_push.test.sql, unit:supabase/functions/notify/handler.test.ts                                              |
+| chat.live.delivery    | 真机收到推送                                                                                                                                                                                                   | gap: real delivery waits for the paid Apple Developer account (ExpoSender, step 3)                                                |
+| chat.live.app         | App 里一个频道、断线重连后重新加载、按种类分发给各功能、点通知跳到对应页面                                                                                                                                     | unit, ui                                                                                                                          |
+
 ## 问小貘
 
 ### ask.sheet 问小貘半屏

@@ -42,7 +42,7 @@ create function pg_temp.kinds(k text, n integer) returns text[] language sql sec
 $$;
 
 create function pg_temp.recorded(k text, kind text) returns bigint language sql security definer as $$
-  select count(*) from public.push_recordings p where p.recipient = pg_temp.u(k) and p.kind = recorded.kind;
+  select count(*) from public.push_queue p where p.recipient = pg_temp.u(k) and p.kind = recorded.kind;
 $$;
 
 select pg_temp.publish(1, interval '3 hours');
@@ -58,7 +58,7 @@ select pg_temp.act_as(pg_temp.u('a1'));
 select public.decide_ride_request(pg_temp.r(1), pg_temp.u('b2'), true);
 select is(pg_temp.kinds('b2', 1), '{ride.approved}'::text[], 'the approved rider is told');
 select is(
-  (select p.thread_id from public.push_recordings p where p.recipient = pg_temp.u('b2') and p.kind = 'ride.approved'),
+  (select p.thread_id from public.push_queue p where p.recipient = pg_temp.u('b2') and p.kind = 'ride.approved'),
   'ride:' || pg_temp.r(1), 'pushes are grouped per ride'
 );
 
@@ -154,7 +154,7 @@ values
   (pg_temp.u('c3'), 'ride.cancelled', pg_temp.r(1), true, '2026-11-02 17:00+00'),
   (pg_temp.u('c3'), 'ride.no_show', pg_temp.r(2), true, '2026-11-02 17:00+00');
 select is(
-  (select array[p.quiet::text, p.send_at::text] from public.push_recordings p
+  (select array[p.quiet::text, p.send_at::text] from public.push_queue p
    where p.recipient = pg_temp.u('c3') and p.kind = 'ride.cancelled'),
   array['true', '2026-11-03 00:00:00+00'], 'a push at 01:00 for a ride not under way waits for 08:00'
 );
@@ -163,14 +163,14 @@ update public.rides set status = 'gathering' where id = pg_temp.r(3);
 insert into public.events (recipient, kind, subject_id, push, created_at)
 values (pg_temp.u('c3'), 'ride.appealed', pg_temp.r(3), true, '2026-11-02 17:00+00');
 select is(
-  (select p.quiet from public.push_recordings p where p.recipient = pg_temp.u('c3') and p.kind = 'ride.appealed'),
+  (select p.quiet from public.push_queue p where p.recipient = pg_temp.u('c3') and p.kind = 'ride.appealed'),
   false, 'the ride you are on is not held by quiet hours'
 );
 
 set local role authenticated;
 select pg_temp.act_as(pg_temp.u('a1'));
 select throws_ok($$select count(*) from public.events$$, '42501', null, 'clients cannot read events');
-select throws_ok($$select count(*) from public.push_recordings$$, '42501', null, 'clients cannot read push recordings');
+select throws_ok($$select count(*) from public.push_queue$$, '42501', null, 'clients cannot read push recordings');
 
 select * from finish();
 rollback;
