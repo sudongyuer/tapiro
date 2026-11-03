@@ -16,7 +16,7 @@ from driver import UI, by_id  # noqa: E402
 from live import new_run, starts, step_at  # noqa: E402
 
 DEPS = ['src/lib/live/', 'src/lib/verifyRecord.ts', 'src/lib/foreground.ts', 'src/features/bounty/select/',
-        'src/ui/OfflineLine.tsx', 'src/app/(tabs)/_layout.tsx', 'verification/ui/live.py',
+        'src/ui/OfflineLine.tsx', 'src/app/(tabs)/_layout.tsx', 'verification/ui/live.py', 'verification/ui/choose.py',
         'verification/ui/board.py', 'verification/ui/bounty.py']
 SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']

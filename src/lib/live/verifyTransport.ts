@@ -52,9 +52,10 @@ export function createVerifyTransport(
         for (const step of steps) {
           timers.set(() => {
             if (!sink) return;
+            // Recorded first: a handler reaches the fixture load synchronously, and that load must come after the step.
+            onDelivered(stepLabel(step));
             if ('signal' in step) sink.signal(step.signal);
             else sink.status(step.status);
-            onDelivered(stepLabel(step));
           }, step.at);
         }
       }

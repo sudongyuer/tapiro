@@ -213,6 +213,22 @@ describe('signals', () => {
 });
 
 describe('verify emitter', () => {
+  test('a step is recorded before its handler runs', () => {
+    const timers = fakeTimers();
+    const order: string[] = [];
+    const live = createLive({
+      transport: createVerifyTransport(parseLiveScript('1000:bounty.applied:b1'), {
+        timers,
+        onDelivered: (label) => order.push(`recorded ${label}`),
+      }),
+      timers,
+    });
+    live.on(['bounty.'], (signal) => order.push(`handled ${signal?.kind ?? 'resync'}`));
+    live.follow('u1');
+    timers.advance(1_000);
+    expect(order).toEqual(['recorded bounty.applied:b1', 'handled bounty.applied']);
+  });
+
   test('parses a script and plays it once from the first open', () => {
     const steps = parseLiveScript('6000:bounty.applied:fixture-bounty-01,2000:drop,4000:back,x:y');
     expect(steps).toEqual([

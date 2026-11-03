@@ -2,9 +2,10 @@ import { describe, expect, test } from 'bun:test';
 
 import { onReturnToForeground } from './foreground';
 
-function fakeAppState() {
+function fakeAppState(currentState: string | null = 'active') {
   const listeners = new Set<(state: string) => void>();
   return {
+    currentState,
     addEventListener(_type: 'change', listener: (state: string) => void) {
       listeners.add(listener);
       return { remove: () => listeners.delete(listener) };
@@ -31,6 +32,14 @@ describe('return to the foreground', () => {
     expect(runs).toBe(1);
     appState.emit('inactive', 'background', 'inactive', 'active');
     expect(runs).toBe(2);
+  });
+
+  test('subscribing while in the background fires on the first active', () => {
+    const appState = fakeAppState('background');
+    let runs = 0;
+    onReturnToForeground(appState, () => (runs += 1));
+    appState.emit('active');
+    expect(runs).toBe(1);
   });
 
   test('removing the listener stops it', () => {

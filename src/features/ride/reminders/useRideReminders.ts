@@ -2,14 +2,14 @@ import type { TFunction } from 'i18next';
 import { useEffect, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
-import { onReturnToForeground } from '@/lib/foreground';
 import { useI18n } from '@/lib/i18n';
-import { notices } from '@/lib/notifications';
+import { notices, permissionAnswers } from '@/lib/notifications';
 
 import { rideReminders, rideService } from '../services';
 import { reminderNotice } from './copy';
 import { reminderTimes } from './ledger';
 import { fromMyRide } from './inputs';
+import { followReminderSync } from './reminderSync';
 import { reminderId, type ReminderRide } from './plan';
 import type { NoticeCopy } from './rideReminders';
 
@@ -50,9 +50,11 @@ export function useRideReminders(stage: 'loading' | 'signedOut' | 'onboarding' |
   }, [stage]);
   useEffect(() => {
     if (stage !== 'ready') return;
-    void syncRideReminders(t, language);
-    const subscription = onReturnToForeground(AppState, () => void syncRideReminders(t, language));
-    return subscription;
+    return followReminderSync(
+      AppState,
+      permissionAnswers,
+      () => void syncRideReminders(t, language),
+    );
   }, [stage, t, language]);
 }
 

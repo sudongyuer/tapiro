@@ -11,7 +11,7 @@ from driver import UI, by_id  # noqa: E402
 from live import new_run, starts, step_at  # noqa: E402
 
 DEPS = ['src/lib/live/', 'src/lib/verifyRecord.ts', 'src/lib/foreground.ts', 'src/features/bounty/live/',
-        'src/features/home/', 'src/app/(tabs)/_layout.tsx', 'verification/ui/live.py',
+        'src/features/home/', 'src/app/(tabs)/_layout.tsx', 'verification/ui/live.py', 'verification/ui/choose.py',
         'verification/ui/bounty.py']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 180
