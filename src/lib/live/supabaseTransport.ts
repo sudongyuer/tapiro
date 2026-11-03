@@ -12,20 +12,19 @@ const STATUSES: Record<string, ChannelStatus> = {
 
 export const userTopic = (userId: string) => `user:${userId}`;
 
-export function createSupabaseTransport(client: SupabaseClient | null): LiveTransport {
+export type LiveClient = Pick<SupabaseClient, 'auth' | 'realtime' | 'channel' | 'removeChannel'>;
+
+export function createSupabaseTransport(client: LiveClient | null): LiveTransport {
+  let leaving: Promise<unknown> = Promise.resolve();
   return {
     open(userId, events) {
       if (!client) return () => undefined;
-      const supabase: SupabaseClient = client;
+      const supabase: LiveClient = client;
       let closed = false;
       let channel: RealtimeChannel | null = null;
-      const auth = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'TOKEN_REFRESHED' && session) {
-          void supabase.realtime.setAuth(session.access_token);
-        }
-      });
 
       async function join() {
+        await leaving.catch(() => undefined);
         const { data } = await supabase.auth.getSession();
         if (closed) return;
         if (!data.session) return events.status('closed');
@@ -49,8 +48,7 @@ export function createSupabaseTransport(client: SupabaseClient | null): LiveTran
 
       return () => {
         closed = true;
-        auth.data.subscription.unsubscribe();
-        if (channel) void supabase.removeChannel(channel);
+        if (channel) leaving = supabase.removeChannel(channel);
       };
     },
   };

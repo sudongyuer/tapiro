@@ -1,12 +1,15 @@
+import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
 import { useLiveSignal } from '@/lib/live';
-import type { PayeeMethod } from '@/lib/payeeMethods';
 
 import { paymentStore } from './services';
+import { answeredSheet, failedSheet, type SheetAnswer, type SheetState } from './sheetLoad';
 import { sheetFailure, type SheetFailure } from './stateMachine';
-import type { Payment, PaymentDetail, SettleResult } from './types';
+import type { SettleResult } from './types';
+
+export type { SheetData, SheetState } from './sheetLoad';
 
 export function useLivePayments(userId: string | null) {
   useEffect(() => {
@@ -26,17 +29,9 @@ export function usePaymentList() {
   return useSyncExternalStore(paymentStore.subscribe, paymentStore.getSnapshot);
 }
 
-export type SheetData = { payment: Payment; methods: PayeeMethod[]; detail: PaymentDetail };
-
-export type SheetState =
-  | { status: 'loading' }
-  | { status: 'failed' }
-  | { status: 'missing' }
-  | ({ status: 'ready' } & SheetData);
-
 export type SheetAction = 'markPaid' | 'undo' | 'confirm' | 'notReceived';
 
-async function loadSheet(userId: string, paymentId: string): Promise<SheetState> {
+async function loadSheet(userId: string, paymentId: string): Promise<SheetAnswer> {
   const { service } = paymentStore;
   const payment = await service.get(userId, paymentId);
   if (!payment) return { status: 'missing' };
@@ -58,19 +53,22 @@ export function usePaySheet(userId: string, paymentId: string) {
   useEffect(() => {
     let live = true;
     loadSheet(userId, paymentId).then(
-      (next) => live && setState(next),
-      () =>
-        live &&
-        setState((current) => (current.status === 'ready' ? current : { status: 'failed' })),
+      (next) => live && setState(answeredSheet(next, Date.now())),
+      () => live && setState(failedSheet),
     );
     return () => {
       live = false;
     };
   }, [userId, paymentId, version]);
 
-  useLiveSignal(['payment.'], (signal) => {
-    if (!signal || signal.id === paymentId) setVersion((current) => current + 1);
-  });
+  const focused = useIsFocused();
+  useLiveSignal(
+    ['payment.'],
+    (signal) => {
+      if (!signal || signal.id === paymentId) setVersion((current) => current + 1);
+    },
+    focused,
+  );
 
   const retry = useCallback(() => {
     setState({ status: 'loading' });

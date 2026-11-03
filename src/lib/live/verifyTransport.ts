@@ -22,14 +22,26 @@ export function parseLiveScript(script: string | undefined): LiveStep[] {
     .sort((a, b) => a.at - b.at);
 }
 
+export const stepLabel = (step: LiveStep) =>
+  'signal' in step
+    ? `${step.signal.kind}:${step.signal.id}`
+    : step.status === 'error'
+      ? 'drop'
+      : 'back';
+
 export function createVerifyTransport(
   steps: readonly LiveStep[],
-  timers: { set: (run: () => void, ms: number) => unknown } = {
-    set: (run, ms) => setTimeout(run, ms),
-  },
+  {
+    timers = { set: (run, ms) => setTimeout(run, ms) },
+    onDelivered = () => undefined,
+  }: {
+    timers?: { set: (run: () => void, ms: number) => unknown };
+    onDelivered?: (labels: string[]) => void;
+  } = {},
 ): LiveTransport {
   let sink: ChannelEvents | null = null;
   let started = false;
+  const delivered: string[] = [];
   return {
     open(_userId, events) {
       sink = events;
@@ -43,6 +55,8 @@ export function createVerifyTransport(
             if (!sink) return;
             if ('signal' in step) sink.signal(step.signal);
             else sink.status(step.status);
+            delivered.push(stepLabel(step));
+            onDelivered([...delivered]);
           }, step.at);
         }
       }

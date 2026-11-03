@@ -215,3 +215,24 @@ describe('live payments', () => {
     expect(live.getSnapshot().accessory.map((item) => item.kind)).toEqual(['oweMoney']);
   });
 });
+
+describe('payment reloads out of order', () => {
+  test('two reloads answering in reverse order keep the newer list', async () => {
+    const service = createFixturePaymentService(OPTIONS);
+    const all = await service.list(FIXTURE_USER_ID);
+    const answers: ((payments: typeof all) => void)[] = [];
+    const store = createPaymentStore({
+      ...service,
+      list: () => new Promise((resolve) => answers.push(resolve)),
+    });
+    const first = store.ensureLoaded(FIXTURE_USER_ID);
+    const second = store.reload(FIXTURE_USER_ID);
+    answers[1](all.slice(0, 1));
+    await second;
+    answers[0](all);
+    await first;
+    const state = store.getSnapshot();
+    expect(all.length).toBeGreaterThan(1);
+    expect(state.status === 'idle' ? [] : state.payments.map((p) => p.id)).toEqual([all[0].id]);
+  });
+});

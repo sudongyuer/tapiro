@@ -15,6 +15,7 @@ export function createLiveBountyStore(service: LiveBountyService) {
   const seen = new Set<string>();
   const marking = new Set<string>();
   let generation = 0;
+  let latest = 0;
 
   const isCurrent = (userId: string, at: number) => {
     const state = store.get();
@@ -23,12 +24,13 @@ export function createLiveBountyStore(service: LiveBountyService) {
 
   async function reload(userId: string) {
     const at = generation;
+    const request = ++latest;
     try {
       const rows = await service.list();
-      if (isCurrent(userId, at)) store.set({ status: 'ready', userId, rows });
+      if (request === latest && isCurrent(userId, at)) store.set({ status: 'ready', userId, rows });
     } catch {
       const state = store.get();
-      if (!isCurrent(userId, at) || state.status === 'idle') return;
+      if (request !== latest || !isCurrent(userId, at) || state.status === 'idle') return;
       store.set(
         state.status === 'ready' || state.status === 'stale'
           ? { status: 'stale', userId, rows: state.rows }

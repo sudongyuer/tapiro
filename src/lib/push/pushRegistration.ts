@@ -3,7 +3,6 @@ import type { NoticePermission } from '@/lib/notifications/types';
 
 export type PushRpc = {
   register(token: string, language: string): Promise<void>;
-  setLanguage(language: string): Promise<void>;
   unregister(token: string): Promise<void>;
 };
 
@@ -33,20 +32,17 @@ export function createPushRegistration(deps: PushDeps) {
         if (!canSchedule(await deps.permission())) return;
         const token = await deps.token();
         if (!token || started !== epoch) return;
-        if (registered?.userId === userId && registered.token === token) {
-          if (registered.language === language) return;
-          await deps.rpc.setLanguage(language);
-          registered = { ...registered, language };
-          return;
-        }
-        await deps.rpc.register(token, language);
-        if (started !== epoch) return;
-        registered = { userId, token, language };
+        const same = registered?.userId === userId && registered.token === token;
+        if (same && registered?.language === language) return;
+        // Stored before the call, so a sign-out that lands while it is in flight still removes the row it creates.
         deps.stored.set(token);
+        await deps.rpc.register(token, language);
+        if (started === epoch) registered = { userId, token, language };
       });
     },
     async signOut() {
       epoch += 1;
+      await queue;
       const token = registered?.token ?? deps.stored.get();
       registered = null;
       deps.stored.set(null);

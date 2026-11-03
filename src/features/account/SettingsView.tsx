@@ -1,4 +1,14 @@
-import { Button, Form, HStack, Host, Image, Section, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Form,
+  HStack,
+  Host,
+  Image,
+  ProgressView,
+  Section,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityHidden,
@@ -22,9 +32,11 @@ export function SettingsView({
   email,
   onSignOut,
   onDeleteAccount,
+  signingOut = false,
 }: {
   name: string;
   email: string | null;
+  signingOut?: boolean;
   onSignOut: () => void;
   onDeleteAccount: () => void;
 }) {
@@ -56,12 +68,25 @@ export function SettingsView({
         </Section>
         <LanguagePickerSection />
         <Section>
-          <Button
-            label={t('account.settings.signOut')}
-            modifiers={[foregroundStyle(color('--color-accent'))]}
-            onPress={onSignOut}
-            testID="settings-sign-out"
-          />
+          {signingOut ? (
+            <HStack
+              spacing={vars['--space-2']}
+              modifiers={[
+                accessibilityElement('combine'),
+                accessibilityIdentifier('settings-signing-out'),
+              ]}
+            >
+              <ProgressView />
+              <Text modifiers={[secondary]}>{t('account.settings.signingOut')}</Text>
+            </HStack>
+          ) : (
+            <Button
+              label={t('account.settings.signOut')}
+              modifiers={[foregroundStyle(color('--color-accent'))]}
+              onPress={onSignOut}
+              testID="settings-sign-out"
+            />
+          )}
         </Section>
         <Section footer={<Text>{t('account.settings.deleteFooter')}</Text>}>
           <Button

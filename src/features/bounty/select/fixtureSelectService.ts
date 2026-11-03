@@ -33,6 +33,7 @@ export type FixtureSelectOptions = {
   onSelected?: (accepted: SelectedArgs[]) => void;
   onAttempted?: (attempts: number) => void;
   onSeen?: (seen: string[]) => void;
+  onLoaded?: (loads: number) => void;
 };
 
 const MINUTE_MS = 60_000;
@@ -192,6 +193,7 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
     async applicants(bountyId) {
       const state = bounty(bountyId);
       loads += 1;
+      options.onLoaded?.(loads);
       if (
         (options.fail === 'first' && loads === 1) ||
         (options.fail === 'refresh' && loads === 2)

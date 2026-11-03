@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { createUserCleanups } from '@/lib/userCleanups';
 
-import { createAccountActions } from './accountActions';
+import { createAccountActions, SIGN_OUT_WAIT_MS } from './accountActions';
 import {
   createFixtureAuthService,
   fixtureUnsettledPayment,
@@ -97,5 +97,30 @@ describe('account actions', () => {
     });
     await actions.signOut();
     expect(auth.getState().status).toBe('signedOut');
+  });
+
+  test('a hung unregistration is capped at 3 s, and sign-out is busy until it ends', async () => {
+    const auth = createFixtureAuthService({ signedInAs: 'apple' });
+    const pending: { run: () => void; ms: number }[] = [];
+    const actions = createAccountActions({
+      auth,
+      onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
+      profiles: createProfileStore(createFixtureProfileService()),
+      cleanups: createUserCleanups(),
+      beforeSignOut: () => new Promise<void>(() => {}),
+      timers: {
+        set: (run, ms) => pending.push({ run, ms }),
+        clear: () => undefined,
+      },
+    });
+    const signingOut = actions.signOut();
+    expect(actions.signingOut.get()).toBe(true);
+    await actions.signOut();
+    expect(pending.map((timer) => timer.ms)).toEqual([SIGN_OUT_WAIT_MS]);
+    expect(auth.getState().status).toBe('signedIn');
+    pending[0].run();
+    await signingOut;
+    expect(auth.getState().status).toBe('signedOut');
+    expect(actions.signingOut.get()).toBe(false);
   });
 });

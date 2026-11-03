@@ -15,7 +15,7 @@ const toTap = (response: Notifications.NotificationResponse | null): NoticeTap |
     : null;
 
 const nativeTaps: NoticeTaps = {
-  last: async () => toTap(await Notifications.getLastNotificationResponseAsync()),
+  last: async () => toTap(Notifications.getLastNotificationResponse()),
   listen(on) {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const tap = toTap(response);
@@ -23,20 +23,27 @@ const nativeTaps: NoticeTaps = {
     });
     return () => subscription.remove();
   },
-  clear: () => void Notifications.clearLastNotificationResponseAsync().catch(() => undefined),
+  clear: () => Notifications.clearLastNotificationResponse(),
 };
 
 const taps = uiVerify ? verifyNoticeTaps(uiVerifyArgument('uiVerifyNoticeTap')) : nativeTaps;
+const handled = new Set<string>();
 
 export function useNoticeRouting(open: (route: NoticeRoute) => void, ready: boolean) {
   const latest = useRef(open);
   useEffect(() => {
     latest.current = open;
   });
-  const handled = useRef(new Set<string>());
 
   useEffect(() => {
     if (!ready) return;
-    return followNoticeTaps(taps, handled.current, (route) => latest.current(route));
+    return followNoticeTaps(taps, handled, (route) => latest.current(route));
   }, [ready]);
+}
+
+export function useDiscardNoticeTaps(signedOut: boolean) {
+  useEffect(() => {
+    if (!signedOut) return;
+    return followNoticeTaps(taps, handled, null);
+  }, [signedOut]);
 }

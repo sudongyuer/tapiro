@@ -40,5 +40,5 @@ export { canSchedule } from './permission';
 export { outsideQuietHours } from './quietHours';
 export { applyNoticeDiff, noticeDiff } from './reconcile';
 export { noticeRoute, type NoticeRoute } from './routes';
-export { useNoticeRouting } from './useNoticeRouting';
+export { useDiscardNoticeTaps, useNoticeRouting } from './useNoticeRouting';
 export type { LocalNotice, NoticeData, NoticePermission, ScheduledNotice } from './types';

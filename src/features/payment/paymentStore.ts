@@ -16,13 +16,16 @@ export function createPaymentStore(service: PaymentService) {
     return state.status !== 'idle' && state.userId === userId;
   };
 
+  let latest = 0;
+
   async function reload(userId: string) {
+    const request = ++latest;
     try {
       const payments = await service.list(userId);
-      if (isCurrent(userId)) store.set({ status: 'ready', userId, payments });
+      if (request === latest && isCurrent(userId)) store.set({ status: 'ready', userId, payments });
     } catch {
       const state = store.get();
-      if (!isCurrent(userId) || state.status === 'idle') return;
+      if (request !== latest || !isCurrent(userId) || state.status === 'idle') return;
       store.set(
         state.status === 'ready' || state.status === 'stale'
           ? { status: 'stale', userId, payments: state.payments }

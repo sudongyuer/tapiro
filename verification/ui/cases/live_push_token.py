@@ -1,6 +1,7 @@
 """Push token registration (spec, Permission and Push copy): with provisional authorisation the signed-in app registers its
-Expo push token once with register_push_token in the app language; choosing another language in settings sends
-set_push_language with it, and choosing the launch language again sends it back; 退出登录 sends unregister_push_token for the same token before the session ends and lands on
+Expo push token once with register_push_token in the app language; choosing another language in settings registers this
+device again with that language (not set_push_language, which would change every device), and choosing the launch
+language again does the same; 退出登录 sends unregister_push_token for the same token before the session ends and lands on
 welcome. The verify build replaces the token and the RPCs at their boundary and records each call in the defaults key
 uiVerifyPushCalls."""
 import json
@@ -39,12 +40,12 @@ ui.wait_label('settings-sign-out', lambda label: label == ui.t('account.settings
 ui.tap_label(ui.t('languages.' + other))
 ui.wait_label('settings-sign-out', lambda label: label == ui.t_in(other, 'account.settings.signOut'),
               f'settings did not switch to {other}')
-language = {'name': 'set_push_language', 'args': {'language': other}}
+language = {'name': 'register_push_token', 'args': {'token': TOKEN, 'language': other}}
 wait_calls([registered, language])
 ui.capture('01-language')
 ui.tap_label(ui.t_in(other, 'languages.' + ui.locale))
 ui.wait_label('settings-sign-out', lambda label: label == ui.t('account.settings.signOut'), 'settings did not switch back')
-back = {'name': 'set_push_language', 'args': {'language': ui.locale}}
+back = registered
 wait_calls([registered, language, back])
 
 ui.tap('settings-sign-out')

@@ -129,6 +129,21 @@ describe('tap routing', () => {
     expect(opened).toEqual([]);
   });
 
+  test('a tap while signed out is cleared and not replayed after the next sign-in', async () => {
+    const handled = new Set<string>();
+    const cold = { key: 'k-out', data: { kind: 'bounty.applied', id: 'b1' } };
+    const signedOut = fakeTaps(cold);
+    const stop = followNoticeTaps(signedOut.taps, handled, null);
+    await settle();
+    signedOut.tap({ key: 'k-out-2', data: { kind: 'payment.settled', id: 'p1' } });
+    stop();
+    expect(signedOut.clears()).toBe(2);
+    const opened: NoticeRoute[] = [];
+    followNoticeTaps(fakeTaps(cold).taps, handled, (route) => opened.push(route));
+    await settle();
+    expect(opened).toEqual([]);
+  });
+
   test('the verify tap is a cold start that is read once', async () => {
     const taps = verifyNoticeTaps('bounty.selected:fixture-bounty-01');
     const opened: NoticeRoute[] = [];

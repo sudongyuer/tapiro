@@ -196,3 +196,26 @@ describe('fixture rows that change on a later load', () => {
     expect(second[0].applicantCount).toBeGreaterThan(0);
   });
 });
+
+describe('live reloads out of order', () => {
+  test('two reloads answering in reverse order keep the newer rows', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterApplicants', 'applicantNotSelected'],
+      failFirstLoad: false,
+      now: () => NOW,
+    });
+    const all = await service.list();
+    const answers: ((rows: typeof all) => void)[] = [];
+    const store = createLiveBountyStore({
+      ...service,
+      list: () => new Promise((resolve) => answers.push(resolve)),
+    });
+    const first = store.ensureLoaded(USER);
+    const second = store.reload(USER);
+    answers[1](all.slice(0, 1));
+    await second;
+    answers[0](all);
+    await first;
+    expect(rows(store as ReturnType<typeof flaky>['store'])).toEqual([all[0].bountyId]);
+  });
+});

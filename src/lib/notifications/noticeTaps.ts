@@ -19,13 +19,14 @@ export function toNoticeData(value: unknown): NoticeData | null {
 export function followNoticeTaps(
   taps: NoticeTaps,
   handled: Set<string>,
-  open: (route: NoticeRoute) => void,
+  open: ((route: NoticeRoute) => void) | null,
 ) {
   let following = true;
   const route = (tap: NoticeTap | null) => {
     if (!following || !tap || handled.has(tap.key)) return;
     handled.add(tap.key);
     taps.clear();
+    if (!open) return;
     const data = toNoticeData(tap.data);
     const target = data ? noticeRoute(data) : null;
     if (target) open(target);

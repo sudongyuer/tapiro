@@ -271,3 +271,23 @@ describe('settled fixture', () => {
     expect(seen).toEqual([[first.stickerId]]);
   });
 });
+
+describe('settled reloads out of order', () => {
+  test('two reloads answering in reverse order keep the newer rows', async () => {
+    const answers: ((rows: SettledRow[]) => void)[] = [];
+    const store = createSettledStore({
+      list: () => new Promise<SettledRow[]>((resolve) => answers.push(resolve)),
+      collect: async () => 'collected' as const,
+    });
+    const first = store.ensureLoaded(USER);
+    await Promise.resolve();
+    const second = store.reload(USER);
+    await Promise.resolve();
+    await Promise.resolve();
+    answers[1]([row('new')]);
+    await second;
+    answers[0]([row('old')]);
+    await first;
+    expect(shownIds(store)).toEqual(['new']);
+  });
+});

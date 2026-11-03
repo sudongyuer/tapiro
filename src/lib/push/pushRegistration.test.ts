@@ -11,19 +11,19 @@ function setup(permission: NoticePermission = 'provisional', token: string | nul
   let stored: string | null = null;
   let current = permission;
   let failNext = false;
+  let hold: Promise<void> | null = null;
   const push = createPushRegistration({
     permission: async () => current,
     token: async () => token,
     rpc: {
       async register(value, language) {
         calls.push(`register ${value} ${language}`);
+        if (hold) await hold;
+        calls.push('registered');
         if (failNext) {
           failNext = false;
           throw new Error('offline');
         }
-      },
-      async setLanguage(language) {
-        calls.push(`language ${language}`);
       },
       async unregister(value) {
         calls.push(`unregister ${value}`);
@@ -37,15 +37,25 @@ function setup(permission: NoticePermission = 'provisional', token: string | nul
     stored: () => stored,
     allow: (next: NoticePermission) => (current = next),
     failNext: () => (failNext = true),
+    holdRegister() {
+      let release = () => {};
+      hold = new Promise((resolve) => (release = resolve));
+      return () => {
+        hold = null;
+        release();
+      };
+    },
   };
 }
+
+const sent = (calls: string[]) => calls.filter((call) => call !== 'registered');
 
 describe('push token registration', () => {
   test('registers once when provisional or allowed, with the app language', async () => {
     const { push, calls, stored } = setup('provisional');
     await push.sync('u1', 'zh-Hans');
     await push.sync('u1', 'zh-Hans');
-    expect(calls).toEqual([`register ${TOKEN} zh-Hans`]);
+    expect(sent(calls)).toEqual([`register ${TOKEN} zh-Hans`]);
     expect(stored()).toBe(TOKEN);
   });
 
@@ -57,7 +67,7 @@ describe('push token registration', () => {
     expect(calls).toEqual([]);
     allow('allowed');
     await push.sync('u1', 'en');
-    expect(calls).toEqual([`register ${TOKEN} en`]);
+    expect(sent(calls)).toEqual([`register ${TOKEN} en`]);
   });
 
   test('without a token (no EAS project yet) nothing is sent', async () => {
@@ -66,41 +76,39 @@ describe('push token registration', () => {
     expect(calls).toEqual([]);
   });
 
-  test('a language change only updates the language', async () => {
+  test('a language change registers this device again with the new language only', async () => {
     const { push, calls } = setup('allowed');
     await push.sync('u1', 'zh-Hans');
     await push.sync('u1', 'ms');
-    expect(calls).toEqual([`register ${TOKEN} zh-Hans`, 'language ms']);
+    expect(sent(calls)).toEqual([`register ${TOKEN} zh-Hans`, `register ${TOKEN} ms`]);
   });
 
   test('another user on the same device registers the token again', async () => {
     const { push, calls } = setup('allowed');
     await push.sync('u1', 'en');
     await push.sync('u2', 'en');
-    expect(calls).toEqual([`register ${TOKEN} en`, `register ${TOKEN} en`]);
+    expect(sent(calls)).toEqual([`register ${TOKEN} en`, `register ${TOKEN} en`]);
   });
 
   test('a failed registration is tried again on the next sync', async () => {
-    const { push, calls, failNext, stored } = setup('allowed');
+    const { push, calls, failNext } = setup('allowed');
     failNext();
     await push.sync('u1', 'en');
-    expect(stored()).toBeNull();
     await push.sync('u1', 'en');
-    expect(calls).toEqual([`register ${TOKEN} en`, `register ${TOKEN} en`]);
-    expect(stored()).toBe(TOKEN);
+    expect(sent(calls)).toEqual([`register ${TOKEN} en`, `register ${TOKEN} en`]);
   });
 
   test('sign-out unregisters the stored token, even after a restart', async () => {
     const first = setup('allowed');
     await first.push.sync('u1', 'en');
     await first.push.signOut();
-    expect(first.calls).toEqual([`register ${TOKEN} en`, `unregister ${TOKEN}`]);
+    expect(sent(first.calls)).toEqual([`register ${TOKEN} en`, `unregister ${TOKEN}`]);
     expect(first.stored()).toBeNull();
     await first.push.signOut();
-    expect(first.calls).toHaveLength(2);
+    expect(sent(first.calls)).toHaveLength(2);
   });
 
-  test('a sync still in flight at sign-out does not keep the token', async () => {
+  test('a sync that has not reached the server at sign-out sends nothing', async () => {
     const { push, calls, stored } = setup('allowed');
     const pending = push.sync('u1', 'en');
     await push.signOut();
@@ -109,12 +117,24 @@ describe('push token registration', () => {
     expect(stored()).toBeNull();
   });
 
+  test('a registration still in flight at sign-out is unregistered after it lands', async () => {
+    const { push, calls, holdRegister } = setup('allowed');
+    const release = holdRegister();
+    void push.sync('u1', 'en');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(calls).toEqual([`register ${TOKEN} en`]);
+    const signingOut = push.signOut();
+    release();
+    await signingOut;
+    expect(calls).toEqual([`register ${TOKEN} en`, 'registered', `unregister ${TOKEN}`]);
+  });
+
   test('a deleted account forgets the token without a call', async () => {
     const { push, calls, stored } = setup('allowed');
     await push.sync('u1', 'en');
     push.forget();
     await push.signOut();
-    expect(calls).toEqual([`register ${TOKEN} en`]);
+    expect(sent(calls)).toEqual([`register ${TOKEN} en`]);
     expect(stored()).toBeNull();
   });
 });

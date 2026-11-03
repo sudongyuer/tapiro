@@ -99,6 +99,7 @@ const en: Translation = {
       title: 'Settings',
       language: 'Language',
       signOut: 'Sign Out',
+      signingOut: 'Signing out…',
       deleteAccount: 'Delete Account',
       deleteFooter: 'A deleted account can’t be restored.',
     },
@@ -139,6 +140,7 @@ const en: Translation = {
   rideSettle,
   live: {
     offline: 'May not be up to date',
+    staleAt: 'May not be up to date · as of {{time}}',
   },
   shell: {
     tabs: {

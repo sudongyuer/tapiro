@@ -111,10 +111,11 @@ Deploy note for the account half: the hosted project needs Realtime "Allow publi
 ### Task 8: Tokens, permission, tap routing
 
 - [x] Register the Expo push token when authorised or provisional (`register_push_token` with the app language);
-      `set_push_language` on a language change; `unregister_push_token` on sign-out (account deletion relies on the
+      this device registered again on a language change (★, not `set_push_language`); `unregister_push_token` on
+      sign-out (account deletion relies on the
       `on delete cascade`, since no session is left for the RPC). Skipped until the EAS `projectId` exists (step 3).
 - [x] The explicit prompt after the first post or application (foundation).
-- [x] Tap routing for every kind from `data {kind, id}`, cold start through `getLastNotificationResponseAsync()`.
+- [x] Tap routing for every kind from `data {kind, id}`, cold start through `getLastNotificationResponse()`.
 - [x] Unit: routing for every kind (read from the migrations, `chat.*` to the 消息 tab); UI case: a tap routes from a
       recorded notification. `xcrun simctl push` cannot tap a banner, so `-uiVerifyNoticeTap` replaces the response at
       its boundary.

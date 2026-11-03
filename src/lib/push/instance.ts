@@ -20,12 +20,32 @@ function projectId(): string | null {
   return typeof id === 'string' && id.length > 0 ? id : null;
 }
 
+async function withTimeout<T>(task: Promise<T>, ms: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), ms);
+  });
+  try {
+    return await Promise.race([task, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+let cached: { device: string; expo: string } | null = null;
+
 async function expoToken(): Promise<string | null> {
   const id = projectId();
   if (!id) return null;
-  const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), TOKEN_TIMEOUT_MS));
-  const token = Notifications.getExpoPushTokenAsync({ projectId: id }).then((value) => value.data);
-  return Promise.race([token, timeout]);
+  const device = await Notifications.getDevicePushTokenAsync();
+  const key = String(device.data);
+  if (cached?.device === key) return cached.expo;
+  const expo = await withTimeout(
+    Notifications.getExpoPushTokenAsync({ projectId: id, devicePushToken: device }),
+    TOKEN_TIMEOUT_MS,
+  );
+  if (expo) cached = { device: key, expo: expo.data };
+  return expo?.data ?? null;
 }
 
 function supabaseRpc(): PushRpc {
@@ -37,7 +57,6 @@ function supabaseRpc(): PushRpc {
   };
   return {
     register: (token, language) => call('register_push_token', { token, language }),
-    setLanguage: (language) => call('set_push_language', { language }),
     unregister: (token) => call('unregister_push_token', { token }),
   };
 }
@@ -51,7 +70,6 @@ function verifyRpc(): PushRpc {
   };
   return {
     register: (token, language) => record('register_push_token', { token, language }),
-    setLanguage: (language) => record('set_push_language', { language }),
     unregister: (token) => record('unregister_push_token', { token }),
   };
 }
