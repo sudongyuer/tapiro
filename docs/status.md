@@ -8,18 +8,19 @@ Updated: 2026-11-03.
 
 ## Built and merged
 
-| Area                   | Spec                                               | Notes                                                                                                                       |
-| ---------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Foundation steps 1–4   | `docs/specs/2026-10-11-foundation-design.md`       | Accounts, shell and navigation, payee methods, payment and stickers                                                         |
-| Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                     |
-| Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                    |
-| Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                         |
+| Area                   | Spec                                               | Notes                                                                                                                         |
+| ---------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Foundation steps 1–4   | `docs/specs/2026-10-11-foundation-design.md`       | Accounts, shell and navigation, payee methods, payment and stickers                                                           |
+| Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                       |
+| Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                      |
+| Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                           |
 | Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, #54 reminders and the event outbox |
 
 ## In progress
 
-- Carpool milestone: run the `ride_*` UI cases once (zh-Hans light, plus dark, `en` and `ms` as Pace selects), then the
-  owner's Simulator walkthrough and the `ride.remind.*` device checks; set the carpool spec to `implemented`.
+- Carpool milestone: the `ride_*` UI cases ran (zh-Hans light 27 plus 24 regression cases, dark 7, `en` 27, `ms` 20;
+  all pass after #55). Waiting on the owner's Simulator walkthrough and the `ride.remind.*` device checks; then set the
+  carpool spec to `implemented`.
 
 ## Queue
 
@@ -33,7 +34,9 @@ Updated: 2026-11-03.
 
 ## Owner decisions pending
 
-None. Carpool defaults marked "★ by default, owner may veto" in the carpool spec are open to veto at the walkthrough.
+- 234: rides use Malaysia time (#55) while bounties use the device time zone. ★A: the whole app uses Malaysia time.
+  B: keep bounties on the device time zone.
+- Carpool defaults marked "★ by default, owner may veto" in the carpool spec are open to veto at the walkthrough.
 
 ## Resuming on another machine
 
