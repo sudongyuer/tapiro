@@ -8,6 +8,32 @@
 - Backend: Supabase, region `ap-southeast-1` (Singapore). Reason: PostGIS nearest-neighbour
   queries, relational data with RLS, native ID-token auth (docs/research/2026-10-04-feasibility.md).
 
+## Working with the owner
+
+Reason: these preferences lived only in one machine's agent memory; work must resume from the repo alone (user,
+2026-11-03).
+
+- Reply to the owner in Chinese, including progress notes and reports; code, paths and identifiers stay as they are.
+- Decide UI details with your own ★ recommendation and record each in the spec's decisions table for veto. Ask only
+  when a choice changes direction, conflicts with an approved spec, or touches money, privacy or a paid service.
+  Reason: 40+ carpool questions were all answered 「都按推荐」 (2026-11-02).
+- A question goes at the end of the turn's final message with its context and numbered options; afterwards name it
+  by number only (「第 N 题待定」) until the summary for the owner's return.
+- An open choice the owner would see or feel is drawn as Tapiro screens on the design canvas
+  (https://claude.ai/artifact/34EC3qaCsv1ibJZ4oeGK3o) before it is asked; canvas media is uploaded as assets
+  (`/_blob/<id>`), since file paths render black. Style samples are drawn as stand-ins next to a polished,
+  model-agnostic prompt; do not block on API keys.
+- A new feature area starts with reference research and a direction agreed with the owner, then one screen at a
+  time. Reason: the first carpool round, drawn without research, was rejected whole (2026-10-31).
+- Push and open PRs on your own branches, and squash-merge your own PRs once CI is green, without asking. Ask before
+  paid services, accounts or certificates, deletes, force-push and the hosted Supabase project.
+- One review round per step; fix every finding at once and re-review only after an Important or Critical finding.
+- When the owner is away, continue into the next step with the ★ options and list them for veto in the return
+  summary.
+- One main session; new work runs as subagents in their own worktrees. Implementation screenshots go in the PR, not
+  on the canvas.
+- Answer feedback with its implications, gaps and a recommendation, not only the literal change.
+
 ## Boundaries
 
 - iOS only. Do not add Android implementations, fallback stubs, or Android build scripts.
