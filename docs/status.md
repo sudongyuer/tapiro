@@ -38,6 +38,10 @@ Updated: 2026-11-03.
 ## Owner decisions pending
 
 - Live updates and push: the ★ defaults in the realtime spec's Decisions (bounty kinds, push path, push copy).
+- Live updates and push, quiet hours: only the ride you are on is exempt from 23:00–08:00. Should an active bounty
+  (`en_route` or `done`) be exempt too? ★ yes, exempt the bounty you are on.
+- Live updates and push, expiry: pending applicants get no signal when a bounty expires. ★ add a live-only
+  `bounty.expired` to pending applicants.
 - Carpool defaults marked "★ by default, owner may veto" in the carpool spec are open to veto at the walkthrough.
 
 ## Resuming on another machine

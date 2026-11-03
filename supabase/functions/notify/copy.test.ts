@@ -2,7 +2,8 @@ import { describe, expect, test } from 'bun:test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { COPY_KINDS, LANGUAGES, pushCopy, toLanguage } from './copy';
+import { latinSpacing as appLatinSpacing } from '../../../src/lib/i18n/latinSpacing';
+import { COPY_KINDS, LANGUAGES, latinSpacing, pushCopy, toLanguage } from './copy';
 
 const migrations = join(import.meta.dir, '../../migrations');
 
@@ -11,7 +12,11 @@ function pushKinds() {
     .filter((name) => name.endsWith('.sql'))
     .map((name) => readFileSync(join(migrations, name), 'utf8'))
     .join('\n');
-  return [...sql.matchAll(/\('([a-z]+\.[a-z_]+)', (true|false)\)/g)]
+  const inserts = [
+    ...sql.matchAll(/insert into private\.event_kinds \(kind, push\)\s+values([^;]+);/g),
+  ];
+  return inserts
+    .flatMap((insert) => [...insert[1].matchAll(/\('([a-z]+\.[a-z_]+)', (true|false)\)/g)])
     .filter((match) => match[2] === 'true')
     .map((match) => match[1])
     .sort();
@@ -41,11 +46,11 @@ describe('pushCopy', () => {
       pushCopy('bounty.applied', 'zh-Hans', { actorName: '小林', subject: { title: '帮取快递' } }),
     ).toEqual({
       title: '帮取快递',
-      body: '小林 申请了你的悬赏',
+      body: '小林申请了你的悬赏',
     });
     expect(
       pushCopy('bounty.applied', 'ms', { actorName: '小林', subject: { title: '帮取快递' } })?.body,
-    ).toBe('小林 memohon bounti anda');
+    ).toBe('小林 memohon ganjaran anda');
   });
 
   test('a ride is titled by its route', () => {
@@ -68,5 +73,30 @@ describe('pushCopy', () => {
     expect(pushCopy('bounty.withdrawn', 'en', { actorName: 'Bob', subject: {} })).toBeNull();
     expect(toLanguage('fr')).toBe('zh-Hans');
     expect(toLanguage('ms')).toBe('ms');
+  });
+
+  test('a Latin name in Chinese copy is spaced like the app does, a Chinese name is not', () => {
+    expect(pushCopy('bounty.applied', 'zh-Hans', { actorName: 'Lily', subject: {} })?.body).toBe(
+      'Lily 申请了你的悬赏',
+    );
+    expect(pushCopy('ride.appealed', 'zh-Hans', { actorName: 'Devi', subject: {} })?.body).toBe(
+      'Devi 说自己上车了，去确认一下',
+    );
+  });
+
+  test('the ported spacing matches the app post-processor', () => {
+    const samples = [
+      'Lily帮我',
+      '小林帮我',
+      '帮Lily取快递',
+      'Tapiro 提醒',
+      'Bob说好',
+      '小林 helped me',
+    ];
+    for (const sample of samples)
+      for (const language of LANGUAGES)
+        expect(latinSpacing(sample, language)).toBe(
+          appLatinSpacing.process(sample, 'k', { lng: language }, undefined as never),
+        );
   });
 });

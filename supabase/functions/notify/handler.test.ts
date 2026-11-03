@@ -64,7 +64,7 @@ describe('handleNotify', () => {
       ],
     ]);
     const res = await handleNotify(post('service'), run.deps);
-    expect(await res.json()).toEqual({ sent: 1, failed: 0 });
+    expect(await res.json()).toEqual({ sent: 1, failed: 0, unfinished: 0 });
     expect(run.sent.map((push) => [push.language, push.message])).toEqual([
       [
         'zh-Hans',
@@ -92,11 +92,11 @@ describe('handleNotify', () => {
     expect(run.finished).toEqual([[1, null]]);
   });
 
-  test('a recipient without tokens is finished without sending', async () => {
+  test('a recipient without devices is finished as no_device, not as sent', async () => {
     const run = harness([[due(2, { tokens: [] })]]);
     await handleNotify(post('service'), run.deps);
     expect(run.sent).toEqual([]);
-    expect(run.finished).toEqual([[2, null]]);
+    expect(run.finished).toEqual([[2, 'no_device']]);
   });
 
   test('drops a token Expo reports as not registered and keeps the push sent to the other device', async () => {
@@ -124,7 +124,7 @@ describe('handleNotify', () => {
   test('records the error of a push that reached no device, so the server retries it once', async () => {
     const run = harness([[due(4)]], () => ({ ok: false, error: 'MessageRateExceeded' }));
     const res = await handleNotify(post('service'), run.deps);
-    expect(await res.json()).toEqual({ sent: 0, failed: 1 });
+    expect(await res.json()).toEqual({ sent: 0, failed: 1, unfinished: 0 });
     expect(run.finished).toEqual([[4, 'MessageRateExceeded']]);
   });
 
@@ -153,7 +153,7 @@ describe('handleNotify', () => {
     const full = Array.from({ length: 100 }, (_, index) => due(100 + index));
     const run = harness([full, [due(500)]]);
     const res = await handleNotify(post('service'), run.deps);
-    expect(await res.json()).toEqual({ sent: 101, failed: 0 });
+    expect(await res.json()).toEqual({ sent: 101, failed: 0, unfinished: 0 });
   });
 
   test('rejects callers without the service key', async () => {
@@ -161,6 +161,70 @@ describe('handleNotify', () => {
     expect((await handleNotify(post('user'), run.deps)).status).toBe(401);
     expect((await handleNotify(post(), run.deps)).status).toBe(401);
     expect(run.finished).toEqual([]);
+  });
+});
+
+describe('handleNotify when the database fails mid-run', () => {
+  test('a push whose every device is unregistered is no_device, and a failing token drop skips nothing', async () => {
+    const run = harness([[due(10), due(11)]], () => ({ ok: false, error: 'DeviceNotRegistered' }));
+    run.deps.dropToken = async (token) => {
+      if (token === 'ExponentPushToken[10]') throw new Error('db');
+      run.dropped.push(token);
+    };
+    const res = await handleNotify(post('service'), run.deps);
+    expect(await res.json()).toEqual({ sent: 0, failed: 2, unfinished: 0 });
+    expect(run.dropped).toEqual(['ExponentPushToken[11]']);
+    expect(run.finished).toEqual([
+      [10, 'no_device'],
+      [11, 'no_device'],
+    ]);
+  });
+
+  test('a failing finish leaves that push to the stale-claim rule and still finishes the others', async () => {
+    const run = harness([[due(12), due(13), due(14)]]);
+    const finish = run.deps.finish;
+    run.deps.finish = async (queueId, error) => {
+      if (queueId === 13) throw new Error('db');
+      await finish(queueId, error);
+    };
+    const res = await handleNotify(post('service'), run.deps);
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ sent: 2, failed: 0, unfinished: 1 });
+    expect(run.finished).toEqual([
+      [12, null],
+      [14, null],
+    ]);
+  });
+
+  test('a push is finished once its batch is answered, before the next batch is sent', async () => {
+    const order: string[] = [];
+    const many = Array.from({ length: 12 }, (_, index) =>
+      due(200 + index, {
+        tokens: Array.from({ length: 10 }, (__, device) => ({
+          token: `ExponentPushToken[${index}-${device}]`,
+          language: 'en',
+        })),
+      }),
+    );
+    const run = harness([many]);
+    const send = run.deps.sender.send;
+    run.deps.sender = {
+      send: async (pushes) => {
+        order.push(`send ${pushes.length}`);
+        return send(pushes);
+      },
+    };
+    const finish = run.deps.finish;
+    run.deps.finish = async (queueId, error) => {
+      order.push(`finish ${queueId}`);
+      await finish(queueId, error);
+    };
+    await handleNotify(post('service'), run.deps);
+    expect(order.slice(0, 12)).toEqual([
+      'send 100',
+      ...Array.from({ length: 10 }, (_, index) => `finish ${200 + index}`),
+      'send 20',
+    ]);
   });
 });
 

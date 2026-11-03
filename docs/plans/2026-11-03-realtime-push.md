@@ -84,8 +84,9 @@ Files: `supabase/functions/notify/{index,handler,copy,recording-sender}.ts`, tes
 - [x] Story map `chat.live`, spec Decisions ★ rows, `docs/status.md`, retro.
 
 Checks: `bun test`, `bunx tsc --noEmit`, `bun run lint:changed origin/main`, `bun run format:check`,
-`node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs`, `bun run db:test`. No UI case: no
-screen changes.
+`node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs`, `bun run db:test` (after
+`bun run db:reset` from this worktree: the shared stack may hold another branch's migrations),
+`deno check supabase/functions/notify/index.ts` (`tsc` excludes `index.ts`). No UI case: no screen changes.
 
 Deploy note for the account half: the hosted project needs Realtime "Allow public access" off, the Vault secrets
 `project_url` and `service_role_key`, and `notify` deployed; none of this is done here.

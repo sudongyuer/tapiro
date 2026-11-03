@@ -91,7 +91,13 @@ begin
     when 'problem_reported' then perform private.emit_event(array[b.helper_id], 'bounty.issue', b.id, new.actor_id);
     when 'cancelled' then perform private.emit_event(both_sides, 'bounty.cancelled', b.id, new.actor_id);
     when 'closed' then
-      perform private.emit_event(private.bounty_applicants(b.id, '{pending}'), 'bounty.cancelled', b.id, new.actor_id);
+      perform private.emit_event(
+        array(
+          select a from unnest(private.bounty_applicants(b.id, '{pending}')) a
+          where not private.is_blocked_between(b.poster_id, a)
+        ),
+        'bounty.cancelled', b.id, new.actor_id
+      );
     when 'expired' then perform private.emit_event(poster, 'bounty.expired', b.id, new.actor_id);
     when 'confirmed', 'auto_confirmed' then
       perform private.emit_event(both_sides, 'bounty.confirmed', b.id, new.actor_id);

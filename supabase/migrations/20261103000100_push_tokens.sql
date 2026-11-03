@@ -96,12 +96,16 @@ begin
     );
   elsif new.kind like 'bounty.%' then
     thread := 'bounty:' || new.subject_id;
-  else
+  elsif new.kind like 'payment.%' then
     select p.item_kind::text || ':' || p.item_id into thread from public.payments p where p.id = new.subject_id;
+    thread := coalesce(thread, 'payment:' || new.subject_id);
+  else
+    raise warning 'push for % not queued: no thread rule', new.kind;
+    return new;
   end if;
   insert into public.push_queue (event_id, recipient, kind, subject_id, thread_id, quiet, send_at)
   values (
-    new.id, new.recipient, new.kind, new.subject_id, coalesce(thread, 'payment:' || new.subject_id),
+    new.id, new.recipient, new.kind, new.subject_id, thread,
     held is not null and not on_ride,
     case when held is not null and not on_ride then held else new.created_at end
   );
@@ -138,17 +142,30 @@ as $$
     when kind like 'ride.%' then (
       select jsonb_build_object('from', r.start_short, 'to', r.dest_short) from public.rides r where r.id = subject
     )
-    else (select jsonb_build_object('title', p.title) from public.payments p where p.id = subject)
+    when kind like 'payment.%' then (
+      select jsonb_build_object('title', p.title) from public.payments p where p.id = subject
+    )
   end;
 $$;
 
--- A claim older than five minutes belongs to a run that died before finish_push; it is claimed again, and the
--- attempt cap keeps that to one retry.
+-- A claim older than five minutes belongs to a run that died before finish_push. It is claimed again while one
+-- attempt is left; after the second attempt it fails as 'stalled' and is never sent, since it may have been delivered.
 create function public.claim_due_pushes(max_rows integer default 100) returns jsonb
-language sql
+language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  answer jsonb;
+begin
+  with stalled as (
+    update public.push_queue q set failed_at = now()
+    where q.sent_at is null and q.failed_at is null and q.attempts >= 2
+      and q.claimed_at < now() - interval '5 minutes'
+    returning q.event_id
+  )
+  update public.events e set push_error = 'stalled' from stalled where e.id = stalled.event_id;
+
   with due as (
     select q.id from public.push_queue q
     where q.sent_at is null and q.failed_at is null and q.attempts < 2 and q.send_at <= now()
@@ -174,10 +191,14 @@ as $$
       from public.push_tokens t where t.user_id = c.recipient
     ), '[]'::jsonb)
   ) order by c.send_at, c.id), '[]'::jsonb)
+  into answer
   from claimed c
   join public.events e on e.id = c.event_id;
+  return answer;
+end;
 $$;
 
+-- 'no_device' (no token, or every token unregistered) and 'no_copy' are final: a retry cannot change them.
 create function public.finish_push(queue_id bigint, error text default null) returns void
 language plpgsql
 security definer
@@ -188,10 +209,12 @@ declare
 begin
   if error is null then
     update public.push_queue set sent_at = now() where id = queue_id returning * into q;
+    update public.events set push_error = null where id = q.event_id;
     return;
   end if;
   update public.push_queue
-  set claimed_at = null, failed_at = case when attempts >= 2 then now() end
+  set claimed_at = null,
+    failed_at = case when attempts >= 2 or error in ('no_device', 'no_copy') then now() end
   where id = queue_id
   returning * into q;
   update public.events set push_error = left(error, 200) where id = q.event_id;

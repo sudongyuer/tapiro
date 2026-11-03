@@ -1,5 +1,5 @@
 begin;
-select plan(60);
+select plan(81);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -147,6 +147,8 @@ select is(pg_temp.kinds('b2', pg_temp.b(2)), '{bounty.selected}'::text[], 'the c
 select pg_temp.publish(3);
 select pg_temp.apply(3, 'b2');
 select pg_temp.apply(3, 'd4');
+select pg_temp.apply(3, 'e5');
+insert into public.blocks (blocker_id, blocked_id) values (pg_temp.u('e5'), pg_temp.u('a1'));
 select pg_temp.act_as(pg_temp.u('a1'));
 select public.close_bounty(pg_temp.b(3));
 select ok(
@@ -154,6 +156,21 @@ select ok(
   'closing an open bounty reaches its pending applicants'
 );
 select ok(pg_temp.pushed('d4', 'bounty.cancelled'), 'a cancellation pushes');
+select is(pg_temp.kinds('e5', pg_temp.b(3)), '{}'::text[], 'an applicant blocked from the poster is not told');
+delete from public.blocks where blocker_id = pg_temp.u('e5');
+
+insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
+values (pg_temp.u('f6'), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'f6@example.com',
+  '{"full_name":"Fay"}');
+insert into public.coin_ledger (user_id, reason, delta) values (pg_temp.u('f6'), 'help_settled', 1);
+select pg_temp.act_as(pg_temp.u('f6'));
+select public.publish_bounty(pg_temp.b(5), '帮买早餐', 'pickup', 500, 'MYR');
+select pg_temp.apply(5, 'd4');
+delete from auth.users where id = pg_temp.u('f6');
+select is(
+  pg_temp.kinds('d4', pg_temp.b(5)), '{bounty.cancelled}'::text[],
+  'a bounty closed by its poster''s account deletion reaches its pending applicants'
+);
 
 select pg_temp.publish(4);
 select private.run_bounty_jobs(now() + interval '30 days');
@@ -172,7 +189,7 @@ select ok(
   'signals go out on private broadcast channels with their time'
 );
 select is(
-  (select count(*) from realtime.messages m where m.topic like 'user:%'),
+  (select count(*) from realtime.messages m where m.topic like 'user:%' and m.topic <> 'user:' || pg_temp.u('f6')),
   (select count(*) from public.events), 'every event row is broadcast once'
 );
 
@@ -211,17 +228,41 @@ select ok(
 );
 select public.register_push_token('ExponentPushToken[bob]', 'zh-Hans');
 
-update public.push_queue set send_at = now() - interval '1 minute', quiet = false;
+insert into public.events (recipient, kind, subject_id, push, created_at)
+values
+  (pg_temp.u('a1'), 'bounty.applied', pg_temp.b(1), true, '2099-01-01 17:00+00'),
+  (pg_temp.u('b2'), 'payment.marked_paid', (select id from fx where name = 'pay'), true, '2099-01-01 17:00+00');
+select is(
+  (select array_agg(array[q.thread_id, q.quiet::text, q.send_at::text] order by q.kind) from public.push_queue q
+   where q.send_at > '2090-01-01'),
+  array[
+    array['bounty:' || pg_temp.b(1), 'true', '2099-01-02 00:00:00+00'],
+    array['bounty:' || pg_temp.b(1), 'true', '2099-01-02 00:00:00+00']
+  ], 'a bounty push and a bounty payment push at 01:00 Malaysia time wait for 08:00'
+);
+insert into private.event_kinds (kind, push) values ('other.thing', true);
+select lives_ok(
+  $$insert into public.events (recipient, kind, subject_id, push) values (pg_temp.u('a1'), 'other.thing', pg_temp.b(1), true)$$,
+  'a push kind without a thread rule never fails the transition'
+);
+select is(
+  (select count(*) from public.push_queue q where q.kind = 'other.thing'), 0::bigint,
+  'a push kind without a thread rule is not queued'
+);
+
+update public.push_queue set send_at = now() - interval '1 minute', quiet = false
+where quiet and send_at < '2090-01-01';
 update public.push_queue set send_at = now() + interval '8 hours', quiet = true
-where kind = 'bounty.cancelled' and recipient = pg_temp.u('d4');
+where kind = 'bounty.cancelled' and recipient = pg_temp.u('d4') and subject_id = pg_temp.b(3);
 create temp table claim as select x from jsonb_array_elements(public.claim_due_pushes(500)) x;
 select is(
-  (select count(*) from claim), (select count(*) - 1 from public.push_queue), 'a claim takes every due push'
+  (select count(*) from claim), (select count(*) - 3 from public.push_queue), 'a claim takes every due push'
 );
 select ok(
   not exists (
     select 1 from claim c join public.push_queue q on q.id = (c.x ->> 'queueId')::bigint
-    where q.recipient = pg_temp.u('d4')
+    where (q.recipient = pg_temp.u('d4') and q.kind = 'bounty.cancelled' and q.subject_id = pg_temp.b(3))
+      or q.send_at > '2090-01-01'
   ),
   'a push held by quiet hours is not claimed'
 );
@@ -267,11 +308,80 @@ select is(
   'MessageRateExceeded', 'the event keeps the push error'
 );
 select is(jsonb_array_length(public.claim_due_pushes(500)), 0, 'a stopped push is not claimed again');
+
+create function pg_temp.claimed(kind text, subject uuid) returns bigint language sql as $$
+  select (x ->> 'queueId')::bigint from claim where x ->> 'kind' = claimed.kind and x ->> 'subjectId' = subject::text;
+$$;
+create function pg_temp.event_error(queue bigint) returns text language sql as $$
+  select e.push_error from public.events e join public.push_queue q on q.event_id = e.id where q.id = queue;
+$$;
+
+select public.finish_push(pg_temp.claimed('bounty.started', pg_temp.b(1)), 'MessageRateExceeded');
+select is(
+  (select (x ->> 'queueId')::bigint from jsonb_array_elements(public.claim_due_pushes(500)) x),
+  pg_temp.claimed('bounty.started', pg_temp.b(1)), 'a push that failed once is claimed for its retry'
+);
+select public.finish_push(pg_temp.claimed('bounty.started', pg_temp.b(1)), null);
+select ok(
+  pg_temp.event_error(pg_temp.claimed('bounty.started', pg_temp.b(1))) is null
+    and (select q.sent_at is not null from public.push_queue q where q.id = pg_temp.claimed('bounty.started', pg_temp.b(1))),
+  'a retry that succeeds is sent and clears the earlier error'
+);
+
+select public.finish_push(pg_temp.claimed('bounty.eta_changed', pg_temp.b(1)), 'no_copy');
+select public.finish_push(
+  pg_temp.claimed('payment.not_received', (select id from fx where name = 'pay')), 'no_device'
+);
+select ok(
+  (select bool_and(q.failed_at is not null and q.attempts = 1) from public.push_queue q
+   where q.id in (
+     pg_temp.claimed('bounty.eta_changed', pg_temp.b(1)),
+     pg_temp.claimed('payment.not_received', (select id from fx where name = 'pay'))
+   )),
+  'no copy and no device are final on the first attempt'
+);
+select is(
+  pg_temp.event_error(pg_temp.claimed('payment.not_received', (select id from fx where name = 'pay'))), 'no_device',
+  'a recipient without a device is recorded as no_device, not as sent'
+);
+select is(jsonb_array_length(public.claim_due_pushes(500)), 0, 'final outcomes are not claimed again');
+
+update public.push_queue set claimed_at = now() - interval '6 minutes'
+where id = pg_temp.claimed('bounty.selected', pg_temp.b(2));
+select is(
+  (select array_agg((x ->> 'queueId')::bigint) from jsonb_array_elements(public.claim_due_pushes(500)) x),
+  array[pg_temp.claimed('bounty.selected', pg_temp.b(2))],
+  'a claim left unfinished for five minutes is claimed again for its second attempt'
+);
+update public.push_queue set claimed_at = now() - interval '6 minutes'
+where id = pg_temp.claimed('bounty.selected', pg_temp.b(2));
+select is(jsonb_array_length(public.claim_due_pushes(500)), 0, 'a second unfinished claim is not sent again');
+select ok(
+  (select q.failed_at is not null and q.sent_at is null from public.push_queue q
+   where q.id = pg_temp.claimed('bounty.selected', pg_temp.b(2)))
+    and pg_temp.event_error(pg_temp.claimed('bounty.selected', pg_temp.b(2))) = 'stalled',
+  'a second unfinished claim fails as stalled'
+);
 select public.drop_push_token('ExponentPushToken[bob]');
 select ok(
   not exists (select 1 from public.push_tokens t where t.token = 'ExponentPushToken[bob]'),
   'the server drops a token Expo reports as not registered'
 );
+
+create function pg_temp.denied(who text) returns setof text language sql as $$
+  select throws_ok($q$select public.claim_due_pushes(10)$q$, '42501', null, who || ' clients cannot claim pushes')
+  union all
+  select throws_ok($q$select public.finish_push(1, null)$q$, '42501', null, who || ' clients cannot finish pushes')
+  union all
+  select throws_ok(
+    $q$select public.drop_push_token('ExponentPushToken[aaa]')$q$, '42501', null, who || ' clients cannot drop tokens'
+  )
+  union all
+  select throws_ok(
+    $q$select public.call_edge_function('notify')$q$, '42501', null, who || ' clients cannot call notify'
+  );
+$$;
+grant execute on function pg_temp.denied(text) to authenticated, anon;
 
 set local role authenticated;
 select pg_temp.act_as(pg_temp.u('a1'));
@@ -289,11 +399,17 @@ select is((select count(*) from realtime.messages), 0::bigint, 'a user cannot jo
 select throws_ok($$select count(*) from public.events$$, '42501', null, 'clients cannot read events');
 select throws_ok($$select count(*) from public.push_tokens$$, '42501', null, 'clients cannot read push tokens');
 select throws_ok($$select count(*) from public.recorded_pushes$$, '42501', null, 'clients cannot read recorded pushes');
-select throws_ok($$select public.claim_due_pushes(10)$$, '42501', null, 'clients cannot claim pushes');
+select throws_ok(
+  $$insert into realtime.messages (topic, extension, payload, event, private)
+    values ('user:' || pg_temp.u('b2'), 'broadcast', '{}', 'bounty.selected', true)$$,
+  '42501', null, 'clients cannot send signals'
+);
+select pg_temp.denied('signed-in');
 reset role;
 set local role anon;
 select set_config('realtime.topic', 'user:' || pg_temp.u('a1'), true);
 select is((select count(*) from realtime.messages), 0::bigint, 'a signed-out client receives no signals');
+select pg_temp.denied('signed-out');
 select throws_ok(
   $$select public.register_push_token('ExponentPushToken[anon]', 'en')$$, '42501', null,
   'a signed-out client cannot register a token'
