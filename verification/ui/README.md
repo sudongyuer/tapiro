@@ -16,7 +16,7 @@ bun run verify:clean
 ```
 
 The runner owns three named Simulators, `Tapiro Verify`, `Tapiro Verify 2` and `Tapiro Verify 3` (iPhone 17 Pro,
-newest iOS runtime), creates each once if missing, and hands the runs to them from one queue; `--workers N` sets how many
+newest iOS runtime that offers it, skipping device-specific ones), creates each once if missing, and hands the runs to them from one queue; `--workers N` sets how many
 it uses, and `--udid` runs on one given Simulator. Before booting more than one it checks that the disk holding the
 checkout has at least 15 GB free and otherwise runs on `Tapiro Verify` alone, printing why (`pool.py`,
 `python3 -m unittest test_pool`). The extra Simulators shut down when the run ends. The breaker below counts each
@@ -27,7 +27,7 @@ picks each case whose `DEPS` prefixes (or its own file) match one, printing why.
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver` in `verification/ui` covers the
+before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime` in `verification/ui` covers the
 selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
 `ARGS`, `BUDGET` and `TIME_ZONE` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
 only; paste other text with `bounty.paste_into`.
