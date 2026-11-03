@@ -89,7 +89,7 @@ class UI:
         return found.group(1)
 
     def axe(self, *args, timeout=20):
-        # Since SDK 58 a tap whose axe process exits at once never fires the Pressable's onPress (2026-11-03).
+        # With AXe 1.8.0 on iOS 27 a tap whose axe process exits at once never fires a Pressable's onPress (2026-11-03).
         args = (*args, '--post-delay', '0.5') if args[:1] == ('tap',) and '--post-delay' not in args else args
         proc =timed(f'axe {" ".join(args)}', ['axe', *args, '--udid', self.udid], timeout, text=True)
         error = proc.stderr.strip() or proc.stdout.strip()
