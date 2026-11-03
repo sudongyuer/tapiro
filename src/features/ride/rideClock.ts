@@ -1,3 +1,4 @@
+export const MALAYSIA_TIME_ZONE = 'Asia/Kuala_Lumpur';
 const MALAYSIA_OFFSET_MS = 8 * 3_600_000;
 const DAY_MS = 86_400_000;
 

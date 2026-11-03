@@ -1,11 +1,12 @@
 """Worst case in the create flow (break-ui): two 80-character places with 8-character short names, 6 people, ¥1600, 9
 large bags and a 140-character meeting note keep the live ticket inside the screen at its fixed height, the 6-seat hint
-shows, and the confirm rows stay inside the sheet, in zh-Hans and ms."""
+shows, the flight picker reads the ticket's Malaysia-time flight clock, and the confirm rows stay inside the sheet, in
+zh-Hans and ms."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI  # noqa: E402
-from ride import form_scroll_to, open_form, open_list, within_screen  # noqa: E402
+from ride import form_scroll_to, open_form, open_list, picker_clock, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py']
 LOCALES = ['zh-Hans', 'ms']
@@ -23,6 +24,10 @@ ui.capture('01-form-top')
 form_scroll_to(ui, 'ride-form-seats-label')
 ui.wait_label('ride-form-seats-label', lambda label: ui.t('ride.create.form.sixSeats', count=5) in label,
               'the 6-seat hint is missing')
+form_scroll_to(ui, 'ride-form-flight')
+flight = picker_clock(ui, 'ride-form-flight')
+assert ui.t('ride.ticket.flight', time=flight) in (ui.element('ride-form-ticket').get('AXLabel') or ''), \
+    f'the flight picker shows {flight}, the ticket does not'
 form_scroll_to(ui, 'ride-form-note')
 assert abs(ui.element('ride-form-ticket')['frame']['height'] - height) < 1, 'the live ticket changed height'
 ui.capture('02-form-bottom')
