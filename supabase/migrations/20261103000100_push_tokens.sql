@@ -150,6 +150,20 @@ $$;
 
 -- A claim older than five minutes belongs to a run that died before finish_push. It is claimed again while one
 -- attempt is left; after the second attempt it fails as 'stalled' and is never sent, since it may have been delivered.
+create function private.mark_stalled_pushes() returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  with stalled as (
+    update public.push_queue q set failed_at = now()
+    where q.sent_at is null and q.failed_at is null and q.attempts >= 2
+      and q.claimed_at < now() - interval '5 minutes'
+    returning q.event_id
+  )
+  update public.events e set push_error = 'stalled' from stalled where e.id = stalled.event_id;
+$$;
+
 create function public.claim_due_pushes(max_rows integer default 100) returns jsonb
 language plpgsql
 security definer
@@ -158,13 +172,7 @@ as $$
 declare
   answer jsonb;
 begin
-  with stalled as (
-    update public.push_queue q set failed_at = now()
-    where q.sent_at is null and q.failed_at is null and q.attempts >= 2
-      and q.claimed_at < now() - interval '5 minutes'
-    returning q.event_id
-  )
-  update public.events e set push_error = 'stalled' from stalled where e.id = stalled.event_id;
+  perform private.mark_stalled_pushes();
 
   with due as (
     select q.id from public.push_queue q
@@ -208,14 +216,16 @@ declare
   q public.push_queue;
 begin
   if error is null then
-    update public.push_queue set sent_at = now() where id = queue_id returning * into q;
+    update public.push_queue set sent_at = now()
+    where id = queue_id and sent_at is null and failed_at is null
+    returning * into q;
     update public.events set push_error = null where id = q.event_id;
     return;
   end if;
   update public.push_queue
   set claimed_at = null,
     failed_at = case when attempts >= 2 or error in ('no_device', 'no_copy') then now() end
-  where id = queue_id
+  where id = queue_id and sent_at is null and failed_at is null
   returning * into q;
   update public.events set push_error = left(error, 200) where id = q.event_id;
 end;
@@ -253,6 +263,7 @@ security definer
 set search_path = ''
 as $$
 begin
+  perform private.mark_stalled_pushes();
   if exists (
     select 1 from public.push_queue q
     where q.sent_at is null and q.failed_at is null and q.attempts < 2 and q.send_at <= now()
@@ -267,6 +278,7 @@ revoke all on function public.set_push_language(text) from public, anon, authent
 revoke all on function public.unregister_push_token(text) from public, anon, authenticated;
 revoke all on function private.queue_push() from public, anon, authenticated;
 revoke all on function private.push_subject(text, uuid) from public, anon, authenticated;
+revoke all on function private.mark_stalled_pushes() from public, anon, authenticated;
 revoke all on function public.claim_due_pushes(integer) from public, anon, authenticated;
 revoke all on function public.finish_push(bigint, text) from public, anon, authenticated;
 revoke all on function public.drop_push_token(text) from public, anon, authenticated;

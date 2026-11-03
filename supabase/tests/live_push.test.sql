@@ -1,5 +1,5 @@
 begin;
-select plan(81);
+select plan(84);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -361,6 +361,32 @@ select ok(
    where q.id = pg_temp.claimed('bounty.selected', pg_temp.b(2)))
     and pg_temp.event_error(pg_temp.claimed('bounty.selected', pg_temp.b(2))) = 'stalled',
   'a second unfinished claim fails as stalled'
+);
+
+select public.finish_push(pg_temp.claimed('bounty.selected', pg_temp.b(1)), 'MessageRateExceeded');
+select ok(
+  (select q.sent_at is not null and q.failed_at is null from public.push_queue q
+   where q.id = pg_temp.claimed('bounty.selected', pg_temp.b(1)))
+    and pg_temp.event_error(pg_temp.claimed('bounty.selected', pg_temp.b(1))) is null,
+  'a late failure report does not undo a sent push'
+);
+select public.finish_push(pg_temp.claimed('bounty.selected', pg_temp.b(2)), null);
+select ok(
+  (select q.sent_at is null and q.failed_at is not null from public.push_queue q
+   where q.id = pg_temp.claimed('bounty.selected', pg_temp.b(2)))
+    and pg_temp.event_error(pg_temp.claimed('bounty.selected', pg_temp.b(2))) = 'stalled',
+  'a late success report does not revive a failed push'
+);
+
+create temp table stuck as
+select q.id from public.push_queue q where q.kind = 'bounty.applied' and q.send_at > '2090-01-01';
+update public.push_queue set attempts = 2, claimed_at = now() - interval '6 minutes', send_at = now() - interval '1 hour'
+where id = (select id from stuck);
+select private.drain_due_pushes();
+select ok(
+  (select q.failed_at is not null from public.push_queue q where q.id = (select id from stuck))
+    and pg_temp.event_error((select id from stuck)) = 'stalled',
+  'the five-minute drain marks a push stuck after its second attempt as stalled, with no other traffic'
 );
 select public.drop_push_token('ExponentPushToken[bob]');
 select ok(
