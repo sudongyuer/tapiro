@@ -139,7 +139,7 @@ def tap_clear(ui, identifier, tries=6):
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
 
 
-CLOCK_IN_VALUE = re.compile(r'(\d{1,2})[:.](\d{2})\s*([^\d\s,]*)')
+CLOCK_IN_VALUE = re.compile(r'([^\d\s,]*)\s*(\d{1,2})[:.](\d{2})\s*([^\d\s,]*)')
 AFTERNOON = ('PM', 'PTG', 'P.M.', '下午', '晚上')
 
 
@@ -148,10 +148,14 @@ def picker_clock(ui, identifier):
         f = by_id(items, identifier)['frame']
         return next((i.get('AXValue') for i in items if i.get('type') == 'Button' and i.get('AXValue')
                      and i['frame']['y'] == f['y'] and i['frame']['x'] >= f['x'] - 1), None)
-    text = ui.wait(value, f'{identifier} exposes no picker value')
+    return clock_24h(ui.wait(value, f'{identifier} exposes no picker value'))
+
+
+def clock_24h(text):
     found = CLOCK_IN_VALUE.search(text)
     assert found, f'no clock in the picker value {text!r}'
-    hours, minutes, suffix = int(found[1]), found[2], found[3].upper()
-    if suffix in AFTERNOON and hours < 12:
+    marker, hours, minutes, suffix = found[1], int(found[2]), found[3], found[4].upper()
+    # zh-Hans puts 下午 before the clock (下午5:00), so the date may run into it: 2026年11月3日下午5:00.
+    if (suffix in AFTERNOON or any(marker.endswith(m) for m in AFTERNOON)) and hours < 12:
         hours += 12
     return f'{hours:02d}:{minutes}'
