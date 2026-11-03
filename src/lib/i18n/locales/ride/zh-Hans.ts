@@ -127,6 +127,7 @@ export default {
       decline: '拒绝',
       approve: '通过',
       a11y: '{{name}}，{{tier}}，{{note}}',
+      a11yNoNote: '{{name}}，{{tier}}',
     },
     apply: {
       action: '申请上车',

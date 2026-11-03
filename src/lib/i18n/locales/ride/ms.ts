@@ -133,6 +133,7 @@ const ms: typeof zhHans = {
       decline: 'Tolak',
       approve: 'Luluskan',
       a11y: '{{name}}, {{tier}}, {{note}}',
+      a11yNoNote: '{{name}}, {{tier}}',
     },
     apply: {
       action: 'Mohon Menyertai',

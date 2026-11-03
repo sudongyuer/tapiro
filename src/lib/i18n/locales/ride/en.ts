@@ -132,6 +132,7 @@ const en: typeof zhHans = {
       decline: 'Decline',
       approve: 'Approve',
       a11y: '{{name}}, {{tier}}, {{note}}',
+      a11yNoNote: '{{name}}, {{tier}}',
     },
     apply: {
       action: 'Ask to Join',
