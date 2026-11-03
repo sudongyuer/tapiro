@@ -42,5 +42,6 @@ Updated: 2026-11-03.
 - Clone, `bun install`, then follow `AGENTS.md` (Homebrew Node, `pod install` after prebuild, `ios/.xcode.env.local`).
 - The design canvas is the claude.ai artifact named in each spec; it is not in the repo.
 - Local-only state that does not travel: `.verify/` build output (rebuild with `bun run verify:build`), the local
-  Supabase database (rebuilt from `supabase/migrations`), and the agent's personal memory notes.
-- Unmerged branch kept on purpose: `spike/photo-sticker`.
+  Supabase database (rebuilt from `supabase/migrations`), and the agent's personal memory notes (the owner's working preferences are copied into `AGENTS.md`,
+  "Working with the owner").
+- Unmerged branch kept on purpose: `spike/photo-sticker` (pushed, nothing uncommitted).
