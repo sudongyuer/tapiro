@@ -129,6 +129,20 @@ describe('push token registration', () => {
     expect(calls).toEqual([`register ${TOKEN} en`, 'registered', `unregister ${TOKEN}`]);
   });
 
+  test('once the sign-out wait has expired, a late registration is not unregistered', async () => {
+    const { push, calls, holdRegister, stored } = setup('allowed');
+    const release = holdRegister();
+    void push.sync('u1', 'en');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const wait = { expired: false };
+    const signingOut = push.signOut(wait);
+    wait.expired = true;
+    release();
+    await signingOut;
+    expect(calls).toEqual([`register ${TOKEN} en`, 'registered']);
+    expect(stored()).toBeNull();
+  });
+
   test('a deleted account forgets the token without a call', async () => {
     const { push, calls, stored } = setup('allowed');
     await push.sync('u1', 'en');

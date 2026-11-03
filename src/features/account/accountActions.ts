@@ -14,12 +14,18 @@ const SYSTEM_TIMERS: Timers = {
   clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
 
-async function bounded(task: Promise<void>, ms: number, timers: Timers) {
+export type SignOutWait = { expired: boolean };
+
+async function bounded(task: (wait: SignOutWait) => Promise<void>, ms: number, timers: Timers) {
+  const wait: SignOutWait = { expired: false };
   let timer: unknown = null;
   const timeout = new Promise<void>((resolve) => {
-    timer = timers.set(resolve, ms);
+    timer = timers.set(() => {
+      wait.expired = true;
+      resolve();
+    }, ms);
   });
-  await Promise.race([task.catch(() => undefined), timeout]);
+  await Promise.race([task(wait).catch(() => undefined), timeout]);
   timers.clear(timer);
 }
 
@@ -35,7 +41,7 @@ export function createAccountActions({
   onboarding: OnboardingStore;
   profiles: ProfileStore;
   cleanups: Pick<UserCleanups, 'run'>;
-  beforeSignOut?: () => Promise<void>;
+  beforeSignOut?: (wait: SignOutWait) => Promise<void>;
   timers?: Timers;
 }) {
   const signingOut = createStore(false);
@@ -50,7 +56,7 @@ export function createAccountActions({
       if (signingOut.get()) return;
       signingOut.set(true);
       try {
-        await bounded(beforeSignOut(), SIGN_OUT_WAIT_MS, timers);
+        await bounded(beforeSignOut, SIGN_OUT_WAIT_MS, timers);
         await auth.signOut();
       } finally {
         signingOut.set(false);

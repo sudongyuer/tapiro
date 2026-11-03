@@ -102,12 +102,16 @@ describe('account actions', () => {
   test('a hung unregistration is capped at 3 s, and sign-out is busy until it ends', async () => {
     const auth = createFixtureAuthService({ signedInAs: 'apple' });
     const pending: { run: () => void; ms: number }[] = [];
+    let seenWait = null as { expired: boolean } | null;
     const actions = createAccountActions({
       auth,
       onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
       profiles: createProfileStore(createFixtureProfileService()),
       cleanups: createUserCleanups(),
-      beforeSignOut: () => new Promise<void>(() => {}),
+      beforeSignOut: (wait) => {
+        seenWait = wait;
+        return new Promise<void>(() => {});
+      },
       timers: {
         set: (run, ms) => pending.push({ run, ms }),
         clear: () => undefined,
@@ -118,7 +122,9 @@ describe('account actions', () => {
     await actions.signOut();
     expect(pending.map((timer) => timer.ms)).toEqual([SIGN_OUT_WAIT_MS]);
     expect(auth.getState().status).toBe('signedIn');
+    expect(seenWait).toEqual({ expired: false });
     pending[0].run();
+    expect(seenWait).toEqual({ expired: true });
     await signingOut;
     expect(auth.getState().status).toBe('signedOut');
     expect(actions.signingOut.get()).toBe(false);

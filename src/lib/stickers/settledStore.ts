@@ -1,3 +1,5 @@
+import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
+import { createAnswerOrder } from '@/lib/answerOrder';
 import { createStore } from '@/lib/store';
 
 import type { CollectResult, SettledRow, SettledService } from './settled';
@@ -6,17 +8,13 @@ export type SettledState =
   | { status: 'idle' }
   | { status: 'loading' | 'failed' | 'ready' | 'stale'; userId: string; rows: SettledRow[] };
 
-type AppStateSource = {
-  addEventListener: (type: 'change', listener: (state: string) => void) => { remove: () => void };
-};
-
 export function createSettledStore(service: SettledService) {
   const store = createStore<SettledState>({ status: 'idle' });
   const collected = new Set<string>();
   const dismissed = new Set<string>();
   const unmarked = new Set<string>();
   let generation = 0;
-  let latest = 0;
+  const order = createAnswerOrder();
 
   const isCurrent = (userId: string, at: number) => {
     const state = store.get();
@@ -43,15 +41,16 @@ export function createSettledStore(service: SettledService) {
 
   async function reload(userId: string) {
     const at = generation;
-    const request = ++latest;
+    const request = order.start();
     await retryUnmarked();
     try {
       const rows = await service.list();
-      if (request === latest && isCurrent(userId, at))
-        store.set({ status: 'ready', userId, rows: shown(rows, collected) });
+      const status = order.succeeded(request);
+      if (status && isCurrent(userId, at))
+        store.set({ status, userId, rows: shown(rows, collected) });
     } catch {
       const state = store.get();
-      if (request !== latest || !isCurrent(userId, at) || state.status === 'idle') return;
+      if (!order.failed(request) || !isCurrent(userId, at) || state.status === 'idle') return;
       store.set(
         state.status === 'ready' || state.status === 'stale'
           ? { status: 'stale', userId, rows: state.rows }
@@ -107,10 +106,8 @@ export function createSettledStore(service: SettledService) {
         return () => undefined;
       }
       ensureLoaded(userId);
-      const subscription = appState.addEventListener('change', (next) => {
-        if (next === 'active') reload(userId);
-      });
-      return () => subscription.remove();
+      const subscription = onReturnToForeground(appState, () => reload(userId));
+      return subscription;
     },
   };
 }

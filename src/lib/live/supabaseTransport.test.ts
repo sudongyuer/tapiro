@@ -119,6 +119,18 @@ describe('supabase transport', () => {
     expect(fake.channels).toHaveLength(0);
   });
 
+  test("another user's channel does not wait for this one to leave", async () => {
+    const fake = fakeClient();
+    const transport = createSupabaseTransport(fake.client);
+    const events = { signal: () => {}, status: () => {} };
+    const close = transport.open('u1', events);
+    await settle();
+    close();
+    transport.open('u2', events);
+    await settle();
+    expect(fake.channels.map((c) => c.topic)).toEqual(['user:u1', 'user:u2']);
+  });
+
   test('a reopen waits until the previous channel has left', async () => {
     const fake = fakeClient();
     const transport = createSupabaseTransport(fake.client);

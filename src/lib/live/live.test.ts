@@ -221,7 +221,7 @@ describe('verify emitter', () => {
       { at: 6000, signal: { kind: 'bounty.applied', id: 'fixture-bounty-01', at: null } },
     ]);
     const timers = fakeTimers();
-    const delivered: string[][] = [];
+    const delivered: string[] = [];
     const live = createLive({
       transport: createVerifyTransport(steps, { timers, onDelivered: (l) => delivered.push(l) }),
       timers,
@@ -237,6 +237,6 @@ describe('verify emitter', () => {
     expect(seen).toEqual([null]);
     timers.advance(2_000);
     expect(seen).toEqual([null, 'bounty.applied']);
-    expect(delivered.at(-1)).toEqual(['drop', 'back', 'bounty.applied:fixture-bounty-01']);
+    expect(delivered).toEqual(['drop', 'back', 'bounty.applied:fixture-bounty-01']);
   });
 });

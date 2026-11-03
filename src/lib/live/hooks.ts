@@ -1,3 +1,5 @@
+import { onReturnToForeground } from '@/lib/foreground';
+
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
@@ -8,10 +10,8 @@ export function useLive(userId: string | null) {
   useEffect(() => {
     live.follow(userId);
     if (!userId) return;
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') live.foreground();
-    });
-    return () => subscription.remove();
+    const subscription = onReturnToForeground(AppState, () => live.foreground());
+    return subscription;
   }, [userId]);
   useEffect(() => () => live.stop(), []);
 }

@@ -140,7 +140,7 @@ const ms: Translation = {
   rideSettle,
   live: {
     offline: 'Mungkin tidak terkini',
-    staleAt: 'Mungkin tidak terkini · setakat {{time}}',
+    staleAt: 'Mungkin tidak terkini · data pada {{time}}',
   },
   shell: {
     tabs: {

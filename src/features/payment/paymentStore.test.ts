@@ -236,3 +236,26 @@ describe('payment reloads out of order', () => {
     expect(state.status === 'idle' ? [] : state.payments.map((p) => p.id)).toEqual([all[0].id]);
   });
 });
+
+describe('payment reloads: newer failure', () => {
+  test('R1 ok after R2 failed keeps R1 payments, marked stale', async () => {
+    const service = createFixturePaymentService(OPTIONS);
+    const all = await service.list(FIXTURE_USER_ID);
+    const answers: { ok: (payments: typeof all) => void; fail: () => void }[] = [];
+    const store = createPaymentStore({
+      ...service,
+      list: () => new Promise((ok, fail) => answers.push({ ok, fail: () => fail(new Error('x')) })),
+    });
+    const first = store.ensureLoaded(FIXTURE_USER_ID);
+    const second = store.reload(FIXTURE_USER_ID);
+    answers[1].fail();
+    await second;
+    answers[0].ok(all);
+    await first;
+    const state = store.getSnapshot();
+    expect(state.status).toBe('stale');
+    expect(state.status === 'idle' ? [] : state.payments.map((p) => p.id)).toEqual(
+      all.map((p) => p.id),
+    );
+  });
+});

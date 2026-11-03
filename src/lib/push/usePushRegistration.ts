@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
+import { onReturnToForeground } from '@/lib/foreground';
 import { useI18n } from '@/lib/i18n';
 import { permissionAnswers } from '@/lib/notifications';
 import { uiVerify } from '@/lib/uiVerify';
@@ -15,13 +16,11 @@ export function usePushRegistration(userId: string | null) {
     const sync = () => void pushRegistration.sync(userId, language);
     sync();
     const offAnswers = permissionAnswers.subscribe(sync);
-    const appState = AppState.addEventListener('change', (next) => {
-      if (next === 'active') sync();
-    });
+    const appState = onReturnToForeground(AppState, () => sync());
     const tokens = uiVerify ? null : Notifications.addPushTokenListener(sync);
     return () => {
       offAnswers();
-      appState.remove();
+      appState();
       tokens?.remove();
     };
   }, [userId, language]);

@@ -36,12 +36,11 @@ export function createVerifyTransport(
     onDelivered = () => undefined,
   }: {
     timers?: { set: (run: () => void, ms: number) => unknown };
-    onDelivered?: (labels: string[]) => void;
+    onDelivered?: (label: string) => void;
   } = {},
 ): LiveTransport {
   let sink: ChannelEvents | null = null;
   let started = false;
-  const delivered: string[] = [];
   return {
     open(_userId, events) {
       sink = events;
@@ -55,8 +54,7 @@ export function createVerifyTransport(
             if (!sink) return;
             if ('signal' in step) sink.signal(step.signal);
             else sink.status(step.status);
-            delivered.push(stepLabel(step));
-            onDelivered([...delivered]);
+            onDelivered(stepLabel(step));
           }, step.at);
         }
       }

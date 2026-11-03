@@ -7,12 +7,12 @@ import { getSupabase } from '@/lib/supabase';
 import { uiVerify } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
+import { createExpoToken } from './expoToken';
 import { createPushRegistration, type PushRpc } from './pushRegistration';
 
 const STORED_KEY = 'tapiro.pushToken';
 const VERIFY_CALLS_KEY = 'uiVerifyPushCalls';
 const VERIFY_TOKEN = 'ExponentPushToken[uiVerify]';
-const TOKEN_TIMEOUT_MS = 15_000;
 
 function projectId(): string | null {
   const extra = Constants.expoConfig?.extra as { eas?: { projectId?: unknown } } | undefined;
@@ -20,33 +20,15 @@ function projectId(): string | null {
   return typeof id === 'string' && id.length > 0 ? id : null;
 }
 
-async function withTimeout<T>(task: Promise<T>, ms: number): Promise<T | null> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<null>((resolve) => {
-    timer = setTimeout(() => resolve(null), ms);
-  });
-  try {
-    return await Promise.race([task, timeout]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-let cached: { device: string; expo: string } | null = null;
-
-async function expoToken(): Promise<string | null> {
-  const id = projectId();
-  if (!id) return null;
-  const device = await Notifications.getDevicePushTokenAsync();
-  const key = String(device.data);
-  if (cached?.device === key) return cached.expo;
-  const expo = await withTimeout(
-    Notifications.getExpoPushTokenAsync({ projectId: id, devicePushToken: device }),
-    TOKEN_TIMEOUT_MS,
-  );
-  if (expo) cached = { device: key, expo: expo.data };
-  return expo?.data ?? null;
-}
+const expoToken = createExpoToken({
+  projectId,
+  device: () => Notifications.getDevicePushTokenAsync(),
+  expo: (id, device) =>
+    Notifications.getExpoPushTokenAsync({
+      projectId: id,
+      devicePushToken: device as Notifications.DevicePushToken,
+    }),
+});
 
 function supabaseRpc(): PushRpc {
   const call = async (name: string, args: Record<string, string>) => {

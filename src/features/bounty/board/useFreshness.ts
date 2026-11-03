@@ -2,6 +2,8 @@ import { useIsFocused, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { onReturnToForeground } from '@/lib/foreground';
+
 import { createFreshness } from './freshness';
 
 // A root sheet also blurs the tab route, and a sheet dismissal plus a tab change can land in one
@@ -21,10 +23,10 @@ export function useFreshness(run: () => void) {
   }, [gate, focused]);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') gate.foreground(() => latest.current());
-    });
-    return () => subscription.remove();
+    const subscription = onReturnToForeground(AppState, () =>
+      gate.foreground(() => latest.current()),
+    );
+    return subscription;
   }, [gate]);
 
   useEffect(() => {

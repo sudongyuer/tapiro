@@ -195,22 +195,6 @@ describe('fixture rows that change on a later load', () => {
     expect(second.map((row) => row.bountyId)).toEqual([fixtureLiveBountyId('posterOpen')]);
     expect(second[0].applicantCount).toBeGreaterThan(0);
   });
-
-  test('loads before the wait keep the first rows, so a launch reload cannot change the card', async () => {
-    let at = NOW.getTime();
-    const service = createFixtureLiveService({
-      rows: ['posterOpen'],
-      next: ['posterApplicants'],
-      nextAfterMs: 8_000,
-      failFirstLoad: false,
-      now: () => new Date(at),
-    });
-    await service.list();
-    at += 5_000;
-    expect((await service.list())[0].applicantCount ?? 0).toBe(0);
-    at += 5_000;
-    expect((await service.list())[0].applicantCount).toBeGreaterThan(0);
-  });
 });
 
 describe('live reloads out of order', () => {
@@ -233,5 +217,29 @@ describe('live reloads out of order', () => {
     answers[0](all);
     await first;
     expect(rows(store as ReturnType<typeof flaky>['store'])).toEqual([all[0].bountyId]);
+  });
+});
+
+describe('live reloads: newer failure', () => {
+  test('R1 ok after R2 failed keeps R1 rows, marked stale', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterApplicants', 'applicantNotSelected'],
+      failFirstLoad: false,
+      now: () => NOW,
+    });
+    const all = await service.list();
+    const answers: { ok: (rows: typeof all) => void; fail: () => void }[] = [];
+    const store = createLiveBountyStore({
+      ...service,
+      list: () => new Promise((ok, fail) => answers.push({ ok, fail: () => fail(new Error('x')) })),
+    });
+    const first = store.ensureLoaded(USER);
+    const second = store.reload(USER);
+    answers[1].fail();
+    await second;
+    answers[0].ok(all);
+    await first;
+    expect(rows(store as ReturnType<typeof flaky>['store'])).toEqual(all.map((r) => r.bountyId));
+    expect(store.getSnapshot().status).toBe('stale');
   });
 });

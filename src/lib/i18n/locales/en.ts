@@ -140,7 +140,7 @@ const en: Translation = {
   rideSettle,
   live: {
     offline: 'May not be up to date',
-    staleAt: 'May not be up to date · as of {{time}}',
+    staleAt: 'May not be up to date · data from {{time}}',
   },
   shell: {
     tabs: {

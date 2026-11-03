@@ -135,7 +135,7 @@ export default {
   rideSettle,
   live: {
     offline: '可能不是最新',
-    staleAt: '可能不是最新 · {{time}} 的',
+    staleAt: '可能不是最新 · {{time}} 的数据',
   },
   shell: {
     tabs: {

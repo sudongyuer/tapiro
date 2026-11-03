@@ -2,6 +2,7 @@ import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { onReturnToForeground } from '@/lib/foreground';
 import { useLiveSignal } from '@/lib/live';
 
 import { paymentStore } from './services';
@@ -18,10 +19,8 @@ export function useLivePayments(userId: string | null) {
       return;
     }
     paymentStore.ensureLoaded(userId);
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') paymentStore.reload(userId);
-    });
-    return () => subscription.remove();
+    const subscription = onReturnToForeground(AppState, () => paymentStore.reload(userId));
+    return subscription;
   }, [userId]);
 }
 

@@ -40,13 +40,13 @@ export function createPushRegistration(deps: PushDeps) {
         if (started === epoch) registered = { userId, token, language };
       });
     },
-    async signOut() {
+    async signOut(wait: { expired: boolean } = { expired: false }) {
       epoch += 1;
       await queue;
       const token = registered?.token ?? deps.stored.get();
       registered = null;
       deps.stored.set(null);
-      if (token) await deps.rpc.unregister(token).catch(() => undefined);
+      if (token && !wait.expired) await deps.rpc.unregister(token).catch(() => undefined);
     },
     forget() {
       epoch += 1;

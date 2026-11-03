@@ -3,6 +3,7 @@ import { Settings } from 'react-native';
 import { fixtureBlocked } from '@/features/block/services';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
+import { verifyRecorder } from '@/lib/verifyRecord';
 
 import '../shared/blockFixturePeople';
 import { createFixtureSelectService, fixtureSelectOptions } from './fixtureSelectService';
@@ -16,11 +17,8 @@ const SEEN_KEY = 'uiVerifyNotSelectedSeen';
 const LOADS_KEY = 'uiVerifyApplicantLoads';
 
 function verifySelectService() {
-  const run = uiVerifyArgument('uiVerifyLiveRun') ?? '';
-  const recordLoads = (loads: number) =>
-    Settings.set({ [LOADS_KEY]: JSON.stringify({ run, loads }) });
+  const recordLoad = verifyRecorder(LOADS_KEY);
   Settings.set({ [SELECTED_KEY]: '', [ATTEMPTS_KEY]: 0, [SEEN_KEY]: '' });
-  recordLoads(0);
   return createFixtureSelectService({
     ...fixtureSelectOptions(uiVerifyArgument),
     writeDelayMs: Number(uiVerifyArgument('uiVerifySelectDelayMs')) || VERIFY_WRITE_DELAY_MS,
@@ -28,7 +26,7 @@ function verifySelectService() {
     onSelected: (accepted) => Settings.set({ [SELECTED_KEY]: JSON.stringify(accepted) }),
     onAttempted: (attempts) => Settings.set({ [ATTEMPTS_KEY]: attempts }),
     onSeen: (seen) => Settings.set({ [SEEN_KEY]: JSON.stringify(seen) }),
-    onLoaded: recordLoads,
+    onLoaded: () => recordLoad('load'),
   });
 }
 

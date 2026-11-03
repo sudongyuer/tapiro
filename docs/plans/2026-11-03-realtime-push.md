@@ -111,7 +111,8 @@ Deploy note for the account half: the hosted project needs Realtime "Allow publi
 ### Task 8: Tokens, permission, tap routing
 
 - [x] Register the Expo push token when authorised or provisional (`register_push_token` with the app language);
-      this device registered again on a language change (★, not `set_push_language`); `unregister_push_token` on
+      this device registered again on a language change (★). `set_push_language` is now unused; drop it in a later
+      migration (none in this step); `unregister_push_token` on
       sign-out (account deletion relies on the
       `on delete cascade`, since no session is left for the RPC). Skipped until the EAS `projectId` exists (step 3).
 - [x] The explicit prompt after the first post or application (foundation).

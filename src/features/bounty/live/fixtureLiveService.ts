@@ -36,7 +36,7 @@ export type SeenCall = { bountyId: string; card: SeenCard };
 export type FixtureLiveOptions = {
   rows: readonly LiveFixtureRow[];
   next?: readonly LiveFixtureRow[];
-  nextAfterMs?: number;
+  onLoaded?: () => void;
   failFirstLoad: boolean;
   data?: StatusData;
   now: () => Date;
@@ -53,15 +53,12 @@ export function fixtureLiveRowIds(selection: string | undefined): LiveFixtureRow
   return LIVE_FIXTURE_ROWS.filter((row) => chosen.includes(row));
 }
 
-const NEXT_AFTER_MS = 18_000;
-
 export function fixtureLiveOptions(
   argument: (name: string) => string | undefined,
   now: () => Date = () => new Date(),
 ): FixtureLiveOptions {
   return {
     rows: fixtureLiveRowIds(argument('uiVerifyBountyLive')),
-    nextAfterMs: NEXT_AFTER_MS,
     next: argument('uiVerifyBountyLiveNext')
       ? fixtureLiveRowIds(argument('uiVerifyBountyLiveNext'))
       : undefined,
@@ -233,16 +230,15 @@ function fixtureRow(row: LiveFixtureRow, now: Date): LiveRow {
 
 export function createFixtureLiveService(options: FixtureLiveOptions): LiveBountyService {
   let loads = 0;
-  const createdAt = options.now().getTime();
   const calls: SeenCall[] = [];
   const seen = new Set<string>();
   return {
     async list() {
       loads += 1;
+      options.onLoaded?.();
       if (options.failFirstLoad && loads === 1) throw new Error('fixture live items failed');
       const now = options.now();
-      const later = now.getTime() - createdAt >= (options.nextAfterMs ?? 0);
-      const rows = options.next && loads > 1 && later ? options.next : options.rows;
+      const rows = options.next && loads > 1 ? options.next : options.rows;
       return rows
         .map((row, index) => {
           const first = options.rows[index];

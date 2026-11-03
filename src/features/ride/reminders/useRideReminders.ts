@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import { useEffect, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { onReturnToForeground } from '@/lib/foreground';
 import { useI18n } from '@/lib/i18n';
 import { notices } from '@/lib/notifications';
 
@@ -50,10 +51,8 @@ export function useRideReminders(stage: 'loading' | 'signedOut' | 'onboarding' |
   useEffect(() => {
     if (stage !== 'ready') return;
     void syncRideReminders(t, language);
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') void syncRideReminders(t, language);
-    });
-    return () => subscription.remove();
+    const subscription = onReturnToForeground(AppState, () => void syncRideReminders(t, language));
+    return subscription;
   }, [stage, t, language]);
 }
 
