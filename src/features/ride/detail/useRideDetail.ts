@@ -39,9 +39,9 @@ export function useRideDetail(id: string, now: number, userId: string) {
   useEffect(() => {
     const { load } = state;
     if (load.kind === 'ready' && !load.stale) {
-      void syncOneRide(id, fromDetail(load.detail, userId), t, language);
+      void syncOneRide(id, fromDetail(load.detail, userId), load.loadedAt, t, language);
     } else if (load.kind === 'gone') {
-      void syncOneRide(id, null, t, language);
+      void syncOneRide(id, null, Date.now(), t, language);
     }
   }, [state, id, userId, t, language]);
 

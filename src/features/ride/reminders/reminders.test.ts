@@ -142,9 +142,9 @@ function setup(permission: NoticePermission = 'allowed', start = my('2026-11-04T
 describe('reconciling rides with the device', () => {
   test('scheduling twice from the same data changes nothing', async () => {
     const { reminders, pending } = setup();
-    await reminders.syncAll([ride({ organiser: true, taken: 2 })], copy);
+    await reminders.syncAll([ride({ organiser: true, taken: 2 })], copy, 0);
     const first = await pending();
-    await reminders.syncAll([ride({ organiser: true, taken: 2 })], copy);
+    await reminders.syncAll([ride({ organiser: true, taken: 2 })], copy, 0);
     expect(await pending()).toEqual(first);
     expect(first).toEqual([
       [reminderId('r1', 'goOrCancel'), my(DEPART) - 15 * MINUTE],
@@ -154,9 +154,9 @@ describe('reconciling rides with the device', () => {
 
   test('a later departure reschedules under the same identifiers', async () => {
     const { reminders, pending } = setup();
-    await reminders.syncAll([ride()], copy);
+    await reminders.syncAll([ride()], copy, 0);
     const later = new Date(my(DEPART) + HOUR).toISOString();
-    await reminders.syncRide('r1', ride({ revisedAt: later }), copy);
+    await reminders.syncRide('r1', ride({ revisedAt: later }), copy, 0);
     expect(await pending()).toEqual([[reminderId('r1', 'meetup'), my(DEPART) + 30 * MINUTE]]);
   });
 
@@ -168,22 +168,31 @@ describe('reconciling rides with the device', () => {
       ride({ status: 'closed', myStatus: 'boarded' }),
     ]) {
       const { reminders, pending } = setup();
-      await reminders.syncAll([ride(), ride({ id: 'r2' })], copy);
-      await reminders.syncRide('r1', after, copy);
+      await reminders.syncAll([ride(), ride({ id: 'r2' })], copy, 0);
+      await reminders.syncRide('r1', after, copy, 0);
       expect(await pending()).toEqual([[reminderId('r2', 'meetup'), my(DEPART) - 30 * MINUTE]]);
     }
   });
 
   test('a ride missing from my rides is cancelled, other rides stay', async () => {
     const { reminders, pending } = setup();
-    await reminders.syncAll([ride(), ride({ id: 'r2' })], copy);
-    await reminders.syncAll([ride({ id: 'r2' })], copy);
+    await reminders.syncAll([ride(), ride({ id: 'r2' })], copy, 0);
+    await reminders.syncAll([ride({ id: 'r2' })], copy, 0);
     expect(await pending()).toEqual([[reminderId('r2', 'meetup'), my(DEPART) - 30 * MINUTE]]);
+  });
+
+  test('my rides read before a ride’s own detail do not overrule it', async () => {
+    const { reminders, pending } = setup();
+    await reminders.syncRide('r1', ride(), copy, 200);
+    await reminders.syncAll([], copy, 100);
+    expect(await pending()).toEqual([[reminderId('r1', 'meetup'), my(DEPART) - 30 * MINUTE]]);
+    await reminders.syncAll([], copy, 300);
+    expect(await pending()).toEqual([]);
   });
 
   test('signing out cancels every ride reminder and forgets what was sent', async () => {
     const { reminders, pending, settings } = setup();
-    await reminders.syncAll([ride(), ride({ id: 'r2' })], copy);
+    await reminders.syncAll([ride(), ride({ id: 'r2' })], copy, 0);
     await reminders.clear();
     expect(await pending()).toEqual([]);
     expect(readLedger(settings)).toEqual([]);
@@ -192,20 +201,20 @@ describe('reconciling rides with the device', () => {
   test('without permission nothing is scheduled', async () => {
     for (const permission of ['denied', 'undetermined'] as const) {
       const { reminders, pending } = setup(permission);
-      await reminders.syncAll([ride()], copy);
+      await reminders.syncAll([ride()], copy, 0);
       expect(await pending()).toEqual([]);
     }
   });
 
   test('provisional permission schedules quietly', async () => {
     const { reminders, pending } = setup('provisional');
-    await reminders.syncAll([ride()], copy);
+    await reminders.syncAll([ride()], copy, 0);
     expect((await pending()).length).toBe(1);
   });
 
   test('a time that has passed is not scheduled', async () => {
     const { reminders, pending } = setup('allowed', my(DEPART) - 20 * MINUTE);
-    await reminders.syncAll([ride()], copy);
+    await reminders.syncAll([ride()], copy, 0);
     expect(await pending()).toEqual([]);
   });
 
@@ -218,7 +227,7 @@ describe('reconciling rides with the device', () => {
       dueSince,
     });
     const { reminders, advance } = setup('allowed', my('2026-11-04T11:00:00'));
-    await reminders.syncAll([owing], copy);
+    await reminders.syncAll([owing], copy, 0);
     const ids = new Set([reminderId('r1', 'pay24'), reminderId('r1', 'pay72')]);
     const read = (now: number) => reminderTimes(reminders.ledger.get(), (id) => ids.has(id), now);
     expect(read(my('2026-11-04T11:00:00'))).toEqual({
@@ -226,7 +235,7 @@ describe('reconciling rides with the device', () => {
       nextAt: my('2026-11-05T10:30:00'),
     });
     advance(26 * HOUR);
-    await reminders.syncAll([owing], copy);
+    await reminders.syncAll([owing], copy, 0);
     expect(read(my('2026-11-05T13:00:00'))).toEqual({
       sentAt: my('2026-11-05T10:30:00'),
       nextAt: my('2026-11-07T10:30:00'),

@@ -18,9 +18,12 @@ export const noticeCopy =
     reminderNotice(reminder, ride, t, language);
 
 export function syncRideReminders(t: TFunction, language: string) {
+  const readAt = Date.now();
   return rideService
     .mine()
-    .then((mine) => rideReminders.syncAll(mine.items.map(fromMyRide), noticeCopy(t, language)))
+    .then((mine) =>
+      rideReminders.syncAll(mine.items.map(fromMyRide), noticeCopy(t, language), readAt),
+    )
     .catch(() => {});
 }
 
@@ -32,10 +35,11 @@ export async function askThenSync(t: TFunction, language: string) {
 export function syncOneRide(
   rideId: string,
   ride: ReminderRide | null,
+  readAt: number,
   t: TFunction,
   language: string,
 ) {
-  return rideReminders.syncRide(rideId, ride, noticeCopy(t, language));
+  return rideReminders.syncRide(rideId, ride, noticeCopy(t, language), readAt);
 }
 
 export function useRideReminders(stage: 'loading' | 'signedOut' | 'onboarding' | 'ready') {

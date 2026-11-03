@@ -764,3 +764,76 @@ stickers fail. `bun test` → 1704 pass, 4 fail (the known worktree `check-file-
 `format:check`, `check:size`, `design-check`, `check-specs`, `check-story-map` → exit 0. `verify:build`, then
 `ride_settle_split` → pass and `ride_settled` → pass on a rerun (the first run's UI read 已收进贴纸本 but the call log
 plist lagged past 10 s; see the retro).
+
+## Implementation Record (2026-11-03, step 7)
+
+PR: pending (`feat/carpool-reminders`). Status stays `approved`: the carpool milestone (UI run and walkthrough) remains.
+
+### What was built
+
+- Server (`supabase/migrations/20261102001100_ride_event_outbox.sql`): the realtime spec's outbox `public.events`
+  (recipient, kind, subject, push, `push_error`) with the push flag per kind in `private.event_kinds`; no client access.
+  An `after insert` trigger on `ride_events` fans every ride transition out to its recipients in the same transaction:
+  join request → organiser; approve, decline → the requester; withdraw, leave → organiser; cancel, revised time →
+  accepted members and applicants; 集合, 我到了 / undo / 晚到 (`ride.arrival`), 车牌, 车费怎么分 → organiser and accepted
+  members; 出发, 到了, split, receipt, settled, appeal → boarded members; no-show, appeal confirmed or lapsed, share changed →
+  that member; 金额不对 → organiser; the actor is never told of their own action. A trigger on ride `payments` adds
+  `payment.marked_paid` (payee), `payment.not_received` (payer) and `payment.settled` (payer, the n−1 settles).
+  Push (170 A, must act or waiting): requested, approved, declined, cancelled, time revised, no-show, appealed, split
+  sent, 金额不对, share changed, marked paid, not received. Live only: the rest, including 我到了.
+- The recording sender: `public.push_recordings`, one row per push event with `thread_id` `ride:<id>` (grouped per ride)
+  and `send_at`; between 23:00 and 08:00 Malaysia time a push is held until 08:00 (`quiet`), except for a ride in
+  `gathering` or `departed` (the ride you are on). `delete_old_events()` with the daily cron `events-cleanup-daily`
+  removes events after 7 days. `my_rides` gains `myDueSince` (the rider's own due payment) and `eta` (accepted and
+  boarded members). Nothing was deployed or pushed to the hosted project.
+- Local reminders (173 A, `src/features/ride/reminders/`): stable identifiers `ride:<id>:<kind>`:
+  - `meetup` at T-30 (集合 starts) for the organiser and accepted members of an open or gathering ride;
+  - `goOrCancel` at T-15 for the organiser while seats are empty (the carried 「照常走还是取消」 rule);
+  - `arrive` at the typed 预计到 for the organiser of a departed ride (the 到了 reminder; none without 预计到);
+  - `pay24` and `pay72` for a boarded rider whose payment is `due`, 24 h and 72 h after the split, moved out of quiet
+    hours to 08:00.
+  `planReminders` computes them from the server's data only; `noticeDiff` (`src/lib/notifications/reconcile.ts`)
+  cancels what is no longer wanted, reschedules a changed time or copy under the same identifier and never schedules a
+  time already past. Reconciled from `my_rides` on sign-in, on every foreground and after the first publish or
+  request; from `ride_detail` on every fresh detail load (a revised time, leave, cancel, block, settle or
+  `ride_not_found` cancels or moves that ride's reminders); a detail read after a `my_rides` read wins for that ride.
+  Sign-out and account deletion cancel every ride reminder and clear the ledger. Copy in `rideReminders.*`
+  (zh-Hans, en, ms), in the app language at scheduling time; a language change reschedules on the next sync.
+- Permission (`src/lib/notifications/`): provisional authorisation when onboarding finishes (no prompt); the explicit
+  prompt once, after the first ride published or the first ride request; provisional is read from `ios.status`
+  (AGENTS.md), and reminders are scheduled when allowed or provisional, never when denied or undetermined. A tap on a
+  ride reminder opens that ride's detail, from a cold start too (`getLastNotificationResponseAsync`).
+- The owing card (`rideSettle.owe.next` / `.sent`): 「Tapiro 会在明天 10:30 提醒你」 while a pay reminder is scheduled on
+  this device, 「Tapiro 今天 10:30 提醒过你」 once its time has passed, else the old general line.
+- Native: `expo-notifications` 57.0.24; `plugins/withoutPushEntitlement.js` strips the `aps-environment` entitlement
+  the package's auto-applied plugin adds, which a free team cannot sign (as for Sign in with Apple). Verify mode
+  replaces permission and scheduling at the boundary (`-uiVerifyNotifications allowed|provisional|denied|undetermined`,
+  pending reminders in `uiVerifyScheduledNotices`).
+
+### Deviations from the design
+
+| Design said | Shipped | Why | Confirmed by |
+| --- | --- | --- | --- |
+| `notify` Edge Function with a `RecordingSender` reads `push_tokens` and writes a table | A trigger on `events` writes `push_recordings` with the thread and the quiet-hours hold; no `push_tokens`, no copy yet | Delivery waits on the Apple account; the account half's `ExpoSender` can drain the same rows. The row holds kind and ids only, so copy is built at send time in the recipient's language | not intent-changing |
+| Each transition inserts its events | One trigger on `ride_events` (every ride RPC already logs there) and one on ride payments; same transaction | No RPC had to be rewritten; recipients come from `ride_members` at that moment | not intent-changing |
+| Events also feed Broadcast (`realtime.send`) | No send trigger | The live layer is not built (status queue item 2) | not intent-changing |
+| (not listed) push for 车牌 and 集合 changes | Live only; 集合 itself is the local `meetup` reminder | 170 A pushes only must-act and waiting; a server push at T-30 would duplicate the local one | not intent-changing |
+| (not listed) events for a membership ended by a block or an account deletion | None | Telling either side would reveal the block | not intent-changing |
+| The home card reminds the organiser to press 到了 (210 A) | A local reminder at the typed 预计到; the home card reminder is still not built | The home card waits for the ride live source; without 预计到 there is no time to remind at | not intent-changing |
+| 「Tapiro 今天 07:26 提醒过你」 | 「提醒过你」 only for a reminder this device scheduled whose time has passed; 「会在…提醒你」 for the next one | A local notification gives no delivery receipt; the card never names a reminder that was not scheduled | not intent-changing |
+| Reminders for 还没收到 (foundation `reminderDue` covers `due` only) | Local reminders only for `due`; 还没收到 records a `payment.not_received` push | Same rule as `src/lib/unpaid.ts` | not intent-changing |
+
+### Verification
+
+- See the PR body for the run on this branch (pgTAP on an isolated stack, unit tests, UI build, smoke and
+  `ride_settle_owing`).
+
+### Known limits
+
+- Reminders are scheduled from what this device last read. A ride approved, revised or filled while the app stays in
+  the background keeps its old reminders until the next foreground or detail load; the T-15 prompt can then fire for a
+  ride that filled meanwhile. Server pushes for those events arrive with the Apple account.
+- 「提醒过你」 assumes the system delivered the scheduled reminder; notifications switched off in Settings after
+  scheduling are not detected until the next sync.
+- The explicit prompt is not yet asked after the first bounty post or application; the shared flag
+  (`tapiro.notificationsAsked`) is ready for bounty.

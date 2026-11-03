@@ -8,6 +8,7 @@ import { nextLedger, readLedger, writeLedger, type LedgerEntry } from './ledger'
 import {
   allRidesScope,
   planReminders,
+  reminderId,
   rideIdOf,
   rideScope,
   type PlannedReminder,
@@ -32,6 +33,7 @@ export function createRideReminders(deps: ReminderDeps) {
   if (deps.fresh) writeLedger(deps.settings, []);
   const ledger = createStore<LedgerEntry[]>(readLedger(deps.settings));
   let queue: Promise<void> = Promise.resolve();
+  const rideReadAt = new Map<string, number>();
 
   const run = (task: () => Promise<void>) => {
     queue = queue.then(task).catch(() => {});
@@ -46,12 +48,13 @@ export function createRideReminders(deps: ReminderDeps) {
     run(async () => {
       const now = deps.now();
       const allowed = canSchedule(await deps.permission());
+      const current = rides.filter((ride) => inScope(reminderId(ride.id, 'meetup')));
       const desired = allowed
-        ? rides.flatMap((ride) => planReminders(ride).map((reminder) => copy(reminder, ride)))
+        ? current.flatMap((ride) => planReminders(ride).map((reminder) => copy(reminder, ride)))
         : [];
       const diff = noticeDiff(await deps.scheduler.scheduled(), desired, inScope, now);
       await applyNoticeDiff(deps.scheduler, diff);
-      const known = new Set(rides.map((ride) => ride.id));
+      const known = new Set(current.map((ride) => ride.id));
       const next = nextLedger(
         ledger.get(),
         {
@@ -67,9 +70,14 @@ export function createRideReminders(deps: ReminderDeps) {
     });
 
   return {
-    syncAll: (rides: readonly ReminderRide[], copy: NoticeCopy) => sync(allRidesScope, rides, copy),
-    syncRide: (rideId: string, ride: ReminderRide | null, copy: NoticeCopy) =>
-      sync(rideScope(rideId), ride ? [ride] : [], copy),
+    syncAll: (rides: readonly ReminderRide[], copy: NoticeCopy, readAt: number) => {
+      const fresher = (id: string) => (rideReadAt.get(rideIdOf(id) ?? '') ?? -Infinity) > readAt;
+      return sync((id) => allRidesScope(id) && !fresher(id), rides, copy);
+    },
+    syncRide: (rideId: string, ride: ReminderRide | null, copy: NoticeCopy, readAt: number) => {
+      rideReadAt.set(rideId, Math.max(readAt, rideReadAt.get(rideId) ?? -Infinity));
+      return sync(rideScope(rideId), ride ? [ride] : [], copy);
+    },
     clear: () =>
       run(async () => {
         const scheduled = await deps.scheduler.scheduled();
@@ -78,6 +86,7 @@ export function createRideReminders(deps: ReminderDeps) {
         }
         writeLedger(deps.settings, []);
         ledger.set([]);
+        rideReadAt.clear();
       }),
     ledger,
     settled: () => queue,

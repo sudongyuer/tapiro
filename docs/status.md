@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-02.
+Updated: 2026-11-03.
 
 ## Built and merged
 
@@ -14,22 +14,22 @@ Updated: 2026-11-02.
 | Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                     |
 | Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                    |
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                         |
-| Carpool steps 1–6      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, step 6 到了 and 结清 (branch `feat/carpool-settle`) |
+| Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, step 7 reminders and the event outbox (branch `feat/carpool-reminders`) |
 
 ## In progress
 
-- Carpool step 7: local reminders (realtime spec 173 A) and the carpool event kinds.
+- Carpool milestone: run the `ride_*` UI cases once (zh-Hans light, plus dark, `en` and `ms` as Pace selects), then the
+  owner's Simulator walkthrough and the `ride.remind.*` device checks; set the carpool spec to `implemented`.
 
 ## Queue
 
-1. Carpool milestone: run the `ride_*` UI cases once (zh-Hans light, plus dark, `en` and `ms` as Pace selects), then the
-   owner's Simulator walkthrough; set the carpool spec to `implemented`.
-2. Shared live-update layer: `docs/specs/2026-10-31-realtime-push-design.md` (approved, not built). Carpool and chat
-   refetch and poll until it exists.
-3. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7), 问小貘
+1. Shared live-update layer: `docs/specs/2026-10-31-realtime-push-design.md` (approved, not built). Carpool and chat
+   refetch and poll until it exists. The `public.events` outbox and the recording sender exist (carpool step 7); the
+   channel, the Broadcast trigger, bounty kinds and `push_tokens` do not.
+2. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7), 问小貘
    (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
    (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6).
-4. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
+3. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
 
 ## Owner decisions pending
 
