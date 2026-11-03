@@ -153,6 +153,7 @@ Every answered question and the defaults drawn on each board. Board names are th
 | 232 ★ default | 我到了 can be undone until 出发, not after. ★ by default, owner may veto                                                                                                                                             | RideMeetup1    |
 | 220 A         | Editing one rider's share leaves the others fixed; the organiser's row is the total minus the others; 发给… is disabled while the others exceed the total. Owner, 2026-11-02                                         | RideSettle1    |
 | 233 A         | An appeal no boarded member confirms within 72 h of the actual 出发 lapses: the no-show counts again, waiver as if no appeal had happened; a confirmed appeal still removes it. Owner, 2026-11-02                    | RideMeetup1    |
+| 234 owner     | Times the app shows or lets you pick (rides and bounties: clocks, 今天 / 明天, day groups, pickers) use the device's system time zone; server rules stay in Malaysia time. Owner, 2026-11-03                       | —              |
 
 Questions 220 and 233 touch money or reputation and were answered by the owner on 2026-11-02 (see "Needs the owner").
 
@@ -850,3 +851,60 @@ PR: https://github.com/sudongyuer/tapiro/pull/54 (`feat/carpool-reminders`). Sta
   scheduling are not detected until the next sync.
 - The explicit prompt is not yet asked after the first bounty post or application; the shared flag
   (`tapiro.notificationsAsked`) is ready for bounty.
+
+## Implementation Record (2026-11-03, device time zone, 234)
+
+Decision 234 (owner, 2026-11-03, 「App都用系统时区」): every time the app shows or lets the user pick uses the device's
+system time zone, in rides and bounties alike. This overrides the Malaysia-time ride clock and pickers of step 4 and
+PR 55. Status stays `approved`: the carpool milestone walkthrough is still to come.
+
+### What was built
+
+- `src/lib/deviceClock.ts` (`localDayKey`, `localClock`, `localTimeOn`, `addDays`) replaces the Malaysia helpers in
+  `src/features/ride/rideClock.ts` and `src/features/bounty/board/malaysiaClock.ts` (deleted). Every ride clock,
+  今天 / 明天 label, day subheading, reminder line and the flight time use the device zone; `flightTime` rolls to the
+  next calendar day, which stays right across a daylight-saving change.
+- The ride `DatePicker`s (depart, flight, revised time, ETA) drop `environment('timeZone', …)`; `malaysiaPicker.ts` is
+  deleted, so the system picker uses the device zone.
+- The list groups 可以加入 by the device day of `departAt`. The client no longer reads `nearby_rides.day` (the
+  server's Malaysia day, still used for its sort and cursor), so a ride the server sorted under another Malaysia day
+  joins its device-day group.
+- Bounty: the stale-refresh clocks use `localClock`; the date free posts come back and the date a used waiver comes
+  back (`dateText`, was `malaysiaDate`) show the device-zone date of the server's instant. `malaysiaDay` and
+  `MALAYSIA_OFFSET_MS` are removed.
+- Left in Malaysia time on purpose: everything computed on the server (monthly free posts, coin caps, reputation
+  recompute, ride jobs, the push outbox's quiet hours), the local reminders' quiet hours (`src/lib/notifications/quietHours.ts`,
+  23:00–08:00 Malaysia, kept equal to the outbox), and fixtures that stand in for server data (`fixturePostService`
+  next month, the BNM rate date).
+- UI runner: every run launches the app with `SIMCTL_CHILD_TZ` (default `Asia/Kuala_Lumpur`, or the case's
+  `TIME_ZONE`) and runs the case script with the same `TZ`, so cases do not depend on the Mac's zone.
+  `ride_create_form`, `ride_create_worst` and `ride_settle_owing` run in `Europe/London`.
+
+### Deviations from the design
+
+| Design said | Shipped | Why | Confirmed by |
+| --- | --- | --- | --- |
+| Rides in Malaysia time (step 4, PR 55) | Device zone for display and pickers | Decision 234 | owner, 2026-11-03 |
+| Day groups from the server's `day` | Grouped on the client by the device day | A server day in Malaysia time would label a traveller's rides under the wrong 今天 / 明天 | not intent-changing |
+
+### Verification
+
+- `bun test` → 1751 pass, 0 fail before the iOS build (after it, the 4 known `scripts/check-file-size.test.ts` cases
+  inside `.claude/worktrees` fail), also with `TZ` set to `Asia/Kuala_Lumpur`, `Europe/London`, `America/Los_Angeles`,
+  `Asia/Tokyo` and `Pacific/Kiritimati`. Zone tests pin the zone with `src/lib/inTimeZone.ts` and assert two or more
+  zones: `src/lib/deviceClock.test.ts`, `src/features/ride/rideClock.test.ts`, `src/features/ride/listState.test.ts`,
+  `src/features/ride/create/validate.test.ts` (a flight across the 2026-11-01 Los Angeles clock change),
+  `src/features/bounty/post/timeText.test.ts`, `src/features/bounty/status/actionCopy.test.ts`.
+- `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `bun run check:size`,
+  `node scripts/design-check.mjs`, `node scripts/check-specs.mjs --dir docs/specs`, `node scripts/check-story-map.mjs`,
+  `python3 -m unittest` in `verification/ui` → exit 0.
+- `bun run verify:build`, then 12 cases in zh-Hans light (ride_create_form, ride_create_worst, ride_settle_owing,
+  ride_list, ride_list_failed, ride_detail, ride_create_confirm, ride_meetup_stale, bounty_board_states,
+  bounty_post_no_balance, bounty_status_states, bounty_board_map_states) → all pass; `bun run verify:smoke` → pass.
+  On a Mac in Los Angeles at 10:50 UTC, `ride_create_form` (London) read the first quick time 「今天 11:30」, the London
+  clock, and `bounty_board_states` (default zone) read 「下面是 18:48 的」, Kuala Lumpur time.
+
+### Known limits
+
+- A server day boundary shown as a date (free posts back, waiver back) is the device-zone date of that instant: outside
+  UTC+8 it can read the day before the Malaysian date, and the hour is not shown.

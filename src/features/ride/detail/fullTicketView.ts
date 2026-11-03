@@ -2,8 +2,8 @@ import type { TFunction } from 'i18next';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { formatMoney } from '@/lib/money';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { gathersAt } from '../rideTimes';
 import { ticketModel, type TicketTone } from '../ticket';
 import { statusText, ticketA11y, whenText } from '../ticketView';
@@ -103,7 +103,7 @@ export function fullTicketView(
     : t('ride.ticket.noEstimate');
   const airport = [
     ...(model.airport?.flight != null
-      ? [cell('flight', t('ride.detail.cell.flight'), malaysiaClock(model.airport.flight))]
+      ? [cell('flight', t('ride.detail.cell.flight'), localClock(model.airport.flight))]
       : []),
     ...(model.airport?.bags
       ? [
@@ -129,7 +129,7 @@ export function fullTicketView(
         ),
       ]
     : [
-        cell('gather', t('ride.detail.cell.gather'), malaysiaClock(gathersAt(ride))),
+        cell('gather', t('ride.detail.cell.gather'), localClock(gathersAt(ride))),
         cell('seats', t('ride.detail.cell.seats'), `${model.taken}/${model.seats}`),
         cell('perPerson', t('ride.detail.cell.perPerson'), perPerson),
       ];
@@ -139,7 +139,7 @@ export function fullTicketView(
     tone: meetup ? ('urgent' as const) : model.tone,
     icon: meetup ? ('clock' as SFSymbol) : ICONS[model.status.kind],
     time: meetup ? t('ride.detail.meetupWhen', { when }) : when,
-    oldTime: ride.revisedAt ? malaysiaClock(Date.parse(ride.departAt)) : null,
+    oldTime: ride.revisedAt ? localClock(Date.parse(ride.departAt)) : null,
     countdown: meetup
       ? {
           number: String(left.minutes),
@@ -174,7 +174,7 @@ export function fullTicketView(
         ...view,
         flight:
           model.airport?.flight != null
-            ? t('ride.ticket.flight', { time: malaysiaClock(model.airport.flight) })
+            ? t('ride.ticket.flight', { time: localClock(model.airport.flight) })
             : null,
         bags: model.airport?.bags ? t('ride.ticket.bags', { count: model.airport.bags }) : null,
         amount: perPerson,

@@ -1,6 +1,6 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
+import { addDays, localDayKey, localTimeOn } from '@/lib/deviceClock';
 
-import { malaysiaDayKey, malaysiaTime } from '../rideClock';
 import type { RideMember, RideDetail, RideRequest, Tier } from './types';
 
 export const FIXTURE_VIEWER = '00000000-0000-4000-8000-000000000001';
@@ -25,7 +25,6 @@ export const DETAIL_SCENES = [
 export type DetailScene = (typeof DETAIL_SCENES)[number];
 
 const MINUTE = 60_000;
-const DAY = 24 * 60 * MINUTE;
 const iso = (time: number) => new Date(time).toISOString();
 
 export const KLIN = 'fixture-ride-xiaolin';
@@ -47,7 +46,7 @@ const LONG_NOTE =
   '我有一个 28 寸的大箱子和一个登机箱，还有一把吉他，可以放后备箱吗？如果放不下我可以抱着吉他坐后排，麻烦小林确认一下';
 
 function tomorrowAt(now: number, hours: number, minutes: number) {
-  return malaysiaTime(malaysiaDayKey(now + DAY), hours, minutes);
+  return localTimeOn(addDays(localDayKey(now), 1), hours, minutes);
 }
 
 export type Person = { id: string; name: string; tier?: Tier };
@@ -75,7 +74,6 @@ function base(now: number, patch: Partial<RideDetail>): RideDetail {
     dest: { label: 'KLIA2 第 2 航站楼', short: 'KLIA2', kind: 'airport' },
     departAt: iso(departs),
     revisedAt: null,
-    day: malaysiaDayKey(departs),
     status: 'open',
     seats: 3,
     taken: 2,
@@ -139,7 +137,6 @@ function meetup(now: number, minutesLeft: number, patch: Partial<RideDetail> = {
   const departs = now + minutesLeft * MINUTE;
   return base(now, {
     departAt: iso(departs),
-    day: malaysiaDayKey(departs),
     flightDepartsAt: iso(departs + 160 * MINUTE),
     status: 'gathering',
     seats: 4,
@@ -264,7 +261,6 @@ export function fixtureRideDetail(
         start: { label: 'Mid Valley Megamall North Court', short: 'Mid Valley', kind: 'mall' },
         dest: { label: 'Sunway Geo', short: '双威', kind: 'home' },
         departAt: iso(departs),
-        day: malaysiaDayKey(departs),
         seats: 4,
         taken: 1,
         estimate: { minor: 3_600, currency: 'MYR' },

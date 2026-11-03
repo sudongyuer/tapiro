@@ -112,6 +112,9 @@ class Declarations(unittest.TestCase):
             parse_declarations("BASE = ['src/a/']\nDEPS = BASE + ['src/b/']\n")
         with self.assertRaisesRegex(ValueError, 'LOCALES must be a list of strings'):
             parse_declarations("LOCALES = 'ms'\n")
+        with self.assertRaisesRegex(ValueError, 'TIME_ZONE must be a zone name string'):
+            parse_declarations("TIME_ZONE = ['Europe/London']\n")
+        self.assertEqual(parse_declarations("TIME_ZONE = 'Europe/London'\n"), {'TIME_ZONE': 'Europe/London'})
 
     def test_every_case_declares_literals_the_runner_can_read(self):
         for case in sorted((HERE / 'cases').glob('*.py')):

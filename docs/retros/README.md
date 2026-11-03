@@ -34,3 +34,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-02 | status page            | 0               | 0             | ~0                                          | 1                       | 0                  |
 | 2026-11-03 | carpool step 7         | pending         | 0             | ~25 min (fixture clock, worktree guard)     | 0                       | pending            |
 | 2026-11-03 | carpool milestone      | 15              | 3             | ~0 (cases first run at the milestone)       | 0                       | 0                  |
+| 2026-11-03 | device time zone (234) | 0               | 0             | ~0                                          | 0                       | 1 (PR 55 pickers)  |

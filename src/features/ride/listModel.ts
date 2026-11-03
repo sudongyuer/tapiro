@@ -1,3 +1,5 @@
+import { localDayKey } from '@/lib/deviceClock';
+
 import { dayRelation, type DayRelation } from './rideClock';
 import type { RideListData, RideSummary } from './types';
 
@@ -11,13 +13,14 @@ export type RideListModel = {
 };
 
 export function groupByDay(rides: readonly RideSummary[], now: number): DayGroup[] {
-  const groups: DayGroup[] = [];
+  const groups = new Map<string, DayGroup>();
   for (const ride of rides) {
-    const last = groups.at(-1);
-    if (last && last.day === ride.day) last.rides.push(ride);
-    else groups.push({ day: ride.day, relation: dayRelation(ride.day, now), rides: [ride] });
+    const day = localDayKey(Date.parse(ride.departAt));
+    const group = groups.get(day);
+    if (group) group.rides.push(ride);
+    else groups.set(day, { day, relation: dayRelation(day, now), rides: [ride] });
   }
-  return groups;
+  return [...groups.values()].sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : 0));
 }
 
 export function rideListModel(data: RideListData, now: number): RideListModel {

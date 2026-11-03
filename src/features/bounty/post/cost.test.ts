@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { costLine, payTarget, malaysiaDay } from './cost';
+import { costLine, payTarget } from './cost';
 import type { PostStatus, UnpaidSummary } from './types';
 
 const NEXT = '2026-10-31T16:00:00Z';
@@ -64,14 +64,6 @@ describe('costLine', () => {
 
   test('unpaid items without the blocked flag do not block', () => {
     expect(costLine(status({ freePostsLeft: 2, unpaid: [jie] })).kind).toBe('free');
-  });
-});
-
-describe('malaysiaDay', () => {
-  test('reads the calendar day in Malaysia time', () => {
-    expect(malaysiaDay(NEXT)).toEqual({ year: 2026, month: 11, day: 1 });
-    expect(malaysiaDay('2026-11-30T15:59:59Z')).toEqual({ year: 2026, month: 11, day: 30 });
-    expect(malaysiaDay('2026-12-31T16:00:00Z')).toEqual({ year: 2027, month: 1, day: 1 });
   });
 });
 

@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 
 import { formatMoney, type Money } from '@/lib/money';
 
-import { malaysiaDate } from '../post/timeText';
+import { dateText } from '../post/timeText';
 import { codePoints } from '../post/validate';
 import type { SheetCopy } from '../shared/askSheet';
 import { ISSUE_REASON_MAX, type CancelPreview, type PostCharge, type StatusRole } from './types';
@@ -23,7 +23,7 @@ export function cancelSheetCopy(
     if (!preview.waiverBackAt) return t(`bounty.cancel.counted${side}Undated`, { name });
     return t(`bounty.cancel.counted${side}`, {
       name,
-      date: malaysiaDate(preview.waiverBackAt, language),
+      date: dateText(preview.waiverBackAt, language),
     });
   })();
   return {

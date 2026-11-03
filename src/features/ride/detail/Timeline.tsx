@@ -5,8 +5,8 @@ import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { ArrivalRow, displayName, SeatRow } from './Avatars';
 import {
   activeMembers,
@@ -65,8 +65,8 @@ function Step({
       : step.at === null
         ? ''
         : step.estimate
-          ? t('ride.detail.steps.about', { time: malaysiaClock(step.at) })
-          : malaysiaClock(step.at);
+          ? t('ride.detail.steps.about', { time: localClock(step.at) })
+          : localClock(step.at);
   const past = step.state === 'past';
   return (
     <View style={styles.step} testID={`ride-detail-step-${step.key}`}>
@@ -173,7 +173,7 @@ function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKe
               text={t('ride.detail.steps.joined', {
                 name: displayName(joined, viewerId, t),
                 tier: t(`bounty.tier.${joined.tier}`),
-                time: malaysiaClock(Date.parse(joined.joinedAt)),
+                time: localClock(Date.parse(joined.joinedAt)),
               })}
             />
           ) : null}
@@ -218,9 +218,9 @@ function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKe
             >
               {t('ride.detail.arrival.lateLine', {
                 name: displayName(m, viewerId, t),
-                at: malaysiaClock(state.said ?? now),
+                at: localClock(state.said ?? now),
                 count: state.minutes,
-                until: malaysiaClock(state.until),
+                until: localClock(state.until),
               })}
             </AppText>
           ))}
@@ -230,7 +230,7 @@ function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKe
               style={{ color: color('--color-warning') }}
               testID="ride-detail-live-stale"
             >
-              {t('ride.detail.staleLive', { time: malaysiaClock(staleAt) })}
+              {t('ride.detail.staleLive', { time: localClock(staleAt) })}
             </AppText>
           ) : null}
         </>

@@ -86,7 +86,6 @@ export function toRideSummary(value: unknown): RideSummary {
     dest: place(body.dest, 'dest'),
     departAt: time(body.departAt, 'departAt'),
     revisedAt: optionalTime(body.revisedAt, 'revisedAt'),
-    day: text(body.day, 'day'),
     status,
     seats: count(body.seats, 'seats'),
     taken: count(body.taken, 'taken'),

@@ -2,14 +2,15 @@ import type { TFunction } from 'i18next';
 
 import { formatMoney } from '@/lib/money';
 import type { LocalNotice } from '@/lib/notifications';
+import { localDayKey } from '@/lib/deviceClock';
 
-import { dayRelation, malaysiaDayKey } from '../rideClock';
+import { dayRelation } from '../rideClock';
 import { whenText } from '../ticketView';
 import type { PlannedReminder, ReminderRide } from './plan';
 
 export function reminderWhen(time: number, now: number, t: TFunction, language: string) {
   const text = whenText(time, now, t, language);
-  if (dayRelation(malaysiaDayKey(time), now) === 'other') return text;
+  if (dayRelation(localDayKey(time), now) === 'other') return text;
   return text.charAt(0).toLocaleLowerCase(language) + text.slice(1);
 }
 

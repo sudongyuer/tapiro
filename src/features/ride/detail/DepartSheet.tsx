@@ -9,8 +9,8 @@ import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { displayName } from './Avatars';
 import { arrival, departCandidates, departPreticked } from './detailModel';
 import { SheetShell } from './SheetShell';
@@ -78,10 +78,10 @@ function DepartForm({
   const line = (member: RideMember) => {
     const state = arrival(member, now);
     if (state.kind === 'arrived')
-      return t('ride.detail.depart.arrivedAt', { time: malaysiaClock(state.at) });
+      return t('ride.detail.depart.arrivedAt', { time: localClock(state.at) });
     if (state.kind === 'late' && state.said !== null) {
       return t('ride.detail.depart.lateLine', {
-        at: malaysiaClock(state.said),
+        at: localClock(state.said),
         count: state.minutes,
       });
     }
@@ -118,7 +118,7 @@ function DepartForm({
             {ride.arrivedAt ? (
               <Text modifiers={[secondary, font({ textStyle: 'footnote' })]}>
                 {t('ride.detail.depart.arrivedAt', {
-                  time: malaysiaClock(Date.parse(ride.arrivedAt)),
+                  time: localClock(Date.parse(ride.arrivedAt)),
                 })}
               </Text>
             ) : null}

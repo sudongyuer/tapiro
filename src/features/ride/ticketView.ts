@@ -2,8 +2,9 @@ import type { TFunction } from 'i18next';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { CURRENCIES, formatMoney, type Money } from '@/lib/money';
+import { localClock, localDayKey } from '@/lib/deviceClock';
 
-import { dayKeyDate, dayRelation, malaysiaClock, malaysiaDayKey } from './rideClock';
+import { dayKeyDate, dayRelation } from './rideClock';
 import { ticketModel, type TicketMine, type TicketStatus, type TicketTone } from './ticket';
 import type { RideSummary } from './types';
 
@@ -66,8 +67,8 @@ export function dayText(dayKey: string, now: number, t: TFunction, language: str
 
 export function whenText(time: number, now: number, t: TFunction, language: string) {
   return t('ride.ticket.time', {
-    day: dayText(malaysiaDayKey(time), now, t, language),
-    clock: malaysiaClock(time),
+    day: dayText(localDayKey(time), now, t, language),
+    clock: localClock(time),
   });
 }
 
@@ -119,7 +120,7 @@ export function rideTicketView(
   const stub = shareStub(ride, options.mine ?? null, t, language);
   const time = options.showDay
     ? whenText(model.departs, options.now, t, language)
-    : malaysiaClock(model.departs);
+    : localClock(model.departs);
   const view = {
     status: statusText(model.status, t),
     tone: model.tone,
@@ -129,7 +130,7 @@ export function rideTicketView(
     labels: t('ride.ticket.route', { from: ride.start.label, to: ride.dest.label }),
     flight:
       model.airport?.flight != null
-        ? t('ride.ticket.flight', { time: malaysiaClock(model.airport.flight) })
+        ? t('ride.ticket.flight', { time: localClock(model.airport.flight) })
         : null,
     bags: model.airport?.bags ? t('ride.ticket.bags', { count: model.airport.bags }) : null,
     ...(stub

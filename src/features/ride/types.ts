@@ -15,7 +15,6 @@ export type RideSummary = {
   dest: RidePlace;
   departAt: string;
   revisedAt: string | null;
-  day: string;
   status: RidePhase;
   seats: number;
   taken: number;

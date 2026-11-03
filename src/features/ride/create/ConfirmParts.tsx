@@ -10,8 +10,8 @@ import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { deviceDecimal } from '@/lib/deviceDecimal';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { whenText } from '../ticketView';
 import type { RideDraft } from './draft';
 import { bagsLine, draftPerPerson } from './draftTicket';
@@ -47,7 +47,7 @@ export function SummarySection({ draft, now }: { draft: RideDraft; now: number }
       />
       <Row
         label={t('ride.create.confirm.gather')}
-        value={t('ride.create.confirm.gatherValue', { time: malaysiaClock(gatherTime(departs)) })}
+        value={t('ride.create.confirm.gatherValue', { time: localClock(gatherTime(departs)) })}
         testID="ride-confirm-gather"
       />
       <Row

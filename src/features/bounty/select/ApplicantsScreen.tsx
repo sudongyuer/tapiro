@@ -9,8 +9,8 @@ import { InlineState } from '@/ui/InlineState';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../board/malaysiaClock';
 import { selectedHelper } from './applicantsController';
 import { ApplicantSection, ApplicantsHeader, StateRow } from './ApplicantRows';
 import { applicantsView } from './applicantsView';
@@ -111,7 +111,9 @@ export function ApplicantsScreen({
           <StateRow>
             <InlineState
               tone="warning"
-              text={t('bounty.select.refreshFailed', { time: malaysiaClock(view.stale.loadedAt) })}
+              text={t('bounty.select.refreshFailed', {
+                time: localClock(Date.parse(view.stale.loadedAt)),
+              })}
               action={{ ...retry, busy: view.stale.refreshing }}
               testID="bounty-applicants-stale"
             />

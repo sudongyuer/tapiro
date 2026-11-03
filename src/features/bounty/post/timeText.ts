@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next';
 
-import { malaysiaDay } from './cost';
 import type { TimeChoice } from './types';
 
 const DAY_MS = 86_400_000;
@@ -31,13 +30,8 @@ export function timeParts(iso: string, language: string, now: Date): TimeParts {
   };
 }
 
-export function malaysiaDate(iso: string, language: string) {
-  const { year, month, day } = malaysiaDay(iso);
-  return new Intl.DateTimeFormat(language, {
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(year, month - 1, day)));
+export function dateText(iso: string, language: string) {
+  return new Intl.DateTimeFormat(language, { month: 'long', day: 'numeric' }).format(new Date(iso));
 }
 
 export function timeLine(time: TimeChoice, t: TFunction, language: string, now: Date) {

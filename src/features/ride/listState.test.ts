@@ -1,39 +1,49 @@
 import { describe, expect, test } from 'bun:test';
 
+import { inTimeZone } from '@/lib/inTimeZone';
+
 import { groupByDay, rideListModel } from './listModel';
 import { createRideList } from './listState';
-import { malaysiaDayKey } from './rideClock';
 import type { RideListData, RideSummary } from './types';
 
 const NOW = Date.parse('2026-11-02T14:07:00Z');
 
-const ride = (id: string, day: string) => ({ id, day }) as RideSummary;
+const ride = (id: string, departAt: string) => ({ id, departAt }) as RideSummary;
 
 const data = (patch: Partial<RideListData> = {}): RideListData => ({
   mine: [],
-  joinable: [ride('a', '2026-11-02')],
+  joinable: [ride('a', '2026-11-02T15:00:00Z')],
   historyCount: 0,
   next: null,
   ...patch,
 });
 
 describe('ride list model', () => {
-  test('joinable rides group under 今天 / 明天 in server order', () => {
-    const groups = groupByDay(
-      [
-        ride('a', '2026-11-02'),
-        ride('b', '2026-11-03'),
-        ride('c', '2026-11-03'),
-        ride('d', '2026-11-06'),
-      ],
-      NOW,
+  const rides = [
+    ride('a', '2026-11-02T15:00:00Z'),
+    ride('b', '2026-11-03T03:00:00Z'),
+    ride('c', '2026-11-02T22:00:00Z'),
+    ride('d', '2026-11-05T20:00:00Z'),
+  ];
+  const grouped = (zone: string) =>
+    inTimeZone(zone, () =>
+      groupByDay(rides, NOW).map((group) => [group.relation, group.rides.map((r) => r.id)]),
     );
-    expect(groups.map((group) => [group.relation, group.rides.map((r) => r.id)])).toEqual([
+
+  test('joinable rides group under 今天 / 明天 in server order', () => {
+    expect(grouped('Asia/Kuala_Lumpur')).toEqual([
       ['today', ['a']],
       ['tomorrow', ['b', 'c']],
       ['other', ['d']],
     ]);
-    expect(malaysiaDayKey(NOW)).toBe('2026-11-02');
+  });
+
+  test('the groups follow the device day, not the day the server sorted by', () => {
+    expect(grouped('Europe/London')).toEqual([
+      ['today', ['a', 'c']],
+      ['tomorrow', ['b']],
+      ['other', ['d']],
+    ]);
   });
 
   test('the list is empty only with no mine, no joinable and no history', () => {

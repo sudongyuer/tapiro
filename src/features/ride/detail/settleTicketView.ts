@@ -1,8 +1,8 @@
 import type { TFunction } from 'i18next';
 
 import { formatMoney } from '@/lib/money';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { whenText } from '../ticketView';
 import type { TicketCell } from './fullTicketView';
 import { equalShares, myRider, owedDays, paidCount } from './settleModel';
@@ -45,26 +45,24 @@ export function settleTicket(
     cell('plate', t('ride.detail.cell.plate'), ride.details?.plate?.split('·')[0]?.trim() || '–'),
     cell('seats', t('ride.detail.cell.seats'), `${ride.taken}/${ride.seats}`),
     reached
-      ? cell('reached', t('rideSettle.ticket.reached'), malaysiaClock(reached))
+      ? cell('reached', t('rideSettle.ticket.reached'), localClock(reached))
       : cell(
           'eta',
           t('rideSettle.ticket.eta'),
-          ride.details?.eta ? malaysiaClock(Date.parse(ride.details.eta)) : '–',
+          ride.details?.eta ? localClock(Date.parse(ride.details.eta)) : '–',
         ),
   ];
 
   if (ride.status === 'departed') {
     return {
       status: t('rideSettle.ticket.onboard'),
-      time: departed ? t('rideSettle.ticket.departedAt', { time: malaysiaClock(departed) }) : null,
+      time: departed ? t('rideSettle.ticket.departedAt', { time: localClock(departed) }) : null,
       lead: null,
       cells: boardCells,
       stamp: false,
     };
   }
-  const arrivedAt = reached
-    ? t('rideSettle.ticket.arrivedAt', { time: malaysiaClock(reached) })
-    : '';
+  const arrivedAt = reached ? t('rideSettle.ticket.arrivedAt', { time: localClock(reached) }) : '';
 
   if (ride.status === 'arrived' || (ride.status === 'settling' && !settle)) {
     return {
@@ -87,7 +85,7 @@ export function settleTicket(
     const youPaid = !organiser && mine ? money(mine.share) : null;
     return {
       status: grab
-        ? t('rideSettle.ticket.closedGrab', { time: reached ? malaysiaClock(reached) : '' })
+        ? t('rideSettle.ticket.closedGrab', { time: reached ? localClock(reached) : '' })
         : t('rideSettle.ticket.closedAt', { time: whenText(settledAt, now, t, language) }),
       time: null,
       lead: {
@@ -97,16 +95,10 @@ export function settleTicket(
       cells: grab
         ? [
             cell('fare', t('rideSettle.ticket.fare'), t('rideSettle.ticket.fareGrab')),
-            cell('reached', t('rideSettle.ticket.reached'), reached ? malaysiaClock(reached) : '–'),
+            cell('reached', t('rideSettle.ticket.reached'), reached ? localClock(reached) : '–'),
           ]
         : !settle
-          ? [
-              cell(
-                'reached',
-                t('rideSettle.ticket.reached'),
-                reached ? malaysiaClock(reached) : '–',
-              ),
-            ]
+          ? [cell('reached', t('rideSettle.ticket.reached'), reached ? localClock(reached) : '–')]
           : [
               cell('total', t('rideSettle.ticket.total'), money(settle.total)),
               youPaid

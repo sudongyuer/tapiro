@@ -4,8 +4,8 @@ import { Linking, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { ApplicationCard } from './ApplicationCard';
 import { displayName } from './Avatars';
 import { MeetupTiles, NoteCard, PrivacyLine, PromptCard, SplitRow } from './DetailCards';
@@ -137,7 +137,7 @@ export function DetailBody({
         <PromptCard
           tone="warning"
           title={t('ride.detail.appeal.canTitle')}
-          body={t('ride.detail.appeal.canBody', { time: malaysiaClock(appeal.until) })}
+          body={t('ride.detail.appeal.canBody', { time: localClock(appeal.until) })}
           actions={[
             {
               label: t('ride.detail.appeal.action'),
@@ -152,7 +152,7 @@ export function DetailBody({
       {appeal.kind === 'pending' ? (
         <PromptCard
           title={t('ride.detail.appeal.pendingTitle')}
-          body={t('ride.detail.appeal.pendingBody', { time: malaysiaClock(appeal.until) })}
+          body={t('ride.detail.appeal.pendingBody', { time: localClock(appeal.until) })}
           actions={[]}
           testID="ride-detail-appeal-pending"
         />

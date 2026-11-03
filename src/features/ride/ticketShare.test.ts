@@ -19,7 +19,6 @@ function settled(patch: Partial<MyRide> = {}): MyRide {
     dest: { label: 'KLIA2', short: 'KLIA2', kind: 'airport' },
     departAt: new Date(NOW - 4 * 3_600_000).toISOString(),
     revisedAt: null,
-    day: '2026-11-03',
     status: 'closed',
     seats: 4,
     taken: 3,

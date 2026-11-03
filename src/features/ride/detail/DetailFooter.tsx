@@ -16,9 +16,9 @@ import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock } from '@/lib/deviceClock';
 
 import { LATE_MINUTES } from '../rideTimes';
-import { malaysiaClock } from '../rideClock';
 import type { Footer } from './detailModel';
 import { SettleFooterBar, type SettleFooterActions } from './SettleFooter';
 import type { LateChoice } from './types';
@@ -142,7 +142,7 @@ export function DetailFooter({
             tintColor={color('--color-success')}
           />
           <AppText variant="body" style={[styles.flex, styles.bold]} testID="ride-detail-arrived">
-            {t('ride.detail.meetup.arrivedLine', { time: malaysiaClock(footer.at) })}
+            {t('ride.detail.meetup.arrivedLine', { time: localClock(footer.at) })}
           </AppText>
           <PillButton
             label={t('ride.detail.meetup.undo')}
