@@ -40,6 +40,8 @@ Updated: 2026-11-03.
 ## Resuming on another machine
 
 - Clone, `bun install`, then follow `AGENTS.md` (Homebrew Node, `pod install` after prebuild, `ios/.xcode.env.local`).
+- Supabase CLI 2.x (`brew install supabase/tap/supabase@2`): CLI 3.0 rejects the `[inbucket]` block in
+  `supabase/config.toml`.
 - The design canvas is the claude.ai artifact named in each spec; it is not in the repo.
 - Local-only state that does not travel: `.verify/` build output (rebuild with `bun run verify:build`), the local
   Supabase database (rebuilt from `supabase/migrations`), and the agent's personal memory notes (the owner's working preferences are copied into `AGENTS.md`,
