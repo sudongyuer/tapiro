@@ -35,14 +35,6 @@
         }
       ],
       [
-        "expo-build-properties",
-        {
-          "ios": {
-            "enableSceneSupport": true
-          }
-        }
-      ],
-      [
         "expo-localization",
         {
           "supportsRTL": false,
@@ -88,6 +80,7 @@
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
           "motionUsagePermission": false,
+          "locationFullAccuracyPermission": false,
           "isIosBackgroundLocationEnabled": false
         }
       ],

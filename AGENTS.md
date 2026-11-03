@@ -37,9 +37,8 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 ## Boundaries
 
 - iOS only. Do not add Android implementations, fallback stubs, or Android build scripts.
-- Deployment target iOS 26.0 (latest two majors). Keep `ios.enableSceneSupport: true` (SDK 58
-  prebuild generates the scene lifecycle anyway and says the flag is no longer required).
-  Reason: apps built with the iOS 27 SDK must use the UIScene lifecycle.
+- Deployment target iOS 26.0 (latest two majors). SDK 58's template uses UIScene
+  (`SceneDelegate.swift`); do not opt out. Reason: apps built with the iOS 27 SDK must use the UIScene lifecycle.
 - All first-party native code and native UI live in `modules/tapiro-kit`, registered through
   one module facade; no separate bridge packages. Import native APIs only through its typed
   facade; remove event subscriptions on unmount; UIKit work runs on the main queue.

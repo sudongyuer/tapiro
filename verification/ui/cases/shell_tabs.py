@@ -23,8 +23,11 @@ def ios_major(udid):
     listing = subprocess.run(['xcrun', 'simctl', 'list', 'devices', '-j'], capture_output=True, text=True,
                              check=True, timeout=30).stdout
     devices = json.loads(listing)['devices']
-    runtime = next(r for r, listed in devices.items() if any(d['udid'] == udid for d in listed))
-    return int(re.search(r'iOS-(\d+)', runtime).group(1))
+    runtime = next((r for r, listed in devices.items() if any(d['udid'] == udid for d in listed)), None)
+    assert runtime, f'Simulator {udid} is not in `simctl list devices`; cannot tell which iOS size to expect'
+    found = re.search(r'iOS-(\d+)', runtime)
+    assert found, f'Simulator {udid} runs {runtime}, not an iOS runtime'
+    return int(found.group(1))
 
 
 def assert_tapir_beside_bar(items, ios):

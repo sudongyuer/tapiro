@@ -76,7 +76,7 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
   const { color } = useTheme();
   return (
     <>
-      <HStack spacing={0} modifiers={[fullRow]}>
+      <HStack spacing={vars['--space-3']} modifiers={[fullRow]}>
         <Image systemName="airplane" modifiers={[accessibilityHidden()]} />
         <Text>{t('ride.create.form.airport')}</Text>
         <Spacer />

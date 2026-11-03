@@ -43,6 +43,8 @@ Updated: 2026-11-03.
 ## Resuming on another machine
 
 - Clone, `bun install`, then follow `AGENTS.md` (Homebrew Node, `pod install` after prebuild, `ios/.xcode.env.local`).
+- After pulling an SDK bump, run `bunx expo prebuild --clean --platform ios` once before `bun run ios`; a plain
+  prebuild keeps the old SDK's AppDelegate and scene delegate. `bun run verify:build` does this on its own.
 - Supabase CLI 2.x (`brew install supabase/tap/supabase@2`): CLI 3.0 rejects the `[inbucket]` block in
   `supabase/config.toml`.
 - The design canvas is the claude.ai artifact named in each spec; it is not in the repo.

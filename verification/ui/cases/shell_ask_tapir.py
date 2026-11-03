@@ -23,7 +23,10 @@ def open_sheet(tab, name):
     ui.wait_label('ask-tapir-subtitle', lambda label: label == subtitle, f'subtitle is not {subtitle}')
     ui.wait_label('ask-tapir-suggestion-0', lambda label: label == suggestion, f'first suggestion is not {suggestion}')
     items = ui.read()
-    scale = min(1.0, max(0.9, by_id(items, 'ask-tapir-sheet')['frame']['width'] / items[0]['frame']['width']))
+    # role="search" is a UISearchTab on iOS 26.1+; selecting it must not activate a search field instead of the sheet.
+    searching = [i.get('AXUniqueId') or i.get('AXLabel') for i in items if i.get('type') == 'SearchField']
+    assert not searching, f'tapping 小貘 activated a search field: {searching}'
+    scale =min(1.0, max(0.9, by_id(items, 'ask-tapir-sheet')['frame']['width'] / items[0]['frame']['width']))
     floor = 44 * scale - (0.5 if scale < 1 else 0)
     for identifier in ('ask-tapir-close', 'ask-tapir-mic'):
         f = by_id(items, identifier)['frame']
