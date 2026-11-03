@@ -751,27 +751,31 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### chat.thread 每件事一个对话
 
 - 故事：作为发布者或乘客，我想在每条悬赏或拼车里和对方聊天，以便约时间地点。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id             | 行为                                           | 覆盖    |
-| ------------------- | ---------------------------------------------- | ------- |
-| chat.thread.members | 每条悬赏或拼车一个对话，只有成员能看           | db      |
-| chat.thread.media   | 能发文字和图片，长按消息可以翻译或举报         | ui      |
-| chat.thread.hint    | 新对话固定显示关于定金和在付款步骤外付钱的提醒 | ui      |
-| chat.thread.kept    | 对话一直保留；删除账号只删自己发的消息         | db, int |
+| 验收 id               | 行为                                                                                                                                                                                                         | 覆盖                                                                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| chat.thread.members   | 每条悬赏或拼车一个对话，只有成员能看                                                                                                                                                                         | db:supabase/tests/chat.test.sql                                                                                                                                                                           |
+| chat.thread.opens     | 悬赏选好帮手时才建对话（发布者和帮手），开放申请期间没有；拼车通过第一个乘客时建群聊（发起人和通过的乘客）；离开或被屏蔽移出的乘客还能看离开时的消息和成员，看不到之后的，不能再发                           | db:supabase/tests/chat.test.sql                                                                                                                                                                           |
+| chat.thread.send-once | 发送带客户端生成的 id；同一条重发只存一次、只通知一次，不自动重发；同一个 id 换了内容被拒；空消息和超过 2000 字被拒                                                                                          | db:supabase/tests/chat.test.sql                                                                                                                                                                           |
+| chat.thread.events    | 每条消息给除发送人以外的在群成员各记一条 chat.message 事件；推送按对话分组，标题是悬赏名或拼车路线，正文不含消息内容；23:00–08:00 推到 08:00，正在集合或出发的拼车群除外；离开的人和与发送人互相屏蔽的人不记 | db:supabase/tests/chat.test.sql, db:supabase/tests/push_kinds.test.sql, unit:supabase/functions/notify/copy.test.ts#a chat message is titled by its bounty or its ride route, and never shows the message |
+| chat.thread.media     | 能发文字和图片，长按消息可以翻译或举报                                                                                                                                                                       | ui                                                                                                                                                                                                        |
+| chat.thread.hint      | 新对话固定显示关于定金和在付款步骤外付钱的提醒                                                                                                                                                               | ui                                                                                                                                                                                                        |
+| chat.thread.kept      | 对话一直保留；删除账号只删自己发的消息                                                                                                                                                                       | db:supabase/tests/chat.test.sql, int                                                                                                                                                                      |
 
 ### chat.safety 举报和拉黑
 
 - 故事：作为同学，我想举报和拉黑骚扰我的人，以便安心使用。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id            | 行为                               | 覆盖   |
-| ------------------ | ---------------------------------- | ------ |
-| chat.safety.report | 每个资料页和每条消息都能举报和拉黑 | ui, db |
+| 验收 id                    | 行为                                                                                                                                                     | 覆盖                                |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| chat.safety.report         | 每个资料页和每条消息都能举报和拉黑                                                                                                                       | ui, db:supabase/tests/chat.test.sql |
+| chat.safety.report-private | 举报只能提交：举报人读不到、改不了、删不掉；举报保存当时的消息内容，对方或举报人删号后仍留给人工处理；不能举报自己或看不到的消息；同一条重复举报只算一次 | db:supabase/tests/chat.test.sql     |
 
 ### chat.block 拉黑
 
@@ -785,6 +789,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | chat.block.private        | 名单只有拉黑的人自己读得到，被拉黑的人读不到，客户端不能直接写                                                                                                                                                                                                                                                               | db:supabase/tests/blocks.test.sql                                                                                                                                                                                                                                                                                               |
 | chat.block.either-side    | 任何一方拉黑都算双方互相屏蔽；取消后恢复                                                                                                                                                                                                                                                                                     | db:supabase/tests/blocks.test.sql                                                                                                                                                                                                                                                                                               |
 | chat.block.account-delete | 删除账号时一起删掉                                                                                                                                                                                                                                                                                                           | db:supabase/tests/blocks.test.sql                                                                                                                                                                                                                                                                                               |
+| chat.block.thread         | 悬赏对话里任何一方屏蔽后双方都不能再发，之前的记录还在，取消屏蔽后恢复；拼车群里屏蔽不影响发消息                                                                                                                                                                                                                             | db:supabase/tests/chat.test.sql                                                                                                                                                                                                                                                                                                 |
 | chat.block.detail         | 悬赏详情右上角「⋯」里只有红色的「屏蔽某某」，系统操作表说明后果，选「屏蔽」才屏蔽；屏蔽时「⋯」换成进度，成功后详情关闭、悬赏板马上去掉对方的悬赏并重新加载；失败提示「没屏蔽成功」，不自动重试                                                                                                                               | ui:bounty_block, unit:src/features/block/blockFlow.test.ts, unit:src/features/bounty/board/boardState.test.ts, unit:src/features/bounty/board/boardController.test.ts, unit:src/features/bounty/board/fixtureBoardService.test.ts                                                                                               |
 | chat.block.list           | 我的 → 屏蔽名单（推进时这一行保持选中）列出屏蔽的人，最近的在前；左滑「解除」，等服务器确认前这一行显示进度，确认后移出名单，回到悬赏板重新加载后对方的悬赏又出现；失败保留这一行并提示；没屏蔽过谁显示说明；没加载出来不当成空                                                                                              | ui:bounty_block, unit:src/features/block/blockFlow.test.ts, unit:src/features/block/blockService.test.ts, device: 从屏蔽名单返回我的时这一行先保持选中再淡出；左滑一行露出「解除」时名字是否还看得见（模拟器上名字被裁掉）                                                                                                      |
 | chat.block.entry          | 申请人列表长按一行出现红色「屏蔽某某」，系统操作表说明对方的申请也会消失；屏蔽时这一行显示进度，服务器确认后离开列表，被勾选的人被屏蔽则勾选清掉、按钮回到「先选一个人」；屏蔽进行中、发送中和选好后不再出现这个菜单，进行中按钮不能按、仍写着被勾选的人；失败保留这一行并提示「没屏蔽成功」，不自动重试。资料页的入口还没有 | ui:bounty_applicant_block, unit:src/features/block/blockFlow.test.ts, unit:src/features/bounty/select/blockFromApplicants.test.ts, unit:src/features/bounty/select/selectState.test.ts, unit:src/features/bounty/select/applicantsController.test.ts, device: 旁白的「操作」转子里有「屏蔽某某」, gap: 资料页在后面的步骤里才有 |
@@ -801,6 +806,25 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | chat.push.provisional | 引导后先要临时授权，第一次发布或申请后再正式请求 | unit, device |
 | chat.push.delivery    | 真机收到推送，数据放在 body 下面                 | device       |
 | chat.push.off         | 关掉通知后角标和提醒条照样工作                   | ui           |
+
+### chat.live 实时更新和推送的服务器部分
+
+- 故事：作为同学，我想别人申请、挑人、出发、完成或付款时，开着的页面马上变，关着 App 时收到通知，以便不用一直下拉刷新。
+- 状态：building
+- 版本：v1
+- 规格：[realtime-push](specs/2026-10-31-realtime-push-design.md)
+
+| 验收 id               | 行为                                                                                                                                                                                                           | 覆盖                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| chat.live.bounty      | 悬赏的申请、撤回、挑人（没选上的人也收到）、出发、改预计到、完成、反馈问题、确认、取消、关闭（发布者删号关闭的也算，和发布者互相屏蔽的申请人不收）和过期写进服务器事件，收件人对，做的人自己不收               | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.payment     | 悬赏和拼车的付款都发事件：我已付款给收款人，还没收到和已结清给付款人                                                                                                                                           | db:supabase/tests/live_push.test.sql, db:supabase/tests/ride_event_outbox.test.sql                                                |
+| chat.live.signal      | 每条事件发到收件人自己的私有频道 `user:<id>`，只带种类、id 和时间，不带内容                                                                                                                                    | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.topic       | 只能收自己频道的信号，收不到别人的；没登录收不到；客户端读不到事件、推送队列、推送记录和 token                                                                                                                 | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.tokens      | 登录的设备登记推送 token 和 App 语言，换账号时 token 归新账号，一人最多 10 个，改语言全部更新，退出只删自己的                                                                                                  | db:supabase/tests/live_push.test.sql                                                                                              |
+| chat.live.notify      | 该行动或在等的事件才推送，按悬赏或拼车分组，免打扰时段的推送等到 08:00；每台设备用它的语言写好标题和内容（中文里的英文名字和 App 一样加空格），数据只带种类和 id                                               | db:supabase/tests/live_push.test.sql, unit:supabase/functions/notify/handler.test.ts, unit:supabase/functions/notify/copy.test.ts |
+| chat.live.notify-fail | 发送失败记下错误、只重试一次；Expo 说设备没注册就删掉那个 token；没有设备或没有文案的记成 no_device / no_copy，不算发出、不重试；发送中断五分钟后再领一次，第二次还中断就记 stalled 不再发；一条出错不影响别的 | db:supabase/tests/live_push.test.sql, unit:supabase/functions/notify/handler.test.ts                                              |
+| chat.live.delivery    | 真机收到推送                                                                                                                                                                                                   | gap: real delivery waits for the paid Apple Developer account (ExpoSender, step 3)                                                |
+| chat.live.app         | App 里一个频道、断线重连后重新加载、按种类分发给各功能、点通知跳到对应页面                                                                                                                                     | unit, ui                                                                                                                          |
 
 ## 问小貘
 
