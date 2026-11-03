@@ -1,3 +1,5 @@
+import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
+
 import type { Sticker, StickerService } from './model';
 
 export type StickerState =
@@ -6,10 +8,6 @@ export type StickerState =
   | { status: 'ready'; userId: string; stickers: Sticker[] }
   | { status: 'stale'; userId: string; stickers: Sticker[] }
   | { status: 'failed'; userId: string };
-
-type AppStateSource = {
-  addEventListener(type: 'change', listener: (state: string) => void): { remove: () => void };
-};
 
 export function createStickerStore(service: StickerService) {
   let state: StickerState = { status: 'idle' };
@@ -63,11 +61,9 @@ export function createStickerStore(service: StickerService) {
         return () => undefined;
       }
       store.ensureLoaded(userId);
-      const subscription = appState.addEventListener('change', (next) => {
-        if (next === 'active') store.refresh(userId);
-      });
+      const subscription = onReturnToForeground(appState, () => store.refresh(userId));
       return () => {
-        subscription.remove();
+        subscription();
         store.clear();
       };
     },

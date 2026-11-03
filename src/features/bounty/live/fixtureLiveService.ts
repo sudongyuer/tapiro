@@ -35,6 +35,8 @@ export type SeenCall = { bountyId: string; card: SeenCard };
 
 export type FixtureLiveOptions = {
   rows: readonly LiveFixtureRow[];
+  next?: readonly LiveFixtureRow[];
+  onLoaded?: () => void;
   failFirstLoad: boolean;
   data?: StatusData;
   now: () => Date;
@@ -57,6 +59,9 @@ export function fixtureLiveOptions(
 ): FixtureLiveOptions {
   return {
     rows: fixtureLiveRowIds(argument('uiVerifyBountyLive')),
+    next: argument('uiVerifyBountyLiveNext')
+      ? fixtureLiveRowIds(argument('uiVerifyBountyLiveNext'))
+      : undefined,
     failFirstLoad: argument('uiVerifyBountyLiveFail') === '1',
     data: STATUS_DATA.find((value) => value === argument('uiVerifyBountyLiveData')) ?? 'demo',
     now,
@@ -230,10 +235,17 @@ export function createFixtureLiveService(options: FixtureLiveOptions): LiveBount
   return {
     async list() {
       loads += 1;
+      options.onLoaded?.();
       if (options.failFirstLoad && loads === 1) throw new Error('fixture live items failed');
       const now = options.now();
-      return options.rows
-        .map((row) => fixtureData(fixtureRow(row, now), options.data ?? 'demo', now))
+      const rows = options.next && loads > 1 ? options.next : options.rows;
+      return rows
+        .map((row, index) => {
+          const first = options.rows[index];
+          const shown = fixtureRow(row, now);
+          return { ...shown, bountyId: first ? fixtureLiveBountyId(first) : shown.bountyId };
+        })
+        .map((row) => fixtureData(row, options.data ?? 'demo', now))
         .filter((row) => !(row.card && seen.has(`${row.bountyId}:${row.card}`)));
     },
     async markSeen(bountyId, card) {

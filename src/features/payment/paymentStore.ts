@@ -1,3 +1,4 @@
+import { createAnswerOrder } from '@/lib/answerOrder';
 import { createStore } from '@/lib/store';
 
 import type { Payment, PaymentService } from './types';
@@ -16,13 +17,17 @@ export function createPaymentStore(service: PaymentService) {
     return state.status !== 'idle' && state.userId === userId;
   };
 
+  const order = createAnswerOrder();
+
   async function reload(userId: string) {
+    const request = order.start();
     try {
       const payments = await service.list(userId);
-      if (isCurrent(userId)) store.set({ status: 'ready', userId, payments });
+      const status = order.succeeded(request);
+      if (status && isCurrent(userId)) store.set({ status, userId, payments });
     } catch {
       const state = store.get();
-      if (!isCurrent(userId) || state.status === 'idle') return;
+      if (!order.failed(request) || !isCurrent(userId) || state.status === 'idle') return;
       store.set(
         state.status === 'ready' || state.status === 'stale'
           ? { status: 'stale', userId, payments: state.payments }

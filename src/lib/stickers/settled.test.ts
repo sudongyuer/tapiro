@@ -271,3 +271,47 @@ describe('settled fixture', () => {
     expect(seen).toEqual([[first.stickerId]]);
   });
 });
+
+describe('settled reloads out of order', () => {
+  test('two reloads answering in reverse order keep the newer rows', async () => {
+    const answers: ((rows: SettledRow[]) => void)[] = [];
+    const store = createSettledStore({
+      list: () => new Promise<SettledRow[]>((resolve) => answers.push(resolve)),
+      collect: async () => 'collected' as const,
+    });
+    const first = store.ensureLoaded(USER);
+    await Promise.resolve();
+    const second = store.reload(USER);
+    await Promise.resolve();
+    await Promise.resolve();
+    answers[1]([row('new')]);
+    await second;
+    answers[0]([row('old')]);
+    await first;
+    expect(shownIds(store)).toEqual(['new']);
+  });
+});
+
+describe('settled reloads: newer failure', () => {
+  test('R1 ok after R2 failed keeps R1 rows, marked stale', async () => {
+    const answers: { ok: (rows: SettledRow[]) => void; fail: () => void }[] = [];
+    const store = createSettledStore({
+      list: () =>
+        new Promise<SettledRow[]>((ok, fail) =>
+          answers.push({ ok, fail: () => fail(new Error('x')) }),
+        ),
+      collect: async () => 'collected' as const,
+    });
+    const first = store.ensureLoaded(USER);
+    await Promise.resolve();
+    const second = store.reload(USER);
+    await Promise.resolve();
+    await Promise.resolve();
+    answers[1].fail();
+    await second;
+    answers[0].ok([row('r1')]);
+    await first;
+    expect(shownIds(store)).toEqual(['r1']);
+    expect(store.getSnapshot().status).toBe('stale');
+  });
+});

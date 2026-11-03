@@ -92,6 +92,17 @@ describe('applicants', () => {
     expect(await list(refresh)).toHaveLength(3);
   });
 
+  test('stream: every load after the first brings one more applicant', async () => {
+    const { service } = fixture({ applicants: 'stream' });
+    const names = async () => {
+      const answer = await service.applicants('fixture-bounty-01');
+      return answer === 'gone' ? [] : answer.map((applicant) => applicant.name);
+    };
+    expect(await names()).toEqual(['阿杰', 'Hana', 'Aiman']);
+    expect(await names()).toEqual(['阿杰', 'Hana', 'Aiman', 'Mei Ling']);
+    expect(await names()).toEqual(['阿杰', 'Hana', 'Aiman', 'Mei Ling', 'Wei Jie']);
+  });
+
   test('grows: a fourth applicant, Mei Ling, applies before the second load', async () => {
     const { service } = fixture({ applicants: 'grows' });
     expect((await list(service)).map((row) => row.name)).toEqual(['阿杰', 'Hana', 'Aiman']);

@@ -1,3 +1,4 @@
+import { pushRegistration } from '@/lib/push';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyFixture, uiVerifySignedIn } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -27,4 +28,5 @@ export const accountActions = createAccountActions({
   onboarding: onboardingStore,
   profiles: profileStore,
   cleanups: userCleanups,
+  beforeSignOut: pushRegistration.signOut,
 });

@@ -178,3 +178,68 @@ describe('published to the live feed', () => {
     expect(feed.getSnapshot().accessory).toHaveLength(2);
   });
 });
+
+describe('fixture rows that change on a later load', () => {
+  test('the same card shows the next state from the second load on', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterOpen'],
+      next: ['posterApplicants'],
+      failFirstLoad: false,
+      now: () => NOW,
+    });
+    const first = await service.list();
+    const second = await service.list();
+    expect(first.map((row) => [row.bountyId, row.applicantCount ?? 0])).toEqual([
+      [fixtureLiveBountyId('posterOpen'), 0],
+    ]);
+    expect(second.map((row) => row.bountyId)).toEqual([fixtureLiveBountyId('posterOpen')]);
+    expect(second[0].applicantCount).toBeGreaterThan(0);
+  });
+});
+
+describe('live reloads out of order', () => {
+  test('two reloads answering in reverse order keep the newer rows', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterApplicants', 'applicantNotSelected'],
+      failFirstLoad: false,
+      now: () => NOW,
+    });
+    const all = await service.list();
+    const answers: ((rows: typeof all) => void)[] = [];
+    const store = createLiveBountyStore({
+      ...service,
+      list: () => new Promise((resolve) => answers.push(resolve)),
+    });
+    const first = store.ensureLoaded(USER);
+    const second = store.reload(USER);
+    answers[1](all.slice(0, 1));
+    await second;
+    answers[0](all);
+    await first;
+    expect(rows(store as ReturnType<typeof flaky>['store'])).toEqual([all[0].bountyId]);
+  });
+});
+
+describe('live reloads: newer failure', () => {
+  test('R1 ok after R2 failed keeps R1 rows, marked stale', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterApplicants', 'applicantNotSelected'],
+      failFirstLoad: false,
+      now: () => NOW,
+    });
+    const all = await service.list();
+    const answers: { ok: (rows: typeof all) => void; fail: () => void }[] = [];
+    const store = createLiveBountyStore({
+      ...service,
+      list: () => new Promise((ok, fail) => answers.push({ ok, fail: () => fail(new Error('x')) })),
+    });
+    const first = store.ensureLoaded(USER);
+    const second = store.reload(USER);
+    answers[1].fail();
+    await second;
+    answers[0].ok(all);
+    await first;
+    expect(rows(store as ReturnType<typeof flaky>['store'])).toEqual(all.map((r) => r.bountyId));
+    expect(store.getSnapshot().status).toBe('stale');
+  });
+});

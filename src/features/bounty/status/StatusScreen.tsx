@@ -3,8 +3,10 @@ import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/m
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { useLiveOffline } from '@/lib/live';
 import { InlineState } from '@/ui/InlineState';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { OfflineSection } from '@/ui/OfflineLine';
 import { SheetFrame, SheetLayer } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
@@ -32,6 +34,7 @@ export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
   const helper = useHelperActions(id, act);
   const poster = usePosterActions(id, act, onPay);
   const { load, action } = state;
+  const offline = useLiveOffline();
 
   if (load.kind === 'failed' && load.reason === 'unavailable') {
     return (
@@ -84,6 +87,9 @@ export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
         onRefresh={refresh}
         notice={
           <>
+            {offline ? (
+              <OfflineSection text={t('live.offline')} testID="bounty-status-offline" />
+            ) : null}
             {action.kind === 'changed' ? (
               <NoticeCard
                 tone="warning"

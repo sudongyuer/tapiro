@@ -1,27 +1,66 @@
+import { createStore } from '@/lib/store';
 import type { UserCleanups } from '@/lib/userCleanups';
 
 import type { OnboardingStore } from './onboardingStore';
 import type { ProfileStore } from './profileStore';
 import type { AuthService, DeleteAccountResult } from './types';
 
+export const SIGN_OUT_WAIT_MS = 3_000;
+
+type Timers = { set: (run: () => void, ms: number) => unknown; clear: (handle: unknown) => void };
+
+const SYSTEM_TIMERS: Timers = {
+  set: (run, ms) => setTimeout(run, ms),
+  clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+};
+
+export type SignOutWait = { expired: boolean };
+
+async function bounded(task: (wait: SignOutWait) => Promise<void>, ms: number, timers: Timers) {
+  const wait: SignOutWait = { expired: false };
+  let timer: unknown = null;
+  const timeout = new Promise<void>((resolve) => {
+    timer = timers.set(() => {
+      wait.expired = true;
+      resolve();
+    }, ms);
+  });
+  await Promise.race([task(wait).catch(() => undefined), timeout]);
+  timers.clear(timer);
+}
+
 export function createAccountActions({
   auth,
   onboarding,
   profiles,
   cleanups,
+  beforeSignOut = async () => undefined,
+  timers = SYSTEM_TIMERS,
 }: {
   auth: AuthService;
   onboarding: OnboardingStore;
   profiles: ProfileStore;
   cleanups: Pick<UserCleanups, 'run'>;
+  beforeSignOut?: (wait: SignOutWait) => Promise<void>;
+  timers?: Timers;
 }) {
+  const signingOut = createStore(false);
   return {
+    signingOut,
+
     finishOnboarding(userId: string) {
       onboarding.markDone(userId);
     },
 
-    signOut() {
-      return auth.signOut();
+    async signOut() {
+      if (signingOut.get()) return;
+      signingOut.set(true);
+      try {
+        await bounded(beforeSignOut, SIGN_OUT_WAIT_MS, timers);
+        await auth.signOut();
+      } finally {
+        signingOut.set(false);
+      }
     },
 
     async deleteAccount(): Promise<DeleteAccountResult> {

@@ -9,10 +9,12 @@ import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { localClock } from '@/lib/deviceClock';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { stickerStore } from '@/lib/stickers';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { OfflineSection } from '@/ui/OfflineLine';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -53,6 +55,11 @@ export function PaySheet({
       icon="exclamationmark.circle.fill"
       title={t(sheet.failed === 'amountChanged' ? 'pay.sheet.amountChanged' : 'pay.sheet.failed')}
       testID="pay-failed"
+    />
+  ) : state.status === 'ready' && state.refreshFailed ? (
+    <OfflineSection
+      text={t('live.staleAt', { time: localClock(state.loadedAt) })}
+      testID="pay-stale"
     />
   ) : null;
 

@@ -1,37 +1,49 @@
 import * as Notifications from 'expo-notifications';
 import { useEffect, useRef } from 'react';
 
-import { uiVerify } from '@/lib/uiVerify';
+import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
-import type { NoticeData } from './types';
+import { followNoticeTaps, verifyNoticeTaps, type NoticeTap, type NoticeTaps } from './noticeTaps';
+import type { NoticeRoute } from './routes';
 
-const toData = (value: unknown): NoticeData | null => {
-  const body = value as Partial<NoticeData> | null | undefined;
-  return typeof body?.kind === 'string' && typeof body.id === 'string'
-    ? { kind: body.kind, id: body.id }
+const toTap = (response: Notifications.NotificationResponse | null): NoticeTap | null =>
+  response
+    ? {
+        key: `${response.notification.request.identifier}:${response.notification.date}`,
+        data: response.notification.request.content.data,
+      }
     : null;
+
+const nativeTaps: NoticeTaps = {
+  last: async () => toTap(Notifications.getLastNotificationResponse()),
+  listen(on) {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const tap = toTap(response);
+      if (tap) on(tap);
+    });
+    return () => subscription.remove();
+  },
+  clear: () => Notifications.clearLastNotificationResponse(),
 };
 
-export function useNoticeRouting(open: (data: NoticeData) => void, ready: boolean) {
+const taps = uiVerify ? verifyNoticeTaps(uiVerifyArgument('uiVerifyNoticeTap')) : nativeTaps;
+const handled = new Set<string>();
+
+export function useNoticeRouting(open: (route: NoticeRoute) => void, ready: boolean) {
   const latest = useRef(open);
   useEffect(() => {
     latest.current = open;
   });
-  const handled = useRef<string | null>(null);
 
   useEffect(() => {
-    if (uiVerify || !ready) return;
-    const route = (response: Notifications.NotificationResponse | null) => {
-      if (!response) return;
-      const key = `${response.notification.request.identifier}:${response.notification.date}`;
-      if (handled.current === key) return;
-      handled.current = key;
-      Notifications.clearLastNotificationResponse();
-      const data = toData(response.notification.request.content.data);
-      if (data) latest.current(data);
-    };
-    route(Notifications.getLastNotificationResponse());
-    const subscription = Notifications.addNotificationResponseReceivedListener(route);
-    return () => subscription.remove();
+    if (!ready) return;
+    return followNoticeTaps(taps, handled, (route) => latest.current(route));
   }, [ready]);
+}
+
+export function useDiscardNoticeTaps(signedOut: boolean) {
+  useEffect(() => {
+    if (!signedOut) return;
+    return followNoticeTaps(taps, handled, null);
+  }, [signedOut]);
 }

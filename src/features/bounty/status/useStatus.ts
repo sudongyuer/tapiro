@@ -1,6 +1,8 @@
 import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 
+import { useLiveSignal } from '@/lib/live';
+
 import { useFreshness } from '../board/useFreshness';
 import { statusService } from './services';
 import {
@@ -47,6 +49,16 @@ export function useStatus(bountyId: string) {
   }, [focused, load]);
 
   useFreshness(load);
+
+  useLiveSignal(
+    ['bounty.', 'payment.'],
+    (signal) => {
+      const shown = latest.current.load;
+      const paymentId = shown.kind === 'ready' ? shown.detail.payment?.id : undefined;
+      if (!signal || signal.id === bountyId || signal.id === paymentId) void load();
+    },
+    focused,
+  );
 
   const act = useCallback(
     async <T>(

@@ -99,6 +99,7 @@ const ms: Translation = {
       title: 'Tetapan',
       language: 'Bahasa',
       signOut: 'Daftar Keluar',
+      signingOut: 'Sedang daftar keluar…',
       deleteAccount: 'Padam Akaun',
       deleteFooter: 'Akaun yang telah dipadam tidak boleh dipulihkan.',
     },
@@ -137,6 +138,10 @@ const ms: Translation = {
   ride,
   rideReminders,
   rideSettle,
+  live: {
+    offline: 'Mungkin tidak terkini',
+    staleAt: 'Mungkin tidak terkini · data pada {{time}}',
+  },
   shell: {
     tabs: {
       bounty: 'Ganjaran',

@@ -2,7 +2,9 @@ import { useFocusEffect, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { onReturnToForeground } from '@/lib/foreground';
 import { useI18n } from '@/lib/i18n';
+import { useLiveSignal } from '@/lib/live';
 
 import { fromDetail } from '../reminders/inputs';
 import { syncOneRide } from '../reminders/useRideReminders';
@@ -29,10 +31,8 @@ export function useRideDetail(id: string, now: number, userId: string) {
   );
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') void store.load();
-    });
-    return () => subscription.remove();
+    const subscription = onReturnToForeground(AppState, () => void store.load());
+    return subscription;
   }, [store]);
 
   const { t, language } = useI18n();
@@ -47,6 +47,13 @@ export function useRideDetail(id: string, now: number, userId: string) {
 
   const detail = state.load.kind === 'ready' ? state.load.detail : null;
   const focused = useIsFocused();
+  useLiveSignal(
+    ['ride.', 'payment.'],
+    (signal) => {
+      if (!signal || signal.kind.startsWith('payment.') || signal.id === id) void store.load();
+    },
+    focused,
+  );
   const polling = focused && shouldPoll(detail, now);
   useEffect(() => {
     if (!polling) return;

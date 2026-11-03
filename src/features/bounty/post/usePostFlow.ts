@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { markArrival } from '@/lib/handArt';
+import { notices } from '@/lib/notifications';
 
 import { createPostFlow, type PublishHandlers } from './postFlow';
 import { draftStore, postService } from './services';
@@ -26,6 +27,7 @@ export function usePostFlow(userId: string, handlers: PublishHandlers) {
         markArrival(result.id);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         handlers.onPublished(result);
+        void notices.askInContext().catch(() => null);
       },
       onInvalid: handlers.onInvalid,
       onAlreadySent: handlers.onAlreadySent,

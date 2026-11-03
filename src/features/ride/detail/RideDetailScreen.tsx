@@ -12,7 +12,9 @@ import {
 
 import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
+import { useLiveOffline } from '@/lib/live';
 import { InlineState } from '@/ui/InlineState';
+import { OfflineLine } from '@/ui/OfflineLine';
 import { vars } from '@/ui/theme/tokens';
 import { localClock } from '@/lib/deviceClock';
 
@@ -57,6 +59,7 @@ export function RideDetailScreen({
   const settle = useSettleActions(id, store, bridge, t('bounty.post.unknownName'));
   const settleSheets = useSettleSheets(id, ride, settle);
   const blocking = useBlockPerson('rideOrganiser', onGone);
+  const offline = useLiveOffline();
 
   if (load.kind === 'gone') {
     return (
@@ -127,6 +130,7 @@ export function RideDetailScreen({
         }
         testID="ride-detail"
       >
+        {offline ? <OfflineLine text={t('live.offline')} testID="ride-detail-offline" /> : null}
         {load.kind === 'loading' ? (
           <ActivityIndicator
             accessibilityLabel={t('ride.detail.loading')}
