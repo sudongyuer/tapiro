@@ -2,6 +2,7 @@ import { useIsFocused } from 'expo-router';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { blockEvents } from '@/features/block/blockEvents';
+import { useLiveSignal } from '@/lib/live';
 
 import { boardService } from '../board/services';
 import { useFreshness } from '../board/useFreshness';
@@ -23,6 +24,14 @@ export function useApplicants(bountyId: string) {
   }, [controller, focused]);
 
   useFreshness(controller.load);
+
+  useLiveSignal(
+    ['bounty.'],
+    (signal) => {
+      if (!signal || signal.id === bountyId) void controller.refetch();
+    },
+    focused,
+  );
 
   useEffect(() => blockEvents.onBlocked((id) => void controller.blocked(id)), [controller]);
 

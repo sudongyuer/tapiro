@@ -68,4 +68,34 @@ describe('account actions', () => {
     const { actions } = setup(auth);
     expect(await actions.deleteAccount()).toEqual({ ok: false, reason: 'failed' });
   });
+
+  test('sign-out unregisters the push token while still signed in', async () => {
+    const auth = createFixtureAuthService({ signedInAs: 'apple' });
+    const seen: string[] = [];
+    const actions = createAccountActions({
+      auth,
+      onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
+      profiles: createProfileStore(createFixtureProfileService()),
+      cleanups: createUserCleanups(),
+      beforeSignOut: async () => {
+        seen.push(auth.getState().status);
+      },
+    });
+    await actions.signOut();
+    expect(seen).toEqual(['signedIn']);
+    expect(auth.getState().status).toBe('signedOut');
+  });
+
+  test('a failing unregistration never blocks sign-out', async () => {
+    const auth = createFixtureAuthService({ signedInAs: 'apple' });
+    const actions = createAccountActions({
+      auth,
+      onboarding: createOnboardingStore(memoryOnboardedStorage([user.id])),
+      profiles: createProfileStore(createFixtureProfileService()),
+      cleanups: createUserCleanups(),
+      beforeSignOut: () => Promise.reject(new Error('offline')),
+    });
+    await actions.signOut();
+    expect(auth.getState().status).toBe('signedOut');
+  });
 });

@@ -137,6 +137,9 @@ const en: Translation = {
   ride,
   rideReminders,
   rideSettle,
+  live: {
+    offline: 'May not be up to date',
+  },
   shell: {
     tabs: {
       bounty: 'Bounties',

@@ -132,6 +132,9 @@ export default {
   ride,
   rideReminders,
   rideSettle,
+  live: {
+    offline: '可能不是最新',
+  },
   shell: {
     tabs: {
       bounty: '悬赏',

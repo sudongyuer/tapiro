@@ -178,3 +178,21 @@ describe('published to the live feed', () => {
     expect(feed.getSnapshot().accessory).toHaveLength(2);
   });
 });
+
+describe('fixture rows that change on a later load', () => {
+  test('the same card shows the next state from the second load on', async () => {
+    const service = createFixtureLiveService({
+      rows: ['posterOpen'],
+      next: ['posterApplicants'],
+      failFirstLoad: false,
+      now: () => NOW,
+    });
+    const first = await service.list();
+    const second = await service.list();
+    expect(first.map((row) => [row.bountyId, row.applicantCount ?? 0])).toEqual([
+      [fixtureLiveBountyId('posterOpen'), 0],
+    ]);
+    expect(second.map((row) => row.bountyId)).toEqual([fixtureLiveBountyId('posterOpen')]);
+    expect(second[0].applicantCount).toBeGreaterThan(0);
+  });
+});

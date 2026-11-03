@@ -1,6 +1,7 @@
 import { Settings } from 'react-native';
 
 import { initI18n } from '@/lib/i18n';
+import { live } from '@/lib/live';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { liveItems } from '@/lib/useLiveItems';
@@ -39,4 +40,8 @@ function publish() {
 }
 
 liveBountyStore.subscribe(publish);
+live.on(['bounty.', 'payment.'], () => {
+  const state = liveBountyStore.getSnapshot();
+  if (state.status !== 'idle') void liveBountyStore.reload(state.userId);
+});
 i18n.on('languageChanged', publish);

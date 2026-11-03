@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { AppState } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { useLiveSignal } from '@/lib/live';
 
 import { fromDetail } from '../reminders/inputs';
 import { syncOneRide } from '../reminders/useRideReminders';
@@ -47,6 +48,13 @@ export function useRideDetail(id: string, now: number, userId: string) {
 
   const detail = state.load.kind === 'ready' ? state.load.detail : null;
   const focused = useIsFocused();
+  useLiveSignal(
+    ['ride.', 'payment.'],
+    (signal) => {
+      if (!signal || signal.kind.startsWith('payment.') || signal.id === id) void store.load();
+    },
+    focused,
+  );
   const polling = focused && shouldPoll(detail, now);
   useEffect(() => {
     if (!polling) return;

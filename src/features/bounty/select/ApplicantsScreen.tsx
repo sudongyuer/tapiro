@@ -5,7 +5,9 @@ import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useBlockPerson } from '@/features/block/hooks';
 import { useI18n } from '@/lib/i18n';
+import { useLiveOffline } from '@/lib/live';
 import { InlineState } from '@/ui/InlineState';
+import { OfflineSection } from '@/ui/OfflineLine';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
@@ -20,6 +22,7 @@ import { SelectFooter } from './SelectFooter';
 import { doneTitle, raceBody, statusCopy } from './selectCopy';
 import { statusLine, type SendState } from './selectState';
 import { useApplicants } from './useApplicants';
+import { useArrivals } from './useArrivals';
 import { useCloseBounty } from './useCloseBounty';
 
 function useRaceAlert(send: SendState, acknowledge: () => void) {
@@ -54,6 +57,8 @@ export function ApplicantsScreen({
   const closed = closing.state.kind === 'closed';
   const view = applicantsView(model, new Date(), closed);
   useRaceAlert(send, model.acknowledgeRace);
+  const offline = useLiveOffline();
+  const motion = useArrivals(list.kind === 'ready' ? list.applicants.map((a) => a.id) : null);
   const blocking = useBlockPerson('applicant');
   const footer =
     view.footer?.state === 'ready' && blocking.state === 'busy'
@@ -107,6 +112,9 @@ export function ApplicantsScreen({
             }
           />
         )}
+        {offline ? (
+          <OfflineSection text={t('live.offline')} testID="bounty-applicants-offline" />
+        ) : null}
         {view.stale ? (
           <StateRow>
             <InlineState
@@ -189,6 +197,7 @@ export function ApplicantsScreen({
             chosen={chosen}
             blocking={blocking.target}
             canBlock={blocking.state !== 'busy' && (send.kind === 'idle' || send.kind === 'failed')}
+            motion={motion}
             onChoose={model.chose}
             onBlock={blocking.ask}
           />

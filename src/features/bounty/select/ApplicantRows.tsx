@@ -24,6 +24,7 @@ import {
   listRowInsets,
   multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
+import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactElement } from 'react';
 
 import type { BlockedPerson } from '@/features/block/types';
@@ -118,15 +119,19 @@ export function StateRow({ children }: { children: ReactElement }) {
   );
 }
 
+type Motion = (id: string) => ModifierConfig[];
+
 function ApplicantRow({
   applicant,
   chosen,
   blocking,
   canBlock,
+  motion,
   onChoose,
   onBlock,
 }: {
   applicant: Applicant;
+  motion: Motion;
   chosen: boolean;
   blocking: boolean;
   canBlock: boolean;
@@ -152,6 +157,7 @@ function ApplicantRow({
       modifiers={[
         accessibilityLabel(label),
         ...(chosen ? [accessibilityAddTraits(['isSelected'])] : []),
+        ...motion(applicant.id),
       ]}
     >
       <HStack alignment="top" spacing={vars['--space-3']}>
@@ -218,10 +224,12 @@ export function ApplicantSection({
   chosen,
   blocking,
   canBlock,
+  motion,
   onChoose,
   onBlock,
 }: {
   applicants: Applicant[];
+  motion: Motion;
   chosen: string | null;
   blocking: string | null;
   canBlock: boolean;
@@ -241,6 +249,7 @@ export function ApplicantSection({
           chosen={applicant.id === chosen}
           blocking={applicant.id === blocking}
           canBlock={canBlock}
+          motion={motion}
           onChoose={onChoose}
           onBlock={onBlock}
         />

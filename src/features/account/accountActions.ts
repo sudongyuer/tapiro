@@ -4,23 +4,37 @@ import type { OnboardingStore } from './onboardingStore';
 import type { ProfileStore } from './profileStore';
 import type { AuthService, DeleteAccountResult } from './types';
 
+const SIGN_OUT_WAIT_MS = 3_000;
+
+async function bounded(task: Promise<void>, ms: number) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, ms);
+  });
+  await Promise.race([task.catch(() => undefined), timeout]);
+  clearTimeout(timer);
+}
+
 export function createAccountActions({
   auth,
   onboarding,
   profiles,
   cleanups,
+  beforeSignOut = async () => undefined,
 }: {
   auth: AuthService;
   onboarding: OnboardingStore;
   profiles: ProfileStore;
   cleanups: Pick<UserCleanups, 'run'>;
+  beforeSignOut?: () => Promise<void>;
 }) {
   return {
     finishOnboarding(userId: string) {
       onboarding.markDone(userId);
     },
 
-    signOut() {
+    async signOut() {
+      await bounded(beforeSignOut(), SIGN_OUT_WAIT_MS);
       return auth.signOut();
     },
 

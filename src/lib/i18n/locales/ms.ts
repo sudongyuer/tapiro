@@ -137,6 +137,9 @@ const ms: Translation = {
   ride,
   rideReminders,
   rideSettle,
+  live: {
+    offline: 'Mungkin tidak terkini',
+  },
   shell: {
     tabs: {
       bounty: 'Ganjaran',

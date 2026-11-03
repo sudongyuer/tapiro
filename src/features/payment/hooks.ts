@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { useLiveSignal } from '@/lib/live';
 import type { PayeeMethod } from '@/lib/payeeMethods';
 
 import { paymentStore } from './services';
@@ -66,6 +67,10 @@ export function usePaySheet(userId: string, paymentId: string) {
       live = false;
     };
   }, [userId, paymentId, version]);
+
+  useLiveSignal(['payment.'], (signal) => {
+    if (!signal || signal.id === paymentId) setVersion((current) => current + 1);
+  });
 
   const retry = useCallback(() => {
     setState({ status: 'loading' });
