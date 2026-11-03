@@ -21,6 +21,8 @@ Updated: 2026-11-03.
 
 - Expo SDK 58 upgrade (React Native 0.88, `chore/expo-sdk-58`): 问小貘 is the prominent tab, a separate 62 pt button
   on iOS 26.5 and 27.2. Open PR, not merged; waiting on the owner's review. The full UI matrix has not run on SDK 58.
+  Open: the 已结清 card's exit animation does not play, `home_fan_out` fails on iOS 27.2, and the Simulators show the
+  pinyin software keyboard, which breaks ASCII typing cases (also on SDK 57). See the PR and the retro.
 
 - Carpool milestone: the `ride_*` UI cases ran (zh-Hans light 27 plus 24 regression cases, dark 7, `en` 27, `ms` 20;
   all pass after #55). Waiting on the owner's Simulator walkthrough and the `ride.remind.*` device checks; then set the
