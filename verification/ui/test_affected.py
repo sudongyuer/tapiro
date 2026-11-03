@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from affected import SMOKE, parse_deps, run_locales, select
+from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -103,6 +103,22 @@ class Declarations(unittest.TestCase):
             for prefix in deps:
                 exists = (ROOT / prefix).exists() or any(path.startswith(prefix) for path in tracked)
                 self.assertTrue(exists, f'{case.name}: DEPS entry {prefix} matches no file')
+
+    def test_a_declaration_built_from_a_name_is_rejected(self):
+        spread = "FAIL = ['-uiVerifyRideFail', 'first']\nARGS = ['-uiVerifySignedIn', 'onboarded', *FAIL]\n"
+        with self.assertRaisesRegex(ValueError, 'ARGS must be a literal'):
+            parse_declarations(spread)
+        with self.assertRaisesRegex(ValueError, 'DEPS must be a literal'):
+            parse_declarations("BASE = ['src/a/']\nDEPS = BASE + ['src/b/']\n")
+        with self.assertRaisesRegex(ValueError, 'LOCALES must be a list of strings'):
+            parse_declarations("LOCALES = 'ms'\n")
+
+    def test_every_case_declares_literals_the_runner_can_read(self):
+        for case in sorted((HERE / 'cases').glob('*.py')):
+            try:
+                parse_declarations(case.read_text())
+            except ValueError as error:
+                self.fail(f'{case.name}: {error}')
 
     def test_smoke_cases_exist(self):
         for case in SMOKE:

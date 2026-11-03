@@ -8,7 +8,7 @@ import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import typed  # noqa: E402
+from bounty import paste_into  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from ride import tap_bar  # noqa: E402
@@ -46,7 +46,7 @@ ui.gone('ride-receipt-image')
 
 ui.tap('ride-detail-dispute')
 ui.element('ride-dispute')
-typed(ui, 'ride-dispute-note', '我中途下车了')
+paste_into(ui, 'ride-dispute-note', '我中途下车了')
 tap_bar(ui, 'ride-dispute-confirm')
 ui.gone('ride-dispute')
 deadline = time.monotonic() + 10

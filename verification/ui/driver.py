@@ -38,10 +38,6 @@ def latin_spacing(locale, text):
     return HAN_THEN_LATIN.sub(r'\1 ', LATIN_THEN_HAN.sub(r'\1 ', text))
 
 
-def load_strings():
-    return json.loads(STRINGS.read_text())
-
-
 # `axe type` sends keys with no delay; the SwiftUI TextField re-renders React on every change and dropped trailing
 # keys in dark runs (2026-10-26), so plain lower-case letters and digits go through paced key-sequence instead.
 HID_KEYCODES = {
@@ -56,7 +52,7 @@ class UI:
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
         self.output.mkdir(parents=True, exist_ok=True)
         self.launch_args = os.environ.get('TAPIRO_VERIFY_ARGS', '').split()
-        self.strings = load_strings()
+        self.strings = json.loads(STRINGS.read_text())
 
     def t(self, key, **values):
         return self.t_in(self.locale, key, **values)
@@ -215,6 +211,7 @@ class UI:
                  '--end-x', str(round(end[0])), '--end-y', str(round(end[1])), '--duration', str(duration))
 
     def type(self, text):
+        assert text.isascii(), f'AXe types ASCII only; paste {text!r} with bounty.paste_into'
         if all(char in HID_KEYCODES for char in text):
             self.axe('key-sequence', '--keycodes', ','.join(HID_KEYCODES[char] for char in text), '--delay', '0.08')
         else:
@@ -309,7 +306,8 @@ def frame(element):
 
 def assert_touch_target(element, name):
     f = frame(element)
-    assert f['width'] >= 44 and f['height'] >= 44, f'{name} needs a 44 pt target, got {f["width"]}x{f["height"]}'
+    # AX frames carry float32 noise (44 reads 43.99997); a real shortfall is a whole 1/3 pt pixel.
+    assert min(f['width'], f['height']) >= 43.99, f'{name} needs a 44 pt target, got {f["width"]}x{f["height"]}'
 
 
 def pixel(png_path, x, y):

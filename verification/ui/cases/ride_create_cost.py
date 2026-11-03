@@ -9,7 +9,7 @@ from ride import open_confirm, open_list, relaunch_list  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py']
 COIN = ['-uiVerifyRideCost', 'coin']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDraft', 'mall', *COIN]
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDraft', 'mall', '-uiVerifyRideCost', 'coin']
 
 ui = UI(*sys.argv[1:])
 open_list(ui)

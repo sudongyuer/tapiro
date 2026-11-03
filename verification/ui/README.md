@@ -27,8 +27,10 @@ picks each case whose `DEPS` prefixes (or its own file) match one, printing why.
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal` in `verification/ui` covers the selection (and
-checks that every case declares `DEPS` that match real paths); CI runs it.
+before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver` in `verification/ui` covers the
+selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
+`ARGS` and `BUDGET` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
+only; paste other text with `bounty.paste_into`.
 Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:
 a PR run uses zh-Hans, a milestone run (`--locales`, and the full matrix) adds `en` for every case, and `ms` exists
 only to catch truncation of the longest copy, so a case that shows long copy declares

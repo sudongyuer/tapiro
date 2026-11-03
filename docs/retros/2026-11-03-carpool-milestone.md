@@ -1,0 +1,46 @@
+---
+branch: fix/ride-case-args
+date: 2026-11-03
+pr: carpool milestone fixes
+title: carpool milestone run (zh-Hans light) and its fix round
+escaped: 13
+rework: 2
+interventions: 0
+overturned: 0
+---
+
+# Retro: carpool milestone run
+
+## Core (mandatory)
+
+| Dimension | Measure                 | This step                                                                                                                         |
+| --------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects         | 13 from steps 4–7: 2 product, 2 fixture, 1 check, 8 case (table below); 7 failures reported, 6 more behind them once those passed |
+| Quality   | Vacuous checks          | 0: every changed assertion was shown to fail on the old form (unit tests) or failed on the first run                              |
+| Quality   | Skipped verifications   | dark, en and ms for the touched cases (milestone matrix still to run); `tsc` fails locally in two untouched files, CI is green    |
+| Speed     | Wall-clock              | About 1.5 h: two builds, three reruns (9 cases, then 3, then 1)                                                                   |
+| Autonomy  | Avoidable interventions | 0                                                                                                                                 |
+| Loop      | Minutes on this retro   | 5                                                                                                                                 |
+
+## Problems and root causes
+
+| #   | What happened                                                                                                                                                  | Root cause class | Change and layer                                                                                                                                                                                |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `ride_create_cost` and `ride_list_failed` built `ARGS` from a name (`*COIN`), so `run.py` exited and the whole run stopped                                     | test bug         | Check: `affected.parse_declarations` is the one parser for `DEPS`/`SCENE`/`LOCALES`/`ARGS`/`BUDGET`; `test_affected` rejects the spread form and parses every case (CI `unittest` step)         |
+| 2   | 改 under a place was 13x15.7 pt: the 44 pt `frame` sat on the SwiftUI `Button`, outside its label, so the hit area stayed the text                             | product          | `FormPlaces.tsx` puts `frame` + `contentShape` on the label, the pattern `OptionalRows` already used. Same search found `AddressSection` retry (inside a List row, whole row taps); left as is  |
+| 3   | 直接写 read 43.99997 pt and failed `>= 44`; the run's AX frames show float32 noise (44.0000076, 43.99997) while real shortfalls are whole 1/3 pt pixels        | check too strict | `assert_touch_target` allows 0.01 pt; `test_driver` shows 43.99997 passes and 43.667 fails                                                                                                      |
+| 4   | `ride_list_empty` matched the nav-bar ＋ by its label, which 发起拼车 on the moment screen shares; the ＋ was hidden                                           | test bug         | `ride.add_button` takes only the identifier-less Button inside the nav bar                                                                                                                      |
+| 5   | `-uiVerifyRideFail first` never failed: step 7's launch-time reminder sync called `mine()` first and used up the fixture's "first load"                        | fixture          | The fixture counts list loads (`nearby` without a cursor), not `mine()` calls; unit test covers a sync before the list                                                                          |
+| 6   | `ride_settle_pay` typed 我中途下车了 through `axe type`, which has no CJK keycodes                                                                             | test bug         | The case pastes with `bounty.paste_into`; `UI.type` now refuses non-ASCII and names `paste_into` (`test_driver`)                                                                                |
+| 7   | The ticket label read 「到了 · 14:00，，谷中城…」: the a11y template joined an empty time slot (the settle status already carries the time)                    | product          | `ticketA11y` joins only present segments with `ride.ticket.a11ySeparator`; unit test fails on the old template. Same pattern left in `ride.detail.requests.a11y` (trailing 「，」 when no note) |
+| 8   | `ride_settle_worst` expected RM 1,000.00 on the organiser's ticket, which shows 每人 / 你出 when shares are equal (as `ride_settle_rows` documents)            | test bug         | The case asserts 每人 RM 166.70 / 你出 RM 166.50 and no empty label segment                                                                                                                     |
+| 9   | `ride_settle_worst` then looked for 付给 on the ¥ rider, whom the fixture has already paid (footer 你说已付 · 查看)                                            | test bug         | The case checks the paid footer, the longer copy                                                                                                                                                |
+| 10  | `ride_settle_rows` tapped 已收到 at y 827–873, under the floating tab bar; the tap hit 拼车 and popped to the list, so 收到 never showed                       | test bug         | `ride.tap_clear` scrolls the target above the tab bar before tapping                                                                                                                            |
+| 11  | `ride_create_form` and `ride_create_pick` read the fare footer and the airport group below the fold; the lazy form list has no AX node for them until scrolled | test bug         | Both call `form_scroll_to` first                                                                                                                                                                |
+| 12  | The recent-route fixture stored short 「Pyramid」 as not edited, so the form re-derived 双威金字塔 from the table                                              | fixture          | The fixture marks it edited, the only state that can store a short name the table would not give                                                                                                |
+| 13  | Cases for steps 4–7 were written but not run (Pace), so each case's first failure hid the next; one fix round became two                                       | process          | Expected under Pace; items 1 and 6 now fail in CI or at the first call instead of mid-run. The remaining kinds (scroll, tab bar) are covered by the helpers above, so no new rule               |
+
+## Notes
+
+- With quick time 17:00 picked, the system date picker on the form showed 01:00 on the Simulator; likely the Simulator's
+  time zone against Malaysia time. Not investigated; check on a device in the walkthrough.

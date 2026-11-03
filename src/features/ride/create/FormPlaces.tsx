@@ -4,11 +4,13 @@ import {
   accessibilityIdentifier,
   accessibilityLabel,
   buttonStyle,
+  contentShape,
   font,
   foregroundStyle,
   frame,
   lineLimit,
   monospacedDigit,
+  shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 
@@ -132,11 +134,16 @@ function PlaceRows({
                 testID={`ride-form-${which}-short-edit`}
                 modifiers={[
                   buttonStyle('borderless'),
-                  frame({ minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] }),
                   accessibilityLabel(t('ride.create.form.shortEditLabel')),
                 ]}
               >
-                <Text modifiers={[font({ textStyle: 'footnote' })]}>
+                <Text
+                  modifiers={[
+                    font({ textStyle: 'footnote' }),
+                    frame({ minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] }),
+                    contentShape(shapes.rectangle()),
+                  ]}
+                >
                   {t('ride.create.form.shortEdit')}
                 </Text>
               </Button>

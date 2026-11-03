@@ -54,6 +54,7 @@ ui.wait_label('ride-form-seats-label', lambda label: ui.t('ride.create.form.sixS
               'six people do not read 记得叫 6 座的车')
 ui.tap('ride-form-estimate')
 ui.type('76')
+form_scroll_to(ui, 'ride-form-fare-footer')
 ui.wait_label('ride-form-fare-footer', lambda label: '13' in label and '6' in label,
               'the footer does not split RM 76 among 6')
 ui.wait_label('ride-form-ticket', lambda label: '13' in label, 'the ticket stub does not show 每人约 RM 13')

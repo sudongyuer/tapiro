@@ -24,9 +24,13 @@ def label(ui, identifier):
     return (ui.element(identifier) or {}).get('AXLabel') or ''
 
 
+NAV_BAR_BOTTOM = 120
+
+
 def add_button(ui):
-    return next((i for i in ui.read() if i.get('AXLabel') == ui.t('ride.list.add') and i.get('type') == 'Button'),
-                None)
+    # 发起拼车 on the moment screen and the joinable card share the ＋ label; the toolbar item alone has no identifier.
+    return next((i for i in ui.read() if i.get('AXLabel') == ui.t('ride.list.add') and i.get('type') == 'Button'
+                 and not i.get('AXUniqueId') and i['frame']['y'] + i['frame']['height'] <= NAV_BAR_BOTTOM), None)
 
 
 def open_create(ui):
@@ -88,4 +92,28 @@ def tap_bar(ui, identifier):
         return next((i for i in found if i.get('type') == 'Button'), found[0] if found else None)
     # SwiftUI toolbar buttons in a sheet expose the identifier twice (the button and its label), so axe tap --id refuses.
     f = ui.settled(match, f'{identifier} never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+
+
+def tab_bar_top(items):
+    tabs = [i['frame']['y'] for i in items if (i.get('AXUniqueId') or '').startswith('tab-')]
+    return min(tabs) if tabs else screen(items)['height']
+
+
+def tap_clear(ui, identifier, tries=6):
+    def clear(items):
+        found = by_id(items, identifier)
+        if not found:
+            return None
+        f = found['frame']
+        return found if f['y'] >= NAV_BAR_BOTTOM and f['y'] + f['height'] <= tab_bar_top(items) - 8 else None
+
+    for _ in range(tries):
+        items = ui.read()
+        if clear(items):
+            break
+        s = screen(items)
+        ui.swipe((s['width'] / 2, s['height'] * 0.7), (s['width'] / 2, s['height'] * 0.45), 0.4)
+    # The floating tab bar covers the scroll view's bottom; a tap there lands on 拼车 and pops the stack.
+    f = ui.settled(clear, f'{identifier} never cleared the tab bar')['frame']
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)

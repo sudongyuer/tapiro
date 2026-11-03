@@ -48,7 +48,7 @@ const ms: typeof zhHans = {
     bags_one: '{{count}} beg besar',
     bags_other: '{{count}} beg besar',
     noEstimate: 'Belum diisi',
-    a11y: '{{status}}, {{time}}, {{route}}, {{labels}}',
+    a11ySeparator: ', ',
     a11yFare: 'Kira-kira {{amount}} seorang, {{taken}} daripada {{seats}} orang',
   },
   detail: {

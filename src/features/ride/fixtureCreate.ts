@@ -16,7 +16,7 @@ export function fixtureRecentRoutes(
         latitude: 3.0733,
         longitude: 101.6078,
         short: 'Pyramid',
-        shortEdited: false,
+        shortEdited: true,
       },
       dest: {
         label: 'YC Residence 正门',

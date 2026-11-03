@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from ride import open_create, open_list  # noqa: E402
+from ride import form_scroll_to, open_create, open_list  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py']
 LOCALES = ['zh-Hans', 'ms']
@@ -31,9 +31,9 @@ ui.capture('01-pick')
 
 ui.tap('ride-pick-airport')
 ui.element('ride-form')
-ui.element('ride-form-airport-remove')
 dest = ui.element('ride-form-dest')
 assert dest.get('AXLabel') == ui.t('ride.create.pick.tile.airport.dest'), dest.get('AXLabel')
+form_scroll_to(ui, 'ride-form-airport-remove')
 ticket = ui.element('ride-form-ticket')
 assert ui.t('ride.create.form.liveRoute') in (ticket.get('AXLabel') or ''), ticket.get('AXLabel')
 ui.capture('02-form-airport')
