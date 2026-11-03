@@ -153,7 +153,8 @@ Every answered question and the defaults drawn on each board. Board names are th
 | 232 ★ default | 我到了 can be undone until 出发, not after. ★ by default, owner may veto                                                                                                                                             | RideMeetup1    |
 | 220 A         | Editing one rider's share leaves the others fixed; the organiser's row is the total minus the others; 发给… is disabled while the others exceed the total. Owner, 2026-11-02                                         | RideSettle1    |
 | 233 A         | An appeal no boarded member confirms within 72 h of the actual 出发 lapses: the no-show counts again, waiver as if no appeal had happened; a confirmed appeal still removes it. Owner, 2026-11-02                    | RideMeetup1    |
-| 234 owner     | Times the app shows or lets you pick (rides and bounties: clocks, 今天 / 明天, day groups, pickers) use the device's system time zone; server rules stay in Malaysia time. Owner, 2026-11-03                       | —              |
+| 234 owner     | Times the app shows or lets you pick (rides and bounties: clocks, 今天 / 明天, day groups, pickers) use the device's system time zone; server rules stay in Malaysia time. Owner, 2026-11-03                         | —              |
+| 235 B         | Local reminders' quiet hours (23:00–08:00, a pay reminder moves to 08:00) follow the device time zone; the server push outbox stays in Malaysia time until the account half sends real pushes. Owner, 2026-11-03     | —              |
 
 Questions 220 and 233 touch money or reputation and were answered by the owner on 2026-11-02 (see "Needs the owner").
 
@@ -521,18 +522,18 @@ PR: https://github.com/sudongyuer/tapiro/pull/50 (`feat/carpool-list-create`) ·
 
 ### Deviations from the design
 
-| Design said                                                     | Shipped                                                                                              | Why                                                                                                   | Confirmed by        |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------- |
-| 「选时间」 is a third capsule                                   | It shows until a time is set; then the 出发 row holds the system compact date and time picker        | The compact picker is the system picker; a second entry would duplicate it                            | not intent-changing |
-| The live ticket sits at the top of the form                     | It is pinned above the scrolling Form                                                                | The board's 「往下滑到底」 frame keeps it in view; an RN view in a Form row mis-measures (TaskCard)    | not intent-changing |
-| Place search rows read 「票上叫「谷中城」」                     | The short name shows under the chosen place in the form, not in the search rows                      | The shared search screen serves bounty too; the form line carries the same information                | not intent-changing |
-| 车费怎么分 menu items carry a one-line explanation              | Titles only                                                                                          | The system menu Picker renders one line per option                                                    | not intent-changing |
-| (not drawn) currency                                            | The device currency (MYR, CNY on China-region devices); no currency menu in the form                 | Bounty's currency menu was not drawn for rides                                                        | not intent-changing |
-| Location denied: 「选一个地方」                                 | The list orders by the current location only when permission is already granted, else by time        | No place chooser was drawn for 拼车; ordering by time is the spec's fallback                          | not intent-changing |
-| 航班起飞 row in the airport group                               | 「加起飞时间」 adds it; the clock is stored as the first such time after departure                    | A flight time is optional; departure-relative storage matches `publish_ride`'s 24 h rule              | not intent-changing |
-| A settled list ticket shows 「你付了」                          | Shows 已结清 only                                                                                    | `my_rides` returns no share; step 6                                                                   | not intent-changing |
-| 已申请 stamp (192 A)                                            | Status line 「已申请 · 等通过」 on the list ticket                                                   | The stamp belongs to the detail (step 5)                                                              | not intent-changing |
-| Pages of 20 with automatic loading                              | Pages of 50 with a 「再看更多」 card                                                                 | Volume is low (spec Known limits)                                                                     | not intent-changing |
+| Design said                                        | Shipped                                                                                       | Why                                                                                                 | Confirmed by        |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------- |
+| 「选时间」 is a third capsule                      | It shows until a time is set; then the 出发 row holds the system compact date and time picker | The compact picker is the system picker; a second entry would duplicate it                          | not intent-changing |
+| The live ticket sits at the top of the form        | It is pinned above the scrolling Form                                                         | The board's 「往下滑到底」 frame keeps it in view; an RN view in a Form row mis-measures (TaskCard) | not intent-changing |
+| Place search rows read 「票上叫「谷中城」」        | The short name shows under the chosen place in the form, not in the search rows               | The shared search screen serves bounty too; the form line carries the same information              | not intent-changing |
+| 车费怎么分 menu items carry a one-line explanation | Titles only                                                                                   | The system menu Picker renders one line per option                                                  | not intent-changing |
+| (not drawn) currency                               | The device currency (MYR, CNY on China-region devices); no currency menu in the form          | Bounty's currency menu was not drawn for rides                                                      | not intent-changing |
+| Location denied: 「选一个地方」                    | The list orders by the current location only when permission is already granted, else by time | No place chooser was drawn for 拼车; ordering by time is the spec's fallback                        | not intent-changing |
+| 航班起飞 row in the airport group                  | 「加起飞时间」 adds it; the clock is stored as the first such time after departure            | A flight time is optional; departure-relative storage matches `publish_ride`'s 24 h rule            | not intent-changing |
+| A settled list ticket shows 「你付了」             | Shows 已结清 only                                                                             | `my_rides` returns no share; step 6                                                                 | not intent-changing |
+| 已申请 stamp (192 A)                               | Status line 「已申请 · 等通过」 on the list ticket                                            | The stamp belongs to the detail (step 5)                                                            | not intent-changing |
+| Pages of 20 with automatic loading                 | Pages of 50 with a 「再看更多」 card                                                          | Volume is low (spec Known limits)                                                                   | not intent-changing |
 
 ### Verification
 
@@ -592,22 +593,22 @@ PR: https://github.com/sudongyuer/tapiro/pull/51 (`feat/carpool-detail-meetup`) 
 - Verify mode: `fixtureDetailService.ts` with scenes `viewer`, `viewerMall`, `applicant`, `organiser`, `member`,
   `meetup` (06:20), `meetupArrived`, `meetupLate` (06:29), `depart` (06:36), `goOrCancel`, `appealOpen`,
   `appealPending`, `appealLapsed`, `confirmAppeal`, `worst` (`-uiVerifyRideDetail`), `-uiVerifyRideDetailFail
-  first|refresh|write`, every call recorded in `uiVerifyRideDetailCalls`; Debug scene `ride-detail`.
+first|refresh|write`, every call recorded in `uiVerifyRideDetailCalls`; Debug scene `ride-detail`.
 
 ### Deviations from the design
 
-| Design said                                                                | Shipped                                                                                                                   | Why                                                                                              | Confirmed by        |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------- |
-| 集合 step and 集合点 cell read a pickup spot (「Geo 大堂 Grab 上车点」) | The 集合点 cell reads the start's short name (双威, as on the ticket); the 集合 step reads the full start label; the exact spot goes in 集合说明 | A ride has no pickup-spot field; the full label truncated in the cell (「Sunway G…」) | coordinator, 2026-11-02 |
-| 到了 shows 「约 07:20」                                                    | Shown only when the organiser typed 预计到 (226), else no time                                                            | Tapiro has no route data                                                                          | not intent-changing |
-| Boarding sheet: check circles and a black 「3 人出发」 pill                 | System toggles; 「n 人出发」 is the sheet's confirm button                                                                | Native sheet pattern of the ETA sheet; no imitated controls                                      | not intent-changing |
-| The organiser's 集合 bar has only 出发                                     | A secondary 我到了 sits beside 出发 until the organiser taps it                                                           | 196 A shows the organiser with an arrival time; the server accepts the organiser's 我到了         | not intent-changing |
-| 填车牌 is one text field                                                   | One sheet: 车牌, optional 预计到, 集合说明                                                                               | `update_ride_details` writes all three; 223 and 226 make them the organiser's edits               | not intent-changing |
-| (not drawn) the note field for 申请上车, 改时间, appeal cards, T-15 prompt | Half sheets for the note and the time (later only, ≤ 24 h); cards under the ticket for appeals and 「照常走还是取消」      | Known gaps of this spec; closest board patterns                                                   | not intent-changing |
-| Realtime updates and the carpool event kinds (step 5)                      | Focus / foreground / pull / after-write refetch and the 15 s poll; no ride live source on home, no event kinds            | The shared live layer is not built; the realtime spec's interim behaviour applies                 | not intent-changing |
-| 199 A: the line shows while disconnected                                   | It shows after a failed refresh or poll                                                                                   | Without a channel, a failed load is the only disconnection signal                                 | not intent-changing |
-| The 已申请 stamp (motion candidate) | Motion A: the bounty stamp landing (same values, `detail/useStampLanding.ts`, since features do not import each other), a spring from 1.4 to 1 with a success haptic when it settles, a 150 ms fade under Reduce Motion; only when the stamp appears on screen, not on load. ★ by default, owner may veto | The owner's standing rule takes the ★ option | ★ by default, owner may veto |
-| Replace the stub detail | `RideDetailStub.tsx` deleted | Created by step 4 of this effort | coordinator, 2026-11-02 |
+| Design said                                                                | Shipped                                                                                                                                                                                                                                                                                                   | Why                                                                                       | Confirmed by                 |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------- |
+| 集合 step and 集合点 cell read a pickup spot (「Geo 大堂 Grab 上车点」)    | The 集合点 cell reads the start's short name (双威, as on the ticket); the 集合 step reads the full start label; the exact spot goes in 集合说明                                                                                                                                                          | A ride has no pickup-spot field; the full label truncated in the cell (「Sunway G…」)     | coordinator, 2026-11-02      |
+| 到了 shows 「约 07:20」                                                    | Shown only when the organiser typed 预计到 (226), else no time                                                                                                                                                                                                                                            | Tapiro has no route data                                                                  | not intent-changing          |
+| Boarding sheet: check circles and a black 「3 人出发」 pill                | System toggles; 「n 人出发」 is the sheet's confirm button                                                                                                                                                                                                                                                | Native sheet pattern of the ETA sheet; no imitated controls                               | not intent-changing          |
+| The organiser's 集合 bar has only 出发                                     | A secondary 我到了 sits beside 出发 until the organiser taps it                                                                                                                                                                                                                                           | 196 A shows the organiser with an arrival time; the server accepts the organiser's 我到了 | not intent-changing          |
+| 填车牌 is one text field                                                   | One sheet: 车牌, optional 预计到, 集合说明                                                                                                                                                                                                                                                                | `update_ride_details` writes all three; 223 and 226 make them the organiser's edits       | not intent-changing          |
+| (not drawn) the note field for 申请上车, 改时间, appeal cards, T-15 prompt | Half sheets for the note and the time (later only, ≤ 24 h); cards under the ticket for appeals and 「照常走还是取消」                                                                                                                                                                                     | Known gaps of this spec; closest board patterns                                           | not intent-changing          |
+| Realtime updates and the carpool event kinds (step 5)                      | Focus / foreground / pull / after-write refetch and the 15 s poll; no ride live source on home, no event kinds                                                                                                                                                                                            | The shared live layer is not built; the realtime spec's interim behaviour applies         | not intent-changing          |
+| 199 A: the line shows while disconnected                                   | It shows after a failed refresh or poll                                                                                                                                                                                                                                                                   | Without a channel, a failed load is the only disconnection signal                         | not intent-changing          |
+| The 已申请 stamp (motion candidate)                                        | Motion A: the bounty stamp landing (same values, `detail/useStampLanding.ts`, since features do not import each other), a spring from 1.4 to 1 with a success haptic when it settles, a 150 ms fade under Reduce Motion; only when the stamp appears on screen, not on load. ★ by default, owner may veto | The owner's standing rule takes the ★ option                                              | ★ by default, owner may veto |
+| Replace the stub detail                                                    | `RideDetailStub.tsx` deleted                                                                                                                                                                                                                                                                              | Created by step 4 of this effort                                                          | coordinator, 2026-11-02      |
 
 ### Verification
 
@@ -690,16 +691,16 @@ PR: https://github.com/sudongyuer/tapiro/pull/53 (`feat/carpool-settle`). Status
 
 ### Deviations from the design
 
-| Design said | Shipped | Why | Confirmed by |
-| --- | --- | --- | --- |
-| 「发给阿明和小雅」 as a black button under the rows | The sheet's toolbar confirm reads 「发给 n 人」; the names are in the footer | Native sheet pattern of the boarding sheet (step 5) | not intent-changing |
-| The home card reminds the organiser to press 到了 (210 A) | Not built | No ride live source on home yet (step 5 record) | not intent-changing |
-| 「Tapiro 今天 07:26 提醒过你」 on the owing card | The card says when Tapiro reminds (24 h, 72 h) and the publishing pause | Reminders are scheduled in step 7; the card shows no reminder that was not sent | not intent-changing |
-| 已收到 for a due payment when the organiser takes cash | 已收到 shows only once the rider said paid | The detail does not know the organiser's methods; the pay sheet still offers cash confirmation | not intent-changing |
-| Riders see each other's paid status | Riders see 已付 for marked-paid and settled alike, without method or time | Least exposure that still answers 215 A | not intent-changing |
-| The 到了 step is 「现在」 once the car leaves | `timeline()` marks 到了 as now from 出发 (was 上车) | RideSettle1 draws 「现在 · 到了？」 at 07:24 | not intent-changing |
-| Organiser's ride sticker names the riders (「和小林、阿明」) | The book names one counterpart: the earliest rider | The sticker label has one name slot | not intent-changing |
-| A Grab-split rider collects from the home settled card | Collected from the ride detail; no home card | A Grab-split ride has no payment amount for the card | not intent-changing |
+| Design said                                                  | Shipped                                                                      | Why                                                                                            | Confirmed by        |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------- |
+| 「发给阿明和小雅」 as a black button under the rows          | The sheet's toolbar confirm reads 「发给 n 人」; the names are in the footer | Native sheet pattern of the boarding sheet (step 5)                                            | not intent-changing |
+| The home card reminds the organiser to press 到了 (210 A)    | Not built                                                                    | No ride live source on home yet (step 5 record)                                                | not intent-changing |
+| 「Tapiro 今天 07:26 提醒过你」 on the owing card             | The card says when Tapiro reminds (24 h, 72 h) and the publishing pause      | Reminders are scheduled in step 7; the card shows no reminder that was not sent                | not intent-changing |
+| 已收到 for a due payment when the organiser takes cash       | 已收到 shows only once the rider said paid                                   | The detail does not know the organiser's methods; the pay sheet still offers cash confirmation | not intent-changing |
+| Riders see each other's paid status                          | Riders see 已付 for marked-paid and settled alike, without method or time    | Least exposure that still answers 215 A                                                        | not intent-changing |
+| The 到了 step is 「现在」 once the car leaves                | `timeline()` marks 到了 as now from 出发 (was 上车)                          | RideSettle1 draws 「现在 · 到了？」 at 07:24                                                   | not intent-changing |
+| Organiser's ride sticker names the riders (「和小林、阿明」) | The book names one counterpart: the earliest rider                           | The sticker label has one name slot                                                            | not intent-changing |
+| A Grab-split rider collects from the home settled card       | Collected from the ride detail; no home card                                 | A Grab-split ride has no payment amount for the card                                           | not intent-changing |
 
 ### Verification
 
@@ -793,13 +794,13 @@ PR: https://github.com/sudongyuer/tapiro/pull/54 (`feat/carpool-reminders`). Sta
   - `arrive` at the typed 预计到 for the organiser of a departed ride (the 到了 reminder; none without 预计到);
   - `pay24` and `pay72` for a boarded rider whose payment is `due`, 24 h and 72 h after the split, moved out of quiet
     hours to 08:00.
-  `planReminders` computes them from the server's data only; `noticeDiff` (`src/lib/notifications/reconcile.ts`)
-  cancels what is no longer wanted, reschedules a changed time or copy under the same identifier and never schedules a
-  time already past. Reconciled from `my_rides` on sign-in, on every foreground and after the first publish or
-  request; from `ride_detail` on every fresh detail load (a revised time, leave, cancel, block, settle or
-  `ride_not_found` cancels or moves that ride's reminders); a detail read after a `my_rides` read wins for that ride.
-  Sign-out and account deletion cancel every ride reminder and clear the ledger. Copy in `rideReminders.*`
-  (zh-Hans, en, ms), in the app language at scheduling time; a language change reschedules on the next sync.
+    `planReminders` computes them from the server's data only; `noticeDiff` (`src/lib/notifications/reconcile.ts`)
+    cancels what is no longer wanted, reschedules a changed time or copy under the same identifier and never schedules a
+    time already past. Reconciled from `my_rides` on sign-in, on every foreground and after the first publish or
+    request; from `ride_detail` on every fresh detail load (a revised time, leave, cancel, block, settle or
+    `ride_not_found` cancels or moves that ride's reminders); a detail read after a `my_rides` read wins for that ride.
+    Sign-out and account deletion cancel every ride reminder and clear the ledger. Copy in `rideReminders.*`
+    (zh-Hans, en, ms), in the app language at scheduling time; a language change reschedules on the next sync.
 - Permission (`src/lib/notifications/`): provisional authorisation when onboarding finishes (no prompt); the explicit
   prompt once, after the first ride published or the first ride request; provisional is read from `ios.status`
   (AGENTS.md), and reminders are scheduled when allowed or provisional, never when denied or undetermined. A tap on a
@@ -813,16 +814,16 @@ PR: https://github.com/sudongyuer/tapiro/pull/54 (`feat/carpool-reminders`). Sta
 
 ### Deviations from the design
 
-| Design said | Shipped | Why | Confirmed by |
-| --- | --- | --- | --- |
+| Design said                                                                            | Shipped                                                                                                                | Why                                                                                                                                                                                      | Confirmed by        |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
 | `notify` Edge Function with a `RecordingSender` reads `push_tokens` and writes a table | A trigger on `events` writes `push_recordings` with the thread and the quiet-hours hold; no `push_tokens`, no copy yet | Delivery waits on the Apple account; the account half's `ExpoSender` can drain the same rows. The row holds kind and ids only, so copy is built at send time in the recipient's language | not intent-changing |
-| Each transition inserts its events | One trigger on `ride_events` (every ride RPC already logs there) and one on ride payments; same transaction | No RPC had to be rewritten; recipients come from `ride_members` at that moment | not intent-changing |
-| Events also feed Broadcast (`realtime.send`) | No send trigger | The live layer is not built (status queue item 2) | not intent-changing |
-| (not listed) push for 车牌 and 集合 changes | Live only; 集合 itself is the local `meetup` reminder | 170 A pushes only must-act and waiting; a server push at T-30 would duplicate the local one | not intent-changing |
-| (not listed) events for a membership ended by a block or an account deletion | None | Telling either side would reveal the block | not intent-changing |
-| The home card reminds the organiser to press 到了 (210 A) | A local reminder at the typed 预计到; the home card reminder is still not built | The home card waits for the ride live source; without 预计到 there is no time to remind at | not intent-changing |
-| 「Tapiro 今天 07:26 提醒过你」 | 「提醒过你」 only for a reminder this device scheduled whose time has passed; 「会在…提醒你」 for the next one | A local notification gives no delivery receipt; the card never names a reminder that was not scheduled | not intent-changing |
-| Reminders for 还没收到 (foundation `reminderDue` covers `due` only) | Local reminders only for `due`; 还没收到 records a `payment.not_received` push | Same rule as `src/lib/unpaid.ts` | not intent-changing |
+| Each transition inserts its events                                                     | One trigger on `ride_events` (every ride RPC already logs there) and one on ride payments; same transaction            | No RPC had to be rewritten; recipients come from `ride_members` at that moment                                                                                                           | not intent-changing |
+| Events also feed Broadcast (`realtime.send`)                                           | No send trigger                                                                                                        | The live layer is not built (status queue item 2)                                                                                                                                        | not intent-changing |
+| (not listed) push for 车牌 and 集合 changes                                            | Live only; 集合 itself is the local `meetup` reminder                                                                  | 170 A pushes only must-act and waiting; a server push at T-30 would duplicate the local one                                                                                              | not intent-changing |
+| (not listed) events for a membership ended by a block or an account deletion           | None                                                                                                                   | Telling either side would reveal the block                                                                                                                                               | not intent-changing |
+| The home card reminds the organiser to press 到了 (210 A)                              | A local reminder at the typed 预计到; the home card reminder is still not built                                        | The home card waits for the ride live source; without 预计到 there is no time to remind at                                                                                               | not intent-changing |
+| 「Tapiro 今天 07:26 提醒过你」                                                         | 「提醒过你」 only for a reminder this device scheduled whose time has passed; 「会在…提醒你」 for the next one         | A local notification gives no delivery receipt; the card never names a reminder that was not scheduled                                                                                   | not intent-changing |
+| Reminders for 还没收到 (foundation `reminderDue` covers `due` only)                    | Local reminders only for `due`; 还没收到 records a `payment.not_received` push                                         | Same rule as `src/lib/unpaid.ts`                                                                                                                                                         | not intent-changing |
 
 ### Verification
 
@@ -882,10 +883,10 @@ PR 55. Status stays `approved`: the carpool milestone walkthrough is still to co
 
 ### Deviations from the design
 
-| Design said | Shipped | Why | Confirmed by |
-| --- | --- | --- | --- |
-| Rides in Malaysia time (step 4, PR 55) | Device zone for display and pickers | Decision 234 | owner, 2026-11-03 |
-| Day groups from the server's `day` | Grouped on the client by the device day | A server day in Malaysia time would label a traveller's rides under the wrong 今天 / 明天 | not intent-changing |
+| Design said                            | Shipped                                 | Why                                                                                       | Confirmed by        |
+| -------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------- |
+| Rides in Malaysia time (step 4, PR 55) | Device zone for display and pickers     | Decision 234                                                                              | owner, 2026-11-03   |
+| Day groups from the server's `day`     | Grouped on the client by the device day | A server day in Malaysia time would label a traveller's rides under the wrong 今天 / 明天 | not intent-changing |
 
 ### Verification
 
@@ -908,3 +909,18 @@ PR 55. Status stays `approved`: the carpool milestone walkthrough is still to co
 
 - A server day boundary shown as a date (free posts back, waiver back) is the device-zone date of that instant: outside
   UTC+8 it can read the day before the Malaysian date, and the hour is not shown.
+
+## Implementation Record (2026-11-03, local quiet hours, 235)
+
+Decision 235 (owner, 2026-11-03, 「B」): the local reminders' quiet hours follow the device time zone, so a pay reminder
+never rings at a traveller's night. The push outbox (`push_recordings.send_at`) keeps Malaysia time; the account half
+can store each device's zone and align it. Status stays `approved`.
+
+- `src/lib/notifications/quietHours.ts` computes 23:00–08:00 with the device's local hours (`Date#getHours`,
+  `setHours`), so a daylight-saving change still lands on 08:00 local.
+- `src/lib/inTimeZone.ts` gains `setTimeZone` for a whole test file; `src/features/ride/reminders/reminders.test.ts`
+  pins `Asia/Kuala_Lumpur`, because `bun test` runs in UTC by default and the pay-reminder cases depend on the zone.
+- Verification: `src/lib/notifications/notifications.test.ts` asserts the quiet hours in `Asia/Kuala_Lumpur` and
+  `Europe/London`, that a Malaysian 08:00 is still night in London, and 08:00 the morning after the 2026-11-01 Los
+  Angeles clock change. `bun test` → 1756 pass, 0 fail with `TZ` set to `UTC`, `America/Los_Angeles`, `Europe/London` and
+  `Asia/Kuala_Lumpur`.

@@ -1,5 +1,6 @@
-import { describe, expect, test } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 
+import { setTimeZone } from '@/lib/inTimeZone';
 import type { NoticePermission } from '@/lib/notifications';
 import { createFixtureNotices } from '@/lib/notifications/fixtureNotices';
 
@@ -10,6 +11,13 @@ import { createRideReminders, type NoticeCopy } from './rideReminders';
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const my = (iso: string) => Date.parse(`${iso}+08:00`);
+
+let restoreZone = () => {};
+beforeAll(() => {
+  restoreZone = setTimeZone('Asia/Kuala_Lumpur');
+});
+afterAll(() => restoreZone());
+
 const DEPART = '2026-11-04T09:00:00';
 
 const ride = (patch: Partial<ReminderRide> = {}): ReminderRide => ({
