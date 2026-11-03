@@ -37,3 +37,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-03 | device time zone (234)  | 0               | 0             | ~0                                          | 0                       | 1 (PR 55 pickers)     |
 | 2026-11-03 | local quiet hours (235) | 0               | 0             | ~0                                          | 1                       | 1 (PR 57 quiet hours) |
 | 2026-11-03 | owner prefs in AGENTS   | 0               | 0             | ~0                                          | 0                       | 0                     |
+| 2026-11-03 | Expo SDK 58             | pending         | 0             | ~5 min (stale Simulator recording)          | 0                       | 0                     |

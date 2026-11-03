@@ -1,9 +1,9 @@
 # Tapiro
 
 - Tapiro is a mutual-help app for Chinese students in Malaysia. iOS only; never Android.
-- Stack: Expo SDK 57 (React Native 0.86), TypeScript, Expo Router, bun. Upgrade to SDK 58
-  once it is stable. Install packages with `bunx expo install`, not `bun add`.
-  Read the versioned Expo docs (`https://docs.expo.dev/versions/v57.0.0/`, index at
+- Stack: Expo SDK 58 (React Native 0.88), TypeScript, Expo Router, bun. Install packages with
+  `bunx expo install`, not `bun add`.
+  Read the versioned Expo docs (`https://docs.expo.dev/versions/v58.0.0/`, index at
   `https://docs.expo.dev/llms.txt`) before writing code; do not rely on memory.
 - Backend: Supabase, region `ap-southeast-1` (Singapore). Reason: PostGIS nearest-neighbour
   queries, relational data with RLS, native ID-token auth (docs/research/2026-10-04-feasibility.md).
@@ -37,7 +37,8 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 ## Boundaries
 
 - iOS only. Do not add Android implementations, fallback stubs, or Android build scripts.
-- Deployment target iOS 26.0 (latest two majors). On SDK 57 set `ios.enableSceneSupport: true`.
+- Deployment target iOS 26.0 (latest two majors). Keep `ios.enableSceneSupport: true` (SDK 58
+  prebuild generates the scene lifecycle anyway and says the flag is no longer required).
   Reason: apps built with the iOS 27 SDK must use the UIScene lifecycle.
 - All first-party native code and native UI live in `modules/tapiro-kit`, registered through
   one module facade; no separate bridge packages. Import native APIs only through its typed
@@ -65,7 +66,7 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   Tapiro adds its own expression (stickers, mascot, one accent).
 - Preserve native navigation, safe areas, VoiceOver labels on every interactive element, and
   touch targets of at least 44 pt.
-- Tabs use Expo Router NativeTabs (`expo-router/unstable-native-tabs`); each tab owns a native
+- Tabs use Expo Router NativeTabs (`expo-router/native-tabs`); each tab owns a native
   Stack. Drill-down uses push with system back and interactive pop; sheets are for transient
   flows only.
 - Stack headers are transparent and use `scrollEdgeEffects`; do not combine them with
