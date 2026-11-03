@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { inTimeZone } from '@/lib/inTimeZone';
+
 import { createFixtureNotices } from './fixtureNotices';
 import { canSchedule, shouldAskInContext, toPermission } from './permission';
 import { outsideQuietHours } from './quietHours';
@@ -16,21 +18,45 @@ const notice = (id: string, at: number, body = 'b'): LocalNotice => ({
   data: { kind: 'k', id },
 });
 
-describe('quiet hours (23:00–08:00 Malaysia)', () => {
-  test('a time in the day stays', () => {
-    expect(outsideQuietHours(my('2026-11-03T12:00:00'))).toBe(my('2026-11-03T12:00:00'));
-    expect(outsideQuietHours(my('2026-11-03T22:59:00'))).toBe(my('2026-11-03T22:59:00'));
-    expect(outsideQuietHours(my('2026-11-03T08:00:00'))).toBe(my('2026-11-03T08:00:00'));
+describe('quiet hours (23:00–08:00 on the phone)', () => {
+  const zones = [
+    { zone: 'Asia/Kuala_Lumpur', offset: '+08:00' },
+    { zone: 'Europe/London', offset: '+00:00' },
+  ];
+  for (const { zone, offset } of zones) {
+    const at = (iso: string) => Date.parse(`${iso}${offset}`);
+    const quiet = (iso: string) => inTimeZone(zone, () => outsideQuietHours(at(iso)));
+
+    test(`${zone}: a time in the day stays`, () => {
+      expect(quiet('2026-11-03T12:00:00')).toBe(at('2026-11-03T12:00:00'));
+      expect(quiet('2026-11-03T22:59:00')).toBe(at('2026-11-03T22:59:00'));
+      expect(quiet('2026-11-03T08:00:00')).toBe(at('2026-11-03T08:00:00'));
+    });
+
+    test(`${zone}: late evening moves to the next morning`, () => {
+      expect(quiet('2026-11-03T23:00:00')).toBe(at('2026-11-04T08:00:00'));
+      expect(quiet('2026-11-03T23:59:00')).toBe(at('2026-11-04T08:00:00'));
+    });
+
+    test(`${zone}: early morning moves to 08:00 the same day`, () => {
+      expect(quiet('2026-11-04T00:30:00')).toBe(at('2026-11-04T08:00:00'));
+      expect(quiet('2026-11-04T07:59:00')).toBe(at('2026-11-04T08:00:00'));
+    });
+  }
+
+  test('a Malaysian 08:00 is still night in London', () => {
+    const malaysiaMorning = Date.parse('2026-11-04T08:00:00+08:00');
+    expect(inTimeZone('Europe/London', () => outsideQuietHours(malaysiaMorning))).toBe(
+      Date.parse('2026-11-04T08:00:00+00:00'),
+    );
   });
 
-  test('late evening moves to the next morning', () => {
-    expect(outsideQuietHours(my('2026-11-03T23:00:00'))).toBe(my('2026-11-04T08:00:00'));
-    expect(outsideQuietHours(my('2026-11-03T23:59:00'))).toBe(my('2026-11-04T08:00:00'));
-  });
-
-  test('early morning moves to 08:00 the same day', () => {
-    expect(outsideQuietHours(my('2026-11-04T00:30:00'))).toBe(my('2026-11-04T08:00:00'));
-    expect(outsideQuietHours(my('2026-11-04T07:59:00'))).toBe(my('2026-11-04T08:00:00'));
+  test('the morning after a daylight-saving change is 08:00 local', () => {
+    expect(
+      inTimeZone('America/Los_Angeles', () =>
+        outsideQuietHours(Date.parse('2026-10-31T23:30:00-07:00')),
+      ),
+    ).toBe(Date.parse('2026-11-01T08:00:00-08:00'));
   });
 });
 
