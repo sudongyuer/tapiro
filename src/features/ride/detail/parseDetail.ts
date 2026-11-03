@@ -1,5 +1,8 @@
+import { isCurrencyCode, toMoney, type Money } from '@/lib/money';
+
 import { toRideSummary } from '../parse';
 import {
+  PAID_STATES,
   TIERS,
   type MemberStatus,
   type RideDetail,
@@ -7,6 +10,9 @@ import {
   type RideMember,
   type RidePerson,
   type RideRequest,
+  type RideSettle,
+  type RideSticker,
+  type SettleRider,
   type ViewerRole,
 } from './types';
 
@@ -87,6 +93,55 @@ function details(value: unknown): RideDetails | null {
   };
 }
 
+function money(minor: unknown, currency: unknown, name: string): Money {
+  const parsed = toMoney(minor, currency);
+  if (!parsed) throw new Error(`ride detail: ${name} is not money`);
+  return parsed;
+}
+
+function settleRider(value: unknown, currency: unknown): SettleRider {
+  const body = object(value, 'settle rider');
+  const dispute =
+    body.dispute === null || body.dispute === undefined ? null : object(body.dispute, 'dispute');
+  return {
+    ...person(body, 'settle rider'),
+    share: money(body.minor, currency, 'share'),
+    paid: oneOf(PAID_STATES, body.paid, 'paid state'),
+    paymentId: optionalText(body.paymentId),
+    methodType: optionalText(body.methodType),
+    markedPaidAt: optionalTime(body.markedPaidAt, 'markedPaidAt'),
+    settledAt: optionalTime(body.settledAt, 'settledAt'),
+    hasProof: body.hasProof === true,
+    dueSince: optionalTime(body.dueSince, 'dueSince'),
+    dispute: dispute
+      ? { note: optionalText(dispute.note), at: time(dispute.at, 'dispute.at') }
+      : null,
+  };
+}
+
+function settle(value: unknown): RideSettle | null {
+  if (value === null || value === undefined) return null;
+  const body = object(value, 'settle');
+  return {
+    total: money(body.totalMinor, body.currency, 'total'),
+    organiserShare:
+      body.organiserShare === null || body.organiserShare === undefined
+        ? null
+        : money(body.organiserShare, body.currency, 'organiserShare'),
+    sentAt: optionalTime(body.sentAt, 'sentAt'),
+    receipt: optionalText(body.receipt),
+    riders: rows(body.riders, 'settle riders', (row) => settleRider(row, body.currency)) ?? [],
+  };
+}
+
+function sticker(value: unknown): RideSticker | null {
+  if (value === null || value === undefined) return null;
+  const body = object(value, 'sticker');
+  const id = optionalText(body.id);
+  if (!id) throw new Error('ride detail: sticker.id is missing');
+  return { id, collected: body.collected === true };
+}
+
 function rows<T>(value: unknown, name: string, parse: (row: unknown) => T): T[] | null {
   if (value === null || value === undefined) return null;
   if (!Array.isArray(value)) throw new Error(`ride detail: ${name} is not a list`);
@@ -105,8 +160,10 @@ function point(value: unknown) {
 export function toRideDetail(value: unknown): RideDetail {
   const body = object(value, 'detail');
   const noShow = body.noShow === 'waived' || body.noShow === 'counted' ? body.noShow : null;
+  const parsedSettle = settle(body.settle);
+  const summary = toRideSummary(body);
   return {
-    ...toRideSummary(body),
+    ...summary,
     role: oneOf(ROLES, body.role, 'role'),
     myStatus: optionalText(body.myStatus),
     myNote: optionalText(body.myNote),
@@ -127,5 +184,14 @@ export function toRideDetail(value: unknown): RideDetail {
     details: details(body.details),
     members: rows(body.members, 'members', member),
     requests: rows(body.requests, 'requests', request),
+    currency: isCurrencyCode(body.currency)
+      ? body.currency
+      : (parsedSettle?.total.currency ?? summary.estimate?.currency ?? 'MYR'),
+    settle: parsedSettle,
+    myShare:
+      parsedSettle && typeof body.myShare === 'number'
+        ? money(body.myShare, parsedSettle.total.currency, 'myShare')
+        : null,
+    sticker: sticker(body.sticker),
   };
 }

@@ -12,7 +12,8 @@ import { createRecentRoutes } from './create/recentRoutes';
 import { fixtureRecentRoutes, fixtureRideDraft } from './fixtureCreate';
 import { createFixtureRideService, fixtureRideOptions } from './fixtureRideService';
 import { createSupabaseRideDetailService } from './detail/detailService';
-import { applyNotes, detailsDrafts } from './detail/drafts';
+import { applyNotes, detailsDrafts, splitDrafts } from './detail/drafts';
+import { fixtureReceiptImage, readReceiptBytes } from './detail/receiptDevice';
 import {
   createFixtureRideDetailService,
   fixtureDetailOptions,
@@ -43,7 +44,10 @@ function verifyDetailService() {
   addBlockFixturePeople(DETAIL_PEOPLE);
   const calls: unknown[] = [];
   return createFixtureRideDetailService(
-    fixtureDetailOptions(uiVerifyArgument, uiVerifyFixture),
+    {
+      ...fixtureDetailOptions(uiVerifyArgument, uiVerifyFixture),
+      receiptImage: fixtureReceiptImage,
+    },
     (name, args) => {
       calls.push({ name, args });
       Settings.set({ [DETAIL_CALLS_KEY]: JSON.stringify(calls) });
@@ -53,7 +57,7 @@ function verifyDetailService() {
 
 export const rideDetailService: RideDetailService = uiVerify
   ? verifyDetailService()
-  : createSupabaseRideDetailService(getSupabase(), deviceCurrency);
+  : createSupabaseRideDetailService(getSupabase(), deviceCurrency, readReceiptBytes);
 
 export const rideDraftStore = createRideDraftStore(Settings, randomUUID, deviceCurrency);
 
@@ -62,6 +66,7 @@ export const recentRoutes = createRecentRoutes(Settings);
 userCleanups.register((userId) => {
   applyNotes.reset();
   detailsDrafts.reset();
+  splitDrafts.reset();
   rideDraftStore.clear(userId);
   recentRoutes.clear(userId);
 });

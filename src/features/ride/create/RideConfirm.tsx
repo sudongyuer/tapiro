@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
+import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { recentRoutes, rideDraftStore, rideService } from '../services';
 import { useNow } from '../useNow';
@@ -35,6 +36,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack }: Confirm
       draft: () => rideDraftStore.load(userId),
       clearDraft: () => rideDraftStore.reset(userId),
       now: () => new Date(),
+      decimal: deviceDecimal(),
     }),
   );
   const state = useSyncExternalStore(flow.subscribe, flow.get);
@@ -86,7 +88,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack }: Confirm
 
   return (
     <TicketFrame
-      view={draftTicketView(draft, now, t, language)}
+      view={draftTicketView(draft, now, t, language, deviceDecimal())}
       caption={false}
       testID="ride-confirm"
     >

@@ -1,5 +1,6 @@
 import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { createStore } from '@/lib/store';
+import type { DecimalSeparator } from '@/lib/money';
 
 import type { PublishRideArgs, RidePostStatus, RideService } from '../types';
 import type { RideDraft } from './draft';
@@ -50,6 +51,7 @@ export function createPublishFlow(deps: {
   draft: () => RideDraft;
   clearDraft: () => void;
   now: () => Date;
+  decimal?: DecimalSeparator;
 }) {
   const store = createStore<PublishState>({
     status: { kind: 'loading' },
@@ -71,7 +73,7 @@ export function createPublishFlow(deps: {
   function publish(handlers: PublishHandlers) {
     return guard(async () => {
       if (!canPublish(store.get())) return;
-      const checked = checkRideDraft(deps.draft(), deps.now());
+      const checked = checkRideDraft(deps.draft(), deps.now(), deps.decimal);
       if (!checked.ok) return handlers.onInvalid(checked.error);
       patch({ busy: true, rejected: null });
       const outcome = await deps.service.publish(checked.args);

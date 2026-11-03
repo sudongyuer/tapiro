@@ -9,6 +9,7 @@ import { formatMoneyRange } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
+import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { rideDraftStore } from '../services';
 import { useNow } from '../useNow';
@@ -57,7 +58,7 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
 
   function next() {
     sync();
-    const checked = checkRideDraft(rideDraftStore.load(userId), new Date());
+    const checked = checkRideDraft(rideDraftStore.load(userId), new Date(), deviceDecimal());
     if (!checked.ok) return rideFormError.set(checked.error);
     rideFormError.set(null);
     onNext();
@@ -80,7 +81,10 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
           : null;
 
   return (
-    <TicketFrame view={draftTicketView(draft, now, t, language)} testID="ride-form">
+    <TicketFrame
+      view={draftTicketView(draft, now, t, language, deviceDecimal())}
+      testID="ride-form"
+    >
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
           variant="prominent"

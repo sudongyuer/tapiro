@@ -24,7 +24,9 @@ import { DetailFooter } from './DetailFooter';
 import { activeMembers, detailPhase, footer as footerFor } from './detailModel';
 import { DetailSheets, useDetailSheets } from './DetailSheets';
 import { DetailMenu } from './DetailMenu';
+import { SettleSheets, useSettleSheets } from './SettleSheets';
 import { useDetailActions } from './useDetailActions';
+import { useSettleActions, type RideSettleBridge } from './useSettleActions';
 import { useRideDetail } from './useRideDetail';
 
 const TICK_MS = 15_000;
@@ -33,10 +35,12 @@ export function RideDetailScreen({
   id,
   userId,
   onGone,
+  settle: bridge,
 }: {
   id: string;
   userId: string;
   onGone: () => void;
+  settle: RideSettleBridge;
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
@@ -50,6 +54,8 @@ export function RideDetailScreen({
   const organiserName = ride?.organiser?.name ?? t('bounty.post.unknownName');
   const actions = useDetailActions(id, store, organiserName);
   const sheets = useDetailSheets(id, ride, now, actions);
+  const settle = useSettleActions(id, store, bridge, t('bounty.post.unknownName'));
+  const settleSheets = useSettleSheets(id, ride, settle);
   const blocking = useBlockPerson('rideOrganiser', onGone);
 
   if (load.kind === 'gone') {
@@ -67,7 +73,7 @@ export function RideDetailScreen({
   const route = ride ? t('ride.ticket.route', { from: ride.start.short, to: ride.dest.short }) : '';
   const action = state.action;
   const busy = action.kind === 'busy' ? action.action : null;
-  const footer = ride ? footerFor(ride, now) : { kind: 'none' as const };
+  const footer = ride ? footerFor(ride, now, userId) : { kind: 'none' as const };
   const arrivedNames = ride
     ? activeMembers(ride)
         .filter((m) => !m.organiser && m.arrivedAt)
@@ -168,6 +174,9 @@ export function RideDetailScreen({
               setRouteBottom(vars['--space-2'] + y + height);
             }}
             onEditDetails={sheets.openDetails}
+            settle={settle}
+            onChangeShare={settleSheets.openChange}
+            onReceipt={settleSheets.openReceipt}
           />
         ) : null}
       </ScrollView>
@@ -186,9 +195,16 @@ export function RideDetailScreen({
           late: actions.late,
           notComing: () => void actions.leave(),
           depart: sheets.openDepart,
+          settle: {
+            reach: () => void settleSheets.reach(),
+            split: settleSheets.openSplit,
+            pay: settle.pay,
+            dispute: settleSheets.openDispute,
+          },
         }}
       />
       <DetailSheets sheets={sheets} viewerId={userId} organiserName={organiserName} now={now} />
+      <SettleSheets sheets={settleSheets} viewerId={userId} organiserName={organiserName} />
     </View>
   );
 }

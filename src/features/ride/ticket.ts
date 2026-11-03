@@ -15,7 +15,12 @@ export type TicketStatus =
 
 export type TicketTone = 'urgent' | 'warning' | 'plain';
 
-export type TicketMine = { role: RideRole; pendingRequests: number };
+export type TicketMine = {
+  role: RideRole;
+  pendingRequests: number;
+  myShare?: Money | null;
+  myPaid?: 'due' | 'paid' | 'settled' | null;
+};
 
 export type TicketModel = {
   status: TicketStatus;

@@ -15,14 +15,18 @@ import {
   askGoOrCancel,
   detailPhase,
   emptySeats,
+  timeline,
 } from './detailModel';
 import type { ActionState } from './detailState';
 import { FullTicket } from './FullTicket';
 import { fullTicketView } from './fullTicketView';
 import { GRAB_HOME_URL, walkingDirectionsUrl } from './links';
+import { OweCard, StickerCard } from './SettleCards';
+import { ArriveStep, SettleStep } from './SettleSteps';
 import { Timeline } from './Timeline';
 import type { RideDetail } from './types';
 import type { DetailActions } from './useDetailActions';
+import type { SettleActions } from './useSettleActions';
 
 type Props = {
   ride: RideDetail;
@@ -33,6 +37,9 @@ type Props = {
   actions: DetailActions;
   onTicketLayout: (event: LayoutChangeEvent) => void;
   onEditDetails: () => void;
+  settle: SettleActions;
+  onChangeShare: (member: string) => void;
+  onReceipt: () => void;
 };
 
 export function DetailBody({
@@ -44,6 +51,9 @@ export function DetailBody({
   actions,
   onTicketLayout,
   onEditDetails,
+  settle,
+  onChangeShare,
+  onReceipt,
 }: Props) {
   const { t, language } = useI18n();
   const [opened, setOpened] = useState<'maps' | 'grab' | null>(null);
@@ -64,15 +74,24 @@ export function DetailBody({
     }
   };
 
+  const stepStrong = (key: 'arrive' | 'settle') =>
+    timeline(ride, now).find((step) => step.key === key)?.state !== 'future';
   const appeal = appealView(ride, now);
   const toConfirm = appealsToConfirm(ride, viewerId, now);
 
   return (
     <View style={styles.body}>
       <FullTicket
-        view={fullTicketView(ride, now, t, language)}
-        stamp={ride.role === 'applicant'}
+        view={fullTicketView(ride, now, t, language, viewerId)}
         onLayout={onTicketLayout}
+      />
+      <OweCard ride={ride} viewerId={viewerId} now={now} />
+      <StickerCard
+        ride={ride}
+        viewerId={viewerId}
+        busy={busy === 'collect'}
+        onCollect={() => void settle.collect()}
+        onOpenBook={settle.openStickerBook}
       />
       {organiser && open && ride.requests ? (
         <ApplicationCard
@@ -187,7 +206,31 @@ export function DetailBody({
           {t(phase === 'cancelled' ? 'ride.detail.ended.cancelled' : 'ride.detail.ended.expired')}
         </AppText>
       ) : null}
-      <Timeline ride={ride} viewerId={viewerId} now={now} staleAt={staleAt} />
+      <Timeline
+        ride={ride}
+        viewerId={viewerId}
+        now={now}
+        staleAt={staleAt}
+        bodies={{
+          arrive: <ArriveStep ride={ride} strong={stepStrong('arrive')} />,
+          settle: (
+            <SettleStep
+              ride={ride}
+              viewerId={viewerId}
+              now={now}
+              strong={stepStrong('settle')}
+              busy={busy ? { action: busy, target: busyTarget } : null}
+              actions={{
+                confirm: (paymentId) => void settle.confirmReceived(paymentId),
+                notReceived: settle.notReceived,
+                change: onChangeShare,
+                openPayment: settle.openPayment,
+              }}
+              onReceipt={onReceipt}
+            />
+          ),
+        }}
+      />
       {inside && ride.details?.meetingNote ? (
         <NoteCard
           note={ride.details.meetingNote}

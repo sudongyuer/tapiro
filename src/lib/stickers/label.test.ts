@@ -5,7 +5,7 @@ import { resources } from '@/lib/i18n/resources';
 
 import { createFixtureStickerService } from './fixture';
 import { stickerLabel } from './label';
-import type { Sticker } from './model';
+import { stickerArt, type Sticker } from './model';
 import { toSticker } from './service';
 import { WORST_NAME, WORST_TITLE } from './worstCase';
 
@@ -73,6 +73,23 @@ describe('sticker book read', () => {
     expect(toSticker({ ...row, counterpartName: null }).counterpartName).toBeNull();
     expect(toSticker({ ...row, art: 7 }).art).toBeNull();
     expect(toSticker({ ...row, art: undefined }).art).toBeNull();
+  });
+
+  test('a ride sticker has no payment and still reads, with the car art', () => {
+    const ride = toSticker({
+      id: 's2',
+      paymentId: null,
+      role: 'payer',
+      itemKind: 'ride',
+      category: null,
+      art: null,
+      title: '双威 → KLIA2',
+      earnedAt: '2026-11-02T02:05:00Z',
+      counterpartName: '小林',
+    });
+    expect(ride.paymentId).toBeNull();
+    expect(stickerArt(ride)).toBe('car');
+    expect(() => toSticker({ ...ride, paymentId: 7 })).toThrow();
   });
 
   test('an unknown role fails the read instead of guessing', () => {

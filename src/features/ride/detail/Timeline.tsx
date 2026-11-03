@@ -2,13 +2,11 @@ import type { ReactNode } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { malaysiaClock } from '../rideClock';
-import { ticketModel } from '../ticket';
 import { ArrivalRow, displayName, SeatRow } from './Avatars';
 import {
   activeMembers,
@@ -28,13 +26,21 @@ const DOT = 11;
 
 type Props = { ride: RideDetail; viewerId: string; now: number; staleAt: number | null };
 
-export function Timeline({ ride, viewerId, now, staleAt }: Props) {
+export function Timeline({
+  ride,
+  viewerId,
+  now,
+  staleAt,
+  bodies = {},
+}: Props & { bodies?: Partial<Record<StepKey, ReactNode>> }) {
   const steps = timeline(ride, now);
   return (
     <View style={styles.card} testID="ride-detail-timeline">
       {steps.map((step, index) => (
         <Step key={step.key} step={step} last={index === steps.length - 1}>
-          <StepBody step={step.key} ride={ride} viewerId={viewerId} now={now} staleAt={staleAt} />
+          {bodies[step.key] ?? (
+            <StepBody step={step.key} ride={ride} viewerId={viewerId} now={now} staleAt={staleAt} />
+          )}
         </Step>
       ))}
     </View>
@@ -94,7 +100,15 @@ function Step({
   );
 }
 
-function Title({ text, strong, testID }: { text: string; strong: boolean; testID?: string }) {
+export function Title({
+  text,
+  strong,
+  testID,
+}: {
+  text: string;
+  strong: boolean;
+  testID?: string;
+}) {
   return (
     <AppText
       variant="body"
@@ -107,7 +121,7 @@ function Title({ text, strong, testID }: { text: string; strong: boolean; testID
   );
 }
 
-function Sub({ text, testID }: { text: string; testID?: string }) {
+export function Sub({ text, testID }: { text: string; testID?: string }) {
   return (
     <AppText variant="meta" tone="secondaryLabel" testID={testID}>
       {text}
@@ -116,7 +130,7 @@ function Sub({ text, testID }: { text: string; testID?: string }) {
 }
 
 function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKey }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const { color } = useTheme();
   const phase = detailPhase(ride, now);
   const before = phase === 'before';
@@ -243,27 +257,8 @@ function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKe
         </>
       );
     }
-    case 'arrive':
-      return <Title text={t('ride.detail.steps.arrive')} strong={strong('arrive')} />;
-    case 'settle': {
-      const model = ticketModel(ride, now);
-      const each = model.perPerson ? formatMoney(model.perPerson, language, { whole: true }) : null;
-      return (
-        <>
-          <Title text={t('ride.detail.steps.settle')} strong={strong('settle')} />
-          <Sub
-            text={
-              ride.splitMode === 'grab'
-                ? t('ride.create.form.splitGrab')
-                : each
-                  ? t('ride.detail.steps.settleTapiro', { amount: each })
-                  : t('ride.detail.steps.settleTapiroOnly')
-            }
-            testID="ride-detail-settle-line"
-          />
-        </>
-      );
-    }
+    default:
+      return null;
   }
 }
 

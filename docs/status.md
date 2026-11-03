@@ -8,30 +8,28 @@ Updated: 2026-11-02.
 
 ## Built and merged
 
-| Area                   | Spec                                               | Notes                                                                   |
-| ---------------------- | -------------------------------------------------- | ----------------------------------------------------------------------- |
-| Foundation steps 1–4   | `docs/specs/2026-10-11-foundation-design.md`       | Accounts, shell and navigation, payee methods, payment and stickers     |
-| Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md` |
-| Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                |
-| Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                     |
-| Carpool steps 1–5      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合  |
+| Area                   | Spec                                               | Notes                                                                                                                       |
+| ---------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Foundation steps 1–4   | `docs/specs/2026-10-11-foundation-design.md`       | Accounts, shell and navigation, payee methods, payment and stickers                                                         |
+| Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                     |
+| Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                    |
+| Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                         |
+| Carpool steps 1–6      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, step 6 到了 and 结清 (branch `feat/carpool-settle`) |
 
 ## In progress
 
-- Carpool step 6, 到了 and 结清 (split, receipt, payments, paid status, Grab split, one sticker per ride, history).
-  Branch `feat/carpool-settle`.
+- Carpool step 7: local reminders (realtime spec 173 A) and the carpool event kinds.
 
 ## Queue
 
-1. Carpool step 7: local reminders (realtime spec 173 A) and the carpool event kinds.
-2. Carpool milestone: run the `ride_*` UI cases once (zh-Hans light, plus dark, `en` and `ms` as Pace selects), then the
+1. Carpool milestone: run the `ride_*` UI cases once (zh-Hans light, plus dark, `en` and `ms` as Pace selects), then the
    owner's Simulator walkthrough; set the carpool spec to `implemented`.
-3. Shared live-update layer: `docs/specs/2026-10-31-realtime-push-design.md` (approved, not built). Carpool and chat
+2. Shared live-update layer: `docs/specs/2026-10-31-realtime-push-design.md` (approved, not built). Carpool and chat
    refetch and poll until it exists.
-4. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7), 问小貘
+3. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7), 问小貘
    (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
    (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6).
-5. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
+4. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
 
 ## Owner decisions pending
 

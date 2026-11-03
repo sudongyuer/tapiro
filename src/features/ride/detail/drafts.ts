@@ -1,3 +1,4 @@
+import type { SplitDraft } from './splitDraft';
 import type { DetailsInput, RideDetails } from './types';
 
 export const NOTE_MAX = 140;
@@ -48,3 +49,5 @@ function createDrafts<T>() {
 
 export const applyNotes = createDrafts<string>();
 export const detailsDrafts = createDrafts<DetailsDraft>();
+export const splitDrafts = createDrafts<SplitDraft>();
+export const disputeNotes = createDrafts<string>();

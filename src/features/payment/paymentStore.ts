@@ -7,7 +7,7 @@ export type PaymentListState =
   | { status: 'loading' | 'failed'; userId: string; payments: Payment[] }
   | { status: 'ready' | 'stale'; userId: string; payments: Payment[] };
 
-export type ActionResult<T> = { ok: true; value: T } | { ok: false };
+export type ActionResult<T> = { ok: true; value: T } | { ok: false; error: unknown };
 
 export function createPaymentStore(service: PaymentService) {
   const store = createStore<PaymentListState>({ status: 'idle' });
@@ -50,8 +50,8 @@ export function createPaymentStore(service: PaymentService) {
       let result: ActionResult<T>;
       try {
         result = { ok: true, value: await action() };
-      } catch {
-        result = { ok: false };
+      } catch (error) {
+        result = { ok: false, error };
       }
       await reload(userId);
       return result;

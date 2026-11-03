@@ -3,6 +3,7 @@ import { convertUp, methodCurrency, type CurrencyCode, type Money } from '@/lib/
 import type { PayeeDetails, PayeeMethod } from '@/lib/payeeMethods';
 
 import {
+  AmountChangedError,
   NoRateError,
   type FxRate,
   type Payment,
@@ -15,7 +16,13 @@ export const FIXTURE_PAYMENT_IDS = {
   owe: 'fixture-owe',
   owed: 'fixture-owed',
   owedCash: 'fixture-owed-cash',
+  rideOwe: 'fixture-ride-owe',
+  rideOwed: 'fixture-ride-owed',
+  rideOwedDue: 'fixture-ride-owed-due',
 } as const;
+
+const RIDE_TITLE = '双威 → KLIA2';
+const RIDE_STICKER_KEY = 'fixture-ride';
 
 export const PAY_METHOD_MIXES = ['all', 'wallets', 'alipay', 'duitnow', 'cash', 'none'] as const;
 export type PayMethodMix = (typeof PAY_METHOD_MIXES)[number];
@@ -196,6 +203,57 @@ export function createFixturePaymentService(
       proofPath: `${FIXTURE_PAYMENT_IDS.owed}/proof.jpg`,
       markedPaidAt: opened,
     },
+    [FIXTURE_PAYMENT_IDS.rideOwe]: {
+      ...common,
+      itemKind: 'ride',
+      category: null,
+      id: FIXTURE_PAYMENT_IDS.rideOwe,
+      title: RIDE_TITLE,
+      amount: { minor: 2470, currency: 'MYR' },
+      paid: null,
+      reference: 'TP-7R2K',
+      state: 'due',
+      role: 'payer',
+      counterpartId: PAYEE_ID,
+      counterpartName: '小林',
+      methodType: null,
+      proofPath: null,
+      markedPaidAt: null,
+    },
+    [FIXTURE_PAYMENT_IDS.rideOwed]: {
+      ...common,
+      itemKind: 'ride',
+      category: null,
+      id: FIXTURE_PAYMENT_IDS.rideOwed,
+      title: RIDE_TITLE,
+      amount: { minor: 2470, currency: 'MYR' },
+      paid: { minor: 2470, currency: 'MYR' },
+      reference: 'TP-4QWM',
+      state: 'marked_paid',
+      role: 'payee',
+      counterpartId: PAYER_ID,
+      counterpartName: '阿明',
+      methodType: 'duitnow_qr',
+      proofPath: `${FIXTURE_PAYMENT_IDS.rideOwed}/proof.jpg`,
+      markedPaidAt: opened,
+    },
+    [FIXTURE_PAYMENT_IDS.rideOwedDue]: {
+      ...common,
+      itemKind: 'ride',
+      category: null,
+      id: FIXTURE_PAYMENT_IDS.rideOwedDue,
+      title: RIDE_TITLE,
+      amount: { minor: 2470, currency: 'MYR' },
+      paid: null,
+      reference: 'TP-9HXC',
+      state: 'due',
+      role: 'payee',
+      counterpartId: PAYER_ID,
+      counterpartName: '小雅',
+      methodType: null,
+      proofPath: null,
+      markedPaidAt: null,
+    },
     [FIXTURE_PAYMENT_IDS.owedCash]: {
       ...owed,
       id: FIXTURE_PAYMENT_IDS.owedCash,
@@ -284,11 +342,12 @@ export function createFixturePaymentService(
       if (!uri) throw new Error('no fixture proof');
       return uri;
     },
-    async markPaid(paymentId, methodId, proofPath) {
+    async markPaid(paymentId, methodId, proofPath, expectedMinor) {
       const payment = find(paymentId);
       const method = payeeMethods.find((candidate) => candidate.id === methodId);
       if (payment.role !== 'payer' || payment.state !== 'due' || !method || method.type === 'cash')
         throw new Error('cannot mark paid');
+      if (expectedMinor !== payment.amount.minor) throw new AmountChangedError();
       const paid = payIn(payment.amount, method.type);
       if (!paid) throw new NoRateError();
       update(paymentId, {
@@ -325,6 +384,20 @@ export function createFixturePaymentService(
         methodType: payment.methodType ?? 'cash',
         paid: payment.paid ?? payment.amount,
       });
+      if (payment.itemKind === 'ride') {
+        const rideSettled = Object.values(catalog).every(
+          (item) => item.itemKind !== 'ride' || item.role !== 'payee' || item.state === 'settled',
+        );
+        if (!rideSettled) return { firstSettled: false, stickerCount: null, rideSettled };
+        const count = earnSticker({
+          paymentId: RIDE_STICKER_KEY,
+          itemKind: 'ride',
+          category: null,
+          title: payment.title,
+          counterpartName: payment.counterpartName,
+        });
+        return { firstSettled: count === 1, stickerCount: count, rideSettled };
+      }
       const stickerCount = earnSticker({
         paymentId,
         itemKind: payment.itemKind,

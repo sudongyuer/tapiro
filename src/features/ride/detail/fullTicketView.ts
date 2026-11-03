@@ -8,6 +8,7 @@ import { gathersAt } from '../rideTimes';
 import { ticketModel, type TicketTone } from '../ticket';
 import { statusText, ticketA11y, whenText } from '../ticketView';
 import { arrivedCount, activeMembers, countdown, detailPhase } from './detailModel';
+import { settleTicket } from './settleTicketView';
 import type { RideDetail } from './types';
 
 export type TicketCell = {
@@ -30,6 +31,7 @@ export type FullTicketView = {
   cells: TicketCell[];
   airport: TicketCell[];
   muted: boolean;
+  stamp: 'applied' | 'settled' | null;
   a11y: string;
 };
 
@@ -85,6 +87,7 @@ export function fullTicketView(
   now: number,
   t: TFunction,
   language: string,
+  viewerId = '',
 ): FullTicketView {
   const model = ticketModel(ride, now, {
     role:
@@ -130,7 +133,8 @@ export function fullTicketView(
         cell('seats', t('ride.detail.cell.seats'), `${model.taken}/${model.seats}`),
         cell('perPerson', t('ride.detail.cell.perPerson'), perPerson),
       ];
-  const view = {
+  const settled = settleTicket(ride, viewerId, now, t, language);
+  const base = {
     status: meetup ? t('ride.detail.meetupStatus') : statusText(model.status, t),
     tone: meetup ? ('urgent' as const) : model.tone,
     icon: meetup ? ('clock' as SFSymbol) : ICONS[model.status.kind],
@@ -149,9 +153,22 @@ export function fullTicketView(
     cells,
     airport,
     muted: model.muted,
+    stamp: ride.role === 'applicant' ? ('applied' as const) : null,
   };
+  const view = settled
+    ? {
+        ...base,
+        status: settled.status,
+        time: settled.time,
+        oldTime: null,
+        countdown: settled.lead,
+        cells: settled.cells,
+        stamp: settled.stamp ? ('settled' as const) : null,
+      }
+    : base;
   const parts = [
-    view.countdown ? `${view.countdown.number} ${view.countdown.text}` : null,
+    view.stamp === 'settled' ? t('rideSettle.ticket.stamp') : null,
+    view.countdown ? `${view.countdown.number} ${view.countdown.text}`.trim() : null,
     ticketA11y(
       {
         ...view,
@@ -169,7 +186,7 @@ export function fullTicketView(
       model.seats,
     ),
     view.oldTime ? t('ride.detail.revisedA11y', { time: view.oldTime }) : null,
-    ...cells.map((c) => `${c.label} ${c.value}${c.sub ? ` ${c.sub}` : ''}`),
+    ...view.cells.map((c) => `${c.label} ${c.value}${c.sub ? ` ${c.sub}` : ''}`),
   ];
   return { ...view, a11y: parts.filter(Boolean).join(', ') };
 }

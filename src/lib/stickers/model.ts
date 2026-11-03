@@ -10,7 +10,7 @@ export const STICKER_ROLES: readonly StickerRole[] = ['payee', 'payer'];
 
 export type Sticker = {
   id: string;
-  paymentId: string;
+  paymentId: string | null;
   role: StickerRole;
   itemKind: StickerKind;
   category: string | null;

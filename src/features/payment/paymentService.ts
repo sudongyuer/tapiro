@@ -6,6 +6,7 @@ import { bountyCategory } from '@/lib/stickers/category';
 import { artOrNull } from '@/lib/stickers/parse';
 
 import {
+  AmountChangedError,
   NoRateError,
   type FxRate,
   type MethodAmount,
@@ -112,6 +113,11 @@ export function toPaymentDetail(value: unknown): PaymentDetail | null {
     : null;
 }
 
+const isAmountChanged = (error: unknown) =>
+  typeof error === 'object' &&
+  error !== null &&
+  (error as { message?: unknown }).message === 'amount_changed';
+
 const isNoRate = (error: unknown) =>
   typeof error === 'object' &&
   error !== null &&
@@ -203,13 +209,15 @@ export function createSupabasePaymentService(
       if (!data?.signedUrl) throw new Error('no signed url');
       return data.signedUrl;
     },
-    async markPaid(paymentId, methodId, proofPath) {
+    async markPaid(paymentId, methodId, proofPath, expectedMinor) {
       const { error } = await db().rpc('mark_payment_paid', {
         payment: paymentId,
         method: methodId,
+        expected_minor: expectedMinor,
         proof: proofPath,
       });
       if (isNoRate(error)) throw new NoRateError();
+      if (isAmountChanged(error)) throw new AmountChangedError();
       if (error) throw error;
     },
     async undo(paymentId) {
@@ -219,12 +227,14 @@ export function createSupabasePaymentService(
       const data = (await rpc('confirm_payment_received', { payment: paymentId })) as {
         firstSettled?: unknown;
         stickerCount?: unknown;
+        rideSettled?: unknown;
       } | null;
       const count = data?.stickerCount;
       return {
         firstSettled: data?.firstSettled === true,
         stickerCount:
           typeof count === 'number' && Number.isInteger(count) && count > 0 ? count : null,
+        ...(typeof data?.rideSettled === 'boolean' ? { rideSettled: data.rideSettled } : {}),
       };
     },
     async notReceived(paymentId) {

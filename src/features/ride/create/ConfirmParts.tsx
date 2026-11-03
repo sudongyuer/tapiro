@@ -9,6 +9,7 @@ import {
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { malaysiaClock } from '../rideClock';
 import { whenText } from '../ticketView';
@@ -34,8 +35,8 @@ export function SummarySection({ draft, now }: { draft: RideDraft; now: number }
   const { t, language } = useI18n();
   if (!draft.departAt) return null;
   const departs = Date.parse(draft.departAt);
-  const estimate = parseEstimate(draft.estimateText, draft.currency);
-  const each = draftPerPerson(draft);
+  const estimate = parseEstimate(draft.estimateText, draft.currency, deviceDecimal());
+  const each = draftPerPerson(draft, deviceDecimal());
   const bags = bagsLine(draft, t);
   return (
     <Section>

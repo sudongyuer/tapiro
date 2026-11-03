@@ -14,6 +14,8 @@ import {
   timeline,
 } from './detailModel';
 import { FIXTURE_VIEWER, fixtureRideDetail } from './fixtureDetails';
+import { settleScene, type SettleScene } from './fixtureSettle';
+import { myRider, owedDays, paidCount } from './settleModel';
 import type { RideDetail } from './types';
 
 const NOW = Date.parse('2026-11-02T14:07:00Z');
@@ -102,8 +104,63 @@ describe('footer by role', () => {
     });
   });
 
-  test('nothing after 出发', () => {
-    expect(footer(scene('confirmAppeal'), NOW).kind).toBe('none');
+  test('after 出发 a rider waits for the split and an outsider sees nothing', () => {
+    expect(footer(scene('confirmAppeal'), NOW, FIXTURE_VIEWER)).toEqual({
+      kind: 'settle',
+      settle: { kind: 'waitSplit' },
+    });
+    expect(footer(scene('appealOpen'), NOW, FIXTURE_VIEWER).kind).toBe('none');
+  });
+});
+
+describe('到了 and 结清 footers (210 A, 213 A)', () => {
+  const settle = (name: SettleScene) => settleScene(name, NOW);
+  const kind = (ride: RideDetail) => {
+    const answer = footer(ride, NOW, FIXTURE_VIEWER);
+    return answer.kind === 'settle' ? answer.settle : answer;
+  };
+
+  test('only the organiser presses 到了; a Grab-split ride says so', () => {
+    expect(kind(settle('reach'))).toEqual({ kind: 'reach', grab: false });
+    expect(kind(settle('reachGrab'))).toEqual({ kind: 'reach', grab: true });
+    expect(kind(settle('reachRider'))).toEqual({ kind: 'waitSplit' });
+  });
+
+  test('a rider pays their own share; the organiser has no bottom button while settling', () => {
+    expect(kind(settle('paying'))).toEqual({
+      kind: 'pay',
+      share: { minor: 2470, currency: 'MYR' },
+      paymentId: 'fixture-ride-owe',
+      disputed: false,
+    });
+    expect(kind(settle('paidSome'))).toEqual({ kind: 'none' });
+    expect(kind(settle('settled'))).toEqual({ kind: 'none' });
+  });
+
+  test('a rider who said paid waits; one already settled waits for the others', () => {
+    const paying = settle('paying');
+    const mark = (paid: 'paid' | 'settled') => ({
+      ...paying,
+      settle: paying.settle && {
+        ...paying.settle,
+        riders: paying.settle.riders.map((r) => (r.id === FIXTURE_VIEWER ? { ...r, paid } : r)),
+      },
+    });
+    expect(kind(mark('paid'))).toEqual({ kind: 'paid', paymentId: 'fixture-ride-owe' });
+    expect(kind(mark('settled'))).toEqual({ kind: 'mineSettled' });
+  });
+});
+
+describe('owed days (216 A)', () => {
+  test('the day count starts a full day after the split', () => {
+    expect(owedDays(myRider(settleScene('paying', NOW), FIXTURE_VIEWER), NOW)).toBe(0);
+    expect(owedDays(myRider(settleScene('owing', NOW), FIXTURE_VIEWER), NOW)).toBe(1);
+    expect(paidCount(settleScene('paidSome', NOW))).toEqual({
+      paid: 1,
+      received: 0,
+      waiting: 1,
+      total: 2,
+    });
   });
 });
 

@@ -34,6 +34,8 @@ export type MyRide = RideSummary & {
   role: RideRole;
   myStatus: string;
   pendingRequests: number;
+  myShare: Money | null;
+  myPaid: 'due' | 'paid' | 'settled' | null;
 };
 
 export type NearbyCursor = { id: string; latitude: number | null; longitude: number | null };

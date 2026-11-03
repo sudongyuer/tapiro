@@ -83,9 +83,11 @@ describe('supabase payment service (local stack)', () => {
     expect(methods.map((method) => method.id)).toEqual([methodId]);
 
     const file = `data:image/png;base64,${Buffer.from('proof').toString('base64')}`;
-    await expect(poster.service.markPaid(id, methodId, `${id}/missing.png`)).rejects.toBeDefined();
+    await expect(
+      poster.service.markPaid(id, methodId, `${id}/missing.png`, listed.amount.minor),
+    ).rejects.toBeDefined();
     const first = await poster.service.uploadProof(id, file);
-    await poster.service.markPaid(id, methodId, first);
+    await poster.service.markPaid(id, methodId, first, listed.amount.minor);
     await poster.service.undo(id);
     expect((await poster.service.get(poster.id, id))?.state).toBe('due');
     await poster.service.removeProof(first);
@@ -94,7 +96,7 @@ describe('supabase payment service (local stack)', () => {
 
     const path = await poster.service.uploadProof(id, file);
     expect(path.startsWith(`${id}/`)).toBe(true);
-    await poster.service.markPaid(id, methodId, path);
+    await poster.service.markPaid(id, methodId, path, listed.amount.minor);
 
     const seen = await helper.service.get(helper.id, id);
     expect(seen).toMatchObject({
@@ -132,7 +134,7 @@ describe('supabase payment service (local stack)', () => {
     const cleared = await admin.from('fx_rates').delete().gte('rate_date', week);
     expect(cleared.error).toBeNull();
     const id = await open(poster.id, helper.id, 1000, 'CNY');
-    const marking = poster.service.markPaid(id, methodId, null);
+    const marking = poster.service.markPaid(id, methodId, null, 1000);
     await expect(marking).rejects.toBeInstanceOf(NoRateError);
     expect((await poster.service.get(poster.id, id))?.state).toBe('due');
   });
@@ -159,7 +161,7 @@ describe('supabase payment service (local stack)', () => {
         amount: { minor: 3247, currency: 'MYR' },
       },
     ]);
-    await poster.service.markPaid(id, methodId, null);
+    await poster.service.markPaid(id, methodId, null, 3247);
     expect((await helper.service.get(helper.id, id))?.paid).toEqual({
       minor: 3247,
       currency: 'MYR',

@@ -10,6 +10,7 @@ export default {
   sheet: {
     title: 'Pay',
     titlePayee: 'Get paid',
+    titleRide: 'Ride',
     close: 'Close',
     loading: 'Loading',
     loadFailed: {
@@ -18,6 +19,7 @@ export default {
     },
     retry: 'Try again',
     failed: 'That didn’t work. Check your connection and try again.',
+    amountChanged: 'The amount changed. Check it again.',
     payTo: 'Pay {{name}}',
     amountLabel: 'Amount {{amount}}',
     original: 'Originally {{amount}}',

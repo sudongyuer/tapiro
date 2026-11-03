@@ -7,7 +7,7 @@ import {
   toPaymentDetail,
   type PaymentRow,
 } from './paymentService';
-import { NoRateError } from './types';
+import { AmountChangedError, NoRateError } from './types';
 
 function settling(data: unknown) {
   const client = { rpc: async () => ({ data, error: null }) } as unknown as SupabaseClient;
@@ -20,6 +20,22 @@ describe('settle result', () => {
       firstSettled: true,
       stickerCount: 1,
     });
+  });
+
+  test('a ride settle says whether it closed the ride; a bounty settle does not', async () => {
+    const earlier = { state: 'settled', firstSettled: false, stickerCount: 0, rideSettled: false };
+    expect(await settling(earlier)).toEqual({
+      firstSettled: false,
+      stickerCount: null,
+      rideSettled: false,
+    });
+    expect(
+      (await settling({ ...earlier, firstSettled: true, stickerCount: 1, rideSettled: true }))
+        .rideSettled,
+    ).toBe(true);
+    expect(
+      await settling({ state: 'settled', firstSettled: true, stickerCount: 1 }),
+    ).not.toHaveProperty('rideSettled');
   });
 
   test('a missing or malformed count is unknown, never a guessed number', async () => {
@@ -162,12 +178,24 @@ describe('mark paid', () => {
     } as unknown as SupabaseClient);
 
   test('maps no_rate to a typed error', async () => {
-    const marking = failing({ code: '55000', message: 'no_rate' }).markPaid('p', 'm', null);
+    const marking = failing({ code: '55000', message: 'no_rate' }).markPaid('p', 'm', null, 100);
     await expect(marking).rejects.toBeInstanceOf(NoRateError);
   });
 
   test('passes any other failure through', async () => {
     const error = { code: '55000', message: 'payment is not due' };
-    await expect(failing(error).markPaid('p', 'm', null)).rejects.toBe(error);
+    await expect(failing(error).markPaid('p', 'm', null, 100)).rejects.toBe(error);
+  });
+
+  test('sends the amount the payer saw and maps a changed amount to a typed error', async () => {
+    const sent: unknown[] = [];
+    const service = createSupabasePaymentService({
+      rpc: async (_name: string, args: unknown) => {
+        sent.push(args);
+        return { data: null, error: { code: '55000', message: 'amount_changed' } };
+      },
+    } as unknown as SupabaseClient);
+    await expect(service.markPaid('p', 'm', null, 2470)).rejects.toBeInstanceOf(AmountChangedError);
+    expect(sent).toEqual([{ payment: 'p', method: 'm', expected_minor: 2470, proof: null }]);
   });
 });

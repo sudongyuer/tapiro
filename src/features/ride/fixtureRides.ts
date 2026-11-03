@@ -4,7 +4,7 @@ import type { CurrencyCode } from '@/lib/money';
 import { malaysiaDayKey, malaysiaTime } from './rideClock';
 import type { MyRide, RideListData, RidePlace, RideSummary, ShortNameRow } from './types';
 
-export const RIDE_LISTS = ['demo', 'empty', 'joinable', 'history'] as const;
+export const RIDE_LISTS = ['demo', 'empty', 'joinable', 'history', 'settled'] as const;
 export type RideListFixture = (typeof RIDE_LISTS)[number];
 
 export const FIXTURE_SHORT_NAMES: ShortNameRow[] = [
@@ -93,6 +93,8 @@ function demo(now: number, variant: FixtureVariant): RideListData {
     role: 'member',
     myStatus: 'accepted',
     pendingRequests: 0,
+    myShare: null,
+    myPaid: null,
   };
   const requests: MyRide = {
     ...ride(
@@ -109,6 +111,8 @@ function demo(now: number, variant: FixtureVariant): RideListData {
     role: 'organiser',
     myStatus: 'accepted',
     pendingRequests: 1,
+    myShare: null,
+    myPaid: null,
   };
   const joinable = [
     ride(
@@ -161,7 +165,32 @@ export function fixtureRideList(
   if (list === 'empty') return { mine: [], joinable: [], historyCount: 0, next: null };
   if (list === 'joinable') return { ...full, mine: [], historyCount: 0 };
   if (list === 'history') return { mine: [], joinable: [], historyCount: 3, next: null };
+  if (list === 'settled') return { ...full, mine: [full.mine[0], settledTicket(now)] };
   return full;
+}
+
+function settledTicket(now: number): MyRide {
+  return {
+    ...ride(
+      {
+        id: 'ride-settled',
+        start: place('Sunway Geo', 'Geo', 'home'),
+        dest: place('KLIA2 第 2 航站楼', 'KLIA2', 'airport'),
+        departAt: iso(now - 4 * 60 * MINUTE),
+        status: 'closed',
+        taken: 3,
+        airport: true,
+      },
+      'MYR',
+      7_600,
+    ),
+    settledAt: iso(now - 15 * MINUTE),
+    role: 'member',
+    myStatus: 'boarded',
+    pendingRequests: 0,
+    myShare: { minor: 2_470, currency: 'MYR' },
+    myPaid: 'settled',
+  };
 }
 
 export function fixtureHistory(now: number): RideSummary[] {

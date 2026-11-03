@@ -10,6 +10,7 @@ export default {
   sheet: {
     title: 'Bayar',
     titlePayee: 'Terima bayaran',
+    titleRide: 'Tumpangan',
     close: 'Tutup',
     loading: 'Memuatkan',
     loadFailed: {
@@ -18,6 +19,7 @@ export default {
     },
     retry: 'Cuba lagi',
     failed: 'Tidak berjaya. Semak sambungan dan cuba lagi.',
+    amountChanged: 'Jumlah telah berubah. Sila semak semula.',
     payTo: 'Bayar {{name}}',
     amountLabel: 'Jumlah {{amount}}',
     original: 'Asalnya {{amount}}',

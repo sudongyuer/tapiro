@@ -4,6 +4,7 @@ import block from './block/ms';
 import bounty from './bounty/ms';
 import pay from './pay/ms';
 import ride from './ride/ms';
+import rideSettle from './rideSettle/ms';
 import payee from './payee/ms';
 import stickers from './stickers/ms';
 
@@ -133,6 +134,7 @@ const ms: Translation = {
   block,
   bounty,
   ride,
+  rideSettle,
   shell: {
     tabs: {
       bounty: 'Ganjaran',

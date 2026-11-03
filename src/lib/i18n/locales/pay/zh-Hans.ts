@@ -10,11 +10,13 @@ export default {
   sheet: {
     title: '付款',
     titlePayee: '收款',
+    titleRide: '拼车',
     close: '关闭',
     loading: '正在加载',
     loadFailed: { title: '付款信息没加载出来', body: '请检查网络后重试。' },
     retry: '重试',
     failed: '没成功，请检查网络后再试一次。',
+    amountChanged: '金额变了，请重新确认',
     payTo: '付给{{name}}',
     amountLabel: '金额 {{amount}}',
     original: '原价 {{amount}}',

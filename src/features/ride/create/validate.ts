@@ -1,5 +1,11 @@
 import { validShortName } from '@/features/place/shortName';
-import { CURRENCIES, POST_LIMITS, type CurrencyCode, type Money } from '@/lib/money';
+import {
+  CURRENCIES,
+  POST_LIMITS,
+  type CurrencyCode,
+  type DecimalSeparator,
+  type Money,
+} from '@/lib/money';
 
 import { malaysiaDayKey, malaysiaTime } from '../rideClock';
 import type { PublishRideArgs } from '../types';
@@ -25,11 +31,16 @@ export type RideDraftError = (typeof RIDE_DRAFT_ERRORS)[number];
 
 export const codePoints = (text: string) => Array.from(text).length;
 
-export function parseEstimate(text: string, currency: CurrencyCode): Money | null {
-  const cleaned = text.replace(/[\s,]/g, '');
+export function parseEstimate(
+  text: string,
+  currency: CurrencyCode,
+  decimal: DecimalSeparator = '.',
+): Money | null {
+  const cleaned = text.trim();
   const digits = CURRENCIES[currency].minorDigits;
-  if (!new RegExp(`^\\d+(\\.\\d{0,${digits}})?$`).test(cleaned)) return null;
-  const [units, fraction = ''] = cleaned.split('.');
+  const point = decimal === ',' ? ',' : '\\.';
+  if (!new RegExp(`^\\d+(${point}\\d{0,${digits}})?$`).test(cleaned)) return null;
+  const [units, fraction = ''] = cleaned.split(decimal);
   const minor = Number(units) * 10 ** digits + Number(fraction.padEnd(digits, '0') || '0');
   return Number.isSafeInteger(minor) ? { minor, currency } : null;
 }
@@ -48,7 +59,11 @@ export function flightTime(departAt: string, clock: string): string {
 export type CheckedDraft =
   { ok: true; args: PublishRideArgs } | { ok: false; error: RideDraftError };
 
-export function checkRideDraft(draft: RideDraft, now: Date): CheckedDraft {
+export function checkRideDraft(
+  draft: RideDraft,
+  now: Date,
+  decimal: DecimalSeparator = '.',
+): CheckedDraft {
   const { start, dest } = draft;
   if (!start || codePoints(start.label.trim()) > LABEL_MAX)
     return { ok: false, error: 'startEmpty' };
@@ -62,7 +77,7 @@ export function checkRideDraft(draft: RideDraft, now: Date): CheckedDraft {
   if (departs > now.getTime() + DEPART_AHEAD_MS) return { ok: false, error: 'timeTooFar' };
   let estimate: Money | null = null;
   if (draft.estimateText.trim() !== '') {
-    estimate = parseEstimate(draft.estimateText, draft.currency);
+    estimate = parseEstimate(draft.estimateText, draft.currency, decimal);
     const limits = estimateLimits(draft.currency);
     if (!estimate || estimate.minor < limits.minMinor || estimate.minor > limits.maxMinor) {
       return { ok: false, error: 'estimateRange' };
