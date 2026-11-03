@@ -3,7 +3,7 @@ export type Language = (typeof LANGUAGES)[number];
 
 export type CopyInput = { actorName: string | null; subject: Record<string, string | undefined> };
 
-type Subject = 'bounty' | 'ride' | 'payment';
+type Subject = 'bounty' | 'ride' | 'payment' | 'chat';
 type Lines = Record<Language, string>;
 type Entry = { subject: Subject; body: Lines };
 
@@ -12,6 +12,7 @@ const FALLBACK_TITLE: Record<Subject, Lines> = {
   bounty: { 'zh-Hans': '悬赏', en: 'Bounty', ms: 'Ganjaran' },
   ride: { 'zh-Hans': '拼车', en: 'Ride', ms: 'Tumpangan' },
   payment: { 'zh-Hans': '付款', en: 'Payment', ms: 'Bayaran' },
+  chat: { 'zh-Hans': '消息', en: 'Message', ms: 'Mesej' },
 };
 
 const COPY: Record<string, Entry> = {
@@ -167,6 +168,14 @@ const COPY: Record<string, Entry> = {
       ms: '{name} belum menerima bayaran',
     },
   },
+  'chat.message': {
+    subject: 'chat',
+    body: {
+      'zh-Hans': '{name}发来一条消息',
+      en: '{name} sent you a message',
+      ms: '{name} menghantar mesej kepada anda',
+    },
+  },
 };
 
 const HAN = '\\p{Script=Han}';
@@ -186,11 +195,9 @@ export function toLanguage(value: string): Language {
 }
 
 function titleOf(entry: Entry, language: Language, subject: CopyInput['subject']) {
-  if (entry.subject === 'ride') {
-    return subject.from && subject.to
-      ? `${subject.from} → ${subject.to}`
-      : FALLBACK_TITLE.ride[language];
-  }
+  const route = subject.from && subject.to ? `${subject.from} → ${subject.to}` : null;
+  if (entry.subject === 'ride') return route ?? FALLBACK_TITLE.ride[language];
+  if (entry.subject === 'chat') return subject.title || route || FALLBACK_TITLE.chat[language];
   return subject.title || FALLBACK_TITLE[entry.subject][language];
 }
 
