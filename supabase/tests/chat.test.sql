@@ -1,5 +1,5 @@
 begin;
-select plan(74);
+select plan(80);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -126,6 +126,17 @@ select throws_ok(
 select throws_ok(
   format('select public.send_message(%L, %L, %L)', (select bt from fx), pg_temp.c(2), E'\n\t\n'),
   '22023', 'invalid_message', 'a message of only newlines and tabs is rejected'
+);
+select throws_ok(
+  format('select public.send_message(%L, %L, %L)', (select bt from fx), pg_temp.c(2), U&' \00A0\200B\FEFF '),
+  '22023', 'invalid_message', 'a message of only no-break and zero-width spaces is rejected'
+);
+select throws_ok(
+  format(
+    $$insert into public.messages (thread_id, sender_id, client_id, body) values (%L, %L, %L, %L)$$,
+    (select bt from fx), pg_temp.u('a1'), pg_temp.c(16), U&'\00A0好'
+  ),
+  '23514', null, 'the table rejects a body with a leading no-break space'
 );
 select throws_ok(
   format('select public.send_message(%L, %L, %L)', (select bt from fx), pg_temp.c(2), repeat('字', 2001)),
@@ -378,10 +389,15 @@ select is(
   (public.list_threads(max_count => 1) ->> 'hasMore')::boolean, true, 'a full thread page says there is more'
 );
 select is(
-  public.list_threads((select id from rt), 1) #>> '{items,0,kind}', 'bounty', 'the next thread page starts after the cursor'
+  public.list_threads(public.list_threads(max_count => 1) ->> 'nextCursor', 1) #>> '{items,0,kind}', 'bounty',
+  'the next thread page starts after the cursor'
 );
 select is(
-  (public.list_threads((select id from rt), 1) ->> 'hasMore')::boolean, false, 'the last thread page says there is no more'
+  public.list_threads(public.list_threads(max_count => 1) ->> 'nextCursor', 1) - 'items',
+  '{"hasMore": false, "nextCursor": null}'::jsonb, 'the last thread page has no more and no cursor'
+);
+select throws_ok(
+  $$select public.list_threads('not-a-cursor')$$, '22023', 'invalid_page', 'a malformed thread cursor is rejected'
 );
 
 select pg_temp.act_as(pg_temp.u('a1'));
@@ -400,6 +416,25 @@ select isnt(
   null, 'an organiser blocking a rider before departure ends the rider''s thread membership'
 );
 select public.unblock_user(pg_temp.u('e5'));
+
+select pg_temp.act_as(pg_temp.u('a1'));
+create temp table pg1 as select public.list_threads(max_count => 2) as page;
+select is(
+  (select array_agg(i ->> 'id') from pg1, jsonb_array_elements(pg1.page -> 'items') i),
+  array[pg_temp.ride_thread('a2000000-0000-4000-8000-000000000002')::text, (select id::text from rt)],
+  'the first thread page holds the two newest threads'
+);
+select pg_temp.send('d4', (select id from rt), 14, '我快到了');
+select pg_temp.act_as(pg_temp.u('a1'));
+select is(
+  (select array_agg(i ->> 'id') from jsonb_array_elements(public.list_threads((select page ->> 'nextCursor' from pg1), 2) -> 'items') i),
+  array[(select bt from fx)::text],
+  'a thread that moves up between pages is not repeated, and the older one is not skipped'
+);
+select is(
+  pg_temp.send('d4', (select id from rt), 15, U&'\FEFF\00A0好\200B') ->> 'body', '好',
+  'no-break and zero-width spaces around a message are trimmed'
+);
 
 update public.bounties set status = 'cancelled' where id = 'b0000000-0000-4000-8000-000000000001';
 delete from auth.users where id = pg_temp.u('b2');

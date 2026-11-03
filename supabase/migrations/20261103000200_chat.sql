@@ -2,7 +2,7 @@ create table public.threads (
   id uuid primary key default gen_random_uuid(),
   bounty_id uuid unique references public.bounties (id) on delete cascade,
   ride_id uuid unique references public.rides (id) on delete cascade,
-  created_at timestamptz not null default now(),
+  created_at timestamptz not null default clock_timestamp(),
   check (num_nonnulls(bounty_id, ride_id) = 1)
 );
 
@@ -21,7 +21,7 @@ create table public.messages (
   thread_id uuid not null references public.threads (id) on delete cascade,
   sender_id uuid not null references auth.users (id) on delete cascade,
   client_id uuid not null,
-  body text not null check (char_length(body) between 1 and 2000 and body = regexp_replace(body, '^\s+|\s+$', '', 'g')),
+  body text not null check (char_length(body) between 1 and 2000 and body = regexp_replace(body, '^[\s\u00a0\u200b\ufeff]+|[\s\u00a0\u200b\ufeff]+$', '', 'g')),
   created_at timestamptz not null default clock_timestamp(),
   unique (sender_id, client_id)
 );
@@ -209,7 +209,9 @@ as $$
   where m.member_id = (select auth.uid());
 $$;
 
-create function public.list_threads(before uuid default null, max_count integer default 50) returns jsonb
+-- The cursor carries the last row's sort key, not its id, so a thread that gets a new message between pages moves
+-- above the cursor instead of shifting the next page (no repeats, no gaps).
+create function public.list_threads(before text default null, max_count integer default 50) returns jsonb
 language plpgsql
 stable
 security definer
@@ -217,22 +219,26 @@ set search_path = ''
 as $$
 declare
   cursor_at timestamptz;
+  cursor_id uuid;
   page jsonb;
   more boolean;
+  last_key text;
 begin
   if max_count is null or max_count not between 1 and 100 then
     raise exception 'invalid_page' using errcode = '22023';
   end if;
   if before is not null then
-    select x.active_at into cursor_at from private.my_threads() x where (x.t).id = before;
-    if not found then
+    begin
+      cursor_at := split_part(before, '/', 1)::timestamptz;
+      cursor_id := split_part(before, '/', 2)::uuid;
+    exception when others then
       raise exception 'invalid_page' using errcode = '22023';
-    end if;
+    end;
   end if;
   with numbered as (
-    select x.t, x.msg, row_number() over (order by x.active_at desc, (x.t).id) as n
+    select x.t, x.msg, x.active_at, row_number() over (order by x.active_at desc, (x.t).id) as n
     from private.my_threads() x
-    where cursor_at is null or x.active_at < cursor_at or (x.active_at = cursor_at and (x.t).id > before)
+    where cursor_at is null or x.active_at < cursor_at or (x.active_at = cursor_at and (x.t).id > cursor_id)
     order by x.active_at desc, (x.t).id
     limit max_count + 1
   )
@@ -242,10 +248,12 @@ begin
         || jsonb_build_object('lastMessage', case when (numbered.msg).id is not null then private.message_json(numbered.msg) end)
       order by numbered.n
     ) filter (where numbered.n <= max_count), '[]'::jsonb),
-    count(*) > max_count
-  into page, more
+    count(*) > max_count,
+    max(to_char(numbered.active_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') || '/' || (numbered.t).id)
+      filter (where numbered.n = max_count)
+  into page, more, last_key
   from numbered;
-  return jsonb_build_object('items', page, 'hasMore', more);
+  return jsonb_build_object('items', page, 'hasMore', more, 'nextCursor', case when more then last_key end);
 end;
 $$;
 
@@ -304,7 +312,7 @@ set search_path = ''
 as $$
 declare
   uid uuid := (select auth.uid());
-  cleaned text := regexp_replace(body, '^\s+|\s+$', '', 'g');
+  cleaned text := regexp_replace(body, '^[\s\u00a0\u200b\ufeff]+|[\s\u00a0\u200b\ufeff]+$', '', 'g');
   until timestamptz;
   existing public.messages;
   t public.threads;
@@ -432,11 +440,11 @@ revoke all on function private.bounty_thread_on_assign() from public, anon, auth
 revoke all on function private.ride_thread_membership() from public, anon, authenticated;
 revoke all on function private.message_json(public.messages) from public, anon, authenticated;
 revoke all on function private.thread_json(public.threads) from public, anon, authenticated;
-revoke all on function public.list_threads(uuid, integer) from public, anon, authenticated;
+revoke all on function public.list_threads(text, integer) from public, anon, authenticated;
 revoke all on function public.read_thread(uuid, uuid, integer) from public, anon, authenticated;
 revoke all on function public.send_message(uuid, uuid, text) from public, anon, authenticated;
 revoke all on function public.report(uuid, uuid, text, text) from public, anon, authenticated;
-grant execute on function public.list_threads(uuid, integer) to authenticated;
+grant execute on function public.list_threads(text, integer) to authenticated;
 grant execute on function public.read_thread(uuid, uuid, integer) to authenticated;
 grant execute on function public.send_message(uuid, uuid, text) to authenticated;
 grant execute on function public.report(uuid, uuid, text, text) to authenticated;

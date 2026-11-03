@@ -46,6 +46,11 @@ rule, since `queue_push` only warns. The first threshold in that test (more than
 the 20 kinds that exist; caught on the first run. Adding the push rules took the chat migration to 512 lines;
 `check:size` caught it, and the push rules moved to their own migration.
 
+Follow-ups after the re-review: `list_threads` paged by a thread id whose sort key was read again on the next call,
+so a thread that moved up repeated the threads above it; the cursor now carries the sort key. The trim did not strip
+no-break or zero-width spaces. Thread creation now uses `clock_timestamp()` like messages, which the cursor case
+needed to order threads created in one transaction.
+
 Lesson: for every boundary a policy enforces, assert it through the role that RLS applies to, not only through the
 `security definer` RPC.
 
