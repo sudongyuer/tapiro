@@ -79,6 +79,7 @@ export default function TabsLayout() {
       <NativeTabs.Trigger
         name="tapir"
         role="search"
+        prominent
         disabled
         testID="tab-ask-tapir"
         accessibilityLabel={t('shell.tabs.askTapir')}
