@@ -652,7 +652,7 @@ owner may veto:
 
 ## Implementation Record (2026-11-02, step 6)
 
-PR: PR_URL (`feat/carpool-settle`). Status stays `approved`: step 7 and the milestone remain.
+PR: https://github.com/sudongyuer/tapiro/pull/53 (`feat/carpool-settle`). Status stays `approved`: step 7 and the milestone remain.
 
 ### What was built
 

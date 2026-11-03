@@ -1,7 +1,7 @@
 ---
 branch: feat/carpool-settle
 date: 2026-11-02
-pr: pending
+pr: https://github.com/sudongyuer/tapiro/pull/53
 title: carpool step 6 (到了 and 结清)
 escaped: pending
 rework: 0
