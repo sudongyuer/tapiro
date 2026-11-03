@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   AccessibilityInfo,
+  type LayoutChangeEvent,
   PlatformColor,
   Pressable,
   StyleSheet,
   View,
-  type LayoutChangeEvent,
+  type ViewInstance,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -48,8 +49,8 @@ export function PinCard({
   const width = cardWidth(map.width);
   const [heights, setHeights] = useState<{ front?: number; back?: number }>({});
   const [flipped, setFlipped] = useState(false);
-  const frontRef = useRef<View>(null);
-  const backRef = useRef<View>(null);
+  const frontRef = useRef<ViewInstance>(null);
+  const backRef = useRef<ViewInstance>(null);
   const measured = heights.front !== undefined && heights.back !== undefined;
   const height = Math.max(heights.front ?? 0, heights.back ?? 0);
   const motion = usePinCardMotion({ ready: measured, closing, flipped, onGone });

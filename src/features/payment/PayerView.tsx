@@ -37,7 +37,7 @@ export function AmountHeader({
   const amount = formatMoney(money, language);
   return (
     <Section>
-      <HStack>
+      <HStack spacing={0}>
         <Spacer />
         <VStack
           spacing={vars['--space-1']}

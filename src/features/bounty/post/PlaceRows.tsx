@@ -78,7 +78,7 @@ export function PlaceSections({
             ROW_INSETS,
           ]}
         >
-          <HStack modifiers={[fullRow, accessibilityElement('combine')]}>
+          <HStack spacing={0} modifiers={[fullRow, accessibilityElement('combine')]}>
             <Text>{t('bounty.place.row')}</Text>
             <Spacer />
             <Text modifiers={[secondary, lineLimit(1)]}>{place.label}</Text>

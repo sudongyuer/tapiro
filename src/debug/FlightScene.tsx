@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { findNodeHandle, ScrollView, StyleSheet, View } from 'react-native';
+import { findNodeHandle, ScrollView, StyleSheet, View, type ViewInstance } from 'react-native';
 import { StickerFlight } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
@@ -13,14 +13,14 @@ const ME_TAB_ID = 'tab-me';
 
 export function FlightScene({ onReady }: { onReady: () => void }) {
   const { t } = useI18n();
-  const sticker = useRef<View>(null);
+  const sticker = useRef<ViewInstance>(null);
   const [round, setRound] = useState(0);
   const [result, setResult] = useState('-');
   useEffect(onReady, [onReady]);
 
   const fly = async (reduceMotion: boolean) => {
     const viewTag = findNodeHandle(sticker.current);
-    if (viewTag === null) return setResult('noTag');
+    if (viewTag == null) return setResult('noTag');
     setResult('flying');
     const { landed } = await StickerFlight.flyToTab({ viewTag, tabId: ME_TAB_ID, reduceMotion });
     setResult(landed ? 'landed' : 'notLanded');

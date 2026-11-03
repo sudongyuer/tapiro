@@ -105,7 +105,7 @@ function PlaceRows({
               accessibilityLabel(place ? `${placeholder}: ${place.label}` : placeholder),
             ]}
           >
-            <HStack>
+            <HStack spacing={0}>
               <Text
                 modifiers={[
                   place ? foregroundStyle(color('--color-accent')) : secondary,

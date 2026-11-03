@@ -256,7 +256,7 @@ function Results({
   if (items.length === 0) {
     return (
       <Section>
-        <HStack modifiers={[row, accessibilityElement('combine')]}>
+        <HStack spacing={0} modifiers={[row, accessibilityElement('combine')]}>
           <Spacer />
           <ProgressView modifiers={[accessibilityLabel(t('bounty.place.searching'))]} />
           <Spacer />

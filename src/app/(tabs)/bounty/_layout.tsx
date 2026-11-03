@@ -4,7 +4,7 @@ import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/ui/theme/useTheme';
 
 // The anchor for pushes from outside the tab (`withAnchor`): the board sits under the pushed screen, so back works.
-export const unstable_settings = { initialRouteName: 'index' };
+export const unstable_settings = { anchor: 'index' };
 
 export default function BountyLayout() {
   const { t } = useI18n();

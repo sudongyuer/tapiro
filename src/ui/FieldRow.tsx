@@ -33,6 +33,7 @@ export function FieldRow({
 }) {
   return (
     <HStack
+      spacing={0}
       modifiers={[
         fullRow,
         contentShape(shapes.rectangle()),

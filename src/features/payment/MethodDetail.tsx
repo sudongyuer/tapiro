@@ -132,7 +132,7 @@ function QrSection({
         </Text>
       }
     >
-      <HStack>
+      <HStack spacing={0}>
         <Spacer />
         {uri ? (
           <Image

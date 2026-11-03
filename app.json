@@ -92,7 +92,9 @@
         }
       ],
       "./plugins/withoutAppleSignInEntitlement",
-      "./plugins/withoutPushEntitlement"
+      "./plugins/withoutPushEntitlement",
+      "expo-image",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,

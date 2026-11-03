@@ -165,7 +165,10 @@ function Preview({ draft }: { draft: PostDraft }) {
 
 function SummaryRow({ label, value, testID }: { label: string; value: string; testID: string }) {
   return (
-    <HStack modifiers={[accessibilityElement('combine'), accessibilityIdentifier(testID)]}>
+    <HStack
+      spacing={0}
+      modifiers={[accessibilityElement('combine'), accessibilityIdentifier(testID)]}
+    >
       <Text>{label}</Text>
       <Spacer />
       <Text modifiers={[secondary, lineLimit(1)]}>{value}</Text>

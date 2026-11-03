@@ -23,7 +23,10 @@ const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
 function Row({ label, value, testID }: { label: string; value: string; testID: string }) {
   return (
-    <HStack modifiers={[accessibilityElement('combine'), accessibilityIdentifier(testID)]}>
+    <HStack
+      spacing={0}
+      modifiers={[accessibilityElement('combine'), accessibilityIdentifier(testID)]}
+    >
       <Text>{label}</Text>
       <Spacer />
       <Text modifiers={[secondary, lineLimit(2)]}>{value}</Text>

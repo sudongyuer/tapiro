@@ -113,7 +113,7 @@ function DepartForm({
         }
       >
         <Toggle isOn modifiers={[disabled(true), accessibilityIdentifier('ride-depart-self')]}>
-          <VStack alignment="leading">
+          <VStack spacing={0} alignment="leading">
             <Text>{t('ride.detail.depart.you')}</Text>
             {ride.arrivedAt ? (
               <Text modifiers={[secondary, font({ textStyle: 'footnote' })]}>
@@ -138,7 +138,7 @@ function DepartForm({
             }
             modifiers={[accessibilityIdentifier(`ride-depart-${member.id}`)]}
           >
-            <VStack alignment="leading">
+            <VStack spacing={0} alignment="leading">
               <Text>{displayName(member, viewerId, t)}</Text>
               <Text modifiers={[secondary, font({ textStyle: 'footnote' })]}>{line(member)}</Text>
             </VStack>
