@@ -233,6 +233,8 @@ select lives_ok(
   format($$insert into storage.objects (bucket_id, name) values ('payment-proofs', '%s/draft.jpg')$$, (select id from ids where name = 'proofed')),
   'the payer uploads a draft proof'
 );
+-- Storage API v1.8x blocks direct deletes unless this is set; the policy under test still applies.
+set local storage.allow_delete_query = 'true';
 select results_eq(
   $$with removed as (delete from storage.objects where bucket_id = 'payment-proofs' and name = (select id from ids where name = 'proofed') || '/draft.jpg' returning 1)
     select count(*)::int from removed$$,
