@@ -45,7 +45,7 @@ export default {
     bags_one: '{{count}} 件大行李',
     bags_other: '{{count}} 件大行李',
     noEstimate: '没填',
-    a11y: '{{status}}，{{time}}，{{route}}，{{labels}}',
+    a11ySeparator: '，',
     a11yFare: '每人约 {{amount}}，{{taken}}/{{seats}} 人',
   },
   detail: {
@@ -127,6 +127,7 @@ export default {
       decline: '拒绝',
       approve: '通过',
       a11y: '{{name}}，{{tier}}，{{note}}',
+      a11yNoNote: '{{name}}，{{tier}}',
     },
     apply: {
       action: '申请上车',

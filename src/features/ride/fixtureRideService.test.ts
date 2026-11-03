@@ -43,12 +43,20 @@ describe('fixture rides', () => {
       items: [],
       historyCount: 0,
     });
+    const listLoad = (rides: ReturnType<typeof service>) =>
+      Promise.all([rides.mine(), rides.nearby(null, null)]);
     const first = service({ uiVerifyRideFail: 'first' });
-    await expect(first.mine()).rejects.toThrow();
-    expect((await first.mine()).items.length).toBeGreaterThan(0);
+    await expect(listLoad(first)).rejects.toThrow();
+    expect((await listLoad(first))[0].items.length).toBeGreaterThan(0);
     const refresh = service({ uiVerifyRideFail: 'refresh' });
-    expect((await refresh.mine()).items.length).toBeGreaterThan(0);
-    await expect(refresh.mine()).rejects.toThrow();
+    expect((await listLoad(refresh))[0].items.length).toBeGreaterThan(0);
+    await expect(listLoad(refresh)).rejects.toThrow();
+  });
+
+  test('a reminder sync before the list does not use up the first-load failure', async () => {
+    const first = service({ uiVerifyRideFail: 'first' });
+    expect((await first.mine()).items.length).toBeGreaterThan(0);
+    await expect(Promise.all([first.mine(), first.nearby(null, null)])).rejects.toThrow();
   });
 
   test('a published ride appears first in mine; without a payee it is refused', async () => {

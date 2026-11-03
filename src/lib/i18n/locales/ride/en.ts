@@ -47,7 +47,7 @@ const en: typeof zhHans = {
     bags_one: '{{count}} large bag',
     bags_other: '{{count}} large bags',
     noEstimate: 'Not set',
-    a11y: '{{status}}, {{time}}, {{route}}, {{labels}}',
+    a11ySeparator: ', ',
     a11yFare: 'About {{amount}} each, {{taken}} of {{seats}} people',
   },
   detail: {
@@ -132,6 +132,7 @@ const en: typeof zhHans = {
       decline: 'Decline',
       approve: 'Approve',
       a11y: '{{name}}, {{tier}}, {{note}}',
+      a11yNoNote: '{{name}}, {{tier}}',
     },
     apply: {
       action: 'Ask to Join',

@@ -14,6 +14,7 @@ import {
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
+import { malaysiaPicker } from '../malaysiaPicker';
 import { malaysiaClock, malaysiaDayKey } from '../rideClock';
 import { whenText } from '../ticketView';
 import type { RideDraft } from './draft';
@@ -55,7 +56,11 @@ export function FormTime({
             displayedComponents={DATE_PARTS}
             onDateChange={(date) => set(date.getTime())}
             testID="ride-form-time"
-            modifiers={[labelsHidden(), accessibilityLabel(t('ride.create.form.depart'))]}
+            modifiers={[
+              labelsHidden(),
+              malaysiaPicker,
+              accessibilityLabel(t('ride.create.form.depart')),
+            ]}
           />
         ) : null}
       </HStack>

@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 
+import { malaysiaPicker } from '../malaysiaPicker';
 import { NOTE_MAX, PLATE_MAX, type DetailsDraft } from './drafts';
 import { SheetShell } from './SheetShell';
 
@@ -115,7 +116,11 @@ export function TimeSheet({
             displayedComponents={['date', 'hourAndMinute']}
             range={{ start: new Date(start), end: new Date(request.first + DAY) }}
             onDateChange={setPicked}
-            modifiers={[datePickerStyle('compact'), accessibilityIdentifier('ride-time-picker')]}
+            modifiers={[
+              datePickerStyle('compact'),
+              malaysiaPicker,
+              accessibilityIdentifier('ride-time-picker'),
+            ]}
           />
         </Section>
       ) : null}
@@ -185,7 +190,11 @@ export function DetailsSheet({
             displayedComponents={['hourAndMinute']}
             range={{ start: new Date(now - 60 * MINUTE), end: new Date(now + 2 * DAY - MINUTE) }}
             onDateChange={(date) => edit({ eta: date.toISOString() })}
-            modifiers={[datePickerStyle('compact'), accessibilityIdentifier('ride-details-eta')]}
+            modifiers={[
+              datePickerStyle('compact'),
+              malaysiaPicker,
+              accessibilityIdentifier('ride-details-eta'),
+            ]}
           />
         ) : null}
       </Section>

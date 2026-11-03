@@ -32,11 +32,32 @@ MILESTONE_LOCALES = ['zh-Hans', 'en']
 LANGUAGE_ORDER = ['zh-Hans', 'en', 'ms']
 
 
-def parse_deps(source):
+DECLARED = ('DEPS', 'SCENE', 'LOCALES', 'ARGS', 'BUDGET')
+STRING_LISTS = ('DEPS', 'LOCALES', 'ARGS')
+
+
+def parse_declarations(source):
+    values = {}
     for node in ast.parse(source).body:
-        if isinstance(node, ast.Assign) and any(getattr(t, 'id', None) == 'DEPS' for t in node.targets):
-            return list(ast.literal_eval(node.value))
-    return None
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            name = getattr(target, 'id', None)
+            if name not in DECLARED:
+                continue
+            try:
+                value = ast.literal_eval(node.value)
+            except ValueError:
+                raise ValueError(f'{name} must be a literal the runner can read without running the case') from None
+            if name in STRING_LISTS and not (isinstance(value, list) and all(isinstance(v, str) for v in value)):
+                raise ValueError(f'{name} must be a list of strings')
+            values[name] = value
+    return values
+
+
+def parse_deps(source):
+    deps = parse_declarations(source).get('DEPS')
+    return None if deps is None else list(deps)
 
 
 def matches(path, prefix):

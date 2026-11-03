@@ -12,7 +12,7 @@ from ride import add_button, open_list, relaunch_list  # noqa: E402
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/InlineState.tsx']
 LOCALES = ['zh-Hans', 'ms']
 FAIL_FIRST = ['-uiVerifyRideFail', 'first']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', *FAIL_FIRST]
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideFail', 'first']
 FIRST = 'ride-ticket-ride-leaving'
 
 ui = UI(*sys.argv[1:])

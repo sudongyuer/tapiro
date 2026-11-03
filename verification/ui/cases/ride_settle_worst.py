@@ -1,6 +1,7 @@
-"""Worst cases for 结清: six riders with 40-character names and RM 1,000.00 (the ride limit) for the organiser, then a
-rider's view of ¥1,600.00 (the ¥ limit), then a lone rider. No row, button or cell overflows the screen, the long
-「金额不对」 note wraps, and the amounts keep their currency."""
+"""Worst cases for 结清: six riders with 40-character names and RM 1,000.00 (the ride limit) for the organiser, read
+as 每人 RM 166.70 / 你出 RM 166.50 with no empty segment in the ticket label; then a rider's view of ¥1,600.00 (the ¥
+limit) after paying, whose footer waits on the 40-character organiser name; then a lone rider. No row, button or cell
+overflows the screen, the long 「金额不对」 note wraps, and the amounts keep their currency."""
 import re
 import sys
 
@@ -25,7 +26,9 @@ def fits(*identifiers):
 
 
 ticket = ui.element('ride-detail-ticket').get('AXLabel') or ''
-assert re.search(r'RM\s?1,?000\.00', ticket), ticket
+assert re.search(re.escape(ui.t('rideSettle.ticket.each')) + r' RM\s?166\.70', ticket), ticket
+assert re.search(re.escape(ui.t('rideSettle.ticket.yours')) + r' RM\s?166\.50', ticket), ticket
+assert not re.search(r'[，,]\s*[，,]', ticket), f'the ticket label joins an empty segment: {ticket}'
 fits('ride-detail-ticket', 'ride-detail-timeline')
 ui.element('ride-settle-dispute-fixture-ride-long-2')
 ui.at_rest()
@@ -35,7 +38,7 @@ relaunch(ui, drop=['-uiVerifyRideDetail', 'settleWorst'], add=['-uiVerifyRideDet
          ready='ride-detail-ticket')
 ticket = ui.element('ride-detail-ticket').get('AXLabel') or ''
 assert re.search(r'¥\s?1,?600\.00', ticket), ticket
-fits('ride-detail-ticket', 'ride-detail-pay')
+fits('ride-detail-ticket', 'ride-detail-paid', 'ride-detail-paid-view')
 ui.at_rest()
 ui.snap('02-cny-limit')
 

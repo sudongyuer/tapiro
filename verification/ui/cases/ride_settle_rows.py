@@ -10,8 +10,10 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from ride import tap_clear  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/features/payment/', 'src/app/(tabs)/ride/', 'src/lib/i18n/locales/rideSettle/']
+DEPS = ['src/features/ride/', 'src/features/payment/', 'src/app/(tabs)/ride/', 'src/lib/i18n/locales/rideSettle/',
+        'verification/ui/ride.py']
 SCENE = 'ride-detail'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
@@ -40,7 +42,7 @@ assert not any('提醒一下' in (i.get('AXLabel') or '') for i in items), 'an o
 ui.at_rest()
 ui.snap('01-rows')
 
-ui.tap(f'ride-settle-confirm-{MING}')
+tap_clear(ui, f'ride-settle-confirm-{MING}')
 ui.wait_label(f'ride-settle-sub-{MING}', lambda label: bool(re.fullmatch(ui.pattern('rideSettle.rows.received', time=CLOCK),
                                                                          label or '')), '阿明 never read 收到')
 deadline = time.monotonic() + 10

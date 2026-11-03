@@ -83,12 +83,9 @@ export function ticketA11y(
   fare?: string,
 ) {
   const parts = [
-    t('ride.ticket.a11y', {
-      status: view.status,
-      time: view.time ?? '',
-      route: view.route,
-      labels: view.labels ?? '',
-    }),
+    [view.status, view.time, view.route, view.labels]
+      .filter(Boolean)
+      .join(t('ride.ticket.a11ySeparator')),
     view.flight,
     view.bags,
     fare ?? t('ride.ticket.a11yFare', { amount: view.amount, taken, seats }),

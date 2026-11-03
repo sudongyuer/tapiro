@@ -65,11 +65,11 @@ export function ApplicationCard({
                 style={styles.nameRow}
                 testID={`ride-detail-request-name-${request.id}`}
                 accessible
-                accessibilityLabel={t('ride.detail.requests.a11y', {
-                  name,
-                  tier,
-                  note: request.note ?? '',
-                })}
+                accessibilityLabel={
+                  request.note
+                    ? t('ride.detail.requests.a11y', { name, tier, note: request.note })
+                    : t('ride.detail.requests.a11yNoNote', { name, tier })
+                }
               >
                 <AppText variant="body" numberOfLines={1} style={[styles.name]}>
                   {name}

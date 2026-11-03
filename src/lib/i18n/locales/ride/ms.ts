@@ -48,7 +48,7 @@ const ms: typeof zhHans = {
     bags_one: '{{count}} beg besar',
     bags_other: '{{count}} beg besar',
     noEstimate: 'Belum diisi',
-    a11y: '{{status}}, {{time}}, {{route}}, {{labels}}',
+    a11ySeparator: ', ',
     a11yFare: 'Kira-kira {{amount}} seorang, {{taken}} daripada {{seats}} orang',
   },
   detail: {
@@ -133,6 +133,7 @@ const ms: typeof zhHans = {
       decline: 'Tolak',
       approve: 'Luluskan',
       a11y: '{{name}}, {{tier}}, {{note}}',
+      a11yNoNote: '{{name}}, {{tier}}',
     },
     apply: {
       action: 'Mohon Menyertai',

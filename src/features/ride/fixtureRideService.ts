@@ -89,14 +89,15 @@ export function createFixtureRideService(
   options: FixtureRideOptions,
   onPublished: (args: PublishRideArgs) => void = () => {},
 ): RideService {
-  let loads = 0;
+  let listLoads = 0;
   const published: MyRide[] = [];
   const wait = () => new Promise((resolve) => setTimeout(resolve, options.delayMs));
   const listFails = () =>
-    (options.fail === 'first' && loads === 1) || (options.fail === 'refresh' && loads > 1);
+    (options.fail === 'first' && listLoads === 1) || (options.fail === 'refresh' && listLoads > 1);
 
   return {
-    async nearby() {
+    async nearby(_point, after) {
+      if (after === null) listLoads += 1;
       await wait();
       if (listFails()) throw new Error('fixture: rides failed');
       return {
@@ -105,7 +106,6 @@ export function createFixtureRideService(
       };
     },
     async mine() {
-      loads += 1;
       await wait();
       if (listFails()) throw new Error('fixture: rides failed');
       const data = fixtureRideList(options.list, options.variant, options.now());

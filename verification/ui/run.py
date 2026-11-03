@@ -1,6 +1,5 @@
 """Run UI verification cases in light and dark on a named Simulator, with screenshots and video."""
 import argparse
-import ast
 import fcntl
 import json
 import os
@@ -12,7 +11,7 @@ import threading
 import time
 from pathlib import Path
 
-from affected import SMOKE, parse_deps, run_locales, select
+from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
 from heal import Attempt, Scheduler, work
@@ -72,17 +71,10 @@ def git_info():
 
 
 def case_meta(case):
-    source = (HERE / 'cases' / f'{case}.py').read_text()
-    values = {}
-    for node in ast.parse(source).body:
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                name = getattr(target, 'id', None)
-                if name in ('SCENE', 'LOCALES', 'ARGS', 'BUDGET'):
-                    try:
-                        values[name] = ast.literal_eval(node.value)
-                    except ValueError:
-                        sys.exit(f'{case}: {name} must be a literal the runner can read without running the case')
+    try:
+        values = parse_declarations((HERE / 'cases' / f'{case}.py').read_text())
+    except ValueError as error:
+        sys.exit(f'{case}: {error}')
     return (
         values.get('SCENE'),
         list(values.get('LOCALES', DEFAULT_LOCALES)),
