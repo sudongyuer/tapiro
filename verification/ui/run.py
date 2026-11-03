@@ -26,6 +26,7 @@ DEFAULT_APP = ROOT / '.verify/DerivedData/Build/Products/Release-iphonesimulator
 DEVICE_TYPE = 'com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro'
 DEFAULT_LOCALES = ['zh-Hans']
 DEFAULT_BUDGET = 180
+DEFAULT_TIME_ZONE = 'Asia/Kuala_Lumpur'
 SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
 
@@ -83,6 +84,15 @@ def case_meta(case):
     )
 
 
+def case_zone(case):
+    return parse_declarations((HERE / 'cases' / f'{case}.py').read_text()).get('TIME_ZONE', DEFAULT_TIME_ZONE)
+
+
+def zone_env(zone):
+    # The app reads TZ through SIMCTL_CHILD_TZ; the case and its relaunches inherit both, so its own clock agrees.
+    return {**os.environ, 'TZ': zone, 'SIMCTL_CHILD_TZ': zone}
+
+
 def export_strings():
     subprocess.run(['bun', str(ROOT / 'scripts/export-ui-strings.ts')], cwd=ROOT, check=True)
 
@@ -132,9 +142,9 @@ def heal(device, app):
     prepare(device, app)
 
 
-def simctl_step(label, argv, log):
+def simctl_step(label, argv, log, env=None):
     try:
-        timed(label, argv, SIMCTL_TIMEOUT, check=True, out=log.append)
+        timed(label, argv, SIMCTL_TIMEOUT, check=True, out=log.append, env=env)
         return None
     except subprocess.TimeoutExpired:
         return f'{label} timed out after {SIMCTL_TIMEOUT} s'
@@ -145,7 +155,7 @@ def run_script(case, extra, budget, locale, appearance, udid, out, after):
         proc = subprocess.run(
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=budget,
-            env={**os.environ, 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
+            env={**zone_env(case_zone(case)), 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
         )
     except subprocess.TimeoutExpired as error:
         message = f'command timed out after {budget} s'
@@ -177,7 +187,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out):
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
         'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
-        *(['-uiVerifyScene', scene] if scene else []), *extra], before)
+        *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(case_zone(case)))
     if stuck:
         status, message = 'fail', stuck
     else:

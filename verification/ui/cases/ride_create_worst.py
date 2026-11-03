@@ -1,7 +1,7 @@
 """Worst case in the create flow (break-ui): two 80-character places with 8-character short names, 6 people, ¥1600, 9
 large bags and a 140-character meeting note keep the live ticket inside the screen at its fixed height, the 6-seat hint
-shows, the flight picker reads the ticket's Malaysia-time flight clock, and the confirm rows stay inside the sheet, in
-zh-Hans and ms."""
+shows, the flight picker and the ticket read the same flight clock in the device zone (234, run in London), and the
+confirm rows stay inside the sheet, in zh-Hans and ms."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -11,6 +11,7 @@ from ride import form_scroll_to, open_form, open_list, picker_clock, within_scre
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDraft', 'worst']
+TIME_ZONE = 'Europe/London'
 
 ui = UI(*sys.argv[1:])
 open_list(ui)

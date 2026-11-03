@@ -13,9 +13,8 @@ import {
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
+import { localClock, localDayKey } from '@/lib/deviceClock';
 
-import { malaysiaPicker } from '../malaysiaPicker';
-import { malaysiaClock, malaysiaDayKey } from '../rideClock';
 import { whenText } from '../ticketView';
 import type { RideDraft } from './draft';
 import { customStart, gatherTime, quickPicks } from './timePicks';
@@ -41,7 +40,7 @@ export function FormTime({
       footer={
         chosen ? (
           <Text modifiers={[accessibilityIdentifier('ride-form-gather')]}>
-            {t('ride.create.form.gather', { time: malaysiaClock(gatherTime(chosen)) })}
+            {t('ride.create.form.gather', { time: localClock(gatherTime(chosen)) })}
           </Text>
         ) : undefined
       }
@@ -56,19 +55,15 @@ export function FormTime({
             displayedComponents={DATE_PARTS}
             onDateChange={(date) => set(date.getTime())}
             testID="ride-form-time"
-            modifiers={[
-              labelsHidden(),
-              malaysiaPicker,
-              accessibilityLabel(t('ride.create.form.depart')),
-            ]}
+            modifiers={[labelsHidden(), accessibilityLabel(t('ride.create.form.depart'))]}
           />
         ) : null}
       </HStack>
       <HStack spacing={vars['--space-2']}>
         {picks.map((time, index) => {
           const label =
-            malaysiaDayKey(time) === malaysiaDayKey(now)
-              ? malaysiaClock(time)
+            localDayKey(time) === localDayKey(now)
+              ? localClock(time)
               : whenText(time, now, t, language);
           const on = chosen === time;
           return (

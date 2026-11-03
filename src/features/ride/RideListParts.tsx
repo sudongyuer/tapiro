@@ -7,9 +7,8 @@ import { InlineState } from '@/ui/InlineState';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
 import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { localClock } from '@/lib/deviceClock';
 import Animated from 'react-native-reanimated';
-
-import { malaysiaClock } from './rideClock';
 
 export function SectionHeading({
   title,
@@ -85,7 +84,7 @@ export function RideStale({
   return (
     <InlineState
       tone="warning"
-      text={t('ride.list.stale', { time: malaysiaClock(Date.parse(loadedAt)) })}
+      text={t('ride.list.stale', { time: localClock(Date.parse(loadedAt)) })}
       action={{ label: t('ride.list.retry'), onPress: onRetry, testID: 'ride-list-retry', busy }}
       testID="ride-list-stale"
     />

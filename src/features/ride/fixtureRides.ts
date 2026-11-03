@@ -1,7 +1,7 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 import type { CurrencyCode } from '@/lib/money';
+import { addDays, localDayKey, localTimeOn } from '@/lib/deviceClock';
 
-import { malaysiaDayKey, malaysiaTime } from './rideClock';
 import type { MyRide, RideListData, RidePlace, RideSummary, ShortNameRow } from './types';
 
 export const RIDE_LISTS = ['demo', 'empty', 'joinable', 'history', 'settled'] as const;
@@ -42,10 +42,8 @@ const place = (label: string, short: string, kind: RidePlace['kind'] = null): Ri
 type Seed = Partial<RideSummary> & Pick<RideSummary, 'id' | 'start' | 'dest' | 'departAt'>;
 
 function ride(seed: Seed, currency: CurrencyCode = 'MYR', estimateMinor: number | null = null) {
-  const departs = Date.parse(seed.departAt);
   return {
     revisedAt: null,
-    day: malaysiaDayKey(departs),
     status: 'open',
     seats: 4,
     taken: 1,
@@ -66,7 +64,7 @@ const longText = (seed: string, count: number) =>
   [...seed.repeat(Math.ceil(count / [...seed].length))].slice(0, count).join('');
 
 function at(now: number, dayOffset: number, hours: number, minutes: number) {
-  return malaysiaTime(malaysiaDayKey(now + dayOffset * DAY), hours, minutes);
+  return localTimeOn(addDays(localDayKey(now), dayOffset), hours, minutes);
 }
 
 function demo(now: number, variant: FixtureVariant): RideListData {

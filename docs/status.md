@@ -15,6 +15,7 @@ Updated: 2026-11-03.
 | Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                      |
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                           |
 | Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, #54 reminders and the event outbox |
+| Device time zone (234) | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times in the system time zone; server rules stay in Malaysia time                            |
 
 ## In progress
 
@@ -34,8 +35,6 @@ Updated: 2026-11-03.
 
 ## Owner decisions pending
 
-- 234: rides use Malaysia time (#55) while bounties use the device time zone. ★A: the whole app uses Malaysia time.
-  B: keep bounties on the device time zone.
 - Carpool defaults marked "★ by default, owner may veto" in the carpool spec are open to veto at the walkthrough.
 
 ## Resuming on another machine

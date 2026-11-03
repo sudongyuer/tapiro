@@ -13,7 +13,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { blockedReason } from './blockedReason';
 import { costLine } from './cost';
 import type { StatusState } from './postFlow';
-import { malaysiaDate } from './timeText';
+import { dateText } from './timeText';
 import type { CostBase, PostStatus } from './types';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -128,7 +128,7 @@ export function CostSection({ state, onRetry }: { state: StatusState; onRetry: (
           icon="circle.slash"
           title={t('bounty.post.noBalance.title')}
           body={`${t('bounty.post.noBalance.body', {
-            date: malaysiaDate(status.nextFreeAt, language),
+            date: dateText(status.nextFreeAt, language),
           })}\n${t('bounty.post.noBalance.earn')}`}
           testID="bounty-post-no-balance"
         />

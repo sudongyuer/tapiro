@@ -12,8 +12,8 @@ import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../board/malaysiaClock';
 import { detailCopy } from './detailCopy';
 import { detailNotice } from '../apply/applyState';
 import { useWithdraw } from '../apply/useApply';
@@ -100,7 +100,9 @@ export function BountyDetailScreen({
               <NoticeCard
                 tone="warning"
                 icon="exclamationmark.triangle.fill"
-                title={t('bounty.detail.refreshFailed', { time: malaysiaClock(state.loadedAt) })}
+                title={t('bounty.detail.refreshFailed', {
+                  time: localClock(Date.parse(state.loadedAt)),
+                })}
                 action={retryAction}
                 testID="bounty-detail-stale"
               />

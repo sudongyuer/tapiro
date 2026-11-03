@@ -24,9 +24,8 @@ import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock, localDayKey, localTimeOn } from '@/lib/deviceClock';
 
-import { malaysiaPicker } from '../malaysiaPicker';
-import { malaysiaClock, malaysiaDayKey, malaysiaTime } from '../rideClock';
 import { BAGS_MAX, type RideDraft } from './draft';
 import { codePoints, NOTE_MAX } from './validate';
 
@@ -69,7 +68,7 @@ function AddRow({
 
 function clockDate(clock: string) {
   const [hours, minutes] = clock.split(':').map(Number);
-  return new Date(malaysiaTime(malaysiaDayKey(Date.now()), hours, minutes));
+  return new Date(localTimeOn(localDayKey(Date.now()), hours, minutes));
 }
 
 function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
@@ -98,13 +97,9 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
           <DatePicker
             selection={clockDate(draft.flightClock)}
             displayedComponents={['hourAndMinute']}
-            onDateChange={(date) => onEdit({ flightClock: malaysiaClock(date.getTime()) })}
+            onDateChange={(date) => onEdit({ flightClock: localClock(date.getTime()) })}
             testID="ride-form-flight"
-            modifiers={[
-              labelsHidden(),
-              malaysiaPicker,
-              accessibilityLabel(t('ride.create.form.flight')),
-            ]}
+            modifiers={[labelsHidden(), accessibilityLabel(t('ride.create.form.flight'))]}
           />
         </HStack>
       ) : (

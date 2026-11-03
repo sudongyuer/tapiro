@@ -13,7 +13,6 @@ function ride(patch: Partial<RideSummary> = {}): RideSummary {
     dest: { label: 'YC Residence', short: 'YC', kind: null },
     departAt: new Date(NOW + 3 * 60 * MINUTE).toISOString(),
     revisedAt: null,
-    day: '2026-11-02',
     status: 'open',
     seats: 4,
     taken: 1,

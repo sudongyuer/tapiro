@@ -32,7 +32,7 @@ MILESTONE_LOCALES = ['zh-Hans', 'en']
 LANGUAGE_ORDER = ['zh-Hans', 'en', 'ms']
 
 
-DECLARED = ('DEPS', 'SCENE', 'LOCALES', 'ARGS', 'BUDGET')
+DECLARED = ('DEPS', 'SCENE', 'LOCALES', 'ARGS', 'BUDGET', 'TIME_ZONE')
 STRING_LISTS = ('DEPS', 'LOCALES', 'ARGS')
 
 
@@ -51,6 +51,8 @@ def parse_declarations(source):
                 raise ValueError(f'{name} must be a literal the runner can read without running the case') from None
             if name in STRING_LISTS and not (isinstance(value, list) and all(isinstance(v, str) for v in value)):
                 raise ValueError(f'{name} must be a list of strings')
+            if name == 'TIME_ZONE' and not isinstance(value, str):
+                raise ValueError('TIME_ZONE must be a zone name string')
             values[name] = value
     return values
 

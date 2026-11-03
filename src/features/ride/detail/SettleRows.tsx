@@ -8,8 +8,8 @@ import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { displayName } from './Avatars';
 import { owedDays } from './settleModel';
 import type { RideDetail, SettleRider } from './types';
@@ -62,12 +62,12 @@ export function OrganiserRows({
         const sub =
           rider.paid === 'settled'
             ? t('rideSettle.rows.received', {
-                time: rider.settledAt ? malaysiaClock(Date.parse(rider.settledAt)) : '',
+                time: rider.settledAt ? localClock(Date.parse(rider.settledAt)) : '',
               })
             : rider.paid === 'paid'
               ? `${t('rideSettle.rows.saidPaid', {
                   method: methodName(rider.methodType, t),
-                  time: rider.markedPaidAt ? malaysiaClock(Date.parse(rider.markedPaidAt)) : '',
+                  time: rider.markedPaidAt ? localClock(Date.parse(rider.markedPaidAt)) : '',
                 })}${rider.hasProof ? t('rideSettle.rows.proof') : ''}`
               : days > 0
                 ? t('rideSettle.rows.dueDays', { count: days })

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { createInstance } from 'i18next';
 
 import { resources } from '@/lib/i18n/resources';
+import { inTimeZone } from '@/lib/inTimeZone';
 
 import {
   cancelSheetCopy,
@@ -47,12 +48,17 @@ describe('cancel sheet copy (ruling 5)', () => {
 
   test('a used waiver is counted and says when it comes back', () => {
     const preview: CancelPreview = { offender: 'self', waiverAvailable: false, waiverBackAt: BACK };
-    expect(cancelSheetCopy(preview, 'helper', '小林', zh).message).toBe(
-      '小林已经选了你，现在退出会记一次放鸽子（60 天豁免已经用过，11月18日 恢复）。',
-    );
-    expect(cancelSheetCopy(preview, 'poster', 'Aiman', copyFor('en')).message).toBe(
-      'You already chose Aiman, so cancelling now records a no-show (your 60-day waiver is used; it comes back on November 18).',
-    );
+    inTimeZone('Asia/Kuala_Lumpur', () => {
+      expect(cancelSheetCopy(preview, 'helper', '小林', zh).message).toBe(
+        '小林已经选了你，现在退出会记一次放鸽子（60 天豁免已经用过，11月18日 恢复）。',
+      );
+      expect(cancelSheetCopy(preview, 'poster', 'Aiman', copyFor('en')).message).toBe(
+        'You already chose Aiman, so cancelling now records a no-show (your 60-day waiver is used; it comes back on November 18).',
+      );
+    });
+    inTimeZone('America/Los_Angeles', () => {
+      expect(cancelSheetCopy(preview, 'helper', '小林', zh).message).toContain('11月17日 恢复');
+    });
   });
 
   test('a used waiver without a date still says it is counted', () => {

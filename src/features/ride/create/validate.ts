@@ -1,4 +1,5 @@
 import { validShortName } from '@/features/place/shortName';
+import { addDays, localDayKey, localTimeOn } from '@/lib/deviceClock';
 import {
   CURRENCIES,
   POST_LIMITS,
@@ -7,14 +8,12 @@ import {
   type Money,
 } from '@/lib/money';
 
-import { malaysiaDayKey, malaysiaTime } from '../rideClock';
 import type { PublishRideArgs } from '../types';
 import { BAGS_MAX, SEATS, type RideDraft } from './draft';
 
 export const LABEL_MAX = 80;
 export const NOTE_MAX = 140;
 export const DEPART_AHEAD_MS = 30 * 86_400_000;
-const DAY_MS = 86_400_000;
 
 export const RIDE_DRAFT_ERRORS = [
   'startEmpty',
@@ -52,8 +51,11 @@ export function estimateLimits(currency: CurrencyCode) {
 export function flightTime(departAt: string, clock: string): string {
   const [hours, minutes] = clock.split(':').map(Number);
   const departs = Date.parse(departAt);
-  const sameDay = malaysiaTime(malaysiaDayKey(departs), hours, minutes);
-  return new Date(sameDay > departs ? sameDay : sameDay + DAY_MS).toISOString();
+  const day = localDayKey(departs);
+  const sameDay = localTimeOn(day, hours, minutes);
+  return new Date(
+    sameDay > departs ? sameDay : localTimeOn(addDays(day, 1), hours, minutes),
+  ).toISOString();
 }
 
 export type CheckedDraft =

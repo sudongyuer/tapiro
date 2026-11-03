@@ -6,8 +6,8 @@ import { nameInitial } from '@/lib/nameInitial';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { activeMembers, arrival, emptySeats, type Arrival } from './detailModel';
 import type { RideDetail, RideMember } from './types';
 
@@ -104,10 +104,10 @@ export function SeatRow({ ride, viewerId }: { ride: RideDetail; viewerId: string
 function stateText(state: Arrival, t: ReturnType<typeof useI18n>['t']) {
   switch (state.kind) {
     case 'arrived':
-      return malaysiaClock(state.at);
+      return localClock(state.at);
     case 'late':
       return state.passed
-        ? t('ride.detail.arrival.said', { time: malaysiaClock(state.until) })
+        ? t('ride.detail.arrival.said', { time: localClock(state.until) })
         : t('ride.detail.arrival.late', { count: state.minutes });
     default:
       return t('ride.detail.arrival.waiting');

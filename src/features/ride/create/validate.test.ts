@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { inTimeZone } from '@/lib/inTimeZone';
+
 import { emptyDraft, type RideDraft } from './draft';
 import { checkRideDraft, flightTime, parseEstimate } from './validate';
 
@@ -24,17 +26,19 @@ function draft(patch: Partial<RideDraft> = {}): RideDraft {
 
 describe('ride draft', () => {
   test('a filled draft becomes publish_ride arguments', () => {
-    const checked = checkRideDraft(
-      draft({
-        estimateText: '76',
-        airportOpen: true,
-        flightClock: '09:10',
-        largeBags: 2,
-        noteOpen: true,
-        note: '  大堂门口  ',
-        splitMode: 'grab',
-      }),
-      NOW,
+    const checked = inTimeZone('Asia/Kuala_Lumpur', () =>
+      checkRideDraft(
+        draft({
+          estimateText: '76',
+          airportOpen: true,
+          flightClock: '09:10',
+          largeBags: 2,
+          noteOpen: true,
+          note: '  大堂门口  ',
+          splitMode: 'grab',
+        }),
+        NOW,
+      ),
     );
     expect(checked.ok && checked.args).toMatchObject({
       start_short: '双威',
@@ -110,7 +114,20 @@ describe('ride draft', () => {
   });
 
   test('a flight clock earlier than the departure is the next day', () => {
-    expect(flightTime('2026-11-02T22:30:00.000Z', '09:10')).toBe('2026-11-03T01:10:00.000Z');
-    expect(flightTime('2026-11-03T01:00:00.000Z', '06:00')).toBe('2026-11-03T22:00:00.000Z');
+    inTimeZone('Asia/Kuala_Lumpur', () => {
+      expect(flightTime('2026-11-02T22:30:00.000Z', '09:10')).toBe('2026-11-03T01:10:00.000Z');
+      expect(flightTime('2026-11-03T01:00:00.000Z', '06:00')).toBe('2026-11-03T22:00:00.000Z');
+    });
+  });
+
+  test('the flight clock is read in the device zone', () => {
+    inTimeZone('Europe/London', () => {
+      expect(flightTime('2026-11-02T22:30:00.000Z', '09:10')).toBe('2026-11-03T09:10:00.000Z');
+      expect(flightTime('2026-11-02T10:30:00.000Z', '09:10')).toBe('2026-11-03T09:10:00.000Z');
+      expect(flightTime('2026-11-02T08:30:00.000Z', '09:10')).toBe('2026-11-02T09:10:00.000Z');
+    });
+    inTimeZone('America/Los_Angeles', () => {
+      expect(flightTime('2026-10-31T20:00:00.000Z', '06:00')).toBe('2026-11-01T14:00:00.000Z');
+    });
   });
 });

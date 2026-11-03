@@ -14,8 +14,8 @@ import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
 import { vars } from '@/ui/theme/tokens';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from '../rideClock';
 import { departsAt } from '../rideTimes';
 import { useNow } from '../useNow';
 import { displayName } from './Avatars';
@@ -79,7 +79,7 @@ export function RideDetailScreen({
         .filter((m) => !m.organiser && m.arrivedAt)
         .map((m) => displayName(m, userId, t))
     : [];
-  const departTime = ride ? malaysiaClock(departsAt(ride)) : '';
+  const departTime = ride ? localClock(departsAt(ride)) : '';
   const departLine =
     arrivedNames.length > 0
       ? t('ride.detail.meetup.departLine', {
@@ -148,7 +148,7 @@ export function RideDetailScreen({
         {stale && !meetup && load.kind === 'ready' ? (
           <InlineState
             tone="warning"
-            text={t('ride.detail.stale', { time: malaysiaClock(load.loadedAt) })}
+            text={t('ride.detail.stale', { time: localClock(load.loadedAt) })}
             action={{
               label: t('ride.detail.retry'),
               onPress: () => void store.load(),

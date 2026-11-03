@@ -1,12 +1,12 @@
 """The rider the next day at 09:10, still owing (216 A). The ticket status reads 欠款 · 昨天到的 and leads with
 「RM 24.70 还欠小林」 with the cell 已欠 1 天; a warning card says what Tapiro reminds and when publishing pauses. 阿明's row
 reads ✓ 已结清 and yours 还没付; the pay button stays. The 24 h reminder time has passed before the app opened, so only the
-72 h one is scheduled, and the card names its time (step 7)."""
+72 h one is scheduled, and the card names its time in the device zone (step 7, 234), run in London."""
 import json
 import re
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from choose import defaults  # noqa: E402
@@ -16,6 +16,7 @@ DEPS = ['src/features/ride/', 'src/lib/i18n/locales/rideSettle/', 'src/lib/notif
 SCENE = 'ride-detail'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 180
+TIME_ZONE = 'Europe/London'
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'owing']
 SELF = '00000000-0000-4000-8000-000000000001'
 MONEY = r'RM\s?'
@@ -35,7 +36,7 @@ def pay_reminders():
 
 
 def clock_of(notice):
-    return datetime.fromtimestamp(notice['at'] / 1000, timezone(timedelta(hours=8))).strftime('%H:%M')
+    return datetime.fromtimestamp(notice['at'] / 1000).strftime('%H:%M')
 
 
 # The fixture places the split 25 h 44 min before each load, so a reload moves the 72 h reminder; read both together.

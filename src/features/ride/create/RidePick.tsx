@@ -9,8 +9,8 @@ import { AppText } from '@/ui/AppText';
 import { PressDim } from '@/ui/PressDim';
 import { token, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { localClock, localDayKey } from '@/lib/deviceClock';
 
-import { malaysiaClock, malaysiaDayKey } from '../rideClock';
 import { recentRoutes, rideDraftStore } from '../services';
 import { useNow } from '../useNow';
 import { dayText } from '../ticketView';
@@ -79,7 +79,7 @@ export function RidePick({
                 });
                 const at = Date.parse(route.at);
                 const meta = t('ride.create.pick.recentMeta', {
-                  date: `${dayText(malaysiaDayKey(at), now, t, language)} ${malaysiaClock(at)}`,
+                  date: `${dayText(localDayKey(at), now, t, language)} ${localClock(at)}`,
                   count: route.seats,
                 });
                 return (

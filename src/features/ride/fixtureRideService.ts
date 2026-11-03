@@ -7,7 +7,6 @@ import {
   RIDE_LISTS,
   type RideListFixture,
 } from './fixtureRides';
-import { malaysiaDayKey } from './rideClock';
 import type { MyRide, PublishRideArgs, RidePostStatus, RideService } from './types';
 
 export const RIDE_FAILS = ['none', 'first', 'refresh'] as const;
@@ -63,7 +62,6 @@ function publishedRide(args: PublishRideArgs): MyRide {
     dest: { label: args.dest_label, short: args.dest_short, kind: null },
     departAt: new Date(departs).toISOString(),
     revisedAt: null,
-    day: malaysiaDayKey(departs),
     status: 'open',
     seats: args.seats,
     taken: 1,

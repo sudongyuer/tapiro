@@ -3,8 +3,8 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
 import { vars } from '@/ui/theme/tokens';
+import { localClock } from '@/lib/deviceClock';
 
-import { malaysiaClock } from './malaysiaClock';
 import type { BoardFilter, BoardState } from './types';
 
 type Ready = Extract<BoardState, { kind: 'ready' }>;
@@ -87,7 +87,7 @@ export function BoardStale({
   return (
     <InlineState
       tone="warning"
-      text={t('bounty.board.state.stale', { time: malaysiaClock(loadedAt) })}
+      text={t('bounty.board.state.stale', { time: localClock(Date.parse(loadedAt)) })}
       action={{
         label: t('bounty.board.state.retry'),
         onPress: onRetry,
