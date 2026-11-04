@@ -13,6 +13,8 @@ const en: Translation = {
   account: {
     signIn: {
       google: 'Sign in with Google',
+      testAccounts: 'Test accounts (local development only)',
+      testAccountAs: 'Sign in as {{name}}',
       error: {
         notConfigured: 'Sign-in isn’t set up yet.',
         cancelled: 'Sign-in cancelled.',

@@ -56,6 +56,9 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   `.env` files, or private service configuration.
 - Auth uses native ID tokens (`expo-apple-authentication`, Google Sign-In) with
   `signInWithIdToken`; no web OAuth. Reason: avoids Apple client-secret rotation.
+  Exception: a `__DEV__` build whose Supabase URL is a loopback host may sign in with email and password as the
+  seeded test accounts (`bun run db:test-accounts`); release builds and verify mode never show them. Reason: the owner
+  plays two-phone flows without a paid Apple account (owner, 2026-11-04).
 - Before destructive operations (revert, reset, delete, force-push), inspect the working tree
   and ask for confirmation.
 
