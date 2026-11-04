@@ -61,6 +61,25 @@ app treats a bounty- or ride-only answer as blocked (it lists neither yet). The 
 the same rules, cancel the user's open rides nobody joined and withdraw their requests. A failed check answers 500
 and deletes nothing.
 
+## Test accounts
+
+Apple and Google sign-in need a paid developer account, so a development build connected to the local stack shows
+「测试账号」 buttons on the sign-in screen. They appear only when `__DEV__` is true, verify mode is off, and
+`EXPO_PUBLIC_SUPABASE_URL` is a loopback host (`testAccountsEnabled` in `src/features/account/testAccounts.ts`).
+
+- `bun run db:test-accounts` applies `dev/test-accounts.sql` to the local database (it refuses a non-local DB URL;
+  `SUPABASE_LOCAL_DB_URL` overrides `supabase status`). It is idempotent and not part of `seed.sql`, so `db reset`,
+  CI and pgTAP never see it; run it again after a reset.
+- Accounts: 小林 `xiaolin@tapiro.test` and 阿明 `aming@tapiro.test`, password `tapiro-dev-only`. Each has an
+  onboarded profile, a DuitNow ID and cash payee method, and the usual grants (5 new-user coins plus 1 for the payee
+  method, on top of 3 free posts a month), enough to publish and join rides and bounties.
+- `bun run dev:two` builds the Debug app into `.dev/DerivedData`, boots two existing iPhone Simulators that are not the
+  runner's `Tapiro Verify` devices (`TAPIRO_DEV_SIMS=<udid>,<udid>` picks them), sets both to Sunway, starts Metro
+  against the local stack when port 8081 is free, and installs and launches the app on both. `--skip-build` reuses
+  the last build. Metro already running on 8081 is reused with whatever environment it was started with.
+- Agents driving the phones with AXe pass `--headless`: while DeviceHub shows a Simulator, AXe taps are dropped.
+  Quitting DeviceHub shuts down every Simulator it shows, the `Tapiro Verify` ones included.
+
 ## Payments
 
 `payments` rows are opened only by server code (`open_payment`, `open_reverse_payment`, service role).

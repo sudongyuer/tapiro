@@ -16,6 +16,7 @@ type Listener = (event: string, session: Session | null) => void;
 function fakeClient({ signInError = null as unknown, invokeError = null as unknown } = {}) {
   let listener: Listener = () => {};
   const signInWithIdToken = mock(async () => ({ error: signInError }));
+  const signInWithPassword = mock(async (_credentials: unknown) => ({ error: signInError }));
   const signOut = mock(async (_options?: unknown) => ({ error: null }));
   const updateUser = mock(async (_attributes: unknown) => ({ data: { user: null }, error: null }));
   const invoke = mock(async () => ({ data: null, error: invokeError }));
@@ -26,13 +27,14 @@ function fakeClient({ signInError = null as unknown, invokeError = null as unkno
         return { data: { subscription: { unsubscribe() {} } } };
       },
       signInWithIdToken,
+      signInWithPassword,
       signOut,
       updateUser,
     },
     functions: { invoke },
   } as unknown as SupabaseClient;
   const emit = (session: Session | null) => listener('SIGNED_IN', session);
-  return { client, emit, signInWithIdToken, signOut, updateUser, invoke };
+  return { client, emit, signInWithIdToken, signInWithPassword, signOut, updateUser, invoke };
 }
 
 const session = {
@@ -111,6 +113,31 @@ describe('supabase auth service', () => {
     };
     await createSupabaseAuthService(client, { apple: named }).signIn('apple');
     expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  test('signs in with an email and password', async () => {
+    const { client, signInWithPassword } = fakeClient();
+    const service = createSupabaseAuthService(client, {});
+    expect(await service.signInWithPassword?.('xiaolin@tapiro.test', 'pw')).toEqual({ ok: true });
+    expect(signInWithPassword).toHaveBeenCalledWith({
+      email: 'xiaolin@tapiro.test',
+      password: 'pw',
+    });
+  });
+
+  test('maps password sign-in failures', async () => {
+    expect(await createSupabaseAuthService(null, {}).signInWithPassword?.('a', 'b')).toEqual({
+      ok: false,
+      reason: 'notConfigured',
+    });
+    const rejected = fakeClient({ signInError: new AuthApiError('bad', 400, undefined) });
+    expect(
+      await createSupabaseAuthService(rejected.client, {}).signInWithPassword?.('a', 'b'),
+    ).toEqual({ ok: false, reason: 'failed' });
+    const offline = fakeClient({ signInError: new AuthRetryableFetchError('offline', 0) });
+    expect(
+      await createSupabaseAuthService(offline.client, {}).signInWithPassword?.('a', 'b'),
+    ).toEqual({ ok: false, reason: 'network' });
   });
 
   test('signs out this device only and never rejects', async () => {
