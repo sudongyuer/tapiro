@@ -22,6 +22,16 @@ assert_touch_target(action, '发起拼车')
 assert add_button(ui) is None, 'the nav-bar ＋ is shown on the empty moment screen'
 items = ui.read()
 assert by_id(items, 'ride-list-failed') is None, 'the empty list is shown as a failure'
+bar = by_id(items, ui.t('shell.tabs.ride'))
+assert bar, 'the 拼车 navigation bar is missing'
+visible_top = bar['frame']['y'] + bar['frame']['height']
+visible_bottom = ui.element('tab-ride')['frame']['y']
+# The sticker is not in the accessibility tree; it sits STICKER_BLOCK above the title (148 pt, --space-5 and --space-3).
+STICKER_BLOCK = 148 + 20 + 12
+top = title['frame']['y'] - STICKER_BLOCK
+bottom = action['frame']['y'] + action['frame']['height']
+offset = (top + bottom) / 2 - (visible_top + visible_bottom) / 2
+assert abs(offset) <= 16, f'the moment is {offset:.0f} pt off the centre between the title bar and the tab bar'
 shot = ui.snap('01-empty')
 f = title['frame']
 ground = shot.rgb(8, f['y'] + f['height'] / 2)
