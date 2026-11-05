@@ -53,8 +53,8 @@ function read(settings: SettingsLike, userId: string): PendingMessage[] {
   }
 }
 
-// onDrop lets the caller delete an entry's image file once the entry leaves the outbox; a delivered image is moved
-// into the image cache first, so dropping it then finds nothing.
+// onDrop lets the caller delete an entry's image file once the entry leaves the outbox; the store moves a delivered
+// image into the image cache before removing its entry, so dropping it then finds nothing.
 export function createOutbox(
   settings: SettingsLike,
   onDrop: (entry: PendingMessage) => void = () => undefined,

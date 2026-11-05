@@ -49,7 +49,9 @@ drawn(shot, f)
 [spinner] = spinners(items)
 assert spinner['frame']['x'] + spinner['frame']['width'] <= f['x'] + 1, 'the spinner is not beside the photo'
 
-[call] = chat_calls(ui, 'send', 1)
+key = bubble['AXUniqueId'][len('chat-bubble-'):]
+# Filtered by this message's client id: the preferences file can still hold the previous launch's calls.
+[call] = [c for c in chat_calls(ui, 'send', 1) if c['clientId'] == key]
 assert call['body'] == '' and call['image'] == f"fixture-chat-bounty/00000000-0000-4000-8000-000000000001/{call['clientId']}.jpg", call
 ui.wait(lambda items: any(b.get('AXLabel') == mine for b in bubbles(items)) and not spinners(items),
         'the photo never turned stored', 20)

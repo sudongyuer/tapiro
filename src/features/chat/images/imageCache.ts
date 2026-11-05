@@ -12,17 +12,19 @@ export function createImageCache(load: (path: string) => Promise<string>) {
     for (const listener of listeners) listener();
   };
 
+  let generation = 0;
+
   function start(path: string) {
+    const at = generation;
     entries.set(path, LOADING);
+    const settle = (next: ImageLoad) => {
+      if (at !== generation) return;
+      entries.set(path, next);
+      emit();
+    };
     load(path).then(
-      (uri) => {
-        entries.set(path, { status: 'ready', uri });
-        emit();
-      },
-      () => {
-        entries.set(path, { status: 'failed' });
-        emit();
-      },
+      (uri) => settle({ status: 'ready', uri }),
+      () => settle({ status: 'failed' }),
     );
   }
 
@@ -46,6 +48,7 @@ export function createImageCache(load: (path: string) => Promise<string>) {
       };
     },
     clear() {
+      generation += 1;
       entries.clear();
       emit();
     },

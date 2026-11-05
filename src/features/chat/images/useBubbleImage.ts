@@ -12,9 +12,10 @@ export function useBubbleImage(image: BubbleImage): ImageLoad & { shown: string 
   const load = useSyncExternalStore(chatImages.subscribe, () =>
     path ? chatImages.peek(path) : null,
   );
+  const known = load !== null;
   useEffect(() => {
-    if (path) chatImages.get(path);
-  }, [path]);
+    if (path && !known) chatImages.get(path);
+  }, [path, known]);
   const current: ImageLoad =
     image.kind === 'local' ? { status: 'ready', uri: outboxUri(image.file) } : (load ?? LOADING);
   // While a just-sent image switches from its outbox file to the cached copy, the last drawn picture stays up

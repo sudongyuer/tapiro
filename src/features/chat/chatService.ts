@@ -27,6 +27,13 @@ const FAILURES: Readonly<Record<string, SendFailure>> = {
   client_id_reused: 'clientIdReused',
 };
 
+const refusedOr = (error: unknown): SendFailure => {
+  const failure = toSendFailure(error);
+  return failure === 'blocked' || failure === 'notMember' || failure === 'notFound'
+    ? failure
+    : 'failed';
+};
+
 export function toSendFailure(error: unknown): SendFailure {
   const message = (error as { message?: unknown } | null)?.message;
   return typeof message === 'string' && Object.hasOwn(FAILURES, message)
@@ -65,14 +72,17 @@ export function createSupabaseChatService(
     },
     async send(threadId, clientId, body, image) {
       try {
-        if (image && !(await upload(image))) return { ok: false, failure: 'failed' };
+        // A refused upload still asks the server: a message stored before a lost answer comes back stored, and a
+        // block or a left thread answers as itself instead of as a retryable failure.
+        const uploaded = image ? await upload(image).catch(() => false) : true;
         const { data, error } = await db().rpc('send_message', {
           thread: threadId,
           client_id: clientId,
           body,
           ...(image ? { image: image.path, width: image.width, height: image.height } : {}),
         });
-        if (error) return { ok: false, failure: toSendFailure(error) };
+        if (error)
+          return { ok: false, failure: uploaded ? toSendFailure(error) : refusedOr(error) };
         return { ok: true, message: toMessage(data) };
       } catch {
         return { ok: false, failure: 'failed' };

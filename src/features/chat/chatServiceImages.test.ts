@@ -66,10 +66,29 @@ describe('supabase chat images', () => {
     expect(calls.some((call) => call.startsWith('rpc send_message'))).toBe(true);
   });
 
-  test('a failed upload is a retryable failure and sends nothing', async () => {
-    const { service, calls } = stub({ statusCode: '500', message: 'storage down' });
-    expect(await service.send('t1', 'c1', '', IMAGE)).toEqual({ ok: false, failure: 'failed' });
-    expect(calls.some((call) => call.startsWith('rpc'))).toBe(false);
+  test('a refused upload still asks the server, so a stored message or a block answers as itself', async () => {
+    const { service, calls } = stub({ statusCode: '403', message: 'row-level security' });
+    expect((await service.send('t1', 'c1', '', IMAGE)).ok).toBe(true);
+    expect(calls.some((call) => call.startsWith('rpc send_message'))).toBe(true);
+    const blocked = createSupabaseChatService(
+      {
+        rpc: async () => ({ data: null, error: { message: 'blocked' } }),
+        storage: { from: () => ({ upload: async () => ({ error: { statusCode: '403' } }) }) },
+      } as unknown as SupabaseClient,
+      { read: async () => new ArrayBuffer(0), cached: () => null, download: async () => '' },
+    );
+    expect(await blocked.send('t1', 'c1', '', IMAGE)).toEqual({ ok: false, failure: 'blocked' });
+  });
+
+  test('a failed upload the server cannot find is a retryable failure', async () => {
+    const failing = createSupabaseChatService(
+      {
+        rpc: async () => ({ data: null, error: { message: 'invalid_message' } }),
+        storage: { from: () => ({ upload: async () => ({ error: { statusCode: '500' } }) }) },
+      } as unknown as SupabaseClient,
+      { read: async () => new ArrayBuffer(0), cached: () => null, download: async () => '' },
+    );
+    expect(await failing.send('t1', 'c1', '', IMAGE)).toEqual({ ok: false, failure: 'failed' });
   });
 
   test('a missing upload answered by the server is retryable', async () => {

@@ -4,15 +4,15 @@ Date: 2026-10-04. Throwaway prototype in a throwaway prototype (not kept).
 
 ## Versions used
 
-| Item | Version | Source |
-|---|---|---|
-| Expo SDK | `expo@57.0.26` (npm `latest` dist-tag = `sdk-57`) | `npm view expo dist-tags` |
-| React Native | 0.86.3 / React 19.2.3 | generated `package.json` |
-| expo-notifications | ~57.0.21 | `npx expo install` |
-| expo-location | ~57.0.20 | `npx expo install` |
-| expo-dev-client | ~57.0.19 | `npx expo install` |
-| Xcode / runtime | Xcode 26.6 (17F113), iOS 26.5 Simulator (iPhone 17 Pro, dedicated device `B79B9585-…`) | `xcodebuild -version` |
-| UI driver | AXe 1.8.0 | `axe --version` |
+| Item               | Version                                                                                | Source                    |
+| ------------------ | -------------------------------------------------------------------------------------- | ------------------------- |
+| Expo SDK           | `expo@57.0.26` (npm `latest` dist-tag = `sdk-57`)                                      | `npm view expo dist-tags` |
+| React Native       | 0.86.3 / React 19.2.3                                                                  | generated `package.json`  |
+| expo-notifications | ~57.0.21                                                                               | `npx expo install`        |
+| expo-location      | ~57.0.20                                                                               | `npx expo install`        |
+| expo-dev-client    | ~57.0.19                                                                               | `npx expo install`        |
+| Xcode / runtime    | Xcode 26.6 (17F113), iOS 26.5 Simulator (iPhone 17 Pro, dedicated device `B79B9585-…`) | `xcodebuild -version`     |
+| UI driver          | AXe 1.8.0                                                                              | `axe --version`           |
 
 ## Questions
 
@@ -38,26 +38,28 @@ Screenshots are in `evidence/2026-10-04-push-location/`.
 
 ### (a) Push
 
-| Step | Result | Evidence |
-|---|---|---|
-| Provisional request (`allowProvisional: true`) | No system prompt. Result: `status=undetermined`, `ios.status=3 (PROVISIONAL)`. **Gotcha:** expo-notifications reports provisional as `status: 'undetermined'` / `granted: false`, so check `ios.status === IosAuthorizationStatus.PROVISIONAL`. | `01-provisional-granted-no-prompt.png`, `09-push-log.png` |
-| Local notification while provisional, app in foreground | The listener fired, but no banner appeared, even though `shouldShowBanner: true` | `02-provisional-local-no-banner.png` |
-| `simctl push` while provisional, app backgrounded | No banner. In Notification Center history the notification showed "Keep receiving notifications from the TapiroProto app?" with **Keep… / Turn Off…** buttons, matching Apple's description | `03-…`, `04-provisional-notification-center.png` |
-| Explicit request after provisional | The system prompt still appeared ("Would Like to Send You Notifications"), so provisional can be upgraded later in context. After Allow: `status=granted`, `ios.status=2` | `05-explicit-prompt-after-provisional.png` |
-| Local notification (TIME_INTERVAL 3 s), foreground | Banner shown and listener fired with `data={"taskId":"local-1"}` | `06-local-delivered-foreground-banner.png` |
-| `getDevicePushTokenAsync()` on Simulator | Returned an APNs device token (`type: ios`, 64 hex chars). It took about 2 s in run 1 and about 30 s in run 2 | `09-push-log.png` |
-| `simctl push`, foreground, custom keys at top level | Banner shown, listener fired, but `content.data === null` | `07-simctl-push-foreground-banner.png`, `09-push-log.png` |
-| `simctl push`, foreground, custom data under a `"body"` key | `content.data = {"status":"completed","taskId":"t-42","event":"status_changed"}` | `09-push-log.png` |
-| `simctl push`, app backgrounded (Settings in front) | System banner shown | `08-simctl-push-background-banner.png` |
+| Step                                                        | Result                                                                                                                                                                                                                                          | Evidence                                                  |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Provisional request (`allowProvisional: true`)              | No system prompt. Result: `status=undetermined`, `ios.status=3 (PROVISIONAL)`. **Gotcha:** expo-notifications reports provisional as `status: 'undetermined'` / `granted: false`, so check `ios.status === IosAuthorizationStatus.PROVISIONAL`. | `01-provisional-granted-no-prompt.png`, `09-push-log.png` |
+| Local notification while provisional, app in foreground     | The listener fired, but no banner appeared, even though `shouldShowBanner: true`                                                                                                                                                                | `02-provisional-local-no-banner.png`                      |
+| `simctl push` while provisional, app backgrounded           | No banner. In Notification Center history the notification showed "Keep receiving notifications from the TapiroProto app?" with **Keep… / Turn Off…** buttons, matching Apple's description                                                     | `03-…`, `04-provisional-notification-center.png`          |
+| Explicit request after provisional                          | The system prompt still appeared ("Would Like to Send You Notifications"), so provisional can be upgraded later in context. After Allow: `status=granted`, `ios.status=2`                                                                       | `05-explicit-prompt-after-provisional.png`                |
+| Local notification (TIME_INTERVAL 3 s), foreground          | Banner shown and listener fired with `data={"taskId":"local-1"}`                                                                                                                                                                                | `06-local-delivered-foreground-banner.png`                |
+| `getDevicePushTokenAsync()` on Simulator                    | Returned an APNs device token (`type: ios`, 64 hex chars). It took about 2 s in run 1 and about 30 s in run 2                                                                                                                                   | `09-push-log.png`                                         |
+| `simctl push`, foreground, custom keys at top level         | Banner shown, listener fired, but `content.data === null`                                                                                                                                                                                       | `07-simctl-push-foreground-banner.png`, `09-push-log.png` |
+| `simctl push`, foreground, custom data under a `"body"` key | `content.data = {"status":"completed","taskId":"t-42","event":"status_changed"}`                                                                                                                                                                | `09-push-log.png`                                         |
+| `simctl push`, app backgrounded (Settings in front)         | System banner shown                                                                                                                                                                                                                             | `08-simctl-push-background-banner.png`                    |
 
 Source check for the `data=null` result: in `node_modules/expo-notifications/ios/ExpoNotifications/Notifications/NotificationRecords.swift:331`, `content.data` comes from `request.content.userInfo["body"]`. The full raw payload is also in `trigger.payload`. If Tapiro sends directly to APNs, it must put its custom data under `body`, or the client must read `trigger.payload`.
 
 Commands:
+
 ```
 xcrun simctl push B79B9585-BE6B-4B7B-99C9-0C4E3B5528B7 payloads/task-status.apns
 xcrun simctl push B79B9585-BE6B-4B7B-99C9-0C4E3B5528B7 payloads/task-status-expo-shape.apns
 xcrun simctl push B79B9585-BE6B-4B7B-99C9-0C4E3B5528B7 payloads/nearby-bg.apns
 ```
+
 `simctl help push`: the payload "must contain an 'aps' key … be 4096 bytes or less. Only application remote push notifications are supported. VoIP, Complication, File Provider, and other types are not supported."
 
 #### Expo Push Service vs direct APNs (primary sources)
@@ -76,19 +78,20 @@ xcrun simctl push B79B9585-BE6B-4B7B-99C9-0C4E3B5528B7 payloads/nearby-bg.apns
 
 ### (b) Location
 
-| Step | Result | Evidence |
-|---|---|---|
-| Prompt with `NSLocationDefaultAccuracyReduced=true` | "Allow "TapiroProto" to use your **approximate** location?" with Allow Once / Allow While Using App / Don't Allow and the purpose string | `10-location-prompt-approximate.png` |
-| Reduced fix at KL (3.1390, 101.6869) | `scope=whenInUse accuracy=reduced`. Position returned: `lat=3.1445 lon=101.6777 acc=4664m`, about 1.2 km from the set point (an earlier run gave 3.1434, 101.6766, also 4664 m) | `11-location-kl-reduced.png` |
-| Prompt with key `false` | "Allow "TapiroProto" to use your location?" | `12-location-prompt-precise.png` |
-| Full fix at KL | `accuracy=full`, `lat=3.1390 lon=101.6869 acc=5m` | `13-location-kl-precise.png` |
-| Generated Info.plist | Only `NSLocationWhenInUseUsageDescription` and `NSLocationDefaultAccuracyReduced`. No Always keys, no `UIBackgroundModes` | `ios/TapiroProto/Info.plist` after prebuild |
+| Step                                                | Result                                                                                                                                                                          | Evidence                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Prompt with `NSLocationDefaultAccuracyReduced=true` | "Allow "TapiroProto" to use your **approximate** location?" with Allow Once / Allow While Using App / Don't Allow and the purpose string                                        | `10-location-prompt-approximate.png`        |
+| Reduced fix at KL (3.1390, 101.6869)                | `scope=whenInUse accuracy=reduced`. Position returned: `lat=3.1445 lon=101.6777 acc=4664m`, about 1.2 km from the set point (an earlier run gave 3.1434, 101.6766, also 4664 m) | `11-location-kl-reduced.png`                |
+| Prompt with key `false`                             | "Allow "TapiroProto" to use your location?"                                                                                                                                     | `12-location-prompt-precise.png`            |
+| Full fix at KL                                      | `accuracy=full`, `lat=3.1390 lon=101.6869 acc=5m`                                                                                                                               | `13-location-kl-precise.png`                |
+| Generated Info.plist                                | Only `NSLocationWhenInUseUsageDescription` and `NSLocationDefaultAccuracyReduced`. No Always keys, no `UIBackgroundModes`                                                       | `ios/TapiroProto/Info.plist` after prebuild |
 
 Commands: `xcrun simctl location <udid> set 3.1390,101.6869`. `simctl location` also supports `start` (waypoints with speed/interval), `run <scenario>` and `clear`. `simctl privacy <udid> grant location <bundle>` can pre-grant, but its help warns that this "can mask bugs".
 
 Plugin source (`node_modules/expo-location/plugin/build/withLocation.js` and `@expo/config-plugins` `ios/Permissions.js`): the plugin **adds Always/AlwaysAndWhenInUse/Motion usage strings by default**, and passing `false` deletes each key. Background mode is added only if `isIosBackgroundLocationEnabled` is true.
 
 Docs:
+
 - expo-location options and defaults (`isIosBackgroundLocationEnabled` defaults to `false`), `ios.accuracy: 'full' | 'reduced'` ("iOS 14+"), and the Accuracy enum (`Balanced` = "within one hundred meters", `Low` = "nearest kilometer", `Lowest` = "nearest three kilometers"). Background location needs the `location` UIBackgroundMode and a dev build. https://docs.expo.dev/versions/v57.0.0/sdk/location/
 - `NSLocationDefaultAccuracyReduced`: "When this key is set to true, all Core Location services … receive service at the reduced-accuracy service level … the location authorization prompt will show a map with an approximate location". The user "can override it any time in Settings". https://developer.apple.com/documentation/bundleresources/information-property-list/nslocationdefaultaccuracyreduced
 - Core Location: "When in Use authorization … is the preferred choice, because it has better privacy and battery life implications." "make authorization requests only when someone engages a part of your app that requires that data." Apple also lists which usage key is required when. https://developer.apple.com/documentation/corelocation/requesting-authorization-to-use-location-services
@@ -111,7 +114,7 @@ Docs:
 
 ## Simulator vs device (be honest)
 
-- `simctl push` injects the payload locally. It does not go through APNs, so it does not test JWT/credentials, `apns-push-type`/priority, throttling, or delivery to a killed app on a real device. The Simulator *can* reach the APNs sandbox with a real token, but that needs a `.p8` key, which was not tested because no credentials were configured.
+- `simctl push` injects the payload locally. It does not go through APNs, so it does not test JWT/credentials, `apns-push-type`/priority, throttling, or delivery to a killed app on a real device. The Simulator _can_ reach the APNs sandbox with a real token, but that needs a `.p8` key, which was not tested because no credentials were configured.
 - The Simulator location prompt showed **no map and no "Precise" toggle**. Apple documents both for devices. The reduced fix (about 1.2 km offset, 4664 m accuracy) is the Simulator's behaviour; device accuracy and offset may differ.
 - The Precise Location toggle in Settings could not be flipped with AXe, so precise mode was tested through a second build with the plist key set to `false`.
 - Token latency varied (2 s vs about 30 s). Expect variance on devices too; never block UI on the token.

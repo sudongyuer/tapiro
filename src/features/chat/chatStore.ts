@@ -246,6 +246,12 @@ export function createChatStore({
       });
       const delivered = deliveredClientIds(merged.messages, outbox.list(userId), userId);
       if (delivered.length > 0) {
+        for (const entry of outbox.list(userId)) {
+          const stored = merged.messages.find(
+            (message) => message.senderId === userId && message.clientId === entry.clientId,
+          );
+          if (entry.image && stored?.image) keepImage(entry.image.file, stored.image.path);
+        }
         outbox.remove(userId, delivered);
         syncPending(userId);
       }

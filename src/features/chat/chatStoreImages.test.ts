@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { createChatStore } from './chatStore';
 import {
   fakeService,
+  info,
   ME,
   memorySettings,
   msg,
@@ -89,5 +90,15 @@ describe('sending an image', () => {
       { clientId: 'new1', image: PHOTO, state: 'failed', failure: 'failed' },
     ]);
     expect(fake.named('send')).toHaveLength(0);
+  });
+
+  test('a reload that finds the image already stored keeps the file in the cache instead of deleting it', async () => {
+    const ctx = setup();
+    ctx.store.openThread('t1');
+    ctx.store.send('t1', '', PHOTO);
+    ctx.queues.readThread[0].resolve({ thread: info(), messages: [stored()], hasMore: false });
+    await settle();
+    expect(ctx.kept).toEqual([['a1.jpg', PATH]]);
+    expect(ctx.outbox.list(ME)).toEqual([]);
   });
 });

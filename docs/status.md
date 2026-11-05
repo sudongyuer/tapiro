@@ -78,7 +78,7 @@ Updated: 2026-11-06.
   available in a ride you left.
 - Chat images (2026-11-06, ★ by default, plan 「Image defaults」): a picked photo sends at once as its own message; 2048
   px JPEG 0.7; 3:1 crop and a 72 pt minimum in the bubble; Quick Look keeps its share button; 复制 copies the picture;
-  unreferenced uploads are swept after one day.
+  unreferenced uploads are swept after seven days.
 - Chat 消息 list (2026-11-06, ★ by default, plan 「消息 list defaults」): one inset grouped card; red unread dot like the
   tab badge; 「我：」 and group 「名字：」 prefixes; empty moment with 「去看看悬赏」; a failed page retries only on 重试; a
   reload asks again for every row shown (up to 100) and replaces the list.

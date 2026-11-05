@@ -36,7 +36,7 @@ export function ImageBubble({
   const load = useBubbleImage(image);
   const size = bubbleImageSize(image.width, image.height);
   const uri = load.status === 'ready' ? load.uri : null;
-  const failed = load.status === 'failed' && !load.shown;
+  const failed = load.status === 'failed';
   const actions: ContextMenuAction[] = [
     ...(uri ? [{ id: 'copy', title: t('chat.thread.copy'), systemImage: 'doc.on.doc' }] : []),
     ...(report
@@ -78,7 +78,7 @@ export function ImageBubble({
         testID={testID}
         style={[styles.frame, { width: size.width, height: size.height }]}
       >
-        {load.shown ? (
+        {load.shown && !failed ? (
           <Image
             source={{ uri: load.shown }}
             style={StyleSheet.absoluteFill}

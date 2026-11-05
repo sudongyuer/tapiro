@@ -282,7 +282,7 @@ revoke all on function public.expire_report_snapshots() from public, anon, authe
 -- past their year, and uploads whose message was never stored. The grace keeps an upload alive while its send is
 -- still in flight; a later retry uploads again. Removed through the Storage API by payment-proof-cleanup, since
 -- storage.objects refuses direct deletes.
-create function public.chat_images_to_delete(grace interval default interval '1 day')
+create function public.chat_images_to_delete(grace interval default interval '7 days')
 returns table (object_name text, thread_id uuid, clears_image boolean)
 language sql
 stable

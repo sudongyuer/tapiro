@@ -27,19 +27,13 @@ export function fitEdge(width: number, height: number, max = IMAGE_MAX_EDGE) {
   };
 }
 
-export async function prepareImage(source: {
-  uri: string;
-  width: number;
-  height: number;
-}): Promise<PendingImage> {
-  const context = ImageManipulator.manipulate(source.uri);
-  if (source.width > 0 && source.height > 0) {
-    const fitted = fitEdge(source.width, source.height);
-    if (fitted.width !== source.width) context.resize(fitted);
-  } else {
-    context.resize({ width: IMAGE_MAX_EDGE, height: null });
-  }
-  const rendered = await context.renderAsync();
+export async function prepareImage(source: { uri: string }): Promise<PendingImage> {
+  const original = await ImageManipulator.manipulate(source.uri).renderAsync();
+  const fitted = fitEdge(original.width, original.height);
+  const rendered =
+    fitted.width === original.width && fitted.height === original.height
+      ? original
+      : await ImageManipulator.manipulate(original).resize(fitted).renderAsync();
   const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: IMAGE_QUALITY });
   const name = `${randomUUID()}.jpg`;
   new File(saved.uri).moveSync(new File(ensure(outboxDir()), name));

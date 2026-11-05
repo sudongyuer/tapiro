@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { Alert, Linking } from 'react-native';
 
-import { prepareImage } from '../images/imageFiles';
+import { dropOutboxImage, prepareImage } from '../images/imageFiles';
 import { imageSource } from '../images/imageSource';
 import { chatStore } from '../services';
 import type { ImageFrom } from './AttachMenu';
@@ -20,7 +20,9 @@ export async function pickAndSend(threadId: string, from: ImageFrom, t: TFunctio
   if (outcome.kind !== 'picked') return null;
   try {
     const image = await prepareImage(outcome.image);
-    return chatStore.send(threadId, '', image);
+    const sent = chatStore.send(threadId, '', image);
+    if (sent === null) dropOutboxImage(image.file);
+    return sent;
   } catch {
     Alert.alert(t('chat.thread.prepareFailed'));
     return null;

@@ -16,6 +16,7 @@
 ## Global constraints
 
 - <Style rules, e.g. "zero comments unless explaining a workaround or a non-obvious invariant">
+
 - <No new dependencies unless listed here: …>
 - <File size limits: 500 lines per file, 300 per component>
 - <Platform rules, e.g. "no Android", "never disable code signing">
@@ -24,8 +25,8 @@
 
 ## File structure
 
-| Action | Path | Responsibility |
-| --- | --- | --- |
+| Action | Path     | Responsibility |
+| ------ | -------- | -------------- |
 | Create | `<path>` | <what it owns> |
 | Modify | `<path>` | <what changes> |
 
