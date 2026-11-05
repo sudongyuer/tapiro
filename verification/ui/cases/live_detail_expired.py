@@ -20,7 +20,7 @@ BOUNTY = 'fixture-bounty-01'
 OTHER = 'bounty.expired:fixture-bounty-other'
 MINE = f'bounty.expired:{BOUNTY}'
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyDetail', 'expiresLive',
-        '-uiVerifyLive', f'40000:{OTHER},50000:{MINE}']
+        '-uiVerifyLive', '40000:bounty.expired:fixture-bounty-other,50000:bounty.expired:fixture-bounty-01']
 CARD = f'bounty-card-{BOUNTY}'
 LOADS = 'uiVerifyDetailLoads'
 RUN = new_run()

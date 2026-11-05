@@ -31,6 +31,7 @@ overturned: 0
 | 3   | Live-reloading the detail alone would not have changed what an applicant sees: a pending application on a closed bounty still rendered 已申请 | hidden UI dependency | Code: `detailAction` returns `closed` for a pending application on a bounty that is not open; unit test |
 | 4   | `rides_schema.test.sql` test 39 fails on the local database seeded by `db:test-accounts` (it counts every `ride_events` row) | test assumes an empty database | Listed, not changed here: CI runs on a fresh database; the test could count only its own fixtures |
 | 5   | The spec checker rejected `## Implementation Record (2026-11-05, milestone and walkthrough)` | heading format | None needed: the checker already catches it (`check-specs.mjs` RECORD_HEADING) |
+| 6   | CI failed: the new case built `ARGS` with an f-string, and the runner reads `ARGS` as a literal | ran the runner's unit tests only in CI | Check exists (`test_affected`); run `python3 -m unittest test_affected` in `verification/ui` locally whenever a case is added |
 
 ## Review findings
 
