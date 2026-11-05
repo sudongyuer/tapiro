@@ -33,7 +33,7 @@ Updated: 2026-11-06.
   hidden in a thread, and `chat.*` taps open the thread. Task 6, report and block, is built: the 举报 sheet (reasons,
   note, then offer to block), the thread ⋯ menu (看详情 / 举报 / 屏蔽, members by name in ride groups), the blocked footer
   with 解除, 「消息发不出去」 on the blocked side, folded messages from blocked ride members
-  (`20261106000200_chat_block_state.sql`). Next: images (Task 5b), then Tasks 7–8.
+  (`20261106000200_chat_block_state.sql`). Task 5b, images, is built: the ＋ menu with 照片 and 拍照, photos re-encoded to JPEG 2048 px and kept with the outbox entry until stored, image bubbles at the photo's shape, the system Quick Look viewer, a private `chat-images` bucket readable by thread members, snapshot paths cleared at one year and unreferenced objects swept daily (`20261106000300_chat_images.sql`). Next: Tasks 7–8.
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
   still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
   `ride.remind.*` device checks wait for TestFlight.
@@ -76,6 +76,9 @@ Updated: 2026-11-06.
   block after a report is the only confirmation; ride groups list members by name under 举报成员 / 屏蔽成员 / 解除屏蔽;
   解除 asks first; the report note is not kept across restarts; 「消息发不出去」 under every refused send; 举报 stays
   available in a ride you left.
+- Chat images (2026-11-06, ★ by default, plan 「Image defaults」): a picked photo sends at once as its own message; 2048
+  px JPEG 0.7; 3:1 crop and a 72 pt minimum in the bubble; Quick Look keeps its share button; 复制 copies the picture;
+  unreferenced uploads are swept after seven days.
 - Chat 消息 list (2026-11-06, ★ by default, plan 「消息 list defaults」): one inset grouped card; red unread dot like the
   tab badge; 「我：」 and group 「名字：」 prefixes; empty moment with 「去看看悬赏」; a failed page retries only on 重试; a
   reload asks again for every row shown (up to 100) and replaces the list.

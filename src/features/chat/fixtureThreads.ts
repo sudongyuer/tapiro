@@ -2,6 +2,7 @@ import type { FixtureVariant } from '@/lib/fixtureVariant';
 
 import {
   MESSAGE_MAX,
+  type ChatImage,
   type ChatMember,
   type ChatMessage,
   type ChatSubject,
@@ -37,7 +38,22 @@ const WORST_FROM = '谷中城北庭正门口';
 const WORST_TO = '吉隆坡第二机场站';
 const WORST_CROWD = 119;
 
-type Line = { from: string; body: string; minutesAgo: number };
+export const FIXTURE_IMAGES = {
+  photo: [1536, 2048],
+  landscape: [2048, 1536],
+  wide: [2048, 400],
+  tall: [410, 2048],
+  tiny: [24, 24],
+} as const;
+export type FixtureImageKind = keyof typeof FIXTURE_IMAGES;
+
+type Line = { from: string; body: string; minutesAgo: number; image?: FixtureImageKind };
+
+const imageOf = (kind: FixtureImageKind | undefined): ChatImage | null => {
+  if (!kind) return null;
+  const [width, height] = FIXTURE_IMAGES[kind];
+  return { path: `fixture/${kind}.jpg`, width, height };
+};
 
 type Item =
   | Omit<Extract<ChatSubject, { kind: 'bounty' }>, 'kind' | 'status'>
@@ -76,6 +92,7 @@ function thread(
       senderId: line.from,
       clientId: `${id}-c${index + 1}`,
       body: line.body,
+      image: imageOf(line.image),
       createdAt: at(line.minutesAgo),
     }))
     .reverse();
@@ -99,7 +116,8 @@ function thread(
 
 const ME = FIXTURE_CHAT_USER_ID;
 
-function demoThreads(now: Date): FixtureThread[] {
+function demoThreads(now: Date, images: boolean): FixtureThread[] {
+  const photo: Line[] = images ? [{ from: JIE.id, body: '', minutesAgo: 1, image: 'photo' }] : [];
   return [
     thread(
       'fixture-chat-bounty',
@@ -109,6 +127,7 @@ function demoThreads(now: Date): FixtureThread[] {
         { from: JIE.id, body: '我到楼下了，快递放哪里？', minutesAgo: 12 },
         { from: ME, body: '放门口的鞋柜上就好，谢谢！', minutesAgo: 10 },
         { from: JIE.id, body: '好的，放好了，拍了照片给你', minutesAgo: 2 },
+        ...photo,
       ],
       now,
       { mine: 10, peer: 10 },
@@ -136,7 +155,14 @@ function demoThreads(now: Date): FixtureThread[] {
   ];
 }
 
-function worstThreads(now: Date): FixtureThread[] {
+const WORST_IMAGES: Line[] = [
+  { from: WORST.id, body: '', minutesAgo: 0.8, image: 'tall' },
+  { from: ME, body: '', minutesAgo: 0.6, image: 'wide' },
+  { from: WORST.id, body: '', minutesAgo: 0.4, image: 'tiny' },
+  { from: ME, body: '', minutesAgo: 0.2, image: 'landscape' },
+];
+
+function worstThreads(now: Date, images: boolean): FixtureThread[] {
   const long = '这条消息很长，'.repeat(400).slice(0, MESSAGE_MAX);
   const head = thread(
     'fixture-chat-worst',
@@ -145,6 +171,7 @@ function worstThreads(now: Date): FixtureThread[] {
     [
       { from: WORST.id, body: long, minutesAgo: 3 },
       { from: ME, body: long, minutesAgo: 1 },
+      ...(images ? WORST_IMAGES : []),
     ],
     now,
     { mine: 3, peer: 1 },
@@ -207,14 +234,19 @@ function longThread(now: Date): FixtureThread {
   });
 }
 
-export function fixtureThreads(variant: FixtureVariant, now: Date, long = false): FixtureThread[] {
-  const threads = variantThreads(variant, now);
+export function fixtureThreads(
+  variant: FixtureVariant,
+  now: Date,
+  long = false,
+  images = false,
+): FixtureThread[] {
+  const threads = variantThreads(variant, now, images);
   return long ? [longThread(now), ...threads] : threads;
 }
 
-function variantThreads(variant: FixtureVariant, now: Date): FixtureThread[] {
+function variantThreads(variant: FixtureVariant, now: Date, images: boolean): FixtureThread[] {
   if (variant === 'empty') return [];
-  if (variant === 'one') return demoThreads(now).slice(0, 1);
-  if (variant === 'worst') return worstThreads(now);
-  return demoThreads(now);
+  if (variant === 'one') return demoThreads(now, images).slice(0, 1);
+  if (variant === 'worst') return worstThreads(now, images);
+  return demoThreads(now, images);
 }

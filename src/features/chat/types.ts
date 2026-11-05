@@ -25,12 +25,18 @@ export type ChatMember = {
   organiser: boolean;
 };
 
+export const IMAGE_MAX_EDGE = 2048;
+export const IMAGE_QUALITY = 0.7;
+
+export type ChatImage = { path: string; width: number; height: number };
+
 export type ChatMessage = {
   id: string;
   threadId: string;
   senderId: string;
   clientId: string;
   body: string;
+  image: ChatImage | null;
   createdAt: string;
 };
 
@@ -106,10 +112,22 @@ export type SendResult = { ok: true; message: ChatMessage } | { ok: false; failu
 export type ReportTarget = { userId: string; messageId?: string | null };
 export type ReportInput = ReportTarget & { reason: ReportReason | null; note: string | null };
 
+export type PendingImage = { file: string; width: number; height: number };
+export type OutgoingImage = PendingImage & { path: string };
+
+export const imagePath = (threadId: string, senderId: string, clientId: string) =>
+  `${threadId}/${senderId}/${clientId}.jpg`;
+
 export type ChatService = {
   listThreads(before: string | null, count?: number): Promise<ThreadPage>;
   readThread(threadId: string, before: string | null): Promise<ThreadRead>;
-  send(threadId: string, clientId: string, body: string): Promise<SendResult>;
+  send(
+    threadId: string,
+    clientId: string,
+    body: string,
+    image: OutgoingImage | null,
+  ): Promise<SendResult>;
+  imageFile(path: string): Promise<string>;
   markRead(threadId: string, messageId: string): Promise<string>;
   unreadCount(): Promise<number>;
   report(input: ReportInput): Promise<string>;
@@ -121,6 +139,7 @@ export type PendingMessage = {
   clientId: string;
   threadId: string;
   body: string;
+  image: PendingImage | null;
   writtenAt: string;
   state: PendingState;
   failure: SendFailure | null;

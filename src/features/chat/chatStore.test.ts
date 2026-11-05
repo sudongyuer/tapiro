@@ -19,7 +19,7 @@ describe('sending', () => {
     expect(ctx.outbox.list(ME)).toMatchObject([
       { clientId: 'new1', body: '你好', state: 'sending' },
     ]);
-    expect(ctx.named('send')[0].args).toEqual(['t1', 'new1', '你好']);
+    expect(ctx.named('send')[0].args).toEqual(['t1', 'new1', '你好', null]);
     expect(ctx.store.getSnapshot().pending).toMatchObject([{ state: 'sending' }]);
   });
 
@@ -67,8 +67,8 @@ describe('sending', () => {
     expect(ctx.store.retry('new1')).toBe(true);
     expect(ctx.store.retry('new1')).toBe(false);
     expect(ctx.named('send').map((entry) => entry.args)).toEqual([
-      ['t1', 'new1', '到了'],
-      ['t1', 'new1', '到了'],
+      ['t1', 'new1', '到了', null],
+      ['t1', 'new1', '到了', null],
     ]);
     expect(ctx.store.getSnapshot().pending).toMatchObject([{ state: 'sending' }]);
   });

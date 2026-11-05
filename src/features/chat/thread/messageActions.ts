@@ -2,12 +2,19 @@ import * as Clipboard from 'expo-clipboard';
 import type { TFunction } from 'i18next';
 import { Alert } from 'react-native';
 
+import { copyImageFile } from '../images/imageFiles';
 import { chatStore } from '../services';
 import type { PendingMessage } from '../types';
 import { canRetry } from './threadView';
 
 export function copyMessage(body: string) {
   void Clipboard.setStringAsync(body);
+}
+
+export function copyImage(uri: string) {
+  void copyImageFile(uri)
+    .then((base64) => Clipboard.setImageAsync(base64))
+    .catch(() => undefined);
 }
 
 export function askResend(pending: PendingMessage, t: TFunction) {

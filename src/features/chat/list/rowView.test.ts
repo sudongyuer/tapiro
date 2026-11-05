@@ -45,6 +45,7 @@ const message = (senderId: string, body: string, createdAt = at(6, 12, 2)) => ({
   senderId,
   clientId: 'c1',
   body,
+  image: null,
   createdAt,
 });
 
@@ -74,6 +75,25 @@ describe('a 消息 row', () => {
       unread: true,
     });
     expect(view.a11y).toBe('帮取快递，阿杰，我到楼下了，12:02，未读');
+  });
+
+  test('an image as the last line reads as 「[图片]」, yours with 「我：」', () => {
+    const photo = { path: 't1/jie/c1.jpg', width: 3, height: 4 };
+    const theirs = rowView(
+      bountyRow({ lastMessage: { ...message('jie', ''), image: photo } }),
+      ME,
+      NOW,
+      t,
+      'zh-Hans',
+    );
+    const mine = rowView(
+      bountyRow({ lastMessage: { ...message(ME, ''), image: photo } }),
+      ME,
+      NOW,
+      t,
+      'zh-Hans',
+    );
+    expect([theirs.last, mine.last]).toEqual(['[图片]', '我：[图片]']);
   });
 
   test('a ride row shows the route, how many are in it, and who said the last line', () => {

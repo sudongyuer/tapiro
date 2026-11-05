@@ -9,6 +9,7 @@ import { PressDim } from '@/ui/PressDim';
 import { space, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { ImageBubble } from './ImageBubble';
 import { askResend, copyMessage } from './messageActions';
 import { ThreadActionsContext } from './threadActions';
 import { canRetry, sameRow, type BubbleRow } from './threadView';
@@ -35,13 +36,14 @@ export const MessageBubble = memo(
     const { t } = useI18n();
     const { color } = useTheme();
     const actionsOf = useContext(ThreadActionsContext);
-    const { item, mine, body } = row;
+    const { item, mine, body, image } = row;
     const pending = item.kind === 'pending' ? item.pending : null;
     const sending = pending?.state === 'sending';
     const late = useLate(sending);
+    const said = image && body === '' ? t('chat.thread.image') : row.spoken;
     const spoken = row.speaker
-      ? t('chat.list.from', { name: row.speaker, body })
-      : t('chat.list.mine', { body });
+      ? t('chat.list.from', { name: row.speaker, body: said })
+      : t('chat.list.mine', { body: said });
     const label =
       pending?.state === 'failed'
         ? t('chat.thread.a11yFailed', { label: spoken })
@@ -125,38 +127,47 @@ export const MessageBubble = memo(
                 {late ? <ActivityIndicator testID={`chat-sending-${row.key}`} /> : null}
               </View>
             ) : null}
-            <ContextMenuView
-              actions={actions}
-              cornerRadius={RADIUS}
-              onAction={act}
-              style={styles.menu}
-            >
-              <View
-                accessible
-                accessibilityLabel={label}
-                accessibilityActions={actions.map((action) => ({
-                  name: action.id,
-                  label: action.title,
-                }))}
-                onAccessibilityAction={(event) => act(event.nativeEvent.actionName)}
+            {image ? (
+              <ImageBubble
+                image={image}
+                label={label}
                 testID={`chat-bubble-${row.key}`}
-                style={[
-                  styles.bubble,
-                  {
-                    backgroundColor: mine
-                      ? color('--color-accent')
-                      : PlatformColor('secondarySystemFill'),
-                  },
-                ]}
+                report={reportTarget ? () => actionsOf.report(reportTarget) : null}
+              />
+            ) : (
+              <ContextMenuView
+                actions={actions}
+                cornerRadius={RADIUS}
+                onAction={act}
+                style={styles.menu}
               >
-                <AppText
-                  variant="body"
-                  style={mine ? { color: color('--color-on-accent') } : undefined}
+                <View
+                  accessible
+                  accessibilityLabel={label}
+                  accessibilityActions={actions.map((action) => ({
+                    name: action.id,
+                    label: action.title,
+                  }))}
+                  onAccessibilityAction={(event) => act(event.nativeEvent.actionName)}
+                  testID={`chat-bubble-${row.key}`}
+                  style={[
+                    styles.bubble,
+                    {
+                      backgroundColor: mine
+                        ? color('--color-accent')
+                        : PlatformColor('secondarySystemFill'),
+                    },
+                  ]}
                 >
-                  {body}
-                </AppText>
-              </View>
-            </ContextMenuView>
+                  <AppText
+                    variant="body"
+                    style={mine ? { color: color('--color-on-accent') } : undefined}
+                  >
+                    {body}
+                  </AppText>
+                </View>
+              </ContextMenuView>
+            )}
           </View>
         )}
         {pending?.state === 'failed' && !canRetry(pending.failure) ? (

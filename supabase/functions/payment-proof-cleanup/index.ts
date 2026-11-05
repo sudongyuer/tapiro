@@ -53,6 +53,13 @@ Deno.serve((req) =>
         clears: 'clears_receipt',
         clear: (ride) => admin.rpc('clear_ride_receipt', { ride }),
       }),
+      bucket({
+        bucket: 'chat-images',
+        list: 'chat_images_to_delete',
+        owner: 'thread_id',
+        clears: 'clears_image',
+        clear: async () => ({ error: null }),
+      }),
     ],
   }),
 );

@@ -26,8 +26,8 @@ describe('fixture chat service', () => {
 
   test('a send stores once per client id', async () => {
     const service = createFixtureChatService({ variant: 'one', failFirst: [], now: NOW });
-    const first = await service.send('fixture-chat-bounty', 'c1', '好');
-    const again = await service.send('fixture-chat-bounty', 'c1', '好');
+    const first = await service.send('fixture-chat-bounty', 'c1', '好', null);
+    const again = await service.send('fixture-chat-bounty', 'c1', '好', null);
     expect(first).toEqual(again);
     expect(first.ok && first.message.senderId).toBe(FIXTURE_CHAT_USER_ID);
     expect((await service.readThread('fixture-chat-bounty', null)).messages).toHaveLength(4);
@@ -43,7 +43,7 @@ describe('fixture chat service', () => {
     });
     const bounty = await service.readThread('fixture-chat-bounty', null);
     expect(bounty.thread.members[0].blockedByMe).toBe(true);
-    expect(await service.send('fixture-chat-bounty', 'c1', '好')).toEqual({
+    expect(await service.send('fixture-chat-bounty', 'c1', '好', null)).toEqual({
       ok: false,
       failure: 'blocked',
     });
@@ -60,11 +60,11 @@ describe('fixture chat service', () => {
     expect(
       (await service.readThread('fixture-chat-bounty', null)).thread.members[0].blockedByMe,
     ).toBe(false);
-    expect(await service.send('fixture-chat-bounty', 'c1', '你下来了吗')).toEqual({
+    expect(await service.send('fixture-chat-bounty', 'c1', '你下来了吗', null)).toEqual({
       ok: false,
       failure: 'blocked',
     });
-    expect((await service.send('fixture-chat-ride', 'c2', '收到')).ok).toBe(true);
+    expect((await service.send('fixture-chat-ride', 'c2', '收到', null)).ok).toBe(true);
   });
 
   test('a fail point fails only its first call', async () => {
@@ -75,11 +75,11 @@ describe('fixture chat service', () => {
     const service = createFixtureChatService({ ...options, now: NOW });
     await expect(service.listThreads(null)).rejects.toThrow();
     expect((await service.listThreads(null)).items).toHaveLength(3);
-    expect(await service.send('fixture-chat-bounty', 'c1', '好')).toEqual({
+    expect(await service.send('fixture-chat-bounty', 'c1', '好', null)).toEqual({
       ok: false,
       failure: 'failed',
     });
-    expect((await service.send('fixture-chat-bounty', 'c1', '好')).ok).toBe(true);
+    expect((await service.send('fixture-chat-bounty', 'c1', '好', null)).ok).toBe(true);
   });
 
   test('the worst case pages 120 threads, unread past the badge cap, with a message at the length limit', async () => {
@@ -136,7 +136,7 @@ describe('fixture chat service', () => {
     const listed = (await service.listThreads(null)).items.find((row) => row.id === LONG_THREAD_ID);
     expect(listed?.lastMessage?.body).toBe('看到你了');
 
-    const sent = await service.send(LONG_THREAD_ID, 'c-long', '好');
+    const sent = await service.send(LONG_THREAD_ID, 'c-long', '好', null);
     at = new Date(at.getTime() + 41_000);
     const after = await service.readThread(LONG_THREAD_ID, null);
     expect(after.messages.slice(0, 3).map((message) => message.body)).toEqual([
@@ -166,7 +166,36 @@ describe('fixture options for the thread screen', () => {
     const read = await service.readThread('fixture-chat-ride', null);
     expect(read.thread.left).toBe(true);
     const started = Date.now();
-    await service.send('fixture-chat-bounty', 'c1', '好');
+    await service.send('fixture-chat-bounty', 'c1', '好', null);
     expect(Date.now() - started).toBeGreaterThanOrEqual(15);
+  });
+
+  test('with images on, threads carry fixture images and a sent image is stored with its path', async () => {
+    const calls: string[] = [];
+    const service = createFixtureChatService({
+      variant: 'demo',
+      failFirst: ['image'],
+      images: true,
+      imageFile: async (path) => `file:///fixture/${path}`,
+      onCall: (name) => calls.push(name),
+    });
+    const read = await service.readThread('fixture-chat-bounty', null);
+    expect(read.messages[0].image).toEqual({
+      path: 'fixture/photo.jpg',
+      width: 1536,
+      height: 2048,
+    });
+    await expect(service.imageFile('fixture/photo.jpg')).rejects.toThrow();
+    expect(await service.imageFile('fixture/photo.jpg')).toBe('file:///fixture/fixture/photo.jpg');
+    const image = { path: 'fixture-chat-bounty/me/c9.jpg', file: 'c9.jpg', width: 3, height: 4 };
+    const sent = await service.send('fixture-chat-bounty', 'c9', '', image);
+    expect(sent.ok && sent.message.image).toEqual({ path: image.path, width: 3, height: 4 });
+    expect(calls.filter((name) => name === 'imageFile')).toHaveLength(2);
+  });
+
+  test('without images the demo threads stay as the earlier cases expect', async () => {
+    const service = createFixtureChatService({ variant: 'demo', failFirst: [] });
+    const read = await service.readThread('fixture-chat-bounty', null);
+    expect(read.messages.every((message) => message.image === null)).toBe(true);
   });
 });

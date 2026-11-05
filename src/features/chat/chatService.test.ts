@@ -5,6 +5,12 @@ import { createSupabaseChatService, PAGE_SIZE } from './chatService';
 
 type Answer = { data?: unknown; error?: unknown };
 
+const NO_FILES = {
+  read: async () => new ArrayBuffer(0),
+  cached: () => null,
+  download: async () => 'file:///downloaded.jpg',
+};
+
 function stubClient(answer: (name: string) => Answer | Promise<never>) {
   const calls: { name: string; args: unknown }[] = [];
   const client = {
@@ -13,7 +19,7 @@ function stubClient(answer: (name: string) => Answer | Promise<never>) {
       return answer(name);
     },
   } as unknown as SupabaseClient;
-  return { service: createSupabaseChatService(client), calls };
+  return { service: createSupabaseChatService(client, NO_FILES), calls };
 }
 
 const MESSAGE = {
@@ -22,6 +28,7 @@ const MESSAGE = {
   senderId: 'u1',
   clientId: 'c1',
   body: '你好',
+  image: null,
   createdAt: '2026-11-06T01:00:00.123456+00:00',
 };
 
@@ -125,13 +132,13 @@ describe('supabase chat service', () => {
       ['something else', 'failed'],
     ] as const) {
       const { service } = stubClient(() => ({ error: { message } }));
-      expect(await service.send('t1', 'c1', '你好')).toEqual({ ok: false, failure });
+      expect(await service.send('t1', 'c1', '你好', null)).toEqual({ ok: false, failure });
     }
   });
 
   test('a send whose answer is lost is failed, so the user can retry it', async () => {
     const { service, calls } = stubClient(() => Promise.reject(new Error('network')));
-    expect(await service.send('t1', 'c1', '你好')).toEqual({ ok: false, failure: 'failed' });
+    expect(await service.send('t1', 'c1', '你好', null)).toEqual({ ok: false, failure: 'failed' });
     expect(calls[0]).toEqual({
       name: 'send_message',
       args: { thread: 't1', client_id: 'c1', body: '你好' },

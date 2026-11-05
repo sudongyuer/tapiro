@@ -1,5 +1,6 @@
 export default {
   list: {
+    image: '[Foto]',
     loading: 'Memuatkan mesej',
     failed: 'Mesej tidak dapat dimuatkan. Semak sambungan dan cuba lagi',
     retry: 'Cuba lagi',
@@ -52,6 +53,20 @@ export default {
     },
   },
   thread: {
+    attach: 'Tambah foto',
+    photo: 'Foto',
+    camera: 'Ambil foto',
+    image: 'Foto',
+    a11yImageState: '{{label}}, {{state}}',
+    openImage: 'Lihat saiz penuh',
+    imageLoading: 'Memuatkan foto',
+    imageFailed: 'Foto tidak dapat dimuatkan. Ketik untuk cuba lagi.',
+    viewFailed: 'Foto ini tidak dapat dibuka. Cuba lagi nanti.',
+    prepareFailed: 'Foto ini tidak boleh dihantar. Cuba foto lain.',
+    cameraDenied: 'Tiada akses kamera',
+    cameraDeniedBody: 'Untuk mengambil foto, benarkan Tapiro menggunakan kamera dalam Tetapan.',
+    openSettings: 'Buka Tetapan',
+    cameraUnavailable: 'Kamera tidak tersedia pada peranti ini',
     placeholder: 'Mesej',
     send: 'Hantar',
     failed: 'Tidak dihantar. Ketik untuk cuba lagi.',

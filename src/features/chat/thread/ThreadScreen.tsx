@@ -31,6 +31,8 @@ import { Composer, COMPOSER_INPUT_ID, COMPOSER_MIN_HEIGHT } from './Composer';
 import { MessageBubble } from './MessageBubble';
 import { blockedFooter } from './safetyView';
 import { SafetyCard } from './SafetyCard';
+import type { ImageFrom } from './AttachMenu';
+import { pickAndSend } from './sendImage';
 import { ThreadActionsContext, type ReportTarget } from './threadActions';
 import { ThreadMenu } from './ThreadMenu';
 import { ThreadTop } from './ThreadTop';
@@ -142,6 +144,11 @@ export function ThreadScreen({
     const sent = chatStore.send(threadId, body) !== null;
     if (sent) pinned.current = true;
     return sent;
+  };
+  const onPickImage = (from: ImageFrom) => {
+    void pickAndSend(threadId, from, t).then((sent) => {
+      if (sent) pinned.current = true;
+    });
   };
 
   const loading = !thread || (thread.status === 'loading' && !info);
@@ -267,6 +274,7 @@ export function ThreadScreen({
           keyboardGap={KEYBOARD_GAP}
           onHeight={onComposerHeight}
           onSend={onSend}
+          onPickImage={onPickImage}
         />
       ) : null}
     </KeyboardGestureArea>

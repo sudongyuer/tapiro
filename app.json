@@ -53,14 +53,14 @@
         "expo-image-picker",
         {
           "photosPermission": false,
-          "cameraPermission": "Scan a receive QR code shown on another screen. Tapiro reads the code only and saves no photo.",
+          "cameraPermission": "Scan a receive QR code shown on another screen, or take a photo to send in a chat. The camera opens only when you tap Take Photo or scan; when scanning, Tapiro reads the code only.",
           "microphonePermission": false
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Scan a receive QR code shown on another screen. Tapiro reads the code only and saves no photo.",
+          "cameraPermission": "Scan a receive QR code shown on another screen, or take a photo to send in a chat. The camera opens only when you tap Take Photo or scan; when scanning, Tapiro reads the code only.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }

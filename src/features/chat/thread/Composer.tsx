@@ -12,6 +12,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { canSend } from '../chatStore';
 import { chatDrafts } from '../services';
 import { MESSAGE_MAX } from '../types';
+import { AttachMenu, type ImageFrom } from './AttachMenu';
 
 export const COMPOSER_INPUT_ID = 'chat-composer-input';
 
@@ -28,9 +29,18 @@ type Props = {
   keyboardGap: number;
   onHeight: (height: number) => void;
   onSend: (body: string) => boolean;
+  onPickImage: (from: ImageFrom) => void;
 };
 
-export function Composer({ userId, threadId, bottomInset, keyboardGap, onHeight, onSend }: Props) {
+export function Composer({
+  userId,
+  threadId,
+  bottomInset,
+  keyboardGap,
+  onHeight,
+  onSend,
+  onPickImage,
+}: Props) {
   const { t } = useI18n();
   const { color } = useTheme();
   const [body, setDraft] = useState(() => chatDrafts.get(userId, threadId));
@@ -53,6 +63,7 @@ export function Composer({ userId, threadId, bottomInset, keyboardGap, onHeight,
       onLayout={(event: LayoutChangeEvent) => onHeight(event.nativeEvent.layout.height)}
     >
       <View style={[styles.row, { paddingBottom: bottomInset + space.sm }]}>
+        <AttachMenu onPick={onPickImage} />
         <GlassView style={styles.field}>
           <TextInput
             nativeID={COMPOSER_INPUT_ID}
@@ -90,8 +101,15 @@ export function Composer({ userId, threadId, bottomInset, keyboardGap, onHeight,
 
 const styles = StyleSheet.create({
   dock: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  row: { paddingHorizontal: space.md, paddingTop: space.sm },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    paddingTop: space.sm,
+  },
   field: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'flex-end',
     minHeight: TARGET,

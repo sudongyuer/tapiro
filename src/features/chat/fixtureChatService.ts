@@ -12,6 +12,7 @@ export const CHAT_FAIL_POINTS = [
   'unread',
   'markRead',
   'report',
+  'image',
 ] as const;
 export type ChatFailPoint = (typeof CHAT_FAIL_POINTS)[number];
 
@@ -23,6 +24,9 @@ export type FixtureChatOptions = {
   blockedBy?: boolean;
   blockedByMe?: (memberId: string) => boolean;
   sendDelayMs?: number;
+  images?: boolean;
+  imageFile?: (path: string) => Promise<string>;
+  imageDelayMs?: number;
   pageSize?: number;
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
@@ -40,6 +44,8 @@ export function fixtureChatOptions(
     left: argument('uiVerifyChatLeft') === '1',
     blockedBy: argument('uiVerifyChatBlockedBy') === '1',
     sendDelayMs: Number(argument('uiVerifyChatSendDelay') ?? 0) || 0,
+    images: argument('uiVerifyChatImages') === '1',
+    imageDelayMs: Number(argument('uiVerifyChatImageDelay') ?? 0) || 0,
   };
 }
 
@@ -58,11 +64,16 @@ export function createFixtureChatService({
   blockedBy = false,
   blockedByMe = () => false,
   sendDelayMs = 0,
+  images = false,
+  imageFile = async (path) => {
+    throw new Error(`no fixture image ${path}`);
+  },
+  imageDelayMs = 0,
   pageSize = 50,
   now = () => new Date(),
   onCall = () => undefined,
 }: FixtureChatOptions): ChatService {
-  const threads = fixtureThreads(variant, now(), long).map((thread) =>
+  const threads = fixtureThreads(variant, now(), long, images).map((thread) =>
     left && thread.kind === 'ride' ? { ...thread, left: true } : thread,
   );
   // Fixture lines dated in the future stay hidden until their time, so a later read shows them arriving.
@@ -133,8 +144,8 @@ export function createFixtureChatService({
         hasMore: page.hasMore,
       };
     },
-    async send(threadId, clientId, body) {
-      onCall('send', { threadId, clientId, body });
+    async send(threadId, clientId, body, image) {
+      onCall('send', { threadId, clientId, body, image: image?.path ?? null });
       if (sendDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, sendDelayMs));
       if (failing.delete('send')) return { ok: false, failure: 'failed' };
       const thread = find(threadId);
@@ -150,10 +161,17 @@ export function createFixtureChatService({
         senderId: FIXTURE_CHAT_USER_ID,
         clientId,
         body,
+        image: image ? { path: image.path, width: image.width, height: image.height } : null,
         createdAt: now().toISOString(),
       };
       thread.messages = [message, ...thread.messages].sort(newestFirst);
       return { ok: true, message };
+    },
+    async imageFile(path) {
+      onCall('imageFile', { path });
+      if (imageDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, imageDelayMs));
+      failOnce('image');
+      return imageFile(path);
     },
     async markRead(threadId, messageId) {
       onCall('markRead', { threadId, messageId });
