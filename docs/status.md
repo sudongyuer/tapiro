@@ -25,9 +25,9 @@ Updated: 2026-11-06.
   Tasks 2 (shared block module) and 3 (client core: service, fixtures, store, outbox, live handler, read state and the
   消息 badge, `20261106000000_chat_read_state.sql`) are merged; `docs/plans/2026-10-30-chat.md` Tasks 0 and 4–8 are
   next (no chat screens yet).
-- Carpool: two UI test-script problems to fix separately: `ride_settle_owing` depends on the clock (quiet hours defer
-  the 24 h reminder in London's early morning) and `paste_into` in `verification/ui/bounty.py` does not paste on the new
-  machine (`ride_settle_pay`, `bounty_post_place`). The `ride.remind.*` device checks wait for TestFlight.
+- Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
+  still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
+  `ride.remind.*` device checks wait for TestFlight.
 - Live updates and push (`docs/plans/2026-11-03-realtime-push.md`): steps 1 (server, #62) and 2 (app, #66) are merged;
   the owner's 2026-11-05 answers added quiet hours for the bounty you are on and a live-only `bounty.expired` to
   pending applicants. The four `live_*` UI cases run with the feature's milestone run. Step 3 waits on the paid

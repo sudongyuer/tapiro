@@ -9,6 +9,7 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
@@ -27,6 +28,7 @@ DEVICE_TYPE = 'com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro'
 DEFAULT_LOCALES = ['zh-Hans']
 DEFAULT_BUDGET = 180
 DEFAULT_TIME_ZONE = 'Asia/Kuala_Lumpur'
+DEFAULT_ZONE_OFFSET = 8
 SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
 KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
@@ -110,8 +112,20 @@ def case_meta(case):
     )
 
 
-def case_zone(case):
-    return parse_declarations((HERE / 'cases' / f'{case}.py').read_text()).get('TIME_ZONE', DEFAULT_TIME_ZONE)
+def case_zone(case, now=None):
+    values = parse_declarations((HERE / 'cases' / f'{case}.py').read_text())
+    if 'LOCAL_HOURS' in values:
+        return zone_at_hour(values['LOCAL_HOURS'], now or datetime.now(timezone.utc))
+    return values.get('TIME_ZONE', DEFAULT_TIME_ZONE)
+
+
+def zone_at_hour(hours, now):
+    # A fixed-offset zone pins the device's wall-clock hour; skipping Malaysia's offset keeps the device zone distinct.
+    for hour in hours:
+        for offset in ((hour - now.hour) % 24, (hour - now.hour) % 24 - 24):
+            if -12 <= offset <= 14 and offset != DEFAULT_ZONE_OFFSET:
+                return f'Etc/GMT{-offset:+d}' if offset else 'Etc/GMT'
+    raise ValueError(f'no zone outside UTC+{DEFAULT_ZONE_OFFSET} puts the device at any of the hours {hours}')
 
 
 def zone_env(zone):
@@ -176,12 +190,12 @@ def simctl_step(label, argv, log, env=None):
         return f'{label} timed out after {SIMCTL_TIMEOUT} s'
 
 
-def run_script(case, extra, budget, locale, appearance, udid, out, after):
+def run_script(case, extra, budget, locale, appearance, udid, out, after, zone):
     try:
         proc = subprocess.run(
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=budget,
-            env={**zone_env(case_zone(case)), 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
+            env={**zone_env(zone), 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
         )
     except subprocess.TimeoutExpired as error:
         message = f'command timed out after {budget} s'
@@ -202,7 +216,8 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out):
     out.mkdir(parents=True, exist_ok=True)
     for stale in out.glob('*'):
         stale.unlink()
-    before, after, case_log = [], [], ''
+    zone = case_zone(case)
+    before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
     video = out / 'run.mp4'
@@ -213,11 +228,11 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out):
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
         'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
-        *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(case_zone(case)))
+        *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(zone))
     if stuck:
         status, message = 'fail', stuck
     else:
-        status, message, case_log = run_script(case, extra, budget, locale, appearance, udid, out, after)
+        status, message, case_log = run_script(case, extra, budget, locale, appearance, udid, out, after, zone)
     if status == 'fail':
         try:
             timed('screenshot failure', ['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],

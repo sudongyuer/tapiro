@@ -27,10 +27,13 @@ picks each case whose `DEPS` prefixes (or its own file) match one, printing why.
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime test_keyboard test_ride` in `verification/ui` covers the
+before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime test_keyboard test_ride test_zone` in `verification/ui` covers the
 selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
-`ARGS`, `BUDGET` and `TIME_ZONE` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
+`ARGS`, `BUDGET`, `TIME_ZONE` and `LOCAL_HOURS` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
 only; paste other text with `bounty.paste_into`, or seed it through a launch argument such as `-uiVerifyApplyNote`.
+`paste_into` writes the device pasteboard with `pasteboard.swift`, a UIKit tool run through `simctl spawn`, because
+`simctl pbcopy` writes nothing on Xcode 27.2, and pastes from the edit menu (粘贴 / Paste / Tampal): an AXe ⌘V is not a
+user-authenticated paste, so iOS asks for permission and the field stays empty.
 Every time it prepares a Simulator (the owned ones, `--udid`, and after a stall), the runner writes the keyboard
 settings with `simctl spawn <udid> defaults write` (`keyboard_commands` in `run.py`, `python3 -m unittest
 test_keyboard`): global `AppleKeyboards` is US English plus emoji, `com.apple.keyboard.preferences` makes US English
@@ -93,7 +96,9 @@ line (count, median, slowest, timeouts); a timeout message adds the median call 
 a stuck screen. A case gets 180 s unless it declares `BUDGET = <seconds>`. The app shows and picks times in the
 device zone (234), so the runner launches it with `SIMCTL_CHILD_TZ` set to `Asia/Kuala_Lumpur`, or to the case's
 `TIME_ZONE = '<zone>'`, and runs the case script with the same `TZ`, so `datetime.fromtimestamp` in a case reads the
-app's clock whatever zone the Mac is in. Two command timeouts in one run mark that
+app's clock whatever zone the Mac is in. A case whose outcome depends on the hour of day (quiet hours, 今天 or 明天)
+declares `LOCAL_HOURS = [9, 10]` instead: the runner picks, once per run, the fixed-offset zone (`Etc/GMT-5`) that puts
+the device at the first of those hours that is not Malaysia's offset, and logs it as `time zone:` in `log.txt`. Two command timeouts in one run mark that
 Simulator stalled (`heal.py`): the runner prints `STALL`, shuts it down, boots it and reinstalls the app, and retries a
 failed run once on another Simulator (the stalled one only when it is the last left; idle Simulators wait for busy ones
 so a retry has somewhere to go). The first attempt's log is kept as `stalled-log.txt`, `result.json` records

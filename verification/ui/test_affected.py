@@ -115,6 +115,11 @@ class Declarations(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'TIME_ZONE must be a zone name string'):
             parse_declarations("TIME_ZONE = ['Europe/London']\n")
         self.assertEqual(parse_declarations("TIME_ZONE = 'Europe/London'\n"), {'TIME_ZONE': 'Europe/London'})
+        with self.assertRaisesRegex(ValueError, 'LOCAL_HOURS must be a list of hours'):
+            parse_declarations("LOCAL_HOURS = [24]\n")
+        with self.assertRaisesRegex(ValueError, 'not both'):
+            parse_declarations("TIME_ZONE = 'Europe/London'\nLOCAL_HOURS = [9]\n")
+        self.assertEqual(parse_declarations("LOCAL_HOURS = [9, 10]\n"), {'LOCAL_HOURS': [9, 10]})
 
     def test_every_case_declares_literals_the_runner_can_read(self):
         for case in sorted((HERE / 'cases').glob('*.py')):

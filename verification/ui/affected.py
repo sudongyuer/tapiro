@@ -32,7 +32,7 @@ MILESTONE_LOCALES = ['zh-Hans', 'en']
 LANGUAGE_ORDER = ['zh-Hans', 'en', 'ms']
 
 
-DECLARED = ('DEPS', 'SCENE', 'LOCALES', 'ARGS', 'BUDGET', 'TIME_ZONE')
+DECLARED = ('DEPS', 'SCENE', 'LOCALES', 'ARGS', 'BUDGET', 'TIME_ZONE', 'LOCAL_HOURS')
 STRING_LISTS = ('DEPS', 'LOCALES', 'ARGS')
 
 
@@ -53,7 +53,12 @@ def parse_declarations(source):
                 raise ValueError(f'{name} must be a list of strings')
             if name == 'TIME_ZONE' and not isinstance(value, str):
                 raise ValueError('TIME_ZONE must be a zone name string')
+            if name == 'LOCAL_HOURS' and not (isinstance(value, list) and value
+                                              and all(isinstance(v, int) and 0 <= v <= 23 for v in value)):
+                raise ValueError('LOCAL_HOURS must be a list of hours 0-23')
             values[name] = value
+    if 'TIME_ZONE' in values and 'LOCAL_HOURS' in values:
+        raise ValueError('declare TIME_ZONE or LOCAL_HOURS, not both')
     return values
 
 

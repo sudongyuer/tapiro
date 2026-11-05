@@ -1,7 +1,10 @@
+import json
 import re
+from datetime import date, datetime
 
 from board import screen, visible
 from bounty import relaunch
+from choose import defaults
 from driver import by_id, close, dominant, reach_home, token
 
 
@@ -159,3 +162,43 @@ def clock_24h(text):
     if (suffix in AFTERNOON or any(marker.endswith(m) for m in AFTERNOON)) and hours < 12:
         hours += 12
     return f'{hours:02d}:{minutes}'
+
+
+def pay_reminders(ui):
+    text = defaults(ui, 'uiVerifyScheduledNotices')
+    notices = [n for n in (json.loads(text) if text else []) if n['id'].endswith((':pay24', ':pay72'))]
+    return sorted(notices, key=lambda notice: notice['at'])
+
+
+def clock_of(at):
+    return datetime.fromtimestamp(at / 1000).strftime('%H:%M')
+
+
+def reminder_when(ui, at):
+    days = (datetime.fromtimestamp(at / 1000).date() - date.today()).days
+    if days not in (0, 1):
+        return r'.+ ' + re.escape(clock_of(at))
+    text = ui.t('ride.ticket.time', day=ui.t('ride.list.today' if days == 0 else 'ride.list.tomorrow'),
+                clock=clock_of(at))
+    return re.escape(text[0].lower() + text[1:])
+
+
+def wait_owe_reminder(ui, kinds):
+    seen, matched = [], []
+
+    # The fixture places the split 25 h 44 min before each load, so a reload moves the reminders; read both together.
+    def names_first(label):
+        pay = pay_reminders(ui)
+        seen.append(([notice['data']['kind'] for notice in pay], label))
+        if seen[-1][0] != kinds:
+            return False
+        if re.fullmatch(ui.pattern('rideSettle.owe.next', time=reminder_when(ui, pay[0]['at'])), label) is None:
+            return False
+        matched[:] = pay
+        return True
+
+    try:
+        ui.wait_label('ride-settle-owe-reminder', names_first, 'the owing card does not name the first reminder')
+    except AssertionError:
+        raise AssertionError(f'expected {kinds} scheduled and the card naming {kinds[0]}; saw {seen[-1:]}') from None
+    return matched
