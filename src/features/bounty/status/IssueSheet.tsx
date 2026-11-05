@@ -115,7 +115,7 @@ function IssueForm({
                 accessibilityLabel(t('bounty.issue.title', { name })),
               ]}
             />
-            <HStack>
+            <HStack spacing={0}>
               <Spacer />
               <Text
                 modifiers={[

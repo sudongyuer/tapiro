@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 
 import { useI18n } from '@/lib/i18n';
 
-export const unstable_settings = { initialRouteName: 'index' };
+export const unstable_settings = { anchor: 'index' };
 
 export default function RideLayout() {
   const { t } = useI18n();

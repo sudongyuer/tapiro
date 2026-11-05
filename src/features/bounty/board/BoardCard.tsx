@@ -1,8 +1,13 @@
 import { Host, VStack } from '@expo/ui/swift-ui';
 import { contentShape, frame, onTapGesture, padding, shapes } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode, Ref } from 'react';
-import type { AccessibilityActionEvent } from 'react-native';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import {
+  type AccessibilityActionEvent,
+  PlatformColor,
+  StyleSheet,
+  View,
+  type ViewInstance,
+} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -25,7 +30,7 @@ export function BoardCard({
   row: BoardRow;
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
-  cardRef?: Ref<View>;
+  cardRef?: Ref<ViewInstance>;
   ring?: ReactNode;
 }) {
   const { t, language } = useI18n();

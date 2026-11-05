@@ -1,5 +1,5 @@
 import { useRouter, useSegments } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 import { useSignedInUser } from '@/features/account';
 import { useLiveBounties } from '@/features/bounty';
@@ -79,6 +79,7 @@ export default function TabsLayout() {
       <NativeTabs.Trigger
         name="tapir"
         role="search"
+        prominent
         disabled
         testID="tab-ask-tapir"
         accessibilityLabel={t('shell.tabs.askTapir')}

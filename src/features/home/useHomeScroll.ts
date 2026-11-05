@@ -3,7 +3,7 @@ import type {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  ScrollView,
+  ScrollViewInstance,
 } from 'react-native';
 import { useNavigation, type NativeStackNavigationProp } from 'expo-router';
 import { useHeaderHeight } from 'expo-router/react-navigation';
@@ -18,7 +18,7 @@ type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 export function useHomeScroll(onReveal?: () => void) {
   const headerHeight = useHeaderHeight();
   const header = useRef(headerHeight);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const liveCardsBottom = useRef(0);
   const [resting] = useState(createRestingOffset);
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();

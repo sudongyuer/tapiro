@@ -1,6 +1,14 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { PlatformColor, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  PlatformColor,
+  RefreshControl,
+  ScrollView,
+  type ScrollViewInstance,
+  StyleSheet,
+  View,
+  type ViewInstance,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fixtureUser } from '@/features/account';
@@ -67,8 +75,8 @@ export function PlaceSearchScene({ onReady }: { onReady: () => void }) {
 }
 
 export function BountyBoardScene({ onReady }: { onReady: () => void }) {
-  const scroll = useRef<ScrollView>(null);
-  const content = useRef<View>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
+  const content = useRef<ViewInstance>(null);
   const insets = useSafeAreaInsets();
   const board = useBountyBoard(fixtureUser('apple').id, {
     scroll,
@@ -82,7 +90,7 @@ export function BountyBoardScene({ onReady }: { onReady: () => void }) {
     <>
       <ScrollView
         ref={scroll}
-        innerViewRef={content as RefObject<View>}
+        innerViewRef={content as RefObject<ViewInstance>}
         testID="bounty-board-scene"
         contentInsetAdjustmentBehavior="automatic"
         style={styles.screen}

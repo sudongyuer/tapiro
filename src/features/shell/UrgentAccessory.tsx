@@ -1,4 +1,4 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 

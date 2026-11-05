@@ -181,7 +181,7 @@ function NoteSection({
           disabled(locked),
         ]}
       />
-      <HStack>
+      <HStack spacing={0}>
         <Spacer />
         <Text
           modifiers={[

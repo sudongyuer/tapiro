@@ -1,4 +1,7 @@
-"""Four tabs with a 消息 badge and the 62 pt 小貘 button switch screens; the accessory is hidden at the top of 悬赏 and shown on 拼车."""
+"""Four tabs with a 消息 badge and the round 小貘 button beside the bar switch screens; the accessory is hidden at the top of 悬赏 and shown on 拼车."""
+import json
+import re
+import subprocess
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -11,7 +14,32 @@ LOCALES = ['zh-Hans', 'ms']
 SCREENS = {'tab-ride': 'ride-screen', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
+TAPIR_SIZE = {26: 62, 27: 62}
+TAPIR_GAP = 4
 ui = UI(*sys.argv[1:])
+
+
+def ios_major(udid):
+    listing = subprocess.run(['xcrun', 'simctl', 'list', 'devices', '-j'], capture_output=True, text=True,
+                             check=True, timeout=30).stdout
+    devices = json.loads(listing)['devices']
+    runtime = next((r for r, listed in devices.items() if any(d['udid'] == udid for d in listed)), None)
+    assert runtime, f'Simulator {udid} is not in `simctl list devices`; cannot tell which iOS size to expect'
+    found = re.search(r'iOS-(\d+)', runtime)
+    assert found, f'Simulator {udid} runs {runtime}, not an iOS runtime'
+    return int(found.group(1))
+
+
+def assert_tapir_beside_bar(items, ios):
+    f = by_id(items, 'tab-ask-tapir')['frame']
+    last = max(by_id(items, t)['frame']['x'] + by_id(items, t)['frame']['width'] for t in TABS)
+    print(f'iOS {ios}: 小貘 button {f}, last tab ends at x={last:.1f}')
+    assert f['x'] >= last + TAPIR_GAP, f'小貘 button {f} is not apart from the tab bar on the trailing side (last tab ends at {last})'
+    assert abs(f['width'] - f['height']) < 1, f'小貘 button is not round: {f}'
+    assert_touch_target(by_id(items, 'tab-ask-tapir'), '小貘 button')
+    assert ios in TAPIR_SIZE, f'no measured 小貘 button size for iOS {ios}; measure it before adding one'
+    assert abs(f['width'] - TAPIR_SIZE[ios]) < 1, f'小貘 button on iOS {ios} is {f["width"]} pt, expected {TAPIR_SIZE[ios]}'
+    return f
 
 
 reach_home(ui)
@@ -21,13 +49,12 @@ assert selected(items) == ['tab-bounty'], f'selected tabs on launch: {selected(i
 assert accessory(items) is None, 'accessory shown at the top of 悬赏 while the live cards are on screen'
 for identifier in TABS:
     assert_touch_target(by_id(items, identifier), identifier)
-button = by_id(items, 'tab-ask-tapir')
-assert button['frame']['width'] == 62 and button['frame']['height'] == 62, f'小貘 button is {button["frame"]}'
+button = assert_tapir_beside_bar(items, ios_major(ui.udid))
 messages = by_id(items, 'tab-messages')['frame']
 shot = ui.snap('01-bounty')
 badge = shot.count({**messages, 'height': messages['height'] / 2}, lambda rgb: rgb[0] > 200 and rgb[1] < 110 and rgb[2] < 110)
 assert badge > 300, f'消息 badge is not drawn ({badge} red pixels)'
-assert_tapir_button(shot, button['frame'], ui.appearance, '62 pt 小貘 button')
+assert_tapir_button(shot, button, ui.appearance, '小貘 button')
 
 for index, identifier in enumerate(TABS[1:], start=2):
     ui.tap(identifier)

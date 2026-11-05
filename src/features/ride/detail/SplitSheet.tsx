@@ -236,6 +236,7 @@ export function SplitSheet({
         }
       >
         <HStack
+          spacing={0}
           modifiers={[
             accessibilityElement('combine'),
             accessibilityIdentifier('ride-split-organiser'),

@@ -45,7 +45,10 @@ export function FormTime({
         ) : undefined
       }
     >
-      <HStack modifiers={[frame({ maxWidth: Infinity, minHeight: vars['--touch-min'] })]}>
+      <HStack
+        spacing={0}
+        modifiers={[frame({ maxWidth: Infinity, minHeight: vars['--touch-min'] })]}
+      >
         <Text>{t('ride.create.form.depart')}</Text>
         <Spacer />
         {chosen ? (

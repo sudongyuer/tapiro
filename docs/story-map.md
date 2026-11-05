@@ -163,7 +163,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | -------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | shell.tabs.switch          | 四个 Tab 切换页面，消息先显示空状态                                              | ui:shell_tabs, unit:src/features/shell/tabs.test.ts                                       |
 | shell.tabs.badge           | 消息 Tab 显示未读角标，很大的数字封顶显示                                        | ui:shell_tabs, ui:home_worst, unit:src/features/shell/accessory.test.ts#caps large counts |
-| shell.tabs.tapir-button    | 62 pt 的小貘按钮在浅色和深色下都有白色描边                                       | ui:shell_tabs                                                                             |
+| shell.tabs.tapir-button    | 62 pt 圆形小貘按钮独立在 Tab 栏右侧（iOS 26 和 27），浅色和深色下都有白色描边     | ui:shell_tabs                                                                             |
 | shell.tabs.minimise        | 往下滑悬赏时 Tab 栏缩起（选中的 Tab、内嵌提醒条、48 pt 小貘），点缩起的 Tab 展开 | ui:shell_minimise                                                                         |
 | shell.tabs.badge-voiceover | VoiceOver 读出消息角标的数字                                                     | device: 打开 VoiceOver 聚焦消息 Tab                                                       |
 

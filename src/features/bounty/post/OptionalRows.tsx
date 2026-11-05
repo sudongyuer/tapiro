@@ -86,7 +86,7 @@ export function HeadingRow({
   const { t } = useI18n();
   const { color } = useTheme();
   return (
-    <HStack modifiers={[fullRow, ROW_INSETS]}>
+    <HStack spacing={0} modifiers={[fullRow, ROW_INSETS]}>
       <Text modifiers={[font({ textStyle: 'body', weight: 'semibold' })]}>{label}</Text>
       <Spacer />
       {remove ? (
@@ -258,7 +258,7 @@ export function DescriptionRows({
         ]}
       />
       {count >= DESCRIPTION_COUNT_FROM ? (
-        <HStack modifiers={[ROW_INSETS, accessibilityElement('combine')]}>
+        <HStack spacing={0} modifiers={[ROW_INSETS, accessibilityElement('combine')]}>
           <Spacer />
           <Text
             modifiers={[
