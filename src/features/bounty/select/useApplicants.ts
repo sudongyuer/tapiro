@@ -1,7 +1,7 @@
 import { useIsFocused } from 'expo-router';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
-import { blockEvents } from '@/features/block/blockEvents';
+import { blockEvents } from '@/features/block';
 import { useLiveSignal } from '@/lib/live';
 
 import { boardService } from '../board/services';

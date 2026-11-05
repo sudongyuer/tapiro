@@ -31,6 +31,7 @@ export const DETAIL_MODES = [
   'notSelected',
   'selected',
   'selectedCancelled',
+  'expiresLive',
 ] as const;
 export const DEFAULT_DETAIL_ID = 'fixture-bounty-01';
 export const FIXTURE_ADDRESS = 'A 座 12-03';
@@ -59,6 +60,7 @@ export type FixtureBoardOptions = {
   writeDelayMs?: number;
   isBlocked?: (posterId: string) => boolean;
   posterView?: (id: string) => { helper: Person | null; status: string } | null;
+  onDetailLoaded?: (id: string) => void;
 };
 
 function pick<T extends string>(values: readonly T[], value: string | undefined, fallback: T): T {
@@ -112,6 +114,10 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
   const applications = new Map<string, { status: 'pending' | 'withdrawn'; note: string | null }>(
     all.filter((item) => item.applied).map((item) => [item.id, { status: 'pending', note: null }]),
   );
+  if (options.detail === 'expiresLive') {
+    applications.set(options.detailId, { status: 'pending', note: OUTCOME_NOTE });
+  }
+  let expiringLoads = 0;
   let firstLoads = 0;
   let pageFailures = options.fail === 'page' ? 1 : 0;
   let applyFailures = options.apply === 'failOnce' ? 1 : 0;
@@ -213,6 +219,15 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
         address: null,
         helper: null,
         myApplication: { status: 'not_selected', note },
+      } as const;
+    }
+    if (options.detail === 'expiresLive' && item.id === options.detailId) {
+      return {
+        status: expiringLoads > 1 ? 'closed' : 'open',
+        viewerRole: 'applicant',
+        address: null,
+        helper: null,
+        myApplication: application,
       } as const;
     }
     const poster = options.posterView?.(item.id) ?? null;
@@ -320,6 +335,8 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
         throw new TypeError('Network request failed');
       }
       const item = visible().find((candidate) => candidate.id === id);
+      options.onDetailLoaded?.(id);
+      if (options.detail === 'expiresLive' && id === options.detailId) expiringLoads += 1;
       return item && options.detail !== 'gone' ? detailOf(item, point) : 'gone';
     },
     async hasPayeeMethod() {

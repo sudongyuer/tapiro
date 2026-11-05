@@ -1,12 +1,13 @@
 import { Settings } from 'react-native';
 
-import { fixtureBlocked } from '@/features/block/services';
+import { fixtureBlocked } from '@/features/block';
 import { FIXTURE_PLACES } from '@/features/place/fixturePlaces';
 import { createOriginStore, createShownOrigins } from '@/features/place/originStore';
 import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
+import { verifyRecorder } from '@/lib/verifyRecord';
 
 import '../shared/blockFixturePeople';
 import { FIXTURE_USER_ID } from '../post/fixtureDrafts';
@@ -18,12 +19,18 @@ import { createViewStore, seedBoardView } from './viewStore';
 
 const VERIFY_WRITE_DELAY_MS = 2500;
 
+function detailLoadRecorder() {
+  const record = verifyRecorder('uiVerifyDetailLoads');
+  return (id: string) => record(`load:${id}`);
+}
+
 export const boardService: BoardService = uiVerify
   ? createFixtureBoardService({
       ...fixtureBoardOptions(uiVerifyArgument, uiVerifyFixture),
       writeDelayMs: VERIFY_WRITE_DELAY_MS,
       isBlocked: fixtureBlocked,
       posterView: fixturePosterView,
+      onDetailLoaded: detailLoadRecorder(),
     })
   : createSupabaseBoardService(getSupabase(), deviceCurrency);
 

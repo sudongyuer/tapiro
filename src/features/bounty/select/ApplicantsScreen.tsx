@@ -3,7 +3,7 @@ import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/m
 import { useEffect, useRef } from 'react';
 import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
 
-import { useBlockPerson } from '@/features/block/hooks';
+import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
 import { useLiveOffline } from '@/lib/live';
 import { InlineState } from '@/ui/InlineState';
