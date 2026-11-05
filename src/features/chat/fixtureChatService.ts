@@ -19,6 +19,8 @@ export type FixtureChatOptions = {
   variant: FixtureVariant;
   failFirst: readonly ChatFailPoint[];
   long?: boolean;
+  left?: boolean;
+  sendDelayMs?: number;
   pageSize?: number;
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
@@ -33,6 +35,8 @@ export function fixtureChatOptions(
     variant,
     failFirst: CHAT_FAIL_POINTS.filter((point) => fail.includes(point)),
     long: argument('uiVerifyChatLong') === '1',
+    left: argument('uiVerifyChatLeft') === '1',
+    sendDelayMs: Number(argument('uiVerifyChatSendDelay') ?? 0) || 0,
   };
 }
 
@@ -47,11 +51,15 @@ export function createFixtureChatService({
   variant,
   failFirst,
   long = false,
+  left = false,
+  sendDelayMs = 0,
   pageSize = 50,
   now = () => new Date(),
   onCall = () => undefined,
 }: FixtureChatOptions): ChatService {
-  const threads = fixtureThreads(variant, now(), long);
+  const threads = fixtureThreads(variant, now(), long).map((thread) =>
+    left && thread.kind === 'ride' ? { ...thread, left: true } : thread,
+  );
   // Fixture lines dated in the future stay hidden until their time, so a later read shows them arriving.
   const shown = (thread: FixtureThread) => {
     const at = now().toISOString();
@@ -114,6 +122,7 @@ export function createFixtureChatService({
     },
     async send(threadId, clientId, body) {
       onCall('send', { threadId, clientId, body });
+      if (sendDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, sendDelayMs));
       if (failing.delete('send')) return { ok: false, failure: 'failed' };
       const thread = find(threadId);
       const existing = thread.messages.find((message) => message.clientId === clientId);

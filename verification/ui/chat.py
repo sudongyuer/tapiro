@@ -40,3 +40,52 @@ def within_screen(items, element):
     f = element['frame']
     assert f['x'] >= 0 and f['x'] + f['width'] <= width + 0.5, f'{element.get("AXUniqueId")} overflows: {f}'
 
+
+
+BUBBLE = 'chat-bubble-'
+
+
+def open_thread(ui, thread_id, title):
+    open_list(ui)
+    ui.tap(f'chat-row-{thread_id}')
+    ui.labelled(title)
+    ui.gone('chat-list')
+    return ui.element('chat-safety', timeout=45)
+
+
+def bubbles(items):
+    found = [i for i in items if (i.get('AXUniqueId') or '').startswith(BUBBLE)]
+    return sorted(found, key=lambda i: i['frame']['y'])
+
+
+def bubble_key(element):
+    return element['AXUniqueId'][len(BUBBLE):]
+
+
+def tab_bar_hidden(items):
+    tab = by_id(items, 'tab-messages')
+    if tab is None:
+        return True
+    f = tab['frame']
+    return f['y'] >= items[0]['frame']['height'] or f['height'] == 0
+
+
+def chat_calls(ui, name, count, timeout=10):
+    import json
+    import time
+
+    from choose import defaults
+    deadline = time.monotonic() + timeout
+    while True:
+        text = defaults(ui, 'uiVerifyChatCalls')
+        found = [call['args'] for call in json.loads(text or '[]') if call['name'] == name]
+        if len(found) >= count or time.monotonic() >= deadline:
+            return found
+        time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously
+
+
+def tap_button(ui, label):
+    found = ui.settled(lambda items: next((i for i in reversed(items) if i.get('AXLabel') == label
+                                           and i.get('type') == 'Button'), None), f'no {label} button')
+    f = found['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)

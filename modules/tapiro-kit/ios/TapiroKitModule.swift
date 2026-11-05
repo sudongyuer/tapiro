@@ -13,6 +13,12 @@ public final class TapiroKitModule: Module {
 
     View(PinnedBarView.self)
 
+    View(ContextMenuView.self) {
+      Events("onAction")
+      Prop("actions") { (view: ContextMenuView, actions: [ContextMenuActionRecord]) in view.setActions(actions) }
+      Prop("cornerRadius") { (view: ContextMenuView, radius: Double?) in view.setCornerRadius(radius ?? 0) }
+    }
+
     View(BountyMapView.self) {
       Events("onPinPress", "onMapPress", "onRegionChange", "onCameraChange", "onExpand")
       Prop("pins") { (view: BountyMapView, pins: [MapPinRecord]) in view.setPins(pins) }

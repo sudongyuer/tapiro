@@ -35,17 +35,24 @@ export default function TabsLayout() {
   useLiveChat(userId);
   useLive(userId);
   usePushRegistration(userId);
-  useNoticeRouting((route) => router.push(route), userId !== null);
+  useNoticeRouting(
+    (route) =>
+      route.pathname === '/messages/[thread]' ? router.navigate(route) : router.push(route),
+    userId !== null,
+  );
   const location = useTabLocation(useSegments());
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();
   const urgent = pickMostUrgent(feed.accessory);
   const badge = badgeText(feed.unreadMessages);
-  const showAccessory = accessoryVisible({
-    hasItem: urgent !== null,
-    onHomeRoot: location.tab === 'bounty' && location.onRoot,
-    liveCardsOnScreen,
-  });
+  const inThread = location.tab === 'messages' && !location.onRoot;
+  const showAccessory =
+    !inThread &&
+    accessoryVisible({
+      hasItem: urgent !== null,
+      onHomeRoot: location.tab === 'bounty' && location.onRoot,
+      liveCardsOnScreen,
+    });
 
   const openHome = () => {
     router.navigate('/bounty');
@@ -53,7 +60,11 @@ export default function TabsLayout() {
   };
 
   return (
-    <NativeTabs minimizeBehavior="onScrollDown" tintColor={color('--color-accent')}>
+    <NativeTabs
+      minimizeBehavior="onScrollDown"
+      tintColor={color('--color-accent')}
+      hidden={inThread}
+    >
       {showAccessory && urgent ? (
         <NativeTabs.BottomAccessory>
           <UrgentAccessory urgent={urgent} onPress={openHome} />

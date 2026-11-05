@@ -23,6 +23,8 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   (https://claude.ai/artifact/34EC3qaCsv1ibJZ4oeGK3o) before it is asked; canvas media is uploaded as assets
   (`/_blob/<id>`), since file paths render black. Style samples are drawn as stand-ins next to a polished,
   model-agnostic prompt; do not block on API keys.
+- Before building an answered choice, read its drawing on the canvas, not only the plan's one-line answer. Reason:
+  120 A's line said "dim while sending"; the board the owner answered drew a spinner and no dimming (2026-11-06).
 - A new feature area starts with reference research and a direction agreed with the owner, then one screen at a
   time. Reason: the first carpool round, drawn without research, was rejected whole (2026-10-31).
 - Push and open PRs on your own branches, and squash-merge your own PRs once CI is green, without asking. Ask before

@@ -78,6 +78,42 @@ export function PinnedBar({ children }: { children: ReactNode }) {
   return <NativePinnedBar>{children}</NativePinnedBar>;
 }
 
+export type ContextMenuAction = {
+  id: string;
+  title: string;
+  systemImage?: string;
+  destructive?: boolean;
+  separate?: boolean;
+};
+
+type NativeContextMenuProps = ViewProps & {
+  actions: ContextMenuAction[];
+  cornerRadius?: number;
+  onAction(event: NativeSyntheticEvent<{ id: string }>): void;
+};
+
+const NativeContextMenu = requireNativeView<NativeContextMenuProps>('TapiroKit', 'ContextMenuView');
+
+export function ContextMenuView({
+  actions,
+  cornerRadius,
+  onAction,
+  ...props
+}: ViewProps & {
+  actions: ContextMenuAction[];
+  cornerRadius?: number;
+  onAction(id: string): void;
+}) {
+  return (
+    <NativeContextMenu
+      {...props}
+      actions={actions}
+      cornerRadius={cornerRadius}
+      onAction={(event) => onAction(event.nativeEvent.id)}
+    />
+  );
+}
+
 const NativeTitleHalo = requireNativeView<ViewProps>('TapiroKit', 'TitleHaloView');
 
 const NativeBountyMap = requireNativeView<

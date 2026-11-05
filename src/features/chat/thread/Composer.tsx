@@ -10,6 +10,7 @@ import { space, typeStyle, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { canSend } from '../chatStore';
+import { chatDrafts } from '../services';
 import { MESSAGE_MAX } from '../types';
 
 export const COMPOSER_INPUT_ID = 'chat-composer-input';
@@ -21,17 +22,24 @@ const LINE_PADDING = (TARGET - BODY.lineHeight) / 2;
 export const COMPOSER_MIN_HEIGHT = TARGET + space.sm * 2;
 
 type Props = {
+  userId: string;
+  threadId: string;
   bottomInset: number;
   keyboardGap: number;
   onHeight: (height: number) => void;
   onSend: (body: string) => boolean;
 };
 
-export function Composer({ bottomInset, keyboardGap, onHeight, onSend }: Props) {
+export function Composer({ userId, threadId, bottomInset, keyboardGap, onHeight, onSend }: Props) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const [body, setBody] = useState('');
+  const [body, setDraft] = useState(() => chatDrafts.get(userId, threadId));
   const ready = canSend(body);
+
+  const setBody = (text: string) => {
+    setDraft(text);
+    chatDrafts.set(userId, threadId, text);
+  };
 
   const send = () => {
     if (!onSend(body)) return;
