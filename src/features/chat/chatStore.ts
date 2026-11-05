@@ -4,6 +4,15 @@ import type { LiveSignal } from '@/lib/live';
 import { createStore } from '@/lib/store';
 
 import { withBlock } from './blockMark';
+import {
+  canSend,
+  cleanBody,
+  failedOrStale,
+  IDLE,
+  staleIfReady,
+  type ChatState,
+  type ThreadState,
+} from './chatState';
 import type { Outbox } from './outbox';
 import {
   appendOlder,
@@ -14,83 +23,38 @@ import {
   needsMarkRead,
 } from './threadModel';
 import {
+  imagePath,
   LIST_RELOAD_MAX,
-  MESSAGE_MAX,
   PAGE_SIZE,
   type ChatMessage,
   type ChatService,
-  type LoadStatus,
+  type PendingImage,
   type PendingMessage,
   type ReportInput,
   type SendResult,
-  type ThreadInfo,
-  type ThreadSummary,
 } from './types';
 
-export type ListState =
-  | { status: 'idle' }
-  | {
-      status: LoadStatus;
-      threads: ThreadSummary[];
-      hasMore: boolean;
-      nextCursor: string | null;
-      more: 'idle' | 'loading' | 'failed';
-      loadedAt: string | null;
-    };
-
-export type UnreadState = { status: 'idle' } | { status: LoadStatus; count: number | null };
-
-export type ThreadState = {
-  status: LoadStatus;
-  info: ThreadInfo | null;
-  messages: ChatMessage[];
-  hasMore: boolean;
-  older: 'idle' | 'loading' | 'failed';
-  loadedAt: string | null;
-  reloadFailed: boolean;
-};
-
-export type ChatState = {
-  userId: string | null;
-  list: ListState;
-  unread: UnreadState;
-  threads: Readonly<Record<string, ThreadState>>;
-  pending: readonly PendingMessage[];
-};
-
-const IDLE: ChatState = {
-  userId: null,
-  list: { status: 'idle' },
-  unread: { status: 'idle' },
-  threads: {},
-  pending: [],
-};
-
-const EDGE_SPACE = /^[\s\u00a0\u200b\ufeff]+|[\s\u00a0\u200b\ufeff]+$/g;
-
-export const cleanBody = (body: string) => body.replace(EDGE_SPACE, '');
-
-export const canSend = (body: string) => {
-  const length = [...cleanBody(body)].length;
-  return length > 0 && length <= MESSAGE_MAX;
-};
-
-const staleIfReady = (thread: ThreadState): ThreadState =>
-  thread.status === 'ready' ? { ...thread, status: 'stale' } : thread;
-
-const failedOrStale = (status: LoadStatus, hasData: boolean): LoadStatus =>
-  hasData && status !== 'failed' && status !== 'loading' ? 'stale' : 'failed';
+export {
+  canSend,
+  cleanBody,
+  type ChatState,
+  type ListState,
+  type ThreadState,
+  type UnreadState,
+} from './chatState';
 
 export function createChatStore({
   service,
   outbox,
   newId,
   now = () => new Date(),
+  keepImage = () => undefined,
 }: {
   service: ChatService;
   outbox: Outbox;
   newId: () => string;
   now?: () => Date;
+  keepImage?: (file: string, path: string) => void;
 }) {
   const store = createStore<ChatState>(IDLE);
   const listOrder = createAnswerOrder();
@@ -350,7 +314,8 @@ export function createChatStore({
     };
   }
 
-  function storeSent(userId: string, message: ChatMessage) {
+  function storeSent(userId: string, message: ChatMessage, entry: PendingMessage) {
+    if (entry.image && message.image) keepImage(entry.image.file, message.image.path);
     outbox.remove(userId, [message.clientId]);
     syncPending(userId);
     const thread = get().threads[message.threadId];
@@ -370,19 +335,25 @@ export function createChatStore({
     sending.add(entry.clientId);
     outbox.put(userId, { ...entry, state: 'sending', failure: null });
     syncPending(userId);
+    const image = entry.image
+      ? { ...entry.image, path: imagePath(entry.threadId, userId, entry.clientId) }
+      : null;
     const result = await service
-      .send(entry.threadId, entry.clientId, entry.body)
+      .send(entry.threadId, entry.clientId, entry.body, image)
       .catch((): SendResult => ({ ok: false, failure: 'failed' }));
     if (at !== generation) {
       const kept = outbox.list(userId).some((item) => item.clientId === entry.clientId);
       if (!kept || sending.has(entry.clientId)) return;
-      if (result.ok) outbox.remove(userId, [entry.clientId]);
-      else outbox.put(userId, { ...entry, state: 'failed', failure: result.failure });
+      if (result.ok) {
+        if (entry.image && result.message.image)
+          keepImage(entry.image.file, result.message.image.path);
+        outbox.remove(userId, [entry.clientId]);
+      } else outbox.put(userId, { ...entry, state: 'failed', failure: result.failure });
       if (get().userId === userId) syncPending(userId);
       return;
     }
     sending.delete(entry.clientId);
-    if (result.ok) return storeSent(userId, result.message);
+    if (result.ok) return storeSent(userId, result.message, entry);
     outbox.put(userId, { ...entry, state: 'failed', failure: result.failure });
     syncPending(userId);
   }
@@ -450,13 +421,15 @@ export function createChatStore({
     loadOlder,
     markRead,
     onSignal,
-    send(threadId: string, body: string) {
+    send(threadId: string, body: string, image: PendingImage | null = null) {
       const userId = get().userId;
-      if (!userId || !canSend(body)) return null;
+      if (!userId || (image ? cleanBody(body) !== '' && !canSend(body) : !canSend(body)))
+        return null;
       const entry: PendingMessage = {
         clientId: newId(),
         threadId,
         body: cleanBody(body),
+        image,
         writtenAt: now().toISOString(),
         state: 'sending',
         failure: null,
@@ -464,6 +437,7 @@ export function createChatStore({
       void deliver(userId, entry);
       return entry.clientId;
     },
+    imageFile: (path: string) => service.imageFile(path),
     retry(clientId: string) {
       const userId = get().userId;
       const entry = get().pending.find((item) => item.clientId === clientId);

@@ -26,6 +26,7 @@ import { chatStore } from '../services';
 import { blockKind } from '../thread/safetyView';
 import { REPORT_NOTE_MAX, REPORT_REASONS, type ReportReason } from '../types';
 import { canSubmit, noteCount, reportInput, type ReportPhase } from './reportForm';
+import { messageText } from '../messageText';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
@@ -137,7 +138,7 @@ export function ReportSheet({
           {quoted ? (
             <Section title={t('chat.report.message')}>
               <Text modifiers={[lineLimit(3), accessibilityIdentifier('chat-report-quote')]}>
-                {quoted.body}
+                {messageText(quoted.body, quoted.image !== null, t)}
               </Text>
             </Section>
           ) : null}

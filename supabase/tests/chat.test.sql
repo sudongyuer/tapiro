@@ -85,7 +85,8 @@ select is(
 select is(
   pg_temp.send('a1', (select bt from fx), 1, '  你好，我在楼下  ') - 'id' - 'createdAt',
   jsonb_build_object(
-    'threadId', (select bt from fx), 'senderId', pg_temp.u('a1'), 'clientId', pg_temp.c(1), 'body', '你好，我在楼下'
+    'threadId', (select bt from fx), 'senderId', pg_temp.u('a1'), 'clientId', pg_temp.c(1), 'body', '你好，我在楼下',
+    'image', null
   ),
   'a member sends a text message, trimmed'
 );

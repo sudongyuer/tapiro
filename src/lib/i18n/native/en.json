@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Tapiro",
-    "NSCameraUsageDescription": "Scan a receive QR code shown on another screen. Tapiro reads the code only and saves no photo.",
+    "NSCameraUsageDescription": "Scan a receive QR code shown on another screen, or take a photo to send in a chat. The camera opens only when you tap Take Photo or scan; when scanning, Tapiro reads the code only.",
     "NSPhotoLibraryAddUsageDescription": "Save a payee's receive QR code to Photos so you can scan it from your wallet app. Tapiro only adds this one image.",
     "NSLocationWhenInUseUsageDescription": "Sort nearby bounties by how far they are, or use where you are now as a bounty's place. Used only while you use Tapiro."
   }

@@ -4,6 +4,7 @@ import { addDays, localClock, localDayKey } from '@/lib/deviceClock';
 import type { ArtSource, HandArtId } from '@/lib/handArt';
 
 import type { ThreadInfo, ThreadSummary } from '../types';
+import { messageText } from '../messageText';
 
 export type RowArt = { kind: 'bounty'; source: ArtSource } | { kind: 'ride'; id: HandArtId };
 
@@ -63,7 +64,7 @@ export function threadTitle(info: ThreadInfo, t: TFunction) {
 function lastText(row: ThreadSummary, me: string, t: TFunction) {
   const last = row.lastMessage;
   if (!last) return t('chat.list.noMessage');
-  const body = oneLine(last.body);
+  const body = oneLine(messageText(last.body, last.image !== null, t));
   if (last.senderId === me) return t('chat.list.mine', { body });
   if (row.kind === 'bounty') return body;
   const sender = row.members.find((member) => member.id === last.senderId);

@@ -24,6 +24,7 @@ const msg = (
     senderId: from,
     clientId: `c${n}`,
     body: `body ${n}`,
+    image: null,
     createdAt: at,
   }) satisfies ChatMessage;
 
@@ -32,6 +33,7 @@ const pending = (clientId: string, writtenAt: string, state: PendingMessage['sta
     clientId,
     threadId: 't1',
     body: clientId,
+    image: null,
     writtenAt,
     state,
     failure: state === 'failed' ? 'failed' : null,

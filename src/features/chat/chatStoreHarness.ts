@@ -38,6 +38,7 @@ export const msg = (n: number, from = PEER, clientId = `c${n}`): ChatMessage => 
   senderId: from,
   clientId,
   body: `body ${n}`,
+  image: null,
   createdAt: at(n),
 });
 
@@ -79,6 +80,7 @@ export function fakeService() {
     markRead: (...args) => call('markRead', args),
     unreadCount: () => call('unreadCount', []),
     report: async () => 'r1',
+    imageFile: async (path) => `file:///cache/${path}`,
   };
   const named = (name: string) => calls.filter((entry) => entry.name === name);
   return { service, calls, queues, named };
@@ -94,14 +96,19 @@ export const noAppState = { addEventListener: () => ({ remove: () => undefined }
 export function setup(settings = memorySettings()) {
   const fake = fakeService();
   let ids = 0;
-  const outbox = createOutbox(settings);
+  const dropped: string[] = [];
+  const kept: [string, string][] = [];
+  const outbox = createOutbox(settings, (entry) => {
+    if (entry.image) dropped.push(entry.image.file);
+  });
   const store = createChatStore({
     service: fake.service,
     outbox,
     newId: () => `new${++ids}`,
     now: () => new Date('2026-11-06T02:00:00.000Z'),
+    keepImage: (file, path) => kept.push([file, path]),
   });
   store.follow(ME, noAppState as never);
   fake.queues.unreadCount.shift()?.resolve(1);
-  return { ...fake, store, outbox, settings };
+  return { ...fake, store, outbox, settings, dropped, kept };
 }

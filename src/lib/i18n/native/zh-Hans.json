@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Tapiro",
-    "NSCameraUsageDescription": "用相机扫另一块屏幕上的收款码。Tapiro 只读取码的内容，不保存照片。",
+    "NSCameraUsageDescription": "扫另一块屏幕上的收款码，或在聊天里拍一张照片发给对方。只在你点「拍照」或扫码时打开相机；扫码时 Tapiro 只读取码的内容。",
     "NSPhotoLibraryAddUsageDescription": "把收款人的收款码存到相册，方便你在钱包 App 里扫。Tapiro 只添加这一张图。",
     "NSLocationWhenInUseUsageDescription": "按离你多远排附近的悬赏，或把你现在的位置当悬赏地点。只在你用 Tapiro 时定位。"
   }

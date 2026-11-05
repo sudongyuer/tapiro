@@ -37,6 +37,7 @@ const stored = (n: number, senderId: string, createdAt: string): ThreadItem => {
     senderId,
     clientId: `c${n}`,
     body: `body ${n}`,
+    image: null,
     createdAt,
   };
   return {
@@ -143,6 +144,7 @@ describe('bubble rows', () => {
         clientId: 'p1',
         threadId: 't1',
         body: '在大堂等你',
+        image: null,
         writtenAt: at(6, 15),
         state: 'failed',
         failure: 'failed',
@@ -150,6 +152,33 @@ describe('bubble rows', () => {
     };
     const [row] = bubbleRows([pending], info(), null, NOW, t, 'zh-Hans');
     expect([row.mine, row.body, row.read]).toEqual([true, '在大堂等你', null]);
+  });
+
+  test('a waiting image shows its local file; a stored one its path; both read as 「[图片]」', () => {
+    const waiting: ThreadItem = {
+      kind: 'pending',
+      key: 'p2',
+      pending: {
+        clientId: 'p2',
+        threadId: 't1',
+        body: '',
+        image: { file: 'p2.jpg', width: 3, height: 4 },
+        writtenAt: at(6, 15),
+        state: 'sending',
+        failure: null,
+      },
+    };
+    const theirs = stored(5, 'jie', at(6, 14));
+    if (theirs.kind === 'stored')
+      theirs.message = {
+        ...theirs.message,
+        body: '',
+        image: { path: 't1/jie/c5.jpg', width: 8, height: 6 },
+      };
+    const [peer, mine] = bubbleRows([theirs, waiting], info(), null, NOW, t, 'zh-Hans');
+    expect(peer.image).toEqual({ kind: 'stored', path: 't1/jie/c5.jpg', width: 8, height: 6 });
+    expect(mine.image).toEqual({ kind: 'local', file: 'p2.jpg', width: 3, height: 4 });
+    expect([peer.spoken, mine.spoken]).toEqual(['[图片]', '[图片]']);
   });
 });
 

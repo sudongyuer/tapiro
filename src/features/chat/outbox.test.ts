@@ -14,6 +14,7 @@ const entry = (clientId: string, state: PendingMessage['state'] = 'sending'): Pe
   clientId,
   threadId: 't1',
   body: `正文 ${clientId}`,
+  image: null,
   writtenAt: '2026-11-06T01:00:00.000Z',
   state,
   failure: state === 'failed' ? 'blocked' : null,
@@ -75,5 +76,29 @@ describe('chat outbox', () => {
         .list('u1')
         .map((item) => item.clientId),
     ).toEqual(['c2']);
+  });
+
+  test('an image entry keeps its file name and size across a restart; a broken image entry is dropped', () => {
+    const settings = memorySettings();
+    createOutbox(settings).put('u1', {
+      ...entry('c1'),
+      image: { file: 'c1.jpg', width: 3, height: 4 },
+    });
+    const raw = JSON.parse(String(settings.values['tapiro.chatOutbox.u1']));
+    raw.push({ ...raw[0], clientId: 'c2', image: { file: '', width: 3, height: 4 } });
+    settings.set({ 'tapiro.chatOutbox.u1': JSON.stringify(raw) });
+    expect(createOutbox(settings).list('u1')).toMatchObject([
+      { clientId: 'c1', image: { file: 'c1.jpg', width: 3, height: 4 }, state: 'failed' },
+    ]);
+  });
+
+  test('removing or clearing entries hands each one to onDrop, so its image file can go', () => {
+    const dropped: string[] = [];
+    const outbox = createOutbox(memorySettings(), (gone) => dropped.push(gone.clientId));
+    outbox.put('u1', entry('c1'));
+    outbox.put('u1', entry('c2'));
+    outbox.remove('u1', ['c1', 'missing']);
+    outbox.clear('u1');
+    expect(dropped).toEqual(['c1', 'c2']);
   });
 });

@@ -1,5 +1,6 @@
 export default {
   list: {
+    image: '[图片]',
     loading: '正在加载消息',
     failed: '消息没加载出来，请检查网络后重试',
     retry: '重试',
@@ -51,6 +52,20 @@ export default {
     },
   },
   thread: {
+    attach: '添加图片',
+    photo: '照片',
+    camera: '拍照',
+    image: '图片',
+    a11yImageState: '{{label}}，{{state}}',
+    openImage: '查看大图',
+    imageLoading: '正在加载图片',
+    imageFailed: '图片没加载出来，点一下重试',
+    viewFailed: '图片打不开，请稍后再试',
+    prepareFailed: '这张图片发不了，换一张试试',
+    cameraDenied: '没有相机权限',
+    cameraDeniedBody: '去「设置」里允许 Tapiro 使用相机，就能拍照发送。',
+    openSettings: '去设置',
+    cameraUnavailable: '这台设备用不了相机',
     placeholder: '发消息',
     send: '发送',
     failed: '没发出去，点一下重试',

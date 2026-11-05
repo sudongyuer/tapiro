@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { addDays, localClock, localDayKey } from '@/lib/deviceClock';
 
 import { rowTime } from '../list/rowView';
+import { messageText } from '../messageText';
 import type { RowArt } from '../list/rowView';
 import type { ChatSubject, SendFailure, ThreadInfo, ThreadItem } from '../types';
 
@@ -87,11 +88,17 @@ export function senderName(info: ThreadInfo | null, senderId: string, t: TFuncti
   return info?.members.find((member) => member.id === senderId)?.name ?? t('chat.list.someone');
 }
 
+export type BubbleImage =
+  | { kind: 'stored'; path: string; width: number; height: number }
+  | { kind: 'local'; file: string; width: number; height: number };
+
 export type BubbleRow = {
   key: string;
   item: ThreadItem;
   mine: boolean;
   body: string;
+  image: BubbleImage | null;
+  spoken: string;
   name: string | null;
   speaker: string | null;
   reportable: boolean;
@@ -101,6 +108,12 @@ export type BubbleRow = {
 };
 
 const BREAK_MS = 60 * 60_000;
+
+function imageOf(item: ThreadItem): BubbleImage | null {
+  if (item.kind === 'pending')
+    return item.pending.image && { kind: 'local', ...item.pending.image };
+  return item.message.image && { kind: 'stored', ...item.message.image };
+}
 
 const itemTime = (item: ThreadItem) =>
   item.kind === 'pending' ? item.pending.writtenAt : item.message.createdAt;
@@ -147,11 +160,15 @@ export function bubbleRows(
       item.kind === 'stored' && item.message.id === seenMessageId && info?.peerReadAt
         ? readLabel(info.peerReadAt, now, t, language)
         : null;
+    const body = item.kind === 'pending' ? item.pending.body : item.message.body;
+    const image = imageOf(item);
     return {
       key: item.key,
       item,
       mine,
-      body: item.kind === 'pending' ? item.pending.body : item.message.body,
+      body,
+      image,
+      spoken: messageText(body, image !== null, t),
       name: group && newSpeaker && sender && !folded ? senderName(info, sender, t) : null,
       speaker: !mine && sender ? senderName(info, sender, t) : null,
       reportable: !mine,
@@ -166,8 +183,12 @@ const itemState = (row: BubbleRow) =>
   row.item.kind === 'pending'
     ? `${row.item.pending.state}:${row.item.pending.failure ?? ''}`
     : row.item.message.id;
+const imageKey = (image: BubbleImage | null) =>
+  image ? (image.kind === 'stored' ? image.path : image.file) : '';
 export const sameRow = (a: BubbleRow, b: BubbleRow) =>
   a.body === b.body &&
+  imageKey(a.image) === imageKey(b.image) &&
+  a.spoken === b.spoken &&
   itemState(a) === itemState(b) &&
   a.name === b.name &&
   a.speaker === b.speaker &&

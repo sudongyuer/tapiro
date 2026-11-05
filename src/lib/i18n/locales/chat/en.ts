@@ -1,5 +1,6 @@
 export default {
   list: {
+    image: '[Photo]',
     loading: 'Loading messages',
     failed: 'Messages didn’t load. Check your connection and try again',
     retry: 'Try Again',
@@ -51,6 +52,20 @@ export default {
     },
   },
   thread: {
+    attach: 'Add Photo',
+    photo: 'Photos',
+    camera: 'Take Photo',
+    image: 'Photo',
+    a11yImageState: '{{label}}, {{state}}',
+    openImage: 'View Full Size',
+    imageLoading: 'Loading photo',
+    imageFailed: 'Photo didn’t load. Tap to try again.',
+    viewFailed: 'This photo couldn’t be opened. Try again later.',
+    prepareFailed: 'This photo can’t be sent. Try another one.',
+    cameraDenied: 'No Camera Access',
+    cameraDeniedBody: 'To take a photo, allow Tapiro to use the camera in Settings.',
+    openSettings: 'Open Settings',
+    cameraUnavailable: 'The camera isn’t available on this device',
     placeholder: 'Message',
     send: 'Send',
     failed: 'Not sent. Tap to try again.',

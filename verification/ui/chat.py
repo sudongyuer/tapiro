@@ -112,3 +112,18 @@ def sheet_action(ui, label):
 
 def labels(items):
     return [i.get('AXLabel') for i in items]
+
+
+def pick_image(ui, item_key):
+    ui.tap('chat-composer-attach')
+    ui.labelled(ui.t('chat.thread.photo'))
+    menu_pick(ui, ui.t(item_key))
+
+
+def drawn(shot, f, minimum=150):
+    # The fixture images are stretched QR codes: a drawn one has both near-black and near-white pixels, while the
+    # placeholder fill is one grey (light in light mode, dark in dark mode) and fails one of the two counts.
+    dark = shot.count(f, lambda rgb: max(rgb) < 50, pad=-2)
+    light = shot.count(f, lambda rgb: min(rgb) > 215, pad=-2)
+    assert dark >= minimum and light >= minimum, f'the image is not drawn in {f} ({dark} dark, {light} light)'
+    return dark, light

@@ -4,6 +4,7 @@ import {
   BOUNTY_SHOWN_STATUSES,
   RIDE_PHASES,
   THREAD_KINDS,
+  type ChatImage,
   type ChatMember,
   type ChatSubject,
   type ChatMessage,
@@ -32,14 +33,29 @@ const flag = (value: unknown, what: string) => (typeof value === 'boolean' ? val
 
 const list = (value: unknown, what: string) => (Array.isArray(value) ? value : fail(what));
 
+const side = (value: unknown, what: string) =>
+  Number.isInteger(value) && Number(value) > 0 ? Number(value) : fail(what);
+
+function toImage(value: unknown): ChatImage | null {
+  if (value === null || value === undefined) return null;
+  const row = body(value, 'message image');
+  return {
+    path: text(row.path, 'image path'),
+    width: side(row.width, 'image width'),
+    height: side(row.height, 'image height'),
+  };
+}
+
 export function toMessage(value: unknown): ChatMessage {
   const row = body(value, 'message');
+  const image = toImage(row.image);
   return {
     id: text(row.id, 'message id'),
     threadId: text(row.threadId, 'message threadId'),
     senderId: text(row.senderId, 'message senderId'),
     clientId: text(row.clientId, 'message clientId'),
-    body: text(row.body, 'message body'),
+    body: image && row.body === '' ? '' : text(row.body, 'message body'),
+    image,
     createdAt: text(row.createdAt, 'message createdAt'),
   };
 }
