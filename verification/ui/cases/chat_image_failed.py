@@ -34,7 +34,7 @@ drawn(shot, f)
 key = bubble['AXUniqueId'][len('chat-bubble-'):]
 time.sleep(2)  # a replay would follow the failed answer
 # Filtered by this message's client id: the preferences file can still hold the previous launch's calls.
-sent = [call for call in chat_calls(ui, 'send', 1) if call['clientId'] == key]
+sent = chat_calls(ui, 'send', 2, 0, where=lambda args: args['clientId'] == key)
 assert len(sent) == 1, f'a failed photo was sent again on its own: {chat_calls(ui, "send", 1)}'
 
 [retry] = retries(ui.read())
@@ -43,9 +43,7 @@ ui.labelled(ui.t('chat.thread.resendTitle'))
 tap_button(ui, ui.t('chat.thread.resend'))
 ui.wait(lambda items: not retries(items) and any(b.get('AXLabel') == mine for b in bubbles(items)),
         'the resent photo never turned stored', 20)
-ui.wait(lambda items: len([c for c in chat_calls(ui, 'send', 2, 0) if c['clientId'] == key]) == 2,
-        'the retry never reached the service', 10)
-first, second = [call for call in chat_calls(ui, 'send', 2) if call['clientId'] == key]
+first, second = chat_calls(ui, 'send', 2, where=lambda args: args['clientId'] == key)
 assert first['clientId'] == second['clientId'] and first['image'] == second['image'] and first['image'], \
     f'the retry changed the message or its image path: {first} {second}'
 ui.at_rest()

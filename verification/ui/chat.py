@@ -70,7 +70,7 @@ def tab_bar_hidden(items):
     return f['y'] >= items[0]['frame']['height'] or f['height'] == 0
 
 
-def chat_calls(ui, name, count, timeout=10):
+def chat_calls(ui, name, count, timeout=10, where=None):
     import json
     import time
 
@@ -78,7 +78,8 @@ def chat_calls(ui, name, count, timeout=10):
     deadline = time.monotonic() + timeout
     while True:
         text = defaults(ui, 'uiVerifyChatCalls')
-        found = [call['args'] for call in json.loads(text or '[]') if call['name'] == name]
+        found = [call['args'] for call in json.loads(text or '[]')
+                 if call['name'] == name and (where is None or where(call['args']))]
         if len(found) >= count or time.monotonic() >= deadline:
             return found
         time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously

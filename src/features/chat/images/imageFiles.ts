@@ -35,6 +35,8 @@ export async function prepareImage(source: { uri: string }): Promise<PendingImag
       ? original
       : await ImageManipulator.manipulate(original).resize(fitted).renderAsync();
   const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: IMAGE_QUALITY });
+  if (rendered !== original) rendered.release();
+  original.release();
   const name = `${randomUUID()}.jpg`;
   new File(saved.uri).moveSync(new File(ensure(outboxDir()), name));
   return { file: name, width: saved.width, height: saved.height };
