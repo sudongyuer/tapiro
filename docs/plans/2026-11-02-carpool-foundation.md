@@ -75,7 +75,7 @@ public, anon, authenticated`, then grant `authenticated` (client RPCs, actor fro
 - [ ] `src/features/place/index.ts` facade; bounty imports `@/features/place` only; `PlaceSearchScreen` exported from
       bounty's index unchanged for the routes.
 - [ ] `bun test` (place and board tests unchanged), `tsc`, lint; commit `refactor(place): move place search and the
-  origin store out of bounty`.
+    origin store out of bounty`.
 
 ### Task 2: shared block module
 
@@ -133,7 +133,7 @@ public, anon, authenticated`, then grant `authenticated` (client RPCs, actor fro
 
 - [ ] `nearby_rides(latitude, longitude, page_after, page_size, reference_currency)`: joinable rides, ordered by
       Malaysia day, then start distance (or departure without a location), then departure, id; cursor `{id,
-  latitude, longitude}`; organiser only, no members. `my_rides()` (24 h rule) and `ride_history()`.
+    latitude, longitude}`; organiser only, no members. `my_rides()` (24 h rule) and `ride_history()`.
 - [ ] pgTAP `ride_nearby.test.sql`. Commit `feat(carpool): nearby rides by day with a cursor`.
 
 ### Task 10: records and PR

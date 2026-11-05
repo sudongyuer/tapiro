@@ -360,7 +360,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 - [ ] VoiceOver labels: applicant row (name, tier, meta, note, selected state), hold button (label + 「按住约 1 秒，或
       双击确认」 hint).
 - [ ] zh-Hans first, then en, then ms; `bun test src/lib/i18n` passes; commit `feat(bounty): applicant list and
-  selection copy in zh-Hans, en, ms`.
+    selection copy in zh-Hans, en, ms`.
 
 ## Task 3: Hold token and `HoldButton` (Q49, Q50 answered)
 
@@ -382,7 +382,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
 - [ ] `HoldButton`: Gesture Handler `Gesture.LongPress().minDuration(0)` (or `Manual` if `LongPress` cannot report
       begin/end without delay; read `node_modules/react-native-gesture-handler` types first) drives a Reanimated shared
       value `progress` 0 → 1 with `withTiming` per Q50; the fill is a full-width view with `transform: [{ scaleX:
-  progress }]` anchored left (`transformOrigin: 'left'`); the label cross-fades from the track label to the fill
+    progress }]` anchored left (`transformOrigin: 'left'`); the label cross-fades from the track label to the fill
       label at 50 % by opacity only; release before 1 runs back per Q50; at 1 `runOnJS(onComplete)` once and the
       heavy impact. Haptic ticks from `holdSchedule` via `runOnJS(Haptics.impactAsync)`. `busy` shows `busyLabel`
       with a spinner and ignores touches; `disabled` uses the disabled appearance and ignores touches.
@@ -440,7 +440,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
       zero applicants per Q47; first-load failure 「没加载出来」 + 重试 (`InlineState`, no count); refresh failure: the
       warning `InlineState` with the data time above the list; closed (ruling 12).
 - [ ] Case `bounty_applicants` (`ARGS -uiVerifySignedIn onboarded`, scene `bounty-applicants`, `LOCALES ['zh-Hans',
-  'ms']`, `DEPS` the select folder, `src/ui/HoldButton.tsx`, the route): three rows in order 阿杰, Hana, Aiman with
+    'ms']`, `DEPS` the select folder, `src/ui/HoldButton.tsx`, the route): three rows in order 阿杰, Hana, Aiman with
       tier text and the Q48 meta; the button shows the Q46 state; tap Hana → check on Hana only and the label reads
       `ui.t('bounty.select.hold.label', name='Hana')`; tap 阿杰 → the check moves (assert Hana unchecked, so the first
       assertion can fail); the hint count reads 2; every row and the button ≥ 44 pt; `-uiVerifyApplicants none` → the
@@ -529,7 +529,7 @@ is replaced by a `create or replace` in the new migration only if Q48 = B
       verb); the tier keeps its width and the name truncates (42A); the full note is readable; with `fifty` the list
       scrolls to the last row above the pinned button; screenshots top, middle, end.
 - [ ] Fix every break (layout only; copy changes go to the user); re-run; commit `fix(bounty): worst-case applicant
-  list`.
+    list`.
 
 ## Task 10: Story map, README, rulings and the PR gate
 

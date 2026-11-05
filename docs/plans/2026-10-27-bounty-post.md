@@ -61,22 +61,22 @@ rows "Posting … fails", "No balance and no free post left", "Publishing blocke
 
 ## Decided UI (do not re-ask)
 
-| Item              | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                              | Source                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Only entry        | The manual 「+」 opens the form; no 问小貘 path in v1                                                                                                                                                                                                                                                                                                                                                                                                 | Decisions "Posting entry"                     |
-| Form shape        | Full-height sheet, native grouped `Form`; fixed rows title, category, reward on top; optional rows as 「＋ 添加…」 rows that expand in place; exact address appears only after a place; no online/offline toggle                                                                                                                                                                                                                                      | 1A; "Form shape"                              |
-| Form chrome       | 取消 left, title 发悬赏, 下一步 right (prominent); reward footer 「整数，RM 1–500。做完后由你直接付给对方。」; section header 「加点细节 · 都可以不填」; footer 「草稿只存在这台手机上，退出也不会丢。」; title row shows a `n/60` counter                                                                                                                                                                                                            | Canvas 1A                                     |
-| Category          | System menu (`Picker` with `pickerStyle('menu')`) over the eight slugs, each with its `CategorySticker` colour/glyph where the menu allows                                                                                                                                                                                                                                                                                                            | 1A; "Category"                                |
-| Reward            | Number pad, whole RM 1–500, stored as `reward_sen = RM × 100`                                                                                                                                                                                                                                                                                                                                                                                         | 1A; "Reward"                                  |
-| Limits            | Title ≤ 60, place label ≤ 80, description ≤ 500, exact address ≤ 120                                                                                                                                                                                                                                                                                                                                                                                  | "Text limits"                                 |
-| Confirm           | Pushed inside the same sheet; system screen titled 确认发布 with back; list-card preview, summary rows (place + exact address note, time, description first line), one 发布费 row, a refund footer, primary 发出去 pinned at the bottom                                                                                                                                                                                                               | 2A                                            |
-| Cost states       | Free: 「本月免费 · 还剩 n/3」, button 发出去. Coin: 「1 貘币 · 余额 N」, footer 「本月 3 次免费已用完…貘币退回」, button 「发出去 · 1 貘币」. Blocked: warning notice 「先付清再发新的」 listing the unpaid payments, primary 「去付款」, 发出去 disabled under it. No slot and no coin: 「1 貘币 · 余额 0」 in urgent, notice 「还差 1 貘币」 with the next free date and 「帮别人办成一单也会得貘币」, button 「需要 1 貘币」 disabled; no purchase | 2A extra states; "Coin cost"; "Unpaid poster" |
-| Unpaid hint       | Tapping 「+」 while `publish_blocked()` shows the reason once; the form still opens and the draft is kept; confirm blocks as in 2A                                                                                                                                                                                                                                                                                                                    | 13A                                           |
-| Draft             | Unsent drafts stay on this device only                                                                                                                                                                                                                                                                                                                                                                                                                | Data flow "Client"; KICKOFF 2026-10-11        |
-| Failure           | Progress until the RPC answers, then 「没发出去，再试一次」; the form stays filled; nothing replayed                                                                                                                                                                                                                                                                                                                                                  | Errors and degradation                        |
-| After publish     | The sheet closes. The fly-to-stack motion is step 9. The bounty shows up on the board (step 4) and in live cards (step 6) under the freshness rule                                                                                                                                                                                                                                                                                                    | Brief; Implementation order 4, 6, 9           |
-| Screen class      | Form and confirm are everyday system screens: grouped background, type stickers only, no full-size mascot                                                                                                                                                                                                                                                                                                                                             | Screen classes                                |
-| Photo sticker row | Not shown until step 9 builds the cut-out                                                                                                                                                                                                                                                                                                                                                                                                             | Implementation order 9                        |
+| Item | Decision | Source |
+| --- | --- | --- |
+| Only entry | The manual 「+」 opens the form; no 问小貘 path in v1 | Decisions "Posting entry" |
+| Form shape | Full-height sheet, native grouped `Form`; fixed rows title, category, reward on top; optional rows as 「＋ 添加…」 rows that expand in place; exact address appears only after a place; no online/offline toggle | 1A; "Form shape" |
+| Form chrome | 取消 left, title 发悬赏, 下一步 right (prominent); reward footer 「整数，RM 1–500。做完后由你直接付给对方。」; section header 「加点细节 · 都可以不填」; footer 「草稿只存在这台手机上，退出也不会丢。」; title row shows a `n/60` counter | Canvas 1A |
+| Category | System menu (`Picker` with `pickerStyle('menu')`) over the eight slugs, each with its `CategorySticker` colour/glyph where the menu allows | 1A; "Category" |
+| Reward | Number pad, whole RM 1–500, stored as `reward_sen = RM × 100` | 1A; "Reward" |
+| Limits | Title ≤ 60, place label ≤ 80, description ≤ 500, exact address ≤ 120 | "Text limits" |
+| Confirm | Pushed inside the same sheet; system screen titled 确认发布 with back; list-card preview, summary rows (place + exact address note, time, description first line), one 发布费 row, a refund footer, primary 发出去 pinned at the bottom | 2A |
+| Cost states | Free: 「本月免费 · 还剩 n/3」, button 发出去. Coin: 「1 貘币 · 余额 N」, footer 「本月 3 次免费已用完…貘币退回」, button 「发出去 · 1 貘币」. Blocked: warning notice 「先付清再发新的」 listing the unpaid payments, primary 「去付款」, 发出去 disabled under it. No slot and no coin: 「1 貘币 · 余额 0」 in urgent, notice 「还差 1 貘币」 with the next free date and 「帮别人办成一单也会得貘币」, button 「需要 1 貘币」 disabled; no purchase | 2A extra states; "Coin cost"; "Unpaid poster" |
+| Unpaid hint | Tapping 「+」 while `publish_blocked()` shows the reason once; the form still opens and the draft is kept; confirm blocks as in 2A | 13A |
+| Draft | Unsent drafts stay on this device only | Data flow "Client"; KICKOFF 2026-10-11 |
+| Failure | Progress until the RPC answers, then 「没发出去，再试一次」; the form stays filled; nothing replayed | Errors and degradation |
+| After publish | The sheet closes. The fly-to-stack motion is step 9. The bounty shows up on the board (step 4) and in live cards (step 6) under the freshness rule | Brief; Implementation order 4, 6, 9 |
+| Screen class | Form and confirm are everyday system screens: grouped background, type stickers only, no full-size mascot | Screen classes |
+| Photo sticker row | Not shown until step 9 builds the cut-out | Implementation order 9 |
 
 ## Open UI questions (answer before Task 5 starts)
 
@@ -144,14 +144,14 @@ UI and may start now.
 
 ## Motion
 
-| Motion                                 | Purpose    | Gate                                                        | Build                                                                                          |
-| -------------------------------------- | ---------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Optional row expands in place          | continuity | Frequent form interaction: system Form insertion only       | SwiftUI default row insertion via `@expo/ui` `withAnimation` default; no custom curve          |
-| Push form → confirm, back              | navigation | System                                                      | Native Stack push                                                                              |
-| Sheet present / dismiss                | navigation | System                                                      | Native page sheet                                                                              |
-| 发出去 progress                        | status     | System                                                      | `PillButton loading` (built `ActivityIndicator`, finite by nature; no ESLint exception needed) |
-| Success haptic on publish (if Q7 A)    | feedback   | Not motion; one haptic for one meaning (design-language 11) | `expo-haptics` success                                                                         |
-| Published sticker flies into the stack | continuity | Passed (spec)                                               | **Not here: step 9**                                                                           |
+| Motion | Purpose | Gate | Build |
+| --- | --- | --- | --- |
+| Optional row expands in place | continuity | Frequent form interaction: system Form insertion only | SwiftUI default row insertion via `@expo/ui` `withAnimation` default; no custom curve |
+| Push form → confirm, back | navigation | System | Native Stack push |
+| Sheet present / dismiss | navigation | System | Native page sheet |
+| 发出去 progress | status | System | `PillButton loading` (built `ActivityIndicator`, finite by nature; no ESLint exception needed) |
+| Success haptic on publish (if Q7 A) | feedback | Not motion; one haptic for one meaning (design-language 11) | `expo-haptics` success |
+| Published sticker flies into the stack | continuity | Passed (spec) | **Not here: step 9** |
 
 No `withRepeat`, no Reanimated in this step. If an answer above adds motion, it is offered through `animate-expo`
 first.
@@ -163,25 +163,20 @@ Server (built, consumed as is):
 ```ts
 // supabase.rpc('publish_bounty', PublishArgs) → PublishResult; replay with the same id returns the first outcome
 type PublishArgs = {
-  id: string; // client uuid v4, one per draft
-  title: string; // trimmed 1..60
-  category: BountyCategory; // 8 slugs, src/lib/stickers/category.ts
-  reward_sen: number; // 100..50000, multiple of 100
-  description: string | null; // 1..500
-  place_label: string | null; // with latitude/longitude together, 1..80
+  id: string;                // client uuid v4, one per draft
+  title: string;             // trimmed 1..60
+  category: BountyCategory;  // 8 slugs, src/lib/stickers/category.ts
+  reward_sen: number;        // 100..50000, multiple of 100
+  description: string | null;      // 1..500
+  place_label: string | null;      // with latitude/longitude together, 1..80
   latitude: number | null;
   longitude: number | null;
-  address: string | null; // only with a place, 1..120
-  starts_at: string | null; // ISO; future; ≤ now + 30 d
-  ends_at: string | null; // > starts_at; needs starts_at
-  deadline_at: string | null; // future; ≤ now + 30 d; ≥ starts_at
+  address: string | null;          // only with a place, 1..120
+  starts_at: string | null;        // ISO; future; ≤ now + 30 d
+  ends_at: string | null;          // > starts_at; needs starts_at
+  deadline_at: string | null;      // future; ≤ now + 30 d; ≥ starts_at
 };
-type PublishResult = {
-  id: string;
-  status: 'open' | string;
-  charge: 'free' | 'coin';
-  expiresAt: string;
-};
+type PublishResult = { id: string; status: 'open' | string; charge: 'free' | 'coin'; expiresAt: string };
 // Rejections arrive as PostgrestError { code, message }: message is the slug.
 //   'publish_blocked' (55000), 'no_balance' (55000), 'invalid_bounty' (22023), check violation code '23514'.
 // supabase.rpc('coin_balance') → { coins: number; freePostsLeft: number; freePostsPerMonth: 3; nextFreeAt: string }
@@ -200,10 +195,10 @@ export type TimeChoice =
   | { kind: 'window'; startsAt: string; endsAt: string };
 
 export type PostDraft = {
-  id: string; // uuid from expo-crypto; reused for every retry of this draft
+  id: string;                 // uuid from expo-crypto; reused for every retry of this draft
   title: string;
   category: BountyCategory | null;
-  rewardText: string; // digits as typed
+  rewardText: string;         // digits as typed
   description: string | null; // null = row not added
   time: TimeChoice;
   place: { label: string; latitude: number; longitude: number; address: string | null } | null; // Q3
@@ -211,28 +206,15 @@ export type PostDraft = {
 };
 
 export type DraftError =
-  | 'titleEmpty'
-  | 'titleTooLong'
-  | 'categoryEmpty'
-  | 'rewardEmpty'
-  | 'rewardRange'
-  | 'descriptionTooLong'
-  | 'placeTooLong'
-  | 'addressTooLong'
-  | 'timePast'
-  | 'timeTooFar'
-  | 'windowOrder';
+  | 'titleEmpty' | 'titleTooLong' | 'categoryEmpty' | 'rewardEmpty' | 'rewardRange'
+  | 'descriptionTooLong' | 'placeTooLong' | 'addressTooLong'
+  | 'timePast' | 'timeTooFar' | 'windowOrder';
 
-export type UnpaidSummary = {
-  paymentId: string;
-  payeeName: string;
-  amountSen: number;
-  createdAt: string;
-};
+export type UnpaidSummary = { paymentId: string; payeeName: string; amountSen: number; createdAt: string };
 
 export type PostStatus = {
   blocked: boolean;
-  unpaid: UnpaidSummary[]; // oldest first
+  unpaid: UnpaidSummary[];    // oldest first
   coins: number;
   freePostsLeft: number;
   freePostsPerMonth: number;
@@ -246,8 +228,7 @@ export type CostLine =
   | { kind: 'blocked'; unpaid: UnpaidSummary[]; under: 'free' | 'coin' | 'none' };
 
 export type PublishFailure = 'blocked' | 'noBalance' | 'invalid' | 'failed';
-export type PublishOutcome =
-  { ok: true; result: PublishResult } | { ok: false; reason: PublishFailure };
+export type PublishOutcome = { ok: true; result: PublishResult } | { ok: false; reason: PublishFailure };
 
 export type PostService = {
   status(): Promise<PostStatus>;
@@ -255,10 +236,7 @@ export type PostService = {
 };
 
 // src/features/bounty/post/validate.ts
-export function checkDraft(
-  draft: PostDraft,
-  now: Date,
-): { ok: true; args: PublishArgs } | { ok: false; error: DraftError };
+export function checkDraft(draft: PostDraft, now: Date): { ok: true; args: PublishArgs } | { ok: false; error: DraftError };
 export function codePoints(text: string): number;
 export function parseReward(text: string): number | null; // whole RM 1..500 → sen, else null
 
@@ -269,70 +247,64 @@ export function costLine(status: PostStatus): CostLine;
 export function toFailure(error: unknown): PublishFailure;
 
 // src/features/bounty/post/draftStore.ts
-export function createDraftStore(
-  storage: DraftStorage,
-  newId: () => string,
-): {
-  load(userId: string): PostDraft; // stored draft or a fresh one with a new id
+export function createDraftStore(storage: DraftStorage, newId: () => string): {
+  load(userId: string): PostDraft;          // stored draft or a fresh one with a new id
   update(userId: string, patch: Partial<PostDraft>): void; // persists synchronously
-  clear(userId: string): void; // only after a successful publish or 清空草稿
+  clear(userId: string): void;              // only after a successful publish or 清空草稿
   isEmpty(draft: PostDraft): boolean;
   subscribe(listener: () => void): () => void;
   getSnapshot(): PostDraft | null;
 };
-export type DraftStorage = {
-  read(userId: string): unknown;
-  write(userId: string, draft: PostDraft | null): void;
-};
+export type DraftStorage = { read(userId: string): unknown; write(userId: string, draft: PostDraft | null): void };
 ```
 
 Verify launch arguments (fixture service, `uiVerify` only):
 
-| Argument               | Values                                                                                       | Effect                                                                        |
-| ---------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `-uiVerifyPostCost`    | `free` (default, 2/3 left), `last` (1/3), `coin` (0 free, 4 coins), `none` (0 free, 0 coins) | `status()` cost fields                                                        |
-| `-uiVerifyUnpaid`      | `none` (default), `two` (阿杰 RM 15, Lily RM 6), `old` (one payment 8 days old)              | `status()` blocked + unpaid; `old`/`two` also make `publish` reject `blocked` |
-| `-uiVerifyPublish`     | `ok` (default), `failOnce` (first call `failed`, then ok), `fail` (always `failed`)          | `publish()` outcome; `none` cost makes `publish` reject `noBalance`           |
-| `-uiVerifyStatusFail`  | `1`                                                                                          | first `status()` throws, then succeeds                                        |
-| `-uiVerifyBountyDraft` | `none` (default), `demo`, `worst`                                                            | seeds the stored draft before the first read                                  |
+| Argument | Values | Effect |
+| --- | --- | --- |
+| `-uiVerifyPostCost` | `free` (default, 2/3 left), `last` (1/3), `coin` (0 free, 4 coins), `none` (0 free, 0 coins) | `status()` cost fields |
+| `-uiVerifyUnpaid` | `none` (default), `two` (阿杰 RM 15, Lily RM 6), `old` (one payment 8 days old) | `status()` blocked + unpaid; `old`/`two` also make `publish` reject `blocked` |
+| `-uiVerifyPublish` | `ok` (default), `failOnce` (first call `failed`, then ok), `fail` (always `failed`) | `publish()` outcome; `none` cost makes `publish` reject `noBalance` |
+| `-uiVerifyStatusFail` | `1` | first `status()` throws, then succeeds |
+| `-uiVerifyBountyDraft` | `none` (default), `demo`, `worst` | seeds the stored draft before the first read |
 
 The fixture `publish` records every id it accepted and returns the first outcome for a repeated id, like the RPC.
 
 ## File structure
 
-| Action | Path                                                               | Responsibility                                                                                             |
-| ------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| Create | `src/features/bounty/index.ts`                                     | Public exports: `PostForm`, `PostConfirm`, `useStartPost`, fixture ids                                     |
-| Create | `src/features/bounty/post/types.ts`                                | Types above                                                                                                |
-| Create | `src/features/bounty/post/validate.ts` (+ `.test.ts`)              | Code-point limits, reward parse, time rules, `checkDraft` → `PublishArgs`                                  |
-| Create | `src/features/bounty/post/cost.ts` (+ `.test.ts`)                  | `costLine`, next-free date in Malaysia time                                                                |
-| Create | `src/features/bounty/post/publishError.ts` (+ `.test.ts`)          | PostgrestError → `PublishFailure`                                                                          |
-| Create | `src/features/bounty/post/postService.ts` (+ `.test.ts`)           | Supabase `status()` and `publish()`                                                                        |
-| Create | `src/features/bounty/post/postService.integration.ts`              | Local-stack round trip (add to `test:stack`)                                                               |
-| Create | `src/features/bounty/post/fixturePostService.ts` (+ `.test.ts`)    | Verify-mode service per the argument table                                                                 |
-| Create | `src/features/bounty/post/draftStore.ts` (+ `.test.ts`)            | Draft lifecycle, id reuse, persistence                                                                     |
-| Create | `src/features/bounty/post/draftStorage.ts`                         | `Settings` key `tapiro.bountyDraft.<userId>`; fixture seed in verify mode                                  |
-| Create | `src/features/bounty/post/fixtureDrafts.ts`                        | `demo` and `worst` drafts                                                                                  |
-| Create | `src/features/bounty/post/services.ts`                             | Wires fixture or Supabase service, draft store, `randomUUID`                                               |
-| Create | `src/features/bounty/post/usePostFlow.ts`                          | Status load, publish with in-flight guard, failure state, `useStartPost` (13A)                             |
-| Create | `src/features/bounty/post/PostForm.tsx`                            | 1A form: fixed rows, error notice, chrome                                                                  |
-| Create | `src/features/bounty/post/OptionalRows.tsx`                        | 「＋ 添加…」 rows: time, description (place per Q3)                                                        |
-| Create | `src/features/bounty/post/PostConfirm.tsx`                         | 2A confirm: preview, summary, cost row, notices, pinned actions                                            |
-| Create | `src/features/bounty/post/CostSection.tsx`                         | Cost row and its four states                                                                               |
-| Create | `src/ui/TaskCard.tsx`                                              | List-card layout (sticker, title, meta line, reward); reused by step 4                                     |
-| Move   | `src/features/payment/SheetFrame.tsx` → `src/ui/SheetFrame.tsx`    | Shared pinned-actions frame; payment imports updated; `testID` becomes a prop (payment passes `pay-sheet`) |
-| Create | `src/app/bounty-post/_layout.tsx`                                  | Nested Stack: `index` (form), `confirm`                                                                    |
-| Create | `src/app/bounty-post/index.tsx`, `src/app/bounty-post/confirm.tsx` | Routes composing the bounty feature with `useSignedInUser`                                                 |
-| Modify | `src/app/_layout.tsx`                                              | Register `bounty-post` as a `pageSheet` with `headerShown: false` (inner Stack owns headers)               |
-| Modify | `src/app/(tabs)/bounty/index.tsx` or `_layout.tsx`                 | 「+」 toolbar button (Q1) calling `useStartPost`                                                           |
-| Create | `src/lib/i18n/locales/bounty/{zh-Hans,en,ms}.ts`                   | `bounty.category.*`, `bounty.post.*` copy                                                                  |
-| Modify | `src/lib/i18n/locales/{zh-Hans,en,ms}.ts`                          | Import the `bounty` namespace                                                                              |
-| Create | `src/debug/BountyScenes.tsx`; Modify `src/debug/scenes.tsx`        | Scenes `bounty-post`, `bounty-confirm`                                                                     |
-| Create | `verification/ui/bounty.py`                                        | Helpers: `open_post`, `fill_fixed`, `next_step`, `assert_cost`                                             |
-| Create | `verification/ui/cases/bounty_post_*.py`                           | Cases listed per task                                                                                      |
-| Modify | `verification/ui/README.md`                                        | Arguments and cases rows                                                                                   |
-| Modify | `docs/story-map.md`                                                | `bounty.post.*` rows: coverage names and new criteria                                                      |
-| Modify | `package.json`, `bun.lock`, `app.json` (if the plugin needs it)    | `expo-crypto` via `bunx expo install`                                                                      |
+| Action | Path | Responsibility |
+| --- | --- | --- |
+| Create | `src/features/bounty/index.ts` | Public exports: `PostForm`, `PostConfirm`, `useStartPost`, fixture ids |
+| Create | `src/features/bounty/post/types.ts` | Types above |
+| Create | `src/features/bounty/post/validate.ts` (+ `.test.ts`) | Code-point limits, reward parse, time rules, `checkDraft` → `PublishArgs` |
+| Create | `src/features/bounty/post/cost.ts` (+ `.test.ts`) | `costLine`, next-free date in Malaysia time |
+| Create | `src/features/bounty/post/publishError.ts` (+ `.test.ts`) | PostgrestError → `PublishFailure` |
+| Create | `src/features/bounty/post/postService.ts` (+ `.test.ts`) | Supabase `status()` and `publish()` |
+| Create | `src/features/bounty/post/postService.integration.ts` | Local-stack round trip (add to `test:stack`) |
+| Create | `src/features/bounty/post/fixturePostService.ts` (+ `.test.ts`) | Verify-mode service per the argument table |
+| Create | `src/features/bounty/post/draftStore.ts` (+ `.test.ts`) | Draft lifecycle, id reuse, persistence |
+| Create | `src/features/bounty/post/draftStorage.ts` | `Settings` key `tapiro.bountyDraft.<userId>`; fixture seed in verify mode |
+| Create | `src/features/bounty/post/fixtureDrafts.ts` | `demo` and `worst` drafts |
+| Create | `src/features/bounty/post/services.ts` | Wires fixture or Supabase service, draft store, `randomUUID` |
+| Create | `src/features/bounty/post/usePostFlow.ts` | Status load, publish with in-flight guard, failure state, `useStartPost` (13A) |
+| Create | `src/features/bounty/post/PostForm.tsx` | 1A form: fixed rows, error notice, chrome |
+| Create | `src/features/bounty/post/OptionalRows.tsx` | 「＋ 添加…」 rows: time, description (place per Q3) |
+| Create | `src/features/bounty/post/PostConfirm.tsx` | 2A confirm: preview, summary, cost row, notices, pinned actions |
+| Create | `src/features/bounty/post/CostSection.tsx` | Cost row and its four states |
+| Create | `src/ui/TaskCard.tsx` | List-card layout (sticker, title, meta line, reward); reused by step 4 |
+| Move | `src/features/payment/SheetFrame.tsx` → `src/ui/SheetFrame.tsx` | Shared pinned-actions frame; payment imports updated; `testID` becomes a prop (payment passes `pay-sheet`) |
+| Create | `src/app/bounty-post/_layout.tsx` | Nested Stack: `index` (form), `confirm` |
+| Create | `src/app/bounty-post/index.tsx`, `src/app/bounty-post/confirm.tsx` | Routes composing the bounty feature with `useSignedInUser` |
+| Modify | `src/app/_layout.tsx` | Register `bounty-post` as a `pageSheet` with `headerShown: false` (inner Stack owns headers) |
+| Modify | `src/app/(tabs)/bounty/index.tsx` or `_layout.tsx` | 「+」 toolbar button (Q1) calling `useStartPost` |
+| Create | `src/lib/i18n/locales/bounty/{zh-Hans,en,ms}.ts` | `bounty.category.*`, `bounty.post.*` copy |
+| Modify | `src/lib/i18n/locales/{zh-Hans,en,ms}.ts` | Import the `bounty` namespace |
+| Create | `src/debug/BountyScenes.tsx`; Modify `src/debug/scenes.tsx` | Scenes `bounty-post`, `bounty-confirm` |
+| Create | `verification/ui/bounty.py` | Helpers: `open_post`, `fill_fixed`, `next_step`, `assert_cost` |
+| Create | `verification/ui/cases/bounty_post_*.py` | Cases listed per task |
+| Modify | `verification/ui/README.md` | Arguments and cases rows |
+| Modify | `docs/story-map.md` | `bounty.post.*` rows: coverage names and new criteria |
+| Modify | `package.json`, `bun.lock`, `app.json` (if the plugin needs it) | `expo-crypto` via `bunx expo install` |
 
 ## Task 1: Draft model, validation, cost line and failure mapping (no UI)
 
@@ -445,7 +417,7 @@ tab route, `PostForm.tsx`, `src/features/bounty/index.ts`, `src/debug/BountyScen
       payment imports; `pay_*` cases are selected by the shared path and run at the milestone.
 - [ ] Prove the nested Stack in a page sheet first: `src/app/bounty-post/_layout.tsx` with `index` and `confirm`,
       registered in the root `Stack.Protected guard={stage === 'ready'}` as `{ presentation: 'pageSheet', headerShown:
-    false }`; the inner Stack shows a native header with back on `confirm`. Run it once on the Simulator before
+      false }`; the inner Stack shows a native header with back on `confirm`. Run it once on the Simulator before
       building the form. If the inner header or back does not render, stop and report (do not fake a header in RN).
 - [ ] 「+」 per Q1 with `testID="bounty-post-open"` and label `t('bounty.post.open')`; it calls `router.push('/bounty-post')`.
 - [ ] `PostForm`: toolbar 取消 (`bounty-post-cancel`) / title / 下一步 (`bounty-post-next`, prominent, accent tint);
@@ -514,8 +486,12 @@ scene `bounty-confirm`, cases `bounty_post_publish`, `bounty_post_coin`, `bounty
       meta line (place label · time), reward in `--text-reward` SF Rounded; no raw sizes. Preview content per Q9.
 - [ ] `PostConfirm`: `SheetFrame` with the preview section, summary section (time with the same formatter the board
       will use, description first line; place rows per Q3), `CostSection` (`bounty-post-cost`) showing exactly one
-      state of "Decided UI → Cost states", the refund footer, and pinned `SheetActions`: - free / coin: `PillButton` 发出去 or 「发出去 · 1 貘币」 (`bounty-post-publish`), `loading` while busy; - blocked: 「去付款」 primary (`bounty-post-pay`) above a disabled 发出去; - none: disabled 「需要 1 貘币」 (`bounty-post-publish`, disabled); - status loading: disabled 发出去; status failed: urgent notice 「发布费没加载出来」 with 重试
-      (`bounty-post-cost-retry`) and no cost value shown.
+      state of "Decided UI → Cost states", the refund footer, and pinned `SheetActions`:
+      - free / coin: `PillButton` 发出去 or 「发出去 · 1 貘币」 (`bounty-post-publish`), `loading` while busy;
+      - blocked: 「去付款」 primary (`bounty-post-pay`) above a disabled 发出去;
+      - none: disabled 「需要 1 貘币」 (`bounty-post-publish`, disabled);
+      - status loading: disabled 发出去; status failed: urgent notice 「发布费没加载出来」 with 重试
+        (`bounty-post-cost-retry`) and no cost value shown.
       While busy: header back hidden and the sheet's swipe-to-dismiss off (`gestureEnabled: false`), restored after
       the answer.
 - [ ] Publish: `draftStore` already holds the latest values (synchronous write); `checkDraft` at tap time (times may
@@ -526,16 +502,21 @@ scene `bounty-confirm`, cases `bounty_post_publish`, `bounty_post_coin`, `bounty
       composes it, the feature only calls `onPay(id)`).
 - [ ] Scene `bounty-confirm` renders `PostConfirm` with the `demo` draft for cases that start on confirm.
 - [ ] Cases (all `ARGS -uiVerifySignedIn onboarded -uiVerifyBountyDraft demo` plus the row's arguments; DEPS as Task 5
-      plus `src/ui/TaskCard.tsx`, `src/ui/SheetFrame.tsx`): - `bounty_post_publish` (`-uiVerifyPostCost free`): the preview shows the title, `RM 8`; the cost row reads
-      `ui.t('bounty.post.cost.free', left=2, of=3)`; 发出去 is pinned below the form (`pay.assert_pinned` pattern,
-      44 pt); tapping it shows progress, the sheet closes, home is back, and reopening 「+」 shows an empty form
-      (the draft was cleared). Video of the tap. - `bounty_post_coin` (`coin`): cost `1 貘币 · 余额 4`, coin footer, button 「发出去 · 1 貘币」; publish succeeds. - `bounty_post_no_balance` (`none`, `LOCALES ['zh-Hans', 'ms']`): urgent balance 0, 「还差 1 貘币」 notice with the
-      formatted next-free date, the earn line, disabled 「需要 1 貘币」; tapping it does nothing (sheet stays, draft
-      stays); no purchase control on screen. - `bounty_post_blocked` (`-uiVerifyUnpaid two`, `LOCALES ['zh-Hans', 'ms']`): notice 「先付清再发新的」 names 阿杰
-      RM 15 and Lily RM 6; 「去付款」 primary, 发出去 disabled; 「去付款」 opens the pay sheet for 阿杰's payment
-      (per Q8); reopening 「+」 still shows the draft. - `bounty_post_failed` (`-uiVerifyPublish failOnce`): first 发出去 shows 「没发出去，再试一次」 and the form values
-      are intact after going back; the second 发出去 succeeds and closes the sheet. A `-uiVerifyStatusFail 1` pass
-      in the same case shows the cost-failed notice, not a free line, until 重试.
+      plus `src/ui/TaskCard.tsx`, `src/ui/SheetFrame.tsx`):
+      - `bounty_post_publish` (`-uiVerifyPostCost free`): the preview shows the title, `RM 8`; the cost row reads
+        `ui.t('bounty.post.cost.free', left=2, of=3)`; 发出去 is pinned below the form (`pay.assert_pinned` pattern,
+        44 pt); tapping it shows progress, the sheet closes, home is back, and reopening 「+」 shows an empty form
+        (the draft was cleared). Video of the tap.
+      - `bounty_post_coin` (`coin`): cost `1 貘币 · 余额 4`, coin footer, button 「发出去 · 1 貘币」; publish succeeds.
+      - `bounty_post_no_balance` (`none`, `LOCALES ['zh-Hans', 'ms']`): urgent balance 0, 「还差 1 貘币」 notice with the
+        formatted next-free date, the earn line, disabled 「需要 1 貘币」; tapping it does nothing (sheet stays, draft
+        stays); no purchase control on screen.
+      - `bounty_post_blocked` (`-uiVerifyUnpaid two`, `LOCALES ['zh-Hans', 'ms']`): notice 「先付清再发新的」 names 阿杰
+        RM 15 and Lily RM 6; 「去付款」 primary, 发出去 disabled; 「去付款」 opens the pay sheet for 阿杰's payment
+        (per Q8); reopening 「+」 still shows the draft.
+      - `bounty_post_failed` (`-uiVerifyPublish failOnce`): first 发出去 shows 「没发出去，再试一次」 and the form values
+        are intact after going back; the second 发出去 succeeds and closes the sheet. A `-uiVerifyStatusFail 1` pass
+        in the same case shows the cost-failed notice, not a free line, until 重试.
 - [ ] Checks; run each case once; commit `feat(bounty): confirm screen with cost line, blocked states and publish`.
 
 ## Task 8: 13A hint on 「+」
@@ -565,7 +546,7 @@ Starts after Q2.
       RM 500), an RM 1 draft, a draft with no optional rows, `-uiVerifyFixture worst` (40-character names in the
       blocked notice with RM 12,345.60), two and one unpaid payments, ms copy, light and dark at the default text size.
 - [ ] Case `bounty_post_worst` (`LOCALES ['zh-Hans', 'ms']`, `-uiVerifyBountyDraft worst -uiVerifyUnpaid two
-    -uiVerifyFixture worst`): the title wraps without truncating the reward; the reward reads `RM 500` in full; the
+      -uiVerifyFixture worst`): the title wraps without truncating the reward; the reward reads `RM 500` in full; the
       pinned buttons stay 44 pt and fully above the home indicator; the notice text is complete after scrolling; the
       description counter reads 500/500. Screenshots of form and confirm in both scroll positions.
 - [ ] Fix every break found (layout only; no copy shortening without the user), re-run the case; commit
@@ -577,10 +558,21 @@ Starts after Q2.
 
 **Steps**
 
-- [ ] `docs/story-map.md`, story `bounty.post` stays `building` (ai-draft, sticker and photo are later steps): - `bounty.post.manual` → `ui:bounty_post_form, ui:bounty_post_publish` - `bounty.post.limits` → add `unit:src/features/bounty/post/validate.test.ts`, `ui:bounty_post_form` - `bounty.post.cost` → add `unit:src/features/bounty/post/cost.test.ts`, `ui:bounty_post_coin` - `bounty.post.publish-blocked` → add `ui:bounty_post_blocked` - `bounty.post.no-balance` → add `ui:bounty_post_no_balance` - `bounty.post.replay` → add `unit:src/features/bounty/post/fixturePostService.test.ts`,
-      `int:src/features/bounty/post/postService.integration.ts` - new `bounty.post.draft` 「草稿只存在这台手机上：关掉、失败、重启都还在，发出去后才清空」 →
-      `unit:src/features/bounty/post/draftStore.test.ts`, `ui:bounty_post_draft` - new `bounty.post.optional` 「时间和说明按需添加，在原位展开」 → `ui:bounty_post_optional` - new `bounty.post.failure` 「发布失败显示没发出去，表单保持，重试用同一条，不自动重发」 →
-      `unit:src/features/bounty/post/usePostFlow.test.ts`, `ui:bounty_post_failed` - new `bounty.post.unpaid-hint` 「有欠款时点 + 先提示一次原因，表单照样打开」 → `ui:bounty_post_unpaid_hint` - new `bounty.post.worst` 「60 字标题、500 字说明、RM 500 和 RM 1 在表单和确认页都排得下」 → `ui:bounty_post_worst`
+- [ ] `docs/story-map.md`, story `bounty.post` stays `building` (ai-draft, sticker and photo are later steps):
+      - `bounty.post.manual` → `ui:bounty_post_form, ui:bounty_post_publish`
+      - `bounty.post.limits` → add `unit:src/features/bounty/post/validate.test.ts`, `ui:bounty_post_form`
+      - `bounty.post.cost` → add `unit:src/features/bounty/post/cost.test.ts`, `ui:bounty_post_coin`
+      - `bounty.post.publish-blocked` → add `ui:bounty_post_blocked`
+      - `bounty.post.no-balance` → add `ui:bounty_post_no_balance`
+      - `bounty.post.replay` → add `unit:src/features/bounty/post/fixturePostService.test.ts`,
+        `int:src/features/bounty/post/postService.integration.ts`
+      - new `bounty.post.draft` 「草稿只存在这台手机上：关掉、失败、重启都还在，发出去后才清空」 →
+        `unit:src/features/bounty/post/draftStore.test.ts`, `ui:bounty_post_draft`
+      - new `bounty.post.optional` 「时间和说明按需添加，在原位展开」 → `ui:bounty_post_optional`
+      - new `bounty.post.failure` 「发布失败显示没发出去，表单保持，重试用同一条，不自动重发」 →
+        `unit:src/features/bounty/post/usePostFlow.test.ts`, `ui:bounty_post_failed`
+      - new `bounty.post.unpaid-hint` 「有欠款时点 + 先提示一次原因，表单照样打开」 → `ui:bounty_post_unpaid_hint`
+      - new `bounty.post.worst` 「60 字标题、500 字说明、RM 500 和 RM 1 在表单和确认页都排得下」 → `ui:bounty_post_worst`
       Use the test names exactly as written in the files. `node scripts/check-story-map.mjs` passes.
 - [ ] README: add the five launch arguments and the ten case rows.
 - [ ] Run `bun run verify:smoke` and `bun run verify:ui --affected` (zh-Hans light); open every screenshot.
@@ -646,18 +638,18 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
 
 ## Not in this plan
 
-| Item                                                                  | Owning step                                       |
-| --------------------------------------------------------------------- | ------------------------------------------------- |
+| Item | Owning step |
+| --- | --- |
 | Place picker / place search, and the 地点 · 精确地址 rows (if Q3 = A) | Step 4 (needs `expo-location`; canvas item first) |
-| Board list, distance, where the published bounty appears for others   | Step 4                                            |
-| Live card 「等人申请」 for the poster, the bounty live-item source    | Step 6                                            |
-| Close (cancel) an open bounty from the UI (`close_bounty` exists)     | Step 6 status screen                              |
-| Photo → die-cut sticker row and upload                                | Step 9                                            |
-| Publish fly-to-stack animation and card pop                           | Step 9                                            |
-| 问小貘 drafting into the confirm form with 撤销                       | Step 10 (after foundation step 8)                 |
-| Buying 貘币                                                           | Foundation step 5                                 |
-| Push after the first post                                             | Step 11 (after foundation step 9)                 |
-| Gates and 先付 options in the form                                    | Step 12, by decision                              |
+| Board list, distance, where the published bounty appears for others | Step 4 |
+| Live card 「等人申请」 for the poster, the bounty live-item source | Step 6 |
+| Close (cancel) an open bounty from the UI (`close_bounty` exists) | Step 6 status screen |
+| Photo → die-cut sticker row and upload | Step 9 |
+| Publish fly-to-stack animation and card pop | Step 9 |
+| 问小貘 drafting into the confirm form with 撤销 | Step 10 (after foundation step 8) |
+| Buying 貘币 | Foundation step 5 |
+| Push after the first post | Step 11 (after foundation step 9) |
+| Gates and 先付 options in the form | Step 12, by decision |
 
 ## Final acceptance
 

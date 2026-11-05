@@ -71,22 +71,22 @@ branch is not pushed to the hosted project until `20261026000800` has landed.
 
 ## Rejection reasons
 
-| Slug                 | SQLSTATE | When                                                                                          |
-| -------------------- | -------- | --------------------------------------------------------------------------------------------- |
-| `bounty_not_found`   | `P0002`  | No bounty with that id is visible to the caller                                               |
-| `invalid_bounty`     | `22023`  | Publish input breaks a rule not covered by a check constraint (times, place pairing, address) |
-| `publish_blocked`    | `55000`  | `publish_blocked()` is true for the poster                                                    |
-| `no_balance`         | `55000`  | From `spend_post`: no free slot and no coin                                                   |
-| `own_bounty`         | `22023`  | The poster applies to their own bounty                                                        |
-| `no_payee_method`    | `55000`  | The applicant has no `payee_methods` row (cash counts)                                        |
-| `blocked`            | `42501`  | Either side blocked the other (visibility to the blocked side: Open question 4)               |
-| `taken`              | `55000`  | Apply or select after a helper was selected                                                   |
-| `closed`             | `55000`  | The bounty is `closed` or `cancelled`, or `open` past `expires_at` before the job ran         |
-| `not_pending`        | `55000`  | Select an applicant whose application is not `pending`; withdraw a non-pending application    |
-| `not_poster`         | `42501`  | A poster-only action by someone else                                                          |
-| `not_helper`         | `42501`  | A helper-only action by someone else                                                          |
-| `invalid_transition` | `55000`  | The action is not allowed from the current status (matrix below)                              |
-| `invalid_reason`     | `22023`  | 「有问题」 reason empty or over the limit                                                     |
+| Slug                  | SQLSTATE | When                                                                                         |
+| --------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `bounty_not_found`    | `P0002`  | No bounty with that id is visible to the caller                                              |
+| `invalid_bounty`      | `22023`  | Publish input breaks a rule not covered by a check constraint (times, place pairing, address) |
+| `publish_blocked`     | `55000`  | `publish_blocked()` is true for the poster                                                   |
+| `no_balance`          | `55000`  | From `spend_post`: no free slot and no coin                                                  |
+| `own_bounty`          | `22023`  | The poster applies to their own bounty                                                       |
+| `no_payee_method`     | `55000`  | The applicant has no `payee_methods` row (cash counts)                                       |
+| `blocked`             | `42501`  | Either side blocked the other (visibility to the blocked side: Open question 4)              |
+| `taken`               | `55000`  | Apply or select after a helper was selected                                                  |
+| `closed`              | `55000`  | The bounty is `closed` or `cancelled`, or `open` past `expires_at` before the job ran       |
+| `not_pending`         | `55000`  | Select an applicant whose application is not `pending`; withdraw a non-pending application  |
+| `not_poster`          | `42501`  | A poster-only action by someone else                                                         |
+| `not_helper`          | `42501`  | A helper-only action by someone else                                                         |
+| `invalid_transition`  | `55000`  | The action is not allowed from the current status (matrix below)                             |
+| `invalid_reason`      | `22023`  | 「有问题」 reason empty or over the limit                                                     |
 
 Text limits and the reward are `char_length` / range checks in the table and raise `23514` (tested per column).
 
@@ -95,20 +95,20 @@ Text limits and the reward are `char_length` / range checks in the table and rai
 `P` = poster, `H` = selected helper, `A` = any other signed-in user. ✓ = allowed (target in brackets). Every blank
 cell raises the reason in the last column of its row, and Tasks 2–5 test every cell.
 
-| Action (actor)              | open         | assigned      | en_route      | done           | disputed       | confirmed | closed | cancelled | Blank cells raise                      |
-| --------------------------- | ------------ | ------------- | ------------- | -------------- | -------------- | --------- | ------ | --------- | -------------------------------------- |
-| `apply_to_bounty` (A)       | ✓ (open)     |               |               |                |                |           |        |           | `taken` (assigned…confirmed), `closed` |
-| `withdraw_application` (A)  | ✓ (open)     |               |               |                |                |           |        |           | `not_pending`                          |
-| `close_bounty` (P)          | ✓ (closed)   |               |               |                |                |           |        |           | `invalid_transition`                   |
-| `select_helper` (P)         | ✓ (assigned) |               |               |                |                |           |        |           | `taken` (assigned…confirmed), `closed` |
-| `start_bounty` (H)          |              | ✓ (en_route)  |               |                |                |           |        |           | `invalid_transition`                   |
-| `update_eta` (H)            |              |               | ✓ (en_route)  |                |                |           |        |           | `invalid_transition`                   |
-| `complete_bounty` (H)       |              |               | ✓ (done)      |                | ✓ (done)       |           |        |           | `invalid_transition`                   |
-| `report_bounty_problem` (P) |              |               |               | ✓ (disputed)   |                |           |        |           | `invalid_transition`                   |
-| `confirm_bounty` (P)        |              |               |               | ✓ (confirmed)  | ✓ (confirmed)¹ |           |        |           | `invalid_transition`                   |
-| `cancel_bounty` (P or H)    |              | ✓ (cancelled) | ✓ (cancelled) |                |                |           |        |           | `invalid_transition`                   |
-| job: expire                 | ✓² (closed)  |               |               |                |                |           |        |           | not touched                            |
-| job: auto-confirm           |              |               |               | ✓³ (confirmed) |                |           |        |           | not touched                            |
+| Action (actor)                 | open            | assigned      | en_route     | done            | disputed       | confirmed | closed | cancelled | Blank cells raise                     |
+| ------------------------------ | --------------- | ------------- | ------------ | --------------- | -------------- | --------- | ------ | --------- | ------------------------------------- |
+| `apply_to_bounty` (A)          | ✓ (open)        |               |              |                 |                |           |        |           | `taken` (assigned…confirmed), `closed` |
+| `withdraw_application` (A)     | ✓ (open)        |               |              |                 |                |           |        |           | `not_pending`                         |
+| `close_bounty` (P)             | ✓ (closed)      |               |              |                 |                |           |        |           | `invalid_transition`                  |
+| `select_helper` (P)            | ✓ (assigned)    |               |              |                 |                |           |        |           | `taken` (assigned…confirmed), `closed` |
+| `start_bounty` (H)             |                 | ✓ (en_route)  |              |                 |                |           |        |           | `invalid_transition`                  |
+| `update_eta` (H)               |                 |               | ✓ (en_route) |                 |                |           |        |           | `invalid_transition`                  |
+| `complete_bounty` (H)          |                 |               | ✓ (done)     |                 | ✓ (done)       |           |        |           | `invalid_transition`                  |
+| `report_bounty_problem` (P)    |                 |               |              | ✓ (disputed)    |                |           |        |           | `invalid_transition`                  |
+| `confirm_bounty` (P)           |                 |               |              | ✓ (confirmed)   | ✓ (confirmed)¹ |           |        |           | `invalid_transition`                  |
+| `cancel_bounty` (P or H)       |                 | ✓ (cancelled) | ✓ (cancelled) |                |                |           |        |           | `invalid_transition`                  |
+| job: expire                    | ✓² (closed)     |               |              |                 |                |           |        |           | not touched                           |
+| job: auto-confirm              |                 |               |              | ✓³ (confirmed)  |                |           |        |           | not touched                           |
 
 ¹ Open question 3 (default: allowed). ² Only when `expires_at <= as_of`. ³ Only when `done_at + 48 h <= as_of`;
 `disputed` is never auto-confirmed. `settled` is not a stored status: it is `confirmed` whose forward payment is
@@ -118,21 +118,21 @@ replayed on `done` does not restart the 48 h clock.
 
 ## File structure
 
-| Action | Path                                                                                                                                                                                                                       | Responsibility                                                                                                                        |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Create | `supabase/migrations/20261026000900_bounties.sql`                                                                                                                                                                          | `postgis`, enums, `bounties`, `bounty_addresses`, `bounty_applications`, `bounty_events`, `bounty_seen`, RLS                          |
-| Create | `supabase/migrations/20261026001000_bounty_publish.sql`                                                                                                                                                                    | `publish_bounty`, `close_bounty`, `private.close_bounty`                                                                              |
-| Create | `supabase/migrations/20261026001100_bounty_apply.sql`                                                                                                                                                                      | `apply_to_bounty`, `withdraw_application`                                                                                             |
-| Create | `supabase/migrations/20261026001200_bounty_flow.sql`                                                                                                                                                                       | `select_helper`, `start_bounty`, `update_eta`, `complete_bounty`, `report_bounty_problem`, `confirm_bounty`, `private.confirm_bounty` |
-| Create | `supabase/migrations/20261026001300_bounty_cancel.sql`                                                                                                                                                                     | `cancel_bounty`, `bounty_cancel_preview`, `private.no_show_offender`                                                                  |
-| Create | `supabase/migrations/20261026001400_bounty_jobs.sql`                                                                                                                                                                       | `run_bounty_jobs()`, `private.run_bounty_jobs(as_of)`, cron `bounty-jobs`                                                             |
-| Create | `supabase/migrations/20261026001600_bounty_account_delete.sql`                                                                                                                                                             | `active_bounties_of(user)`, `auth.users` before-delete trigger                                                                        |
-| Create | `supabase/migrations/20261026001700_bounty_read.sql`                                                                                                                                                                       | `private.bounty_status`, `bounty_detail`, `my_bounties`, `bounty_applicants`, `bounty_live_items`, `mark_bounty_seen`                 |
-| Create | `supabase/tests/bounties.test.sql`, `bounty_publish.test.sql`, `bounty_apply.test.sql`, `bounty_flow.test.sql`, `bounty_cancel.test.sql`, `bounty_jobs.test.sql`, `bounty_read.test.sql`, `bounty_account_delete.test.sql` | pgTAP per area                                                                                                                        |
-| Modify | `supabase/functions/account-delete/handler.ts`, `handler.test.ts`, `index.ts`                                                                                                                                              | active bounties in the 409                                                                                                            |
-| Modify | `supabase/functions/tests/account-delete.integration.ts`                                                                                                                                                                   | a user with an active bounty is not deleted                                                                                           |
-| Modify | `supabase/README.md`                                                                                                                                                                                                       | a "Bounties" section; the 409 body; "Scheduled functions" gains `bounty-jobs`                                                         |
-| Modify | `docs/story-map.md`                                                                                                                                                                                                        | criteria per task                                                                                                                     |
+| Action | Path                                                          | Responsibility                                                                          |
+| ------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Create | `supabase/migrations/20261026000900_bounties.sql`             | `postgis`, enums, `bounties`, `bounty_addresses`, `bounty_applications`, `bounty_events`, `bounty_seen`, RLS |
+| Create | `supabase/migrations/20261026001000_bounty_publish.sql`       | `publish_bounty`, `close_bounty`, `private.close_bounty`                                |
+| Create | `supabase/migrations/20261026001100_bounty_apply.sql`         | `apply_to_bounty`, `withdraw_application`                                               |
+| Create | `supabase/migrations/20261026001200_bounty_flow.sql`          | `select_helper`, `start_bounty`, `update_eta`, `complete_bounty`, `report_bounty_problem`, `confirm_bounty`, `private.confirm_bounty` |
+| Create | `supabase/migrations/20261026001300_bounty_cancel.sql`        | `cancel_bounty`, `bounty_cancel_preview`, `private.no_show_offender`                    |
+| Create | `supabase/migrations/20261026001400_bounty_jobs.sql`          | `run_bounty_jobs()`, `private.run_bounty_jobs(as_of)`, cron `bounty-jobs`               |
+| Create | `supabase/migrations/20261026001600_bounty_account_delete.sql` | `active_bounties_of(user)`, `auth.users` before-delete trigger                         |
+| Create | `supabase/migrations/20261026001700_bounty_read.sql`          | `private.bounty_status`, `bounty_detail`, `my_bounties`, `bounty_applicants`, `bounty_live_items`, `mark_bounty_seen` |
+| Create | `supabase/tests/bounties.test.sql`, `bounty_publish.test.sql`, `bounty_apply.test.sql`, `bounty_flow.test.sql`, `bounty_cancel.test.sql`, `bounty_jobs.test.sql`, `bounty_read.test.sql`, `bounty_account_delete.test.sql` | pgTAP per area |
+| Modify | `supabase/functions/account-delete/handler.ts`, `handler.test.ts`, `index.ts` | active bounties in the 409                                                              |
+| Modify | `supabase/functions/tests/account-delete.integration.ts`      | a user with an active bounty is not deleted                                              |
+| Modify | `supabase/README.md`                                          | a "Bounties" section; the 409 body; "Scheduled functions" gains `bounty-jobs`          |
+| Modify | `docs/story-map.md`                                           | criteria per task                                                                       |
 
 ## Task 1: PostGIS, tables and RLS
 
@@ -239,7 +239,7 @@ RLS (all `grant select` only; no client writes):
     a positive number of metres.
   - Each check raises `23514`: reward 99, 50001, 150; title of 61 characters, place label 81, description 501, note
     141, address 121; a category `'parcel'`; place without label; `ends_at` before `starts_at`; `payment_timing =
-'before'`; `gate = 'reliable'`. Boundary values (100, 50000, 60/80/500/140/120 characters) insert.
+    'before'`; `gate = 'reliable'`. Boundary values (100, 50000, 60/80/500/140/120 characters) insert.
   - A second `selected` application on one bounty raises `23505`.
   - Visibility as clients: an open bounty is read by C; after poster A blocks C, C reads zero bounties and C's
     pending application is no longer in A's application read; B (unrelated) still reads it. An `assigned` bounty is
@@ -318,7 +318,7 @@ private.close_bounty(bounty uuid, why public.bounty_event_kind) returns text   i
       `bounty.post.cost` coverage `db:supabase/tests/bounty_publish.test.sql, unit`; add `bounty.post.replay`
       (同一条重发只发布一次、只扣一次) `db:…`; `bounty.flow.refund` text 「没人被选中就关掉、过期或挑人前取消，退回貘币或免费
       名额；挑人后取消不退」, coverage `db:supabase/tests/bounty_publish.test.sql, db:supabase/tests/bounty_jobs.test.sql,
-    db:supabase/tests/bounty_cancel.test.sql`.
+      db:supabase/tests/bounty_cancel.test.sql`.
 - [ ] Commit: `feat(bounty): publish with coin spend and close with refund`
 
 ## Task 3: Apply and withdraw
@@ -422,7 +422,7 @@ private.confirm_bounty(bounty uuid, actor uuid) returns uuid       internal; sta
       48 小时) `db:…bounty_flow.test.sql, db:…bounty_jobs.test.sql, ui`; add `bounty.flow.payment` (确认完成后开一笔
       付款，带类别，每个悬赏只有一笔) `db:…bounty_flow.test.sql`; `bounty.apply.select` adds
       `db:supabase/tests/bounty_flow.test.sql` and a `gap: concurrency needs two sessions（两台设备同时挑人要两个数据库
-    会话；单会话测了第二次挑人得到 taken）`.
+      会话；单会话测了第二次挑人得到 taken）`.
 - [ ] Commit: `feat(bounty): select, start, complete, problem and confirm with payment`
 
 ## Task 5: Cancellation and the no-show record
@@ -559,18 +559,18 @@ public.mark_bounty_seen(bounty uuid, card public.bounty_seen_card) returns void 
 Live-item rules (UI 9A; one item per bounty per user; `confirmed` and `settled` produce none because the built payment
 source already shows the poster's 付给 card and the helper's 「等{name}付款」 card, see Spec contradiction 1):
 
-| Role      | Status                       | Item                                                         |
-| --------- | ---------------------------- | ------------------------------------------------------------ |
-| poster    | open, ≥ 1 pending applicant  | `bountyAction` / `choose` with `applicantCount`              |
-| poster    | open, none                   | `bountyInProgress`                                           |
-| helper    | assigned                     | `bountyAction` / `start` (`startLate` when past `starts_at`) |
-| poster    | assigned, en_route, disputed | `bountyInProgress` (`startLate`, ETA, `issueReason`)         |
-| helper    | en_route, done               | `bountyInProgress` (ETA, `autoConfirmAt`)                    |
-| poster    | done                         | `bountyAction` / `confirm` with `autoConfirmAt`              |
-| helper    | disputed                     | `bountyAction` / `resolveIssue` with `issueReason`           |
-| applicant | not_selected, not seen       | `oneTime` / `not_selected`                                   |
-| poster    | closed by expiry, not seen   | `oneTime` / `expired` with `refund` from `post_charges`      |
-| applicant | pending                      | none (Open question 8)                                       |
+| Role      | Status                       | Item                                                          |
+| --------- | ---------------------------- | ------------------------------------------------------------- |
+| poster    | open, ≥ 1 pending applicant  | `bountyAction` / `choose` with `applicantCount`               |
+| poster    | open, none                   | `bountyInProgress`                                            |
+| helper    | assigned                     | `bountyAction` / `start` (`startLate` when past `starts_at`)  |
+| poster    | assigned, en_route, disputed | `bountyInProgress` (`startLate`, ETA, `issueReason`)          |
+| helper    | en_route, done               | `bountyInProgress` (ETA, `autoConfirmAt`)                     |
+| poster    | done                         | `bountyAction` / `confirm` with `autoConfirmAt`               |
+| helper    | disputed                     | `bountyAction` / `resolveIssue` with `issueReason`            |
+| applicant | not_selected, not seen       | `oneTime` / `not_selected`                                    |
+| poster    | closed by expiry, not seen   | `oneTime` / `expired` with `refund` from `post_charges`       |
+| applicant | pending                      | none (Open question 8)                                         |
 
 **Steps**
 
@@ -595,7 +595,7 @@ source already shows the poster's 付给 card and the helper's 「等{name}付�
 - [ ] Write the migration; run `bun run db:reset && bun run db:test`.
 - [ ] Story map: add `bounty.flow.settled` (悬赏「已结清」跟着付款走，不单独存) `db:…bounty_read.test.sql`; add
       `bounty.flow.live-items` (首页实时卡：选人、出发、确认完成、处理有问题四种待办，其余进行中) `db:…bounty_read.test.sql,
-    unit, ui`; add `bounty.apply.seen` (「这次没选上」「过期了 · 免费次数已退回」看过就消失，换设备也一样)
+      unit, ui`; add `bounty.apply.seen` (「这次没选上」「过期了 · 免费次数已退回」看过就消失，换设备也一样)
       `db:…bounty_read.test.sql, ui`; `bounty.apply.select` text adds 「其他人收到「这次没选上」」 coverage
       `db:supabase/tests/bounty_read.test.sql` added.
 - [ ] Commit: `feat(bounty): read model, settled derivation and seen flags`
@@ -655,12 +655,12 @@ export type AccountDeleteDeps = {
       409 with that bounty and still exists; run `bun run fn:serve` and `bun run test:stack`.
 - [ ] Run `bun run db:reset && bun run db:test`, `bun test supabase/functions/account-delete`,
       `bun run lint -- supabase/functions/account-delete/handler.ts supabase/functions/account-delete/handler.test.ts
-    supabase/functions/tests/account-delete.integration.ts`, `bunx tsc --noEmit`.
+      supabase/functions/tests/account-delete.integration.ts`, `bunx tsc --noEmit`.
 - [ ] `supabase/README.md`: the 409 body gains `bounties`; "Bounties" section notes the delete trigger.
 - [ ] Story map: `account.delete` add `account.delete.bounty` (有进行中的悬赏（已选人、还没确认完成）时不能删除，和没结清的
       付款列在一起；开着的悬赏随删除关掉并退回，申请随删除撤回) with
       `db:supabase/tests/bounty_account_delete.test.sql, unit:supabase/functions/account-delete/handler.test.ts#<exact
-    test name>, int:supabase/functions/tests/account-delete.integration.ts, ui`. `account.delete` is `done`, so the
+      test name>, int:supabase/functions/tests/account-delete.integration.ts, ui`. `account.delete` is `done`, so the
       planned `ui` needs Open question 7's answer: with B it becomes `gap: 列表界面在悬赏第 6 步`.
 - [ ] Commit: `feat(account): deletion blocked by an active bounty`
 
@@ -682,21 +682,21 @@ export type AccountDeleteDeps = {
 
 ## Not in this plan
 
-| Piece                                                                                                    | Owner                         |
-| -------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Piece                                                                                                   | Owner                         |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `nearby_bounties(area or point, filters, cursor)` with distance, 急 and 塞得进空档 filters               | Bounty step 2                 |
-| Client service, types, posting form, confirm screen, cost line, 13A reason on 「+」                      | Bounty step 3                 |
+| Client service, types, posting form, confirm screen, cost line, 13A reason on 「+」                     | Bounty step 3                 |
 | Board list, `expo-location`, apply sheet, 已申请 stamp, block entry in detail ⋯                          | Bounty step 4                 |
 | Applicant list, hold-to-commit, 「这次没选上」 / 「已经选好了」 UI                                       | Bounty step 5                 |
 | Status screen, live-item source in `src/lib`, `bountyAction` accessory kind, 8A sheets, card-detail move | Bounty step 6                 |
-| Listing active bounties on the account-deletion screen (if Open question 7 is B)                         | Bounty step 6                 |
-| Payer sticker surfaces, book title, category art in the celebration                                      | Bounty step 7                 |
-| `expo-maps` map view                                                                                     | Bounty step 8                 |
+| Listing active bounties on the account-deletion screen (if Open question 7 is B)                        | Bounty step 6                 |
+| Payer sticker surfaces, book title, category art in the celebration                                     | Bounty step 7                 |
+| `expo-maps` map view                                                                                    | Bounty step 8                 |
 | Sticker storage bucket and `sticker_path` writes; photo cut-out; publish flight                          | Bounty step 9                 |
 | 问小貘 drafting                                                                                          | Bounty step 10 (foundation 8) |
-| Push for in-app events, Live Activity for `en_route`                                                     | Bounty step 11 (foundation 9) |
+| Push for in-app events, Live Activity for `en_route`                                                    | Bounty step 11 (foundation 9) |
 | 先付, gates, `void` payment, `cancelling` state                                                          | Bounty step 12 (Later)        |
-| Reputation snapshots and `reputation_tier`                                                               | Prerequisite Task 3           |
+| Reputation snapshots and `reputation_tier`                                                              | Prerequisite Task 3           |
 
 ## Open questions
 
