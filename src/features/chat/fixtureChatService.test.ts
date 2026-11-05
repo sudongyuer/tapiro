@@ -120,3 +120,19 @@ describe('fixture chat service', () => {
     ).toBe(true);
   });
 });
+
+describe('fixture options for the thread screen', () => {
+  test('uiVerifyChatLeft marks the ride group as left; a send delay holds the answer', async () => {
+    const options = fixtureChatOptions(
+      (name) => ({ uiVerifyChatLeft: '1', uiVerifyChatSendDelay: '20' })[name],
+      'demo',
+    );
+    expect([options.left, options.sendDelayMs]).toEqual([true, 20]);
+    const service = createFixtureChatService(options);
+    const read = await service.readThread('fixture-chat-ride', null);
+    expect(read.thread.left).toBe(true);
+    const started = Date.now();
+    await service.send('fixture-chat-bounty', 'c1', '好');
+    expect(Date.now() - started).toBeGreaterThanOrEqual(15);
+  });
+});

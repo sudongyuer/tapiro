@@ -2,6 +2,8 @@ import { Stack } from 'expo-router';
 
 import { useI18n } from '@/lib/i18n';
 
+export const unstable_settings = { anchor: 'index' };
+
 export default function MessagesLayout() {
   const { t } = useI18n();
   return (
@@ -9,10 +11,6 @@ export default function MessagesLayout() {
       <Stack.Screen name="index" options={{ title: t('shell.tabs.messages') }} />
       <Stack.Screen
         name="[thread]"
-        options={{ headerLargeTitleEnabled: false, scrollEdgeEffects: { top: 'automatic' } }}
-      />
-      <Stack.Screen
-        name="debug-thread"
         options={{ headerLargeTitleEnabled: false, scrollEdgeEffects: { top: 'automatic' } }}
       />
     </Stack>

@@ -10,6 +10,7 @@ import { userCleanups } from '@/lib/userCleanups';
 import { badgeCount } from './badge';
 import { createSupabaseChatService } from './chatService';
 import { createChatStore } from './chatStore';
+import { createDrafts } from './drafts';
 import { createFixtureChatService, fixtureChatOptions } from './fixtureChatService';
 import { FIXTURE_CHAT_USER_ID } from './fixtureThreads';
 import { createOutbox } from './outbox';
@@ -29,6 +30,7 @@ function verifyChatService() {
 }
 
 const outbox = createOutbox(Settings);
+export const chatDrafts = createDrafts(Settings);
 
 export const chatStore = createChatStore({
   service: uiVerify ? verifyChatService() : createSupabaseChatService(getSupabase()),
@@ -36,7 +38,12 @@ export const chatStore = createChatStore({
   newId: randomUUID,
 });
 
-if (uiVerify) outbox.clear(FIXTURE_CHAT_USER_ID);
+if (uiVerify) {
+  outbox.clear(FIXTURE_CHAT_USER_ID);
+  chatDrafts.clear(FIXTURE_CHAT_USER_ID);
+  const [threadId, draft] = (uiVerifyArgument('uiVerifyChatDraft') ?? '').split('|');
+  if (threadId && draft) chatDrafts.set(FIXTURE_CHAT_USER_ID, threadId, draft);
+}
 
 // Verify builds keep the shell feed's fixture badge unless a case asks for chat fixtures, so shell cases stay as they were.
 const drivesBadge = !uiVerify || uiVerifyArgument('uiVerifyChat') === '1';
@@ -47,4 +54,7 @@ if (drivesBadge) {
 
 live.on(['chat.'], chatStore.onSignal);
 
-userCleanups.register((userId) => outbox.clear(userId));
+userCleanups.register((userId) => {
+  outbox.clear(userId);
+  chatDrafts.clear(userId);
+});

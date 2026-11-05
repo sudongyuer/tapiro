@@ -45,6 +45,8 @@ export type ThreadState = {
   messages: ChatMessage[];
   hasMore: boolean;
   older: 'idle' | 'loading' | 'failed';
+  loadedAt: string | null;
+  reloadFailed: boolean;
 };
 
 export type ChatState = {
@@ -97,6 +99,7 @@ export function createChatStore({
   const sending = new Set<string>();
   const marking = new Set<string>();
   let generation = 0;
+  let visibility: AppStateSource | null = null;
   let listVersion = 0;
   let reloadsOut = 0;
 
@@ -219,6 +222,7 @@ export function createChatStore({
     const thread = threads[threadId];
     const newest = thread?.messages[0];
     if (!userId || !thread?.info || !needsMarkRead(thread.info, newest)) return;
+    if (visibility?.currentState && visibility.currentState !== 'active') return;
     if (!newest || marking.has(threadId)) return;
     const at = generation;
     marking.add(threadId);
@@ -253,6 +257,9 @@ export function createChatStore({
     const request = (threadRequests.get(threadId) ?? 0) + 1;
     threadRequests.set(threadId, request);
     const latestRequest = () => threadRequests.get(threadId) === request;
+    const before = get().threads[threadId];
+    if (before?.status === 'failed' && !before.info)
+      setThread(threadId, { ...before, status: 'loading' });
     try {
       const read = await service.readThread(threadId, null);
       if (!latestRequest() || !current(userId, at)) return;
@@ -269,6 +276,8 @@ export function createChatStore({
         messages: merged.messages,
         hasMore: merged.hasMore,
         older: existing?.older === 'loading' ? 'loading' : 'idle',
+        loadedAt: now().toISOString(),
+        reloadFailed: false,
       });
       const delivered = deliveredClientIds(merged.messages, outbox.list(userId), userId);
       if (delivered.length > 0) {
@@ -285,6 +294,8 @@ export function createChatStore({
         messages: existing?.messages ?? [],
         hasMore: existing?.hasMore ?? false,
         older: existing?.older ?? 'idle',
+        loadedAt: existing?.loadedAt ?? null,
+        reloadFailed: true,
       });
     }
   }
@@ -323,6 +334,8 @@ export function createChatStore({
         messages: [],
         hasMore: false,
         older: 'idle',
+        loadedAt: null,
+        reloadFailed: false,
       });
     }
     void reloadThread(threadId);
@@ -466,6 +479,7 @@ export function createChatStore({
         return () => undefined;
       }
       start(userId);
+      visibility = appState;
       void refreshUnread(userId);
       return onReturnToForeground(appState, refresh);
     },

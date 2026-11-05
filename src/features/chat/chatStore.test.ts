@@ -122,14 +122,37 @@ describe('threads', () => {
     await settle();
     expect(ctx.store.getSnapshot().threads.t1).toMatchObject({ status: 'failed', info: null });
     void ctx.store.reloadThread('t1');
+    expect(ctx.store.getSnapshot().threads.t1.status).toBe('loading');
     ctx.queues.readThread[1].resolve({ thread: info(), messages: [msg(1)], hasMore: false });
     await settle();
     void ctx.store.reloadThread('t1');
     ctx.queues.readThread.at(-1)?.reject(new Error('offline'));
     await settle();
-    expect(ctx.store.getSnapshot().threads.t1).toMatchObject({ status: 'stale' });
+    expect(ctx.store.getSnapshot().threads.t1).toMatchObject({
+      status: 'stale',
+      reloadFailed: true,
+      loadedAt: '2026-11-06T02:00:00.000Z',
+    });
     expect(ctx.store.getSnapshot().threads.t1.messages).toHaveLength(1);
+    void ctx.store.reloadThread('t1');
+    ctx.queues.readThread.at(-1)?.resolve({ thread: info(), messages: [msg(1)], hasMore: false });
+    await settle();
+    expect(ctx.store.getSnapshot().threads.t1).toMatchObject({
+      status: 'ready',
+      reloadFailed: false,
+    });
     release();
+  });
+
+  test('a thread gone stale on a signal is not a failed refresh', async () => {
+    const ctx = setup();
+    const release = await openWith(ctx, { thread: info(), messages: [msg(1)], hasMore: false });
+    release();
+    ctx.store.onSignal({ kind: 'chat.message', id: 't1', at: at(2) });
+    expect(ctx.store.getSnapshot().threads.t1).toMatchObject({
+      status: 'stale',
+      reloadFailed: false,
+    });
   });
 
   test('an older answer never overwrites a newer one', async () => {
@@ -249,6 +272,28 @@ describe('read state', () => {
       unread: false,
     });
     expect(ctx.named('unreadCount')).toHaveLength(counts + 1);
+  });
+
+  test('nothing is marked read while the app is in the background; returning marks the open thread', async () => {
+    const ctx = setup();
+    let onChange: (state: string) => void = () => undefined;
+    const appState = {
+      currentState: 'background',
+      addEventListener: (_type: string, listener: (state: string) => void) => {
+        onChange = listener;
+        return { remove: () => undefined };
+      },
+    };
+    ctx.store.follow(ME, appState as never);
+    await openWith(ctx, { thread: info(), messages: [msg(2), msg(1)], hasMore: false });
+    expect(ctx.named('markRead')).toHaveLength(0);
+    appState.currentState = 'active';
+    onChange('active');
+    ctx.queues.readThread
+      .at(-1)
+      ?.resolve({ thread: info(), messages: [msg(2), msg(1)], hasMore: false });
+    await settle();
+    expect(ctx.named('markRead').map((entry) => entry.args)).toEqual([['t1', 'm2']]);
   });
 
   test('a new message while the thread is open is marked read too; a read thread is not marked again', async () => {

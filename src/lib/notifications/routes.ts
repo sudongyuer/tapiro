@@ -4,7 +4,8 @@ type ItemPath =
   '/bounty/[id]' | '/bounty/applicants/[id]' | '/bounty/status/[id]' | '/pay/[id]' | '/ride/[id]';
 
 export type NoticeRoute =
-  { pathname: ItemPath; params: { id: string } } | { pathname: '/messages' };
+  | { pathname: ItemPath; params: { id: string } }
+  | { pathname: '/messages/[thread]'; params: { thread: string } };
 
 const BOUNTY_ROUTES: Record<string, ItemPath> = {
   'bounty.applied': '/bounty/applicants/[id]',
@@ -26,6 +27,8 @@ export function noticeRoute(data: NoticeData): NoticeRoute | null {
   if (bounty) return { pathname: bounty, params };
   if (data.kind.startsWith('payment.')) return { pathname: '/pay/[id]', params };
   if (data.kind.startsWith('ride.')) return { pathname: '/ride/[id]', params };
-  if (data.kind.startsWith('chat.')) return { pathname: '/messages' };
+  if (data.kind.startsWith('chat.')) {
+    return { pathname: '/messages/[thread]', params: { thread: data.id } };
+  }
   return null;
 }

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
 import type { ChatState, ThreadState } from './chatStore';
@@ -48,9 +49,11 @@ export function useChatThread(threadId: string) {
   const userId = useChatState((state) => state.userId);
   const thread: ThreadState | undefined = useChatState((state) => state.threads[threadId]);
   const pending = useChatState((state) => state.pending);
-  useEffect(() => {
-    if (userId) return chatStore.openThread(threadId);
-  }, [threadId, userId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) return chatStore.openThread(threadId);
+    }, [threadId, userId]),
+  );
   return useMemo(() => {
     const mine = pending.filter((entry) => entry.threadId === threadId);
     const messages = thread?.messages ?? [];
