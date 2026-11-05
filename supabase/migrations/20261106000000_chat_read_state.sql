@@ -46,6 +46,7 @@ as $$
       select max(m.last_read_at) from public.thread_members m
       where m.thread_id = t.id and m.member_id <> (select auth.uid()) and m.left_at is null
         and private.thread_visible_until(t.id) = 'infinity'::timestamptz
+        and not private.is_blocked_between((select auth.uid()), m.member_id)
     ) end,
     'members', coalesce((
       select jsonb_agg(

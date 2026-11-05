@@ -263,7 +263,7 @@ describe('threads', () => {
     ]);
   });
 
-  test('a chat.message for the open thread reloads it; for a closed one it only goes stale', async () => {
+  test('a signal for the open thread reloads it; for a closed one it only goes stale', async () => {
     const ctx = setup();
     const release = await openWith(ctx, { thread: info(), messages: [msg(1)], hasMore: false });
     ctx.queues.markRead.shift()?.resolve(at(1));
@@ -274,8 +274,66 @@ describe('threads', () => {
     expect(ctx.named('unreadCount').length).toBeGreaterThan(1);
     release();
     ctx.store.onSignal({ kind: 'chat.read', id: 't1', at: null });
+    ctx.store.onSignal({ kind: 'chat.message', id: 't1', at: null });
     expect(ctx.named('readThread')).toHaveLength(reads + 1);
     expect(ctx.store.getSnapshot().threads.t1.status).toBe('stale');
+  });
+
+  test('a thread that never loaded stays failed on a signal, never stale and empty', async () => {
+    const ctx = setup();
+    const release = ctx.store.openThread('t1');
+    ctx.queues.readThread[0].reject(new Error('offline'));
+    await settle();
+    release();
+    ctx.store.onSignal({ kind: 'chat.message', id: 't1', at: null });
+    ctx.store.onSignal(null);
+    expect(ctx.store.getSnapshot().threads.t1.status).toBe('failed');
+  });
+
+  test('a read that started before your send cannot hide the sent message', async () => {
+    const ctx = setup();
+    await openWith(ctx, { thread: info(), messages: [msg(1)], hasMore: false });
+    ctx.store.onSignal({ kind: 'chat.message', id: 't1', at: null });
+    const before = ctx.queues.readThread.at(-1);
+    ctx.store.send('t1', '到了');
+    ctx.queues.send[0].resolve({ ok: true, message: msg(3, ME, 'new1') });
+    await settle();
+    before?.resolve({ thread: info(), messages: [msg(2), msg(1)], hasMore: false });
+    await settle();
+    expect(ctx.store.getSnapshot().threads.t1.messages.map((m) => m.id)).toContain('m3');
+    ctx.queues.readThread.at(-1)?.resolve({
+      thread: info(),
+      messages: [msg(3, ME, 'new1'), msg(2), msg(1)],
+      hasMore: false,
+    });
+    await settle();
+    expect(ctx.store.getSnapshot().threads.t1.messages.map((m) => m.id)).toEqual([
+      'm3',
+      'm2',
+      'm1',
+    ]);
+  });
+
+  test('signing out and back in turns a message left sending into a failed one you can retry', async () => {
+    const ctx = setup();
+    ctx.store.send('t1', '到了');
+    ctx.store.follow(null, noAppState as never);
+    ctx.store.follow(ME, noAppState as never);
+    expect(ctx.store.getSnapshot().pending).toMatchObject([{ clientId: 'new1', state: 'failed' }]);
+    expect(ctx.store.retry('new1')).toBe(true);
+    ctx.queues.send[0].resolve({ ok: false, failure: 'failed' });
+    await settle();
+    expect(ctx.store.getSnapshot().pending).toMatchObject([{ state: 'sending' }]);
+  });
+
+  test('an answer after the account was deleted writes nothing back to the device', async () => {
+    const ctx = setup();
+    ctx.store.send('t1', '到了');
+    ctx.store.follow(null, noAppState as never);
+    ctx.outbox.clear(ME);
+    ctx.queues.send[0].resolve({ ok: false, failure: 'failed' });
+    await settle();
+    expect(ctx.outbox.list(ME)).toEqual([]);
   });
 });
 
@@ -310,6 +368,23 @@ describe('read state', () => {
     });
     await settle();
     expect(ctx.named('markRead').map((entry) => entry.args)).toEqual([['t1', 'm2']]);
+  });
+
+  test('a message that arrives while a mark is in flight is marked next', async () => {
+    const ctx = setup();
+    await openWith(ctx, { thread: info(), messages: [msg(1)], hasMore: false });
+    ctx.store.onSignal({ kind: 'chat.message', id: 't1', at: null });
+    ctx.queues.readThread
+      .at(-1)
+      ?.resolve({ thread: info(), messages: [msg(2), msg(1)], hasMore: false });
+    await settle();
+    ctx.queues.markRead[0].resolve(at(1));
+    await settle();
+    expect(ctx.named('markRead').map((entry) => entry.args)).toEqual([
+      ['t1', 'm1'],
+      ['t1', 'm2'],
+    ]);
+    expect(ctx.store.getSnapshot().threads.t1.info?.unread).toBe(true);
   });
 
   test('a thread that is not open is never marked read', async () => {

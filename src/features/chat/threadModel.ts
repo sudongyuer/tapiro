@@ -85,3 +85,10 @@ export function needsMarkRead(
   if (!newest) return false;
   return thread.lastReadAt === null || compareTime(thread.lastReadAt, newest.createdAt) < 0;
 }
+
+export function hasUnread(lastReadAt: string | null, messages: readonly ChatMessage[], me: string) {
+  const newest = messages.find((message) => message.senderId !== me);
+  return (
+    newest !== undefined && (lastReadAt === null || compareTime(lastReadAt, newest.createdAt) < 0)
+  );
+}

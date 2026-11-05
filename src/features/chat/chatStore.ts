@@ -8,6 +8,7 @@ import {
   appendOlder,
   compareTime,
   deliveredClientIds,
+  hasUnread,
   mergeNewest,
   needsMarkRead,
 } from './threadModel';
@@ -59,7 +60,7 @@ const IDLE: ChatState = {
   pending: [],
 };
 
-const EDGE_SPACE = /^[\s ​﻿]+|[\s ​﻿]+$/g;
+const EDGE_SPACE = /^[\s\u00a0\u200b\ufeff]+|[\s\u00a0\u200b\ufeff]+$/g;
 
 export const cleanBody = (body: string) => body.replace(EDGE_SPACE, '');
 
@@ -67,6 +68,9 @@ export const canSend = (body: string) => {
   const length = [...cleanBody(body)].length;
   return length > 0 && length <= MESSAGE_MAX;
 };
+
+const staleIfReady = (thread: ThreadState): ThreadState =>
+  thread.status === 'ready' ? { ...thread, status: 'stale' } : thread;
 
 const failedOrStale = (status: LoadStatus, hasData: boolean): LoadStatus =>
   hasData && status !== 'failed' && status !== 'loading' ? 'stale' : 'failed';
@@ -196,16 +200,19 @@ export function createChatStore({
     if (!newest || marking.has(threadId)) return;
     const at = generation;
     marking.add(threadId);
+    let marked = false;
     try {
       const lastReadAt = await service.markRead(threadId, newest.id);
       if (!current(userId, at)) return;
+      marked = true;
       const latest = get().threads[threadId];
+      const unread = hasUnread(lastReadAt, latest?.messages ?? [], userId);
       if (latest?.info)
-        setThread(threadId, { ...latest, info: { ...latest.info, lastReadAt, unread: false } });
+        setThread(threadId, { ...latest, info: { ...latest.info, lastReadAt, unread } });
       const list = get().list;
       if (list.status !== 'idle') {
         const threadsRead = list.threads.map((row) =>
-          row.id === threadId ? { ...row, lastReadAt, unread: false } : row,
+          row.id === threadId ? { ...row, lastReadAt, unread } : row,
         );
         patch({ list: { ...list, threads: threadsRead } });
       }
@@ -214,6 +221,7 @@ export function createChatStore({
     } finally {
       if (at === generation) marking.delete(threadId);
     }
+    if (marked && focused.has(threadId)) void markRead(threadId);
   }
 
   async function reloadThread(threadId: string) {
@@ -316,6 +324,8 @@ export function createChatStore({
       );
       setThread(message.threadId, { ...thread, messages });
     }
+    // A read already in flight may predate this message; reloading supersedes its answer.
+    if (thread) void reloadThread(message.threadId);
     if (get().list.status !== 'idle') void reloadList(userId);
   }
 
@@ -328,8 +338,11 @@ export function createChatStore({
       .send(entry.threadId, entry.clientId, entry.body)
       .catch((): SendResult => ({ ok: false, failure: 'failed' }));
     if (at !== generation) {
+      const kept = outbox.list(userId).some((item) => item.clientId === entry.clientId);
+      if (!kept || sending.has(entry.clientId)) return;
       if (result.ok) outbox.remove(userId, [entry.clientId]);
       else outbox.put(userId, { ...entry, state: 'failed', failure: result.failure });
+      if (get().userId === userId) syncPending(userId);
       return;
     }
     sending.delete(entry.clientId);
@@ -350,6 +363,10 @@ export function createChatStore({
   function start(userId: string) {
     if (get().userId === userId) return;
     clear();
+    for (const entry of outbox.list(userId)) {
+      if (entry.state === 'sending')
+        outbox.put(userId, { ...entry, state: 'failed', failure: 'failed' });
+    }
     patch({ userId, pending: [...outbox.list(userId)] });
   }
 
@@ -360,7 +377,7 @@ export function createChatStore({
     void refreshUnread(userId);
     for (const threadId of Object.keys(threads)) {
       if (focused.has(threadId)) void reloadThread(threadId);
-      else setThread(threadId, { ...threads[threadId], status: 'stale' });
+      else setThread(threadId, staleIfReady(threads[threadId]));
     }
   }
 
@@ -374,7 +391,7 @@ export function createChatStore({
     }
     if (!thread) return;
     if (focused.has(signal.id)) void reloadThread(signal.id);
-    else setThread(signal.id, { ...thread, status: 'stale' });
+    else setThread(signal.id, staleIfReady(thread));
   }
 
   return {

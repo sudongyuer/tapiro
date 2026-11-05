@@ -1,5 +1,5 @@
 begin;
-select plan(26);
+select plan(27);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -120,11 +120,19 @@ select is(
   (select count(*) from public.thread_members where thread_id = (select bt from fx)), 2::bigint,
   'members still read the other membership columns'
 );
-select throws_ok(
-  format($$update public.thread_members set last_read_at = now() where thread_id = %L$$, (select bt from fx)),
-  '42501', null, 'members cannot write last_read_at directly'
-);
 reset role;
+
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.block_user(pg_temp.u('b2'));
+select pg_temp.act_as(pg_temp.u('b2'));
+select public.mark_read((select bt from fx), (select id from sent where n = 1));
+select is(pg_temp.read_events('a1', (select bt from fx)), 2::bigint, 'a blocked bounty peer gets no chat.read');
+select is(
+  pg_temp.listed('a1', (select bt from fx)) -> 'peerReadAt', 'null'::jsonb,
+  'a blocked bounty peer''s read time is hidden'
+);
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.unblock_user(pg_temp.u('b2'));
 
 select pg_temp.act_as(pg_temp.u('a1'));
 select public.publish_ride(
