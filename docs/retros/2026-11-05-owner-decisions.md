@@ -4,7 +4,7 @@ date: 2026-11-05
 pr: owner decisions 2026-11-05
 title: quiet hours for the bounty you are on, expiry to pending applicants, report snapshot retention, carpool record
 escaped: 0
-rework: 1
+rework: 2
 interventions: 0
 overturned: 0
 ---
@@ -41,4 +41,10 @@ One round, 0 Critical, 1 Important, 8 Minor; all fixed in the same round.
   live signals needs a UI case even when its predicate is pure; the existing `live_*` cases were the template.
 - Minor: clearer quiet-hours predicate; `taken` before the pending branch; two chat assertions (disputed sent, after a
   cancel held); a redundant assertion removed; stale plan and spec lines; PR list without #52.
+- Re-review (after the Important finding): 1 Critical, 1 Important, 3 Minor, all fixed. Critical: the new case passed a
+  boolean check to `ui.settled`, which reads `.get('frame')` from the match, so it could never pass; now `ui.gone`. Lesson:
+  a case that cannot be run in the task needs its helper calls checked against `driver.py` signatures. Important: the
+  signal times could land before the detail opened and make the "other bounty" check moot; the case now fails if the
+  first signal came first and counts detail loads (`uiVerifyDetailLoads`) as `live_applicants` does. Minor: chat in a
+  `disputed` thread went beyond the owner's answer; it now follows quiet hours (a dispute can last for days).
 - Not fixed (pre-existing): a cached board row can flash 已申请 on an expired bounty until the detail load returns.

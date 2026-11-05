@@ -60,6 +60,7 @@ export type FixtureBoardOptions = {
   writeDelayMs?: number;
   isBlocked?: (posterId: string) => boolean;
   posterView?: (id: string) => { helper: Person | null; status: string } | null;
+  onDetailLoaded?: (id: string) => void;
 };
 
 function pick<T extends string>(values: readonly T[], value: string | undefined, fallback: T): T {
@@ -334,7 +335,8 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
         throw new TypeError('Network request failed');
       }
       const item = visible().find((candidate) => candidate.id === id);
-      if (id === options.detailId) expiringLoads += 1;
+      options.onDetailLoaded?.(id);
+      if (options.detail === 'expiresLive' && id === options.detailId) expiringLoads += 1;
       return item && options.detail !== 'gone' ? detailOf(item, point) : 'gone';
     },
     async hasPayeeMethod() {

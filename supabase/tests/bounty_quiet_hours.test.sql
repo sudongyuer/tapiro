@@ -100,8 +100,8 @@ select is(
   'a problem reported on a done bounty reaches the helper at once'
 );
 select is(
-  pg_temp.held('a1', 'chat.message', pg_temp.thread_of(2)), 'sent',
-  'while the problem is open the thread is not held'
+  pg_temp.held('a1', 'chat.message', pg_temp.thread_of(2)), 'held',
+  'while the problem is open the thread follows quiet hours, since a dispute can last for days'
 );
 
 select pg_temp.started(3);

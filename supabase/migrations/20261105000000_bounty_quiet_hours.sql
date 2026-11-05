@@ -20,9 +20,9 @@ as $$
   );
 $$;
 
--- Quiet hours skip the ride and the bounty the recipient is on. A bounty counts from en_route until it is confirmed
--- (disputed is reached only from done), and once cancelled on the way, so news that the job stopped is not held
--- until 08:00 either.
+-- Quiet hours skip the ride and the bounty the recipient is on. Its own pushes count from en_route until it is
+-- confirmed (disputed is reached only from done) and once cancelled on the way, so news that the job stopped is not
+-- held until 08:00; its chat counts only while en_route or done, since a dispute can last for days.
 create or replace function private.queue_push() returns trigger
 language plpgsql
 security definer
@@ -51,7 +51,7 @@ begin
       left join public.rides r on r.id = t.ride_id
       left join public.bounties b on b.id = t.bounty_id
       where t.id = new.subject_id
-        and (r.status in ('gathering', 'departed') or b.status in ('en_route', 'done', 'disputed'))
+        and (r.status in ('gathering', 'departed') or b.status in ('en_route', 'done'))
     );
   else
     raise warning 'push for % not queued: no thread rule', new.kind;
