@@ -12,6 +12,8 @@ export const REPORT_REASONS = [
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
 export const MESSAGE_MAX = 2000;
+export const PAGE_SIZE = 50;
+export const LIST_RELOAD_MAX = 100;
 export const REPORT_NOTE_MAX = 500;
 
 export type ChatMember = {
@@ -30,15 +32,43 @@ export type ChatMessage = {
   createdAt: string;
 };
 
+export const BOUNTY_SHOWN_STATUSES = [
+  'open',
+  'assigned',
+  'en_route',
+  'done',
+  'disputed',
+  'confirmed',
+  'settled',
+  'closed',
+  'cancelled',
+] as const;
+export const RIDE_PHASES = [
+  'open',
+  'gathering',
+  'departed',
+  'arrived',
+  'settling',
+  'closed',
+  'cancelled',
+  'expired',
+] as const;
+
 export type ChatSubject =
   | {
       kind: 'bounty';
       title: string;
       category: BountyCategory;
       art: string | null;
-      status: string;
+      status: (typeof BOUNTY_SHOWN_STATUSES)[number];
     }
-  | { kind: 'ride'; from: string; to: string; departsAt: string; status: string };
+  | {
+      kind: 'ride';
+      from: string;
+      to: string;
+      departsAt: string;
+      status: (typeof RIDE_PHASES)[number];
+    };
 
 export type ThreadInfo = {
   id: string;
@@ -75,7 +105,7 @@ export type ReportTarget = { userId: string; messageId?: string | null };
 export type ReportInput = ReportTarget & { reason: ReportReason | null; note: string | null };
 
 export type ChatService = {
-  listThreads(before: string | null): Promise<ThreadPage>;
+  listThreads(before: string | null, count?: number): Promise<ThreadPage>;
   readThread(threadId: string, before: string | null): Promise<ThreadRead>;
   send(threadId: string, clientId: string, body: string): Promise<SendResult>;
   markRead(threadId: string, messageId: string): Promise<string>;

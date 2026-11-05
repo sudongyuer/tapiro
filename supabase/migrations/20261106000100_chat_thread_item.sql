@@ -10,12 +10,12 @@ as $$
     'itemId', coalesce(t.bounty_id, t.ride_id),
     'item', case
       when t.bounty_id is not null then (
-        select jsonb_build_object('title', b.title, 'category', b.category, 'art', b.art, 'status', b.status)
+        select jsonb_build_object('title', b.title, 'category', b.category, 'art', b.art, 'status', private.bounty_status(b))
         from public.bounties b where b.id = t.bounty_id
       )
       else (
         select jsonb_build_object(
-          'from', r.start_short, 'to', r.dest_short, 'departsAt', private.ride_departs_at(r), 'status', r.status
+          'from', r.start_short, 'to', r.dest_short, 'departsAt', private.ride_departs_at(r), 'status', private.ride_phase(r)
         )
         from public.rides r where r.id = t.ride_id
       )

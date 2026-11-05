@@ -31,38 +31,38 @@ describe('thread list', () => {
     ]);
   });
 
-  test('a reload keeps the pages already shown when its first page joins them', async () => {
+  test('a reload asks again for every row already shown, up to 100, and replaces the list', async () => {
+    const rows = (prefix: string, n: number) =>
+      Array.from({ length: n }, (_, index) => row(`${prefix}${index}`));
     const ctx = setup();
     void ctx.store.loadList();
-    ctx.queues.listThreads[0].resolve({
-      items: [row('a'), row('b')],
-      hasMore: true,
-      nextCursor: 'k1',
-    });
+    ctx.queues.listThreads[0].resolve({ items: rows('a', 50), hasMore: true, nextCursor: 'k1' });
     await settle();
+    expect(ctx.named('listThreads')[0].args).toEqual([null, 50]);
     void ctx.store.loadMoreThreads();
-    ctx.queues.listThreads[1].resolve({ items: [row('c')], hasMore: false, nextCursor: null });
+    ctx.queues.listThreads[1].resolve({ items: rows('b', 20), hasMore: true, nextCursor: 'k2' });
     await settle();
     ctx.store.onSignal({ kind: 'chat.message', id: 'x', at: null });
+    expect(ctx.named('listThreads')[2].args).toEqual([null, 70]);
     ctx.queues.listThreads[2].resolve({
-      items: [row('n'), row('a')],
+      items: [row('n'), ...rows('a', 50), ...rows('b', 19)],
       hasMore: true,
-      nextCursor: 'ka',
+      nextCursor: 'k3',
     });
     await settle();
-    expect(ctx.store.getSnapshot().list).toMatchObject({
+    const list = ctx.store.getSnapshot().list;
+    expect(list).toMatchObject({
       status: 'ready',
-      hasMore: false,
-      nextCursor: null,
+      nextCursor: 'k3',
       loadedAt: '2026-11-06T02:00:00.000Z',
     });
-    const list = ctx.store.getSnapshot().list;
-    expect(list.status !== 'idle' && list.threads.map((thread) => thread.id)).toEqual([
-      'n',
-      'a',
-      'b',
-      'c',
-    ]);
+    expect(list.status !== 'idle' && list.threads.length).toBe(70);
+    expect(list.status !== 'idle' && list.threads[0].id).toBe('n');
+    void ctx.store.loadMoreThreads();
+    ctx.queues.listThreads[3].resolve({ items: rows('c', 50), hasMore: true, nextCursor: 'k4' });
+    await settle();
+    ctx.store.onSignal({ kind: 'chat.message', id: 'x', at: null });
+    expect(ctx.named('listThreads')[4].args).toEqual([null, 100]);
   });
 
   test('a failed reload keeps the threads as stale with the time they were loaded', async () => {

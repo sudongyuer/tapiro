@@ -12,13 +12,14 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
+from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id, luma  # noqa: E402
 from ocr import lines  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/shared/', 'src/features/bounty/post/timeText.ts',
         'src/ui/NoticeCard.tsx', 'src/ui/PillButton.tsx',
         'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'verification/ui/ocr.py']
+        'verification/ui/ocr.py', 'verification/ui/gestures.py']
 SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
@@ -168,8 +169,7 @@ ui.gone('bounty-status-load-failed')
 
 restart('enRoute', 'poster', ['-uiVerifyBountyStatusLoad', 'refreshFails'])
 assert by_id(ui.read(), 'bounty-status-stale') is None, 'the refresh notice shows before a refresh failed'
-s = screen(ui.read())
-ui.swipe((s['width'] / 2, s['height'] * 0.3), (s['width'] / 2, s['height'] * 0.8), 0.6)
+pull(ui, ui.read())
 stale = ui.wait_label('bounty-status-stale',
                       lambda text: re.search(ui.pattern('bounty.status.refreshFailed', time=CLOCK), text),
                       'the failed pull shows no refresh notice with the data time')

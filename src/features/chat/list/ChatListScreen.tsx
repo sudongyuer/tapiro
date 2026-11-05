@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -19,7 +19,6 @@ import { useChatList, useChatUserId } from '../hooks';
 import { chatStore } from '../services';
 import type { ThreadSummary } from '../types';
 import { ChatEmpty } from './ChatEmpty';
-import { rowView } from './rowView';
 import { ThreadRow } from './ThreadRow';
 
 type Actions = { onOpen: (threadId: string) => void; onBrowse: () => void };
@@ -39,7 +38,7 @@ function useBusy(run: () => Promise<unknown>) {
 const reload = () => chatStore.reloadList();
 
 export function ChatListScreen({ onOpen, onBrowse }: Actions) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const list = useChatList();
   const me = useChatUserId() ?? '';
   const offline = useLiveOffline();
@@ -47,22 +46,20 @@ export function ChatListScreen({ onOpen, onBrowse }: Actions) {
   const [retrying, retry] = useBusy(reload);
   const threads = list.status === 'idle' ? NO_THREADS : list.threads;
   const loadedAt = list.status === 'idle' ? null : list.loadedAt;
-  const views = useMemo(() => {
-    const now = loadedAt ? Date.parse(loadedAt) : 0;
-    return threads.map((row) => rowView(row, me, now, t, language));
-  }, [threads, me, loadedAt, t, language]);
+  const now = loadedAt ? Date.parse(loadedAt) : 0;
 
   const renderItem = useCallback(
     ({ item, index }: { item: ThreadSummary; index: number }) => (
       <ThreadRow
-        id={item.id}
-        view={views[index]}
+        row={item}
+        me={me}
+        now={now}
         first={index === 0}
         last={index === threads.length - 1}
         onOpen={onOpen}
       />
     ),
-    [views, threads.length, onOpen],
+    [me, now, threads.length, onOpen],
   );
 
   if (list.status === 'ready' && threads.length === 0) {
@@ -93,10 +90,10 @@ export function ChatListScreen({ onOpen, onBrowse }: Actions) {
           testID="chat-list-failed"
         />
       ) : null}
-      {list.status === 'stale' ? (
+      {list.status === 'stale' && loadedAt ? (
         <InlineState
           tone="warning"
-          text={t('live.staleAt', { time: localClock(Date.parse(list.loadedAt ?? '')) })}
+          text={t('live.staleAt', { time: localClock(now) })}
           action={{
             label: t('chat.list.retry'),
             onPress: retry,
@@ -109,12 +106,12 @@ export function ChatListScreen({ onOpen, onBrowse }: Actions) {
     </View>
   );
 
-  const more = list.status === 'idle' ? 'idle' : list.more;
+  const more = list.status === 'ready' ? list.more : 'idle';
   const footer =
     more === 'loading' ? (
       <View style={styles.loading}>
         <ActivityIndicator
-          accessibilityLabel={t('chat.list.more')}
+          accessibilityLabel={t('chat.list.moreLoading')}
           testID="chat-list-more-loading"
         />
       </View>

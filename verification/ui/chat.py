@@ -40,9 +40,3 @@ def within_screen(items, element):
     f = element['frame']
     assert f['x'] >= 0 and f['x'] + f['width'] <= width + 0.5, f'{element.get("AXUniqueId")} overflows: {f}'
 
-
-# On the iOS 27.2 Simulator `axe swipe` does not start a pull to refresh; explicit touch moves do.
-def pull(ui, items):
-    width, height = items[0]['frame']['width'], items[0]['frame']['height']
-    ui.axe('drag', '--start-x', str(round(width / 2)), '--start-y', str(round(height * 0.34)), '--end-x',
-           str(round(width / 2)), '--end-y', str(round(height * 0.86)), '--duration', '1.2', '--steps', '80')

@@ -34,7 +34,7 @@ export function rowTime(at: string, now: number, t: TFunction, language: string)
   const sameYear = date.getFullYear() === new Date(now).getFullYear();
   return new Intl.DateTimeFormat(language, {
     ...(sameYear ? {} : { year: 'numeric' }),
-    month: 'numeric',
+    month: 'short',
     day: 'numeric',
   }).format(date);
 }

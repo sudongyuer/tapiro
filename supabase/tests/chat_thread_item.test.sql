@@ -1,5 +1,5 @@
 begin;
-select plan(7);
+select plan(8);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -79,9 +79,15 @@ select is(
   'a ride row carries the departure time'
 );
 
-update public.rides set status = 'gathering' where id = 'a2000000-0000-4000-8000-000000000009';
+update public.rides set depart_at = now() + interval '20 minutes'
+where id = 'a2000000-0000-4000-8000-000000000009';
 select is(
-  pg_temp.listed_item('a1', 'ride') ->> 'status', 'gathering', 'the item status follows the ride'
+  (select status::text from public.rides where id = 'a2000000-0000-4000-8000-000000000009'), 'open',
+  'the stored ride status has not moved yet'
+);
+select is(
+  pg_temp.listed_item('a1', 'ride') ->> 'status', 'gathering',
+  'the item shows the ride phase the clock puts it in, not the stored status'
 );
 
 select pg_temp.act_as(pg_temp.u('b2'));

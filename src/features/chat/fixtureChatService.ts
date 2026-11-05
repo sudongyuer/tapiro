@@ -84,14 +84,14 @@ export function createFixtureChatService({
     );
 
   return {
-    async listThreads(before) {
-      onCall('listThreads', { before });
+    async listThreads(before, count = pageSize) {
+      onCall('listThreads', { before, count });
       failOnce('list');
       if (before) failOnce('listMore');
       else if (listed++ > 0) failOnce('listRefresh');
       const rows = ordered();
       const from = before ? rows.findIndex((row) => row.id === before) + 1 : 0;
-      const page = pageOf(rows, from, pageSize);
+      const page = pageOf(rows, from, count);
       return {
         items: page.rows.map((row) => summary({ ...row, unread: unread(row) })),
         hasMore: page.hasMore,

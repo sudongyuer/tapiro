@@ -22,7 +22,7 @@ expected = {
     'fixture-chat-bounty': row_label(ui, '帮取快递', '阿杰', '好的，放好了，拍了照片给你', unread=True),
     'fixture-chat-new': row_label(ui, '帮我买杯奶茶', '小林', ui.t('chat.list.noMessage')),
     'fixture-chat-ride': row_label(ui, ui.t('chat.list.route', **{'from': '双威', 'to': 'KLIA2'}),
-                                   ui.t('chat.list.people', count=3),
+                                   ui.tn('chat.list.people', 3),
                                    ui.t('chat.list.mine', body='收到，我穿蓝色外套')),
 }
 for element in rows(items):

@@ -29,7 +29,7 @@ const RIDE_ITEM = {
   from: '双威',
   to: 'KLIA2',
   departsAt: '2026-11-07T01:00:00+00:00',
-  status: 'open',
+  status: 'open' as const,
 };
 
 const THREAD = {
@@ -86,8 +86,20 @@ describe('supabase chat service', () => {
     ]);
   });
 
-  test('a row without its item or with an unknown category is a failure', async () => {
-    for (const item of [null, { ...THREAD.item, category: 'cooking' }]) {
+  test('a category the app does not know reads as other', async () => {
+    const { service } = stubClient(() => ({
+      data: {
+        items: [{ ...THREAD, item: { ...THREAD.item, category: 'cooking' }, lastMessage: null }],
+        hasMore: false,
+        nextCursor: null,
+      },
+    }));
+    const [row] = (await service.listThreads(null)).items;
+    expect(row.item.kind === 'bounty' && row.item.category).toBe('other');
+  });
+
+  test('a row without its item or with an unknown status is a failure', async () => {
+    for (const item of [null, { ...THREAD.item, status: 'paused' }]) {
       const { service } = stubClient(() => ({
         data: { items: [{ ...THREAD, item, lastMessage: null }], hasMore: false, nextCursor: null },
       }));

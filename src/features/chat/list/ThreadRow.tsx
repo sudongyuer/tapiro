@@ -1,13 +1,15 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { HandArt, HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
-import type { RowView } from './rowView';
+import type { ThreadSummary } from '../types';
+import { rowView } from './rowView';
 
 const ART_BOX = vars['--touch-min'];
 const ART = 40;
@@ -15,18 +17,23 @@ const DOT = 10;
 const SEPARATOR_INSET = vars['--space-4'] + ART_BOX + vars['--space-3'];
 
 export const ThreadRow = memo(function ThreadRow({
-  id,
-  view,
+  row,
+  me,
+  now,
   first,
   last,
   onOpen,
 }: {
-  id: string;
-  view: RowView;
+  row: ThreadSummary;
+  me: string;
+  now: number;
   first: boolean;
   last: boolean;
   onOpen: (id: string) => void;
 }) {
+  const { t, language } = useI18n();
+  const id = row.id;
+  const view = useMemo(() => rowView(row, me, now, t, language), [row, me, now, t, language]);
   const { select, highlight } = useSelectedUntilReturn();
   return (
     <Pressable

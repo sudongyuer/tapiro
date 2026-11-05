@@ -3,7 +3,6 @@ import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import type { LiveSignal } from '@/lib/live';
 import { createStore } from '@/lib/store';
 
-import { mergeFirstPage } from './listModel';
 import type { Outbox } from './outbox';
 import {
   appendOlder,
@@ -14,7 +13,9 @@ import {
   needsMarkRead,
 } from './threadModel';
 import {
+  LIST_RELOAD_MAX,
   MESSAGE_MAX,
+  PAGE_SIZE,
   type ChatMessage,
   type ChatService,
   type LoadStatus,
@@ -114,19 +115,22 @@ export function createChatStore({
     if (!userId) return;
     const at = generation;
     const request = listOrder.start();
+    const loaded = get().list;
+    const count = Math.min(
+      LIST_RELOAD_MAX,
+      Math.max(PAGE_SIZE, loaded.status === 'idle' ? 0 : loaded.threads.length),
+    );
     try {
-      const page = await service.listThreads(null);
+      const page = await service.listThreads(null, count);
       const status = listOrder.succeeded(request);
       if (!status || !current(userId, at)) return;
       listVersion += 1;
-      const previous = get().list;
-      const kept = previous.status === 'idle' ? null : previous;
       patch({
         list: {
           status,
-          ...(kept
-            ? mergeFirstPage(kept, page)
-            : { threads: page.items, hasMore: page.hasMore, nextCursor: page.nextCursor }),
+          threads: page.items,
+          hasMore: page.hasMore,
+          nextCursor: page.nextCursor,
           more: 'idle',
           loadedAt: now().toISOString(),
         },

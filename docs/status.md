@@ -65,7 +65,7 @@ Updated: 2026-11-06.
   content insets; composer capped at 5 lines. For Task 5's canvas: ★ hide the tab bar while a thread is open.
 - Chat 消息 list (2026-11-06, ★ by default, plan 「消息 list defaults」): one inset grouped card; red unread dot like the
   tab badge; 「我：」 and group 「名字：」 prefixes; empty moment with 「去看看悬赏」; a failed page retries only on 重试; a
-  reload keeps loaded pages only when its first page joins them.
+  reload asks again for every row shown (up to 100) and replaces the list.
 
 ## Resuming on another machine
 

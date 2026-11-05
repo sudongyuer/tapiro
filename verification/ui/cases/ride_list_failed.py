@@ -5,11 +5,11 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import screen  # noqa: E402
+from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from ride import add_button, open_list, relaunch_list  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/InlineState.tsx']
+DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/InlineState.tsx', 'verification/ui/gestures.py']
 LOCALES = ['zh-Hans', 'ms']
 FAIL_FIRST = ['-uiVerifyRideFail', 'first']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideFail', 'first']
@@ -33,8 +33,7 @@ ui.capture('02-retried')
 relaunch_list(ui, drop=FAIL_FIRST, add=['-uiVerifyRideFail', 'refresh'])
 ui.element(FIRST)
 ui.at_rest()
-s = screen(ui.read())
-ui.swipe((s['width'] / 2, s['height'] * 0.3), (s['width'] / 2, s['height'] * 0.8), 0.6)
+pull(ui, ui.read())
 stale_text = re.compile(ui.pattern('ride.list.stale', time=r'\d{2}:\d{2}'))
 ui.wait_label('ride-list-stale', lambda label: bool(stale_text.fullmatch(label)),
               'a failed refresh shows no stale note with the time')

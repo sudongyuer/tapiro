@@ -3,11 +3,12 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import screen, visible as board_visible  # noqa: E402
+from board import visible as board_visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
+from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
+DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/', 'verification/ui/gestures.py']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
 FAIL_FIRST = ['-uiVerifyBoardFail', 'first']
@@ -80,8 +81,7 @@ relaunch(ui, drop=FAIL_FIRST, add=['-uiVerifyBoardFail', 'refresh'])
 ui.element(FIRST_CARD)
 ui.at_rest()
 assert by_id(ui.read(), 'bounty-board-stale') is None, 'the stale notice shows before any pull (a launch load failed)'
-s = screen(ui.read())
-ui.swipe((s['width'] / 2, s['height'] * 0.3), (s['width'] / 2, s['height'] * 0.8), 0.6)
+pull(ui, ui.read())
 stale_text = re.compile(ui.pattern('bounty.board.state.stale', time=r'\d{2}:\d{2}'))
 stale = ui.wait_label('bounty-board-stale', lambda label: bool(stale_text.fullmatch(label)),
                       'a failed refresh shows no stale notice with a time')

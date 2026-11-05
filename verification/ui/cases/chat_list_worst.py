@@ -19,7 +19,8 @@ TITLE = '帮我去 Sunway Pyramid LG 层的驿站取一个很重的快递然后�
 NAME = 'Nurul Aisyah binti Mohd Rahman Abdullah Hj. Kamaruddin'
 HEAD = 'chat-row-fixture-chat-worst'
 LAST = 'chat-row-fixture-chat-worst-119'
-MAX_ROW = 100
+# 22 pt title line, 4 pt gap, 20 pt preview line and 2 x 12 pt padding; a second preview line adds 20.
+ONE_LINE_ROW = 76
 
 ui = UI(*sys.argv[1:])
 open_list(ui)
@@ -27,12 +28,15 @@ head = ui.element(HEAD)
 assert head.get('AXLabel', '').startswith(TITLE), head.get('AXLabel')
 assert NAME in head['AXLabel'], head['AXLabel']
 items = ui.read()
+shortest = min(element['frame']['height'] for element in rows(items))
+assert shortest <= ONE_LINE_ROW, f'the shortest row is {shortest} pt, more than one title and one preview line'
 for element in rows(items):
     within_screen(items, element)
-    assert element['frame']['height'] <= MAX_ROW, f'{element["AXUniqueId"]} is {element["frame"]["height"]} pt tall'
+    height = element['frame']['height']
+    assert height <= shortest + 1, f'{element["AXUniqueId"]} is {height} pt tall, rows of one line are {shortest} pt'
 ride = by_id(items, 'chat-row-fixture-chat-worst-2')
 route = ui.t('chat.list.route', **{'from': '谷中城北庭正门口', 'to': '吉隆坡第二机场站'})
-assert row_label(ui, route, ui.t('chat.list.people', count=5),
+assert row_label(ui, route, ui.tn('chat.list.people', 5),
                  ui.t('chat.list.from', name=NAME, body=f'{NAME} 🚗📦 2'), unread=True).fullmatch(ride['AXLabel']), \
     ride['AXLabel']
 ui.at_rest()

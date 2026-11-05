@@ -1,6 +1,8 @@
 import { bountyCategory } from '@/lib/stickers/category';
 
 import {
+  BOUNTY_SHOWN_STATUSES,
+  RIDE_PHASES,
   THREAD_KINDS,
   type ChatMember,
   type ChatSubject,
@@ -58,9 +60,9 @@ function toSubject(kind: ThreadInfo['kind'], value: unknown): ChatSubject {
     return {
       kind,
       title: text(row.title, 'bounty title'),
-      category: bountyCategory(row.category) ?? fail('bounty category'),
+      category: bountyCategory(row.category) ?? 'other',
       art: textOrNull(row.art, 'bounty art'),
-      status: text(row.status, 'bounty status'),
+      status: BOUNTY_SHOWN_STATUSES.find((value) => value === row.status) ?? fail('bounty status'),
     };
   }
   return {
@@ -68,7 +70,7 @@ function toSubject(kind: ThreadInfo['kind'], value: unknown): ChatSubject {
     from: text(row.from, 'ride from'),
     to: text(row.to, 'ride to'),
     departsAt: text(row.departsAt, 'ride departsAt'),
-    status: text(row.status, 'ride status'),
+    status: RIDE_PHASES.find((value) => value === row.status) ?? fail('ride status'),
   };
 }
 

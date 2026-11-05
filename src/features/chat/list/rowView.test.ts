@@ -126,8 +126,8 @@ describe('the row time', () => {
     expect(rowTime(at(5, 23, 59), NOW, t, 'en')).toBe(t('chat.list.yesterday'));
     expect(rowTime(at(2), NOW, t, 'en')).toBe('Mon');
     expect(rowTime(at(1), NOW, t, 'en')).toBe('Sun');
-    expect(rowTime(new Date(2026, 9, 30, 9).toISOString(), NOW, t, 'en')).toBe('10/30');
-    expect(rowTime(new Date(2025, 11, 31, 9).toISOString(), NOW, t, 'en')).toBe('12/31/2025');
+    expect(rowTime(new Date(2026, 9, 30, 9).toISOString(), NOW, t, 'en')).toBe('Oct 30');
+    expect(rowTime(new Date(2025, 11, 31, 9).toISOString(), NOW, t, 'en')).toBe('Dec 31, 2025');
   });
 });
 
