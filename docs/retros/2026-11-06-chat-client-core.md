@@ -39,7 +39,10 @@ overturned: pending
 
 One round: 0 Critical, 4 Important (#2–#5 above), 9 Minor. All fixed in the same round except: a send whose answer
 fails to parse shows as failed (retry is idempotent, cosmetic) and the list keeping only page one on reload (left to
-Task 4, noted in the plan). Re-review after the Important findings: see the PR.
+Task 4, noted in the plan). Re-review: all four fixed and checked against the old code; one new Important: the
+pgTAP "blocked peer gets no chat.read" could not fail (the mark did not advance), now marks a newer message and
+asserts the read time moved. Minor left: a failed mark is not re-checked; the local `unread` flag ignores blocks
+until the next reload (noted in the plan).
 
 Lesson: a store that both inserts locally and reloads from the server needs a test for "local write lands while a read
 is in flight" for every local write; the review found two of these (send, mark).

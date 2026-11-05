@@ -1,5 +1,5 @@
 begin;
-select plan(27);
+select plan(28);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -122,10 +122,16 @@ select is(
 );
 reset role;
 
+insert into sent values (6, pg_temp.send('a1', (select bt from fx), 6, '还在吗'));
 select pg_temp.act_as(pg_temp.u('a1'));
 select public.block_user(pg_temp.u('b2'));
 select pg_temp.act_as(pg_temp.u('b2'));
-select public.mark_read((select bt from fx), (select id from sent where n = 1));
+select public.mark_read((select bt from fx), (select id from sent where n = 6));
+select is(
+  pg_temp.listed('b2', (select bt from fx)) ->> 'lastReadAt',
+  (select to_jsonb(created_at) #>> '{}' from public.messages where id = (select id from sent where n = 6)),
+  'a member still marks read after a block'
+);
 select is(pg_temp.read_events('a1', (select bt from fx)), 2::bigint, 'a blocked bounty peer gets no chat.read');
 select is(
   pg_temp.listed('a1', (select bt from fx)) -> 'peerReadAt', 'null'::jsonb,
