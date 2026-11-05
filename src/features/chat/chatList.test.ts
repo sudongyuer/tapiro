@@ -88,6 +88,20 @@ describe('thread list', () => {
     expect(ctx.store.getSnapshot().list).toMatchObject({ status: 'failed', threads: [] });
   });
 
+  test('no next page is asked for while a reload is out, so the reload cannot shrink the list', async () => {
+    const ctx = setup();
+    void ctx.store.loadList();
+    ctx.queues.listThreads[0].resolve({ items: [row('a')], hasMore: true, nextCursor: 'k1' });
+    await settle();
+    void ctx.store.reloadList();
+    void ctx.store.loadMoreThreads();
+    expect(ctx.named('listThreads').map((call) => call.args[0])).toEqual([null, null]);
+    ctx.queues.listThreads[1].resolve({ items: [row('a')], hasMore: true, nextCursor: 'k1' });
+    await settle();
+    void ctx.store.loadMoreThreads();
+    expect(ctx.named('listThreads').at(-1)?.args).toEqual(['k1']);
+  });
+
   test('a page that answers after the list was reloaded is dropped', async () => {
     const ctx = setup();
     void ctx.store.loadList();

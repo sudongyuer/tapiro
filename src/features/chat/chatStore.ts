@@ -98,6 +98,7 @@ export function createChatStore({
   const marking = new Set<string>();
   let generation = 0;
   let listVersion = 0;
+  let reloadsOut = 0;
 
   const get = store.get;
   const patch = (next: Partial<ChatState>) => store.set({ ...get(), ...next });
@@ -120,6 +121,7 @@ export function createChatStore({
       LIST_RELOAD_MAX,
       Math.max(PAGE_SIZE, loaded.status === 'idle' ? 0 : loaded.threads.length),
     );
+    reloadsOut += 1;
     try {
       const page = await service.listThreads(null, count);
       const status = listOrder.succeeded(request);
@@ -140,6 +142,8 @@ export function createChatStore({
       const list = get().list;
       if (list.status === 'idle') return;
       patch({ list: { ...list, status: failedOrStale(list.status, list.threads.length > 0) } });
+    } finally {
+      reloadsOut -= 1;
     }
   }
 
@@ -165,6 +169,8 @@ export function createChatStore({
   async function loadMoreThreads() {
     const { userId, list } = get();
     if (!userId || list.status !== 'ready' || !list.hasMore || list.more === 'loading') return;
+    // A reload sized before this page landed would replace the list with fewer rows.
+    if (reloadsOut > 0) return;
     const at = generation;
     const version = listVersion;
     patch({ list: { ...list, more: 'loading' } });
