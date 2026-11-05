@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { useBlockPerson, useUnblockPerson, type AskOutcome } from '@/features/block';
+import { blockEvents, useBlockPerson, useUnblockPerson, type AskOutcome } from '@/features/block';
 
 import type { ChatMember, ThreadInfo } from '../types';
 import { blockKind } from './safetyView';
@@ -22,6 +22,15 @@ export function useThreadSafety({
   const blocking = useBlockPerson('threadPeer');
   const unblocking = useUnblockPerson();
   const [failure, setFailure] = useState<Failure>(null);
+  useEffect(() => {
+    const clear = () => setFailure(null);
+    const offBlocked = blockEvents.onBlocked(clear);
+    const offUnblocked = blockEvents.onUnblocked(clear);
+    return () => {
+      offBlocked();
+      offUnblocked();
+    };
+  }, []);
   const settled = useCallback(
     (kind: 'block' | 'unblock') => (outcome: AskOutcome) =>
       setFailure(outcome === 'failed' ? kind : null),

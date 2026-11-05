@@ -21,7 +21,7 @@ const BODY = {
   groupMember: 'block.confirm.groupBody',
 } as const;
 
-export type AskOutcome = 'cancelled' | 'blocked' | 'failed';
+export type AskOutcome = 'cancelled' | 'blocked' | 'unblocked' | 'failed';
 export type AskOptions = {
   kind?: BlockKind;
   title?: string;
@@ -107,7 +107,7 @@ export function useUnblockPerson() {
         async (index) => {
           if (index !== 0) return;
           const done = await flow.unblock(person.id);
-          if (mounted.current) onSettled?.(done ? 'blocked' : 'failed');
+          if (mounted.current) onSettled?.(done ? 'unblocked' : 'failed');
         },
       );
     },
