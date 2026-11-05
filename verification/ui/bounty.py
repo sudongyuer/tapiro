@@ -6,6 +6,7 @@ from pathlib import Path
 
 from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, reach_home
 from run import REGIONS
+from swifttool import SIMULATOR, compiled
 
 OPEN = 'bounty.post.open'
 TITLE = 'bounty.post.title'
@@ -238,12 +239,51 @@ def search_places(ui, text, focused=False):
     ui.type(text)
 
 
-def paste_into(ui, identifier, text):
-    f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+PASTE = {'zh-Hans': '粘贴', 'en': 'Paste', 'ms': 'Tampal'}
+SELECT_ALL = {'zh-Hans': '全选', 'en': 'Select All', 'ms': 'Pilih Semua'}
+
+
+def copy_on_device(ui, text):
+    # simctl pbcopy is a silent no-op on Xcode 27.2 (pbpaste reads nothing back); a UIKit tool spawned in the
+    # Simulator writes the device pasteboard itself.
+    binary = compiled('pasteboard', SIMULATOR)
+    subprocess.run(['xcrun', 'simctl', 'spawn', ui.udid, str(binary), text], check=True, timeout=20)
+    on_board = subprocess.run(['xcrun', 'simctl', 'pbpaste', ui.udid], capture_output=True, check=True, timeout=20)
+    assert on_board.stdout.decode() == text, f'the device pasteboard reads {on_board.stdout.decode()!r}, not {text!r}'
+
+
+def menu_item(label):
+    return lambda items: next((i for i in items if i.get('AXLabel') == label and i.get('type') == 'GenericElement'), None)
+
+
+def tap_centre(ui, item):
+    f = item['frame']
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
-    ui.axe('key-combo', '--modifiers', '227', '--key', '4')
-    subprocess.run(['xcrun', 'simctl', 'pbcopy', ui.udid], input=text.encode(), check=True, timeout=20)
-    ui.axe('key-combo', '--modifiers', '227', '--key', '25')
+
+
+def paste_into(ui, identifier, text):
+    # Taps only: an AXe ⌘V carries no user authentication, so iOS asks for paste permission and pastes nothing, and AXe
+    # key events (⌘A, typed keys) are dropped for seconds at a time on iOS 27. 粘贴 in the edit menu is the user's own
+    # paste; 全选 first makes it replace what the field holds.
+    paste, select_all = PASTE[ui.locale], SELECT_ALL[ui.locale]
+    copy_on_device(ui, text)
+    tap_centre(ui, ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled'))
+    f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled after focus')['frame']
+    end = (f['x'] + f['width'] - 8, f['y'] + f['height'] / 2)
+    for attempt in range(4):
+        ui.tap_point(*end)
+        try:
+            ui.wait(menu_item(paste), f'{identifier} shows no edit menu with {paste}', 3)
+            break
+        except AssertionError:
+            if attempt == 3:
+                raise
+    select = menu_item(select_all)(ui.read())
+    if select:
+        tap_centre(ui, select)
+        ui.wait(lambda items: not menu_item(select_all)(items) and menu_item(paste)(items),
+                f'{select_all} did not select the text in {identifier}', 5)
+    tap_centre(ui, ui.wait(menu_item(paste), f'{identifier} lost the edit menu', 3))
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
 
 

@@ -14,7 +14,8 @@ from driver import UI, assert_touch_target, by_id  # noqa: E402
 from ride import tap_bar  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/features/payment/', 'src/app/(tabs)/ride/', 'src/app/pay/',
-        'src/lib/i18n/locales/rideSettle/', 'src/lib/i18n/locales/pay/']
+        'src/lib/i18n/locales/rideSettle/', 'src/lib/i18n/locales/pay/', 'verification/ui/bounty.py',
+        'verification/ui/pasteboard.swift']
 SCENE = 'ride-detail'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300

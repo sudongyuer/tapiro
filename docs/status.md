@@ -27,8 +27,8 @@ Updated: 2026-11-05.
 - Carpool milestone: the `ride_*` UI cases ran (zh-Hans light 27 plus 24 regression cases, dark 7, `en` 27, `ms` 20;
   all pass after #55). Waiting on the owner's Simulator walkthrough and the `ride.remind.*` device checks; then set the
   carpool spec to `implemented`.
-- Live updates and push (`docs/plans/2026-11-03-realtime-push.md`): step 1 (server) merged in #62; step 2 (app) is
-  in its PR: `src/lib/live/` (one private channel, reconnect refetch, dispatch by kind, verify emitter), live handlers
+- Live updates and push (`docs/plans/2026-11-03-realtime-push.md`): step 1 (server) merged in #62; step 2 (app) merged
+  in #66: `src/lib/live/` (one private channel, reconnect refetch, dispatch by kind, verify emitter), live handlers
   for home cards, applicants, status, pay sheet and ride detail, the 「可能不是最新」 line, push token registration,
   the bounty permission moment and tap routing for every kind. Its four `live_*` UI cases are written and run with the
   feature's milestone run. Then step 3 waits on the paid account; the spec stays `approved` until then.

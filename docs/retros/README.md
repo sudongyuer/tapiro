@@ -81,3 +81,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-04 | new machine and overnight | 0               | 1             | ~0 (one owner correction on check selection) | 1                       | 0                     |
 | 2026-11-04 | dev test accounts         | 0               | 1             | ~15 min (AXe taps dropped under DeviceHub)   | 0                       | 0                     |
 | 2026-11-04 | ride empty centre         | 1               | 0             | ~0                                           | 1                       | 0                     |
+| 2026-11-06 | verify owing and paste    | 0               | 4             | ~1.5 h (AXe key drops measured by hand)      | 0                       | 0                     |
