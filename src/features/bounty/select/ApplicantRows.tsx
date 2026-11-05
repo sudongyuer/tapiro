@@ -27,7 +27,7 @@ import {
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactElement } from 'react';
 
-import type { BlockedPerson } from '@/features/block/types';
+import type { BlockedPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
 import { formatMoney } from '@/lib/money';

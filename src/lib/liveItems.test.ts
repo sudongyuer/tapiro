@@ -105,6 +105,16 @@ describe('live item sources', () => {
     live.setSource('payments', []);
     expect(calls).toBe(0);
   });
+
+  test('the chat count drives the badge, and clearing it falls back to the feed', () => {
+    const live = createLiveItems(fixtureLiveItems(undefined));
+    live.setUnreadMessages(12);
+    expect(live.getSnapshot().unreadMessages).toBe(12);
+    live.setUnreadMessages(0);
+    expect(live.getSnapshot().unreadMessages).toBe(0);
+    live.setUnreadMessages(null);
+    expect(live.getSnapshot().unreadMessages).toBe(FIXTURE_UNREAD_MESSAGES);
+  });
 });
 
 describe('live item source states', () => {

@@ -3,6 +3,7 @@ import { NativeTabs } from 'expo-router/native-tabs';
 
 import { useSignedInUser } from '@/features/account';
 import { useLiveBounties } from '@/features/bounty';
+import { useLiveChat } from '@/features/chat';
 import { useLivePayments } from '@/features/payment';
 import {
   UrgentAccessory,
@@ -31,6 +32,7 @@ export default function TabsLayout() {
   useLivePayments(userId);
   useLiveBounties(userId);
   useLiveStickers(userId);
+  useLiveChat(userId);
   useLive(userId);
   usePushRegistration(userId);
   useNoticeRouting((route) => router.push(route), userId !== null);

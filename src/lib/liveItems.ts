@@ -123,12 +123,14 @@ export type LiveItems = {
     retry?: () => void,
   ) => void;
   retry: (name: string) => void;
+  setUnreadMessages: (count: number | null) => void;
 };
 
 export const EMPTY_LIVE_ITEMS: LiveItemsSnapshot = { accessory: [], unreadMessages: 0 };
 
 export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): LiveItems {
   let base = initial;
+  let unread: number | null = null;
   const sources = new Map<string, { items: readonly AccessoryItem[]; status: SourceStatus }>();
   const retries = new Map<string, () => void>();
   const store = createStore(initial);
@@ -140,7 +142,8 @@ export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): 
     const issues = [...sources.entries()].flatMap(([source, { status }]) =>
       status === 'ready' ? [] : [{ source, status }],
     );
-    store.set({ ...base, accessory: [...base.accessory, ...live], issues });
+    const unreadMessages = unread ?? base.unreadMessages;
+    store.set({ ...base, accessory: [...base.accessory, ...live], unreadMessages, issues });
   };
   return {
     getSnapshot: store.get,
@@ -157,6 +160,11 @@ export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): 
     },
     retry(name) {
       retries.get(name)?.();
+    },
+    setUnreadMessages(count) {
+      if (count === unread) return;
+      unread = count;
+      merge();
     },
   };
 }

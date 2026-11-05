@@ -1,6 +1,6 @@
 import { Settings } from 'react-native';
 
-import { fixtureBlocked } from '@/features/block/services';
+import { fixtureBlocked } from '@/features/block';
 import { FIXTURE_PLACES } from '@/features/place/fixturePlaces';
 import { createOriginStore, createShownOrigins } from '@/features/place/originStore';
 import { deviceCurrency } from '@/lib/deviceCurrency';
