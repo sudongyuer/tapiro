@@ -5,17 +5,39 @@ import { ActionSheetIOS } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 
 import { blockEvents } from './blockEvents';
-import { createBlockFlow, createBlockList } from './blockFlow';
+import { createBlockFlow, createBlockList, createUnblockFlow } from './blockFlow';
 import { blockService } from './services';
 import type { BlockedPerson } from './types';
 
-export type BlockKind = 'poster' | 'applicant' | 'rideOrganiser';
+export type BlockKind =
+  'poster' | 'applicant' | 'rideOrganiser' | 'rideMember' | 'threadPeer' | 'groupMember';
 
 const BODY = {
   poster: 'block.confirm.body',
   applicant: 'block.confirm.applicantBody',
   rideOrganiser: 'block.confirm.rideBody',
+  rideMember: 'block.confirm.rideMemberBody',
+  threadPeer: 'block.confirm.threadBody',
+  groupMember: 'block.confirm.groupBody',
 } as const;
+
+export type AskOutcome = 'cancelled' | 'blocked' | 'failed';
+export type AskOptions = {
+  kind?: BlockKind;
+  title?: string;
+  onSettled?: (outcome: AskOutcome) => void;
+};
+
+function useMounted() {
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  return mounted;
+}
 
 export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
   const { t } = useI18n();
@@ -24,35 +46,35 @@ export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
   );
   const state = useSyncExternalStore(flow.subscribe, flow.get);
   const [target, setTarget] = useState<string | null>(null);
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
+  const mounted = useMounted();
 
   const ask = useCallback(
-    (poster: BlockedPerson) => {
+    (person: BlockedPerson, options: AskOptions = {}) => {
       if (flow.get() === 'busy') return;
-      const name = poster.name ?? t('bounty.post.unknownName');
+      const name = person.name ?? t('bounty.post.unknownName');
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          title: t('block.confirm.title', { name }),
-          message: t(BODY[kind], { name }),
+          title: options.title ?? t('block.confirm.title', { name }),
+          message: t(BODY[options.kind ?? kind], { name }),
           options: [t('block.confirm.confirm'), t('block.confirm.cancel')],
           destructiveButtonIndex: 0,
           cancelButtonIndex: 1,
         },
         async (index) => {
-          if (index !== 0) return;
-          const blocking = flow.block(poster.id);
+          if (index !== 0) {
+            options.onSettled?.('cancelled');
+            return;
+          }
+          const blocking = flow.block(person.id);
           setTarget(flow.target());
-          if ((await blocking) && mounted.current) onBlocked?.();
+          const blocked = await blocking;
+          if (!mounted.current) return;
+          if (blocked) onBlocked?.();
+          options.onSettled?.(blocked ? 'blocked' : 'failed');
         },
       );
     },
-    [flow, kind, onBlocked, t],
+    [flow, kind, mounted, onBlocked, t],
   );
 
   return { state, ask, target: state === 'busy' ? target : null };
@@ -62,6 +84,35 @@ export function useBlockPoster(onBlocked: () => void) {
   return useBlockPerson('poster', onBlocked);
 }
 
+export function useUnblockPerson() {
+  const { t } = useI18n();
+  const [flow] = useState(() =>
+    createUnblockFlow({ service: blockService, unblocked: blockEvents.unblocked }),
+  );
+  const state = useSyncExternalStore(flow.subscribe, flow.get);
+
+  const ask = useCallback(
+    (person: BlockedPerson) => {
+      if (flow.get() === 'busy') return;
+      const name = person.name ?? t('bounty.post.unknownName');
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: t('block.unblock.title', { name }),
+          message: t('block.unblock.body', { name }),
+          options: [t('block.unblock.confirm'), t('block.unblock.cancel')],
+          cancelButtonIndex: 1,
+        },
+        (index) => {
+          if (index === 0) void flow.unblock(person.id);
+        },
+      );
+    },
+    [flow, t],
+  );
+
+  return { state, ask };
+}
+
 export function useBlockList() {
   const [list] = useState(() => createBlockList(blockService));
   const state = useSyncExternalStore(list.subscribe, list.get);
@@ -69,5 +120,11 @@ export function useBlockList() {
   useEffect(() => {
     if (focused) void list.load();
   }, [focused, list]);
-  return { state, retry: list.load, unblock: list.unblock };
+  const unblock = useCallback(
+    async (id: string) => {
+      if (await list.unblock(id)) blockEvents.unblocked(id);
+    },
+    [list],
+  );
+  return { state, retry: list.load, unblock };
 }

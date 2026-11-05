@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { createBlockFlow, createBlockList } from './blockFlow';
+import { createBlockFlow, createBlockList, createUnblockFlow } from './blockFlow';
 import type { BlockOutcome, BlockService, BlockedPerson } from './types';
 
 type Deferred<T> = { resolve: (value: T) => void; reject: (error: unknown) => void };
@@ -163,5 +163,27 @@ describe('block list', () => {
     await loading;
     const state = list.get();
     expect(state.kind === 'ready' && state.people).toEqual([JIE]);
+  });
+});
+
+describe('unblock flow', () => {
+  test('tells listeners only after the server unblocked, and a failure stays shown', async () => {
+    let fail = true;
+    const unblocked: string[] = [];
+    const flow = createUnblockFlow({
+      service: {
+        unblock: async () => {
+          if (fail) throw new TypeError('Network request failed');
+        },
+      },
+      unblocked: (id) => unblocked.push(id),
+    });
+    const first = flow.unblock('lin');
+    expect(flow.get()).toBe('busy');
+    expect(await first).toBe(false);
+    expect([flow.get(), unblocked]).toEqual(['failed', []]);
+    fail = false;
+    expect(await flow.unblock('lin')).toBe(true);
+    expect([flow.get(), unblocked]).toEqual(['idle', ['lin']]);
   });
 });

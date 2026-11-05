@@ -51,7 +51,9 @@ export const info = (over: Partial<ThreadInfo> = {}): ThreadInfo => ({
   unread: true,
   lastReadAt: null,
   peerReadAt: null,
-  members: [{ id: PEER, name: '阿杰', avatarUrl: null, left: false }],
+  members: [
+    { id: PEER, name: '阿杰', avatarUrl: null, left: false, blockedByMe: false, organiser: false },
+  ],
   ...over,
 });
 

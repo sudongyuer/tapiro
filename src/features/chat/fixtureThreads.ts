@@ -19,13 +19,18 @@ const member = (id: string, name: string | null, left = false): ChatMember => ({
   name,
   avatarUrl: null,
   left,
+  blockedByMe: false,
+  organiser: false,
 });
 
 const JIE = member('fixture-chat-jie', '阿杰');
-const MEI = member('fixture-chat-mei', '美玲');
+const MEI = { ...member('fixture-chat-mei', '美玲'), organiser: true };
 const ARIF = member('fixture-chat-arif', 'Arif');
 const WORST_NAME = 'Nurul Aisyah binti Mohd Rahman Abdullah Hj. Kamaruddin';
 const WORST = member('fixture-chat-worst', WORST_NAME);
+export const FIXTURE_CHAT_PEOPLE = [JIE, MEI, ARIF, WORST, member('fixture-chat-lin', '小林')].map(
+  ({ id, name }) => ({ id, name }),
+);
 const WORST_TITLE =
   '帮我去 Sunway Pyramid LG 层的驿站取一个很重的快递然后送到 Block C 十二楼门口谢谢你，很急！！';
 const WORST_FROM = '谷中城北庭正门口';

@@ -95,6 +95,7 @@ export type BubbleRow = {
   name: string | null;
   speaker: string | null;
   reportable: boolean;
+  folded: boolean;
   timeBreak: string | null;
   read: string | null;
 };
@@ -118,8 +119,14 @@ export function bubbleRows(
   now: number,
   t: TFunction,
   language: string,
+  revealed: ReadonlySet<string> = new Set(),
 ): BubbleRow[] {
   const group = info?.kind === 'ride';
+  const blocked = new Set(
+    group
+      ? (info?.members ?? []).filter((member) => member.blockedByMe).map((member) => member.id)
+      : [],
+  );
   return oldestFirst.map((item, index) => {
     const previous = oldestFirst[index - 1];
     const at = itemTime(item);
@@ -129,6 +136,7 @@ export function bubbleRows(
     const previousSender =
       previous?.kind === 'stored' && !previous.mine ? previous.message.senderId : null;
     const newSpeaker = sender !== null && !mine && (sender !== previousSender || gap >= BREAK_MS);
+    const folded = sender !== null && !mine && blocked.has(sender) && !revealed.has(item.key);
     const seen =
       item.kind === 'stored' && item.message.id === seenMessageId && info?.peerReadAt
         ? readLabel(info.peerReadAt, now, t, language)
@@ -138,9 +146,10 @@ export function bubbleRows(
       item,
       mine,
       body: item.kind === 'pending' ? item.pending.body : item.message.body,
-      name: group && newSpeaker && sender ? senderName(info, sender, t) : null,
+      name: group && newSpeaker && sender && !folded ? senderName(info, sender, t) : null,
       speaker: !mine && sender ? senderName(info, sender, t) : null,
-      reportable: !mine && !info?.left,
+      reportable: !mine,
+      folded,
       timeBreak: gap >= BREAK_MS ? breakLabel(at, now, t, language) : null,
       read: seen,
     };
@@ -157,5 +166,6 @@ export const sameRow = (a: BubbleRow, b: BubbleRow) =>
   a.name === b.name &&
   a.speaker === b.speaker &&
   a.reportable === b.reportable &&
+  a.folded === b.folded &&
   a.timeBreak === b.timeBreak &&
   a.read === b.read;

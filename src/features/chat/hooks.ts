@@ -41,6 +41,14 @@ export function useChatThreadInfo(threadId: string): ThreadInfo | null {
   );
 }
 
+export function useChatMessage(threadId: string, messageId: string | null) {
+  return useChatState((state) =>
+    messageId
+      ? (state.threads[threadId]?.messages.find((message) => message.id === messageId) ?? null)
+      : null,
+  );
+}
+
 export function useChatUnread() {
   return useChatState((state) => state.unread);
 }

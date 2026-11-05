@@ -24,12 +24,17 @@ import { PAGE_SIZE } from '../chatService';
 import { useChatThread, useChatUserId } from '../hooks';
 import { chatStore } from '../services';
 import type { ThreadInfo } from '../types';
+import { BlockedFooter } from './BlockedFooter';
 import { ChatScrollView } from './ChatScrollView';
 import { Composer, COMPOSER_INPUT_ID, COMPOSER_MIN_HEIGHT } from './Composer';
 import { MessageBubble } from './MessageBubble';
+import { blockedFooter } from './safetyView';
 import { SafetyCard } from './SafetyCard';
+import { ThreadActionsContext, type ReportTarget } from './threadActions';
+import { ThreadMenu } from './ThreadMenu';
 import { ThreadTop } from './ThreadTop';
 import { bubbleRows, type BubbleRow } from './threadView';
+import { useThreadSafety } from './useThreadSafety';
 
 const KEYBOARD_GAP = space.sm;
 const KEEP_POSITION = { minIndexForVisible: 0 };
@@ -41,9 +46,11 @@ const keyOf = (row: BubbleRow) => row.key;
 export function ThreadScreen({
   threadId,
   onOpenItem,
+  onReport,
 }: {
   threadId: string;
   onOpenItem: (info: ThreadInfo) => void;
+  onReport: (target: ReportTarget) => void;
 }) {
   const { t, language } = useI18n();
   const userId = useChatUserId();
@@ -51,10 +58,20 @@ export function ThreadScreen({
   const info = thread?.info ?? null;
   const [openedAt] = useState(() => Date.now());
   const now = thread?.loadedAt ? Date.parse(thread.loadedAt) : openedAt;
+  const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => new Set());
   const rows = useMemo(
-    () => bubbleRows([...items].reverse(), info, seenMessageId, now, t, language),
-    [items, info, seenMessageId, now, t, language],
+    () => bubbleRows([...items].reverse(), info, seenMessageId, now, t, language, revealed),
+    [items, info, seenMessageId, now, t, language, revealed],
   );
+  const actions = useMemo(
+    () => ({
+      report: onReport,
+      reveal: (key: string) => setRevealed((shown) => new Set(shown).add(key)),
+    }),
+    [onReport],
+  );
+  const safety = useThreadSafety({ info, onOpenItem, onReport });
+  const blocked = info ? blockedFooter(info) : null;
   const { bottom } = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const scroll = useRef<KeyboardChatScrollViewRef>(null);
@@ -165,39 +182,43 @@ export function ThreadScreen({
       offset={COMPOSER_MIN_HEIGHT}
       textInputNativeID={COMPOSER_INPUT_ID}
     >
+      <ThreadMenu info={info} busy={safety.busy} onChoose={safety.choose} />
       <ThreadTop
         threadId={threadId}
         thread={thread}
         top={headerHeight}
         now={now}
+        blockFailed={safety.blockFailed}
         onOpenItem={onOpenItem}
       />
-      <FlatList
-        testID="chat-thread-list"
-        style={shown ? undefined : styles.placing}
-        data={rows}
-        keyExtractor={keyOf}
-        renderItem={renderItem}
-        renderScrollComponent={renderScrollComponent}
-        initialNumToRender={FIRST_RENDER}
-        maintainVisibleContentPosition={KEEP_POSITION}
-        onContentSizeChange={onContentSizeChange}
-        ListHeaderComponent={header}
-        contentContainerStyle={{
-          paddingTop: space.sm,
-          paddingBottom: COMPOSER_MIN_HEIGHT + bottom + space.sm,
-        }}
-        onScrollBeginDrag={() => {
-          dragging.current = true;
-          pinned.current = false;
-        }}
-        onScrollEndDrag={() => {
-          dragging.current = false;
-        }}
-        onStartReached={() => {
-          if (thread?.older !== 'failed') void chatStore.loadOlder(threadId);
-        }}
-      />
+      <ThreadActionsContext value={actions}>
+        <FlatList
+          testID="chat-thread-list"
+          style={shown ? undefined : styles.placing}
+          data={rows}
+          keyExtractor={keyOf}
+          renderItem={renderItem}
+          renderScrollComponent={renderScrollComponent}
+          initialNumToRender={FIRST_RENDER}
+          maintainVisibleContentPosition={KEEP_POSITION}
+          onContentSizeChange={onContentSizeChange}
+          ListHeaderComponent={header}
+          contentContainerStyle={{
+            paddingTop: space.sm,
+            paddingBottom: COMPOSER_MIN_HEIGHT + bottom + space.sm,
+          }}
+          onScrollBeginDrag={() => {
+            dragging.current = true;
+            pinned.current = false;
+          }}
+          onScrollEndDrag={() => {
+            dragging.current = false;
+          }}
+          onStartReached={() => {
+            if (thread?.older !== 'failed') void chatStore.loadOlder(threadId);
+          }}
+        />
+      </ThreadActionsContext>
       {info?.left ? (
         <View
           style={[styles.left, { paddingBottom: bottom + space.md }]}
@@ -209,6 +230,14 @@ export function ThreadScreen({
             {t('chat.thread.left')}
           </AppText>
         </View>
+      ) : blocked ? (
+        <BlockedFooter
+          member={blocked}
+          bottom={bottom}
+          busy={safety.unblocking}
+          failed={safety.unblockFailed}
+          onUnblock={() => safety.askUnblock(blocked)}
+        />
       ) : info && userId ? (
         <Composer
           userId={userId}

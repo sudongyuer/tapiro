@@ -439,6 +439,7 @@ export function createChatStore({
     reloadList: () => reloadList(),
     loadMoreThreads,
     refreshUnread: () => refreshUnread(),
+    refresh,
     openThread,
     reloadThread,
     loadOlder,

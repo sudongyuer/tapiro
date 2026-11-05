@@ -13,6 +13,15 @@ export default function MessagesLayout() {
         name="[thread]"
         options={{ headerLargeTitleEnabled: false, scrollEdgeEffects: { top: 'automatic' } }}
       />
+      <Stack.Screen
+        name="report"
+        options={{
+          presentation: 'formSheet',
+          sheetAllowedDetents: [0.7, 1],
+          sheetGrabberVisible: true,
+          headerLargeTitleEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

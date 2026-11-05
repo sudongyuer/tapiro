@@ -20,6 +20,8 @@ export type FixtureChatOptions = {
   failFirst: readonly ChatFailPoint[];
   long?: boolean;
   left?: boolean;
+  blockedBy?: boolean;
+  blockedByMe?: (memberId: string) => boolean;
   sendDelayMs?: number;
   pageSize?: number;
   now?: () => Date;
@@ -36,6 +38,7 @@ export function fixtureChatOptions(
     failFirst: CHAT_FAIL_POINTS.filter((point) => fail.includes(point)),
     long: argument('uiVerifyChatLong') === '1',
     left: argument('uiVerifyChatLeft') === '1',
+    blockedBy: argument('uiVerifyChatBlockedBy') === '1',
     sendDelayMs: Number(argument('uiVerifyChatSendDelay') ?? 0) || 0,
   };
 }
@@ -52,6 +55,8 @@ export function createFixtureChatService({
   failFirst,
   long = false,
   left = false,
+  blockedBy = false,
+  blockedByMe = () => false,
   sendDelayMs = 0,
   pageSize = 50,
   now = () => new Date(),
@@ -65,8 +70,16 @@ export function createFixtureChatService({
     const at = now().toISOString();
     return thread.messages.filter((message) => message.createdAt <= at);
   };
+  const withBlocks = (thread: FixtureThread): FixtureThread => {
+    const members = thread.members.map((one) => ({ ...one, blockedByMe: blockedByMe(one.id) }));
+    const before =
+      thread.item.kind === 'ride' && ['open', 'gathering'].includes(thread.item.status);
+    const leftByBlock = before && members.some((one) => one.organiser && one.blockedByMe);
+    const peerReadAt = members.some((one) => one.blockedByMe) ? null : thread.peerReadAt;
+    return { ...thread, members, peerReadAt, left: thread.left || leftByBlock };
+  };
   const summary = (thread: FixtureThread): ThreadSummary => {
-    const { messages: _messages, ...info } = thread;
+    const { messages: _messages, ...info } = withBlocks(thread);
     return { ...info, lastMessage: shown(thread)[0] ?? null };
   };
   const failing = new Set<ChatFailPoint>(failFirst);
@@ -113,7 +126,7 @@ export function createFixtureChatService({
       const messages = shown(thread);
       const from = before ? messages.findIndex((message) => message.id === before) + 1 : 0;
       const page = pageOf(messages, from, pageSize);
-      const { messages: _messages, ...info } = thread;
+      const { messages: _messages, ...info } = withBlocks(thread);
       return {
         thread: { ...info, unread: unread(thread) },
         messages: page.rows,
@@ -125,6 +138,10 @@ export function createFixtureChatService({
       if (sendDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, sendDelayMs));
       if (failing.delete('send')) return { ok: false, failure: 'failed' };
       const thread = find(threadId);
+      const blockedHere = thread.members.some((one) => blockedByMe(one.id));
+      if (thread.kind === 'bounty' && (blockedBy || blockedHere)) {
+        return { ok: false, failure: 'blocked' };
+      }
       const existing = thread.messages.find((message) => message.clientId === clientId);
       if (existing) return { ok: true, message: existing };
       const message: ChatMessage = {

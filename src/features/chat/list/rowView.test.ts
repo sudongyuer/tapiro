@@ -20,6 +20,8 @@ const member = (id: string, name: string | null, left = false): ChatMember => ({
   name,
   avatarUrl: null,
   left,
+  blockedByMe: false,
+  organiser: false,
 });
 
 const bountyRow = (over: Partial<ThreadSummary> = {}): ThreadSummary => ({
@@ -90,6 +92,20 @@ describe('a 消息 row', () => {
       unread: false,
     });
     expect(view.a11y.endsWith('未读')).toBe(false);
+  });
+
+  test('in a ride group the last line of someone you blocked stays folded', () => {
+    const view = rowView(
+      rideRow({
+        members: [{ ...member('mei', '美玲'), blockedByMe: true }, member('arif', 'Arif')],
+        lastMessage: message('mei', '先转 RM20 给我'),
+      }),
+      ME,
+      NOW,
+      t,
+      'zh-Hans',
+    );
+    expect(view.last).toBe(t('chat.thread.folded'));
   });
 
   test('your own last line is marked as yours, and line breaks fold into one line', () => {

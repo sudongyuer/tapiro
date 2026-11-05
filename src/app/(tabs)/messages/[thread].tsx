@@ -9,10 +9,15 @@ export default function Thread() {
     info.kind === 'bounty'
       ? router.push({ pathname: '/bounty/status/[id]', params: { id: info.itemId } })
       : router.push({ pathname: '/ride/[id]', params: { id: info.itemId } });
+  const report = (target: { userId: string; messageId: string | null }) =>
+    router.push({
+      pathname: '/messages/report',
+      params: { thread, user: target.userId, message: target.messageId ?? '' },
+    });
   return (
     <>
       <ThreadTitle threadId={thread} />
-      <ThreadScreen threadId={thread} onOpenItem={openItem} />
+      <ThreadScreen threadId={thread} onOpenItem={openItem} onReport={report} />
     </>
   );
 }

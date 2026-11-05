@@ -30,6 +30,28 @@ export function createBlockFlow(deps: {
   };
 }
 
+export function createUnblockFlow(deps: {
+  service: Pick<BlockService, 'unblock'>;
+  unblocked: (personId: string) => void;
+}) {
+  const store = createStore<BlockState>('idle');
+  return {
+    get: store.get,
+    subscribe: store.subscribe,
+    async unblock(personId: string): Promise<boolean> {
+      if (store.get() === 'busy') return false;
+      store.set('busy');
+      let ok = true;
+      await deps.service.unblock(personId).catch(() => {
+        ok = false;
+      });
+      store.set(ok ? 'idle' : 'failed');
+      if (ok) deps.unblocked(personId);
+      return ok;
+    },
+  };
+}
+
 export type BlockListState =
   | { kind: 'loading' }
   | { kind: 'failed'; retrying: boolean }
@@ -70,9 +92,9 @@ export function createBlockList(service: BlockService) {
     }
   }
 
-  async function unblock(id: string) {
+  async function unblock(id: string): Promise<boolean> {
     const now = store.get();
-    if (now.kind !== 'ready' || now.unblocking.includes(id)) return;
+    if (now.kind !== 'ready' || now.unblocking.includes(id)) return false;
     store.set({ ...now, unblocking: [...now.unblocking, id], unblockFailed: false });
     let ok = true;
     await service.unblock(id).catch(() => {
@@ -80,13 +102,14 @@ export function createBlockList(service: BlockService) {
     });
     if (ok) request += 1;
     const after = store.get();
-    if (after.kind !== 'ready') return;
+    if (after.kind !== 'ready') return ok;
     const unblocking = after.unblocking.filter((other) => other !== id);
     store.set(
       ok
         ? { ...after, unblocking, people: after.people.filter((person) => person.id !== id) }
         : { ...after, unblocking, unblockFailed: true },
     );
+    return ok;
   }
 
   return { get: store.get, subscribe: store.subscribe, load, unblock };

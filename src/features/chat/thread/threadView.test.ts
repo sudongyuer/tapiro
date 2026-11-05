@@ -24,7 +24,9 @@ const info = (over: Partial<ThreadInfo> = {}): ThreadInfo => ({
   unread: false,
   lastReadAt: null,
   peerReadAt: null,
-  members: [{ id: 'jie', name: '阿杰', avatarUrl: null, left: false }],
+  members: [
+    { id: 'jie', name: '阿杰', avatarUrl: null, left: false, blockedByMe: false, organiser: false },
+  ],
   ...over,
 });
 
@@ -96,8 +98,22 @@ describe('bubble rows', () => {
       kind: 'ride',
       item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9), status: 'open' },
       members: [
-        { id: 'mei', name: '美玲', avatarUrl: null, left: false },
-        { id: 'arif', name: 'Arif', avatarUrl: null, left: false },
+        {
+          id: 'mei',
+          name: '美玲',
+          avatarUrl: null,
+          left: false,
+          blockedByMe: false,
+          organiser: false,
+        },
+        {
+          id: 'arif',
+          name: 'Arif',
+          avatarUrl: null,
+          left: false,
+          blockedByMe: false,
+          organiser: false,
+        },
       ],
     });
     const items = [
@@ -149,5 +165,54 @@ describe('retry', () => {
     ] as const) {
       expect(canRetry(failure)).toBe(false);
     }
+  });
+});
+
+describe('blocked people in a thread', () => {
+  const person = (id: string, name: string, blockedByMe = false) => ({
+    id,
+    name,
+    avatarUrl: null,
+    left: false,
+    blockedByMe,
+    organiser: false,
+  });
+  const group = info({
+    kind: 'ride',
+    item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9), status: 'open' },
+    members: [person('mei', '美玲', true), person('arif', 'Arif')],
+  });
+  const items = [stored(1, 'mei', at(6, 14)), stored(2, 'arif', at(6, 14, 1))];
+
+  test('a ride group folds the messages of someone you blocked, without their name', () => {
+    const rows = bubbleRows(items, group, null, NOW, t, 'zh-Hans');
+    expect(rows.map((row) => [row.folded, row.name])).toEqual([
+      [true, null],
+      [false, 'Arif'],
+    ]);
+  });
+
+  test('a folded message opens once it is revealed', () => {
+    const rows = bubbleRows(items, group, null, NOW, t, 'zh-Hans', new Set([items[0].key]));
+    expect(rows.map((row) => row.folded)).toEqual([false, false]);
+    expect(rows[0].name).toBe('美玲');
+  });
+
+  test('a bounty thread keeps the history of a peer you blocked unfolded', () => {
+    const blocked = info({ members: [person('jie', '阿杰', true)] });
+    const rows = bubbleRows([stored(1, 'jie', at(6, 14))], blocked, null, NOW, t, 'zh-Hans');
+    expect(rows[0].folded).toBe(false);
+  });
+
+  test('a thread you left still lets you report what was said', () => {
+    const rows = bubbleRows(
+      [stored(1, 'jie', at(6, 14))],
+      info({ left: true }),
+      null,
+      NOW,
+      t,
+      'zh-Hans',
+    );
+    expect(rows[0].reportable).toBe(true);
   });
 });
