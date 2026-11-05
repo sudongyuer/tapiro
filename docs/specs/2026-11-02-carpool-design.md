@@ -1,9 +1,9 @@
 ---
 title: Carpool (拼车) v1, redesigned as a ticket
-status: approved
+status: implemented
 created: 2026-11-02
 approved: 2026-11-02
-implemented:
+implemented: 2026-11-05
 supersedes: 2026-10-11-carpool-design.md
 superseded-by:
 pr:
@@ -924,3 +924,58 @@ can store each device's zone and align it. Status stays `approved`.
   `Europe/London`, that a Malaysian 08:00 is still night in London, and 08:00 the morning after the 2026-11-01 Los
   Angeles clock change. `bun test` → 1756 pass, 0 fail with `TZ` set to `UTC`, `America/Los_Angeles`, `Europe/London` and
   `Asia/Kuala_Lumpur`.
+
+## Implementation Record (2026-11-05)
+
+PR: #48–#55, #57, #70 (record in the owner-decisions PR) · Commits: 8533873..4e39dbe
+
+### What was built
+
+- Steps 1–7 of the Implementation order, each recorded above: shared modules, schema and transitions, `nearby_rides`
+  (#48); appeal lapse 233 A (#49); list, 去哪儿？, form and confirm (#50); detail and 集合 (#51); 到了 and 结清 (#53);
+  reminders and the event outbox (#54); milestone fixes (#55); the device time zone across the app (#57); the empty
+  moment centred in the visible area (#70). Evidence: `git log --oneline origin/main` (8533873, e61b32a, 67c1bb9,
+  ce2c17e, 0ebfb45, 0be2757, f60c624, cdde4e2, 4e39dbe).
+- Step 8 (reviews, chat, 问小貘, push delivery, Live Activity) belongs to later foundation steps and is not part of
+  this record; the ride group chat and the push outbox kinds already exist (`supabase/migrations/20261103000200_chat.sql`,
+  `20261103000300_chat_push.sql`).
+
+### Deviations from the design
+
+| Design said | Shipped | Why | Confirmed by |
+| --- | --- | --- | --- |
+| Decisions marked「★ by default, owner may veto」 | Shipped as written in the step records above | The owner walked through carpool on the Simulator and raised only the off-centre empty screen | owner, walkthrough 2026-11-04 (fixed in #70) |
+| Quiet hours of the local reminders (235) | Device time zone; the push outbox keeps Malaysia time | Recorded in the 235 record above | owner, 2026-11-03 「B」 |
+
+### Bugs fixed during implementation
+
+- **Symptom:** the empty list's moment sat about 107 pt below the visible centre.
+  **Root cause:** `flexGrow` plus `justifyContent: 'center'` in a ScrollView with automatic content insets centres in
+  the full frame, then UIKit shifts it by the large-title inset.
+  **Fix:** size the container to the visible area; `ride_list_empty` asserts placement within 16 pt (4e39dbe, #70;
+  `docs/retros/2026-11-04-ride-empty-center.md`).
+- Milestone fixes (13 pt 「改」 target, doubled commas in VoiceOver text, picker and ticket time zones) are listed in
+  `docs/walkthroughs/2026-11-03-carpool.md` and `docs/retros/2026-11-03-carpool-milestone.md` (f60c624, #55).
+
+### Verification
+
+- Milestone run 2026-11-03: zh-Hans light 51 cases (27 carpool + 24 regression), zh-Hans dark 7, en light 27, ms light
+  20, all passing after the fixes (`docs/walkthroughs/2026-11-03-carpool.md`, table 「自动用例」).
+- Owner walkthrough on the Simulator, 2026-11-04: one issue (off-centre empty screen), fixed in #70.
+- Rerun on the new machine, 2026-11-04, reported by the main session: 22 of 27 carpool cases pass on iOS 27.2, 3 more
+  pass on iOS 26.5; the remaining 2 are test-script problems (Known limits). Unverified here: this agent did not run
+  Simulators (another session owned them).
+- pgTAP: every `supabase/tests/ride_*.test.sql` file passes under `bun run db:test` (2026-11-05, this PR's run);
+  `rides_schema.test.sql` test 39 fails only on a local database seeded by `bun run db:test-accounts` (it counts
+  every `ride_events` row), not on a fresh database as in CI.
+
+### Known limits
+
+- `ride_settle_owing` depends on the clock: run in London's early morning, the 24 h reminder is deferred by quiet hours
+  and the case's expectation no longer holds. To be fixed separately.
+- `ride_settle_pay` and `bounty_post_place` fail because the `paste_into` helper in `verification/ui/bounty.py` does not
+  paste on the new machine. To be fixed separately.
+- `ride.remind.*` device checks (local notifications on a locked phone, tap to open after a cold start) and the Apple
+  Maps and Grab links wait for TestFlight.
+- Not built in v1: the Grab-receipt AI draft (`ride.split.receipt`, step 8 with 问小貘) and the 集合 Live Activity
+  (`ride.split.live-activity`, account half).

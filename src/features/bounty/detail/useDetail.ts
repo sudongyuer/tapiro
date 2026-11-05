@@ -2,6 +2,7 @@ import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 
 import { detailOrigin, evaluateOrigin } from '@/features/place/originStore';
+import { useLiveSignal } from '@/lib/live';
 import { locationService } from '@/lib/location';
 
 import { boardService, originStore, shownOrigins } from '../board/services';
@@ -14,6 +15,7 @@ import {
   hasOutcome,
   initialDetail,
   keptWrite,
+  reloadsOn,
   seenMarkDue,
   withWrite,
   type LocalWrite,
@@ -65,6 +67,14 @@ export function useDetail(id: string, userId: string) {
   useEffect(() => {
     if (focused && !gone) void load();
   }, [focused, gone, load]);
+
+  useLiveSignal(
+    ['bounty.'],
+    (signal) => {
+      if (reloadsOn(signal, id)) void load();
+    },
+    focused && !gone,
+  );
 
   useEffect(
     () =>
