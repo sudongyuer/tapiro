@@ -133,8 +133,14 @@ export function bubbleRows(
     const gap = previous ? Date.parse(at) - Date.parse(itemTime(previous)) : Infinity;
     const mine = item.kind === 'pending' || item.mine;
     const sender = item.kind === 'stored' ? item.message.senderId : null;
+    const previousFolded =
+      previous?.kind === 'stored' &&
+      blocked.has(previous.message.senderId) &&
+      !revealed.has(previous.key);
     const previousSender =
-      previous?.kind === 'stored' && !previous.mine ? previous.message.senderId : null;
+      previous?.kind === 'stored' && !previous.mine && !previousFolded
+        ? previous.message.senderId
+        : null;
     const newSpeaker = sender !== null && !mine && (sender !== previousSender || gap >= BREAK_MS);
     const folded = sender !== null && !mine && blocked.has(sender) && !revealed.has(item.key);
     const seen =

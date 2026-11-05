@@ -77,7 +77,6 @@ export default {
     show: 'Tunjuk',
     foldedA11y: 'Mesej daripada orang yang anda sekat, tunjuk',
     reported: 'Terima kasih, kami akan menyemaknya',
-    reportFailed: 'Laporan tidak berjaya. Cuba lagi nanti',
     ok: 'OK',
     left: 'Anda telah keluar dari tumpangan ini dan tidak boleh menghantar mesej',
   },

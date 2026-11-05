@@ -3,6 +3,7 @@ import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import type { LiveSignal } from '@/lib/live';
 import { createStore } from '@/lib/store';
 
+import { withBlock } from './blockMark';
 import type { Outbox } from './outbox';
 import {
   appendOlder,
@@ -440,6 +441,10 @@ export function createChatStore({
     loadMoreThreads,
     refreshUnread: () => refreshUnread(),
     refresh,
+    markBlocked(personId: string, blocked: boolean) {
+      store.set(withBlock(get(), personId, blocked));
+      refresh();
+    },
     openThread,
     reloadThread,
     loadOlder,

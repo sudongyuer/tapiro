@@ -76,7 +76,6 @@ export default {
     show: 'Show',
     foldedA11y: 'Message from someone you blocked, show',
     reported: 'Thanks, we’ll take a look',
-    reportFailed: 'The report didn’t go through. Try again later',
     ok: 'OK',
     left: 'You left this ride and can’t send messages',
   },

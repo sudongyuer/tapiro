@@ -11,7 +11,7 @@ from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/features/block/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
-        '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '1500']
+        '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '3000']
 NAME = '阿杰'
 
 
@@ -49,7 +49,7 @@ ui.tap_point(20, 400)
 ui.at_rest()
 
 block_once()
-ui.element('chat-thread-block-failed', timeout=20)
+ui.element('chat-thread-safety-failed', timeout=20)
 assert by_id(ui.read(), 'chat-composer-input'), 'the composer went away after a failed block'
 ui.capture('02-block-failed')
 
@@ -58,7 +58,7 @@ footer = ui.element('chat-thread-blocked', timeout=20)
 assert footer.get('AXLabel') == ui.t('chat.blocked.footer', name=NAME), footer
 items = ui.read()
 assert by_id(items, 'chat-composer-input') is None, 'the composer stayed after blocking'
-assert by_id(items, 'chat-thread-block-failed') is None, '没屏蔽成功 stayed after the block went through'
+assert by_id(items, 'chat-thread-safety-failed') is None, '没屏蔽成功 stayed after the block went through'
 assert len(bubbles(items)) == 3, 'the history did not stay'
 list_bottom = max(b['frame']['y'] + b['frame']['height'] for b in bubbles(items))
 assert list_bottom <= footer['frame']['y'] + 1, 'the newest message is under the blocked footer'
@@ -72,7 +72,13 @@ ui.at_rest()
 
 unblock_once()
 ui.element('chat-thread-unblock-failed', timeout=20)
-assert by_id(ui.read(), 'chat-thread-blocked'), 'the footer went away after a failed unblock'
+items = ui.read()
+assert by_id(items, 'chat-thread-blocked'), 'the footer went away after a failed unblock'
+ui.at_rest()
+items = ui.read()
+top = min(i['frame']['y'] for i in items if (i.get('AXUniqueId') or '') in ('chat-thread-blocked', 'chat-thread-unblock'))
+low = max(b['frame']['y'] + b['frame']['height'] for b in bubbles(items))
+assert low <= top + 1, f'the newest message ({low}) is under the taller footer ({top})'
 ui.capture('05-unblock-failed')
 unblock_once()
 ui.element('chat-composer-input', timeout=20)

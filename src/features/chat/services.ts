@@ -56,8 +56,8 @@ if (drivesBadge) {
 }
 
 live.on(['chat.'], chatStore.onSignal);
-blockEvents.onBlocked(chatStore.refresh);
-blockEvents.onUnblocked(chatStore.refresh);
+blockEvents.onBlocked((personId) => chatStore.markBlocked(personId, true));
+blockEvents.onUnblocked((personId) => chatStore.markBlocked(personId, false));
 
 userCleanups.register((userId) => {
   outbox.clear(userId);

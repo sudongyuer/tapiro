@@ -72,5 +72,7 @@ describe('report and block in a thread', () => {
     expect(blockKind(ride([mei, arif], 'gathering'), arif)).toBe('groupMember');
     expect(blockKind(ride([arif], 'open'), arif)).toBe('rideMember');
     expect(blockKind(ride([mei, arif], 'departed'), mei)).toBe('groupMember');
+    const gone = person('gone', { left: true });
+    expect(blockKind(ride([gone], 'open'), gone)).toBe('poster');
   });
 });

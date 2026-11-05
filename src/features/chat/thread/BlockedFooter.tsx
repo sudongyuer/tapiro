@@ -1,4 +1,10 @@
-import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  PlatformColor,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -14,18 +20,20 @@ export function BlockedFooter({
   busy,
   failed,
   onUnblock,
+  onLayout,
 }: {
   member: ChatMember;
   bottom: number;
   busy: boolean;
   failed: boolean;
   onUnblock: () => void;
+  onLayout: (event: LayoutChangeEvent) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const name = member.name ?? t('chat.list.someone');
   return (
-    <View style={[styles.footer, { paddingBottom: bottom + space.sm }]}>
+    <View style={[styles.footer, { paddingBottom: bottom + space.sm }]} onLayout={onLayout}>
       <View style={styles.line}>
         <AppText
           variant="secondary"

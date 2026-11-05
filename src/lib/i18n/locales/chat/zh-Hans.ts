@@ -75,7 +75,6 @@ export default {
     show: '显示',
     foldedA11y: '已屏蔽的人发的消息，显示',
     reported: '收到了，我们会看',
-    reportFailed: '没举报成功，请稍后再试',
     ok: '好',
     left: '你已离开这个拼车，不能再发消息',
   },

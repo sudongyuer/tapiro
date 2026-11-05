@@ -1,6 +1,6 @@
 import type { ChatMember, ThreadInfo } from '../types';
 
-export type SafetyKind = 'threadPeer' | 'groupMember' | 'rideOrganiser' | 'rideMember';
+export type SafetyKind = 'threadPeer' | 'groupMember' | 'rideOrganiser' | 'rideMember' | 'poster';
 
 const BEFORE_DEPARTURE: ReadonlySet<string> = new Set(['open', 'gathering']);
 
@@ -11,6 +11,7 @@ export function peerOf(info: ThreadInfo): ChatMember | null {
 
 export function blockKind(info: ThreadInfo, member: ChatMember): SafetyKind {
   if (info.kind === 'bounty') return 'threadPeer';
+  if (member.left) return 'poster';
   const before = info.item.kind === 'ride' && BEFORE_DEPARTURE.has(info.item.status);
   if (!before) return 'groupMember';
   if (member.organiser) return 'rideOrganiser';

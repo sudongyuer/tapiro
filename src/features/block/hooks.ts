@@ -62,7 +62,7 @@ export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
         },
         async (index) => {
           if (index !== 0) {
-            options.onSettled?.('cancelled');
+            if (mounted.current) options.onSettled?.('cancelled');
             return;
           }
           const blocking = flow.block(person.id);
@@ -91,8 +91,10 @@ export function useUnblockPerson() {
   );
   const state = useSyncExternalStore(flow.subscribe, flow.get);
 
+  const mounted = useMounted();
+
   const ask = useCallback(
-    (person: BlockedPerson) => {
+    (person: BlockedPerson, onSettled?: (outcome: AskOutcome) => void) => {
       if (flow.get() === 'busy') return;
       const name = person.name ?? t('bounty.post.unknownName');
       ActionSheetIOS.showActionSheetWithOptions(
@@ -102,12 +104,14 @@ export function useUnblockPerson() {
           options: [t('block.unblock.confirm'), t('block.unblock.cancel')],
           cancelButtonIndex: 1,
         },
-        (index) => {
-          if (index === 0) void flow.unblock(person.id);
+        async (index) => {
+          if (index !== 0) return;
+          const done = await flow.unblock(person.id);
+          if (mounted.current) onSettled?.(done ? 'blocked' : 'failed');
         },
       );
     },
-    [flow, t],
+    [flow, mounted, t],
   );
 
   return { state, ask };

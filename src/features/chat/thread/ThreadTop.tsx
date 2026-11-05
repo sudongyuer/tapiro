@@ -17,14 +17,14 @@ export function ThreadTop({
   thread,
   top,
   now,
-  blockFailed,
+  warning,
   onOpenItem,
 }: {
   threadId: string;
   thread: ThreadState | undefined;
   top: number;
   now: number;
-  blockFailed: boolean;
+  warning: string | null;
   onOpenItem: (info: ThreadInfo) => void;
 }) {
   const { t } = useI18n();
@@ -33,9 +33,9 @@ export function ThreadTop({
   return (
     <View style={[styles.top, { paddingTop: top + space.sm }]}>
       {thread?.info ? <ItemCard info={thread.info} now={now} onOpen={onOpenItem} /> : null}
-      {blockFailed ? (
+      {warning ? (
         <View style={styles.inset}>
-          <InlineState tone="warning" text={t('block.failed')} testID="chat-thread-block-failed" />
+          <InlineState tone="warning" text={warning} testID="chat-thread-safety-failed" />
         </View>
       ) : null}
       {offline ? <OfflineLine text={t('live.offline')} testID="chat-thread-offline" /> : null}

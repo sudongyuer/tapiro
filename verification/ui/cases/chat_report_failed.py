@@ -6,7 +6,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from chat import chat_calls, menu_pick, open_menu, open_thread, sheet_action  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, by_id, luma  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/features/block/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
@@ -33,7 +33,21 @@ submit()
 ui.element('chat-report-failed', timeout=20)
 assert by_id(ui.read(), 'chat-report'), 'the sheet closed after a failed report'
 ui.at_rest()
-ui.capture('01-failed')
+items = ui.read()
+shot = ui.snap('01-failed')
+
+
+def check_mark(label):
+    f = next(i for i in items if i.get('AXLabel') == label and i.get('type') == 'Button')['frame']
+    tail = {'x': f['x'] + f['width'] - 44, 'y': f['y'], 'width': 44, 'height': f['height']}
+    return shot.count(tail, lambda rgb: max(rgb) - min(rgb) < 40 and abs(luma(rgb) - luma(ground)) > 60)
+
+
+ground = shot.rgb(items[0]['frame']['width'] / 2, next(
+    i for i in items if i.get('AXLabel') == ui.t('chat.report.reason.other'))['frame']['y'] + 4)
+kept = check_mark(ui.t('chat.report.reason.harassment'))
+other = check_mark(ui.t('chat.report.reason.inappropriate'))
+assert kept > 20 and other < 5, f'the picked reason lost its checkmark ({kept} vs {other} pixels)'
 time.sleep(2)  # a replay would follow the failed answer
 first = chat_calls(ui, 'report', 2, 0)
 assert first == [{'userId': 'fixture-chat-jie', 'messageId': None, 'reason': 'harassment', 'note': None}], first

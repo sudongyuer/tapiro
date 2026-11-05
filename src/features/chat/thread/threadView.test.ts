@@ -198,6 +198,15 @@ describe('blocked people in a thread', () => {
     expect(rows[0].name).toBe('美玲');
   });
 
+  test('a revealed message after a folded one from the same person is named', () => {
+    const run = [stored(1, 'mei', at(6, 14)), stored(2, 'mei', at(6, 14, 1))];
+    const rows = bubbleRows(run, group, null, NOW, t, 'zh-Hans', new Set([run[1].key]));
+    expect(rows.map((row) => [row.folded, row.name])).toEqual([
+      [true, null],
+      [false, '美玲'],
+    ]);
+  });
+
   test('a bounty thread keeps the history of a peer you blocked unfolded', () => {
     const blocked = info({ members: [person('jie', '阿杰', true)] });
     const rows = bubbleRows([stored(1, 'jie', at(6, 14))], blocked, null, NOW, t, 'zh-Hans');

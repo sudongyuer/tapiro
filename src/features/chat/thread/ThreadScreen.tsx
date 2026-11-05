@@ -6,6 +6,7 @@ import {
   PlatformColor,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
   type ScrollViewProps,
 } from 'react-native';
 import {
@@ -72,6 +73,10 @@ export function ThreadScreen({
   );
   const safety = useThreadSafety({ info, onOpenItem, onReport });
   const blocked = info ? blockedFooter(info) : null;
+  const composing = !!info && !info.left && !blocked && !!userId;
+  const [footerHeight, setFooterHeight] = useState(0);
+  const onFooterLayout = (event: LayoutChangeEvent) =>
+    setFooterHeight(event.nativeEvent.layout.height);
   const { bottom } = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const scroll = useRef<KeyboardChatScrollViewRef>(null);
@@ -118,6 +123,11 @@ export function ThreadScreen({
   }, []);
 
   const growth = useRef<number | null>(null);
+  useEffect(() => {
+    if (composing) return;
+    extraContentPadding.set(0);
+    growth.current = null;
+  }, [composing, extraContentPadding]);
   const onComposerHeight = useCallback(
     (height: number) => {
       const extra = Math.max(Math.round(height - COMPOSER_MIN_HEIGHT - bottom), 0);
@@ -188,7 +198,13 @@ export function ThreadScreen({
         thread={thread}
         top={headerHeight}
         now={now}
-        blockFailed={safety.blockFailed}
+        warning={
+          safety.failure === 'block'
+            ? t('block.failed')
+            : safety.failure === 'unblock' && !blocked
+              ? t('chat.blocked.unblockFailed')
+              : null
+        }
         onOpenItem={onOpenItem}
       />
       <ThreadActionsContext value={actions}>
@@ -205,7 +221,10 @@ export function ThreadScreen({
           ListHeaderComponent={header}
           contentContainerStyle={{
             paddingTop: space.sm,
-            paddingBottom: COMPOSER_MIN_HEIGHT + bottom + space.sm,
+            paddingBottom:
+              (composing
+                ? COMPOSER_MIN_HEIGHT + bottom
+                : Math.max(footerHeight, COMPOSER_MIN_HEIGHT + bottom)) + space.sm,
           }}
           onScrollBeginDrag={() => {
             dragging.current = true;
@@ -222,6 +241,7 @@ export function ThreadScreen({
       {info?.left ? (
         <View
           style={[styles.left, { paddingBottom: bottom + space.md }]}
+          onLayout={onFooterLayout}
           testID="chat-thread-left"
           accessible
           accessibilityLabel={t('chat.thread.left')}
@@ -235,7 +255,8 @@ export function ThreadScreen({
           member={blocked}
           bottom={bottom}
           busy={safety.unblocking}
-          failed={safety.unblockFailed}
+          failed={safety.failure === 'unblock'}
+          onLayout={onFooterLayout}
           onUnblock={() => safety.askUnblock(blocked)}
         />
       ) : info && userId ? (
