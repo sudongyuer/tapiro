@@ -11,6 +11,8 @@ export default {
   account: {
     signIn: {
       google: '通过 Google 登录',
+      testAccounts: '测试账号（仅本地开发）',
+      testAccountAs: '以{{name}}登录',
       error: {
         notConfigured: '登录还没配置好，暂时不能用',
         cancelled: '已取消登录',

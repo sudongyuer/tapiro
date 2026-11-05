@@ -53,6 +53,7 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
+    "dev:two": "bun scripts/dev-two.ts",
     "lint:changed": "node scripts/lint-changed.mjs",
     "lint": "node -e \"const [a,b,c]=process.versions.node.split('.').map(Number);if(a<20||(a===20&&(b<19||(b===19&&c<4)))){console.error('expo lint needs Node >=20.19.4, found '+process.versions.node);process.exit(1)}\" && expo lint",
     "typecheck": "tsc --noEmit",
@@ -70,6 +71,7 @@
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
+    "db:test-accounts": "bun scripts/db-test-accounts.ts",
     "fn:serve": "supabase functions serve",
     "test:stack": "bun test ./supabase/functions/tests/*.integration.ts ./src/features/account/*.integration.ts ./src/features/payee/*.integration.ts ./src/features/payment/*.integration.ts ./src/features/bounty/post/*.integration.ts"
   },

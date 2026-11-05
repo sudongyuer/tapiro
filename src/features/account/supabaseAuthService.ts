@@ -45,6 +45,17 @@ export function createSupabaseAuthService(
       }
     },
 
+    async signInWithPassword(email, password) {
+      if (!client) return { ok: false, reason: 'notConfigured' };
+      try {
+        const { error } = await client.auth.signInWithPassword({ email, password });
+        if (!error) return { ok: true };
+        return { ok: false, reason: isAuthRetryableFetchError(error) ? 'network' : 'failed' };
+      } catch {
+        return { ok: false, reason: 'failed' };
+      }
+    },
+
     async signOut() {
       await client?.auth.signOut({ scope: 'local' }).catch(() => {});
     },

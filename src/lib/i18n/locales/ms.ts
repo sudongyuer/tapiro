@@ -13,6 +13,8 @@ const ms: Translation = {
   account: {
     signIn: {
       google: 'Daftar masuk dengan Google',
+      testAccounts: 'Akaun ujian (pembangunan setempat sahaja)',
+      testAccountAs: 'Masuk sebagai {{name}}',
       error: {
         notConfigured: 'Daftar masuk belum disediakan lagi.',
         cancelled: 'Daftar masuk dibatalkan.',

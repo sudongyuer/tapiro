@@ -15,7 +15,9 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { authService } from './authService';
 import { safeSignIn } from './safeSignIn';
-import type { AuthProvider, SignInFailure } from './types';
+import { TEST_ACCOUNT_PASSWORD, type TestAccount } from './testAccounts';
+import { showTestAccounts, TestAccountButtons } from './TestAccountButtons';
+import type { AuthProvider, SignInFailure, SignInResult } from './types';
 
 const BUTTON_HEIGHT = vars['--touch-min'] + vars['--space-2'];
 const LOGO_SIZE = 18;
@@ -28,18 +30,28 @@ export function SignInButtons() {
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<SignInFailure | null>(null);
 
-  function signIn(provider: AuthProvider) {
+  function run(attempt: () => Promise<SignInResult>) {
     return guard(async () => {
       setPending(true);
       setFailure(null);
       try {
-        const result = await safeSignIn(authService, provider);
+        const result = await attempt();
         if (!result.ok) setFailure(result.reason);
       } finally {
         setPending(false);
       }
     });
   }
+
+  const signIn = (provider: AuthProvider) => run(() => safeSignIn(authService, provider));
+
+  const signInAs = (account: TestAccount) =>
+    run(async () => {
+      const result = await authService
+        .signInWithPassword?.(account.email, TEST_ACCOUNT_PASSWORD)
+        .catch((): SignInResult => ({ ok: false, reason: 'failed' }));
+      return result ?? { ok: false, reason: 'notConfigured' };
+    });
 
   const appleStyle =
     theme === 'dark' ? AppleAuthenticationButtonStyle.WHITE : AppleAuthenticationButtonStyle.BLACK;
@@ -78,6 +90,7 @@ export function SignInButtons() {
           {t('account.signIn.google')}
         </AppText>
       </Pressable>
+      {showTestAccounts && <TestAccountButtons disabled={pending} onPick={signInAs} />}
       {failure && (
         <AppText
           variant="secondary"

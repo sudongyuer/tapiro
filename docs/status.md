@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-03.
+Updated: 2026-11-05.
 
 ## Built and merged
 
@@ -16,13 +16,10 @@ Updated: 2026-11-03.
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                                       |
 | Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, #54 reminders and the event outbox             |
 | Device time zone (234) | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times, and local reminders keep quiet hours, in the system time zone; server rules stay in Malaysia time |
+| Expo SDK 58            | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; open, not SDK 58: the 已结清 exit animation and `home_fan_out` on iOS 27.2 (retro)           |
 
 ## In progress
 
-- Expo SDK 58 upgrade (React Native 0.88, `chore/expo-sdk-58`): 问小貘 is the prominent tab, a separate 62 pt button
-  on iOS 26.5 and 27.2. Open PR, not merged; waiting on the owner's review. The full UI matrix has not run on SDK 58.
-  Open, not SDK 58 (A/B against SDK 57): the 已结清 card's exit animation does not play and `home_fan_out` fails on
-  iOS 27.2. See the PR and the retro.
 - Chat (foundation step 7): the server half that questions 117–128 do not decide is built on its branch (threads,
   members, messages, reports, RPCs, thread creation at bounty `assigned` and ride acceptance, blocks, deletion,
   `chat.message` events); `docs/plans/2026-10-30-chat.md` Task 1 lists what waits on 117–128.
@@ -64,6 +61,9 @@ Updated: 2026-11-03.
 - Clone, `bun install`, then follow `AGENTS.md` (Homebrew Node, `pod install` after prebuild, `ios/.xcode.env.local`).
 - After pulling an SDK bump, run `bunx expo prebuild --clean --platform ios` once before `bun run ios`; a plain
   prebuild keeps the old SDK's AppDelegate and scene delegate. `bun run verify:build` does this on its own.
+- Two phones against the local stack: `bun run db:start`, `bun run db:test-accounts`, then `bun run dev:two` (builds
+  the Debug app once, boots two non-verify iPhone Simulators, starts Metro, launches both; `--skip-build` reuses the
+  last build). Sign in with 「测试账号」: 小林 on one, 阿明 on the other. Details in `supabase/README.md`, "Test accounts".
 - Supabase CLI 2.x (`brew install supabase/tap/supabase@2`): CLI 3.0 rejects the `[inbucket]` block in
   `supabase/config.toml`.
 - The design canvas is the claude.ai artifact named in each spec; it is not in the repo.

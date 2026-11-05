@@ -43,5 +43,6 @@ example
 /ios
 /android
 .verify/
+.dev/
 
 __pycache__/

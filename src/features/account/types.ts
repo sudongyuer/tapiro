@@ -48,6 +48,7 @@ export type AuthService = {
   getState(): SessionState;
   subscribe(listener: () => void): () => void;
   signIn(provider: AuthProvider): Promise<SignInResult>;
+  signInWithPassword?(email: string, password: string): Promise<SignInResult>;
   signOut(): Promise<void>;
   deleteAccount(): Promise<DeleteAccountResult>;
 };
