@@ -3,8 +3,7 @@ import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/m
 import { useEffect } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
-import { BlockMenu } from '@/features/block/BlockMenu';
-import { useBlockPoster } from '@/features/block/hooks';
+import { BlockMenu, useBlockPoster } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { InlineState } from '@/ui/InlineState';

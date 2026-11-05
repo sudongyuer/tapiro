@@ -1,4 +1,4 @@
-import { addBlockFixturePeople } from '@/features/block/services';
+import { addBlockFixturePeople } from '@/features/block';
 import { uiVerify } from '@/lib/uiVerify';
 
 import { FIXTURE_BOARDS } from '../board/fixtureBoardData';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
-import { blockEvents } from '@/features/block/blockEvents';
+import { blockEvents } from '@/features/block';
 
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied } from '../shared/justApplied';

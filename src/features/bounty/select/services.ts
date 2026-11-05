@@ -1,6 +1,6 @@
 import { Settings } from 'react-native';
 
-import { fixtureBlocked } from '@/features/block/services';
+import { fixtureBlocked } from '@/features/block';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { verifyRecorder } from '@/lib/verifyRecord';
