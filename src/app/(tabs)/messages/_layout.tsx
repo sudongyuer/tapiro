@@ -7,6 +7,10 @@ export default function MessagesLayout() {
   return (
     <Stack screenOptions={{ headerTransparent: true, headerLargeTitleEnabled: true }}>
       <Stack.Screen name="index" options={{ title: t('shell.tabs.messages') }} />
+      <Stack.Screen
+        name="debug-thread"
+        options={{ headerLargeTitleEnabled: false, scrollEdgeEffects: { top: 'automatic' } }}
+      />
     </Stack>
   );
 }

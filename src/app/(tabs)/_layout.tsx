@@ -69,7 +69,7 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Label>{t('shell.tabs.ride')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'car', selected: 'car.fill' }} />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="messages" testID="tab-messages">
+      <NativeTabs.Trigger name="messages" testID="tab-messages" disableAutomaticContentInsets>
         <NativeTabs.Trigger.Label>{t('shell.tabs.messages')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'bubble.left', selected: 'bubble.left.fill' }} />
         <NativeTabs.Trigger.Badge hidden={badge === null}>{badge ?? ''}</NativeTabs.Trigger.Badge>

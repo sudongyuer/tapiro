@@ -23,8 +23,9 @@ Updated: 2026-11-06.
 - Chat (foundation step 7): the server half is merged (threads, members, messages, reports, RPCs, thread creation,
   blocks, deletion, `chat.message` events, report snapshot retention). Questions 117–128 are answered (★, 125 B).
   Tasks 2 (shared block module) and 3 (client core: service, fixtures, store, outbox, live handler, read state and the
-  消息 badge, `20261106000000_chat_read_state.sql`) are merged; `docs/plans/2026-10-30-chat.md` Tasks 0 and 4–8 are
-  next (no chat screens yet).
+  消息 badge, `20261106000000_chat_read_state.sql`) are merged. Task 0, the thread-screen spike, is done: 128 A confirmed
+  (RN + `react-native-keyboard-controller` 1.22.7, `docs/research/2026-11-06-chat-thread-spike.md`); the thread
+  components live behind the `chat-thread` debug scene. Tasks 4–8 are next (no user-facing chat screens yet).
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
   still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
   `ride.remind.*` device checks wait for TestFlight.
@@ -57,6 +58,8 @@ Updated: 2026-11-06.
 - Chat client core (★ by default, plan 「Client core defaults」): mark read up to the newest shown message; 已读 and
   a live-only `chat.read` in bounty threads only; the badge counts unread threads and ignores blocked senders; failed
   messages stay on the device below the stored ones and are sent again only on a tap.
+- Chat thread spike (2026-11-06, ★ by default): 128 A confirmed; non-inverted list; 消息 tab without automatic
+  content insets; composer capped at 5 lines. For Task 5's canvas: ★ hide the tab bar while a thread is open.
 
 ## Resuming on another machine
 

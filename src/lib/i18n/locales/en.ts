@@ -1,6 +1,7 @@
 import type { Translation } from '../resources';
 
 import block from './block/en';
+import chat from './chat/en';
 import bounty from './bounty/en';
 import pay from './pay/en';
 import ride from './ride/en';
@@ -136,6 +137,7 @@ const en: Translation = {
   pay,
   stickers,
   block,
+  chat,
   bounty,
   ride,
   rideReminders,
@@ -310,6 +312,7 @@ const en: Translation = {
     },
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
+    chat: { thread: 'Chat thread (keyboard)' },
     flight: {
       title: 'Sticker flight to Me',
       fly: 'Fly to Me',

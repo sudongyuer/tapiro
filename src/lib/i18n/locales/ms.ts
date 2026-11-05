@@ -1,6 +1,7 @@
 import type { Translation } from '../resources';
 
 import block from './block/ms';
+import chat from './chat/ms';
 import bounty from './bounty/ms';
 import pay from './pay/ms';
 import ride from './ride/ms';
@@ -136,6 +137,7 @@ const ms: Translation = {
   pay,
   stickers,
   block,
+  chat,
   bounty,
   ride,
   rideReminders,
@@ -314,6 +316,7 @@ const ms: Translation = {
     },
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
+    chat: { thread: 'Benang sembang (papan kekunci)' },
     flight: {
       title: 'Pelekat terbang ke Saya',
       fly: 'Terbang ke Saya',

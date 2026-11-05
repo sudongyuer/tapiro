@@ -9,6 +9,7 @@ import {
   WelcomeScene,
 } from './AccountScenes';
 import { BoardMapScene } from './BoardMapScene';
+import { ChatThreadScene } from './ChatScenes';
 import {
   BountyApplicantsScene,
   BountyBoardScene,
@@ -71,6 +72,7 @@ export const scenes: Scene[] = [
   { id: 'ride-form', titleKey: 'debug.ride.form', Component: RideFormScene },
   { id: 'ride-confirm', titleKey: 'debug.ride.confirm', Component: RideConfirmScene },
   { id: 'ride-detail', titleKey: 'debug.ride.detail', Component: RideDetailScene },
+  { id: 'chat-thread', titleKey: 'debug.chat.thread', Component: ChatThreadScene },
 ];
 
 export function findScene(id: string) {

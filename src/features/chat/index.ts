@@ -23,3 +23,5 @@ export {
   type ThreadKind,
   type ThreadSummary,
 } from './types';
+export { ThreadScreen } from './thread/ThreadScreen';
+export { LONG_THREAD_ID as FIXTURE_LONG_THREAD_ID } from './fixtureThreads';

@@ -9,6 +9,7 @@ export type ChatFailPoint = (typeof CHAT_FAIL_POINTS)[number];
 export type FixtureChatOptions = {
   variant: FixtureVariant;
   failFirst: readonly ChatFailPoint[];
+  long?: boolean;
   pageSize?: number;
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
@@ -19,13 +20,14 @@ export function fixtureChatOptions(
   variant: FixtureVariant,
 ): FixtureChatOptions {
   const fail = (argument('uiVerifyChatFail') ?? '').split(',').map((part) => part.trim());
-  return { variant, failFirst: CHAT_FAIL_POINTS.filter((point) => fail.includes(point)) };
+  return {
+    variant,
+    failFirst: CHAT_FAIL_POINTS.filter((point) => fail.includes(point)),
+    long: argument('uiVerifyChatLong') === '1',
+  };
 }
 
-const summary = ({ messages, ...info }: FixtureThread): ThreadSummary => ({
-  ...info,
-  lastMessage: messages[0] ?? null,
-});
+const newestFirst = (a: ChatMessage, b: ChatMessage) => b.createdAt.localeCompare(a.createdAt);
 
 const pageOf = <T>(rows: readonly T[], from: number, size: number) => ({
   rows: rows.slice(from, from + size),
@@ -35,11 +37,21 @@ const pageOf = <T>(rows: readonly T[], from: number, size: number) => ({
 export function createFixtureChatService({
   variant,
   failFirst,
+  long = false,
   pageSize = 50,
   now = () => new Date(),
   onCall = () => undefined,
 }: FixtureChatOptions): ChatService {
-  const threads = fixtureThreads(variant, now());
+  const threads = fixtureThreads(variant, now(), long);
+  // Fixture lines dated in the future stay hidden until their time, so a later read shows them arriving.
+  const shown = (thread: FixtureThread) => {
+    const at = now().toISOString();
+    return thread.messages.filter((message) => message.createdAt <= at);
+  };
+  const summary = (thread: FixtureThread): ThreadSummary => {
+    const { messages: _messages, ...info } = thread;
+    return { ...info, lastMessage: shown(thread)[0] ?? null };
+  };
   const failing = new Set<ChatFailPoint>(failFirst);
   const failOnce = (point: ChatFailPoint) => {
     if (!failing.delete(point)) return;
@@ -52,12 +64,10 @@ export function createFixtureChatService({
   };
   const ordered = () =>
     [...threads].sort((a, b) =>
-      (b.messages[0]?.createdAt ?? b.createdAt).localeCompare(
-        a.messages[0]?.createdAt ?? a.createdAt,
-      ),
+      (shown(b)[0]?.createdAt ?? b.createdAt).localeCompare(shown(a)[0]?.createdAt ?? a.createdAt),
     );
   const unread = (thread: FixtureThread) =>
-    thread.messages.some(
+    shown(thread).some(
       (message) =>
         message.senderId !== FIXTURE_CHAT_USER_ID &&
         (thread.lastReadAt === null || message.createdAt > thread.lastReadAt),
@@ -80,8 +90,9 @@ export function createFixtureChatService({
       onCall('readThread', { threadId, before });
       failOnce('thread');
       const thread = find(threadId);
-      const from = before ? thread.messages.findIndex((message) => message.id === before) + 1 : 0;
-      const page = pageOf(thread.messages, from, pageSize);
+      const messages = shown(thread);
+      const from = before ? messages.findIndex((message) => message.id === before) + 1 : 0;
+      const page = pageOf(messages, from, pageSize);
       const { messages: _messages, ...info } = thread;
       return {
         thread: { ...info, unread: unread(thread) },
@@ -103,17 +114,17 @@ export function createFixtureChatService({
         body,
         createdAt: now().toISOString(),
       };
-      thread.messages.unshift(message);
+      thread.messages = [message, ...thread.messages].sort(newestFirst);
       return { ok: true, message };
     },
     async markRead(threadId, messageId) {
       onCall('markRead', { threadId, messageId });
       failOnce('markRead');
       const thread = find(threadId);
-      const shown = thread.messages.find((message) => message.id === messageId);
-      if (!shown) throw new Error('message_not_found');
-      if (thread.lastReadAt === null || shown.createdAt > thread.lastReadAt) {
-        thread.lastReadAt = shown.createdAt;
+      const read = thread.messages.find((message) => message.id === messageId);
+      if (!read) throw new Error('message_not_found');
+      if (thread.lastReadAt === null || read.createdAt > thread.lastReadAt) {
+        thread.lastReadAt = read.createdAt;
       }
       return thread.lastReadAt;
     },
