@@ -21,6 +21,7 @@ SHARED = [
     'verification/ui/heal.py',
     'verification/ui/latency.py',
     'verification/ui/recording.py',
+    'verification/ui/records.py',
     'verification/ui/swifttool.py',
     'verification/ui/frames.swift',
     'verification/ui/build.sh',

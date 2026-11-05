@@ -167,3 +167,40 @@ describe('supabase chat service', () => {
     await expect(service.unreadCount()).rejects.toThrow();
   });
 });
+
+describe('finding an item’s thread', () => {
+  function tableClient(answer: Answer) {
+    const asked: unknown[][] = [];
+    const query = {
+      select: (...args: unknown[]) => (asked.push(['select', ...args]), query),
+      eq: (...args: unknown[]) => (asked.push(['eq', ...args]), query),
+      maybeSingle: async () => answer,
+    };
+    const client = {
+      from: (table: string) => (asked.push(['from', table]), query),
+    } as unknown as SupabaseClient;
+    return { service: createSupabaseChatService(client, NO_FILES), asked };
+  }
+
+  test('a bounty is looked up by its bounty id and a ride by its ride id', async () => {
+    const bounty = tableClient({ data: { id: 't1' }, error: null });
+    expect(await bounty.service.findThread('bounty', 'b1')).toBe('t1');
+    expect(bounty.asked).toEqual([
+      ['from', 'threads'],
+      ['select', 'id'],
+      ['eq', 'bounty_id', 'b1'],
+    ]);
+    const ride = tableClient({ data: { id: 't2' }, error: null });
+    expect(await ride.service.findThread('ride', 'r1')).toBe('t2');
+    expect(ride.asked.at(-1)).toEqual(['eq', 'ride_id', 'r1']);
+  });
+
+  test('no row is no thread; an error is a failure, not “no thread”', async () => {
+    expect(
+      await tableClient({ data: null, error: null }).service.findThread('bounty', 'b'),
+    ).toBeNull();
+    await expect(
+      tableClient({ data: null, error: new Error('offline') }).service.findThread('bounty', 'b'),
+    ).rejects.toThrow('offline');
+  });
+});

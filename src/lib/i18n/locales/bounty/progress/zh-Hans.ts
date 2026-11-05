@@ -74,6 +74,7 @@ export default {
       cancel: '取消这单',
       withdraw: '不帮了',
       sending: '正在发送',
+      message: '发消息',
     },
     failed: '没发出去，再试一次',
     stateChanged: '这单的状态变了',

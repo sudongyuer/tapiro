@@ -79,6 +79,7 @@ const ms: typeof zhHans = {
       cancel: 'Batalkan Ganjaran',
       withdraw: 'Tarik Diri',
       sending: 'Menghantar',
+      message: 'Mesej',
     },
     failed: 'Gagal dihantar. Cuba lagi.',
     stateChanged: 'Status ganjaran ini sudah berubah',

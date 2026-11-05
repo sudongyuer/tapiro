@@ -61,6 +61,7 @@ const en: typeof zhHans = {
     stale: 'Couldn’t refresh · showing {{time}}',
     staleLive: 'May be out of date · as of {{time}}',
     more: 'More',
+    chat: 'Group Chat',
     you: 'You',
     listJoin: ', ',
     meetupStatus: 'Meeting up',

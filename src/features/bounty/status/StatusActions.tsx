@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
-import { AccessibilityInfo, ActivityIndicator, StyleSheet } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -71,15 +71,19 @@ export function StatusMenu({
   );
 }
 
+export type StatusMessage = { onPress: () => void; busy: boolean };
+
 export function PinnedActions({
   actions,
   role,
   state,
+  message,
   onAction,
 }: {
   actions: StatusActions['pinned'];
   role: StatusRole;
   state: ActionState;
+  message: StatusMessage | null;
   onAction: (action: StatusAction) => void;
 }) {
   const { t } = useI18n();
@@ -90,8 +94,29 @@ export function PinnedActions({
     if (notice) AccessibilityInfo.announceForAccessibility(notice);
   }, [notice]);
 
-  if (actions.length === 0 && !notice) return null;
+  if (actions.length === 0 && !notice && !message) return null;
   const locked = actionLocked(state);
+  const buttons = actions.map((action, index) => (
+    <PillButton
+      key={action}
+      label={t(actionKey(action, role))}
+      variant={index === 0 ? 'primary' : 'secondary'}
+      loading={locked && 'action' in state && state.action === action}
+      disabled={locked}
+      onPress={() => onAction(action)}
+      testID={`bounty-status-action-${action}`}
+    />
+  ));
+  const chat = message ? (
+    <PillButton
+      label={t('bounty.status.action.message')}
+      variant="secondary"
+      loading={message.busy}
+      onPress={message.onPress}
+      testID="bounty-status-message"
+    />
+  ) : null;
+  const [first, ...rest] = buttons;
   return (
     <SheetActions>
       {notice ? (
@@ -104,22 +129,22 @@ export function PinnedActions({
           {notice}
         </AppText>
       ) : null}
-      {actions.map((action, index) => (
-        <PillButton
-          key={action}
-          label={t(actionKey(action, role))}
-          variant={index === 0 ? 'primary' : 'secondary'}
-          loading={locked && 'action' in state && state.action === action}
-          disabled={locked}
-          onPress={() => onAction(action)}
-          testID={`bounty-status-action-${action}`}
-        />
-      ))}
+      {chat && first ? (
+        <View style={styles.row}>
+          {chat}
+          <View style={styles.fill}>{first}</View>
+        </View>
+      ) : (
+        (chat ?? first)
+      )}
+      {rest}
     </SheetActions>
   );
 }
 
 const styles = StyleSheet.create({
   notice: { textAlign: 'center' },
+  row: { flexDirection: 'row', gap: vars['--space-2'] },
+  fill: { flex: 1 },
   busy: { minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] },
 });

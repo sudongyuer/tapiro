@@ -18,15 +18,19 @@ const ICONS: Record<MenuItem, SFSymbol> = {
 
 const DESTRUCTIVE = new Set<MenuItem>(['cancel', 'leave', 'block']);
 
+export type RideMessage = { onPress: () => void; busy: boolean };
+
 export function DetailMenu({
   ride,
   now,
   blocking,
+  message,
   onChoose,
 }: {
   ride: RideDetail | null;
   now: number;
   blocking: boolean;
+  message: RideMessage | null;
   onChoose: (item: MenuItem) => void;
 }) {
   const { t } = useI18n();
@@ -48,6 +52,13 @@ export function DetailMenu({
   const name = ride?.organiser?.name ?? t('bounty.post.unknownName');
   return (
     <Stack.Toolbar placement="right">
+      <Stack.Toolbar.Button
+        icon="bubble.left.and.bubble.right"
+        accessibilityLabel={t('ride.detail.chat')}
+        hidden={message === null}
+        disabled={message?.busy}
+        onPress={message?.onPress}
+      />
       <Stack.Toolbar.Menu
         icon="ellipsis"
         accessibilityLabel={t('ride.detail.more')}

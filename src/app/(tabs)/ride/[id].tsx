@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useSignedInUser } from '@/features/account';
+import { useItemChat } from '@/features/chat';
 import { useSettleCelebration } from '@/features/payment';
 import { RideDetailScreen } from '@/features/ride';
 
@@ -13,6 +14,12 @@ export default function RideDetailRoute() {
   const openBook = () => router.navigate('/me/stickers');
   const celebration = useSettleCelebration(userId, openBook);
   const { settled } = celebration;
+  const chat = useItemChat(
+    useCallback(
+      (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
+      [router],
+    ),
+  );
   const bridge = useMemo(
     () => ({
       pay: (paymentId: string) => router.push({ pathname: '/pay/[id]', params: { id: paymentId } }),
@@ -26,7 +33,13 @@ export default function RideDetailRoute() {
   if (!user || !id) return null;
   return (
     <>
-      <RideDetailScreen id={id} userId={user.id} onGone={() => router.back()} settle={bridge} />
+      <RideDetailScreen
+        id={id}
+        userId={user.id}
+        onGone={() => router.back()}
+        settle={bridge}
+        message={{ onPress: () => chat.open('ride', id), busy: chat.opening === id }}
+      />
       {celebration.element}
     </>
   );

@@ -133,4 +133,9 @@ export default {
     offerBlock: 'Terima kasih, kami akan menyemaknya. Sekat {{name}} juga?',
     blockFailed: 'Laporan diterima, tetapi sekatan tidak berjaya',
   },
+  entry: {
+    failed: 'Perbualan tidak dibuka. Semak sambungan dan cuba lagi',
+    none: 'Belum ada perbualan untuk ini',
+    ok: 'OK',
+  },
 };

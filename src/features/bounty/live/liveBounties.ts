@@ -139,6 +139,7 @@ export function liveBountyItem(row: LiveRow, copy: LiveCopy): BountyLiveItem | n
     counterpart: row.counterpartName,
     line: found.line,
     target: TARGETS[found.target](row.bountyId),
+    ...(row.role !== 'applicant' && found.target === 'status' ? { chat: true } : {}),
     ...(actionLabel ? { actionLabel } : {}),
     ...(card ? { oneTime: card, markSeen: () => copy.markSeen(row.bountyId, card) } : {}),
   };

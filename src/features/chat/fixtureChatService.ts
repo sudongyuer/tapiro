@@ -13,6 +13,7 @@ export const CHAT_FAIL_POINTS = [
   'markRead',
   'report',
   'image',
+  'find',
 ] as const;
 export type ChatFailPoint = (typeof CHAT_FAIL_POINTS)[number];
 
@@ -193,6 +194,13 @@ export function createFixtureChatService({
       onCall('report', input);
       failOnce('report');
       return `fixture-report-${input.messageId ?? input.userId}`;
+    },
+    // Fixture bounties and rides have their own ids, so an item without its own thread opens the first of its kind.
+    async findThread(kind, itemId) {
+      onCall('findThread', { kind, itemId });
+      failOnce('find');
+      const ofKind = threads.filter((thread) => thread.kind === kind);
+      return (ofKind.find((thread) => thread.itemId === itemId) ?? ofKind[0])?.id ?? null;
     },
   };
 }

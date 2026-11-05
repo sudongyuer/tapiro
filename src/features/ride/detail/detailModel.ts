@@ -187,6 +187,11 @@ export function appealsToConfirm(ride: RideDetail, viewerId: string | null, now:
   return (ride.members ?? []).filter((member) => member.status === 'appealed');
 }
 
+export const hasThread = (ride: RideDetail) =>
+  ride.role === 'member' ||
+  ride.role === 'noShow' ||
+  (ride.role === 'organiser' && (ride.members ?? []).some((member) => !member.organiser));
+
 export type MenuItem = 'block' | 'leave' | 'cancel' | 'reviseTime' | 'editDetails';
 
 export function menuItems(ride: RideDetail, now: number): MenuItem[] {

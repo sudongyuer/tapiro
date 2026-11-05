@@ -302,6 +302,9 @@ export function actionKey(action: StatusAction, role: StatusRole): ActionKey {
 
 const none = (): StatusActions => ({ pinned: [], menu: [] });
 
+export const hasThread = (detail: StatusDetail) =>
+  detail.helper !== null && detail.status !== 'open';
+
 export function statusActions(detail: StatusDetail, role: StatusRole): StatusActions {
   const helper = role === 'helper';
   switch (detail.status) {

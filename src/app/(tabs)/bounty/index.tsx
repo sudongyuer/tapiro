@@ -1,6 +1,6 @@
 import { Stack, useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useRef, type RefObject } from 'react';
+import { useCallback, useRef, type RefObject } from 'react';
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -20,6 +20,7 @@ import {
   usePublishBoard,
   useStartPost,
 } from '@/features/bounty';
+import { useItemChat } from '@/features/chat';
 import {
   HOME_BOTTOM_CHROME,
   HOME_TOP_CLEAR,
@@ -43,6 +44,12 @@ function BountyHome({ user }: { user: AccountUser }) {
   const name =
     (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user.name ?? '';
   const stack = useLiveStackState();
+  const chat = useItemChat(
+    useCallback(
+      (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
+      [router],
+    ),
+  );
   const startPost = useStartPost({
     open: () =>
       hasPostDraft(user.id)
@@ -95,6 +102,7 @@ function BountyHome({ user }: { user: AccountUser }) {
         onToggle={stack.setOpen}
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
+        chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
         board={
           <BountyBoard
             board={board}

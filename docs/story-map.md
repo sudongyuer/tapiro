@@ -751,7 +751,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### chat.thread 每件事一个对话
 
 - 故事：作为发布者或乘客，我想在每条悬赏或拼车里和对方聊天，以便约时间地点。
-- 状态：building
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
@@ -766,7 +766,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | chat.thread.image-show   | 图片气泡按图片比例占位（最宽 220、最高 280，超过 3:1 的裁成 3:1，小图不放大但至少 72 pt）；加载中是灰色占位，加载失败显示重试标记、点一下再加载，不自动重试；点图片用系统 Quick Look 全屏打开，系统按钮关掉；列表最后一句和举报引用写「[图片]」                                                                             | ui:chat_image_viewer, ui:chat_image_states, ui:chat_image_worst, unit:src/features/chat/images/imageSize.test.ts, unit:src/features/chat/images/imageCache.test.ts, unit:src/features/chat/list/rowView.test.ts, device: Quick Look 双指缩放和下滑关闭    |
 | chat.thread.image-access | 图片在私有存储桶里，只有能看到这条消息的成员能读（离开的人只到离开时，屏蔽后历史图片还在）；只能往自己是在群成员的对话里、自己的文件夹上传，悬赏对话被屏蔽后不能上传；举报时快照记下图片路径，一年后和文字快照一起清掉；删号后自己的图片、没发出去的上传和过期快照的图片由每日清理删掉                                      | db:supabase/tests/chat_images.test.sql                                                                                                                                                                                                                    |
 | chat.thread.hint         | 每个对话最上面固定一张提醒卡（32 pt 小貘头）说定金和在付款步骤外付钱，不能关，随消息滚走                                                                                                                                                                                                                                    | ui:chat_thread_hint, ui:chat_thread_worst                                                                                                                                                                                                                 |
-| chat.thread.kept         | 对话一直保留；删除账号只删自己发的消息                                                                                                                                                                                                                                                                                      | db:supabase/tests/chat.test.sql, int                                                                                                                                                                                                                      |
+| chat.thread.kept         | 对话一直保留；删除账号只删自己发的消息                                                                                                                                                                                                                                                                                      | db:supabase/tests/chat.test.sql, db:supabase/tests/chat_images.test.sql, gap: the account-delete Edge Function is not run against chat rows; it deletes the auth user and the cascade it relies on is the pgTAP check                                                                                                                                                                                                                      |
 | chat.thread.read         | 每个成员记到读到哪条；开着并在最前面的对话读到最新一条，开着时来新消息也算读了，App 在后台或被别的页面盖住时不算，没开过的对话不算；悬赏对话里对方读到你最后一条时显示「已读」，拼车群不显示，群成员也读不到彼此读到哪；消息 tab 角标是有未读的对话数，自己发的、离开后的和互相屏蔽的人发的不算；刷新失败时角标保留上次的数 | db:supabase/tests/chat_read_state.test.sql, unit:src/features/chat/threadModel.test.ts, unit:src/features/chat/chatStore.test.ts, unit:src/lib/liveItems.test.ts, ui:chat_thread_read                                                                     |
 | chat.thread.outbox       | 发送前先把消息存在手机上，显示发送中；存进服务器后才算发出；失败的留在手机上标出原因，不自动重发，重开 App 后发送中的变成失败；只在用户点了以后用同一个客户端 id 重发，也能删掉；重新加载时服务器已经有的就不再显示为失败                                                                                                   | unit:src/features/chat/outbox.test.ts, unit:src/features/chat/chatStore.test.ts, unit:src/features/chat/chatService.test.ts, ui:chat_thread_failed                                                                                                        |
 | chat.thread.list         | 消息 Tab 一行一件事：这件事的手绘图、悬赏标题或拼车路线、对方（悬赏是对方名字，拼车是几个人）、最后一句（自己的写「我：」，拼车群写说话人）和时间，最新的在最上；有未读的那行有红点；点一行推进对话，返回时这一行先保持选中再取消，读过以后红点和角标消失                                                                   | ui:chat_list, unit:src/features/chat/list/rowView.test.ts, db:supabase/tests/chat_thread_item.test.sql, unit:src/features/chat/chatService.test.ts, device: 推进对话时这一行保持选中、返回时淡出；边缘右滑返回（iOS 27.2 模拟器上 AXe 的边缘滑动不返回）  |
@@ -780,11 +780,13 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | chat.thread.draft        | 输入框里没发的字按对话存在手机上，离开再回来、重开 App 都还在；发出后清空；删号时清掉；输入框最多长到 5 行再滚动                                                                                                                                                                                                            | ui:chat_thread_sending, unit:src/features/chat/drafts.test.ts, device: 5 行后滚动和键盘跟手（spike 设备清单）                                                                                                                                             |
 | chat.thread.screen       | 打开对话停在最新一条、在输入框上方；停在底部时新消息自动出现在底部；第一次没加载出来显示失败和重试、不当成空；刷新失败保留消息并标「可能不是最新 · hh:mm 的数据」；更早的消息没加载出来只在点重试时再加载；离开的拼车成员看不到输入框                                                                                       | ui:chat_thread_long, ui:chat_thread_states, ui:chat_thread_hint, unit:src/features/chat/chatStore.test.ts                                                                                                                                                 |
 | chat.thread.worst        | 60 字标题在小卡里一行、「看详情」还在；2000 字的消息在屏幕内换行、对面留出空间，「已读」在它下面不被盖住；马来语下提醒卡完整；深色模式气泡颜色对                                                                                                                                                                            | ui:chat_thread_worst, ui:chat_thread_failed                                                                                                                                                                                                               |
+| chat.thread.entry | 选好帮手以后，悬赏状态页底部有灰色「发消息」（有主按钮时在它左边、同一行），首页进行中的悬赏卡片底部也有「发消息」，拼车详情的成员和已有乘客的组织者在导航栏有「群聊」；点了在消息 Tab 打开这件事的对话，下面是消息列表；还没选人（或没有通过的乘客）时没有入口；首页卡片仍是一个旁白按钮，「发消息」是它的自定义操作 | ui:chat_entry_status, ui:chat_entry_home, ui:chat_entry_ride, unit:src/features/bounty/status/timeline.test.ts, unit:src/features/bounty/live/liveBounties.test.ts, unit:src/features/ride/detail/detailModel.test.ts, db:supabase/tests/chat.test.sql, device: 旁白在首页卡片上用「操作」转子选「发消息」 |
+| chat.thread.entry-lookup | 入口按这件事找对话：消息列表或已打开的对话里有的直接打开，否则问服务器一次，找到后记住（换账号就忘掉）；没找到说「这件事还没有对话」，没打开说「对话没打开」，都不自动重试，留在原页面 | ui:chat_entry_status, unit:src/features/chat/itemThreads.test.ts, unit:src/features/chat/chatService.test.ts, unit:src/features/chat/fixtureChatService.test.ts |
 
 ### chat.safety 举报和拉黑
 
 - 故事：作为同学，我想举报和拉黑骚扰我的人，以便安心使用。
-- 状态：building
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
@@ -797,7 +799,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### chat.block 拉黑
 
 - 故事：作为同学，我想拉黑让我不舒服的人，以便我们不再在悬赏里遇到。
-- 状态：building
+- 状态：done
 - 版本：v1
 - 规格：[bounty](specs/2026-10-11-bounty-design.md)
 

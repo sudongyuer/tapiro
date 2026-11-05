@@ -62,6 +62,7 @@ const ms: typeof zhHans = {
     stale: 'Gagal dimuat semula · ini data pukul {{time}}',
     staleLive: 'Mungkin bukan yang terkini · data pukul {{time}}',
     more: 'Lagi',
+    chat: 'Sembang Kumpulan',
     you: 'Anda',
     listJoin: ', ',
     meetupStatus: 'Sedang berkumpul',

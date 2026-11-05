@@ -132,4 +132,9 @@ export default {
     offerBlock: 'Thanks, we’ll take a look. Block {{name}} too?',
     blockFailed: 'Report received, but blocking didn’t go through',
   },
+  entry: {
+    failed: 'The chat didn’t open. Check your connection and try again',
+    none: 'There’s no chat for this yet',
+    ok: 'OK',
+  },
 };

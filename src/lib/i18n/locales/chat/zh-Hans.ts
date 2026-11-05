@@ -131,4 +131,9 @@ export default {
     offerBlock: '收到了，我们会看。也屏蔽{{name}}？',
     blockFailed: '举报收到了，但没屏蔽成功',
   },
+  entry: {
+    failed: '对话没打开，请检查网络后再试',
+    none: '这件事还没有对话',
+    ok: '好',
+  },
 };

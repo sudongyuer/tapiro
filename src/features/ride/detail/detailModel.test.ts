@@ -9,6 +9,7 @@ import {
   departPreticked,
   detailPhase,
   footer,
+  hasThread,
   menuItems,
   shouldPoll,
   timeline,
@@ -206,5 +207,21 @@ describe('polling (175 B)', () => {
     expect(shouldPoll(scene('meetup'), NOW - 10 * MINUTE)).toBe(false);
     expect(shouldPoll(scene('viewer'), NOW)).toBe(false);
     expect(shouldPoll(null, NOW)).toBe(false);
+  });
+});
+
+describe('群聊 entry (126 A)', () => {
+  test('members and an organiser with an accepted rider have a thread; viewers and applicants do not', () => {
+    expect(hasThread(scene('member'))).toBe(true);
+    expect(hasThread(scene('meetup'))).toBe(true);
+    expect(hasThread(scene('organiser'))).toBe(true);
+    expect(hasThread(scene('viewer'))).toBe(false);
+    expect(hasThread(scene('applicant'))).toBe(false);
+  });
+
+  test('an organiser whose ride has no accepted rider yet has no thread', () => {
+    const ride = scene('organiser');
+    const alone = { ...ride, members: (ride.members ?? []).filter((m) => m.organiser) };
+    expect(hasThread(alone)).toBe(false);
   });
 });

@@ -14,10 +14,10 @@ import { AddressSection } from '../shared/AddressSection';
 import { addressView } from '../shared/exactAddress';
 import { EtaSheet } from './EtaSheet';
 import { IssueSheet } from './IssueSheet';
-import { PinnedActions, StatusMenu } from './StatusActions';
+import { PinnedActions, StatusMenu, type StatusMessage } from './StatusActions';
 import { statusClock } from './statusCopy';
 import { StatusHeader, StatusTimeline } from './StatusTimeline';
-import { counterpartName, statusActions, type StatusAction } from './timeline';
+import { counterpartName, hasThread, statusActions, type StatusAction } from './timeline';
 import { useHelperActions } from './useHelperActions';
 import { usePosterActions } from './usePosterActions';
 import { useStatus } from './useStatus';
@@ -26,9 +26,10 @@ export type StatusScreenProps = {
   id: string;
   onBack: () => void;
   onPay: (paymentId: string) => void;
+  message?: StatusMessage;
 };
 
-export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
+export function StatusScreen({ id, onBack, onPay, message }: StatusScreenProps) {
   const { t, language } = useI18n();
   const { state, refresh, act } = useStatus(id);
   const helper = useHelperActions(id, act);
@@ -131,7 +132,13 @@ export function StatusScreen({ id, onBack, onPay }: StatusScreenProps) {
                 testID="bounty-status-address"
               />
             )}
-            <PinnedActions actions={actions.pinned} role={role} state={action} onAction={run} />
+            <PinnedActions
+              actions={actions.pinned}
+              role={role}
+              state={action}
+              message={message && hasThread(detail) ? message : null}
+              onAction={run}
+            />
             <SheetLayer>
               <EtaSheet
                 request={helper.eta.request}
