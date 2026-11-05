@@ -665,3 +665,65 @@ their buttons to it through `SheetActions`; the pinned buttons show a spinner wh
 seventh sticker on, the sixth earlier sticker fades out during the shift.
 The pinned bar shortened the Form enough that SwiftUI no longer realized the row holding the full-screen QR `Modal`,
 so 用另一台手机扫 stopped opening (`pay_sheet_wallets`); sheet modals now mount outside the Host through `SheetLayer`.
+
+## Implementation Record (2026-11-06) — step 7: chat with report and block
+
+PR: #63, #72, #74, #75, #76, #77, #79 and `feat/chat-entries` (this PR) · Plan: `docs/plans/2026-10-30-chat.md` (done).
+Steps 5, 6 and 8 remain; the spec stays `approved`.
+
+### What was built
+
+- Server: `threads`, `thread_members` (with `left_at`), `messages`, `reports` with members-only RLS; threads created by
+  triggers at a bounty's `assigned` and a ride member's acceptance; `list_threads`, `read_thread`, idempotent
+  `send_message`, `report`, `mark_read`, `unread_threads`; block rules; `chat.message` / `chat.read` events and push
+  copy; report snapshot retention (one year); private `chat-images` bucket and its sweep. Evidence:
+  `supabase/migrations/20261103000200_chat.sql`, `20261103000300_chat_push.sql`, `20261105000200_report_snapshot_retention.sql`,
+  `20261106000000_chat_read_state.sql`, `20261106000100_chat_thread_item.sql`, `20261106000200_chat_block_state.sql`,
+  `20261106000300_chat_images.sql`; pgTAP `supabase/tests/chat*.test.sql`, `report_retention.test.sql`, `push_kinds.test.sql`
+  (#63, #72, #75–#77, #79)
+- Client `src/features/chat/`: service, fixture service, store with the device outbox and drafts, live handler and the
+  消息 badge (#72); 消息 tab list (#75); thread screen with the item card, safety card, delivery states, the kit's
+  `ContextMenuView`, 已读 in bounty threads (#74, #76); report sheet, thread ⋯ menu, block footer and folded group
+  messages (#77); image messages with the ＋ menu, Quick Look viewer and image cache (#79).
+- Entries (126 A, this PR): 发消息 on the bounty status screen (`src/features/bounty/status/StatusActions.tsx`,
+  `timeline.ts` `hasThread`) and the home in-progress card (`src/features/home/cards/BountyCard.tsx`, `chat` on
+  `BountyCardDetail` from `src/features/bounty/live/liveBounties.ts`); 群聊 in the ride detail's navigation bar
+  (`src/features/ride/detail/DetailMenu.tsx`, `detailModel.ts` `hasThread`); thread lookup through the chat facade
+  (`src/features/chat/itemThreads.ts`, `useItemChat.ts`, `findThread` on `threads` under RLS).
+- Runner: verify record keys are deleted before each launch (`verification/ui/records.py`, `test_records`).
+
+### Deviations from the design
+
+| Design said                                                           | Shipped                                                                                                | Why                                                                          | Confirmed by                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------- |
+| Applicants get a thread with the poster before selection              | A bounty thread opens at `assigned`; an application carries one short note                             | Bounty decision 8A                                                           | owner, bounty spec 8A                          |
+| Long-press → 翻译 / 举报                                              | 复制 / 举报; 翻译 and 问小貘 drafts arrive with step 8                                                 | 小貘体力 and the AI path are step 8                                          | owner, 2026-11-05 (121 A)                      |
+| Report and block on every profile                                     | No profile screen; 举报 / 屏蔽 in the thread ⋯ menu and on each message                                | A profile has no content until reviews (step 6)                              | owner, 2026-11-05 (127 A)                      |
+| (not in the design) read receipts                                     | 已读 under your newest message, bounty threads only                                                    | Urgent errands decide between waiting and calling                            | owner, 2026-11-05 (125 B)                      |
+| (not in the design) entry points                                      | 发消息 on the status screen and home card; 群聊 in the ride detail's bar; hidden until a thread exists | Canvas 126 A; ride entry not drawn                                           | owner 126 A; ride placement ★ default, for veto |
+| UI details beyond the answers                                         | The ★ defaults in the plan's defaults sections (server, client core, list, thread, report and block, images, entries) | Owner: 「都按推荐」, decide UI details and record them                 | ★ by default, owner may veto                   |
+
+### Bugs fixed during implementation
+
+- **Symptom:** a UI case read the previous launch's fixture calls. **Root cause:** the app resets its record keys at
+  launch, but NSUserDefaults reaches the plist seconds later. **Fix:** the runner deletes the keys by container plist
+  path before each launch (`verification/ui/records.py`, this PR).
+- **Symptom:** a second tap on the home card's busy 发消息 pushed the status screen. **Root cause:** a disabled inner
+  Pressable does not take the responder, so the touch reached the card. **Fix:** the pill stays enabled; the hook
+  ignores taps while a lookup runs (`src/features/home/cards/BountyCard.tsx`, this PR).
+- Earlier steps' bugs are in their retros: `docs/retros/2026-11-06-chat-*.md`.
+
+### Verification
+
+VERIFY_PLACEHOLDER
+
+### Known limits
+
+- Push delivery waits on the paid Apple Developer account (`RecordingSender` until then); the lock-screen preview never
+  shows message text.
+- Device checks: keyboard feel and the 5-line composer, the context menu preview and VoiceOver order, the camera, Quick
+  Look gestures, pasting a copied photo, the VoiceOver custom action 发消息 on the home card.
+- An organiser whose riders all left keeps the thread but loses 群聊 (the thread stays in 消息).
+- Secondary pills in the status screen's pinned bar are translucent over scrolled content (also 有问题, before this
+  step).
+- No admin tool for the report queue (`private.report_queue`, service role only).

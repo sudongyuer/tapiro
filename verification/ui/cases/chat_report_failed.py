@@ -48,6 +48,7 @@ ground = shot.rgb(items[0]['frame']['width'] / 2, next(
 kept = check_mark(ui.t('chat.report.reason.harassment'))
 other = check_mark(ui.t('chat.report.reason.inappropriate'))
 assert kept > 20 and other < 5, f'the picked reason lost its checkmark ({kept} vs {other} pixels)'
+assert chat_calls(ui, 'report', 1), 'the first report never reached the call log'
 time.sleep(2)  # a replay would follow the failed answer
 first = chat_calls(ui, 'report', 2, 0)
 assert first == [{'userId': 'fixture-chat-jie', 'messageId': None, 'reason': 'harassment', 'note': None}], first

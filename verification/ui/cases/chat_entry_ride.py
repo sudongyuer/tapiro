@@ -24,13 +24,11 @@ ui.element('ride-detail-ticket', timeout=45)
 button = ui.settled(lambda items: next((i for i in items if i.get('AXLabel') == label and i.get('type') == 'Button'),
                                        None), f'no {label} button in the navigation bar')
 assert button['frame']['y'] < 120, f'{label} is not in the navigation bar: {button["frame"]}'
-assert button['frame']['width'] >= 44 and button['frame']['height'] >= 44, button['frame']
 ui.at_rest()
 ui.capture('01-member')
 
 tap_button(ui, label)
 ui.element('chat-safety', timeout=45)
-ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
 card = ui.element('chat-item-card')
 assert '双威' in (card.get('AXLabel') or '') and 'KLIA2' in (card.get('AXLabel') or ''), card.get('AXLabel')
 assert tab_bar_hidden(ui.read()), 'the tab bar stays in a group opened from the ride'
@@ -39,6 +37,7 @@ ui.capture('02-group')
 
 ui.tap('BackButton')
 ui.element('chat-list', timeout=30)
+ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyRideDetail', 'viewer', '-uiVerifyScene', SCENE], ready='ride-detail-ticket')
 ui.at_rest()

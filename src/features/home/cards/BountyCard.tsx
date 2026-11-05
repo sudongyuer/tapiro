@@ -136,8 +136,8 @@ function MessagePill({ message, ink }: { message: CardMessage; ink: string }) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ busy: message.busy, disabled: message.busy }}
-      disabled={message.busy}
+      accessibilityState={{ busy: message.busy }}
+      // Stays enabled while busy: a disabled Pressable passes the touch to the card, which opens the status screen.
       onPress={message.onPress}
       testID="live-card-message"
       style={({ pressed }) => [styles.action, styles.inRow, pressed && styles.pressed]}

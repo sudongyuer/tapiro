@@ -39,8 +39,27 @@ assert pill['y'] > front['frame']['y'] + front['frame']['height'] / 2, f'{word} 
 
 ui.tap_point(pill['x'] + pill['width'] / 2, pill['y'] + pill['height'] / 2)
 ui.element('chat-safety', timeout=45)
-ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
-assert by_id(ui.read(), 'bounty-status') is None, 'the status screen opened instead of the thread'
 ui.at_rest()
 ui.capture('03-thread')
-print('PASS: 发消息 only on a card with a chosen helper, opens the thread in 消息')
+
+ui.tap('BackButton')
+ui.element('chat-list', timeout=30)
+ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
+ui.tap('tab-bounty')
+ui.element('home-scroll', timeout=30)
+ui.at_rest()
+assert by_id(ui.read(), 'bounty-status') is None, 'the pill tap also pushed the status screen under home'
+
+relaunch(ui, drop=FIRST, add=['-uiVerifyShellFeed', 'bountyAction', '-uiVerifyFixture', 'worst'])
+front = ui.settled(lambda items: by_id(items, 'live-card-bountyAction'), 'the worst 要你处理 card is not in front')
+ui.at_rest()
+shot = ui.snap('04-worst-row')
+read = lines(shot)
+pills = find(read, word, front['frame'])
+actions = find(read, '去确认', front['frame'])
+assert len(pills) == 1, f'expected one {word} on the worst card, OCR read {pills}'
+pill = pills[0]
+beside = [line for line in actions if line is not pill and abs(line['y'] - pill['y']) < 6 and line['x'] > pill['x']]
+assert beside, f'no action pill on the row right of {word}: {actions}'
+print('PASS: 发消息 only on a card with a chosen helper, opens the thread in 消息 without the status screen, '
+      'and sits left of the action pill on the worst card')

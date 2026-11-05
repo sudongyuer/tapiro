@@ -41,6 +41,7 @@ assert max(abs(a - b) for a, b in zip(theirs, ground)) >= 12, f'their bubble {th
 urgent = shot.count(retry['frame'], lambda rgb: abs(rgb[0] - token('--color-urgent', ui.appearance)[0]) < 30
                     and rgb[1] < 140)
 assert urgent > 40, f'the ! is not drawn in the urgent colour ({urgent} pixels)'
+assert chat_calls(ui, 'send', 1), 'the first send never reached the call log'
 time.sleep(2)  # a replay would follow the failed answer
 assert len(chat_calls(ui, 'send', 2, 0)) == 1, 'a failed message was sent again on its own'
 

@@ -1,3 +1,4 @@
+import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
@@ -15,13 +16,14 @@ export function useItemChat(navigate: (threadId: string) => void): ItemChat {
   const { t } = useI18n();
   const [opening, setOpening] = useState<string | null>(null);
   const busy = useRef(false);
-  const mounted = useRef(true);
+  const focused = useIsFocused();
+  const shown = useRef(focused);
   useEffect(() => {
-    mounted.current = true;
+    shown.current = focused;
     return () => {
-      mounted.current = false;
+      shown.current = false;
     };
-  }, []);
+  }, [focused]);
   const open = useCallback(
     (kind: ThreadKind, itemId: string) => {
       if (busy.current) return;
@@ -31,8 +33,8 @@ export function useItemChat(navigate: (threadId: string) => void): ItemChat {
       setOpening(itemId);
       void itemThreads.lookup(kind, itemId).then((found) => {
         busy.current = false;
-        if (!mounted.current) return;
         setOpening(null);
+        if (!shown.current) return;
         if (found.kind === 'found') return navigate(found.threadId);
         Alert.alert(t(found.kind === 'none' ? 'chat.entry.none' : 'chat.entry.failed'), undefined, [
           { text: t('chat.entry.ok') },

@@ -60,4 +60,7 @@ def reset_records(udid):
     running = [subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                for command in reset_commands(udid, plist)]
     for process in running:
-        process.wait(timeout=30)
+        try:
+            process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            process.kill()

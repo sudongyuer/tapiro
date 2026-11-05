@@ -37,7 +37,6 @@ assert by_id(items, 'chat-safety') is None, 'a failed lookup opened a thread'
 
 ui.tap('bounty-status-message')
 ui.element('chat-safety', timeout=45)
-ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
 ui.labelled('阿杰')
 assert tab_bar_hidden(ui.read()), 'the tab bar stays in a thread opened from the status screen'
 found = chat_calls(ui, 'findThread', 2)
@@ -47,12 +46,13 @@ ui.capture('03-thread')
 
 ui.tap('BackButton')
 ui.element('chat-list', timeout=30)
+ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
 ui.capture('04-list-under')
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyBountyStatus', 'done', '-uiVerifyScene', SCENE],
          ready='bounty-status-message')
-items = ui.settled(lambda items: items if by_id(items, 'bounty-status-action-confirm') else None,
-                   'the done bounty never showed 确认完成')
+ui.settled(lambda items: by_id(items, 'bounty-status-action-confirm'), 'the done bounty never showed 确认完成')
+items = ui.read()
 chat_button = by_id(items, 'bounty-status-message')['frame']
 confirm = by_id(items, 'bounty-status-action-confirm')['frame']
 issue = by_id(items, 'bounty-status-action-reportIssue')['frame']
@@ -64,7 +64,8 @@ ui.at_rest()
 ui.capture('05-done-row')
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyBountyStatus', 'open', '-uiVerifyScene', SCENE], ready='bounty-status')
-ui.wait(lambda items: by_id(items, 'bounty-status-summary'), 'the open bounty never loaded', timeout=45)
+ui.settled(lambda items: by_id(items, 'bounty-status-title'), 'the open bounty never loaded', timeout=45)
+ui.settled(lambda items: by_id(items, 'bounty-status-reward'), 'the open bounty never showed its reward')
 ui.at_rest()
 assert by_id(ui.read(), 'bounty-status-message') is None, 'an open bounty offers 发消息 before anyone is chosen'
 ui.capture('06-open-no-entry')
