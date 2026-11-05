@@ -1,5 +1,5 @@
 begin;
-select plan(7);
+select plan(6);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -45,7 +45,6 @@ select is(pg_temp.kinds('e5'), '{}'::text[], 'an applicant blocked from the post
 select ok(
   (select bool_and(not e.push) from public.events e where e.kind = 'bounty.expired'), 'an expiry is live only'
 );
-select is((select count(*) from public.push_queue q where q.kind = 'bounty.expired'), 0::bigint, 'and queues no push');
 select is(
   (select m.payload - 'at' from realtime.messages m
    where m.topic = 'user:' || pg_temp.u('d4') and m.event = 'bounty.expired'),

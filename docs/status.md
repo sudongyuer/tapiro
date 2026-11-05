@@ -14,7 +14,7 @@ Updated: 2026-11-05.
 | Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                                   |
 | Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                                  |
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                                       |
-| Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | Implemented: #48–#55, #57, #70; milestone `docs/walkthroughs/2026-11-03-carpool.md`, owner walkthrough 2026-11-04                        |
+| Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | Implemented: #48–#51, #53–#55, #57, #70; milestone `docs/walkthroughs/2026-11-03-carpool.md`, owner walkthrough 2026-11-04                        |
 | Device time zone (234) | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times, and local reminders keep quiet hours, in the system time zone; server rules stay in Malaysia time |
 
 ## In progress
@@ -45,8 +45,9 @@ Updated: 2026-11-05.
 - Live updates and push: the ★ defaults in the realtime spec's Decisions (bounty kinds, push path, push copy; and from
   step 2 the 「可能不是最新」 line, the new-applicant motion, tap routes, the permission moment, reconnect, handlers and
   the push token rules).
-- Live updates and push, from the 2026-11-05 answers (★ by default, owner may veto, realtime spec Decisions): the
-  transition that ends an active bounty (a cancel on the way, a problem reported after 完成) also skips quiet hours;
+- Live updates and push, from the 2026-11-05 answers (★ by default, owner may veto, realtime spec Decisions): a
+  bounty with a problem reported after 完成 stays exempt until confirmation, and one cancelled on the way stays exempt
+  for its bounty pushes;
   the bounty detail reloads on its own signals, and a pending application on a closed bounty shows 「已经关闭了」.
 - Chat report retention: the report row (reason, note) stays after its message copy is cleared at one year (★ by
   default, `docs/plans/2026-10-30-chat.md` Rulings). Defaults for the chat server half are in the same Rulings.

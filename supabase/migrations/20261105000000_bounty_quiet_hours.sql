@@ -8,20 +8,21 @@ as $$
     select 1 from public.bounties b
     where b.id = bounty and recipient in (b.poster_id, b.helper_id)
       and (
-        b.status in ('en_route', 'done')
+        b.status in ('en_route', 'done', 'disputed')
         or (
-          b.status in ('cancelled', 'disputed')
-          and (
-            select e.from_status from public.bounty_events e where e.bounty_id = b.id order by e.id desc limit 1
-          ) in ('en_route', 'done')
+          b.status = 'cancelled'
+          and exists (
+            select 1 from public.bounty_events e
+            where e.bounty_id = b.id and e.kind = 'cancelled' and e.from_status = 'en_route'
+          )
         )
       )
   );
 $$;
 
--- Quiet hours skip the ride and the bounty the recipient is on. A bounty counts while it is en_route or done and
--- for the transition that ends that stretch (a cancel on the way, a problem reported after 完成), so news that
--- the job stopped is not held until 08:00 either.
+-- Quiet hours skip the ride and the bounty the recipient is on. A bounty counts from en_route until it is confirmed
+-- (disputed is reached only from done), and once cancelled on the way, so news that the job stopped is not held
+-- until 08:00 either.
 create or replace function private.queue_push() returns trigger
 language plpgsql
 security definer
@@ -50,7 +51,7 @@ begin
       left join public.rides r on r.id = t.ride_id
       left join public.bounties b on b.id = t.bounty_id
       where t.id = new.subject_id
-        and (r.status in ('gathering', 'departed') or b.status in ('en_route', 'done'))
+        and (r.status in ('gathering', 'departed') or b.status in ('en_route', 'done', 'disputed'))
     );
   else
     raise warning 'push for % not queued: no thread rule', new.kind;

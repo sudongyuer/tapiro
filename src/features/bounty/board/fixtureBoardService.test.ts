@@ -452,3 +452,19 @@ describe('outcomes and the poster view', () => {
     });
   });
 });
+
+describe('expiresLive', () => {
+  test('the pending application reads open on the first detail load and closed on the next', async () => {
+    const board = service({ detail: 'expiresLive' });
+    const first = await board.detail('fixture-bounty-01', null);
+    const second = await board.detail('fixture-bounty-01', null);
+    expect(first === 'gone' ? null : [first.status, first.myApplication?.status]).toEqual([
+      'open',
+      'pending',
+    ]);
+    expect(second === 'gone' ? null : [second.status, second.myApplication?.status]).toEqual([
+      'closed',
+      'pending',
+    ]);
+  });
+});

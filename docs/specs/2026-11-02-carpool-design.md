@@ -927,7 +927,7 @@ can store each device's zone and align it. Status stays `approved`.
 
 ## Implementation Record (2026-11-05)
 
-PR: #48–#55, #57, #70 (record in the owner-decisions PR) · Commits: 8533873..4e39dbe
+PR: #48–#51, #53–#55, #57, #70 (record in the owner-decisions PR) · Commits: 8533873..4e39dbe
 
 ### What was built
 

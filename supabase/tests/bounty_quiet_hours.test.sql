@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(12);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -99,6 +99,10 @@ select is(
   pg_temp.held('b2', 'bounty.issue', pg_temp.b(2)), 'sent',
   'a problem reported on a done bounty reaches the helper at once'
 );
+select is(
+  pg_temp.held('a1', 'chat.message', pg_temp.thread_of(2)), 'sent',
+  'while the problem is open the thread is not held'
+);
 
 select pg_temp.started(3);
 select pg_temp.act_as(pg_temp.u('a1'));
@@ -106,6 +110,10 @@ select public.cancel_bounty(pg_temp.b(3));
 select is(
   pg_temp.held('b2', 'bounty.cancelled', pg_temp.b(3)), 'sent',
   'a cancel while the helper is on the way reaches them at once'
+);
+select is(
+  pg_temp.held('b2', 'chat.message', pg_temp.thread_of(3)), 'held',
+  'after that cancel the thread follows quiet hours again'
 );
 
 select pg_temp.assigned(4);
