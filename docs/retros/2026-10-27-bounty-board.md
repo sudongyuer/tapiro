@@ -1,7 +1,7 @@
 ---
 branch: feat/bounty-board-ui
 date: 2026-10-27
-pr: '#18 (4a, branch feat/bounty-board) and 4b'
+pr: "#18 (4a, branch feat/bounty-board) and 4b"
 status: complete before PR
 ---
 
