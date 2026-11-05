@@ -89,3 +89,26 @@ def tap_button(ui, label):
                                            and i.get('type') == 'Button'), None), f'no {label} button')
     f = found['frame']
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+
+
+def open_menu(ui, first):
+    ui.tap_label(ui.t('chat.menu.more'))
+    return ui.labelled(first)
+
+
+def menu_pick(ui, label):
+    found = ui.settled(lambda items: next((i for i in reversed(items) if i.get('AXLabel') == label), None),
+                       f'menu item {label} never settled')
+    f = found['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+
+
+def sheet_action(ui, label):
+    found = ui.settled(lambda items: next((i for i in items if i.get('AXLabel') == label
+                                           and i.get('type') == 'Button'), None),
+                       f'action sheet button {label} never settled')['frame']
+    ui.tap_point(found['x'] + found['width'] / 2, found['y'] + found['height'] / 2)
+
+
+def labels(items):
+    return [i.get('AXLabel') for i in items]

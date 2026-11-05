@@ -27,19 +27,3 @@ export function askResend(pending: PendingMessage, t: TFunction) {
     cancel,
   ]);
 }
-
-export function askReport(target: { userId: string; messageId: string }, t: TFunction) {
-  const ack = (title: string) => Alert.alert(title, undefined, [{ text: t('chat.thread.ok') }]);
-  Alert.alert(t('chat.thread.reportTitle'), t('chat.thread.reportBody'), [
-    { text: t('chat.thread.cancel'), style: 'cancel' },
-    {
-      text: t('chat.thread.report'),
-      onPress: () => {
-        chatStore
-          .report({ ...target, reason: null, note: null })
-          .then(() => ack(t('chat.thread.reported')))
-          .catch(() => ack(t('chat.thread.reportFailed')));
-      },
-    },
-  ]);
-}

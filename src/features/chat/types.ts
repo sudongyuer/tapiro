@@ -21,6 +21,8 @@ export type ChatMember = {
   name: string | null;
   avatarUrl: string | null;
   left: boolean;
+  blockedByMe: boolean;
+  organiser: boolean;
 };
 
 export type ChatMessage = {

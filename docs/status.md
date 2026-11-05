@@ -30,8 +30,10 @@ Updated: 2026-11-06.
   `20261106000100_chat_thread_item.sql`). Task 5, the thread screen, is built without images: pinned item card with
   看详情, fixed safety card, sending / stored / failed bubbles with a user-tapped resend, the system long-press menu
   (复制 / 举报) through the kit's `ContextMenuView`, 已读 in bounty threads, drafts kept on the device, the tab bar
-  hidden in a thread, and `chat.*` taps open the thread. Next: images (Task 5b, split out so each PR ships whole), then
-  Tasks 6–8.
+  hidden in a thread, and `chat.*` taps open the thread. Task 6, report and block, is built: the 举报 sheet (reasons,
+  note, then offer to block), the thread ⋯ menu (看详情 / 举报 / 屏蔽, members by name in ride groups), the blocked footer
+  with 解除, 「消息发不出去」 on the blocked side, folded messages from blocked ride members
+  (`20261106000200_chat_block_state.sql`). Next: images (Task 5b), then Tasks 7–8.
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
   still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
   `ride.remind.*` device checks wait for TestFlight.
@@ -70,6 +72,10 @@ Updated: 2026-11-06.
   (spinner while sending, no dimming; the Answers list says "dim", veto to switch); ! offers 重发 / 删除; the item card
   is a fixed bar and 看详情 opens the status or ride screen in its own tab; 举报 is a confirm-and-send until Task 6's
   sheet; time lines every hour gap; speaker names in ride groups; tab bar hidden in a thread; drafts kept per thread.
+- Chat report and block (2026-11-06, ★ by default, plan 「Report and block defaults」): 提交 needs a reason; the offer to
+  block after a report is the only confirmation; ride groups list members by name under 举报成员 / 屏蔽成员 / 解除屏蔽;
+  解除 asks first; the report note is not kept across restarts; 「消息发不出去」 under every refused send; 举报 stays
+  available in a ride you left.
 - Chat 消息 list (2026-11-06, ★ by default, plan 「消息 list defaults」): one inset grouped card; red unread dot like the
   tab badge; 「我：」 and group 「名字：」 prefixes; empty moment with 「去看看悬赏」; a failed page retries only on 重试; a
   reload asks again for every row shown (up to 100) and replaces the list.

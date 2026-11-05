@@ -25,6 +25,7 @@ export {
   type ThreadSummary,
 } from './types';
 export { ThreadScreen } from './thread/ThreadScreen';
+export { ReportSheet } from './report/ReportSheet';
 export { ChatListScreen } from './list/ChatListScreen';
 export { ThreadTitle } from './list/ThreadTitle';
 export { LONG_THREAD_ID as FIXTURE_LONG_THREAD_ID } from './fixtureThreads';

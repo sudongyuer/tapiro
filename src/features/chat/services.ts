@@ -1,6 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { Settings } from 'react-native';
 
+import { addBlockFixturePeople, blockEvents, fixtureBlocked } from '@/features/block';
 import { live } from '@/lib/live';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
@@ -12,7 +13,7 @@ import { createSupabaseChatService } from './chatService';
 import { createChatStore } from './chatStore';
 import { createDrafts } from './drafts';
 import { createFixtureChatService, fixtureChatOptions } from './fixtureChatService';
-import { FIXTURE_CHAT_USER_ID } from './fixtureThreads';
+import { FIXTURE_CHAT_PEOPLE, FIXTURE_CHAT_USER_ID } from './fixtureThreads';
 import { createOutbox } from './outbox';
 
 const CALLS_KEY = 'uiVerifyChatCalls';
@@ -20,8 +21,10 @@ const CALLS_KEY = 'uiVerifyChatCalls';
 function verifyChatService() {
   Settings.set({ [CALLS_KEY]: '[]' });
   const calls: unknown[] = [];
+  addBlockFixturePeople(FIXTURE_CHAT_PEOPLE);
   return createFixtureChatService({
     ...fixtureChatOptions(uiVerifyArgument, uiVerifyFixture),
+    blockedByMe: fixtureBlocked,
     onCall: (name, args) => {
       calls.push({ name, args });
       Settings.set({ [CALLS_KEY]: JSON.stringify(calls) });
@@ -53,6 +56,8 @@ if (drivesBadge) {
 }
 
 live.on(['chat.'], chatStore.onSignal);
+blockEvents.onBlocked((personId) => chatStore.markBlocked(personId, true));
+blockEvents.onUnblocked((personId) => chatStore.markBlocked(personId, false));
 
 userCleanups.register((userId) => {
   outbox.clear(userId);

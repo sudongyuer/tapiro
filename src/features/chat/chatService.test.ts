@@ -42,7 +42,9 @@ const THREAD = {
   unread: true,
   lastReadAt: null,
   peerReadAt: '2026-11-06T01:00:00.123456+00:00',
-  members: [{ id: 'u2', name: null, avatarUrl: null, left: false }],
+  members: [
+    { id: 'u2', name: null, avatarUrl: null, left: false, blockedByMe: false, organiser: false },
+  ],
 };
 
 describe('supabase chat service', () => {

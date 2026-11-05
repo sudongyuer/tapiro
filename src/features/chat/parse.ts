@@ -51,6 +51,8 @@ function toMember(value: unknown): ChatMember {
     name: textOrNull(row.name, 'member name'),
     avatarUrl: textOrNull(row.avatarUrl, 'member avatarUrl'),
     left: flag(row.left, 'member left'),
+    blockedByMe: flag(row.blockedByMe, 'member blockedByMe'),
+    organiser: flag(row.organiser, 'member organiser'),
   };
 }
 

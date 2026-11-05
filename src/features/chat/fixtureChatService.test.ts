@@ -33,6 +33,40 @@ describe('fixture chat service', () => {
     expect((await service.readThread('fixture-chat-bounty', null)).messages).toHaveLength(4);
   });
 
+  test('blocks shape the thread: a blocked peer refuses sends, a blocked organiser ends the ride', async () => {
+    const blocked = new Set(['fixture-chat-jie', 'fixture-chat-mei']);
+    const service = createFixtureChatService({
+      variant: 'demo',
+      failFirst: [],
+      now: NOW,
+      blockedByMe: (id) => blocked.has(id),
+    });
+    const bounty = await service.readThread('fixture-chat-bounty', null);
+    expect(bounty.thread.members[0].blockedByMe).toBe(true);
+    expect(await service.send('fixture-chat-bounty', 'c1', '好')).toEqual({
+      ok: false,
+      failure: 'blocked',
+    });
+    expect((await service.readThread('fixture-chat-ride', null)).thread.left).toBe(true);
+  });
+
+  test('the blocked side is refused without being told', async () => {
+    const service = createFixtureChatService({
+      variant: 'demo',
+      failFirst: [],
+      now: NOW,
+      blockedBy: true,
+    });
+    expect(
+      (await service.readThread('fixture-chat-bounty', null)).thread.members[0].blockedByMe,
+    ).toBe(false);
+    expect(await service.send('fixture-chat-bounty', 'c1', '你下来了吗')).toEqual({
+      ok: false,
+      failure: 'blocked',
+    });
+    expect((await service.send('fixture-chat-ride', 'c2', '收到')).ok).toBe(true);
+  });
+
   test('a fail point fails only its first call', async () => {
     const options = fixtureChatOptions(
       (name) => (name === 'uiVerifyChatFail' ? 'list, send' : undefined),

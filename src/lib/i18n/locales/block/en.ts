@@ -9,6 +9,18 @@ export default {
     applicantBody:
       'You won’t see each other’s bounties or be able to apply to them. {{name}} won’t be notified, and {{name}}’s application will disappear from here. You can unblock in Me → Blocked.',
     cancel: 'Don’t Block',
+    rideMemberBody:
+      'You won’t see each other’s bounties or rides. {{name}} will leave this ride if it hasn’t left yet, and it won’t count as a no-show; a ride that has left is unaffected. {{name}} won’t be notified. You can unblock in Me → Blocked.',
+    threadBody:
+      'Neither of you will be able to send messages in this chat, and you won’t see each other’s bounties or rides. The chat history stays. {{name}} won’t be notified. You can unblock at the bottom of the chat or in Me → Blocked.',
+    groupBody:
+      '{{name}} stays in this ride. Their messages will be folded, and you can tap to show them. You won’t see each other’s bounties or rides. {{name}} won’t be notified. You can unblock in Me → Blocked.',
+  },
+  unblock: {
+    title: 'Unblock {{name}}?',
+    body: 'You’ll see each other’s bounties and rides again, and this chat goes back to normal. {{name}} won’t be notified.',
+    confirm: 'Unblock',
+    cancel: 'Cancel',
   },
   blocking: 'Blocking',
   failed: 'Couldn’t block. Try again.',

@@ -66,8 +66,9 @@ function lastText(row: ThreadSummary, me: string, t: TFunction) {
   const body = oneLine(last.body);
   if (last.senderId === me) return t('chat.list.mine', { body });
   if (row.kind === 'bounty') return body;
-  const name = row.members.find((member) => member.id === last.senderId)?.name;
-  return t('chat.list.from', { name: name ?? t('chat.list.someone'), body });
+  const sender = row.members.find((member) => member.id === last.senderId);
+  if (sender?.blockedByMe) return t('chat.thread.folded');
+  return t('chat.list.from', { name: sender?.name ?? t('chat.list.someone'), body });
 }
 
 export function rowView(
