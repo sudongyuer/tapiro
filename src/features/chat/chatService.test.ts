@@ -25,10 +25,18 @@ const MESSAGE = {
   createdAt: '2026-11-06T01:00:00.123456+00:00',
 };
 
+const RIDE_ITEM = {
+  from: '双威',
+  to: 'KLIA2',
+  departsAt: '2026-11-07T01:00:00+00:00',
+  status: 'open' as const,
+};
+
 const THREAD = {
   id: 't1',
   kind: 'bounty',
   itemId: 'b1',
+  item: { title: '帮取快递', category: 'pickup', art: null, status: 'assigned' },
   createdAt: '2026-11-06T00:00:00+00:00',
   left: false,
   unread: true,
@@ -51,9 +59,52 @@ describe('supabase chat service', () => {
 
   test('a ride thread never carries a read time for the others', async () => {
     const { service } = stubClient(() => ({
-      data: { thread: { ...THREAD, kind: 'ride' }, messages: [MESSAGE], hasMore: false },
+      data: {
+        thread: { ...THREAD, kind: 'ride', item: RIDE_ITEM },
+        messages: [MESSAGE],
+        hasMore: false,
+      },
     }));
     expect((await service.readThread('t1', null)).thread.peerReadAt).toBeNull();
+  });
+
+  test('each row carries its bounty or ride, read by the thread kind', async () => {
+    const { service } = stubClient(() => ({
+      data: {
+        items: [
+          { ...THREAD, lastMessage: null },
+          { ...THREAD, id: 't2', kind: 'ride', item: RIDE_ITEM, lastMessage: null },
+        ],
+        hasMore: false,
+        nextCursor: null,
+      },
+    }));
+    const page = await service.listThreads(null);
+    expect(page.items.map((row) => row.item)).toEqual([
+      { kind: 'bounty', title: '帮取快递', category: 'pickup', art: null, status: 'assigned' },
+      { kind: 'ride', ...RIDE_ITEM },
+    ]);
+  });
+
+  test('a category the app does not know reads as other', async () => {
+    const { service } = stubClient(() => ({
+      data: {
+        items: [{ ...THREAD, item: { ...THREAD.item, category: 'cooking' }, lastMessage: null }],
+        hasMore: false,
+        nextCursor: null,
+      },
+    }));
+    const [row] = (await service.listThreads(null)).items;
+    expect(row.item.kind === 'bounty' && row.item.category).toBe('other');
+  });
+
+  test('a row without its item or with an unknown status is a failure', async () => {
+    for (const item of [null, { ...THREAD.item, status: 'paused' }]) {
+      const { service } = stubClient(() => ({
+        data: { items: [{ ...THREAD, item, lastMessage: null }], hasMore: false, nextCursor: null },
+      }));
+      await expect(service.listThreads(null)).rejects.toThrow('chat: unexpected');
+    }
   });
 
   test('an unexpected shape is a failure, not an empty thread', async () => {

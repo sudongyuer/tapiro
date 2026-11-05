@@ -157,10 +157,6 @@ const en: Translation = {
     home: {
       title: 'Bounties',
     },
-    messages: {
-      emptyTitle: 'No messages yet',
-      emptyBody: 'Chats show up here once you take a bounty or join a ride',
-    },
     accessory: {
       label: '{{title}}, {{sub}}',
       withMore: '{{sub}} · {{count}} more',

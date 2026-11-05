@@ -151,7 +151,7 @@ select is(
   jsonb_array_length(public.list_threads() -> 'items'), 1, 'the helper lists one thread'
 );
 select is(
-  (public.list_threads() #> '{items,0}') - 'createdAt' - 'lastMessage' - 'unread' - 'lastReadAt' - 'peerReadAt',
+  (public.list_threads() #> '{items,0}') - 'createdAt' - 'lastMessage' - 'unread' - 'lastReadAt' - 'peerReadAt' - 'item',
   jsonb_build_object(
     'id', (select bt from fx), 'kind', 'bounty', 'itemId', 'b0000000-0000-4000-8000-000000000001', 'left', false,
     'members', jsonb_build_array(jsonb_build_object('id', pg_temp.u('a1'), 'name', 'Alice', 'avatarUrl', null, 'left', false))

@@ -35,12 +35,12 @@ ui.capture('03-payment-marked-paid')
 relaunch(ui, drop=TAP, add=['-uiVerifyNoticeTap', 'ride.approved:ride-airport'], ready='ride-detail-ticket')
 ui.capture('04-ride-approved')
 
-relaunch(ui, drop=TAP, add=['-uiVerifyNoticeTap', 'chat.message:thread-tap'], ready='messages-empty')
+relaunch(ui, drop=TAP, add=['-uiVerifyNoticeTap', 'chat.message:thread-tap'], ready='chat-list')
 ui.capture('05-chat-message')
 
 relaunch(ui, drop=TAP)
 ui.at_rest()
 items = ui.read()
-for screen in ('bounty-status', 'bounty-applicants', 'pay-sheet', 'ride-detail', 'messages-empty'):
+for screen in ('bounty-status', 'bounty-applicants', 'pay-sheet', 'ride-detail', 'chat-list'):
     assert by_id(items, screen) is None, f'{screen} opened again without a notification'
 print('PASS: bounty.selected, bounty.applied, payment.marked_paid, ride.approved and chat.message each route from a cold-start tap')

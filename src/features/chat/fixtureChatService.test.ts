@@ -48,15 +48,40 @@ describe('fixture chat service', () => {
     expect((await service.send('fixture-chat-bounty', 'c1', '好')).ok).toBe(true);
   });
 
-  test('the worst case pages its sixty-one threads and holds a message at the length limit', async () => {
+  test('the worst case pages 120 threads, unread past the badge cap, with a message at the length limit', async () => {
     const service = createFixtureChatService({ variant: 'worst', failFirst: [], now: NOW });
-    const first = await service.listThreads(null);
-    expect(first).toMatchObject({ hasMore: true });
-    const second = await service.listThreads(first.nextCursor);
-    expect(first.items.length + second.items.length).toBe(61);
-    expect(second.hasMore).toBe(false);
+    const pages = [await service.listThreads(null)];
+    while (pages.at(-1)?.hasMore)
+      pages.push(await service.listThreads(pages.at(-1)?.nextCursor ?? null));
+    expect(pages.map((page) => page.items.length)).toEqual([50, 50, 20]);
+    expect(await service.unreadCount()).toBeGreaterThan(99);
+    const head = pages[0].items[0];
+    expect(head.item.kind === 'bounty' && [...head.item.title].length).toBe(60);
     const read = await service.readThread('fixture-chat-worst', null);
     expect([...read.messages[0].body].length).toBe(2000);
+  });
+
+  test('demo rows carry their bounty or ride', async () => {
+    const service = createFixtureChatService({ variant: 'demo', failFirst: [], now: NOW });
+    const rows = (await service.listThreads(null)).items;
+    expect(rows.map((row) => row.item)).toMatchObject([
+      { kind: 'bounty', title: '帮取快递', category: 'pickup', art: null },
+      { kind: 'bounty', title: '帮我买杯奶茶', art: 'tea' },
+      { kind: 'ride', from: '双威', to: 'KLIA2' },
+    ]);
+  });
+
+  test('listRefresh fails the first reload after a load, listMore the first next page', async () => {
+    const options = fixtureChatOptions(
+      (name) => (name === 'uiVerifyChatFail' ? 'listRefresh,listMore' : undefined),
+      'worst',
+    );
+    const service = createFixtureChatService({ ...options, now: NOW });
+    const first = await service.listThreads(null);
+    await expect(service.listThreads(first.nextCursor)).rejects.toThrow();
+    expect((await service.listThreads(first.nextCursor)).items).toHaveLength(50);
+    await expect(service.listThreads(null)).rejects.toThrow();
+    expect((await service.listThreads(null)).items).toHaveLength(50);
   });
 
   test('empty has no threads', async () => {

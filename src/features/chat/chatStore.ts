@@ -13,7 +13,9 @@ import {
   needsMarkRead,
 } from './threadModel';
 import {
+  LIST_RELOAD_MAX,
   MESSAGE_MAX,
+  PAGE_SIZE,
   type ChatMessage,
   type ChatService,
   type LoadStatus,
@@ -32,6 +34,7 @@ export type ListState =
       hasMore: boolean;
       nextCursor: string | null;
       more: 'idle' | 'loading' | 'failed';
+      loadedAt: string | null;
     };
 
 export type UnreadState = { status: 'idle' } | { status: LoadStatus; count: number | null };
@@ -95,6 +98,7 @@ export function createChatStore({
   const marking = new Set<string>();
   let generation = 0;
   let listVersion = 0;
+  let reloadsOut = 0;
 
   const get = store.get;
   const patch = (next: Partial<ChatState>) => store.set({ ...get(), ...next });
@@ -112,8 +116,14 @@ export function createChatStore({
     if (!userId) return;
     const at = generation;
     const request = listOrder.start();
+    const loaded = get().list;
+    const count = Math.min(
+      LIST_RELOAD_MAX,
+      Math.max(PAGE_SIZE, loaded.status === 'idle' ? 0 : loaded.threads.length),
+    );
+    reloadsOut += 1;
     try {
-      const page = await service.listThreads(null);
+      const page = await service.listThreads(null, count);
       const status = listOrder.succeeded(request);
       if (!status || !current(userId, at)) return;
       listVersion += 1;
@@ -124,6 +134,7 @@ export function createChatStore({
           hasMore: page.hasMore,
           nextCursor: page.nextCursor,
           more: 'idle',
+          loadedAt: now().toISOString(),
         },
       });
     } catch {
@@ -131,6 +142,8 @@ export function createChatStore({
       const list = get().list;
       if (list.status === 'idle') return;
       patch({ list: { ...list, status: failedOrStale(list.status, list.threads.length > 0) } });
+    } finally {
+      reloadsOut -= 1;
     }
   }
 
@@ -141,7 +154,14 @@ export function createChatStore({
       return;
     }
     patch({
-      list: { status: 'loading', threads: [], hasMore: false, nextCursor: null, more: 'idle' },
+      list: {
+        status: 'loading',
+        threads: [],
+        hasMore: false,
+        nextCursor: null,
+        more: 'idle',
+        loadedAt: null,
+      },
     });
     await reloadList(userId);
   }
@@ -149,6 +169,8 @@ export function createChatStore({
   async function loadMoreThreads() {
     const { userId, list } = get();
     if (!userId || list.status !== 'ready' || !list.hasMore || list.more === 'loading') return;
+    // A reload sized before this page landed would replace the list with fewer rows.
+    if (reloadsOut > 0) return;
     const at = generation;
     const version = listVersion;
     patch({ list: { ...list, more: 'loading' } });

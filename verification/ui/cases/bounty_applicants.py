@@ -6,9 +6,10 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import ink_box, screen  # noqa: E402
 from bounty import assert_grouped_background, relaunch  # noqa: E402
+from gestures import pull  # noqa: E402
 from driver import UI, assert_colour, assert_touch_target, by_id, token  # noqa: E402
 
-DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'src/features/place/', 'src/features/block/']
+DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/ui/HoldButton.tsx', 'src/app/(tabs)/bounty/', 'src/features/place/', 'src/features/block/', 'verification/ui/gestures.py']
 SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
@@ -115,7 +116,7 @@ ui.at_rest()
 assert by_id(ui.read(), MEI) is None, 'Mei Ling is listed before the pull'
 assert label('bounty-applicants-status') == ui.tn('bounty.select.statusOpen', 3), label('bounty-applicants-status')
 s = screen(ui.read())
-ui.swipe((s['width'] / 2, s['height'] * 0.3), (s['width'] / 2, s['height'] * 0.8), 0.6)
+pull(ui, ui.read())
 ui.wait_label('bounty-applicants-status', lambda text: text == ui.tn('bounty.select.statusOpen', 4),
               'the status does not count 4 applicants after the pull')
 ui.at_rest()

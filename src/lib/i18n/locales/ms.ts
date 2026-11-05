@@ -157,11 +157,6 @@ const ms: Translation = {
     home: {
       title: 'Ganjaran',
     },
-    messages: {
-      emptyTitle: 'Belum ada mesej',
-      emptyBody:
-        'Perbualan akan dipaparkan di sini selepas anda mengambil ganjaran atau menyertai tumpangan',
-    },
     accessory: {
       label: '{{title}}, {{sub}}',
       withMore: '{{sub}} · {{count}} lagi',

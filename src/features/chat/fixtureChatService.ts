@@ -3,7 +3,16 @@ import type { FixtureVariant } from '@/lib/fixtureVariant';
 import { fixtureThreads, FIXTURE_CHAT_USER_ID, type FixtureThread } from './fixtureThreads';
 import type { ChatMessage, ChatService, ThreadSummary } from './types';
 
-export const CHAT_FAIL_POINTS = ['list', 'thread', 'send', 'unread', 'markRead', 'report'] as const;
+export const CHAT_FAIL_POINTS = [
+  'list',
+  'listRefresh',
+  'listMore',
+  'thread',
+  'send',
+  'unread',
+  'markRead',
+  'report',
+] as const;
 export type ChatFailPoint = (typeof CHAT_FAIL_POINTS)[number];
 
 export type FixtureChatOptions = {
@@ -53,6 +62,7 @@ export function createFixtureChatService({
     return { ...info, lastMessage: shown(thread)[0] ?? null };
   };
   const failing = new Set<ChatFailPoint>(failFirst);
+  let listed = 0;
   const failOnce = (point: ChatFailPoint) => {
     if (!failing.delete(point)) return;
     throw new Error(`fixture ${point} failed`);
@@ -74,12 +84,14 @@ export function createFixtureChatService({
     );
 
   return {
-    async listThreads(before) {
-      onCall('listThreads', { before });
+    async listThreads(before, count = pageSize) {
+      onCall('listThreads', { before, count });
       failOnce('list');
+      if (before) failOnce('listMore');
+      else if (listed++ > 0) failOnce('listRefresh');
       const rows = ordered();
       const from = before ? rows.findIndex((row) => row.id === before) + 1 : 0;
-      const page = pageOf(rows, from, pageSize);
+      const page = pageOf(rows, from, count);
       return {
         items: page.rows.map((row) => summary({ ...row, unread: unread(row) })),
         hasMore: page.hasMore,

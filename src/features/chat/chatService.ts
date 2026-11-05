@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { toCount, toMessage, toReadAt, toReportId, toThreadPage, toThreadRead } from './parse';
-import type { ChatService, SendFailure } from './types';
+import { PAGE_SIZE, type ChatService, type SendFailure } from './types';
 
-export const PAGE_SIZE = 50;
+export { PAGE_SIZE };
 
 const FAILURES: Readonly<Record<string, SendFailure>> = {
   blocked: 'blocked',
@@ -31,8 +31,8 @@ export function createSupabaseChatService(client: SupabaseClient | null): ChatSe
     return client;
   };
   return {
-    async listThreads(before) {
-      return toThreadPage(unwrap(await db().rpc('list_threads', { before, max_count: PAGE_SIZE })));
+    async listThreads(before, count = PAGE_SIZE) {
+      return toThreadPage(unwrap(await db().rpc('list_threads', { before, max_count: count })));
     },
     async readThread(threadId, before) {
       return toThreadRead(

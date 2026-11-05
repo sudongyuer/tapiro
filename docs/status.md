@@ -25,7 +25,10 @@ Updated: 2026-11-06.
   Tasks 2 (shared block module) and 3 (client core: service, fixtures, store, outbox, live handler, read state and the
   消息 badge, `20261106000000_chat_read_state.sql`) are merged. Task 0, the thread-screen spike, is done: 128 A confirmed
   (RN + `react-native-keyboard-controller` 1.22.7, `docs/research/2026-11-06-chat-thread-spike.md`); the thread
-  components live behind the `chat-thread` debug scene. Tasks 4–8 are next (no user-facing chat screens yet).
+  components live behind the `chat-thread` debug scene. Task 4, the 消息 tab list, is built (rows with the item art,
+  title, the other side and the last line; empty, failed, not-current and paging states; `item` in each thread's JSON,
+  `20261106000100_chat_thread_item.sql`); a row opens the spike thread screen on `/messages/[thread]`. Tasks 5–8 are
+  next.
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
   still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
   `ride.remind.*` device checks wait for TestFlight.
@@ -60,6 +63,9 @@ Updated: 2026-11-06.
   messages stay on the device below the stored ones and are sent again only on a tap.
 - Chat thread spike (2026-11-06, ★ by default): 128 A confirmed; non-inverted list; 消息 tab without automatic
   content insets; composer capped at 5 lines. For Task 5's canvas: ★ hide the tab bar while a thread is open.
+- Chat 消息 list (2026-11-06, ★ by default, plan 「消息 list defaults」): one inset grouped card; red unread dot like the
+  tab badge; 「我：」 and group 「名字：」 prefixes; empty moment with 「去看看悬赏」; a failed page retries only on 重试; a
+  reload asks again for every row shown (up to 100) and replaces the list.
 
 ## Resuming on another machine
 
