@@ -49,7 +49,7 @@ Same migration.
       (push), issue (push), cancelled (push), expired, confirmed.
 - [x] `bounty_events_fanout`: applied, withdrawn → poster; selected → helper, and `not_selected` → the other
       applicants; started, eta_changed, completed → poster; problem_reported → helper; cancelled → poster and helper;
-      closed → pending applicants (`bounty.cancelled`); expired → poster; confirmed / auto_confirmed → both. The actor
+      closed → pending applicants (`bounty.cancelled`); expired → poster and pending applicants not blocked from the poster (2026-11-05); confirmed / auto_confirmed → both. The actor
       is never told.
 - [x] Replace `ride_payment_fanout` with `payment_fanout` for every payment.
 

@@ -6,6 +6,7 @@ import {
   detailReducer,
   initialDetail,
   keptWrite,
+  reloadsOn,
   seenMarkDue,
   withWrite,
   shownView,
@@ -198,6 +199,16 @@ describe('detailAction', () => {
     expect(detailAction({ ...DETAIL, expiresAt: NOW.toISOString() }, NOW)).toBe('closed');
   });
 
+  test('a pending application on a bounty that closed or expired shows it closed', () => {
+    const pending = { status: 'pending' as const, note: 'hi' };
+    expect(detailAction({ ...DETAIL, status: 'closed', myApplication: pending }, NOW)).toBe(
+      'closed',
+    );
+    expect(viewOfDetail({ ...DETAIL, status: 'closed', myApplication: pending }, NOW).note).toBe(
+      null,
+    );
+  });
+
   test('a seeded row shows 申请 or the applied block from appliedByMe', () => {
     expect(shownView(initialDetail(ROW), NOW)?.action).toBe('apply');
     expect(shownView(initialDetail({ ...ROW, appliedByMe: true }), NOW)?.action).toBe('applied');
@@ -362,5 +373,13 @@ describe('outcomes', () => {
     expect(seenMarkDue({ ...DETAIL, myApplication: { status: 'pending', note: null } })).toBe(
       false,
     );
+  });
+});
+
+describe('reloadsOn', () => {
+  test('the detail reloads on a signal about its own bounty or a reconnect only', () => {
+    expect(reloadsOn({ kind: 'bounty.expired', id: 'b1', at: AT }, 'b1')).toBe(true);
+    expect(reloadsOn({ kind: 'bounty.cancelled', id: 'b2', at: AT }, 'b1')).toBe(false);
+    expect(reloadsOn(null, 'b1')).toBe(true);
   });
 });

@@ -1,3 +1,4 @@
+import type { LiveSignal } from '@/lib/live';
 import type { Money, MoneyReference } from '@/lib/money';
 
 import type { BoardRow, BountyDetail, Person } from '../board/types';
@@ -35,8 +36,10 @@ export function detailAction(detail: BountyDetail, now: Date): DetailAction {
   if (detail.viewerRole === 'helper') return outcome ?? 'none';
   if (detail.myApplication?.status === 'not_selected') return 'notSelected';
   if (detail.viewerRole === 'poster') return outcome === 'cancelled' ? 'cancelled' : 'none';
-  if (detail.myApplication?.status === 'pending') return 'applied';
   if (outcome === 'selected') return 'taken';
+  if (detail.myApplication?.status === 'pending') {
+    return detail.status === 'open' ? 'applied' : 'closed';
+  }
   if (detail.status === 'open' && new Date(detail.expiresAt).getTime() > now.getTime()) {
     return 'apply';
   }
@@ -176,3 +179,6 @@ export function shownView(state: DetailState, now: Date): DetailView | null {
 
 export const seenMarkDue = (detail: BountyDetail) =>
   detail.viewerRole !== 'helper' && detail.myApplication?.status === 'not_selected';
+
+export const reloadsOn = (signal: LiveSignal | null, id: string) =>
+  signal === null || signal.id === id;
