@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { createFixtureChatService, fixtureChatOptions } from './fixtureChatService';
-import { FIXTURE_CHAT_USER_ID } from './fixtureThreads';
+import { FIXTURE_CHAT_USER_ID, LONG_THREAD_ID } from './fixtureThreads';
 
 const NOW = () => new Date('2026-11-06T02:00:00.000Z');
 
@@ -62,5 +62,36 @@ describe('fixture chat service', () => {
   test('empty has no threads', async () => {
     const service = createFixtureChatService({ variant: 'empty', failFirst: [], now: NOW });
     expect((await service.listThreads(null)).items).toEqual([]);
+  });
+
+  test('the long thread holds back its two replies until their time, then shows them newest first', async () => {
+    let at = new Date('2026-11-06T02:00:00.000Z');
+    const service = createFixtureChatService({
+      variant: 'demo',
+      failFirst: [],
+      long: true,
+      now: () => at,
+    });
+    const before = await service.readThread(LONG_THREAD_ID, null);
+    expect(before.messages).toHaveLength(44);
+    const listed = (await service.listThreads(null)).items.find((row) => row.id === LONG_THREAD_ID);
+    expect(listed?.lastMessage?.body).toBe('看到你了');
+
+    const sent = await service.send(LONG_THREAD_ID, 'c-long', '好');
+    at = new Date(at.getTime() + 41_000);
+    const after = await service.readThread(LONG_THREAD_ID, null);
+    expect(after.messages.slice(0, 3).map((message) => message.body)).toEqual([
+      '记得确认一下哦',
+      '箱子放你门口了',
+      '好',
+    ]);
+    expect(sent.ok && sent.message.senderId).toBe(FIXTURE_CHAT_USER_ID);
+  });
+
+  test('the long thread is opt-in through its launch argument', () => {
+    expect(fixtureChatOptions(() => undefined, 'demo').long).toBe(false);
+    expect(
+      fixtureChatOptions((name) => (name === 'uiVerifyChatLong' ? '1' : undefined), 'demo').long,
+    ).toBe(true);
   });
 });

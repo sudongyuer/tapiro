@@ -1,5 +1,6 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { useAccountStage } from '@/features/account';
 import { applySheetGone } from '@/features/bounty';
@@ -11,9 +12,11 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <I18nProvider>
-        <RootStack />
-      </I18nProvider>
+      <KeyboardProvider>
+        <I18nProvider>
+          <RootStack />
+        </I18nProvider>
+      </KeyboardProvider>
     </ThemeProvider>
   );
 }

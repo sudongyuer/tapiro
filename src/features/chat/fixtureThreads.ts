@@ -118,7 +118,55 @@ function worstThreads(now: Date): FixtureThread[] {
   return [head, ...crowd];
 }
 
-export function fixtureThreads(variant: FixtureVariant, now: Date): FixtureThread[] {
+export const LONG_THREAD_ID = 'fixture-chat-long';
+
+const LONG_LINES = [
+  '你好，我是接你悬赏的阿杰',
+  '你好！谢谢你接单',
+  '快递是在 Sunway Pyramid 的驿站吗？',
+  '对，LG 层，靠近 Uniqlo 那边',
+  '好的，取件码发我一下',
+  '8-2-4417',
+  '收到 👍',
+  '大概几点能到？我五点有课',
+  '我现在在路上，Grab 说 15 分钟',
+  'OK 不急，路上小心',
+  '到驿站了，排队的人有点多',
+  '没事慢慢来',
+  '拿到了，是一个中等大小的箱子，有点重，你要我直接送到楼上还是放保安亭？',
+  '送上来吧，Block C 12 楼，我在家',
+  '电梯要刷卡吗？',
+  '要的，我下来接你',
+  '好，我到楼下给你发消息',
+  'Thanks ya',
+  '🙏',
+  '到了，在大堂',
+  '马上下来',
+  '看到你了',
+] as const;
+
+function longThread(now: Date): FixtureThread {
+  const lines: Line[] = Array.from({ length: 44 }, (_, index) => ({
+    from: index % 3 === 1 ? ME : JIE.id,
+    body: LONG_LINES[index % LONG_LINES.length],
+    minutesAgo: 240 - index * 5,
+  }));
+  const incoming: Line[] = [
+    { from: JIE.id, body: '箱子放你门口了', minutesAgo: -20 / 60 },
+    { from: JIE.id, body: '记得确认一下哦', minutesAgo: -40 / 60 },
+  ];
+  return thread(LONG_THREAD_ID, 'bounty', [JIE], [...lines, ...incoming], now, {
+    mine: 40,
+    peer: 30,
+  });
+}
+
+export function fixtureThreads(variant: FixtureVariant, now: Date, long = false): FixtureThread[] {
+  const threads = variantThreads(variant, now);
+  return long ? [longThread(now), ...threads] : threads;
+}
+
+function variantThreads(variant: FixtureVariant, now: Date): FixtureThread[] {
   if (variant === 'empty') return [];
   if (variant === 'one') return demoThreads(now).slice(0, 1);
   if (variant === 'worst') return worstThreads(now);

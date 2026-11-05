@@ -1,4 +1,5 @@
 import block from './block/zh-Hans';
+import chat from './chat/zh-Hans';
 import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import ride from './ride/zh-Hans';
@@ -131,6 +132,7 @@ export default {
   pay,
   stickers,
   block,
+  chat,
   bounty,
   ride,
   rideReminders,
@@ -305,6 +307,7 @@ export default {
     },
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
+    chat: { thread: '聊天线程（键盘）' },
     flight: {
       title: '贴纸飞向我的',
       fly: '飞到「我的」',
