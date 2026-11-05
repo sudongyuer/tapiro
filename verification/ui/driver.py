@@ -89,7 +89,9 @@ class UI:
         return found.group(1)
 
     def axe(self, *args, timeout=20):
-        proc = timed(f'axe {" ".join(args)}', ['axe', *args, '--udid', self.udid], timeout, text=True)
+        # With AXe 1.8.0 on iOS 27 a tap whose axe process exits at once never fires a Pressable's onPress (2026-11-03).
+        args = (*args, '--post-delay', '0.5') if args[:1] == ('tap',) and '--post-delay' not in args else args
+        proc =timed(f'axe {" ".join(args)}', ['axe', *args, '--udid', self.udid], timeout, text=True)
         error = proc.stderr.strip() or proc.stdout.strip()
         if proc.returncode != 0 or proc.stdout.startswith('Error:'):
             raise AxeError(f'axe {" ".join(args)} failed: {error}')

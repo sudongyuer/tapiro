@@ -23,6 +23,7 @@ function CostRow({ value, urgent = false }: { value: string; urgent?: boolean })
   const { color } = useTheme();
   return (
     <HStack
+      spacing={0}
       modifiers={[accessibilityElement('combine'), accessibilityIdentifier('bounty-post-cost')]}
     >
       <Text>{t('bounty.post.confirm.fee')}</Text>

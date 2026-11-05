@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import { type AccessibilityActionEvent, StyleSheet, View } from 'react-native';
+import { type AccessibilityActionEvent, StyleSheet, View, type ViewInstance } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -15,7 +15,7 @@ const STICKER = 44;
 type FaceProps = {
   row: BoardRow;
   copy: CardCopy;
-  summaryRef: Ref<View>;
+  summaryRef: Ref<ViewInstance>;
   onFlip: () => void;
   onApply: () => void;
   onOpen: () => void;

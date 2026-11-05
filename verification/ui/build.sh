@@ -8,10 +8,15 @@ cd "$ROOT"
 STARTED=$SECONDS
 STAMP=ios/.verify-prebuild-stamp
 NATIVE_INPUTS=(app.json package.json bun.lock plugins src/lib/i18n/native modules/tapiro-kit)
+EXPO_MAJOR="expo-$(node -p "require('expo/package.json').version.split('.')[0]")"
+# A plain prebuild keeps template files from an older SDK (AppDelegate, scene delegate), so an SDK change starts clean.
+if [ "$(cat "$STAMP" 2>/dev/null)" != "$EXPO_MAJOR" ]; then
+  CI=1 bunx expo prebuild --clean --platform ios
+  echo "$EXPO_MAJOR" > "$STAMP"
 # A workspace that exists can still predate config-plugin changes; prebuild whenever a native input is newer.
-if [ ! -d ios/Tapiro.xcworkspace ] || [ ! -f "$STAMP" ] || [ -n "$(find "${NATIVE_INPUTS[@]}" -newer "$STAMP" -not -name '*.ts' -not -name '*.tsx' -print -quit 2>/dev/null)" ]; then
+elif [ ! -d ios/Tapiro.xcworkspace ] || [ -n "$(find "${NATIVE_INPUTS[@]}" -newer "$STAMP" -not -name '*.ts' -not -name '*.tsx' -print -quit 2>/dev/null)" ]; then
   CI=1 bunx expo prebuild --platform ios
-  touch "$STAMP"
+  echo "$EXPO_MAJOR" > "$STAMP"
 fi
 # pod install writes the first node on PATH, which can be too old to bundle.
 printf 'export NODE_BINARY=%s\n' "$(PATH=/opt/homebrew/bin:$PATH command -v node)" > ios/.xcode.env.local

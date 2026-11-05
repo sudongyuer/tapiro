@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useRef, useState } from 'react';
-import { AccessibilityInfo, findNodeHandle, type View } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, type ViewInstance } from 'react-native';
 import {
   Easing,
   ReduceMotion,
@@ -35,8 +35,8 @@ export function useSettledCollect({
   const { t } = useI18n();
   const { color } = useTheme();
   const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
-  const sticker = useRef<View>(null);
-  const card = useRef<View>(null);
+  const sticker = useRef<ViewInstance>(null);
+  const card = useRef<ViewInstance>(null);
   const started = useRef(false);
   const [collecting, setCollecting] = useState(false);
   const opacity = useSharedValue(1);
@@ -56,7 +56,7 @@ export function useSettledCollect({
 
   const fly = () => {
     const viewTag = findNodeHandle(sticker.current);
-    if (viewTag === null) return Promise.resolve({ landed: false });
+    if (viewTag == null) return Promise.resolve({ landed: false });
     return StickerFlight.flyToTab({
       viewTag,
       anchorTag: findNodeHandle(card.current) ?? undefined,

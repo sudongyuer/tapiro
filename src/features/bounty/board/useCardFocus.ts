@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useReducer, useRef, type RefObject } from 'react';
 import {
   AccessibilityInfo,
-  useWindowDimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
-  type ScrollView,
-  type View,
+  type ScrollViewInstance,
+  useWindowDimensions,
+  type ViewInstance,
 } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -13,8 +13,8 @@ import { needsScroll, scrollTarget } from './axisFocus';
 import { cardFocusReducer, NO_FOCUS } from './cardFocusState';
 
 export type ScrollHost = {
-  scroll: RefObject<ScrollView | null>;
-  content: RefObject<View | null>;
+  scroll: RefObject<ScrollViewInstance | null>;
+  content: RefObject<ViewInstance | null>;
   topInset: number;
   bottomInset: number;
 };
@@ -26,8 +26,8 @@ type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 const STILL_MS = 200;
 
 export function useCardFocus({ scroll, content, topInset, bottomInset }: ScrollHost) {
-  const cards = useRef(new Map<string, View>());
-  const refs = useRef(new Map<string, (view: View | null) => void>());
+  const cards = useRef(new Map<string, ViewInstance>());
+  const refs = useRef(new Map<string, (view: ViewInstance | null) => void>());
   const offset = useRef<number | null>(null);
   const contentHeight = useRef(0);
   const still = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -51,7 +51,7 @@ export function useCardFocus({ scroll, content, topInset, bottomInset }: ScrollH
   const cardRef = useCallback((id: string) => {
     let ref = refs.current.get(id);
     if (!ref) {
-      ref = (view: View | null) => {
+      ref = (view: ViewInstance | null) => {
         if (view) {
           cards.current.set(id, view);
           return;

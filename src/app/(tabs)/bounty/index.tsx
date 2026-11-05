@@ -2,10 +2,10 @@ import { Stack, useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useRef, type RefObject } from 'react';
 import {
-  RefreshControl,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
-  type View,
+  RefreshControl,
+  type ViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TitleHalo } from 'tapiro-kit';
@@ -55,7 +55,7 @@ function BountyHome({ user }: { user: AccountUser }) {
   });
   const { scrollViewProps, onLiveCardsLayout } = useHomeScroll(() => stack.setOpen(true));
   const insets = useSafeAreaInsets();
-  const content = useRef<View>(null);
+  const content = useRef<ViewInstance>(null);
   const board = useBountyBoard(user.id, {
     scroll: scrollViewProps.ref,
     content,
@@ -65,7 +65,7 @@ function BountyHome({ user }: { user: AccountUser }) {
   usePublishBoard(board, startPost);
   const homeScroll = {
     ...scrollViewProps,
-    innerViewRef: content as RefObject<View>,
+    innerViewRef: content as RefObject<ViewInstance>,
     onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       scrollViewProps.onScroll(event);
       board.scrollHandlers.onScroll(event);

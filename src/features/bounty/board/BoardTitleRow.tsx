@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AccessibilityInfo, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, StyleSheet, View, type ViewInstance } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -19,7 +19,7 @@ export function BoardTitleRow({
   hint: boolean;
   reduceMotion: boolean;
   onChoose: (view: BoardView) => void;
-  onTitle: (node: View | null) => void;
+  onTitle: (node: ViewInstance | null) => void;
 }) {
   const { t } = useI18n();
   return (

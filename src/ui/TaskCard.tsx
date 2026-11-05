@@ -57,7 +57,7 @@ export function TaskCard({
     : [];
   return (
     <HStack spacing={vars['--space-3']}>
-      <HStack modifiers={artModifiers}>
+      <HStack spacing={0} modifiers={artModifiers}>
         <RNHostView matchContents>
           <HandArt id={art} size={TASK_CARD_ART} />
         </RNHostView>

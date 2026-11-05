@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-04.
+Updated: 2026-11-05.
 
 ## Built and merged
 
@@ -16,6 +16,7 @@ Updated: 2026-11-04.
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                                       |
 | Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | #48 schema, #49 appeal lapse, #50 list and create, #51 detail and 集合, #53 到了 and 结清, #54 reminders and the event outbox             |
 | Device time zone (234) | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times, and local reminders keep quiet hours, in the system time zone; server rules stay in Malaysia time |
+| Expo SDK 58            | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; open, not SDK 58: the 已结清 exit animation and `home_fan_out` on iOS 27.2 (retro)           |
 
 ## In progress
 
@@ -58,6 +59,8 @@ Updated: 2026-11-04.
 ## Resuming on another machine
 
 - Clone, `bun install`, then follow `AGENTS.md` (Homebrew Node, `pod install` after prebuild, `ios/.xcode.env.local`).
+- After pulling an SDK bump, run `bunx expo prebuild --clean --platform ios` once before `bun run ios`; a plain
+  prebuild keeps the old SDK's AppDelegate and scene delegate. `bun run verify:build` does this on its own.
 - Two phones against the local stack: `bun run db:start`, `bun run db:test-accounts`, then `bun run dev:two` (builds
   the Debug app once, boots two non-verify iPhone Simulators, starts Metro, launches both; `--skip-build` reuses the
   last build). Sign in with 「测试账号」: 小林 on one, 阿明 on the other. Details in `supabase/README.md`, "Test accounts".

@@ -7,13 +7,14 @@ import {
   type RefObject,
 } from 'react';
 import {
+  type LayoutChangeEvent,
   PlatformColor,
+  type RefreshControlProps,
   ScrollView,
+  type ScrollViewInstance,
+  type ScrollViewProps,
   StyleSheet,
   View,
-  type LayoutChangeEvent,
-  type RefreshControlProps,
-  type ScrollViewProps,
 } from 'react-native';
 import Animated, {
   Extrapolation,
@@ -55,7 +56,7 @@ export const HOME_BOTTOM_CHROME = 49;
 const markShownOneTime = createSeenMarks();
 
 export type HomeScreenProps = {
-  scrollViewProps: ScrollViewProps & { ref: RefObject<ScrollView | null> };
+  scrollViewProps: ScrollViewProps & { ref: RefObject<ScrollViewInstance | null> };
   onLiveCardsLayout: (event: LayoutChangeEvent) => void;
   open: boolean;
   onToggle: (open: boolean) => void;
@@ -93,7 +94,7 @@ export function HomeScreen({
   });
 
   const { ref, ...scrollProps } = scrollViewProps;
-  const animatedRef = useAnimatedRef<ScrollView>();
+  const animatedRef = useAnimatedRef<ScrollViewInstance>();
   const offset = useScrollOffset(animatedRef, useSharedValue(BEFORE_FIRST_SCROLL));
   const stripBottom = headerHeight + STRIP_ROW;
   const [stripShown, setStripShown] = useState(false);
@@ -134,7 +135,7 @@ export function HomeScreen({
   }));
 
   const attachScroll = useCallback(
-    (node: ScrollView | null) => {
+    (node: ScrollViewInstance | null) => {
       ref.current = node;
       animatedRef(node);
     },

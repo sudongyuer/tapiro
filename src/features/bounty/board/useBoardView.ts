@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { NativeScrollEvent, NativeSyntheticEvent, View } from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent, ViewInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { uiVerifyArgument, uiVerifyReduceMotion } from '@/lib/uiVerify';
@@ -20,7 +20,7 @@ export function useBoardView(userId: string, { scroll, content, topInset }: Scro
   const [view, setView] = useState<BoardView>(launch.view);
   const [hint, setHint] = useState(launch.hint);
   const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
-  const title = useRef<View>(null);
+  const title = useRef<ViewInstance>(null);
   const offset = useRef(0);
   const listOffset = useRef(0);
   const restore = useRef<number | null>(null);
@@ -72,7 +72,7 @@ export function useBoardView(userId: string, { scroll, content, topInset }: Scro
     offset.current = nativeEvent.contentOffset.y;
   }, []);
   const onScrollBeginDrag = useCallback(() => setHint(false), []);
-  const attachTitle = useCallback((node: View | null) => {
+  const attachTitle = useCallback((node: ViewInstance | null) => {
     title.current = node;
   }, []);
 

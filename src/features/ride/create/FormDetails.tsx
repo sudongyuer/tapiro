@@ -76,7 +76,7 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
   const { color } = useTheme();
   return (
     <>
-      <HStack modifiers={[fullRow]}>
+      <HStack spacing={vars['--space-3']} modifiers={[fullRow]}>
         <Image systemName="airplane" modifiers={[accessibilityHidden()]} />
         <Text>{t('ride.create.form.airport')}</Text>
         <Spacer />
@@ -91,7 +91,7 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
         </Button>
       </HStack>
       {draft.flightClock ? (
-        <HStack modifiers={[fullRow]}>
+        <HStack spacing={0} modifiers={[fullRow]}>
           <Text>{t('ride.create.form.flight')}</Text>
           <Spacer />
           <DatePicker
