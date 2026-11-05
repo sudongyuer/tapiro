@@ -49,11 +49,13 @@ assert not delivered(OTHER), 'the detail opened after the first signal, so the c
 ui.capture('01-applied')
 
 other_at = step_at(ui, RUN, OTHER, timeout=60)
+assert loads(until=other_at), 'the detail had not loaded before the first signal'
 mine_at = step_at(ui, RUN, MINE, timeout=30)
 assert loads(since=other_at, until=mine_at) == [], \
     f'the signal for another bounty started a detail load: {loads(since=other_at, until=mine_at)}'
 ui.wait_label('bounty-detail-reason', lambda text: text == ui.t('bounty.detail.closed'),
               'the bounty.expired signal did not turn the open detail into 这条悬赏已经关闭了', timeout=20)
+ui.wait(lambda items: loads(since=mine_at) or None, 'no detail load was recorded after the signal')
 assert len(loads(since=mine_at, until=mine_at + 5000)) == 1, \
     f'the signal should start exactly one detail load: {loads(since=mine_at)}'
 ui.gone('bounty-detail-applied')
