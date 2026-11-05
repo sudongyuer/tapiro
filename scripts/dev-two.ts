@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, openSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = join(import.meta.dir, '..');
@@ -106,9 +106,11 @@ function pickTwo(all: Device[]): Device[] {
 }
 
 function prebuildIfNeeded() {
+  const expoMajor = `expo-${JSON.parse(readFileSync(join(ROOT, 'node_modules/expo/package.json'), 'utf8')).version.split('.')[0]}`;
+  const sdkChanged = !existsSync(STAMP) || readFileSync(STAMP, 'utf8').trim() !== expoMajor;
   const stale =
+    sdkChanged ||
     !existsSync(join(ROOT, 'ios/Tapiro.xcworkspace')) ||
-    !existsSync(STAMP) ||
     capture([
       'find',
       ...NATIVE_INPUTS,
@@ -124,10 +126,17 @@ function prebuildIfNeeded() {
       '-quit',
     ]).text.trim() !== '';
   if (stale) {
-    console.log('dev:two: running expo prebuild');
-    if (!run(['bunx', 'expo', 'prebuild', '--platform', 'ios'], { env: { CI: '1' } }))
-      fail('expo prebuild failed');
-    writeFileSync(STAMP, '');
+    const args = [
+      'bunx',
+      'expo',
+      'prebuild',
+      ...(sdkChanged ? ['--clean'] : []),
+      '--platform',
+      'ios',
+    ];
+    console.log(`dev:two: running ${args.slice(1).join(' ')}`);
+    if (!run(args, { env: { CI: '1' } })) fail('expo prebuild failed');
+    writeFileSync(STAMP, `${expoMajor}\n`);
   }
   const node = capture(['sh', '-c', 'command -v node']).text.trim();
   writeFileSync(join(ROOT, 'ios/.xcode.env.local'), `export NODE_BINARY=${node}\n`);
