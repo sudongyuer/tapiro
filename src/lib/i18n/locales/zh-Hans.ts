@@ -152,10 +152,6 @@ export default {
     home: {
       title: '悬赏令',
     },
-    messages: {
-      emptyTitle: '还没有消息',
-      emptyBody: '接了悬赏或拼车以后，对话会出现在这里',
-    },
     accessory: {
       label: '{{title}}，{{sub}}',
       withMore: '{{sub}} · 还有 {{count}} 件',

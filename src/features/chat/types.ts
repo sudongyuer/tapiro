@@ -1,3 +1,5 @@
+import type { BountyCategory } from '@/lib/stickers/category';
+
 export const THREAD_KINDS = ['bounty', 'ride'] as const;
 export type ThreadKind = (typeof THREAD_KINDS)[number];
 
@@ -28,10 +30,21 @@ export type ChatMessage = {
   createdAt: string;
 };
 
+export type ChatSubject =
+  | {
+      kind: 'bounty';
+      title: string;
+      category: BountyCategory;
+      art: string | null;
+      status: string;
+    }
+  | { kind: 'ride'; from: string; to: string; departsAt: string; status: string };
+
 export type ThreadInfo = {
   id: string;
   kind: ThreadKind;
   itemId: string;
+  item: ChatSubject;
   createdAt: string;
   left: boolean;
   unread: boolean;

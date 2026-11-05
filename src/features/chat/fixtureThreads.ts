@@ -1,6 +1,12 @@
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 
-import { MESSAGE_MAX, type ChatMember, type ChatMessage, type ThreadInfo } from './types';
+import {
+  MESSAGE_MAX,
+  type ChatMember,
+  type ChatMessage,
+  type ChatSubject,
+  type ThreadInfo,
+} from './types';
 
 export const FIXTURE_CHAT_USER_ID = '00000000-0000-4000-8000-000000000001';
 
@@ -20,12 +26,38 @@ const MEI = member('fixture-chat-mei', '美玲');
 const ARIF = member('fixture-chat-arif', 'Arif');
 const WORST_NAME = 'Nurul Aisyah binti Mohd Rahman Abdullah Hj. Kamaruddin';
 const WORST = member('fixture-chat-worst', WORST_NAME);
+const WORST_TITLE =
+  '帮我去 Sunway Pyramid LG 层的驿站取一个很重的快递然后送到 Block C 十二楼门口谢谢你，很急！！';
+const WORST_FROM = '谷中城北庭正门口';
+const WORST_TO = '吉隆坡第二机场站';
+const WORST_CROWD = 119;
 
 type Line = { from: string; body: string; minutesAgo: number };
 
+type Item =
+  | Omit<Extract<ChatSubject, { kind: 'bounty' }>, 'kind' | 'status'>
+  | Omit<Extract<ChatSubject, { kind: 'ride' }>, 'kind' | 'status' | 'departsAt'>;
+
+const bounty = (
+  title: string,
+  category: Extract<ChatSubject, { kind: 'bounty' }>['category'],
+  art: string | null = null,
+): Item => ({ title, category, art });
+const route = (from: string, to: string): Item => ({ from, to });
+
+function subject(item: Item, now: Date): ChatSubject {
+  if ('title' in item) return { kind: 'bounty', ...item, status: 'assigned' };
+  return {
+    kind: 'ride',
+    ...item,
+    departsAt: new Date(now.getTime() + 180 * MINUTE_MS).toISOString(),
+    status: 'open',
+  };
+}
+
 function thread(
   id: string,
-  kind: ThreadInfo['kind'],
+  item: Item,
   members: ChatMember[],
   lines: readonly Line[],
   now: Date,
@@ -43,10 +75,13 @@ function thread(
     }))
     .reverse();
   const oldest = lines[0]?.minutesAgo ?? 30;
+  const about = subject(item, now);
+  const kind: ThreadInfo['kind'] = about.kind;
   return {
     id,
     kind,
     itemId: `${id}-item`,
+    item: about,
     createdAt: at(oldest + 5),
     left: false,
     unread: false,
@@ -63,7 +98,7 @@ function demoThreads(now: Date): FixtureThread[] {
   return [
     thread(
       'fixture-chat-bounty',
-      'bounty',
+      bounty('帮取快递', 'pickup'),
       [JIE],
       [
         { from: JIE.id, body: '我到楼下了，快递放哪里？', minutesAgo: 12 },
@@ -75,7 +110,7 @@ function demoThreads(now: Date): FixtureThread[] {
     ),
     thread(
       'fixture-chat-ride',
-      'ride',
+      route('双威', 'KLIA2'),
       [MEI, ARIF],
       [
         { from: MEI.id, body: '我们在 Sunway Geo 门口集合吧', minutesAgo: 90 },
@@ -85,10 +120,14 @@ function demoThreads(now: Date): FixtureThread[] {
       now,
       { mine: 75, peer: null },
     ),
-    thread('fixture-chat-new', 'bounty', [member('fixture-chat-lin', '小林')], [], now, {
-      mine: null,
-      peer: null,
-    }),
+    thread(
+      'fixture-chat-new',
+      bounty('帮我买杯奶茶', 'buy', 'tea'),
+      [member('fixture-chat-lin', '小林')],
+      [],
+      now,
+      { mine: null, peer: null },
+    ),
   ];
 }
 
@@ -96,7 +135,7 @@ function worstThreads(now: Date): FixtureThread[] {
   const long = '这条消息很长，'.repeat(400).slice(0, MESSAGE_MAX);
   const head = thread(
     'fixture-chat-worst',
-    'bounty',
+    bounty(WORST_TITLE, 'handle'),
     [WORST],
     [
       { from: WORST.id, body: long, minutesAgo: 3 },
@@ -105,14 +144,16 @@ function worstThreads(now: Date): FixtureThread[] {
     now,
     { mine: 3, peer: 1 },
   );
-  const crowd = Array.from({ length: 60 }, (_, index) =>
+  const crowd = Array.from({ length: WORST_CROWD }, (_, index) =>
     thread(
       `fixture-chat-worst-${index + 1}`,
-      index % 2 === 0 ? 'bounty' : 'ride',
+      index % 2 === 0
+        ? bounty(`${WORST_TITLE.slice(0, 40)} ${index + 1}`, 'other')
+        : route(WORST_FROM, WORST_TO),
       index % 2 === 0 ? [member(`fixture-chat-p${index}`, null)] : [WORST, JIE, MEI, ARIF],
       [{ from: WORST.id, body: `${WORST_NAME} 🚗📦 ${index + 1}`, minutesAgo: 10 + index * 7 }],
       now,
-      { mine: index % 3 === 0 ? null : 10 + index * 7, peer: null },
+      { mine: index % 10 === 9 ? 10 + index * 7 : null, peer: null },
     ),
   );
   return [head, ...crowd];
@@ -155,7 +196,7 @@ function longThread(now: Date): FixtureThread {
     { from: JIE.id, body: '箱子放你门口了', minutesAgo: -20 / 60 },
     { from: JIE.id, body: '记得确认一下哦', minutesAgo: -40 / 60 },
   ];
-  return thread(LONG_THREAD_ID, 'bounty', [JIE], [...lines, ...incoming], now, {
+  return thread(LONG_THREAD_ID, bounty('帮取快递', 'pickup'), [JIE], [...lines, ...incoming], now, {
     mine: 40,
     peer: 30,
   });

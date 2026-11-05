@@ -14,6 +14,7 @@ export {
   REPORT_REASONS,
   type ChatMember,
   type ChatMessage,
+  type ChatSubject,
   type PendingMessage,
   type ReportInput,
   type ReportReason,
@@ -24,4 +25,6 @@ export {
   type ThreadSummary,
 } from './types';
 export { ThreadScreen } from './thread/ThreadScreen';
+export { ChatListScreen } from './list/ChatListScreen';
+export { ThreadTitle } from './list/ThreadTitle';
 export { LONG_THREAD_ID as FIXTURE_LONG_THREAD_ID } from './fixtureThreads';

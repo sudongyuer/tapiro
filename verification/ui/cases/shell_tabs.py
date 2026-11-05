@@ -11,7 +11,7 @@ from driver import (UI, TABS, accessory, assert_appearance, assert_tapir_button,
 DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
 
 LOCALES = ['zh-Hans', 'ms']
-SCREENS = {'tab-ride': 'ride-screen', 'tab-messages': 'messages-empty', 'tab-me': 'me-screen'}
+SCREENS = {'tab-ride': 'ride-screen', 'tab-messages': 'chat-list', 'tab-me': 'me-screen'}
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 TAPIR_SIZE = {26: 62, 27: 62}

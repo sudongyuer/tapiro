@@ -1,14 +1,13 @@
-import { EmptyTab } from '@/features/shell';
-import { useI18n } from '@/lib/i18n';
+import { useRouter } from 'expo-router';
+
+import { ChatListScreen } from '@/features/chat';
 
 export default function Messages() {
-  const { t } = useI18n();
+  const router = useRouter();
   return (
-    <EmptyTab
-      symbol="bubble.left.and.bubble.right"
-      title={t('shell.messages.emptyTitle')}
-      description={t('shell.messages.emptyBody')}
-      testID="messages-empty"
+    <ChatListScreen
+      onOpen={(thread) => router.push({ pathname: '/messages/[thread]', params: { thread } })}
+      onBrowse={() => router.navigate('/bounty')}
     />
   );
 }

@@ -1,6 +1,9 @@
+import { bountyCategory } from '@/lib/stickers/category';
+
 import {
   THREAD_KINDS,
   type ChatMember,
+  type ChatSubject,
   type ChatMessage,
   type ThreadInfo,
   type ThreadPage,
@@ -49,6 +52,26 @@ function toMember(value: unknown): ChatMember {
   };
 }
 
+function toSubject(kind: ThreadInfo['kind'], value: unknown): ChatSubject {
+  const row = body(value, 'thread item');
+  if (kind === 'bounty') {
+    return {
+      kind,
+      title: text(row.title, 'bounty title'),
+      category: bountyCategory(row.category) ?? fail('bounty category'),
+      art: textOrNull(row.art, 'bounty art'),
+      status: text(row.status, 'bounty status'),
+    };
+  }
+  return {
+    kind,
+    from: text(row.from, 'ride from'),
+    to: text(row.to, 'ride to'),
+    departsAt: text(row.departsAt, 'ride departsAt'),
+    status: text(row.status, 'ride status'),
+  };
+}
+
 function toThreadInfo(value: unknown): ThreadInfo {
   const row = body(value, 'thread');
   const kind = THREAD_KINDS.find((candidate) => candidate === row.kind) ?? fail('thread kind');
@@ -56,6 +79,7 @@ function toThreadInfo(value: unknown): ThreadInfo {
     id: text(row.id, 'thread id'),
     kind,
     itemId: text(row.itemId, 'thread itemId'),
+    item: toSubject(kind, row.item),
     createdAt: text(row.createdAt, 'thread createdAt'),
     left: flag(row.left, 'thread left'),
     unread: flag(row.unread, 'thread unread'),

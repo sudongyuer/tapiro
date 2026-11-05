@@ -4,7 +4,7 @@ import { AppState } from 'react-native';
 import type { ChatState, ThreadState } from './chatStore';
 import { chatStore } from './services';
 import { seenMessageId, threadItems } from './threadModel';
-import type { PendingMessage } from './types';
+import type { PendingMessage, ThreadInfo } from './types';
 
 const NO_PENDING: readonly PendingMessage[] = [];
 
@@ -23,6 +23,21 @@ export function useChatList() {
     if (userId) void chatStore.loadList(userId);
   }, [userId]);
   return list;
+}
+
+export function useChatUserId() {
+  return useChatState((state) => state.userId);
+}
+
+export function useChatThreadInfo(threadId: string): ThreadInfo | null {
+  return useChatState(
+    (state) =>
+      state.threads[threadId]?.info ??
+      (state.list.status === 'idle'
+        ? undefined
+        : state.list.threads.find((row) => row.id === threadId)) ??
+      null,
+  );
 }
 
 export function useChatUnread() {

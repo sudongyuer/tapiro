@@ -3,6 +3,7 @@ import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import type { LiveSignal } from '@/lib/live';
 import { createStore } from '@/lib/store';
 
+import { mergeFirstPage } from './listModel';
 import type { Outbox } from './outbox';
 import {
   appendOlder,
@@ -32,6 +33,7 @@ export type ListState =
       hasMore: boolean;
       nextCursor: string | null;
       more: 'idle' | 'loading' | 'failed';
+      loadedAt: string | null;
     };
 
 export type UnreadState = { status: 'idle' } | { status: LoadStatus; count: number | null };
@@ -117,13 +119,16 @@ export function createChatStore({
       const status = listOrder.succeeded(request);
       if (!status || !current(userId, at)) return;
       listVersion += 1;
+      const previous = get().list;
+      const kept = previous.status === 'idle' ? null : previous;
       patch({
         list: {
           status,
-          threads: page.items,
-          hasMore: page.hasMore,
-          nextCursor: page.nextCursor,
+          ...(kept
+            ? mergeFirstPage(kept, page)
+            : { threads: page.items, hasMore: page.hasMore, nextCursor: page.nextCursor }),
           more: 'idle',
+          loadedAt: now().toISOString(),
         },
       });
     } catch {
@@ -141,7 +146,14 @@ export function createChatStore({
       return;
     }
     patch({
-      list: { status: 'loading', threads: [], hasMore: false, nextCursor: null, more: 'idle' },
+      list: {
+        status: 'loading',
+        threads: [],
+        hasMore: false,
+        nextCursor: null,
+        more: 'idle',
+        loadedAt: null,
+      },
     });
     await reloadList(userId);
   }
