@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-06 (live updates milestone run).
+Updated: 2026-11-06 (steps 5–6 questions 238–255 drawn).
 
 ## Built and merged
 
@@ -38,6 +38,10 @@ Updated: 2026-11-06 (live updates milestone run).
 
 ## Owner decisions pending
 
+- Foundation steps 5 (account-free part) and 6, questions 238–255 on the canvas page 「06+ 评价、主页与小貘等级」:
+  reviews (238–244), profile, tier drop and mascot level (245–250), coins in 我的, weekly feed and invite codes
+  (251–255). The ★ for each is listed in `docs/plans/2026-10-30-coins-reputation-remaining.md`, 「Open questions」;
+  step 6 starts once they are answered.
 - Live updates and push: the ★ defaults in the realtime spec's Decisions (bounty kinds, push path, push copy; and from
   step 2 the 「可能不是最新」 line, the new-applicant motion, tap routes, the permission moment, reconnect, handlers and
   the push token rules).
