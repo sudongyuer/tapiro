@@ -27,5 +27,6 @@ ui.at_rest()
 tap_mascot(ui, element)
 says(ui, line(ui, 'fed'))
 assert_thanks(ui.snap('02-fed'))
-assert len(feeds(ui, 1)) == 1, 'the second tap did not feed'
+sent = feeds(ui, 1, timeout=25)
+assert len(sent) == 1, f'expected one feed from the second tap: {sent}'
 print('PASS: the level-up went first and the next tap fed')
