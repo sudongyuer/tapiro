@@ -16,6 +16,7 @@ reach_home(ui)
 element = stage(ui)
 says(ui, ui.t('reputation.level.grewUp'))
 ui.at_rest()
+ui.capture('01-level-first')
 tap_mascot(ui, element)
 ui.element(GROWN, timeout=20)
 assert not feeds(ui, 1, timeout=2), 'the level-up tap fed 小貘'
@@ -26,4 +27,5 @@ ui.at_rest()
 tap_mascot(ui, element)
 says(ui, line(ui, 'fed'))
 assert len(feeds(ui, 1)) == 1, 'the second tap did not feed'
+ui.capture('02-fed')
 print('PASS: the level-up went first and the next tap fed')
