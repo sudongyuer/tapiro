@@ -16,6 +16,7 @@ const BOUNTY_ROUTES: Record<string, ItemPath> = {
   'bounty.completed': '/bounty/status/[id]',
   'bounty.issue': '/bounty/status/[id]',
   'bounty.confirmed': '/bounty/status/[id]',
+  'bounty.reviewed': '/bounty/status/[id]',
   'bounty.not_selected': '/bounty/[id]',
   'bounty.cancelled': '/bounty/[id]',
   'bounty.expired': '/bounty/[id]',

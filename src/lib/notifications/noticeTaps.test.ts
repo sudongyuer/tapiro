@@ -56,6 +56,7 @@ const EXPECTED: Record<string, string> = {
   'bounty.cancelled': '/bounty/[id]',
   'bounty.expired': '/bounty/[id]',
   'bounty.confirmed': '/bounty/status/[id]',
+  'bounty.reviewed': '/bounty/status/[id]',
 };
 
 function expected(kind: string, id: string): NoticeRoute {
@@ -69,6 +70,7 @@ describe('tap routing', () => {
 
   test('the migrations declare the bounty, payment, ride and chat kinds', () => {
     expect(kinds).toContain('chat.message');
+    expect(kinds).toContain('ride.reviewed');
     expect(kinds.length).toBeGreaterThan(35);
     expect(kinds.filter((kind) => kind.startsWith('bounty.')).sort()).toEqual(
       Object.keys(EXPECTED).sort(),

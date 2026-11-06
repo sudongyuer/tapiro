@@ -2,11 +2,13 @@ import type { Translation } from '../resources';
 
 import block from './block/en';
 import chat from './chat/en';
+import coins from './coins/en';
 import bounty from './bounty/en';
 import pay from './pay/en';
 import ride from './ride/en';
 import rideReminders from './rideReminders/en';
 import rideSettle from './rideSettle/en';
+import reputation from './reputation/en';
 import payee from './payee/en';
 import stickers from './stickers/en';
 
@@ -138,6 +140,8 @@ const en: Translation = {
   stickers,
   block,
   chat,
+  coins,
+  reputation,
   bounty,
   ride,
   rideReminders,

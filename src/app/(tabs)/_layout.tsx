@@ -4,7 +4,9 @@ import { NativeTabs } from 'expo-router/native-tabs';
 import { useSignedInUser } from '@/features/account';
 import { useLiveBounties } from '@/features/bounty';
 import { useLiveChat } from '@/features/chat';
+import { useLiveCoins } from '@/features/coins';
 import { useLivePayments } from '@/features/payment';
+import { useLiveReputation } from '@/features/reputation';
 import {
   UrgentAccessory,
   accessoryVisible,
@@ -33,6 +35,8 @@ export default function TabsLayout() {
   useLiveBounties(userId);
   useLiveStickers(userId);
   useLiveChat(userId);
+  useLiveReputation(userId);
+  useLiveCoins(userId);
   useLive(userId);
   usePushRegistration(userId);
   useNoticeRouting(
