@@ -248,9 +248,6 @@ declare
   inv public.invites;
   others uuid[];
 begin
-  if not exists (select 1 from public.invites i where i.invitee_id = new.owner_id and i.rewarded_at is null) then
-    return null;
-  end if;
   -- Shared, so settles inserting stickers for the same people in different orders never wait on each other; a code
   -- being entered (exclusive in redeem_invite) still waits for the settle, and the reverse.
   perform pg_advisory_xact_lock_shared(hashtextextended('invite:' || new.owner_id::text, 0));
