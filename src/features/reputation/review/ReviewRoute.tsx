@@ -5,7 +5,7 @@ import {
   type NativeStackNavigationOptions,
 } from 'expo-router';
 import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { InlineState } from '@/ui/InlineState';
@@ -15,7 +15,7 @@ import { useReviewState } from '../hooks';
 import { reviewStore } from '../services';
 import { ITEM_KINDS, targetKey, type ItemKind, type ReviewTarget } from '../types';
 import { findPair } from './reviewView';
-import { ReviewSheet, ReviewSheetLoading } from './ReviewSheet';
+import { ReviewSheet } from './ReviewSheet';
 
 export const reviewHref = (target: ReviewTarget, title: string | null) => ({
   pathname: '/review' as const,
@@ -87,7 +87,17 @@ function ReviewLoader({
       />
     );
   }
-  if (item.status === 'idle' || !item.data) return <ReviewSheetLoading />;
+  if (item.status === 'idle' || !item.data) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator
+          accessible
+          accessibilityLabel={t('reputation.sheet.loading')}
+          testID="review-loading"
+        />
+      </View>
+    );
+  }
   const pair = findPair(item.data, target);
   if (!pair) {
     return <Unavailable text={t('reputation.sheet.notFound')} onRetry={null} onClose={onClose} />;
@@ -121,5 +131,6 @@ export function ReviewRoute() {
 }
 
 const styles = StyleSheet.create({
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   message: { flex: 1, padding: vars['--space-5'], justifyContent: 'center' },
 });
