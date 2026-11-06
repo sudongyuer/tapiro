@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
+import { PlatformColor, Pressable, StyleSheet, View, type ViewInstance } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -9,6 +9,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { chipsFor } from '../model';
+import { chipLabel } from '../profile/profileView';
 import { FACES, type Face, type ReviewDraft, type Role } from '../types';
 import { ReviewFace } from './ReviewFace';
 
@@ -28,7 +29,7 @@ export function FacePicker({
   picked: Face | null;
   disabled: boolean;
   onPick: (face: Face) => void;
-  pickedRef: Ref<View>;
+  pickedRef: Ref<ViewInstance>;
 }) {
   const { t } = useI18n();
   const reduced = useReducedMotion() || uiVerifyReduceMotion;
@@ -48,18 +49,19 @@ export function FacePicker({
             testID={`review-face-${face}`}
             style={styles.face}
           >
-            <Animated.View
-              ref={selected ? pickedRef : undefined}
-              style={[
-                styles.faceArt,
-                {
-                  opacity: dimmed ? DIM_OPACITY : 1,
-                  transform: [{ scale: dimmed && !reduced ? DIM_SCALE : 1 }],
-                },
-              ]}
-            >
-              <ReviewFace face={face} size={FACE_SIZE} />
-            </Animated.View>
+            <View ref={selected ? pickedRef : undefined}>
+              <Animated.View
+                style={[
+                  FACE_TRANSITION,
+                  {
+                    opacity: dimmed ? DIM_OPACITY : 1,
+                    transform: [{ scale: dimmed && !reduced ? DIM_SCALE : 1 }],
+                  },
+                ]}
+              >
+                <ReviewFace face={face} size={FACE_SIZE} />
+              </Animated.View>
+            </View>
             <AppText
               variant="body"
               tone={dimmed ? 'secondaryLabel' : 'label'}
@@ -92,7 +94,7 @@ export function ChipPicker({
     <View style={styles.chips}>
       {chipsFor(role, draft.face).map((chip) => {
         const on = draft.chips.includes(chip);
-        const label = t(`reputation.chip.${role}.${chip}`);
+        const label = chipLabel(role, chip, t);
         return (
           <Pressable
             key={chip}
@@ -120,6 +122,11 @@ export function ChipPicker({
   );
 }
 
+const FACE_TRANSITION = {
+  transitionProperty: ['opacity', 'transform'],
+  transitionDuration: vars['--duration-settle'],
+} as const;
+
 const styles = StyleSheet.create({
   faces: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' },
   face: {
@@ -127,10 +134,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: vars['--space-2'],
     minHeight: vars['--touch-min'],
-  },
-  faceArt: {
-    transitionProperty: ['opacity', 'transform'],
-    transitionDuration: vars['--duration-settle'],
   },
   pickedLabel: { fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },

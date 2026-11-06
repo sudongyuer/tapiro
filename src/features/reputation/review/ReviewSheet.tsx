@@ -10,6 +10,7 @@ import {
   StyleSheet,
   TextInput,
   View,
+  type ViewInstance,
 } from 'react-native';
 import Animated, { FadeIn, ReduceMotion, useAnimatedStyle } from 'react-native-reanimated';
 
@@ -41,7 +42,7 @@ type Outcome = { revealed: boolean; from: ScreenRect | null };
 
 const REVEAL_IN = FadeIn.duration(vars['--duration-settle']).reduceMotion(ReduceMotion.Never);
 
-function measured(view: View | null) {
+function measured(view: ViewInstance | null) {
   return new Promise<ScreenRect | null>((resolve) => {
     if (!view) return resolve(null);
     view.measureInWindow((x, y, width, height) => resolve({ x, y, width, height }));
@@ -90,7 +91,7 @@ export function ReviewSheet({
   const [submitting, setSubmitting] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [placed, setPlaced] = useState(false);
-  const face = useRef<View>(null);
+  const face = useRef<ViewInstance>(null);
   const seal = useSealClock(outcome !== null && (placed || outcome.revealed), !outcome?.revealed);
   const name = pairName(pair, t);
   const sending = submitState?.phase === 'sending';

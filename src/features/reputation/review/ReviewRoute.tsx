@@ -1,4 +1,9 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  Stack,
+  useLocalSearchParams,
+  useRouter,
+  type NativeStackNavigationOptions,
+} from 'expo-router';
 import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -22,14 +27,14 @@ export const reviewHref = (target: ReviewTarget, title: string | null) => ({
   },
 });
 
-export const REVIEW_SHEET_OPTIONS = {
+export const REVIEW_SHEET_OPTIONS: NativeStackNavigationOptions = {
   presentation: 'formSheet',
   sheetAllowedDetents: [1],
   sheetGrabberVisible: true,
   headerShown: true,
   headerLargeTitleEnabled: false,
   scrollEdgeEffects: { top: 'automatic' },
-} as const;
+};
 
 function Unavailable({
   text,

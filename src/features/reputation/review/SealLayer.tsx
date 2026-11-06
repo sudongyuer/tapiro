@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewInstance } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
@@ -49,7 +49,7 @@ function Envelope({
   const rim = theme === 'dark' ? { stroke: paint.rim, strokeWidth: 1 } : null;
   const { clock, press, reduced } = seal;
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
-  const slot = useRef<View>(null);
+  const slot = useRef<ViewInstance>(null);
 
   const measure = () =>
     slot.current?.measureInWindow((x, y, width, height) => {
