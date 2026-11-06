@@ -3,6 +3,7 @@ import tempfile
 from coins import coin_calls
 from driver import Shot, token
 from mascot import colour_count, ink_top, mascot_box, says
+from ocr import lines
 from recording import frames
 
 KEY = 'coins.feed'
@@ -41,6 +42,11 @@ def leaf_above(ui, video, element, width):
     leaf = token('--color-leaf', ui.appearance)
     with tempfile.TemporaryDirectory() as tmp:
         return max(colour_count(Shot(path, width), band, leaf, tolerance=20) for path, _ in frames(video, tmp, 0.03))
+
+
+def assert_thanks(shot):
+    read = lines(shot)
+    assert [item for item in read if '+1' in item['text']], f'the thanks is not on screen: {[i["text"] for i in read]}'
 
 
 def feeds(ui, count, timeout=10):

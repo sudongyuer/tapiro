@@ -11,7 +11,7 @@ from recording import clip  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/features/home/', 'src/ui/MascotStage.tsx', 'src/ui/MascotStageParts.tsx', 'src/lib/i18n/locales/coins/', 'src/app/(tabs)/bounty/', 'verification/ui/feed.py', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyCoins', 'one', '-uiVerifyCoinsDelayMs', '1500']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyCoins', 'one', '-uiVerifyCoinsDelayMs', '5000']
 LOCALES = ['zh-Hans', 'ms']
 
 ui = UI(*sys.argv[1:])

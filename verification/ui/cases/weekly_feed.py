@@ -6,7 +6,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, reach_home  # noqa: E402
-from feed import assert_one_feed, back_to, body_tops, bubble_pixels, leaf_pixels, line  # noqa: E402
+from feed import assert_one_feed, assert_thanks, back_to, body_tops, bubble_pixels, leaf_pixels, line  # noqa: E402
 from mascot import mascot_box, says, stage, tap_mascot  # noqa: E402
 from recording import clip  # noqa: E402
 
@@ -34,7 +34,7 @@ leaf = leaf_pixels(ui, waiting, element, width)
 assert leaf > 40, f'no leaf at the mouth while waiting: {leaf} px'
 dots = bubble_pixels(ui, waiting, element)
 assert dots > 200, f'the waiting bubble is not visible: {dots} px'
-assert line(ui, 'fed') in (ui.output / '03-fed.json').read_text(), 'the shot missed the thanks'
+assert_thanks(fed)
 tops = body_tops(ui, video, mascot_box(element, width), width)
 assert max(tops) - min(tops) >= CHEW_DIP, f'小貘 never chewed: tops {min(tops)}..{max(tops)}'
 assert_one_feed(ui, 'the tap did not send one feed')

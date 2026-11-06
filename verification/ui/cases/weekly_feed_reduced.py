@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, reach_home  # noqa: E402
-from feed import body_tops, feeds, leaf_above, leaf_pixels, line  # noqa: E402
+from feed import assert_thanks, body_tops, feeds, leaf_above, leaf_pixels, line  # noqa: E402
 from mascot import mascot_box, says, stage, tap_mascot  # noqa: E402
 from recording import clip  # noqa: E402
 
@@ -30,6 +30,6 @@ assert high < 12, f'the leaf dropped under Reduce Motion: {high} px above the mo
 tops = body_tops(ui, video, mascot_box(element, width), width)
 assert max(tops) - min(tops) <= 2, f'小貘 moved under Reduce Motion: {min(tops)}..{max(tops)}'
 assert leaf_pixels(ui, fed, element, width) < 12, 'the leaf stayed on fed'
-assert line(ui, 'fed') in (ui.output / '02-fed.json').read_text(), 'the shot missed the thanks'
+assert_thanks(fed)
 assert len(feeds(ui, 1)) == 1
 print('PASS: the leaf faded in and out with no drop and no chew')

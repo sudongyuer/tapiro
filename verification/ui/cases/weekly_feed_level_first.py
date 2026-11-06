@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, reach_home  # noqa: E402
-from feed import feeds, line  # noqa: E402
+from feed import assert_thanks, feeds, line  # noqa: E402
 from mascot import GROWN, says, stage, tap_mascot  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/features/home/', 'src/ui/MascotStage.tsx', 'src/ui/MascotStageParts.tsx', 'src/lib/i18n/locales/coins/', 'src/app/(tabs)/bounty/', 'verification/ui/feed.py', 'verification/ui/mascot.py', 'verification/ui/recording.py']
@@ -26,7 +26,6 @@ says(ui, line(ui, 'idle'))
 ui.at_rest()
 tap_mascot(ui, element)
 says(ui, line(ui, 'fed'))
-ui.capture('02-fed')
-assert line(ui, 'fed') in (ui.output / '02-fed.json').read_text(), 'the shot missed the thanks'
+assert_thanks(ui.snap('02-fed'))
 assert len(feeds(ui, 1)) == 1, 'the second tap did not feed'
 print('PASS: the level-up went first and the next tap fed')
