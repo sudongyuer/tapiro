@@ -21,7 +21,9 @@ import {
   useStartPost,
 } from '@/features/bounty';
 import { useItemChat } from '@/features/chat';
+import { coinsStore, useStageFeed } from '@/features/coins';
 import {
+  composeStageActor,
   HOME_BOTTOM_CHROME,
   HOME_TOP_CLEAR,
   HomeScreen,
@@ -47,11 +49,14 @@ function BountyHome({ user }: { user: AccountUser }) {
   const stack = useLiveStackState();
   const [mascotShown, setMascotShown] = useState(true);
   const openGrown = useCallback(() => router.push('/bounty/mascot-grown'), [router]);
+  const [bubbleShown, setBubbleShown] = useState(true);
+  const feedActor = useStageFeed({ visible: focused && bubbleShown });
   const growthActor = useStageGrowth({
     userId: user.id,
-    visible: focused && mascotShown,
+    visible: focused && mascotShown && !feedActor.overlay,
     open: openGrown,
   });
+  const actor = composeStageActor(growthActor, feedActor);
   const chat = useItemChat(
     useCallback(
       (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
@@ -111,8 +116,9 @@ function BountyHome({ user }: { user: AccountUser }) {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
-        actor={growthActor}
+        actor={actor}
         onMascotShown={setMascotShown}
+        onBubbleShown={setBubbleShown}
         reviews={<PendingReviewCards />}
         board={
           <BountyBoard
@@ -134,6 +140,7 @@ function BountyHome({ user }: { user: AccountUser }) {
             refreshing={board.pulling}
             onRefresh={() => {
               void reviewStore.reloadPending();
+              void coinsStore.reloadFeedStatus();
               board.pull();
             }}
           />

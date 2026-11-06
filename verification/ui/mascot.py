@@ -82,7 +82,7 @@ def ink_top(shot, box, ui):
     ink = token('--color-mascot-ink', ui.appearance)
     rows = {}
     for x, y, p in ((box['x'] + i, box['y'] + j, shot.rgb(box['x'] + i, box['y'] + j))
-                    for i in range(0, int(box['width']), 3) for j in range(0, int(box['height']), 2)):
+                    for i in range(0, int(box['width']), 3) for j in range(0, int(box['height']))):
         if max(abs(a - b) for a, b in zip(p, ink)) < 24:
             rows[y] = rows.get(y, 0) + 1
     return min((y for y, n in rows.items() if n >= 3), default=None)

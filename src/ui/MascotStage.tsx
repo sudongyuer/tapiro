@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import {
   type AccessibilityActionEvent,
   PlatformColor,
@@ -15,7 +15,7 @@ import Animated, {
 import Svg, { Line, Path } from 'react-native-svg';
 
 import type { MascotWear } from './MascotWear';
-import { Snore, SpeechBubble, StageBody, Star } from './MascotStageParts';
+import { Snore, SpeechBubble, StageBody, StageLeaf, Star } from './MascotStageParts';
 import { CarArt, ParcelArt, StickerShadow } from './StickerArt';
 import { vars, type TokenName } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
@@ -26,6 +26,7 @@ export const STAGE_HEIGHT = 200;
 export const STAGE_HILL_HEIGHT = 110;
 const BLEED = 1000;
 const SUN_SIZE = 70;
+const LEAF_HINT = 20;
 
 const POSE: Record<StageState, { size: number; right: number; top: number; sunTop: number }> = {
   urgent: { size: 96, right: 58, top: -8, sunTop: -60 },
@@ -42,17 +43,20 @@ type AnimatedStyle = ComponentProps<typeof Animated.View>['style'];
 export type StageActor = {
   wear: MascotWear | null;
   say: string | null;
-  hint: 'star' | null;
+  sayOverLive?: boolean;
+  hint: 'star' | 'leaf' | null;
   onPress: (() => void) | null;
   action: string | null;
   bodyStyle?: AnimatedStyle;
   wearStyle?: AnimatedStyle;
+  chewStyle?: AnimatedStyle;
+  overlay?: ReactNode;
   reveal?: SharedValue<number>;
   revealRise?: number;
 };
 
 export const stageSay = (actor: StageActor | undefined, state: StageState) =>
-  state === 'calm' ? (actor?.say ?? null) : null;
+  state === 'calm' || actor?.sayOverLive ? (actor?.say ?? null) : null;
 
 export type MascotStageProps = ViewProps & {
   state: StageState;
@@ -73,10 +77,6 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
   const reveal = actor?.reveal ?? shown;
   const rise = actor?.revealRise ?? 0;
   const speaking = say !== null;
-  const slotStyle = useAnimatedStyle(() => {
-    const value = speaking ? reveal.value : 1;
-    return { opacity: value, transform: [{ translateY: rise * (1 - value) }] };
-  });
   const starStyle = useAnimatedStyle(() => ({ opacity: reveal.value }));
   const onAction = (event: AccessibilityActionEvent) => {
     if (event.nativeEvent.actionName === MASCOT_ACTION) actor?.onPress?.();
@@ -86,7 +86,7 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
       {...rest}
       style={[styles.stage, { backgroundColor: color(stageColor(state)) }, style]}
       accessible
-      accessibilityLabel={say ?? line}
+      accessibilityLabel={say || line}
       accessibilityRole={actor?.action ? 'button' : undefined}
       accessibilityHint={actor?.action ?? undefined}
       accessibilityActions={
@@ -162,13 +162,24 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
             <Star fill={color('--color-stage-hint')} rim={color('--color-sticker-border')} />
           </Animated.View>
         ) : null}
+        {actor?.hint === 'leaf' && say === null ? (
+          <View style={styles.leafHint} pointerEvents="none">
+            <StageLeaf size={LEAF_HINT} />
+          </View>
+        ) : null}
+        {actor?.overlay}
       </View>
-      <SpeechBubble
-        line={say ?? line}
-        style={bubbleStyle}
-        slotStyle={slotStyle}
-        onPress={say === null ? undefined : (actor?.onPress ?? undefined)}
-      />
+      {say === '' ? null : (
+        <SpeechBubble
+          key={speaking ? 'say' : 'line'}
+          line={say ?? line}
+          style={bubbleStyle}
+          reveal={reveal}
+          rise={rise}
+          speaking={speaking}
+          onPress={speaking ? (actor?.onPress ?? undefined) : undefined}
+        />
+      )}
     </View>
   );
 }
@@ -188,6 +199,7 @@ const styles = StyleSheet.create({
   road: { position: 'absolute', left: 0, right: 0, top: 72 },
   actor: { position: 'absolute' },
   star: { position: 'absolute', left: 20, top: -14 },
+  leafHint: { position: 'absolute', right: -14, top: '38%' },
   car: { position: 'absolute', left: -30, bottom: -6 },
   parcel: { position: 'absolute', right: -38, bottom: 0, transform: [{ rotate: '8deg' }] },
 });

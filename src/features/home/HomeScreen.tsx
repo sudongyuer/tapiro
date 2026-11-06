@@ -70,6 +70,7 @@ export type HomeScreenProps = {
   chat?: HomeChat;
   actor?: StageActor;
   onMascotShown?: (shown: boolean) => void;
+  onBubbleShown?: (shown: boolean) => void;
 };
 
 export function HomeScreen({
@@ -85,6 +86,7 @@ export function HomeScreen({
   chat,
   actor,
   onMascotShown,
+  onBubbleShown,
 }: HomeScreenProps) {
   const { t } = useI18n();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
@@ -111,6 +113,15 @@ export function HomeScreen({
 
   const [mascotShown, setMascotShown] = useState(true);
   useEffect(() => onMascotShown?.(mascotShown), [onMascotShown, mascotShown]);
+  const [bubbleShown, setBubbleShown] = useState(true);
+  useEffect(() => onBubbleShown?.(bubbleShown), [onBubbleShown, bubbleShown]);
+
+  useAnimatedReaction(
+    () => BUBBLE_TOP - offset.value >= headerHeight + BUBBLE_FADE / 4,
+    (shown, previous) => {
+      if (shown !== previous) scheduleOnRN(setBubbleShown, shown);
+    },
+  );
 
   useAnimatedReaction(
     () => -offset.value + BAR_TOLERANCE >= headerHeight,

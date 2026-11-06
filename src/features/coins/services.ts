@@ -26,6 +26,7 @@ function verifyService() {
   Settings.set({ [CALLS_KEY]: '[]' });
   return createFixtureCoinsService({
     variant: coinsVariant(uiVerifyArgument('uiVerifyCoins')),
+    fedAtStart: uiVerifyArgument('uiVerifyCoins') === undefined ? true : undefined,
     failFirst: coinsFailPoints(uiVerifyArgument('uiVerifyCoinsFail')),
     delayMs: Number(uiVerifyArgument('uiVerifyCoinsDelayMs') ?? 0) || 0,
     onCall: recordCall,

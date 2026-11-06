@@ -6,7 +6,7 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06); Task 7 (mascot level) is built (2026-11-07). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
+(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06); Tasks 7 (mascot level) and 9 (weekly feed) are built (2026-11-07). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
 profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
@@ -287,6 +287,22 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 | M16 | 「看得见舞台」 means 小貘's top is clear of the navigation bar: only then the growth plays, and scrolling it under the bar goes to the end. A level with no new accessory (Lv.6+, or a chosen older one) does not fade what is already worn. While a growth waits with the stage collapsed, the strip's small 小貘 already wears the new accessory | The strip threshold still left 小貘 hidden; the once-per-level motion must be seen |
 | M14 | New en / ms wording: 「Your tapir is now a {name}!」 / 「Tapir anda kini {name}!」; 「See My Tapir」 / 「Lihat Tapir Saya」; the body, note and failure lines. Malay needs the native review | Boards had zh-Hans only |
 
+## ★ Weekly feed defaults (Task 9, 2026-11-07, for veto)
+
+| #   | Decision ★ | Why |
+| --- | ---------- | --- |
+| W1  | 257 c1 is built as drawn, over the literal 253 A: the leaf drops on the tap and waits at the mouth, 小貘 chews only after `fed`, and the haptic is `impactAsync(Light)` on the first bite, not 253's 「成功触感」 | Owner chose c1 knowingly; the canvas drawing wins |
+| W2  | An answer bubble (谢谢 / 吃饱啦 / 没喂上) stays 4 s, then the stage returns to its own line or the invitation; a tap during those 4 s starts again | Boards give no duration; long enough to read Malay |
+| W3  | The thanks bubble is text only: no coin icon | C2: the app has no coin art |
+| W4  | A tap in a week already fed still asks the server, so the leaf falls and 「这周吃饱啦」 comes from the answer, not the device. The story's 「什么都不发」 means no coin | 253 A; the server is the source, and the device's read can be old |
+| W5  | On a busy stage the item's line stays while the leaf drops; 「…」 and the answer show over it, then it comes back | 254 A keeps the bubble for the item; an answer to your tap still has to be seen |
+| W6  | The invitation and the small leaf show only on a fresh read of 「not fed」: during loading, after a failed read or on a stale one the stage says its usual line. A tap still works | A nudge must not be guessed; the server answers the tap anyway |
+| W7  | The small leaf sits to the right of 小貘 at mid height, above the parcel of the urgent stage, 20 pt | The 254 drawing has no car or parcel |
+| W8  | In the calm state 小貘 wakes for the invitation and through the feed (M9); the bubble is a tap target too (M15); VoiceOver's double-tap and the action 「喂小貘」 take the same path and the answer is announced | 253 A; 257 board |
+| W9  | The leaf is the canvas drawing (`--color-leaf`, `--color-leaf-vein`), 26 pt, at the trunk; it is stand-in art until the drawing task | Art gap |
+| W11 | A tap counts only when nothing runs or while an answer shows; the drop, the wait and the chew ignore taps even after the server has answered. A feed already running finishes before a level-up takes the stage, and the 4 s runs only while the bubble can be seen and the app is active | A double tap must not swap the thanks for 「吃饱啦」; an answer must be seen |
+| W10 | Pull to refresh on home re-reads the week as well | The week can turn while home is open |
+
 ## File structure
 
 | Action | Path                                                                             | Responsibility                                            |
@@ -348,11 +364,11 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 8. **Coins in 我的** — **done 2026-11-06** (251 A, 252 A; ★ details in 「★ Coins defaults」): a 「貘币 n」 row beside 一起办成的事 pushing the 貘币 page: the balance, free posts
    left this month and the monthly history; a failed load reads 「没加载出来 · 重试」, never 0. UI cases `coins_page`,
    `coins_page_empty`, `coins_page_failed`, `coins_page_worst`.
-9. **Weekly feed** (253 A, 254 A, after 257): tapping 小貘 on the stage drops a leaf and chews once; 「谢谢！+1 貘币」
+9. **Weekly feed** — **done 2026-11-07** (253 A, 254 A, 257 c1; ★ details in 「★ Weekly feed defaults」): tapping 小貘 on the stage drops a leaf and chews once; 「谢谢！+1 貘币」
    after the server answers `fed`, 「这周吃饱啦，周一再来」 for `already_fed`, 「没喂上，再点一下试试」 on failure (no
    automatic retry); the idle bubble 「新的一周，点我喂片叶子」 or a small leaf beside 小貘 when a live item owns the
    bubble; the level-up bubble goes first; a VoiceOver action 「喂小貘」. UI cases `weekly_feed`,
-   `weekly_feed_already`, `weekly_feed_failed`, `weekly_feed_busy_stage`; motion: one appearance with video.
+   `weekly_feed_already`, `weekly_feed_failed`, `weekly_feed_busy_stage`, also `weekly_feed_level_first`, `weekly_feed_reduced`, `weekly_feed_hold`; motion: one appearance with video.
 10. **Invite page** — **done 2026-11-06** (255 A; ★ details in 「★ Invite defaults」): 我的 → 邀请朋友 with my code, 复制 and 分享 (system share sheet with the copy in the
     canvas), the code field only while `canRedeem`, 「没有这个邀请码」 and the other errors without clearing the field,
     and the progress rows. UI cases `invite_page`, `invite_redeem`, `invite_redeem_error`, `invite_worst` (ms).

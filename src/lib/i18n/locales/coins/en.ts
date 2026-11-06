@@ -46,6 +46,7 @@ const en: typeof zhHans = {
     other: 'Other',
   },
   feed: {
+    waiting: '…',
     idle: 'New week. Tap me for a leaf',
     fed: 'Thanks! +1 coin',
     alreadyFed: 'I’m full this week. Come back Monday',

@@ -58,6 +58,8 @@ export const vars = {
   '--color-wear-canopy': '#4F86C6',
   '--color-wear-handle': '#6B4F3A',
   '--color-stage-hint': '#E9A23B',
+  '--color-leaf': '#7BB661',
+  '--color-leaf-vein': '#4E8A3A',
 
   '--color-paper': '#FFFDF8',
   '--color-paper-line': '#EDE7DA',
