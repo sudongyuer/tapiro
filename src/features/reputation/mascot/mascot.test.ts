@@ -5,17 +5,18 @@ import { createGrowMarks } from './growMarks';
 import { GROW_CROUCH, growScale, growStep } from './growTimeline';
 import { grownMoment, newAccessories } from './grownView';
 
-function memorySettings() {
-  const values: Record<string, unknown> = {};
+function memoryStore(values: Record<string, unknown> = {}) {
   return {
-    get: (key: string) => values[key],
-    set: (next: Record<string, unknown>) => Object.assign(values, next),
+    read: (userId: string) => values[userId],
+    write: (userId: string, value: string | null) => {
+      values[userId] = value;
+    },
   };
 }
 
 describe('grow marks', () => {
   test('a level played on this device stays played for that user only', () => {
-    const marks = createGrowMarks(memorySettings(), (id) => `played.${id}`);
+    const marks = createGrowMarks(memoryStore());
     expect(marks.played('a')).toBe(0);
     marks.mark('a', 5);
     expect(marks.played('a')).toBe(5);
@@ -25,9 +26,7 @@ describe('grow marks', () => {
   });
 
   test('a stored value that is not a number reads as nothing played', () => {
-    const settings = memorySettings();
-    settings.set({ 'played.a': 'oops' });
-    expect(createGrowMarks(settings, (id) => `played.${id}`).played('a')).toBe(0);
+    expect(createGrowMarks(memoryStore({ a: 'oops' })).played('a')).toBe(0);
   });
 });
 

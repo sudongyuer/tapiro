@@ -61,8 +61,17 @@ export const profileStore = createProfileStore({
   onReplied: reviewStore.applyReply,
 });
 export const meStore = createMeStore({ service });
-export const growMarks = createGrowMarks(Settings, (userId) =>
-  uiVerify ? GROW_PLAYED_KEY : `tapiro.mascotGrown.${userId}`,
+const growKey = (userId: string) => `tapiro.mascotGrown.${userId}`;
+export const growMarks = createGrowMarks(
+  uiVerify
+    ? {
+        read: () => Settings.get(GROW_PLAYED_KEY),
+        write: (_userId, value) => Settings.set({ [GROW_PLAYED_KEY]: value }),
+      }
+    : {
+        read: (userId) => Settings.get(growKey(userId)),
+        write: (userId, value) => Settings.set({ [growKey(userId)]: value }),
+      },
 );
 
 if (uiVerify) reviewDrafts.clear(FIXTURE_REP_USER_ID);

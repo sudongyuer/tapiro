@@ -1,16 +1,19 @@
-import type { SettingsLike } from '../drafts';
+export type GrowStore = {
+  read(userId: string): unknown;
+  write(userId: string, value: string | null): void;
+};
 
-export function createGrowMarks(settings: SettingsLike, keyOf: (userId: string) => string) {
+export function createGrowMarks(store: GrowStore) {
   return {
     played(userId: string) {
-      const stored = Number(settings.get(keyOf(userId)));
+      const stored = Number(store.read(userId));
       return Number.isFinite(stored) ? stored : 0;
     },
     mark(userId: string, level: number) {
-      settings.set({ [keyOf(userId)]: String(level) });
+      store.write(userId, String(level));
     },
     clear(userId: string) {
-      settings.set({ [keyOf(userId)]: null });
+      store.write(userId, null);
     },
   };
 }
