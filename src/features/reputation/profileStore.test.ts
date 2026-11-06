@@ -60,6 +60,24 @@ describe('profile card', () => {
     expect(store.getSnapshot().readFailed).toEqual({});
   });
 
+  test('an older failed read does not flag a newer good one as a failed refresh', async () => {
+    const first = deferred<ProfileCard>();
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        profile: (id) => {
+          reads += 1;
+          return reads === 1 ? first.promise : Promise.resolve(card({ id }));
+        },
+      }),
+    );
+    void store.reloadCard('p1');
+    await store.reloadCard('p1');
+    first.reject(new Error('x'));
+    await settle();
+    expect(store.getSnapshot().readFailed).toEqual({});
+  });
+
   test('a review signal reloads the profile on screen and marks the others stale', async () => {
     const reads: string[] = [];
     const { store } = setup(

@@ -90,12 +90,14 @@ export function createProfileStore({
   }
 
   async function tracked<T>(key: string, userId: string, at: number, read: () => Promise<T>) {
+    const request = requests.latest(key);
+    const mine = () => current(userId, at) && requests.isLatest(key, request);
     try {
       const value = await read();
-      if (current(userId, at)) setReadFailed(key, false);
+      if (mine()) setReadFailed(key, false);
       return value;
     } catch (error) {
-      if (current(userId, at)) setReadFailed(key, true);
+      if (mine()) setReadFailed(key, true);
       throw error;
     }
   }

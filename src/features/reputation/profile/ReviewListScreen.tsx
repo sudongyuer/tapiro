@@ -38,7 +38,7 @@ export function ReviewListScreen({
   const reload = () =>
     Promise.all([
       profileStore.reloadList(personId),
-      owner ? Promise.resolve() : profileStore.reloadCard(personId),
+      card.status === 'ready' ? Promise.resolve() : profileStore.reloadCard(personId),
     ]).then(() => undefined);
   const retry = {
     label: t('reputation.profile.retry'),
