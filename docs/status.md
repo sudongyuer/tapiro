@@ -4,21 +4,22 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-07 (pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-07 (reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
 
-| Area                   | Spec                                               | Notes                                                                                                                                                                        |
-| ---------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Foundation steps 1–4   | `docs/specs/2026-10-11-foundation-design.md`       | Accounts, shell and navigation, payee methods, payment and stickers                                                                                                          |
-| Bounty steps 1–9       | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                                                                      |
-| Money in any currency  | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                                                                     |
-| Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                                                                          |
-| Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | Implemented: #48–#51, #53–#55, #57, #70; milestone `docs/walkthroughs/2026-11-03-carpool.md`, owner walkthrough 2026-11-04                                                   |
-| Device time zone (234) | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times, and local reminders keep quiet hours, in the system time zone; server rules stay in Malaysia time                                    |
-| Chat (foundation 7)    | `docs/specs/2026-10-11-foundation-design.md`       | Plan `docs/plans/2026-10-30-chat.md` done: server, 消息 list, thread, images, report and block, entries (#63, #72, #74–#77, #79 and this PR); milestone in the step 7 record |
-| Expo SDK 58            | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; open, not SDK 58: the 已结清 exit animation (retro); `home_fan_out` fixed (scroll steps, 2026-11-06)                            |
+| Area                    | Spec                                               | Notes                                                                                                                                                                                                                                         |
+| ----------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Foundation steps 1–4    | `docs/specs/2026-10-11-foundation-design.md`       | Accounts, shell and navigation, payee methods, payment and stickers                                                                                                                                                                           |
+| Bounty steps 1–9        | `docs/specs/2026-10-11-bounty-design.md`           | Milestone run and walkthrough: `docs/walkthroughs/2026-10-31-bounty.md`                                                                                                                                                                       |
+| Money in any currency   | `docs/specs/2026-10-29-multi-currency-design.md`   | RM and ¥                                                                                                                                                                                                                                      |
+| Posting a bounty, redo  | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                                                                                                                                           |
+| Carpool steps 1–7       | `docs/specs/2026-11-02-carpool-design.md`          | Implemented: #48–#51, #53–#55, #57, #70; milestone `docs/walkthroughs/2026-11-03-carpool.md`, owner walkthrough 2026-11-04                                                                                                                    |
+| Device time zone (234)  | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times, and local reminders keep quiet hours, in the system time zone; server rules stay in Malaysia time                                                                                                     |
+| Chat (foundation 7)     | `docs/specs/2026-10-11-foundation-design.md`       | Plan `docs/plans/2026-10-30-chat.md` done: server, 消息 list, thread, images, report and block, entries (#63, #72, #74–#77, #79 and this PR); milestone in the step 7 record                                                                  |
+| Reviews, profile, coins | `docs/specs/2026-10-11-foundation-design.md`       | Foundation step 6 and the account-free part of step 5, plan `docs/plans/2026-11-06-reviews-profile-coins.md` done (#85–#98); 258 A, 259 A; milestone in the record of 2026-11-07. Accessory art is stand-in; 买貘币 waits on the paid account |
+| Expo SDK 58             | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; open, not SDK 58: the 已结清 exit animation (retro); `home_fan_out` fixed (scroll steps, 2026-11-06)                                                                                             |
 
 ## In progress
 
@@ -31,19 +32,6 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   the owner's 2026-11-05 answers added quiet hours for the bounty you are on and a live-only `bounty.expired` to
   pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3 waits on the paid account;
   the spec stays `approved` until then.
-
-- Reviews, profile, mascot level, coins in 我的, weekly feed and invites (foundation step 6 and the account-free part
-  of step 5): plan `docs/plans/2026-11-06-reviews-profile-coins.md`; Task 1 (server: reviews, the review share in
-  靠谱度, tier drops, mascot level, profile reads, weekly feed, invite codes, coin history) is merged; Task 2 (client
-  core: `src/features/reputation/` and `src/features/coins/`, review live signals, copy) is merged; Task 5 (the profile
-  screen, 全部评价, 回复, ⋯ 举报 / 屏蔽, the five entries and the gone state; cases `profile_*`) is built; Task 6 (the
-  tier-drop sheet, cases `tier_drop_*`) is built; Task 8 (the 我的 「貘币」 row and the 貘币 page: balance, free posts
-  left, monthly history; cases `coins_page*`) is merged (#91); Task 10 (the 邀请朋友 page: my code, 复制, 分享, the
-  code field before the first deal, progress rows; cases `invite_*`) is built. Task 3 (the review sheet: faces, chips by role, sentence, draft and discard, 改一下, the envelope seal 257 a1; cases
-  `review_sheet*`) is merged (#93); Task 4 (review entries: the row under 已结清, one row per counterpart on a closed ride, the sealed
-  lines, one home card per pending review; cases `review_entry_*`) is built. Task 7 (小貘 grows on the stage (257 b1), 「小貘长大的时刻」, the accessory picker, stand-in accessory art; cases `mascot_*`) is merged (#95); Task 9 (the weekly feed on the stage: leaf, chew, the answers, 257 c1; cases `weekly_feed*`) is built. Next: Task 11, the wrap-up (milestone selection and the foundation spec's Implementation Record). 258 A is built: a closed ride counts toward 靠谱度 with or
-  without a payment (the farming it leaves open is in the plan, 「★ 258 defaults」). 259 A is built: long-press a review on a
-  profile or on 全部评价 to report it (cases `profile_report_review*`).
 
 ## Queue
 
