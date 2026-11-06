@@ -942,7 +942,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | rep.tier.recompute | 每天马来西亚时间 03:30 重算                                                                              | db:supabase/tests/reputation.test.sql       |
 | rep.tier.visible   | 所有登录用户只读得到档位，读不到明细                                                                     | db:supabase/tests/reputation.test.sql       |
 | rep.tier.tiers     | 新朋友 / 靠谱 / 很靠谱 / 貘友四档，以文字徽章显示                                                        | ui                                          |
-| rep.tier.drop      | 掉档时用一个平静的系统弹窗说明原因和怎么恢复；每次掉档只弹一次，已经回升的不弹，升档不弹                 | ui, db:supabase/tests/reputation_reviews.test.sql |
+| rep.tier.drop      | 掉档后第一次打开 App，在 Tab 页上（没有别的 sheet 开着时）弹一个中号系统 sheet：新的档位、原因（没到的次数和最多 3 件事的日期和标题、提到没做好的评价数，都没有时写近 180 天的完成次数和帮到的人不够原来的档位）和回去的路（还差几次、几个新的人、几条好评），「知道了」和「看我的主页」；关掉（两个按钮或下滑）就记看过，重开不再弹；没加载出来不弹也不记看过；已经回升的不弹，升档不弹，没有难过的小貘 | ui:tier_drop_no_shows, ui:tier_drop_reviews, ui:tier_drop_both, ui:tier_drop_worst, ui:tier_drop_failed, ui:tier_drop_dismissed, unit:src/features/reputation/tierDrop/tierDropView.test.ts, unit:src/features/reputation/meStore.test.ts, db:supabase/tests/reputation_reviews.test.sql, device: iPhone SE（667 pt）上马来文最长的掉档说明两个按钮都在屏幕内，旁白按标题、原因、回去的路、按钮的顺序读 |
 
 ### rep.no-show 放鸽子记录
 

@@ -8,7 +8,7 @@ import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
 import { createReviewDrafts } from './drafts';
-import { FIXTURE_PEOPLE, FIXTURE_REP_USER_ID, repVariant } from './fixtureData';
+import { FIXTURE_PEOPLE, FIXTURE_REP_USER_ID, repVariant, tierDropVariant } from './fixtureData';
 import { createFixtureReputationService, fixtureRepFailPoints } from './fixtureReputationService';
 import { createMeStore } from './meStore';
 import { createProfileStore } from './profileStore';
@@ -16,6 +16,7 @@ import { createSupabaseReputationService } from './reputationService';
 import { createReviewStore, REVIEW_SIGNALS } from './reviewStore';
 
 const CALLS_KEY = 'uiVerifyRepCalls';
+const DROP_SEEN_KEY = 'uiVerifyTierDropSeen';
 
 function verifyService() {
   Settings.set({ [CALLS_KEY]: '[]' });
@@ -24,6 +25,9 @@ function verifyService() {
   return createFixtureReputationService({
     isBlocked: fixtureBlocked,
     variant: repVariant(uiVerifyArgument('uiVerifyReviews') ?? uiVerifyArgument('uiVerifyProfile')),
+    tierDrop: tierDropVariant(uiVerifyArgument('uiVerifyTierDrop')),
+    seenDrop: Number(Settings.get(DROP_SEEN_KEY)) || null,
+    onDropSeen: (id) => Settings.set({ [DROP_SEEN_KEY]: String(id) }),
     failFirst: fixtureRepFailPoints(uiVerifyArgument('uiVerifyRepFail')),
     delayMs: Number(uiVerifyArgument('uiVerifyRepDelayMs') ?? 0) || 0,
     onCall: (name, args) => {

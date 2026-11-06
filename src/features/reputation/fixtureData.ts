@@ -217,32 +217,46 @@ export function fixtureMascot(variant: RepVariant): MyMascot {
   };
 }
 
-export function fixtureTierDrop(variant: RepVariant, now: Date): TierDrop | null {
-  if (variant === 'empty') return null;
+export const TIER_DROP_VARIANTS = ['none', 'noShows', 'reviews', 'both', 'fewer', 'worst'] as const;
+export type TierDropVariant = (typeof TIER_DROP_VARIANTS)[number];
+
+export const tierDropVariant = (value: string | undefined): TierDropVariant =>
+  TIER_DROP_VARIANTS.find((variant) => variant === value) ?? 'none';
+
+const WORST_NO_SHOWS = [
+  'Ambil bungkusan besar dari Sunway Pyramid ke Sunway Geo Residences sebelum pukul lapan malam',
+  null,
+  '帮忙去 Sunway Pyramid 地下一层的超市买一箱矿泉水和两袋大米，送到 Sunway Geo Residences A 座 12 楼',
+];
+
+export function fixtureTierDrop(variant: TierDropVariant, now: Date): TierDrop | null {
+  if (variant === 'none') return null;
+  const noShows =
+    variant === 'worst'
+      ? WORST_NO_SHOWS.map((title, index) => ({
+          at: at(now, -20 - index * 30),
+          kind: title === null ? ('ride' as const) : ('bounty' as const),
+          title,
+        }))
+      : variant === 'noShows' || variant === 'both'
+        ? [{ at: at(now, -30), kind: 'bounty' as const, title: '帮取快递' }]
+        : [];
+  const worst = variant === 'worst';
   return {
-    id: 1,
-    from: 'very_reliable',
+    id: worst ? 7 : 1,
+    from: worst ? 'tapir_friend' : 'very_reliable',
     to: 'reliable',
     droppedAt: at(now, 0),
-    noShows: [
-      {
-        at: at(now, -30),
-        kind: 'bounty',
-        title:
-          variant === 'worst'
-            ? 'Ambil bungkusan besar dari Sunway Pyramid ke Sunway Geo'
-            : '帮取快递',
-      },
-    ],
-    noShowCount: 1,
-    negativeReviews: variant === 'worst' ? 3 : 0,
-    settled: 8,
-    people: 4,
+    noShows,
+    noShowCount: worst ? 5 : noShows.length,
+    negativeReviews: worst ? 12 : variant === 'reviews' || variant === 'both' ? 2 : 0,
+    settled: worst ? 31 : 8,
+    people: worst ? 17 : 4,
     toRegain: {
-      tier: 'very_reliable',
-      settled: 2,
-      newPeople: 1,
-      goodReviews: variant === 'worst' ? 4 : 0,
+      tier: worst ? 'tapir_friend' : 'very_reliable',
+      settled: worst ? 12 : 2,
+      newPeople: worst ? 6 : variant === 'reviews' ? 0 : 1,
+      goodReviews: worst ? 18 : variant === 'reviews' || variant === 'both' ? 3 : 0,
     },
   };
 }

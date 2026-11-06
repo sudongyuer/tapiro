@@ -8,6 +8,7 @@ import {
   fixtureReviews,
   fixtureTierDrop,
   type RepVariant,
+  type TierDropVariant,
 } from './fixtureData';
 import { accessoryLevel, mascotLevel } from './model';
 import { AccessoryError, ProfileGoneError } from './reputationService';
@@ -37,6 +38,9 @@ export type RepFailPoint = (typeof REP_FAIL_POINTS)[number];
 
 export type FixtureRepOptions = {
   variant: RepVariant;
+  tierDrop?: TierDropVariant;
+  seenDrop?: number | null;
+  onDropSeen?: (id: number) => void;
   failFirst?: readonly RepFailPoint[];
   delayMs?: number;
   now?: () => Date;
@@ -62,6 +66,9 @@ export function fixtureRepFailPoints(value: string | undefined): RepFailPoint[] 
 
 export function createFixtureReputationService({
   variant,
+  tierDrop: dropVariant = 'none',
+  seenDrop = null,
+  onDropSeen,
   failFirst = [],
   delayMs = 0,
   now = () => new Date(),
@@ -75,7 +82,8 @@ export function createFixtureReputationService({
   const items = new Map<string, ReviewPair[]>();
   const reviews = fixtureReviews(data, now());
   let mascot: MyMascot = fixtureMascot(data);
-  let tierDrop = fixtureTierDrop(data, now());
+  const firstDrop = fixtureTierDrop(dropVariant, now());
+  let tierDrop = firstDrop && seenDrop !== null && firstDrop.id <= seenDrop ? null : firstDrop;
   let pending = fixturePending(data, now());
   let profileReads = 0;
 
@@ -217,6 +225,7 @@ export function createFixtureReputationService({
     async markTierDropSeen(id) {
       await step('tierDrop', 'markTierDropSeen', { id });
       if (tierDrop && tierDrop.id <= id) tierDrop = null;
+      onDropSeen?.(id);
     },
     async reportPerson(personId, reason, note) {
       await step('report', 'reportPerson', { personId, reason, note });
