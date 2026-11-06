@@ -32,7 +32,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@/lib/i18n';
 import { accessoryPriority } from '@/lib/liveItems';
 import { useLiveItems } from '@/lib/useLiveItems';
-import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
+import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT, type StageActor } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
 import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
@@ -47,6 +47,7 @@ const CARD_OVERLAP = STAGE_HILL_HEIGHT - 18;
 const STRIP_FADE = 80;
 const BUBBLE_FADE = 90;
 const BUBBLE_TOP = 18;
+const BAR_TOLERANCE = 1;
 const BEFORE_FIRST_SCROLL = -100000;
 // useHeaderHeight reports the expanded large-title header; the strip hangs under the compact bar (54 pt on iOS 26).
 const COMPACT_BAR = 54;
@@ -67,6 +68,8 @@ export type HomeScreenProps = {
   board?: ReactNode;
   refreshControl?: ReactElement<RefreshControlProps>;
   chat?: HomeChat;
+  actor?: StageActor;
+  onMascotShown?: (shown: boolean) => void;
 };
 
 export function HomeScreen({
@@ -80,6 +83,8 @@ export function HomeScreen({
   board,
   refreshControl,
   chat,
+  actor,
+  onMascotShown,
 }: HomeScreenProps) {
   const { t } = useI18n();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
@@ -103,6 +108,16 @@ export function HomeScreen({
   const offset = useScrollOffset(animatedRef, useSharedValue(BEFORE_FIRST_SCROLL));
   const stripBottom = headerHeight + STRIP_ROW;
   const [stripShown, setStripShown] = useState(false);
+
+  const [mascotShown, setMascotShown] = useState(true);
+  useEffect(() => onMascotShown?.(mascotShown), [onMascotShown, mascotShown]);
+
+  useAnimatedReaction(
+    () => -offset.value + BAR_TOLERANCE >= headerHeight,
+    (shown, previous) => {
+      if (shown !== previous) scheduleOnRN(setMascotShown, shown);
+    },
+  );
 
   useAnimatedReaction(
     () => STAGE_HEIGHT - offset.value < stripBottom + STRIP_FADE / 2,
@@ -162,6 +177,7 @@ export function HomeScreen({
           state={state}
           line={line}
           bubbleStyle={bubbleStyle}
+          actor={actor}
           testID={`home-stage-${state}`}
         />
         <View
@@ -192,6 +208,7 @@ export function HomeScreen({
       </ScrollView>
       <HomeStrip
         state={state}
+        wear={actor?.wear ?? null}
         line={line}
         label={t('home.strip.label', { title: t('shell.home.title'), line })}
         top={headerHeight}

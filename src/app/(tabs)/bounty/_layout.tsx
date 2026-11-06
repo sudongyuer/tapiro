@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import {
+  MASCOT_GROWN_OPTIONS,
   PROFILE_LIST_OPTIONS,
   PROFILE_SCREEN_OPTIONS,
   PROFILE_SHEET_OPTIONS,
@@ -54,6 +55,10 @@ export default function BountyLayout() {
       <Stack.Screen
         name="place"
         options={{ title: t('bounty.board.place.pick'), headerLargeTitleEnabled: false }}
+      />
+      <Stack.Screen
+        name="mascot-grown"
+        options={{ ...MASCOT_GROWN_OPTIONS, headerBackTitle: t('shell.home.title') }}
       />
       <Stack.Screen name="profile/[id]" options={PROFILE_SCREEN_OPTIONS} />
       <Stack.Screen name="profile/reviews/[id]" options={PROFILE_LIST_OPTIONS} />

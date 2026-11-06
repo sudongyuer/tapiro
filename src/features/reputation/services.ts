@@ -8,15 +8,23 @@ import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
 import { createReviewDrafts } from './drafts';
-import { FIXTURE_PEOPLE, FIXTURE_REP_USER_ID, repVariant, tierDropVariant } from './fixtureData';
+import {
+  FIXTURE_PEOPLE,
+  FIXTURE_REP_USER_ID,
+  mascotVariant,
+  repVariant,
+  tierDropVariant,
+} from './fixtureData';
 import { createFixtureReputationService, fixtureRepFailPoints } from './fixtureReputationService';
 import { createMeStore } from './meStore';
+import { createGrowMarks } from './mascot/growMarks';
 import { createProfileStore } from './profileStore';
 import { createSupabaseReputationService } from './reputationService';
 import { createReviewStore, REVIEW_SIGNALS } from './reviewStore';
 
 const CALLS_KEY = 'uiVerifyRepCalls';
 const DROP_SEEN_KEY = 'uiVerifyTierDropSeen';
+const GROW_PLAYED_KEY = 'uiVerifyMascotPlayed';
 
 function verifyService() {
   Settings.set({ [CALLS_KEY]: '[]' });
@@ -26,6 +34,10 @@ function verifyService() {
     isBlocked: fixtureBlocked,
     variant: repVariant(uiVerifyArgument('uiVerifyReviews') ?? uiVerifyArgument('uiVerifyProfile')),
     reviewsOn: uiVerifyArgument('uiVerifyReviews') !== undefined,
+    mascot: mascotVariant(
+      uiVerifyArgument('uiVerifyMascot'),
+      uiVerifyArgument('uiVerifyProfile') !== undefined,
+    ),
     tierDrop: tierDropVariant(uiVerifyArgument('uiVerifyTierDrop')),
     seenDrop: Number(Settings.get(DROP_SEEN_KEY)) || null,
     onDropSeen: (id) => Settings.set({ [DROP_SEEN_KEY]: String(id) }),
@@ -49,6 +61,18 @@ export const profileStore = createProfileStore({
   onReplied: reviewStore.applyReply,
 });
 export const meStore = createMeStore({ service });
+const growKey = (userId: string) => `tapiro.mascotGrown.${userId}`;
+export const growMarks = createGrowMarks(
+  uiVerify
+    ? {
+        read: () => Settings.get(GROW_PLAYED_KEY),
+        write: (_userId, value) => Settings.set({ [GROW_PLAYED_KEY]: value }),
+      }
+    : {
+        read: (userId) => Settings.get(growKey(userId)),
+        write: (userId, value) => Settings.set({ [growKey(userId)]: value }),
+      },
+);
 
 if (uiVerify) reviewDrafts.clear(FIXTURE_REP_USER_ID);
 
@@ -78,4 +102,7 @@ live.on(['payment.settled', 'ride.settled'], (signal) => {
 blockEvents.onBlocked((personId) => profileStore.markBlocked(personId, true));
 blockEvents.onUnblocked((personId) => profileStore.markBlocked(personId, false));
 
-userCleanups.register((userId) => reviewDrafts.clear(userId));
+userCleanups.register((userId) => {
+  reviewDrafts.clear(userId);
+  growMarks.clear(userId);
+});

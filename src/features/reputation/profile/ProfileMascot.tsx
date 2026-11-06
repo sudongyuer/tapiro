@@ -31,8 +31,9 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
-import { accessoryLevel } from '../model';
-import { ACCESSORIES, type PublicMascot } from '../types';
+import { useMyMascot } from '../hooks';
+import type { PublicMascot } from '../types';
+import { AccessoryRows } from './AccessoryRows';
 import { levelLabel, levelProgress } from './profileView';
 
 const ROW_HEAD = 28;
@@ -57,7 +58,7 @@ export function MascotRow({ mascot }: { mascot: PublicMascot }) {
         ]}
       >
         <RNHostView matchContents>
-          <Mascot variant="side" size={ROW_HEAD} />
+          <Mascot variant="side" size={ROW_HEAD} wear={mascot.accessory} />
         </RNHostView>
         <Text modifiers={[wraps, fill]}>{line}</Text>
       </HStack>
@@ -68,6 +69,9 @@ export function MascotRow({ mascot }: { mascot: PublicMascot }) {
 export function LevelCard({ mascot }: { mascot: PublicMascot }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const mine = useMyMascot();
+  const myMascot = mine.status === 'idle' ? null : mine.data;
+  const worn = myMascot?.accessory ?? mascot.accessory;
   const progress = levelProgress(mascot.level, mascot.stickers);
   const next = t('reputation.profile.nextLevel', {
     count: progress.toGo,
@@ -87,7 +91,7 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
         ]}
       >
         <RNHostView matchContents>
-          <Mascot variant="side" size={CARD_HEAD} outlined />
+          <Mascot variant="side" size={CARD_HEAD} outlined wear={worn} />
         </RNHostView>
         <VStack alignment="leading" spacing={vars['--space-2']} modifiers={[fill]}>
           <Text modifiers={[font({ textStyle: 'headline' }), wraps]}>
@@ -100,38 +104,7 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
           <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{next}</Text>
         </VStack>
       </HStack>
-      {ACCESSORIES.map((accessory) => {
-        const level = accessoryLevel(accessory);
-        const open = level <= mascot.level;
-        const name = t(`reputation.accessory.${accessory}`);
-        return (
-          <HStack
-            key={accessory}
-            spacing={vars['--space-3']}
-            modifiers={[
-              accessibilityElement('ignore'),
-              accessibilityLabel(
-                open
-                  ? t('reputation.profile.accessoryUnlockedA11y', { name })
-                  : t('reputation.profile.accessoryLockedA11y', { name, level }),
-              ),
-              accessibilityIdentifier(`profile-accessory-${accessory}`),
-            ]}
-          >
-            <Image
-              systemName={open ? 'checkmark.circle.fill' : 'lock.fill'}
-              size={17}
-              modifiers={[open ? foregroundStyle(color('--color-success')) : tertiary]}
-            />
-            <Text modifiers={open ? [fill] : [fill, secondary]}>{name}</Text>
-            {open ? null : (
-              <Text modifiers={[secondary, font({ textStyle: 'footnote' })]}>
-                {t('reputation.profile.accessoryLocked', { level })}
-              </Text>
-            )}
-          </HStack>
-        );
-      })}
+      <AccessoryRows level={Math.max(mascot.level, myMascot?.level ?? 0)} worn={worn} />
     </Section>
   );
 }

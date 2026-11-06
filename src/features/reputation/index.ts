@@ -79,6 +79,8 @@ export {
   ProfileRoute,
   type ProfileTab,
 } from './profile/routes';
+export { MASCOT_GROWN_OPTIONS, MascotGrownRoute } from './mascot/MascotGrownRoute';
+export { useStageGrowth } from './mascot/useStageGrowth';
 export { PendingReviewCards } from './review/PendingReviewCards';
 export { ReviewEntriesSection } from './review/ReviewEntriesSection';
 export { ReviewEntryCard } from './review/ReviewEntryCard';

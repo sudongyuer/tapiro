@@ -4,6 +4,7 @@ import type { ViewStyle } from 'react-native';
 
 import { AppText } from '@/ui/AppText';
 import { Mascot } from '@/ui/Mascot';
+import type { MascotWear } from '@/ui/MascotWear';
 import { stageColor, type StageState } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -13,6 +14,7 @@ export const STRIP_SHADOW = vars['--space-1'] + vars['--space-3'];
 
 export function HomeStrip({
   state,
+  wear,
   line,
   label,
   top,
@@ -20,6 +22,7 @@ export function HomeStrip({
   style,
 }: {
   state: StageState;
+  wear: MascotWear | null;
   line: string;
   label: string;
   top: number;
@@ -48,7 +51,7 @@ export function HomeStrip({
         testID="home-strip"
         style={styles.row}
       >
-        <Mascot variant="side" size={28} outlined />
+        <Mascot variant="side" size={28} outlined wear={wear} />
         <AppText
           variant="meta"
           numberOfLines={1}

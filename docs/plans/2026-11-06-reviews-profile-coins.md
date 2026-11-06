@@ -6,7 +6,7 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
+(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06); Task 7 (mascot level) is built (2026-11-07). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
 profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
@@ -266,6 +266,27 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 | E9  | Verify mode has no pairs or pending rows without `-uiVerifyReviews`, so no other home, status or ride case meets them                                                                                                                                                                                                 | Existing cases stay as they were                                        |
 | E10 | New en / ms wording: 「Reviews are public」 / 「Penilaian sudah dipaparkan」; 「{name} gave you “{face}”」 / 「{name} memberi anda “{face}”」; home lines 「You got it done for {name}」 / 「Anda sudah selesaikan untuk {name}」, 「Rode with {name}」 / 「Menumpang bersama {name}」. Malay needs the native review | Boards had no such lines                                                |
 
+## ★ Mascot defaults (Task 7, 2026-11-07, for veto)
+
+| #   | Decision ★ | Why |
+| --- | ---------- | --- |
+| M1  | 「小貘长大的时刻」 is a push in the 首页 stack (`/bounty/mascot-grown`) with system back and no title; 去看看我的小貘 goes back, then opens your own profile in 我的 | 249 A word 「推出」; drill-down rule; RepBC2 draws no bar, but HIG back stays |
+| M2  | The bubble reads 「我长大了！点我看看」 (the 249 drawing and the Task 2 key), not the shorter 「我长大了！」 of the 257 board | Only the longer line says it can be tapped |
+| M3  | The top line reads 「第 N 张贴纸 · Lv.a → Lv.b」 without the item title drawn in RepBC2 | `my_mascot()` returns no title |
+| M4  | From Lv.6 there is no 「解锁了」 card, and the note says 「小貘长大只解锁装扮」 instead of 「…和贴纸本页数」: 贴纸本 pages and cover colours (250 A) are not built, so nothing may promise them | Gap: Lv.6+ gets a name and nothing else until covers exist |
+| M5  | The four accessories are vector stand-ins inside the mascot's 64 pt art box (`src/ui/MascotWear.tsx`), drawn after the canvas scarf; they replace with the 93 A crayon art in the separate drawing task. A 「解锁了」 row shows the small 小貘 wearing the item, not RepBC2's line icons | Gap 5 of this plan; the Svg clips at its box, so nothing can stick out |
+| M6  | There is no grown drawing: every level uses the same art at the same resting size, and the worn accessory is what stays different. So the crouch starts from the size on screen (1.0), not the board's 0.88: a resting 小貘 would otherwise jump 12 % in one frame before each play. The crouch ends at the board's 0.93 / 0.81 and everything after follows b1. Under Reduce Motion, since old and new are one drawing, the accessory fades in 150 ms in place and the bubble follows (total 300 ms, as the board) | Art gap; a size per level would move the stage layout, and the jump would read as a glitch |
+| M7  | The spring runs exactly `{ duration: 420, dampingRatio: 0.55 }` as the board says (real devices use the written values); that peaks near 1.02, not the 1.07 of the board's CSS keyframes. Reaching 1.07 needs a looser spring, a motion choice for the owner | 257 board: 「真机用下面写的 Reanimated 参数」 |
+| M8  | Level seen is written when the moment opens; if that write fails the bubble stays and the next tap opens the moment again. The played mark is per device and per user (`Settings`), so a second device plays once too unless the level was already seen | Data integrity: a failure is not "seen" |
+| M9  | In the calm state 小貘 wakes while it speaks: eyes open and no snore while the bubble is its own; it sleeps again after | A sleeping mascot cannot say 「我长大了」 |
+| M10 | On a busy stage the star sits over 小貘's head with a white sticker rim, since gold on the sun has no contrast | 249 A star; contrast by eye |
+| M11 | The picker: each unlocked accessory is a row with a green ✓ on the one worn, locked rows keep 「Lv.N 解锁」 and a lock (the P3 check icons go); the ✓ moves after the server answers, with a spinner in the row meanwhile; a failure reads 「没换上，再点一下试试」 under the rows and goes when you leave. There is no 「不戴」, since the server falls back to the newest | 250 A; a failed write never shows as worn |
+| M12 | RepBC2's entrance is built as drawn (0.72 → 1.08 → 1 in 900 ms, ease-out, no haptic), with a 150 ms fade under Reduce Motion | The drawing; 257 covers only the stage |
+| M13 | Other people's 小貘 row still has no chevron and opens nothing: board 245 says 「点开看大图」, but no big view is planned; it now shows the worn accessory | P2 said 「until Task 7」; the big view is a scope gap |
+| M15 | The bubble is a tap target as well as 小貘; the collapsed strip keeps the normal line, since it is not tappable; a second tap while the seen write is out does nothing; VoiceOver double-tap and the action 「看看小貘」 open the moment, and on a busy stage the hint names it | 「点我看看」 must work where it is written; nothing promises a tap that does nothing |
+| M16 | 「看得见舞台」 means 小貘's top is clear of the navigation bar: only then the growth plays, and scrolling it under the bar goes to the end. A level with no new accessory (Lv.6+, or a chosen older one) does not fade what is already worn. While a growth waits with the stage collapsed, the strip's small 小貘 already wears the new accessory | The strip threshold still left 小貘 hidden; the once-per-level motion must be seen |
+| M14 | New en / ms wording: 「Your tapir is now a {name}!」 / 「Tapir anda kini {name}!」; 「See My Tapir」 / 「Lihat Tapir Saya」; the body, note and failure lines. Malay needs the native review | Boards had zh-Hans only |
+
 ## File structure
 
 | Action | Path                                                                             | Responsibility                                            |
@@ -320,10 +341,10 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 6. **Tier-drop sheet** — **done 2026-11-06** (248 A; ★ details in 「★ Tier-drop defaults」): a medium sheet on the first open after a drop: the new tier, the reason, the way back,
    知道了 and 看我的主页; marked seen when dismissed. UI cases `tier_drop_no_shows`, `tier_drop_reviews`,
    `tier_drop_both`, `tier_drop_worst` (ms), `tier_drop_failed`, `tier_drop_dismissed`.
-7. **Mascot level** (249 B, 250 A, after 257): the home stage shows the grown 小貘 with the worn accessory and the
+7. **Mascot level** — **done 2026-11-07** (249 B, 250 A, 257 b1; ★ details in 「★ Mascot defaults」): the home stage shows the grown 小貘 with the worn accessory and the
    「我长大了！」 bubble until tapped; the tap opens 「小貘长大的时刻」 (RepBC2) once and marks the level seen; the
-   accessory picker on your own profile; Reduce Motion swaps the image. UI cases `mascot_level_up`,
-   `mascot_accessory`; motion: one appearance with video.
+   accessory picker on your own profile; Reduce Motion fades the accessory in place (M6). UI cases `mascot_level_up`,
+   `mascot_accessory`, also `mascot_level_busy`, `mascot_level_collapsed`, `mascot_level_reduced`, `mascot_level_jump`, `mascot_accessory_failed`; motion: one appearance with video.
 8. **Coins in 我的** — **done 2026-11-06** (251 A, 252 A; ★ details in 「★ Coins defaults」): a 「貘币 n」 row beside 一起办成的事 pushing the 貘币 page: the balance, free posts
    left this month and the monthly history; a failed load reads 「没加载出来 · 重试」, never 0. UI cases `coins_page`,
    `coins_page_empty`, `coins_page_failed`, `coins_page_worst`.

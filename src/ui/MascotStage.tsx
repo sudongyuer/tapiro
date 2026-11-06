@@ -1,10 +1,21 @@
 import type { ComponentProps } from 'react';
-import { PlatformColor, StyleSheet, View, type ViewProps } from 'react-native';
-import Animated from 'react-native-reanimated';
+import {
+  type AccessibilityActionEvent,
+  PlatformColor,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewProps,
+} from 'react-native';
+import Animated, {
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import Svg, { Line, Path } from 'react-native-svg';
 
-import { AppText } from './AppText';
-import { Mascot } from './Mascot';
+import type { MascotWear } from './MascotWear';
+import { Snore, SpeechBubble, StageBody, Star } from './MascotStageParts';
 import { CarArt, ParcelArt, StickerShadow } from './StickerArt';
 import { vars, type TokenName } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
@@ -26,22 +37,63 @@ export function stageColor(state: StageState): TokenName {
   return `--color-stage-${state}`;
 }
 
+type AnimatedStyle = ComponentProps<typeof Animated.View>['style'];
+
+export type StageActor = {
+  wear: MascotWear | null;
+  say: string | null;
+  hint: 'star' | null;
+  onPress: (() => void) | null;
+  action: string | null;
+  bodyStyle?: AnimatedStyle;
+  wearStyle?: AnimatedStyle;
+  reveal?: SharedValue<number>;
+  revealRise?: number;
+};
+
+export const stageSay = (actor: StageActor | undefined, state: StageState) =>
+  state === 'calm' ? (actor?.say ?? null) : null;
+
 export type MascotStageProps = ViewProps & {
   state: StageState;
   line: string;
-  bubbleStyle?: ComponentProps<typeof Animated.View>['style'];
+  bubbleStyle?: AnimatedStyle;
+  actor?: StageActor;
 };
 
-export function MascotStage({ state, line, bubbleStyle, style, ...rest }: MascotStageProps) {
+const MASCOT_ACTION = 'mascot';
+
+export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }: MascotStageProps) {
   const { color } = useTheme();
   const pose = POSE[state];
   const ink = color('--color-on-stage');
+  const say = stageSay(actor, state);
+  const sleeping = state === 'calm' && say === null;
+  const shown = useSharedValue(1);
+  const reveal = actor?.reveal ?? shown;
+  const rise = actor?.revealRise ?? 0;
+  const speaking = say !== null;
+  const slotStyle = useAnimatedStyle(() => {
+    const value = speaking ? reveal.value : 1;
+    return { opacity: value, transform: [{ translateY: rise * (1 - value) }] };
+  });
+  const starStyle = useAnimatedStyle(() => ({ opacity: reveal.value }));
+  const onAction = (event: AccessibilityActionEvent) => {
+    if (event.nativeEvent.actionName === MASCOT_ACTION) actor?.onPress?.();
+  };
   return (
     <View
       {...rest}
       style={[styles.stage, { backgroundColor: color(stageColor(state)) }, style]}
       accessible
-      accessibilityLabel={line}
+      accessibilityLabel={say ?? line}
+      accessibilityRole={actor?.action ? 'button' : undefined}
+      accessibilityHint={actor?.action ?? undefined}
+      accessibilityActions={
+        actor?.action ? [{ name: MASCOT_ACTION, label: actor.action }] : undefined
+      }
+      onAccessibilityAction={actor?.action ? onAction : undefined}
+      onAccessibilityTap={actor?.action ? (actor.onPress ?? undefined) : undefined}
     >
       <View style={[styles.bleed, { backgroundColor: color(stageColor(state)) }]} />
       <View
@@ -90,75 +142,34 @@ export function MascotStage({ state, line, bubbleStyle, style, ...rest }: Mascot
             />
           </StickerShadow>
         ) : null}
-        <StickerShadow>
-          <Mascot
-            variant="side"
-            size={pose.size}
-            outlined
-            eyes={state === 'calm' ? 'asleep' : 'open'}
-          />
-        </StickerShadow>
+        <Pressable
+          accessible={false}
+          disabled={!actor?.onPress}
+          onPress={actor?.onPress ?? undefined}
+        >
+          <StickerShadow>
+            <StageBody size={pose.size} asleep={sleeping} actor={actor} />
+          </StickerShadow>
+        </Pressable>
         {state === 'urgent' ? (
           <StickerShadow style={styles.parcel}>
             <ParcelArt width={46} />
           </StickerShadow>
         ) : null}
-        {state === 'calm' ? <Snore color={ink} /> : null}
+        {sleeping ? <Snore color={ink} /> : null}
+        {actor?.hint === 'star' && say === null ? (
+          <Animated.View style={[styles.star, starStyle]} pointerEvents="none">
+            <Star fill={color('--color-stage-hint')} rim={color('--color-sticker-border')} />
+          </Animated.View>
+        ) : null}
       </View>
-      <SpeechBubble line={line} style={bubbleStyle} />
+      <SpeechBubble
+        line={say ?? line}
+        style={bubbleStyle}
+        slotStyle={slotStyle}
+        onPress={say === null ? undefined : (actor?.onPress ?? undefined)}
+      />
     </View>
-  );
-}
-
-function Snore({ color }: { color: string }) {
-  return (
-    <Svg style={styles.snore} width={30} height={34} viewBox="0 0 30 34">
-      <Path
-        d="M2 22 H10 L2 31 H10"
-        fill="none"
-        stroke={color}
-        strokeWidth={2.6}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        opacity={0.7}
-      />
-      <Path
-        d="M14 3 H27 L14 16 H27"
-        fill="none"
-        stroke={color}
-        strokeWidth={3}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        opacity={0.55}
-      />
-    </Svg>
-  );
-}
-
-function SpeechBubble({ line, style }: { line: string; style: MascotStageProps['bubbleStyle'] }) {
-  const { color } = useTheme();
-  const fill = color('--color-stage-bubble');
-  return (
-    <Animated.View
-      style={[
-        styles.bubble,
-        { backgroundColor: fill, shadowColor: color('--color-sticker-shadow') },
-        style,
-      ]}
-      importantForAccessibility="no-hide-descendants"
-      accessibilityElementsHidden
-    >
-      <AppText
-        variant="secondary"
-        numberOfLines={3}
-        style={[styles.say, { color: color('--color-on-stage') }]}
-      >
-        {line}
-      </AppText>
-      <Svg style={styles.tail} width={9} height={18} viewBox="0 0 9 18">
-        <Path d="M0 0 L9 9 L0 18 Z" fill={fill} />
-      </Svg>
-    </Animated.View>
   );
 }
 
@@ -176,22 +187,7 @@ const styles = StyleSheet.create({
   hill: { position: 'absolute', left: -20, right: -20, bottom: 0, height: STAGE_HILL_HEIGHT },
   road: { position: 'absolute', left: 0, right: 0, top: 72 },
   actor: { position: 'absolute' },
+  star: { position: 'absolute', left: 20, top: -14 },
   car: { position: 'absolute', left: -30, bottom: -6 },
   parcel: { position: 'absolute', right: -38, bottom: 0, transform: [{ rotate: '8deg' }] },
-  snore: { position: 'absolute', left: 80, top: -14 },
-  bubble: {
-    position: 'absolute',
-    left: vars['--space-4'],
-    top: 18,
-    maxWidth: 230,
-    borderRadius: vars['--space-5'],
-    borderCurve: 'continuous',
-    paddingVertical: 9,
-    paddingHorizontal: 13,
-    shadowOffset: { width: 0, height: vars['--space-2'] },
-    shadowOpacity: 1,
-    shadowRadius: vars['--space-3'],
-  },
-  say: { fontWeight: '700' },
-  tail: { position: 'absolute', right: -8, bottom: 14 },
 });

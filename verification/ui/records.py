@@ -17,6 +17,7 @@ RECORD_KEYS = (
     'uiVerifyDetailLoads',
     'uiVerifyHomeSeen',
     'uiVerifyLiveSteps',
+    'uiVerifyMascotPlayed',
     'uiVerifyNoticeAsks',
     'uiVerifyNotSelectedSeen',
     'uiVerifyPublishedArgs',

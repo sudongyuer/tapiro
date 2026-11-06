@@ -1,6 +1,6 @@
 import { Stack, useIsFocused, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useRef, type RefObject } from 'react';
+import { useCallback, useRef, useState, type RefObject } from 'react';
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -28,7 +28,7 @@ import {
   useHomeScroll,
   useLiveStackState,
 } from '@/features/home';
-import { PendingReviewCards, reviewStore } from '@/features/reputation';
+import { PendingReviewCards, reviewStore, useStageGrowth } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
@@ -45,6 +45,13 @@ function BountyHome({ user }: { user: AccountUser }) {
   const name =
     (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user.name ?? '';
   const stack = useLiveStackState();
+  const [mascotShown, setMascotShown] = useState(true);
+  const openGrown = useCallback(() => router.push('/bounty/mascot-grown'), [router]);
+  const growthActor = useStageGrowth({
+    userId: user.id,
+    visible: focused && mascotShown,
+    open: openGrown,
+  });
   const chat = useItemChat(
     useCallback(
       (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
@@ -104,6 +111,8 @@ function BountyHome({ user }: { user: AccountUser }) {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
+        actor={growthActor}
+        onMascotShown={setMascotShown}
         reviews={<PendingReviewCards />}
         board={
           <BountyBoard
