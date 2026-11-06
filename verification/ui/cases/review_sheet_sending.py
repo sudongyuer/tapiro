@@ -21,7 +21,6 @@ ui.tap('review-submit')
 ui.wait_label('review-submit', lambda text: text == ui.t('reputation.sheet.submitting'), 'no 提交中 while sending', 8)
 assert by_id(ui.read(), 'review-sealed-ok') is None, 'the seal started before the answer'
 assert not enabled(ui, 'review-face-okay'), 'a face is still live while sending'
-ui.at_rest(timeout=4)
 shot(ui, '01-sending')
 items = ui.read()
 w, h = items[0]['frame']['width'], items[0]['frame']['height']

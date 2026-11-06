@@ -4,7 +4,7 @@ date: 2026-11-06
 pr: review sheet (plan Task 3)
 title: The review sheet with faces, chips by role, draft and discard, 改一下, and the 257 a1 seal
 escaped: pending
-rework: 1
+rework: 2
 interventions: 0
 overturned: pending
 ---
@@ -25,7 +25,7 @@ overturned: pending
 | Dimension | Measure                 | This step                                                                              |
 | --------- | ----------------------- | -------------------------------------------------------------------------------------- |
 | Quality   | Escaped defects         | pending                                                                                |
-| Quality   | Vacuous checks          | None found by me; see the review findings                                              |
+| Quality   | Vacuous checks          | `review_sheet_failed` retried only by reopening (review C1); two weak assertions (M5)  |
 | Quality   | Skipped verifications   | Device: the light haptic, seal feel on a Release build, VoiceOver order, keyboard feel |
 | Speed     | Wall-clock              | About 2 h                                                                              |
 | Autonomy  | Avoidable interventions | 0                                                                                      |
@@ -42,4 +42,4 @@ overturned: pending
 
 ## Review findings
 
-Pending.
+Round 1: 1 Critical (提交 stayed off after any failure, so the promised retry in place could not happen; the case closed and reopened first, the one route that worked, and missed it), 4 Important (no close and an English route title while loading; the form live again between the acknowledgement and the seal, where a tap could send twice; nothing checked the sending state; a public review opened over an old draft and stayed editable), 7 Minor (old failure announced on reopening; a lost answer read as a failure; sealed copy stale after a live reveal; the invisible 好的 closed instead of skipping; two weak assertions; no pixel appearance check; story-map links and `DEPS`). All fixed, three cases added (`review_sheet_retry`, `review_sheet_lost`, `review_sheet_sending`). Round 2: see below.
