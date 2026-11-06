@@ -72,14 +72,15 @@ assert drawn > COLOURFUL_MIN, f'the top card draws no hand art ({drawn} colourfu
 
 f = card['frame']
 y = f['y'] + f['height'] / 2
-for _ in range(2):
-    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.3)
+# On iOS 27.2 a 0.3 s axe swipe leaves the paging list on its card; 0.8 s turns it.
+for page in (2, 3):
+    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)
+    ui.wait_label(
+        'sticker-stack-position',
+        lambda text: ui.t('stickers.card.position', index=page, total=7) in text,
+        'the position line does not follow the swipe',
+    )
 ride = ui.wait_label('sticker-card-2', lambda text: RIDE_TITLE in text, 'the third card is not the ride')
-ui.wait_label(
-    'sticker-stack-position',
-    lambda text: ui.t('stickers.card.position', index=3, total=7) in text,
-    'the position line does not follow the swipe',
-)
 ride_shot = ui.snap('03-ride')
 car_red = ride_shot.count(art(ride['frame']), red)
 print(f'ride card: {car_red} red pixels')

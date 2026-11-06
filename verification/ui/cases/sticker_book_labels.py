@@ -41,7 +41,7 @@ for index, (line1, title) in enumerate(EXPECTED):
         ui.capture(f'0{index + 1}-card-{index}')
     f = card['frame']
     y = f['y'] + f['height'] / 2
-    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.3)
+    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)
 
 print(f'card heights: {heights}')
 assert max(heights) - min(heights) <= 1, f'cards differ in height: {heights}'
