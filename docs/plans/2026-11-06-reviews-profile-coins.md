@@ -188,8 +188,32 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
 256. Ride reviews on someone else's profile: **A★** show 「拼车」 without the route (a short name can be someone's home)
      and without the reviewer (who rode with whom); the reviewee still sees both on their own profile; **B** show the
      route's short names and the reviewer like bounty reviews. Touches privacy. The server does A until answered.
-257. Motion for the sealed review, 小貘 growing and the leaf: to be drawn on the canvas with numbered options (curve,
-     duration, Reduce Motion fallback) before Tasks 3, 7 and 9 start.
+257. Motion for the sealed review, 小貘 growing and the leaf: drawn on the canvas page 「06+ 评价、主页与小貘等级」,
+     boards `Motion257Seal`, `Motion257Grow` and `Motion257Leaf` (live previews, keyframes, exact values). Pick one per
+     row before Tasks 3, 7 and 9 start. All three: transform and opacity only, Reanimated on the UI thread, one linear
+     clock per sequence so a tap skips to the end; Reduce Motion drops movement and keeps 150 ms fades
+     (`withTiming` with `reduceMotion: ReduceMotion.Never`), haptics stay.
+     - **257a, sealed review** (plays only after the server acknowledges; occasional; purpose: state). **a1★** fold
+       into an envelope: the chosen face moves into the envelope (320 ms, ease-in-out 0.77/0/0.175/1, scale 0.55), the
+       envelope rises (200 ms ease-out 0.23/1/0.32/1), the flap folds shut (rotateX 180° → 0°, 200 ms), a 小貘 seal
+       presses (spring `{ duration: 240, dampingRatio: 0.7 }`, scale 1.12 → 1, `impactAsync(Light)`), the copy fades
+       in; about 0.75 s. Reason: shows "your review is put away, not public yet", the new double-blind rule. **a2** a
+       sealed envelope pops in (spring `{ duration: 300, dampingRatio: 1 }`, 0.95 → 1) and the seal presses; 0.6 s.
+       **a3** a 150 ms cross-fade with the light haptic only.
+     - **257b, 小貘 grows on the stage** (rare; once per level when the stage is visible; purpose: state). **b1★**
+       crouch then grow, origin at the feet: 140 ms ease-out to scaleX 0.93 / scaleY 0.81 (from the old 0.88), then
+       spring `{ duration: 420, dampingRatio: 0.55 }` to 1 (peak about 1.07), the accessory fades in with 0.95 → 1
+       (150 ms), the 「我长大了！」 bubble rises 6 pt (200 ms) at 560 ms; about 0.76 s; no haptic (the user did not
+       cause it); a tap mid-way skips to the end and opens RepBC2. Reason: one weighted grow says "it grew" without a
+       second celebration on an everyday screen. **b2** b1 plus six sparkles (520 ms), which repeat celebration G's
+       sparks. **b3** a 240 ms cross-fade of the old and new image.
+     - **257c, weekly-feed leaf** (occasional; purpose: feedback and cause and effect). **c1★** the leaf drops on the
+       tap (translateY −110 → 0 pt with a −18° → 14° → 0° sway, 420 ms ease-out) and waits at the mouth, 「…」 only if
+       the answer is not in by then; on `fed` one chew (two bites, scaleY 0.94 / scaleX 1.03, 360 ms ease-in-out,
+       `impactAsync(Light)` on the first) and 「谢谢！+1 貘币」; on `already_fed` or failure the leaf falls to the
+       hill and fades (240 ms) with no chew. Reason: feedback within 0.1 s, and nothing shows "eaten" before the server
+       confirms. **c2** chew right after the drop (the literal 253 A); on `already_fed` or failure 小貘 has already
+       chewed. **c3** press 小貘 (0.97, 90 ms) and show 「…」; drop and chew only after `fed`.
 258. Rides without a Tapiro payment (Grab split, or riding alone): **A★** count a closed ride as a settled item for the
      organiser and each boarded rider (no on-time input), so carpool counts toward 靠谱度 the same either way; **B** keep
      counting only paid rides. Changes how tiers are computed.
