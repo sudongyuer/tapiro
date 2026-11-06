@@ -167,7 +167,7 @@ select is(
 );
 
 update public.reports set created_at = now() - interval '1 year 1 minute' where review_id = pg_temp.v(1);
-select is(public.expire_report_snapshots(), 1, 'the yearly run clears a review copy');
+select is(public.expire_report_snapshots(), 2, 'the yearly run clears both copies of the review');
 select is(
   (select row(review_face::text, review_chips, review_sentence, reason)::text from public.reports
    where review_id = pg_temp.v(1) and reporter_id = pg_temp.u('c3')),
