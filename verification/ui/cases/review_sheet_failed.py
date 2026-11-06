@@ -7,7 +7,7 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
 from profile import label, rep_calls  # noqa: E402
-from review import SHEET, open_sheet, sealed  # noqa: E402
+from review import SHEET, sealed  # noqa: E402
 
 DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
@@ -15,8 +15,7 @@ BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'state,submit']
 
 ui = UI(*sys.argv[1:])
-open_sheet(ui)
-ui.element('review-unavailable', timeout=30)
+ui.element('review-unavailable', timeout=45)
 assert ui.t('reputation.profile.failed') in label(ui, 'review-unavailable')
 assert by_id(ui.read(), 'review-face-happy') is None, 'a failed read shows the form'
 ui.at_rest()

@@ -1,4 +1,4 @@
-import { Stack, useNavigation, usePreventRemove } from 'expo-router';
+import { Stack, usePreventRemove } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -39,21 +39,20 @@ function measured(view: ViewInstance | null) {
 
 function useDiscardPrompt(active: boolean, sending: boolean, onDrop: () => void) {
   const { t } = useI18n();
-  const navigation = useNavigation();
-  usePreventRemove(active, ({ data }) => {
+  usePreventRemove(active, ({ repeat }) => {
     if (sending) return;
     Alert.alert(t('reputation.sheet.discardTitle'), undefined, [
       { text: t('reputation.sheet.discardContinue'), style: 'cancel' },
       {
         text: t('reputation.sheet.discardKeep'),
-        onPress: () => navigation.dispatch(data.action),
+        onPress: repeat,
       },
       {
         text: t('reputation.sheet.discardDrop'),
         style: 'destructive',
         onPress: () => {
           onDrop();
-          navigation.dispatch(data.action);
+          repeat();
         },
       },
     ]);
