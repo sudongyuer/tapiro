@@ -161,7 +161,12 @@ describe('coins store', () => {
     const read = deferred<typeof BALANCE>();
     let reads = 0;
     const { store } = setup({
-      balance: () => (reads++ === 0 ? Promise.resolve(BALANCE) : read.promise),
+      balance: () => {
+        reads += 1;
+        if (reads === 1) return Promise.resolve(BALANCE);
+        if (reads === 2) return read.promise;
+        return Promise.resolve({ ...BALANCE, coins: 13, freePostsLeft: 1 });
+      },
       feed: async () => ({
         status: 'fed',
         fedThisWeek: true,
@@ -176,7 +181,12 @@ describe('coins store', () => {
     read.resolve(BALANCE);
     await settle();
     const balance = store.getSnapshot().balance;
-    expect(balance.status !== 'idle' && balance.data?.coins).toBe(13);
+    expect(balance.status !== 'idle' && balance.data).toEqual({
+      ...BALANCE,
+      coins: 13,
+      freePostsLeft: 1,
+    });
+    expect(reads).toBe(3);
   });
 
   test('the typed code is stored before the call, kept after a refusal and cleared after success', async () => {
@@ -192,6 +202,29 @@ describe('coins store', () => {
     expect(drafts.get(ME)).toBe('');
     const invite = store.getSnapshot().invite;
     expect(invite.status !== 'idle' && invite.data?.canRedeem).toBe(false);
+  });
+
+  test('history on screen reads again on new coins; off screen it goes stale', async () => {
+    let reads = 0;
+    const { store } = setup({
+      balance: async () => BALANCE,
+      history: async () => {
+        reads += 1;
+        return { items: [], hasMore: false, nextCursor: null };
+      },
+    });
+    const close = store.open('history');
+    await settle();
+    store.onCoinsChanged();
+    await settle();
+    expect(reads).toBe(2);
+    expect(store.getSnapshot().history.status).toBe('ready');
+    close();
+    store.onCoinsChanged();
+    expect(store.getSnapshot().history.status).toBe('stale');
+    store.open('history');
+    await settle();
+    expect(reads).toBe(3);
   });
 
   test('history marked stale by new coins reads again when the page opens', async () => {

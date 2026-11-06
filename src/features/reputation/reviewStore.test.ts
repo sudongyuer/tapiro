@@ -131,12 +131,18 @@ describe('submit', () => {
     expect(store.getSnapshot().submits['bounty:b1:p1']).toBeUndefined();
   });
 
-  test('a read in flight when the submit lands cannot bring back the unreviewed pair', async () => {
+  test('a read in flight when the submit lands is dropped and read again after the write', async () => {
     const read = deferred<ReviewPair[]>();
     let reads = 0;
+    const other = pair({ counterpart: { id: 'p2', name: 'Mei', avatarUrl: null } });
     const { store } = setup(
       fakeService({
-        reviewState: () => (reads++ === 0 ? Promise.resolve([pair()]) : read.promise),
+        reviewState: () => {
+          reads += 1;
+          if (reads === 1) return Promise.resolve([pair(), other]);
+          if (reads === 2) return read.promise;
+          return Promise.resolve([sealed(pair()), { ...other, theyReviewed: true }]);
+        },
         submitReview: async () => ({ ok: true, pair: sealed(pair()) }),
       }),
     );
@@ -144,10 +150,65 @@ describe('submit', () => {
     await settle();
     void store.reloadItem('bounty', 'b1');
     await store.submit(TARGET, 'helper', DRAFT);
-    read.resolve([pair()]);
+    read.resolve([pair(), other]);
     await settle();
+    expect(reads).toBe(3);
     const item = store.getSnapshot().items['bounty:b1'];
-    expect(item.status !== 'idle' && item.data?.[0].state).toBe('sealed');
+    expect(
+      item.status !== 'idle' && item.data?.map((row) => [row.state, row.theyReviewed]),
+    ).toEqual([
+      ['sealed', false],
+      ['open', true],
+    ]);
+  });
+
+  test('a submit with no read in flight does not read again', async () => {
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        reviewState: async () => {
+          reads += 1;
+          return [pair()];
+        },
+        submitReview: async () => ({ ok: true, pair: sealed(pair()) }),
+      }),
+    );
+    store.openItem('bounty', 'b1');
+    await settle();
+    await store.submit(TARGET, 'helper', DRAFT);
+    await settle();
+    expect(reads).toBe(1);
+  });
+
+  test('an invalid draft is kept and reported as invalid without a call', async () => {
+    const { store } = setup();
+    expect(await store.submit(TARGET, 'helper', { face: null, chips: [], sentence: 'x' })).toBe(
+      false,
+    );
+    expect(store.getSnapshot().submits['bounty:b1:p1']).toEqual({
+      phase: 'failed',
+      failure: 'invalid',
+    });
+  });
+
+  test('a reply to a review I received shows on the pair', async () => {
+    const theirs = {
+      id: 'rv9',
+      face: 'happy' as const,
+      chips: [],
+      sentence: null,
+      submittedAt: '2026-11-06T01:00:00Z',
+      shownAt: '2026-11-06T02:00:00Z',
+      reply: null,
+    };
+    const { store } = setup(
+      fakeService({ reviewState: async () => [pair({ state: 'revealed', theirs })] }),
+    );
+    store.openItem('bounty', 'b1');
+    await settle();
+    store.applyReply('rv9', { body: '谢谢', createdAt: '2026-11-06T03:00:00Z' });
+    const item = store.getSnapshot().items['bounty:b1'];
+    expect(item.status !== 'idle' && item.data?.[0].theirs?.reply?.body).toBe('谢谢');
   });
 
   test('a closed or locked answer reloads the item and the pending list and keeps the draft', async () => {
@@ -234,6 +295,24 @@ describe('live signal', () => {
     await settle();
     expect(reads).toBe(2);
     expect(store.getSnapshot().items['ride:r1'].status).toBe('ready');
+  });
+
+  test('a read already out when a signal marks the item stale lands as stale', async () => {
+    const read = deferred<ReviewPair[]>();
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        reviewState: () => (reads++ === 0 ? Promise.resolve([pair()]) : read.promise),
+      }),
+    );
+    const close = store.openItem('ride', 'r1');
+    await settle();
+    close();
+    void store.reloadItem('ride', 'r1');
+    store.onSignal({ kind: 'ride.reviewed', id: 'r1', at: null });
+    read.resolve([pair()]);
+    await settle();
+    expect(store.getSnapshot().items['ride:r1'].status).toBe('stale');
   });
 
   test('a signal for another kind or item reads nothing for this one', async () => {

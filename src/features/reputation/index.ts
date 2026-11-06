@@ -4,6 +4,7 @@ export {
   useMyMascot,
   usePendingReviews,
   useProfile,
+  useProfileGone,
   useProfileReviews,
   useReplyState,
   useReviewState,
@@ -45,6 +46,8 @@ export {
   type Accessory,
   type AccessoryFailure,
   type Face,
+  type FaceCounts,
+  type MyReview,
   type ItemKind,
   type MyMascot,
   type PairState,
@@ -52,6 +55,7 @@ export {
   type Person,
   type ProfileCard,
   type ProfileReview,
+  type PublicMascot,
   type ReplyFailure,
   type Review,
   type ReviewDraft,
@@ -61,5 +65,6 @@ export {
   type SubmitFailure,
   type Tier,
   type TierDrop,
+  type TierDropNoShow,
 } from './types';
 export { FIXTURE_PEOPLE as FIXTURE_REP_PEOPLE, FIXTURE_REP_USER_ID } from './fixtureData';

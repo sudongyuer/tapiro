@@ -920,13 +920,13 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id            | 行为                                                | 覆盖         |
 | ------------------ | --------------------------------------------------- | ------------ |
 | rep.reviews.faces | 开心 / 一般 / 不开心加标签和一句话，只能在结清后 7 天内评 | ui, db:supabase/tests/reviews.test.sql |
-| rep.reviews.sealed | 双方都评了才同时公开；7 天到了只评了一方就只公开那一条；公开前谁都看不到内容，只知道对方评了 | unit, ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.sealed | 双方都评了才同时公开；7 天到了只评了一方就只公开那一条；公开前谁都看不到内容，只知道对方评了 | unit:src/features/reputation/parse.test.ts#a review pair keeps my review and hides theirs while sealed, ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.chips | 标签按被评的人分四套（帮忙的人、发布的人、发起人、同车的人），开心只能选好的，一般和不开心只能选不太好的，最多 4 个 | ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.pairs | 悬赏是发布的人和帮忙的人互评；拼车是发起人和每个上车的人互评，同车的人之间不评 | ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.edit | 公开前能改自己的评价，公开后不能改 | ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.reply | 被评的人在公开后回复一次，200 字以内，发出后不能改 | ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.reveal-job | 每 10 分钟把到期的评价标成公开；读的时候按 7 天的截止时间算，不等这个任务 | db:supabase/tests/reviews.test.sql |
-| rep.reviews.live | 对方评了或公开时，开着的这一单和首页卡片自动刷新；不发推送 | unit, ui |
+| rep.reviews.live | 对方评了或公开时，开着的这一单和首页卡片自动刷新；不发推送 | unit:src/features/reputation/reviewStore.test.ts#a review signal reloads the open item and the pending list, db:supabase/tests/review_signals.test.sql, ui |
 | rep.reviews.private | 客户端读不到也写不了评价表，只能通过服务器函数；删除账号时删除他写的和收到的评价和回复 | db:supabase/tests/reviews.test.sql |
 
 ### rep.tier 靠谱度
@@ -967,7 +967,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id             | 行为                                                     | 覆盖                                                                            |
 | ------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                   | db:supabase/tests/stickers.test.sql, unit:src/lib/stickers/stickers.test.ts, ui |
-| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit, db:supabase/tests/mascot_profile.test.sql |
+| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit:src/features/reputation/model.test.ts#3, 8, 15 and 25 stickers reach levels 2 to 5, then every 15 more is a level, db:supabase/tests/mascot_profile.test.sql |
 | rep.stickers.level-up | 升级的时刻只出现一次；已经有贴纸的老用户不补播；Lv2–5 各解锁一件装扮，默认戴最新的，可以换成已解锁的 | ui, db:supabase/tests/mascot_profile.test.sql |
 
 ### rep.profile 主页

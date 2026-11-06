@@ -4,9 +4,8 @@ import {
   createRequests,
   IDLE_LOAD,
   loaded,
-  loadFailed,
-  loading,
   needsLoad,
+  readInto,
   type Loadable,
 } from '@/lib/loadable';
 import { AccessoryError } from './reputationService';
@@ -35,6 +34,7 @@ const IDLE: MeState = {
 
 const DROP = 'drop';
 const MASCOT = 'mascot';
+const WRITE = 'mascotWrite';
 
 export function createMeStore({ service }: { service: ReputationService }) {
   const store = createStore<MeState>(IDLE);
@@ -45,46 +45,47 @@ export function createMeStore({ service }: { service: ReputationService }) {
   const patch = (next: Partial<MeState>) => store.set({ ...get(), ...next });
   const current = (userId: string, at: number) => at === generation && get().userId === userId;
 
-  async function reloadTierDrop() {
+  function reloadTierDrop() {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) return Promise.resolve();
     const at = generation;
-    const request = requests.start(DROP);
-    patch({ tierDrop: loading(get().tierDrop) });
-    try {
-      const drop = await service.pendingTierDrop();
-      if (!current(userId, at) || !requests.isLatest(DROP, request)) return;
-      patch({ tierDrop: loaded(drop) });
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(DROP, request)) return;
-      patch({ tierDrop: loadFailed(get().tierDrop) });
-    }
+    return readInto({
+      requests,
+      key: DROP,
+      read: () => service.pendingTierDrop(),
+      current: () => current(userId, at),
+      value: () => get().tierDrop,
+      set: (tierDrop) => patch({ tierDrop }),
+    });
   }
 
-  async function reloadMascot() {
+  function reloadMascot() {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) return Promise.resolve();
     const at = generation;
-    const request = requests.start(MASCOT);
-    patch({ mascot: loading(get().mascot) });
-    try {
-      const mascot = await service.myMascot();
-      if (!current(userId, at) || !requests.isLatest(MASCOT, request)) return;
-      patch({ mascot: loaded(mascot) });
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(MASCOT, request)) return;
-      patch({ mascot: loadFailed(get().mascot) });
-    }
+    return readInto({
+      requests,
+      key: MASCOT,
+      read: () => service.myMascot(),
+      current: () => current(userId, at),
+      value: () => get().mascot,
+      set: (mascot) => patch({ mascot }),
+    });
   }
 
   async function writeMascot(userId: string, write: () => Promise<MyMascot>) {
     const at = generation;
-    requests.supersede(MASCOT);
-    const mascot = await write();
-    if (!current(userId, at)) return null;
-    requests.supersede(MASCOT);
-    patch({ mascot: loaded(mascot) });
-    return mascot;
+    const request = requests.start(WRITE);
+    try {
+      const mascot = await write();
+      if (!current(userId, at) || !requests.isLatest(WRITE, request)) return null;
+      const dropped = requests.supersede(MASCOT);
+      patch({ mascot: loaded(mascot) });
+      if (dropped) void reloadMascot();
+      return mascot;
+    } finally {
+      requests.end(WRITE);
+    }
   }
 
   async function markLevelSeen(level: number) {

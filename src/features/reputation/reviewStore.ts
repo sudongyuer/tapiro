@@ -6,10 +6,8 @@ import {
   createFocus,
   createRequests,
   IDLE_LOAD,
-  loaded,
-  loadFailed,
-  loading,
   needsLoad,
+  readInto,
   staleIfReady,
   type Loadable,
 } from '@/lib/loadable';
@@ -19,6 +17,7 @@ import {
   targetKey,
   type ItemKind,
   type PendingReview,
+  type Reply,
   type ReputationService,
   type ReviewDraft,
   type ReviewPair,
@@ -42,7 +41,7 @@ const IDLE: ReviewsState = { userId: null, pending: IDLE_LOAD, items: {}, submit
 
 const PENDING = 'pending';
 
-const RELOAD_AFTER: readonly SubmitFailure[] = ['closed', 'locked', 'notFound'];
+const RELOAD_AFTER: readonly SubmitFailure[] = ['closed', 'locked', 'notFound', 'failed'];
 
 const signalKind = (signal: LiveSignal): ItemKind | null =>
   signal.kind === 'bounty.reviewed' ? 'bounty' : signal.kind === 'ride.reviewed' ? 'ride' : null;
@@ -76,57 +75,54 @@ export function createReviewStore({
     patch({ submits: next ? { ...rest, [key]: next } : rest });
   }
 
-  async function reloadPending() {
+  function reloadPending() {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) return Promise.resolve();
     const at = generation;
-    const request = requests.start(PENDING);
-    patch({ pending: loading(get().pending) });
-    try {
-      const items = await service.pendingReviews();
-      if (!current(userId, at) || !requests.isLatest(PENDING, request)) return;
-      patch({ pending: loaded(items) });
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(PENDING, request)) return;
-      patch({ pending: loadFailed(get().pending) });
-    }
+    return readInto({
+      requests,
+      key: PENDING,
+      read: () => service.pendingReviews(),
+      current: () => current(userId, at),
+      value: () => get().pending,
+      set: (pending) => patch({ pending }),
+    });
   }
 
-  async function reloadItem(kind: ItemKind, itemId: string) {
+  function reloadItem(kind: ItemKind, itemId: string) {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) return Promise.resolve();
     const key = pairKey(kind, itemId);
     const at = generation;
-    const request = requests.start(key);
-    setItem(key, loading(get().items[key]));
-    try {
-      const pairs = await service.reviewState(kind, itemId);
-      if (!current(userId, at) || !requests.isLatest(key, request)) return;
-      setItem(key, loaded(pairs));
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(key, request)) return;
-      setItem(key, loadFailed(get().items[key]));
-    }
+    return readInto({
+      requests,
+      key,
+      read: () => service.reviewState(kind, itemId),
+      current: () => current(userId, at),
+      value: () => get().items[key],
+      set: (next) => setItem(key, next),
+    });
   }
 
   function applySubmitted(target: ReviewTarget, pair: ReviewPair) {
     const key = pairKey(target.kind, target.itemId);
     const item = get().items[key];
     if (item && item.status !== 'idle' && item.data) {
-      requests.supersede(key);
+      const dropped = requests.supersede(key);
       const pairs = item.data.some((row) => samePair(row, target))
         ? item.data.map((row) => (samePair(row, target) ? pair : row))
         : [...item.data, pair];
       setItem(key, { status: item.status, data: pairs });
+      if (dropped) void reloadItem(target.kind, target.itemId);
     } else if (item) {
       void reloadItem(target.kind, target.itemId);
     }
     const pending = get().pending;
     if (pending.status !== 'idle' && pending.data) {
-      requests.supersede(PENDING);
+      const dropped = requests.supersede(PENDING);
       patch({
         pending: {
-          status: pending.status === 'loading' ? 'ready' : pending.status,
+          status: pending.status,
           data: pending.data.filter(
             (row) =>
               !(
@@ -137,6 +133,20 @@ export function createReviewStore({
           ),
         },
       });
+      if (dropped) void reloadPending();
+    }
+  }
+
+  function applyReply(reviewId: string, reply: Reply) {
+    for (const [key, item] of Object.entries(get().items)) {
+      if (item.status === 'idle' || !item.data) continue;
+      if (!item.data.some((row) => row.theirs?.id === reviewId)) continue;
+      setItem(key, {
+        ...item,
+        data: item.data.map((row) =>
+          row.theirs?.id === reviewId ? { ...row, theirs: { ...row.theirs, reply } } : row,
+        ),
+      });
     }
   }
 
@@ -146,7 +156,10 @@ export function createReviewStore({
     if (!userId || get().submits[key]?.phase === 'sending') return false;
     drafts.setReview(userId, key, draft);
     const valid = validDraft(draft, role);
-    if (!valid) return false;
+    if (!valid) {
+      setSubmit(key, { phase: 'failed', failure: 'invalid' });
+      return false;
+    }
     const at = generation;
     setSubmit(key, { phase: 'sending' });
     const result = await service.submitReview(target, valid);
@@ -179,6 +192,7 @@ export function createReviewStore({
       const [kind, itemId] = key.split(':') as [ItemKind, string];
       void reloadItem(kind, itemId);
     } else {
+      requests.dirty(key);
       setItem(key, staleIfReady(item));
     }
   }
@@ -228,6 +242,7 @@ export function createReviewStore({
       if (userId) drafts.setReview(userId, targetKey(target), draft);
     },
     submit,
+    applyReply,
     dismissFailure(target: ReviewTarget) {
       const key = targetKey(target);
       if (get().submits[key]?.phase === 'failed') setSubmit(key, null);

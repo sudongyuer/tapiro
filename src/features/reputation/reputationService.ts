@@ -50,6 +50,12 @@ export class AccessoryError extends Error {
   }
 }
 
+export class ProfileGoneError extends Error {
+  constructor() {
+    super('profile: user_not_found');
+  }
+}
+
 function unwrap<T extends { data: unknown; error: unknown }>(result: T): T['data'] {
   if (result.error) throw result.error;
   return result.data;
@@ -93,7 +99,10 @@ export function createSupabaseReputationService(client: SupabaseClient | null): 
       }
     },
     async profile(personId) {
-      return toProfileCard(unwrap(await db().rpc('profile_card', { person: personId })));
+      const { data, error } = await db().rpc('profile_card', { person: personId });
+      if (error && errorCode(error) === 'user_not_found') throw new ProfileGoneError();
+      if (error) throw error;
+      return toProfileCard(data);
     },
     async profileReviews(personId, before) {
       return toReviewPage(

@@ -10,6 +10,7 @@ import {
   profileReview,
   settle,
 } from './storeHarness';
+import { ProfileGoneError } from './reputationService';
 import type { ProfileCard, ReplyResult, ReviewPage } from './types';
 
 function setup(service = fakeService()) {
@@ -58,7 +59,12 @@ describe('profile card', () => {
     let reads = 0;
     const { store } = setup(
       fakeService({
-        profile: () => (reads++ === 0 ? Promise.resolve(card()) : read.promise),
+        profile: () => {
+          reads += 1;
+          if (reads === 1) return Promise.resolve(card());
+          if (reads === 2) return read.promise;
+          return Promise.resolve(card({ blockedByMe: true, helped: 5 }));
+        },
       }),
     );
     store.openProfile('p1');
@@ -69,6 +75,16 @@ describe('profile card', () => {
     await settle();
     const shown = store.getSnapshot().cards.p1;
     expect(shown.status !== 'idle' && shown.data?.blockedByMe).toBe(true);
+    expect(shown.status !== 'idle' && shown.data?.helped).toBe(5);
+    expect(reads).toBe(3);
+  });
+
+  test('a deleted account is told apart from a failed load', async () => {
+    const { store } = setup(fakeService({ profile: () => Promise.reject(new ProfileGoneError()) }));
+    store.openProfile('p1');
+    await settle();
+    expect(store.getSnapshot().cards.p1.status).toBe('failed');
+    expect(store.getSnapshot().gone.p1).toBe(true);
   });
 });
 
@@ -105,6 +121,80 @@ describe('all reviews', () => {
     ]);
     expect(list.status !== 'idle' && list.data?.hasMore).toBe(false);
     expect(cursors).toEqual([null, 'c2', 'c2']);
+  });
+});
+
+describe('reply in flight', () => {
+  test('a list read in flight when the reply lands cannot hide the reply', async () => {
+    const read = deferred<ReviewPage>();
+    let reads = 0;
+    const replied = { body: '谢谢', createdAt: '2026-11-06T05:00:00Z' };
+    const { store } = setup(
+      fakeService({
+        profileReviews: () => {
+          reads += 1;
+          if (reads === 1) return Promise.resolve(page(['r1'], null));
+          if (reads === 2) return read.promise;
+          return Promise.resolve({
+            ...page(['r1'], null),
+            items: [profileReview('r1', { reply: replied })],
+          });
+        },
+        reply: async (reviewId, body) => ({ ok: true, reviewId, reply: { ...replied, body } }),
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    void store.reloadList('p1');
+    await store.reply('r1', '谢谢');
+    read.resolve(page(['r1'], null));
+    await settle();
+    const list = store.getSnapshot().reviews.p1;
+    expect(list.status !== 'idle' && list.data?.items[0].reply?.body).toBe('谢谢');
+  });
+
+  test('a page that lands after the head was read again is dropped, and stale stays stale', async () => {
+    const more = deferred<ReviewPage>();
+    let heads = 0;
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, before) => {
+          if (before) return more.promise;
+          heads += 1;
+          return Promise.resolve(page(heads === 1 ? ['r2', 'r3'] : ['r1', 'r2'], 'c'));
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    const loadingMore = store.loadMore('p1');
+    await store.reloadList('p1');
+    more.resolve(page(['r4'], null));
+    await loadingMore;
+    let list = store.getSnapshot().reviews.p1;
+    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual(['r1', 'r2']);
+    expect(list.status !== 'idle' && list.data?.more).toBe('idle');
+  });
+
+  test('a page appended to a stale list keeps it stale', async () => {
+    const { store } = setup(
+      fakeService({
+        profileReviews: async (_id, before) =>
+          before ? page(['r3'], null) : page(['r1', 'r2'], 'c'),
+      }),
+    );
+    const close = store.openReviews('p1');
+    await settle();
+    close();
+    store.onSignal();
+    await store.loadMore('p1');
+    const list = store.getSnapshot().reviews.p1;
+    expect(list.status).toBe('stale');
+    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual([
+      'r1',
+      'r2',
+      'r3',
+    ]);
   });
 });
 

@@ -45,8 +45,16 @@ export function followCoins(userId: string | null, appState: AppStateSource) {
   return onReturnToForeground(appState, coinsStore.refresh);
 }
 
-live.on(['payment.settled', 'ride.settled'], (signal) =>
-  signal === null ? coinsStore.refresh() : coinsStore.onCoinsChanged(),
+live.on(
+  [
+    'payment.settled',
+    'ride.settled',
+    'bounty.cancelled',
+    'bounty.expired',
+    'ride.cancelled',
+    'ride.expired',
+  ],
+  (signal) => (signal === null ? coinsStore.refresh() : coinsStore.onCoinsChanged()),
 );
 
 userCleanups.register((userId) => codeDrafts.set(userId, ''));

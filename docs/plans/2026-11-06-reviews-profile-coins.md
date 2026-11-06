@@ -6,7 +6,8 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06). Questions 256–259 below are open; Tasks 2, 8 and 10 do not depend on them.
+(2026-11-06); Task 2 (client core) is built (2026-11-06). Questions 256–259 below are open; Tasks 2, 8 and 10 do not
+depend on them.
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
 profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
@@ -120,6 +121,58 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
   Malaysia `month` (`YYYY-MM`) for grouping and the item title for spends, refunds and help grants; free posts write no
   row, as before.
 
+## ★ Client core defaults (Task 2, 2026-11-06, for veto)
+
+- **Signals:** migration `20261106000900_review_signals.sql` adds live-only `bounty.reviewed` and `ride.reviewed`
+  (subject = the item id, never pushed) from a trigger on `public.reviews`: a first submit signals the reviewee only;
+  a reveal signals both sides with no actor, so the submitter's other devices reload too; the second submit of a pair
+  sends one reveal signal per person (its own insert sends none), and the reveal job signals both sides of each
+  one-sided review it stamps. An edit while sealed sends nothing. `bounty.reviewed` taps open the status screen;
+  `ride.reviewed` the ride (prefix route). The existing bounty and ride live handlers also reload on these kinds,
+  which costs one extra read and is left as is.
+- **Live handler:** `reviewStore` reloads the pending list and the item's review state when that item is on screen,
+  marks it stale otherwise (read again on next open); a resync (`null`) reloads everything loaded; profiles on screen
+  reload and the rest go stale. Coins reload the balance and mark the history stale on `payment.settled` and
+  `ride.settled` (help grants, invite rewards); the mascot reloads on the same kinds (new stickers can level up).
+  Every store also reloads on a return from background.
+- **Loads:** every read is a `Loadable` (`src/lib/loadable.ts`): `loading` and `failed` carry no data, a failed
+  reload of shown data is `stale` (kept, marked not current); a newer answer always wins over an older one. A local
+  write (submit, reply, feed, redeem, block mark, mascot write) drops reads already in flight and, when it dropped
+  one, reads again once, since the dropped read may have carried rows the write did not touch. A signal for an item
+  off screen marks it stale, and a read already out for it lands as stale too. A next page is dropped when the first
+  page was read again meanwhile, and appending a page never turns a stale list ready. A failed first load is never an
+  empty list or a 0 balance. A deleted account's profile reads as gone (`useProfileGone`), not as a retryable failure.
+- **Coins on screen:** each coins hook reads again when its screen gains focus (the balance changes on posts, refunds
+  and an inviter's reward, which send the inviter no signal); on screen it also reloads on the settle, cancel and
+  expire kinds.
+- **Writes:** submit, reply and the invite code are stored on the device before the call (`reviewDrafts`, per user;
+  the invite code per user) and kept after any failure; nothing is retried automatically; a second tap while one is
+  in flight is ignored; an invalid draft or reply is kept and reported as `invalid`. `closed`, `locked`, `notFound`
+  and `failed` reload the item and the pending list (the review that is
+  already public shows); `alreadyReplied` reloads the profile. A tier drop dismissed in the app stays hidden for the
+  session even when `mark_tier_drop_seen` fails (it shows again on the next launch until marked). The weekly feed
+  shows its answer only from the server (`answered: fed | already_fed`), `failed` otherwise.
+- **Parsing:** an unknown pair state, face, role or tier fails the read (shown as failed, not guessed); an unknown
+  coin reason reads as `other` so one new server reason does not blank the whole history. An invite answer may carry
+  no code yet (a redeem before the first `my_invite()`). A typed code not in the code alphabet is refused on the
+  device as `malformed` (same copy as `notFound`) without a call.
+- **Copy:** chips, faces, level names, accessories, coin reasons, the sealed lines, the home card, the tier-drop
+  lines, the weekly-feed bubbles and the invite page in zh-Hans, en and ms from the boards; new ★ wording where the
+  boards had none: en faces Happy / Okay / Unhappy, ms Gembira / Biasa / Tidak gembira; en level names Baby, Little,
+  Student, Teen, Young and Grown Tapir; accessories en Red hat / Backpack / Umbrella / Scarf, ms Topi merah / Beg
+  galas / Payung / Selendang; coins keep the existing 「Coins」 / 「Syiling」; invite errors 「这是你自己的邀请码」,
+  「你已经填过邀请码了」, 「完成第一单后就不能再填邀请码了」, 「TA 是你邀请来的，不能填 TA 的码」 and
+  「没填上，请检查网络后重试」. The tier names stay under `bounty.tier.*`. Malay copy needs a native review (spec).
+- **Verify fixtures:** `-uiVerifyReviews` / `-uiVerifyProfile` (`many` default, `one`, `empty`, `failed`, `worst`),
+  `-uiVerifyRepFail <state,pending,submit,reply,profile,reviews,mascot,accessory,tierDrop>` (fail once),
+  `-uiVerifyRepDelayMs`; `-uiVerifyCoins` (same variants), `-uiVerifyCoinsFail <balance,history,feedStatus,feed,
+invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are recorded under `uiVerifyRepCalls` and
+  `uiVerifyCoinsCalls`. A ride id ending in `-rider` gives the rider's view (one organiser row); other ride ids give
+  the organiser's four rows (open, sealed, they reviewed, ended). The friend code is `7KQ3XP`, mine `M8WQ4K`.
+- **256 / 258 / 259:** nothing in the client depends on the answers: ride reviews parse with or without a route and a
+  reviewer (256), counting rides is server-only (258), and reporting a review would be a later addition to Task 5
+  (259).
+
 ## File structure
 
 | Action | Path                                                                             | Responsibility                                            |
@@ -140,12 +193,22 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
 
 1. **Server** — **done 2026-11-06** (this plan's first PR): the five migrations and four pgTAP files above. Defaults
    above. Account deletion needs no Edge Function change: every new table cascades or sets null with `auth.users`.
-2. **Client core** (no UI): `src/features/reputation/` and `src/features/coins/` with types, parsers, the Supabase
+2. **Client core** — **done 2026-11-06** (no UI): `src/features/reputation/` and `src/features/coins/` with types, parsers, the Supabase
    services, fixture services (`-uiVerifyReviews`, `-uiVerifyProfile`, `-uiVerifyCoins` variants: empty, one, many,
    failed, worst-case names), stores that never show a failed load as empty; a migration adding the review signals
    (Signals above) with their tap routes, and a live handler that reloads the open item's review state and the
    pending list; chip, face, level-name and coin-reason copy in zh-Hans,
    en and ms. Unit tests for parsing, the store states and the level curve (`rep.stickers.levels`). UI cases: none.
+   Public surface for Tasks 3–10: `@/features/reputation` exports the hooks `useReviewState(kind, itemId)`,
+   `usePendingReviews()`, `useReviewSubmit(target)`, `useProfile(personId)`, `useProfileGone(personId)`, `useProfileReviews(personId)`,
+   `useReplyState(reviewId)`, `useTierDrop()`, `useMyMascot()`, `useAccessoryState()`; the stores `reviewStore`
+   (`submit`, `draft`, `saveDraft`, `dismissFailure`, `reloadItem`, `reloadPending`), `profileStore` (`reply`,
+   `replyDraft`, `saveReplyDraft`, `loadMore`, `reloadCard`, `reloadList`), `meStore` (`markLevelSeen`,
+   `setAccessory`, `dismissTierDrop`); and the model helpers (`chipsFor`, `pickFace`, `toggleChip`, `validDraft`,
+   `draftFromReview`, `draftChanged`, `canReview`, `daysLeft`, `mascotLevel`, `levelStartsAt`, `levelNameKey`,
+   `unlockedAccessories`). `@/features/coins` exports `useCoinBalance()`, `useCoinHistory()`, `useWeeklyFeed()`,
+   `useInvite()`, `coinsStore` (`feed`, `settleFeed`, `redeem`, `codeDraft`, `saveCodeDraft`, `loadMoreHistory`, the
+   reloads), `groupByMonth`, `reasonKey`, `signedDelta`, `normalizeInviteCode`, `inviteCodeShaped`.
 3. **Review sheet** (239 A, 240 A, 244 A, after 257): a large system sheet with 取消 and the title 「评价{name}」; faces,
    then the chip set for the reviewee's role (good chips for 开心, not-good for 一般 / 不开心), the sentence, 提交;
    the draft is kept on the device across failures and a discard asks first; the same sheet opens for 改一下 with the

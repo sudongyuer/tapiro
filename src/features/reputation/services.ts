@@ -36,7 +36,11 @@ const service = uiVerify ? verifyService() : createSupabaseReputationService(get
 export const reviewDrafts = createReviewDrafts(Settings);
 
 export const reviewStore = createReviewStore({ service, drafts: reviewDrafts });
-export const profileStore = createProfileStore({ service, drafts: reviewDrafts });
+export const profileStore = createProfileStore({
+  service,
+  drafts: reviewDrafts,
+  onReplied: reviewStore.applyReply,
+});
 export const meStore = createMeStore({ service });
 
 if (uiVerify) reviewDrafts.clear(FIXTURE_REP_USER_ID);

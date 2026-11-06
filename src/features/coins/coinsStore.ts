@@ -1,11 +1,11 @@
 import { createStore } from '@/lib/store';
 import {
+  createFocus,
   createRequests,
   IDLE_LOAD,
   loaded,
-  loadFailed,
-  loading,
   needsLoad,
+  readInto,
   staleIfReady,
   type Loadable,
 } from '@/lib/loadable';
@@ -57,7 +57,9 @@ const IDLE: CoinsState = {
   redeem: { phase: 'idle' },
 };
 
-type LoadKey = 'balance' | 'history' | 'feedStatus' | 'invite';
+export type LoadKey = 'balance' | 'history' | 'feedStatus' | 'invite';
+
+const PAGE = 'historyPage';
 
 export function createCoinsStore({
   service,
@@ -68,29 +70,28 @@ export function createCoinsStore({
 }) {
   const store = createStore<CoinsState>(IDLE);
   const requests = createRequests();
+  const focus = createFocus();
   let generation = 0;
 
   const get = store.get;
   const patch = (next: Partial<CoinsState>) => store.set({ ...get(), ...next });
   const current = (userId: string, at: number) => at === generation && get().userId === userId;
 
-  async function reload<K extends LoadKey>(
+  function reload<K extends LoadKey>(
     key: K,
     read: () => Promise<CoinsState[K] extends Loadable<infer T> ? T : never>,
   ) {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) return Promise.resolve();
     const at = generation;
-    const request = requests.start(key);
-    patch({ [key]: loading(get()[key] as Loadable<unknown>) } as Partial<CoinsState>);
-    try {
-      const value = await read();
-      if (!current(userId, at) || !requests.isLatest(key, request)) return;
-      patch({ [key]: loaded(value) } as Partial<CoinsState>);
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(key, request)) return;
-      patch({ [key]: loadFailed(get()[key] as Loadable<unknown>) } as Partial<CoinsState>);
-    }
+    return readInto({
+      requests,
+      key,
+      read,
+      current: () => current(userId, at),
+      value: () => get()[key] as Loadable<Awaited<ReturnType<typeof read>>>,
+      set: (next) => patch({ [key]: next } as Partial<CoinsState>),
+    });
   }
 
   const reloadBalance = () => reload('balance', () => service.balance());
@@ -102,42 +103,69 @@ export function createCoinsStore({
   const reloadFeedStatus = () => reload('feedStatus', () => service.feedStatus());
   const reloadInvite = () => reload('invite', () => service.invite());
 
+  const RELOADS: Record<LoadKey, () => Promise<void>> = {
+    balance: reloadBalance,
+    history: reloadHistory,
+    feedStatus: reloadFeedStatus,
+    invite: reloadInvite,
+  };
+
   async function loadMoreHistory() {
     const { userId, history } = get();
-    if (!userId || history.status !== 'ready' || !history.data) return;
+    if (!userId || history.status === 'idle' || history.status === 'loading' || !history.data)
+      return;
     const { hasMore, nextCursor, more } = history.data;
     if (!hasMore || nextCursor === null || more === 'loading') return;
     const at = generation;
-    const request = requests.start('history');
+    const head = requests.latest('history');
+    const request = requests.start(PAGE);
     patch({ history: { ...history, data: { ...history.data, more: 'loading' } } });
+    let page: Awaited<ReturnType<CoinsService['history']>> | null = null;
     try {
-      const page = await service.history(nextCursor);
-      const now = get().history;
-      if (!current(userId, at) || !requests.isLatest('history', request)) return;
-      if (now.status === 'idle' || !now.data) return;
-      const seen = new Set(now.data.items.map((row) => row.id));
-      patch({
-        history: loaded({
+      page = await service.history(nextCursor);
+    } catch {
+      page = null;
+    } finally {
+      requests.end(PAGE);
+    }
+    const now = get().history;
+    if (!current(userId, at) || !requests.isLatest(PAGE, request)) return;
+    if (now.status === 'idle' || !now.data) return;
+    if (!page || requests.latest('history') !== head) {
+      patch({ history: { ...now, data: { ...now.data, more: page ? 'idle' : 'failed' } } });
+      return;
+    }
+    const seen = new Set(now.data.items.map((row) => row.id));
+    patch({
+      history: {
+        status: now.status,
+        data: {
           items: [...now.data.items, ...page.items.filter((row) => !seen.has(row.id))],
           hasMore: page.hasMore,
           nextCursor: page.nextCursor,
           more: 'idle',
-        }),
-      });
-    } catch {
-      const now = get().history;
-      if (!current(userId, at) || !requests.isLatest('history', request)) return;
-      if (now.status !== 'idle' && now.data) {
-        patch({ history: { ...now, data: { ...now.data, more: 'failed' } } });
-      }
+        },
+      },
+    });
+  }
+
+  function changed(key: LoadKey) {
+    const value = get()[key];
+    if (value.status === 'idle') return;
+    if (focus.has(key)) {
+      void RELOADS[key]();
+      return;
     }
+    requests.dirty(key);
+    patch({ [key]: staleIfReady(value as Loadable<unknown>) } as Partial<CoinsState>);
   }
 
   function applyCoins(coins: number) {
     const balance = get().balance;
-    if (balance.status === 'idle' || !balance.data || balance.data.coins === coins) return;
-    requests.supersede('balance');
+    if (balance.status === 'idle' || !balance.data) return;
+    const dropped = requests.supersede('balance');
     patch({ balance: { ...balance, data: { ...balance.data, coins } } });
+    if (dropped) void reloadBalance();
   }
 
   async function feed() {
@@ -148,7 +176,7 @@ export function createCoinsStore({
     try {
       const result = await service.feed();
       if (!current(userId, at)) return null;
-      requests.supersede('feedStatus');
+      const dropped = requests.supersede('feedStatus');
       patch({
         feed: { phase: 'answered', status: result.status },
         feedStatus: loaded({
@@ -157,18 +185,14 @@ export function createCoinsStore({
           coins: result.coins,
         }),
       });
+      if (dropped) void reloadFeedStatus();
       applyCoins(result.coins);
-      if (result.status === 'fed') markHistoryChanged();
+      if (result.status === 'fed') changed('history');
       return result.status;
     } catch {
       if (current(userId, at)) patch({ feed: { phase: 'failed' } });
       return null;
     }
-  }
-
-  function markHistoryChanged() {
-    const history = get().history;
-    if (history.status !== 'idle') patch({ history: staleIfReady(history) });
   }
 
   async function redeem(typed: string) {
@@ -181,8 +205,9 @@ export function createCoinsStore({
     if (!current(userId, at)) return false;
     if (result.ok) {
       drafts.set(userId, '');
-      requests.supersede('invite');
+      const dropped = requests.supersede('invite');
       patch({ redeem: { phase: 'idle' }, invite: loaded(result.invite) });
+      if (dropped) void reloadInvite();
       return true;
     }
     patch({ redeem: { phase: 'failed', failure: result.failure } });
@@ -202,6 +227,7 @@ export function createCoinsStore({
   function clear() {
     generation += 1;
     requests.clear();
+    focus.clear();
     store.set(IDLE);
   }
 
@@ -248,10 +274,16 @@ export function createCoinsStore({
       if (get().redeem.phase === 'failed') patch({ redeem: { phase: 'idle' } });
     },
     onCoinsChanged() {
-      const { userId, balance } = get();
-      if (!userId) return;
+      if (!get().userId) return;
+      const { balance } = get();
       if (balance.status !== 'idle') void reloadBalance();
-      markHistoryChanged();
+      changed('history');
+      changed('invite');
+    },
+    open(key: LoadKey) {
+      const close = focus.open(key);
+      if (get().userId) void RELOADS[key]();
+      return close;
     },
     refresh,
   };

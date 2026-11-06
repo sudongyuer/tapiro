@@ -4,15 +4,21 @@ import type { ReviewDrafts } from './drafts';
 import {
   createFocus,
   createRequests,
-  loaded,
-  loadFailed,
-  loading,
   needsLoad,
+  readInto,
   staleIfReady,
   type Loadable,
 } from '@/lib/loadable';
 import { cleanText, textFits } from './model';
-import type { ProfileCard, ProfileReview, Reply, ReplyFailure, ReputationService } from './types';
+import { ProfileGoneError } from './reputationService';
+import type {
+  ProfileCard,
+  ProfileReview,
+  Reply,
+  ReplyFailure,
+  ReputationService,
+  ReviewPage,
+} from './types';
 
 export type ReviewList = {
   items: ProfileReview[];
@@ -28,12 +34,14 @@ export type ProfilesState = {
   cards: Readonly<Record<string, Loadable<ProfileCard>>>;
   reviews: Readonly<Record<string, Loadable<ReviewList>>>;
   replies: Readonly<Record<string, ReplyState>>;
+  gone: Readonly<Record<string, true>>;
 };
 
-const IDLE: ProfilesState = { userId: null, cards: {}, reviews: {}, replies: {} };
+const IDLE: ProfilesState = { userId: null, cards: {}, reviews: {}, replies: {}, gone: {} };
 
 const cardKey = (personId: string) => `card:${personId}`;
 const listKey = (personId: string) => `list:${personId}`;
+const pageKey = (personId: string) => `page:${personId}`;
 
 const withReply = (rows: ProfileReview[], reviewId: string, reply: Reply) =>
   rows.map((row) => (row.id === reviewId ? { ...row, reply } : row));
@@ -41,9 +49,11 @@ const withReply = (rows: ProfileReview[], reviewId: string, reply: Reply) =>
 export function createProfileStore({
   service,
   drafts,
+  onReplied = () => undefined,
 }: {
   service: ReputationService;
   drafts: ReviewDrafts;
+  onReplied?: (reviewId: string, reply: Reply) => void;
 }) {
   const store = createStore<ProfilesState>(IDLE);
   const requests = createRequests();
@@ -64,89 +74,113 @@ export function createProfileStore({
     patch({ replies: next ? { ...rest, [reviewId]: next } : rest });
   }
 
-  async function reloadCard(personId: string) {
-    const { userId } = get();
-    if (!userId) return;
-    const at = generation;
-    const request = requests.start(cardKey(personId));
-    setCard(personId, loading(get().cards[personId]));
-    try {
-      const card = await service.profile(personId);
-      if (!current(userId, at) || !requests.isLatest(cardKey(personId), request)) return;
-      setCard(personId, loaded(card));
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(cardKey(personId), request)) return;
-      setCard(personId, loadFailed(get().cards[personId]));
-    }
+  function setGone(personId: string, gone: boolean) {
+    if (Boolean(get().gone[personId]) === gone) return;
+    const { [personId]: _dropped, ...rest } = get().gone;
+    patch({ gone: gone ? { ...rest, [personId]: true } : rest });
   }
 
-  async function reloadList(personId: string) {
+  function reloadCard(personId: string) {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) return Promise.resolve();
     const at = generation;
-    const request = requests.start(listKey(personId));
-    setList(personId, loading(get().reviews[personId]));
-    try {
-      const page = await service.profileReviews(personId, null);
-      if (!current(userId, at) || !requests.isLatest(listKey(personId), request)) return;
-      setList(personId, loaded({ ...page, more: 'idle' }));
-    } catch {
-      if (!current(userId, at) || !requests.isLatest(listKey(personId), request)) return;
-      setList(personId, loadFailed(get().reviews[personId]));
-    }
+    return readInto({
+      requests,
+      key: cardKey(personId),
+      read: async () => {
+        try {
+          const card = await service.profile(personId);
+          if (current(userId, at)) setGone(personId, false);
+          return card;
+        } catch (error) {
+          if (error instanceof ProfileGoneError && current(userId, at)) setGone(personId, true);
+          throw error;
+        }
+      },
+      current: () => current(userId, at),
+      value: () => get().cards[personId],
+      set: (next) => setCard(personId, next),
+    });
+  }
+
+  function reloadList(personId: string) {
+    const { userId } = get();
+    if (!userId) return Promise.resolve();
+    const at = generation;
+    return readInto({
+      requests,
+      key: listKey(personId),
+      read: async () => ({
+        ...(await service.profileReviews(personId, null)),
+        more: 'idle' as const,
+      }),
+      current: () => current(userId, at),
+      value: () => get().reviews[personId],
+      set: (next) => setList(personId, next),
+    });
   }
 
   async function loadMore(personId: string) {
     const { userId } = get();
     const list = get().reviews[personId];
-    if (!userId || !list || list.status !== 'ready' || !list.data) return;
+    if (!userId || !list || list.status === 'idle' || list.status === 'loading' || !list.data)
+      return;
     const { hasMore, nextCursor, more } = list.data;
     if (!hasMore || !nextCursor || more === 'loading') return;
     const at = generation;
-    const request = requests.start(listKey(personId));
+    const head = requests.latest(listKey(personId));
+    const key = pageKey(personId);
+    const request = requests.start(key);
     setList(personId, { ...list, data: { ...list.data, more: 'loading' } });
+    let page: ReviewPage | null = null;
     try {
-      const page = await service.profileReviews(personId, nextCursor);
-      const now = get().reviews[personId];
-      if (!current(userId, at) || !requests.isLatest(listKey(personId), request)) return;
-      if (!now || now.status === 'idle' || !now.data) return;
-      const seen = new Set(now.data.items.map((row) => row.id));
-      setList(
-        personId,
-        loaded({
-          items: [...now.data.items, ...page.items.filter((row) => !seen.has(row.id))],
-          hasMore: page.hasMore,
-          nextCursor: page.nextCursor,
-          more: 'idle',
-        }),
-      );
+      page = await service.profileReviews(personId, nextCursor);
     } catch {
-      const now = get().reviews[personId];
-      if (!current(userId, at) || !requests.isLatest(listKey(personId), request)) return;
-      if (now && now.status !== 'idle' && now.data) {
-        setList(personId, { ...now, data: { ...now.data, more: 'failed' } });
-      }
+      page = null;
+    } finally {
+      requests.end(key);
     }
+    const now = get().reviews[personId];
+    if (!current(userId, at) || !requests.isLatest(key, request)) return;
+    if (!now || now.status === 'idle' || !now.data) return;
+    if (!page || requests.latest(listKey(personId)) !== head) {
+      setList(personId, { ...now, data: { ...now.data, more: page ? 'idle' : 'failed' } });
+      return;
+    }
+    const seen = new Set(now.data.items.map((row) => row.id));
+    setList(personId, {
+      status: now.status,
+      data: {
+        items: [...now.data.items, ...page.items.filter((row) => !seen.has(row.id))],
+        hasMore: page.hasMore,
+        nextCursor: page.nextCursor,
+        more: 'idle',
+      },
+    });
   }
 
   function applyReply(reviewId: string, reply: Reply) {
     for (const [personId, card] of Object.entries(get().cards)) {
       if (card.status === 'idle' || !card.data) continue;
       if (!card.data.latestReviews.some((row) => row.id === reviewId)) continue;
-      requests.supersede(cardKey(personId));
+      const dropped = requests.supersede(cardKey(personId));
       setCard(personId, {
         status: card.status,
         data: { ...card.data, latestReviews: withReply(card.data.latestReviews, reviewId, reply) },
       });
+      if (dropped) void reloadCard(personId);
     }
     for (const [personId, list] of Object.entries(get().reviews)) {
       if (list.status === 'idle' || !list.data) continue;
       if (!list.data.items.some((row) => row.id === reviewId)) continue;
+      const dropped = requests.supersede(listKey(personId));
       setList(personId, {
         status: list.status,
         data: { ...list.data, items: withReply(list.data.items, reviewId, reply) },
       });
+      if (dropped) void reloadList(personId);
     }
+    onReplied(reviewId, reply);
   }
 
   async function reply(reviewId: string, body: string) {
@@ -154,7 +188,10 @@ export function createProfileStore({
     if (!userId || get().replies[reviewId]?.phase === 'sending') return false;
     drafts.setReply(userId, reviewId, body);
     const text = cleanText(body);
-    if (text === '' || !textFits(text)) return false;
+    if (text === '' || !textFits(text)) {
+      setReply(reviewId, { phase: 'failed', failure: 'invalid' });
+      return false;
+    }
     const at = generation;
     setReply(reviewId, { phase: 'sending' });
     const result = await service.reply(reviewId, text);
@@ -176,11 +213,17 @@ export function createProfileStore({
     const focused = focus.has(personId);
     if (card) {
       if (focused) void reloadCard(personId);
-      else setCard(personId, staleIfReady(card));
+      else {
+        requests.dirty(cardKey(personId));
+        setCard(personId, staleIfReady(card));
+      }
     }
     if (list) {
       if (focused) void reloadList(personId);
-      else setList(personId, staleIfReady(list));
+      else {
+        requests.dirty(listKey(personId));
+        setList(personId, staleIfReady(list));
+      }
     }
   }
 
@@ -235,8 +278,9 @@ export function createProfileStore({
     markBlocked(personId: string, blocked: boolean) {
       const card = get().cards[personId];
       if (!card || card.status === 'idle' || !card.data) return;
-      requests.supersede(cardKey(personId));
+      const dropped = requests.supersede(cardKey(personId));
       setCard(personId, { ...card, data: { ...card.data, blockedByMe: blocked } });
+      if (dropped) void reloadCard(personId);
     },
     refresh,
     onSignal() {
