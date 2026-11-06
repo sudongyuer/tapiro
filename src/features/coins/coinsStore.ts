@@ -165,6 +165,7 @@ export function createCoinsStore({
     if (now.status === 'idle' || !now.data) return;
     if (!page || requests.latest('history') !== head) {
       patch({ history: { ...now, data: { ...now.data, more: page ? 'idle' : 'failed' } } });
+      if (page) void loadMoreHistory();
       return;
     }
     const seen = new Set(now.data.items.map((row) => row.id));
