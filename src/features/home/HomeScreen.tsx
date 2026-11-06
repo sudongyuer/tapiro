@@ -32,13 +32,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@/lib/i18n';
 import { accessoryPriority } from '@/lib/liveItems';
 import { useLiveItems } from '@/lib/useLiveItems';
-import {
-  MascotStage,
-  STAGE_HEIGHT,
-  STAGE_HILL_HEIGHT,
-  stageSay,
-  type StageActor,
-} from '@/ui/MascotStage';
+import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT, type StageActor } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
 import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
@@ -98,7 +92,7 @@ export function HomeScreen({
   const cards = liveCards(accessory, homeCardDetails, accessoryPriority, issues);
   const state = stageState(accessory, issues);
   const { key, ...values } = stageLine(cards);
-  const line = stageSay(actor, state) ?? t(`home.say.${key}`, values);
+  const line = t(`home.say.${key}`, values);
   const { heights, ready, onCardLayout } = useCardHeights(cards);
   const layout = stackLayout(heights);
   const progress = useStackProgress(open);
@@ -205,6 +199,7 @@ export function HomeScreen({
       </ScrollView>
       <HomeStrip
         state={state}
+        wear={actor?.wear ?? null}
         line={line}
         label={t('home.strip.label', { title: t('shell.home.title'), line })}
         top={headerHeight}

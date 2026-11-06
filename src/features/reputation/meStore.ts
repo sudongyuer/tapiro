@@ -40,6 +40,7 @@ export function createMeStore({ service }: { service: ReputationService }) {
   const store = createStore<MeState>(IDLE);
   const requests = createRequests();
   let generation = 0;
+  let marking = false;
 
   const get = store.get;
   const patch = (next: Partial<MeState>) => store.set({ ...get(), ...next });
@@ -95,10 +96,13 @@ export function createMeStore({ service }: { service: ReputationService }) {
   async function markLevelSeen(level: number) {
     const userId = get().userId;
     if (!userId) return false;
+    marking = true;
     try {
       return await writeMascot(userId, () => service.markLevelSeen(level));
     } catch {
       return false;
+    } finally {
+      marking = false;
     }
   }
 
@@ -164,6 +168,7 @@ export function createMeStore({ service }: { service: ReputationService }) {
     reloadTierDrop,
     reloadMascot,
     markLevelSeen,
+    markingLevel: () => marking,
     setAccessory,
     dismissTierDrop,
     clearAccessoryFailure() {

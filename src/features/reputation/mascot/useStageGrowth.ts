@@ -17,19 +17,17 @@ import type { StageActor } from '@/ui/MascotStage';
 
 import { useMyMascot } from '../hooks';
 import { easeEnter, progress } from '../review/sealTimeline';
-import { growMarks } from '../services';
+import { growMarks, meStore } from '../services';
 import {
   GROW,
   GROW_BUBBLE_RISE,
   GROW_CROUCH,
-  GROW_FROM,
   GROW_REDUCED,
   GROW_SPRING,
   GROW_WEAR_FROM,
   growScale,
+  growStep,
 } from './growTimeline';
-
-export type StageGrowth = { actor: StageActor; pending: boolean };
 
 export function useStageGrowth({
   userId,
@@ -39,7 +37,7 @@ export function useStageGrowth({
   userId: string;
   visible: boolean;
   open: () => void;
-}): StageGrowth {
+}): StageActor {
   const { t } = useI18n();
   const mascot = useMyMascot();
   const data = mascot.status === 'idle' ? null : mascot.data;
@@ -63,22 +61,21 @@ export function useStageGrowth({
 
   useEffect(() => {
     if (visible) opened.current = false;
-    if (levelUp && level > played.current) {
-      clock.set(0);
-      grown.set(0);
-      if (!visible) return;
-      growMarks.mark(userId, level);
-      played.current = level;
-      clock.set(
-        withTiming(total, {
-          duration: total,
-          easing: Easing.linear,
-          reduceMotion: ReduceMotion.Never,
-        }),
-      );
-    } else if (!visible) {
-      finish();
-    }
+    const step = growStep({ levelUp, level, played: played.current, visible });
+    if (step === 'finish') finish();
+    if (step !== 'hold' && step !== 'play') return;
+    clock.set(0);
+    grown.set(0);
+    if (step === 'hold') return;
+    growMarks.mark(userId, level);
+    played.current = level;
+    clock.set(
+      withTiming(total, {
+        duration: total,
+        easing: Easing.linear,
+        reduceMotion: ReduceMotion.Never,
+      }),
+    );
   }, [levelUp, level, visible, userId, total, clock, grown, finish]);
 
   useAnimatedReaction(
@@ -89,14 +86,14 @@ export function useStageGrowth({
   );
 
   const press = useCallback(() => {
-    if (opened.current) return;
+    if (opened.current || meStore.markingLevel()) return;
     opened.current = true;
     finish();
     open();
   }, [open, finish]);
 
   const bodyStyle = useAnimatedStyle(() => {
-    if (reduced) return { opacity: progress(clock.value, GROW_REDUCED.swap) };
+    if (reduced) return {};
     const crouched = easeEnter(progress(clock.value, GROW.crouch));
     return {
       transform: [
@@ -106,13 +103,8 @@ export function useStageGrowth({
     };
   });
 
-  const oldBodyStyle = useAnimatedStyle(() => ({
-    opacity: 1 - progress(clock.value, GROW_REDUCED.swap),
-    transform: [{ scale: GROW_FROM }],
-  }));
-
   const wearStyle = useAnimatedStyle(() => {
-    if (reduced) return {};
+    if (reduced) return { opacity: progress(clock.value, GROW_REDUCED.wear) };
     const shown = progress(clock.value, GROW.wear);
     return {
       opacity: shown,
@@ -130,17 +122,13 @@ export function useStageGrowth({
   });
 
   return {
-    pending: levelUp,
-    actor: {
-      wear: data?.accessory ?? null,
-      say: levelUp ? t('reputation.level.grewUp') : null,
-      hint: levelUp ? 'star' : null,
-      onPress: levelUp ? press : null,
-      action: levelUp ? t('reputation.grown.action') : null,
-      bodyStyle,
-      oldBodyStyle: reduced && levelUp ? oldBodyStyle : undefined,
-      wearStyle,
-      revealStyle,
-    },
+    wear: data?.accessory ?? null,
+    say: levelUp ? t('reputation.level.grewUp') : null,
+    hint: levelUp ? 'star' : null,
+    onPress: levelUp ? press : null,
+    action: levelUp ? t('reputation.grown.action') : null,
+    bodyStyle,
+    wearStyle,
+    revealStyle,
   };
 }

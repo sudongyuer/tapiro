@@ -70,7 +70,8 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const mine = useMyMascot();
-  const worn = (mine.status === 'idle' ? null : mine.data)?.accessory ?? mascot.accessory;
+  const myMascot = mine.status === 'idle' ? null : mine.data;
+  const worn = myMascot?.accessory ?? mascot.accessory;
   const progress = levelProgress(mascot.level, mascot.stickers);
   const next = t('reputation.profile.nextLevel', {
     count: progress.toGo,
@@ -103,7 +104,7 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
           <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{next}</Text>
         </VStack>
       </HStack>
-      <AccessoryRows level={mascot.level} worn={worn} />
+      <AccessoryRows level={Math.max(mascot.level, myMascot?.level ?? 0)} worn={worn} />
     </Section>
   );
 }

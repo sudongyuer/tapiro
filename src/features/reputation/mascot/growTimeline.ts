@@ -7,11 +7,10 @@ export const GROW = {
 
 export const GROW_REDUCED = {
   total: 300,
-  swap: { start: 0, end: 150 },
+  wear: { start: 0, end: 150 },
   bubble: { start: 150, end: 300 },
 } as const;
 
-export const GROW_FROM = 0.88;
 export const GROW_CROUCH = { x: 0.93, y: 0.81 } as const;
 export const GROW_WEAR_FROM = 0.95;
 export const GROW_BUBBLE_RISE = 6;
@@ -19,5 +18,22 @@ export const GROW_SPRING = { duration: 420, dampingRatio: 0.55 } as const;
 
 export function growScale(crouched: number, grown: number, low: number) {
   'worklet';
-  return GROW_FROM + (low - GROW_FROM) * crouched + (1 - low) * grown;
+  return 1 + (low - 1) * crouched + (1 - low) * grown;
+}
+
+export type GrowStep = 'hold' | 'play' | 'finish' | 'rest';
+
+export function growStep({
+  levelUp,
+  level,
+  played,
+  visible,
+}: {
+  levelUp: boolean;
+  level: number;
+  played: number;
+  visible: boolean;
+}): GrowStep {
+  if (levelUp && level > played) return visible ? 'play' : 'hold';
+  return visible ? 'rest' : 'finish';
 }

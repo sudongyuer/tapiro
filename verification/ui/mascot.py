@@ -1,6 +1,6 @@
 import tempfile
 
-from driver import Shot, by_id
+from driver import Shot, by_id, token
 from profile import rep_calls
 from recording import frames
 
@@ -72,6 +72,30 @@ def assert_moment(ui, title_level, count, from_level, to_level, unlocked):
     for level, accessory in unlocked:
         line = ui.t('reputation.grown.unlockedRow', level=level, name=ui.t(f'reputation.accessory.{accessory}'))
         assert [i for i in items if i.get('AXLabel') == line], f'{line} is not listed'
+
+
+def colour_count(shot, box, colour, tolerance=24):
+    return sum(1 for p in shot.pixels(box) if max(abs(a - b) for a, b in zip(p, colour)) < tolerance)
+
+
+def ink_top(shot, box, ui):
+    ink = token('--color-mascot-ink', ui.appearance)
+    rows = {}
+    for x, y, p in ((box['x'] + i, box['y'] + j, shot.rgb(box['x'] + i, box['y'] + j))
+                    for i in range(0, int(box['width']), 3) for j in range(0, int(box['height']), 2)):
+        if max(abs(a - b) for a, b in zip(p, ink)) < 24:
+            rows[y] = rows.get(y, 0) + 1
+    return min((y for y, n in rows.items() if n >= 3), default=None)
+
+
+def assert_grown(ui, shot, element, width, wear, state='calm'):
+    box = mascot_box(element, width, state)
+    worn = colour_count(shot, box, token(wear, ui.appearance))
+    assert worn > 40, f'the accessory is not visible on 小貘: {worn} px of {wear}'
+    f = element['frame']
+    bubble = {'x': 16, 'y': f['y'] + 18, 'width': 90, 'height': 36}
+    white = colour_count(shot, bubble, token('--color-stage-bubble', ui.appearance))
+    assert white > 200, f'the bubble is not visible: {white} px'
 
 
 def seen_levels(ui, count=1, timeout=10):

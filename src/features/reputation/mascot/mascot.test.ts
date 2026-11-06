@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { fixtureMascot } from '../fixtureData';
 import { createGrowMarks } from './growMarks';
-import { GROW_CROUCH, GROW_FROM, growScale } from './growTimeline';
+import { GROW_CROUCH, growScale, growStep } from './growTimeline';
 import { grownMoment, newAccessories } from './grownView';
 
 function memorySettings() {
@@ -32,12 +32,33 @@ describe('grow marks', () => {
 });
 
 describe('grow scale', () => {
-  test('starts at the old size, crouches, then rests at full size', () => {
-    expect(growScale(0, 0, GROW_CROUCH.y)).toBeCloseTo(GROW_FROM);
+  test('starts at the size on screen, crouches, then rests at full size', () => {
+    expect(growScale(0, 0, GROW_CROUCH.y)).toBeCloseTo(1);
     expect(growScale(1, 0, GROW_CROUCH.y)).toBeCloseTo(GROW_CROUCH.y);
     expect(growScale(1, 0, GROW_CROUCH.x)).toBeCloseTo(GROW_CROUCH.x);
     expect(growScale(1, 1, GROW_CROUCH.y)).toBeCloseTo(1);
     expect(growScale(1, 1, GROW_CROUCH.x)).toBeCloseTo(1);
+  });
+});
+
+describe('grow step', () => {
+  const up = { levelUp: true, level: 5, played: 4 };
+
+  test('plays once when the stage is visible', () => {
+    expect(growStep({ ...up, visible: true })).toBe('play');
+    expect(growStep({ ...up, played: 5, visible: true })).toBe('rest');
+  });
+
+  test('waits for a stage that is collapsed or off screen', () => {
+    expect(growStep({ ...up, visible: false })).toBe('hold');
+  });
+
+  test('a stage scrolled away mid-way goes to the end', () => {
+    expect(growStep({ ...up, played: 5, visible: false })).toBe('finish');
+  });
+
+  test('a level already seen never plays, even if not played here', () => {
+    expect(growStep({ levelUp: false, level: 5, played: 0, visible: true })).toBe('rest');
   });
 });
 

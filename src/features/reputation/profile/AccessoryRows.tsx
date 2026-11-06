@@ -10,7 +10,8 @@ import {
   frame,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
-import { useEffect } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
@@ -31,7 +32,7 @@ export function AccessoryRows({ level, worn }: { level: number; worn: Accessory 
   const { color } = useTheme();
   const state = useAccessoryState();
 
-  useEffect(() => () => meStore.clearAccessoryFailure(), []);
+  useFocusEffect(useCallback(() => () => meStore.clearAccessoryFailure(), []));
 
   return (
     <>

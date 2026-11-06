@@ -47,7 +47,7 @@ function BountyHome({ user }: { user: AccountUser }) {
   const stack = useLiveStackState();
   const [stageCollapsed, setStageCollapsed] = useState(false);
   const openGrown = useCallback(() => router.push('/bounty/mascot-grown'), [router]);
-  const growth = useStageGrowth({
+  const growthActor = useStageGrowth({
     userId: user.id,
     visible: focused && !stageCollapsed,
     open: openGrown,
@@ -111,7 +111,7 @@ function BountyHome({ user }: { user: AccountUser }) {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
-        actor={growth.actor}
+        actor={growthActor}
         onStageCollapsed={setStageCollapsed}
         reviews={<PendingReviewCards />}
         board={

@@ -22,8 +22,9 @@ ui.tap('profile-accessory-backpack')
 failed = ui.element('profile-accessory-failed', timeout=15)
 assert failed.get('AXLabel') == ui.t('reputation.profile.accessoryFailed'), failed
 assert label(ui, 'profile-accessory-umbrella') == worn('umbrella'), 'a failed write changed what is worn'
-time.sleep(2)
-assert len(rep_calls(ui, 'setAccessory', 2, timeout=0)) == 1, 'the write was resent on its own'
+assert len(rep_calls(ui, 'setAccessory', 1)) == 1, 'the failed write was not recorded'
+sent = rep_calls(ui, 'setAccessory', 2, timeout=3)
+assert len(sent) == 1, f'the write was resent on its own: {sent}'
 ui.at_rest()
 ui.capture('01-failed')
 ui.tap('profile-accessory-backpack')
