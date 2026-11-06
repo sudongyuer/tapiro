@@ -359,6 +359,51 @@ describe('submit', () => {
     expect(drafts.review(ME, 'bounty:b1:p1')).toEqual(other);
   });
 
+  test('a failed refresh is marked until a read answers, and a sign-out clears the mark', async () => {
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        reviewState: async () => {
+          reads += 1;
+          if (reads === 2) throw new Error('offline');
+          return [pair()];
+        },
+      }),
+    );
+    store.openItem('bounty', 'b1');
+    await settle();
+    await store.reloadItem('bounty', 'b1');
+    expect(store.getSnapshot().readFailed['bounty:b1']).toBe(true);
+    expect(store.getSnapshot().items['bounty:b1']?.status).toBe('stale');
+    await store.reloadItem('bounty', 'b1');
+    expect(store.getSnapshot().readFailed['bounty:b1']).toBeUndefined();
+    await store.reloadItem('bounty', 'b1');
+    store.clear();
+    expect(store.getSnapshot().readFailed).toEqual({});
+  });
+
+  test('an older read that answers after a newer one failed leaves the mark', async () => {
+    const older = deferred<ReviewPair[]>();
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        reviewState: async () => {
+          reads += 1;
+          if (reads === 1) return [pair()];
+          if (reads === 2) return older.promise;
+          throw new Error('offline');
+        },
+      }),
+    );
+    store.openItem('bounty', 'b1');
+    await settle();
+    const first = store.reloadItem('bounty', 'b1');
+    await store.reloadItem('bounty', 'b1');
+    older.resolve([pair()]);
+    await first;
+    expect(store.getSnapshot().readFailed['bounty:b1']).toBe(true);
+  });
+
   test('an answer for a signed-out user changes nothing', async () => {
     const answer = deferred<SubmitResult>();
     const { store, drafts } = setup(fakeService({ submitReview: () => answer.promise }));

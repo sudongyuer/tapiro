@@ -27,6 +27,9 @@ const mine: MyReview = {
   editable: true,
 };
 
+const inWindow = new Date('2026-11-07T04:00:00.000Z');
+const afterWindow = new Date('2026-11-14T04:00:00.000Z');
+
 const happy: ReviewDraft = { face: 'happy', chips: [], sentence: '' };
 
 describe('the review sheet', () => {
@@ -53,13 +56,18 @@ describe('the review sheet', () => {
   });
 
   test('says why a pair no longer takes a review', () => {
-    expect(blockedBy(pair)).toBeNull();
-    expect(blockedBy({ ...pair, state: 'sealed', mine })).toBeNull();
-    expect(blockedBy({ ...pair, state: 'sealed', mine: { ...mine, editable: false } })).toBe(
-      'locked',
-    );
-    expect(blockedBy({ ...pair, state: 'revealed' })).toBe('locked');
-    expect(blockedBy({ ...pair, state: 'ended' })).toBe('closed');
+    expect(blockedBy(pair, inWindow)).toBeNull();
+    expect(blockedBy({ ...pair, state: 'sealed', mine }, inWindow)).toBeNull();
+    expect(
+      blockedBy({ ...pair, state: 'sealed', mine: { ...mine, editable: false } }, inWindow),
+    ).toBe('locked');
+    expect(blockedBy({ ...pair, state: 'revealed' }, inWindow)).toBe('locked');
+    expect(blockedBy({ ...pair, state: 'ended' }, inWindow)).toBe('closed');
+  });
+
+  test('a window that passed on the device clock is over before any read says so', () => {
+    expect(blockedBy(pair, afterWindow)).toBe('closed');
+    expect(blockedBy({ ...pair, state: 'sealed', mine }, afterWindow)).toBe('locked');
   });
 
   test('finds the pair of the person reviewed', () => {

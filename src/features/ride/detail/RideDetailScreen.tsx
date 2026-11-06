@@ -42,6 +42,7 @@ export function RideDetailScreen({
   message,
   onOpenProfile,
   reviews,
+  onPull,
 }: {
   id: string;
   userId: string;
@@ -50,6 +51,7 @@ export function RideDetailScreen({
   message?: RideMessage;
   onOpenProfile?: (personId: string) => void;
   reviews?: (title: string) => ReactNode;
+  onPull?: () => void;
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
@@ -132,6 +134,7 @@ export function RideDetailScreen({
               refreshing={pulling}
               onRefresh={async () => {
                 setPulling(true);
+                onPull?.();
                 await store.load();
                 setPulling(false);
               }}

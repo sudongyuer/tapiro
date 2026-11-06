@@ -1,20 +1,24 @@
 """A closed ride as a rider (241 A): one row, the organiser's, and it opens the organiser's chips; the other riders are not
-offered."""
+offered. A failed read reads 评价没加载出来 with 重试, never nothing."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI  # noqa: E402
+from driver import UI, by_id  # noqa: E402
 from profile import label  # noqa: E402
 from review import SHEET, on_screen_row, shot  # noqa: E402
 
 DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/ride/detail/', 'src/app/(tabs)/ride/', 'verification/ui/gestures.py']
 SCENE = 'ride-detail'
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'settled', '-uiVerifyRideDetailId', 'ride-scene-rider', '-uiVerifyReviews', 'one']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'settled', '-uiVerifyRideDetailId', 'ride-scene-rider', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'state']
 ROW = 'review-entry-fixture-person-lin'
 
 ui = UI(*sys.argv[1:])
 ui.element('ride-settle-sticker', timeout=45)
+ui.element('review-entries-failed', timeout=30)
+assert by_id(ui.read(), ROW) is None, 'a failed read shows a row'
+assert ui.t('reputation.entry.failed') in label(ui, 'review-entries-failed')
+ui.tap('review-entries-retry')
 ui.element(ROW, timeout=30)
 on_screen_row(ui, ROW)
 assert ui.t('reputation.entry.review', name='小林') in label(ui, ROW)

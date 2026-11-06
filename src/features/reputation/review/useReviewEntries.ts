@@ -14,10 +14,12 @@ export function useReviewEntries(kind: ItemKind, itemId: string, title: string) 
   const item = useReviewState(kind, itemId);
   const readFailed = useReviewReadFailed(kind, itemId);
   const pairs = item.status === 'idle' ? null : item.data;
+  const retrying = item.status === 'loading' && readFailed;
   const now = new Date();
   return {
-    entries: (pairs ?? []).map((pair) => reviewEntry(pair, now, t)),
-    failed: item.status === 'failed',
+    entries: (pairs ?? []).map((pair, index) => reviewEntry(pair, index, now, t)),
+    failed: item.status === 'failed' || retrying,
+    retrying,
     stale: item.status === 'stale' && readFailed,
     retry: () => void reviewStore.reloadItem(kind, itemId),
     open: (target: ReviewTarget) => router.push(reviewHref(target, title)),

@@ -25,9 +25,11 @@ const useMe = <T>(select: (state: MeState) => T) =>
 
 export function usePendingReviews() {
   const userId = useReviews((state) => state.userId);
-  useEffect(() => {
-    if (userId) reviewStore.loadPending();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) void reviewStore.reloadPending();
+    }, [userId]),
+  );
   return useReviews((state) => state.pending);
 }
 

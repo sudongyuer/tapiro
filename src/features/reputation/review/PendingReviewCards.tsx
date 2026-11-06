@@ -10,7 +10,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { usePendingReviews } from '../hooks';
 import { personName } from '../profile/profileView';
 import type { PendingReview } from '../types';
-import { pendingLine, stillOpen } from './entryView';
+import { pendingLine, shortTitle, stillOpen } from './entryView';
 import { reviewHref } from './ReviewRoute';
 
 function PendingCard({ row, reviewee }: { row: PendingReview; reviewee: string }) {
@@ -18,13 +18,14 @@ function PendingCard({ row, reviewee }: { row: PendingReview; reviewee: string }
   const { color } = useTheme();
   const router = useRouter();
   const name = personName(row.counterpart?.name ?? null, t);
-  const line = pendingLine(row, name, t);
+  const line = pendingLine(row, name, shortTitle(row.title), t);
+  const whole = pendingLine(row, name, row.title, t);
   const ask = t('reputation.home.ask');
   const action = t('reputation.home.action');
   return (
     <PressDim
       accessibilityRole="button"
-      accessibilityLabel={`${line}${t('reputation.profile.listJoin')}${ask}`}
+      accessibilityLabel={`${whole}${t('reputation.profile.listJoin')}${ask}`}
       accessibilityHint={t('reputation.entry.review', { name })}
       onPress={() =>
         router.push(reviewHref({ kind: row.kind, itemId: row.itemId, reviewee }, row.title))
@@ -52,7 +53,7 @@ function PendingCard({ row, reviewee }: { row: PendingReview; reviewee: string }
 export function PendingReviewCards() {
   const pending = usePendingReviews();
   const now = new Date();
-  const rows = pending.status === 'idle' ? [] : (pending.data ?? []);
+  const rows = pending.status === 'ready' ? (pending.data ?? []) : [];
   const shown = rows.filter((row) => row.counterpart && stillOpen(row, now));
   if (shown.length === 0) return null;
   return (

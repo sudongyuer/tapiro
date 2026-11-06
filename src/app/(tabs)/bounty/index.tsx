@@ -28,7 +28,7 @@ import {
   useHomeScroll,
   useLiveStackState,
 } from '@/features/home';
-import { PendingReviewCards } from '@/features/reputation';
+import { PendingReviewCards, reviewStore } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
@@ -120,7 +120,15 @@ function BountyHome({ user }: { user: AccountUser }) {
             }}
           />
         }
-        refreshControl={<RefreshControl refreshing={board.pulling} onRefresh={board.pull} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={board.pulling}
+            onRefresh={() => {
+              void reviewStore.reloadPending();
+              board.pull();
+            }}
+          />
+        }
       />
       <TitleHalo />
     </>

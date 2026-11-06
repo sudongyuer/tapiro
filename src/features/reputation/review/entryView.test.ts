@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { TFunction } from 'i18next';
 
 import type { MyReview, PendingReview, Review, ReviewPair } from '../types';
-import { pendingLine, reviewEntry, stillOpen } from './entryView';
+import { pendingLine, reviewEntry, shortTitle, stillOpen } from './entryView';
 
 const t = ((key: string, values?: Record<string, unknown>) =>
   values ? `${key} ${JSON.stringify(values)}` : key) as unknown as TFunction;
@@ -36,7 +36,7 @@ const theirs: Review = { ...mine, id: 'r2', face: 'okay' };
 
 describe('a review entry', () => {
   test('open: 评价 name with the days left, and it opens the sheet', () => {
-    const entry = reviewEntry(pair, now, t);
+    const entry = reviewEntry(pair, 0, now, t);
     expect(entry.title).toContain('reputation.entry.review');
     expect(entry.trailing).toContain('"count":5');
     expect(entry.detail).toBeNull();
@@ -44,14 +44,14 @@ describe('a review entry', () => {
   });
 
   test('open after they reviewed: says so, never what they wrote', () => {
-    const entry = reviewEntry({ ...pair, theyReviewed: true }, now, t);
+    const entry = reviewEntry({ ...pair, theyReviewed: true }, 0, now, t);
     expect(entry.detail).toContain('reputation.entry.sealedTheirs');
     expect(entry.detail).toContain('"count":5');
     expect(entry.trailing).toBeNull();
   });
 
   test('sealed: 已评价, waiting line, 改一下 opens the sheet', () => {
-    const entry = reviewEntry({ ...pair, state: 'sealed', mine }, now, t);
+    const entry = reviewEntry({ ...pair, state: 'sealed', mine }, 0, now, t);
     expect(entry.title).toBe('reputation.entry.reviewed');
     expect(entry.detail).toContain('reputation.entry.sealedMine');
     expect(entry.trailing).toBe('reputation.entry.edit');
@@ -61,6 +61,7 @@ describe('a review entry', () => {
   test('sealed but no longer editable offers no edit', () => {
     const entry = reviewEntry(
       { ...pair, state: 'sealed', mine: { ...mine, editable: false } },
+      0,
       now,
       t,
     );
@@ -69,21 +70,39 @@ describe('a review entry', () => {
   });
 
   test('revealed: names their face and does not open', () => {
-    const entry = reviewEntry({ ...pair, state: 'revealed', mine, theirs }, now, t);
+    const entry = reviewEntry({ ...pair, state: 'revealed', mine, theirs }, 0, now, t);
     expect(entry.title).toBe('reputation.entry.public');
     expect(entry.detail).toContain('reputation.entry.publicDetail');
     expect(entry.target).toBeNull();
   });
 
   test('ended: 评价已结束 with the name, and it does not open', () => {
-    const entry = reviewEntry({ ...pair, state: 'ended' }, now, t);
+    const entry = reviewEntry({ ...pair, state: 'ended' }, 0, now, t);
     expect(entry.title).toBe('reputation.entry.ended');
     expect(entry.detail).toBe('小林');
     expect(entry.target).toBeNull();
   });
 
+  test('a window that passed reads as ended before any read says so', () => {
+    const later = new Date('2026-11-11T03:00:00.000Z');
+    const open = reviewEntry(pair, 0, later, t);
+    expect(open.title).toBe('reputation.entry.ended');
+    expect(open.target).toBeNull();
+    const sealed = reviewEntry({ ...pair, state: 'sealed', mine }, 0, later, t);
+    expect(sealed.trailing).toBeNull();
+    expect(sealed.target).toBeNull();
+  });
+
+  test('no counterpart: nothing to open, and two such rows keep their own ids', () => {
+    const gone = { ...pair, counterpart: null, state: 'sealed' as const, mine };
+    const first = reviewEntry(gone, 0, now, t);
+    expect(first.trailing).toBeNull();
+    expect(first.target).toBeNull();
+    expect(first.id).not.toBe(reviewEntry(gone, 1, now, t).id);
+  });
+
   test('VoiceOver reads every part of the row', () => {
-    const entry = reviewEntry({ ...pair, state: 'sealed', mine }, now, t);
+    const entry = reviewEntry({ ...pair, state: 'sealed', mine }, 0, now, t);
     expect(entry.label).toContain('reputation.entry.reviewed');
     expect(entry.label).toContain('reputation.entry.sealedMine');
     expect(entry.label).toContain('reputation.entry.edit');
@@ -102,12 +121,21 @@ describe('a home card', () => {
   };
 
   test('says who did what by the other side’s role', () => {
-    expect(pendingLine(row, '小林', t)).toContain('reputation.home.helpedYou');
-    expect(pendingLine({ ...row, role: 'poster' }, '小林', t)).toContain(
+    expect(pendingLine(row, '小林', row.title, t)).toContain('reputation.home.helpedYou');
+    expect(pendingLine({ ...row, role: 'poster' }, '小林', row.title, t)).toContain(
       'reputation.home.helpedThem',
     );
-    expect(pendingLine({ ...row, role: 'rider' }, '小林', t)).toContain('reputation.home.rode');
-    expect(pendingLine({ ...row, role: 'organiser' }, '小林', t)).toContain('reputation.home.rode');
+    expect(pendingLine({ ...row, role: 'rider' }, '小林', row.title, t)).toContain(
+      'reputation.home.rode',
+    );
+    expect(pendingLine({ ...row, role: 'organiser' }, '小林', row.title, t)).toContain(
+      'reputation.home.rode',
+    );
+  });
+
+  test('a long title is cut so the name stays on the card', () => {
+    expect(shortTitle('帮取快递')).toBe('帮取快递');
+    expect([...shortTitle('字'.repeat(80))]).toHaveLength(25);
   });
 
   test('goes away when the window ends', () => {

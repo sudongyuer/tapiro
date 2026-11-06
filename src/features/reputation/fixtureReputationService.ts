@@ -23,6 +23,7 @@ import {
 
 export const REP_FAIL_POINTS = [
   'state',
+  'stateAgain',
   'pending',
   'submit',
   'submitLost',
@@ -82,7 +83,7 @@ export function createFixtureReputationService({
   const failing = new Set<RepFailPoint>(
     variant === 'failed'
       ? REP_FAIL_POINTS.filter(
-          (point) => !['profileAgain', 'submitLost', 'submitLocked'].includes(point),
+          (point) => !['profileAgain', 'stateAgain', 'submitLost', 'submitLocked'].includes(point),
         )
       : failFirst,
   );
@@ -94,6 +95,7 @@ export function createFixtureReputationService({
   let tierDrop = firstDrop && seenDrop !== null && firstDrop.id <= seenDrop ? null : firstDrop;
   let pending = reviewsOn ? fixturePending(data, now()) : [];
   let profileReads = 0;
+  let stateReads = 0;
 
   async function step(point: RepFailPoint, name: string, args: unknown = null) {
     onCall?.(name, args);
@@ -110,7 +112,9 @@ export function createFixtureReputationService({
 
   return {
     async reviewState(kind, itemId) {
-      await step('state', 'reviewState', { kind, itemId });
+      stateReads += 1;
+      const again = stateReads > 1 && failing.has('stateAgain');
+      await step(again ? 'stateAgain' : 'state', 'reviewState', { kind, itemId });
       return pairsOf(kind, itemId);
     },
     async pendingReviews() {

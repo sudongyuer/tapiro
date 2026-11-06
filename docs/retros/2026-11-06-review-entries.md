@@ -4,7 +4,7 @@ date: 2026-11-06
 pr: review entries (plan Task 4)
 title: The review row on 已结清, one row per counterpart on a closed ride, the sealed lines and the home card
 escaped: pending
-rework: 1
+rework: 2
 interventions: 0
 overturned: pending
 ---
@@ -15,7 +15,7 @@ overturned: pending
 
 | Cases                                                                 | Runs              | Reason                                                             |
 | --------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------ |
-| `review_entry_*` (six)                                                | zh-Hans light, en | New rows and card, new copy keys                                   |
+| `review_entry_*` (eight)                                              | zh-Hans light, en | New rows and card, new copy keys                                   |
 | `review_entry_sealed`, `_ride`, `_home`, `_home_worst`                | ms                | Long sealed lines and names                                        |
 | `review_entry_status`, `_ride`, `_home`                               | dark              | New surfaces on three screens; contrast by eye                     |
 | `review_sheet_edit`, `_revealed`, `_locked`                           | zh-Hans light     | Their args changed: the fixture now needs `-uiVerifyReviews`       |
@@ -26,7 +26,7 @@ overturned: pending
 | Dimension | Measure                 | This step                                                                     |
 | --------- | ----------------------- | ----------------------------------------------------------------------------- |
 | Quality   | Escaped defects         | pending                                                                       |
-| Quality   | Vacuous checks          | See the review findings                                                       |
+| Quality   | Vacuous checks          | Three found in review, fixed                                                  |
 | Quality   | Skipped verifications   | `rep.reviews.live` on screen (unit only); device: VoiceOver order on the rows |
 | Speed     | Wall-clock              | About 1.5 h                                                                   |
 | Autonomy  | Avoidable interventions | 0                                                                             |
@@ -41,4 +41,4 @@ overturned: pending
 
 ## Review findings
 
-Pending.
+Round 1: 0 Critical, 3 Important (a newly settled item got no home card until the next foreground return: the list now reads on focus, pull and the two settled signals; a window that passed on the device still opened the sheet: entries and the sheet now check the clock; `readFailed` was untested and the stale path unreachable: `stateAgain`, store tests and two cases), 9 Minor (the mark ignored request order and sign-out; a retry blanked the block; a stale empty list said nothing; stale home cards stayed; pull did not reach the entries; viewers saw a failed block on rides they were not on; a null counterpart offered 改一下; a long title pushed the name off the card; vacuous assertions and missing `DEPS`). All fixed.

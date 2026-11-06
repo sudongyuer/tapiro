@@ -29,9 +29,10 @@ export type StatusScreenProps = {
   onPay: (paymentId: string) => void;
   message?: StatusMessage;
   reviews?: (title: string) => ReactNode;
+  onPull?: () => void;
 };
 
-export function StatusScreen({ id, onBack, onPay, message, reviews }: StatusScreenProps) {
+export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: StatusScreenProps) {
   const { t, language } = useI18n();
   const { state, refresh, act } = useStatus(id);
   const helper = useHelperActions(id, act);
@@ -87,7 +88,10 @@ export function StatusScreen({ id, onBack, onPay, message, reviews }: StatusScre
       <StatusMenu actions={actions.menu} role={role} state={action} onAction={run} />
       <SheetFrame
         testID="bounty-status"
-        onRefresh={refresh}
+        onRefresh={async () => {
+          onPull?.();
+          await refresh();
+        }}
         notice={
           <>
             {offline ? (

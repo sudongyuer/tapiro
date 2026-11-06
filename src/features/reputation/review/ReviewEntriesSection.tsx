@@ -81,11 +81,12 @@ export function ReviewEntriesSection({
   title: string;
 }) {
   const { t } = useI18n();
-  const { entries, failed, stale, retry, open } = useReviewEntries(kind, itemId, title);
+  const { entries, failed, retrying, stale, retry, open } = useReviewEntries(kind, itemId, title);
   const again = {
     label: t('reputation.profile.retry'),
     onPress: retry,
     testID: 'review-entries-retry',
+    busyLabel: retrying ? t('reputation.sheet.loading') : undefined,
   };
   if (failed) {
     return (
@@ -98,7 +99,7 @@ export function ReviewEntriesSection({
       />
     );
   }
-  if (entries.length === 0) return null;
+  if (entries.length === 0 && !stale) return null;
   return (
     <>
       {stale ? (

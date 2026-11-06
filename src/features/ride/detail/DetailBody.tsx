@@ -95,7 +95,7 @@ export function DetailBody({
         onCollect={() => void settle.collect()}
         onOpenBook={settle.openStickerBook}
       />
-      {ride.status === 'closed'
+      {ride.status === 'closed' && ride.role !== 'viewer' && ride.role !== 'applicant'
         ? reviews?.(t('ride.ticket.route', { from: ride.start.short, to: ride.dest.short }))
         : null}
       {organiser && open && ride.requests ? (

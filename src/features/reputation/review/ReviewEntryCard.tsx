@@ -81,11 +81,12 @@ export function ReviewEntryCard({
   title: string;
 }) {
   const { t } = useI18n();
-  const { entries, failed, stale, retry, open } = useReviewEntries(kind, itemId, title);
+  const { entries, failed, retrying, stale, retry, open } = useReviewEntries(kind, itemId, title);
   const again = {
     label: t('reputation.profile.retry'),
     onPress: retry,
     testID: 'review-entries-retry',
+    busy: retrying,
   };
   if (failed) {
     return (
@@ -97,7 +98,7 @@ export function ReviewEntryCard({
       />
     );
   }
-  if (entries.length === 0) return null;
+  if (entries.length === 0 && !stale) return null;
   return (
     <View style={styles.block}>
       {stale ? (

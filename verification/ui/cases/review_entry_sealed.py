@@ -8,7 +8,7 @@ from driver import UI, by_id  # noqa: E402
 from profile import label  # noqa: E402
 from review import SHEET, on_screen_row, shot, submit_happy  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/']
+DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/', 'verification/ui/gestures.py']
 SCENE = 'bounty-status'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'settled', '-uiVerifyBountyRole', 'poster', '-uiVerifyReviews', 'many', '-uiVerifyRepFail', 'state']

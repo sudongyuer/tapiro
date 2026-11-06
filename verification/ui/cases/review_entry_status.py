@@ -3,11 +3,11 @@ after a sealed submit the row reads 已评价, 等小林评完一起公开 and �
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id  # noqa: E402
+from driver import UI  # noqa: E402
 from profile import label  # noqa: E402
-from review import SHEET, on_screen_row, shot, submit_happy  # noqa: E402
+from review import SHEET, enabled, on_screen_row, shot, submit_happy  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/']
+DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/', 'verification/ui/gestures.py']
 SCENE = 'bounty-status'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'settled', '-uiVerifyBountyRole', 'poster', '-uiVerifyReviews', 'one']
@@ -25,6 +25,7 @@ shot(ui, '01-open')
 ui.tap(ROW)
 ui.element(SHEET, timeout=20)
 ui.labelled(ui.t('reputation.sheet.title', name='小林'))
+ui.wait_label('review-subtitle', lambda value: value.startswith('帮取快递 · '), 'the sheet lost the bounty title', 15)
 submit_happy(ui)
 ui.tap('review-sealed-ok')
 ui.gone(SHEET)
@@ -35,5 +36,5 @@ ui.at_rest()
 shot(ui, '02-sealed')
 ui.tap(ROW)
 ui.element('review-chips-title', timeout=20)
-assert by_id(ui.read(), 'review-face-happy'), 'the stored review did not open'
+assert not enabled(ui, 'review-submit'), 'the stored review did not open: 提交 is on with nothing changed'
 print('PASS: the status row opens the sheet and turns sealed with 改一下')

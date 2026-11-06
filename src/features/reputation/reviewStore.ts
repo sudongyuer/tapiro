@@ -111,12 +111,16 @@ export function createReviewStore({
       requests,
       key,
       read: async () => {
+        const mine = requests.latest(key);
+        const report = (failed: boolean) => {
+          if (requests.latest(key) === mine && current(userId, at)) setReadFailed(key, failed);
+        };
         try {
           const pairs = await service.reviewState(kind, itemId);
-          setReadFailed(key, false);
+          report(false);
           return pairs;
         } catch (error) {
-          setReadFailed(key, true);
+          report(true);
           throw error;
         }
       },
