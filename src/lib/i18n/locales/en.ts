@@ -315,7 +315,7 @@ const en: Translation = {
     stickers: { title: 'Sticker book' },
     chat: { thread: 'Chat thread (keyboard)' },
     reputation: { profile: 'Profile' },
-    coins: { page: 'Coins page' },
+    coins: { page: 'Coins page', invite: 'Invite page' },
     flight: {
       title: 'Sticker flight to Me',
       fly: 'Fly to Me',

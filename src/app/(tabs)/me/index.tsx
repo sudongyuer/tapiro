@@ -29,6 +29,7 @@ export default function Me() {
       onOpenStickers={() => router.push('/me/stickers')}
       coinCount={coins === null ? null : coinCount(coins, language)}
       onOpenCoins={() => router.push('/me/coins')}
+      onOpenInvite={() => router.push('/me/invite')}
       onOpenPayee={() => router.push('/me/payee')}
       onOpenBlocked={() => router.push('/me/blocked')}
       onOpenSettings={() => router.push('/me/settings')}

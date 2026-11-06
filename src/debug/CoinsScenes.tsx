@@ -1,14 +1,23 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
-export function CoinsPageScene({ onReady }: { onReady: () => void }) {
+function usePushOnce(path: '/me/coins' | '/me/invite', onReady: () => void) {
   const router = useRouter();
   const pushed = useRef(false);
   useEffect(() => {
     if (pushed.current) return;
     pushed.current = true;
-    router.push('/me/coins', { withAnchor: true });
+    router.push(path, { withAnchor: true });
     onReady();
-  }, [router, onReady]);
+  }, [router, path, onReady]);
+}
+
+export function CoinsPageScene({ onReady }: { onReady: () => void }) {
+  usePushOnce('/me/coins', onReady);
+  return null;
+}
+
+export function InvitePageScene({ onReady }: { onReady: () => void }) {
+  usePushOnce('/me/invite', onReady);
   return null;
 }

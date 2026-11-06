@@ -233,7 +233,9 @@ export function createCoinsStore({
     drafts.set(userId, typed);
     const at = generation;
     patch({ redeem: { phase: 'sending' } });
-    const result = await service.redeem(typed);
+    const result = await service
+      .redeem(typed)
+      .catch(() => ({ ok: false, failure: 'failed' }) as const);
     if (!current(userId, at)) return false;
     if (result.ok) {
       drafts.set(userId, '');
@@ -243,7 +245,10 @@ export function createCoinsStore({
       return true;
     }
     patch({ redeem: { phase: 'failed', failure: result.failure } });
-    if (result.failure === 'alreadyRedeemed' || result.failure === 'tooLate') void reloadInvite();
+    if (result.failure === 'alreadyRedeemed' || result.failure === 'tooLate') {
+      drafts.set(userId, '');
+      void reloadInvite();
+    }
     return false;
   }
 

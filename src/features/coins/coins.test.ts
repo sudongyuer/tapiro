@@ -369,6 +369,28 @@ describe('coins services', () => {
     expect(new Set(ids).size).toBe(129);
   });
 
+  test('a redeem whose service throws ends as failed, not stuck sending, and keeps the typed code', async () => {
+    const { store, drafts } = setup({ redeem: () => Promise.reject(new Error('x')) });
+    expect(await store.redeem('7KQ3XP')).toBe(false);
+    expect(store.getSnapshot().redeem).toEqual({ phase: 'failed', failure: 'failed' });
+    expect(drafts.get(ME)).toBe('7KQ3XP');
+  });
+
+  test('a too-late refusal drops the typed code, since the field will not come back', async () => {
+    const { store, drafts } = setup({
+      redeem: () => Promise.resolve({ ok: false, failure: 'tooLate' } as const),
+      invite: () => Promise.resolve({ ...INVITE, canRedeem: false }),
+    });
+    await store.redeem('7KQ3XP');
+    expect(drafts.get(ME)).toBe('');
+  });
+
+  test('the fixture can turn a redeem into too late once, as when the first deal lands meanwhile', async () => {
+    const service = createFixtureCoinsService({ variant: 'empty', failFirst: ['redeemTooLate'] });
+    expect(await service.redeem(FIXTURE_FRIEND_CODE)).toEqual({ ok: false, failure: 'tooLate' });
+    expect((await service.invite()).canRedeem).toBe(false);
+  });
+
   test('the fixture can fail a refresh or a next page once without failing the first read', async () => {
     const service = createFixtureCoinsService({
       variant: 'worst',
