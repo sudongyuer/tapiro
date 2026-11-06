@@ -66,10 +66,8 @@ On 2026-11-06 the owner answered 「按你推荐的走」:
   and the live updates ★ rows (`docs/specs/2026-10-31-realtime-push-design.md`, Decisions). Confirmed by name: 120
   stays as the canvas draws it (spinner while sending, no dimming), and a blocked bounty thread keeps hiding 已读.
 - Secondary buttons in pinned bottom bars are opaque (`fix/opaque-bar-buttons`). ★ for veto: inside `SheetActions`
-  bars a secondary pill fills with `systemGray5` and every pill sits on an opaque canvas-coloured base, so pressed and
-  disabled dimming and plain pills hide scrolled content too; other secondary pills keep `tertiarySystemFill`. Text
-  lines in those bars (notices, the 已申请 and outcome lines) still sit over scrolled content: answered later the same
-  day (below), Queue item 3.
+  bars a secondary pill fills with `systemGray5`; other secondary pills keep `tertiarySystemFill`. Superseded in part
+  below: the whole bar became opaque, so the per-pill base is gone.
 
 Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main session):
 

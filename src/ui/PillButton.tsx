@@ -7,8 +7,8 @@ import { useTheme } from './theme/useTheme';
 
 type Variant = 'primary' | 'secondary' | 'destructive' | 'plain';
 
-// The bar itself hides scrolled content; systemGray5 stays because tertiarySystemFill goes nearly black on its dark
-// canvas, too close to the bar to read as a button.
+// The bar itself hides scrolled content; systemGray5 stays to keep the look the owner accepted on 2026-11-06, a step
+// brighter than tertiarySystemFill on the dark canvas.
 export const PinnedSurface = createContext(false);
 
 export type PillButtonProps = {

@@ -5,8 +5,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import screen, visible  # noqa: E402
-from bounty import assert_bar_hides_content, assert_grouped_background  # noqa: E402
-from driver import UI, bottom, by_id, reach_home  # noqa: E402
+from bounty import assert_bar_hides_content  # noqa: E402
+from driver import UI, assert_colour, bottom, by_id, reach_home  # noqa: E402
 from gestures import drag  # noqa: E402
 
 DEPS = ['src/ui/SheetFrame.tsx', 'src/ui/PillButton.tsx', 'modules/tapiro-kit/ios/PinnedBarView.swift',
@@ -15,6 +15,8 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
         '-uiVerifyDetail', 'notSelected', '-uiVerifyDetailId', 'fixture-worst-01']
 BUDGET = 180
 WORST = 'bounty-card-fixture-worst-01'
+# A pushed screen's canvas: in dark, not the (28, 28, 30) of the cards scrolling under the bar.
+CANVAS = {'light': (242, 242, 247), 'dark': (0, 0, 0)}
 
 ui = UI(*sys.argv[1:])
 reach_home(ui)
@@ -35,10 +37,11 @@ row = by_id(items, 'bounty-detail-not-selected')['frame']
 browse = by_id(items, 'bounty-detail-browse')
 s = screen(items)
 band = {'y': row['y'] + row['height'] * 0.25, 'height': row['height'] * 0.5}
-assert_bar_hides_content(shot, {**band, 'x': 26, 'width': 56}, behind['frame'], 'left of 这次没选上')
-assert_bar_hides_content(shot, {**band, 'x': s['width'] - 82, 'width': 56}, behind['frame'], 'right of 这次没选上')
+left = {**band, 'x': 26, 'width': 40}
+right = {**band, 'x': s['width'] - 66, 'width': 40}
 under = {'x': s['width'] * 0.32, 'width': s['width'] * 0.36, 'y': bottom(browse) + 2,
          'height': s['height'] - bottom(browse) - 2 - 24}
-assert_bar_hides_content(shot, under, behind['frame'], 'below the button')
-assert_grouped_background(ui, shot, {**band, 'x': 26, 'width': 56}, 'the bar')
+for strip, name in ((left, 'left of 这次没选上'), (right, 'right of 这次没选上'), (under, 'below the button')):
+    assert_bar_hides_content(shot, strip, behind['frame'], name)
+    assert_colour(shot, strip, CANVAS[ui.appearance], name)
 print('PASS: the bar hides scrolled content beside its text and down to the screen edge')
