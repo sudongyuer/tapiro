@@ -100,3 +100,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-07 | 6 mascot level (Task 7)   | pending         | 1             | ~15 min (clipped art, clip timing)           | 0                       | pending               |
 | 2026-11-07 | 6 weekly feed (Task 9)    | pending         | 3             | ~20 min (hold thresholds, load 200–700)      | 0                       | pending               |
 | 2026-11-07 | 258 rides count settled   | pending         | 1             | ~0                                           | 0                       | pending               |
+| 2026-11-07 | 259 report a review       | pending         | 2             | ~10 min (a half-applied patch script)        | 0                       | pending               |
