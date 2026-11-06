@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-07 (mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-07 (selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -51,6 +51,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
 3. Text rows in pinned bottom bars (notices, the 已申请 and outcome lines) sit over scrolled content: the owner chose
    ★A on 2026-11-06, the whole bar opaque. A task of its own, not started.
+4. The 消息 list has the same refusal as review paging had: `loadMoreThreads` returns while a reload is out and nothing
+   asks again. Softer there: `onEndReached` fires again after the user scrolls away and back. Not fixed.
 
 ## Owner decisions pending
 

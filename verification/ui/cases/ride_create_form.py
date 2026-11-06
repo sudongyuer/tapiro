@@ -14,7 +14,7 @@ from driver import UI, assert_touch_target, by_id, token  # noqa: E402
 from readable import assert_label_reads  # noqa: E402
 from ride import form_scroll_to, open_form, open_list, picker_clock, step  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py',
+DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py', 'verification/ui/readable.py',
         'src/ui/FieldRow.tsx', 'src/ui/SyncedTextField.tsx']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyPlaces', 'ride']
