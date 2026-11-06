@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-07 (mascot level and weekly feed built; closed rides count toward 靠谱度); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-07 (mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -42,8 +42,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   code field before the first deal, progress rows; cases `invite_*`) is built. Task 3 (the review sheet: faces, chips by role, sentence, draft and discard, 改一下, the envelope seal 257 a1; cases
   `review_sheet*`) is merged (#93); Task 4 (review entries: the row under 已结清, one row per counterpart on a closed ride, the sealed
   lines, one home card per pending review; cases `review_entry_*`) is built. Task 7 (小貘 grows on the stage (257 b1), 「小貘长大的时刻」, the accessory picker, stand-in accessory art; cases `mascot_*`) is merged (#95); Task 9 (the weekly feed on the stage: leaf, chew, the answers, 257 c1; cases `weekly_feed*`) is built. Next: Task 11, the wrap-up (milestone selection and the foundation spec's Implementation Record). 258 A is built: a closed ride counts toward 靠谱度 with or
-  without a payment (the farming it leaves open is in the plan, 「★ 258 defaults」). 259 A (report a review from a
-  profile) is answered, not built yet.
+  without a payment (the farming it leaves open is in the plan, 「★ 258 defaults」). 259 A is built: long-press a review on a
+  profile or on 全部评价 to report it (cases `profile_report_review*`).
 
 ## Queue
 
