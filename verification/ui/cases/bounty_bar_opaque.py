@@ -32,7 +32,7 @@ shot = ui.snap('01-under-bar')
 behind = by_id(items, 'bounty-detail-description')
 assert behind, 'the description is missing'
 row = by_id(items, 'bounty-detail-not-selected')['frame']
-browse = by_id(items, 'bounty-detail-browse')['frame']
+browse = by_id(items, 'bounty-detail-browse')
 s = screen(items)
 band = {'y': row['y'] + row['height'] * 0.25, 'height': row['height'] * 0.5}
 assert_bar_hides_content(shot, {**band, 'x': 26, 'width': 56}, behind['frame'], 'left of 这次没选上')
