@@ -1,5 +1,6 @@
 import { usePreventRemove } from 'expo-router';
-import { useCallback, useEffect, useState, type RefObject } from 'react';
+import type { TFunction } from 'i18next';
+import { useEffect, useState, type RefObject } from 'react';
 import { AccessibilityInfo, Alert, Keyboard, type ViewInstance } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -47,6 +48,9 @@ function useDiscardPrompt(active: boolean, busy: boolean, onDrop: () => void) {
   });
 }
 
+const sealLine = (revealed: boolean, name: string, t: TFunction) =>
+  revealed ? t('reputation.sheet.revealedTitle') : t('reputation.sheet.sealedTitle', { name });
+
 const storedPair = (target: ReviewTarget) => {
   const item = reviewStore.getSnapshot().items[pairKey(target.kind, target.itemId)];
   return item && item.status !== 'idle' ? findPair(item.data ?? [], target) : null;
@@ -63,12 +67,15 @@ export function useReviewSheet(
   const base = draftFromReview(pair);
   const [draft, setDraft] = useState<ReviewDraft>(() => reviewStore.draft(target) ?? base);
   const [submitting, setSubmitting] = useState(false);
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const busy = submitting || submitState?.phase === 'sending';
+  const [sent, setSent] = useState<Outcome | null>(null);
   const failure = submitState?.phase === 'failed' ? submitState.failure : null;
+  const landedLater = failure === 'failed' && pair.mine !== null && !draftChanged(draft, base);
+  const revealedNow = pair.state === 'revealed';
+  const outcome = sent ?? (landedLater ? { revealed: revealedNow, from: null } : null);
+  const busy = submitting || submitState?.phase === 'sending';
   const blocked = busy || outcome ? null : blockedBy(pair);
   const final = blocked ?? (failure && FINAL_FAILURES.includes(failure) ? failure : null);
-  const line = final ?? failure;
+  const line = outcome ? null : (final ?? failure);
   const stored = blocked !== null && pair.mine !== null;
   const shown = stored ? base : draft;
   const changed = draftChanged(shown, base);
@@ -87,28 +94,15 @@ export function useReviewSheet(
     if (!busy && !changed) reviewStore.saveDraft(target, null);
   }, [busy, changed, target]);
 
-  const finish = useCallback(
-    async (revealed: boolean) => {
-      const from = await measured(face.current);
-      setOutcome({ revealed, from });
-      AccessibilityInfo.announceForAccessibility(
-        revealed
-          ? t('reputation.sheet.revealedTitle')
-          : t('reputation.sheet.sealedTitle', { name }),
-      );
-    },
-    [face, name, t],
-  );
-
-  const landedLater = failure === 'failed' && pair.mine !== null && !draftChanged(draft, base);
-
   useEffect(() => {
-    if (!landedLater) return;
-    setSubmitting(true);
-    reviewStore.dismissFailure(target);
-    reviewStore.saveDraft(target, null);
-    void finish(pair.state === 'revealed');
-  }, [landedLater, target, finish, pair.state]);
+    if (landedLater) AccessibilityInfo.announceForAccessibility(sealLine(revealedNow, name, t));
+  }, [landedLater, revealedNow, name, t]);
+
+  const finish = async (revealed: boolean) => {
+    const from = await measured(face.current);
+    setSent({ revealed, from });
+    AccessibilityInfo.announceForAccessibility(sealLine(revealed, name, t));
+  };
 
   const update = (next: ReviewDraft) => {
     setDraft(next);
