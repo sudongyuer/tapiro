@@ -1,5 +1,6 @@
 """改一下 (244 A): a review still sealed opens the same sheet with what was picked; 提交 stays off until something changes;
-the edit is the same submit, and the seal plays again; an unchanged close asks nothing."""
+the edit is the same submit, and the seal plays again (here on the Reduce Motion path, a fade); an unchanged close
+asks nothing."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -9,7 +10,7 @@ from review import SHEET, assert_one_submit, enabled, open_sheet, sealed  # noqa
 DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviewKind', 'ride', '-uiVerifyReviewItem', 'fixture-ride-closed', '-uiVerifyReviewPerson', 'fixture-person-aming']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviewKind', 'ride', '-uiVerifyReviewItem', 'fixture-ride-closed', '-uiVerifyReviewPerson', 'fixture-person-aming', '-uiVerifyReduceMotion', '1']
 
 ui = UI(*sys.argv[1:])
 open_sheet(ui)

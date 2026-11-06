@@ -59,7 +59,7 @@ ui.capture('02-kept')
 
 items = ui.read()
 w, h = items[0]['frame']['width'], items[0]['frame']['height']
-drag(ui, (w / 2, 20), (w / 2, h * 0.8))
+drag(ui, (w / 2, 72), (w / 2, h * 0.8))
 asked()
 answer('discardDrop')
 reopen()
