@@ -89,5 +89,5 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-06 | live updates milestone    | 0               | 4             | ~40 min (AXe gestures and OCR on iOS 27.2)   | 0                       | 0                     |
 | 2026-11-06 | steps 5–6 questions       | 0               | 0             | ~0                                           | 0                       | pending               |
 | 2026-11-06 | opaque bar buttons        | 1               | 2             | ~10 min (label strip estimate)               | 0                       | 0                     |
-| 2026-11-06 | rep + coins server        | pending         | 2             | ~10 min (SQL name scope, tap-route test)     | 0                       | pending               |
+| 2026-11-06 | rep + coins server        | pending         | 3             | ~10 min (SQL name scope, tap-route test)     | 0                       | pending               |
 | 2026-11-06 | pay copy feedback         | 0               | 0             | ~0 (one diagnostic case)                     | 0                       | 0                     |
