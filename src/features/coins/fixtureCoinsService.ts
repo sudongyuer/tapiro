@@ -95,9 +95,11 @@ export function createFixtureCoinsService({
   failFirst = [],
   delayMs = 0,
   now = () => new Date(),
+  fedAtStart,
   onCall,
 }: {
   variant: CoinsVariant;
+  fedAtStart?: boolean;
   failFirst?: readonly CoinsFailPoint[];
   delayMs?: number;
   now?: () => Date;
@@ -109,7 +111,7 @@ export function createFixtureCoinsService({
   const data = variant === 'failed' ? 'many' : variant;
   const ledger = rows(data, now());
   let coins = ledger.reduce((sum, row) => sum + row.delta, 0) + (data === 'worst' ? 1105 : 0);
-  let fed = data === 'one';
+  let fed = fedAtStart ?? data === 'one';
   let nextId = 5000;
   let invite: Invite = {
     code: FIXTURE_MY_CODE,

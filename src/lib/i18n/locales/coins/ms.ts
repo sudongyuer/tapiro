@@ -46,6 +46,7 @@ const ms: typeof zhHans = {
     other: 'Lain-lain',
   },
   feed: {
+    waiting: '…',
     idle: 'Minggu baharu, ketik saya untuk sehelai daun',
     fed: 'Terima kasih! +1 Syiling',
     alreadyFed: 'Saya dah kenyang minggu ini. Datang lagi hari Isnin',

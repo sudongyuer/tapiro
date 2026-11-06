@@ -26,14 +26,29 @@ export function StageBody({
   return (
     <View>
       <Animated.View style={[styles.feet, actor?.bodyStyle]}>
-        <Mascot variant="side" size={size} outlined eyes={eyes} />
-        {actor?.wear ? (
-          <Animated.View style={[styles.layer, actor.wearStyle]}>
-            <MascotWearLayer wear={actor.wear} size={size} outlined />
-          </Animated.View>
-        ) : null}
+        <Animated.View style={[styles.feet, actor?.chewStyle]}>
+          <Mascot variant="side" size={size} outlined eyes={eyes} />
+          {actor?.wear ? (
+            <Animated.View style={[styles.layer, actor.wearStyle]}>
+              <MascotWearLayer wear={actor.wear} size={size} outlined />
+            </Animated.View>
+          ) : null}
+        </Animated.View>
       </Animated.View>
     </View>
+  );
+}
+
+export function StageLeaf({ size }: { size: number }) {
+  const { color } = useTheme();
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M12 3 C7 8 6 12 8 16 C9.5 19 14.5 19 16 16 C18 12 17 8 12 3 Z"
+        fill={color('--color-leaf')}
+      />
+      <Path d="M12 6 V17" stroke={color('--color-leaf-vein')} strokeWidth={1.4} />
+    </Svg>
   );
 }
 

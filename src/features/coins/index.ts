@@ -22,6 +22,7 @@ export {
   type RedeemFailure,
 } from './types';
 export { FIXTURE_FRIEND_CODE, FIXTURE_MY_CODE } from './fixtureCoinsService';
+export { useStageFeed } from './feed/useStageFeed';
 export { CoinsScreen } from './page/CoinsScreen';
 export { coinCount } from './page/coinsView';
 export { InviteScreen } from './invite/InviteScreen';

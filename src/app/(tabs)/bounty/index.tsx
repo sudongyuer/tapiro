@@ -21,7 +21,9 @@ import {
   useStartPost,
 } from '@/features/bounty';
 import { useItemChat } from '@/features/chat';
+import { coinsStore, useStageFeed } from '@/features/coins';
 import {
+  composeStageActor,
   HOME_BOTTOM_CHROME,
   HOME_TOP_CLEAR,
   HomeScreen,
@@ -52,6 +54,8 @@ function BountyHome({ user }: { user: AccountUser }) {
     visible: focused && mascotShown,
     open: openGrown,
   });
+  const feedActor = useStageFeed();
+  const actor = composeStageActor(growthActor, feedActor);
   const chat = useItemChat(
     useCallback(
       (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
@@ -111,7 +115,7 @@ function BountyHome({ user }: { user: AccountUser }) {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
-        actor={growthActor}
+        actor={actor}
         onMascotShown={setMascotShown}
         reviews={<PendingReviewCards />}
         board={
@@ -134,6 +138,7 @@ function BountyHome({ user }: { user: AccountUser }) {
             refreshing={board.pulling}
             onRefresh={() => {
               void reviewStore.reloadPending();
+              void coinsStore.reloadFeedStatus();
               board.pull();
             }}
           />

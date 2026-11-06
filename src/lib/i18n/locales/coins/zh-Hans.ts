@@ -44,6 +44,7 @@ export default {
     other: '其他',
   },
   feed: {
+    waiting: '…',
     idle: '新的一周，点我喂片叶子',
     fed: '谢谢！+1 貘币',
     alreadyFed: '这周吃饱啦，周一再来',
