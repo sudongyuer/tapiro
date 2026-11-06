@@ -2,7 +2,7 @@
 
 > Short plan written overnight 2026-10-30 by checking the foundation spec's steps 5 and 6 against main (b2fab87). It
 > lists what is built, what is left, what is blocked on the user, and the UI questions to draw before each step
-> starts. It is not a task plan yet.
+> starts. The task plan is `docs/plans/2026-11-06-reviews-profile-coins.md` (2026-11-06).
 
 **Spec:** `docs/specs/2026-10-11-foundation-design.md` (Decisions 「Coins: purchase / spend / free grants」, 「Ledger」,
 「Reputation」, 「Reviews」, 「Mascot level curve」; Implementation order 5 and 6). Bounty spec prerequisites P1 and P2

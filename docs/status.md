@@ -5,7 +5,7 @@ owner decision, a new queue item). Decisions and their reasons live in the specs
 points to them.
 
 Updated: 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
-pinned bars).
+pinned bars; reviews, profile, mascot level, weekly feed and invites: plan and server).
 
 ## Built and merged
 
@@ -32,16 +32,24 @@ pinned bars).
   pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3 waits on the paid account;
   the spec stays `approved` until then.
 
+- Reviews, profile, mascot level, coins in 我的, weekly feed and invites (foundation step 6 and the account-free part
+  of step 5): plan `docs/plans/2026-11-06-reviews-profile-coins.md`; Task 1 (server: reviews, the review share in
+  靠谱度, tier drops, mascot level, profile reads, weekly feed, invite codes, coin history) is merged. Next: Task 2
+  (client core, no UI), then one screen per task.
+
 ## Queue
 
-1. Plans written, not built: 问小貘
-   (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
-   (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6; questions answered 2026-11-06, step 6 can start).
+1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
 
 ## Owner decisions pending
 
-None open; one ★ below is listed for veto. On 2026-11-06 the owner answered 「按你推荐的走」:
+- Questions 256–259 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「Questions」): ride routes on public profiles,
+  motion for the review, level-up and feed moments (to draw on the canvas), counting rides without a Tapiro payment
+  toward 靠谱度, and reporting a review. The server ★ defaults of Task 1 (same plan, 「★ Server defaults」) are listed
+  for veto, among them the review share thresholds (70 / 80 / 90 % from 3 reviews).
+
+On 2026-11-06 the owner answered 「按你推荐的走」:
 
 - Questions 238–255 (steps 5–6) take their ★: `docs/plans/2026-10-30-coins-reputation-remaining.md`, 「Answers」.
 - Accepted 2026-11-06 and kept where they are recorded: the chat plan's defaults (server, client core, 消息 list,
