@@ -7,11 +7,12 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import screen, visible  # noqa: E402
 from bounty import assert_bar_hides_content, assert_grouped_background  # noqa: E402
 from driver import UI, bottom, by_id, reach_home  # noqa: E402
+from gestures import drag  # noqa: E402
 
 DEPS = ['src/ui/SheetFrame.tsx', 'src/ui/PillButton.tsx', 'modules/tapiro-kit/ios/PinnedBarView.swift',
         'src/features/bounty/detail/', 'verification/ui/bounty.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoard', 'worst',
-        '-uiVerifyDetail', 'notSelected']
+        '-uiVerifyDetail', 'notSelected', '-uiVerifyDetailId', 'fixture-worst-01']
 BUDGET = 180
 WORST = 'bounty-card-fixture-worst-01'
 
@@ -22,6 +23,9 @@ ui.at_rest()
 f = card['frame']
 ui.tap_point(f['x'] + f['width'] * 0.4, f['y'] + 30)
 ui.element('bounty-detail-not-selected')
+ui.at_rest()
+width = screen(ui.read())['width']
+drag(ui, (width / 2, 480), (width / 2, 220))
 ui.at_rest()
 items = ui.read()
 shot = ui.snap('01-under-bar')
