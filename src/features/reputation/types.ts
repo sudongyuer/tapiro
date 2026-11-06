@@ -101,6 +101,7 @@ export type ProfileReview = Review & {
   role: Role;
   title: string | null;
   reviewer: Person | null;
+  reportable: boolean;
 };
 
 export type FaceCounts = Record<Face, number>;
@@ -165,6 +166,7 @@ export type ReputationService = {
   pendingTierDrop(): Promise<TierDrop | null>;
   markTierDropSeen(id: number): Promise<void>;
   reportPerson(personId: string, reason: ReportReason, note: string | null): Promise<void>;
+  reportReview(reviewId: string, reason: ReportReason, note: string | null): Promise<void>;
 };
 
 export type ValidDraft = { face: Face; chips: string[]; sentence: string | null };

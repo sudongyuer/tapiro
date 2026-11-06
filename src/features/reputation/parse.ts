@@ -138,6 +138,7 @@ function toProfileReview(value: unknown): ProfileReview {
     role: oneOf(ROLES, row.role, 'profile review role'),
     title: textOrNull(row.title, 'profile review title'),
     reviewer: toPerson(row.reviewer),
+    reportable: flag(row.reportable, 'profile review reportable'),
   };
 }
 

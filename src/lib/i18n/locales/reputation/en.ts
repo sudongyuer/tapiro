@@ -113,6 +113,11 @@ const en: typeof zhHans = {
     notFound: 'This review is no longer here',
     invalid: 'A reply needs 1 to 200 characters',
   },
+  report: {
+    quote: 'Reported review',
+    reasons: 'Why are you reporting this review?',
+    footer: 'The reviewer won’t know it was reported. Reporting doesn’t remove the review by itself.',
+  },
   profile: {
     helped: 'People helped',
     completionRate: 'Completion',

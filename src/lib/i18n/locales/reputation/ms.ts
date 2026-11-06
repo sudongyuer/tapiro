@@ -115,6 +115,11 @@ const ms: typeof zhHans = {
     notFound: 'Penilaian ini sudah tiada',
     invalid: 'Balasan perlu 1 hingga 200 aksara',
   },
+  report: {
+    quote: 'Ulasan yang dilaporkan',
+    reasons: 'Kenapa anda melaporkan ulasan ini?',
+    footer: 'Penulis ulasan tidak akan tahu ia dilaporkan. Laporan tidak membuang ulasan ini secara automatik.',
+  },
   profile: {
     helped: 'Orang dibantu',
     completionRate: 'Kadar siap',

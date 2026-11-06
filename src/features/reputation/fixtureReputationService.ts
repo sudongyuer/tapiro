@@ -258,6 +258,9 @@ export function createFixtureReputationService({
     async reportPerson(personId, reason, note) {
       await step('report', 'reportPerson', { personId, reason, note });
     },
+    async reportReview(reviewId, reason, note) {
+      await step('report', 'reportReview', { reviewId, reason, note });
+    },
   };
 }
 

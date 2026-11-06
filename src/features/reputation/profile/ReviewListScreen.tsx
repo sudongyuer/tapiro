@@ -22,9 +22,11 @@ import { ReviewRow } from './ReviewRow';
 export function ReviewListScreen({
   personId,
   onReply,
+  onReport,
 }: {
   personId: string;
   onReply: (reviewId: string) => void;
+  onReport: (reviewId: string) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -69,6 +71,7 @@ export function ReviewListScreen({
                   owner={personName(owner?.name ?? null, t)}
                   self={self}
                   onReply={self ? onReply : null}
+                  onReport={onReport}
                   modifiers={
                     index === rows.items.length - 1
                       ? [onAppear(() => void profileStore.loadMore(personId))]

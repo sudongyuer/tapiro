@@ -135,5 +135,16 @@ export function createSupabaseReputationService(client: SupabaseClient | null): 
     async reportPerson(personId, reason, note) {
       unwrap(await db().rpc('report', { target_user: personId, message: null, reason, note }));
     },
+    async reportReview(reviewId, reason, note) {
+      unwrap(
+        await db().rpc('report', {
+          target_user: null,
+          message: null,
+          reason,
+          note,
+          review: reviewId,
+        }),
+      );
+    },
   };
 }

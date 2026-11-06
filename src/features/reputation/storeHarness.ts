@@ -100,6 +100,7 @@ export const profileReview = (
   role: 'helper',
   title: '帮取快递',
   reviewer: person('p2', '阿明'),
+  reportable: true,
   ...overrides,
 });
 
@@ -149,6 +150,7 @@ export function fakeService(overrides: Partial<ReputationService> = {}): Reputat
     pendingTierDrop: unexpected('pendingTierDrop'),
     markTierDropSeen: unexpected('markTierDropSeen'),
     reportPerson: unexpected('reportPerson'),
+    reportReview: unexpected('reportReview'),
     ...overrides,
   };
 }

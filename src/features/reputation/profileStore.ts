@@ -308,6 +308,9 @@ export function createProfileStore({
     report(personId: string, reason: ReportReason, note: string | null) {
       return service.reportPerson(personId, reason, note);
     },
+    reportReview(reviewId: string, reason: ReportReason, note: string | null) {
+      return service.reportReview(reviewId, reason, note);
+    },
     markBlocked(personId: string, blocked: boolean) {
       const card = get().cards[personId];
       if (!card || card.status === 'idle' || !card.data) return;

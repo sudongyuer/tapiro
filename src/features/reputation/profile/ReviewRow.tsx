@@ -1,4 +1,4 @@
-import { Button, HStack, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { Button, ContextMenu, HStack, Spacer, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
@@ -33,12 +33,14 @@ export function ReviewRow({
   owner,
   self,
   onReply,
+  onReport,
   modifiers = [],
 }: {
   review: ProfileReview;
   owner: string;
   self: boolean;
   onReply: ((reviewId: string) => void) | null;
+  onReport: (reviewId: string) => void;
   modifiers?: ModifierConfig[];
 }) {
   const { t } = useI18n();
@@ -47,54 +49,72 @@ export function ReviewRow({
   const chips = chipLabels(review, t);
   const source = reviewSource(review, t);
   const testID = `profile-review-${review.id}`;
+  const content = (
+    <VStack
+      alignment="leading"
+      spacing={vars['--space-1']}
+      modifiers={[
+        fill,
+        contentShape(shapes.rectangle()),
+        accessibilityElement('ignore'),
+        accessibilityLabel(reviewLabel(review, owner, self, t)),
+        accessibilityIdentifier(testID),
+      ]}
+    >
+      <HStack spacing={vars['--space-2']} alignment="firstTextBaseline">
+        <Text
+          modifiers={[
+            font({ textStyle: 'subheadline', weight: 'bold' }),
+            tone ? foregroundStyle(color(tone)) : secondary,
+          ]}
+        >
+          {t(`reputation.face.${review.face}`)}
+        </Text>
+        {chips.length > 0 ? (
+          <Text modifiers={[font({ textStyle: 'subheadline' }), wraps]}>{chips.join(' · ')}</Text>
+        ) : null}
+        <Spacer />
+      </HStack>
+      {review.sentence ? <Text modifiers={[wraps]}>{review.sentence}</Text> : null}
+      {source ? (
+        <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{source}</Text>
+      ) : null}
+      {review.reply ? (
+        <Text
+          modifiers={[
+            font({ textStyle: 'subheadline' }),
+            wraps,
+            fill,
+            padding({ horizontal: vars['--space-3'], vertical: vars['--space-2'] }),
+            background(
+              PlatformColor('tertiarySystemFill'),
+              shapes.roundedRectangle({ cornerRadius: vars['--radius-chip'] }),
+            ),
+            accessibilityIdentifier(`${testID}-reply`),
+          ]}
+        >
+          {`${self ? t('reputation.reply.mine') : t('reputation.reply.theirs', { name: owner })}${review.reply.body}`}
+        </Text>
+      ) : null}
+    </VStack>
+  );
   return (
     <VStack alignment="leading" spacing={vars['--space-2']} modifiers={[fill, ...modifiers]}>
-      <VStack
-        alignment="leading"
-        spacing={vars['--space-1']}
-        modifiers={[
-          fill,
-          accessibilityElement('ignore'),
-          accessibilityLabel(reviewLabel(review, owner, self, t)),
-          accessibilityIdentifier(testID),
-        ]}
-      >
-        <HStack spacing={vars['--space-2']} alignment="firstTextBaseline">
-          <Text
-            modifiers={[
-              font({ textStyle: 'subheadline', weight: 'bold' }),
-              tone ? foregroundStyle(color(tone)) : secondary,
-            ]}
-          >
-            {t(`reputation.face.${review.face}`)}
-          </Text>
-          {chips.length > 0 ? (
-            <Text modifiers={[font({ textStyle: 'subheadline' }), wraps]}>{chips.join(' · ')}</Text>
-          ) : null}
-          <Spacer />
-        </HStack>
-        {review.sentence ? <Text modifiers={[wraps]}>{review.sentence}</Text> : null}
-        {source ? (
-          <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{source}</Text>
-        ) : null}
-        {review.reply ? (
-          <Text
-            modifiers={[
-              font({ textStyle: 'subheadline' }),
-              wraps,
-              fill,
-              padding({ horizontal: vars['--space-3'], vertical: vars['--space-2'] }),
-              background(
-                PlatformColor('tertiarySystemFill'),
-                shapes.roundedRectangle({ cornerRadius: vars['--radius-chip'] }),
-              ),
-              accessibilityIdentifier(`${testID}-reply`),
-            ]}
-          >
-            {`${self ? t('reputation.reply.mine') : t('reputation.reply.theirs', { name: owner })}${review.reply.body}`}
-          </Text>
-        ) : null}
-      </VStack>
+      {review.reportable ? (
+        <ContextMenu>
+          <ContextMenu.Items>
+            <Button
+              label={t('chat.thread.report')}
+              systemImage="exclamationmark.bubble"
+              onPress={() => onReport(review.id)}
+              testID={`${testID}-report`}
+            />
+          </ContextMenu.Items>
+          <ContextMenu.Trigger>{content}</ContextMenu.Trigger>
+        </ContextMenu>
+      ) : (
+        content
+      )}
       {onReply && review.reply === null ? (
         <Button
           onPress={() => onReply(review.id)}
