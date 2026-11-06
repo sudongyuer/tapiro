@@ -1,10 +1,15 @@
-import { ActivityIndicator, PlatformColor, Pressable, StyleSheet } from 'react-native';
+import { createContext, useContext } from 'react';
+import { ActivityIndicator, PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from './AppText';
 import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
 type Variant = 'primary' | 'secondary' | 'destructive' | 'plain';
+
+// Bars pinned over scrolling content need an opaque secondary fill and an opaque base under every pill, so neither a
+// translucent fill nor the pressed and disabled dimming lets scrolled text show through and cross the label.
+export const PinnedSurface = createContext(false);
 
 export type PillButtonProps = {
   label: string;
@@ -24,6 +29,7 @@ export function PillButton({
   testID,
 }: PillButtonProps) {
   const { color } = useTheme();
+  const pinned = useContext(PinnedSurface);
   const inactive = disabled || loading;
   const labelColor =
     variant === 'primary'
@@ -37,10 +43,10 @@ export function PillButton({
       : variant === 'destructive'
         ? PlatformColor('secondarySystemGroupedBackground')
         : variant === 'secondary'
-          ? PlatformColor('tertiarySystemFill')
+          ? PlatformColor(pinned ? 'systemGray5' : 'tertiarySystemFill')
           : undefined;
 
-  return (
+  const button = (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -64,9 +70,16 @@ export function PillButton({
       )}
     </Pressable>
   );
+  if (!pinned) return button;
+  return (
+    <View style={[styles.base, { backgroundColor: PlatformColor('systemGroupedBackground') }]}>
+      {button}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+  base: { borderRadius: vars['--radius-pill'], borderCurve: 'continuous' },
   button: {
     minHeight: vars['--touch-min'],
     borderRadius: vars['--radius-pill'],
