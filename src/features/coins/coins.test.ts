@@ -128,6 +128,41 @@ describe('coins store', () => {
     expect(store.getSnapshot().readFailed.balance).toBeUndefined();
   });
 
+  test('a page that lands after the first page was read again is read again from the new head', async () => {
+    const more = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    const before: (number | null)[] = [];
+    let heads = 0;
+    const { store } = setup({
+      history: (cursor) => {
+        before.push(cursor);
+        if (cursor === 3) return more.promise;
+        if (cursor === 4)
+          return Promise.resolve({
+            items: [row(2, '2026-10') as CoinRow],
+            hasMore: false,
+            nextCursor: null,
+          });
+        heads += 1;
+        return Promise.resolve({
+          items: [row(heads === 1 ? 3 : 4, '2026-11') as CoinRow],
+          hasMore: true,
+          nextCursor: heads === 1 ? 3 : 4,
+        });
+      },
+    });
+    await store.reloadHistory();
+    const loadingMore = store.loadMoreHistory();
+    await store.reloadHistory();
+    more.resolve({ items: [row(1, '2026-10') as CoinRow], hasMore: false, nextCursor: null });
+    await loadingMore;
+    await settle();
+    expect(before).toEqual([null, 3, null, 4]);
+    const history = store.getSnapshot().history;
+    expect(history.status === 'idle' ? [] : history.data?.items.map((item) => item.id)).toEqual([
+      4, 2,
+    ]);
+  });
+
   test('a next page asked for while the first page is being read loads once that read lands', async () => {
     const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
     const before: (number | null)[] = [];
