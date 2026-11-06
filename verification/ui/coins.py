@@ -1,0 +1,78 @@
+import json
+import time
+from datetime import datetime, timedelta, timezone
+
+from choose import defaults
+from driver import by_id
+
+SCENE = 'coins-page'
+BASE_ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
+
+
+def coin_calls(ui, name, count, timeout=10, where=None):
+    deadline = time.monotonic() + timeout
+    while True:
+        text = defaults(ui, 'uiVerifyCoinsCalls')
+        found = [call['args'] for call in json.loads(text or '[]')
+                 if call['name'] == name and (where is None or where(call['args']))]
+        if len(found) >= count or time.monotonic() >= deadline:
+            return found
+        time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously
+
+
+def month(offset=0):
+    now = datetime.now(timezone.utc)
+    index = now.year * 12 + now.month - 1 - offset
+    return f'{index // 12:04d}-{index % 12 + 1:02d}'
+
+
+def label(ui, identifier):
+    return ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled').get('AXLabel') or ''
+
+
+def balance_label(ui, coins, left, total=3):
+    return ui.tn('coins.balanceA11y', coins) + ui.t('coins.listJoin') + ui.t('coins.freePosts', left=left, total=total)
+
+
+def row_title(ui, reason, title=None):
+    name = ui.t(f'coins.reason.{reason}')
+    return ui.t('coins.withTitle', reason=name, title=title) if title else name
+
+
+def row_prefix(ui, reason, delta, title=None):
+    sign = f'+{delta}' if delta > 0 else f'−{-delta}'
+    join = ui.t('coins.listJoin')
+    return f'{row_title(ui, reason, title)}{join}{sign}{join}'
+
+
+def row_ids(items):
+    rows = [i for i in items if (i.get('AXUniqueId') or '').startswith('coins-row-')]
+    return [int(i['AXUniqueId'][len('coins-row-'):]) for i in sorted(rows, key=lambda i: i['frame']['y'])]
+
+
+def month_ids(items):
+    heads = [i for i in items if (i.get('AXUniqueId') or '').startswith('coins-month-')]
+    return [i['AXUniqueId'][len('coins-month-'):] for i in sorted(heads, key=lambda i: i['frame']['y'])]
+
+
+def open_page(ui, timeout=45):
+    ui.element('coins-screen', timeout=timeout)
+    return ui.element('coins-balance', timeout=30)
+
+
+def month_label(ui, key):
+    year, number = (int(part) for part in key.split('-'))
+    malaysia_year = (datetime.now(timezone.utc) + timedelta(hours=8)).year
+    name = ui.t(f'coins.monthName.m{number}')
+    if year == malaysia_year:
+        return ui.t('coins.month', name=name)
+    return ui.t('coins.monthYear', name=name, year=year)
+
+
+def assert_month_labels(ui, items):
+    keys = month_ids(items)
+    assert keys, 'no month header on screen'
+    for key in keys:
+        found = by_id(items, f'coins-month-{key}').get('AXLabel') or ''
+        assert found == month_label(ui, key), f'month {key} reads {found!r}, expected {month_label(ui, key)!r}'
+    return keys

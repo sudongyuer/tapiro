@@ -37,24 +37,22 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   靠谱度, tier drops, mascot level, profile reads, weekly feed, invite codes, coin history) is merged; Task 2 (client
   core: `src/features/reputation/` and `src/features/coins/`, review live signals, copy) is merged; Task 5 (the profile
   screen, 全部评价, 回复, ⋯ 举报 / 屏蔽, the five entries and the gone state; cases `profile_*`) is built; Task 6 (the
-  tier-drop sheet, cases `tier_drop_*`) is built. Next: Tasks 4, 8 and 10 (review entries, coins in 我的, invites), one screen per task; Tasks 3, 7 and 9 wait on the
-  motion drawings (257).
+  tier-drop sheet, cases `tier_drop_*`) is built; Task 8 (the 我的 「貘币」 row and the 貘币 page: balance, free posts
+  left, monthly history; cases `coins_page*`) is built. Next: Tasks 4 and 10 (review entries, invites), one screen per
+  task; Tasks 3, 7 and 9 no longer wait: 257 is answered (a1, b1, c1). 258 A (count closed rides toward 靠谱度, a
+  server change) and 259 A (report a review from a profile) are answered but not planned as tasks yet.
 
 ## Queue
 
 1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
+3. Text rows in pinned bottom bars (notices, the 已申请 and outcome lines) sit over scrolled content: the owner chose
+   ★A on 2026-11-06, the whole bar opaque. A task of its own, not started.
 
 ## Owner decisions pending
 
-- Questions 256–259 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「Questions」): ride routes on public profiles,
-  motion for the review, level-up and feed moments (drawn on the canvas as 257a1–a3, b1–b3 and c1–c3, ★ a1, b1, c1),
-  counting rides without a Tapiro payment
-  toward 靠谱度, and reporting a review. The server ★ defaults of Task 1 (same plan, 「★ Server defaults」) are listed
-  for veto, among them the review share thresholds (70 / 80 / 90 % from 3 reviews), and the client ★ defaults of
-  Task 2 (「★ Client core defaults」), among them the new en and ms wording for faces, level names, accessories and
-  invite errors, the profile ★ details of Task 5 (「★ Profile defaults」) and the tier-drop ★ details of Task 6 (「★ Tier-drop
-  defaults」).
+- The coins page ★ details of Task 8 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「★ Coins defaults」, C1–C9),
+  listed for veto after the owner's 2026-11-06 answer below.
 
 On 2026-11-06 the owner answered 「按你推荐的走」:
 
@@ -66,7 +64,18 @@ On 2026-11-06 the owner answered 「按你推荐的走」:
 - Secondary buttons in pinned bottom bars are opaque (`fix/opaque-bar-buttons`). ★ for veto: inside `SheetActions`
   bars a secondary pill fills with `systemGray5` and every pill sits on an opaque canvas-coloured base, so pressed and
   disabled dimming and plain pills hide scrolled content too; other secondary pills keep `tertiarySystemFill`. Text
-  lines in those bars (notices, the 已申请 and outcome lines) still sit over scrolled content: question in the PR.
+  lines in those bars (notices, the 已申请 and outcome lines) still sit over scrolled content: answered later the same
+  day (below), Queue item 3.
+
+Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main session):
+
+- Questions 256–259 take their ★: 256 A (ride reviews on others' profiles show 「拼车」 without route or reviewer), 257
+  a1 + b1 + c1 (envelope seal, crouch-then-grow, leaf drop then chew after `fed`), 258 A (a closed ride counts as
+  settled toward 靠谱度 without a Tapiro payment), 259 A (long-press a review → 举报). Recorded in the plan's
+  「Questions」.
+- Accepted: the ★ defaults of Task 1 (「★ Server defaults」), Task 2 (「★ Client core defaults」), Task 5 (「★ Profile
+  defaults」, P1–P10) and Task 6 (「★ Tier-drop defaults」, D1–D8).
+- Text rows in pinned bottom bars: ★A, the whole bar opaque (Queue item 3).
 
 ## Resuming on another machine
 

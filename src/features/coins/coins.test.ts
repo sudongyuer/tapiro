@@ -121,6 +121,56 @@ describe('coins store', () => {
     fail = true;
     await store.reloadBalance();
     expect(store.getSnapshot().balance).toEqual({ status: 'stale', data: BALANCE });
+    expect(store.getSnapshot().readFailed.balance).toBe(true);
+    fail = false;
+    await store.reloadBalance();
+    expect(store.getSnapshot().balance).toEqual({ status: 'ready', data: BALANCE });
+    expect(store.getSnapshot().readFailed.balance).toBeUndefined();
+  });
+
+  test('a next page asked for while the first page is being read loads once that read lands', async () => {
+    const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    const before: (number | null)[] = [];
+    let reads = 0;
+    const page = { items: [row(3, '2026-11') as CoinRow], hasMore: true, nextCursor: 3 };
+    const { store } = setup({
+      history: (cursor) => {
+        before.push(cursor);
+        reads += 1;
+        if (cursor !== null)
+          return Promise.resolve({
+            items: [row(2, '2026-10') as CoinRow],
+            hasMore: false,
+            nextCursor: null,
+          });
+        return reads === 1 ? Promise.resolve(page) : first.promise;
+      },
+    });
+    await store.reloadHistory();
+    const reloading = store.reloadHistory();
+    await store.loadMoreHistory();
+    expect(before).toEqual([null, null]);
+    first.resolve(page);
+    await reloading;
+    await settle();
+    expect(before).toEqual([null, null, 3]);
+    const history = store.getSnapshot().history;
+    expect(history.status === 'idle' ? [] : history.data?.items.map((item) => item.id)).toEqual([
+      3, 2,
+    ]);
+  });
+
+  test('history marked stale by new coins off screen is not a failed refresh', async () => {
+    const { store } = setup({
+      balance: () => Promise.resolve(BALANCE),
+      history: () => Promise.resolve({ items: [], hasMore: false, nextCursor: null }),
+    });
+    store.loadHistory();
+    await settle();
+    store.onCoinsChanged();
+    await settle();
+    expect(store.getSnapshot().history.status).toBe('stale');
+    expect(store.getSnapshot().readFailed.history).toBeUndefined();
   });
 
   test('feeding shows the answer only after the server confirms and updates the balance', async () => {
@@ -317,5 +367,17 @@ describe('coins services', () => {
     } while (cursor !== null);
     expect(ids.length).toBe(129);
     expect(new Set(ids).size).toBe(129);
+  });
+
+  test('the fixture can fail a refresh or a next page once without failing the first read', async () => {
+    const service = createFixtureCoinsService({
+      variant: 'worst',
+      failFirst: ['historyAgain', 'historyMore'],
+    });
+    const first = await service.history(null);
+    await expect(service.history(null)).rejects.toThrow();
+    await expect(service.history(first.nextCursor)).rejects.toThrow();
+    expect((await service.history(null)).items.length).toBe(first.items.length);
+    expect((await service.history(first.nextCursor)).items[0].id).toBe(959);
   });
 });

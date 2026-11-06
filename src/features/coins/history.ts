@@ -12,6 +12,6 @@ export function groupByMonth(rows: readonly CoinRow[]): MonthGroup[] {
   return groups;
 }
 
-export const reasonKey = (reason: CoinReason | 'other') => `coins.reason.${reason}`;
+export const reasonKey = (reason: CoinReason | 'other') => `coins.reason.${reason}` as const;
 
 export const signedDelta = (delta: number) => (delta > 0 ? `+${delta}` : `−${-delta}`);

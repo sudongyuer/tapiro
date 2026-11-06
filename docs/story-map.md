@@ -1035,7 +1035,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | coins.ledger.refund     | 退回恢复貘币或免费名额，同一件事只退一次                 | db:supabase/tests/coins.test.sql                                                                                                                  |
 | coins.ledger.balance    | 余额由账本算出，只读得到自己的，并给出下次免费名额的时间 | db:supabase/tests/coins.test.sql                                                                                                                  |
 | coins.ledger.anonymised | 删除账号后账本行保留但不再关联到人                       | db:supabase/tests/coins.test.sql, db:supabase/tests/weekly_feed_invites.test.sql                                                                                                                  |
-| coins.ledger.history | 「我的」里的貘币页按马来西亚的月份分组列出明细，最新的在上面，只读得到自己的；没加载出来不显示 0 | ui, db:supabase/tests/weekly_feed_invites.test.sql |
+| coins.ledger.history | 「我的」里一起办成的事下面一行「貘币 n」，推进貘币页：余额、本月免费发布还剩几条，明细按马来西亚的月份分组，最新的在上面，长标题一行截断、旁白读全，往下滑加载更早的；只读得到自己的；没加载出来写「没加载出来 · 重试」，余额那行不显示数字，不显示 0 也不显示「还没有明细」；刷新失败保留上次的并标明不是最新；不出现买貘币 | ui:coins_page, ui:coins_page_empty, ui:coins_page_failed, ui:coins_page_worst, unit:src/features/coins/page/coinsView.test.ts, unit:src/features/coins/coins.test.ts, db:supabase/tests/weekly_feed_invites.test.sql |
 
 ### coins.grants 免费貘币
 

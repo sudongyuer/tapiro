@@ -45,6 +45,7 @@ export type CoinsState = {
   feed: FeedState;
   invite: Loadable<Invite>;
   redeem: RedeemState;
+  readFailed: Partial<Record<LoadKey, true>>;
 };
 
 const IDLE: CoinsState = {
@@ -55,6 +56,7 @@ const IDLE: CoinsState = {
   feed: { phase: 'idle' },
   invite: IDLE_LOAD,
   redeem: { phase: 'idle' },
+  readFailed: {},
 };
 
 export type LoadKey = 'balance' | 'history' | 'feedStatus' | 'invite';
@@ -72,10 +74,16 @@ export function createCoinsStore({
   const requests = createRequests();
   const focus = createFocus();
   let generation = 0;
+  let moreWanted = false;
 
   const get = store.get;
   const patch = (next: Partial<CoinsState>) => store.set({ ...get(), ...next });
   const current = (userId: string, at: number) => at === generation && get().userId === userId;
+
+  function withReadFailed(key: LoadKey, failed: boolean) {
+    const { [key]: _dropped, ...rest } = get().readFailed;
+    return failed ? { ...rest, [key]: true as const } : rest;
+  }
 
   function reload<K extends LoadKey>(
     key: K,
@@ -84,13 +92,33 @@ export function createCoinsStore({
     const { userId } = get();
     if (!userId) return Promise.resolve();
     const at = generation;
+    let outcome: boolean | null = null;
+    const tracked = async () => {
+      try {
+        const value = await read();
+        outcome = false;
+        return value;
+      } catch (error) {
+        outcome = true;
+        throw error;
+      }
+    };
     return readInto({
       requests,
       key,
-      read,
+      read: tracked,
       current: () => current(userId, at),
       value: () => get()[key] as Loadable<Awaited<ReturnType<typeof read>>>,
-      set: (next) => patch({ [key]: next } as Partial<CoinsState>),
+      set: (next) =>
+        patch({
+          [key]: next,
+          ...(outcome === null ? {} : { readFailed: withReadFailed(key, outcome) }),
+        } as Partial<CoinsState>),
+    }).then(() => {
+      if (key === 'history' && moreWanted && current(userId, at)) {
+        moreWanted = false;
+        void loadMoreHistory();
+      }
     });
   }
 
@@ -115,7 +143,11 @@ export function createCoinsStore({
     if (!userId || history.status === 'idle' || history.status === 'loading' || !history.data)
       return;
     const { hasMore, nextCursor, more } = history.data;
-    if (!hasMore || nextCursor === null || more === 'loading' || requests.busy('history')) return;
+    if (!hasMore || nextCursor === null || more === 'loading') return;
+    if (requests.busy('history')) {
+      moreWanted = true;
+      return;
+    }
     const at = generation;
     const head = requests.latest('history');
     const request = requests.start(PAGE);
@@ -226,6 +258,7 @@ export function createCoinsStore({
 
   function clear() {
     generation += 1;
+    moreWanted = false;
     requests.clear();
     focus.clear();
     store.set(IDLE);

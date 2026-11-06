@@ -1,4 +1,11 @@
-export { useCoinBalance, useCoinHistory, useInvite, useLiveCoins, useWeeklyFeed } from './hooks';
+export {
+  useCoinBalance,
+  useCoinHistory,
+  useCoinsReadFailed,
+  useInvite,
+  useLiveCoins,
+  useWeeklyFeed,
+} from './hooks';
 export { coinsStore } from './services';
 export type { CoinsState, FeedState, History, RedeemState } from './coinsStore';
 export { groupByMonth, reasonKey, signedDelta, type MonthGroup } from './history';
@@ -15,3 +22,5 @@ export {
   type RedeemFailure,
 } from './types';
 export { FIXTURE_FRIEND_CODE, FIXTURE_MY_CODE } from './fixtureCoinsService';
+export { CoinsScreen } from './page/CoinsScreen';
+export { coinCount } from './page/coinsView';
