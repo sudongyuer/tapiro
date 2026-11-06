@@ -77,8 +77,7 @@ def progress_to_status(summary_key, shot):
 
 
 def back_to_board():
-    s = screen(ui.read())
-    ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+    ui.tap('BackButton')
     ui.gone('bounty-detail-title')
 
 

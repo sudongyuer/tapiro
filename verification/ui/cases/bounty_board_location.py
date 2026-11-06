@@ -29,6 +29,16 @@ def restart(*args):
     reach_home(ui)
 
 
+def leave_search():
+    # The focused search bar takes the back button's place with its own close button; closing it brings BackButton back.
+    width = screen(ui.read())['width']
+    shut = ui.settled(lambda items: next((i for i in items if i.get('type') == 'Button' and i['frame']['y'] < 120
+                                          and i['frame']['x'] > width / 2), None), 'the search bar shows no close button')
+    f = shut['frame']
+    ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
+    ui.tap('BackButton')
+
+
 def labelled(identifier, text, message):
     return ui.wait_label(identifier, lambda label: text in label, message)
 
@@ -87,10 +97,9 @@ visible(ui, 'bounty-place-row')
 ui.tap('bounty-place-row')
 ui.element('place-search')
 ui.gone('bounty-place-row')
-s = screen(ui.read())
-ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+leave_search()
 ui.gone('place-search')
-row = ui.settled(lambda items: by_id(items, 'bounty-place-row'), 'swiping back did not return to the board')
+row = ui.settled(lambda items: by_id(items, 'bounty-place-row'), 'going back did not return to the board')
 ui.at_rest()
 shot = ui.snap('03b-returned')
 f = row['frame']

@@ -1,4 +1,4 @@
-"""Detail 3A pushed from a board card: tapping the card body opens the detail with the same title and RM 8; the rows read the place with 约 300 m · 精确地址只给选中的人, the deadline with 急 in the urgent colour, and 小林 · 靠谱; 申请 is a 44 pt pinned button above the tab bar; an edge swipe back returns to the board at the same scroll position with the card deselected, and from a page-two card of the `long` board it returns to that card with every loaded page kept; a worst row's 500-character description scrolls while 申请 stays put; a failed load shows 没加载出来 with 重试 and no rows, and a gone bounty shows 这条悬赏已经不在了 with 返回."""
+"""Detail 3A pushed from a board card: tapping the card body opens the detail with the same title and RM 8; the rows read the place with 约 300 m · 精确地址只给选中的人, the deadline with 急 in the urgent colour, and 小林 · 靠谱; 申请 is a 44 pt pinned button above the tab bar; the back button returns to the board (an AXe edge swipe does not pop on iOS 27.2; the interactive pop is a device check) at the same scroll position with the card deselected, and from a page-two card of the `long` board it returns to that card with every loaded page kept; a worst row's 500-character description scrolls while 申请 stays put; a failed load shows 没加载出来 with 重试 and no rows, and a gone bounty shows 这条悬赏已经不在了 with 返回."""
 import re
 import sys
 
@@ -75,10 +75,9 @@ urgent = ink_box(shot, time_row, token('--color-urgent', ui.appearance), 40)
 assert urgent and urgent['count'] >= URGENT_MIN, f'急 is not drawn in the urgent colour: {urgent}'
 print(f'detail: 申请 {pinned["width"]:.0f} x {pinned["height"]:.0f} pt at y {pinned["y"]:.1f}')
 
-s = screen(ui.read())
-ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+ui.tap('BackButton')
 ui.gone('bounty-detail-title')
-card = ui.settled(lambda items: by_id(items, FIRST), 'swiping back did not return to the board')
+card = ui.settled(lambda items: by_id(items, FIRST), 'going back did not return to the board')
 ui.at_rest()
 moved = abs(card['frame']['y'] - card_before['y'])
 assert moved <= SAME_PLACE, f'the board moved {moved:.1f} pt after returning from the detail'
@@ -89,10 +88,9 @@ assert close(fill, CARD_FILL[ui.appearance], 6), f'the card is still selected af
 
 relaunch(ui, drop=[], add=['-uiVerifyBoard', 'long'])
 deep_before = open_card(DEEP)
-s = screen(ui.read())
-ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+ui.tap('BackButton')
 ui.gone('bounty-detail-title')
-ui.settled(lambda items: by_id(items, DEEP), 'swiping back from a page-two card did not return to it')
+ui.settled(lambda items: by_id(items, DEEP), 'going back from a page-two card did not return to it')
 ui.at_rest()
 items = ui.read()
 deep = by_id(items, DEEP)
