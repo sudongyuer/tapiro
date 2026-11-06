@@ -96,3 +96,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-06 | case account + detail     | 0               | 2             | ~20 min (paste budget, place search back)    | 0                       | 0                     |
 | 2026-11-06 | 6 tier drop (Task 6)      | pending         | 2             | ~25 min (plural keys, review fixes)          | 0                       | pending               |
 | 2026-11-06 | 6 review sheet (Task 3)   | pending         | 1             | ~15 min (prevent-remove, one case bug)       | 0                       | pending               |
+| 2026-11-06 | 6 review entries (Task 4) | pending         | 1             | ~5 min (button identifier)                   | 0                       | pending               |

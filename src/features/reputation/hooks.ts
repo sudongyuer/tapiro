@@ -25,9 +25,11 @@ const useMe = <T>(select: (state: MeState) => T) =>
 
 export function usePendingReviews() {
   const userId = useReviews((state) => state.userId);
-  useEffect(() => {
-    if (userId) reviewStore.loadPending();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) void reviewStore.reloadPending();
+    }, [userId]),
+  );
   return useReviews((state) => state.pending);
 }
 
@@ -39,6 +41,10 @@ export function useReviewState(kind: ItemKind, itemId: string) {
     }, [kind, itemId, userId]),
   );
   return useReviews((state) => state.items[pairKey(kind, itemId)] ?? IDLE_LOAD);
+}
+
+export function useReviewReadFailed(kind: ItemKind, itemId: string) {
+  return useReviews((state) => state.readFailed[pairKey(kind, itemId)] === true);
 }
 
 export function useReviewSubmit(target: ReviewTarget) {

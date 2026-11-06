@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Linking, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -40,6 +40,7 @@ type Props = {
   settle: SettleActions;
   onChangeShare: (member: string) => void;
   onReceipt: () => void;
+  reviews?: (title: string) => ReactNode;
 };
 
 export function DetailBody({
@@ -54,6 +55,7 @@ export function DetailBody({
   settle,
   onChangeShare,
   onReceipt,
+  reviews,
 }: Props) {
   const { t, language } = useI18n();
   const [opened, setOpened] = useState<'maps' | 'grab' | null>(null);
@@ -93,6 +95,9 @@ export function DetailBody({
         onCollect={() => void settle.collect()}
         onOpenBook={settle.openStickerBook}
       />
+      {ride.status === 'closed' && ride.role !== 'viewer' && ride.role !== 'applicant'
+        ? reviews?.(t('ride.ticket.route', { from: ride.start.short, to: ride.dest.short }))
+        : null}
       {organiser && open && ride.requests ? (
         <ApplicationCard
           requests={ride.requests}

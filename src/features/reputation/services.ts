@@ -25,6 +25,7 @@ function verifyService() {
   return createFixtureReputationService({
     isBlocked: fixtureBlocked,
     variant: repVariant(uiVerifyArgument('uiVerifyReviews') ?? uiVerifyArgument('uiVerifyProfile')),
+    reviewsOn: uiVerifyArgument('uiVerifyReviews') !== undefined,
     tierDrop: tierDropVariant(uiVerifyArgument('uiVerifyTierDrop')),
     seenDrop: Number(Settings.get(DROP_SEEN_KEY)) || null,
     onDropSeen: (id) => Settings.set({ [DROP_SEEN_KEY]: String(id) }),
@@ -70,7 +71,10 @@ live.on(REVIEW_SIGNALS, (signal) => {
   reviewStore.onSignal(signal);
   profileStore.onSignal();
 });
-live.on(['payment.settled', 'ride.settled'], () => meStore.onStickers());
+live.on(['payment.settled', 'ride.settled'], (signal) => {
+  meStore.onStickers();
+  reviewStore.onSettled(signal);
+});
 blockEvents.onBlocked((personId) => profileStore.markBlocked(personId, true));
 blockEvents.onUnblocked((personId) => profileStore.markBlocked(personId, false));
 

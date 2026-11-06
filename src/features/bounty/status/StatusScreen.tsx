@@ -1,5 +1,6 @@
 import { ProgressView, Section } from '@expo/ui/swift-ui';
 import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/modifiers';
+import type { ReactNode } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -27,9 +28,11 @@ export type StatusScreenProps = {
   onBack: () => void;
   onPay: (paymentId: string) => void;
   message?: StatusMessage;
+  reviews?: (title: string) => ReactNode;
+  onPull?: () => void;
 };
 
-export function StatusScreen({ id, onBack, onPay, message }: StatusScreenProps) {
+export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: StatusScreenProps) {
   const { t, language } = useI18n();
   const { state, refresh, act } = useStatus(id);
   const helper = useHelperActions(id, act);
@@ -85,7 +88,10 @@ export function StatusScreen({ id, onBack, onPay, message }: StatusScreenProps) 
       <StatusMenu actions={actions.menu} role={role} state={action} onAction={run} />
       <SheetFrame
         testID="bounty-status"
-        onRefresh={refresh}
+        onRefresh={async () => {
+          onPull?.();
+          await refresh();
+        }}
         notice={
           <>
             {offline ? (
@@ -124,6 +130,7 @@ export function StatusScreen({ id, onBack, onPay, message }: StatusScreenProps) 
         ) : detail ? (
           <>
             <StatusHeader detail={detail} />
+            {detail.status === 'settled' ? reviews?.(detail.title) : null}
             <StatusTimeline detail={detail} now={new Date()} />
             {detail.status === 'cancelled' ? null : (
               <AddressSection

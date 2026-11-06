@@ -1,6 +1,7 @@
 import time
 
 from driver import assert_appearance, by_id
+from gestures import drag
 from profile import label, rep_calls
 
 SHEET = 'review-sheet'
@@ -36,3 +37,23 @@ def shot(ui, name):
     path = ui.capture(name)
     assert_appearance(path, ui.appearance, 20, 2000, 'the review sheet')
     return path
+
+
+def on_screen_row(ui, identifier, tries=6):
+    # Rows sit below the ticket and the stage; drag until the row is fully above the tab bar.
+    for _ in range(tries):
+        items = ui.read()
+        row = by_id(items, identifier)
+        height = items[0]['frame']['height']
+        if row and row['frame']['y'] + row['frame']['height'] < height - 110 and row['frame']['y'] > 90:
+            return row
+        drag(ui, (items[0]['frame']['width'] / 2, height * 0.72), (items[0]['frame']['width'] / 2, height * 0.42))
+    raise AssertionError(f'{identifier} never came on screen')
+
+
+def submit_happy(ui):
+    ui.element('review-face-happy', timeout=30)
+    ui.tap('review-face-happy')
+    ui.element('review-submit')
+    ui.tap('review-submit')
+    ui.element('review-sealed-ok', timeout=20)

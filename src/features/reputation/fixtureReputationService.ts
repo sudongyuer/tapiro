@@ -23,6 +23,7 @@ import {
 
 export const REP_FAIL_POINTS = [
   'state',
+  'stateAgain',
   'pending',
   'submit',
   'submitLost',
@@ -40,6 +41,7 @@ export type RepFailPoint = (typeof REP_FAIL_POINTS)[number];
 
 export type FixtureRepOptions = {
   variant: RepVariant;
+  reviewsOn?: boolean;
   tierDrop?: TierDropVariant;
   seenDrop?: number | null;
   onDropSeen?: (id: number) => void;
@@ -68,6 +70,7 @@ export function fixtureRepFailPoints(value: string | undefined): RepFailPoint[] 
 
 export function createFixtureReputationService({
   variant,
+  reviewsOn = true,
   tierDrop: dropVariant = 'none',
   seenDrop = null,
   onDropSeen,
@@ -80,7 +83,7 @@ export function createFixtureReputationService({
   const failing = new Set<RepFailPoint>(
     variant === 'failed'
       ? REP_FAIL_POINTS.filter(
-          (point) => !['profileAgain', 'submitLost', 'submitLocked'].includes(point),
+          (point) => !['profileAgain', 'stateAgain', 'submitLost', 'submitLocked'].includes(point),
         )
       : failFirst,
   );
@@ -90,8 +93,9 @@ export function createFixtureReputationService({
   let mascot: MyMascot = fixtureMascot(data);
   const firstDrop = fixtureTierDrop(dropVariant, now());
   let tierDrop = firstDrop && seenDrop !== null && firstDrop.id <= seenDrop ? null : firstDrop;
-  let pending = fixturePending(data, now());
+  let pending = reviewsOn ? fixturePending(data, now()) : [];
   let profileReads = 0;
+  let stateReads = 0;
 
   async function step(point: RepFailPoint, name: string, args: unknown = null) {
     onCall?.(name, args);
@@ -101,14 +105,16 @@ export function createFixtureReputationService({
 
   const pairsOf = (kind: ReviewPair['kind'], itemId: string) => {
     const key = pairKey(kind, itemId);
-    const stored = items.get(key) ?? fixturePairs(kind, itemId, data, now());
+    const stored = items.get(key) ?? (reviewsOn ? fixturePairs(kind, itemId, data, now()) : []);
     items.set(key, stored);
     return stored;
   };
 
   return {
     async reviewState(kind, itemId) {
-      await step('state', 'reviewState', { kind, itemId });
+      stateReads += 1;
+      const again = stateReads > 1 && failing.has('stateAgain');
+      await step(again ? 'stateAgain' : 'state', 'reviewState', { kind, itemId });
       return pairsOf(kind, itemId);
     },
     async pendingReviews() {

@@ -6,7 +6,7 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
+(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
 profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
@@ -251,6 +251,21 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 | R15 | If the answer to a submit is lost but the reload shows the review stored, the sheet seals instead of reading 没提交成功                                                                                                                                                                                                    | Data integrity: a success is never shown as a failure                               |
 | R14 | New en / ms wording: 「What went wrong (pick any)」 / 「Apa yang tidak kena (pilih mana-mana)」; Keep Writing, Keep Draft, Discard / Terus Menulis, Simpan Draf, Buang; 「Reviewed · Shown once {name} reviews too」 / 「Sudah dinilai · Dipaparkan selepas {name} menilai」. Malay needs the native review                | Boards had no such lines                                                            |
 
+## ★ Review entry defaults (Task 4, 2026-11-06, for veto)
+
+| #   | Decision ★                                                                                                                                                                                                                                                                                                            | Why                                                                     |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| E1  | The status screen shows the entry right under the header that says 已结清, only while the bounty is settled; the ride shows a 「评价」 block under the sticker card, only on a closed ride. Routes pass the entries in, so features still do not import each other                                                    | 238 A; layering rule                                                    |
+| E2  | Row states: 评价 {name} with 还剩 N 天; 评价 {name} with 「{name}已经评价你了…· 还剩 N 天」; 已评价 with 「等{name}评完一起公开」 and 改一下; 评价已结束 with the name, not tappable                                                                                                                                  | 238 A, 241 A, 242 A, 244 A drawings; on a ride every row needs the name |
+| E3  | Once both are public the row reads 「评价已公开」 and 「{name}给你的是「开心」」, not tappable; the chips and the sentence are on your own profile. No drawing covers this state                                                                                                                                      | The window is over for that pair; a row must not stay on 已评价         |
+| E4  | The status row carries the small 小貘 as drawn in 238; the ride rows do not, as drawn in 241                                                                                                                                                                                                                          | The two drawings differ; each followed                                  |
+| E5  | A failed read reads 「评价没加载出来」 with 重试, never nothing; a failed refresh keeps the rows with 「没刷新成功 · 下面是上次加载的评价」; an item marked stale by a signal reads again on open with no warning                                                                                                     | Data integrity, C6 pattern                                              |
+| E6  | The home card sits under the live cards, above the board: the line, 这次怎么样？ and a small 评价 pill; the whole card is one button. A window that ends while home is open removes the card on the next render                                                                                                       | 238 A drawing; a card is one target                                     |
+| E7  | The line follows who the other person was: 「{title} · {name}帮你办成了」 (helper), 「{title} · 你帮{name}办成了」 (poster), 「{title} · 和{name}一起坐的车」 (ride). The board drew only the first                                                                                                                   | The first line is false for the helper's own card                       |
+| E8  | A failed pending read shows no card and a stale list shows none either: the card is a nudge, the entries on the item stay the source, and home says nothing about 「no reviews」. The list reads again whenever home gains focus, on pull, and on `payment.settled` and `ride.settled`                                | No claim of empty is made                                               |
+| E9  | Verify mode has no pairs or pending rows without `-uiVerifyReviews`, so no other home, status or ride case meets them                                                                                                                                                                                                 | Existing cases stay as they were                                        |
+| E10 | New en / ms wording: 「Reviews are public」 / 「Penilaian sudah dipaparkan」; 「{name} gave you “{face}”」 / 「{name} memberi anda “{face}”」; home lines 「You got it done for {name}」 / 「Anda sudah selesaikan untuk {name}」, 「Rode with {name}」 / 「Menumpang bersama {name}」. Malay needs the native review | Boards had no such lines                                                |
+
 ## File structure
 
 | Action | Path                                                                             | Responsibility                                            |
@@ -292,10 +307,10 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
    the draft is kept on the device across failures and a discard asks first; the same sheet opens for 改一下 with the
    stored review. UI cases `review_sheet`, `review_sheet_edit`, `review_sheet_discard`, `review_sheet_failed`,
    `review_sheet_worst` (ms chips).
-4. **Review entries** (238 A, 241 A, 242 A): under 已结清 on the bounty status screen one 「评价 {name}」 row with the
+4. **Review entries** — **done 2026-11-06** (238 A, 241 A, 242 A; ★ details in 「★ Review entry defaults」): under 已结清 on the bounty status screen one 「评价 {name}」 row with the
    days left; on a closed ride one row per counterpart (the organiser sees each rider, a rider sees the organiser);
    the sealed copy on both sides and 「评价已结束」; one home card per pending review until reviewed or the window
-   ends. UI cases `review_entry_status`, `review_entry_sealed`, `review_entry_ride`, `review_entry_home`.
+   ends. UI cases `review_entry_status`, `review_entry_sealed`, `review_entry_ride`, `review_entry_home`, `review_entry_ride_rider`, `review_entry_home_worst`.
 5. **Profile** — **done 2026-11-06** (243 A, 245 A, 246 A, 247 A; ★ details in 「★ Profile defaults」): a pushed screen in the current tab: header, three numbers, reviews (latest
    3, 「全部评价」 page), one 小貘 and stickers row; your own profile keeps the RepBC order and offers 回复 under each
    received review (confirm once, 200 characters); ⋯ with 举报 and 屏蔽 reusing the chat report and the block module;

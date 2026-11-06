@@ -23,9 +23,12 @@ export function sheetSubtitle(title: string | null, pair: ReviewPair, language: 
   return title ? `${title} · ${date}` : date;
 }
 
-export function blockedBy(pair: ReviewPair): SubmitFailure | null {
-  if (canReview(pair)) return null;
-  return pair.state === 'ended' ? 'closed' : 'locked';
+export const windowOver = (pair: ReviewPair, now: Date) =>
+  Date.parse(pair.closesAt) <= now.getTime();
+
+export function blockedBy(pair: ReviewPair, now: Date): SubmitFailure | null {
+  if (canReview(pair) && !windowOver(pair, now)) return null;
+  return pair.state === 'ended' || pair.state === 'open' ? 'closed' : 'locked';
 }
 
 export function canSend(draft: ReviewDraft, base: ReviewDraft, pair: ReviewPair) {

@@ -73,7 +73,7 @@ export function useReviewSheet(
   const revealedNow = pair.state === 'revealed';
   const outcome = sent ?? (landedLater ? { revealed: revealedNow, from: null } : null);
   const busy = submitting || submitState?.phase === 'sending';
-  const blocked = busy || outcome ? null : blockedBy(pair);
+  const blocked = busy || outcome ? null : blockedBy(pair, new Date());
   const final = blocked ?? (failure && FINAL_FAILURES.includes(failure) ? failure : null);
   const line = outcome ? null : (final ?? failure);
   const stored = blocked !== null && pair.mine !== null;

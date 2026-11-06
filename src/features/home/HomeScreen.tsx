@@ -63,6 +63,7 @@ export type HomeScreenProps = {
   onToggle: (open: boolean) => void;
   name: string;
   onAsk: () => void;
+  reviews?: ReactNode;
   board?: ReactNode;
   refreshControl?: ReactElement<RefreshControlProps>;
   chat?: HomeChat;
@@ -75,6 +76,7 @@ export function HomeScreen({
   onToggle,
   name,
   onAsk,
+  reviews,
   board,
   refreshControl,
   chat,
@@ -184,6 +186,7 @@ export function HomeScreen({
           {cards.length > 1 ? (
             <StackToggle count={cards.length} open={open} onToggle={onToggle} />
           ) : null}
+          {reviews}
           {board}
         </Animated.View>
       </ScrollView>
