@@ -51,6 +51,13 @@ export const vars = {
   '--color-sticker-study': '#F0C9DA',
   '--color-sticker-other': '#D8D4CC',
   '--color-on-sticker': '#25232B',
+  '--color-wear-red': '#C8463A',
+  '--color-wear-red-deep': '#A83A30',
+  '--color-wear-bag': '#E9A23B',
+  '--color-wear-bag-deep': '#B97A22',
+  '--color-wear-canopy': '#4F86C6',
+  '--color-wear-handle': '#6B4F3A',
+  '--color-stage-hint': '#E9A23B',
 
   '--color-paper': '#FFFDF8',
   '--color-paper-line': '#EDE7DA',

@@ -1,6 +1,7 @@
 import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
 import { mascotPaint } from '@/ui/mascotPaint';
+import { MascotWearArt, type MascotWear } from '@/ui/MascotWear';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -9,6 +10,7 @@ export type MascotEyes = 'open' | 'asleep';
 
 const ART_SCALE = 0.6;
 const DARK_OUTLINE = 1;
+const SIDE_TRANSFORM = `translate(-4 -14) scale(${ART_SCALE})`;
 
 const SIDE_TRUNK = 'M46 82 C36 86 27 93 21 103 C17 111 23 117 31 113 C37 109 45 105 56 102 Z';
 
@@ -18,7 +20,18 @@ export type MascotProps = {
   outlined?: boolean;
   darkOutline?: boolean;
   eyes?: MascotEyes;
+  wear?: MascotWear | null;
 };
+
+function useSticker(size: number, outlined: boolean, darkOutline: boolean) {
+  const { theme, color } = useTheme();
+  const border = size >= 48 ? vars['--sticker-border'] : vars['--sticker-border-small'];
+  const extra = (width: number) => (2 * width * 64) / (size * ART_SCALE);
+  if (outlined) return { color: color('--color-sticker-border'), extra: extra(border) };
+  return darkOutline && theme === 'dark'
+    ? { color: mascotPaint(theme).rim, extra: extra(DARK_OUTLINE) }
+    : null;
+}
 
 export function Mascot({
   variant,
@@ -26,16 +39,11 @@ export function Mascot({
   outlined = false,
   darkOutline = false,
   eyes = 'open',
+  wear = null,
 }: MascotProps) {
-  const { theme, color } = useTheme();
+  const { theme } = useTheme();
   const paint = mascotPaint(theme);
-  const border = size >= 48 ? vars['--sticker-border'] : vars['--sticker-border-small'];
-  const extra = (width: number) => (2 * width * 64) / (size * ART_SCALE);
-  const sticker = outlined
-    ? { color: color('--color-sticker-border'), extra: extra(border) }
-    : darkOutline && theme === 'dark'
-      ? { color: paint.rim, extra: extra(DARK_OUTLINE) }
-      : null;
+  const sticker = useSticker(size, outlined, darkOutline);
   return (
     <Svg
       width={size}
@@ -45,10 +53,35 @@ export function Mascot({
       style={{ overflow: 'visible' }}
     >
       {variant === 'side' ? (
-        <Side {...paint} sticker={sticker} eyes={eyes} />
+        <Side {...paint} sticker={sticker} eyes={eyes} wear={wear} />
       ) : (
         <Front {...paint} sticker={sticker} />
       )}
+    </Svg>
+  );
+}
+
+export function MascotWearLayer({
+  wear,
+  size,
+  outlined = false,
+}: {
+  wear: MascotWear;
+  size: number;
+  outlined?: boolean;
+}) {
+  const sticker = useSticker(size, outlined, false);
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      accessible={false}
+      style={{ overflow: 'visible' }}
+    >
+      <G transform={SIDE_TRANSFORM}>
+        <MascotWearArt wear={wear} sticker={sticker} />
+      </G>
     </Svg>
   );
 }
@@ -73,9 +106,18 @@ function SideSilhouette(stroke: { stroke: string; strokeWidth: number }) {
   );
 }
 
-function Side({ line, ink, rim, blush, eye, sticker, eyes }: Paint & { eyes: MascotEyes }) {
+function Side({
+  line,
+  ink,
+  rim,
+  blush,
+  eye,
+  sticker,
+  eyes,
+  wear,
+}: Paint & { eyes: MascotEyes; wear: MascotWear | null }) {
   return (
-    <G transform={`translate(-4 -14) scale(${ART_SCALE})`}>
+    <G transform={SIDE_TRANSFORM}>
       {sticker ? <SideSilhouette stroke={sticker.color} strokeWidth={7 + sticker.extra} /> : null}
       <SideSilhouette stroke={line} strokeWidth={7} />
       <Ellipse cx={88} cy={50} rx={11} ry={15} rotation={18} origin="88, 50" fill={ink} />
@@ -117,6 +159,7 @@ function Side({ line, ink, rim, blush, eye, sticker, eyes }: Paint & { eyes: Mas
         opacity={0.9}
       />
       <Circle cx={24} cy={108} r={1.6} fill={rim} opacity={0.8} />
+      {wear ? <MascotWearArt wear={wear} sticker={sticker} /> : null}
     </G>
   );
 }

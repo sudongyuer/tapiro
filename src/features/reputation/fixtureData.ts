@@ -193,29 +193,46 @@ export function fixtureProfile(
   };
 }
 
-export function fixtureMascot(variant: RepVariant): MyMascot {
-  if (variant === 'empty') {
-    return {
-      level: 1,
-      stickers: 0,
-      accessory: null,
-      seenLevel: 1,
-      levelUp: false,
-      nextLevelAt: 3,
-      chosenAccessory: null,
-      unlocked: [],
-    };
-  }
-  return {
-    level: 5,
-    stickers: 25,
-    accessory: 'scarf',
-    seenLevel: 4,
-    levelUp: true,
-    nextLevelAt: 40,
+export const MASCOT_VARIANTS = ['levelUp', 'jump', 'grown', 'rest'] as const;
+export type MascotVariant = (typeof MASCOT_VARIANTS)[number];
+
+export const mascotVariant = (
+  value: string | undefined,
+  profileOn: boolean,
+): MascotVariant | null =>
+  MASCOT_VARIANTS.find((variant) => variant === value) ?? (profileOn ? 'rest' : null);
+
+const ALL_ACCESSORIES: MyMascot['unlocked'] = ['red_hat', 'backpack', 'umbrella', 'scarf'];
+
+export function fixtureMascot(variant: MascotVariant | null): MyMascot {
+  const mascot = (
+    level: number,
+    stickers: number,
+    seenLevel: number,
+    unlocked: MyMascot['unlocked'],
+    nextLevelAt: number,
+  ): MyMascot => ({
+    level,
+    stickers,
+    accessory: unlocked[unlocked.length - 1] ?? null,
+    seenLevel,
+    levelUp: level > seenLevel,
+    nextLevelAt,
     chosenAccessory: null,
-    unlocked: ['red_hat', 'backpack', 'umbrella', 'scarf'],
-  };
+    unlocked,
+  });
+  switch (variant) {
+    case 'levelUp':
+      return mascot(5, 25, 4, ALL_ACCESSORIES, 40);
+    case 'jump':
+      return mascot(3, 8, 1, ALL_ACCESSORIES.slice(0, 2), 15);
+    case 'grown':
+      return mascot(6, 40, 5, ALL_ACCESSORIES, 55);
+    case 'rest':
+      return mascot(4, 23, 4, ALL_ACCESSORIES.slice(0, 3), 25);
+    default:
+      return mascot(1, 0, 1, [], 3);
+  }
 }
 
 export const TIER_DROP_VARIANTS = ['none', 'noShows', 'reviews', 'both', 'fewer', 'worst'] as const;

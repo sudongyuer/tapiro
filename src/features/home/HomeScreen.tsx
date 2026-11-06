@@ -32,7 +32,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@/lib/i18n';
 import { accessoryPriority } from '@/lib/liveItems';
 import { useLiveItems } from '@/lib/useLiveItems';
-import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT } from '@/ui/MascotStage';
+import {
+  MascotStage,
+  STAGE_HEIGHT,
+  STAGE_HILL_HEIGHT,
+  stageSay,
+  type StageActor,
+} from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
 
 import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
@@ -67,6 +73,8 @@ export type HomeScreenProps = {
   board?: ReactNode;
   refreshControl?: ReactElement<RefreshControlProps>;
   chat?: HomeChat;
+  actor?: StageActor;
+  onStageCollapsed?: (collapsed: boolean) => void;
 };
 
 export function HomeScreen({
@@ -80,6 +88,8 @@ export function HomeScreen({
   board,
   refreshControl,
   chat,
+  actor,
+  onStageCollapsed,
 }: HomeScreenProps) {
   const { t } = useI18n();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
@@ -88,7 +98,7 @@ export function HomeScreen({
   const cards = liveCards(accessory, homeCardDetails, accessoryPriority, issues);
   const state = stageState(accessory, issues);
   const { key, ...values } = stageLine(cards);
-  const line = t(`home.say.${key}`, values);
+  const line = stageSay(actor, state) ?? t(`home.say.${key}`, values);
   const { heights, ready, onCardLayout } = useCardHeights(cards);
   const layout = stackLayout(heights);
   const progress = useStackProgress(open);
@@ -103,6 +113,8 @@ export function HomeScreen({
   const offset = useScrollOffset(animatedRef, useSharedValue(BEFORE_FIRST_SCROLL));
   const stripBottom = headerHeight + STRIP_ROW;
   const [stripShown, setStripShown] = useState(false);
+
+  useEffect(() => onStageCollapsed?.(stripShown), [onStageCollapsed, stripShown]);
 
   useAnimatedReaction(
     () => STAGE_HEIGHT - offset.value < stripBottom + STRIP_FADE / 2,
@@ -162,6 +174,7 @@ export function HomeScreen({
           state={state}
           line={line}
           bubbleStyle={bubbleStyle}
+          actor={actor}
           testID={`home-stage-${state}`}
         />
         <View

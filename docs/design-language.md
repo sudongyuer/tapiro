@@ -133,6 +133,13 @@ The hold button's track is the accent; the gold fill appears only while the user
 | `--color-mascot-blush`   | `#FF8A7A`   |             | 小貘 cheeks                     |
 | `--color-mascot-eye`     | `#FFFFFF`   |             | 小貘 eye whites and highlights  |
 | `--color-mascot-snout`   | `#3A3742`   |             | 小貘 front-view snout           |
+| `--color-wear-red`       | `#C8463A`   |             | 小红帽 and 围巾 (stand-in art)  |
+| `--color-wear-red-deep`  | `#A83A30`   |             | Their shaded parts              |
+| `--color-wear-bag`       | `#E9A23B`   |             | 书包 (stand-in art)             |
+| `--color-wear-bag-deep`  | `#B97A22`   |             | 书包 strap                      |
+| `--color-wear-canopy`    | `#4F86C6`   |             | 雨伞 canopy (stand-in art)      |
+| `--color-wear-handle`    | `#6B4F3A`   |             | 雨伞 handle                     |
+| `--color-stage-hint`     | `#E9A23B`   |             | Star over 小貘 on a busy stage  |
 | `--color-moment-chip`    | `#FFFFFFBF` | `#FFFFFF1A` | Info chip on moment screens     |
 
 In dark mode only, the 12 pt tier heads (`TierMark`, on the board, the detail and the applicant rows) add a 1 pt

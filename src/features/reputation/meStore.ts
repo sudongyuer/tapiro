@@ -166,6 +166,9 @@ export function createMeStore({ service }: { service: ReputationService }) {
     markLevelSeen,
     setAccessory,
     dismissTierDrop,
+    clearAccessoryFailure() {
+      if (get().accessory.phase === 'failed') patch({ accessory: { phase: 'idle' } });
+    },
     refresh,
     onStickers() {
       if (get().userId && get().mascot.status !== 'idle') void reloadMascot();
