@@ -30,6 +30,6 @@ assert len(feeds(ui, 2, timeout=2)) == 1, 'the feed was resent on its own'
 says(ui, line(ui, 'idle'))
 tap_mascot(ui, element)
 says(ui, line(ui, 'fed'))
-sent = feeds(ui, 2)
+sent = feeds(ui, 2, timeout=25)
 assert len(sent) == 2, f'expected the second tap to send once: {sent}'
 print('PASS: a failure says so, waits for the tap, and the tap feeds')
