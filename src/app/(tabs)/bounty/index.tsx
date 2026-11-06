@@ -28,6 +28,7 @@ import {
   useHomeScroll,
   useLiveStackState,
 } from '@/features/home';
+import { PendingReviewCards } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 
@@ -103,6 +104,7 @@ function BountyHome({ user }: { user: AccountUser }) {
         name={name}
         onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
+        reviews={<PendingReviewCards />}
         board={
           <BountyBoard
             board={board}

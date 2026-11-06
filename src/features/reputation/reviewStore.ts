@@ -35,9 +35,16 @@ export type ReviewsState = {
   pending: Loadable<PendingReview[]>;
   items: Readonly<Record<string, Loadable<ReviewPair[]>>>;
   submits: Readonly<Record<string, SubmitState>>;
+  readFailed: Readonly<Record<string, true>>;
 };
 
-const IDLE: ReviewsState = { userId: null, pending: IDLE_LOAD, items: {}, submits: {} };
+const IDLE: ReviewsState = {
+  userId: null,
+  pending: IDLE_LOAD,
+  items: {},
+  submits: {},
+  readFailed: {},
+};
 
 const PENDING = 'pending';
 
@@ -75,6 +82,12 @@ export function createReviewStore({
     patch({ submits: next ? { ...rest, [key]: next } : rest });
   }
 
+  function setReadFailed(key: string, failed: boolean) {
+    if (Boolean(get().readFailed[key]) === failed) return;
+    const { [key]: _dropped, ...rest } = get().readFailed;
+    patch({ readFailed: failed ? { ...rest, [key]: true } : rest });
+  }
+
   function reloadPending() {
     const { userId } = get();
     if (!userId) return Promise.resolve();
@@ -97,7 +110,16 @@ export function createReviewStore({
     return readInto({
       requests,
       key,
-      read: () => service.reviewState(kind, itemId),
+      read: async () => {
+        try {
+          const pairs = await service.reviewState(kind, itemId);
+          setReadFailed(key, false);
+          return pairs;
+        } catch (error) {
+          setReadFailed(key, true);
+          throw error;
+        }
+      },
       current: () => current(userId, at),
       value: () => get().items[key],
       set: (next) => setItem(key, next),

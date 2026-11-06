@@ -10,7 +10,7 @@ from review import SHEET, assert_one_submit, enabled, open_sheet, sealed, shot  
 DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviewKind', 'ride', '-uiVerifyReviewItem', 'fixture-ride-closed', '-uiVerifyReviewPerson', 'fixture-person-aming', '-uiVerifyReduceMotion', '1']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'many', '-uiVerifyReviewKind', 'ride', '-uiVerifyReviewItem', 'fixture-ride-closed', '-uiVerifyReviewPerson', 'fixture-person-aming', '-uiVerifyReduceMotion', '1']
 
 ui = UI(*sys.argv[1:])
 open_sheet(ui)

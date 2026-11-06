@@ -10,7 +10,7 @@ from review import SHEET, assert_one_submit, open_sheet, shot  # noqa: E402
 DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'many']
 
 ui = UI(*sys.argv[1:])
 open_sheet(ui)

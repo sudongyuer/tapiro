@@ -40,6 +40,7 @@ export type RepFailPoint = (typeof REP_FAIL_POINTS)[number];
 
 export type FixtureRepOptions = {
   variant: RepVariant;
+  reviewsOn?: boolean;
   tierDrop?: TierDropVariant;
   seenDrop?: number | null;
   onDropSeen?: (id: number) => void;
@@ -68,6 +69,7 @@ export function fixtureRepFailPoints(value: string | undefined): RepFailPoint[] 
 
 export function createFixtureReputationService({
   variant,
+  reviewsOn = true,
   tierDrop: dropVariant = 'none',
   seenDrop = null,
   onDropSeen,
@@ -90,7 +92,7 @@ export function createFixtureReputationService({
   let mascot: MyMascot = fixtureMascot(data);
   const firstDrop = fixtureTierDrop(dropVariant, now());
   let tierDrop = firstDrop && seenDrop !== null && firstDrop.id <= seenDrop ? null : firstDrop;
-  let pending = fixturePending(data, now());
+  let pending = reviewsOn ? fixturePending(data, now()) : [];
   let profileReads = 0;
 
   async function step(point: RepFailPoint, name: string, args: unknown = null) {
@@ -101,7 +103,7 @@ export function createFixtureReputationService({
 
   const pairsOf = (kind: ReviewPair['kind'], itemId: string) => {
     const key = pairKey(kind, itemId);
-    const stored = items.get(key) ?? fixturePairs(kind, itemId, data, now());
+    const stored = items.get(key) ?? (reviewsOn ? fixturePairs(kind, itemId, data, now()) : []);
     items.set(key, stored);
     return stored;
   };

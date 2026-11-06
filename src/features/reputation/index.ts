@@ -79,6 +79,9 @@ export {
   ProfileRoute,
   type ProfileTab,
 } from './profile/routes';
+export { PendingReviewCards } from './review/PendingReviewCards';
+export { ReviewEntriesSection } from './review/ReviewEntriesSection';
+export { ReviewEntryCard } from './review/ReviewEntryCard';
 export { REVIEW_SHEET_OPTIONS, reviewHref, ReviewRoute } from './review/ReviewRoute';
 export { TIER_DROP_SHEET_OPTIONS, TierDropRoute } from './tierDrop/TierDropRoute';
 export { useTierDropPrompt } from './tierDrop/useTierDropPrompt';

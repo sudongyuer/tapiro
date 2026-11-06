@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useHeaderHeight } from 'expo-router/react-navigation';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   PlatformColor,
@@ -41,6 +41,7 @@ export function RideDetailScreen({
   settle: bridge,
   message,
   onOpenProfile,
+  reviews,
 }: {
   id: string;
   userId: string;
@@ -48,6 +49,7 @@ export function RideDetailScreen({
   settle: RideSettleBridge;
   message?: RideMessage;
   onOpenProfile?: (personId: string) => void;
+  reviews?: (title: string) => ReactNode;
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
@@ -192,6 +194,7 @@ export function RideDetailScreen({
               settle={settle}
               onChangeShare={settleSheets.openChange}
               onReceipt={settleSheets.openReceipt}
+              reviews={reviews}
             />
           ) : null}
         </ScrollView>

@@ -41,6 +41,10 @@ export function useReviewState(kind: ItemKind, itemId: string) {
   return useReviews((state) => state.items[pairKey(kind, itemId)] ?? IDLE_LOAD);
 }
 
+export function useReviewReadFailed(kind: ItemKind, itemId: string) {
+  return useReviews((state) => state.readFailed[pairKey(kind, itemId)] === true);
+}
+
 export function useReviewSubmit(target: ReviewTarget) {
   return useReviews((state) => state.submits[targetKey(target)]);
 }
