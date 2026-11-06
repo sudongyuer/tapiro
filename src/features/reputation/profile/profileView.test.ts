@@ -10,6 +10,7 @@ import {
   rateText,
   reviewLabel,
   reviewLine,
+  reviewQuote,
   reviewSource,
   showsAllReviews,
 } from './profileView';
@@ -19,6 +20,8 @@ i18n.init({ resources, lng: 'zh-Hans', initAsync: false, interpolation: { escape
 const t = i18n.t.bind(i18n);
 
 const review = (overrides: Partial<ProfileReview> = {}): ProfileReview => ({
+  reviewerBlockedByMe: false,
+  reportable: true,
   id: 'r1',
   face: 'unhappy',
   chips: ['late', 'no_heads_up'],
@@ -86,6 +89,13 @@ describe('profile view', () => {
   test('全部评价 shows only when there are more than the latest rows', () => {
     expect(showsAllReviews(card())).toBe(false);
     expect(showsAllReviews(card({ reviewCount: 128 }))).toBe(true);
+  });
+
+  test('the report sheet quotes the face, the chips and the sentence, and no reviewer', () => {
+    const quoted = review({ face: 'unhappy', chips: ['late'], sentence: '等了很久' });
+    expect(reviewQuote(quoted, t)).toBe(`${reviewLine(quoted, t)}\n等了很久`);
+    expect(reviewQuote(quoted, t)).not.toContain('小林');
+    expect(reviewQuote(review({ sentence: null }), t)).toBe(reviewLine(review(), t));
   });
 
   test('the completion rate is a whole percent and absent before five items', () => {

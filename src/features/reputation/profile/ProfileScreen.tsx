@@ -28,6 +28,7 @@ export type ProfileActions = {
   onOpenReviews: () => void;
   onReport: () => void;
   onReply: (reviewId: string) => void;
+  onReportReview: (reviewId: string) => void;
   onOpenStickers: () => void;
   onBack: () => void;
 };
@@ -139,6 +140,7 @@ function ProfileBody({ card, actions }: { card: ProfileCard; actions: ProfileAct
       card={card}
       onOpenAll={actions.onOpenReviews}
       onReply={actions.onReply}
+      onReport={actions.onReportReview}
     />
   );
   if (card.self) {

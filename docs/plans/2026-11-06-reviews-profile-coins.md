@@ -6,7 +6,7 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06); Tasks 7 (mascot level) and 9 (weekly feed) are built (2026-11-07). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257. 258 A is built (2026-11-07).
+(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06); Tasks 7 (mascot level) and 9 (weekly feed) are built (2026-11-07). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257. 258 A and 259 A are built (2026-11-07).
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
 profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
@@ -44,7 +44,7 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
    (or one where nobody but the organiser boarded) writes no `settled` reputation event. A Grab-split ride does earn
    stickers and reviews; a ride alone earns neither. Asked as 258.
 2. **A review cannot be reported.** `report(target_user, message, …)` covers people and chat messages. A review sentence
-   is public free text. Asked as 259.
+   is public free text. Asked as 259, built 2026-11-07 (「★ 259 defaults」).
 3. **Ride routes on public profiles.** A ride's title is its route of short names, and a start of kind `home` can point
    at where someone lives. Asked as 256; the server hides it until answered.
 4. **Motion is not chosen.** The sealed animation inside the review sheet (ReviewA), 小貘 growing on the stage (249 B)
@@ -171,8 +171,8 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
   `uiVerifyCoinsCalls`. A ride id ending in `-rider` gives the rider's view (one organiser row); other ride ids give
   the organiser's four rows (open, sealed, they reviewed, ended). The friend code is `7KQ3XP`, mine `M8WQ4K`.
 - **256 / 258 / 259:** nothing in the client depends on the answers: ride reviews parse with or without a route and a
-  reviewer (256), counting rides is server-only (258), and reporting a review would be a later addition to Task 5
-  (259).
+  reviewer (256), counting rides is server-only (258), and reporting a review was added after Task 5 (259; `-uiVerifyRepFail reportGone`
+  answers one review report as gone).
 
 ## ★ 258 defaults (2026-11-07, for veto)
 
@@ -202,6 +202,24 @@ pays for the whole ride, and S1 multiplies it for the organiser:
 
 `helped` (帮过的人 on a profile) still counts paid payees only, so an organiser's Grab rides raise 靠谱度 but not that
 number; it stays as built, since 258 A is about 靠谱度.
+
+## ★ 259 defaults (2026-11-07, for veto)
+
+No canvas board was drawn for 259; this follows the question's text, the chat report sheet and the profile's. Migration
+`20261107000100_report_review.sql`, test `supabase/tests/report_review.test.sql`.
+
+| #   | Decision ★                                                                                                                                                                                                                                                                                                                                                        | Why                                                                                                         |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| T1  | Long-press works on both the profile's latest reviews and 全部评价                                                                                                                                                                                                                                                                                                | Same row; a review past the latest three would otherwise have no way to be reported                         |
+| T2  | It also works on your own profile: the person a review is about can report it. Only the review's author cannot, and `reportable` hides the menu for them                                                                                                                                                                                                          | The reviewee is the one most likely to need it; a reply is public, but it cannot remove an abusive sentence |
+| T3  | The system context menu with one item 举报, on the review itself; 回复 stays outside it                                                                                                                                                                                                                                                                           | Same word and icon as a chat message                                                                        |
+| T4  | Same sheet as ⋯ 举报 (`ProfileReportSheet`, same reasons and note), with 「举报的评价」 quoting face, chips and sentence, and 「为什么举报这条评价？」                                                                                                                                                                                                            | 259 A: the same reasons. The sheet names no one, so it reads the same when the reviewer is hidden           |
+| T5  | The footer also says a report does not remove the review by itself                                                                                                                                                                                                                                                                                                | 259 A; otherwise a reporter expects it to vanish                                                            |
+| T6  | After 提交 a visible reviewer is offered for blocking as in chat; a hidden ride reviewer (256 A) gets only 「收到了，我们会看」                                                                                                                                                                                                                                   | Offering the block would reveal who wrote the review                                                        |
+| T7  | The server takes the review id, never a target, and refuses a named target whether right or wrong                                                                                                                                                                                                                                                                 | Otherwise `report(<guess>, review)` would confirm who wrote a hidden ride review                            |
+| T8  | Only shown reviews can be reported; a sealed one answers `review_not_found`                                                                                                                                                                                                                                                                                       | The content is sealed, and the answer must not tell that it exists                                          |
+| T9  | The copy of face, chips and sentence follows the report retention of 2026-11-05: it outlives the review (an account deletion) and is cleared after a year                                                                                                                                                                                                         | 「Like a chat message」; the same privacy rule as a message copy                                            |
+| T10 | Replies are not a report target: a reply is the profile owner's, and ⋯ 举报 covers the person. `reports_person_once` now skips review reports, so a person report and review reports stand side by side. `reports.message_id` lost its foreign key for the same reason: deleting a sender could collide two message reports and block the deletion (an older bug) | 259 A names the review only                                                                                 |
 
 ## ★ Profile defaults (Task 5, 2026-11-06, for veto)
 

@@ -45,12 +45,14 @@ function useProfileLinks(tab: ProfileTab, personId: string) {
     router,
     reply: (review: string) =>
       router.push({ pathname: PATHS[tab].reply, params: { person: personId, review } }),
+    reportReview: (review: string) =>
+      router.push({ pathname: PATHS[tab].report, params: { person: personId, review } }),
   };
 }
 
 export function ProfileRoute({ tab }: { tab: ProfileTab }) {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { router, reply } = useProfileLinks(tab, id ?? '');
+  const { router, reply, reportReview } = useProfileLinks(tab, id ?? '');
   if (!id) return null;
   return (
     <ProfileScreen
@@ -58,6 +60,7 @@ export function ProfileRoute({ tab }: { tab: ProfileTab }) {
       onOpenReviews={() => router.push({ pathname: PATHS[tab].reviews, params: { id } })}
       onReport={() => router.push({ pathname: PATHS[tab].report, params: { person: id } })}
       onReply={reply}
+      onReportReview={reportReview}
       onOpenStickers={() =>
         tab === 'me' ? router.push('/me/stickers') : router.navigate('/me/stickers')
       }
@@ -68,16 +71,18 @@ export function ProfileRoute({ tab }: { tab: ProfileTab }) {
 
 export function ProfileReviewsRoute({ tab }: { tab: ProfileTab }) {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { reply } = useProfileLinks(tab, id ?? '');
+  const { reply, reportReview } = useProfileLinks(tab, id ?? '');
   if (!id) return null;
-  return <ReviewListScreen personId={id} onReply={reply} />;
+  return <ReviewListScreen personId={id} onReply={reply} onReport={reportReview} />;
 }
 
 export function ProfileReportRoute() {
   const router = useRouter();
-  const { person } = useLocalSearchParams<{ person: string }>();
+  const { person, review } = useLocalSearchParams<{ person: string; review?: string }>();
   if (!person) return null;
-  return <ProfileReportSheet personId={person} onClose={() => router.back()} />;
+  return (
+    <ProfileReportSheet personId={person} reviewId={review ?? null} onClose={() => router.back()} />
+  );
 }
 
 export function ProfileReplyRoute() {

@@ -111,6 +111,12 @@ export default {
     notFound: '这条评价已经不在了',
     invalid: '回复要写 1 到 200 个字',
   },
+  report: {
+    quote: '要举报的评价',
+    reasons: '为什么举报这条评价？',
+    footer: '写评价的人不会知道被举报。举报不会让这条评价自动消失。',
+    hint: '打开操作菜单可以举报这条评价',
+  },
   profile: {
     helped: '帮过的人',
     completionRate: '完成率',

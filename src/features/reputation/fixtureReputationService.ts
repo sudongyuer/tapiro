@@ -36,6 +36,7 @@ export const REP_FAIL_POINTS = [
   'accessory',
   'tierDrop',
   'report',
+  'reportGone',
   'profileAgain',
 ] as const;
 export type RepFailPoint = (typeof REP_FAIL_POINTS)[number];
@@ -61,7 +62,9 @@ const RIDE_ROUTE = '双威 → KLIA2';
 function seenBy(personId: string, rows: ProfileReview[]) {
   if (personId !== FIXTURE_REP_USER_ID) return rows;
   return rows.map((row) =>
-    row.kind === 'ride' ? { ...row, title: RIDE_ROUTE, reviewer: FIXTURE_PEOPLE.mei } : row,
+    row.kind === 'ride'
+      ? { ...row, title: RIDE_ROUTE, reviewer: FIXTURE_PEOPLE.mei, reportable: true }
+      : row,
   );
 }
 
@@ -86,7 +89,10 @@ export function createFixtureReputationService({
   const failing = new Set<RepFailPoint>(
     variant === 'failed'
       ? REP_FAIL_POINTS.filter(
-          (point) => !['profileAgain', 'stateAgain', 'submitLost', 'submitLocked'].includes(point),
+          (point) =>
+            !['profileAgain', 'stateAgain', 'submitLost', 'submitLocked', 'reportGone'].includes(
+              point,
+            ),
         )
       : failFirst,
   );
@@ -257,6 +263,10 @@ export function createFixtureReputationService({
     },
     async reportPerson(personId, reason, note) {
       await step('report', 'reportPerson', { personId, reason, note });
+    },
+    async reportReview(reviewId, reason, note) {
+      await step('report', 'reportReview', { reviewId, reason, note });
+      return failing.delete('reportGone') ? 'gone' : 'sent';
     },
   };
 }

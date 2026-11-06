@@ -1,5 +1,6 @@
 import { Form, Host, HStack, Picker, Section, Spacer, Text } from '@expo/ui/swift-ui';
 import {
+  accessibilityIdentifier,
   accessibilityLabel,
   disabled,
   foregroundStyle,
@@ -29,24 +30,30 @@ import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { useProfile } from '../hooks';
+import { useProfile, useProfileReview } from '../hooks';
 import { profileStore } from '../services';
-import { personName } from './profileView';
+import { personName, reviewQuote } from './profileView';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
 export function ProfileReportSheet({
   personId,
+  reviewId,
   onClose,
 }: {
   personId: string;
+  reviewId: string | null;
   onClose: () => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const card = useProfile(personId);
   const person = card.status === 'idle' ? null : card.data;
-  const name = personName(person?.name ?? null, t);
+  const live = useProfileReview(personId, reviewId);
+  // A refresh can drop a review of a later page from the store while the sheet is open.
+  const [review] = useState(live);
+  const blockable = reviewId === null ? person : (review?.reviewer ?? null);
+  const name = personName(blockable?.name ?? null, t);
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [typed, setTyped] = useState('');
   const [phase, setPhase] = useState<ReportPhase>('form');
@@ -56,14 +63,16 @@ export function ProfileReportSheet({
   const count = noteCount(typed);
 
   const offerBlock = () => {
-    if (!person || person.blockedByMe) {
+    // A hidden ride reviewer stays hidden (256 A): only a reviewer the reader can already see is offered.
+    const blocked = reviewId === null ? person?.blockedByMe : review?.reviewerBlockedByMe;
+    if (!blockable || blocked) {
       Alert.alert(t('chat.thread.reported'), undefined, [
         { text: t('chat.thread.ok'), onPress: onClose },
       ]);
       return;
     }
     blocking.ask(
-      { id: person.id, name: person.name },
+      { id: blockable.id, name: blockable.name },
       {
         title: t('chat.report.offerBlock', { name }),
         onSettled: (outcome) => {
@@ -82,11 +91,17 @@ export function ProfileReportSheet({
     // The Form's collection view aborts when it rebuilds rows while the note field is first responder.
     Keyboard.dismiss();
     setPhase('sending');
-    profileStore
-      .report(personId, reason, cleanNote(text))
-      .then(() => {
+    const sent =
+      reviewId === null
+        ? profileStore.report(personId, reason, cleanNote(text)).then(() => 'sent' as const)
+        : profileStore.reportReview(reviewId, reason, cleanNote(text));
+    sent
+      .then((outcome) => {
         setPhase('sent');
-        offerBlock();
+        if (outcome === 'sent') return offerBlock();
+        Alert.alert(t('reputation.reply.notFound'), undefined, [
+          { text: t('chat.thread.ok'), onPress: onClose },
+        ]);
       })
       .catch(() => setPhase('failed'));
   };
@@ -134,9 +149,26 @@ export function ProfileReportSheet({
               testID="profile-report-failed"
             />
           ) : null}
+          {review ? (
+            <Section title={t('reputation.report.quote')}>
+              <Text modifiers={[lineLimit(3), accessibilityIdentifier('profile-report-quote')]}>
+                {reviewQuote(review, t)}
+              </Text>
+            </Section>
+          ) : null}
           <Section
-            title={t('chat.report.reasons', { name })}
-            footer={<Text>{t('chat.report.footer', { name })}</Text>}
+            title={
+              reviewId === null
+                ? t('chat.report.reasons', { name })
+                : t('reputation.report.reasons')
+            }
+            footer={
+              <Text>
+                {reviewId === null
+                  ? t('chat.report.footer', { name })
+                  : t('reputation.report.footer')}
+              </Text>
+            }
           >
             <Picker<ReportReason | null>
               selection={reason}

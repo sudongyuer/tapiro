@@ -44,10 +44,12 @@ export function ProfileReviewsSection({
   card,
   onOpenAll,
   onReply,
+  onReport,
 }: {
   card: ProfileCard;
   onOpenAll: () => void;
   onReply: (reviewId: string) => void;
+  onReport: (reviewId: string) => void;
 }) {
   const { t } = useI18n();
   const { selected, select } = useSelectedUntilReturn();
@@ -71,6 +73,7 @@ export function ProfileReviewsSection({
           owner={owner}
           self={card.self}
           onReply={card.self ? onReply : null}
+          onReport={onReport}
         />
       ))}
       {showsAllReviews(card) ? (

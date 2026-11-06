@@ -10,7 +10,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -19,33 +19,14 @@ import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { useReplyState } from '../hooks';
+import { useProfileReview, useReplyState } from '../hooks';
 import { cleanText, textLength } from '../model';
-import type { ProfilesState } from '../profileStore';
 import { profileStore } from '../services';
-import { REVIEW_TEXT_MAX, type ProfileReview } from '../types';
+import { REVIEW_TEXT_MAX } from '../types';
 import { reviewLine } from './profileView';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const wraps = fixedSize({ horizontal: false, vertical: true });
-
-function findReview(state: ProfilesState, personId: string, reviewId: string) {
-  const card = state.cards[personId];
-  const list = state.reviews[personId];
-  const fromCard =
-    card && card.status !== 'idle'
-      ? card.data?.latestReviews.find((row) => row.id === reviewId)
-      : null;
-  const fromList =
-    list && list.status !== 'idle' ? list.data?.items.find((row) => row.id === reviewId) : null;
-  return fromCard ?? fromList ?? null;
-}
-
-function useReview(personId: string, reviewId: string): ProfileReview | null {
-  return useSyncExternalStore(profileStore.subscribe, () =>
-    findReview(profileStore.getSnapshot(), personId, reviewId),
-  );
-}
 
 export function ReplySheet({
   personId,
@@ -58,7 +39,7 @@ export function ReplySheet({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const review = useReview(personId, reviewId);
+  const review = useProfileReview(personId, reviewId);
   const state = useReplyState(reviewId);
   const [typed, setTyped] = useState(() => profileStore.replyDraft(reviewId));
   const field = useSyncedText(typed, (text) => {

@@ -61,6 +61,21 @@ export function useProfile(personId: string) {
   return useProfiles((state) => state.cards[personId] ?? IDLE_LOAD);
 }
 
+export function useProfileReview(personId: string, reviewId: string | null) {
+  return useProfiles((state) => {
+    if (reviewId === null) return null;
+    const card = state.cards[personId];
+    const list = state.reviews[personId];
+    const fromCard =
+      card && card.status !== 'idle'
+        ? card.data?.latestReviews.find((row) => row.id === reviewId)
+        : null;
+    const fromList =
+      list && list.status !== 'idle' ? list.data?.items.find((row) => row.id === reviewId) : null;
+    return fromCard ?? fromList ?? null;
+  });
+}
+
 export function useProfileReviews(personId: string) {
   const userId = useProfiles((state) => state.userId);
   useFocusEffect(

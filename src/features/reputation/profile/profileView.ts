@@ -50,6 +50,12 @@ export function reviewLine(review: ProfileReview, t: TFunction) {
   return [t(`reputation.face.${review.face}`), ...chipLabels(review, t)].join(' · ');
 }
 
+export function reviewQuote(review: ProfileReview, t: TFunction) {
+  return [reviewLine(review, t), review.sentence]
+    .filter((part): part is string => !!part)
+    .join('\n');
+}
+
 export function reviewLabel(review: ProfileReview, owner: string, self: boolean, t: TFunction) {
   const reply = review.reply
     ? self

@@ -55,6 +55,8 @@ const PROFILE = {
       role: 'helper',
       title: '帮取快递',
       reviewer: PERSON,
+      reviewerBlockedByMe: true,
+      reportable: true,
     },
     {
       ...REVIEW,
@@ -67,6 +69,8 @@ const PROFILE = {
       role: 'rider',
       title: null,
       reviewer: null,
+      reviewerBlockedByMe: false,
+      reportable: false,
     },
   ],
   mascot: { level: 4, stickers: 23, accessory: 'umbrella' },
@@ -115,7 +119,12 @@ describe('reputation parsing', () => {
 
   test('a profile keeps a ride review without route or reviewer, and a hidden completion rate', () => {
     const card = toProfileCard(PROFILE);
-    expect(card.latestReviews[1]).toMatchObject({ kind: 'ride', title: null, reviewer: null });
+    expect(card.latestReviews[1]).toMatchObject({
+      kind: 'ride',
+      title: null,
+      reviewer: null,
+      reportable: false,
+    });
     expect(card.latestReviews[0].reply?.body).toBe('谢谢你');
     expect(toProfileCard({ ...PROFILE, completionRate: null }).completionRate).toBeNull();
     expect(toProfileCard({ ...PROFILE, completionRate: '0.9600' }).completionRate).toBe(0.96);
