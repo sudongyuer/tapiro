@@ -141,12 +141,17 @@ export function createReviewStore({
     for (const [key, item] of Object.entries(get().items)) {
       if (item.status === 'idle' || !item.data) continue;
       if (!item.data.some((row) => row.theirs?.id === reviewId)) continue;
+      const dropped = requests.supersede(key);
       setItem(key, {
         ...item,
         data: item.data.map((row) =>
           row.theirs?.id === reviewId ? { ...row, theirs: { ...row.theirs, reply } } : row,
         ),
       });
+      if (dropped) {
+        const [kind, itemId] = key.split(':') as [ItemKind, string];
+        void reloadItem(kind, itemId);
+      }
     }
   }
 

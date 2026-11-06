@@ -227,6 +227,29 @@ describe('coins store', () => {
     expect(reads).toBe(3);
   });
 
+  test('coming back to a ready history keeps its pages; the balance reads again', async () => {
+    let historyReads = 0;
+    let balanceReads = 0;
+    const { store } = setup({
+      balance: async () => {
+        balanceReads += 1;
+        return BALANCE;
+      },
+      history: async () => {
+        historyReads += 1;
+        return { items: [], hasMore: false, nextCursor: null };
+      },
+    });
+    store.open('history')();
+    store.open('balance')();
+    await settle();
+    store.open('history')();
+    store.open('balance')();
+    await settle();
+    expect(historyReads).toBe(1);
+    expect(balanceReads).toBe(2);
+  });
+
   test('history marked stale by new coins reads again when the page opens', async () => {
     let reads = 0;
     const { store } = setup({

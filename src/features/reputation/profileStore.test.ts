@@ -176,6 +176,29 @@ describe('reply in flight', () => {
     expect(list.status !== 'idle' && list.data?.more).toBe('idle');
   });
 
+  test('no next page starts while the first page is being read again', async () => {
+    const head = deferred<ReviewPage>();
+    let calls = 0;
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, before) => {
+          calls += 1;
+          if (before) return Promise.resolve(page(['r3'], null));
+          return calls === 1 ? Promise.resolve(page(['r1', 'r2'], 'c')) : head.promise;
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    void store.reloadList('p1');
+    await store.loadMore('p1');
+    expect(calls).toBe(2);
+    head.resolve(page(['r0', 'r1'], 'c2'));
+    await settle();
+    const list = store.getSnapshot().reviews.p1;
+    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual(['r0', 'r1']);
+  });
+
   test('a page appended to a stale list keeps it stale', async () => {
     const { store } = setup(
       fakeService({

@@ -126,7 +126,7 @@ export function createProfileStore({
     if (!userId || !list || list.status === 'idle' || list.status === 'loading' || !list.data)
       return;
     const { hasMore, nextCursor, more } = list.data;
-    if (!hasMore || !nextCursor || more === 'loading') return;
+    if (!hasMore || !nextCursor || more === 'loading' || requests.busy(listKey(personId))) return;
     const at = generation;
     const head = requests.latest(listKey(personId));
     const key = pageKey(personId);
@@ -138,7 +138,7 @@ export function createProfileStore({
     } catch {
       page = null;
     } finally {
-      requests.end(key);
+      requests.end(key, request);
     }
     const now = get().reviews[personId];
     if (!current(userId, at) || !requests.isLatest(key, request)) return;

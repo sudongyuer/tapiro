@@ -191,6 +191,40 @@ describe('submit', () => {
     });
   });
 
+  test('a read in flight when a reply lands is dropped and read again', async () => {
+    const theirs = {
+      id: 'rv9',
+      face: 'happy' as const,
+      chips: [],
+      sentence: null,
+      submittedAt: '2026-11-06T01:00:00Z',
+      shownAt: '2026-11-06T02:00:00Z',
+      reply: null,
+    };
+    const read = deferred<ReviewPair[]>();
+    const reply = { body: '谢谢', createdAt: '2026-11-06T03:00:00Z' };
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        reviewState: () => {
+          reads += 1;
+          if (reads === 1) return Promise.resolve([pair({ state: 'revealed', theirs })]);
+          if (reads === 2) return read.promise;
+          return Promise.resolve([pair({ state: 'revealed', theirs: { ...theirs, reply } })]);
+        },
+      }),
+    );
+    store.openItem('bounty', 'b1');
+    await settle();
+    void store.reloadItem('bounty', 'b1');
+    store.applyReply('rv9', reply);
+    read.resolve([pair({ state: 'revealed', theirs })]);
+    await settle();
+    const item = store.getSnapshot().items['bounty:b1'];
+    expect(item.status !== 'idle' && item.data?.[0].theirs?.reply?.body).toBe('谢谢');
+    expect(reads).toBe(3);
+  });
+
   test('a reply to a review I received shows on the pair', async () => {
     const theirs = {
       id: 'rv9',

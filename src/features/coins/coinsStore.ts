@@ -115,7 +115,7 @@ export function createCoinsStore({
     if (!userId || history.status === 'idle' || history.status === 'loading' || !history.data)
       return;
     const { hasMore, nextCursor, more } = history.data;
-    if (!hasMore || nextCursor === null || more === 'loading') return;
+    if (!hasMore || nextCursor === null || more === 'loading' || requests.busy('history')) return;
     const at = generation;
     const head = requests.latest('history');
     const request = requests.start(PAGE);
@@ -126,7 +126,7 @@ export function createCoinsStore({
     } catch {
       page = null;
     } finally {
-      requests.end(PAGE);
+      requests.end(PAGE, request);
     }
     const now = get().history;
     if (!current(userId, at) || !requests.isLatest(PAGE, request)) return;
@@ -282,7 +282,9 @@ export function createCoinsStore({
     },
     open(key: LoadKey) {
       const close = focus.open(key);
-      if (get().userId) void RELOADS[key]();
+      const value = get()[key];
+      const keepPages = key === 'history' && !needsLoad(value as Loadable<unknown>);
+      if (get().userId && !keepPages && !requests.busy(key)) void RELOADS[key]();
       return close;
     },
     refresh,

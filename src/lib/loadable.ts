@@ -33,20 +33,23 @@ export const needsLoad = <T>(value: Loadable<T> | undefined) =>
 export function createRequests() {
   const latest = new Map<string, number>();
   const dirtyAt = new Map<string, number>();
-  const out = new Map<string, number>();
+  const out = new Map<string, Set<number>>();
   let issued = 0;
   return {
     start(key: string) {
       issued += 1;
       latest.set(key, issued);
-      out.set(key, (out.get(key) ?? 0) + 1);
+      const running = out.get(key) ?? new Set<number>();
+      running.add(issued);
+      out.set(key, running);
       return issued;
     },
-    end(key: string) {
-      const left = (out.get(key) ?? 1) - 1;
-      if (left <= 0) out.delete(key);
-      else out.set(key, left);
+    end(key: string, request: number) {
+      const running = out.get(key);
+      running?.delete(request);
+      if (running?.size === 0) out.delete(key);
     },
+    busy: (key: string) => out.has(key),
     isLatest: (key: string, request: number) => latest.get(key) === request,
     outcome(key: string, request: number): 'ready' | 'stale' | null {
       if (latest.get(key) !== request) return null;
@@ -115,6 +118,6 @@ export async function readInto<T>({
   } catch {
     if (requests.isLatest(key, request) && current()) set(loadFailed(value()));
   } finally {
-    requests.end(key);
+    requests.end(key, request);
   }
 }

@@ -142,9 +142,11 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
   off screen marks it stale, and a read already out for it lands as stale too. A next page is dropped when the first
   page was read again meanwhile, and appending a page never turns a stale list ready. A failed first load is never an
   empty list or a 0 balance. A deleted account's profile reads as gone (`useProfileGone`), not as a retryable failure.
-- **Coins on screen:** each coins hook reads again when its screen gains focus (the balance changes on posts, refunds
-  and an inviter's reward, which send the inviter no signal); on screen it also reloads on the settle, cancel and
-  expire kinds.
+- **Coins on screen:** the balance, the weekly feed and the invite read again whenever their screen gains focus and
+  no read is out (the balance changes on posts and on refunds of your own cancels, and an inviter's reward sends the
+  inviter no signal); a ready history keeps its loaded pages on return and reads again only when stale or failed. On
+  screen they also reload on `payment.settled` and `ride.settled`. No next page starts while the first page is being
+  read.
 - **Writes:** submit, reply and the invite code are stored on the device before the call (`reviewDrafts`, per user;
   the invite code per user) and kept after any failure; nothing is retried automatically; a second tap while one is
   in flight is ignored; an invalid draft or reply is kept and reported as `invalid`. `closed`, `locked`, `notFound`

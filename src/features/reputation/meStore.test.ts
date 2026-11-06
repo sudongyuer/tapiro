@@ -139,6 +139,34 @@ describe('mascot', () => {
     expect(shown.status !== 'idle' && shown.data?.chosenAccessory).toBe('red_hat');
   });
 
+  test('when the newest write fails after an older one succeeded, the mascot is read again', async () => {
+    const answers: {
+      resolve: (value: ReturnType<typeof mascot>) => void;
+      reject: (e: Error) => void;
+    }[] = [];
+    let reads = 0;
+    const store = setup({
+      myMascot: async () => {
+        reads += 1;
+        return mascot({ seenLevel: reads === 1 ? 1 : 2, levelUp: reads === 1 });
+      },
+      markLevelSeen: () => new Promise((resolve, reject) => answers.push({ resolve, reject })),
+      setAccessory: () => new Promise((resolve, reject) => answers.push({ resolve, reject })),
+    });
+    store.loadMascot();
+    await settle();
+    const first = store.markLevelSeen(2);
+    const second = store.setAccessory('red_hat');
+    answers[0].resolve(mascot({ seenLevel: 2, levelUp: false }));
+    expect(await first).toBe(true);
+    answers[1].reject(new Error('offline'));
+    await second;
+    await settle();
+    expect(reads).toBe(2);
+    const shown = store.getSnapshot().mascot;
+    expect(shown.status !== 'idle' && shown.data?.levelUp).toBe(false);
+  });
+
   test('new stickers reload a loaded mascot and leave an unloaded one alone', async () => {
     let reads = 0;
     const store = setup({

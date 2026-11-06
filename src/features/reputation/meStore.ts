@@ -78,13 +78,17 @@ export function createMeStore({ service }: { service: ReputationService }) {
     const request = requests.start(WRITE);
     try {
       const mascot = await write();
-      if (!current(userId, at) || !requests.isLatest(WRITE, request)) return null;
-      const dropped = requests.supersede(MASCOT);
-      patch({ mascot: loaded(mascot) });
-      if (dropped) void reloadMascot();
-      return mascot;
+      if (current(userId, at) && requests.isLatest(WRITE, request)) {
+        const dropped = requests.supersede(MASCOT);
+        patch({ mascot: loaded(mascot) });
+        if (dropped) void reloadMascot();
+      }
+      return true;
+    } catch (error) {
+      if (current(userId, at) && requests.isLatest(WRITE, request)) void reloadMascot();
+      throw error;
     } finally {
-      requests.end(WRITE);
+      requests.end(WRITE, request);
     }
   }
 
@@ -92,7 +96,7 @@ export function createMeStore({ service }: { service: ReputationService }) {
     const userId = get().userId;
     if (!userId) return false;
     try {
-      return (await writeMascot(userId, () => service.markLevelSeen(level))) !== null;
+      return await writeMascot(userId, () => service.markLevelSeen(level));
     } catch {
       return false;
     }
@@ -107,12 +111,11 @@ export function createMeStore({ service }: { service: ReputationService }) {
       const done = await writeMascot(userId, () => service.setAccessory(accessory));
       if (!current(userId, at)) return false;
       patch({ accessory: { phase: 'idle' } });
-      return done !== null;
+      return done;
     } catch (error) {
       if (!current(userId, at)) return false;
       const failure = error instanceof AccessoryError ? error.failure : 'failed';
       patch({ accessory: { phase: 'failed', accessory, failure } });
-      if (failure === 'locked') void reloadMascot();
       return false;
     }
   }
