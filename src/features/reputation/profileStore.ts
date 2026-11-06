@@ -1,3 +1,4 @@
+import type { ReportReason } from '@/lib/report';
 import { createStore } from '@/lib/store';
 
 import type { ReviewDrafts } from './drafts';
@@ -35,12 +36,20 @@ export type ProfilesState = {
   reviews: Readonly<Record<string, Loadable<ReviewList>>>;
   replies: Readonly<Record<string, ReplyState>>;
   gone: Readonly<Record<string, true>>;
+  readFailed: Readonly<Record<string, true>>;
 };
 
-const IDLE: ProfilesState = { userId: null, cards: {}, reviews: {}, replies: {}, gone: {} };
+const IDLE: ProfilesState = {
+  userId: null,
+  cards: {},
+  reviews: {},
+  replies: {},
+  gone: {},
+  readFailed: {},
+};
 
-const cardKey = (personId: string) => `card:${personId}`;
-const listKey = (personId: string) => `list:${personId}`;
+export const cardKey = (personId: string) => `card:${personId}`;
+export const listKey = (personId: string) => `list:${personId}`;
 const pageKey = (personId: string) => `page:${personId}`;
 
 const withReply = (rows: ProfileReview[], reviewId: string, reply: Reply) =>
@@ -74,6 +83,25 @@ export function createProfileStore({
     patch({ replies: next ? { ...rest, [reviewId]: next } : rest });
   }
 
+  function setReadFailed(key: string, failed: boolean) {
+    if (Boolean(get().readFailed[key]) === failed) return;
+    const { [key]: _dropped, ...rest } = get().readFailed;
+    patch({ readFailed: failed ? { ...rest, [key]: true } : rest });
+  }
+
+  async function tracked<T>(key: string, userId: string, at: number, read: () => Promise<T>) {
+    const request = requests.latest(key);
+    const mine = () => current(userId, at) && requests.isLatest(key, request);
+    try {
+      const value = await read();
+      if (mine()) setReadFailed(key, false);
+      return value;
+    } catch (error) {
+      if (mine()) setReadFailed(key, true);
+      throw error;
+    }
+  }
+
   function setGone(personId: string, gone: boolean) {
     if (Boolean(get().gone[personId]) === gone) return;
     const { [personId]: _dropped, ...rest } = get().gone;
@@ -87,16 +115,17 @@ export function createProfileStore({
     return readInto({
       requests,
       key: cardKey(personId),
-      read: async () => {
-        try {
-          const card = await service.profile(personId);
-          if (current(userId, at)) setGone(personId, false);
-          return card;
-        } catch (error) {
-          if (error instanceof ProfileGoneError && current(userId, at)) setGone(personId, true);
-          throw error;
-        }
-      },
+      read: () =>
+        tracked(cardKey(personId), userId, at, async () => {
+          try {
+            const card = await service.profile(personId);
+            if (current(userId, at)) setGone(personId, false);
+            return card;
+          } catch (error) {
+            if (error instanceof ProfileGoneError && current(userId, at)) setGone(personId, true);
+            throw error;
+          }
+        }),
       current: () => current(userId, at),
       value: () => get().cards[personId],
       set: (next) => setCard(personId, next),
@@ -110,10 +139,11 @@ export function createProfileStore({
     return readInto({
       requests,
       key: listKey(personId),
-      read: async () => ({
-        ...(await service.profileReviews(personId, null)),
-        more: 'idle' as const,
-      }),
+      read: () =>
+        tracked(listKey(personId), userId, at, async () => ({
+          ...(await service.profileReviews(personId, null)),
+          more: 'idle' as const,
+        })),
       current: () => current(userId, at),
       value: () => get().reviews[personId],
       set: (next) => setList(personId, next),
@@ -274,6 +304,9 @@ export function createProfileStore({
     reply,
     dismissReplyFailure(reviewId: string) {
       if (get().replies[reviewId]?.phase === 'failed') setReply(reviewId, null);
+    },
+    report(personId: string, reason: ReportReason, note: string | null) {
+      return service.reportPerson(personId, reason, note);
     },
     markBlocked(personId: string, blocked: boolean) {
       const card = get().cards[personId];

@@ -23,6 +23,7 @@ import { DesignTokensScene } from './DesignTokensScene';
 import { FlightRedirect } from './FlightScene';
 import { MapKitScene } from './MapKitScene';
 import { PaySheetScene, StickerBookScene } from './PayScenes';
+import { ProfileScene } from './ReputationScenes';
 import { RideConfirmScene, RideDetailScene, RideFormScene, RideListScene } from './RideScenes';
 import { SignInScene } from './SignInScene';
 
@@ -73,6 +74,7 @@ export const scenes: Scene[] = [
   { id: 'ride-confirm', titleKey: 'debug.ride.confirm', Component: RideConfirmScene },
   { id: 'ride-detail', titleKey: 'debug.ride.detail', Component: RideDetailScene },
   { id: 'chat-thread', titleKey: 'debug.chat.thread', Component: ChatThreadScene },
+  { id: 'profile', titleKey: 'debug.reputation.profile', Component: ProfileScene },
 ];
 
 export function findScene(id: string) {

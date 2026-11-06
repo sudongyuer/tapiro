@@ -185,7 +185,7 @@ export function fixtureProfile(
     faces: faces(reviews),
     latestReviews: reviews.slice(0, 3),
     mascot: {
-      level: fresh ? 1 : worst ? 82 : 4,
+      level: fresh ? 1 : worst ? 85 : 4,
       stickers: fresh ? 0 : worst ? 1234 : 23,
       accessory: fresh ? null : worst ? 'scarf' : 'umbrella',
     },

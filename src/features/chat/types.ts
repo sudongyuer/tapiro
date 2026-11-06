@@ -1,20 +1,14 @@
+import type { ReportReason } from '@/lib/report';
 import type { BountyCategory } from '@/lib/stickers/category';
 
 export const THREAD_KINDS = ['bounty', 'ride'] as const;
 export type ThreadKind = (typeof THREAD_KINDS)[number];
 
-export const REPORT_REASONS = [
-  'harassment',
-  'off_platform_payment',
-  'inappropriate',
-  'other',
-] as const;
-export type ReportReason = (typeof REPORT_REASONS)[number];
+export { REPORT_NOTE_MAX, REPORT_REASONS, type ReportReason } from '@/lib/report';
 
 export const MESSAGE_MAX = 2000;
 export const PAGE_SIZE = 50;
 export const LIST_RELOAD_MAX = 100;
-export const REPORT_NOTE_MAX = 500;
 
 export type ChatMember = {
   id: string;

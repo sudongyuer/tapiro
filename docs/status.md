@@ -35,8 +35,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 - Reviews, profile, mascot level, coins in 我的, weekly feed and invites (foundation step 6 and the account-free part
   of step 5): plan `docs/plans/2026-11-06-reviews-profile-coins.md`; Task 1 (server: reviews, the review share in
   靠谱度, tier drops, mascot level, profile reads, weekly feed, invite codes, coin history) is merged; Task 2 (client
-  core: `src/features/reputation/` and `src/features/coins/`, review live signals, copy) is merged. Next: Tasks 4–6, 8
-  and 10 (entries, profile, tier drop, coins in 我的, invites), one screen per task; Tasks 3, 7 and 9 wait on the
+  core: `src/features/reputation/` and `src/features/coins/`, review live signals, copy) is merged; Task 5 (the profile
+  screen, 全部评价, 回复, ⋯ 举报 / 屏蔽, the five entries and the gone state; cases `profile_*`) is built. Next: Tasks 4,
+  6, 8 and 10 (review entries, tier drop, coins in 我的, invites), one screen per task; Tasks 3, 7 and 9 wait on the
   motion drawings (257).
 
 ## Queue
@@ -52,7 +53,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   toward 靠谱度, and reporting a review. The server ★ defaults of Task 1 (same plan, 「★ Server defaults」) are listed
   for veto, among them the review share thresholds (70 / 80 / 90 % from 3 reviews), and the client ★ defaults of
   Task 2 (「★ Client core defaults」), among them the new en and ms wording for faces, level names, accessories and
-  invite errors.
+  invite errors, and the profile ★ details of Task 5 (「★ Profile defaults」).
 
 On 2026-11-06 the owner answered 「按你推荐的走」:
 

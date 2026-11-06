@@ -1,3 +1,5 @@
+import type { ReportReason } from '@/lib/report';
+
 export const ITEM_KINDS = ['bounty', 'ride'] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
 
@@ -162,6 +164,7 @@ export type ReputationService = {
   setAccessory(accessory: Accessory | null): Promise<MyMascot>;
   pendingTierDrop(): Promise<TierDrop | null>;
   markTierDropSeen(id: number): Promise<void>;
+  reportPerson(personId: string, reason: ReportReason, note: string | null): Promise<void>;
 };
 
 export type ValidDraft = { face: Face; chips: string[]; sentence: string | null };

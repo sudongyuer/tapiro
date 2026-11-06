@@ -148,6 +148,7 @@ export function fakeService(overrides: Partial<ReputationService> = {}): Reputat
     setAccessory: unexpected('setAccessory'),
     pendingTierDrop: unexpected('pendingTierDrop'),
     markTierDropSeen: unexpected('markTierDropSeen'),
+    reportPerson: unexpected('reportPerson'),
     ...overrides,
   };
 }

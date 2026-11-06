@@ -1,5 +1,10 @@
 import { Stack } from 'expo-router';
 
+import {
+  PROFILE_LIST_OPTIONS,
+  PROFILE_SCREEN_OPTIONS,
+  PROFILE_SHEET_OPTIONS,
+} from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 
 export const unstable_settings = { anchor: 'index' };
@@ -25,6 +30,10 @@ export default function RideLayout() {
           scrollEdgeEffects: { top: 'automatic' },
         }}
       />
+      <Stack.Screen name="profile/[id]" options={PROFILE_SCREEN_OPTIONS} />
+      <Stack.Screen name="profile/reviews/[id]" options={PROFILE_LIST_OPTIONS} />
+      <Stack.Screen name="profile/report" options={PROFILE_SHEET_OPTIONS} />
+      <Stack.Screen name="profile/reply" options={PROFILE_SHEET_OPTIONS} />
     </Stack>
   );
 }

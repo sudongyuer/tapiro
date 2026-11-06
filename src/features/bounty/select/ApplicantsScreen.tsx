@@ -41,10 +41,12 @@ export function ApplicantsScreen({
   id,
   onBack,
   onProgress,
+  onOpenProfile,
 }: {
   id: string;
   onBack: () => void;
   onProgress: () => void;
+  onOpenProfile: (personId: string) => void;
 }) {
   const { t } = useI18n();
   const model = useApplicants(id);
@@ -200,6 +202,7 @@ export function ApplicantsScreen({
             motion={motion}
             onChoose={model.chose}
             onBlock={blocking.ask}
+            onOpenProfile={onOpenProfile}
           />
         )}
         {footer || view.notice ? (

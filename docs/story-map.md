@@ -924,7 +924,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | rep.reviews.chips | 标签按被评的人分四套（帮忙的人、发布的人、发起人、同车的人），开心只能选好的，一般和不开心只能选不太好的，最多 4 个 | ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.pairs | 悬赏是发布的人和帮忙的人互评；拼车是发起人和每个上车的人互评，同车的人之间不评 | ui, db:supabase/tests/reviews.test.sql |
 | rep.reviews.edit | 公开前能改自己的评价，公开后不能改 | ui, db:supabase/tests/reviews.test.sql |
-| rep.reviews.reply | 被评的人在公开后回复一次，200 字以内，发出后不能改 | ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.reply | 被评的人在公开后回复一次，200 字以内，发出前确认一次，发出后不能改；失败时留着草稿、不自动重发 | ui:profile_reply, unit:src/features/reputation/profileStore.test.ts, db:supabase/tests/reviews.test.sql |
 | rep.reviews.reveal-job | 每 10 分钟把到期的评价标成公开；读的时候按 7 天的截止时间算，不等这个任务 | db:supabase/tests/reviews.test.sql |
 | rep.reviews.live | 对方评了或公开时，开着的这一单和首页卡片自动刷新；不发推送 | unit:src/features/reputation/reviewStore.test.ts#a review signal reloads the open item and the pending list, db:supabase/tests/review_signals.test.sql, ui |
 | rep.reviews.private | 客户端读不到也写不了评价表，只能通过服务器函数；删除账号时删除他写的和收到的评价和回复 | db:supabase/tests/reviews.test.sql |
@@ -979,10 +979,13 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id | 行为 | 覆盖 |
 | --- | --- | --- |
-| rep.profile.numbers | 主页有帮过的人、完成率（满 5 单才显示）和评价数，只算公开的评价 | ui, db:supabase/tests/mascot_profile.test.sql |
-| rep.profile.reviews | 最近 3 条评价和「全部评价」，按时间倒序分页；别人主页上拼车的评价不显示路线和评价人 | ui, db:supabase/tests/mascot_profile.test.sql |
-| rep.profile.mascot | 别人主页只看到小貘等级和贴纸数，看不到自己的升级状态 | ui, db:supabase/tests/mascot_profile.test.sql |
-| rep.profile.failed | 没加载出来写「没加载出来 · 重试」，不当成没有评价 | ui |
+| rep.profile.numbers | 主页有帮过的人、完成率（满 5 单才显示）和评价数，只算公开的评价；新用户写「刚来 Tapiro」和「还没有评价」 | ui:profile_other, ui:profile_new, ui:profile_worst, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.reviews | 最近 3 条评价和「全部评价」，按时间倒序分页；别人主页上拼车的评价只写「拼车」，不显示路线和评价人，自己的主页两样都看得到 | ui:profile_other, unit:src/features/reputation/profile/profileView.test.ts, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.mascot | 别人主页只看到小貘等级和贴纸数（排在评价后面的一行），看不到自己的升级状态；自己的主页按 RepBC 顺序有小貘等级卡和贴纸本 | ui:profile_other, ui:profile_self, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.failed | 没加载出来写「没加载出来 · 重试」，不当成没有评价；刷新失败留着上次的主页并标出来 | ui:profile_failed |
+| rep.profile.gone | 注销的账号写「这个账号已经注销了」和「返回」，不当成可以重试的失败 | ui:profile_gone |
+| rep.profile.safety | 别人主页的 ⋯ 里能举报（同样的理由，只举报人）、屏蔽和解除屏蔽 | ui:profile_report_block |
+| rep.profile.entries | 悬赏详情的发布者那行、申请人的头像、对话导航栏标题、拼车的发起人那行和上车申请、「我的」名字那行都推进当前 Tab 的主页 | ui:profile_entry_detail, ui:profile_entry_applicants, ui:profile_entry_chat, ui:profile_entry_ride, ui:profile_entry_me |
 
 ### rep.sticker-book 只读贴纸本「一起办成的事」
 

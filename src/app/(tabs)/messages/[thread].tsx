@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
 import { ThreadScreen, ThreadTitle, type ThreadInfo } from '@/features/chat';
+import { profileHref } from '@/features/reputation';
 
 export default function Thread() {
   const router = useRouter();
@@ -20,7 +21,10 @@ export default function Thread() {
   );
   return (
     <>
-      <ThreadTitle threadId={thread} />
+      <ThreadTitle
+        threadId={thread}
+        onOpenProfile={(person) => router.push(profileHref('messages', person))}
+      />
       <ThreadScreen threadId={thread} onOpenItem={openItem} onReport={report} />
     </>
   );

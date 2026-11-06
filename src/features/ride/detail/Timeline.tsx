@@ -8,6 +8,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { localClock } from '@/lib/deviceClock';
 
 import { ArrivalRow, displayName, SeatRow } from './Avatars';
+import { OrganiserLink } from './ProfileLink';
 import {
   activeMembers,
   arrival,
@@ -137,7 +138,6 @@ function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKe
   const inside = ride.members !== null;
   const unknown = t('bounty.post.unknownName');
   const organiser = ride.organiser ? displayName(ride.organiser, viewerId, t) : unknown;
-  const tier = ride.organiser ? t(`bounty.tier.${ride.organiser.tier}`) : '';
   const strong = (key: StepKey) =>
     timeline(ride, now).find((s) => s.key === key)?.state !== 'future';
 
@@ -146,10 +146,9 @@ function StepBody({ step, ride, viewerId, now, staleAt }: Props & { step: StepKe
       return before ? (
         <>
           <Title text={t('ride.detail.steps.published')} strong />
-          <Sub
-            text={t('ride.detail.steps.by', { name: organiser, tier })}
-            testID="ride-detail-organiser"
-          />
+          <OrganiserLink ride={ride} viewerId={viewerId} name={organiser}>
+            {(label) => <Sub text={label} />}
+          </OrganiserLink>
         </>
       ) : (
         <Title text={t('ride.detail.steps.publishedBy', { name: organiser })} strong />

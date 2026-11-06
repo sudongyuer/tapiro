@@ -14,6 +14,8 @@ import {
   accessibilityHidden,
   accessibilityIdentifier,
   accessibilityLabel,
+  buttonStyle,
+  contentShape,
   fixedSize,
   font,
   foregroundStyle,
@@ -23,15 +25,14 @@ import {
   listRowBackground,
   listRowInsets,
   multilineTextAlignment,
+  shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactElement } from 'react';
 
 import type { BlockedPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
-import { nameInitial } from '@/lib/nameInitial';
 import { formatMoney } from '@/lib/money';
-import { Avatar } from '@/ui/Avatar';
 import { HandArtSticker } from '@/ui/HandArt';
 import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
@@ -39,16 +40,21 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { BountyDetail } from '../board/types';
 import { tierName, tierRank } from '../shared/tierCopy';
+import { AvatarButton } from './AvatarButton';
 import { helpedLine } from './selectCopy';
 import type { Applicant } from './types';
 
 const STICKER = 48;
-const AVATAR = 36;
 const CHECK = 17;
 const primary = foregroundStyle({ type: 'hierarchical', style: 'primary' });
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const wraps = fixedSize({ horizontal: false, vertical: true });
 const fill = frame({ maxWidth: Infinity, alignment: 'leading' });
+const target = [
+  frame({ maxWidth: Infinity, minHeight: vars['--touch-min'], alignment: 'topLeading' }),
+  contentShape(shapes.rectangle()),
+  multilineTextAlignment('leading'),
+];
 const NO_INSETS = listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 });
 
 export function ApplicantsHeader({
@@ -129,6 +135,7 @@ function ApplicantRow({
   motion,
   onChoose,
   onBlock,
+  onOpenProfile,
 }: {
   applicant: Applicant;
   motion: Motion;
@@ -137,6 +144,7 @@ function ApplicantRow({
   canBlock: boolean;
   onChoose: (id: string) => void;
   onBlock: (person: BlockedPerson) => void;
+  onOpenProfile: (id: string) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -155,15 +163,12 @@ function ApplicantRow({
       onPress={() => onChoose(applicant.id)}
       testID={`bounty-applicant-${applicant.id}`}
       modifiers={[
+        buttonStyle('borderless'),
         accessibilityLabel(label),
         ...(chosen ? [accessibilityAddTraits(['isSelected'])] : []),
-        ...motion(applicant.id),
       ]}
     >
-      <HStack alignment="top" spacing={vars['--space-3']}>
-        <RNHostView matchContents>
-          <Avatar uri={null} size={AVATAR} label={name} initial={nameInitial(name)} />
-        </RNHostView>
+      <HStack alignment="top" spacing={vars['--space-3']} modifiers={target}>
         <VStack alignment="leading" spacing={vars['--space-1']} modifiers={[fill]}>
           <HStack spacing={vars['--space-2']} alignment="center">
             <Text
@@ -204,6 +209,12 @@ function ApplicantRow({
   return (
     <ContextMenu>
       <ContextMenu.Items>
+        <Button
+          label={t('reputation.profile.open', { name })}
+          systemImage="person.crop.circle"
+          onPress={() => onOpenProfile(applicant.id)}
+          testID={`bounty-applicant-open-${applicant.id}`}
+        />
         {canBlock ? (
           <Button
             label={t('block.menu', { name })}
@@ -214,7 +225,12 @@ function ApplicantRow({
           />
         ) : null}
       </ContextMenu.Items>
-      <ContextMenu.Trigger>{row}</ContextMenu.Trigger>
+      <ContextMenu.Trigger>
+        <HStack alignment="top" spacing={vars['--space-3']} modifiers={motion(applicant.id)}>
+          <AvatarButton id={applicant.id} name={name} onPress={onOpenProfile} />
+          {row}
+        </HStack>
+      </ContextMenu.Trigger>
     </ContextMenu>
   );
 }
@@ -227,6 +243,7 @@ export function ApplicantSection({
   motion,
   onChoose,
   onBlock,
+  onOpenProfile,
 }: {
   applicants: Applicant[];
   motion: Motion;
@@ -235,6 +252,7 @@ export function ApplicantSection({
   canBlock: boolean;
   onChoose: (id: string) => void;
   onBlock: (person: BlockedPerson) => void;
+  onOpenProfile: (id: string) => void;
 }) {
   const { t } = useI18n();
   return (
@@ -252,6 +270,7 @@ export function ApplicantSection({
           motion={motion}
           onChoose={onChoose}
           onBlock={onBlock}
+          onOpenProfile={onOpenProfile}
         />
       ))}
     </Section>

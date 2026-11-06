@@ -6,7 +6,7 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06); Task 2 (client core) is built (2026-11-06). Questions 256–259 below are open; Tasks 2, 8 and 10 do not
+(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06). Questions 256–259 below are open; Tasks 2, 8 and 10 do not
 depend on them.
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
@@ -175,6 +175,21 @@ invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are reco
   reviewer (256), counting rides is server-only (258), and reporting a review would be a later addition to Task 5
   (259).
 
+## ★ Profile defaults (Task 5, 2026-11-06, for veto)
+
+| #   | Decision ★                                                                                                                                                                                                                                                                                                                              | Why                                                                                             |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| P1  | The profile is a pushed Form in the current tab (`/<tab>/profile/[id]`, also `reviews/[id]`, and form sheets `report`, `reply`); the navigation title stays empty and the name is the header                                                                                                                                            | HIG push, back returns to where you were (247 A)                                                |
+| P2  | Others: header → three numbers → 评价 (faces line, latest 3, 「全部 N 条评价」 only when there are more) → one 小貘 row without a chevron                                                                                                                                                                                               | 245 A; no big mascot view exists yet, so the row is not a link until Task 7                     |
+| P3  | Own: header → numbers → 小貘等级 · 只升不降 card (level, progress, 再收 n 张 → next level, the four accessories as rows with ✓ or the unlocking level) → 一起办成的事 (opens the sticker book) → 评价 with 回复; the RepBC 靠谱度 explainer card is left out                                                                            | RepBC order; the explainer needs inputs the profile read does not return                        |
+| P4  | The header note reads 「刚来 Tapiro」 while the person has no settled item, else 「近 180 天」                                                                                                                                                                                                                                          | 246 A board text                                                                                |
+| P5  | 回复 opens a sheet 「回复评价」 quoting the review, with a 0/200 count; 发送 asks 「回复发出后不能修改」 (再想想 / 发出); the draft stays on the device across failures and closing, so no discard prompt                                                                                                                               | 243 A: confirm once, final                                                                      |
+| P6  | ⋯ (others only) holds 举报 {name} and 屏蔽 {name}, or 解除屏蔽 {name} once blocked; a blocked profile says 「你屏蔽了{name}」 under the header; the report sheet is chat's sheet for a person (same reasons and copy, no message), offering a block afterwards; its note, like chat's, lives only while the sheet is open               | 127 A, reuse; reasons moved to `src/lib/report.ts` so features do not import each other         |
+| P7  | Entries: bounty detail poster row (chevron), applicant avatar as its own 44 pt button plus 看{name}的主页 in the row's long-press menu (a tap on the rest of the row still chooses), the bounty thread's navigation title (ride group titles stay the route), the ride organiser line and each join-request name, and the 我的 name row | 247 A; the name stays inside the choose target because a selection row must stay one tap target |
+| P8  | 256 A is one server switch, `private.ride_review_details_public()` (false); the reviewee now also sees the route of ride reviews on their own profile, which the Task 1 read had hidden                                                                                                                                                 | 256 A says the reviewee still sees both                                                         |
+| P9  | Pull to refresh on the profile and the list; a failed refresh keeps the profile with 「没刷新成功 · 下面是上次加载的主页」 and 重试                                                                                                                                                                                                     | Data integrity: stale is never shown as current                                                 |
+| P10 | A deleted account reads 「这个账号已经注销了」 with 返回                                                                                                                                                                                                                                                                                | Not a retryable failure                                                                         |
+
 ## File structure
 
 | Action | Path                                                                             | Responsibility                                            |
@@ -220,12 +235,12 @@ invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are reco
    days left; on a closed ride one row per counterpart (the organiser sees each rider, a rider sees the organiser);
    the sealed copy on both sides and 「评价已结束」; one home card per pending review until reviewed or the window
    ends. UI cases `review_entry_status`, `review_entry_sealed`, `review_entry_ride`, `review_entry_home`.
-5. **Profile** (243 A, 245 A, 246 A, 247 A): a pushed screen in the current tab: header, three numbers, reviews (latest
+5. **Profile** — **done 2026-11-06** (243 A, 245 A, 246 A, 247 A; ★ details in 「★ Profile defaults」): a pushed screen in the current tab: header, three numbers, reviews (latest
    3, 「全部评价」 page), one 小貘 and stickers row; your own profile keeps the RepBC order and offers 回复 under each
    received review (confirm once, 200 characters); ⋯ with 举报 and 屏蔽 reusing the chat report and the block module;
    entries from the bounty poster row, applicant rows, the chat navigation title, ride member rows and the 我的 name
-   row. UI cases `profile_other`, `profile_new`, `profile_many`, `profile_failed`, `profile_self`, `profile_reply`,
-   `profile_entries`, `profile_worst` (ms).
+   row. UI cases `profile_other` (with paging), `profile_new`, `profile_worst` (ms), `profile_failed`, `profile_gone`,
+   `profile_self`, `profile_reply`, `profile_report_block` and one `profile_entry_*` per entry.
 6. **Tier-drop sheet** (248 A): a medium sheet on the first open after a drop: the new tier, the reason, the way back,
    知道了 and 看我的主页; marked seen when dismissed. UI cases `tier_drop_sheet` (zh-Hans, en, ms),
    `tier_drop_no_show`.

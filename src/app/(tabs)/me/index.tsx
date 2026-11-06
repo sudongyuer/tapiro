@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 
 import { MeView, useProfile, useSignedInUser } from '@/features/account';
 import { usePayeeRecheckDue } from '@/features/payee';
+import { profileHref } from '@/features/reputation';
 import { useStickers } from '@/lib/stickers';
 
 export default function Me() {
@@ -17,6 +18,7 @@ export default function Me() {
       avatarUrl={ready?.avatarUrl ?? user?.avatarUrl ?? null}
       payeeDue={payeeDue}
       stickerCount={stickers.status === 'ready' ? stickers.stickers.length : null}
+      onOpenProfile={user ? () => router.push(profileHref('me', user.id)) : null}
       onOpenStickers={() => router.push('/me/stickers')}
       onOpenPayee={() => router.push('/me/payee')}
       onOpenBlocked={() => router.push('/me/blocked')}
