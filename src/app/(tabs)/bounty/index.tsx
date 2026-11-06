@@ -1,5 +1,5 @@
-import { Stack, useIsFocused, useRouter } from 'expo-router';
-import { useCallback, useRef, useState, type RefObject } from 'react';
+import { Stack, useIsFocused, useNavigation, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -38,10 +38,23 @@ export default function BountyHomeRoute() {
   return user ? <BountyHome user={user} /> : null;
 }
 
+// The stage stays light in dark mode. Status bar options on a screen under NativeTabs never reach UIKit, and
+// expo-status-bar does nothing with view-controller-based appearance; only the root screen holding the tabs counts.
+function useDarkStatusBar(focused: boolean) {
+  const navigation = useNavigation();
+  useEffect(() => {
+    if (!focused) return;
+    const root = navigation.getParent()?.getParent();
+    root?.setOptions({ statusBarStyle: 'dark' });
+    return () => root?.setOptions({ statusBarStyle: 'auto' });
+  }, [focused, navigation]);
+}
+
 function BountyHome({ user }: { user: AccountUser }) {
   const router = useRouter();
   const { t } = useI18n();
   const focused = useIsFocused();
+  useDarkStatusBar(focused);
   const profile = useProfile(user);
   const name =
     (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user.name ?? '';

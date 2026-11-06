@@ -194,7 +194,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | home.stage.urgent | 欠钱时舞台是有急事的颜色                                                                     | ui:home_three_cards, ui:shell_minimise, unit:src/features/home/homeModel.test.ts#owing money is urgent     |
 | home.stage.live   | 有进行中的事、没欠钱时是进行中的颜色                                                         | ui:home_live, ui:home_one_card, unit:src/features/home/homeModel.test.ts#anything else live is in progress |
-| home.stage.calm   | 什么都没有时是没事的舞台和平静卡，卡上有问小貘入口；舞台在深色模式下也是浅的，状态栏是深色字 | ui:home_calm, unit:src/features/home/homeModel.test.ts#nothing pending is calm, ui:bounty_board_list       |
+| home.stage.calm   | 什么都没有时是没事的舞台和平静卡，卡上有问小貘入口；舞台在深色模式下也是浅的，状态栏是深色字 | ui:home_calm, unit:src/features/home/homeModel.test.ts#nothing pending is calm, ui:home_status_bar       |
 | home.stage.line   | 小貘的话点名最前面那张卡的人，例如「送到啦，记得付款」                                       | ui:home_worst, unit:src/features/home/homeModel.test.ts#stageLine                                          |
 
 ### home.live-cards 实时卡叠放和摊开

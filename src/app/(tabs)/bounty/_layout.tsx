@@ -24,7 +24,6 @@ export default function BountyLayout() {
           title: t('shell.home.title'),
           headerTitleStyle: { color: onStage },
           headerLargeTitleStyle: { color: onStage, fontWeight: '800' },
-          statusBarStyle: 'dark',
         }}
       />
       <Stack.Screen
