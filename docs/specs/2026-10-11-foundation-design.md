@@ -715,7 +715,22 @@ Steps 5, 6 and 8 remain; the spec stays `approved`.
 
 ### Verification
 
-VERIFY_PLACEHOLDER
+- Fast checks on this PR: `bun test` 2085 pass; `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map`, `check:size`, `design-check` pass; runner unit tests
+  (67, incl. `test_records`) pass; pgTAP `supabase/tests/chat.test.sql` 82 pass (local database).
+- Chat milestone run (2026-11-06, this branch's verify build), 103 runs, selected from what changed across #72–#79 and
+  this PR: every `chat_*` case (27) in zh-Hans light and en light; dark for bubbles, sheets, the viewer, the list and
+  the entries (16); ms for the cases with long copy (12 chat, plus `bounty_status_poster`, `bounty_status_worst`,
+  `home_worst`); `shell_tabs`, `live_notice_tap`, the status (`bounty_status_poster/helper/states/worst`), home
+  (`home_bounty_cards`, `home_three_cards`, `home_worst`, `home_worst_inline`, `home_fan_out`, `home_live`,
+  `home_one_card`, `live_home_card`) and ride detail (`ride_detail`, `ride_detail_organiser`, `ride_detail_worst`,
+  `ride_meetup`) cases the entries touch, zh-Hans light. All pass except `home_fan_out` (closest hidden check 74.7 pt
+  from the bar, limit 60; already open on iOS 27.2 at 70.7 pt, `docs/retros/2026-11-03-expo-sdk-58.md`). Reruns:
+  `chat_block_refused` (case waited for the first call, then passed), `chat_list_failed` and en `chat_block_refused`
+  (dropped taps), dark `chat_block_peer` (spinner missed under load average 30–140) and seven ms runs that timed
+  out creating the automation session; all passed on rerun.
+- Screenshots: `docs/research/evidence/2026-11-06-chat-entries/`; earlier steps' evidence in the sibling
+  `2026-11-06-chat-*` folders.
 
 ### Known limits
 
