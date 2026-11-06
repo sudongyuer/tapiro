@@ -1,6 +1,6 @@
 """The whole pinned bottom bar is opaque (owner, 2026-11-06). 这次没选上 sits in the bar with no fill of its own: with a long
-description scrolled under the bar, the bar beside that line and below 看看附近别的悬赏 down to the screen edge is one
-colour, in the run's appearance."""
+description scrolled under the bar, the bar beside that line and below 看看附近别的悬赏, down to the home indicator with
+the tab bar minimised, is the canvas colour, in the run's appearance."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -44,4 +44,4 @@ under = {'x': s['width'] * 0.32, 'width': s['width'] * 0.36, 'y': bottom(browse)
 for strip, name in ((left, 'left of 这次没选上'), (right, 'right of 这次没选上'), (under, 'below the button')):
     assert_bar_hides_content(shot, strip, behind['frame'], name)
     assert_colour(shot, strip, CANVAS[ui.appearance], name)
-print('PASS: the bar hides scrolled content beside its text and down to the screen edge')
+print('PASS: the bar hides scrolled content beside its text and down to the home indicator')

@@ -52,6 +52,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Owner decisions pending
 
+- The opaque bar's ★ (no hairline on its top edge; secondary pills stay `systemGray5`), below. The hard edge has not been
+  seen on a device.
 - The review sheet ★ details of Task 3 (plan 「★ Review defaults」, R1–R15) and the review entries of Task 4 (「★ Review entry
   defaults」, E1–E10).
 - The coins page ★ details of Task 8 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「★ Coins defaults」, C1–C9)
