@@ -68,3 +68,14 @@ export {
   type TierDropNoShow,
 } from './types';
 export { FIXTURE_PEOPLE as FIXTURE_REP_PEOPLE, FIXTURE_REP_USER_ID } from './fixtureData';
+export {
+  PROFILE_LIST_OPTIONS,
+  PROFILE_SCREEN_OPTIONS,
+  PROFILE_SHEET_OPTIONS,
+  profileHref,
+  ProfileReplyRoute,
+  ProfileReportRoute,
+  ProfileReviewsRoute,
+  ProfileRoute,
+  type ProfileTab,
+} from './profile/routes';

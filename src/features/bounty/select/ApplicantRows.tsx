@@ -14,6 +14,7 @@ import {
   accessibilityHidden,
   accessibilityIdentifier,
   accessibilityLabel,
+  buttonStyle,
   fixedSize,
   font,
   foregroundStyle,
@@ -26,6 +27,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactElement } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import type { BlockedPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
@@ -129,6 +131,7 @@ function ApplicantRow({
   motion,
   onChoose,
   onBlock,
+  onOpenProfile,
 }: {
   applicant: Applicant;
   motion: Motion;
@@ -137,6 +140,7 @@ function ApplicantRow({
   canBlock: boolean;
   onChoose: (id: string) => void;
   onBlock: (person: BlockedPerson) => void;
+  onOpenProfile: (id: string) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -157,13 +161,9 @@ function ApplicantRow({
       modifiers={[
         accessibilityLabel(label),
         ...(chosen ? [accessibilityAddTraits(['isSelected'])] : []),
-        ...motion(applicant.id),
       ]}
     >
       <HStack alignment="top" spacing={vars['--space-3']}>
-        <RNHostView matchContents>
-          <Avatar uri={null} size={AVATAR} label={name} initial={nameInitial(name)} />
-        </RNHostView>
         <VStack alignment="leading" spacing={vars['--space-1']} modifiers={[fill]}>
           <HStack spacing={vars['--space-2']} alignment="center">
             <Text
@@ -201,9 +201,31 @@ function ApplicantRow({
       </HStack>
     </Button>
   );
+  const profile = (
+    <Button
+      onPress={() => onOpenProfile(applicant.id)}
+      testID={`bounty-applicant-profile-${applicant.id}`}
+      modifiers={[
+        buttonStyle('borderless'),
+        accessibilityLabel(t('reputation.profile.open', { name })),
+      ]}
+    >
+      <RNHostView matchContents>
+        <View style={styles.avatar}>
+          <Avatar uri={null} size={AVATAR} label={name} initial={nameInitial(name)} />
+        </View>
+      </RNHostView>
+    </Button>
+  );
   return (
     <ContextMenu>
       <ContextMenu.Items>
+        <Button
+          label={t('reputation.profile.open', { name })}
+          systemImage="person.crop.circle"
+          onPress={() => onOpenProfile(applicant.id)}
+          testID={`bounty-applicant-open-${applicant.id}`}
+        />
         {canBlock ? (
           <Button
             label={t('block.menu', { name })}
@@ -214,7 +236,12 @@ function ApplicantRow({
           />
         ) : null}
       </ContextMenu.Items>
-      <ContextMenu.Trigger>{row}</ContextMenu.Trigger>
+      <ContextMenu.Trigger>
+        <HStack alignment="top" spacing={vars['--space-3']} modifiers={motion(applicant.id)}>
+          {profile}
+          {row}
+        </HStack>
+      </ContextMenu.Trigger>
     </ContextMenu>
   );
 }
@@ -227,6 +254,7 @@ export function ApplicantSection({
   motion,
   onChoose,
   onBlock,
+  onOpenProfile,
 }: {
   applicants: Applicant[];
   motion: Motion;
@@ -235,6 +263,7 @@ export function ApplicantSection({
   canBlock: boolean;
   onChoose: (id: string) => void;
   onBlock: (person: BlockedPerson) => void;
+  onOpenProfile: (id: string) => void;
 }) {
   const { t } = useI18n();
   return (
@@ -252,8 +281,18 @@ export function ApplicantSection({
           motion={motion}
           onChoose={onChoose}
           onBlock={onBlock}
+          onOpenProfile={onOpenProfile}
         />
       ))}
     </Section>
   );
 }
+
+const styles = StyleSheet.create({
+  avatar: {
+    minWidth: vars['--touch-min'],
+    minHeight: vars['--touch-min'],
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+});

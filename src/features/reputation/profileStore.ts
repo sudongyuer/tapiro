@@ -1,3 +1,4 @@
+import type { ReportReason } from '@/lib/report';
 import { createStore } from '@/lib/store';
 
 import type { ReviewDrafts } from './drafts';
@@ -274,6 +275,9 @@ export function createProfileStore({
     reply,
     dismissReplyFailure(reviewId: string) {
       if (get().replies[reviewId]?.phase === 'failed') setReply(reviewId, null);
+    },
+    report(personId: string, reason: ReportReason, note: string | null) {
+      return service.reportPerson(personId, reason, note);
     },
     markBlocked(personId: string, blocked: boolean) {
       const card = get().cards[personId];

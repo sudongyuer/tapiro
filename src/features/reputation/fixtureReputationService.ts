@@ -9,7 +9,7 @@ import {
   type RepVariant,
 } from './fixtureData';
 import { accessoryLevel, mascotLevel } from './model';
-import { AccessoryError } from './reputationService';
+import { AccessoryError, ProfileGoneError } from './reputationService';
 import {
   pairKey,
   REVIEW_PAGE_SIZE,
@@ -29,6 +29,8 @@ export const REP_FAIL_POINTS = [
   'mascot',
   'accessory',
   'tierDrop',
+  'report',
+  'profileAgain',
 ] as const;
 export type RepFailPoint = (typeof REP_FAIL_POINTS)[number];
 
@@ -38,7 +40,10 @@ export type FixtureRepOptions = {
   delayMs?: number;
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
+  isBlocked?: (personId: string) => boolean;
 };
+
+export const FIXTURE_GONE_PERSON_ID = 'fixture-person-gone';
 
 export function fixtureRepFailPoints(value: string | undefined): RepFailPoint[] {
   const parts = (value ?? '').split(',').map((part) => part.trim());
@@ -51,14 +56,18 @@ export function createFixtureReputationService({
   delayMs = 0,
   now = () => new Date(),
   onCall,
+  isBlocked = () => false,
 }: FixtureRepOptions): ReputationService {
-  const failing = new Set<RepFailPoint>(variant === 'failed' ? REP_FAIL_POINTS : failFirst);
+  const failing = new Set<RepFailPoint>(
+    variant === 'failed' ? REP_FAIL_POINTS.filter((point) => point !== 'profileAgain') : failFirst,
+  );
   const data = variant === 'failed' ? 'many' : variant;
   const items = new Map<string, ReviewPair[]>();
   const reviews = fixtureReviews(data, now());
   let mascot: MyMascot = fixtureMascot(data);
   let tierDrop = fixtureTierDrop(data, now());
   let pending = fixturePending(data, now());
+  let profileReads = 0;
 
   async function step(point: RepFailPoint, name: string, args: unknown = null) {
     onCall?.(name, args);
@@ -146,8 +155,19 @@ export function createFixtureReputationService({
       return { ok: true, reviewId, reply: row.reply };
     },
     async profile(personId) {
-      await step('profile', 'profile', { personId });
-      return fixtureProfile(personId, data, now(), reviews);
+      profileReads += 1;
+      await step(
+        profileReads > 1 && failing.has('profileAgain') ? 'profileAgain' : 'profile',
+        'profile',
+        {
+          personId,
+        },
+      );
+      if (personId === FIXTURE_GONE_PERSON_ID) throw new ProfileGoneError();
+      return {
+        ...fixtureProfile(personId, data, now(), reviews),
+        blockedByMe: isBlocked(personId),
+      };
     },
     async profileReviews(personId, before) {
       await step('reviews', 'profileReviews', { personId, before });
@@ -187,6 +207,9 @@ export function createFixtureReputationService({
     async markTierDropSeen(id) {
       await step('tierDrop', 'markTierDropSeen', { id });
       if (tierDrop && tierDrop.id <= id) tierDrop = null;
+    },
+    async reportPerson(personId, reason, note) {
+      await step('report', 'reportPerson', { personId, reason, note });
     },
   };
 }

@@ -309,6 +309,7 @@ export default {
     pay: { title: '付款弹窗' },
     stickers: { title: '贴纸本' },
     chat: { thread: '聊天线程（键盘）' },
+    reputation: { profile: '主页' },
     flight: {
       title: '贴纸飞向我的',
       fly: '飞到「我的」',

@@ -1,6 +1,6 @@
 import { Settings } from 'react-native';
 
-import { blockEvents } from '@/features/block';
+import { addBlockFixturePeople, blockEvents, fixtureBlocked } from '@/features/block';
 import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import { live } from '@/lib/live';
 import { getSupabase } from '@/lib/supabase';
@@ -8,7 +8,7 @@ import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
 import { createReviewDrafts } from './drafts';
-import { FIXTURE_REP_USER_ID, repVariant } from './fixtureData';
+import { FIXTURE_PEOPLE, FIXTURE_REP_USER_ID, repVariant } from './fixtureData';
 import { createFixtureReputationService, fixtureRepFailPoints } from './fixtureReputationService';
 import { createMeStore } from './meStore';
 import { createProfileStore } from './profileStore';
@@ -20,7 +20,9 @@ const CALLS_KEY = 'uiVerifyRepCalls';
 function verifyService() {
   Settings.set({ [CALLS_KEY]: '[]' });
   const calls: unknown[] = [];
+  addBlockFixturePeople(Object.values(FIXTURE_PEOPLE));
   return createFixtureReputationService({
+    isBlocked: fixtureBlocked,
     variant: repVariant(uiVerifyArgument('uiVerifyReviews') ?? uiVerifyArgument('uiVerifyProfile')),
     failFirst: fixtureRepFailPoints(uiVerifyArgument('uiVerifyRepFail')),
     delayMs: Number(uiVerifyArgument('uiVerifyRepDelayMs') ?? 0) || 0,

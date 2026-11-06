@@ -8,6 +8,7 @@ import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { ProfileLink } from './ProfileLink';
 import type { RideRequest } from './types';
 
 const FACE = 36;
@@ -61,23 +62,25 @@ export function ApplicationCard({
               </AppText>
             </View>
             <View style={styles.text}>
-              <View
-                style={styles.nameRow}
+              <ProfileLink
+                personId={request.id}
+                name={name}
                 testID={`ride-detail-request-name-${request.id}`}
-                accessible
-                accessibilityLabel={
+                label={
                   request.note
                     ? t('ride.detail.requests.a11y', { name, tier, note: request.note })
                     : t('ride.detail.requests.a11yNoNote', { name, tier })
                 }
               >
-                <AppText variant="body" numberOfLines={1} style={[styles.name]}>
-                  {name}
-                </AppText>
-                <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
-                  {tier}
-                </AppText>
-              </View>
+                <View style={styles.nameRow}>
+                  <AppText variant="body" numberOfLines={1} style={[styles.name]}>
+                    {name}
+                  </AppText>
+                  <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
+                    {tier}
+                  </AppText>
+                </View>
+              </ProfileLink>
               {request.note ? (
                 <AppText variant="secondary" testID={`ride-detail-request-note-${request.id}`}>
                   {t('ride.detail.requests.note', { note: request.note })}

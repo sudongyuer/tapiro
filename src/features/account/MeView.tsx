@@ -11,12 +11,16 @@ import {
 } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
+  accessibilityHint,
   accessibilityHidden,
   accessibilityIdentifier,
   accessibilityLabel,
+  contentShape,
   font,
   foregroundStyle,
+  lineLimit,
   listRowBackground,
+  shapes,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { PlatformColor, StyleSheet } from 'react-native';
@@ -35,6 +39,7 @@ export function MeView({
   avatarUrl,
   payeeDue,
   stickerCount,
+  onOpenProfile,
   onOpenStickers,
   onOpenPayee,
   onOpenBlocked,
@@ -44,6 +49,7 @@ export function MeView({
   avatarUrl: string | null;
   payeeDue: boolean;
   stickerCount: number | null;
+  onOpenProfile: (() => void) | null;
   onOpenStickers: () => void;
   onOpenPayee: () => void;
   onOpenBlocked: () => void;
@@ -55,15 +61,7 @@ export function MeView({
     <Host style={styles.host} testID="me-screen">
       <Form modifiers={[tint(color('--color-accent'))]}>
         <Section>
-          <HStack
-            spacing={vars['--space-4']}
-            modifiers={[accessibilityElement('combine'), accessibilityIdentifier('me-profile')]}
-          >
-            <RNHostView matchContents>
-              <Avatar uri={avatarUrl} size={AVATAR_SIZE} label={t('account.name.avatar')} />
-            </RNHostView>
-            <Text modifiers={[font({ textStyle: 'title2', weight: 'bold' })]}>{name}</Text>
-          </HStack>
+          <ProfileRow name={name} avatarUrl={avatarUrl} onPress={onOpenProfile} />
         </Section>
         <Section>
           <NavRow
@@ -83,6 +81,68 @@ export function MeView({
         </Section>
       </Form>
     </Host>
+  );
+}
+
+function ProfileRow({
+  name,
+  avatarUrl,
+  onPress,
+}: {
+  name: string;
+  avatarUrl: string | null;
+  onPress: (() => void) | null;
+}) {
+  const { t } = useI18n();
+  const { selected, select } = useSelectedUntilReturn();
+  const content = (
+    <HStack
+      spacing={vars['--space-4']}
+      modifiers={[
+        accessibilityElement('combine'),
+        contentShape(shapes.rectangle()),
+        ...(onPress ? [] : [accessibilityIdentifier('me-profile')]),
+      ]}
+    >
+      <RNHostView matchContents>
+        <Avatar uri={avatarUrl} size={AVATAR_SIZE} label={t('account.name.avatar')} />
+      </RNHostView>
+      <Text
+        modifiers={[
+          font({ textStyle: 'title2', weight: 'bold' }),
+          foregroundStyle({ type: 'hierarchical', style: 'primary' }),
+          lineLimit(2),
+        ]}
+      >
+        {name}
+      </Text>
+      {onPress ? (
+        <>
+          <Spacer />
+          <Image
+            systemName="chevron.right"
+            size={14}
+            modifiers={[tertiary, accessibilityHidden()]}
+          />
+        </>
+      ) : null}
+    </HStack>
+  );
+  if (!onPress) return content;
+  return (
+    <Button
+      onPress={() => {
+        select();
+        onPress();
+      }}
+      testID="me-profile"
+      modifiers={[
+        accessibilityHint(t('reputation.profile.openSelf')),
+        ...(selected ? [listRowBackground(PlatformColor('systemGray4'))] : []),
+      ]}
+    >
+      {content}
+    </Button>
   );
 }
 

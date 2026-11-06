@@ -1,5 +1,5 @@
 begin;
-select plan(38);
+select plan(39);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -182,6 +182,10 @@ select pg_temp.act_as(pg_temp.u('c3'));
 select is(
   (select x -> 'reviewer' ->> 'name' from jsonb_array_elements(public.profile_card(pg_temp.u('c3')) -> 'latestReviews') x),
   'Devi', 'the reviewee still sees who wrote it'
+);
+select isnt(
+  (select x ->> 'title' from jsonb_array_elements(public.profile_card(pg_temp.u('c3')) -> 'latestReviews') x),
+  null, 'and the route'
 );
 select pg_temp.act_as(pg_temp.u('b2'));
 

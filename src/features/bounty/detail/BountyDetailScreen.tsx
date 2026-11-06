@@ -30,6 +30,7 @@ type Props = {
   onBlocked: () => void;
   onBrowse: () => void;
   onProgress: (id: string) => void;
+  onOpenProfile: (personId: string) => void;
 };
 
 export function BountyDetailScreen({
@@ -40,6 +41,7 @@ export function BountyDetailScreen({
   onBlocked,
   onBrowse,
   onProgress,
+  onOpenProfile,
 }: Props) {
   const { t, language } = useI18n();
   const { state, retry } = useDetail(id, userId);
@@ -128,7 +130,11 @@ export function BountyDetailScreen({
           />
         ) : view && copy ? (
           <>
-            <DetailInfo view={view} copy={copy} />
+            <DetailInfo
+              view={view}
+              copy={copy}
+              onOpenPoster={() => onOpenProfile(view.poster.id)}
+            />
             {view.action === 'selected' ? (
               <SelectedAddress name={copy.name} address={view.address} />
             ) : null}

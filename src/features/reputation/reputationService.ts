@@ -132,5 +132,8 @@ export function createSupabaseReputationService(client: SupabaseClient | null): 
     async markTierDropSeen(id) {
       unwrap(await db().rpc('mark_tier_drop_seen', { seen: id }));
     },
+    async reportPerson(personId, reason, note) {
+      unwrap(await db().rpc('report', { target_user: personId, message: null, reason, note }));
+    },
   };
 }

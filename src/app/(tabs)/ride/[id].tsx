@@ -5,6 +5,7 @@ import { useSignedInUser } from '@/features/account';
 import { useItemChat } from '@/features/chat';
 import { useSettleCelebration } from '@/features/payment';
 import { RideDetailScreen } from '@/features/ride';
+import { profileHref } from '@/features/reputation';
 
 export default function RideDetailRoute() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function RideDetailRoute() {
         onGone={() => router.back()}
         settle={bridge}
         message={{ onPress: () => chat.open('ride', id), busy: chat.opening === id }}
+        onOpenProfile={(person) => router.push(profileHref('ride', person))}
       />
       {celebration.element}
     </>

@@ -26,6 +26,7 @@ import { DetailFooter } from './DetailFooter';
 import { activeMembers, detailPhase, footer as footerFor, hasThread } from './detailModel';
 import { DetailSheets, useDetailSheets } from './DetailSheets';
 import { DetailMenu, type RideMessage } from './DetailMenu';
+import { ProfileLinkProvider } from './ProfileLink';
 import { SettleSheets, useSettleSheets } from './SettleSheets';
 import { useDetailActions } from './useDetailActions';
 import { useSettleActions, type RideSettleBridge } from './useSettleActions';
@@ -39,12 +40,14 @@ export function RideDetailScreen({
   onGone,
   settle: bridge,
   message,
+  onOpenProfile,
 }: {
   id: string;
   userId: string;
   onGone: () => void;
   settle: RideSettleBridge;
   message?: RideMessage;
+  onOpenProfile?: (personId: string) => void;
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
@@ -96,123 +99,129 @@ export function RideDetailScreen({
   const meetup = ride !== null && detailPhase(ride, now) === 'meetup' && ride.members !== null;
 
   return (
-    <View style={styles.screen}>
-      <Stack.Screen options={{ title: titleShown ? route : '' }} />
-      <DetailMenu
-        ride={ride}
-        now={now}
-        blocking={blocking.state === 'busy'}
-        message={message && ride && hasThread(ride) ? message : null}
-        onChoose={(item) => {
-          if (!ride) return;
-          if (item === 'block' && ride.organiser) blocking.ask(ride.organiser);
-          if (item === 'leave') void actions.leave();
-          if (item === 'cancel') void actions.cancel();
-          if (item === 'reviseTime') sheets.openTime();
-          if (item === 'editDetails') sheets.openDetails();
-        }}
-      />
-      <ScrollView
-        style={styles.flex}
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.content}
-        scrollEventThrottle={32}
-        onScroll={(event) => {
-          const past = event.nativeEvent.contentOffset.y + headerHeight > routeBottom;
-          if (past !== titleShown) setTitleShown(past);
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={pulling}
-            onRefresh={async () => {
-              setPulling(true);
-              await store.load();
-              setPulling(false);
-            }}
-          />
-        }
-        testID="ride-detail"
-      >
-        {offline ? <OfflineLine text={t('live.offline')} testID="ride-detail-offline" /> : null}
-        {load.kind === 'loading' ? (
-          <ActivityIndicator
-            accessibilityLabel={t('ride.detail.loading')}
-            testID="ride-detail-loading"
-          />
-        ) : null}
-        {load.kind === 'failed' ? (
-          <InlineState
-            text={t('ride.detail.failed')}
-            action={{
-              label: t('ride.detail.retry'),
-              onPress: () => void store.load(),
-              testID: 'ride-detail-retry',
-              busy: load.busy,
-            }}
-            testID="ride-detail-failed"
-          />
-        ) : null}
-        {stale && !meetup && load.kind === 'ready' ? (
-          <InlineState
-            tone="warning"
-            text={t('ride.detail.stale', { time: localClock(load.loadedAt) })}
-            action={{
-              label: t('ride.detail.retry'),
-              onPress: () => void store.load(),
-              testID: 'ride-detail-stale-retry',
-              busy: load.busy,
-            }}
-            testID="ride-detail-stale"
-          />
-        ) : null}
-        {blocking.state === 'failed' ? (
-          <InlineState tone="warning" text={t('block.failed')} testID="ride-detail-block-failed" />
-        ) : null}
-        {ride && load.kind === 'ready' ? (
-          <DetailBody
-            ride={ride}
-            viewerId={userId}
-            now={now}
-            staleAt={stale ? load.loadedAt : null}
-            action={action}
-            actions={actions}
-            onTicketLayout={(event) => {
-              const { y, height } = event.nativeEvent.layout;
-              setRouteBottom(vars['--space-2'] + y + height);
-            }}
-            onEditDetails={sheets.openDetails}
-            settle={settle}
-            onChangeShare={settleSheets.openChange}
-            onReceipt={settleSheets.openReceipt}
-          />
-        ) : null}
-      </ScrollView>
-      <DetailFooter
-        footer={footer}
-        organiserName={organiserName}
-        departLine={departLine}
-        late={ride?.lateUntil != null}
-        busy={busy}
-        error={action.kind === 'failed' ? t(`ride.detail.errors.${action.reason}`) : null}
-        actions={{
-          apply: sheets.openApply,
-          withdraw: () => void actions.withdraw(),
-          arrive: actions.arrive,
-          undoArrive: actions.undoArrive,
-          late: actions.late,
-          notComing: () => void actions.leave(),
-          depart: sheets.openDepart,
-          settle: {
-            reach: () => void settleSheets.reach(),
-            split: settleSheets.openSplit,
-            pay: settle.pay,
-            dispute: settleSheets.openDispute,
-          },
-        }}
-      />
-      <DetailSheets sheets={sheets} viewerId={userId} organiserName={organiserName} now={now} />
-      <SettleSheets sheets={settleSheets} viewerId={userId} organiserName={organiserName} />
-    </View>
+    <ProfileLinkProvider value={onOpenProfile ?? null}>
+      <View style={styles.screen}>
+        <Stack.Screen options={{ title: titleShown ? route : '' }} />
+        <DetailMenu
+          ride={ride}
+          now={now}
+          blocking={blocking.state === 'busy'}
+          message={message && ride && hasThread(ride) ? message : null}
+          onChoose={(item) => {
+            if (!ride) return;
+            if (item === 'block' && ride.organiser) blocking.ask(ride.organiser);
+            if (item === 'leave') void actions.leave();
+            if (item === 'cancel') void actions.cancel();
+            if (item === 'reviseTime') sheets.openTime();
+            if (item === 'editDetails') sheets.openDetails();
+          }}
+        />
+        <ScrollView
+          style={styles.flex}
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.content}
+          scrollEventThrottle={32}
+          onScroll={(event) => {
+            const past = event.nativeEvent.contentOffset.y + headerHeight > routeBottom;
+            if (past !== titleShown) setTitleShown(past);
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={pulling}
+              onRefresh={async () => {
+                setPulling(true);
+                await store.load();
+                setPulling(false);
+              }}
+            />
+          }
+          testID="ride-detail"
+        >
+          {offline ? <OfflineLine text={t('live.offline')} testID="ride-detail-offline" /> : null}
+          {load.kind === 'loading' ? (
+            <ActivityIndicator
+              accessibilityLabel={t('ride.detail.loading')}
+              testID="ride-detail-loading"
+            />
+          ) : null}
+          {load.kind === 'failed' ? (
+            <InlineState
+              text={t('ride.detail.failed')}
+              action={{
+                label: t('ride.detail.retry'),
+                onPress: () => void store.load(),
+                testID: 'ride-detail-retry',
+                busy: load.busy,
+              }}
+              testID="ride-detail-failed"
+            />
+          ) : null}
+          {stale && !meetup && load.kind === 'ready' ? (
+            <InlineState
+              tone="warning"
+              text={t('ride.detail.stale', { time: localClock(load.loadedAt) })}
+              action={{
+                label: t('ride.detail.retry'),
+                onPress: () => void store.load(),
+                testID: 'ride-detail-stale-retry',
+                busy: load.busy,
+              }}
+              testID="ride-detail-stale"
+            />
+          ) : null}
+          {blocking.state === 'failed' ? (
+            <InlineState
+              tone="warning"
+              text={t('block.failed')}
+              testID="ride-detail-block-failed"
+            />
+          ) : null}
+          {ride && load.kind === 'ready' ? (
+            <DetailBody
+              ride={ride}
+              viewerId={userId}
+              now={now}
+              staleAt={stale ? load.loadedAt : null}
+              action={action}
+              actions={actions}
+              onTicketLayout={(event) => {
+                const { y, height } = event.nativeEvent.layout;
+                setRouteBottom(vars['--space-2'] + y + height);
+              }}
+              onEditDetails={sheets.openDetails}
+              settle={settle}
+              onChangeShare={settleSheets.openChange}
+              onReceipt={settleSheets.openReceipt}
+            />
+          ) : null}
+        </ScrollView>
+        <DetailFooter
+          footer={footer}
+          organiserName={organiserName}
+          departLine={departLine}
+          late={ride?.lateUntil != null}
+          busy={busy}
+          error={action.kind === 'failed' ? t(`ride.detail.errors.${action.reason}`) : null}
+          actions={{
+            apply: sheets.openApply,
+            withdraw: () => void actions.withdraw(),
+            arrive: actions.arrive,
+            undoArrive: actions.undoArrive,
+            late: actions.late,
+            notComing: () => void actions.leave(),
+            depart: sheets.openDepart,
+            settle: {
+              reach: () => void settleSheets.reach(),
+              split: settleSheets.openSplit,
+              pay: settle.pay,
+              dispute: settleSheets.openDispute,
+            },
+          }}
+        />
+        <DetailSheets sheets={sheets} viewerId={userId} organiserName={organiserName} now={now} />
+        <SettleSheets sheets={settleSheets} viewerId={userId} organiserName={organiserName} />
+      </View>
+    </ProfileLinkProvider>
   );
 }
 
