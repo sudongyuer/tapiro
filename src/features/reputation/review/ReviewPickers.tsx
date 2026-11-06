@@ -1,6 +1,12 @@
-import type { Ref } from 'react';
+import { useEffect, type Ref } from 'react';
 import { PlatformColor, Pressable, StyleSheet, View, type ViewInstance } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { uiVerifyReduceMotion } from '@/lib/uiVerify';
@@ -19,6 +25,27 @@ const DIM_SCALE = 0.88;
 const DIM_OPACITY = 0.35;
 const CHIP_HEIGHT = 36;
 const CHIP_SLOP = (44 - CHIP_HEIGHT) / 2;
+
+function FaceArt({ face, dimmed, reduced }: { face: Face; dimmed: boolean; reduced: boolean }) {
+  const dim = useSharedValue(0);
+  useEffect(() => {
+    dim.set(
+      withTiming(dimmed ? 1 : 0, {
+        duration: vars['--duration-settle'],
+        reduceMotion: ReduceMotion.Never,
+      }),
+    );
+  }, [dim, dimmed]);
+  const style = useAnimatedStyle(() => ({
+    opacity: 1 - (1 - DIM_OPACITY) * dim.value,
+    transform: [{ scale: reduced ? 1 : 1 - (1 - DIM_SCALE) * dim.value }],
+  }));
+  return (
+    <Animated.View style={style}>
+      <ReviewFace face={face} size={FACE_SIZE} />
+    </Animated.View>
+  );
+}
 
 export function FacePicker({
   picked,
@@ -50,17 +77,7 @@ export function FacePicker({
             style={styles.face}
           >
             <View ref={selected ? pickedRef : undefined}>
-              <Animated.View
-                style={[
-                  FACE_TRANSITION,
-                  {
-                    opacity: dimmed ? DIM_OPACITY : 1,
-                    transform: [{ scale: dimmed && !reduced ? DIM_SCALE : 1 }],
-                  },
-                ]}
-              >
-                <ReviewFace face={face} size={FACE_SIZE} />
-              </Animated.View>
+              <FaceArt face={face} dimmed={dimmed} reduced={reduced} />
             </View>
             <AppText
               variant="body"
@@ -121,11 +138,6 @@ export function ChipPicker({
     </View>
   );
 }
-
-const FACE_TRANSITION = {
-  transitionProperty: ['opacity', 'transform'],
-  transitionDuration: vars['--duration-settle'],
-} as const;
 
 const styles = StyleSheet.create({
   faces: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' },
