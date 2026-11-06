@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import apply_pill, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, by_id, reach_home, token  # noqa: E402
+from driver import UI, by_id, luma, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
@@ -82,6 +82,9 @@ for part in ('-title', '-reward', '-apply', '-meta'):
     assert by_id(ui.read(), FIRST + part) is None, f'{FIRST + part} is a separate VoiceOver element'
 
 shot = ui.snap('01-top')
+# The stage stays light in both appearances, so the clock must be dark ink; pixels, since AX cannot see the status bar.
+darkest = min(luma(rgb) for rgb in shot.pixels({'x': 50, 'y': 20, 'width': 50, 'height': 24}))
+assert darkest < 90, f'the status bar is light over the light stage in {ui.appearance}: darkest luma {darkest:.0f}'
 f = first['frame']
 urgent = token('--color-urgent', ui.appearance)
 clock = ink_box(shot, column(f, 14, 18), urgent, 40)

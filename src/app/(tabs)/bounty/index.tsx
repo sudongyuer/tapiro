@@ -1,5 +1,4 @@
 import { Stack, useIsFocused, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useCallback, useRef, useState, type RefObject } from 'react';
 import {
   type NativeScrollEvent,
@@ -100,7 +99,6 @@ function BountyHome({ user }: { user: AccountUser }) {
 
   return (
     <>
-      {focused ? <StatusBar style="dark" /> : null}
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
           icon="plus"
