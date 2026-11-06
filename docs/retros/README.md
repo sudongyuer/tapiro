@@ -92,3 +92,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-06 | rep + coins server        | pending         | 3             | ~10 min (SQL name scope, tap-route test)     | 0                       | pending               |
 | 2026-11-06 | pay copy feedback         | 0               | 0             | ~0 (one diagnostic case)                     | 0                       | 0                     |
 | 2026-11-06 | rep + coins client core   | pending         | 2             | ~5 min (one pgTAP grant slip)                | 0                       | pending               |
+| 2026-11-06 | 6 profile (Task 5)        | pending         | 3             | ~40 min (row hit areas, Simulator timeouts)  | 0                       | pending               |

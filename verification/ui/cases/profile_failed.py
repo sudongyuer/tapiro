@@ -24,8 +24,9 @@ assert ui.t('reputation.profile.failed') in (by_id(items, 'profile-failed').get(
 for missing in ('profile-name', 'profile-no-reviews', 'profile-helped'):
     assert by_id(items, missing) is None, f'{missing} shows on a failed load'
 assert not [i for i in items if i.get('AXLabel') == ui.t('reputation.profile.more')], '⋯ shows with no profile'
+assert rep_calls(ui, 'profile', 1, timeout=15), 'the first profile read never reached the call log'
 time.sleep(2)  # a replay would follow the failed answer
-reads = rep_calls(ui, 'profile', 2, timeout=2)
+reads = rep_calls(ui, 'profile', 2, timeout=3)
 assert len(reads) == 1, f'the failed read was repeated on its own: {reads} {defaults(ui, "uiVerifyRepCalls")}'
 ui.at_rest()
 ui.capture('01-failed')

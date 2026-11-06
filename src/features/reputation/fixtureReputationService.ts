@@ -175,7 +175,7 @@ export function createFixtureReputationService({
       );
       if (personId === FIXTURE_GONE_PERSON_ID) throw new ProfileGoneError();
       return {
-        ...fixtureProfile(personId, data, now(), reviews),
+        ...fixtureProfile(personId, data, now(), seenBy(personId, reviews)),
         blockedByMe: isBlocked(personId),
       };
     },

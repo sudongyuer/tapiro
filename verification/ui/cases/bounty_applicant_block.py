@@ -9,9 +9,10 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import tap_sheet_action  # noqa: E402
 from choose import AIMAN, HANA, HOLD, JIE, hold_reads, row_id  # noqa: E402
 from driver import UI, by_id  # noqa: E402
+from gestures import drag  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/features/block/', 'src/ui/HoldButton.tsx',
-        'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py', 'src/features/place/']
+        'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py', 'verification/ui/gestures.py', 'src/features/place/']
 SCENE = 'bounty-applicants'
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '6000']
@@ -30,7 +31,7 @@ def menu_for(applicant, name):
         if clear >= min(row['height'], 44):
             break
         x = row['x'] + row['width'] / 2
-        ui.swipe((x, hold['y'] - 20), (x, hold['y'] - 20 - (row['height'] - clear) - 40), 0.4)
+        drag(ui, (x, hold['y'] - 20), (x, hold['y'] - 20 - (row['height'] - clear) - 40))
     ui.press_at({**row, 'height': min(row['height'], clear)}, LONG_PRESS_S)
     return ui.labelled(ui.t('block.menu', name=name))
 
@@ -101,7 +102,10 @@ ui.capture('06-checked-blocked')
 
 # Scrolling in menu_for minimises the tab bar; scrolling back up brings it back.
 f = ui.element(HOLD)['frame']
-ui.swipe((f['x'] + f['width'] / 2, f['y'] * 0.45), (f['x'] + f['width'] / 2, f['y'] * 0.9), 0.4)
+for _ in range(3):
+    if by_id(ui.read(), 'tab-me'):
+        break
+    drag(ui, (f['x'] + f['width'] / 2, f['y'] * 0.45), (f['x'] + f['width'] / 2, f['y'] * 0.9))
 ui.tap('tab-me')
 ui.tap('me-blocked')
 ui.element('blocked-screen')

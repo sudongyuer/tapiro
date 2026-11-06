@@ -6,8 +6,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from gestures import drag  # noqa: E402
-from profile import (assert_order, label, open_profile,  # noqa: E402
-                     review_id)
+from profile import assert_order, label, open_profile, review_id, scroll_to  # noqa: E402
 
 DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'src/features/stickers/']
 SCENE = 'profile'
@@ -47,7 +46,7 @@ line = f"{ui.t('reputation.face.happy')} · {ui.t('reputation.chip.helper.on_tim
 assert reply.get('AXLabel') == ui.t('reputation.reply.actionA11y', review=line), reply.get('AXLabel')
 assert_touch_target(reply, '回复')
 assert by_id(items, f'{review_id(2)}-reply-button') is None, 'an answered review still offers 回复'
-ride = label(ui, review_id(3))
+ride = scroll_to(ui, review_id(3)).get('AXLabel') or ''
 assert 'Mei' in ride and '双威 → KLIA2' in ride, f'your own ride review hides its route or reviewer: {ride}'
 answered = label(ui, f'{review_id(2)}-reply')
 assert answered.startswith(ui.t('reputation.reply.mine')), answered

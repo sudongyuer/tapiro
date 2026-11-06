@@ -53,6 +53,7 @@ const fill = frame({ maxWidth: Infinity, alignment: 'leading' });
 const target = [
   frame({ maxWidth: Infinity, minHeight: vars['--touch-min'], alignment: 'topLeading' }),
   contentShape(shapes.rectangle()),
+  multilineTextAlignment('leading'),
 ];
 const NO_INSETS = listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 });
 
