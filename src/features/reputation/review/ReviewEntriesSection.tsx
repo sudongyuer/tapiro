@@ -36,9 +36,10 @@ function EntryBody({ entry, target }: { entry: ReviewEntry; target: ReviewTarget
     <HStack
       spacing={vars['--space-3']}
       modifiers={[
-        accessibilityElement('ignore'),
-        accessibilityLabel(entry.label),
-        accessibilityIdentifier(`review-entry-${entry.id}`),
+        accessibilityElement(target ? 'combine' : 'ignore'),
+        ...(target
+          ? []
+          : [accessibilityLabel(entry.label), accessibilityIdentifier(`review-entry-${entry.id}`)]),
         contentShape(shapes.rectangle()),
       ]}
     >
@@ -113,7 +114,12 @@ export function ReviewEntriesSection({
         {entries.map((entry) => {
           const { target } = entry;
           return target ? (
-            <Button key={entry.id} onPress={() => open(target)} testID={`review-open-${entry.id}`}>
+            <Button
+              key={entry.id}
+              onPress={() => open(target)}
+              testID={`review-entry-${entry.id}`}
+              modifiers={[accessibilityLabel(entry.label)]}
+            >
               <EntryBody entry={entry} target={target} />
             </Button>
           ) : (

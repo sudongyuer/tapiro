@@ -37,7 +37,7 @@ ui.tap('review-sealed-ok')
 ui.gone(SHEET)
 ui.wait_label(ROW, lambda value: ui.t('reputation.entry.public') in value, 'the row never read public', 20)
 assert ui.t('reputation.face.happy') in label(ui, ROW)
-assert by_id(ui.read(), f'review-open-fixture-person-lin') is None, 'a public review still opens the sheet'
+assert by_id(ui.read(), ROW).get('type') != 'Button', 'a public review still opens the sheet'
 ui.at_rest()
 shot(ui, '03-public')
 print('PASS: the waiting line, the reveal and the failed read')
