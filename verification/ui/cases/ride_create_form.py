@@ -10,7 +10,8 @@ import time
 from datetime import datetime
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_label_reads, assert_touch_target, by_id, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, token  # noqa: E402
+from readable import assert_label_reads  # noqa: E402
 from ride import form_scroll_to, open_form, open_list, picker_clock, step  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py',

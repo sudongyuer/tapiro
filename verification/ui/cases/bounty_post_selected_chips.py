@@ -5,9 +5,10 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import form_scroll_to, open_post, value  # noqa: E402
-from driver import UI, assert_label_reads, by_id, token  # noqa: E402
+from driver import UI, by_id, token  # noqa: E402
+from readable import assert_label_reads  # noqa: E402
 
-DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'verification/ui/bounty.py', 'verification/ui/driver.py']
+DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'verification/ui/bounty.py', 'verification/ui/readable.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 180
 

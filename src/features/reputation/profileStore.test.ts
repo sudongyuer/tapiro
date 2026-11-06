@@ -208,9 +208,7 @@ describe('reply in flight', () => {
           if (cursor === 'c1') return more.promise;
           if (cursor === 'c2') return Promise.resolve(page(['r3'], null));
           heads += 1;
-          return Promise.resolve(
-            heads === 1 ? page(['r2', 'r3'], 'c1') : page(['r1', 'r2'], 'c2'),
-          );
+          return Promise.resolve(heads === 1 ? page(['r2', 'r3'], 'c1') : page(['r1', 'r2'], 'c2'));
         },
       }),
     );
