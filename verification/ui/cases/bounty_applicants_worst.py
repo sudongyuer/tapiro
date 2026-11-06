@@ -14,6 +14,7 @@ from board import screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from choose import hold_select  # noqa: E402
 from driver import UI, assert_touch_target, by_id, dominant, reach_home  # noqa: E402
+from gestures import drag  # noqa: E402
 from ocr import find, lines  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/detail/', 'src/features/bounty/board/',
@@ -73,17 +74,18 @@ def label(identifier):
 
 def scroll(share):
     s = screen(ui.read())
-    ui.swipe((s['width'] / 2, s['height'] * 0.6), (s['width'] / 2, s['height'] * (0.6 - share)), 0.8)
+    drag(ui, (s['width'] / 2, s['height'] * 0.6), (s['width'] / 2, s['height'] * (0.6 - share)))
 
 
 def reveal(identifier, tries=12):
     for _ in range(tries):
+        ui.at_rest()
         items = ui.read()
         found, hold = by_id(items, identifier), by_id(items, HOLD)
         limit = hold['frame']['y'] if hold else screen(items)['height']
         if found and found['frame']['y'] + found['frame']['height'] <= limit - 4 and found['frame']['y'] > 100:
-            return ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')
-        scroll(0.3)
+            return found
+        scroll(-0.2 if found and found['frame']['y'] <= 100 else 0.3)
     raise AssertionError(f'{identifier} never scrolled fully above the hold button')
 
 
@@ -183,6 +185,19 @@ def head_outline(shot, f, bottom):
     return len(light) / shot.scale ** 2, light[len(light) // 2]
 
 
+# Vision OCR misreads glyphs on the dark hold button (按 as 接, Tahan as Tanan, pilih as piih on iOS 27.2), so each end
+# of the label is matched with the two name characters beside it, allowing one edit per five characters (at least one):
+# a cut verb takes the start of the name with it, and the name's middle ellipsis keeps both of its ends.
+def appears(part, text):
+    slack = max(1, len(part) // 5) if len(part) >= 4 else 0
+    row = [0] * (len(text) + 1)
+    for i, a in enumerate(part, 1):
+        diagonal, row[0] = row[0], i
+        for j, b in enumerate(text, 1):
+            diagonal, row[j] = row[j], min(row[j] + 1, row[j - 1] + 1, diagonal + (a != b))
+    return min(row) <= slack
+
+
 def assert_hold(name, shot_name):
     hold = ui.wait_label(HOLD, lambda text: text == ui.t('bounty.select.hold.label', name=name),
                          'the hold button does not name the chosen applicant')
@@ -194,8 +209,10 @@ def assert_hold(name, shot_name):
     inside = [line['text'] for line in read if find([line], '.', f)]
     print(f'{shot_name}: hold {f}, text {inside}')
     shown = ''.join(inside).replace(' ', '')
-    for part in ui.t('bounty.select.hold.label', name='\0').split('\0'):
-        assert part.replace(' ', '') in shown, f'the verb {part!r} is cut from the hold label: {inside}'
+    head, tail = (part.replace(' ', '') for part in ui.t('bounty.select.hold.label', name='\0').split('\0'))
+    compact = name.replace(' ', '')
+    for end in (head + compact[:2], compact[-2:] + tail):
+        assert appears(end, shown), f'{end!r} is cut from the hold label: {inside}'
     return hold
 
 

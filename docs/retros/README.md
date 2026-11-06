@@ -86,3 +86,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-06 | chat client core          | pending         | 1             | ~5 min (one test timeout)                    | 0                       | pending               |
 | 2026-11-06 | chat thread spike         | pending         | 0             | ~1 h (scroll range under NativeTabs)         | 0                       | pending               |
 | 2026-11-06 | chat list (Task 4)        | pending         | 2             | ~45 min (AXe gestures on iOS 27.2, a stall)  | 0                       | pending               |
+| 2026-11-06 | live updates milestone    | 0               | 4             | ~40 min (AXe gestures and OCR on iOS 27.2)   | 0                       | 0                     |
