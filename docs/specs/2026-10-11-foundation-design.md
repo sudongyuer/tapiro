@@ -694,14 +694,14 @@ Steps 5, 6 and 8 remain; the spec stays `approved`.
 
 ### Deviations from the design
 
-| Design said                                                           | Shipped                                                                                                | Why                                                                          | Confirmed by                                   |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------- |
-| Applicants get a thread with the poster before selection              | A bounty thread opens at `assigned`; an application carries one short note                             | Bounty decision 8A                                                           | owner, bounty spec 8A                          |
-| Long-press → 翻译 / 举报                                              | 复制 / 举报; 翻译 and 问小貘 drafts arrive with step 8                                                 | 小貘体力 and the AI path are step 8                                          | owner, 2026-11-05 (121 A)                      |
-| Report and block on every profile                                     | No profile screen; 举报 / 屏蔽 in the thread ⋯ menu and on each message                                | A profile has no content until reviews (step 6)                              | owner, 2026-11-05 (127 A)                      |
-| (not in the design) read receipts                                     | 已读 under your newest message, bounty threads only                                                    | Urgent errands decide between waiting and calling                            | owner, 2026-11-05 (125 B)                      |
-| (not in the design) entry points                                      | 发消息 on the status screen and home card; 群聊 in the ride detail's bar; hidden until a thread exists | Canvas 126 A; ride entry not drawn                                           | owner 126 A; ride placement ★ default, for veto |
-| UI details beyond the answers                                         | The ★ defaults in the plan's defaults sections (server, client core, list, thread, report and block, images, entries) | Owner: 「都按推荐」, decide UI details and record them                 | ★, accepted by the owner 2026-11-06            |
+| Design said                                              | Shipped                                                                                                               | Why                                                    | Confirmed by                                    |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------- |
+| Applicants get a thread with the poster before selection | A bounty thread opens at `assigned`; an application carries one short note                                            | Bounty decision 8A                                     | owner, bounty spec 8A                           |
+| Long-press → 翻译 / 举报                                 | 复制 / 举报; 翻译 and 问小貘 drafts arrive with step 8                                                                | 小貘体力 and the AI path are step 8                    | owner, 2026-11-05 (121 A)                       |
+| Report and block on every profile                        | No profile screen; 举报 / 屏蔽 in the thread ⋯ menu and on each message                                               | A profile has no content until reviews (step 6)        | owner, 2026-11-05 (127 A)                       |
+| (not in the design) read receipts                        | 已读 under your newest message, bounty threads only                                                                   | Urgent errands decide between waiting and calling      | owner, 2026-11-05 (125 B)                       |
+| (not in the design) entry points                         | 发消息 on the status screen and home card; 群聊 in the ride detail's bar; hidden until a thread exists                | Canvas 126 A; ride entry not drawn                     | owner 126 A; ride placement ★ default, for veto |
+| UI details beyond the answers                            | The ★ defaults in the plan's defaults sections (server, client core, list, thread, report and block, images, entries) | Owner: 「都按推荐」, decide UI details and record them | ★, accepted by the owner 2026-11-06             |
 
 ### Bugs fixed during implementation
 
@@ -741,4 +741,89 @@ Steps 5, 6 and 8 remain; the spec stays `approved`.
 - An organiser whose riders all left keeps the thread but loses 群聊 (the thread stays in 消息).
 - Secondary pills in the status screen's pinned bar are translucent over scrolled content (also 有问题, before this
   step).
+- No admin tool for the report queue (`private.report_queue`, service role only).
+
+## Implementation Record (2026-11-07) — step 6 and the account-free part of step 5: reviews, reputation, mascot level, coins in 我的, weekly feed, invites
+
+PR: #85, #87, #88, #90–#98, and `chore/reputation-wrap-up` (this PR) · Plan: `docs/plans/2026-11-06-reviews-profile-coins.md`
+(done). Research: `docs/research/2026-11-06-reviews-profile.md`. The IAP spike and purchases of step 5 wait on the paid
+account, and steps 8 and 9 remain; the spec stays `approved`.
+
+### What was built
+
+- Server (#85): `reviews`, `review_replies`, `tier_drops`, `mascot_progress`, `weekly_feeds`, `invite_codes`, `invites`
+  with RLS on and no client grants; every read and write a `security definer` RPC; the review share in 靠谱度; review
+  signals through the `events` outbox (#87). Evidence: `supabase/migrations/20261106000400_reviews.sql` to
+  `20261106001000_ride_review_details.sql`; pgTAP `supabase/tests/reviews.test.sql`, `reputation_reviews.test.sql`,
+  `mascot_profile.test.sql`, `review_signals.test.sql`, `ride_review.test.sql`, `ride_settle_review.test.sql`,
+  `weekly_feed_invites.test.sql`.
+- Client core (#87): `src/features/reputation/` and `src/features/coins/` with services, fixture services, stores that
+  never show a failed load as empty, a live handler, and copy in zh-Hans, en and ms.
+- Review sheet with the envelope seal (#93, 239 A, 240 A, 244 A, 257 a1); review entries under 已结清, on a closed ride
+  and on home (#94, 238 A, 241 A, 242 A). Cases `review_sheet*`, `review_entry_*`.
+- Profile, 全部评价, 回复, ⋯ 举报 / 屏蔽, five entries and the gone state (#88, 243 A, 245–247 A). Cases `profile_*`.
+- Tier-drop sheet (#90, 248 A). Cases `tier_drop_*`.
+- 小貘 grows on the stage, 「小貘长大的时刻」, the accessory picker (#95, 249 B, 250 A, 257 b1). Cases `mascot_*`.
+- 貘币 row and page (#91, 251 A, 252 A); 邀请朋友 (#92, 255 A); the weekly feed on the stage (#96, 253 A, 254 A, 257 c1).
+  Cases `coins_page*`, `invite_*`, `weekly_feed*`.
+- 258 A (#97): a closed ride counts as settled toward 靠谱度 with or without a Tapiro payment, one row per organiser–rider
+  pair, a lone organiser one settled item and no person, counted back from the close.
+  `supabase/migrations/20261107000000_rides_count_settled.sql`, `supabase/tests/ride_settled_reputation.test.sql`.
+- 259 A (#98): long-press a review on a profile or 全部评价 to report it; a snapshot of face, chips and sentence follows
+  the report retention; sealed reviews and the author cannot report. `supabase/migrations/20261107000100_report_review.sql`,
+  `supabase/tests/report_review.test.sql`, cases `profile_report_review*`.
+- Fixes the screens rely on: the whole pinned bottom bar is opaque (#99, case `bounty_bar_opaque`); selected chips and
+  the home status bar readable in dark, review and coin paging around a reload (#100, cases
+  `bounty_post_selected_chips`, `home_status_bar`).
+
+### Deviations from the design
+
+| Design said                                                  | Shipped                                                                                                                                 | Why                                                                        | Confirmed by                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------- |
+| 靠谱度 inputs include on-time payment                        | The on-time share stays in the snapshot and gates no tier                                                                               | The tier thresholds of 2026-10-27 (`private.tier_for`) stay                | plan 「Decided」, story `rep.tier.inputs`   |
+| A settled item is a settled payment                          | A closed ride counts with or without a Tapiro payment                                                                                   | A Grab-split ride would never count; the farming this opens is in the plan | owner, 2026-11-06 (258 A)                   |
+| Invite: 3 to each side after the friend's first settled item | After the friend's first item with someone other than the inviter                                                                       | Plan 「★ Server defaults」, the reward rule                                | ★ server default, accepted 2026-11-06       |
+| Purchase through a StoreKit sheet                            | 买貘币 is not shown; IAP not built                                                                                                      | Waits on the paid account                                                  | owner, 2026-11-06 (252 A)                   |
+| (not in the design) ride reviews on public profiles          | Others read only 「拼车」, without route or reviewer                                                                                    | A ride's start can point at a home                                         | owner, 2026-11-06 (256 A)                   |
+| (not in the design) reporting a review                       | Long-press 举报 on a shown review                                                                                                       | A review sentence is public free text                                      | owner, 2026-11-06 (259 A)                   |
+| Lv2–5 accessories hand drawn                                 | Stand-in art for 小红帽, 书包, 雨伞, 围巾                                                                                               | The art is a separate drawing task                                         | plan gap 5                                  |
+| UI details beyond the answers                                | The ★ defaults in the plan's sections (server, client core, review, entries, profile, tier drop, mascot, coins, feed, invite, 258, 259) | Owner: decide UI details and record them                                   | ★; Tasks 1, 2, 5, 6 accepted, the rest veto |
+
+### Bugs fixed during implementation
+
+- **Symptom:** 留着草稿 and 放弃 reopened the alert. **Root cause:** a prevented navigation action is prevented again; the
+  Expo Router `usePreventRemove` hands the callback `repeat()`. **Fix:** #93, `docs/retros/2026-11-06-review-sheet.md`.
+- **Symptom:** a review report would merge with a person report and could block account deletion. **Root cause:**
+  `reports_person_once` covered every row with no message; a nulled foreign key collided. **Fix:** #98,
+  `docs/retros/2026-11-07-report-review.md`.
+- **Symptom:** a fast `fed` answer let a second tap replace the thanks with 吃饱啦. **Root cause:** the tap guard followed
+  the request. **Fix:** `createFeedGate`, #96, `docs/retros/2026-11-07-weekly-feed.md`.
+- **Symptom:** selected chips at 1.15:1 in dark, a white clock over the home stage, 全部评价 paging that could stop for
+  good. **Fix:** #100, `docs/retros/2026-11-07-dark-selected-and-paging.md`.
+- Other steps' bugs are in their retros: `docs/retros/2026-11-06-{rep-client-core,profile,tier-drop,coins-page,invite-page,review-sheet,review-entries}.md`,
+  `docs/retros/2026-11-07-{mascot-level,rides-count-settled}.md`.
+
+### Verification
+
+- Fast checks on this PR: `bun test` 2268 pass; `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map`, `check:size`, `design-check` pass. pgTAP not rerun: no SQL
+  here; the last full local run is in `docs/status.md`, and #97 and #98 ran their own files.
+- Copy: every key of the zh-Hans, en and ms objects (1841) exists and is non-empty in all three, with the same
+  placeholders.
+- Milestone run on current main (2026-11-07; app built from 737d582; the selection and reasons are in
+  `docs/retros/2026-11-07-reputation-wrap-up.md`): zh-Hans light 90 cases and zh-Hans dark 25 all ended in a passing
+  assertion. Three of the light ones (`mascot_accessory_failed`, `profile_entry_detail`, `sticker_book_labels`) and dark `review_sheet` lost only
+  their recording on the last run. en light: 6 of 13 before the time limit; ms: not reached. No product bug found. `verify:smoke` 4 of 4.
+- First-run failures, all rerun: automation-session timeouts (a stuck `Tapiro Verify`, load up to 175);
+  `sticker_book` (a 0.3 s swipe no longer pages on iOS 27.2; the case now swipes for 0.8 s);
+  `mascot_level_collapsed` and `home_settled_collect` under load (passed alone with `--workers 1`);
+  `profile_entry_ride` (a dropped tap on the back button).
+
+### Known limits
+
+- `rep.reviews.live` has no UI case: the review fixture does not change on a signal, so the reload of an open screen is
+  covered by unit and pgTAP only (`docs/story-map.md`).
+- Device checks: the seal's motion and haptic, the grow and chew motion, VoiceOver actions on the stage, the share sheet.
+- 258 A opens farming through Grab rides with friends (plan, 「★ 258 defaults」); tuned after launch.
+- Accessory art is stand-in. A reload that shrinks a long list may need a scroll to page again (`docs/status.md`, Queue).
 - No admin tool for the report queue (`private.report_queue`, service role only).
