@@ -163,6 +163,29 @@ describe('coins store', () => {
     ]);
   });
 
+  test('a next page wanted before sign-out is not read for the next account', async () => {
+    const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    const before: (number | null)[] = [];
+    const page = { items: [row(3, '2026-11') as CoinRow], hasMore: true, nextCursor: 3 };
+    const { store } = setup({
+      history: (cursor) => {
+        before.push(cursor);
+        return before.length === 2 ? first.promise : Promise.resolve(page);
+      },
+    });
+    await store.reloadHistory();
+    const reloading = store.reloadHistory();
+    await store.loadMoreHistory();
+    store.clear();
+    store.start('other');
+    await store.reloadHistory();
+    first.resolve(page);
+    await reloading;
+    await store.reloadHistory();
+    await settle();
+    expect(before).toEqual([null, null, null, null]);
+  });
+
   test('a next page asked for while the first page is being read loads once that read lands', async () => {
     const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
     const before: (number | null)[] = [];

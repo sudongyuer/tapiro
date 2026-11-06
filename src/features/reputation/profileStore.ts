@@ -181,9 +181,10 @@ export function createProfileStore({
     const now = get().reviews[personId];
     if (!current(userId, at) || !requests.isLatest(key, request)) return;
     if (!now || now.status === 'idle' || !now.data) return;
-    if (!page || requests.latest(listKey(personId)) !== head) {
-      setList(personId, { ...now, data: { ...now.data, more: page ? 'idle' : 'failed' } });
-      if (page) void loadMore(personId);
+    const moved = requests.latest(listKey(personId)) !== head;
+    if (!page || moved) {
+      setList(personId, { ...now, data: { ...now.data, more: moved ? 'idle' : 'failed' } });
+      if (moved) void loadMore(personId);
       return;
     }
     const seen = new Set(now.data.items.map((row) => row.id));

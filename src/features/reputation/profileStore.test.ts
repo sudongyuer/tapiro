@@ -287,7 +287,8 @@ describe('reply in flight', () => {
       fakeService({
         profileReviews: (_id, cursor) => {
           before.push(cursor);
-          return before.length === 1 ? Promise.resolve(page(['r1'], 'c')) : head.promise;
+          if (before.length === 2) return head.promise;
+          return Promise.resolve(page(['r1'], 'c'));
         },
       }),
     );
@@ -296,10 +297,38 @@ describe('reply in flight', () => {
     const reloading = store.reloadList('p1');
     await store.loadMore('p1');
     store.clear();
+    store.start('other');
+    store.openReviews('p1');
+    await settle();
     head.resolve(page(['r1'], 'c'));
     await reloading;
     await settle();
-    expect(before).toEqual([null, null]);
+    await store.reloadList('p1');
+    await settle();
+    expect(before).toEqual([null, null, null, null]);
+  });
+
+  test('a failed page that outlives a head read leaves no retry row on a list with no more', async () => {
+    const more = deferred<ReviewPage>();
+    let heads = 0;
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, cursor) => {
+          if (cursor) return more.promise;
+          heads += 1;
+          return Promise.resolve(heads === 1 ? page(['r1'], 'c') : page(['r0', 'r1'], null));
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    const loadingMore = store.loadMore('p1');
+    await store.reloadList('p1');
+    more.reject(new Error('x'));
+    await loadingMore;
+    await settle();
+    const list = store.getSnapshot().reviews.p1;
+    expect(list.status !== 'idle' && list.data?.more).toBe('idle');
   });
 
   test('a page appended to a stale list keeps it stale', async () => {
