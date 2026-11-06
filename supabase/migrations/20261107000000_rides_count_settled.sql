@@ -116,7 +116,8 @@ begin
 end;
 $$;
 
--- A close running the old function must commit before the loop reads, or it would never be counted.
+-- Waits for closes already committing, so the loop reads them. A close that starts under the old function and blocks
+-- here stays uncounted; the function is idempotent, so a second run of this loop would pick it up.
 do $$
 declare
   closed uuid;

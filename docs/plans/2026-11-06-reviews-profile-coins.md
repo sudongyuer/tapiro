@@ -193,7 +193,7 @@ pays for the whole ride, and S1 multiplies it for the organiser:
 - **Friends on a Grab ride, the strong case.** One ride with 2 friends gives the organiser 2 settled and 2 people, which
   is 靠谱 at the next recompute (no account age). One ride with 5 friends (seats go up to 6) gives 5 and 5, which is 很靠谱
   but for the 60 days of account age; three such rides with different friends pass the 12 and 8 of 貘友 but for its 180
-  days. Each friend gets +1 settled and +1 person per ride. A paid ride counts the same today and needs no money either:
+  days. Each friend gets +1 settled per ride and +1 person per new organiser. A paid ride counts the same today and needs no money either:
   with a cash method the payee confirms from `due`. 258 A removes the step of opening and confirming the payments.
 - **Alone.** Raises `settled` and the completion rate but never the people count, so it cannot lift a new account to
   靠谱. It can wash no-shows out of the rate (at 12 settled, 8 people and 3 no-shows the rate is 0.80; 45 lone rides make
