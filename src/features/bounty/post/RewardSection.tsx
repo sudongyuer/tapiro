@@ -44,6 +44,7 @@ import {
 import type { BountyCategory } from '@/lib/stickers/category';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import { FieldRow, ROW_INSETS } from '@/ui/FieldRow';
 import { rewardAmounts, rewardSuggestion } from './postKinds';
@@ -124,6 +125,7 @@ export function RewardSection({
   onBlur: (focused: boolean) => void;
 }) {
   const { t, language } = useI18n();
+  const { color } = useTheme();
   const input = useRef<TextFieldRef>(null);
   const limits = rewardLimits(currency);
   const money = (major: number) =>
@@ -171,24 +173,26 @@ export function RewardSection({
       <HStack spacing={vars['--space-2']} modifiers={[ROW_INSETS]}>
         {rewardAmounts(category, currency).map((major) => {
           const label = money(major);
+          const on = typed === String(major);
           return (
             <Button
               key={major}
               onPress={() => onAmount(String(major))}
               testID={`bounty-post-amount-${major}`}
               modifiers={[
-                buttonStyle(typed === String(major) ? 'borderedProminent' : 'bordered'),
+                buttonStyle(on ? 'borderedProminent' : 'bordered'),
                 buttonBorderShape('capsule'),
                 controlSize('regular'),
                 frame({ maxWidth: Infinity }),
                 accessibilityLabel(t('bounty.post.form.amountLabel', { amount: label })),
-                ...(typed === String(major) ? [accessibilityAddTraits(['isSelected'])] : []),
+                ...(on ? [accessibilityAddTraits(['isSelected'])] : []),
               ]}
             >
               <Text
                 modifiers={[
                   lineLimit(1),
                   frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+                  ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
                 ]}
               >
                 {label}

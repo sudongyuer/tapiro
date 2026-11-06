@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_touch_target  # noqa: E402
+from driver import UI, assert_label_reads, assert_touch_target, by_id  # noqa: E402
 from ride import form_scroll_to, open_form, open_list, picker_clock, step  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py',
@@ -62,6 +62,9 @@ ui.tap('ride-form-pick-0')
 gather = re.compile(ui.pattern('ride.create.form.gather', time=r'\d{2}:\d{2}'))
 ui.wait_label('ride-form-gather', lambda label: bool(gather.fullmatch(label)), 'no 起集合 line after a quick time')
 ui.wait_label('ride-form-ticket', lambda label: picked in label, f'the ticket does not read the picked {picked}')
+ui.at_rest()
+items = ui.read()
+assert_label_reads(ui.snap('02b-time-selected'), by_id(items, 'ride-form-pick-0')['frame'], 'selected quick time')
 shown = picker_clock(ui, 'ride-form-time')
 assert shown == picked, f'the date picker shows {shown} for the picked {picked} (both read the device zone)'
 

@@ -6,6 +6,7 @@ import {
   buttonBorderShape,
   buttonStyle,
   controlSize,
+  foregroundStyle,
   frame,
   labelsHidden,
   lineLimit,
@@ -13,6 +14,7 @@ import {
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 import { localClock, localDayKey } from '@/lib/deviceClock';
 
 import { whenText } from '../ticketView';
@@ -32,6 +34,7 @@ export function FormTime({
   onEdit: (patch: Partial<RideDraft>) => void;
 }) {
   const { t, language } = useI18n();
+  const { color } = useTheme();
   const chosen = draft.departAt ? Date.parse(draft.departAt) : null;
   const picks = quickPicks(now);
   const set = (time: number) => onEdit({ departAt: new Date(time).toISOString() });
@@ -83,7 +86,15 @@ export function FormTime({
                 ...(on ? [accessibilityAddTraits(['isSelected'])] : []),
               ]}
             >
-              <Text modifiers={[lineLimit(1), frame({ maxWidth: Infinity })]}>{label}</Text>
+              <Text
+                modifiers={[
+                  lineLimit(1),
+                  frame({ maxWidth: Infinity }),
+                  ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
+                ]}
+              >
+                {label}
+              </Text>
             </Button>
           );
         })}

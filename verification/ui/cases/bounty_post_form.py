@@ -11,7 +11,7 @@ from bounty import (  # noqa: E402
     CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
     erase, form_scroll_to, next_step, open_post, pick_category, reach_confirm, typed, value,
 )
-from driver import UI, assert_touch_target  # noqa: E402
+from driver import UI, assert_label_reads, assert_touch_target, by_id  # noqa: E402
 
 DEPS = [
     'src/features/bounty/',
@@ -73,6 +73,9 @@ for wrong in ('0', '501'):
 assert_touch_target(ui.element('bounty-post-amount-8'), 'RM 8')
 ui.tap('bounty-post-amount-8')
 ui.wait(lambda items: value(ui, 'bounty-post-reward') == '8', 'the RM 8 button did not fill the reward')
+ui.at_rest()
+items = ui.read()
+assert_label_reads(ui.snap('02c-amount-selected'), by_id(items, 'bounty-post-amount-8')['frame'], 'selected RM 8')
 
 assert_touch_target(form_scroll_to(ui, 'bounty-post-clear'), '清空草稿')
 ui.capture('03-filled')
