@@ -89,6 +89,9 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   `ios.status === PROVISIONAL`. Reason: observed in the feasibility prototype.
 - Custom push data goes under the payload's `body` key. Reason: expo-notifications reads
   `content.data` from `userInfo.body`; top-level keys arrive as `data=null`.
+- A status bar style for a tab's screen goes on the root screen holding NativeTabs (`statusBarStyle` through
+  `setOptions`). Reason: options on screens under the tabs never reach UIKit, and `expo-status-bar`'s component does
+  nothing with view-controller-based appearance (the home clock stayed white over the stage; 2026-11-07).
 - The expo-location plugin adds Always and motion usage strings by default; set them to
   `false` unless a spec requires them. Reason: unused permission strings draw review questions.
 

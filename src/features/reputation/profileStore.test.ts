@@ -197,15 +197,18 @@ describe('reply in flight', () => {
     expect(list.status !== 'idle' && list.data?.items[0].reply?.body).toBe('谢谢');
   });
 
-  test('a page that lands after the head was read again is dropped, and stale stays stale', async () => {
+  test('a page that lands after the head was read again is dropped for the new head', async () => {
     const more = deferred<ReviewPage>();
+    const before: (string | null)[] = [];
     let heads = 0;
     const { store } = setup(
       fakeService({
-        profileReviews: (_id, before) => {
-          if (before) return more.promise;
+        profileReviews: (_id, cursor) => {
+          before.push(cursor);
+          if (cursor === 'c1') return more.promise;
+          if (cursor === 'c2') return Promise.resolve(page(['r3'], null));
           heads += 1;
-          return Promise.resolve(page(heads === 1 ? ['r2', 'r3'] : ['r1', 'r2'], 'c'));
+          return Promise.resolve(heads === 1 ? page(['r2', 'r3'], 'c1') : page(['r1', 'r2'], 'c2'));
         },
       }),
     );
@@ -215,32 +218,117 @@ describe('reply in flight', () => {
     await store.reloadList('p1');
     more.resolve(page(['r4'], null));
     await loadingMore;
-    let list = store.getSnapshot().reviews.p1;
-    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual(['r1', 'r2']);
+    await settle();
+    expect(before).toEqual([null, 'c1', null, 'c2']);
+    const list = store.getSnapshot().reviews.p1;
+    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual([
+      'r1',
+      'r2',
+      'r3',
+    ]);
     expect(list.status !== 'idle' && list.data?.more).toBe('idle');
   });
 
-  test('no next page starts while the first page is being read again', async () => {
+  test('a next page asked for while the first page is being read loads once that read lands', async () => {
     const head = deferred<ReviewPage>();
-    let calls = 0;
+    const before: (string | null)[] = [];
     const { store } = setup(
       fakeService({
-        profileReviews: (_id, before) => {
-          calls += 1;
-          if (before) return Promise.resolve(page(['r3'], null));
-          return calls === 1 ? Promise.resolve(page(['r1', 'r2'], 'c')) : head.promise;
+        profileReviews: (_id, cursor) => {
+          before.push(cursor);
+          if (cursor) return Promise.resolve(page(['r3'], null));
+          return before.length === 1 ? Promise.resolve(page(['r1', 'r2'], 'c')) : head.promise;
         },
       }),
     );
     store.openReviews('p1');
     await settle();
-    void store.reloadList('p1');
+    const reloading = store.reloadList('p1');
     await store.loadMore('p1');
-    expect(calls).toBe(2);
+    expect(before).toEqual([null, null]);
     head.resolve(page(['r0', 'r1'], 'c2'));
+    await reloading;
+    await settle();
+    expect(before).toEqual([null, null, 'c2']);
+    const list = store.getSnapshot().reviews.p1;
+    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual([
+      'r0',
+      'r1',
+      'r3',
+    ]);
+  });
+
+  test('a next page asked for during a read that fails still loads from the rows on screen', async () => {
+    const head = deferred<ReviewPage>();
+    const before: (string | null)[] = [];
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, cursor) => {
+          before.push(cursor);
+          if (cursor) return Promise.resolve(page(['r3'], null));
+          return before.length === 1 ? Promise.resolve(page(['r1', 'r2'], 'c')) : head.promise;
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    const reloading = store.reloadList('p1');
+    await store.loadMore('p1');
+    head.reject(new Error('x'));
+    await reloading;
+    await settle();
+    expect(before).toEqual([null, null, 'c']);
+  });
+
+  test('a next page wanted by the last account is not read for the next one', async () => {
+    const head = deferred<ReviewPage>();
+    const before: (string | null)[] = [];
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, cursor) => {
+          before.push(cursor);
+          if (before.length === 2) return head.promise;
+          return Promise.resolve(page(['r1'], 'c'));
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    const reloading = store.reloadList('p1');
+    await store.loadMore('p1');
+    store.clear();
+    store.start('other');
+    store.openReviews('p1');
+    await settle();
+    head.resolve(page(['r1'], 'c'));
+    await reloading;
+    await settle();
+    await store.reloadList('p1');
+    await settle();
+    expect(before).toEqual([null, null, null, null]);
+  });
+
+  test('a failed page that outlives a head read leaves no retry row on a list with no more', async () => {
+    const more = deferred<ReviewPage>();
+    let heads = 0;
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, cursor) => {
+          if (cursor) return more.promise;
+          heads += 1;
+          return Promise.resolve(heads === 1 ? page(['r1'], 'c') : page(['r0', 'r1'], null));
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    const loadingMore = store.loadMore('p1');
+    await store.reloadList('p1');
+    more.reject(new Error('x'));
+    await loadingMore;
     await settle();
     const list = store.getSnapshot().reviews.p1;
-    expect(list.status !== 'idle' && list.data?.items.map((row) => row.id)).toEqual(['r0', 'r1']);
+    expect(list.status !== 'idle' && list.data?.more).toBe('idle');
   });
 
   test('a page appended to a stale list keeps it stale', async () => {

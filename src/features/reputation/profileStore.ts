@@ -67,6 +67,8 @@ export function createProfileStore({
   const store = createStore<ProfilesState>(IDLE);
   const requests = createRequests();
   const focus = createFocus();
+  // The last row's onAppear fires once, so a next page refused or dropped around a head read is never asked for again.
+  const moreWanted = new Set<string>();
   let generation = 0;
 
   const get = store.get;
@@ -147,6 +149,8 @@ export function createProfileStore({
       current: () => current(userId, at),
       value: () => get().reviews[personId],
       set: (next) => setList(personId, next),
+    }).then(() => {
+      if (current(userId, at) && moreWanted.delete(personId)) void loadMore(personId);
     });
   }
 
@@ -156,7 +160,11 @@ export function createProfileStore({
     if (!userId || !list || list.status === 'idle' || list.status === 'loading' || !list.data)
       return;
     const { hasMore, nextCursor, more } = list.data;
-    if (!hasMore || !nextCursor || more === 'loading' || requests.busy(listKey(personId))) return;
+    if (!hasMore || !nextCursor || more === 'loading') return;
+    if (requests.busy(listKey(personId))) {
+      moreWanted.add(personId);
+      return;
+    }
     const at = generation;
     const head = requests.latest(listKey(personId));
     const key = pageKey(personId);
@@ -173,8 +181,10 @@ export function createProfileStore({
     const now = get().reviews[personId];
     if (!current(userId, at) || !requests.isLatest(key, request)) return;
     if (!now || now.status === 'idle' || !now.data) return;
-    if (!page || requests.latest(listKey(personId)) !== head) {
-      setList(personId, { ...now, data: { ...now.data, more: page ? 'idle' : 'failed' } });
+    const moved = requests.latest(listKey(personId)) !== head;
+    if (!page || moved) {
+      setList(personId, { ...now, data: { ...now.data, more: moved ? 'idle' : 'failed' } });
+      if (moved) void loadMore(personId);
       return;
     }
     const seen = new Set(now.data.items.map((row) => row.id));
@@ -268,6 +278,7 @@ export function createProfileStore({
     generation += 1;
     requests.clear();
     focus.clear();
+    moreWanted.clear();
     store.set(IDLE);
   }
 

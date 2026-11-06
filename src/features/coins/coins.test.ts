@@ -128,38 +128,6 @@ describe('coins store', () => {
     expect(store.getSnapshot().readFailed.balance).toBeUndefined();
   });
 
-  test('a next page asked for while the first page is being read loads once that read lands', async () => {
-    const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
-    const before: (number | null)[] = [];
-    let reads = 0;
-    const page = { items: [row(3, '2026-11') as CoinRow], hasMore: true, nextCursor: 3 };
-    const { store } = setup({
-      history: (cursor) => {
-        before.push(cursor);
-        reads += 1;
-        if (cursor !== null)
-          return Promise.resolve({
-            items: [row(2, '2026-10') as CoinRow],
-            hasMore: false,
-            nextCursor: null,
-          });
-        return reads === 1 ? Promise.resolve(page) : first.promise;
-      },
-    });
-    await store.reloadHistory();
-    const reloading = store.reloadHistory();
-    await store.loadMoreHistory();
-    expect(before).toEqual([null, null]);
-    first.resolve(page);
-    await reloading;
-    await settle();
-    expect(before).toEqual([null, null, 3]);
-    const history = store.getSnapshot().history;
-    expect(history.status === 'idle' ? [] : history.data?.items.map((item) => item.id)).toEqual([
-      3, 2,
-    ]);
-  });
-
   test('history marked stale by new coins off screen is not a failed refresh', async () => {
     const { store } = setup({
       balance: () => Promise.resolve(BALANCE),

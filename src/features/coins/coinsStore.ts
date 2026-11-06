@@ -163,8 +163,10 @@ export function createCoinsStore({
     const now = get().history;
     if (!current(userId, at) || !requests.isLatest(PAGE, request)) return;
     if (now.status === 'idle' || !now.data) return;
-    if (!page || requests.latest('history') !== head) {
-      patch({ history: { ...now, data: { ...now.data, more: page ? 'idle' : 'failed' } } });
+    const moved = requests.latest('history') !== head;
+    if (!page || moved) {
+      patch({ history: { ...now, data: { ...now.data, more: moved ? 'idle' : 'failed' } } });
+      if (moved) void loadMoreHistory();
       return;
     }
     const seen = new Set(now.data.items.map((row) => row.id));

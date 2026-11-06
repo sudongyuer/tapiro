@@ -5,6 +5,7 @@ import {
   buttonBorderShape,
   buttonStyle,
   controlSize,
+  foregroundStyle,
   frame,
   lineLimit,
   multilineTextAlignment,
@@ -13,6 +14,7 @@ import {
 import { useI18n } from '@/lib/i18n';
 import type { BountyCategory } from '@/lib/stickers/category';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import { ROW_INSETS } from '@/ui/FieldRow';
 import { shownPicks } from './postKinds';
@@ -29,6 +31,7 @@ export function TimePicks({
   onEdit: (patch: Partial<PostDraft>) => void;
 }) {
   const { t } = useI18n();
+  const { color } = useTheme();
   const picks = shownPicks(category, new Date());
   if (picks.length === 0) return null;
   const chosen = time.kind === 'deadline' ? Date.parse(time.deadlineAt) : null;
@@ -58,6 +61,7 @@ export function TimePicks({
                 lineLimit(2),
                 multilineTextAlignment('center'),
                 frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+                ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
               ]}
             >
               {name}
