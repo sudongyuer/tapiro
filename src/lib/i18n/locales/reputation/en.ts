@@ -70,6 +70,7 @@ const en: typeof zhHans = {
   },
   reply: {
     action: 'Reply',
+    actionA11y: 'Reply to {{review}}',
     mine: 'My reply:',
     theirs: '{{name}} replied:',
     confirm: 'A reply can’t be changed once it’s sent',
@@ -118,7 +119,8 @@ const en: typeof zhHans = {
     nextLevel_other: '{{count}} more stickers → {{label}}',
     levelNote:
       'Levels only unlock outfits and never change what you can take on. A no-show never makes your tapir drop a level or feel sad.',
-    accessoryLocked: 'Lv.{{level}} {{name}}',
+    accessoryLocked: 'Unlocks at Lv.{{level}}',
+    listJoin: ', ',
     accessoryUnlockedA11y: '{{name}}, unlocked',
     accessoryLockedA11y: '{{name}}, unlocks at Lv.{{level}}',
     loadingMore: 'Loading more reviews',

@@ -15,7 +15,7 @@ import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { useProfile, useProfileGone } from '../hooks';
+import { useProfile, useProfileGone, useRefreshFailed } from '../hooks';
 import { profileStore } from '../services';
 import type { ProfileCard } from '../types';
 import { ProfileHeader, ProfileNumbers } from './ProfileHeader';
@@ -37,6 +37,7 @@ export function ProfileScreen({ personId, ...actions }: { personId: string } & P
   const { color } = useTheme();
   const card = useProfile(personId);
   const gone = useProfileGone(personId);
+  const refreshFailed = useRefreshFailed(personId, 'card');
   const blocking = useBlockPerson('poster');
   const unblocking = useUnblockPerson();
 
@@ -79,7 +80,7 @@ export function ProfileScreen({ personId, ...actions }: { personId: string } & P
         name={name}
         blocked={data?.blockedByMe ?? false}
         hidden={!data || data.self}
-        busy={blocking.state === 'busy' || unblocking.state === 'busy'}
+        busy={blocking.state === 'busy' ? 'block' : unblocking.state === 'busy' ? 'unblock' : null}
         onChoose={choose}
       />
       <Host style={styles.host} testID="profile-screen">
@@ -89,7 +90,7 @@ export function ProfileScreen({ personId, ...actions }: { personId: string } & P
             refreshable(() => profileStore.reloadCard(personId)),
           ]}
         >
-          {card.status === 'stale' && data ? (
+          {card.status === 'stale' && refreshFailed && data ? (
             <NoticeCard
               tone="warning"
               icon="exclamationmark.triangle.fill"

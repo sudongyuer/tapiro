@@ -1,4 +1,5 @@
 import {
+  FIXTURE_PEOPLE,
   FIXTURE_REP_USER_ID,
   fixtureMascot,
   fixturePairs,
@@ -44,6 +45,15 @@ export type FixtureRepOptions = {
 };
 
 export const FIXTURE_GONE_PERSON_ID = 'fixture-person-gone';
+
+const RIDE_ROUTE = '双威 → KLIA2';
+
+function seenBy(personId: string, rows: ProfileReview[]) {
+  if (personId !== FIXTURE_REP_USER_ID) return rows;
+  return rows.map((row) =>
+    row.kind === 'ride' ? { ...row, title: RIDE_ROUTE, reviewer: FIXTURE_PEOPLE.mei } : row,
+  );
+}
 
 export function fixtureRepFailPoints(value: string | undefined): RepFailPoint[] {
   const parts = (value ?? '').split(',').map((part) => part.trim());
@@ -172,7 +182,7 @@ export function createFixtureReputationService({
     async profileReviews(personId, before) {
       await step('reviews', 'profileReviews', { personId, before });
       const from = before ? reviews.findIndex((row) => row.id === before) + 1 : 0;
-      const page: ProfileReview[] = reviews.slice(from, from + REVIEW_PAGE_SIZE);
+      const page: ProfileReview[] = seenBy(personId, reviews.slice(from, from + REVIEW_PAGE_SIZE));
       const hasMore = reviews.length > from + REVIEW_PAGE_SIZE;
       return { items: page, hasMore, nextCursor: hasMore ? page[page.length - 1].id : null };
     },

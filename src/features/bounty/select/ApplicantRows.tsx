@@ -15,6 +15,7 @@ import {
   accessibilityIdentifier,
   accessibilityLabel,
   buttonStyle,
+  contentShape,
   fixedSize,
   font,
   foregroundStyle,
@@ -24,16 +25,14 @@ import {
   listRowBackground,
   listRowInsets,
   multilineTextAlignment,
+  shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactElement } from 'react';
-import { StyleSheet, View } from 'react-native';
 
 import type { BlockedPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
-import { nameInitial } from '@/lib/nameInitial';
 import { formatMoney } from '@/lib/money';
-import { Avatar } from '@/ui/Avatar';
 import { HandArtSticker } from '@/ui/HandArt';
 import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
@@ -41,16 +40,20 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { BountyDetail } from '../board/types';
 import { tierName, tierRank } from '../shared/tierCopy';
+import { AvatarButton } from './AvatarButton';
 import { helpedLine } from './selectCopy';
 import type { Applicant } from './types';
 
 const STICKER = 48;
-const AVATAR = 36;
 const CHECK = 17;
 const primary = foregroundStyle({ type: 'hierarchical', style: 'primary' });
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const wraps = fixedSize({ horizontal: false, vertical: true });
 const fill = frame({ maxWidth: Infinity, alignment: 'leading' });
+const target = [
+  frame({ maxWidth: Infinity, minHeight: vars['--touch-min'], alignment: 'topLeading' }),
+  contentShape(shapes.rectangle()),
+];
 const NO_INSETS = listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 });
 
 export function ApplicantsHeader({
@@ -159,11 +162,12 @@ function ApplicantRow({
       onPress={() => onChoose(applicant.id)}
       testID={`bounty-applicant-${applicant.id}`}
       modifiers={[
+        buttonStyle('borderless'),
         accessibilityLabel(label),
         ...(chosen ? [accessibilityAddTraits(['isSelected'])] : []),
       ]}
     >
-      <HStack alignment="top" spacing={vars['--space-3']}>
+      <HStack alignment="top" spacing={vars['--space-3']} modifiers={target}>
         <VStack alignment="leading" spacing={vars['--space-1']} modifiers={[fill]}>
           <HStack spacing={vars['--space-2']} alignment="center">
             <Text
@@ -201,22 +205,6 @@ function ApplicantRow({
       </HStack>
     </Button>
   );
-  const profile = (
-    <Button
-      onPress={() => onOpenProfile(applicant.id)}
-      testID={`bounty-applicant-profile-${applicant.id}`}
-      modifiers={[
-        buttonStyle('borderless'),
-        accessibilityLabel(t('reputation.profile.open', { name })),
-      ]}
-    >
-      <RNHostView matchContents>
-        <View style={styles.avatar}>
-          <Avatar uri={null} size={AVATAR} label={name} initial={nameInitial(name)} />
-        </View>
-      </RNHostView>
-    </Button>
-  );
   return (
     <ContextMenu>
       <ContextMenu.Items>
@@ -238,7 +226,7 @@ function ApplicantRow({
       </ContextMenu.Items>
       <ContextMenu.Trigger>
         <HStack alignment="top" spacing={vars['--space-3']} modifiers={motion(applicant.id)}>
-          {profile}
+          <AvatarButton id={applicant.id} name={name} onPress={onOpenProfile} />
           {row}
         </HStack>
       </ContextMenu.Trigger>
@@ -287,12 +275,3 @@ export function ApplicantSection({
     </Section>
   );
 }
-
-const styles = StyleSheet.create({
-  avatar: {
-    minWidth: vars['--touch-min'],
-    minHeight: vars['--touch-min'],
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-});

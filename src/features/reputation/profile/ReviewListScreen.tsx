@@ -13,7 +13,7 @@ import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { useProfile, useProfileReviews } from '../hooks';
+import { useProfile, useProfileReviews, useRefreshFailed } from '../hooks';
 import { profileStore } from '../services';
 import { FacesLine } from './ProfileReviews';
 import { personName } from './profileView';
@@ -30,10 +30,16 @@ export function ReviewListScreen({
   const { color } = useTheme();
   const card = useProfile(personId);
   const list = useProfileReviews(personId);
+  const refreshFailed = useRefreshFailed(personId, 'list');
   const owner = card.status === 'idle' ? null : card.data;
   const self = owner?.self ?? false;
-  const rows = list.status === 'idle' ? null : list.data;
-  const reload = () => profileStore.reloadList(personId);
+  const rows = owner && list.status !== 'idle' ? list.data : null;
+  const failed = list.status === 'failed' || (!owner && card.status === 'failed');
+  const reload = () =>
+    Promise.all([
+      profileStore.reloadList(personId),
+      owner ? Promise.resolve() : profileStore.reloadCard(personId),
+    ]).then(() => undefined);
   const retry = {
     label: t('reputation.profile.retry'),
     onPress: () => void reload(),
@@ -44,7 +50,7 @@ export function ReviewListScreen({
       <Stack.Screen options={{ title: t('reputation.profile.reviews') }} />
       <Host style={styles.host} testID="profile-reviews">
         <Form modifiers={[tint(color('--color-accent')), refreshable(reload)]}>
-          {list.status === 'stale' && rows ? (
+          {list.status === 'stale' && refreshFailed && rows ? (
             <NoticeCard
               tone="warning"
               icon="exclamationmark.triangle.fill"
@@ -83,7 +89,9 @@ export function ReviewListScreen({
                   testID="profile-reviews-more-retry"
                   modifiers={[
                     accessibilityLabel(
-                      `${t('reputation.profile.moreFailed')}，${t('reputation.profile.retry')}`,
+                      [t('reputation.profile.moreFailed'), t('reputation.profile.retry')].join(
+                        t('reputation.profile.listJoin'),
+                      ),
                     ),
                   ]}
                 >
@@ -91,7 +99,7 @@ export function ReviewListScreen({
                 </Button>
               ) : null}
             </Section>
-          ) : list.status === 'failed' ? (
+          ) : failed ? (
             <NoticeCard
               tone="urgent"
               icon="exclamationmark.circle.fill"

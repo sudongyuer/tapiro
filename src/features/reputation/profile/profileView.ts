@@ -48,7 +48,7 @@ export function reviewLabel(review: ProfileReview, owner: string, self: boolean,
     : null;
   return [reviewLine(review, t), review.sentence, reviewSource(review, t), reply]
     .filter((part): part is string => !!part)
-    .join('，');
+    .join(t('reputation.profile.listJoin'));
 }
 
 export const canReply = (card: Pick<ProfileCard, 'self'>, review: ProfileReview) =>

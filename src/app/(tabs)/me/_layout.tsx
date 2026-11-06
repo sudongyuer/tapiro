@@ -7,6 +7,8 @@ import {
 } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 
+export const unstable_settings = { anchor: 'index' };
+
 export default function MeLayout() {
   const { t } = useI18n();
   return (

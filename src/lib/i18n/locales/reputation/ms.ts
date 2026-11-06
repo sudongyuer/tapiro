@@ -70,6 +70,7 @@ const ms: typeof zhHans = {
   },
   reply: {
     action: 'Balas',
+    actionA11y: 'Balas {{review}}',
     mine: 'Balasan saya:',
     theirs: 'Balasan {{name}}:',
     confirm: 'Balasan tidak boleh diubah selepas dihantar',
@@ -118,7 +119,8 @@ const ms: typeof zhHans = {
     nextLevel_other: 'Kumpul {{count}} lagi pelekat → {{label}}',
     levelNote:
       'Tahap hanya membuka pakaian dan tidak mengubah tugasan yang boleh anda ambil. Tidak hadir tidak akan menurunkan tahap tapir anda atau membuatnya sedih.',
-    accessoryLocked: 'Lv.{{level}} {{name}}',
+    accessoryLocked: 'Dibuka pada Lv.{{level}}',
+    listJoin: ', ',
     accessoryUnlockedA11y: '{{name}}, sudah dibuka',
     accessoryLockedA11y: '{{name}}, dibuka pada Lv.{{level}}',
     loadingMore: 'Memuatkan lagi penilaian',

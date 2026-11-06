@@ -1,6 +1,7 @@
 """Someone else's profile (245 A, 246 A): Mei's header reads her name and 很靠谱 · 近 180 天; the three numbers read 帮过的人 9,
-完成率 96%, 评价 24; the reviews come before the one 小貘 row; 开心 22 · 一般 1 · 不开心 1 heads the latest 3 rows, the second
-shows 不开心 · 迟到 with Mei's reply under it, the third is a ride review that reads only 拼车 (no route, no reviewer, 256 A);
+完成率 96%, 评价 24; the reviews come before the one 小貘 row; 开心 20 · 一般 3 · 不开心 1 heads the latest 3 rows, the second
+shows 不开心 · 迟到 with Mei's reply under it, the third is a ride review that reads only 拼车 (the fixture strips the route and reviewer as the server does, 256 A;
+the server side is pgTAP);
 there is no 回复 on someone else's profile; 全部 24 条评价 pushes the list, which pages in the rest (20, then 4, cursor after the 20th) as it scrolls, and the back button returns with the row
 deselected; ⋯ offers 举报 Mei and 屏蔽 Mei."""
 import sys

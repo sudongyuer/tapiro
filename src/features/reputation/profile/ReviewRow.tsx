@@ -22,7 +22,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ProfileReview } from '../types';
-import { chipLabels, faceTone, reviewLabel, reviewSource } from './profileView';
+import { chipLabels, faceTone, reviewLabel, reviewLine, reviewSource } from './profileView';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const wraps = fixedSize({ horizontal: false, vertical: true });
@@ -99,7 +99,10 @@ export function ReviewRow({
         <Button
           onPress={() => onReply(review.id)}
           testID={`${testID}-reply-button`}
-          modifiers={[buttonStyle('borderless'), accessibilityLabel(t('reputation.reply.action'))]}
+          modifiers={[
+            buttonStyle('borderless'),
+            accessibilityLabel(t('reputation.reply.actionA11y', { review: reviewLine(review, t) })),
+          ]}
         >
           <Text
             modifiers={[

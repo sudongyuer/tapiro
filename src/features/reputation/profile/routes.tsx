@@ -58,7 +58,9 @@ export function ProfileRoute({ tab }: { tab: ProfileTab }) {
       onOpenReviews={() => router.push({ pathname: PATHS[tab].reviews, params: { id } })}
       onReport={() => router.push({ pathname: PATHS[tab].report, params: { person: id } })}
       onReply={reply}
-      onOpenStickers={() => router.navigate('/me/stickers')}
+      onOpenStickers={() =>
+        tab === 'me' ? router.push('/me/stickers') : router.navigate('/me/stickers')
+      }
       onBack={() => router.back()}
     />
   );

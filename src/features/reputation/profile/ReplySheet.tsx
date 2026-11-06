@@ -67,7 +67,8 @@ export function ReplySheet({
   });
   const sending = state?.phase === 'sending';
   const count = textLength(typed);
-  const ready = cleanText(typed) !== '' && count <= REVIEW_TEXT_MAX && !sending;
+  const ready =
+    cleanText(typed) !== '' && count <= REVIEW_TEXT_MAX && !sending && review?.reply == null;
 
   useEffect(() => {
     profileStore.dismissReplyFailure(reviewId);

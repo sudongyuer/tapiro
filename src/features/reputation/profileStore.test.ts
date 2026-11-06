@@ -34,6 +34,32 @@ describe('profile card', () => {
     expect(store.getSnapshot().cards.p1).toEqual({ status: 'failed', data: null });
   });
 
+  test('only a failed read marks a stale profile as a failed refresh', async () => {
+    let fail = false;
+    const { store } = setup(
+      fakeService({
+        profile: async (id) => {
+          if (fail) throw new Error('x');
+          return card({ id });
+        },
+      }),
+    );
+    const close = store.openProfile('p1');
+    await settle();
+    close();
+    store.onSignal();
+    expect(store.getSnapshot().cards.p1.status).toBe('stale');
+    expect(store.getSnapshot().readFailed).toEqual({});
+    fail = true;
+    await store.reloadCard('p1');
+    expect(store.getSnapshot().cards.p1.status).toBe('stale');
+    expect(store.getSnapshot().readFailed).toEqual({ 'card:p1': true });
+    fail = false;
+    await store.reloadCard('p1');
+    expect(store.getSnapshot().cards.p1.status).toBe('ready');
+    expect(store.getSnapshot().readFailed).toEqual({});
+  });
+
   test('a review signal reloads the profile on screen and marks the others stale', async () => {
     const reads: string[] = [];
     const { store } = setup(

@@ -1,10 +1,10 @@
 """Entry from the applicant list (247 A): each row's avatar is its own 44 pt button 看阿杰的主页 that pushes 阿杰's profile
-(one read for fixture-applicant-jie) and back returns to the list; tapping the rest of a row still chooses (the hold button
+(one read for fixture-applicant-jie) and back returns to the list with nobody chosen; tapping the rest of a row still chooses (the hold button
 names Hana), and long-pressing a row offers 看Hana的主页 beside 屏蔽Hana."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from choose import choose  # noqa: E402
+from choose import choose, hold_reads  # noqa: E402
 from driver import UI, assert_touch_target  # noqa: E402
 from profile import open_profile, rep_calls  # noqa: E402
 
@@ -26,6 +26,7 @@ ui.at_rest()
 ui.capture('02-profile')
 ui.tap('BackButton')
 ui.gone('profile-screen')
+hold_reads(ui, ui.t('bounty.select.hold.none'))
 choose(ui, 'fixture-applicant-hana', 'Hana')
 assert len(rep_calls(ui, 'profile', 2, timeout=2)) == 1, 'choosing a row opened a profile'
 ui.press('bounty-applicant-fixture-applicant-hana', 1.2)

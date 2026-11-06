@@ -124,7 +124,11 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
               modifiers={[open ? foregroundStyle(color('--color-success')) : tertiary]}
             />
             <Text modifiers={open ? [fill] : [fill, secondary]}>{name}</Text>
-            <Text modifiers={[secondary, font({ textStyle: 'footnote' })]}>{`Lv.${level}`}</Text>
+            {open ? null : (
+              <Text modifiers={[secondary, font({ textStyle: 'footnote' })]}>
+                {t('reputation.profile.accessoryLocked', { level })}
+              </Text>
+            )}
           </HStack>
         );
       })}

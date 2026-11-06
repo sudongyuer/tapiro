@@ -1,5 +1,5 @@
--- Question 256 is open: ride reviews on someone else's profile hide the route and the reviewer (256 A). This function
--- is the one switch; 256 B makes it return true. The reviewee always sees both on their own profile.
+-- The one switch for ride reviews on someone else's profile: false hides the route (a short name can be a home) and
+-- the reviewer (who rode with whom); true shows both to everyone. The reviewee always sees both.
 create function private.ride_review_details_public() returns boolean
 language sql
 immutable

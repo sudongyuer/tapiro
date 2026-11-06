@@ -5,7 +5,7 @@ import { AppState } from 'react-native';
 import { IDLE_LOAD } from '@/lib/loadable';
 
 import { shownTierDrop, type MeState } from './meStore';
-import type { ProfilesState } from './profileStore';
+import { cardKey, listKey, type ProfilesState } from './profileStore';
 import type { ReviewsState } from './reviewStore';
 import { followReputation, meStore, profileStore, reviewStore } from './services';
 import { pairKey, targetKey, type ItemKind, type ReviewTarget } from './types';
@@ -67,6 +67,11 @@ export function useProfileReviews(personId: string) {
 
 export function useProfileGone(personId: string) {
   return useProfiles((state) => state.gone[personId] === true);
+}
+
+export function useRefreshFailed(personId: string, what: 'card' | 'list') {
+  const key = what === 'card' ? cardKey(personId) : listKey(personId);
+  return useProfiles((state) => state.readFailed[key] === true);
 }
 
 export function useReplyState(reviewId: string) {

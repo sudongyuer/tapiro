@@ -68,6 +68,7 @@ export default {
   },
   reply: {
     action: '回复',
+    actionA11y: '回复：{{review}}',
     mine: '我的回复：',
     theirs: '{{name}}回复：',
     confirm: '回复发出后不能修改',
@@ -115,7 +116,8 @@ export default {
     nextLevel_one: '再收 {{count}} 张贴纸 → {{label}}',
     nextLevel_other: '再收 {{count}} 张贴纸 → {{label}}',
     levelNote: '只解锁装扮，不影响能接什么任务。放鸽子不会让小貘掉级或难过。',
-    accessoryLocked: 'Lv.{{level}} {{name}}',
+    accessoryLocked: 'Lv.{{level}} 解锁',
+    listJoin: '，',
     accessoryUnlockedA11y: '{{name}}，已解锁',
     accessoryLockedA11y: '{{name}}，Lv.{{level}} 解锁',
     loadingMore: '正在加载更多评价',

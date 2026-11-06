@@ -53,7 +53,7 @@ export function ProfileHeader({ card }: { card: ProfileCard }) {
             spacing={vars['--space-2']}
             modifiers={[
               accessibilityElement('combine'),
-              accessibilityLabel(`${tier}，${note}`),
+              accessibilityLabel([tier, note].join(t('reputation.profile.listJoin'))),
               accessibilityIdentifier('profile-tier'),
             ]}
           >

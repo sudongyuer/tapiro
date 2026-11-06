@@ -1,6 +1,6 @@
 """Your own profile keeps the RepBC order (245 A): header, the three numbers, the 小貘等级 · 只升不降 card (Lv.4 少年貘, 再收 2 张贴纸
-→ Lv.5 青年貘, 小红帽 / 书包 / 雨伞 unlocked and 围巾 locked at Lv.5), 一起办成的事 with 23 张, then the reviews; a review with no
-reply offers 回复 (44 pt) and the one already answered reads 我的回复：…; there is no ⋯; 一起办成的事 opens the sticker book."""
+→ Lv.5 青年貘, 小红帽 / 书包 / 雨伞 unlocked and 围巾 locked at Lv.5), 一起办成的事 with 23 张, then the reviews; your own ride review keeps its route and
+reviewer (256 A); a review with no reply offers 回复 (44 pt, read with the review) and the one already answered reads 我的回复：…; there is no ⋯; 一起办成的事 opens the sticker book."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -43,9 +43,12 @@ assert_order(items, 'profile-stickers', 'profile-faces', review_id(1))
 stickers = by_id(items, 'profile-stickers').get('AXLabel') or ''
 assert ui.t('stickers.book.title') in stickers and ui.tn('stickers.count', 23) in stickers, stickers
 reply = by_id(items, f'{review_id(1)}-reply-button')
-assert reply.get('AXLabel') == ui.t('reputation.reply.action'), reply.get('AXLabel')
+line = f"{ui.t('reputation.face.happy')} · {ui.t('reputation.chip.helper.on_time')} · {ui.t('reputation.chip.helper.kept_posted')}"
+assert reply.get('AXLabel') == ui.t('reputation.reply.actionA11y', review=line), reply.get('AXLabel')
 assert_touch_target(reply, '回复')
 assert by_id(items, f'{review_id(2)}-reply-button') is None, 'an answered review still offers 回复'
+ride = label(ui, review_id(3))
+assert 'Mei' in ride and '双威 → KLIA2' in ride, f'your own ride review hides its route or reviewer: {ride}'
 answered = label(ui, f'{review_id(2)}-reply')
 assert answered.startswith(ui.t('reputation.reply.mine')), answered
 ui.at_rest()

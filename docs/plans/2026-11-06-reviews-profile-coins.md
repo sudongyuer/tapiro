@@ -239,8 +239,8 @@ invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are reco
    3, 「全部评价」 page), one 小貘 and stickers row; your own profile keeps the RepBC order and offers 回复 under each
    received review (confirm once, 200 characters); ⋯ with 举报 and 屏蔽 reusing the chat report and the block module;
    entries from the bounty poster row, applicant rows, the chat navigation title, ride member rows and the 我的 name
-   row. UI cases `profile_other`, `profile_new`, `profile_many`, `profile_failed`, `profile_self`, `profile_reply`,
-   `profile_entries`, `profile_worst` (ms).
+   row. UI cases `profile_other` (with paging), `profile_new`, `profile_worst` (ms), `profile_failed`, `profile_gone`,
+   `profile_self`, `profile_reply`, `profile_report_block` and one `profile_entry_*` per entry.
 6. **Tier-drop sheet** (248 A): a medium sheet on the first open after a drop: the new tier, the reason, the way back,
    知道了 and 看我的主页; marked seen when dismissed. UI cases `tier_drop_sheet` (zh-Hans, en, ms),
    `tier_drop_no_show`.

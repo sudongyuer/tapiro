@@ -5,12 +5,13 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, by_id  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close  # noqa: E402
 from profile import open_profile, rep_calls  # noqa: E402
 
 DEPS = ['src/features/ride/detail/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
 SCENE = 'ride-detail'
 BUDGET = 240
+CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'viewer']
 
 ui = UI(*sys.argv[1:])
@@ -26,6 +27,11 @@ assert [call['personId'] for call in rep_calls(ui, 'profile', 1)] == ['fixture-r
 ui.tap('BackButton')
 ui.gone('profile-screen')
 ui.element('ride-detail-organiser')
+ui.at_rest()
+shot = ui.snap('02-back')
+f = by_id(ui.read(), 'ride-detail-organiser')['frame']
+fill = shot.rgb(f['x'] + f['width'] * 0.8, f['y'] + f['height'] / 2)
+assert close(fill, CELL[ui.appearance], 8), f'the organiser line stays highlighted: {fill}'
 
 relaunch(ui, drop=['-uiVerifyRideDetail', 'viewer'], add=['-uiVerifyRideDetail', 'organiser', '-uiVerifyScene', SCENE],
          ready='ride-detail-ticket')
@@ -35,10 +41,10 @@ items = ui.read()
 for button in ('ride-detail-approve-fixture-ride-ajie', 'ride-detail-decline-fixture-ride-ajie'):
     assert by_id(items, button) is not None, f'{button} is gone'
 ui.at_rest()
-ui.capture('02-organiser')
+ui.capture('03-organiser')
 ui.tap('ride-detail-request-name-fixture-ride-ajie')
 open_profile(ui)
 assert 'fixture-ride-ajie' in [call['personId'] for call in rep_calls(ui, 'profile', 1)]
 ui.at_rest()
-ui.capture('03-profile')
+ui.capture('04-profile')
 print('PASS: the organiser line and the request names push profiles in the ride tab')

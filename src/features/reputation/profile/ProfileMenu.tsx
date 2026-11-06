@@ -16,7 +16,7 @@ export function ProfileMenu({
   name: string;
   blocked: boolean;
   hidden: boolean;
-  busy: boolean;
+  busy: 'block' | 'unblock' | null;
   onChoose: (choice: ProfileMenuChoice) => void;
 }) {
   const { t } = useI18n();
@@ -26,7 +26,7 @@ export function ProfileMenu({
         <Stack.Toolbar.View>
           <ActivityIndicator
             accessible
-            accessibilityLabel={t('block.blocking')}
+            accessibilityLabel={t(busy === 'block' ? 'block.blocking' : 'block.list.unblocking')}
             testID="profile-menu-busy"
             style={styles.busy}
           />
