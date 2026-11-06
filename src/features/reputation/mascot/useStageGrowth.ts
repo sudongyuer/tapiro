@@ -10,7 +10,6 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
 import { uiVerifyReduceMotion } from '@/lib/uiVerify';
@@ -49,35 +48,38 @@ export function useStageGrowth({
   const reduced = useReducedMotion() || uiVerifyReduceMotion;
   const total = reduced ? GROW_REDUCED.total : GROW.total;
 
-  const [played, setPlayed] = useState(() => growMarks.played(userId));
-  const [running, setRunning] = useState(false);
-  const due = levelUp && level > played;
+  const [marked] = useState(() => growMarks.played(userId));
+  const played = useRef(marked);
   const clock = useSharedValue<number>(total);
   const grown = useSharedValue(1);
   const opened = useRef(false);
 
-  useEffect(() => {
-    if (!due) return;
-    clock.set(0);
-    grown.set(0);
-    if (!visible) return;
-    growMarks.mark(userId, level);
-    setPlayed(level);
-    setRunning(true);
-  }, [due, visible, userId, level, clock, grown]);
+  const finish = useCallback(() => {
+    cancelAnimation(clock);
+    clock.set(total);
+    cancelAnimation(grown);
+    grown.set(1);
+  }, [clock, grown, total]);
 
   useEffect(() => {
-    if (!running) return;
-    clock.set(
-      withTiming(
-        total,
-        { duration: total, easing: Easing.linear, reduceMotion: ReduceMotion.Never },
-        (finished) => {
-          if (finished) scheduleOnRN(setRunning, false);
-        },
-      ),
-    );
-  }, [running, total, clock]);
+    if (visible) opened.current = false;
+    if (levelUp && level > played.current) {
+      clock.set(0);
+      grown.set(0);
+      if (!visible) return;
+      growMarks.mark(userId, level);
+      played.current = level;
+      clock.set(
+        withTiming(total, {
+          duration: total,
+          easing: Easing.linear,
+          reduceMotion: ReduceMotion.Never,
+        }),
+      );
+    } else if (!visible) {
+      finish();
+    }
+  }, [levelUp, level, visible, userId, total, clock, grown, finish]);
 
   useAnimatedReaction(
     () => !reduced && clock.value >= GROW.crouch.end,
@@ -86,25 +88,12 @@ export function useStageGrowth({
     },
   );
 
-  const skip = useCallback(() => {
-    cancelAnimation(clock);
-    clock.set(total);
-    cancelAnimation(grown);
-    grown.set(1);
-    setRunning(false);
-  }, [clock, grown, total]);
-
-  useEffect(() => {
-    if (running && !visible) skip();
-    if (visible) opened.current = false;
-  }, [running, visible, skip]);
-
   const press = useCallback(() => {
     if (opened.current) return;
     opened.current = true;
-    skip();
+    finish();
     open();
-  }, [open, skip]);
+  }, [open, finish]);
 
   const bodyStyle = useAnimatedStyle(() => {
     if (reduced) return { opacity: progress(clock.value, GROW_REDUCED.swap) };
@@ -149,7 +138,7 @@ export function useStageGrowth({
       onPress: levelUp ? press : null,
       action: levelUp ? t('reputation.grown.action') : null,
       bodyStyle,
-      oldBodyStyle: reduced && (due || running) ? oldBodyStyle : undefined,
+      oldBodyStyle: reduced && levelUp ? oldBodyStyle : undefined,
       wearStyle,
       revealStyle,
     },

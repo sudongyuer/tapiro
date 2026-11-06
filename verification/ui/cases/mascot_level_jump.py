@@ -5,10 +5,11 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from driver import UI, reach_home  # noqa: E402
-from mascot import BASE_ARGS, DEPS, assert_moment, says, stage, tap_mascot  # noqa: E402,F401
+from mascot import assert_moment, says, stage, tap_mascot  # noqa: E402
 
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 240
-ARGS = [*BASE_ARGS, '-uiVerifyMascot', 'jump']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyMascot', 'jump']
 LOCALES = ['zh-Hans', 'ms']
 
 ui = UI(*sys.argv[1:])

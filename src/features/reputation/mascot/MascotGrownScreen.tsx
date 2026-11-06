@@ -9,7 +9,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { uiVerifyReduceMotion } from '@/lib/uiVerify';
@@ -63,7 +62,6 @@ export function MascotGrownScreen({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const insets = useSafeAreaInsets();
   const lines = grownLines(moment, t);
   const entrance = useEntrance();
   return (
@@ -127,11 +125,11 @@ export function MascotGrownScreen({
 
 const styles = StyleSheet.create({
   content: {
-    flexGrow: 1,
     alignItems: 'center',
     gap: vars['--space-4'],
     paddingHorizontal: vars['--space-5'],
     paddingTop: vars['--space-3'],
+    paddingBottom: vars['--space-5'],
   },
   hero: { marginTop: vars['--space-5'], marginBottom: vars['--space-3'] },
   center: { textAlign: 'center' },
@@ -151,5 +149,5 @@ const styles = StyleSheet.create({
     borderRadius: vars['--space-3'],
     borderCurve: 'continuous',
   },
-  action: { alignSelf: 'stretch', marginTop: 'auto' },
+  action: { alignSelf: 'stretch', marginTop: vars['--space-3'] },
 });

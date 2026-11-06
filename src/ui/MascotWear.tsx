@@ -18,18 +18,18 @@ const PIECES: Record<MascotWear, readonly Piece[]> = {
   ],
   backpack: [
     {
-      d: 'M99 62 Q116 56 120 71 L123 101 Q124 111 113 112 L104 113 Q110 88 99 62 Z',
+      d: 'M92 66 Q108 58 112 72 L113 100 Q113 110 103 111 L95 113 Q104 90 92 66 Z',
       paint: '--color-wear-bag',
     },
-    { d: 'M90 62 Q106 72 94 112 L88 111 Q98 76 86 66 Z', paint: '--color-wear-bag-deep' },
+    { d: 'M84 62 Q100 74 90 113 L84 112 Q93 78 80 66 Z', paint: '--color-wear-bag-deep' },
   ],
   umbrella: [
     {
-      d: 'M96.5 36 h3.6 v42 a6 6 0 0 1 -12 0 h3.4 a2.6 2.6 0 0 0 5 0 Z',
+      d: 'M90.4 44 h3.2 v34 a5.5 5.5 0 0 1 -11 0 h3 a2.5 2.5 0 0 0 4.8 0 Z',
       paint: '--color-wear-handle',
     },
     {
-      d: 'M68 38 A30 30 0 0 1 128 38 Q120 31 113 38 Q105 31 98 38 Q90 31 83 38 Q75 31 68 38 Z',
+      d: 'M71 45 A21 21 0 0 1 113 45 Q107.75 39 102.5 45 Q97.25 39 92 45 Q86.75 39 81.5 45 Q76.25 39 71 45 Z',
       paint: '--color-wear-canopy',
     },
   ],

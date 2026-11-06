@@ -150,7 +150,7 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
         {sleeping ? <Snore color={ink} /> : null}
         {actor?.hint === 'star' && say === null ? (
           <Animated.View style={[styles.star, actor.revealStyle]}>
-            <Star color={color('--color-stage-hint')} />
+            <Star fill={color('--color-stage-hint')} rim={color('--color-sticker-border')} />
           </Animated.View>
         ) : null}
       </View>
@@ -191,10 +191,13 @@ function StageBody({
   );
 }
 
-function Star({ color }: { color: string }) {
+const STAR = 'M10 1 L12 8 L19 10 L12 12 L10 19 L8 12 L1 10 L8 8 Z';
+
+function Star({ fill, rim }: { fill: string; rim: string }) {
   return (
-    <Svg width={18} height={18} viewBox="0 0 16 16">
-      <Path d="M8 0 L9.6 6.4 L16 8 L9.6 9.6 L8 16 L6.4 9.6 L0 8 L6.4 6.4 Z" fill={color} />
+    <Svg width={26} height={26} viewBox="0 0 20 20">
+      <Path d={STAR} fill={rim} stroke={rim} strokeWidth={2.4} strokeLinejoin="round" />
+      <Path d={STAR} fill={fill} />
     </Svg>
   );
 }
@@ -267,7 +270,7 @@ const styles = StyleSheet.create({
   actor: { position: 'absolute' },
   layer: { position: 'absolute', left: 0, top: 0 },
   feet: { transformOrigin: '50% 100%' },
-  star: { position: 'absolute', left: 26, top: -10 },
+  star: { position: 'absolute', left: 20, top: -14 },
   car: { position: 'absolute', left: -30, bottom: -6 },
   parcel: { position: 'absolute', right: -38, bottom: 0, transform: [{ rotate: '8deg' }] },
   snore: { position: 'absolute', left: 80, top: -14 },

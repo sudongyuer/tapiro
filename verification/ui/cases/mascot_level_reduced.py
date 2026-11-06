@@ -4,22 +4,26 @@ import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import relaunch  # noqa: E402
 from driver import UI, reach_home  # noqa: E402
-from mascot import DEPS, LEVEL_ARGS, mascot_box, moved_at, says, stage  # noqa: E402,F401
+from mascot import last_run, mascot_box, moved_at, says, stage  # noqa: E402
 from recording import clip  # noqa: E402
 
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 200
-ARGS = [*LEVEL_ARGS, '-uiVerifyMascot', 'levelUp', '-uiVerifyReduceMotion', '1']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRepDelayMs', '5000', '-uiVerifyMascot', 'levelUp', '-uiVerifyReduceMotion', '1']
 WATCH_S = 8.0
 
 ui = UI(*sys.argv[1:])
 reach_home(ui)
-element = stage(ui)
+says(ui, ui.t('reputation.level.grewUp'))
 width = ui.read()[0]['frame']['width']
 with clip(ui, 'reduced') as video:
+    relaunch(ui, drop=[])
     time.sleep(WATCH_S)
 says(ui, ui.t('reputation.level.grewUp'))
-steps = moved_at(video, mascot_box(element, width), width)
+element = stage(ui)
+steps = last_run(moved_at(video, mascot_box(element, width), width))
 assert steps, '小貘 never changed'
 span = steps[-1] - steps[0]
 assert span <= 0.6, f'the fade took {span:.2f} s: {steps}'

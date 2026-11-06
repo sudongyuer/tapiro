@@ -5,8 +5,9 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id, reach_home, token  # noqa: E402
-from mascot import DEPS, GROWN, assert_moment, mascot_box, stage, tap_mascot  # noqa: E402,F401
+from mascot import GROWN, assert_moment, mascot_box, stage, tap_mascot  # noqa: E402
 
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'bountyInProgress', '-uiVerifyMascot', 'levelUp']
 
@@ -20,8 +21,8 @@ element = stage(ui, state)
 assert element.get('AXLabel') != ui.t('reputation.level.grewUp'), 'the level-up took over the bubble of a live item'
 ui.at_rest()
 shot = ui.snap('01-star')
-hint = tuple(int(token('--color-stage-hint', ui.appearance)[i:i + 2], 16) for i in (1, 3, 5))
-box = mascot_box(element, items[0]['frame']['width'], state)
+hint = token('--color-stage-hint', ui.appearance)
+box = star_box(element, items[0]['frame']['width'], state)
 gold = sum(1 for p in shot.pixels(box) if max(abs(a - b) for a, b in zip(p, hint)) < 24)
 assert gold > 20, f'no star over 小貘: {gold} gold pixels'
 tap_mascot(ui, element, state)

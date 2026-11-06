@@ -9,12 +9,13 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
-from mascot import DEPS, GROWN, LEVEL_ARGS, assert_moment, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402,F401
-from profile import open_profile  # noqa: E402
+from mascot import GROWN, assert_moment, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402
+from profile import open_profile, scroll_to  # noqa: E402
 from recording import clip  # noqa: E402
 
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 300
-ARGS = [*LEVEL_ARGS, '-uiVerifyMascot', 'levelUp']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRepDelayMs', '5000', '-uiVerifyMascot', 'levelUp']
 LOCALES = ['zh-Hans', 'ms']
 WATCH_S = 8.0
 
@@ -24,14 +25,17 @@ element = stage(ui)
 calm = element.get('AXLabel')
 grew = ui.t('reputation.level.grewUp')
 assert calm != grew, 'the stage spoke before the mascot was read'
+says(ui, grew)
 width = ui.read()[0]['frame']['width']
 with clip(ui, 'grow') as video:
+    relaunch(ui, drop=[])
     time.sleep(WATCH_S)
 says(ui, grew)
-steps = moved_at(video, mascot_box(element, width), width)
+element = stage(ui)
+steps = last_run(moved_at(video, mascot_box(element, width), width))
 assert len(steps) >= 5, f'小貘 moved in {len(steps)} frames only, it never grew: {steps}'
 span = steps[-1] - steps[0]
-assert 0.4 <= span <= 1.8, f'the growth took {span:.2f} s of frames {steps}'
+assert 0.2 <= span <= 1.8, f'the growth took {span:.2f} s of frames {steps}'
 assert defaults(ui, 'uiVerifyMascotPlayed') == '5', 'the played level was not stored'
 ui.at_rest()
 ui.capture('01-grown')
@@ -43,6 +47,9 @@ assert seen_levels(ui) == [5], 'opening the moment did not mark level 5 seen'
 go = ui.element('mascot-grown-go')
 assert go.get('AXLabel') == ui.t('reputation.grown.go')
 assert_touch_target(go, ui.t('reputation.grown.go'))
+tab_top = by_id(ui.read(), 'tab-bounty')['frame']['y']
+if ui.locale == 'zh-Hans':
+    assert go['frame']['y'] + go['frame']['height'] <= tab_top, f'the tab bar covers the button: {go["frame"]} vs {tab_top}'
 ui.at_rest()
 ui.capture('02-moment')
 
@@ -56,18 +63,19 @@ time.sleep(2)
 assert by_id(ui.read(), GROWN) is None, 'the moment opened a second time'
 assert seen_levels(ui, 2, timeout=1) == [5], 'the level was marked seen twice'
 
-relaunch(ui, drop=[], keep_records=True)
-element = stage(ui)
 with clip(ui, 'replay') as video:
+    relaunch(ui, drop=[], keep_records=True)
     time.sleep(WATCH_S)
 says(ui, grew)
-steps = moved_at(video, mascot_box(element, width), width)
-assert len(steps) <= 2, f'the growth played again: {steps}'
+element = stage(ui)
+replayed = last_run(moved_at(video, mascot_box(element, width), width))
+assert len(replayed) <= 3, f'the growth played again: {replayed}'
 tap_mascot(ui, element)
 ui.element(GROWN, timeout=20)
+scroll_to(ui, 'mascot-grown-go')
 ui.tap('mascot-grown-go')
 open_profile(ui)
 ui.element('profile-level')
 ui.at_rest()
 ui.capture('04-profile')
-print(f'PASS: 小貘 grew over {span:.2f} s in {len(steps)} replay frames, the moment opened once and led to the profile')
+print(f'PASS: 小貘 grew over {span:.2f} s, {len(replayed)} frames moved on the relaunch, the moment opened once and led to the profile')

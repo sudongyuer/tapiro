@@ -4,11 +4,6 @@ from driver import Shot, by_id
 from profile import rep_calls
 from recording import frames
 
-BASE_ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
-LEVEL_ARGS = [*BASE_ARGS, '-uiVerifyRepDelayMs', '5000']
-DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx',
-        'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/',
-        'verification/ui/mascot.py', 'verification/ui/recording.py']
 POSES = {'calm': (96, 58, -8), 'urgent': (96, 58, -8), 'live': (86, 54, 2)}
 FRAME_GAP_S = 0.03
 MOVED = 40
@@ -28,6 +23,12 @@ def mascot_box(element, width, state='calm'):
             'width': size + 2 * BOX_PAD, 'height': size + 2 * BOX_PAD}
 
 
+def star_box(element, width, state='calm'):
+    size, right, top = POSES[state]
+    f = element['frame']
+    return {'x': width - right - size + 12, 'y': f['y'] + top - 22, 'width': 42, 'height': 42}
+
+
 def tap_mascot(ui, element, state='calm'):
     size, right, top = POSES[state]
     width = ui.read()[0]['frame']['width']
@@ -37,6 +38,15 @@ def tap_mascot(ui, element, state='calm'):
 def says(ui, text, state='calm', timeout=45):
     ui.wait(lambda items: (by_id(items, f'home-stage-{state}') or {}).get('AXLabel') == text or None,
             f'the stage never said {text!r}', timeout)
+
+
+def last_run(steps, gap=0.35):
+    run = steps[-1:]
+    for at in reversed(steps[:-1]):
+        if run[0] - at > gap:
+            break
+        run.insert(0, at)
+    return run
 
 
 def moved_at(video, box, width):

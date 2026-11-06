@@ -5,10 +5,9 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from mascot import DEPS as MASCOT_DEPS  # noqa: E402
 from profile import label, open_profile, rep_calls, scroll_to  # noqa: E402
 
-DEPS = [*MASCOT_DEPS, 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py']
 SCENE = 'profile'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',
@@ -48,7 +47,8 @@ assert not rep_calls(ui, 'setAccessory', 1, timeout=0), 'a tap on what you wear 
 ui.tap('profile-accessory-backpack')
 ui.wait_label('profile-accessory-backpack', lambda text: text == worn('backpack'), '书包 never became worn')
 assert label(ui, 'profile-accessory-umbrella') == open_row('umbrella')
-assert rep_calls(ui, 'setAccessory', 2, timeout=1) == [{'accessory': 'backpack'}], 'expected one write'
+assert rep_calls(ui, 'setAccessory', 1) == [{'accessory': 'backpack'}], 'the write was not recorded'
+assert len(rep_calls(ui, 'setAccessory', 2, timeout=2)) == 1, 'the write was sent twice'
 ui.at_rest()
 ui.capture('02-changed')
 print('PASS: the picker shows what is worn, changes after the server answers and ignores a tap on the worn one')
