@@ -62,6 +62,11 @@ def within_width(items, identifier):
     assert f['x'] >= 0 and f['x'] + f['width'] <= width + 0.5, f'{identifier} overflows: {f}'
 
 
+def within_row(ui, f, margin=16):
+    width = ui.read()[0]['frame']['width']
+    assert f['x'] + f['width'] <= width - margin, f'past the row: {f}'
+
+
 def intrinsic_width(ui, text):
     binary = compiled('textwidth', SIMULATOR)
     proc = subprocess.run(['xcrun', 'simctl', 'spawn', ui.udid, str(binary), text], capture_output=True, text=True,
@@ -76,6 +81,7 @@ def assert_tier_whole(ui):
                                           and i.get('AXLabel') in tiers), None), 'the tier text never settled')
     need = intrinsic_width(ui, text['AXLabel'])
     assert text['frame']['width'] >= need - 1, f"{text['AXLabel']} is cut: {text['frame']['width']} of {need} pt"
+    within_row(ui, text['frame'])
 
 
 def menu_more(ui):
@@ -105,7 +111,9 @@ def on_screen(items, identifier, bottom_inset=90):
 
 
 def tab_bar_top(items):
-    return min(i['frame']['y'] for i in items if i.get('type') == 'RadioButton')
+    # The tab bar shrinks on scroll, and the 小貘 image keeps the top the expanded bar returns to.
+    return min(i['frame']['y'] for i in items
+               if i.get('type') == 'RadioButton' or 'tapir-button' in (i.get('AXUniqueId') or ''))
 
 
 def assert_clears_tab_bar(ui, identifier, tries=6):
@@ -113,7 +121,9 @@ def assert_clears_tab_bar(ui, identifier, tries=6):
     for drags in range(tries):
         ui.at_rest()
         items = ui.read()
-        f, top = by_id(items, identifier)['frame'], tab_bar_top(items)
+        element = by_id(items, identifier)
+        assert element is not None, f'{identifier} is missing'
+        f, top = element['frame'], tab_bar_top(items)
         print(f"{identifier}: bottom {f['y'] + f['height']:.0f}, tab bar top {top:.0f}, {drags} drags")
         if f['y'] + f['height'] <= top:
             return

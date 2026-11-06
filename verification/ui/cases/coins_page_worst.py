@@ -1,8 +1,7 @@
 """Worst data (`-uiVerifyCoins worst`): 1,238 coins, no free posts left, 129 rows over three pages with long titles. The
 balance reads with a thousands separator; a long title stays on one line inside the screen while VoiceOver reads it whole;
 every month header reads its month (and its year outside this Malaysia year); scrolling to the end of the first page loads the next, and a
-failed next page (`historyMore`) reads 「更早的明细没加载出来 · 重试」, which loads it, and rests clear of the minimised tab
-bar at the end of the list."""
+failed next page (`historyMore`) reads 「更早的明细没加载出来 · 重试」, which loads it, and scrolls clear of the tab bar."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))

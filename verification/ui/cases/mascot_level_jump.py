@@ -8,7 +8,7 @@ from driver import UI, reach_home  # noqa: E402
 from mascot import assert_grown, assert_moment, says, stage, tap_mascot  # noqa: E402
 from profile import assert_clears_tab_bar  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/profile.py', 'verification/ui/recording.py']
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/profile.py', 'verification/ui/recording.py', 'verification/ui/gestures.py']
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyMascot', 'jump']
 LOCALES = ['zh-Hans', 'ms']

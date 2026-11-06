@@ -36,8 +36,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 ## Queue
 
 0. `bun run verify:full` has still not run on main since the reviews and coins milestone; run it when the machine is
-   idle. The milestone's en and ms cases are done (ms on 33563b6, with three layout findings fixed or cleared in
-   `fix/ms-layout`).
+   idle. The milestone's remaining en and ms cases ran on 33563b6 (7 en and 16 ms cases, reported done by the main
+   session; artifacts removed with their worktree), and their three layout findings were closed in `fix/ms-layout`.
 
 1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
@@ -47,6 +47,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 4. Review and coin paging, one stall left (reasoned, not reproduced): a head read that shrinks a long list while no page
    is out can leave the new last row already on screen, so its `onAppear` may not fire until the user scrolls. A sentinel
    row keyed by the cursor would close it.
+5. Bounty board card, not measured: `TierMark` has `layoutPriority(0.5)` without `fixedSize` beside the name and 申请
+   (`BoardCardRows.tsx`), so 「Sangat Boleh Diharap」 may truncate in ms the way the profile header did.
 
 ## Owner decisions pending
 

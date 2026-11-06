@@ -7,7 +7,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from profile import assert_tier_whole, label, open_profile, rep_calls, scroll_to  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py', 'verification/ui/textwidth.swift']
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'verification/ui/gestures.py']
 SCENE = 'profile'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',

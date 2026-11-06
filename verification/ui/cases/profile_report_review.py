@@ -11,7 +11,7 @@ from driver import UI, by_id  # noqa: E402
 from profile import (assert_tier_whole, open_profile, rep_calls, report_review, review_id,  # noqa: E402
                      submit_report, tap_button)
 
-DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/lib/i18n/locales/chat/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/textwidth.swift']
+DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/lib/i18n/locales/chat/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'verification/ui/gestures.py']
 SCENE = 'profile'
 BUDGET = 300
 LOCALES = ['zh-Hans', 'en', 'ms']
