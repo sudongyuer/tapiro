@@ -20,6 +20,7 @@ i18n.init({ resources, lng: 'zh-Hans', initAsync: false, interpolation: { escape
 const t = i18n.t.bind(i18n);
 
 const review = (overrides: Partial<ProfileReview> = {}): ProfileReview => ({
+  reviewerBlockedByMe: false,
   reportable: true,
   id: 'r1',
   face: 'unhappy',
@@ -92,9 +93,7 @@ describe('profile view', () => {
 
   test('the report sheet quotes the face, the chips and the sentence, and no reviewer', () => {
     const quoted = review({ face: 'unhappy', chips: ['late'], sentence: '等了很久' });
-    expect(reviewQuote(quoted, t)).toBe(
-      `${reviewLine(quoted, t)}${t('reputation.profile.listJoin')}等了很久`,
-    );
+    expect(reviewQuote(quoted, t)).toBe(`${reviewLine(quoted, t)}\n等了很久`);
     expect(reviewQuote(quoted, t)).not.toContain('小林');
     expect(reviewQuote(review({ sentence: null }), t)).toBe(reviewLine(review(), t));
   });

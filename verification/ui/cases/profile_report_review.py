@@ -19,7 +19,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 
 ui = UI(*sys.argv[1:])
 open_profile(ui)
-report_review(ui, review_id(2))
+report_review(ui, review_id(2), '00-menu')
 quote = ui.element('profile-report-quote').get('AXLabel') or ''
 assert ui.t('reputation.face.unhappy') in quote and ui.t('reputation.chip.helper.late') in quote, quote
 assert '等了 40 分钟' in quote, quote

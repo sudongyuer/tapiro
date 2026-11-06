@@ -239,6 +239,9 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
 | `profile_gone` | A deleted account reads 这个账号已经注销了 with 返回, no ⋯ | `profile` | `fixture-person-gone` |
 | `profile_reply` | 回复 sheet: count, confirm 回复发出后不能修改, a failed send keeps the text, the second lands and the reply is final | `profile` | `-uiVerifyRepFail reply` |
 | `profile_report_block` | ⋯ → 举报 Mei, a failed 提交 keeps the sheet, the retry offers a block, 屏蔽 then 解除屏蔽 show on the profile | `profile` | `-uiVerifyRepFail report` |
+| `profile_report_review` | Long-press a review → 举报: the copy quoted, a failed 提交 keeps the sheet, the retry offers to block a visible reviewer; a hidden ride reviewer gets no offer | `profile` | `fixture-person-mei` |
+| `profile_report_review_all` | 全部评价: the same sheet, 取消 sends nothing, a review already gone closes the sheet, my own ride review has no menu | `profile` | `fixture-person-mei` |
+| `profile_report_review_self` | My own profile: a review about me can be reported, 回复 still opens | `profile` | self |
 | `tier_drop_no_shows` | 248 A over home: medium sheet, 靠谱度变成了「靠谱」, the no-show with date and title, the way back, 知道了 and 看我的主页 at 44 pt; 知道了 marks drop 1 seen | — | `-uiVerifyTierDrop noShows` |
 | `tier_drop_reviews` | The negative-reviews reason alone, a way back without new people; 看我的主页 marks it seen and pushes your own profile in 我的 | — | `-uiVerifyTierDrop reviews` |
 | `tier_drop_both` | Both reasons (还有 … 条评价); dragging the sheet down marks it seen | — | `-uiVerifyTierDrop both` |

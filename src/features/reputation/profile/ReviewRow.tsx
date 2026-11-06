@@ -1,6 +1,7 @@
 import { Button, ContextMenu, HStack, Spacer, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
+  accessibilityHint,
   accessibilityIdentifier,
   accessibilityLabel,
   background,
@@ -54,10 +55,11 @@ export function ReviewRow({
       alignment="leading"
       spacing={vars['--space-1']}
       modifiers={[
-        fill,
+        frame({ maxWidth: Infinity, minHeight: vars['--touch-min'], alignment: 'leading' }),
         contentShape(shapes.rectangle()),
         accessibilityElement('ignore'),
         accessibilityLabel(reviewLabel(review, owner, self, t)),
+        ...(review.reportable ? [accessibilityHint(t('reputation.report.hint'))] : []),
         accessibilityIdentifier(testID),
       ]}
     >

@@ -114,10 +114,11 @@ const en: typeof zhHans = {
     invalid: 'A reply needs 1 to 200 characters',
   },
   report: {
-    quote: 'Reported review',
+    quote: 'Review you’re reporting',
     reasons: 'Why are you reporting this review?',
     footer:
       'The reviewer won’t know it was reported. Reporting doesn’t remove the review by itself.',
+    hint: 'Open the actions menu to report this review',
   },
   profile: {
     helped: 'People helped',

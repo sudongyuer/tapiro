@@ -102,11 +102,14 @@ def scroll_to(ui, identifier, tries=12):
     raise AssertionError(f'{identifier} never scrolled into view')
 
 
-def report_review(ui, identifier):
+def report_review(ui, identifier, shot=None):
     scroll_to(ui, identifier)
     ui.at_rest()
     ui.press(identifier, 1.2)
     ui.labelled(ui.t('chat.thread.report'))
+    if shot:
+        ui.at_rest()
+        ui.capture(shot)
     ui.tap_label(ui.t('chat.thread.report'))
     ui.element('profile-report', timeout=30)
 

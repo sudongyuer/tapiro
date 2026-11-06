@@ -1,5 +1,8 @@
--- No foreign key: a deleted review must keep its report out of reports_person_once. Deleting a reviewee removes the
--- review but not the target, so a nulled review_id would collide with a report on that person and block the deletion.
+-- No foreign keys to the reported thing: its report must stay out of reports_person_once when it is deleted. Deleting a
+-- reviewee removes the review but not the target, and a message's sender may still be the target when the cascade nulls
+-- message_id, so a nulled id would collide with the next report on that person and block the account deletion.
+alter table public.reports drop constraint reports_message_id_fkey;
+
 alter table public.reports
   add column review_id uuid,
   add column review_face public.review_face,
@@ -28,6 +31,9 @@ as $$
     'role', v.reviewee_role,
     'title', case when shown.details then private.item_title(v.item_kind, v.item_id) end,
     'reviewer', case when shown.details then private.person_json(v.reviewer_id) end,
+    'reviewerBlockedByMe', shown.details and exists (
+      select 1 from public.blocks b where b.blocker_id = (select auth.uid()) and b.blocked_id = v.reviewer_id
+    ),
     'reportable', v.reviewer_id is distinct from (select auth.uid())
   )
   from shown;
@@ -117,7 +123,7 @@ select
   r.thread_id, t.bounty_id, t.ride_id,
   r.message_id, r.message_body, r.message_sent_at, r.message_image_path,
   r.review_id, r.review_face, r.review_chips, r.review_sentence,
-  v.reviewee_id, reviewee.display_name as reviewee_name
+  v.reviewee_id, reviewee.display_name as reviewee_name, v.item_kind as review_item_kind, v.item_id as review_item_id
 from public.reports r
 left join public.profiles reporter on reporter.id = r.reporter_id
 left join public.profiles target on target.id = r.target_id

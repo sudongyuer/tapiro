@@ -53,7 +53,7 @@ export function reviewLine(review: ProfileReview, t: TFunction) {
 export function reviewQuote(review: ProfileReview, t: TFunction) {
   return [reviewLine(review, t), review.sentence]
     .filter((part): part is string => !!part)
-    .join(t('reputation.profile.listJoin'));
+    .join('\n');
 }
 
 export function reviewLabel(review: ProfileReview, owner: string, self: boolean, t: TFunction) {

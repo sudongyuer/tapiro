@@ -49,7 +49,9 @@ export function ProfileReportSheet({
   const { color } = useTheme();
   const card = useProfile(personId);
   const person = card.status === 'idle' ? null : card.data;
-  const review = useProfileReview(personId, reviewId);
+  const live = useProfileReview(personId, reviewId);
+  // A refresh can drop a review of a later page from the store while the sheet is open.
+  const [review] = useState(live);
   const blockable = reviewId === null ? person : (review?.reviewer ?? null);
   const name = personName(blockable?.name ?? null, t);
   const [reason, setReason] = useState<ReportReason | null>(null);
@@ -62,7 +64,8 @@ export function ProfileReportSheet({
 
   const offerBlock = () => {
     // A hidden ride reviewer stays hidden (256 A): only a reviewer the reader can already see is offered.
-    if (!blockable || (blockable.id === person?.id && person.blockedByMe)) {
+    const blocked = reviewId === null ? person?.blockedByMe : review?.reviewerBlockedByMe;
+    if (!blockable || blocked) {
       Alert.alert(t('chat.thread.reported'), undefined, [
         { text: t('chat.thread.ok'), onPress: onClose },
       ]);
@@ -90,12 +93,15 @@ export function ProfileReportSheet({
     setPhase('sending');
     const sent =
       reviewId === null
-        ? profileStore.report(personId, reason, cleanNote(text))
+        ? profileStore.report(personId, reason, cleanNote(text)).then(() => 'sent' as const)
         : profileStore.reportReview(reviewId, reason, cleanNote(text));
     sent
-      .then(() => {
+      .then((outcome) => {
         setPhase('sent');
-        offerBlock();
+        if (outcome === 'sent') return offerBlock();
+        Alert.alert(t('reputation.reply.notFound'), undefined, [
+          { text: t('chat.thread.ok'), onPress: onClose },
+        ]);
       })
       .catch(() => setPhase('failed'));
   };

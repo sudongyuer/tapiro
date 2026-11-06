@@ -116,10 +116,11 @@ const ms: typeof zhHans = {
     invalid: 'Balasan perlu 1 hingga 200 aksara',
   },
   report: {
-    quote: 'Ulasan yang dilaporkan',
-    reasons: 'Kenapa anda melaporkan ulasan ini?',
+    quote: 'Penilaian yang akan dilaporkan',
+    reasons: 'Kenapa anda melaporkan penilaian ini?',
     footer:
-      'Penulis ulasan tidak akan tahu ia dilaporkan. Laporan tidak membuang ulasan ini secara automatik.',
+      'Penulis penilaian tidak akan tahu ia dilaporkan. Laporan tidak membuang penilaian ini secara automatik.',
+    hint: 'Buka menu tindakan untuk melaporkan penilaian ini',
   },
   profile: {
     helped: 'Orang dibantu',

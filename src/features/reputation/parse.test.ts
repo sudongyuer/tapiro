@@ -55,6 +55,7 @@ const PROFILE = {
       role: 'helper',
       title: '帮取快递',
       reviewer: PERSON,
+      reviewerBlockedByMe: true,
       reportable: true,
     },
     {
@@ -68,6 +69,7 @@ const PROFILE = {
       role: 'rider',
       title: null,
       reviewer: null,
+      reviewerBlockedByMe: false,
       reportable: false,
     },
   ],

@@ -96,11 +96,14 @@ export type ReplyFailure = (typeof REPLY_FAILURES)[number];
 export type ReplyResult =
   { ok: true; reviewId: string; reply: Reply } | { ok: false; failure: ReplyFailure };
 
+export type ReviewReportResult = 'sent' | 'gone';
+
 export type ProfileReview = Review & {
   kind: ItemKind;
   role: Role;
   title: string | null;
   reviewer: Person | null;
+  reviewerBlockedByMe: boolean;
   reportable: boolean;
 };
 
@@ -166,7 +169,11 @@ export type ReputationService = {
   pendingTierDrop(): Promise<TierDrop | null>;
   markTierDropSeen(id: number): Promise<void>;
   reportPerson(personId: string, reason: ReportReason, note: string | null): Promise<void>;
-  reportReview(reviewId: string, reason: ReportReason, note: string | null): Promise<void>;
+  reportReview(
+    reviewId: string,
+    reason: ReportReason,
+    note: string | null,
+  ): Promise<ReviewReportResult>;
 };
 
 export type ValidDraft = { face: Face; chips: string[]; sentence: string | null };

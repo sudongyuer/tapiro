@@ -1,5 +1,5 @@
 begin;
-select plan(24);
+select plan(30);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -156,6 +156,22 @@ select is(
   row('unhappy', pg_temp.u('a1'), 'Alice', 'Bob')::text, 'the queue shows the copy, the reviewee and the reviewer'
 );
 
+insert into public.blocks (blocker_id, blocked_id) values (pg_temp.u('c3'), pg_temp.u('b2'));
+set local role authenticated;
+select is(
+  (select i -> 'reviewerBlockedByMe' from jsonb_array_elements(
+    pg_temp.as_user('c3', format('public.profile_reviews(%L)', pg_temp.u('a1'))) -> 'items') i
+   where i ->> 'id' = pg_temp.v(1)::text),
+  'true'::jsonb, 'a visible reviewer I blocked reads as blocked'
+);
+select is(
+  (select i -> 'reviewerBlockedByMe' from jsonb_array_elements(
+    pg_temp.as_user('c3', format('public.profile_reviews(%L)', pg_temp.u('a1'))) -> 'items') i
+   where i ->> 'id' = pg_temp.v(3)::text),
+  'false'::jsonb, 'a hidden reviewer never reads as blocked, or the flag would name them'
+);
+reset role;
+
 select lives_ok(
   $$delete from auth.users where id = pg_temp.u('a1')$$,
   'deleting the reviewee removes the reviews and collides with no report'
@@ -164,6 +180,29 @@ select is(
   (select row(review_id, review_sentence)::text from public.reports
    where reporter_id = pg_temp.u('c3') and review_id = pg_temp.v(1)),
   row(pg_temp.v(1), '等了四十分钟')::text, 'the report and its copy outlive the review, as a message report does'
+);
+
+insert into public.reports (id, reporter_id, target_id, message_id, reason, message_body)
+values
+  ('45100000-0000-0000-0000-000000000001', pg_temp.u('c3'), pg_temp.u('d4'), pg_temp.v(60), 'other', '第一条'),
+  ('45100000-0000-0000-0000-000000000002', pg_temp.u('c3'), pg_temp.u('d4'), pg_temp.v(61), 'other', '第二条'),
+  ('45100000-0000-0000-0000-000000000003', pg_temp.u('c3'), pg_temp.u('d4'), null, 'other', null);
+select lives_ok(
+  $$delete from public.messages where sender_id = pg_temp.u('d4')$$, 'removing a sender''s messages touches no report'
+);
+select is(
+  (select count(*) from public.reports where reporter_id = pg_temp.u('c3') and target_id = pg_temp.u('d4')
+     and message_id is not null),
+  2::bigint, 'message reports keep their id, so they never collide with the person report'
+);
+
+select lives_ok(
+  $$delete from auth.users where id = pg_temp.u('b2')$$, 'deleting the reviewer collides with no report'
+);
+select is(
+  (select row(target_id, review_sentence)::text from public.reports
+   where reporter_id = pg_temp.u('c3') and review_id = pg_temp.v(1)),
+  row(null::uuid, '等了四十分钟')::text, 'the copy outlives the reviewer too; the report no longer points at them'
 );
 
 update public.reports set created_at = now() - interval '1 year 1 minute' where review_id = pg_temp.v(1);

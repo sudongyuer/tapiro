@@ -100,6 +100,7 @@ export const profileReview = (
   role: 'helper',
   title: '帮取快递',
   reviewer: person('p2', '阿明'),
+  reviewerBlockedByMe: false,
   reportable: true,
   ...overrides,
 });

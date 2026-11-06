@@ -125,6 +125,7 @@ const review = (n: number, now: Date, overrides: Partial<ProfileReview> = {}): P
   role: 'helper',
   title: '帮取快递',
   reviewer: FIXTURE_PEOPLE.aming,
+  reviewerBlockedByMe: false,
   reportable: true,
   ...overrides,
 });
@@ -150,7 +151,15 @@ export function fixtureReviews(variant: RepVariant, now: Date): ProfileReview[] 
     }
     if (n === 3)
       return review(n, now, { kind: 'ride', role: 'rider', title: null, reviewer: null });
-    if (n === 4) return review(n, now, { reviewer: ME, reportable: false });
+    if (n === 4) {
+      return review(n, now, {
+        kind: 'ride',
+        role: 'rider',
+        title: null,
+        reviewer: null,
+        reportable: false,
+      });
+    }
     if (n % 7 === 0) return review(n, now, { face: 'okay', chips: ['no_heads_up'] });
     return review(n, now);
   });
