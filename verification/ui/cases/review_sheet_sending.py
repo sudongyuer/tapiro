@@ -11,7 +11,7 @@ from review import SHEET, enabled, open_sheet, sealed, shot  # noqa: E402
 DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/gestures.py']
 SCENE = 'review-sheet'
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyRepDelayMs', '9000']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyRepDelayMs', '20000']
 
 ui = UI(*sys.argv[1:])
 ui.element('review-face-happy', timeout=60)
@@ -28,7 +28,7 @@ drag(ui, (w / 2, 72), (w / 2, h * 0.8))
 items = ui.read()
 assert by_id(items, SHEET), 'the sheet closed while sending'
 assert not any(i.get('AXLabel') == ui.t('reputation.sheet.discardTitle') for i in items), 'a pull asked while sending'
-ui.element('review-sealed-ok', timeout=20)
+ui.element('review-sealed-ok', timeout=40)
 assert label(ui, 'review-sealed-title') == ui.t('reputation.sheet.sealedTitle', name='小林')
 sealed(ui, '小林', 7)
 print('PASS: sending locks the sheet and the seal waits for the answer')
