@@ -1,6 +1,7 @@
 """While sending (R7, 257 board): the pill reads 提交中 with a spinner, 取消 and the form are off, a pull neither closes the
 sheet nor asks anything, and the seal starts only after the server answers."""
 import sys
+import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
@@ -25,9 +26,11 @@ shot(ui, '01-sending')
 items = ui.read()
 w, h = items[0]['frame']['width'], items[0]['frame']['height']
 drag(ui, (w / 2, 72), (w / 2, h * 0.8))
-items = ui.read()
-assert by_id(items, SHEET), 'the sheet closed while sending'
-assert not any(i.get('AXLabel') == ui.t('reputation.sheet.discardTitle') for i in items), 'a pull asked while sending'
+deadline = time.monotonic() + 2.5
+while time.monotonic() < deadline:
+    items = ui.read()
+    assert by_id(items, SHEET), 'the sheet closed while sending'
+    assert not any(i.get('AXLabel') == ui.t('reputation.sheet.discardTitle') for i in items), 'a pull asked while sending'
 ui.element('review-sealed-ok', timeout=40)
 assert label(ui, 'review-sealed-title') == ui.t('reputation.sheet.sealedTitle', name='小林')
 sealed(ui, '小林', 7)

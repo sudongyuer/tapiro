@@ -1,5 +1,6 @@
 """The server took the review but the answer was lost (`submitLost`): the reload shows the review as stored, so the sheet
-seals instead of saying 没提交成功, the draft is gone, and nothing was sent twice."""
+seals instead of ever saying 没提交成功, and nothing was sent twice. The cases after a failed reload are unit tests
+(`reviewStore.test.ts`)."""
 import sys
 import time
 
@@ -11,16 +12,22 @@ from review import open_sheet, sealed, shot  # noqa: E402
 DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
 BUDGET = 200
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'submitLost']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'submitLost', '-uiVerifyRepDelayMs', '1500']
 
 ui = UI(*sys.argv[1:])
 open_sheet(ui)
-ui.element('review-face-happy', timeout=30)
+ui.element('review-face-happy', timeout=45)
 ui.tap('review-face-happy')
 ui.element('review-submit')
 ui.tap('review-submit')
-ui.element('review-sealed-ok', timeout=20)
-assert by_id(ui.read(), 'review-failed') is None, 'a stored review reads as failed'
+
+
+def sealed_or_failed(items):
+    assert by_id(items, 'review-failed') is None, 'a stored review read as failed on the way to the seal'
+    return by_id(items, 'review-sealed-ok')
+
+
+ui.wait(sealed_or_failed, 'the seal never came', 30)
 sealed(ui, '小林', 7)
 assert rep_calls(ui, 'submitReview', 1, timeout=15), 'nothing was submitted'
 time.sleep(2)  # a replay would follow the lost answer

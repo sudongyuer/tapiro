@@ -26,6 +26,7 @@ export const REP_FAIL_POINTS = [
   'pending',
   'submit',
   'submitLost',
+  'submitLocked',
   'reply',
   'profile',
   'reviews',
@@ -78,7 +79,9 @@ export function createFixtureReputationService({
 }: FixtureRepOptions): ReputationService {
   const failing = new Set<RepFailPoint>(
     variant === 'failed'
-      ? REP_FAIL_POINTS.filter((point) => point !== 'profileAgain' && point !== 'submitLost')
+      ? REP_FAIL_POINTS.filter(
+          (point) => !['profileAgain', 'submitLost', 'submitLocked'].includes(point),
+        )
       : failFirst,
   );
   const data = variant === 'failed' ? 'many' : variant;
@@ -121,6 +124,18 @@ export function createFixtureReputationService({
       const pairs = pairsOf(target.kind, target.itemId);
       const pair = pairs.find((row) => row.counterpart?.id === target.reviewee);
       if (!pair) return { ok: false, failure: 'notFound' };
+      if (failing.delete('submitLocked')) {
+        const shown: ReviewPair = {
+          ...pair,
+          state: 'revealed',
+          mine: pair.mine && { ...pair.mine, editable: false },
+        };
+        items.set(
+          pairKey(target.kind, target.itemId),
+          pairs.map((row) => (row === pair ? shown : row)),
+        );
+        return { ok: false, failure: 'locked' };
+      }
       if (pair.state === 'ended' || pair.state === 'revealed') {
         return { ok: false, failure: pair.state === 'ended' ? 'closed' : 'locked' };
       }

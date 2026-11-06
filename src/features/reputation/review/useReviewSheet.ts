@@ -1,11 +1,11 @@
 import { usePreventRemove } from 'expo-router';
-import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { AccessibilityInfo, Alert, Keyboard, type ViewInstance } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 
 import { useReviewSubmit } from '../hooks';
-import { canReview, draftChanged, draftFromReview } from '../model';
+import { draftChanged, draftFromReview } from '../model';
 import { reviewStore } from '../services';
 import {
   pairKey,
@@ -60,10 +60,8 @@ export function useReviewSheet(
 ) {
   const { t } = useI18n();
   const submitState = useReviewSubmit(target);
-  const [base] = useState(() => draftFromReview(pair));
-  const [draft, setDraft] = useState<ReviewDraft>(() =>
-    pair.mine && !canReview(pair) ? base : (reviewStore.draft(target) ?? base),
-  );
+  const base = draftFromReview(pair);
+  const [draft, setDraft] = useState<ReviewDraft>(() => reviewStore.draft(target) ?? base);
   const [submitting, setSubmitting] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const busy = submitting || submitState?.phase === 'sending';
@@ -71,7 +69,9 @@ export function useReviewSheet(
   const blocked = busy || outcome ? null : blockedBy(pair);
   const final = blocked ?? (failure && FINAL_FAILURES.includes(failure) ? failure : null);
   const line = final ?? failure;
-  const changed = draftChanged(draft, base);
+  const stored = blocked !== null && pair.mine !== null;
+  const shown = stored ? base : draft;
+  const changed = draftChanged(shown, base);
 
   useDiscardPrompt(outcome === null && (busy || (changed && !final)), busy, () =>
     reviewStore.saveDraft(target, null),
@@ -83,31 +83,17 @@ export function useReviewSheet(
     if (line) AccessibilityInfo.announceForAccessibility(t(`reputation.sheet.${line}`));
   }, [line, t]);
 
-  const finish = useCallback(
-    async (revealed: boolean) => {
-      const from = await measured(face.current);
-      setOutcome({ revealed, from });
-      AccessibilityInfo.announceForAccessibility(
-        revealed
-          ? t('reputation.sheet.revealedTitle')
-          : t('reputation.sheet.sealedTitle', { name }),
-      );
-    },
-    [face, name, t],
-  );
-
-  const landedAnyway =
-    failure === 'failed' &&
-    pair.mine !== null &&
-    changed &&
-    !draftChanged(draft, draftFromReview(pair));
-
   useEffect(() => {
-    if (!landedAnyway) return;
-    reviewStore.dismissFailure(target);
-    reviewStore.saveDraft(target, null);
-    void finish(pair.state === 'revealed');
-  }, [landedAnyway, target, finish, pair.state]);
+    if (!busy && !changed) reviewStore.saveDraft(target, null);
+  }, [busy, changed, target]);
+
+  const finish = async (revealed: boolean) => {
+    const from = await measured(face.current);
+    setOutcome({ revealed, from });
+    AccessibilityInfo.announceForAccessibility(
+      revealed ? t('reputation.sheet.revealedTitle') : t('reputation.sheet.sealedTitle', { name }),
+    );
+  };
 
   const update = (next: ReviewDraft) => {
     setDraft(next);
@@ -124,7 +110,7 @@ export function useReviewSheet(
   };
 
   return {
-    draft,
+    draft: shown,
     update,
     submit,
     outcome,

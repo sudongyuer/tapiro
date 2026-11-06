@@ -93,7 +93,7 @@ function Envelope({
   }, [dx, dy]);
 
   return (
-    <View ref={slot} style={styles.slot} onLayout={measure}>
+    <View ref={slot} style={styles.slot} onLayout={measure} testID="review-envelope">
       <Animated.View style={[StyleSheet.absoluteFill, envelope]}>
         <Svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} accessible={false}>
           <Rect x={0} y={0} width={WIDTH} height={HEIGHT} rx={10} fill={paint.ink} {...rim} />

@@ -38,6 +38,10 @@ assert len(rep_calls(ui, 'submitReview', 2, timeout=2)) == 1, 'the failed review
 ui.at_rest()
 shot(ui, '02-failed')
 
+ui.tap('review-chip-no_heads_up')
+ui.wait(lambda items: by_id(items, 'review-failed') is None, 'editing did not clear the failure line', 10)
+ui.tap('review-chip-no_heads_up')
+
 ui.tap_label(ui.t('reputation.sheet.cancel'))
 ui.labelled(ui.t('reputation.sheet.discardTitle'))
 ui.tap_label(ui.t('reputation.sheet.discardKeep'))
