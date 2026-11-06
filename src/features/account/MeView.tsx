@@ -39,8 +39,10 @@ export function MeView({
   avatarUrl,
   payeeDue,
   stickerCount,
+  coinCount,
   onOpenProfile,
   onOpenStickers,
+  onOpenCoins,
   onOpenPayee,
   onOpenBlocked,
   onOpenSettings,
@@ -49,8 +51,10 @@ export function MeView({
   avatarUrl: string | null;
   payeeDue: boolean;
   stickerCount: number | null;
+  coinCount: string | null;
   onOpenProfile: (() => void) | null;
   onOpenStickers: () => void;
+  onOpenCoins: () => void;
   onOpenPayee: () => void;
   onOpenBlocked: () => void;
   onOpenSettings: () => void;
@@ -69,6 +73,12 @@ export function MeView({
             value={stickerCount === null ? null : t('stickers.count', { count: stickerCount })}
             onPress={onOpenStickers}
             testID="me-stickers"
+          />
+          <NavRow
+            label={t('coins.row')}
+            value={coinCount}
+            onPress={onOpenCoins}
+            testID="me-coins"
           />
           <NavRow
             label={t('payee.meRow')}

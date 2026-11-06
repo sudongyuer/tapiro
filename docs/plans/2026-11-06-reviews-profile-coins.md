@@ -6,8 +6,7 @@
 
 **Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
-(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06). Questions 256–259 below are open; Tasks 2, 8 and 10 do not
-depend on them.
+(2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 6 (tier drop) and 8 (coins in 我的) are built (2026-11-06). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257.
 
 **Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
 profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
@@ -168,7 +167,7 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
 - **Verify fixtures:** `-uiVerifyReviews` / `-uiVerifyProfile` (`many` default, `one`, `empty`, `failed`, `worst`),
   `-uiVerifyRepFail <state,pending,submit,reply,profile,reviews,mascot,accessory,tierDrop>` (fail once),
   `-uiVerifyRepDelayMs`; `-uiVerifyCoins` (same variants), `-uiVerifyCoinsFail <balance,history,feedStatus,feed,
-invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are recorded under `uiVerifyRepCalls` and
+invite,redeem,historyAgain,historyMore>` (`historyAgain` fails the second first-page read, a refresh; `historyMore` the first next page), `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are recorded under `uiVerifyRepCalls` and
   `uiVerifyCoinsCalls`. A ride id ending in `-rider` gives the rider's view (one organiser row); other ride ids give
   the organiser's four rows (open, sealed, they reviewed, ended). The friend code is `7KQ3XP`, mine `M8WQ4K`.
 - **256 / 258 / 259:** nothing in the client depends on the answers: ride reviews parse with or without a route and a
@@ -202,6 +201,20 @@ invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are reco
 | D6  | Dates are month and day in `<language>-MY` on the device clock (10月7日, 7 Oct, 7 Okt); long titles are shown whole                                                                                                                                                                                                                                                                                                                                                                                    | Malaysian date order in en; nothing hidden                                 |
 | D7  | 看我的主页 is the plain pill of the delete-account sheet (label colour), not the drawing's accent-coloured text                                                                                                                                                                                                                                                                                                                                                                                        | One secondary style for sheets                                             |
 | D8  | New en / ms wording: reviews 「N review(s) mentioned something that went wrong」 / 「N ulasan menyebut perkara yang tidak berjalan baik」; steps 「get N more good review(s)」 / 「dapatkan N lagi ulasan baik」; fallback 「Keep finishing smoothly…」 / 「Terus selesaikan dengan lancar…」; a missing title Bounty / Carpool (as on the profile), Ganjaran / Tumpangan; 知道了 reads 「Got It」 in title case like the other en buttons (the board wrote 「Got it」). Malay needs the native review | Boards had only the drawn sentence                                         |
+
+## ★ Coins defaults (Task 8, 2026-11-06, for veto)
+
+| #   | Decision ★                                                                                                                                                                                                                                                                                                                                                                 | Why                                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| C1  | 我的 gets a 「貘币」 row right under 一起办成的事 with the balance on the right (grouped digits, 1,234) and a chevron; during the first load, after a failed load and after a failed refresh the row shows no number (a refresh in flight keeps the last good number) (never 0, never an old number as current); the page says why                                         | 251 A; a failure is never 0                                                             |
+| C2  | The row has no coin icon: the app has no coin art yet (the board's TapirCoin is canvas-only), and the other rows carry none                                                                                                                                                                                                                                                | Never draw a stand-in icon in product UI; the coin art joins the accessory drawing task |
+| C3  | The 貘币 page is a pushed Form titled 貘币 (inline title): the balance in large rounded bold digits, then 「本月免费发布还剩 n 条（共 3 条）」, then one section per Malaysia month (newest first): 「11 月」 this year, 「2025 年 11 月」 otherwise (en 「November」 / 「November 2025」, ms 「November」 / 「November 2025」; the month names are copy keys, not `Intl`) | 251 A drawing; the year only when it differs                                            |
+| C4  | A row reads the reason, with 「 · 标题」 for spends, refunds and help (one line, cut at the end), then the signed amount (+1 / −1, semibold) and the date as month and day on the device clock (11月2日, 2 Nov), like D6; VoiceOver reads the whole title, the amount and the date                                                                                         | Board text; nothing hidden from VoiceOver                                               |
+| C5  | A failed first load of the balance or the history shows one 「没加载出来」 card with 重试 (reloads both) in place of what is missing; what did load stays; the history never reads 「还没有明细」 after a failure                                                                                                                                                          | Data integrity                                                                          |
+| C6  | Pull to refresh reloads the balance and the history; a failed refresh keeps them with 「没刷新成功 · 下面是上次加载的貘币」 and 重试 (P9 pattern). A list marked stale by a signal while off screen reads again on open and shows no warning                                                                                                                               | Stale is never shown as current                                                         |
+| C7  | The next page (50 rows) loads when the last row appears; a failed page reads 「更早的明细没加载出来 · 重试」                                                                                                                                                                                                                                                               | Same as 全部评价                                                                        |
+| C8  | No 买貘币 anywhere (252 A); the free-post line has no 「下个月 1 号」 date, since the no-balance sheet already says it                                                                                                                                                                                                                                                     | 252 A; the drawing has only the count                                                   |
+| C9  | New en / ms wording: stale 「Couldn’t refresh · Showing your coins from last time」 / 「Tidak dapat dimuat semula · Ini Syiling yang dimuatkan sebelum ini」; VoiceOver balance 「N coin(s)」 / 「N Syiling」; loading 「Loading coins」 / 「Memuatkan Syiling」. Malay needs the native review                                                                            | Boards had no such lines                                                                |
 
 ## File structure
 
@@ -261,7 +274,7 @@ invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are reco
    「我长大了！」 bubble until tapped; the tap opens 「小貘长大的时刻」 (RepBC2) once and marks the level seen; the
    accessory picker on your own profile; Reduce Motion swaps the image. UI cases `mascot_level_up`,
    `mascot_accessory`; motion: one appearance with video.
-8. **Coins in 我的** (251 A, 252 A): a 「貘币 n」 row beside 一起办成的事 pushing the 貘币 page: the balance, free posts
+8. **Coins in 我的** — **done 2026-11-06** (251 A, 252 A; ★ details in 「★ Coins defaults」): a 「貘币 n」 row beside 一起办成的事 pushing the 貘币 page: the balance, free posts
    left this month and the monthly history; a failed load reads 「没加载出来 · 重试」, never 0. UI cases `coins_page`,
    `coins_page_empty`, `coins_page_failed`, `coins_page_worst`.
 9. **Weekly feed** (253 A, 254 A, after 257): tapping 小貘 on the stage drops a leaf and chews once; 「谢谢！+1 貘币」
@@ -276,7 +289,11 @@ invite,redeem>`, `-uiVerifyCoinsDelayMs`, `-uiVerifyInviteDraft`; calls are reco
     selection (the cases above in zh-Hans light, `en` for new copy, `ms` where marked, dark for the review sheet and the
     profile); the foundation spec's Implementation Record for step 6 and the step 5 part.
 
-## Questions (2026-11-06, open)
+## Questions (2026-11-06, answered)
+
+Answered later on 2026-11-06 (owner, 「都按推荐」, relayed by the main session): **256 A**, **257 a1 + b1 + c1**,
+**258 A**, **259 A**. The ★ defaults of Task 1, Task 2, Task 5 (P1–P10) and Task 6 (D1–D8) are accepted; the Task 8
+coins defaults (C1–C9) came after and stay listed for veto.
 
 256. Ride reviews on someone else's profile: **A★** show 「拼车」 without the route (a short name can be someone's home)
      and without the reviewer (who rode with whom); the reviewee still sees both on their own profile; **B** show the

@@ -44,3 +44,7 @@ export function useInvite() {
   const redeem = useCoins((state) => state.redeem);
   return { invite, redeem };
 }
+
+export function useCoinsReadFailed(key: LoadKey) {
+  return useCoins((state) => state.readFailed[key] === true);
+}

@@ -22,6 +22,7 @@ export default function MeLayout() {
         name="stickers"
         options={{ title: t('stickers.book.title'), headerTitle: '' }}
       />
+      <Stack.Screen name="coins" options={{ title: t('coins.title') }} />
       <Stack.Screen name="payee" options={{ title: t('payee.title') }} />
       <Stack.Screen name="blocked" options={{ title: t('block.list.title') }} />
       <Stack.Screen name="profile/[id]" options={PROFILE_SCREEN_OPTIONS} />

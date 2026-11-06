@@ -21,8 +21,19 @@ export const COINS_FAIL_POINTS = [
   'feed',
   'invite',
   'redeem',
+  'historyAgain',
+  'historyMore',
 ] as const;
 export type CoinsFailPoint = (typeof COINS_FAIL_POINTS)[number];
+
+const FIRST_CALLS: readonly CoinsFailPoint[] = [
+  'balance',
+  'history',
+  'feedStatus',
+  'feed',
+  'invite',
+  'redeem',
+];
 
 export function coinsFailPoints(value: string | undefined): CoinsFailPoint[] {
   const parts = (value ?? '').split(',').map((part) => part.trim());
@@ -90,7 +101,8 @@ export function createFixtureCoinsService({
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
 }): CoinsService {
-  const failing = new Set<CoinsFailPoint>(variant === 'failed' ? COINS_FAIL_POINTS : failFirst);
+  const failing = new Set<CoinsFailPoint>(variant === 'failed' ? FIRST_CALLS : failFirst);
+  let firstPages = 0;
   const data = variant === 'failed' ? 'many' : variant;
   const ledger = rows(data, now());
   let coins = ledger.reduce((sum, row) => sum + row.delta, 0) + (data === 'worst' ? 1105 : 0);
@@ -148,7 +160,9 @@ export function createFixtureCoinsService({
       };
     },
     async history(before) {
-      await step('history', 'history', { before });
+      const again = before === null && firstPages++ > 0 && failing.has('historyAgain');
+      const point = before !== null ? 'historyMore' : again ? 'historyAgain' : 'history';
+      await step(point, 'history', { before });
       const from = before === null ? 0 : ledger.findIndex((row) => row.id === before) + 1;
       const items = ledger.slice(from, from + HISTORY_PAGE_SIZE);
       const hasMore = ledger.length > from + HISTORY_PAGE_SIZE;
