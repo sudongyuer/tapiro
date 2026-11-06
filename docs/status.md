@@ -35,6 +35,10 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Queue
 
+0. The reviews and coins milestone stopped on time before en finished (6 of 13) and before ms: run
+   `mascot_level_up`, `weekly_feed`, `weekly_feed_already`, `coins_page`, `invite_page`, `invite_redeem_error`,
+   `profile_report_review` in en, and the `*_worst` cases in ms, at the next idle `verify:full`.
+
 1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
 3. The 消息 list has the same two gaps as review paging had: `loadMoreThreads` returns while a reload is out, and drops a

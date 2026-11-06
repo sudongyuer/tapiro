@@ -811,9 +811,9 @@ account, and steps 8 and 9 remain; the spec stays `approved`.
 - Copy: every key of the zh-Hans, en and ms objects (1841) exists and is non-empty in all three, with the same
   placeholders.
 - Milestone run on current main (2026-11-07; app built from 737d582; the selection and reasons are in
-  `docs/retros/2026-11-07-reputation-wrap-up.md`): zh-Hans light 89 cases and zh-Hans dark 25 all ended in a passing
-  assertion. Two of the light ones (`mascot_accessory_failed`, `profile_entry_detail`) and dark `review_sheet` lost only
-  their recording on the last run. en light: 6 of 13 before the time limit; ms: not reached. No product bug found.
+  `docs/retros/2026-11-07-reputation-wrap-up.md`): zh-Hans light 90 cases and zh-Hans dark 25 all ended in a passing
+  assertion. Three of the light ones (`mascot_accessory_failed`, `profile_entry_detail`, `sticker_book_labels`) and dark `review_sheet` lost only
+  their recording on the last run. en light: 6 of 13 before the time limit; ms: not reached. No product bug found. `verify:smoke` 4 of 4.
 - First-run failures, all rerun: automation-session timeouts (a stuck `Tapiro Verify`, load up to 175);
   `sticker_book` (a 0.3 s swipe no longer pages on iOS 27.2; the case now swipes for 0.8 s);
   `mascot_level_collapsed` and `home_settled_collect` under load (passed alone with `--workers 1`);
