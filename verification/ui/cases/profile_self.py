@@ -25,7 +25,8 @@ assert lv4 in level and ui.tn('reputation.profile.nextLevel', 2, label=lv5) in l
 for accessory in ('red_hat', 'backpack', 'umbrella'):
     name = ui.t(f'reputation.accessory.{accessory}')
     found = label(ui, f'profile-accessory-{accessory}')
-    assert found == ui.t('reputation.profile.accessoryUnlockedA11y', name=name), found
+    key = 'accessoryWornA11y' if accessory == 'umbrella' else 'accessoryUnlockedA11y'
+    assert found == ui.t(f'reputation.profile.{key}', name=name), found
 scarf = label(ui, 'profile-accessory-scarf')
 assert scarf == ui.t('reputation.profile.accessoryLockedA11y', name=ui.t('reputation.accessory.scarf'), level=5), scarf
 assert_order(items, 'profile-name', 'profile-helped', 'profile-level', 'profile-accessory-scarf')

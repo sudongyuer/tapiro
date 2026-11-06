@@ -1,0 +1,32 @@
+"""RepBC2 when the level moved more than one step, and past the named levels: Lv.1 → Lv.3 lists 小红帽 and 书包; Lv.5 →
+Lv.6 reads 大貘 and has no 解锁了 card, since cover colours are not built."""
+import sys
+
+sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import relaunch  # noqa: E402
+from driver import UI, reach_home  # noqa: E402
+from mascot import BASE_ARGS, DEPS, assert_moment, says, stage, tap_mascot  # noqa: E402,F401
+
+BUDGET = 240
+ARGS = [*BASE_ARGS, '-uiVerifyMascot', 'jump']
+LOCALES = ['zh-Hans', 'ms']
+
+ui = UI(*sys.argv[1:])
+reach_home(ui)
+element = stage(ui)
+says(ui, ui.t('reputation.level.grewUp'))
+ui.at_rest()
+tap_mascot(ui, element)
+assert_moment(ui, 3, 8, 1, 3, [(2, 'red_hat'), (3, 'backpack')])
+ui.at_rest()
+ui.capture('01-two-levels')
+
+relaunch(ui, drop=['-uiVerifyMascot', 'jump'], add=['-uiVerifyMascot', 'grown'])
+element = stage(ui)
+says(ui, ui.t('reputation.level.grewUp'))
+ui.at_rest()
+tap_mascot(ui, element)
+assert_moment(ui, 6, 40, 5, 6, [])
+ui.at_rest()
+ui.capture('02-past-named')
+print('PASS: two levels list two accessories and Lv.6 lists none')
