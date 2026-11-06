@@ -27,6 +27,7 @@ ui.gone('profile-report', timeout=30)
 
 reply = f'{review_id(1)}-reply-button'
 scroll_to(ui, reply)
+ui.at_rest()  # a tap during the sheet's dismissal or the drag's settle lands on nothing
 ui.tap(reply)
 ui.element('profile-reply', timeout=30)
 ui.at_rest()
