@@ -21,7 +21,7 @@ export function growScale(crouched: number, grown: number, low: number) {
   return 1 + (low - 1) * crouched + (1 - low) * grown;
 }
 
-export type GrowStep = 'hold' | 'play' | 'finish' | 'rest';
+export type GrowStep = 'hold' | 'play' | 'finish';
 
 export function growStep({
   levelUp,
@@ -35,5 +35,5 @@ export function growStep({
   visible: boolean;
 }): GrowStep {
   if (levelUp && level > played) return visible ? 'play' : 'hold';
-  return visible ? 'rest' : 'finish';
+  return 'finish';
 }

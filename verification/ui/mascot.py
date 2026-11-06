@@ -1,5 +1,7 @@
+import json
 import tempfile
 
+from choose import defaults
 from driver import Shot, by_id, token
 from profile import rep_calls
 from recording import frames
@@ -89,13 +91,21 @@ def ink_top(shot, box, ui):
 
 
 def assert_grown(ui, shot, element, width, wear, state='calm'):
-    box = mascot_box(element, width, state)
-    worn = colour_count(shot, box, token(wear, ui.appearance))
-    assert worn > 40, f'the accessory is not visible on 小貘: {worn} px of {wear}'
+    assert_wearing(ui, shot, element, width, wear, state)
     f = element['frame']
     bubble = {'x': 16, 'y': f['y'] + 18, 'width': 90, 'height': 36}
     white = colour_count(shot, bubble, token('--color-stage-bubble', ui.appearance))
     assert white > 200, f'the bubble is not visible: {white} px'
+
+
+def rep_times(ui, name):
+    text = defaults(ui, 'uiVerifyRepCalls')
+    return [call['at'] for call in json.loads(text or '[]') if call['name'] == name]
+
+
+def assert_wearing(ui, shot, element, width, wear, state='calm'):
+    worn = colour_count(shot, mascot_box(element, width, state), token(wear, ui.appearance))
+    assert worn > 40, f'小貘 wears nothing at rest: {worn} px of {wear}'
 
 
 def seen_levels(ui, count=1, timeout=10):

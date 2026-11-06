@@ -56,6 +56,18 @@ describe('tier drop', () => {
 });
 
 describe('mascot', () => {
+  test('the seen write counts as in flight until it answers', async () => {
+    const answers: ((value: ReturnType<typeof mascot>) => void)[] = [];
+    const store = setup({
+      markLevelSeen: () => new Promise((resolve) => answers.push(resolve)),
+    });
+    const write = store.markLevelSeen(2);
+    expect(store.markingLevel()).toBe(true);
+    answers[0](mascot({ seenLevel: 2, levelUp: false }));
+    await write;
+    expect(store.markingLevel()).toBe(false);
+  });
+
   test('marking the level seen replaces the mascot with the server answer', async () => {
     const store = setup({
       myMascot: async () => mascot(),

@@ -46,7 +46,7 @@ describe('grow step', () => {
 
   test('plays once when the stage is visible', () => {
     expect(growStep({ ...up, visible: true })).toBe('play');
-    expect(growStep({ ...up, played: 5, visible: true })).toBe('rest');
+    expect(growStep({ ...up, played: 5, visible: true })).toBe('finish');
   });
 
   test('waits for a stage that is collapsed or off screen', () => {
@@ -58,7 +58,7 @@ describe('grow step', () => {
   });
 
   test('a level already seen never plays, even if not played here', () => {
-    expect(growStep({ levelUp: false, level: 5, played: 0, visible: true })).toBe('rest');
+    expect(growStep({ levelUp: false, level: 5, played: 0, visible: true })).toBe('finish');
   });
 });
 

@@ -44,7 +44,7 @@ function verifyService() {
     failFirst: fixtureRepFailPoints(uiVerifyArgument('uiVerifyRepFail')),
     delayMs: Number(uiVerifyArgument('uiVerifyRepDelayMs') ?? 0) || 0,
     onCall: (name, args) => {
-      calls.push({ name, args });
+      calls.push({ name, args, at: Date.now() });
       Settings.set({ [CALLS_KEY]: JSON.stringify(calls) });
     },
   });

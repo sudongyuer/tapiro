@@ -47,6 +47,7 @@ const CARD_OVERLAP = STAGE_HILL_HEIGHT - 18;
 const STRIP_FADE = 80;
 const BUBBLE_FADE = 90;
 const BUBBLE_TOP = 18;
+const MASCOT_TOP = 8;
 const BEFORE_FIRST_SCROLL = -100000;
 // useHeaderHeight reports the expanded large-title header; the strip hangs under the compact bar (54 pt on iOS 26).
 const COMPACT_BAR = 54;
@@ -68,7 +69,7 @@ export type HomeScreenProps = {
   refreshControl?: ReactElement<RefreshControlProps>;
   chat?: HomeChat;
   actor?: StageActor;
-  onStageCollapsed?: (collapsed: boolean) => void;
+  onMascotShown?: (shown: boolean) => void;
 };
 
 export function HomeScreen({
@@ -83,7 +84,7 @@ export function HomeScreen({
   refreshControl,
   chat,
   actor,
-  onStageCollapsed,
+  onMascotShown,
 }: HomeScreenProps) {
   const { t } = useI18n();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
@@ -108,7 +109,15 @@ export function HomeScreen({
   const stripBottom = headerHeight + STRIP_ROW;
   const [stripShown, setStripShown] = useState(false);
 
-  useEffect(() => onStageCollapsed?.(stripShown), [onStageCollapsed, stripShown]);
+  const [mascotShown, setMascotShown] = useState(true);
+  useEffect(() => onMascotShown?.(mascotShown), [onMascotShown, mascotShown]);
+
+  useAnimatedReaction(
+    () => -offset.value - MASCOT_TOP >= headerHeight,
+    (shown, previous) => {
+      if (shown !== previous) scheduleOnRN(setMascotShown, shown);
+    },
+  );
 
   useAnimatedReaction(
     () => STAGE_HEIGHT - offset.value < stripBottom + STRIP_FADE / 2,

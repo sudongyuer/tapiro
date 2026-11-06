@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   cancelAnimation,
@@ -5,6 +6,7 @@ import {
   ReduceMotion,
   useAnimatedReaction,
   useAnimatedStyle,
+  useDerivedValue,
   useReducedMotion,
   useSharedValue,
   withSpring,
@@ -16,6 +18,7 @@ import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import type { StageActor } from '@/ui/MascotStage';
 
 import { useMyMascot } from '../hooks';
+import { accessoryLevel } from '../model';
 import { easeEnter, progress } from '../review/sealTimeline';
 import { growMarks, meStore } from '../services';
 import {
@@ -43,6 +46,7 @@ export function useStageGrowth({
   const data = mascot.status === 'idle' ? null : mascot.data;
   const level = data?.level ?? 1;
   const levelUp = data?.levelUp ?? false;
+  const newWear = data?.accessory ? accessoryLevel(data.accessory) > data.seenLevel : false;
   const reduced = useReducedMotion() || uiVerifyReduceMotion;
   const total = reduced ? GROW_REDUCED.total : GROW.total;
 
@@ -60,10 +64,11 @@ export function useStageGrowth({
   }, [clock, grown, total]);
 
   useEffect(() => {
-    if (visible) opened.current = false;
     const step = growStep({ levelUp, level, played: played.current, visible });
-    if (step === 'finish') finish();
-    if (step !== 'hold' && step !== 'play') return;
+    if (step === 'finish') {
+      finish();
+      return;
+    }
     clock.set(0);
     grown.set(0);
     if (step === 'hold') return;
@@ -77,6 +82,12 @@ export function useStageGrowth({
       }),
     );
   }, [levelUp, level, visible, userId, total, clock, grown, finish]);
+
+  useFocusEffect(
+    useCallback(() => {
+      opened.current = false;
+    }, []),
+  );
 
   useAnimatedReaction(
     () => !reduced && clock.value >= GROW.crouch.end,
@@ -104,22 +115,17 @@ export function useStageGrowth({
   });
 
   const wearStyle = useAnimatedStyle(() => {
-    if (reduced) return { opacity: progress(clock.value, GROW_REDUCED.wear) };
-    const shown = progress(clock.value, GROW.wear);
-    return {
-      opacity: shown,
-      transform: [{ scale: GROW_WEAR_FROM + (1 - GROW_WEAR_FROM) * shown }],
-    };
+    if (!newWear) return { opacity: 1, transform: [{ scale: 1 }] };
+    const shown = progress(clock.value, reduced ? GROW_REDUCED.wear : GROW.wear);
+    const scale = reduced ? 1 : GROW_WEAR_FROM + (1 - GROW_WEAR_FROM) * shown;
+    return { opacity: shown, transform: [{ scale }] };
   });
 
-  const revealStyle = useAnimatedStyle(() => {
-    if (reduced) return { opacity: progress(clock.value, GROW_REDUCED.bubble) };
-    const shown = progress(clock.value, GROW.bubble);
-    return {
-      opacity: shown,
-      transform: [{ translateY: GROW_BUBBLE_RISE * (1 - easeEnter(shown)) }],
-    };
-  });
+  const reveal = useDerivedValue(() =>
+    reduced
+      ? progress(clock.value, GROW_REDUCED.bubble)
+      : easeEnter(progress(clock.value, GROW.bubble)),
+  );
 
   return {
     wear: data?.accessory ?? null,
@@ -129,6 +135,7 @@ export function useStageGrowth({
     action: levelUp ? t('reputation.grown.action') : null,
     bodyStyle,
     wearStyle,
-    revealStyle,
+    reveal,
+    revealRise: reduced ? 0 : GROW_BUBBLE_RISE,
   };
 }

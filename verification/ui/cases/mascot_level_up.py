@@ -3,15 +3,16 @@ scarf and the 我长大了 bubble that stays until tapped. The tap opens 「小�
 and 去看看我的小貘 opens your own profile; back on home the bubble is gone. A relaunch with the level not yet seen keeps
 the bubble and does not play again (replay.mp4), and a tap on the bubble opens the moment too. Motion: one appearance with video."""
 import sys
+import tempfile
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
-from mascot import GROWN, assert_grown, assert_moment, ink_top, last_run, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402
+from driver import UI, Shot, assert_touch_target, by_id, reach_home  # noqa: E402
+from mascot import GROWN, assert_grown, assert_moment, assert_wearing, ink_top, last_run, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402
 from profile import open_profile, scroll_to  # noqa: E402
-from recording import clip  # noqa: E402
+from recording import clip, frames  # noqa: E402
 
 DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 300
@@ -36,6 +37,12 @@ steps = last_run(moved_at(video, mascot_box(element, width), width))
 assert len(steps) >= 5, f'小貘 moved in {len(steps)} frames only, it never grew: {steps}'
 span = steps[-1] - steps[0]
 assert 0.2 <= span <= 1.8, f'the growth took {span:.2f} s of frames {steps}'
+box = mascot_box(element, width)
+with tempfile.TemporaryDirectory() as tmp:
+    tops = [ink_top(Shot(path, width), box, ui) for path, at in frames(video, tmp, 0.03) if steps[0] <= at <= steps[-1]]
+tops = [top for top in tops if top is not None]
+depth = max(tops) - min(tops)
+assert 6 <= depth <= 26, f'the crouch moved the top of 小貘 by {depth:.0f} pt: {tops}'
 assert defaults(ui, 'uiVerifyMascotPlayed') == '5', 'the played level was not stored'
 ui.at_rest()
 grown_shot = ui.snap('01-grown')
@@ -59,7 +66,9 @@ ui.tap('BackButton')
 ui.gone(GROWN)
 says(ui, calm)
 ui.at_rest()
-back_top = ink_top(ui.snap('03-back'), mascot_box(element, width), ui)
+back_shot = ui.snap('03-back')
+assert_wearing(ui, back_shot, element, width, '--color-wear-red')
+back_top = ink_top(back_shot, mascot_box(element, width), ui)
 assert full_top is not None and abs(full_top - back_top) <= 2, f'小貘 rests at another size: {full_top} vs {back_top}'
 tap_mascot(ui, element)
 time.sleep(2)
@@ -73,6 +82,8 @@ says(ui, grew)
 element = stage(ui)
 replayed = last_run(moved_at(video, mascot_box(element, width), width))
 assert len(replayed) <= 3, f'the growth played again: {replayed}'
+ui.at_rest()
+assert_grown(ui, ui.snap('03-relaunched'), element, width, '--color-wear-red')
 ui.tap_point(70, element['frame']['y'] + 40)
 ui.element(GROWN, timeout=20)
 scroll_to(ui, 'mascot-grown-go')

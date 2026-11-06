@@ -25,9 +25,8 @@ with clip(ui, 'reduced') as video:
 says(ui, ui.t('reputation.level.grewUp'))
 element = stage(ui)
 steps = last_run(moved_at(video, mascot_box(element, width), width))
-assert steps, '小貘 never changed'
 span = steps[-1] - steps[0]
-assert span <= 0.3, f'the fade took {span:.2f} s: {steps}'
+assert len(steps) >= 2 and span <= 0.3, f'expected a short fade, the frames moved at {steps}'
 box = mascot_box(element, width)
 with tempfile.TemporaryDirectory() as tmp:
     tops = [ink_top(Shot(path, width), box, ui) for path, at in frames(video, tmp, 0.05)
