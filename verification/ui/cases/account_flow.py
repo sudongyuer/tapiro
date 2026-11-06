@@ -1,7 +1,8 @@
-"""Sign in with the fixture, set a name, pick a language, reach home, sign out and back in, then delete the account and land on welcome."""
+"""Sign in with the fixture, blank the name (spaces only) and see the error, paste a name, pick a language, reach home, sign out and back in, then delete the account and land on welcome."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import paste_into  # noqa: E402
 from driver import UI, assert_appearance, assert_touch_target, sign_in_apple  # noqa: E402
 
 DEPS = [
@@ -12,11 +13,14 @@ DEPS = [
     'src/app/delete-account.tsx',
     'src/features/shell/',
     'src/features/home/',
+    'verification/ui/bounty.py',
+    'verification/ui/pasteboard.swift',
 ]
 
 LOCALES = ['zh-Hans', 'ms']
-BUDGET = 200
+BUDGET = 280
 NAME = 'Lin Mo'
+BLANK = '   '
 DELETE_ITEMS = ['profile', 'payee', 'messages', 'memory', 'coins', 'stickers']
 
 ui = UI(*sys.argv[1:])
@@ -52,15 +56,11 @@ assert_touch_target(ui.element('name-input'), 'name field')
 assert_touch_target(ui.element('name-continue'), 'continue button')
 ui.capture('02-name-prefilled')
 
-ui.tap('name-input')
-ui.backspace(3)
+paste_into(ui, 'name-input', BLANK)
 ui.tap('name-continue')
 ui.element('name-error')
 ui.capture('03-name-empty')
-ui.tap('name-input')
-ui.type(NAME)
-ui.wait(lambda items: any(i.get('AXUniqueId') == 'name-input' and i.get('AXValue') == NAME for i in items),
-        f'name field does not read {NAME}')
+paste_into(ui, 'name-input', NAME)
 ui.tap('name-continue')
 
 done = ui.element('language-done')

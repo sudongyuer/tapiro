@@ -44,8 +44,7 @@ band = {'x': 0, 'y': title['y'] - 90, 'width': screen(items)['width'], 'height':
 ink = ink_box(ui.snap('01-detail-stamped'), band, token('--color-success', ui.appearance), 40)
 assert ink and ink['count'] >= STAMP_MIN, f'the detail shows no 已申请 stamp: {ink}'
 
-s = screen(ui.read())
-ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+ui.tap('BackButton')
 ui.gone('bounty-detail-title')
 applied_label = ui.t('bounty.board.card.applied')
 card = ui.wait(lambda items: (lambda c: c if c and applied_label in (c.get('AXLabel') or '') else None)(by_id(items, CARD)),

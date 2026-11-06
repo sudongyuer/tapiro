@@ -75,10 +75,9 @@ ui.at_rest()
 element, ink = detail_stamp('03-withdrawn')
 assert element is None and (ink is None or ink['count'] < STAMP_MIN), f'the stamp is still on the detail: {ink}'
 
-s = screen(ui.read())
-ui.swipe((1, s['height'] / 2), (s['width'] * 0.8, s['height'] / 2), 0.4)
+ui.tap('BackButton')
 ui.gone('bounty-detail-title')
-card = ui.settled(lambda items: by_id(items, CARD), 'swiping back did not return to the board')
+card = ui.settled(lambda items: by_id(items, CARD), 'going back did not return to the board')
 assert ui.t('bounty.board.card.applied') not in (card.get('AXLabel') or ''), card.get('AXLabel')
 ui.at_rest()
 shot = ui.snap('04-card')
