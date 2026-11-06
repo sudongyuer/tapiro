@@ -23,6 +23,8 @@ export const COINS_FAIL_POINTS = [
   'redeem',
   'historyAgain',
   'historyMore',
+  'inviteAgain',
+  'redeemTooLate',
 ] as const;
 export type CoinsFailPoint = (typeof COINS_FAIL_POINTS)[number];
 
@@ -103,6 +105,7 @@ export function createFixtureCoinsService({
 }): CoinsService {
   const failing = new Set<CoinsFailPoint>(variant === 'failed' ? FIRST_CALLS : failFirst);
   let firstPages = 0;
+  let inviteReads = 0;
   const data = variant === 'failed' ? 'many' : variant;
   const ledger = rows(data, now());
   let coins = ledger.reduce((sum, row) => sum + row.delta, 0) + (data === 'worst' ? 1105 : 0);
@@ -189,7 +192,8 @@ export function createFixtureCoinsService({
       return { status: 'fed', ...feedStatus() };
     },
     async invite() {
-      await step('invite', 'invite');
+      const again = inviteReads++ > 0 && failing.has('inviteAgain');
+      await step(again ? 'inviteAgain' : 'invite', 'invite');
       return invite;
     },
     async redeem(typed) {
@@ -199,6 +203,10 @@ export function createFixtureCoinsService({
         return { ok: false, failure: 'failed' };
       }
       if (!inviteCodeShaped(typed)) return { ok: false, failure: 'malformed' };
+      if (failing.delete('redeemTooLate')) {
+        invite = { ...invite, canRedeem: false };
+        return { ok: false, failure: 'tooLate' };
+      }
       const code = normalizeInviteCode(typed);
       if (invite.redeemed) {
         return invite.redeemed.code === code

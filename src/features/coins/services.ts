@@ -1,4 +1,5 @@
-import { Settings } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { Settings, Share } from 'react-native';
 
 import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import { live } from '@/lib/live';
@@ -14,23 +15,48 @@ import { coinsFailPoints, coinsVariant, createFixtureCoinsService } from './fixt
 const FIXTURE_USER_ID = '00000000-0000-4000-8000-000000000001';
 const CALLS_KEY = 'uiVerifyCoinsCalls';
 
+const calls: unknown[] = [];
+
+function recordCall(name: string, args: unknown) {
+  calls.push({ name, args });
+  Settings.set({ [CALLS_KEY]: JSON.stringify(calls) });
+}
+
 function verifyService() {
   Settings.set({ [CALLS_KEY]: '[]' });
-  const calls: unknown[] = [];
   return createFixtureCoinsService({
     variant: coinsVariant(uiVerifyArgument('uiVerifyCoins')),
     failFirst: coinsFailPoints(uiVerifyArgument('uiVerifyCoinsFail')),
     delayMs: Number(uiVerifyArgument('uiVerifyCoinsDelayMs') ?? 0) || 0,
-    onCall: (name, args) => {
-      calls.push({ name, args });
-      Settings.set({ [CALLS_KEY]: JSON.stringify(calls) });
-    },
+    onCall: recordCall,
   });
 }
 
 const service = uiVerify ? verifyService() : createSupabaseCoinsService(getSupabase());
 
 const codeDrafts = createCodeDrafts(Settings);
+
+export const inviteDevice = {
+  async copy(text: string) {
+    try {
+      await Clipboard.setStringAsync(text);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  async share(message: string) {
+    if (uiVerify) {
+      recordCall('share', { message });
+      return;
+    }
+    try {
+      await Share.share({ message });
+    } catch {
+      return;
+    }
+  },
+};
 
 export const coinsStore = createCoinsStore({ service, drafts: codeDrafts });
 

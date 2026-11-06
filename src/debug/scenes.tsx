@@ -10,7 +10,7 @@ import {
 } from './AccountScenes';
 import { BoardMapScene } from './BoardMapScene';
 import { ChatThreadScene } from './ChatScenes';
-import { CoinsPageScene } from './CoinsScenes';
+import { CoinsPageScene, InvitePageScene } from './CoinsScenes';
 import {
   BountyApplicantsScene,
   BountyBoardScene,
@@ -77,6 +77,7 @@ export const scenes: Scene[] = [
   { id: 'chat-thread', titleKey: 'debug.chat.thread', Component: ChatThreadScene },
   { id: 'profile', titleKey: 'debug.reputation.profile', Component: ProfileScene },
   { id: 'coins-page', titleKey: 'debug.coins.page', Component: CoinsPageScene },
+  { id: 'invite-page', titleKey: 'debug.coins.invite', Component: InvitePageScene },
 ];
 
 export function findScene(id: string) {

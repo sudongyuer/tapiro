@@ -43,6 +43,7 @@ export function MeView({
   onOpenProfile,
   onOpenStickers,
   onOpenCoins,
+  onOpenInvite,
   onOpenPayee,
   onOpenBlocked,
   onOpenSettings,
@@ -55,6 +56,7 @@ export function MeView({
   onOpenProfile: (() => void) | null;
   onOpenStickers: () => void;
   onOpenCoins: () => void;
+  onOpenInvite: () => void;
   onOpenPayee: () => void;
   onOpenBlocked: () => void;
   onOpenSettings: () => void;
@@ -80,6 +82,7 @@ export function MeView({
             onPress={onOpenCoins}
             testID="me-coins"
           />
+          <NavRow label={t('coins.invite.row')} onPress={onOpenInvite} testID="me-invite" />
           <NavRow
             label={t('payee.meRow')}
             dotLabel={payeeDue ? t('payee.meRowDue') : null}

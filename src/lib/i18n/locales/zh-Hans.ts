@@ -310,7 +310,7 @@ export default {
     stickers: { title: '贴纸本' },
     chat: { thread: '聊天线程（键盘）' },
     reputation: { profile: '主页' },
-    coins: { page: '貘币页' },
+    coins: { page: '貘币页', invite: '邀请页' },
     flight: {
       title: '贴纸飞向我的',
       fly: '飞到「我的」',
