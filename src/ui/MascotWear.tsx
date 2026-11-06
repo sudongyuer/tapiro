@@ -34,7 +34,7 @@ const PIECES: Record<MascotWear, readonly Piece[]> = {
     },
   ],
   scarf: [
-    { d: 'M78 110 L92 106 L98 128 L85 132 Z', paint: '--color-wear-red-deep' },
+    { d: 'M78 110 L92 106 L97 126 L85 129 Z', paint: '--color-wear-red-deep' },
     { d: 'M52 100 Q74 114 100 98 L104 108 Q74 126 48 110 Z', paint: '--color-wear-red' },
   ],
 };
