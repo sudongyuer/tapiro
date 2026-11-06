@@ -113,7 +113,9 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
   owner was invited by you); the same code again answers with the stored invite. The reward is 3 coins each the first
   time a sticker of the friend's comes from an item with someone other than the inviter; an inviter who deleted their
   account leaves the friend's 3 in place. Ledger rows carry no friend id, so the history line reads 「邀请奖励」 without
-  a name.
+  a name. Settles take the invite lock shared (a code entry takes it exclusive), so settles never deadlock on it; two
+  settles between two unrewarded invitees in opposite roles at the same moment can still meet on the invite row locks,
+  and one fails and is retried by the user (known, rare).
 - **Coin history** (`coin_history(before, max_count)`): ledger rows newest first, 50 a page (1–100), each with its
   Malaysia `month` (`YYYY-MM`) for grouping and the item title for spends, refunds and help grants; free posts write no
   row, as before.
