@@ -4,7 +4,7 @@
 > cases but do not run them; the last task runs the selection once (Pace, 2026-10-29). When all tasks are done, run
 > `spec-lifecycle` (foundation spec, step 6 record and the step 5 part) before the PR.
 
-**Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
+**Status:** done (2026-11-07, wrap-up in `chore/reputation-wrap-up`). Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
 `CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
 (2026-11-06); Task 2 (client core) is built (2026-11-06); Task 5 (profile) is built (2026-11-06); Tasks 3 (review sheet), 4 (review entries), 6 (tier drop), 8 (coins in 我的) and 10 (invite page) are built (2026-11-06); Tasks 7 (mascot level) and 9 (weekly feed) are built (2026-11-07). Questions 256–259 are answered with the ★ (owner, later on 2026-11-06: 「都按推荐」): 256 A, 257 a1 + b1 + c1, 258 A, 259 A, and the ★ defaults of Tasks 1, 2, 5 and 6 are accepted; Tasks 3, 7 and 9 no longer wait on 257. 258 A and 259 A are built (2026-11-07).
 
@@ -419,7 +419,7 @@ No canvas board was drawn for 259; this follows the question's text, the chat re
 10. **Invite page** — **done 2026-11-06** (255 A; ★ details in 「★ Invite defaults」): 我的 → 邀请朋友 with my code, 复制 and 分享 (system share sheet with the copy in the
     canvas), the code field only while `canRedeem`, 「没有这个邀请码」 and the other errors without clearing the field,
     and the progress rows. UI cases `invite_page`, `invite_redeem`, `invite_redeem_error`, `invite_worst` (ms).
-11. **Wrap-up:** every new string in zh-Hans, en and ms; story-map stories marked done with their cases; the milestone
+11. **Wrap-up** — **done 2026-11-07:** every new string in zh-Hans, en and ms; story-map stories marked done with their cases; the milestone
     selection (the cases above in zh-Hans light, `en` for new copy, `ms` where marked, dark for the review sheet and the
     profile); the foundation spec's Implementation Record for step 6 and the step 5 part.
 
