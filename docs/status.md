@@ -79,7 +79,9 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   「Questions」.
 - Accepted: the ★ defaults of Task 1 (「★ Server defaults」), Task 2 (「★ Client core defaults」), Task 5 (「★ Profile
   defaults」, P1–P10) and Task 6 (「★ Tier-drop defaults」, D1–D8).
-- Text rows in pinned bottom bars: ★A, the whole bar opaque; built in `fix/opaque-bottom-bar`.
+- Text rows in pinned bottom bars: ★A, the whole bar opaque; built in `fix/opaque-bottom-bar`. ★ for veto: the bar is
+  `systemGroupedBackground` with no hairline on top, so scrolled cards end in a clean cut at its edge; the per-pill
+  opaque base went with it, and secondary pills keep `systemGray5`.
 
 ## Resuming on another machine
 
