@@ -54,6 +54,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 4. The 消息 list has the same two gaps as review paging had: `loadMoreThreads` returns while a reload is out, and drops a
    page after one, and nothing asks again. Softer there: `onEndReached` fires again after the user scrolls away and
    back. Not fixed.
+5. Review and coin paging, one stall left (reasoned, not reproduced): a head read that shrinks a long list while no page
+   is out can leave the new last row already on screen, so its `onAppear` may not fire until the user scrolls. A sentinel
+   row keyed by the cursor would close it.
 
 ## Owner decisions pending
 

@@ -1,13 +1,14 @@
 """The stage stays light in both appearances, so the status bar over 悬赏 has dark ink, at the top of the board and after
 coming back to it; another tab and a pushed detail follow the appearance again. Pixels of the clock, since the
-accessibility tree cannot see the status bar."""
+accessibility tree cannot see the status bar. Only a dark run can fail on the stage: in light the ink is dark anyway."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import visible  # noqa: E402
 from driver import UI, luma, reach_home  # noqa: E402
 
-DEPS = ['src/app/(tabs)/bounty/', 'src/app/_layout.tsx', 'src/features/home/', 'verification/ui/board.py']
+DEPS = ['src/app/(tabs)/', 'src/app/_layout.tsx', 'src/features/home/', 'src/ui/MascotStage.tsx',
+        'verification/ui/board.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 BUDGET = 180
 CLOCK = {'x': 50, 'y': 20, 'width': 50, 'height': 24}

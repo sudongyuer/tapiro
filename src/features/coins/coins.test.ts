@@ -23,10 +23,12 @@ function memorySettings() {
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((yes) => {
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((yes, no) => {
     resolve = yes;
+    reject = no;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 }
 
 const unexpected = (name: string) => () => Promise.reject(new Error(`unexpected ${name}`));
@@ -184,6 +186,51 @@ describe('coins store', () => {
     await store.reloadHistory();
     await settle();
     expect(before).toEqual([null, null, null, null]);
+  });
+
+  test('a failed page that outlives a first-page read leaves no retry row', async () => {
+    const more = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    let heads = 0;
+    const { store } = setup({
+      history: (cursor) => {
+        if (cursor !== null) return more.promise;
+        heads += 1;
+        return Promise.resolve({
+          items: [row(3, '2026-11') as CoinRow],
+          hasMore: heads === 1,
+          nextCursor: heads === 1 ? 3 : null,
+        });
+      },
+    });
+    await store.reloadHistory();
+    const loadingMore = store.loadMoreHistory();
+    await store.reloadHistory();
+    more.reject(new Error('x'));
+    await loadingMore;
+    await settle();
+    const history = store.getSnapshot().history;
+    expect(history.status !== 'idle' && history.data?.more).toBe('idle');
+  });
+
+  test('a next page asked for during a read that fails still loads', async () => {
+    const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    const before: (number | null)[] = [];
+    const page = { items: [row(3, '2026-11') as CoinRow], hasMore: true, nextCursor: 3 };
+    const { store } = setup({
+      history: (cursor) => {
+        before.push(cursor);
+        if (cursor !== null)
+          return Promise.resolve({ items: [], hasMore: false, nextCursor: null });
+        return before.length === 1 ? Promise.resolve(page) : first.promise;
+      },
+    });
+    await store.reloadHistory();
+    const reloading = store.reloadHistory();
+    await store.loadMoreHistory();
+    first.reject(new Error('x'));
+    await reloading;
+    await settle();
+    expect(before).toEqual([null, null, 3]);
   });
 
   test('a next page asked for while the first page is being read loads once that read lands', async () => {
