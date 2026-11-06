@@ -13,13 +13,14 @@ import {
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { uiVerifyArgument } from '@/lib/uiVerify';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { payDevice } from './services';
 
 export const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
-const COPIED_MS = 2000;
+const COPIED_MS = Number(uiVerifyArgument('uiVerifyCopiedMs')) || 2000;
 
 export function CopyRow({
   label,
