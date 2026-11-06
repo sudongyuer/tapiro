@@ -38,3 +38,11 @@ overturned: pending
 | 2   | Canvas has no board for 258 or 259: the question's text is the whole drawing                                                      | process          | Stated in the plan's 258 defaults                                           |
 | 3   | `verify:smoke` failed with "App not found": a fresh worktree has no `.verify` build, and the smoke run does not build one         | own gap          | Run `verify:build` first in a new worktree                                  |
 | 4   | A null counterpart would have read as a deleted account and given a lone organiser a person; the recompute's rule forced a marker | own gap          | Lone rows name the organiser and the recompute skips them; pgTAP asserts it |
+
+## Review findings
+
+One round, one Important. The farming note understated S1: one Grab ride with friends reaches 靠谱. Rewritten with the
+numbers. Minor, all fixed: `helped` undocumented; `supabase/README.md` stale; a vacuous assertion on the 256 A switch
+removed; lone-after-deletion and deleted-organiser paths had no test; the backfill now locks `rides`; an appeal after
+the organiser's deletion failed on the sticker insert (an older bug in `ride_appeal_sticker`, fixed here); the defaults
+renamed S1–S5, since R1–R5 were taken in the plan.

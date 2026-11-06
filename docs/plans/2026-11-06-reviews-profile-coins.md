@@ -181,18 +181,27 @@ test `supabase/tests/ride_settled_reputation.test.sql`.
 
 | #   | Decision ★                                                                                                                                                              | Why                                                                                                                                       |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | One row per organiser–rider pair, not one per ride: a Grab ride with 3 riders is 3 for the organiser and 1 for each rider                                               | A paid ride already counts that way (one row per payment); the answer says carpool counts the same either way                             |
-| R2  | An organiser who rode alone counts 1 settled item and no person; still no sticker and no review. The row's counterpart is the organiser                                 | The question names riding alone; a null counterpart would read as a deleted account and add a person, and the tier thresholds need people |
-| R3  | A boarded rider with no share (appeal confirmed after the split) counts, without a sticker; an appeal confirmed after the close counts too; a lone row becomes the pair | The answer says each boarded rider; the split stays as sent (coordinator, 2026-11-02), so the sticker rule does not move                  |
-| R4  | Rows are dated at the ride's close and closed rides are counted back in the migration; tiers follow at the next 03:30 recompute                                         | The 180-day window runs from the close, not from when this shipped                                                                        |
-| R5  | No new limit. The existing ones stay: `spend_post` (3 free posts a month, then 1 貘币), distinct people per tier, account age, the 180-day window, the review share     | Owner brief, 2026-11-07. The farming this leaves open is below                                                                            |
+| S1  | One row per organiser–rider pair, not one per ride: a Grab ride with 3 riders is 3 for the organiser and 1 for each rider                                               | A paid ride already counts that way (one row per payment); the answer says carpool counts the same either way                             |
+| S2  | An organiser who rode alone counts 1 settled item and no person; still no sticker and no review. The row's counterpart is the organiser                                 | The question names riding alone; a null counterpart would read as a deleted account and add a person, and the tier thresholds need people |
+| S3  | A boarded rider with no share (appeal confirmed after the split) counts, without a sticker; an appeal confirmed after the close counts too; a lone row becomes the pair | The answer says each boarded rider; the split stays as sent (coordinator, 2026-11-02), so the sticker rule does not move                  |
+| S4  | Rows are dated at the ride's close and closed rides are counted back in the migration; tiers follow at the next 03:30 recompute                                         | The 180-day window runs from the close, not from when this shipped                                                                        |
+| S5  | No new limit. The existing ones stay: `spend_post` (3 free posts a month, then 1 貘币), distinct people per tier, account age, the 180-day window, the review share     | Owner brief, 2026-11-07. The farming this leaves open is below                                                                            |
 
-**Farming this opens.** A ride needs no proof it happened: publish with a departure minutes away, 出发, 到了. Alone, that
-raises `settled` and the completion rate but never the people count, so it cannot lift a new account to 靠谱; it can wash
-no-shows out of the rate (at 12 settled, 8 people and 3 no-shows the rate is 0.80; 45 lone rides make it 0.95) and it
-fills the 5 settled that show a public 完成率 on a profile. Two friends on a Grab ride get +1 each per ride at no money
-cost, where a paid ride at least moves a payment; people still count once. The cost is posts only: 3 free a month, then 1
-貘币 each, so 买貘币 would make settled items purchasable once it ships.
+**Farming this opens.** A ride needs no proof it happened: publish with a departure minutes away, 出发, 到了. One post
+pays for the whole ride, and S1 multiplies it for the organiser:
+
+- **Friends on a Grab ride, the strong case.** One ride with 2 friends gives the organiser 2 settled and 2 people, which
+  is 靠谱 at the next recompute (no account age). One ride with 5 friends (seats go up to 6) gives 5 and 5, which is 很靠谱
+  but for the 60 days of account age; three such rides with different friends pass the 12 and 8 of 貘友 but for its 180
+  days. Each friend gets +1 settled and +1 person per ride. A paid ride counts the same today and needs no money either:
+  with a cash method the payee confirms from `due`. 258 A removes the step of opening and confirming the payments.
+- **Alone.** Raises `settled` and the completion rate but never the people count, so it cannot lift a new account to
+  靠谱. It can wash no-shows out of the rate (at 12 settled, 8 people and 3 no-shows the rate is 0.80; 45 lone rides make
+  it 0.95) and it fills the 5 settled that show a public 完成率 on a profile.
+- **Cost.** Posts only: 3 free a month, then 1 貘币 each, so 买貘币 would make settled items purchasable once it ships.
+
+`helped` (帮过的人 on a profile) still counts paid payees only, so an organiser's Grab rides raise 靠谱度 but not that
+number; it stays as built, since 258 A is about 靠谱度.
 
 ## ★ Profile defaults (Task 5, 2026-11-06, for veto)
 

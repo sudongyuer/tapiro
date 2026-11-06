@@ -92,10 +92,36 @@ create trigger ride_appeal_settled
   when (old.status = 'appealed' and new.status = 'boarded')
   execute function private.ride_appeal_settled();
 
+-- The organiser's account can be gone by the time an appeal is confirmed on a closed ride.
+create or replace function private.ride_appeal_sticker() returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  r public.rides;
+begin
+  select * into r from public.rides where id = new.ride_id;
+  if r.status <> 'closed' or r.total_minor is not null then
+    return new;
+  end if;
+  insert into public.stickers (owner_id, item_kind, item_id, role, title)
+  select side.owner_id, 'ride', r.id, side.role, private.ride_title(r)
+  from (
+    values (new.member_id, 'payer'::public.sticker_role), (r.organiser_id, 'payee'::public.sticker_role)
+  ) as side (owner_id, role)
+  where side.owner_id is not null
+  on conflict (owner_id, item_id) where item_kind = 'ride' do nothing;
+  return new;
+end;
+$$;
+
+-- A close running the old function must commit before the loop reads, or it would never be counted.
 do $$
 declare
   closed uuid;
 begin
+  lock table public.rides in share row exclusive mode;
   for closed in select r.id from public.rides r where r.status = 'closed' order by r.settled_at loop
     perform private.record_ride_settled(closed);
   end loop;

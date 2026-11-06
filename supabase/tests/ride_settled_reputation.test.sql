@@ -1,10 +1,10 @@
 begin;
-select plan(19);
+select plan(22);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', k || '@example.com', jsonb_build_object('full_name', n)
-from (values ('a1', 'Alice'), ('b2', 'Bob'), ('c3', 'Chen'), ('d4', 'Dina'), ('e5', 'Eli')) v (k, n);
+from (values ('a1', 'Alice'), ('b2', 'Bob'), ('c3', 'Chen'), ('d4', 'Dina'), ('e5', 'Eli'), ('f6', 'Fay')) v (k, n);
 
 insert into public.payee_methods (user_id, type) values ('00000000-0000-0000-0000-0000000000a1', 'cash');
 insert into public.payee_methods (id, user_id, type, phone, display_name)
@@ -174,8 +174,28 @@ select is(
   (select settled_at from public.rides where id = pg_temp.r(4)), 'a ride counted later keeps its close date for the 180-day window'
 );
 
+delete from auth.users where id = pg_temp.u('e5');
+select private.record_ride_settled(pg_temp.r(3));
 select is(
-  (select private.ride_review_details_public()), false, 'ride review details stay private'
+  pg_temp.events(3), array['a1>gone'], 'counting again after the only rider left does not read the ride as lone'
+);
+
+update public.post_charges set refunded_at = now() where item_kind = 'ride' and item_id = pg_temp.r(1);
+select pg_temp.departed(5, 'grab', array['d4', 'f6'], array['d4']);
+select pg_temp.act_as(pg_temp.u('a1'));
+select public.reach_ride(pg_temp.r(5));
+delete from auth.users where id = pg_temp.u('a1');
+select private.record_ride_settled(pg_temp.r(5));
+select private.record_ride_settled(pg_temp.r(5));
+select is(pg_temp.events(5), array['d4>gone'], 'a deleted organiser leaves one row per rider, however often it is counted');
+
+select pg_temp.as_user('f6', format('public.appeal_ride_no_show(%L)', pg_temp.r(5)));
+select pg_temp.as_user('d4', format('public.confirm_ride_appeal(%L, %L)', pg_temp.r(5), pg_temp.u('f6')));
+select is(
+  pg_temp.events(5), array['d4>gone', 'f6>gone'], 'an appeal confirmed after the organiser left still counts'
+);
+select is(
+  pg_temp.stickers(5), array[pg_temp.u('d4'), pg_temp.u('f6')], 'and gives the appellant the sticker, with no organiser to give one to'
 );
 
 select * from finish();
