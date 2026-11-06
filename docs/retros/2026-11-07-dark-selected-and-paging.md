@@ -54,7 +54,7 @@ No case for paging: logic only, unit tests.
   Minor, all fixed; a failed page outliving a reload no longer leaves a dead 重试.
 - Re-review: 0 Critical, 0 Important, 4 Minor. Fixed: coin tests, case `DEPS`. Accepted: over a half-height sheet on home
   the clock follows the appearance again (the stage is dimmed there), and the `getParent` depth stays (the dark case
-  fails if a layout level moves). Listed: Queue item 5.
+  fails if a layout level moves). Listed: Queue item 4.
 - `expo-status-bar` stays in `package.json` and `app.json`: the component is unused now, but removing a config plugin
   changes prebuild output and is its own small task.
 - A second runner in the same checkout exits at once, and a run chained behind one silently produced nothing: read the
