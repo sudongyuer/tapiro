@@ -250,8 +250,13 @@ def copy_on_device(ui, text):
     # Simulator writes the device pasteboard itself.
     binary = compiled('pasteboard', SIMULATOR)
     subprocess.run(['xcrun', 'simctl', 'spawn', ui.udid, str(binary), text], check=True, timeout=20)
-    on_board = subprocess.run(['xcrun', 'simctl', 'pbpaste', ui.udid], capture_output=True, check=True, timeout=20)
-    assert on_board.stdout.decode() == text, f'the device pasteboard reads {on_board.stdout.decode()!r}, not {text!r}'
+    on_board = device_pasteboard(ui)
+    assert on_board == text, f'the device pasteboard reads {on_board!r}, not {text!r}'
+
+
+def device_pasteboard(ui):
+    return subprocess.run(['xcrun', 'simctl', 'pbpaste', ui.udid], capture_output=True, check=True,
+                          timeout=20).stdout.decode()
 
 
 def menu_item(label):
