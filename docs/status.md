@@ -45,7 +45,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan and s
 ## Owner decisions pending
 
 - Questions 256–259 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「Questions」): ride routes on public profiles,
-  motion for the review, level-up and feed moments (to draw on the canvas), counting rides without a Tapiro payment
+  motion for the review, level-up and feed moments (drawn on the canvas as 257a1–a3, b1–b3 and c1–c3, ★ a1, b1, c1),
+  counting rides without a Tapiro payment
   toward 靠谱度, and reporting a review. The server ★ defaults of Task 1 (same plan, 「★ Server defaults」) are listed
   for veto, among them the review share thresholds (70 / 80 / 90 % from 3 reviews).
 
