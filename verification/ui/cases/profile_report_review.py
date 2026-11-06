@@ -8,10 +8,10 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
-from profile import (open_profile, rep_calls, report_review, review_id,  # noqa: E402
+from profile import (assert_tier_whole, open_profile, rep_calls, report_review, review_id,  # noqa: E402
                      submit_report, tap_button)
 
-DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/lib/i18n/locales/chat/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/lib/i18n/locales/chat/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/textwidth.swift']
 SCENE = 'profile'
 BUDGET = 300
 LOCALES = ['zh-Hans', 'en', 'ms']
@@ -19,6 +19,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 
 ui = UI(*sys.argv[1:])
 open_profile(ui)
+assert_tier_whole(ui)
 report_review(ui, review_id(2), '00-menu')
 quote = ui.element('profile-report-quote').get('AXLabel') or ''
 assert ui.t('reputation.face.unhappy') in quote and ui.t('reputation.chip.helper.late') in quote, quote

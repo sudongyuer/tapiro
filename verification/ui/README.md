@@ -31,6 +31,7 @@ before TestFlight. `python3 -m unittest test_affected test_breaker test_pool tes
 selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
 `ARGS`, `BUDGET`, `TIME_ZONE` and `LOCAL_HOURS` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
 only; paste other text with `bounty.paste_into`, or seed it through a launch argument such as `-uiVerifyApplyNote`.
+`profile.intrinsic_width` measures footnote text at Large with `textwidth.swift`, spawned the same way as the pasteboard tool, because AX reports neither truncation nor the rendered string: `assert_tier_whole` compares it with the text's frame.
 `paste_into` writes the device pasteboard with `pasteboard.swift`, a UIKit tool run through `simctl spawn`, because
 `simctl pbcopy` writes nothing on Xcode 27.2, and pastes from the edit menu (粘贴 / Paste / Tampal): an AXe ⌘V is not a
 user-authenticated paste, so iOS asks for permission and the field stays empty.

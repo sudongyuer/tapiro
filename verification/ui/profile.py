@@ -1,8 +1,10 @@
 import json
+import subprocess
 import time
 
 from choose import defaults
 from driver import by_id
+from swifttool import SIMULATOR, compiled
 
 SCENE = 'profile'
 SELF_ID = '00000000-0000-4000-8000-000000000001'
@@ -60,6 +62,22 @@ def within_width(items, identifier):
     assert f['x'] >= 0 and f['x'] + f['width'] <= width + 0.5, f'{identifier} overflows: {f}'
 
 
+def intrinsic_width(ui, text):
+    binary = compiled('textwidth', SIMULATOR)
+    proc = subprocess.run(['xcrun', 'simctl', 'spawn', ui.udid, str(binary), text], capture_output=True, text=True,
+                          check=True, timeout=20)
+    return float(proc.stdout)
+
+
+def assert_tier_whole(ui):
+    # VoiceOver reads the whole label of a truncated Text, and AX reports no rendered string: only the frame shows it.
+    tiers = [ui.t(f'bounty.tier.{tier}') for tier in ('new_friend', 'reliable', 'very_reliable', 'tapir_friend')]
+    text = ui.settled(lambda items: next((i for i in items if i.get('type') == 'StaticText'
+                                          and i.get('AXLabel') in tiers), None), 'the tier text never settled')
+    need = intrinsic_width(ui, text['AXLabel'])
+    assert text['frame']['width'] >= need - 1, f"{text['AXLabel']} is cut: {text['frame']['width']} of {need} pt"
+
+
 def menu_more(ui):
     ui.tap_label(ui.t('reputation.profile.more'))
 
@@ -84,6 +102,24 @@ def on_screen(items, identifier, bottom_inset=90):
         return None
     f, height = element['frame'], items[0]['frame']['height']
     return element if f['y'] >= 100 and f['y'] + f['height'] <= height - bottom_inset else None
+
+
+def tab_bar_top(items):
+    return min(i['frame']['y'] for i in items if i.get('type') == 'RadioButton')
+
+
+def assert_clears_tab_bar(ui, identifier, tries=6):
+    from gestures import drag
+    for drags in range(tries):
+        ui.at_rest()
+        items = ui.read()
+        f, top = by_id(items, identifier)['frame'], tab_bar_top(items)
+        print(f"{identifier}: bottom {f['y'] + f['height']:.0f}, tab bar top {top:.0f}, {drags} drags")
+        if f['y'] + f['height'] <= top:
+            return
+        w, h = items[0]['frame']['width'], items[0]['frame']['height']
+        drag(ui, (w / 2, h * 0.7), (w / 2, h * 0.3))
+    raise AssertionError(f'{identifier} stays under the tab bar after {tries} drags: {f} vs {top}')
 
 
 def scroll_to(ui, identifier, tries=12):

@@ -3,9 +3,11 @@ import {
   accessibilityElement,
   accessibilityIdentifier,
   accessibilityLabel,
+  fixedSize,
   font,
   foregroundStyle,
   frame,
+  layoutPriority,
   lineLimit,
   listRowBackground,
   monospacedDigit,
@@ -50,6 +52,7 @@ export function ProfileHeader({ card }: { card: ProfileCard }) {
             {name}
           </Text>
           <HStack
+            alignment="top"
             spacing={vars['--space-2']}
             modifiers={[
               accessibilityElement('combine'),
@@ -57,8 +60,12 @@ export function ProfileHeader({ card }: { card: ProfileCard }) {
               accessibilityIdentifier('profile-tier'),
             ]}
           >
-            <TierMark label={tier} rank={tierRank(card.tier)} />
-            <Text modifiers={[font({ textStyle: 'footnote' }), secondary, lineLimit(1)]}>
+            <TierMark
+              label={tier}
+              rank={tierRank(card.tier)}
+              modifiers={[fixedSize(), layoutPriority(1)]}
+            />
+            <Text modifiers={[font({ textStyle: 'footnote' }), secondary, lineLimit(2)]}>
               {note}
             </Text>
           </HStack>

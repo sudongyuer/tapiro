@@ -202,3 +202,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-07 | 259 report a review       | pending         | 2             | ~10 min (a half-applied patch script)         | 0                       | pending               |
 | 2026-11-07 | opaque bottom bar         | pending         | 1             | ~10 min (case bugs, checkout lock)            | 0                       | 0                     |
 | 2026-11-07 | reputation wrap-up        | 0               | 1             | ~15 min (stuck Simulator, chained runs)       | 0                       | 0                     |
+| 2026-11-07 | ms layout findings        | pending         | 1             | ~10 min (a mutation that did not break)       | 0                       | pending               |

@@ -7,9 +7,9 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
 from gestures import drag  # noqa: E402
-from profile import label, open_profile, review_id, within_width  # noqa: E402
+from profile import assert_tier_whole, label, open_profile, review_id, within_width  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/textwidth.swift']
 SCENE = 'profile'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
@@ -22,6 +22,7 @@ assert name.get('AXLabel') == NAME, name.get('AXLabel')
 assert name['frame']['height'] < 50, f'the name wraps: {name["frame"]}'
 items = ui.read()
 within_width(items, 'profile-name')
+assert_tier_whole(ui)
 assert label(ui, 'profile-helped').endswith(' 87'), label(ui, 'profile-helped')
 assert label(ui, 'profile-rate').endswith(' 99%'), label(ui, 'profile-rate')
 assert label(ui, 'profile-count-reviews').endswith(' 128'), label(ui, 'profile-count-reviews')
