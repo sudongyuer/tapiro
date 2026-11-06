@@ -47,7 +47,7 @@ const CARD_OVERLAP = STAGE_HILL_HEIGHT - 18;
 const STRIP_FADE = 80;
 const BUBBLE_FADE = 90;
 const BUBBLE_TOP = 18;
-const MASCOT_TOP = 8;
+const BAR_TOLERANCE = 1;
 const BEFORE_FIRST_SCROLL = -100000;
 // useHeaderHeight reports the expanded large-title header; the strip hangs under the compact bar (54 pt on iOS 26).
 const COMPACT_BAR = 54;
@@ -113,7 +113,7 @@ export function HomeScreen({
   useEffect(() => onMascotShown?.(mascotShown), [onMascotShown, mascotShown]);
 
   useAnimatedReaction(
-    () => -offset.value - MASCOT_TOP >= headerHeight,
+    () => -offset.value + BAR_TOLERANCE >= headerHeight,
     (shown, previous) => {
       if (shown !== previous) scheduleOnRN(setMascotShown, shown);
     },

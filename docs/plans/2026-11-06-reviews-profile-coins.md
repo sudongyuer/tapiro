@@ -284,7 +284,7 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 | M12 | RepBC2's entrance is built as drawn (0.72 → 1.08 → 1 in 900 ms, ease-out, no haptic), with a 150 ms fade under Reduce Motion | The drawing; 257 covers only the stage |
 | M13 | Other people's 小貘 row still has no chevron and opens nothing: board 245 says 「点开看大图」, but no big view is planned; it now shows the worn accessory | P2 said 「until Task 7」; the big view is a scope gap |
 | M15 | The bubble is a tap target as well as 小貘; the collapsed strip keeps the normal line, since it is not tappable; a second tap while the seen write is out does nothing; VoiceOver double-tap and the action 「看看小貘」 open the moment, and on a busy stage the hint names it | 「点我看看」 must work where it is written; nothing promises a tap that does nothing |
-| M16 | 「看得见舞台」 means 小貘's top is clear of the navigation bar: only then the growth plays, and scrolling it under the bar goes to the end. A level with no new accessory (Lv.6+, or a chosen older one) does not fade what is already worn | The strip threshold still left 小貘 hidden; the once-per-level motion must be seen |
+| M16 | 「看得见舞台」 means 小貘's top is clear of the navigation bar: only then the growth plays, and scrolling it under the bar goes to the end. A level with no new accessory (Lv.6+, or a chosen older one) does not fade what is already worn. While a growth waits with the stage collapsed, the strip's small 小貘 already wears the new accessory | The strip threshold still left 小貘 hidden; the once-per-level motion must be seen |
 | M14 | New en / ms wording: 「Your tapir is now a {name}!」 / 「Tapir anda kini {name}!」; 「See My Tapir」 / 「Lihat Tapir Saya」; the body, note and failure lines. Malay needs the native review | Boards had zh-Hans only |
 
 ## File structure
@@ -344,7 +344,7 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 7. **Mascot level** — **done 2026-11-07** (249 B, 250 A, 257 b1; ★ details in 「★ Mascot defaults」): the home stage shows the grown 小貘 with the worn accessory and the
    「我长大了！」 bubble until tapped; the tap opens 「小貘长大的时刻」 (RepBC2) once and marks the level seen; the
    accessory picker on your own profile; Reduce Motion fades the accessory in place (M6). UI cases `mascot_level_up`,
-   `mascot_accessory`, also `mascot_level_busy`, `mascot_level_collapsed`, `mascot_level_midway`, `mascot_level_reduced`, `mascot_level_jump`, `mascot_accessory_failed`; motion: one appearance with video.
+   `mascot_accessory`, also `mascot_level_busy`, `mascot_level_collapsed`, `mascot_level_reduced`, `mascot_level_jump`, `mascot_accessory_failed`; motion: one appearance with video.
 8. **Coins in 我的** — **done 2026-11-06** (251 A, 252 A; ★ details in 「★ Coins defaults」): a 「貘币 n」 row beside 一起办成的事 pushing the 貘币 page: the balance, free posts
    left this month and the monthly history; a failed load reads 「没加载出来 · 重试」, never 0. UI cases `coins_page`,
    `coins_page_empty`, `coins_page_failed`, `coins_page_worst`.

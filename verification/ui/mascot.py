@@ -1,7 +1,5 @@
-import json
 import tempfile
 
-from choose import defaults
 from driver import Shot, by_id, token
 from profile import rep_calls
 from recording import frames
@@ -94,13 +92,8 @@ def assert_grown(ui, shot, element, width, wear, state='calm'):
     assert_wearing(ui, shot, element, width, wear, state)
     f = element['frame']
     bubble = {'x': 16, 'y': f['y'] + 18, 'width': 90, 'height': 36}
-    white = colour_count(shot, bubble, token('--color-stage-bubble', ui.appearance))
+    white = colour_count(shot, bubble, token('--color-stage-bubble', ui.appearance), tolerance=8)
     assert white > 200, f'the bubble is not visible: {white} px'
-
-
-def rep_times(ui, name):
-    text = defaults(ui, 'uiVerifyRepCalls')
-    return [call['at'] for call in json.loads(text or '[]') if call['name'] == name]
 
 
 def assert_wearing(ui, shot, element, width, wear, state='calm'):

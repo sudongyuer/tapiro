@@ -1,4 +1,4 @@
-"""257 b: a level-up that lands while 小貘 is not on screen waits. Scrolled past the stage, or on another tab, nothing is
+"""257 b: a level-up that lands while 小貘 is not on screen waits. With 小貘 under the bar but the strip not yet shown, scrolled past the stage, or on another tab, nothing is
 marked played; the collapsed strip keeps the plain line, not 点我看看; coming back plays it and leaves the bubble and the
 scarf on screen."""
 import sys
@@ -15,6 +15,7 @@ DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyMascot', 'levelUp', '-uiVerifyRepDelayMs', '9000']
 WAIT_S = 11.0
+UNDER_THE_BAR = 100
 
 ui = UI(*sys.argv[1:])
 reach_home(ui)
@@ -22,8 +23,10 @@ element = stage(ui)
 calm = element.get('AXLabel')
 items = ui.read()
 width, height = items[0]['frame']['width'], items[0]['frame']['height']
-drag(ui, (width / 2, height * 0.75), (width / 2, height * 0.2))
+drag(ui, (width / 2, height * 0.6), (width / 2, height * 0.6 - UNDER_THE_BAR))
 time.sleep(WAIT_S)
+assert defaults(ui, 'uiVerifyMascotPlayed') == '', 'the growth played with 小貘 under the bar'
+drag(ui, (width / 2, height * 0.75), (width / 2, height * 0.2))
 assert defaults(ui, 'uiVerifyMascotPlayed') == '', 'the growth played on a collapsed stage'
 strip = ui.settled(lambda found: by_id(found, 'home-strip'), 'the strip never showed')
 assert ui.t('reputation.level.grewUp') not in (strip.get('AXLabel') or ''), strip.get('AXLabel')
