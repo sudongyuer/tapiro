@@ -28,6 +28,7 @@ RECORD_KEYS = (
     'uiVerifySelectAttempts',
     'uiVerifySelectedArgs',
     'uiVerifySettledCollected',
+    'uiVerifyTierDropSeen',
 )
 
 KEY_CONSTANT = re.compile(r"const (\w+) = '(uiVerify\w+)'")

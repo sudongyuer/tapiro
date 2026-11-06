@@ -1,4 +1,5 @@
 import { useRouter, useSegments } from 'expo-router';
+import { useCallback } from 'react';
 import { NativeTabs } from 'expo-router/native-tabs';
 
 import { useSignedInUser } from '@/features/account';
@@ -6,7 +7,7 @@ import { useLiveBounties } from '@/features/bounty';
 import { useLiveChat } from '@/features/chat';
 import { useLiveCoins } from '@/features/coins';
 import { useLivePayments } from '@/features/payment';
-import { useLiveReputation } from '@/features/reputation';
+import { tierDropCanShow, useLiveReputation, useTierDropPrompt } from '@/features/reputation';
 import {
   UrgentAccessory,
   accessoryVisible,
@@ -44,7 +45,10 @@ export default function TabsLayout() {
       route.pathname === '/messages/[thread]' ? router.navigate(route) : router.push(route),
     userId !== null,
   );
-  const location = useTabLocation(useSegments());
+  const segments = useSegments();
+  const location = useTabLocation(segments);
+  const openTierDrop = useCallback(() => router.push('/tier-drop'), [router]);
+  useTierDropPrompt(tierDropCanShow(segments), openTierDrop);
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();
   const urgent = pickMostUrgent(feed.accessory);

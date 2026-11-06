@@ -94,3 +94,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-06 | rep + coins client core   | pending         | 2             | ~5 min (one pgTAP grant slip)                | 0                       | pending               |
 | 2026-11-06 | 6 profile (Task 5)        | pending         | 3             | ~40 min (row hit areas, Simulator timeouts)  | 0                       | pending               |
 | 2026-11-06 | case account + detail     | 0               | 2             | ~20 min (paste budget, place search back)    | 0                       | 0                     |
+| 2026-11-06 | 6 tier drop (Task 6)      | pending         | 2             | ~25 min (plural keys, review fixes)          | 0                       | pending               |

@@ -129,14 +129,15 @@ def close_sheet_by_swipe(ui):
     ui.gone('bounty-post-form')
 
 
-def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll'):
+def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll', keep_records=False):
     args = list(ui.launch_args)
     for start in range(len(args) - len(drop) + 1):
         if args[start:start + len(drop)] == drop:
             args = args[:start] + args[start + len(drop):]
             break
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
-    reset_records(ui.udid)
+    if not keep_records:
+        reset_records(ui.udid)
     subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, '-AppleLanguages', f'({ui.locale})',
                     '-AppleLocale', REGIONS[ui.locale], *args, *add], check=True, capture_output=True, timeout=60)
     ui.element(ready, timeout=60)
