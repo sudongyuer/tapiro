@@ -7,8 +7,8 @@ import { useTheme } from './theme/useTheme';
 
 type Variant = 'primary' | 'secondary' | 'destructive' | 'plain';
 
-// Bars pinned over scrolling content need an opaque secondary fill and an opaque base under every pill, so neither a
-// translucent fill nor the pressed and disabled dimming lets scrolled text show through and cross the label.
+// The bar itself hides scrolled content; systemGray5 stays to keep the look the owner accepted on 2026-11-06, a step
+// brighter than tertiarySystemFill on the dark canvas.
 export const PinnedSurface = createContext(false);
 
 export type PillButtonProps = {
@@ -48,7 +48,7 @@ export function PillButton({
           ? PlatformColor(pinned ? 'systemGray5' : 'tertiarySystemFill')
           : undefined;
 
-  const button = (
+  return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={(loading && loadingLabel) || label}
@@ -79,16 +79,9 @@ export function PillButton({
       )}
     </Pressable>
   );
-  if (!pinned) return button;
-  return (
-    <View style={[styles.base, { backgroundColor: PlatformColor('systemGroupedBackground') }]}>
-      {button}
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
-  base: { borderRadius: vars['--radius-pill'], borderCurve: 'continuous' },
   button: {
     minHeight: vars['--touch-min'],
     borderRadius: vars['--radius-pill'],

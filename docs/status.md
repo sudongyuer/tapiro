@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-07 (mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-07 (pinned bottom bars opaque; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -49,11 +49,11 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
-3. Text rows in pinned bottom bars (notices, the 已申请 and outcome lines) sit over scrolled content: the owner chose
-   ★A on 2026-11-06, the whole bar opaque. A task of its own, not started.
 
 ## Owner decisions pending
 
+- The opaque bar's ★ (no hairline on its top edge; secondary pills stay `systemGray5`), below. The hard edge has not been
+  seen on a device.
 - The review sheet ★ details of Task 3 (plan 「★ Review defaults」, R1–R15) and the review entries of Task 4 (「★ Review entry
   defaults」, E1–E10).
 - The coins page ★ details of Task 8 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「★ Coins defaults」, C1–C9)
@@ -68,10 +68,8 @@ On 2026-11-06 the owner answered 「按你推荐的走」:
   and the live updates ★ rows (`docs/specs/2026-10-31-realtime-push-design.md`, Decisions). Confirmed by name: 120
   stays as the canvas draws it (spinner while sending, no dimming), and a blocked bounty thread keeps hiding 已读.
 - Secondary buttons in pinned bottom bars are opaque (`fix/opaque-bar-buttons`). ★ for veto: inside `SheetActions`
-  bars a secondary pill fills with `systemGray5` and every pill sits on an opaque canvas-coloured base, so pressed and
-  disabled dimming and plain pills hide scrolled content too; other secondary pills keep `tertiarySystemFill`. Text
-  lines in those bars (notices, the 已申请 and outcome lines) still sit over scrolled content: answered later the same
-  day (below), Queue item 3.
+  bars a secondary pill fills with `systemGray5`; other secondary pills keep `tertiarySystemFill`. Superseded in part
+  below: the whole bar became opaque, so the per-pill base is gone.
 
 Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main session):
 
@@ -81,7 +79,9 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   「Questions」.
 - Accepted: the ★ defaults of Task 1 (「★ Server defaults」), Task 2 (「★ Client core defaults」), Task 5 (「★ Profile
   defaults」, P1–P10) and Task 6 (「★ Tier-drop defaults」, D1–D8).
-- Text rows in pinned bottom bars: ★A, the whole bar opaque (Queue item 3).
+- Text rows in pinned bottom bars: ★A, the whole bar opaque; built in `fix/opaque-bottom-bar`. ★ for veto: the bar is
+  `systemGroupedBackground` with no hairline on top, so scrolled cards end in a clean cut at its edge; the per-pill
+  opaque base went with it, and secondary pills keep `systemGray5`.
 
 ## Resuming on another machine
 

@@ -318,12 +318,23 @@ def label_strips(f, label):
     return [strip for strip in (left, right) if strip['width'] >= 4]
 
 
-# Content scrolled under a pinned bar must not show through a button: beside the label the fill is one colour.
 def crosses(a, b):
     return a['x'] < b['x'] + b['width'] and b['x'] < a['x'] + a['width'] and \
         a['y'] < b['y'] + b['height'] and b['y'] < a['y'] + a['height']
 
 
+# A text row has no fill of its own, so the bar behind it must be one colour wherever content scrolls under it.
+def assert_bar_hides_content(shot, strip, behind, name, tolerance=8):
+    assert crosses(strip, behind), (
+        f'nothing scrolled under {name}: {behind} does not cross {strip}, so the check would prove nothing')
+    fill = dominant(shot, strip)
+    total = sum(1 for _ in shot.pixels(strip))
+    stray = shot.count(strip, lambda rgb: not close(rgb, fill, tolerance))
+    print(f'{name}: fill {fill}, {stray} of {total} pixels differ')
+    assert stray <= total * 0.01, f'{name}: scrolled content shows through ({stray} of {total} pixels)'
+
+
+# Content scrolled under a pinned bar must not show through a button: beside the label the fill is one colour.
 def assert_fill_hides_content(shot, element, behind, name):
     assert element, f'{name} is missing'
     f = element['frame']
@@ -331,10 +342,4 @@ def assert_fill_hides_content(shot, element, behind, name):
     strips = label_strips(f, element.get('AXLabel') or '')
     assert strips, f'{name} {f} leaves no fill beside its label'
     for strip in strips:
-        assert crosses(strip, behind), (
-            f'nothing scrolled under {name}: {behind} does not cross {strip}, so the check would prove nothing')
-        fill = dominant(shot, strip)
-        total = sum(1 for _ in shot.pixels(strip))
-        stray = shot.count(strip, lambda rgb: not close(rgb, fill, 24))
-        print(f'{name}: fill {fill}, {stray} of {total} pixels beside the label differ')
-        assert stray <= total * 0.01, f'{name}: scrolled content shows through the fill ({stray} of {total} pixels)'
+        assert_bar_hides_content(shot, strip, behind, name, tolerance=24)

@@ -4,10 +4,10 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import CONFIRM_TITLE, DEMO_TITLE, assert_cost, assert_preview, assert_pinned, assert_title, open_confirm, open_sheet, value  # noqa: E402
-from driver import UI  # noqa: E402
+from driver import UI, close  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/ios/PinnedBarView.swift', 'src/features/place/', 'src/features/block/']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyPostCost', 'free']
 
 ui = UI(*sys.argv[1:])
@@ -17,7 +17,10 @@ assert_preview(ui, DEMO_TITLE, '8')
 assert_cost(ui, ui.t('bounty.post.cost.free', left=2, of=3))
 assert_pinned(ui, 'bounty-post-publish', '发出去')
 ui.wait_label('bounty-post-publish', lambda label: label == ui.t('bounty.post.confirm.publish'), '发出去 label wrong')
-ui.capture('01-confirm')
+shot = ui.snap('01-confirm')
+button = ui.element('bounty-post-publish')['frame']
+in_bar, on_canvas = shot.rgb(6, button['y'] + button['height'] / 2), shot.rgb(6, button['y'] - 120)
+assert close(in_bar, on_canvas), f'the bar {in_bar} and the sheet canvas {on_canvas} differ in {ui.appearance}'
 ui.tap('bounty-post-publish')
 ui.gone('bounty-post-confirm')
 ui.element('home-scroll')
