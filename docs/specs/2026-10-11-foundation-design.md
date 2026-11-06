@@ -805,7 +805,19 @@ account, and steps 8 and 9 remain; the spec stays `approved`.
 
 ### Verification
 
-VERIFICATION_PLACEHOLDER
+- Fast checks on this PR: `bun test` 2268 pass; `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map`, `check:size`, `design-check` pass. pgTAP not rerun: no SQL
+  here; the last full local run is in `docs/status.md`, and #97 and #98 ran their own files.
+- Copy: every key of the zh-Hans, en and ms objects (1841) exists and is non-empty in all three, with the same
+  placeholders.
+- Milestone run on current main (2026-11-07; app built from 737d582; the selection and reasons are in
+  `docs/retros/2026-11-07-reputation-wrap-up.md`): zh-Hans light 89 cases and zh-Hans dark 25 all ended in a passing
+  assertion. Two of the light ones (`mascot_accessory_failed`, `profile_entry_detail`) and dark `review_sheet` lost only
+  their recording on the last run. en light: 6 of 13 before the time limit; ms: not reached. No product bug found.
+- First-run failures, all rerun: automation-session timeouts (a stuck `Tapiro Verify`, load up to 175);
+  `sticker_book` (a 0.3 s swipe no longer pages on iOS 27.2; the case now swipes for 0.8 s);
+  `mascot_level_collapsed` and `home_settled_collect` under load (passed alone with `--workers 1`);
+  `profile_entry_ride` (a dropped tap on the back button).
 
 ### Known limits
 
