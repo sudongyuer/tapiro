@@ -5,9 +5,9 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
 from gestures import drag  # noqa: E402
-from review import SHEET, open_sheet  # noqa: E402
+from review import SHEET, open_sheet, shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/gestures.py']
+DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/gestures.py']
 SCENE = 'review-sheet'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one']
@@ -43,7 +43,7 @@ ui.tap('review-chip-on_time')
 cancel()
 asked()
 ui.at_rest()
-ui.capture('01-asked')
+shot(ui, '01-asked')
 answer('discardContinue')
 ui.element('review-submit')
 assert by_id(ui.read(), SHEET), '继续写 closed the sheet'
@@ -53,9 +53,9 @@ asked()
 answer('discardKeep')
 reopen()
 ui.element('review-chip-on_time', timeout=15)
-assert by_id(ui.read(), 'review-submit'), 'the kept draft did not come back'
+assert by_id(ui.read(), 'review-chip-on_time').get('AXValue') == 'checkbox, checked', 'the kept draft lost its chip'
 ui.at_rest()
-ui.capture('02-kept')
+shot(ui, '02-kept')
 
 items = ui.read()
 w, h = items[0]['frame']['width'], items[0]['frame']['height']
@@ -66,5 +66,5 @@ reopen()
 items = ui.read()
 assert by_id(items, 'review-submit') is None and by_id(items, 'review-chip-on_time') is None, '放弃 kept the draft'
 ui.at_rest()
-ui.capture('03-dropped')
+shot(ui, '03-dropped')
 print('PASS: 继续写 stays, 留着草稿 keeps, 放弃 clears, a pull asks too')

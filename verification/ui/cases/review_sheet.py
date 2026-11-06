@@ -8,9 +8,9 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from profile import label  # noqa: E402
-from review import SHEET, assert_one_submit, open_sheet, sealed  # noqa: E402
+from review import SHEET, assert_one_submit, open_sheet, sealed, shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyReviewTitle', '帮取快递', '-uiVerifyRepDelayMs', '400']
@@ -24,7 +24,7 @@ assert label(ui, 'review-subtitle').startswith('帮取快递 · ')
 items = ui.read()
 assert by_id(items, 'review-submit') is None and by_id(items, 'review-sentence') is None, '提交 shows before a face'
 ui.at_rest()
-ui.capture('01-faces')
+shot(ui, '01-faces')
 
 ui.tap('review-face-happy')
 ui.element('review-chip-on_time')
@@ -46,7 +46,7 @@ ui.type('Thanks')
 ui.wait_label('review-count', lambda text: text == ui.t('reputation.reply.countLabel', count=6, max=200),
               'the count does not read 6 of 200')
 ui.at_rest()
-ui.capture('02-filled')
+shot(ui, '02-filled')
 
 ui.tap('review-submit')
 ui.element('review-sealed-ok', timeout=20)
@@ -56,7 +56,7 @@ assert call['target']['reviewee'] == 'fixture-person-lin', call
 sealed(ui, '小林', 7)
 assert by_id(ui.read(), 'review-submit') is None, 'the hidden form is still in the accessibility tree'
 ui.at_rest()
-ui.capture('03-sealed')
+shot(ui, '03-sealed')
 ui.tap('review-sealed-ok')
 ui.gone(SHEET)
 ui.element('review-reopen', timeout=15)

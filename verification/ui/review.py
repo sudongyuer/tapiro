@@ -1,6 +1,6 @@
 import time
 
-from driver import by_id
+from driver import assert_appearance, by_id
 from profile import label, rep_calls
 
 SHEET = 'review-sheet'
@@ -29,3 +29,10 @@ def sealed(ui, name, days):
     assert title == ui.t('reputation.sheet.sealedTitle', name=name), title
     note = label(ui, 'review-sealed-note')
     assert note == ui.tn('reputation.sheet.sealedNote', days, name=name), note
+
+
+def shot(ui, name):
+    # Outside every pill and the envelope, on the sheet's own background.
+    path = ui.capture(name)
+    assert_appearance(path, ui.appearance, 20, 2000, 'the review sheet')
+    return path

@@ -32,9 +32,24 @@ export const REVIEW_SHEET_OPTIONS: NativeStackNavigationOptions = {
   sheetAllowedDetents: [1],
   sheetGrabberVisible: true,
   headerShown: true,
+  title: '',
   headerLargeTitleEnabled: false,
   scrollEdgeEffects: { top: 'automatic' },
 };
+
+function PlainHeader({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
+  return (
+    <>
+      <Stack.Screen options={{ title: t('reputation.home.action') }} />
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button onPress={onClose}>
+          {t('reputation.sheet.cancel')}
+        </Stack.Toolbar.Button>
+      </Stack.Toolbar>
+    </>
+  );
+}
 
 function Unavailable({
   text,
@@ -48,12 +63,7 @@ function Unavailable({
   const { t } = useI18n();
   return (
     <View style={styles.message}>
-      <Stack.Screen options={{ title: t('reputation.home.action') }} />
-      <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button onPress={onClose}>
-          {t('reputation.sheet.cancel')}
-        </Stack.Toolbar.Button>
-      </Stack.Toolbar>
+      <PlainHeader onClose={onClose} />
       <InlineState
         text={text}
         testID="review-unavailable"
@@ -90,6 +100,7 @@ function ReviewLoader({
   if (item.status === 'idle' || !item.data) {
     return (
       <View style={styles.loading}>
+        <PlainHeader onClose={onClose} />
         <ActivityIndicator
           accessible
           accessibilityLabel={t('reputation.sheet.loading')}
@@ -114,6 +125,7 @@ function ReviewLoader({
 }
 
 export function ReviewRoute() {
+  const { t } = useI18n();
   const router = useRouter();
   const { kind, item, person, title } = useLocalSearchParams<{
     kind: string;
@@ -126,8 +138,11 @@ export function ReviewRoute() {
     () => (itemKind && item && person ? { kind: itemKind, itemId: item, reviewee: person } : null),
     [itemKind, item, person],
   );
-  if (!target) return null;
-  return <ReviewLoader target={target} title={title ?? null} onClose={() => router.back()} />;
+  const close = () => router.back();
+  if (!target) {
+    return <Unavailable text={t('reputation.sheet.notFound')} onRetry={null} onClose={close} />;
+  }
+  return <ReviewLoader target={target} title={title ?? null} onClose={close} />;
 }
 
 const styles = StyleSheet.create({

@@ -165,7 +165,7 @@ export function SealLayer({
   onOk: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const { clock, fade, reduced, skip } = seal;
+  const { clock, fade, reduced, live, skip } = seal;
   const layer = useAnimatedStyle(() => ({ opacity: reduced ? fade.value : 1 }));
   const copy = useAnimatedStyle(() => ({ opacity: progress(clock.value, SEAL.copy) }));
   return (
@@ -197,7 +197,12 @@ export function SealLayer({
           </Animated.View>
         </View>
         <Animated.View style={copy}>
-          <PillButton label={ok} variant="secondary" onPress={onOk} testID="review-sealed-ok" />
+          <PillButton
+            label={ok}
+            variant="secondary"
+            onPress={live ? onOk : skip}
+            testID="review-sealed-ok"
+          />
         </Animated.View>
       </Pressable>
     </Animated.View>

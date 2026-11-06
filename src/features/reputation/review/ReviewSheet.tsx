@@ -1,14 +1,6 @@
-import { Stack, usePreventRemove } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import {
-  AccessibilityInfo,
-  Alert,
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  View,
-  type ViewInstance,
-} from 'react-native';
+import { Stack } from 'expo-router';
+import { useRef, useState } from 'react';
+import { ScrollView, StyleSheet, View, type ViewInstance } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -17,47 +9,15 @@ import { InlineState } from '@/ui/InlineState';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
-import { useReviewSubmit } from '../hooks';
-import { daysLeft, draftChanged, draftFromReview, pickFace, toggleChip } from '../model';
-import { reviewStore } from '../services';
-import { type ReviewDraft, type ReviewPair, type ReviewTarget } from '../types';
-import { blockedBy, canSend, findPair, pairName, sheetSubtitle } from './reviewView';
+import { daysLeft, pickFace } from '../model';
+import type { ReviewPair, ReviewTarget } from '../types';
+import { pairName, sheetSubtitle } from './reviewView';
 import { ReviewDetails } from './ReviewDetails';
 import { FacePicker } from './ReviewPickers';
-import { SealLayer, type ScreenRect } from './SealLayer';
+import { SealLayer } from './SealLayer';
 import { progress, SEAL } from './sealTimeline';
+import { useReviewSheet } from './useReviewSheet';
 import { useSealClock } from './useSealClock';
-
-type Outcome = { revealed: boolean; from: ScreenRect | null };
-
-function measured(view: ViewInstance | null) {
-  return new Promise<ScreenRect | null>((resolve) => {
-    if (!view) return resolve(null);
-    view.measureInWindow((x, y, width, height) => resolve({ x, y, width, height }));
-  });
-}
-
-function useDiscardPrompt(active: boolean, sending: boolean, onDrop: () => void) {
-  const { t } = useI18n();
-  usePreventRemove(active, ({ repeat }) => {
-    if (sending) return;
-    Alert.alert(t('reputation.sheet.discardTitle'), undefined, [
-      { text: t('reputation.sheet.discardContinue'), style: 'cancel' },
-      {
-        text: t('reputation.sheet.discardKeep'),
-        onPress: repeat,
-      },
-      {
-        text: t('reputation.sheet.discardDrop'),
-        style: 'destructive',
-        onPress: () => {
-          onDrop();
-          repeat();
-        },
-      },
-    ]);
-  });
-}
 
 export function ReviewSheet({
   pair,
@@ -71,55 +31,13 @@ export function ReviewSheet({
   onClose: () => void;
 }) {
   const { t, language } = useI18n();
-  const submitState = useReviewSubmit(target);
-  const [base] = useState(() => draftFromReview(pair));
-  const [draft, setDraft] = useState<ReviewDraft>(() => reviewStore.draft(target) ?? base);
-  const [submitting, setSubmitting] = useState(false);
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const [placed, setPlaced] = useState(false);
   const face = useRef<ViewInstance>(null);
-  const seal = useSealClock(outcome !== null && (placed || outcome.revealed), !outcome?.revealed);
   const name = pairName(pair, t);
-  const sending = submitState?.phase === 'sending';
-  const failure = submitState?.phase === 'failed' ? submitState.failure : null;
-  const refusal = failure ?? (submitting || outcome ? null : blockedBy(pair));
-  const ready = canSend(draft, base, pair) && !sending && !refusal;
-
-  useDiscardPrompt(outcome === null && (sending || draftChanged(draft, base)), sending, () =>
-    reviewStore.saveDraft(target, null),
-  );
-
-  useEffect(() => {
-    reviewStore.dismissFailure(target);
-  }, [target]);
-
-  useEffect(() => {
-    if (failure) AccessibilityInfo.announceForAccessibility(t(`reputation.sheet.${failure}`));
-  }, [failure, t]);
-
-  const update = (next: ReviewDraft) => {
-    setDraft(next);
-    reviewStore.saveDraft(target, draftChanged(next, base) ? next : null);
-  };
-
-  const submit = async () => {
-    Keyboard.dismiss();
-    setSubmitting(true);
-    const sent = await reviewStore.submit(target, pair.role, draft);
-    if (!sent) {
-      setSubmitting(false);
-      return;
-    }
-    const item = reviewStore.getSnapshot().items[`${target.kind}:${target.itemId}`];
-    const stored = item && item.status !== 'idle' ? findPair(item.data ?? [], target) : null;
-    const revealed = stored?.state === 'revealed';
-    const from = await measured(face.current);
-    setOutcome({ revealed, from });
-    const line = revealed
-      ? t('reputation.sheet.revealedTitle')
-      : t('reputation.sheet.sealedTitle', { name });
-    AccessibilityInfo.announceForAccessibility(line);
-  };
+  const sheet = useReviewSheet(pair, target, face, name);
+  const { draft, update, outcome, busy, frozen, line } = sheet;
+  const [placed, setPlaced] = useState(false);
+  const seal = useSealClock(outcome !== null && (placed || outcome.revealed), !outcome?.revealed);
+  const revealedNow = outcome?.revealed === true || pair.state === 'revealed';
 
   const form = useAnimatedStyle(() => ({
     opacity:
@@ -135,7 +53,7 @@ export function ReviewSheet({
       <Stack.Screen options={{ title: t('reputation.sheet.title', { name }) }} />
       {outcome ? null : (
         <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button disabled={sending} onPress={onClose}>
+          <Stack.Toolbar.Button disabled={busy} onPress={onClose}>
             {t('reputation.sheet.cancel')}
           </Stack.Toolbar.Button>
         </Stack.Toolbar>
@@ -162,28 +80,28 @@ export function ReviewSheet({
           </AppText>
           <FacePicker
             picked={draft.face}
-            disabled={sending}
+            disabled={frozen}
             pickedRef={face}
             onPick={(next) => update(pickFace(draft, pair.role, next))}
           />
           {draft.face ? (
-            <ReviewDetails draft={draft} role={pair.role} disabled={sending} onChange={update} />
+            <ReviewDetails draft={draft} role={pair.role} disabled={frozen} onChange={update} />
           ) : null}
           <View style={styles.actions}>
-            {refusal ? (
+            {line ? (
               <InlineState
                 tone="warning"
-                text={t(`reputation.sheet.${refusal}`)}
+                text={t(`reputation.sheet.${line}`)}
                 testID="review-failed"
               />
             ) : null}
             {draft.face ? (
               <PillButton
                 label={t('reputation.sheet.submit')}
-                loading={sending}
+                loading={busy}
                 loadingLabel={t('reputation.sheet.submitting')}
-                disabled={!ready && !sending}
-                onPress={() => void submit()}
+                disabled={!sheet.ready && !busy}
+                onPress={() => void sheet.submit()}
                 testID="review-submit"
               />
             ) : null}
@@ -196,11 +114,9 @@ export function ReviewSheet({
           face={draft.face}
           from={outcome.from}
           envelope={!outcome.revealed}
-          title={t(`reputation.sheet.${outcome.revealed ? 'revealedTitle' : 'sealedTitle'}`, {
-            name,
-          })}
+          title={t(`reputation.sheet.${revealedNow ? 'revealedTitle' : 'sealedTitle'}`, { name })}
           note={
-            outcome.revealed
+            revealedNow
               ? t('reputation.sheet.revealedNote', { name })
               : t('reputation.sheet.sealedNote', {
                   name,

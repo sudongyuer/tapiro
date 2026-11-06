@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   cancelAnimation,
   Easing,
@@ -23,6 +23,7 @@ export type SealClock = {
   fade: SharedValue<number>;
   press: SharedValue<number>;
   reduced: boolean;
+  live: boolean;
   skip: () => void;
 };
 
@@ -36,6 +37,7 @@ export function useSealClock(running: boolean, moves: boolean): SealClock {
   const fade = useSharedValue(0);
   const press = useSharedValue<number>(SEAL_PRESS_FROM);
   const skipped = useSharedValue(false);
+  const [live, setLive] = useState(false);
 
   useEffect(() => {
     if (!running) return;
@@ -61,6 +63,13 @@ export function useSealClock(running: boolean, moves: boolean): SealClock {
     },
   );
 
+  useAnimatedReaction(
+    () => (reduced ? fade.value >= 1 : clock.value >= SEAL.copy.start),
+    (now, before) => {
+      if (now && before !== true) scheduleOnRN(setLive, true);
+    },
+  );
+
   const skip = useCallback(() => {
     skipped.set(true);
     cancelAnimation(clock);
@@ -71,5 +80,5 @@ export function useSealClock(running: boolean, moves: boolean): SealClock {
     press.set(1);
   }, [clock, fade, press, skipped]);
 
-  return { clock, fade, press, reduced, skip };
+  return { clock, fade, press, reduced, live, skip };
 }

@@ -24,7 +24,7 @@ export const FACE_SIZE = 76;
 const DIM_SCALE = 0.88;
 const DIM_OPACITY = 0.35;
 const CHIP_HEIGHT = 36;
-const CHIP_SLOP = (44 - CHIP_HEIGHT) / 2;
+const CHIP_SLOP = (vars['--touch-min'] - CHIP_HEIGHT) / 2;
 
 function FaceArt({ face, dimmed, reduced }: { face: Face; dimmed: boolean; reduced: boolean }) {
   const dim = useSharedValue(0);
