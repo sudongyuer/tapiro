@@ -26,6 +26,7 @@ says(ui, line(ui, 'idle'))
 ui.at_rest()
 tap_mascot(ui, element)
 says(ui, line(ui, 'fed'))
-assert len(feeds(ui, 1)) == 1, 'the second tap did not feed'
 ui.capture('02-fed')
+assert line(ui, 'fed') in (ui.output / '02-fed.json').read_text(), 'the shot missed the thanks'
+assert len(feeds(ui, 1)) == 1, 'the second tap did not feed'
 print('PASS: the level-up went first and the next tap fed')

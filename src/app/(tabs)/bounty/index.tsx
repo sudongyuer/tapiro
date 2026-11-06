@@ -49,12 +49,13 @@ function BountyHome({ user }: { user: AccountUser }) {
   const stack = useLiveStackState();
   const [mascotShown, setMascotShown] = useState(true);
   const openGrown = useCallback(() => router.push('/bounty/mascot-grown'), [router]);
+  const stageVisible = focused && mascotShown;
+  const feedActor = useStageFeed({ visible: stageVisible });
   const growthActor = useStageGrowth({
     userId: user.id,
-    visible: focused && mascotShown,
+    visible: stageVisible && !feedActor.overlay,
     open: openGrown,
   });
-  const feedActor = useStageFeed();
   const actor = composeStageActor(growthActor, feedActor);
   const chat = useItemChat(
     useCallback(

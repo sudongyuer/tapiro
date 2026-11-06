@@ -18,7 +18,7 @@ export const LEAF = {
 } as const;
 
 export const BITE = { step: 90, scaleY: 0.94, scaleX: 1.03 } as const;
-export const FEED_BUBBLE = { rise: 6, duration: 200, reduced: 150 } as const;
+export const FEED_BUBBLE = { rise: 6, duration: 200 } as const;
 export const ANSWER_HOLD_MS = 4000;
 
 export const easeEnter = Easing.bezierFn(0.23, 1, 0.32, 1);

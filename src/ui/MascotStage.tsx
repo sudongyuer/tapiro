@@ -90,7 +90,7 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
       {...rest}
       style={[styles.stage, { backgroundColor: color(stageColor(state)) }, style]}
       accessible
-      accessibilityLabel={say ?? line}
+      accessibilityLabel={say || line}
       accessibilityRole={actor?.action ? 'button' : undefined}
       accessibilityHint={actor?.action ?? undefined}
       accessibilityActions={

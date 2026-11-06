@@ -20,7 +20,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useWeeklyFeed } from '../hooks';
 import { coinsStore } from '../services';
 import { FeedLeaf } from './FeedLeaf';
-import { FEED_LINES, feedAnswered, feedStep } from './feedStep';
+import { FEED_LINES, feedAnswered, feedStep, feedTakesTap } from './feedStep';
 import {
   ANSWER_HOLD_MS,
   BITE,
@@ -38,7 +38,7 @@ function firstBite() {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
 }
 
-export function useStageFeed(): Partial<StageActor> {
+export function useStageFeed({ visible }: { visible: boolean }): Partial<StageActor> {
   const { t } = useI18n();
   const { status, feed } = useWeeklyFeed();
   const reduced = useReducedMotion() || uiVerifyReduceMotion;
@@ -47,7 +47,7 @@ export function useStageFeed(): Partial<StageActor> {
   const [landed, setLanded] = useState(false);
   const [chewed, setChewed] = useState(false);
   const step = feedStep({ tapped, landed, chewed, feed });
-  const sending = useRef(false);
+  const busy = useRef(false);
 
   const drop = useSharedValue(0);
   const shown = useSharedValue(0);
@@ -57,8 +57,8 @@ export function useStageFeed(): Partial<StageActor> {
   const reveal = useSharedValue(1);
 
   const press = useCallback(() => {
-    if (sending.current) return;
-    sending.current = true;
+    if (busy.current) return;
+    busy.current = true;
     setTapped(true);
     setLanded(false);
     setChewed(false);
@@ -78,9 +78,7 @@ export function useStageFeed(): Partial<StageActor> {
       drop.set(0);
       drop.set(withTiming(1, { duration: LEAF.drop, easing: Easing.linear }, land));
     }
-    void coinsStore.feed().finally(() => {
-      sending.current = false;
-    });
+    void coinsStore.feed();
   }, [drop, falls, out, reduced, reveal, shown]);
 
   useEffect(() => {
@@ -125,8 +123,14 @@ export function useStageFeed(): Partial<StageActor> {
   }, [step, reduced, reveal, out, bite, falls]);
 
   useEffect(() => {
-    if (!feedAnswered(step)) return;
-    AccessibilityInfo.announceForAccessibility(t(FEED_LINES[step as keyof typeof FEED_LINES]));
+    if (feedTakesTap(step)) busy.current = false;
+    if (feedAnswered(step)) {
+      AccessibilityInfo.announceForAccessibility(t(FEED_LINES[step as keyof typeof FEED_LINES]));
+    }
+  }, [step, t]);
+
+  useEffect(() => {
+    if (!feedAnswered(step) || !visible) return;
     const hold = setTimeout(() => {
       coinsStore.settleFeed();
       setTapped(false);
@@ -135,7 +139,7 @@ export function useStageFeed(): Partial<StageActor> {
       reveal.set(1);
     }, ANSWER_HOLD_MS);
     return () => clearTimeout(hold);
-  }, [step, t, reveal]);
+  }, [step, visible, reveal]);
 
   const leafStyle = useAnimatedStyle(() => {
     const left = 1 - out.value;
@@ -170,22 +174,19 @@ export function useStageFeed(): Partial<StageActor> {
   }));
 
   const hungry = status.status === 'ready' && status.data?.fedThisWeek === false;
-  const flying = tapped && step !== 'idle';
-  const say =
-    step === 'idle'
-      ? hungry
-        ? t('coins.feed.idle')
-        : null
-      : t(FEED_LINES[step === 'dropping' || step === 'chewing' ? 'waiting' : step]);
+  const say = (() => {
+    if (step === 'idle') return hungry ? t('coins.feed.idle') : null;
+    return step === 'dropping' || step === 'chewing' ? '' : t(FEED_LINES[step]);
+  })();
 
   return {
     say,
-    sayOverLive: step === 'waiting' || feedAnswered(step),
+    sayOverLive: step === 'waiting' || step === 'chewing' || feedAnswered(step),
     hint: step === 'idle' && hungry ? 'leaf' : null,
     onPress: press,
     action: t('coins.feed.action'),
     chewStyle,
-    overlay: flying ? createElement(FeedLeaf, { style: leafStyle }) : null,
+    overlay: step === 'idle' ? null : createElement(FeedLeaf, { style: leafStyle }),
     reveal,
     revealRise: reduced ? 0 : FEED_BUBBLE.rise,
   };

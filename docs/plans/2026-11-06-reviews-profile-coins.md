@@ -300,6 +300,7 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 | W7  | The small leaf sits to the right of 小貘 at mid height, above the parcel of the urgent stage, 20 pt | The 254 drawing has no car or parcel |
 | W8  | In the calm state 小貘 wakes for the invitation and through the feed (M9); the bubble is a tap target too (M15); VoiceOver's double-tap and the action 「喂小貘」 take the same path and the answer is announced | 253 A; 257 board |
 | W9  | The leaf is the canvas drawing (`--color-leaf`, `--color-leaf-vein`), 26 pt, at the trunk; it is stand-in art until the drawing task | Art gap |
+| W11 | A tap counts only when nothing runs or while an answer shows; the drop, the wait and the chew ignore taps even after the server has answered. A feed already running finishes before a level-up takes the stage, and the 4 s starts only with 小貘 on screen | A double tap must not swap the thanks for 「吃饱啦」; an answer must be seen |
 | W10 | Pull to refresh on home re-reads the week as well | The week can turn while home is open |
 
 ## File structure

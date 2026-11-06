@@ -18,10 +18,16 @@ def leaf_pixels(ui, shot, element, width, state='calm'):
     return colour_count(shot, wide, token('--color-leaf', ui.appearance), tolerance=20)
 
 
-def body_tops(ui, video, box, width, start=0.0):
+def body_tops(ui, video, box, width):
     with tempfile.TemporaryDirectory() as tmp:
-        tops = [ink_top(Shot(path, width), box, ui) for path, at in frames(video, tmp, 0.03) if at >= start]
+        tops = [ink_top(Shot(path, width), box, ui) for path, _ in frames(video, tmp, 0.03)]
     return [top for top in tops if top is not None]
+
+
+def bubble_pixels(ui, shot, element, size=36):
+    f = element['frame']
+    box = {'x': 16, 'y': f['y'] + 18, 'width': size, 'height': 36}
+    return colour_count(shot, box, token('--color-stage-bubble', ui.appearance), tolerance=8)
 
 
 def feeds(ui, count, timeout=10):

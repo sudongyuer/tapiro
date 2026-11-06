@@ -25,6 +25,8 @@ export function feedStep({
 export const feedAnswered = (step: FeedStep) =>
   step === 'fed' || step === 'alreadyFed' || step === 'failed';
 
+export const feedTakesTap = (step: FeedStep) => step === 'idle' || feedAnswered(step);
+
 export const FEED_LINES = {
   waiting: 'coins.feed.waiting',
   fed: 'coins.feed.fed',

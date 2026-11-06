@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { feedStep } from './feedStep';
+import { feedStep, feedTakesTap } from './feedStep';
 
 const sending = { phase: 'sending' } as const;
 const fed = { phase: 'answered', status: 'fed' } as const;
@@ -32,5 +32,19 @@ describe('feed step', () => {
   test('already fed and a failure never chew', () => {
     expect(feedStep({ ...landed, feed: already })).toBe('alreadyFed');
     expect(feedStep({ ...landed, feed: failed })).toBe('failed');
+  });
+});
+
+describe('feed taps', () => {
+  test('a tap counts when nothing runs and while an answer shows', () => {
+    for (const step of ['idle', 'fed', 'alreadyFed', 'failed'] as const) {
+      expect(feedTakesTap(step)).toBe(true);
+    }
+  });
+
+  test('a tap during the drop, the wait or the chew does nothing, answered or not', () => {
+    for (const step of ['dropping', 'waiting', 'chewing'] as const) {
+      expect(feedTakesTap(step)).toBe(false);
+    }
   });
 });
