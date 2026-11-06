@@ -1,0 +1,61 @@
+import type zhHans from './zh-Hans';
+
+const ms: typeof zhHans = {
+  row: 'Syiling',
+  title: 'Syiling',
+  freePosts: '{{left}} daripada {{total}} siaran percuma lagi bulan ini',
+  empty: 'Belum ada aktiviti',
+  failed: 'Tidak dapat dimuatkan',
+  retry: 'Cuba Lagi',
+  more: 'Muatkan aktiviti lebih awal',
+  moreFailed: 'Aktiviti lebih awal tidak dapat dimuatkan',
+  withTitle: '{{reason}} · {{title}}',
+  reason: {
+    new_user: 'Hadiah pengguna baharu',
+    onboarding_payee_method: 'Tetapkan kaedah bayaran',
+    onboarding_first_post: 'Siaran pertama',
+    onboarding_first_help: 'Bantuan pertama',
+    help_settled: 'Membantu',
+    post_spend: 'Siaran',
+    post_refund: 'Bayaran balik',
+    weekly_feed: 'Suapan mingguan',
+    invite_inviter: 'Ganjaran jemputan',
+    invite_invitee: 'Ganjaran jemputan',
+    other: 'Lain-lain',
+  },
+  feed: {
+    idle: 'Minggu baharu, ketik saya untuk sehelai daun',
+    fed: 'Terima kasih! +1 Syiling',
+    alreadyFed: 'Saya dah kenyang minggu ini. Datang lagi hari Isnin',
+    failed: 'Tak berjaya. Ketik saya sekali lagi',
+    action: 'Beri tapir makan',
+  },
+  invite: {
+    row: 'Jemput Kawan',
+    title: 'Jemput Kawan',
+    myCode: 'Kod jemputan saya',
+    copy: 'Salin',
+    share: 'Kongsi',
+    explain:
+      'Apabila kawan memasukkan kod anda dan menyelesaikan urusan pertama, anda berdua dapat {{reward}} Syiling',
+    shareText:
+      'Saya guna Tapiro untuk saling membantu. Masukkan kod jemputan saya {{code}} dan kita berdua dapat {{reward}} Syiling selepas urusan pertama anda.',
+    enterCode: 'Masukkan kod kawan',
+    placeholder: 'cth. {{code}}',
+    submit: 'OK',
+    invited: 'Orang yang saya jemput',
+    rewarded: 'Urusan pertama selesai · +{{reward}}',
+    waiting: 'Belum selesai',
+    error: {
+      notFound: 'Tiada kod jemputan ini',
+      malformed: 'Tiada kod jemputan ini',
+      ownCode: 'Itu kod jemputan anda sendiri',
+      alreadyRedeemed: 'Anda sudah memasukkan kod jemputan',
+      tooLate: 'Kod jemputan tidak boleh dimasukkan selepas urusan pertama anda',
+      mutual: 'Anda yang menjemput dia, jadi kod dia tidak boleh digunakan',
+      failed: 'Tak berjaya. Semak sambungan dan cuba lagi',
+    },
+  },
+};
+
+export default ms;
