@@ -116,7 +116,8 @@ const en: typeof zhHans = {
   report: {
     quote: 'Reported review',
     reasons: 'Why are you reporting this review?',
-    footer: 'The reviewer won’t know it was reported. Reporting doesn’t remove the review by itself.',
+    footer:
+      'The reviewer won’t know it was reported. Reporting doesn’t remove the review by itself.',
   },
   profile: {
     helped: 'People helped',
