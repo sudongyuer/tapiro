@@ -223,6 +223,10 @@ begin
   if private.has_settled_item(uid) then
     raise exception 'too_late' using errcode = '55000';
   end if;
+  -- Both people of a pair take one lock, so A redeeming B's code and B redeeming A's at once cannot both pass.
+  perform pg_advisory_xact_lock(hashtextextended(
+    'invite-pair:' || least(uid, code_owner)::text || ':' || greatest(uid, code_owner)::text, 0
+  ));
   if exists (select 1 from public.invites i where i.invitee_id = code_owner and i.inviter_id = uid) then
     raise exception 'mutual_invite' using errcode = '55000';
   end if;
@@ -244,6 +248,8 @@ declare
   inv public.invites;
   others uuid[];
 begin
+  -- The same lock redeem_invite holds, so a code entered while the first item settles is decided in one order.
+  perform pg_advisory_xact_lock(hashtextextended('invite:' || new.owner_id::text, 0));
   select * into inv from public.invites i where i.invitee_id = new.owner_id and i.rewarded_at is null for update;
   if not found then
     return null;
@@ -254,8 +260,8 @@ begin
   else
     select case
       when r.organiser_id = new.owner_id then coalesce((
-        select array_agg(m.member_id) from public.ride_members m
-        where m.ride_id = r.id and m.status = 'boarded' and m.member_id <> new.owner_id
+        select array_agg(s.owner_id) from public.stickers s
+        where s.item_kind = 'ride' and s.item_id = new.item_id and s.owner_id <> new.owner_id
       ), '{}')
       else array[r.organiser_id]
     end into others

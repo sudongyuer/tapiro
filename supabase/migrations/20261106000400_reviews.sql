@@ -37,6 +37,7 @@ create table public.reviews (
     and sentence = regexp_replace(sentence, '^[\s ​﻿]+|[\s ​﻿]+$', '', 'g')
   ),
   negative boolean not null,
+  submitted_at timestamptz not null default now(),
   closes_at timestamptz not null,
   revealed_at timestamptz,
   -- A review is visible from shown_at on: when both sides have submitted, else when the 7-day window closes.
@@ -144,7 +145,7 @@ as $$
     'face', v.face,
     'chips', to_jsonb(v.chips),
     'sentence', v.sentence,
-    'submittedAt', v.updated_at,
+    'submittedAt', v.submitted_at,
     'shownAt', case when v.shown_at <= now() then v.shown_at end,
     'reply', (
       select jsonb_build_object('body', x.body, 'createdAt', x.created_at)
@@ -285,7 +286,9 @@ begin
       || greatest(uid, reviewee)::text,
     0
   ));
-  if now() >= pair.closes_at then
+  -- Checked against the clock, not the transaction start: a submit that waited on the pair lock past the window's end
+  -- must not change a review that has just become visible.
+  if clock_timestamp() >= pair.closes_at then
     raise exception 'review_closed' using errcode = '55000';
   end if;
   if face is null
@@ -305,7 +308,7 @@ begin
   select * into existing from public.reviews v
   where v.item_kind = kind and v.item_id = item and v.reviewer_id = uid and v.reviewee_id = reviewee
   for update;
-  if found and existing.shown_at <= now() then
+  if found and existing.shown_at <= clock_timestamp() then
     raise exception 'review_locked' using errcode = '55000';
   end if;
   if existing.id is null then
@@ -315,7 +318,8 @@ begin
     values (kind, item, uid, reviewee, pair.counterpart_role, face, picked, cleaned, has_negative, pair.closes_at);
   else
     update public.reviews v
-    set face = submit_review.face, chips = picked, sentence = cleaned, negative = has_negative
+    set face = submit_review.face, chips = picked, sentence = cleaned, negative = has_negative,
+      submitted_at = now()
     where v.id = existing.id;
   end if;
   update public.reviews v set revealed_at = now()

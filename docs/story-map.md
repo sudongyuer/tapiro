@@ -980,7 +980,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id | 行为 | 覆盖 |
 | --- | --- | --- |
 | rep.profile.numbers | 主页有帮过的人、完成率（满 5 单才显示）和评价数，只算公开的评价 | ui, db:supabase/tests/mascot_profile.test.sql |
-| rep.profile.reviews | 最近 3 条评价和「全部评价」，按时间倒序分页；拼车的评价不显示路线 | ui, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.reviews | 最近 3 条评价和「全部评价」，按时间倒序分页；别人主页上拼车的评价不显示路线和评价人 | ui, db:supabase/tests/mascot_profile.test.sql |
 | rep.profile.mascot | 别人主页只看到小貘等级和贴纸数，看不到自己的升级状态 | ui, db:supabase/tests/mascot_profile.test.sql |
 | rep.profile.failed | 没加载出来写「没加载出来 · 重试」，不当成没有评价 | ui |
 

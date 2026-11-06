@@ -1,5 +1,5 @@
 begin;
-select plan(43);
+select plan(45);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -68,7 +68,11 @@ select is(has_function_privilege('anon', 'public.feed_weekly()', 'execute'), fal
 
 select pg_temp.act_as(pg_temp.u('a1'));
 select matches(public.my_invite() ->> 'code', '^[A-HJ-NP-Z2-9]{6}$', 'my code has 6 characters without 0, O, 1 or I');
-select is(public.my_invite() ->> 'code', public.my_invite() ->> 'code', 'the code stays the same');
+create temp table first_code as select public.my_invite() ->> 'code' as code;
+select is(public.my_invite() ->> 'code', (select code from first_code), 'the code stays the same');
+reset role;
+select is((select count(*) from public.invite_codes where user_id = pg_temp.u('a1')), 1::bigint, 'one code per user');
+set local role authenticated;
 select is(public.my_invite() ->> 'canRedeem', 'true', 'a user without settled items may enter a code');
 
 create temp table codes (k text primary key, code text);
@@ -152,6 +156,14 @@ values ('10000000-0000-0000-0000-0000000000f1', pg_temp.u('d4'), 'boarded'),
 insert into public.stickers (owner_id, item_kind, item_id, role, title)
 values (pg_temp.u('c3'), 'ride', '10000000-0000-0000-0000-0000000000f1', 'payer', '双威 → KLIA2');
 select is(pg_temp.coins('c3', 'invite_invitee'), 0::bigint, 'a ride organised by the inviter earns nothing');
+insert into public.stickers (owner_id, item_kind, item_id, role, title)
+values (pg_temp.u('c3'), 'ride', '10000000-0000-0000-0000-0000000000f2', 'payee', '双威 → KLIA2'),
+  (pg_temp.u('d4'), 'ride', '10000000-0000-0000-0000-0000000000f2', 'payer', '双威 → KLIA2');
+select is(pg_temp.coins('c3', 'invite_invitee'), 0::bigint,
+  'a boarded member without a car sticker does not count as someone besides the inviter');
+insert into public.stickers (owner_id, item_kind, item_id, role, title)
+values (pg_temp.u('f6'), 'ride', '10000000-0000-0000-0000-0000000000f2', 'payer', '双威 → KLIA2');
+delete from public.stickers where owner_id = pg_temp.u('c3') and item_id = '10000000-0000-0000-0000-0000000000f2';
 insert into public.stickers (owner_id, item_kind, item_id, role, title)
 values (pg_temp.u('c3'), 'ride', '10000000-0000-0000-0000-0000000000f2', 'payee', '双威 → KLIA2');
 select is(

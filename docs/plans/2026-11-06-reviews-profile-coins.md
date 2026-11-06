@@ -67,7 +67,11 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
   of the pair's two stickers, so a rider boarded later by an appeal gets a full window.
 - **Sentence and reply:** at most 200 characters after the chat trim (spaces, newlines, U+00A0, U+200B, U+FEFF); an
   empty sentence is stored as none.
-- **Edit** (244 A) is the same `submit_review` call while the review is sealed; `review_locked` after.
+- **Edit** (244 A) is the same `submit_review` call while the review is sealed; `review_locked` after. The window and
+  lock checks use the clock after the pair lock, so a submit that waited past the window's end is refused.
+  `submittedAt` is the last submit or edit, never the reveal.
+- **Deletion:** reviews a user wrote or received go with their account (F10), so the other side's share and counts
+  change; unlike reputation events, a deleted reviewer is not kept as one anonymous review.
 - **Reveal:** the second submit reveals both at once; otherwise a review is visible from the window's end. Reads use
   `shown_at` (`coalesce(revealed_at, closes_at)`), so nothing waits on the job; `reveal_due_reviews()` (pg_cron
   `reviews-reveal`, every 10 minutes) stamps the reveal time.
@@ -179,8 +183,9 @@ Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profi
 
 ## Questions (2026-11-06, open)
 
-256. Ride reviews on a public profile: **A★** show 「拼车」 without the route (a short name can be someone's home);
-     **B** show the route's short names like the sticker book does. Touches privacy.
+256. Ride reviews on someone else's profile: **A★** show 「拼车」 without the route (a short name can be someone's home)
+     and without the reviewer (who rode with whom); the reviewee still sees both on their own profile; **B** show the
+     route's short names and the reviewer like bounty reviews. Touches privacy. The server does A until answered.
 257. Motion for the sealed review, 小貘 growing and the leaf: to be drawn on the canvas with numbered options (curve,
      duration, Reduce Motion fallback) before Tasks 3, 7 and 9 start.
 258. Rides without a Tapiro payment (Grab split, or riding alone): **A★** count a closed ride as a settled item for the

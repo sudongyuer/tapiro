@@ -1,5 +1,5 @@
 begin;
-select plan(36);
+select plan(38);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 values
@@ -174,6 +174,16 @@ select is(
   (select row(x ->> 'kind', x -> 'title') from jsonb_array_elements(public.profile_card(pg_temp.u('c3')) -> 'latestReviews') x),
   row('ride'::text, 'null'::jsonb), 'a ride review never shows the route on a public profile'
 );
+select is(
+  (select x -> 'reviewer' from jsonb_array_elements(public.profile_card(pg_temp.u('c3')) -> 'latestReviews') x),
+  'null'::jsonb, 'nor who rode with whom'
+);
+select pg_temp.act_as(pg_temp.u('c3'));
+select is(
+  (select x -> 'reviewer' ->> 'name' from jsonb_array_elements(public.profile_card(pg_temp.u('c3')) -> 'latestReviews') x),
+  'Devi', 'the reviewee still sees who wrote it'
+);
+select pg_temp.act_as(pg_temp.u('b2'));
 
 select is(has_function_privilege('anon', 'public.profile_card(uuid)', 'execute'), false, 'anon cannot read profiles');
 select is(has_function_privilege('authenticated', 'private.mascot_json(uuid, boolean)', 'execute'), false,

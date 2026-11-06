@@ -1,5 +1,5 @@
 begin;
-select plan(24);
+select plan(26);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated',
@@ -66,9 +66,10 @@ select is(
 select is((select count(*) from public.tier_drops), 0::bigint, 'a first snapshot is never a drop');
 
 select pg_temp.review('100', 2, 1);
-insert into public.reputation_events (user_id, kind, item_kind, item_id, waived)
-select pg_temp.u('101'), 'no_show', k, gen_random_uuid(), false
-from unnest(array['bounty', 'ride']::public.payment_item_kind[]) k;
+insert into public.reputation_events (user_id, kind, item_kind, item_id, waived, created_at)
+values
+  (pg_temp.u('101'), 'no_show', 'bounty', gen_random_uuid(), false, now() - interval '2 days'),
+  (pg_temp.u('101'), 'no_show', 'ride', gen_random_uuid(), false, now() - interval '1 day');
 select pg_temp.review('102', 1, 2);
 select public.recompute_reputation();
 
@@ -95,6 +96,15 @@ select is(
 select is(
   (select detail -> 'noShows' -> 0 ->> 'kind' from public.tier_drops where user_id = pg_temp.u('101')), 'ride',
   'no-shows are listed newest first'
+);
+
+select is(
+  private.tier_drop_detail(pg_temp.u('100'), 'very_reliable', 5, 4, 0, 3, 0.3333, now()) -> 'toRegain' -> 'goodReviews',
+  '7'::jsonb, 'one good review of three needs 7 more to reach 80%, counted from whole reviews'
+);
+select is(
+  private.tier_drop_detail(pg_temp.u('100'), 'tapir_friend', 12, 8, 0, 3, 0.3333, now()) -> 'toRegain' -> 'goodReviews',
+  '17'::jsonb, 'and 17 more to reach 90%'
 );
 
 select pg_temp.settle('104', 1, 1);

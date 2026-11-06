@@ -169,7 +169,8 @@ $$;
 revoke all on function public.set_mascot_accessory(public.mascot_accessory) from public, anon;
 grant execute on function public.set_mascot_accessory(public.mascot_accessory) to authenticated;
 
--- Ride routes stay off public profiles: a ride's short names can point at someone's home (privacy, owner question).
+-- A ride review on someone else's profile names neither the route (a short name can be a home) nor the reviewer
+-- (who rode with whom); question 256.
 create function private.public_review_json(v public.reviews) returns jsonb
 language sql
 stable
@@ -180,7 +181,8 @@ as $$
     'kind', v.item_kind,
     'role', v.reviewee_role,
     'title', case when v.item_kind = 'bounty' then private.item_title(v.item_kind, v.item_id) end,
-    'reviewer', private.person_json(v.reviewer_id)
+    'reviewer', case when v.item_kind = 'bounty' or v.reviewee_id = (select auth.uid())
+      then private.person_json(v.reviewer_id) end
   );
 $$;
 

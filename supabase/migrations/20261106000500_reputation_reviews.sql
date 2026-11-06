@@ -101,13 +101,13 @@ set search_path = ''
 as $$
   select jsonb_build_object(
     'noShows', coalesce((
-      select jsonb_agg(jsonb_build_object('at', e.created_at, 'kind', e.item_kind, 'title', e.title) order by e.created_at desc)
+      select jsonb_agg(jsonb_build_object('at', e.created_at, 'kind', e.item_kind, 'title', e.title) order by e.created_at desc, e.id desc)
       from (
-        select x.created_at, x.item_kind, private.item_title(x.item_kind, x.item_id) as title
+        select x.id, x.created_at, x.item_kind, private.item_title(x.item_kind, x.item_id) as title
         from public.reputation_events x
         where x.user_id = uid and x.kind = 'no_show' and not x.waived and not x.appeal_pending
           and x.created_at > as_of - interval '180 days' and x.created_at <= as_of
-        order by x.created_at desc
+        order by x.created_at desc, x.id desc
         limit 3
       ) e
     ), '[]'::jsonb),
@@ -130,7 +130,7 @@ as $$
         'goodReviews', case
           when reviews >= 3 and tier_drop_detail.good_share < t.good_share then
             greatest(0, ceil(
-              (t.good_share - tier_drop_detail.good_share) * reviews / (1 - t.good_share) - 0.000001
+              (t.good_share * reviews - round(tier_drop_detail.good_share * reviews)) / (1 - t.good_share)
             )::integer)
           else 0
         end
