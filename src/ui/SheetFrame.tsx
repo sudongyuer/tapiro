@@ -4,6 +4,7 @@ import { createContext, useContext, useLayoutEffect, useState, type ReactNode } 
 import { StyleSheet, View } from 'react-native';
 import { PinnedBar } from 'tapiro-kit';
 
+import { PinnedSurface } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -64,7 +65,9 @@ export function SheetFrame({
           {form}
           {actions ? (
             <RNHostView matchContents={{ vertical: true }}>
-              <View style={styles.actions}>{actions}</View>
+              <PinnedSurface.Provider value>
+                <View style={styles.actions}>{actions}</View>
+              </PinnedSurface.Provider>
             </RNHostView>
           ) : null}
         </PinnedBar>

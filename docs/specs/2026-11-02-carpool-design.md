@@ -970,6 +970,8 @@ PR: #48–#51, #53–#55, #57, #70 (record in the owner-decisions PR) · Commits
 - pgTAP: every `supabase/tests/ride_*.test.sql` file passes under `bun run db:test` (2026-11-05, this PR's run);
   `rides_schema.test.sql` test 39 fails only on a local database seeded by `bun run db:test-accounts` (it counts
   every `ride_events` row), not on a fresh database as in CI.
+- Local database reset 2026-11-06 (main session: `supabase db reset --local`, test accounts reseeded with
+  `bun run db:test-accounts`): pgTAP 49 files, 1721 tests, all pass; the local `rides_schema` test 39 failure is gone.
 
 ### Known limits
 

@@ -4,7 +4,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, reach_home
+from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, close, dominant, reach_home
 from records import reset_records
 from run import REGIONS
 from swifttool import SIMULATOR, compiled
@@ -301,3 +301,34 @@ def published_args(ui, timeout=20):
             return json.loads(proc.stdout)
         time.sleep(0.5)  # NSUserDefaults reaches the plist asynchronously
     raise AssertionError(f'the fixture recorded no publish in {PUBLISHED_KEY}')
+
+
+def label_strips(f, label):
+    wide = sum(17.5 if ord(ch) > 0x2E80 else 10 for ch in label) + 8
+    centre, inset = f['x'] + f['width'] / 2, 6
+    band = {'y': f['y'] + f['height'] * 0.25, 'height': f['height'] * 0.5}
+    left = {**band, 'x': f['x'] + inset, 'width': centre - wide / 2 - f['x'] - inset}
+    right = {**band, 'x': centre + wide / 2, 'width': f['x'] + f['width'] - inset - centre - wide / 2}
+    return [strip for strip in (left, right) if strip['width'] >= 4]
+
+
+# Content scrolled under a pinned bar must not show through a button: beside the label the fill is one colour.
+def crosses(a, b):
+    return a['x'] < b['x'] + b['width'] and b['x'] < a['x'] + a['width'] and \
+        a['y'] < b['y'] + b['height'] and b['y'] < a['y'] + a['height']
+
+
+def assert_fill_hides_content(shot, element, behind, name):
+    assert element, f'{name} is missing'
+    f = element['frame']
+    assert f['height'] < 1.6 * 44, f'{name} {f} wraps its label, so the strips beside it would hold its own ink'
+    strips = label_strips(f, element.get('AXLabel') or '')
+    assert strips, f'{name} {f} leaves no fill beside its label'
+    for strip in strips:
+        assert crosses(strip, behind), (
+            f'nothing scrolled under {name}: {behind} does not cross {strip}, so the check would prove nothing')
+        fill = dominant(shot, strip)
+        total = sum(1 for _ in shot.pixels(strip))
+        stray = shot.count(strip, lambda rgb: not close(rgb, fill, 24))
+        print(f'{name}: fill {fill}, {stray} of {total} pixels beside the label differ')
+        assert stray <= total * 0.01, f'{name}: scrolled content shows through the fill ({stray} of {total} pixels)'

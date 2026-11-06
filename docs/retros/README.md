@@ -88,3 +88,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-06 | chat list (Task 4)        | pending         | 2             | ~45 min (AXe gestures on iOS 27.2, a stall)  | 0                       | pending               |
 | 2026-11-06 | live updates milestone    | 0               | 4             | ~40 min (AXe gestures and OCR on iOS 27.2)   | 0                       | 0                     |
 | 2026-11-06 | steps 5–6 questions       | 0               | 0             | ~0                                           | 0                       | pending               |
+| 2026-11-06 | opaque bar buttons        | 1               | 2             | ~10 min (label strip estimate)               | 0                       | 0                     |

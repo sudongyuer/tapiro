@@ -701,7 +701,7 @@ Steps 5, 6 and 8 remain; the spec stays `approved`.
 | Report and block on every profile                                     | No profile screen; 举报 / 屏蔽 in the thread ⋯ menu and on each message                                | A profile has no content until reviews (step 6)                              | owner, 2026-11-05 (127 A)                      |
 | (not in the design) read receipts                                     | 已读 under your newest message, bounty threads only                                                    | Urgent errands decide between waiting and calling                            | owner, 2026-11-05 (125 B)                      |
 | (not in the design) entry points                                      | 发消息 on the status screen and home card; 群聊 in the ride detail's bar; hidden until a thread exists | Canvas 126 A; ride entry not drawn                                           | owner 126 A; ride placement ★ default, for veto |
-| UI details beyond the answers                                         | The ★ defaults in the plan's defaults sections (server, client core, list, thread, report and block, images, entries) | Owner: 「都按推荐」, decide UI details and record them                 | ★ by default, owner may veto                   |
+| UI details beyond the answers                                         | The ★ defaults in the plan's defaults sections (server, client core, list, thread, report and block, images, entries) | Owner: 「都按推荐」, decide UI details and record them                 | ★, accepted by the owner 2026-11-06            |
 
 ### Bugs fixed during implementation
 

@@ -86,6 +86,11 @@ src/features/*           only use src/ui/*, never raw sizes or colours
 System semantic colours (`systemGroupedBackground`, `secondarySystemGroupedBackground`,
 `label`, `secondaryLabel`, `tertiaryLabel`, `separator`) are used directly and are not tokens.
 
+A secondary pill fills with `tertiarySystemFill`, except inside a bar pinned over scrolling content (`SheetActions`),
+where it fills with the opaque `systemGray5` and every pill sits on a `systemGroupedBackground` base, so neither the
+fill nor the pressed and disabled dimming lets scrolled text cross its label (owner, 2026-11-06). Close to the translucent fill over the canvas in light and over a card in dark, and distinct from both
+the canvas and the cards scrolling under it.
+
 ### Accent
 
 | Token               | Light     | Dark      | Use                                                |
