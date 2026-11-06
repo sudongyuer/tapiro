@@ -142,7 +142,10 @@ Deleting an account removes its blocks in both directions.
 
 `reputation_events` is server-only (RLS on, no client grants); it is the input to the reputation
 tier. A `no_show` is one row per (user, item kind, item); a `settled` event is one row per (user,
-payment), so a driver gets one per rider on the same ride. A ride no-show under a 「我上车了」 appeal has
+payment), so a driver gets one per rider on the same ride. A closed ride counts the same without a payment:
+`private.record_ride_settled` writes a row for each organiser–rider pair that has none (`payment_id` null, dated at the
+close), including an appeal confirmed after the close. An organiser who rode alone has one row naming themselves as
+counterpart, which the recompute does not count as a person; an appeal after that replaces it with the pair. A ride no-show under a 「我上车了」 appeal has
 `appeal_pending`: the recompute skips it, but it keeps its `created_at` and its waiver. A confirmed appeal deletes the
 row; the `ride-jobs` cron clears the flag when the appeal lapses 72 h after 出发.
 
@@ -164,8 +167,8 @@ row; the `ride-jobs` cron clears the flag when the appeal lapses 72 h after 出�
 
 - `recompute_reputation(as_of default now())` (service role): upserts one snapshot per profile from
   the events with `as_of - 180 days < created_at <= as_of` and returns the rows written. Inputs:
-  `settled_count` (settled events, one per payment), `counterpart_count` (distinct counterparts
-  among them; counterparts whose account was deleted count together as one, so a deletion does not erase them and cannot be used to add more), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
+  `settled_count` (settled events), `counterpart_count` (distinct counterparts
+  among them, the user themselves excluded; counterparts whose account was deleted count together as one, so a deletion does not erase them and cannot be used to add more), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
   counted no-shows), null when both are 0, and `on_time_share` over the user's payer events with a
   known `on_time`, null when none. Account age is `as_of - profiles.created_at`.
 - `private.tier_for(settled, counterparts, rate, account_age)` holds every threshold, so tuning is
