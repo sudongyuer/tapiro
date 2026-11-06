@@ -49,8 +49,8 @@ function BountyHome({ user }: { user: AccountUser }) {
   const stack = useLiveStackState();
   const [mascotShown, setMascotShown] = useState(true);
   const openGrown = useCallback(() => router.push('/bounty/mascot-grown'), [router]);
-  const [stripShown, setStripShown] = useState(false);
-  const feedActor = useStageFeed({ visible: focused && !stripShown });
+  const [bubbleShown, setBubbleShown] = useState(true);
+  const feedActor = useStageFeed({ visible: focused && bubbleShown });
   const growthActor = useStageGrowth({
     userId: user.id,
     visible: focused && mascotShown && !feedActor.overlay,
@@ -118,7 +118,7 @@ function BountyHome({ user }: { user: AccountUser }) {
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
         actor={actor}
         onMascotShown={setMascotShown}
-        onStripShown={setStripShown}
+        onBubbleShown={setBubbleShown}
         reviews={<PendingReviewCards />}
         board={
           <BountyBoard

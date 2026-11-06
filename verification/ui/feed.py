@@ -37,7 +37,7 @@ def leaf_peak(ui, video, element, width):
 
 def leaf_above(ui, video, element, width):
     box = mascot_box(element, width)
-    band = {**box, 'x': box['x'] - 10, 'y': box['y'] - 60, 'height': 90}
+    band = {**box, 'x': box['x'] - 10, 'y': box['y'] - 60, 'height': 118}
     leaf = token('--color-leaf', ui.appearance)
     with tempfile.TemporaryDirectory() as tmp:
         return max(colour_count(Shot(path, width), band, leaf, tolerance=20) for path, _ in frames(video, tmp, 0.03))
