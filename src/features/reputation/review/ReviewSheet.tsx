@@ -288,7 +288,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   centre: { alignItems: 'center', justifyContent: 'center' },
   content: {
-    flexGrow: 1,
     paddingHorizontal: vars['--space-5'],
     paddingTop: vars['--space-2'],
     paddingBottom: vars['--space-3'],
@@ -307,5 +306,5 @@ const styles = StyleSheet.create({
     backgroundColor: PlatformColor('tertiarySystemFill'),
   },
   count: { alignSelf: 'flex-end' },
-  actions: { marginTop: 'auto', gap: vars['--space-3'] },
+  actions: { gap: vars['--space-3'] },
 });

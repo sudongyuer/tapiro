@@ -3,20 +3,10 @@ import time
 from driver import by_id
 from profile import label, rep_calls
 
-SCENE = 'review-sheet'
 SHEET = 'review-sheet'
-BASE_ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx',
-        'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx',
-        'verification/ui/review.py', 'verification/ui/profile.py']
-
 
 def open_sheet(ui):
     return ui.element(SHEET, timeout=45)
-
-
-def submitted(ui, count):
-    return rep_calls(ui, 'submitReview', count)
 
 
 def assert_one_submit(ui):
@@ -28,9 +18,9 @@ def assert_one_submit(ui):
     return calls[0]
 
 
-def checked(ui, identifier):
+def enabled(ui, identifier):
     element = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')
-    return element.get('AXValue') in ('1', 1) or 'selected' in (element.get('AXTraits') or [])
+    return element.get('enabled') is not False
 
 
 def sealed(ui, name, days):
