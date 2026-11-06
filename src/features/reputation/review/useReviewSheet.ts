@@ -1,5 +1,5 @@
 import { usePreventRemove } from 'expo-router';
-import { useEffect, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useState, type RefObject } from 'react';
 import { AccessibilityInfo, Alert, Keyboard, type ViewInstance } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -87,13 +87,28 @@ export function useReviewSheet(
     if (!busy && !changed) reviewStore.saveDraft(target, null);
   }, [busy, changed, target]);
 
-  const finish = async (revealed: boolean) => {
-    const from = await measured(face.current);
-    setOutcome({ revealed, from });
-    AccessibilityInfo.announceForAccessibility(
-      revealed ? t('reputation.sheet.revealedTitle') : t('reputation.sheet.sealedTitle', { name }),
-    );
-  };
+  const finish = useCallback(
+    async (revealed: boolean) => {
+      const from = await measured(face.current);
+      setOutcome({ revealed, from });
+      AccessibilityInfo.announceForAccessibility(
+        revealed
+          ? t('reputation.sheet.revealedTitle')
+          : t('reputation.sheet.sealedTitle', { name }),
+      );
+    },
+    [face, name, t],
+  );
+
+  const landedLater = failure === 'failed' && pair.mine !== null && !draftChanged(draft, base);
+
+  useEffect(() => {
+    if (!landedLater) return;
+    setSubmitting(true);
+    reviewStore.dismissFailure(target);
+    reviewStore.saveDraft(target, null);
+    void finish(pair.state === 'revealed');
+  }, [landedLater, target, finish, pair.state]);
 
   const update = (next: ReviewDraft) => {
     setDraft(next);
