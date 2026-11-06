@@ -1,6 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { toCount, toMessage, toReadAt, toReportId, toThreadPage, toThreadRead } from './parse';
+import {
+  toCount,
+  toMessage,
+  toReadAt,
+  toReportId,
+  toThreadId,
+  toThreadPage,
+  toThreadRead,
+} from './parse';
 import { PAGE_SIZE, type ChatService, type OutgoingImage, type SendFailure } from './types';
 
 export const IMAGE_BUCKET = 'chat-images';
@@ -116,6 +124,16 @@ export function createSupabaseChatService(
           }),
         ),
       );
+    },
+    async findThread(kind, itemId) {
+      const row = unwrap(
+        await db()
+          .from('threads')
+          .select('id')
+          .eq(kind === 'bounty' ? 'bounty_id' : 'ride_id', itemId)
+          .maybeSingle(),
+      );
+      return toThreadId(row);
     },
   };
 }

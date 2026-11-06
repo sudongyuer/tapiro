@@ -79,6 +79,7 @@ const en: typeof zhHans = {
       cancel: 'Cancel Bounty',
       withdraw: 'Stop Helping',
       sending: 'Sending',
+      message: 'Message',
     },
     failed: 'Couldn’t send. Try again.',
     stateChanged: 'This bounty’s status has changed',

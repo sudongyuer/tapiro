@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, reach_home
+from records import reset_records
 from run import REGIONS
 from swifttool import SIMULATOR, compiled
 
@@ -135,6 +136,7 @@ def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll'):
             args = args[:start] + args[start + len(drop):]
             break
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
+    reset_records(ui.udid)
     subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, '-AppleLanguages', f'({ui.locale})',
                     '-AppleLocale', REGIONS[ui.locale], *args, *add], check=True, capture_output=True, timeout=60)
     ui.element(ready, timeout=60)

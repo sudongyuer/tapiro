@@ -314,3 +314,24 @@ describe('one-time cards', () => {
     ]);
   });
 });
+
+describe('发消息 on the home card (126 A)', () => {
+  test('only a poster or helper past selection gets the chat entry', async () => {
+    const rows = await rowsByName();
+    const withChat = LIVE_FIXTURE_ROWS.filter(
+      (name) => liveBountyItem(rows.get(name)!, copy())?.bounty.chat === true,
+    );
+    expect(withChat).toEqual([
+      'posterAssigned',
+      'posterLate',
+      'posterEnRoute',
+      'posterDone',
+      'posterDisputed',
+      'helperAssigned',
+      'helperLate',
+      'helperEnRoute',
+      'helperDone',
+      'helperDisputed',
+    ]);
+  });
+});

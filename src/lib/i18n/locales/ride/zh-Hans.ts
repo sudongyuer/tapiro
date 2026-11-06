@@ -59,6 +59,7 @@ export default {
     stale: '没刷新成功 · 下面是 {{time}} 的',
     staleLive: '可能不是最新 · {{time}} 的',
     more: '更多',
+    chat: '群聊',
     you: '你',
     listJoin: '、',
     meetupStatus: '集合中',

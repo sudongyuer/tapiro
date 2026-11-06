@@ -7,6 +7,7 @@ import {
 } from './fixtureStatusService';
 import {
   actionKey,
+  hasThread,
   statusActions,
   statusSummary,
   timeline,
@@ -307,5 +308,18 @@ describe('copy keys', () => {
 
   test('an open bounty has no status summary', async () => {
     expect(statusSummary(await detailOf('open', 'poster'), 'poster')).toBeNull();
+  });
+});
+
+describe('发消息 on the status screen (126 A)', () => {
+  test('the entry shows once a helper is selected, for both sides, and stays after the bounty ends', async () => {
+    for (const role of ['poster', 'helper'] as const) {
+      expect(hasThread(await detailOf('assigned', role))).toBe(true);
+      expect(hasThread(await detailOf('settled', role))).toBe(true);
+    }
+  });
+
+  test('an open bounty has no thread yet, so no entry', async () => {
+    expect(hasThread(await detailOf('open', 'poster'))).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 import { collectSticker, dismissSettled } from '@/lib/stickers';
 
 import type { LiveCardModel } from '../homeModel';
-import { BountyCard, OwedCard } from './BountyCard';
+import { BountyCard, OwedCard, type CardMessage } from './BountyCard';
 import { CalmCard, FallbackCard } from './CalmCard';
 import { PayCard } from './PayCard';
 import { RideCard } from './RideCard';
@@ -13,11 +13,13 @@ export function CardBody({
   behind,
   name,
   onAsk,
+  message = null,
 }: {
   card: LiveCardModel;
   behind: boolean;
   name: string;
   onAsk: () => void;
+  message?: CardMessage | null;
 }) {
   if (card.kind === 'calm') return <CalmCard name={name} onAsk={onAsk} />;
   if (card.kind === 'unavailable') return <UnavailableCard issue={card.issue} />;
@@ -32,7 +34,7 @@ export function CardBody({
     case 'bountyAction':
     case 'bountyInProgress':
     case 'waitingConfirm':
-      return <BountyCard detail={detail} />;
+      return <BountyCard detail={detail} message={message} />;
     case 'settled':
       return (
         <SettledCard

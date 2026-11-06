@@ -258,6 +258,7 @@ const en: Translation = {
         line: '{{title}} · {{line}}',
         label: '{{title}}, {{line}}, reward {{reward}}',
         details: 'View',
+        message: 'Message',
       },
       calm: {
         tag: 'Nothing pending today',

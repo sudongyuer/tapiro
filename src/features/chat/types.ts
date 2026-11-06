@@ -131,6 +131,7 @@ export type ChatService = {
   markRead(threadId: string, messageId: string): Promise<string>;
   unreadCount(): Promise<number>;
   report(input: ReportInput): Promise<string>;
+  findThread(kind: ThreadKind, itemId: string): Promise<string | null>;
 };
 
 export type PendingState = 'sending' | 'failed';

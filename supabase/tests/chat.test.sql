@@ -1,5 +1,5 @@
 begin;
-select plan(80);
+select plan(82);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -193,7 +193,15 @@ select pg_temp.act_as(pg_temp.u('c3'));
 select is((select count(*) from public.messages), 0::bigint, 'RLS hides messages from non-members');
 select is((select count(*) from public.threads), 0::bigint, 'RLS hides threads from non-members');
 select is((select count(*) from public.thread_members), 0::bigint, 'RLS hides memberships from non-members');
+select is(
+  (select t.id from public.threads t where t.bounty_id = 'b0000000-0000-4000-8000-000000000001'), null::uuid,
+  'a non-member finds no thread for the bounty'
+);
 select pg_temp.act_as(pg_temp.u('b2'));
+select is(
+  (select t.id from public.threads t where t.bounty_id = 'b0000000-0000-4000-8000-000000000001'), (select bt from fx),
+  'a member finds the thread by its bounty, as the 发消息 entry does'
+);
 select is((select count(*) from public.messages), 3::bigint, 'a member reads the thread messages directly');
 select is((select count(*) from public.thread_members), 2::bigint, 'a member sees the thread members');
 select throws_ok(

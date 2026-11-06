@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import type { BountyCardDetail, OwedDetail } from '@/lib/liveItems';
@@ -18,7 +18,15 @@ const TAG = {
   waitingConfirm: 'home.card.bounty.tag.waiting',
 } as const;
 
-export function BountyCard({ detail }: { detail: BountyCardDetail }) {
+export type CardMessage = { onPress: () => void; busy: boolean };
+
+export function BountyCard({
+  detail,
+  message,
+}: {
+  detail: BountyCardDetail;
+  message?: CardMessage | null;
+}) {
   const { t } = useI18n();
   const tone = detail.kind === 'waitingConfirm' ? 'calm' : 'progress';
   const { ink, surface, urgentDot } = useLiveCardPaint(tone);
@@ -43,7 +51,18 @@ export function BountyCard({ detail }: { detail: BountyCardDetail }) {
         {detail.line}
       </CardText>
       <TitleRow ink={ink} title={detail.title} amount={detail.reward} />
-      {action ? <ActionPill label={action} fill={ink} ink={surface} /> : null}
+      {message ? (
+        <View style={styles.actions}>
+          <MessagePill message={message} ink={ink} />
+          {action ? (
+            <View style={styles.fill}>
+              <ActionPill label={action} fill={ink} ink={surface} inRow />
+            </View>
+          ) : null}
+        </View>
+      ) : action ? (
+        <ActionPill label={action} fill={ink} ink={surface} />
+      ) : null}
     </LiveCard>
   );
 }
@@ -89,9 +108,19 @@ export function TitleRow({ ink, title, amount }: { ink: string; title: string; a
   );
 }
 
-function ActionPill({ label, ink, fill }: { label: string; ink: string; fill: string }) {
+function ActionPill({
+  label,
+  ink,
+  fill,
+  inRow = false,
+}: {
+  label: string;
+  ink: string;
+  fill: string;
+  inRow?: boolean;
+}) {
   return (
-    <View style={styles.action}>
+    <View style={[styles.action, inRow && styles.inRow]}>
       <View style={[StyleSheet.absoluteFill, styles.actionFill, { backgroundColor: fill }]} />
       <AppText variant="secondary" numberOfLines={1} style={[styles.actionText, { color: ink }]}>
         {label}
@@ -100,7 +129,41 @@ function ActionPill({ label, ink, fill }: { label: string; ink: string; fill: st
   );
 }
 
+function MessagePill({ message, ink }: { message: CardMessage; ink: string }) {
+  const { t } = useI18n();
+  const label = t('home.card.bounty.message');
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ busy: message.busy }}
+      // Stays enabled while busy: a disabled Pressable passes the touch to the card, which opens the status screen.
+      onPress={message.onPress}
+      testID="live-card-message"
+      style={({ pressed }) => [styles.action, styles.inRow, pressed && styles.pressed]}
+    >
+      <View style={[StyleSheet.absoluteFill, styles.messageFill, { backgroundColor: ink }]} />
+      {message.busy ? (
+        <ActivityIndicator color={ink} />
+      ) : (
+        <AppText variant="secondary" numberOfLines={1} style={[styles.actionText, { color: ink }]}>
+          {label}
+        </AppText>
+      )}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  actions: {
+    flexDirection: 'row',
+    gap: vars['--space-2'],
+    marginTop: vars['--space-4'],
+  },
+  fill: { flex: 1 },
+  inRow: { marginTop: 0 },
+  messageFill: { borderRadius: vars['--radius-pill'], opacity: 0.12 },
+  pressed: { opacity: vars['--opacity-pressed'] },
   note: { marginTop: vars['--space-3'] },
   titleRow: {
     flexDirection: 'row',

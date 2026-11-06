@@ -37,6 +37,7 @@ assert not any('屏蔽' in str(label) or 'block' in str(label).lower() for label
     f'the blocked side reads a block: {labels(items)}'
 ui.at_rest()
 ui.snap("01-refused")
+assert chat_calls(ui, 'send', 1), 'the first send never reached the call log'
 time.sleep(2)  # a replay would follow the refused answer
 assert len(chat_calls(ui, 'send', 2, 0)) == 1, 'a refused message was sent again on its own'
 

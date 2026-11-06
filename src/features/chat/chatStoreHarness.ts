@@ -81,6 +81,7 @@ export function fakeService() {
     unreadCount: () => call('unreadCount', []),
     report: async () => 'r1',
     imageFile: async (path) => `file:///cache/${path}`,
+    findThread: async () => null,
   };
   const named = (name: string) => calls.filter((entry) => entry.name === name);
   return { service, calls, queues, named };

@@ -199,3 +199,20 @@ describe('fixture options for the thread screen', () => {
     expect(read.messages.every((message) => message.image === null)).toBe(true);
   });
 });
+
+describe('fixture thread lookup for the 发消息 entry', () => {
+  test('an item finds its own thread, else the first thread of its kind', async () => {
+    const service = createFixtureChatService({ variant: 'demo', failFirst: [], now: NOW });
+    expect(await service.findThread('bounty', 'fixture-chat-new-item')).toBe('fixture-chat-new');
+    expect(await service.findThread('bounty', 'fixture-bounty-04')).toBe('fixture-chat-bounty');
+    expect(await service.findThread('ride', 'fixture-ride-1')).toBe('fixture-chat-ride');
+  });
+
+  test('without threads there is none, and the find fail point fails once', async () => {
+    const empty = createFixtureChatService({ variant: 'empty', failFirst: [], now: NOW });
+    expect(await empty.findThread('bounty', 'b1')).toBeNull();
+    const failing = createFixtureChatService({ variant: 'demo', failFirst: ['find'], now: NOW });
+    await expect(failing.findThread('bounty', 'b1')).rejects.toThrow();
+    expect(await failing.findThread('bounty', 'b1')).toBe('fixture-chat-bounty');
+  });
+});

@@ -16,7 +16,6 @@ import { AppText } from '@/ui/AppText';
 import { useLiveCardPaint, type LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
 import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
-import { useTheme } from '@/ui/theme/useTheme';
 
 import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
@@ -62,6 +61,8 @@ export function useCardHeights(cards: readonly LiveCardModel[]) {
   };
 }
 
+export type HomeChat = { open: (bountyId: string) => void; opening: string | null };
+
 export type LiveCardStackProps = {
   cards: readonly LiveCardModel[];
   layout: StackLayout;
@@ -72,6 +73,7 @@ export type LiveCardStackProps = {
   onAsk: () => void;
   onToggle: (open: boolean) => void;
   onCardLayout: (id: string) => (event: LayoutChangeEvent) => void;
+  chat?: HomeChat;
 };
 
 export function LiveCardStack(props: LiveCardStackProps) {
@@ -89,36 +91,6 @@ export function LiveCardStack(props: LiveCardStackProps) {
         />
       ))}
     </View>
-  );
-}
-
-export function StackToggle({
-  count,
-  open,
-  onToggle,
-}: {
-  count: number;
-  open: boolean;
-  onToggle: (open: boolean) => void;
-}) {
-  const { t } = useI18n();
-  const { color } = useTheme();
-  const label = open ? t('home.stack.collapse') : t('home.stack.fanOut', { count });
-  return (
-    <PressDim
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityHint={open ? t('home.stack.collapseHint') : t('home.stack.fanOutHint')}
-      testID="live-cards-toggle"
-      onPress={() => onToggle(!open)}
-      style={styles.toggle}
-    >
-      <View style={[styles.togglePill, { backgroundColor: color('--color-stage-bubble') }]}>
-        <AppText variant="meta" style={[styles.toggleText, { color: color('--color-on-stage') }]}>
-          {label}
-        </AppText>
-      </View>
-    </PressDim>
   );
 }
 
@@ -141,6 +113,7 @@ function StackedCard({
   onAsk,
   onToggle,
   onCardLayout,
+  chat,
 }: StackedCardProps) {
   const { t, language } = useI18n();
   const router = useRouter();
@@ -188,6 +161,19 @@ function StackedCard({
         reward: formatMoney(bounty.reward, language, { whole: true }),
       })
     : undefined;
+  const message =
+    bounty?.chat && chat && !behind
+      ? {
+          onPress: () => chat.open(bounty.bountyId),
+          busy: chat.opening === bounty.bountyId,
+        }
+      : null;
+  const actionsForVoiceOver = openTarget
+    ? [
+        { name: 'activate' },
+        ...(message ? [{ name: 'message', label: t('home.card.bounty.message') }] : []),
+      ]
+    : undefined;
   const ownButton = card.kind === 'oweMoney';
   const grouped = card.kind !== 'calm' && card.kind !== 'unavailable' && card.kind !== 'settled';
 
@@ -215,13 +201,15 @@ function StackedCard({
           accessible={grouped}
           accessibilityRole={openTarget ? 'button' : undefined}
           accessibilityLabel={label}
-          accessibilityActions={openTarget ? [{ name: 'activate' }] : undefined}
-          onAccessibilityAction={openTarget}
+          accessibilityActions={actionsForVoiceOver}
+          onAccessibilityAction={(event) =>
+            event.nativeEvent.actionName === 'message' ? message?.onPress() : openTarget?.()
+          }
           testID={grouped ? `live-card-${card.kind}` : undefined}
         >
           {openTarget && !ownButton ? (
             <PressDim onPress={openTarget}>
-              <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
+              <CardBody card={card} behind={behind} name={name} onAsk={onAsk} message={message} />
             </PressDim>
           ) : (
             <CardBody card={card} behind={behind} name={name} onAsk={onAsk} />
@@ -275,18 +263,4 @@ const styles = StyleSheet.create({
     opacity: MUTED_TEXT_OPACITY,
     paddingHorizontal: vars['--space-5'],
   },
-  toggle: {
-    alignSelf: 'flex-end',
-    minHeight: vars['--touch-min'],
-    justifyContent: 'center',
-    marginTop: vars['--space-2'],
-  },
-  togglePill: {
-    opacity: 0.9,
-    paddingHorizontal: vars['--space-3'],
-    minHeight: vars['--space-7'] - vars['--space-1'],
-    justifyContent: 'center',
-    borderRadius: vars['--radius-pill'],
-  },
-  toggleText: { fontWeight: '700' },
 });

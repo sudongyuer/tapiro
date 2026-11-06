@@ -253,6 +253,7 @@ export default {
         line: '{{title}} · {{line}}',
         label: '{{title}}，{{line}}，赏金 {{reward}}',
         details: '看详情',
+        message: '发消息',
       },
       calm: {
         tag: '今天没有待处理的事',

@@ -23,9 +23,9 @@ import { useNow } from '../useNow';
 import { displayName } from './Avatars';
 import { DetailBody } from './DetailBody';
 import { DetailFooter } from './DetailFooter';
-import { activeMembers, detailPhase, footer as footerFor } from './detailModel';
+import { activeMembers, detailPhase, footer as footerFor, hasThread } from './detailModel';
 import { DetailSheets, useDetailSheets } from './DetailSheets';
-import { DetailMenu } from './DetailMenu';
+import { DetailMenu, type RideMessage } from './DetailMenu';
 import { SettleSheets, useSettleSheets } from './SettleSheets';
 import { useDetailActions } from './useDetailActions';
 import { useSettleActions, type RideSettleBridge } from './useSettleActions';
@@ -38,11 +38,13 @@ export function RideDetailScreen({
   userId,
   onGone,
   settle: bridge,
+  message,
 }: {
   id: string;
   userId: string;
   onGone: () => void;
   settle: RideSettleBridge;
+  message?: RideMessage;
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
@@ -100,6 +102,7 @@ export function RideDetailScreen({
         ride={ride}
         now={now}
         blocking={blocking.state === 'busy'}
+        message={message && ride && hasThread(ride) ? message : null}
         onChoose={(item) => {
           if (!ride) return;
           if (item === 'block' && ride.organiser) blocking.ask(ride.organiser);

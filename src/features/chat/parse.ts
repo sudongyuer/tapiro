@@ -148,3 +148,7 @@ export function toCount(value: unknown): number {
 export function toReportId(value: unknown): string {
   return text(body(value, 'report').id, 'report id');
 }
+
+export function toThreadId(value: unknown): string | null {
+  return value === null || value === undefined ? null : text(body(value, 'thread').id, 'thread id');
+}

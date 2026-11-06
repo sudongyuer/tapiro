@@ -19,6 +19,7 @@ from heal import Attempt, Scheduler, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
 from recording import stop_all
+from records import reset_records
 
 MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
@@ -220,6 +221,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out):
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
+    reset_records(udid)
     video = out / 'run.mp4'
     recorder = subprocess.Popen(
         ['xcrun', 'simctl', 'io', udid, 'recordVideo', '--codec=hevc', '--force', str(video)],

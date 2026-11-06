@@ -22,6 +22,7 @@ import {
   keepSentImage,
 } from './images/imageFiles';
 import { fixtureImageFile } from './images/imageSource';
+import { createItemThreads } from './itemThreads';
 import { createOutbox } from './outbox';
 
 const CALLS_KEY = 'uiVerifyChatCalls';
@@ -46,16 +47,20 @@ const outbox = createOutbox(Settings, (entry) => {
 });
 export const chatDrafts = createDrafts(Settings);
 
+const service = uiVerify
+  ? verifyChatService()
+  : createSupabaseChatService(getSupabase(), deviceImageFiles);
+
 export const chatStore = createChatStore({
-  service: uiVerify
-    ? verifyChatService()
-    : createSupabaseChatService(getSupabase(), deviceImageFiles),
+  service,
   outbox,
   newId: randomUUID,
   keepImage: keepSentImage,
 });
 
 export const chatImages = createImageCache(chatStore.imageFile);
+
+export const itemThreads = createItemThreads(service.findThread, chatStore.getSnapshot);
 
 if (uiVerify) {
   outbox.clear(FIXTURE_CHAT_USER_ID);

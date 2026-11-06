@@ -37,7 +37,8 @@ import { vars } from '@/ui/theme/tokens';
 
 import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
 import { HomeStrip, STRIP_ROW, STRIP_SHADOW } from './HomeStrip';
-import { LiveCardStack, StackToggle, useCardHeights } from './LiveCardStack';
+import { LiveCardStack, useCardHeights, type HomeChat } from './LiveCardStack';
+import { StackToggle } from './StackToggle';
 import { homeCardDetails } from './services';
 import { followShift, stackHeight, stackLayout } from './stackLayout';
 import { useStackProgress } from './useLiveStack';
@@ -64,6 +65,7 @@ export type HomeScreenProps = {
   onAsk: () => void;
   board?: ReactNode;
   refreshControl?: ReactElement<RefreshControlProps>;
+  chat?: HomeChat;
 };
 
 export function HomeScreen({
@@ -75,6 +77,7 @@ export function HomeScreen({
   onAsk,
   board,
   refreshControl,
+  chat,
 }: HomeScreenProps) {
   const { t } = useI18n();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
@@ -174,6 +177,7 @@ export function HomeScreen({
             onAsk={onAsk}
             onToggle={onToggle}
             onCardLayout={onCardLayout}
+            chat={chat}
           />
         </View>
         <Animated.View style={followStyle}>

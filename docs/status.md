@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-06.
+Updated: 2026-11-06 (chat done).
 
 ## Built and merged
 
@@ -16,24 +16,11 @@ Updated: 2026-11-06.
 | Posting a bounty, redo | `docs/specs/2026-10-31-bounty-post-redo-design.md` | #40                                                                                                                                       |
 | Carpool steps 1–7      | `docs/specs/2026-11-02-carpool-design.md`          | Implemented: #48–#51, #53–#55, #57, #70; milestone `docs/walkthroughs/2026-11-03-carpool.md`, owner walkthrough 2026-11-04                |
 | Device time zone (234) | `docs/specs/2026-11-02-carpool-design.md`          | Rides and bounties show and pick times, and local reminders keep quiet hours, in the system time zone; server rules stay in Malaysia time |
+| Chat (foundation 7)    | `docs/specs/2026-10-11-foundation-design.md`       | Plan `docs/plans/2026-10-30-chat.md` done: server, 消息 list, thread, images, report and block, entries (#63, #72, #74–#77, #79 and this PR); milestone in the step 7 record |
 | Expo SDK 58            | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; open, not SDK 58: the 已结清 exit animation and `home_fan_out` on iOS 27.2 (retro)           |
 
 ## In progress
 
-- Chat (foundation step 7): the server half is merged (threads, members, messages, reports, RPCs, thread creation,
-  blocks, deletion, `chat.message` events, report snapshot retention). Questions 117–128 are answered (★, 125 B).
-  Tasks 2 (shared block module) and 3 (client core: service, fixtures, store, outbox, live handler, read state and the
-  消息 badge, `20261106000000_chat_read_state.sql`) are merged. Task 0, the thread-screen spike, is done: 128 A confirmed
-  (RN + `react-native-keyboard-controller` 1.22.7, `docs/research/2026-11-06-chat-thread-spike.md`); the thread
-  components live behind the `chat-thread` debug scene. Task 4, the 消息 tab list, is built (rows with the item art,
-  title, the other side and the last line; empty, failed, not-current and paging states; `item` in each thread's JSON,
-  `20261106000100_chat_thread_item.sql`). Task 5, the thread screen, is built without images: pinned item card with
-  看详情, fixed safety card, sending / stored / failed bubbles with a user-tapped resend, the system long-press menu
-  (复制 / 举报) through the kit's `ContextMenuView`, 已读 in bounty threads, drafts kept on the device, the tab bar
-  hidden in a thread, and `chat.*` taps open the thread. Task 6, report and block, is built: the 举报 sheet (reasons,
-  note, then offer to block), the thread ⋯ menu (看详情 / 举报 / 屏蔽, members by name in ride groups), the blocked footer
-  with 解除, 「消息发不出去」 on the blocked side, folded messages from blocked ride members
-  (`20261106000200_chat_block_state.sql`). Task 5b, images, is built: the ＋ menu with 照片 and 拍照, photos re-encoded to JPEG 2048 px and kept with the outbox entry until stored, image bubbles at the photo's shape, the system Quick Look viewer, a private `chat-images` bucket readable by thread members, snapshot paths cleared at one year and unreferenced objects swept daily (`20261106000300_chat_images.sql`). Next: Tasks 7–8.
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
   still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
   `ride.remind.*` device checks wait for TestFlight.
@@ -47,7 +34,7 @@ Updated: 2026-11-06.
 1. Live updates milestone run: the four `live_*` cases plus the changed applicant, status, ride detail and home cases
    (zh-Hans light, `ms` for the applicant and home cases, `en` for the new `live.offline` key). Chat's `chat.*`
    handlers are registered (Task 3); `chat.*` taps open the thread (Task 5, `live_notice_tap` updated).
-2. Plans written, not built: chat (`docs/plans/2026-10-30-chat.md`, foundation step 7; server half in progress), 问小貘
+2. Plans written, not built: 问小貘
    (`docs/plans/2026-10-30-ask-tapir.md`, step 8), coins and reputation remaining
    (`docs/plans/2026-10-30-coins-reputation-remaining.md`, steps 5–6).
 3. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
@@ -82,6 +69,10 @@ Updated: 2026-11-06.
 - Chat 消息 list (2026-11-06, ★ by default, plan 「消息 list defaults」): one inset grouped card; red unread dot like the
   tab badge; 「我：」 and group 「名字：」 prefixes; empty moment with 「去看看悬赏」; a failed page retries only on 重试; a
   reload asks again for every row shown (up to 100) and replaces the list.
+- Chat entries (2026-11-06, ★ by default, plan 「Entry defaults」): 发消息 on the status screen (beside the main action,
+  or alone) and on the home in-progress card (a VoiceOver custom action there); 群聊 in the ride detail's navigation bar
+  (not drawn on the canvas; not on the home ride card); entries hidden until a thread exists; no unread mark on them;
+  the thread opens in the 消息 tab over the list.
 
 ## Resuming on another machine
 

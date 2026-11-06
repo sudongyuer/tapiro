@@ -261,6 +261,7 @@ const ms: Translation = {
         line: '{{title}} · {{line}}',
         label: '{{title}}, {{line}}, ganjaran {{reward}}',
         details: 'Lihat',
+        message: 'Mesej',
       },
       calm: {
         tag: 'Tiada urusan tertunggak hari ini',

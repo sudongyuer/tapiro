@@ -8,6 +8,7 @@ export {
 } from './chatStore';
 export { useChatList, useChatThread, useChatUnread, useLiveChat } from './hooks';
 export { chatStore } from './services';
+export { useItemChat, type ItemChat } from './useItemChat';
 export {
   MESSAGE_MAX,
   REPORT_NOTE_MAX,

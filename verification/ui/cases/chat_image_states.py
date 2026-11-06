@@ -30,7 +30,8 @@ ui.wait_label(PHOTO, lambda label: label == failed, 'the failed download never s
 assert not by_id(ui.read(), f'{PHOTO}-image'), 'a failed photo shows a picture'
 ui.at_rest()
 ui.capture('02-failed')
-time.sleep(3)  # the preferences file can lag behind and still hold the previous launch's calls
+assert chat_calls(ui, 'imageFile', 1), 'the failed download never reached the call log'
+time.sleep(3)  # the preferences file lags behind the app
 loads = len(chat_calls(ui, 'imageFile', 1, 0))
 time.sleep(5)
 assert len(chat_calls(ui, 'imageFile', 1, 0)) == loads, 'the failed photo was downloaded again on its own'

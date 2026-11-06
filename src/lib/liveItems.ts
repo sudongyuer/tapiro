@@ -60,6 +60,7 @@ export type BountyCardDetail = {
   line: string;
   actionLabel?: string;
   target: string;
+  chat?: boolean;
   oneTime?: 'not_selected' | 'expired';
   markSeen?: () => Promise<void>;
 };
@@ -216,6 +217,7 @@ const DEMO_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
     counterpart: 'Aiman',
     line: 'Aiman在路上 · 20:00 到',
     target: '/bounty/status/fixture-bounty-04',
+    chat: true,
   },
   bountyWaiting: {
     kind: 'waitingConfirm',
@@ -252,6 +254,7 @@ const WORST_BOUNTY: Record<BountyFixtureName, BountyCardDetail> = {
     counterpart: LONG_NAME,
     line: `${LONG_NAME}说做完了 · 去确认`,
     actionLabel: '去确认',
+    chat: true,
   },
   bountyInProgress: {
     ...DEMO_BOUNTY.bountyInProgress,
