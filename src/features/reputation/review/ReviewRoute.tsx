@@ -111,7 +111,13 @@ function ReviewLoader({
   }
   const pair = findPair(item.data, target);
   if (!pair) {
-    return <Unavailable text={t('reputation.sheet.notFound')} onRetry={null} onClose={onClose} />;
+    return (
+      <Unavailable
+        text={t('reputation.sheet.notFound')}
+        onRetry={() => void reviewStore.reloadItem(target.kind, target.itemId)}
+        onClose={onClose}
+      />
+    );
   }
   return (
     <ReviewSheet

@@ -71,9 +71,9 @@ live.on(REVIEW_SIGNALS, (signal) => {
   reviewStore.onSignal(signal);
   profileStore.onSignal();
 });
-live.on(['payment.settled', 'ride.settled'], () => {
+live.on(['payment.settled', 'ride.settled'], (signal) => {
   meStore.onStickers();
-  void reviewStore.reloadPending();
+  reviewStore.onSettled(signal);
 });
 blockEvents.onBlocked((personId) => profileStore.markBlocked(personId, true));
 blockEvents.onUnblocked((personId) => profileStore.markBlocked(personId, false));

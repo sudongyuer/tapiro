@@ -404,6 +404,47 @@ describe('submit', () => {
     expect(store.getSnapshot().readFailed['bounty:b1']).toBe(true);
   });
 
+  test('a pull reads only an item on screen, so nothing empty is cached before settlement', async () => {
+    let reads = 0;
+    const { store } = setup(
+      fakeService({
+        reviewState: async () => {
+          reads += 1;
+          return [pair()];
+        },
+      }),
+    );
+    await store.pullItem('bounty', 'b1');
+    expect(reads).toBe(0);
+    expect(store.getSnapshot().items['bounty:b1']).toBeUndefined();
+    const close = store.openItem('bounty', 'b1');
+    await settle();
+    expect(reads).toBe(1);
+    await store.pullItem('bounty', 'b1');
+    expect(reads).toBe(2);
+    close();
+  });
+
+  test('a settled signal reloads the pending list and marks a cached ride stale', async () => {
+    let pendingReads = 0;
+    const { store } = setup(
+      fakeService({
+        pendingReviews: async () => {
+          pendingReads += 1;
+          return [];
+        },
+        reviewState: async () => [],
+      }),
+    );
+    const close = store.openItem('ride', 'r1');
+    await settle();
+    close();
+    store.onSettled({ kind: 'ride.settled', id: 'r1' } as never);
+    await settle();
+    expect(pendingReads).toBe(1);
+    expect(store.getSnapshot().items['ride:r1']?.status).toBe('stale');
+  });
+
   test('an answer for a signed-out user changes nothing', async () => {
     const answer = deferred<SubmitResult>();
     const { store, drafts } = setup(fakeService({ submitReview: () => answer.promise }));

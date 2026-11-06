@@ -277,6 +277,14 @@ export function createReviewStore({
       return close;
     },
     reloadItem,
+    pullItem(kind: ItemKind, itemId: string) {
+      return focus.has(pairKey(kind, itemId)) ? reloadItem(kind, itemId) : Promise.resolve();
+    },
+    onSettled(signal: LiveSignal | null) {
+      if (!get().userId) return;
+      void reloadPending();
+      if (signal?.kind === 'ride.settled') refreshItem(pairKey('ride', signal.id));
+    },
     draft(target: ReviewTarget): ReviewDraft | null {
       const userId = get().userId;
       return userId ? drafts.review(userId, targetKey(target)) : null;
