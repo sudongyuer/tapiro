@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { feedStep, feedTakesTap } from './feedStep';
+import { createFeedGate, feedStep, feedTakesTap } from './feedStep';
 
 const sending = { phase: 'sending' } as const;
 const fed = { phase: 'answered', status: 'fed' } as const;
@@ -46,5 +46,29 @@ describe('feed taps', () => {
     for (const step of ['dropping', 'waiting', 'chewing'] as const) {
       expect(feedTakesTap(step)).toBe(false);
     }
+  });
+});
+
+describe('feed gate', () => {
+  test('two taps in one frame count once', () => {
+    const gate = createFeedGate();
+    expect(gate.take()).toBe(true);
+    expect(gate.take()).toBe(false);
+  });
+
+  test('a fast answer does not open it during the drop or the chew', () => {
+    const gate = createFeedGate();
+    gate.take();
+    gate.update('dropping');
+    expect(gate.take()).toBe(false);
+    gate.update('chewing');
+    expect(gate.take()).toBe(false);
+  });
+
+  test('an answer on screen opens it again', () => {
+    const gate = createFeedGate();
+    gate.take();
+    gate.update('fed');
+    expect(gate.take()).toBe(true);
   });
 });

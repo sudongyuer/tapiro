@@ -77,10 +77,6 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
   const reveal = actor?.reveal ?? shown;
   const rise = actor?.revealRise ?? 0;
   const speaking = say !== null;
-  const slotStyle = useAnimatedStyle(() => {
-    const value = speaking ? reveal.value : 1;
-    return { opacity: value, transform: [{ translateY: rise * (1 - value) }] };
-  });
   const starStyle = useAnimatedStyle(() => ({ opacity: reveal.value }));
   const onAction = (event: AccessibilityActionEvent) => {
     if (event.nativeEvent.actionName === MASCOT_ACTION) actor?.onPress?.();
@@ -173,12 +169,17 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
         ) : null}
         {actor?.overlay}
       </View>
-      <SpeechBubble
-        line={say ?? line}
-        style={bubbleStyle}
-        slotStyle={slotStyle}
-        onPress={say === null ? undefined : (actor?.onPress ?? undefined)}
-      />
+      {say === '' ? null : (
+        <SpeechBubble
+          key={speaking ? 'say' : 'line'}
+          line={say ?? line}
+          style={bubbleStyle}
+          reveal={reveal}
+          rise={rise}
+          speaking={speaking}
+          onPress={speaking ? (actor?.onPress ?? undefined) : undefined}
+        />
+      )}
     </View>
   );
 }

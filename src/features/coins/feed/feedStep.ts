@@ -27,6 +27,20 @@ export const feedAnswered = (step: FeedStep) =>
 
 export const feedTakesTap = (step: FeedStep) => step === 'idle' || feedAnswered(step);
 
+export function createFeedGate() {
+  let busy = false;
+  return {
+    take() {
+      if (busy) return false;
+      busy = true;
+      return true;
+    },
+    update(step: FeedStep) {
+      if (feedTakesTap(step)) busy = false;
+    },
+  };
+}
+
 export const FEED_LINES = {
   waiting: 'coins.feed.waiting',
   fed: 'coins.feed.fed',

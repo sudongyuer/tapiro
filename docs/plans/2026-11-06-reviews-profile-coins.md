@@ -300,7 +300,7 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
 | W7  | The small leaf sits to the right of 小貘 at mid height, above the parcel of the urgent stage, 20 pt | The 254 drawing has no car or parcel |
 | W8  | In the calm state 小貘 wakes for the invitation and through the feed (M9); the bubble is a tap target too (M15); VoiceOver's double-tap and the action 「喂小貘」 take the same path and the answer is announced | 253 A; 257 board |
 | W9  | The leaf is the canvas drawing (`--color-leaf`, `--color-leaf-vein`), 26 pt, at the trunk; it is stand-in art until the drawing task | Art gap |
-| W11 | A tap counts only when nothing runs or while an answer shows; the drop, the wait and the chew ignore taps even after the server has answered. A feed already running finishes before a level-up takes the stage, and the 4 s starts only with 小貘 on screen | A double tap must not swap the thanks for 「吃饱啦」; an answer must be seen |
+| W11 | A tap counts only when nothing runs or while an answer shows; the drop, the wait and the chew ignore taps even after the server has answered. A feed already running finishes before a level-up takes the stage, and the 4 s starts only with the stage on screen and the app active | A double tap must not swap the thanks for 「吃饱啦」; an answer must be seen |
 | W10 | Pull to refresh on home re-reads the week as well | The week can turn while home is open |
 
 ## File structure
@@ -368,7 +368,7 @@ invite,redeem,historyAgain,historyMore,inviteAgain,redeemTooLate>` (`historyAgai
    after the server answers `fed`, 「这周吃饱啦，周一再来」 for `already_fed`, 「没喂上，再点一下试试」 on failure (no
    automatic retry); the idle bubble 「新的一周，点我喂片叶子」 or a small leaf beside 小貘 when a live item owns the
    bubble; the level-up bubble goes first; a VoiceOver action 「喂小貘」. UI cases `weekly_feed`,
-   `weekly_feed_already`, `weekly_feed_failed`, `weekly_feed_busy_stage`, also `weekly_feed_level_first`, `weekly_feed_reduced`; motion: one appearance with video.
+   `weekly_feed_already`, `weekly_feed_failed`, `weekly_feed_busy_stage`, also `weekly_feed_level_first`, `weekly_feed_reduced`, `weekly_feed_hold`; motion: one appearance with video.
 10. **Invite page** — **done 2026-11-06** (255 A; ★ details in 「★ Invite defaults」): 我的 → 邀请朋友 with my code, 复制 and 分享 (system share sheet with the copy in the
     canvas), the code field only while `canRedeem`, 「没有这个邀请码」 and the other errors without clearing the field,
     and the progress rows. UI cases `invite_page`, `invite_redeem`, `invite_redeem_error`, `invite_worst` (ms).

@@ -4,7 +4,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, reach_home  # noqa: E402
-from feed import body_tops, feeds, leaf_pixels, line  # noqa: E402
+from feed import body_tops, feeds, leaf_peak, leaf_pixels, line  # noqa: E402
 from mascot import mascot_box, says, stage, tap_mascot  # noqa: E402
 from recording import clip  # noqa: E402
 
@@ -20,8 +20,11 @@ width = ui.read()[0]['frame']['width']
 with clip(ui, 'failed') as video:
     tap_mascot(ui, element)
     says(ui, line(ui, 'failed'))
+    time.sleep(0.4)
 shot = ui.snap('01-failed')
 assert leaf_pixels(ui, shot, element, width) < 12, 'the leaf stayed after a failure'
+peak = leaf_peak(ui, video, element, width)
+assert peak > 40, f'no leaf ever fell: {peak} px'
 tops = body_tops(ui, video, mascot_box(element, width), width)
 assert max(tops) - min(tops) <= 2, f'小貘 chewed on a failure: {min(tops)}..{max(tops)}'
 assert len(feeds(ui, 1)) == 1, 'the failed feed was not recorded'

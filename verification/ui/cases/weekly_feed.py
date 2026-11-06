@@ -1,7 +1,6 @@
 """253 A, 254 A, 257 c1: a week not yet fed: the bubble invites and a tap drops a leaf at once. With a slow answer the leaf
 waits at the mouth under 「…」, nothing reads as paid; on `fed` 小貘 chews (feed.mp4, the top of 小貘 dips) and 「谢谢！+1 貘币」
 shows, then the stage goes back to its own line and the invitation is gone. One write. Motion: one appearance with video."""
-import json
 import sys
 import time
 
@@ -35,7 +34,6 @@ leaf = leaf_pixels(ui, waiting, element, width)
 assert leaf > 40, f'no leaf at the mouth while waiting: {leaf} px'
 dots = bubble_pixels(ui, waiting, element)
 assert dots > 200, f'the waiting bubble is not visible: {dots} px'
-assert json.loads((ui.output / '03-fed.json').read_text()), 'no tree for the thanks'
 assert line(ui, 'fed') in (ui.output / '03-fed.json').read_text(), 'the shot missed the thanks'
 tops = body_tops(ui, video, mascot_box(element, width), width)
 assert max(tops) - min(tops) >= CHEW_DIP, f'小貘 never chewed: tops {min(tops)}..{max(tops)}'

@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
 import { AppText } from './AppText';
@@ -91,15 +91,23 @@ export function Snore({ color }: { color: string }) {
 export function SpeechBubble({
   line,
   style,
-  slotStyle,
+  reveal,
+  rise,
+  speaking,
   onPress,
 }: {
   line: string;
   style: AnimatedStyle;
-  slotStyle: AnimatedStyle;
+  reveal: SharedValue<number>;
+  rise: number;
+  speaking: boolean;
   onPress?: () => void;
 }) {
   const { color } = useTheme();
+  const slotStyle = useAnimatedStyle(() => {
+    const value = speaking ? reveal.value : 1;
+    return { opacity: value, transform: [{ translateY: rise * (1 - value) }] };
+  });
   const fill = color('--color-stage-bubble');
   return (
     <Animated.View

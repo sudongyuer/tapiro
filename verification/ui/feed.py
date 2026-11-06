@@ -30,6 +30,19 @@ def bubble_pixels(ui, shot, element, size=36):
     return colour_count(shot, box, token('--color-stage-bubble', ui.appearance), tolerance=8)
 
 
+def leaf_peak(ui, video, element, width):
+    with tempfile.TemporaryDirectory() as tmp:
+        return max(leaf_pixels(ui, Shot(path, width), element, width) for path, _ in frames(video, tmp, 0.03))
+
+
+def leaf_above(ui, video, element, width):
+    box = mascot_box(element, width)
+    band = {**box, 'x': box['x'] - 10, 'y': box['y'] - 60, 'height': 90}
+    leaf = token('--color-leaf', ui.appearance)
+    with tempfile.TemporaryDirectory() as tmp:
+        return max(colour_count(Shot(path, width), band, leaf, tolerance=20) for path, _ in frames(video, tmp, 0.03))
+
+
 def feeds(ui, count, timeout=10):
     return coin_calls(ui, 'feed', count, timeout=timeout)
 

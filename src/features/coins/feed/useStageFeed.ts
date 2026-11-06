@@ -1,6 +1,13 @@
 import * as Haptics from 'expo-haptics';
-import { createElement, useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import {
+  createElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
+import { AccessibilityInfo, AppState } from 'react-native';
 import {
   Easing,
   ReduceMotion,
@@ -20,7 +27,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useWeeklyFeed } from '../hooks';
 import { coinsStore } from '../services';
 import { FeedLeaf } from './FeedLeaf';
-import { FEED_LINES, feedAnswered, feedStep, feedTakesTap } from './feedStep';
+import { createFeedGate, FEED_LINES, feedAnswered, feedStep } from './feedStep';
 import {
   ANSWER_HOLD_MS,
   BITE,
@@ -33,6 +40,13 @@ import {
 
 const NEVER = { reduceMotion: ReduceMotion.Never } as const;
 const FADE = { duration: vars['--duration-fade'], ...NEVER };
+
+function subscribeAppState(listener: () => void) {
+  const subscription = AppState.addEventListener('change', listener);
+  return () => subscription.remove();
+}
+
+const appActive = () => AppState.currentState === 'active';
 
 function firstBite() {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
@@ -47,7 +61,10 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
   const [landed, setLanded] = useState(false);
   const [chewed, setChewed] = useState(false);
   const step = feedStep({ tapped, landed, chewed, feed });
-  const busy = useRef(false);
+  const [gate] = useState(createFeedGate);
+  const active = useSyncExternalStore(subscribeAppState, appActive);
+  const onScreen = visible && active;
+  const seen = useRef(onScreen);
 
   const drop = useSharedValue(0);
   const shown = useSharedValue(0);
@@ -57,8 +74,7 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
   const reveal = useSharedValue(1);
 
   const press = useCallback(() => {
-    if (busy.current) return;
-    busy.current = true;
+    if (!gate.take()) return;
     setTapped(true);
     setLanded(false);
     setChewed(false);
@@ -79,7 +95,11 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
       drop.set(withTiming(1, { duration: LEAF.drop, easing: Easing.linear }, land));
     }
     void coinsStore.feed();
-  }, [drop, falls, out, reduced, reveal, shown]);
+  }, [drop, falls, gate, out, reduced, reveal, shown]);
+
+  useEffect(() => {
+    seen.current = onScreen;
+  }, [onScreen]);
 
   useEffect(() => {
     const showBubble = () =>
@@ -90,7 +110,7 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
       );
     if (step === 'waiting') showBubble();
     if (step === 'chewing') {
-      firstBite();
+      if (seen.current) firstBite();
       reveal.set(0);
       const done = (finished?: boolean) => {
         'worklet';
@@ -123,14 +143,14 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
   }, [step, reduced, reveal, out, bite, falls]);
 
   useEffect(() => {
-    if (feedTakesTap(step)) busy.current = false;
+    gate.update(step);
     if (feedAnswered(step)) {
       AccessibilityInfo.announceForAccessibility(t(FEED_LINES[step as keyof typeof FEED_LINES]));
     }
-  }, [step, t]);
+  }, [gate, step, t]);
 
   useEffect(() => {
-    if (!feedAnswered(step) || !visible) return;
+    if (!feedAnswered(step) || !onScreen) return;
     const hold = setTimeout(() => {
       coinsStore.settleFeed();
       setTapped(false);
@@ -139,7 +159,7 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
       reveal.set(1);
     }, ANSWER_HOLD_MS);
     return () => clearTimeout(hold);
-  }, [step, visible, reveal]);
+  }, [step, onScreen, reveal]);
 
   const leafStyle = useAnimatedStyle(() => {
     const left = 1 - out.value;

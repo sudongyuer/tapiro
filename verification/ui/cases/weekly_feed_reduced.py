@@ -1,10 +1,10 @@
-"""257 c, Reduce Motion: the leaf shows at the mouth with no chew (reduced.mp4: the top of 小貘 stays on its row); `fed`
+"""257 c, Reduce Motion: the leaf shows at the mouth with no drop and no chew (reduced.mp4: nothing above the mouth, the top of 小貘 stays on its row); `fed`
 removes the leaf and shows the thanks."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, reach_home  # noqa: E402
-from feed import body_tops, feeds, leaf_pixels, line  # noqa: E402
+from feed import body_tops, feeds, leaf_above, leaf_pixels, line  # noqa: E402
 from mascot import mascot_box, says, stage, tap_mascot  # noqa: E402
 from recording import clip  # noqa: E402
 
@@ -25,6 +25,8 @@ with clip(ui, 'reduced') as video:
     fed = ui.snap('02-fed')
 leaf = leaf_pixels(ui, waiting, element, width)
 assert leaf > 40, f'no leaf at the mouth: {leaf} px'
+high = leaf_above(ui, video, element, width)
+assert high < 12, f'the leaf dropped under Reduce Motion: {high} px above the mouth'
 tops = body_tops(ui, video, mascot_box(element, width), width)
 assert max(tops) - min(tops) <= 2, f'小貘 moved under Reduce Motion: {min(tops)}..{max(tops)}'
 assert leaf_pixels(ui, fed, element, width) < 12, 'the leaf stayed on fed'
