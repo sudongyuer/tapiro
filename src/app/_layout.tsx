@@ -4,7 +4,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { useAccountStage } from '@/features/account';
 import { applySheetGone } from '@/features/bounty';
-import { TIER_DROP_SHEET_OPTIONS } from '@/features/reputation';
+import { REVIEW_SHEET_OPTIONS, TIER_DROP_SHEET_OPTIONS } from '@/features/reputation';
 import { useRideReminders } from '@/features/ride';
 import { I18nProvider } from '@/lib/i18n';
 import { useDiscardNoticeTaps } from '@/lib/notifications';
@@ -73,6 +73,7 @@ function RootStack() {
           options={{ presentation: 'pageSheet', headerShown: false }}
         />
         <Stack.Screen name="tier-drop" options={TIER_DROP_SHEET_OPTIONS} />
+        <Stack.Screen name="review" options={REVIEW_SHEET_OPTIONS} />
         <Stack.Screen
           name="delete-account"
           options={{

@@ -58,7 +58,8 @@ export function fixturePairs(
   });
   if (kind === 'bounty') {
     const person = worst ? FIXTURE_PEOPLE.aiman : FIXTURE_PEOPLE.lin;
-    return [{ ...pair(person, 'helper', 7), theyReviewed: variant !== 'one' }];
+    const role = worst ? 'poster' : 'helper';
+    return [{ ...pair(person, role, 7), theyReviewed: variant !== 'one' && !worst }];
   }
   const asRider = itemId.endsWith('-rider');
   if (asRider) return [pair(worst ? FIXTURE_PEOPLE.aiman : FIXTURE_PEOPLE.lin, 'organiser', 5)];
