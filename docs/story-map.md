@@ -913,14 +913,21 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### rep.reviews 评价
 
 - 故事：作为结清了一件事的同学，我想给对方一个表情和几个标签，以便下一个人知道他靠不靠谱。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
 | 验收 id            | 行为                                                | 覆盖         |
 | ------------------ | --------------------------------------------------- | ------------ |
-| rep.reviews.faces  | 开心 / 一般 / 不开心加标签和一句话，只能在结清后评  | ui, db       |
-| rep.reviews.sealed | 双方都评了或 7 天后才同时公开，被评的人可以回复一次 | unit, db, ui |
+| rep.reviews.faces | 开心 / 一般 / 不开心加标签和一句话，只能在结清后 7 天内评 | ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.sealed | 双方都评了才同时公开；7 天到了只评了一方就只公开那一条；公开前谁都看不到内容，只知道对方评了 | unit, ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.chips | 标签按被评的人分四套（帮忙的人、发布的人、发起人、同车的人），开心只能选好的，一般和不开心只能选不太好的，最多 4 个 | ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.pairs | 悬赏是发布的人和帮忙的人互评；拼车是发起人和每个上车的人互评，同车的人之间不评 | ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.edit | 公开前能改自己的评价，公开后不能改 | ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.reply | 被评的人在公开后回复一次，200 字以内，发出后不能改 | ui, db:supabase/tests/reviews.test.sql |
+| rep.reviews.reveal-job | 每 10 分钟把到期的评价标成公开；读的时候按 7 天的截止时间算，不等这个任务 | db:supabase/tests/reviews.test.sql |
+| rep.reviews.live | 对方评了或公开时，开着的这一单和首页卡片自动刷新；不发推送 | unit, ui |
+| rep.reviews.private | 客户端读不到也写不了评价表，只能通过服务器函数；删除账号时删除他写的和收到的评价和回复 | db:supabase/tests/reviews.test.sql |
 
 ### rep.tier 靠谱度
 
@@ -931,11 +938,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id            | 行为                                                                                                     | 覆盖                                        |
 | ------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| rep.tier.inputs    | 按 180 天内结清数、不同对象、完成率和注册时长算；按时付款比例只记在快照里、不参与门槛；评价在第 6 步加入 | db:supabase/tests/reputation.test.sql, unit |
+| rep.tier.inputs    | 按 180 天内结清数、不同对象、完成率和注册时长算；按时付款比例只记在快照里、不参与门槛；有 3 条以上公开评价时，没有不太好标签的比例要到 70% / 80% / 90% | db:supabase/tests/reputation.test.sql, db:supabase/tests/reputation_reviews.test.sql, unit |
 | rep.tier.recompute | 每天马来西亚时间 03:30 重算                                                                              | db:supabase/tests/reputation.test.sql       |
 | rep.tier.visible   | 所有登录用户只读得到档位，读不到明细                                                                     | db:supabase/tests/reputation.test.sql       |
 | rep.tier.tiers     | 新朋友 / 靠谱 / 很靠谱 / 貘友四档，以文字徽章显示                                                        | ui                                          |
-| rep.tier.drop      | 掉档时用一个平静的系统弹窗说明原因和怎么恢复                                                             | ui                                          |
+| rep.tier.drop      | 掉档时用一个平静的系统弹窗说明原因和怎么恢复；每次掉档只弹一次，已经回升的不弹，升档不弹                 | ui, db:supabase/tests/reputation_reviews.test.sql |
 
 ### rep.no-show 放鸽子记录
 
@@ -960,7 +967,22 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id             | 行为                                                     | 覆盖                                                                            |
 | ------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | rep.stickers.earn   | 每结清一件事双方各得一张对应类别的贴纸                   | db:supabase/tests/stickers.test.sql, unit:src/lib/stickers/stickers.test.ts, ui |
-| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit                                                                            |
+| rep.stickers.levels | 3、8、15、25 张升到 2–5 级，之后每 15 张一级，只解锁装扮 | unit, db:supabase/tests/mascot_profile.test.sql |
+| rep.stickers.level-up | 升级的时刻只出现一次；已经有贴纸的老用户不补播；Lv2–5 各解锁一件装扮，默认戴最新的，可以换成已解锁的 | ui, db:supabase/tests/mascot_profile.test.sql |
+
+### rep.profile 主页
+
+- 故事：作为要选人或上车的同学，我想点开对方的主页看他的靠谱度和评价，以便决定要不要和他一起办事。
+- 状态：building
+- 版本：v1
+- 规格：[foundation](specs/2026-10-11-foundation-design.md)
+
+| 验收 id | 行为 | 覆盖 |
+| --- | --- | --- |
+| rep.profile.numbers | 主页有帮过的人、完成率（满 5 单才显示）和评价数，只算公开的评价 | ui, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.reviews | 最近 3 条评价和「全部评价」，按时间倒序分页；别人主页上拼车的评价不显示路线和评价人 | ui, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.mascot | 别人主页只看到小貘等级和贴纸数，看不到自己的升级状态 | ui, db:supabase/tests/mascot_profile.test.sql |
+| rep.profile.failed | 没加载出来写「没加载出来 · 重试」，不当成没有评价 | ui |
 
 ### rep.sticker-book 只读贴纸本「一起办成的事」
 
@@ -1009,7 +1031,8 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | coins.ledger.spend      | 先用本月免费名额，再扣 1 颗；都没有时拒绝，什么都不写    | db:supabase/tests/coins.test.sql, gap: concurrency needs two sessions（两次同时发布抢最后一个免费名额或最后一颗要两个数据库会话，pgTAP 只有一个） |
 | coins.ledger.refund     | 退回恢复貘币或免费名额，同一件事只退一次                 | db:supabase/tests/coins.test.sql                                                                                                                  |
 | coins.ledger.balance    | 余额由账本算出，只读得到自己的，并给出下次免费名额的时间 | db:supabase/tests/coins.test.sql                                                                                                                  |
-| coins.ledger.anonymised | 删除账号后账本行保留但不再关联到人                       | db:supabase/tests/coins.test.sql                                                                                                                  |
+| coins.ledger.anonymised | 删除账号后账本行保留但不再关联到人                       | db:supabase/tests/coins.test.sql, db:supabase/tests/weekly_feed_invites.test.sql                                                                                                                  |
+| coins.ledger.history | 「我的」里的貘币页按马来西亚的月份分组列出明细，最新的在上面，只读得到自己的；没加载出来不显示 0 | ui, db:supabase/tests/weekly_feed_invites.test.sql |
 
 ### coins.grants 免费貘币
 
@@ -1024,7 +1047,8 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | coins.grants.new-user     | 新人 5 颗，注册时由服务器发                                                       | db:supabase/tests/coins.test.sql |
 | coins.grants.onboarding   | 新手任务各 1 颗：加收款方式、第一次发布或拼车、第一次帮成；每项只发一次           | db:supabase/tests/coins.test.sql |
 | coins.grants.help-settled | 每帮成一单悬赏 1 颗，马来西亚时间每月最多 10 颗；拼车和反向付款不发               | db:supabase/tests/coins.test.sql |
-| coins.grants.sources      | 每周点首页小貘 1 颗；邀请双方各 3 颗                                              | unit, db                         |
+| coins.grants.weekly-feed  | 每周点首页小貘 1 颗，马来西亚时间周一 00:00 换周；服务器确认后才显示 +1，这周喂过再点什么都不发 | ui, db:supabase/tests/weekly_feed_invites.test.sql |
+| coins.grants.invite       | 手输 6 位邀请码（不用 0 / O / 1 / I，不分大小写），只能在第一单结清前填一次，不能填自己的或互填；朋友第一次和邀请人以外的人办成一单后双方各 3 颗 | ui, db:supabase/tests/weekly_feed_invites.test.sql |
 | coins.grants.free-posts   | 每月 3 条免费发布，按马来西亚时间的自然月，悬赏和拼车共用，退回的免费发布恢复名额 | db:supabase/tests/coins.test.sql |
 
 ### rep.vouching 熟人担保

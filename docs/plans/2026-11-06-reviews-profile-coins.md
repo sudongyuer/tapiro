@@ -1,0 +1,204 @@
+# Foundation step 6 and the account-free part of step 5: reviews, profile, mascot level, coins in 我的, weekly feed, invites
+
+> **For agentic workers:** execute task by task. Only one Simulator-using agent runs at a time. Tasks write their UI
+> cases but do not run them; the last task runs the selection once (Pace, 2026-10-29). When all tasks are done, run
+> `spec-lifecycle` (foundation spec, step 6 record and the step 5 part) before the PR.
+
+**Status:** in progress. Questions 238–255 (canvas page 「06+ 评价、主页与小貘等级」, boards `RepPick1`, `RepPick2`,
+`CoinPick1`) are answered with the ★ (owner, 2026-11-06: 「按你推荐的走」; 249 is B). Task 1 (server) is built
+(2026-11-06). Questions 256–259 below are open; Tasks 2, 8 and 10 do not depend on them.
+
+**Goal:** After a settled bounty or ride, each side can leave a sealed three-face review that both see together; a
+profile shows trust first; a tier drop is explained once; 小貘 grows with the sticker count; 我的 shows coins with their
+history; 小貘 can be fed once a week; a typed invite code rewards both friends after the friend's first real item.
+
+**Architecture:** Supabase tables `reviews`, `review_replies`, `tier_drops`, `mascot_progress`, `weekly_feeds`,
+`invite_codes`, `invites` with RLS on and no client grants; every read and write is a `security definer` RPC. Stickers
+are the settlement fact that opens a review pair. Live-only review signals go through the `events` outbox to
+`user:<uid>` (`docs/specs/2026-10-31-realtime-push-design.md`) from Task 2 on. Clients: `src/features/reputation/`
+(reviews, profile, tier drop, mascot level) and `src/features/coins/` (balance and history, weekly feed, invites), each
+with a Supabase service, a fixture service for verify mode and a store; features do not import each other.
+
+**Tech stack:** Expo SDK 58, React Native 0.88, Expo Router, Supabase (Postgres 17, pg_cron), bun test, pgTAP,
+`verification/ui` (AXe).
+
+**Spec:** `docs/specs/2026-10-11-foundation-design.md` (Decisions 「Reputation」, 「Reviews」, 「Mascot level curve」,
+「Coins: free grants」, 「Ledger」, 「Account deletion」; Behaviour 「Reputation, reviews, stickers, mascot」 and 「貘币」;
+Implementation order 5 and 6). Research: `docs/research/2026-11-06-reviews-profile.md`. Story map: `rep.reviews.*`,
+`rep.tier.*`, `rep.stickers.levels`, `rep.profile.*`, `coins.ledger.history`, `coins.grants.weekly-feed`,
+`coins.grants.invite`.
+
+## Decided (do not re-ask)
+
+- Three faces 开心 / 一般 / 不开心, chips and an optional sentence; only after settlement; sealed until both submit or 7
+  days, and a one-sided review is shown alone when the window ends; the reviewee replies once (foundation, ReviewA,
+  RepBC). Only chips count toward 靠谱度; free text never does.
+- 238–255 as answered below. 112 no longer matters: 218 A gives one car sticker per ride, and the level counts stickers.
+- The tier thresholds of 2026-10-27 (`private.tier_for`), the 180-day window and the daily 03:30 recompute stay.
+- In-app purchase waits for the developer account; 买貘币 is not shown (252 A).
+- Account deletion removes the user's reviews (F10); ledger rows stay anonymised.
+
+## Gaps found while preparing
+
+1. **Rides without a Tapiro payment do not count toward 靠谱度.** `record_settled` runs per payment, so a Grab-split ride
+   (or one where nobody but the organiser boarded) writes no `settled` reputation event. Such rides do earn stickers and
+   reviews. Asked as 258.
+2. **A review cannot be reported.** `report(target_user, message, …)` covers people and chat messages. A review sentence
+   is public free text. Asked as 259.
+3. **Ride routes on public profiles.** A ride's title is its route of short names, and a start of kind `home` can point
+   at where someone lives. Asked as 256; the server hides it until answered.
+4. **Motion is not chosen.** The sealed animation inside the review sheet (ReviewA), 小貘 growing on the stage (249 B)
+   and the leaf and chew (253 A) are motion choices that belong to the owner (AGENTS.md, Animation). Asked as 257, to be
+   drawn on the canvas with numbered options before Tasks 3, 7 and 9.
+5. **Accessory art.** 250 A needs four hand-drawn accessories (小红帽, 书包, 雨伞, 围巾) in the 93 A crayon style. Task 7
+   ships placeholders drawn as stand-ins; the art is a separate drawing task.
+
+## ★ Server defaults (Task 1, 2026-11-06, for veto)
+
+- **Chips** are stored as keys, validated per the reviewee's role (240 A): helper `on_time`, `careful`, `kept_posted`,
+  `extra_kind` | `late`, `no_heads_up`, `unfinished`, `item_damaged`; poster `clear_ask`, `paid_promptly`,
+  `easy_to_talk`, `polite` | `not_as_described`, `slow_to_pay`, `changed_ask`, `rude`; organiser `left_on_time`,
+  `fair_split`, `clear_meetup`, `good_company` | `late`, `cancelled_late`, `wrong_fare`, `rude`; rider `on_time`,
+  `paid_promptly`, `good_company`, `considerate` | `late`, `luggage_unmentioned`, `slow_to_pay`, `rude`. 开心 takes only
+  good chips, 一般 and 不开心 only not-good ones; none is required; at most 4, no repeats. A review counts as negative
+  only when it has a not-good chip, so 不开心 with no chip does not lower 靠谱度.
+- **Who reviews whom** comes from stickers: a bounty pair holds the two stickers of one settled forward payment; a ride
+  pair is the organiser and one boarded member with the ride's car sticker (241 A). The 7-day window opens at the later
+  of the pair's two stickers, so a rider boarded later by an appeal gets a full window.
+- **Sentence and reply:** at most 200 characters after the chat trim (spaces, newlines, U+00A0, U+200B, U+FEFF); an
+  empty sentence is stored as none.
+- **Edit** (244 A) is the same `submit_review` call while the review is sealed; `review_locked` after. The window and
+  lock checks use the clock after the pair lock, so a submit that waited past the window's end is refused.
+  `submittedAt` is the last submit or edit, never the reveal.
+- **Deletion:** reviews a user wrote or received go with their account (F10), so the other side's share and counts
+  change; unlike reputation events, a deleted reviewer is not kept as one anonymous review.
+- **Reveal:** the second submit reveals both at once; otherwise a review is visible from the window's end. Reads use
+  `shown_at` (`coalesce(revealed_at, closes_at)`), so nothing waits on the job; `reveal_due_reviews()` (pg_cron
+  `reviews-reveal`, every 10 minutes) stamps the reveal time.
+- **Signals** wait for Task 2: every event kind must have a tap route (`src/lib/notifications/noticeTaps.test.ts` reads
+  the kinds from the migrations), so the kinds land with the client routing. ★ plan: live-only `bounty.reviewed` and
+  `ride.reviewed`, subject = the item id, to the reviewee on a first submit and to both on a reveal (the job too); no
+  push (238 A). The `bounty.*` kind joins the tap-route table (to the status screen).
+- **Reads:** clients have no grant on the tables; `review_state(kind, item)` returns one row per counterpart with
+  `state` (`open` / `sealed` / `revealed` / `ended`), `theyReviewed` (never the content while sealed), `mine` with
+  `editable` and `theirs` once visible; `pending_reviews()` feeds the home card.
+- **Blocks** do not stop a review or hide one: the review is about a deal that happened, and a block must not become a
+  way to avoid a negative chip.
+- **Reply:** only the reviewee, only after the review is visible; repeating the same text answers with the stored reply,
+  other text is `already_replied`.
+- **Reviews in 靠谱度:** the share of visible reviews in the window without a negative chip gates a tier only from 3
+  reviews: 靠谱 70 %, 很靠谱 80 %, 貘友 90 %. Below 3 reviews the old thresholds apply unchanged. Snapshots keep
+  `review_count` and `good_review_share`, private like the other inputs.
+- **Tier drop record:** the recompute writes a `tier_drops` row when a tier falls (never on a first snapshot or a rise)
+  with the reason (up to 3 counted no-shows with date, kind and title; the negative review count) and the way back
+  (settled items, new people and good reviews needed for the previous tier). `pending_tier_drop()` shows the newest
+  unseen drop only while the user is still at that tier; `mark_tier_drop_seen(id)` marks it and any older one.
+- **Mascot level** (`public.mascot_level`): Lv1 0, Lv2 3, Lv3 8, Lv4 15, Lv5 25, then +15 each, counting every sticker
+  (both roles, car stickers included). `mascot_progress` keeps the seen level and the chosen accessory; people who
+  already held stickers start with their current level seen, so only levels reached from now on play the moment.
+  `my_mascot()` returns `levelUp`, `nextLevelAt`, the unlocked accessories and the one worn (the chosen one, else the
+  newest). Cover colours from Lv6 are derived on the device; there is no choice to store yet.
+- **Profile** (`profile_card(person)`): name, avatar, joined date, tier, `helped` (distinct people who paid you for a
+  settled item, lifetime; a deleted account counts once), `settled` (lifetime), `completionRate` (the snapshot's
+  180-day rate, only from 5 lifetime settled items, 246 A), `reviewCount` and face counts of visible reviews, the
+  latest 3 (reviewer, face, chips, sentence, reply, bounty title), the public mascot (level, sticker count, accessory)
+  and `blockedByMe`. `profile_reviews(person, before, max_count)` pages 20 at a time, newest first, cursor
+  `shownAt|id`.
+- **Weekly feed** (`feed_weekly()`): one `weekly_feeds` row per Malaysia week (Monday 00:00) under the user's coin lock;
+  the answer is `fed` or `already_fed` with the balance and the next Monday, so 「谢谢！+1 貘币」 shows only after the
+  server confirms (253 A). `weekly_feed_status()` drives the bubble (254 A).
+- **Invites:** a 6-character code from the payment-reference alphabet (no 0, O, 1, I), made on the first
+  `my_invite()`. `redeem_invite(code)` ignores case, spaces and hyphens; errors `code_not_found`, `own_code`,
+  `already_redeemed` (a second, different code), `too_late` (after the first settled item), `mutual_invite` (the code's
+  owner was invited by you); the same code again answers with the stored invite. The reward is 3 coins each the first
+  time a sticker of the friend's comes from an item with someone other than the inviter; an inviter who deleted their
+  account leaves the friend's 3 in place. Ledger rows carry no friend id, so the history line reads 「邀请奖励」 without
+  a name. Settles take the invite lock shared (a code entry takes it exclusive), so settles never deadlock on it; two
+  settles between two unrewarded invitees in opposite roles at the same moment can still meet on the invite row locks,
+  and one fails and is retried by the user (known, rare).
+- **Coin history** (`coin_history(before, max_count)`): ledger rows newest first, 50 a page (1–100), each with its
+  Malaysia `month` (`YYYY-MM`) for grouping and the item title for spends, refunds and help grants; free posts write no
+  row, as before.
+
+## File structure
+
+| Action | Path                                                                             | Responsibility                                            |
+| ------ | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Create | `supabase/migrations/20261106000400_reviews.sql`                                 | reviews, replies, chips, pairs, RPCs, reveal job          |
+| Create | `supabase/migrations/20261106000500_reputation_reviews.sql`                      | review share in the recompute, tier drops                 |
+| Create | `supabase/migrations/20261106000600_mascot_profile.sql`                          | mascot level and progress, profile reads                  |
+| Create | `supabase/migrations/20261106000700_coin_reasons.sql`                            | `weekly_feed`, `invite_inviter`, `invite_invitee`         |
+| Create | `supabase/migrations/20261106000800_weekly_feed_invites.sql`                     | weekly feed, invite codes and rewards, coin history       |
+| Create | `supabase/tests/{reviews,reputation_reviews,mascot_profile,weekly_feed_invites}` | pgTAP                                                     |
+| Create | `src/features/reputation/`                                                       | review, profile, tier-drop and mascot services and stores |
+| Create | `src/features/coins/`                                                            | balance and history, weekly feed, invite services         |
+| Create | `src/app/(tabs)/*/profile/[id].tsx`, `src/app/review.tsx` (sheet)                | routes                                                    |
+| Modify | bounty status, ride detail, home stage and cards, 我的 list                      | entries                                                   |
+| Create | `verification/ui/cases/review_*`, `profile_*`, `coins_*`, `invite_*`, …          | UI cases with fixture services                            |
+
+## Tasks
+
+1. **Server** — **done 2026-11-06** (this plan's first PR): the five migrations and four pgTAP files above. Defaults
+   above. Account deletion needs no Edge Function change: every new table cascades or sets null with `auth.users`.
+2. **Client core** (no UI): `src/features/reputation/` and `src/features/coins/` with types, parsers, the Supabase
+   services, fixture services (`-uiVerifyReviews`, `-uiVerifyProfile`, `-uiVerifyCoins` variants: empty, one, many,
+   failed, worst-case names), stores that never show a failed load as empty; a migration adding the review signals
+   (Signals above) with their tap routes, and a live handler that reloads the open item's review state and the
+   pending list; chip, face, level-name and coin-reason copy in zh-Hans,
+   en and ms. Unit tests for parsing, the store states and the level curve (`rep.stickers.levels`). UI cases: none.
+3. **Review sheet** (239 A, 240 A, 244 A, after 257): a large system sheet with 取消 and the title 「评价{name}」; faces,
+   then the chip set for the reviewee's role (good chips for 开心, not-good for 一般 / 不开心), the sentence, 提交;
+   the draft is kept on the device across failures and a discard asks first; the same sheet opens for 改一下 with the
+   stored review. UI cases `review_sheet`, `review_sheet_edit`, `review_sheet_discard`, `review_sheet_failed`,
+   `review_sheet_worst` (ms chips).
+4. **Review entries** (238 A, 241 A, 242 A): under 已结清 on the bounty status screen one 「评价 {name}」 row with the
+   days left; on a closed ride one row per counterpart (the organiser sees each rider, a rider sees the organiser);
+   the sealed copy on both sides and 「评价已结束」; one home card per pending review until reviewed or the window
+   ends. UI cases `review_entry_status`, `review_entry_sealed`, `review_entry_ride`, `review_entry_home`.
+5. **Profile** (243 A, 245 A, 246 A, 247 A): a pushed screen in the current tab: header, three numbers, reviews (latest
+   3, 「全部评价」 page), one 小貘 and stickers row; your own profile keeps the RepBC order and offers 回复 under each
+   received review (confirm once, 200 characters); ⋯ with 举报 and 屏蔽 reusing the chat report and the block module;
+   entries from the bounty poster row, applicant rows, the chat navigation title, ride member rows and the 我的 name
+   row. UI cases `profile_other`, `profile_new`, `profile_many`, `profile_failed`, `profile_self`, `profile_reply`,
+   `profile_entries`, `profile_worst` (ms).
+6. **Tier-drop sheet** (248 A): a medium sheet on the first open after a drop: the new tier, the reason, the way back,
+   知道了 and 看我的主页; marked seen when dismissed. UI cases `tier_drop_sheet` (zh-Hans, en, ms),
+   `tier_drop_no_show`.
+7. **Mascot level** (249 B, 250 A, after 257): the home stage shows the grown 小貘 with the worn accessory and the
+   「我长大了！」 bubble until tapped; the tap opens 「小貘长大的时刻」 (RepBC2) once and marks the level seen; the
+   accessory picker on your own profile; Reduce Motion swaps the image. UI cases `mascot_level_up`,
+   `mascot_accessory`; motion: one appearance with video.
+8. **Coins in 我的** (251 A, 252 A): a 「貘币 n」 row beside 一起办成的事 pushing the 貘币 page: the balance, free posts
+   left this month and the monthly history; a failed load reads 「没加载出来 · 重试」, never 0. UI cases `coins_page`,
+   `coins_page_empty`, `coins_page_failed`, `coins_page_worst`.
+9. **Weekly feed** (253 A, 254 A, after 257): tapping 小貘 on the stage drops a leaf and chews once; 「谢谢！+1 貘币」
+   after the server answers `fed`, 「这周吃饱啦，周一再来」 for `already_fed`, 「没喂上，再点一下试试」 on failure (no
+   automatic retry); the idle bubble 「新的一周，点我喂片叶子」 or a small leaf beside 小貘 when a live item owns the
+   bubble; the level-up bubble goes first; a VoiceOver action 「喂小貘」. UI cases `weekly_feed`,
+   `weekly_feed_already`, `weekly_feed_failed`, `weekly_feed_busy_stage`; motion: one appearance with video.
+10. **Invite page** (255 A): 我的 → 邀请朋友 with my code, 复制 and 分享 (system share sheet with the copy in the
+    canvas), the code field only while `canRedeem`, 「没有这个邀请码」 and the other errors without clearing the field,
+    and the progress rows. UI cases `invite_page`, `invite_redeem`, `invite_redeem_error`, `invite_worst` (ms).
+11. **Wrap-up:** every new string in zh-Hans, en and ms; story-map stories marked done with their cases; the milestone
+    selection (the cases above in zh-Hans light, `en` for new copy, `ms` where marked, dark for the review sheet and the
+    profile); the foundation spec's Implementation Record for step 6 and the step 5 part.
+
+## Questions (2026-11-06, open)
+
+256. Ride reviews on someone else's profile: **A★** show 「拼车」 without the route (a short name can be someone's home)
+     and without the reviewer (who rode with whom); the reviewee still sees both on their own profile; **B** show the
+     route's short names and the reviewer like bounty reviews. Touches privacy. The server does A until answered.
+257. Motion for the sealed review, 小貘 growing and the leaf: to be drawn on the canvas with numbered options (curve,
+     duration, Reduce Motion fallback) before Tasks 3, 7 and 9 start.
+258. Rides without a Tapiro payment (Grab split, or riding alone): **A★** count a closed ride as a settled item for the
+     organiser and each boarded rider (no on-time input), so carpool counts toward 靠谱度 the same either way; **B** keep
+     counting only paid rides. Changes how tiers are computed.
+259. Reporting a review: **A★** long-press a review on a profile → 举报 with the same reasons, snapshotting the face,
+     chips and sentence like a chat message; a report never hides the review by itself; **B** only report the person
+     from ⋯. Touches safety and moderation.
+
+## Answers (canvas 「06+ 评价、主页与小貘等级」, 238–255; owner 2026-11-06, all ★, 249 B)
+
+See `docs/plans/2026-10-30-coins-reputation-remaining.md`, 「Answers」, for the one-line answers; the drawings on the
+boards `RepPick1`, `RepPick2` and `CoinPick1` carry the details this plan follows (chip tables, sealed copy, profile
+order, the tier-drop copy in three languages, level names, the invite rules).
