@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, accessory, assert_colour, bottom, by_id, card_fill, corner, nav_bar, reach_home, token  # noqa: E402
+from gestures import drag  # noqa: E402
 
 DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx', 'src/app/(tabs)/bounty/']
 
@@ -11,6 +12,13 @@ CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'liv
 PEEKS = ['live-card-peek-1', 'live-card-peek-2']
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
+# A long held drag can carry on about 50 pt past its distance, so long steps stop well short and only short, slow drags
+# (measured up to 60 pt/s) aim inside the hidden check.
+SLOP_PT = 10
+LONG_STOP_PT = 100
+NEAR_AIM_PT = 30
+HIDDEN_MAX_PT = 60
+NEAR_SPEED_PT_S = 60
 ui = UI(*sys.argv[1:])
 fan_out, collapse = ui.t('home.stack.fanOut', count=4), ui.t('home.stack.collapse')
 
@@ -52,10 +60,21 @@ for f, name in zip(frames, CARDS):
 shot = ui.snap('02-fanned')
 assert_colour(shot, card_fill(frames[1]), token('--color-card-ride', ui.appearance), 'ride card')
 
+
+
+def step_for(gap):
+    if gap > LONG_STOP_PT + 50:
+        return min(300, gap - LONG_STOP_PT), True
+    return (gap - NEAR_AIM_PT + SLOP_PT if gap > HIDDEN_MAX_PT else 80), False
+
+
 hidden_gap = shown = progress_checked = None
-distance = 300
+distance, long_step = step_for(bottom({'frame': frames[-1]}) - bottom(nav_bar(items, ui)))
 for step in range(12):
-    ui.swipe((200, 650), (200, 650 - distance), duration=2 if distance > 80 else 1)
+    if long_step:
+        drag(ui, (200, 650), (200, 650 - distance), duration=1.5, steps=80)
+    else:
+        drag(ui, (200, 650), (200, 650 - distance), duration=max(1, distance / NEAR_SPEED_PT_S), steps=40)
     last = ui.settled(lambda items: by_id(items, CARDS[-1]), f'last card never settled after swipe {step}')
     items = ui.read()
     edge = bottom(nav_bar(items, ui))
@@ -69,7 +88,7 @@ for step in range(12):
             progress_checked = True
         gap = bottom(last) - edge
         hidden_gap = gap
-        distance = min(300, gap - 20) if gap > 60 else 80
+        distance, long_step = step_for(gap)
     elif bottom(last) < edge - 2:
         ui.wait(accessory, f'accessory missing after the last card passed under the bar ({bottom(last):.0f} < {edge:.0f})',
                 timeout=10)
@@ -77,7 +96,7 @@ for step in range(12):
         ui.capture('04-last-card-under-bar')
         break
 assert shown is not None, 'scrolling never moved the last card past the bar'
-assert hidden_gap is not None and hidden_gap <= 60, f'no hidden check close to the bar (closest gap {hidden_gap})'
+assert hidden_gap is not None and hidden_gap <= HIDDEN_MAX_PT, f'no hidden check close to the bar (closest gap {hidden_gap})'
 assert progress_checked, 'the in-progress card was never fully on screen for a colour check'
 
 for _ in range(6):

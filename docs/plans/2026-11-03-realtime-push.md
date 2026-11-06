@@ -126,8 +126,8 @@ Deploy note for the account half: the hosted project needs Realtime "Allow publi
 - [x] Poll every 15 s while the meet-up screen is open within 15 minutes of departure. Already built in carpool step
       5 (`shouldPoll`, `POLL_MS` in `src/features/ride/detail/detailModel.ts`); nothing to add.
 
-UI cases written in step 2, not yet run (Pace): `live_applicants`, `live_home_card`, `live_notice_tap`,
-`live_push_token`.
+UI cases written in step 2 (and `live_detail_expired` from the 2026-11-05 answers) ran together in the milestone run on
+2026-11-06 and passed (`docs/retros/2026-11-06-live-milestone.md`).
 
 After step 2: the feature's UI cases run once together, `spec-lifecycle` appends the Implementation Record and sets
 `implemented`.
