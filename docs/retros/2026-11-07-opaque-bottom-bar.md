@@ -41,4 +41,9 @@ overturned: pending
 ## Notes
 
 - Review: round 1 found 0 Critical, 2 Important (the colour check above; no story-map criterion) and 5 Minor, all fixed.
+- Re-review: 0 Critical, 1 Important (is the bar the elevated colour in dark sheets?) and 3 Minor. Pixels settle it: bar
+  and canvas both read (28, 28, 30) in the post and ride confirm sheets; `bounty_post_publish` now asserts they match, so
+  no third round. Minors fixed.
+- `chat_entry_status` light failed once on 好 not closing the alert (a dropped tap); it passed in dark and on a rerun.
+  Tag `tap-drop`.
 - The design canvas has no board for this choice; the owner answered from the PR #83 question.
