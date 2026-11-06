@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-07 (mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-07 (pinned bottom bars opaque; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -49,8 +49,6 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
-3. Text rows in pinned bottom bars (notices, the 已申请 and outcome lines) sit over scrolled content: the owner chose
-   ★A on 2026-11-06, the whole bar opaque. A task of its own, not started.
 
 ## Owner decisions pending
 
@@ -81,7 +79,7 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   「Questions」.
 - Accepted: the ★ defaults of Task 1 (「★ Server defaults」), Task 2 (「★ Client core defaults」), Task 5 (「★ Profile
   defaults」, P1–P10) and Task 6 (「★ Tier-drop defaults」, D1–D8).
-- Text rows in pinned bottom bars: ★A, the whole bar opaque (Queue item 3).
+- Text rows in pinned bottom bars: ★A, the whole bar opaque; built in `fix/opaque-bottom-bar`.
 
 ## Resuming on another machine
 

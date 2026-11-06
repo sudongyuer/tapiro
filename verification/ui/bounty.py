@@ -324,6 +324,17 @@ def crosses(a, b):
         a['y'] < b['y'] + b['height'] and b['y'] < a['y'] + a['height']
 
 
+# A text row has no fill of its own, so the bar behind it must be one colour wherever content scrolls under it.
+def assert_bar_hides_content(shot, strip, behind, name):
+    assert crosses(strip, behind), (
+        f'nothing scrolled under {name}: {behind} does not cross {strip}, so the check would prove nothing')
+    fill = dominant(shot, strip)
+    total = sum(1 for _ in shot.pixels(strip))
+    stray = shot.count(strip, lambda rgb: not close(rgb, fill, 8))
+    print(f'{name}: bar {fill}, {stray} of {total} pixels differ')
+    assert stray <= total * 0.01, f'{name}: scrolled content shows through the bar ({stray} of {total} pixels)'
+
+
 def assert_fill_hides_content(shot, element, behind, name):
     assert element, f'{name} is missing'
     f = element['frame']
