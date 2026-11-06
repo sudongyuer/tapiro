@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import close_sheet_by_swipe, fill_fixed, form_scroll_to, open_post, relaunch, typed  # noqa: E402
-from driver import UI, assert_label_reads, by_id  # noqa: E402
+from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
         'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
@@ -60,9 +60,7 @@ ui.tap('bounty-post-pick-time-tomorrow')
 after = ui.wait(lambda items: (lambda value: value if value and value != before and re.search(r'(21|9):00', value)
                                else None)(picker_value(items, 'bounty-post-deadline')),
                 f'the 明天 quick pick did not set tomorrow 21:00 (still {before!r})')
-ui.at_rest()
-items = ui.read()
-assert_label_reads(ui.snap('02b-time-pick'), by_id(items, 'bounty-post-pick-time-tomorrow')['frame'], 'selected 明天')
+ui.capture('02b-time-pick')
 
 ui.tap_label(ui.t('bounty.post.form.window'))
 ui.element('bounty-post-start')

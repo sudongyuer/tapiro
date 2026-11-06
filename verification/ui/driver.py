@@ -433,11 +433,12 @@ def wcag_ratio(a, b):
 
 # The strongest pixels of a label against its pill: anti-aliased edges would drag an average below the real contrast.
 # The inset keeps the capsule's corners out, where the card behind would count as ink and pass an unreadable label.
-def assert_label_reads(shot, frame, name, ratio=4.5, ink=40):
+def assert_label_reads(shot, frame, name, expected_fill, ratio=4.5, ink=40):
     inset = frame['height'] / 2
     core = {'x': frame['x'] + inset, 'width': frame['width'] - 2 * inset,
             'y': frame['y'] + 4, 'height': frame['height'] - 8}
     fill = dominant(shot, core)
+    assert close(fill, expected_fill, 12), f'{name} fills with {fill}, not {expected_fill}: it is not selected'
     found = sorted((wcag_ratio(rgb, fill) for rgb in shot.pixels(core)), reverse=True)[ink]
     print(f'{name}: fill {fill}, label contrast {found:.2f}:1')
     assert found >= ratio, f'{name} is hard to read on its fill {fill}: {found:.2f}:1'
