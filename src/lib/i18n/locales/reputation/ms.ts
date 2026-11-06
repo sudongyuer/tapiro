@@ -71,8 +71,8 @@ const ms: typeof zhHans = {
   reply: {
     action: 'Balas',
     actionA11y: 'Balas {{review}}',
-    mine: 'Balasan saya:',
-    theirs: 'Balasan {{name}}:',
+    mine: 'Balasan saya: ',
+    theirs: 'Balasan {{name}}: ',
     confirm: 'Balasan tidak boleh diubah selepas dihantar',
     title: 'Balas Penilaian',
     placeholder: 'Tulis balasan',

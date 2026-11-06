@@ -71,8 +71,8 @@ const en: typeof zhHans = {
   reply: {
     action: 'Reply',
     actionA11y: 'Reply to {{review}}',
-    mine: 'My reply:',
-    theirs: '{{name}} replied:',
+    mine: 'My reply: ',
+    theirs: '{{name}} replied: ',
     confirm: 'A reply can’t be changed once it’s sent',
     title: 'Reply to Review',
     placeholder: 'Write a reply',
