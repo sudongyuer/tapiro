@@ -9,7 +9,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
-from mascot import GROWN, assert_moment, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402
+from mascot import GROWN, assert_moment, last_run, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402
 from profile import open_profile, scroll_to  # noqa: E402
 from recording import clip  # noqa: E402
 

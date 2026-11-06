@@ -66,13 +66,7 @@ export function MascotGrownScreen({
   const entrance = useEntrance();
   return (
     <MomentBackground testID="mascot-grown">
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: insets.bottom + vars['--space-5'] },
-        ]}
-      >
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
         <AppText variant="secondary" tone="secondaryLabel" testID="mascot-grown-progress">
           {lines.progress}
         </AppText>

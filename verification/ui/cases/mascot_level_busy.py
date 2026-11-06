@@ -5,7 +5,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id, reach_home, token  # noqa: E402
-from mascot import GROWN, assert_moment, mascot_box, stage, tap_mascot  # noqa: E402
+from mascot import assert_moment, stage, star_box, tap_mascot  # noqa: E402
 
 DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 240
