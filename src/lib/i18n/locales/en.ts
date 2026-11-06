@@ -314,7 +314,7 @@ const en: Translation = {
     pay: { title: 'Pay sheet' },
     stickers: { title: 'Sticker book' },
     chat: { thread: 'Chat thread (keyboard)' },
-    reputation: { profile: 'Profile' },
+    reputation: { profile: 'Profile', review: 'Review sheet', reviewOpen: 'Open the review' },
     coins: { page: 'Coins page', invite: 'Invite page' },
     flight: {
       title: 'Sticker flight to Me',

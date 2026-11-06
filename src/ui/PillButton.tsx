@@ -16,6 +16,7 @@ export type PillButtonProps = {
   onPress: () => void;
   variant?: Variant;
   loading?: boolean;
+  loadingLabel?: string;
   disabled?: boolean;
   testID?: string;
 };
@@ -25,6 +26,7 @@ export function PillButton({
   onPress,
   variant = 'primary',
   loading = false,
+  loadingLabel,
   disabled = false,
   testID,
 }: PillButtonProps) {
@@ -49,7 +51,7 @@ export function PillButton({
   const button = (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={(loading && loadingLabel) || label}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
@@ -62,7 +64,14 @@ export function PillButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={labelColor} />
+        <View style={styles.loading}>
+          <ActivityIndicator color={labelColor} />
+          {loadingLabel ? (
+            <AppText variant="body" style={[styles.label, { color: labelColor }]}>
+              {loadingLabel}
+            </AppText>
+          ) : null}
+        </View>
       ) : (
         <AppText variant="body" style={[styles.label, { color: labelColor }]}>
           {label}
@@ -92,4 +101,5 @@ const styles = StyleSheet.create({
   pressed: { opacity: vars['--opacity-pressed'] },
   disabled: { opacity: 0.4 },
   label: { fontWeight: '600', textAlign: 'center' },
+  loading: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
 });

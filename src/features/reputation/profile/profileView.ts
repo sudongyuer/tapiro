@@ -1,7 +1,14 @@
 import type { TFunction } from 'i18next';
 
 import { levelNameKey, levelStartsAt } from '../model';
-import { TIERS, type Face, type ProfileCard, type ProfileReview, type Tier } from '../types';
+import {
+  TIERS,
+  type Face,
+  type ProfileCard,
+  type ProfileReview,
+  type Role,
+  type Tier,
+} from '../types';
 
 export type TierRank = 1 | 2 | 3 | 4;
 
@@ -24,9 +31,12 @@ export const countText = (count: number, language: string) =>
 export const faceTone = (face: Face) =>
   face === 'happy' ? '--color-success' : face === 'unhappy' ? '--color-urgent' : null;
 
+export const chipLabel = (role: Role, chip: string, t: TFunction) =>
+  t(`reputation.chip.${role}.${chip}`, { defaultValue: '' });
+
 export function chipLabels(review: ProfileReview, t: TFunction) {
   return review.chips
-    .map((chip) => t(`reputation.chip.${review.role}.${chip}`, { defaultValue: '' }))
+    .map((chip) => chipLabel(review.role, chip, t))
     .filter((label) => label !== '');
 }
 

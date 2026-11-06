@@ -11,7 +11,7 @@ import {
   staleIfReady,
   type Loadable,
 } from '@/lib/loadable';
-import { validDraft } from './model';
+import { draftChanged, draftFromReview, validDraft } from './model';
 import {
   pairKey,
   targetKey,
@@ -155,6 +155,13 @@ export function createReviewStore({
     }
   }
 
+  function alreadyStored(target: ReviewTarget, draft: ReviewDraft) {
+    const item = get().items[pairKey(target.kind, target.itemId)];
+    const pair =
+      item && item.status !== 'idle' ? item.data?.find((row) => samePair(row, target)) : null;
+    return !!pair?.mine && !draftChanged(draft, draftFromReview(pair));
+  }
+
   async function submit(target: ReviewTarget, role: Role, draft: ReviewDraft) {
     const userId = get().userId;
     const key = targetKey(target);
@@ -175,11 +182,17 @@ export function createReviewStore({
       applySubmitted(target, result.pair);
       return true;
     }
-    setSubmit(key, { phase: 'failed', failure: result.failure });
     if (RELOAD_AFTER.includes(result.failure)) {
-      void reloadItem(target.kind, target.itemId);
       void reloadPending();
+      await reloadItem(target.kind, target.itemId);
+      if (!current(userId, at)) return false;
+      if (alreadyStored(target, draft)) {
+        drafts.setReview(userId, key, null);
+        setSubmit(key, null);
+        return true;
+      }
     }
+    setSubmit(key, { phase: 'failed', failure: result.failure });
     return false;
   }
 

@@ -317,7 +317,7 @@ const ms: Translation = {
     pay: { title: 'Helaian bayaran' },
     stickers: { title: 'Buku pelekat' },
     chat: { thread: 'Benang sembang (papan kekunci)' },
-    reputation: { profile: 'Profil' },
+    reputation: { profile: 'Profil', review: 'Helaian penilaian', reviewOpen: 'Buka penilaian' },
     coins: { page: 'Halaman Syiling', invite: 'Halaman jemputan' },
     flight: {
       title: 'Pelekat terbang ke Saya',

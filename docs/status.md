@@ -39,8 +39,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   screen, 全部评价, 回复, ⋯ 举报 / 屏蔽, the five entries and the gone state; cases `profile_*`) is built; Task 6 (the
   tier-drop sheet, cases `tier_drop_*`) is built; Task 8 (the 我的 「貘币」 row and the 貘币 page: balance, free posts
   left, monthly history; cases `coins_page*`) is merged (#91); Task 10 (the 邀请朋友 page: my code, 复制, 分享, the
-  code field before the first deal, progress rows; cases `invite_*`) is built. Next: Task 4 (review entries), one
-  screen per task; Tasks 3, 7 and 9 no longer wait: 257 is answered (a1, b1, c1). 258 A (count closed rides toward 靠谱度, a
+  code field before the first deal, progress rows; cases `invite_*`) is built. Task 3 (the review sheet: faces, chips by role, sentence, draft and discard, 改一下, the envelope seal 257 a1; cases
+  `review_sheet*`) is built, reachable from entries once Task 4 lands. Next: Task 4 (review entries), one screen per
+  task; Tasks 7 and 9 no longer wait: 257 is answered (b1, c1). 258 A (count closed rides toward 靠谱度, a
   server change) and 259 A (report a review from a profile) are answered but not planned as tasks yet.
 
 ## Queue
@@ -52,6 +53,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Owner decisions pending
 
+- The review sheet ★ details of Task 3 (plan 「★ Review defaults」, R1–R14).
 - The coins page ★ details of Task 8 (`docs/plans/2026-11-06-reviews-profile-coins.md`, 「★ Coins defaults」, C1–C9)
   and the invite page ★ details of Task 10 (「★ Invite defaults」, I1–I10), listed for veto after the owner's
   2026-11-06 answer below.
