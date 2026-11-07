@@ -5,9 +5,9 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from profile import label, open_profile, rep_calls, scroll_to  # noqa: E402
+from profile import assert_tier_whole, label, open_profile, rep_calls, scroll_to  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'verification/ui/gestures.py']
 SCENE = 'profile'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',
@@ -30,6 +30,7 @@ def open_row(key):
 
 ui = UI(*sys.argv[1:])
 open_profile(ui)
+assert_tier_whole(ui)
 scroll_to(ui, 'profile-accessory-scarf')
 assert label(ui, 'profile-accessory-umbrella') == worn('umbrella')
 assert label(ui, 'profile-accessory-backpack') == open_row('backpack')

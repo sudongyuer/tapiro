@@ -11,10 +11,10 @@ from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, Shot, assert_touch_target, by_id, reach_home  # noqa: E402
 from mascot import GROWN, assert_grown, assert_moment, assert_wearing, ink_top, last_run, mascot_box, moved_at, says, seen_levels, stage, tap_mascot  # noqa: E402
-from profile import open_profile, scroll_to  # noqa: E402
+from profile import assert_clears_tab_bar, open_profile, scroll_to  # noqa: E402
 from recording import clip, frames  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py']
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/profile.py', 'verification/ui/recording.py', 'verification/ui/gestures.py']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRepDelayMs', '5000', '-uiVerifyMascot', 'levelUp']
 LOCALES = ['zh-Hans', 'ms']
@@ -56,10 +56,7 @@ assert seen_levels(ui) == [5], 'opening the moment did not mark level 5 seen'
 go = ui.element('mascot-grown-go')
 assert go.get('AXLabel') == ui.t('reputation.grown.go')
 assert_touch_target(go, ui.t('reputation.grown.go'))
-tab_top = by_id(ui.read(), 'tab-bounty')['frame']['y']
-if ui.locale == 'zh-Hans':
-    assert go['frame']['y'] + go['frame']['height'] <= tab_top, f'the tab bar covers the button: {go["frame"]} vs {tab_top}'
-ui.at_rest()
+assert_clears_tab_bar(ui, 'mascot-grown-go')
 ui.capture('02-moment')
 
 ui.tap('BackButton')
