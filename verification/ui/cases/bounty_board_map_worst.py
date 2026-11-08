@@ -1,7 +1,8 @@
 """Worst-case map (break-ui; Debug scene `bounty-map` with `-uiVerifyBoard worst`, the board switch lands in Task 5):
 each pin's VoiceOver label carries the whole 60-code-point title and the reward; the card for the 100 m bounty stays
 inside the map, wraps the title to at most two lines, shows RM 500 in full and a 44 pt 申请; its back keeps 看详情 and
-申请 side by side at 44 pt inside the card (the `ms` labels are the longest); the applied bounty at 1.8 km, near the
+申请 side by side at 44 pt inside the card (the `ms` labels are the longest) and the poster's name over the longest
+tier, read whole by OCR; the applied bounty at 1.8 km, near the
 map's top edge, opens a card that still fits on the map and shows 已申请 · 等对方选 instead of 申请; its pin (84A) wears the
 list's 已申请 stamp in the success colour under the sticker and VoiceOver reads 已申请，等对方选 after the reward, while
 no other pin carries a stamp."""
@@ -9,15 +10,16 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import ink_box  # noqa: E402
+from board import assert_tier_whole, ink_box  # noqa: E402
 from driver import UI, assert_touch_target, by_id, token  # noqa: E402
 from map import (BACK, DISC, FRONT, close_card, disc_centre, face_box, inside, map_at_rest, map_frame,  # noqa: E402
                  pin_id, pin_title, pins, tap_pin)
-from ocr import find, lines  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/fixtureBoardData.ts', 'src/debug/BoardMapScene.tsx',
         'modules/tapiro-kit/ios/BountyPinView.swift', 'verification/ui/map.py', 'verification/ui/ocr.py',
-        'verification/ui/ocr.swift', 'verification/ui/board.py', 'src/features/bounty/shared/justApplied.ts']
+        'verification/ui/ocr.swift', 'verification/ui/board.py', 'verification/ui/profile.py',
+        'verification/ui/textwidth.swift', 'src/features/bounty/shared/justApplied.ts']
 SCENE = 'bounty-map'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
@@ -51,7 +53,7 @@ def stamp_ink(shot, pin):
 
 def in_card(shot, box, pattern, what):
     if shot.path not in READ:
-        READ[shot.path] = lines(shot)
+        READ[shot.path] = lines_in(shot, ui.locale)
     read = READ[shot.path]
     found = find(read, pattern, box)
     assert found, f'{what} ({pattern}) is not shown in full inside the card: {[line["text"] for line in read]}'
@@ -112,6 +114,7 @@ assert d['x'] + d['width'] <= a['x'] + 1, f'看详情 overlaps 申请: {d} / {a}
 assert abs(d['y'] - a['y']) < 1, f'看详情 and 申请 are not side by side: {d} / {a}'
 shot = ui.snap('03-back')
 in_card(shot, back, re.escape(ui.t('bounty.board.map.details')).replace('\\ ', r'\s?'), '看详情')
+assert_tier_whole(ui, READ[shot.path], back)
 close_card(ui)
 
 ui.settled(lambda items: by_id(items, pin_id(APPLIED)), 'the applied pin is not on the map')

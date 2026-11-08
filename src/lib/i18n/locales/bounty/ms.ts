@@ -325,7 +325,6 @@ const ms: typeof zhHans = {
       separator: ', ',
       urgentLine: 'Segera · {{time}}',
       placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
-      posterName: '{{name}} ·',
       noPlace: 'Tiada tempat',
     },
   },

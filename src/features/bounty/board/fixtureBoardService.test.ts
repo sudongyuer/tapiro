@@ -255,7 +255,7 @@ describe('worst', () => {
     expect(items.find((row) => row.reward.currency === 'CNY')?.reference?.minor).toBe(48980);
     expect(items.map((row) => row.distanceM)).toContain(100);
     expect(items.map((row) => row.distanceM)).toContain(18_400);
-    expect(items.some((row) => row.poster.tier === 'tapir_friend')).toBe(true);
+    expect(items.some((row) => row.poster.tier === 'very_reliable')).toBe(true);
     expect(
       items.some(
         (row) => row.placeLabel === null && row.startsAt === null && row.deadlineAt === null,

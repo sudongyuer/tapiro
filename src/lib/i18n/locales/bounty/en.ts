@@ -323,7 +323,6 @@ const en: typeof zhHans = {
       separator: ', ',
       urgentLine: 'Urgent · {{time}}',
       placeLine: '{{place}}\u00a0·\u00a0{{distance}}',
-      posterName: '{{name}} ·',
       noPlace: 'No place given',
     },
   },

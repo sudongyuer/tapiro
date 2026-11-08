@@ -4,10 +4,17 @@ import re
 from swifttool import run
 
 
-def lines(shot):
-    return [{'text': line['text'], 'x': line['x'] / shot.scale, 'y': line['y'] / shot.scale,
+def lines(shot, languages=None):
+    args = [shot.path, ','.join(languages)] if languages else [shot.path]
+    # Vision's en-US reading returns the Turkish dotless ı for i (「Lihat Butıran」).
+    return [{'text': line['text'].replace('ı', 'i'), 'x': line['x'] / shot.scale, 'y': line['y'] / shot.scale,
              'width': line['width'] / shot.scale, 'height': line['height'] / shot.scale}
-            for line in json.loads(run('ocr', shot.path, timeout=60))]
+            for line in json.loads(run('ocr', *args, timeout=60))]
+
+
+def lines_in(shot, locale):
+    # zh-Hans first misreads Latin (「lebih jauh」 as 「lebin jaun」); en-US first loses Chinese, so Latin locales read twice.
+    return lines(shot) + ([] if locale == 'zh-Hans' else lines(shot, ['en-US', 'zh-Hans']))
 
 
 def inside(box, f, slack=1):

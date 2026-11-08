@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-09 (264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-09 (the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -47,13 +47,13 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 4. Review and coin paging, one stall left (reasoned, not reproduced): a head read that shrinks a long list while no page
    is out can leave the new last row already on screen, so its `onAppear` may not fire until the user scrolls. A sentinel
    row keyed by the cursor would close it.
-5. Bounty board card, not measured: `TierMark` has `layoutPriority(0.5)` without `fixedSize` beside the name and 申请
-   (`BoardCardRows.tsx`), so 「Sangat Boleh Diharap」 may truncate in ms the way the profile header did.
 
 ## Owner decisions pending
 
 - The profile header ★ (P11 in `docs/plans/2026-11-06-reviews-profile-coins.md`): the tier keeps its full width and the
   note beside it wraps to a second line when both do not fit.
+- The board card ★ (P12, same plan): on the bounty board card and the map card's back the poster's name sits over the
+  tier, which always shows in full.
 - The opaque bar's ★ (no hairline on its top edge; secondary pills stay `systemGray5`), below. The hard edge has not been
   seen on a device.
 - The review sheet ★ details of Task 3 (plan 「★ Review defaults」, R1–R15) and the review entries of Task 4 (「★ Review entry
