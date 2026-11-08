@@ -1,7 +1,8 @@
 """Worst-case board (break-ui): with 45 bounties of 60-code-point titles, 80-code-point places and 40-character names,
 RM 500 sits inside the card beside a title that wraps to two lines; the place line truncates the label but always shows
-the distance (100 m, 1.8 km, 18 km); 申请 stays a 44 pt pill beside the 貘友 poster; the applied card shows 已申请 · 等对方选
-in full; the first page already reads the exact 「+42 更远」 (42 located bounties beyond 2 km), which fits the axis;
+the distance (100 m, 1.8 km, 18 km); 申请 stays a 44 pt pill beside the poster,
+whose name sits over the longest tier (很靠谱, 「Sangat Boleh Diharap」 in ms), read whole by OCR against its intrinsic
+width, on the applied card too; the applied card shows 已申请 · 等对方选 in full; the first page already reads the exact 「+42 更远」 (42 located bounties beyond 2 km), which fits the axis;
 the list loads all 45 cards and ends with 没写地点. The detail of the first card and the apply sheet with a 140-code-point note with spaces (`-uiVerifyApplyNote worst`) fit, and the applied detail keeps 撤回 at 44 pt. Place search lists an
 80-code-point place, and choosing it shows the place row with 附近 still visible and 换 at 44 pt."""
 import re
@@ -9,14 +10,15 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import count_reads, note_value, send, title_shown  # noqa: E402
-from board import cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
+from board import assert_tier_whole, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch, search_places  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
-from ocr import find, lines  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/bounty-apply/',
         'verification/ui/bounty.py', 'verification/ui/board.py', 'verification/ui/apply.py', 'verification/ui/ocr.py',
-        'verification/ui/ocr.swift', 'src/features/place/', 'src/features/block/']
+        'verification/ui/ocr.swift', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'src/features/place/',
+        'src/features/block/', 'src/ui/TierMark.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 480
 
@@ -51,7 +53,7 @@ PILL_LANE = 130
 
 def assert_in_card(shot, card, pattern, what):
     if shot.path not in READ:
-        READ[shot.path] = lines(shot)
+        READ[shot.path] = lines_in(shot, ui.locale)
     read = READ[shot.path]
     found = find(read, pattern, card['frame'])
     assert found, f'{what} ({pattern}) is not shown in full inside {card["AXUniqueId"]}: {[l["text"] for l in read]}'
@@ -108,12 +110,14 @@ assert_in_card(shot, first, r'100\s?m', 'the distance 100 m')
 pill = pill_box(shot, first)
 assert pill and pill['height'] >= PILL_MIN and pill['width'] >= PILL_MIN, f'申请 is not a 44 pt pill: {pill}'
 assert pill['x'] + pill['width'] <= f['x'] + f['width'], f'申请 runs past the card: {pill} / {f}'
+assert_tier_whole(ui, READ[shot.path], first['frame'], before=pill['x'])
 print(f'top card: RM 500 at x {reward["x"]:.1f}, title ends {title["x"] + title["width"]:.1f}, '
       f'申请 {pill["width"]:.1f} x {pill["height"]:.1f} pt')
 
 applied, shot = card_shot('bounty-card-fixture-worst-02', '02-applied')
 assert_in_card(shot, applied, r'1[.,]8\s?km', 'the distance 1.8 km')
 status = assert_in_card(shot, applied, tail('bounty.board.applied'), 'the applied line')
+assert_tier_whole(ui, READ[shot.path], applied['frame'])
 assert not re.search(r'…|\.\.\.$', status['text']), f'the applied line is truncated: {status["text"]!r}'
 
 loaded = set()

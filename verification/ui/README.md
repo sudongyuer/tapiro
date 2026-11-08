@@ -120,7 +120,7 @@ while a run is in progress: a pointer drag reaches the app as a real touch, and 
 failed because a stray drag scrolled 悬赏 back to the top.
 
 `ocr.find(ocr.lines(shot), pattern, within)` reads on-screen text with Vision (`ocr.swift`) for text inside a single
-VoiceOver element, such as a board card whose parts have no frames of their own. Motion that must be timed uses
+VoiceOver element, such as a board card whose parts have no frames of their own. `ocr.lines_in(shot, locale)` reads a Latin locale twice (zh-Hans first misreads Latin, en-US first loses Chinese), and `board.assert_tier_whole` checks a tier read that way against `textwidth.swift`. Motion that must be timed uses
 `recording.clip(ui, name)`: it pauses the run video (`run.mp4`, then `run-2.mp4`, …), records `<name>.mp4` around the
 interaction, and `recording.frames(video, dir)` (`frames.swift`) returns each frame with its video timestamp, so the
 timing does not depend on screenshot latency. Swift helpers compile once to `.verify/<name>` through `swifttool.py`.

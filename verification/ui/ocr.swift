@@ -13,7 +13,7 @@ guard arguments.count >= 2,
 let request = VNRecognizeTextRequest()
 request.revision = VNRecognizeTextRequestRevision3
 request.recognitionLevel = .accurate
-request.recognitionLanguages = ["zh-Hans", "en-US"]
+request.recognitionLanguages = arguments.count >= 3 ? arguments[2].split(separator: ",").map(String.init) : ["zh-Hans", "en-US"]
 request.usesLanguageCorrection = false
 try VNImageRequestHandler(cgImage: image).perform([request])
 

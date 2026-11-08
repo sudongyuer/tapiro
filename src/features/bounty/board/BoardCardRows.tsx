@@ -1,4 +1,4 @@
-import { Button, HStack, Image, RNHostView, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { Button, HStack, Image, RNHostView, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   background,
@@ -26,7 +26,6 @@ import type { BoardRow } from './types';
 
 const STICKER = 48;
 const AVATAR = 24;
-const NAME_MIN = 40;
 const GAP = ' ';
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const footnote = font({ textStyle: 'footnote' });
@@ -121,18 +120,14 @@ export function CardFoot({
       <RNHostView matchContents>
         <Avatar uri={null} size={AVATAR} label={copy.name} initial={copy.initial} />
       </RNHostView>
-      <Text
-        modifiers={[
-          footnote,
-          secondary,
-          lineLimit(1),
-          frame({ minWidth: NAME_MIN, alignment: 'leading' }),
-        ]}
+      <VStack
+        alignment="leading"
+        spacing={2}
+        modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}
       >
-        {t('bounty.board.card.posterName', { name: copy.name })}
-      </Text>
-      <TierMark label={copy.tier} rank={copy.rank} modifiers={[layoutPriority(0.5)]} />
-      <Spacer minLength={vars['--space-2']} />
+        <Text modifiers={[footnote, secondary, lineLimit(1)]}>{copy.name}</Text>
+        <TierMark label={copy.tier} rank={copy.rank} modifiers={[fixedSize(), layoutPriority(1)]} />
+      </VStack>
       {applied ? null : (
         <Button
           onPress={onApply}

@@ -117,7 +117,10 @@ export function CardBack({ row, copy, summaryRef, onFlip, onApply, onOpen }: Fac
           {copy.place}
         </AppText>
         <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
-          {`${t('bounty.board.card.posterName', { name: copy.name })} ${copy.tier}`}
+          {copy.name}
+        </AppText>
+        <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
+          {copy.tier}
         </AppText>
         {row.appliedByMe ? <Applied testID="map-card-back-applied" /> : null}
       </View>

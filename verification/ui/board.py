@@ -1,6 +1,8 @@
 import re
 
 from driver import by_id, close, token
+from ocr import find
+from profile import intrinsic_width
 
 CARD = 'bounty-card-'
 TOP_CLEAR, BOTTOM_CLEAR = 120, 110
@@ -84,3 +86,17 @@ def distance_text(ui, metres):
         value = f'{km:.1f}'.rstrip('0').rstrip('.') if km < 10 else str(round(km))
         text = ui.t('bounty.board.distance.kilometers', value=value)
     return text.replace(' ', ' ')
+
+
+def assert_tier_whole(ui, read, box, tier_key='very_reliable', before=None):
+    tier = ui.t(f'bounty.tier.{tier_key}')
+    pattern = re.escape(tier).replace('\\ ', r'\s?') + r'\s*$'
+    found = find(read, pattern, box)
+    assert found, f'the tier {tier} is not shown whole: {[line["text"] for line in read]}'
+    line, need = found[0], intrinsic_width(ui, tier)
+    print(f"tier {line['text']!r}: x {line['x']:.1f}, width {line['width']:.1f} of {need:.1f} pt intrinsic")
+    if line['text'].strip() == tier:
+        assert line['width'] >= need - 4, f'{tier} is cut: {line["width"]:.1f} of {need:.1f} pt'
+    if before is not None:
+        assert line['x'] + line['width'] <= before + 1, f'{tier} runs under its neighbour: {line} / {before}'
+    return line
