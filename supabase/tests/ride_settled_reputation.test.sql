@@ -139,12 +139,12 @@ select pg_temp.departed(4, 'grab', array[]::text[], array[]::text[]);
 select public.reach_ride(pg_temp.r(4));
 select public.recompute_reputation();
 select is(
-  pg_temp.snapshot('a1'), '{"settled": 7, "people": 3, "tier": "reliable"}'::jsonb,
-  'lone rides add to settled but never to the distinct people'
+  pg_temp.snapshot('a1'), '{"settled": 7, "people": 1, "tier": "new_friend"}'::jsonb,
+  'lone and unpaid rides add to settled; only the paid rider is a person'
 );
 select is(
-  pg_temp.snapshot('c3'), '{"settled": 2, "people": 1, "tier": "new_friend"}'::jsonb,
-  'two rides with one organiser are one person, paid or not'
+  pg_temp.snapshot('c3'), '{"settled": 2, "people": 0, "tier": "new_friend"}'::jsonb,
+  'two unpaid rides with one organiser count twice and add no person'
 );
 
 select pg_temp.as_user('e5', format('public.appeal_ride_no_show(%L)', pg_temp.r(3)));
@@ -163,7 +163,7 @@ select is(
 );
 select public.recompute_reputation();
 select is(
-  pg_temp.snapshot('a1') -> 'people', '3'::jsonb, 'deleted riders count as one person (d4, e5 and the deleted)'
+  pg_temp.snapshot('a1') -> 'people', '1'::jsonb, 'a deleted paid rider still counts as one person'
 );
 
 delete from public.reputation_events where item_id = pg_temp.r(4);

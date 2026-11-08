@@ -168,7 +168,7 @@ row; the `ride-jobs` cron clears the flag when the appeal lapses 72 h after å‡ºå
 - `recompute_reputation(as_of default now())` (service role): upserts one snapshot per profile from
   the events with `as_of - 180 days < created_at <= as_of` and returns the rows written. Inputs:
   `settled_count` (settled events), `counterpart_count` (distinct counterparts
-  among them, the user themselves excluded; counterparts whose account was deleted count together as one, so a deletion does not erase them and cannot be used to add more), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
+  among them, the user themselves excluded, and rides closed without a Tapiro payment excluded; counterparts whose account was deleted count together as one, so a deletion does not erase them and cannot be used to add more), `counted_no_shows` (no-shows not waived), `completion_rate` = settled / (settled +
   counted no-shows), null when both are 0, and `on_time_share` over the user's payer events with a
   known `on_time`, null when none. Account age is `as_of - profiles.created_at`.
 - `private.tier_for(settled, counterparts, rate, account_age)` holds every threshold, so tuning is
