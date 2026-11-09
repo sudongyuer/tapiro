@@ -74,7 +74,8 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:test-accounts": "bun scripts/db-test-accounts.ts",
-    "fn:serve": "supabase functions serve",
+    "fn:serve": "supabase functions serve --env-file supabase/functions/ai-draft/fake.env",
+    "test:deno": "deno test --no-check --no-lock --allow-env --import-map=supabase/functions/tests/deno-import-map.json supabase/functions/ai-draft/handler.test.ts supabase/functions/ai-draft/budget.test.ts supabase/functions/ai-draft/store.test.ts",
     "test:stack": "bun test ./supabase/functions/tests/*.integration.ts ./src/features/account/*.integration.ts ./src/features/payee/*.integration.ts ./src/features/payment/*.integration.ts ./src/features/bounty/post/*.integration.ts"
   },
   "private": true

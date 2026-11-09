@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-09 (the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-09 (问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -33,13 +33,19 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3 waits on the paid account;
   the spec stays `approved` until then.
 
+- 问小貘 (foundation step 8, `docs/plans/2026-10-30-ask-tapir.md`): Tasks 1 and 2 are merged with a fake provider: tables,
+  RPCs, the 06:00 refill, `ai-draft` and `src/lib/drafts`. No screen calls them and nothing is deployed. The other tasks
+  wait on questions 129–149, the real provider on the Model Studio account (148). The token budget is an unmeasured
+  placeholder and no model ID is pinned. Paid 嫩叶 feeding is uncapped until 149. Until the coins page learns the reason
+  (Task 5), a `pantry_swap` row would read 「其他」; none can occur from the app.
+
 ## Queue
 
 0. `bun run verify:full` has still not run on main since the reviews and coins milestone; run it when the machine is
    idle. The milestone's remaining en and ms cases ran on 33563b6 (7 en and 16 ms cases, reported done by the main
    session; artifacts removed with their worktree), and their three layout findings were closed in `fix/ms-layout`.
 
-1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
+1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
 3. The 消息 list has the same two gaps as review paging had: `loadMoreThreads` returns while a reload is out, and drops a
    page after one, and nothing asks again. Softer there: `onEndReached` fires again after the user scrolls away and
@@ -50,6 +56,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Owner decisions pending
 
+- 问小貘 questions 129–149 are unanswered (plan 「Open questions」). The ★ defaults of its server and draft contract are
+  listed for veto in the plan's 「★ Server defaults」 (S1–S13).
 - The profile header ★ (P11 in `docs/plans/2026-11-06-reviews-profile-coins.md`): the tier keeps its full width and the
   note beside it wraps to a second line when both do not fit.
 - The board card ★ (P12, same plan): on the bounty board card and the map card's back the poster's name sits over the
