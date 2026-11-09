@@ -12,6 +12,8 @@ A = ('Tapiro Verify', 'udid-a', 'ios')
 B = ('Tapiro Verify 2', 'udid-b', 'ios')
 STALL = Attempt('fail', "subprocess.TimeoutExpired: Command '['axe', 'tap']' timed out after 20 seconds", 2)
 SLOW = Attempt('fail', 'command timed out after 180 s', 1)
+LOST = Attempt('fail', 'driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation '
+                       'session')
 PASS = Attempt('pass', 'PASS: shown')
 
 
@@ -62,6 +64,15 @@ class Heal(unittest.TestCase):
         self.assertEqual(report.stalls, [(first, 'case', True)])
         [outcome] = report.outcomes
         self.assertEqual((outcome.stalled_device, outcome.retried_on, outcome.device), (first, second, second))
+
+    def test_a_lost_automation_session_reboots_and_retries_on_another_device(self):
+        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: LOST if n == 1 else PASS)
+        first, second = calls[0][0], calls[1][0]
+        self.assertNotEqual(first, second)
+        self.assertEqual([d[0] for d in healed], [first])
+        [outcome] = report.outcomes
+        self.assertEqual((outcome.status, outcome.stalled_device, outcome.retried_on), ('pass', first, second))
+        self.assertEqual(LOST.stall_reason, 'lost the AXe automation session')
 
     def test_a_pass_on_retry_is_a_flagged_pass(self):
         _, _, report = drive([A, B], ['case'], lambda name, job, n: STALL if n == 1 else PASS)
