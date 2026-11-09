@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-09 (the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -23,11 +23,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## In progress
 
-- Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). `bounty_post_place`
-  still fails after its pastes: AXe key events (Return, typed keys) are dropped on iOS 27.2 and need their own look. The
-  `ride.remind.*` device checks wait for TestFlight. The local pgTAP `rides_schema` test 39 failure is gone: the main
-  session reset the local database on 2026-11-06 (`supabase db reset --local`, test accounts reseeded) and all 49
-  files, 1721 tests pass.
+- Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). The `ride.remind.*`
+  device checks wait for TestFlight. The local pgTAP `rides_schema` test 39 failure is gone: the main session reset the
+  local database on 2026-11-06 (`supabase db reset --local`, test accounts reseeded) and all 49 files, 1721 tests pass.
 - Live updates and push (`docs/plans/2026-11-03-realtime-push.md`): steps 1 (server, #62) and 2 (app, #66) are merged;
   the owner's 2026-11-05 answers added quiet hours for the bounty you are on and a live-only `bounty.expired` to
   pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3 waits on the paid account;
@@ -41,12 +39,10 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 1. Plans written, not built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
-3. The 消息 list has the same two gaps as review paging had: `loadMoreThreads` returns while a reload is out, and drops a
-   page after one, and nothing asks again. Softer there: `onEndReached` fires again after the user scrolls away and
-   back. Not fixed.
-4. Review and coin paging, one stall left (reasoned, not reproduced): a head read that shrinks a long list while no page
-   is out can leave the new last row already on screen, so its `onAppear` may not fire until the user scrolls. A sentinel
-   row keyed by the cursor would close it.
+3. `bounty_post_form`, `bounty_post_optional` and `ride_create_form` were last reported failing on dropped typed keys
+   (2026-11-07). `bounty_post_place` was blamed on the same drop and was not: an `axe key` Return leaves the field focused
+   while typed keys land, and the on-screen Return works (`bounty.end_editing`). Run them again before trusting that
+   diagnosis.
 
 ## Owner decisions pending
 

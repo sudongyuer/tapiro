@@ -229,6 +229,35 @@ describe('reply in flight', () => {
     expect(list.status !== 'idle' && list.data?.more).toBe('idle');
   });
 
+  test('a page that fails before a head read lands is read again after it', async () => {
+    const more = deferred<ReviewPage>();
+    const head = deferred<ReviewPage>();
+    const before: (string | null)[] = [];
+    const { store } = setup(
+      fakeService({
+        profileReviews: (_id, cursor) => {
+          before.push(cursor);
+          if (before.length === 1) return Promise.resolve(page(['r1'], 'c'));
+          if (before.length === 2) return more.promise;
+          if (before.length === 3) return head.promise;
+          return Promise.resolve(page(['r2'], null));
+        },
+      }),
+    );
+    store.openReviews('p1');
+    await settle();
+    const loadingMore = store.loadMore('p1');
+    const reloading = store.reloadList('p1');
+    more.reject(new Error('x'));
+    await loadingMore;
+    const during = store.getSnapshot().reviews.p1;
+    expect(during.status !== 'idle' && during.data?.more).toBe('idle');
+    head.resolve(page(['r1'], 'c'));
+    await reloading;
+    await settle();
+    expect(before).toEqual([null, 'c', null, 'c']);
+  });
+
   test('a next page asked for while the first page is being read loads once that read lands', async () => {
     const head = deferred<ReviewPage>();
     const before: (string | null)[] = [];

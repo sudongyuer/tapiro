@@ -67,6 +67,9 @@ export function createChatStore({
   let visibility: AppStateSource | null = null;
   let listVersion = 0;
   let reloadsOut = 0;
+  let pagesAsked = 0;
+  // onEndReached fires once per content length, so a next page refused or dropped around a reload is never asked again.
+  let moreWanted = false;
 
   const get = store.get;
   const patch = (next: Partial<ChatState>) => store.set({ ...get(), ...next });
@@ -112,6 +115,10 @@ export function createChatStore({
       patch({ list: { ...list, status: failedOrStale(list.status, list.threads.length > 0) } });
     } finally {
       reloadsOut -= 1;
+      if (moreWanted && reloadsOut === 0) {
+        moreWanted = false;
+        void loadMoreThreads();
+      }
     }
   }
 
@@ -136,33 +143,36 @@ export function createChatStore({
 
   async function loadMoreThreads() {
     const { userId, list } = get();
-    if (!userId || list.status !== 'ready' || !list.hasMore || list.more === 'loading') return;
+    if (!userId || (list.status !== 'ready' && list.status !== 'stale')) return;
+    if (!list.hasMore || list.more === 'loading') return;
     // A reload sized before this page landed would replace the list with fewer rows.
-    if (reloadsOut > 0) return;
+    if (reloadsOut > 0) {
+      moreWanted = true;
+      return;
+    }
     const at = generation;
     const version = listVersion;
+    const request = ++pagesAsked;
     patch({ list: { ...list, more: 'loading' } });
-    try {
-      const page = await service.listThreads(list.nextCursor);
-      const latest = get().list;
-      if (!current(userId, at) || latest.status === 'idle') return;
-      if (version !== listVersion) return patch({ list: { ...latest, more: 'idle' } });
-      const known = new Set(latest.threads.map((thread) => thread.id));
-      patch({
-        list: {
-          ...latest,
-          threads: [...latest.threads, ...page.items.filter((thread) => !known.has(thread.id))],
-          hasMore: page.hasMore,
-          nextCursor: page.nextCursor,
-          more: 'idle',
-        },
-      });
-    } catch {
-      const latest = get().list;
-      if (current(userId, at) && latest.status !== 'idle') {
-        patch({ list: { ...latest, more: 'failed' } });
-      }
+    const page = await service.listThreads(list.nextCursor).catch(() => null);
+    const latest = get().list;
+    if (!current(userId, at) || request !== pagesAsked || latest.status === 'idle') return;
+    const again = version !== listVersion || (!page && reloadsOut > 0);
+    if (!page || again) {
+      patch({ list: { ...latest, more: again ? 'idle' : 'failed' } });
+      if (again) void loadMoreThreads();
+      return;
     }
+    const known = new Set(latest.threads.map((thread) => thread.id));
+    patch({
+      list: {
+        ...latest,
+        threads: [...latest.threads, ...page.items.filter((thread) => !known.has(thread.id))],
+        hasMore: page.hasMore,
+        nextCursor: page.nextCursor,
+        more: 'idle',
+      },
+    });
   }
 
   async function refreshUnread(userId = get().userId) {
@@ -366,6 +376,7 @@ export function createChatStore({
 
   function clear() {
     generation += 1;
+    moreWanted = false;
     focused.clear();
     sending.clear();
     marking.clear();

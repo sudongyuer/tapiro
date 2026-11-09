@@ -11,6 +11,7 @@ from chat import (LIST_GROUND, ROW_FILL, badge_pixels, open_list, row_id, row_la
 from driver import UI, assert_touch_target, by_id, close  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
+LOCAL_HOURS = [9, 10]
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1']
 ORDER = ['fixture-chat-bounty', 'fixture-chat-new', 'fixture-chat-ride']
 

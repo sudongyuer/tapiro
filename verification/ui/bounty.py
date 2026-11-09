@@ -210,7 +210,6 @@ def assert_preview(ui, title, amount, symbol='RM'):
 
 
 PUBLISHED_KEY = 'uiVerifyPublishedArgs'
-RETURN_KEY = '40'
 
 
 def form_scroll_to(ui, identifier, tries=6):
@@ -226,7 +225,9 @@ def form_scroll_to(ui, identifier, tries=6):
 
 
 def end_editing(ui):
-    ui.axe('key', RETURN_KEY)
+    # On iOS 27.2 an `axe key` Return leaves the field focused while typed letters land; the on-screen key ends editing.
+    tap_centre(ui, ui.settled(lambda items: by_id(items, 'Return'), 'the keyboard has no Return key'))
+    ui.gone('Return')
 
 
 def search_field(ui):

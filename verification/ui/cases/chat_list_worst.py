@@ -13,6 +13,7 @@ from driver import UI, by_id  # noqa: E402
 DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py', 'src/ui/InlineState.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
+LOCAL_HOURS = [9, 10]
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
         '-uiVerifyFixture', 'worst', '-uiVerifyChatFail', 'listMore']
 TITLE = '帮我去 Sunway Pyramid LG 层的驿站取一个很重的快递然后送到 Block C 十二楼门口谢谢你，很急！！'
