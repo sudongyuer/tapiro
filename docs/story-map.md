@@ -872,30 +872,33 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### ask.consent 第一次用 AI 前同意
 
 - 故事：作为同学，我想第一次用小貘前知道数据发给谁、做什么，以便自己决定要不要用。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id             | 行为                                                       | 覆盖   |
-| ------------------- | ---------------------------------------------------------- | ------ |
-| ask.consent.screen  | 同意页写明阿里云百炼（新加坡）、用途和发送的数据，记下时间 | ui, db |
-| ask.consent.decline | 不同意时每个功能都还能手动完成                             | ui     |
+| 验收 id             | 行为                                                         | 覆盖                                                                                |
+| ------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| ask.consent.screen  | 同意页写明阿里云百炼（新加坡）、用途和发送的数据，记下时间   | ui, db:supabase/tests/ai.test.sql                                                   |
+| ask.consent.decline | 不同意时每个功能都还能手动完成                               | ui                                                                                  |
+| ask.consent.gate    | 没同意、撤回同意或同意的版本过期时，云端调用被拒绝，不扣体力 | db:supabase/tests/ai.test.sql, int:supabase/functions/tests/ai-draft.integration.ts |
 
 ### ask.draft 起草和小貘体力
 
 - 故事：作为同学，我想小貘帮我起草、翻译，以便省时间，又不会用超。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id              | 行为                                                             | 覆盖     |
-| -------------------- | ---------------------------------------------------------------- | -------- |
-| ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥         | int      |
-| ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                             | ui       |
-| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份 | unit, db |
-| ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                       | ui, unit |
-| ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                       | device   |
-| ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                       | ui, db   |
+| 验收 id              | 行为                                                                 | 覆盖                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥             | int:supabase/functions/tests/ai-draft.integration.ts                                                                                          |
+| ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                                 | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
+| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份     | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql                                                                |
+| ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                           | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
+| ask.draft.no-store   | 服务器不存提示词和回复，只存用量；日志里也没有                       | unit:supabase/functions/ai-draft/handler.test.ts, db:supabase/tests/ai.test.sql                                                               |
+| ask.draft.contract   | 起草结果多一个字段就拒收；能填进发布表单，表单不接受的金额和时间留空 | unit:src/lib/drafts/bountyDraft.test.ts, unit:src/features/bounty/post/draftFields.test.ts, unit:supabase/functions/ai-draft/contract.test.ts |
+| ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                           | device                                                                                                                                        |
+| ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                           | ui, db:supabase/tests/ai.test.sql                                                                                                             |
 
 ### ask.long-press-voice 长按小貘按钮说话
 
