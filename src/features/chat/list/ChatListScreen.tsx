@@ -106,7 +106,7 @@ export function ChatListScreen({ onOpen, onBrowse }: Actions) {
     </View>
   );
 
-  const more = list.status === 'ready' ? list.more : 'idle';
+  const more = list.status === 'ready' || list.status === 'stale' ? list.more : 'idle';
   const footer =
     more === 'loading' ? (
       <View style={styles.loading}>

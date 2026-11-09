@@ -125,6 +125,33 @@ describe('coin history paging around a first-page read', () => {
     expect(history.status !== 'idle' && history.data?.more).toBe('idle');
   });
 
+  test('a page that fails before a first-page read lands is read again after it', async () => {
+    const more = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    const head = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
+    const before: (number | null)[] = [];
+    const page = { items: [row(3, '2026-11') as CoinRow], hasMore: true, nextCursor: 3 };
+    const { store } = setup({
+      history: (cursor) => {
+        before.push(cursor);
+        if (before.length === 1) return Promise.resolve(page);
+        if (before.length === 2) return more.promise;
+        if (before.length === 3) return head.promise;
+        return Promise.resolve({ items: [], hasMore: false, nextCursor: null });
+      },
+    });
+    await store.reloadHistory();
+    const loadingMore = store.loadMoreHistory();
+    const reloading = store.reloadHistory();
+    more.reject(new Error('x'));
+    await loadingMore;
+    const during = store.getSnapshot().history;
+    expect(during.status !== 'idle' && during.data?.more).toBe('idle');
+    head.resolve(page);
+    await reloading;
+    await settle();
+    expect(before).toEqual([null, 3, null, 3]);
+  });
+
   test('a next page asked for during a read that fails still loads', async () => {
     const first = deferred<{ items: CoinRow[]; hasMore: boolean; nextCursor: number | null }>();
     const before: (number | null)[] = [];

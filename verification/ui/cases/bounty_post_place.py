@@ -3,7 +3,7 @@ exact-address row; 移除地点 collapses back to 「＋ 地点」; picking 用�
 fixture answers the prompt with 允许, so no system alert is drawn) and fills the reverse-geocoded name, renamed by hand;
 confirm shows the renamed place and the exact-address note, and the published draft carries the edited name, the
 point's coordinates and the address (read from the fixture's record in the app's defaults). The search bar is focused
-on arrival: typing lands without a tap (the Simulator's hardware keyboard keeps the software keyboard down)."""
+on arrival: typing lands without a tap."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -84,10 +84,7 @@ label_reads(PYRAMID)
 ui.capture('06-current-location')
 paste_into(ui, 'bounty-post-place-label', PYRAMID_EDITED)
 end_editing(ui)
-address = by_id(ui.read(), 'bounty-post-address')['frame']
-ui.tap_point(address['x'] + address['width'] / 2, address['y'] + address['height'] / 2)
-ui.type(ADDRESS)
-ui.wait(lambda items: (by_id(items, 'bounty-post-address') or {}).get('AXValue') == ADDRESS, 'the address was not typed')
+paste_into(ui, 'bounty-post-address', ADDRESS)
 end_editing(ui)
 
 next_step(ui)
