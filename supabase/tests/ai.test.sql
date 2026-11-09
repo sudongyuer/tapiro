@@ -1,5 +1,5 @@
 begin;
-select plan(102);
+select plan(111);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -68,7 +68,7 @@ select is(
 );
 select columns_are(
   'public', 'ai_metering',
-  array['id', 'user_id', 'task', 'model', 'input_tokens', 'output_tokens', 'energy_spent', 'created_at'],
+  array['id', 'user_id', 'task', 'model', 'input_tokens', 'output_tokens', 'energy_spent', 'discarded', 'created_at'],
   'metering holds no prompt or response column'
 );
 select is(
@@ -90,7 +90,11 @@ select is(
     at time zone 'Asia/Kuala_Lumpur',
   'the next refill is the next 06:00 in Malaysia'
 );
-select ok(not (pg_temp.status('a1') ? 'tokens'), 'the status shows no tokens');
+select is(
+  (select array_agg(k order by k) from jsonb_object_keys(pg_temp.status('a1')) k),
+  array['coins', 'consent', 'energy', 'energyFull', 'leaves', 'nextRefillAt'],
+  'the status carries exactly these keys: no tokens, no model'
+);
 
 select is(pg_temp.begin_status('a1'), 'consent_required', 'no call starts before consent');
 select is(pg_temp.level('a1'), null, 'a refused call stores no energy row');
@@ -152,6 +156,10 @@ select throws_ok(
   $$select public.ai_abort_call('00000000-0000-0000-0000-0000000000a1', gen_random_uuid())$$,
   '42501', null, 'a client cannot release a lease'
 );
+select throws_ok(
+  $$select public.ai_discard_call('00000000-0000-0000-0000-0000000000a1', gen_random_uuid(), 'answer', 'x', 0, 0)$$,
+  '42501', null, 'a client cannot record a discard'
+);
 select throws_ok('select public.refill_ai_energy()', '42501', null, 'a client cannot run the refill');
 reset role;
 set local role anon;
@@ -196,6 +204,37 @@ select is(
   0, 'energy floors at 0 and the overdrawn answer is not cut off'
 );
 select is(pg_temp.begin_status('a1'), 'hungry', 'an empty belly starts no call');
+
+-- Discarded replies
+select pg_temp.set_level('b2', 500);
+update public.ai_energy set lease = null, lease_until = null where user_id = pg_temp.uid('b2');
+insert into leases select 'discard', (public.ai_begin_call(pg_temp.uid('b2')) ->> 'lease')::uuid;
+select public.ai_discard_call(pg_temp.uid('b2'), (select id from leases where name = 'discard'), 'answer', 'fake', 10, 20);
+select is(pg_temp.level('b2'), 500, 'a discarded reply deducts nothing');
+select is((select lease from public.ai_energy where user_id = pg_temp.uid('b2')), null, 'and frees the lease');
+select is(
+  (select row(input_tokens, output_tokens, energy_spent, discarded)::text from public.ai_metering
+   where user_id = pg_temp.uid('b2')),
+  row(10, 20, 0, true)::text, 'its tokens are still recorded'
+);
+insert into public.ai_metering (user_id, task, model, input_tokens, output_tokens, energy_spent, discarded)
+select pg_temp.uid('b2'), 'answer', 'fake', 0, 0, 0, true from generate_series(1, 18);
+select is(pg_temp.begin_status('b2'), 'ok', 'after 19 discards in a day a call still starts');
+select public.ai_abort_call(pg_temp.uid('b2'), (select lease from public.ai_energy where user_id = pg_temp.uid('b2')));
+insert into public.ai_metering (user_id, task, model, input_tokens, output_tokens, energy_spent, discarded)
+values (pg_temp.uid('b2'), 'answer', 'fake', 0, 0, 0, true);
+select is(pg_temp.begin_status('b2'), 'too_many_discards', 'the 20th stops further calls');
+select is(pg_temp.level('b2'), 500, 'with the energy untouched');
+update public.ai_metering set created_at = (private.ai_refill_day(now())::timestamp + interval '6 hours')
+    at time zone 'Asia/Kuala_Lumpur' - interval '1 second'
+  where user_id = pg_temp.uid('b2');
+select is(pg_temp.begin_status('b2'), 'ok', 'discards from before 06:00 do not count');
+select public.ai_abort_call(pg_temp.uid('b2'), (select lease from public.ai_energy where user_id = pg_temp.uid('b2')));
+select throws_ok(
+  $$insert into public.ai_metering (user_id, task, model, input_tokens, output_tokens, energy_spent, discarded)
+    values ('00000000-0000-0000-0000-0000000000b2', 'answer', 'fake', 0, 0, 1, true)$$,
+  '23514', null, 'a discarded reply cannot carry a charge'
+);
 
 -- The 06:00 refill
 select is(private.ai_refill_day('2026-11-09 05:59:59+08'), date '2026-11-08', 'before 06:00 is still yesterday');

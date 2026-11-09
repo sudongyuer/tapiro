@@ -28,6 +28,16 @@ export function rpcStore(client: RpcClient): AiStore {
         energy_spent: row.energySpent,
       })) as { energy: number; energyFull: number };
     },
+    async discard(row) {
+      await call('ai_discard_call', {
+        uid: row.userId,
+        held: row.lease,
+        task: row.task,
+        model: row.model,
+        input_tokens: row.inputTokens,
+        output_tokens: row.outputTokens,
+      });
+    },
     async abort(userId, lease) {
       await call('ai_abort_call', { uid: userId, held: lease });
     },

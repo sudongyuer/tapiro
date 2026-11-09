@@ -57,7 +57,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 ## Owner decisions pending
 
 - 问小貘 questions 129–149 are unanswered (plan 「Open questions」). The ★ defaults of its server and draft contract are
-  listed for veto in the plan's 「★ Server defaults」 (S1–S12).
+  listed for veto in the plan's 「★ Server defaults」 (S1–S13).
 - The profile header ★ (P11 in `docs/plans/2026-11-06-reviews-profile-coins.md`): the tier keeps its full width and the
   note beside it wraps to a second line when both do not fit.
 - The board card ★ (P12, same plan): on the bounty board card and the map card's back the poster's name sits over the

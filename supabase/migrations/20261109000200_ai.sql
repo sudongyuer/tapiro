@@ -119,7 +119,9 @@ create table public.ai_metering (
   input_tokens integer not null check (input_tokens >= 0),
   output_tokens integer not null check (output_tokens >= 0),
   energy_spent integer not null check (energy_spent >= 0),
-  created_at timestamptz not null default now()
+  discarded boolean not null default false,
+  created_at timestamptz not null default now(),
+  check (not discarded or energy_spent = 0)
 );
 
 create index ai_metering_user on public.ai_metering (user_id, created_at);
@@ -358,6 +360,15 @@ begin
   if stored.level <= 0 then
     return jsonb_build_object('status', 'hungry');
   end if;
+  -- A reply we throw away costs the user nothing but the provider still bills it, so a prompt that reliably produces one
+  -- would otherwise spend without limit on any energy above 0.
+  if (
+    select count(*) from public.ai_metering m
+    where m.user_id = uid and m.discarded
+      and m.created_at >= (private.ai_refill_day(now())::timestamp + interval '6 hours') at time zone 'Asia/Kuala_Lumpur'
+  ) >= 20 then
+    return jsonb_build_object('status', 'too_many_discards');
+  end if;
   if stored.lease_until > now() then
     return jsonb_build_object('status', 'busy');
   end if;
@@ -408,6 +419,29 @@ $$;
 revoke all on function public.ai_finish_call(uuid, uuid, text, text, integer, integer, integer)
   from public, anon, authenticated;
 grant execute on function public.ai_finish_call(uuid, uuid, text, text, integer, integer, integer) to service_role;
+
+create function public.ai_discard_call(
+  uid uuid,
+  held uuid,
+  task text,
+  model text,
+  input_tokens integer,
+  output_tokens integer
+) returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  insert into public.ai_metering (user_id, task, model, input_tokens, output_tokens, energy_spent, discarded)
+  values (uid, ai_discard_call.task, ai_discard_call.model, ai_discard_call.input_tokens, ai_discard_call.output_tokens,
+    0, true);
+  update public.ai_energy e set lease = null, lease_until = null
+  where e.user_id = uid and e.lease = held;
+$$;
+
+revoke all on function public.ai_discard_call(uuid, uuid, text, text, integer, integer)
+  from public, anon, authenticated;
+grant execute on function public.ai_discard_call(uuid, uuid, text, text, integer, integer) to service_role;
 
 create function public.ai_abort_call(uid uuid, held uuid) returns void
 language sql

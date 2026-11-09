@@ -233,13 +233,13 @@ Nothing here is reachable from the app yet: no screen calls these, and `ai-draft
   `feed_leaf()` takes a leaf and fills the belly, or raises `55000 already_full` or `55000 no_leaf`. Neither has a daily
   ceiling: that is question 149.
 - `ai_memory`: 小貘记得, full CRUD for the owner under RLS.
-- `ai_metering` (no client access): user, task, model, input and output tokens, energy spent, time. No prompt or response
+- `ai_metering` (no client access): user, task, model, input and output tokens, energy spent, whether the reply was discarded, time. No prompt or response
   column exists.
 - `ai_status()` (authenticated): `{ consent: { currentVersion, given }, energy, energyFull, leaves, coins, nextRefillAt }`,
   null when signed out.
 - `ai_begin_call(uid)`, `ai_finish_call(uid, held, task, model, input_tokens, output_tokens, energy_spent)` and
   `ai_abort_call(uid, held)` (service role) are the function's side. Begin answers `{ status }`: `consent_required`,
-  `hungry`, `busy`, or `ok` with a 60 s `lease`. Finish writes the metering row and floors energy at 0; abort deducts nothing.
+  `hungry`, `busy`, or `ok` with a 60 s `lease`. Begin also answers `too_many_discards` after 20 discarded replies since the last 06:00. Finish writes the metering row and floors energy at 0; abort deducts nothing; `ai_discard_call(uid, held, task, model, input_tokens, output_tokens)` records a reply the function threw away, with `discarded` true and no charge.
 
 ## Bounties
 
@@ -358,8 +358,8 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   when the gateway listens on another port than the one `supabase status` reports (`scripts/local-supabase.ts`).
 - `ai-draft` (`POST`, user JWT, body `{ task, input: { text, to? } }`, `task` one of `draft_bounty`, `answer`, `translate`)
   answers `{ task, result, energy, energyFull }`, or `{ error }`: 400 `invalid_request`, 401 `unauthorized`, 403
-  `consent_required`, 409 `busy`, 429 `hungry`, 500 `server_error`, 502 `provider_error`. No `error` answer deducts
-  anything. `AI_PROVIDER=fake` is the only provider; unset or anything else is a
+  `consent_required`, 409 `busy`, 429 `hungry`, 500 `server_error`, 502 `provider_error`. An `error` answer deducts nothing, with one edge: if
+  `ai_finish_call` commits and its reply is lost, the answer is a 500 with the energy already spent. `AI_PROVIDER=fake` is the only provider; unset or anything else is a
   `provider_error`. `bun run fn:serve` passes `functions/ai-draft/fake.env`. `budget.ts` holds an unmeasured placeholder.
   `bun run test:deno` runs its handler tests in Deno as well (`functions/tests/deno-bun-test.ts` maps `bun:test`).
 - Request handling lives in `handler.ts` (no Deno APIs), unit-tested by `bun test`; `index.ts` wires

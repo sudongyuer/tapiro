@@ -889,16 +889,16 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id              | 行为                                                                 | 覆盖                                                                                                                                          |
-| -------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥             | int:supabase/functions/tests/ai-draft.integration.ts                                                                                          |
-| ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                                 | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
-| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份     | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql                                                                |
-| ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                           | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
-| ask.draft.no-store   | 服务器不存提示词和回复，只存用量；日志里也没有                       | unit:supabase/functions/ai-draft/handler.test.ts, db:supabase/tests/ai.test.sql                                                               |
-| ask.draft.contract   | 起草结果多一个字段就拒收；能填进发布表单，表单不接受的金额和时间留空 | unit:src/lib/drafts/bountyDraft.test.ts, unit:src/features/bounty/post/draftFields.test.ts, unit:supabase/functions/ai-draft/contract.test.ts |
-| ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                           | device                                                                                                                                        |
-| ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                           | ui, db:supabase/tests/ai.test.sql                                                                                                             |
+| 验收 id              | 行为                                                                         | 覆盖                                                                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥                     | int:supabase/functions/tests/ai-draft.integration.ts                                                                                          |
+| ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                                         | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
+| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份             | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql                                                                |
+| ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                                   | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
+| ask.draft.no-store   | 服务器不存提示词和回复，只存用量；日志里也没有                               | unit:supabase/functions/ai-draft/handler.test.ts, db:supabase/tests/ai.test.sql                                                               |
+| ask.draft.contract   | 起草结果多一个字段就拒收；能填进发布表单，表单不接受的金额和时间不填并列出来 | unit:src/lib/drafts/bountyDraft.test.ts, unit:src/features/bounty/post/draftFields.test.ts, unit:supabase/functions/ai-draft/contract.test.ts |
+| ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                                   | device                                                                                                                                        |
+| ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                                   | ui, db:supabase/tests/ai.test.sql                                                                                                             |
 
 ### ask.long-press-voice 长按小貘按钮说话
 

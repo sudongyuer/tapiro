@@ -119,10 +119,17 @@ function matches(schema: Schema, value: unknown): boolean {
   return true;
 }
 
-const OFFSET_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
+const OFFSET_DATE_TIME =
+  /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
 
-const isDateTime = (value: unknown) =>
-  typeof value === 'string' && OFFSET_DATE_TIME.test(value) && !Number.isNaN(Date.parse(value));
+// Date.parse rolls an impossible day such as 11-31 over to the next month instead of refusing it.
+function isDateTime(value: unknown) {
+  if (typeof value !== 'string') return false;
+  const match = OFFSET_DATE_TIME.exec(value);
+  if (!match || Number.isNaN(Date.parse(value))) return false;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDate() === day;
+}
 
 function validDraftTime(args: Record<string, unknown>) {
   const { deadlineAt, startsAt, endsAt } = args;

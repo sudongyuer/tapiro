@@ -1,3 +1,4 @@
+import { titleIntent } from '@/lib/handArt';
 import { CURRENCIES, isCurrencyCode, POST_LIMITS, type CurrencyCode } from '@/lib/money';
 import { bountyCategory, type BountyCategory } from '@/lib/stickers/category';
 
@@ -42,10 +43,17 @@ export const BOUNTY_DRAFT_FIELDS = [
   'placeHint',
 ] as const;
 
-const OFFSET_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
+const OFFSET_DATE_TIME =
+  /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
 
-const isDateTime = (value: unknown): value is string =>
-  typeof value === 'string' && OFFSET_DATE_TIME.test(value) && !Number.isNaN(Date.parse(value));
+// Date.parse rolls an impossible day such as 11-31 over to the next month instead of refusing it.
+function isDateTime(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const match = OFFSET_DATE_TIME.exec(value);
+  if (!match || Number.isNaN(Date.parse(value))) return false;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDate() === day;
+}
 
 function requiredText(value: unknown, max: number) {
   if (typeof value !== 'string') return null;
@@ -124,15 +132,25 @@ export function parseBountyDraft(value: unknown): BountyDraftParse {
 export type BountyFormFields = {
   title: string;
   art: null;
-  category?: BountyCategory;
-  categorySource?: 'auto';
+  category?: BountyCategory | null;
+  categorySource?: 'auto' | null;
   rewardText?: string;
   currency?: CurrencyCode;
   description?: string;
   time?: Exclude<BountyDraftTime, { kind: 'none' }>;
 };
 
-export type BountyFormPatch = { fields: BountyFormFields; placeHint: string | null };
+export type BountyFormPatch = {
+  fields: BountyFormFields;
+  placeHint: string | null;
+  dropped: ('reward' | 'time')[];
+};
+
+export type BountyFormState = {
+  now: Date;
+  currency: CurrencyCode;
+  categorySource: 'chosen' | 'auto' | null;
+};
 
 function fitsReward(major: number, currency: CurrencyCode) {
   const { minMinor, maxMinor, stepMinor } = POST_LIMITS.bounty[currency];
@@ -149,26 +167,32 @@ function pickableTime(time: BountyDraftTime, now: Date) {
 }
 
 // Only what the draft says goes into the patch, so a field the user already filled keeps its value. A reward or a time
-// the form would refuse is left out instead of blocking the rest of the draft. A place needs coordinates a model cannot
-// supply, so it comes back as a hint for the user to pick, never as a filled place.
-export function toBountyFormPatch(
-  draft: BountyDraft,
-  form: { now: Date; currency: CurrencyCode },
-): BountyFormPatch {
+// the form would refuse is left out and named in `dropped`, because the form may still hold an older value the user
+// would otherwise take for the draft's. A place needs coordinates a model cannot supply, so it comes back as a hint for
+// the user to pick. The draft always replaces the title, so a category the form only guessed is guessed again from it,
+// as a typed title would do.
+export function toBountyFormPatch(draft: BountyDraft, form: BountyFormState): BountyFormPatch {
   const fields: BountyFormFields = { title: draft.title, art: null };
+  const dropped: BountyFormPatch['dropped'] = [];
   if (draft.category !== null) {
     fields.category = draft.category;
     fields.categorySource = 'auto';
+  } else if (form.categorySource !== 'chosen') {
+    const guessed = titleIntent(draft.title, null)?.category ?? null;
+    fields.category = guessed;
+    fields.categorySource = guessed ? 'auto' : null;
   }
-  if (
-    draft.rewardMajor !== null &&
-    fitsReward(draft.rewardMajor, draft.currency ?? form.currency)
-  ) {
-    fields.rewardText = String(draft.rewardMajor);
-    if (draft.currency !== null) fields.currency = draft.currency;
+  if (draft.rewardMajor !== null) {
+    if (fitsReward(draft.rewardMajor, draft.currency ?? form.currency)) {
+      fields.rewardText = String(draft.rewardMajor);
+      if (draft.currency !== null) fields.currency = draft.currency;
+    } else {
+      dropped.push('reward');
+    }
   }
   if (draft.description !== null) fields.description = draft.description;
   const time = pickableTime(draft.time, form.now);
   if (time !== null) fields.time = time;
-  return { fields, placeHint: draft.placeHint };
+  else if (draft.time.kind !== 'none') dropped.push('time');
+  return { fields, placeHint: draft.placeHint, dropped };
 }

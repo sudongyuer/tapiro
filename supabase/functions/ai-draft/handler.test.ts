@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 
-import { handleAiDraft, type AiDraftDeps, type BeginResult, type MeterRow } from './handler.ts';
+import {
+  handleAiDraft,
+  type AiDraftDeps,
+  type BeginResult,
+  type DiscardRow,
+  type MeterRow,
+} from './handler.ts';
 import { fakeProvider, selectProvider, type AiProvider, type ProviderCall } from './provider.ts';
 
 const USER = '00000000-0000-4000-8000-00000000000a';
@@ -9,12 +15,13 @@ const SECRET_PROMPT = '帮我取快递，我的手机号 0123456789';
 type Recorded = {
   begins: string[];
   finishes: MeterRow[];
+  discards: DiscardRow[];
   aborts: string[];
   provider: ProviderCall[];
 };
 
 function setup(overrides: Partial<AiDraftDeps> = {}, begin: BeginResult = okBegin(500)) {
-  const recorded: Recorded = { begins: [], finishes: [], aborts: [], provider: [] };
+  const recorded: Recorded = { begins: [], finishes: [], discards: [], aborts: [], provider: [] };
   const deps: AiDraftDeps = {
     userIdFromToken: async (token) => (token === 'valid' ? USER : null),
     store: {
@@ -25,6 +32,9 @@ function setup(overrides: Partial<AiDraftDeps> = {}, begin: BeginResult = okBegi
       async finish(row) {
         recorded.finishes.push(row);
         return { energy: 166, energyFull: 1000 };
+      },
+      async discard(row) {
+        recorded.discards.push(row);
       },
       async abort(_userId, lease) {
         recorded.aborts.push(lease);
@@ -218,16 +228,64 @@ describe('ai-draft', () => {
     ['a tool the task did not ask for', { toolName: 'publish_bounty' }],
     ['an unknown field in the draft', { arguments: { text: 'x', extra: true } }],
     ['a draft of the wrong shape', { arguments: { title: 'only a title' } }],
-    ['a usage that is not a count', { inputTokens: -1 }],
-    ['a usage that is missing', { outputTokens: Number.NaN }],
-    ['no model name', { model: '' }],
-  ])('%s from the provider is a provider_error', async (_name, reply) => {
+  ])('%s is discarded: the user pays nothing, the tokens are recorded', async (_name, reply) => {
     const { deps, recorded } = setup({ provider: replying(reply) });
     await captureConsole(async () => {
       await expectError(await handleAiDraft(post(DRAFT), deps), 502, 'provider_error');
     });
     expect(recorded.finishes).toEqual([]);
-    expect(recorded.aborts).toEqual(['lease-1']);
+    expect(recorded.aborts).toEqual([]);
+    expect(recorded.discards).toEqual([
+      {
+        userId: USER,
+        lease: 'lease-1',
+        task: 'draft_bounty',
+        model: 'fake',
+        inputTokens: 3000,
+        outputTokens: 600,
+      },
+    ]);
+  });
+
+  test.each([
+    [
+      'a usage that is not a count',
+      { inputTokens: -1 },
+      { inputTokens: 0, outputTokens: 600, model: 'fake' },
+    ],
+    [
+      'a usage that is missing',
+      { outputTokens: Number.NaN },
+      { inputTokens: 3000, outputTokens: 0, model: 'fake' },
+    ],
+    ['no model name', { model: '' }, { inputTokens: 3000, outputTokens: 600, model: 'unknown' }],
+  ])('%s is discarded with what can still be recorded', async (_name, reply, recordedAs) => {
+    const { deps, recorded } = setup({ provider: replying(reply) });
+    await captureConsole(async () => {
+      await expectError(await handleAiDraft(post(DRAFT), deps), 502, 'provider_error');
+    });
+    expect(recorded.finishes).toEqual([]);
+    expect(recorded.discards).toEqual([
+      { userId: USER, lease: 'lease-1', task: 'draft_bounty', ...recordedAs },
+    ]);
+  });
+
+  test('too many discards today is a provider_error with no provider call', async () => {
+    const { deps, recorded } = setup({}, { status: 'too_many_discards' });
+    await captureConsole(async () => {
+      await expectError(await handleAiDraft(post(DRAFT), deps), 502, 'provider_error');
+    });
+    expect(recorded.provider).toEqual([]);
+  });
+
+  test('a failed discard does not change the answer', async () => {
+    const { deps } = setup({ provider: replying({ toolName: 'publish_bounty' }) });
+    deps.store.discard = async () => {
+      throw new Error('db down');
+    };
+    await captureConsole(async () => {
+      await expectError(await handleAiDraft(post(DRAFT), deps), 502, 'provider_error');
+    });
   });
 
   test.each([

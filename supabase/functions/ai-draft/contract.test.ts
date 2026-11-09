@@ -78,6 +78,8 @@ describe('the draft_bounty tool and the app contract', () => {
     ['a blank description', { description: ' ' }, false],
     ['a long place hint', { placeHint: 'x'.repeat(81) }, false],
     ['a time with no offset', { deadlineAt: '2026-11-10T10:00:00' }, false],
+    ['a day that does not exist', { deadlineAt: '2026-11-31T10:00:00+08:00' }, false],
+    ['more fraction digits than a date holds', { deadlineAt: '2026-11-10T10:00:00.1234Z' }, false],
     ['a deadline and a start', { startsAt: '2026-11-10T10:00:00Z' }, false],
     ['a start alone', { deadlineAt: null, startsAt: '2026-11-10T10:00:00Z' }, false],
     ['an end alone', { deadlineAt: null, endsAt: '2026-11-10T10:00:00Z' }, false],

@@ -9,7 +9,7 @@ import {
 } from './tools.ts';
 
 export type BeginResult =
-  | { status: 'consent_required' | 'hungry' | 'busy' }
+  | { status: 'consent_required' | 'hungry' | 'busy' | 'too_many_discards' }
   | { status: 'ok'; lease: string; energy: number; energyFull: number };
 
 export type MeterRow = {
@@ -22,9 +22,12 @@ export type MeterRow = {
   energySpent: number;
 };
 
+export type DiscardRow = Omit<MeterRow, 'energySpent'>;
+
 export type AiStore = {
   begin(userId: string): Promise<BeginResult>;
   finish(row: MeterRow): Promise<{ energy: number; energyFull: number }>;
+  discard(row: DiscardRow): Promise<void>;
   abort(userId: string, lease: string): Promise<void>;
 };
 
@@ -42,6 +45,8 @@ const REFUSALS = {
   busy: 409,
   hungry: 429,
 } as const;
+
+const UNKNOWN_MODEL = 'unknown';
 
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -89,16 +94,15 @@ async function callProvider(
   }
 }
 
-function usable(reply: ProviderReply | null, task: AiTask): reply is ProviderReply {
+const isCount = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 0;
+const hasModel = (reply: ProviderReply) => typeof reply.model === 'string' && reply.model !== '';
+
+function usable(reply: ProviderReply, task: AiTask) {
   return (
-    reply !== null &&
     reply.toolName === task &&
-    Number.isSafeInteger(reply.inputTokens) &&
-    reply.inputTokens >= 0 &&
-    Number.isSafeInteger(reply.outputTokens) &&
-    reply.outputTokens >= 0 &&
-    typeof reply.model === 'string' &&
-    reply.model !== '' &&
+    isCount(reply.inputTokens) &&
+    isCount(reply.outputTokens) &&
+    hasModel(reply) &&
     validToolResult(task, reply.arguments)
   );
 }
@@ -127,12 +131,30 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
     logCode('begin_failed');
     return failure(500, 'server_error');
   }
+  if (begun.status === 'too_many_discards') {
+    logCode('too_many_discards');
+    return failure(502, 'provider_error');
+  }
   if (begun.status !== 'ok') return failure(REFUSALS[begun.status], begun.status);
 
   const reply = await callProvider(deps.provider, request, deps.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  if (!usable(reply, request.task)) {
+  if (reply === null) {
     logCode('provider_error');
     await deps.store.abort(userId, begun.lease).catch(() => logCode('abort_failed'));
+    return failure(502, 'provider_error');
+  }
+  if (!usable(reply, request.task)) {
+    logCode('reply_discarded');
+    await deps.store
+      .discard({
+        userId,
+        lease: begun.lease,
+        task: request.task,
+        model: hasModel(reply) ? reply.model : UNKNOWN_MODEL,
+        inputTokens: isCount(reply.inputTokens) ? reply.inputTokens : 0,
+        outputTokens: isCount(reply.outputTokens) ? reply.outputTokens : 0,
+      })
+      .catch(() => logCode('discard_failed'));
     return failure(502, 'provider_error');
   }
 

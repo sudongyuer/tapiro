@@ -21,14 +21,15 @@ const BLANK: PostDraft = {
   updatedAt: NOW.toISOString(),
 };
 
-function formWith(raw: Record<string, unknown>): PostDraft {
+function formWith(raw: Record<string, unknown>, form: PostDraft = BLANK): PostDraft {
   const parsed = parseBountyDraft(raw);
   if (!parsed.ok) throw new Error(`rejected: ${JSON.stringify(parsed)}`);
   const fields: Partial<PostDraft> = toBountyFormPatch(parsed.draft, {
     now: NOW,
-    currency: BLANK.currency,
+    currency: form.currency,
+    categorySource: form.categorySource,
   }).fields;
-  return { ...BLANK, ...fields };
+  return { ...form, ...fields };
 }
 
 const DRAFT = {
@@ -87,6 +88,16 @@ describe('a bounty draft in the post form', () => {
     });
   });
 
+  test('on a filled form, a dropped reward leaves the older reward in place', () => {
+    const form = { ...BLANK, rewardText: '8', title: '买奶茶' };
+    expect(formWith({ ...DRAFT, rewardMajor: 600 }, form).rewardText).toBe('8');
+  });
+
+  test('a stale guessed category does not survive a new title', () => {
+    const form: PostDraft = { ...BLANK, title: '买奶茶', category: 'buy', categorySource: 'auto' };
+    expect(formWith({ ...DRAFT, category: null }, form).category).toBe('pickup');
+  });
+
   test('a window the mapping keeps passes the form', () => {
     const checked = checkDraft(
       formWith({
@@ -100,8 +111,8 @@ describe('a bounty draft in the post form', () => {
     expect(checked.ok).toBe(true);
   });
 
-  test('a draft with no category asks for one on the form', () => {
-    expect(checkDraft(formWith({ ...DRAFT, category: null }), NOW)).toEqual({
+  test('a draft with no category and no guess asks for one on the form', () => {
+    expect(checkDraft(formWith({ ...DRAFT, title: 'xyz', category: null }), NOW)).toEqual({
       ok: false,
       error: 'categoryEmpty',
     });
