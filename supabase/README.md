@@ -213,6 +213,34 @@ existing accounts the two sign-up grants and returns how many rows it wrote.
 Spends, refunds and help grants take a per-user advisory lock, so concurrent publishes cannot both
 take the last free slot or the last coin, and concurrent settles cannot pass the monthly cap.
 
+## 问小貘
+
+Nothing here is reachable from the app yet: no screen calls these, and `ai-draft` is not deployed. Plan:
+`docs/plans/2026-10-30-ask-tapir.md`.
+
+- `ai_consent_versions` (no client access): provider and purpose per version; the newest is the one in force.
+  `ai_consents`: a client reads its own rows and writes none. `record_consent(version)` writes a row with the server's
+  provider and purpose, is harmless when repeated, and raises `22023 stale_consent_version` for any version but the newest.
+  `withdraw_consent()` stamps `withdrawn_at`; the row stays, and consenting again adds another.
+- `ai_energy` (no client access): `level` 0–1000, one row per user that has called, `refilled_on` (the day that starts at
+  06:00 Malaysia time) and the call lease. No row reads as full. `refill_ai_energy()` runs at 22:00 UTC (06:00 Malaysia
+  time, job `ai-energy-refill-daily`, in SQL) and sets stale rows to full; a second run that day does nothing. Reads and
+  writes apply a missed refill themselves. The clock-taking body `private.refill_ai_energy(as_of)` has no grant and is for
+  tests.
+- `ai_pantry`: append-only like `coin_ledger`, with the same `user_id → null` on account deletion; a client reads its own
+  rows and never writes. The leaf count is the sum of `delta`; leaves never expire. `swap_coin_for_leaf()` writes a `-1`
+  `pantry_swap` row in `coin_ledger` and a `+1` `swap` row pointing at it in one transaction, or `55000 no_balance`.
+  `feed_leaf()` takes a leaf and fills the belly, or raises `55000 already_full` or `55000 no_leaf`. Neither has a daily
+  ceiling: that is question 149.
+- `ai_memory`: 小貘记得, full CRUD for the owner under RLS.
+- `ai_metering` (no client access): user, task, model, input and output tokens, energy spent, whether the reply was discarded, time. No prompt or response
+  column exists.
+- `ai_status()` (authenticated): `{ consent: { currentVersion, given }, energy, energyFull, leaves, coins, nextRefillAt }`,
+  null when signed out.
+- `ai_begin_call(uid)`, `ai_finish_call(uid, held, task, model, input_tokens, output_tokens, energy_spent)` and
+  `ai_abort_call(uid, held)` (service role) are the function's side. Begin answers `{ status }`: `consent_required`,
+  `hungry`, `busy`, or `ok` with a 60 s `lease`. Begin also answers `too_many_discards` after 20 discarded replies since the last 06:00. Finish writes the metering row and floors energy at 0; abort deducts nothing; `ai_discard_call(uid, held, task, model, input_tokens, output_tokens)` records a reply the function threw away, with `discarded` true and no charge.
+
 ## Bounties
 
 Reads: `bounty_events` gives the poster and the helper the bounty's events, except that `applied` and
@@ -328,5 +356,11 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   token are rejected) and the app's profile service under RLS. The tests read the URL and keys from
   `supabase status`; set `SUPABASE_LOCAL_API_URL` (and `SUPABASE_LOCAL_ANON_KEY`, `SUPABASE_LOCAL_SERVICE_ROLE_KEY`)
   when the gateway listens on another port than the one `supabase status` reports (`scripts/local-supabase.ts`).
+- `ai-draft` (`POST`, user JWT, body `{ task, input: { text, to? } }`, `task` one of `draft_bounty`, `answer`, `translate`)
+  answers `{ task, result, energy, energyFull }`, or `{ error }`: 400 `invalid_request`, 401 `unauthorized`, 403
+  `consent_required`, 409 `busy`, 429 `hungry`, 500 `server_error`, 502 `provider_error`. An `error` answer deducts nothing, with one edge: if
+  `ai_finish_call` commits and its reply is lost, the answer is a 500 with the energy already spent. `AI_PROVIDER=fake` is the only provider; unset or anything else is a
+  `provider_error`. `bun run fn:serve` passes `functions/ai-draft/fake.env`. `budget.ts` holds an unmeasured placeholder.
+  `bun run test:deno` runs its handler tests in Deno as well (`functions/tests/deno-bun-test.ts` maps `bun:test`).
 - Request handling lives in `handler.ts` (no Deno APIs), unit-tested by `bun test`; `index.ts` wires
   Deno and the service-role client and is excluded from `tsc`.
