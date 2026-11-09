@@ -11,6 +11,9 @@ export type ProviderReply = {
   outputTokens: number;
 };
 
+// An adapter throws only when no response arrived. A billed response with no tool call or unparseable arguments comes back
+// as a reply with its real usage, so the handler discards and counts it; thrown errors are not counted, and a prompt that
+// made the adapter throw could otherwise spend without limit.
 export type AiProvider = {
   generate(call: ProviderCall, signal: AbortSignal): Promise<ProviderReply>;
 };
