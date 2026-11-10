@@ -70,6 +70,7 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   resolvePlace(searchId: string, suggestionId: string): Promise<PlaceResult>;
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
+  resignFocus(): Promise<void>;
 }
 
 const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
@@ -173,6 +174,10 @@ export function resolvePlace(searchId: string, suggestionId: string): Promise<Pl
 
 export function placeAt(point: PlacePoint): Promise<PlaceResult> {
   return kit.placeAt(point.latitude, point.longitude);
+}
+
+export function resignFocus(): Promise<void> {
+  return kit.resignFocus();
 }
 
 export function endPlaceSearch(searchId: string): void {

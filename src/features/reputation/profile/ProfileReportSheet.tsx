@@ -12,10 +12,11 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Keyboard, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
 import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import {
   canSubmit,
   cleanNote,
@@ -39,12 +40,13 @@ const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 export function ProfileReportSheet({
   personId,
   reviewId,
-  onClose,
+  onClose: leave,
 }: {
   personId: string;
   reviewId: string | null;
   onClose: () => void;
 }) {
+  const onClose = afterResign(leave);
   const { t } = useI18n();
   const { color } = useTheme();
   const card = useProfile(personId);
@@ -85,11 +87,9 @@ export function ProfileReportSheet({
     );
   };
 
-  const submit = () => {
+  const submit = afterResign(() => {
     const text = note.sync();
     if (!reason || !canSubmit(reason, text, phase)) return;
-    // The Form's collection view aborts when it rebuilds rows while the note field is first responder.
-    Keyboard.dismiss();
     setPhase('sending');
     const sent =
       reviewId === null
@@ -104,7 +104,7 @@ export function ProfileReportSheet({
         ]);
       })
       .catch(() => setPhase('failed'));
-  };
+  });
 
   return (
     <>

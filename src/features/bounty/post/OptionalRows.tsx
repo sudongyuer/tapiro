@@ -20,6 +20,7 @@ import {
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import type { BountyCategory } from '@/lib/stickers/category';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
@@ -92,7 +93,7 @@ export function HeadingRow({
       {remove ? (
         <Button
           role="destructive"
-          onPress={remove.onPress}
+          onPress={afterResign(remove.onPress)}
           testID={remove.testID}
           modifiers={[buttonStyle('borderless'), accessibilityLabel(remove.voiceOver)]}
         >

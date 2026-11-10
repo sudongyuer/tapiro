@@ -3,6 +3,7 @@ import { foregroundStyle } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
@@ -42,10 +43,10 @@ export function ClearSection({
           <Button
             label={t('bounty.post.form.clearConfirm.confirm')}
             role="destructive"
-            onPress={() => {
+            onPress={afterResign(() => {
               resetDraft(userId);
               onCleared();
-            }}
+            })}
           />
           <Button label={t('bounty.post.form.clearConfirm.cancel')} role="cancel" />
         </ConfirmationDialog.Actions>

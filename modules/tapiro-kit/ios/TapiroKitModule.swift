@@ -78,6 +78,18 @@ public final class TapiroKitModule: Module {
       }
     }.runOnQueue(.main)
 
+    // Forced, on every window: a polite resign can be refused, and a SwiftUI field resigned later, while React removes
+    // its Form rows, re-enters the list's batch update and trips UICollectionView's first-responder assertion.
+    // Resolving on the next main turn lets SwiftUI apply the focus change before JS mutates the tree.
+    AsyncFunction("resignFocus") { (promise: Promise) in
+      MainActor.assumeIsolated {
+        for scene in UIApplication.shared.connectedScenes {
+          (scene as? UIWindowScene)?.windows.forEach { $0.endEditing(true) }
+        }
+        DispatchQueue.main.async { promise.resolve() }
+      }
+    }.runOnQueue(.main)
+
   }
 
   // Sync functions run on the JS thread; ids are minted there so JS gets them synchronously, and the MapKit work is
