@@ -10,6 +10,7 @@ import subprocess
 import time
 from pathlib import Path
 
+from keys import backspace, type_text
 from latency import timed
 
 BUNDLE_ID = 'app.tapiro'
@@ -38,13 +39,6 @@ def latin_spacing(locale, text):
     return HAN_THEN_LATIN.sub(r'\1 ', LATIN_THEN_HAN.sub(r'\1 ', text))
 
 
-# `axe type` sends keys with no delay; the SwiftUI TextField re-renders React on every change and dropped trailing
-# keys in dark runs (2026-10-26), so plain lower-case letters and digits go through paced key-sequence instead.
-HID_KEYCODES = {
-    **{chr(ord('a') + offset): str(4 + offset) for offset in range(26)},
-    **{str(digit): str(29 + digit) for digit in range(1, 10)},
-    '0': '39',
-}
 
 
 class UI:
@@ -213,14 +207,10 @@ class UI:
                  '--end-x', str(round(end[0])), '--end-y', str(round(end[1])), '--duration', str(duration))
 
     def type(self, text):
-        assert text.isascii(), f'AXe types ASCII only; paste {text!r} with bounty.paste_into'
-        if all(char in HID_KEYCODES for char in text):
-            self.axe('key-sequence', '--keycodes', ','.join(HID_KEYCODES[char] for char in text), '--delay', '0.08')
-        else:
-            self.axe('type', text)
+        type_text(self, text)
 
     def backspace(self, times):
-        self.axe('key-sequence', '--keycodes', ','.join(['42'] * times))
+        backspace(self, times)
 
     def capture(self, name):
         timed(f'screenshot {name}', ['xcrun', 'simctl', 'io', self.udid, 'screenshot', str(self.output / f'{name}.png')],

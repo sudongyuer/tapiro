@@ -32,10 +32,11 @@ ui.at_rest()
 shot = ui.snap('01-failed')
 drawn(shot, f)
 key = bubble['AXUniqueId'][len('chat-bubble-'):]
-time.sleep(2)  # a replay would follow the failed answer
 # Filtered by this message's client id: the preferences file can still hold the previous launch's calls.
+assert chat_calls(ui, 'send', 1, 15, where=lambda args: args['clientId'] == key), 'the first send never reached the call log'
+time.sleep(2)  # a replay would follow the failed answer
 sent = chat_calls(ui, 'send', 2, 0, where=lambda args: args['clientId'] == key)
-assert len(sent) == 1, f'a failed photo was sent again on its own: {chat_calls(ui, "send", 1)}'
+assert len(sent) == 1, f'a failed photo was sent again on its own: {sent}'
 
 [retry] = retries(ui.read())
 ui.tap(retry['AXUniqueId'])

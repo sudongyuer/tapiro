@@ -40,9 +40,12 @@ var written: [[String: Any]] = []
 var last = -Double.infinity
 while let sample = output.copyNextSampleBuffer() {
     let seconds = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sample))
+    // simctl's recording tags its frames with a wider colour space than the sRGB values they hold; converting from the
+    // tag shifted the dark hold gold #D99A2B to (226, 149, 0) while screenshots read it exactly (2026-11-10).
     guard seconds - last >= minGap, let buffer = CMSampleBufferGetImageBuffer(sample),
           let image = context.createCGImage(
-              CIImage(cvPixelBuffer: buffer), from: CIImage(cvPixelBuffer: buffer).extent, format: .RGBA8, colorSpace: srgb)
+              CIImage(cvPixelBuffer: buffer, options: [.colorSpace: srgb]), from: CIImage(cvPixelBuffer: buffer).extent,
+              format: .RGBA8, colorSpace: srgb)
     else { continue }
     let url = outDir.appendingPathComponent(String(format: "frame-%04d.png", written.count))
     guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil)

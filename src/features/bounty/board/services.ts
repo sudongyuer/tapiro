@@ -27,7 +27,7 @@ function detailLoadRecorder() {
 export const boardService: BoardService = uiVerify
   ? createFixtureBoardService({
       ...fixtureBoardOptions(uiVerifyArgument, uiVerifyFixture),
-      writeDelayMs: VERIFY_WRITE_DELAY_MS,
+      writeDelayMs: Number(uiVerifyArgument('uiVerifyBoardDelayMs')) || VERIFY_WRITE_DELAY_MS,
       isBlocked: fixtureBlocked,
       posterView: fixturePosterView,
       onDetailLoaded: detailLoadRecorder(),

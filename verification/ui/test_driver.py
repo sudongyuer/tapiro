@@ -31,6 +31,35 @@ class Typing(unittest.TestCase):
             ui.type('我中途下车了')
 
 
+class Keys(unittest.TestCase):
+    def typed(self, text, screens):
+        ui = UI.__new__(UI)
+        sent, reads = [], iter(screens)
+        ui.axe = lambda *args, **kwargs: sent.append(args)
+        ui.state = lambda: next(reads)
+        ui.type(text)
+        return sent
+
+    def test_digits_on_a_pad_tap_its_keys(self):
+        pad = [{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}]
+        sent = self.typed('80', [pad] * 4)
+        self.assertEqual(sent, [('tap', '-x', '201', '-y', '728', '--post-delay', '0.5'),
+                                ('tap', '-x', '201', '-y', '782', '--post-delay', '0.5')])
+
+    def test_digits_on_the_letter_keyboard_stay_hid_keys(self):
+        letters = [{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}, {'AXUniqueId': 'Return'}]
+        sent = self.typed('12', [letters] * 2)
+        self.assertEqual(sent, [('key-sequence', '--keycodes', '30,31', '--delay', '0.08')])
+
+    def test_backspace_on_a_pad_taps_its_delete_key(self):
+        ui = UI.__new__(UI)
+        sent, reads = [], iter([[{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}]] * 6)
+        ui.axe = lambda *args, **kwargs: sent.append(args)
+        ui.state = lambda: next(reads)
+        ui.backspace(2)
+        self.assertEqual(sent, [('tap', '-x', '335', '-y', '782', '--post-delay', '0.5')] * 2)
+
+
 class Tapping(unittest.TestCase):
     def sent(self, *args):
         calls = []

@@ -74,7 +74,7 @@ assert empty.get('AXLabel') == ui.t('bounty.board.state.empty'), empty.get('AXLa
 assert chip('bounty-filter-all') == ui.t('bounty.board.filter.allCount', count=0), chip('bounty-filter-all')
 assert_inline_card(ui.snap('04-empty'), empty, 'empty card')
 ui.tap('bounty-board-post')
-ui.element('bounty-post-form')
+ui.wait(lambda items: by_id(items, 'bounty-post-pick') or by_id(items, 'bounty-post-form'), 'the post sheet did not open')
 ui.capture('05-post-sheet')
 
 relaunch(ui, drop=FAIL_FIRST, add=['-uiVerifyBoardFail', 'refresh'])

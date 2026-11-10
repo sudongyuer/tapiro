@@ -15,6 +15,7 @@ SHARED = [
     'bun.lock',
     'tsconfig.json',
     'verification/ui/driver.py',
+    'verification/ui/keys.py',
     'verification/ui/run.py',
     'verification/ui/affected.py',
     'verification/ui/breaker.py',

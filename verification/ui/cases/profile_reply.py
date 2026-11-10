@@ -49,8 +49,10 @@ send()
 ui.element('profile-reply-failed', timeout=30)
 assert ui.t('reputation.reply.failed') in label(ui, 'profile-reply-failed')
 assert (by_id(ui.read(), 'profile-reply-input').get('AXValue') or '') == TEXT, 'the typed reply was lost'
+assert rep_calls(ui, 'reply', 1, timeout=15), 'the first reply never reached the call log'
 time.sleep(2)  # a replay would follow the failed answer
-assert len(rep_calls(ui, 'reply', 2, timeout=2)) == 1, 'the failed reply was sent again on its own'
+sent = rep_calls(ui, 'reply', 2, timeout=2)
+assert len(sent) == 1, f'the failed reply was sent again on its own: {sent}'
 ui.at_rest()
 ui.capture('02-failed')
 
