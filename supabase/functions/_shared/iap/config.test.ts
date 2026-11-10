@@ -3,7 +3,12 @@ import { describe, expect, test } from 'bun:test';
 import { APPLE_ROOT_CA_G3 } from './appleRoot.ts';
 import { iapConfig } from './config.ts';
 import { LOCAL_ENV, serviceRoleKey } from './fakes.ts';
-import { base64Der, peekNotificationEnvironment, peekTransactionEnvironment } from './jws.ts';
+import {
+  base64Der,
+  peekNotificationEnvironment,
+  peekTransactionEnvironment,
+  toVerifiedTransaction,
+} from './jws.ts';
 
 const HOSTED = 'https://abcdefghijklmnop.supabase.co';
 const TEST_ROOT = 'MIIBtest';
@@ -104,5 +109,32 @@ describe('environment peek', () => {
       'Sandbox',
     );
     expect(peekNotificationEnvironment(unsigned({ environment: 'Sandbox' }))).toBeNull();
+  });
+});
+
+describe('transaction ids', () => {
+  const payload = (environment: string, extra: Record<string, unknown> = {}) => ({
+    transactionId: '0',
+    originalTransactionId: '0',
+    productId: 'app.tapiro.coins.5',
+    bundleId: 'app.tapiro',
+    purchaseDate: 1_762_800_000_000,
+    environment,
+    ...extra,
+  });
+
+  test('an Xcode id carries its purchase date, since Xcode restarts its numbering at 0', () => {
+    const first = toVerifiedTransaction(payload('Xcode'));
+    const later = toVerifiedTransaction(payload('Xcode', { purchaseDate: 1_762_800_060_000 }));
+    expect(first.transactionId).toBe('xcode-1762800000000-0');
+    expect(first.originalTransactionId).toBe('xcode-1762800000000-0');
+    expect(later.transactionId).not.toBe(first.transactionId);
+    const refunded = toVerifiedTransaction(payload('Xcode', { revocationDate: 1_762_800_120_000 }));
+    expect(refunded.transactionId).toBe(first.transactionId);
+  });
+
+  test('App Store ids are kept as they are', () => {
+    expect(toVerifiedTransaction(payload('Sandbox')).transactionId).toBe('0');
+    expect(toVerifiedTransaction(payload('Production')).transactionId).toBe('0');
   });
 });

@@ -27,6 +27,8 @@ import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { ProfileScene, ReviewSheetScene } from './ReputationScenes';
 import { RideConfirmScene, RideDetailScene, RideFormScene, RideListScene } from './RideScenes';
 import { SignInScene } from './SignInScene';
+import { LiveActivitySpikeScene } from './LiveActivitySpikeScene';
+import { StoreSpikeScene } from './StoreSpikeScene';
 
 export type Scene = {
   id: string;
@@ -79,7 +81,19 @@ export const scenes: Scene[] = [
   { id: 'review-sheet', titleKey: 'debug.reputation.review', Component: ReviewSheetScene },
   { id: 'coins-page', titleKey: 'debug.coins.page', Component: CoinsPageScene },
   { id: 'invite-page', titleKey: 'debug.coins.invite', Component: InvitePageScene },
+  ...(__DEV__ ? devOnlyScenes() : []),
 ];
+
+function devOnlyScenes(): Scene[] {
+  return [
+    { id: 'store-spike', titleKey: 'debug.store.title', Component: StoreSpikeScene },
+    {
+      id: 'live-activity-spike',
+      titleKey: 'debug.liveActivity.title',
+      Component: LiveActivitySpikeScene,
+    },
+  ];
+}
 
 export function findScene(id: string) {
   return scenes.find((scene) => scene.id === id);

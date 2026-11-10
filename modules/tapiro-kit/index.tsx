@@ -58,8 +58,63 @@ export type BountyMapViewProps = {
   testID?: string;
 };
 
+export type StoreProduct = {
+  id: string;
+  displayName: string;
+  displayPrice: string;
+  price: number;
+  currencyCode: string;
+};
+export type StoreFailureCode =
+  | 'network'
+  | 'cancelled'
+  | 'notAvailable'
+  | 'notEntitled'
+  | 'system'
+  | 'unsupported'
+  | 'notAllowed'
+  | 'unknownProduct'
+  | 'invalidPurchase'
+  | 'invalidToken'
+  | 'noScene'
+  | 'unknown';
+export type StoreProductsResult =
+  { status: 'ok'; products: StoreProduct[] } | { status: 'failed'; code: StoreFailureCode };
+export type StoreTransaction = {
+  source: 'purchase' | 'updates' | 'unfinished' | 'history';
+  transactionId: string;
+  originalTransactionId: string;
+  productId: string;
+  jws: string;
+  environment: string;
+  revoked: boolean;
+  verified: boolean;
+};
+export type StorePurchaseResult =
+  | { status: 'purchased'; transaction: StoreTransaction }
+  | { status: 'pending' | 'cancelled' | 'notAllowed' }
+  | { status: 'failed'; code: StoreFailureCode };
+
+export type LiveActivityState = {
+  sentence: string;
+  progress: number;
+  minutes?: number;
+  staleAfterSeconds?: number;
+};
+export type LiveActivityStartResult =
+  | { status: 'ok'; id: string }
+  | { status: 'disabled' }
+  | {
+      status: 'failed';
+      code:
+        'unsupported' | 'disabled' | 'tooMany' | 'tooLarge' | 'unentitled' | 'failed' | 'unknown';
+    };
+export type LiveActivityChangeResult = { status: 'ok' | 'notFound' };
+export type LiveActivityInfo = { id: string; kind: string; state: string };
+
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
+  onStoreTransaction(event: StoreTransaction): void;
 };
 
 declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
@@ -71,6 +126,21 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
   resignFocus(): Promise<void>;
+  liveActivityStart(kind: string, state: LiveActivityState): Promise<LiveActivityStartResult>;
+  liveActivityUpdate(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult>;
+  liveActivityEnd(
+    id: string,
+    state: LiveActivityState | null,
+    immediately: boolean,
+  ): Promise<LiveActivityChangeResult>;
+  liveActivityList(): Promise<LiveActivityInfo[]>;
+  storeProducts(ids: string[]): Promise<StoreProductsResult>;
+  storePurchase(productId: string, accountToken: string): Promise<StorePurchaseResult>;
+  storeUnfinished(): Promise<StoreTransaction[]>;
+  storeRevoked(): Promise<StoreTransaction[]>;
+  storeFinish(transactionId: string): Promise<boolean>;
+  storeStartUpdates(): Promise<void>;
+  storeStopUpdates(): Promise<void>;
 }
 
 const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
@@ -187,5 +257,48 @@ export function endPlaceSearch(searchId: string): void {
 export const StickerFlight = {
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult> {
     return kit.flyToTab(options);
+  },
+};
+
+export const Store = {
+  products(ids: string[]): Promise<StoreProductsResult> {
+    return kit.storeProducts(ids);
+  },
+  purchase(productId: string, accountToken: string): Promise<StorePurchaseResult> {
+    return kit.storePurchase(productId, accountToken);
+  },
+  unfinished(): Promise<StoreTransaction[]> {
+    return kit.storeUnfinished();
+  },
+  revoked(): Promise<StoreTransaction[]> {
+    return kit.storeRevoked();
+  },
+  finish(transactionId: string): Promise<boolean> {
+    return kit.storeFinish(transactionId);
+  },
+  listen(cb: (transaction: StoreTransaction) => void): { remove(): void } {
+    const subscription = kit.addListener('onStoreTransaction', cb);
+    void kit.storeStartUpdates();
+    return {
+      remove() {
+        subscription.remove();
+        void kit.storeStopUpdates();
+      },
+    };
+  },
+};
+
+export const LiveActivity = {
+  start(kind: string, state: LiveActivityState): Promise<LiveActivityStartResult> {
+    return kit.liveActivityStart(kind, state);
+  },
+  update(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult> {
+    return kit.liveActivityUpdate(id, state);
+  },
+  end(id: string, state: LiveActivityState | null, immediately: boolean) {
+    return kit.liveActivityEnd(id, state, immediately);
+  },
+  list(): Promise<LiveActivityInfo[]> {
+    return kit.liveActivityList();
   },
 };

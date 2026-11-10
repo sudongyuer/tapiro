@@ -319,6 +319,23 @@ const ms: Translation = {
     chat: { thread: 'Benang sembang (papan kekunci)' },
     reputation: { profile: 'Profil', review: 'Helaian penilaian', reviewOpen: 'Buka penilaian' },
     coins: { page: 'Halaman Syiling', invite: 'Halaman jemputan' },
+    store: {
+      title: 'Ujian StoreKit',
+      signIn: 'Log masuk sebagai Xiaolin',
+      products: 'Muat produk',
+      buy: 'Beli {{id}}',
+      unfinished: 'Hantar transaksi belum selesai',
+      revoked: 'Hantar transaksi dibayar balik',
+      buyKept: 'Beli 5 tanpa hantar',
+    },
+    liveActivity: {
+      title: 'Ujian Aktiviti Langsung',
+      start: 'Mula',
+      update: 'Kemas kini',
+      end: 'Tamat',
+      sample: 'Pemegang tempat: pembantu kira-kira {{minutes}} minit lagi',
+      list: 'Senarai',
+    },
     flight: {
       title: 'Pelekat terbang ke Saya',
       fly: 'Terbang ke Saya',

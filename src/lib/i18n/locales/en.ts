@@ -316,6 +316,23 @@ const en: Translation = {
     chat: { thread: 'Chat thread (keyboard)' },
     reputation: { profile: 'Profile', review: 'Review sheet', reviewOpen: 'Open the review' },
     coins: { page: 'Coins page', invite: 'Invite page' },
+    store: {
+      title: 'StoreKit spike',
+      signIn: 'Sign in as Xiaolin',
+      products: 'Load products',
+      buy: 'Buy {{id}}',
+      unfinished: 'Forward unfinished',
+      revoked: 'Forward refunded',
+      buyKept: 'Buy 5 without forwarding',
+    },
+    liveActivity: {
+      title: 'Live Activity spike',
+      start: 'Start',
+      update: 'Update',
+      end: 'End',
+      sample: 'Placeholder: helper about {{minutes}} min away',
+      list: 'List',
+    },
     flight: {
       title: 'Sticker flight to Me',
       fly: 'Fly to Me',

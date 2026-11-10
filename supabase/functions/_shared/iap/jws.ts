@@ -82,6 +82,13 @@ const text = (value: unknown) => (typeof value === 'string' && value !== '' ? va
 const time = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) ? value : null;
 
+// Xcode's StoreKit test environment numbers transactions from 0 again whenever its history is cleared or the
+// Simulator is new, so on the long-lived local database a new purchase would collide with an old row and answer
+// `duplicate`. The purchase date is the same in the purchase and its refund, so it keeps the id stable per purchase.
+function localId(environment: IapEnvironment, id: string, purchasedAt: number) {
+  return environment === 'Xcode' ? `xcode-${purchasedAt}-${id}` : id;
+}
+
 export function toVerifiedTransaction(decoded: Record<string, unknown>): VerifiedTransaction {
   const transactionId = text(decoded.transactionId);
   const productId = text(decoded.productId);
@@ -97,9 +104,14 @@ export function toVerifiedTransaction(decoded: Record<string, unknown>): Verifie
   ) {
     throw new VerifyError(false, 'incomplete_transaction');
   }
+  const originalTransactionId = text(decoded.originalTransactionId) ?? transactionId;
   return {
-    transactionId,
-    originalTransactionId: text(decoded.originalTransactionId) ?? transactionId,
+    transactionId: localId(environment, transactionId, purchaseDate),
+    originalTransactionId: localId(
+      environment,
+      originalTransactionId,
+      time(decoded.originalPurchaseDate) ?? purchaseDate,
+    ),
     productId,
     bundleId,
     environment,

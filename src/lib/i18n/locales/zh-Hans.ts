@@ -311,6 +311,23 @@ export default {
     chat: { thread: '聊天线程（键盘）' },
     reputation: { profile: '主页', review: '评价 sheet', reviewOpen: '打开评价' },
     coins: { page: '貘币页', invite: '邀请页' },
+    store: {
+      title: 'StoreKit 试验',
+      signIn: '以小林登录',
+      products: '读取商品',
+      buy: '买 {{id}}',
+      unfinished: '处理未完成交易',
+      revoked: '处理已退款交易',
+      buyKept: '买 5，不发送到服务器',
+    },
+    liveActivity: {
+      title: '实时活动试验',
+      start: '开始',
+      update: '更新',
+      end: '结束',
+      sample: '占位：帮手约 {{minutes}} 分钟到',
+      list: '列出',
+    },
     flight: {
       title: '贴纸飞向我的',
       fly: '飞到「我的」',

@@ -1,0 +1,416 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3268379ADB0BEFFD06E24B5D /* HostApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A5B99634C0869DE00EEAE4 /* HostApp.swift */; };
+		9EF5ED0BE800BCC1034D216D /* StoreKitUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42E9632D70E2010A2C9F4215 /* StoreKitUITests.swift */; };
+		CC0B4E683F206574DBCC6814 /* Tapiro.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 5AEE3FE993488438A42AB8B4 /* Tapiro.storekit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1D33F46CA9F567ADA7179A31 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D06E7FF5641534146B4DE6B0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 19FF126F01FFD4D6CDB79E11;
+			remoteInfo = Host;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		40A5B99634C0869DE00EEAE4 /* HostApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostApp.swift; sourceTree = "<group>"; };
+		42E9632D70E2010A2C9F4215 /* StoreKitUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitUITests.swift; sourceTree = "<group>"; };
+		5AEE3FE993488438A42AB8B4 /* Tapiro.storekit */ = {isa = PBXFileReference; path = Tapiro.storekit; sourceTree = "<group>"; };
+		CAA205BE020CF97ABA9C521C /* Host.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Host.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCA8D0340683E1C772134D27 /* StoreKitUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = StoreKitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		343529A3963B1B4C3CE8E7C6 /* Host */ = {
+			isa = PBXGroup;
+			children = (
+				40A5B99634C0869DE00EEAE4 /* HostApp.swift */,
+			);
+			path = Host;
+			sourceTree = "<group>";
+		};
+		6003B5F3F9958282F6845885 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CAA205BE020CF97ABA9C521C /* Host.app */,
+				FCA8D0340683E1C772134D27 /* StoreKitUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		746E1BAC15A9C9859FABE83C = {
+			isa = PBXGroup;
+			children = (
+				343529A3963B1B4C3CE8E7C6 /* Host */,
+				9E5E026A82138AA6BBF52ED4 /* ios-config */,
+				962262AFC4ABD6AE0878B4BF /* UITests */,
+				6003B5F3F9958282F6845885 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		962262AFC4ABD6AE0878B4BF /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				42E9632D70E2010A2C9F4215 /* StoreKitUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		9E5E026A82138AA6BBF52ED4 /* ios-config */ = {
+			isa = PBXGroup;
+			children = (
+				5AEE3FE993488438A42AB8B4 /* Tapiro.storekit */,
+			);
+			name = "ios-config";
+			path = "../../ios-config";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		19FF126F01FFD4D6CDB79E11 /* Host */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 76B767A1357F47B6E1D4BD47 /* Build configuration list for PBXNativeTarget "Host" */;
+			buildPhases = (
+				898E7DD94544425A551070A6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Host;
+			packageProductDependencies = (
+			);
+			productName = Host;
+			productReference = CAA205BE020CF97ABA9C521C /* Host.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D9162D27FA1C42D004ACBDB3 /* StoreKitUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 149A5F39B6CA6359DF99DC37 /* Build configuration list for PBXNativeTarget "StoreKitUITests" */;
+			buildPhases = (
+				8B9FD0D38327DD3F60A26C94 /* Sources */,
+				91E0F8AB66B3589A108D2695 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4E16F3C4ED94B0B8181DADC6 /* PBXTargetDependency */,
+			);
+			name = StoreKitUITests;
+			packageProductDependencies = (
+			);
+			productName = StoreKitUITests;
+			productReference = FCA8D0340683E1C772134D27 /* StoreKitUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D06E7FF5641534146B4DE6B0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					19FF126F01FFD4D6CDB79E11 = {
+						ProvisioningStyle = Automatic;
+					};
+					D9162D27FA1C42D004ACBDB3 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = 19FF126F01FFD4D6CDB79E11;
+					};
+				};
+			};
+			buildConfigurationList = 99000B0006552E2A8FE76E44 /* Build configuration list for PBXProject "StoreKitHarness" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 746E1BAC15A9C9859FABE83C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 6003B5F3F9958282F6845885 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				19FF126F01FFD4D6CDB79E11 /* Host */,
+				D9162D27FA1C42D004ACBDB3 /* StoreKitUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		91E0F8AB66B3589A108D2695 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC0B4E683F206574DBCC6814 /* Tapiro.storekit in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		898E7DD94544425A551070A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3268379ADB0BEFFD06E24B5D /* HostApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B9FD0D38327DD3F60A26C94 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9EF5ED0BE800BCC1034D216D /* StoreKitUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4E16F3C4ED94B0B8181DADC6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 19FF126F01FFD4D6CDB79E11 /* Host */;
+			targetProxy = 1D33F46CA9F567ADA7179A31 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1E4A25D76BCEEA22E5EAAF75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2634FA08F1740C456074A6CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "app.tapiro.storekit-harness";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3D28FEAD0E2D4EEB6672B8CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "app.tapiro.storekit-harness";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4EAE93CCA88A9C7C061C7FAF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "app.tapiro.storekit-harness.uitests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Host;
+			};
+			name = Release;
+		};
+		5DB07480B1766699304F424C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BDC2CAE1B88EF00C24B44C66 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "app.tapiro.storekit-harness.uitests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Host;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		149A5F39B6CA6359DF99DC37 /* Build configuration list for PBXNativeTarget "StoreKitUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BDC2CAE1B88EF00C24B44C66 /* Debug */,
+				4EAE93CCA88A9C7C061C7FAF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		76B767A1357F47B6E1D4BD47 /* Build configuration list for PBXNativeTarget "Host" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2634FA08F1740C456074A6CC /* Debug */,
+				3D28FEAD0E2D4EEB6672B8CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		99000B0006552E2A8FE76E44 /* Build configuration list for PBXProject "StoreKitHarness" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1E4A25D76BCEEA22E5EAAF75 /* Debug */,
+				5DB07480B1766699304F424C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D06E7FF5641534146B4DE6B0 /* Project object */;
+}
