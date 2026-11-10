@@ -60,7 +60,10 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      dismiss the keyboard when they scroll (★ 22 in `docs/plans/2026-10-27-bounty-post.md`, for veto). Cases:
      `bounty_post_optional` and `_currency` drag the form as a person would, `ride_create_form` drags the results
      before picking KLIA2, `ride.form_scroll_to` uses held drags (`ride_create_worst` en and ms pass),
-     `home_settled_collect` passes when the sticker lands in the frame the card starts to leave (owner ★, below). Still
+     `home_settled_collect` passes when the sticker lands in the frame the card starts to leave (owner ★, below).
+     Open: `home_settled_collect` en dark, where the 我的 tab region already differs from its resting look at the clip
+     start (share 0.19, threshold 0.12), so its flight check had passed vacuously; a new guard now fails it.
+     `bounty_post_art` zh-Hans lost the art tap with the keyboard up 2 of 6 (both under a three-Simulator batch). Still
      open from the full run: `chat_entry_status` en, `live_applicants`, `bounty_status_poster` (`axe type` spaces).
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.

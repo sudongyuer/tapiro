@@ -92,6 +92,7 @@ def collect_and_watch(name):
     print(f'{name}: ' + ', '.join(f'{at:.2f}s tab={t:.2f} card={c:.2f}' for at, t, c in rows))
     assert rows[0][2] > 0.8, f'{name}: the card is not on screen at the start of the clip: {rows[0]}'
     assert rows[-1][2] < 0.2, f'{name}: the card is still on screen at the end of the clip: {rows[-1]}'
+    assert rows[0][1] < TAB_HIT, f'{name}: the 我的 tab already differs from its resting look at the start: {rows[0]}'
     shown = max(i for i, (_, _, c) in enumerate(rows) if c >= 0.8)
     leaving = rows[shown + 1][0]
     gone = next(at for at, _, c in rows[shown + 1:] if c < 0.2)
