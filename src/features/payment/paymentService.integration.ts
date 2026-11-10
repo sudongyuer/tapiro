@@ -117,7 +117,10 @@ describe('supabase payment service (local stack)', () => {
     expect(
       stickers.map(({ paymentId, itemKind, title }) => ({ paymentId, itemKind, title })),
     ).toEqual([{ paymentId: id, itemKind: 'bounty', title: '帮取快递' }]);
-    expect(await createSupabaseStickerService(poster.client).list(helper.id)).toEqual([]);
+    const posterBook = await createSupabaseStickerService(poster.client).list(poster.id);
+    expect(posterBook.map(({ paymentId, role }) => ({ paymentId, role }))).toEqual([
+      { paymentId: id, role: 'payer' },
+    ]);
     expect(await poster.service.list(poster.id)).toEqual([]);
     expect(await poster.service.methodsOf(helper.id)).toEqual([]);
   });
@@ -161,7 +164,7 @@ describe('supabase payment service (local stack)', () => {
         amount: { minor: 3247, currency: 'MYR' },
       },
     ]);
-    await poster.service.markPaid(id, methodId, null, 3247);
+    await poster.service.markPaid(id, methodId, null, 5000);
     expect((await helper.service.get(helper.id, id))?.paid).toEqual({
       minor: 3247,
       currency: 'MYR',

@@ -36,3 +36,38 @@ jobs:
       - run: bunx expo export --platform ios --output-dir dist
         env:
           CI: '1'
+
+  supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.8
+      # CLI 3 rejects the [inbucket] block in supabase/config.toml; match the 2.x CLI used locally.
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.122.1
+      - run: bun install --frozen-lockfile
+      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,inbucket,postgres-meta
+      # pgTAP runs on the fresh database before test:stack, whose leftover rows break absolute counts (live_push 35).
+      - run: supabase test db
+      - run: bun run test:deno
+      - name: Serve functions with the fake AI provider
+        run: |
+          nohup supabase functions serve --env-file supabase/functions/ai-draft/fake.env > functions.log 2>&1 &
+          api=$(supabase status -o env | sed -n 's/^API_URL="\(.*\)"$/\1/p')
+          for _ in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X OPTIONS "$api/functions/v1/ai-draft" || true)
+            if [ "$code" != "000" ] && [ "$code" != "502" ] && [ "$code" != "503" ]; then exit 0; fi
+            sleep 2
+          done
+          cat functions.log
+          exit 1
+      - run: bun run test:stack
+      - if: failure()
+        run: cat functions.log || true
