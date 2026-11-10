@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-11 (plans for the account-free halves of in-app purchase and the Live Activity; questions 268–278); 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -67,11 +67,21 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      open from the full run: `chat_entry_status` en, `live_applicants`, `bounty_status_poster` (`axe type` spaces).
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.
-2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
+2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The
+   account-free halves are planned (2026-11-11): in-app purchase on the Simulator with a local `.storekit` file, the
+   local stack and a StoreKit 2 wrapper in the kit (`docs/plans/2026-11-11-iap-local.md`, spikes 1–2 can start, the
+   rest waits on questions 268–273); the Live Activity extension from our own config plugin, started and updated
+   locally (`docs/plans/2026-11-11-live-activity-spike.md`, spikes 1–3 can start, the rest waits on 274–278). Each plan
+   lists what waits on the account.
 3. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
    were HID keys sent to a number pad, which iOS 27.2 ignores; on-screen taps land (see 0).
 
 ## Owner decisions pending
+
+- Questions 268–273 (coin purchase: refunds after spending, price points, what a purchase grants, limits, sandbox
+  coins, where 买貘币 appears) in `docs/plans/2026-11-11-iap-local.md`, and 274–278 (Live Activity: Lock Screen
+  privacy, start, look, end, shipping before push) in `docs/plans/2026-11-11-live-activity-spike.md`. 273 and 274–277
+  are drawn on the canvas before they are asked.
 
 - 0b, the payee save crash: which fix (options in the PR `fix/post-hint-keypad-crash`).
 - ★ for veto (2026-11-10): forms that hold a number, decimal or phone pad, and the place search results, dismiss the
