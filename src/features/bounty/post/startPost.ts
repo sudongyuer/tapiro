@@ -4,7 +4,7 @@ type Present = (status: PostStatus) => void;
 
 export function createHintGate() {
   let tap = 0;
-  let frontmost = false;
+  const focused = new Set<string>();
   let seenSinceTap = false;
   let pending: PostStatus | null = null;
   let present: Present = () => {};
@@ -19,21 +19,23 @@ export function createHintGate() {
       pending = null;
       return tap;
     },
-    formFocused() {
-      frontmost = true;
+    formFocused(screen: string) {
+      focused.add(screen);
       if (seenSinceTap) return;
       seenSinceTap = true;
       const waiting = pending;
       pending = null;
       if (waiting) present(waiting);
     },
-    formBlurred() {
-      frontmost = false;
-      pending = null;
+    formBlurred(screen: string) {
+      // With a draft the tile screen mounts unfocused under the form; its blur must not drop an answer the form is
+      // still waiting for, and must not mark the form as gone.
+      if (!focused.delete(screen)) return;
+      if (focused.size === 0) pending = null;
     },
     answered(token: number, status: PostStatus) {
       if (token !== tap || !status.blocked) return;
-      if (frontmost && seenSinceTap) present(status);
+      if (focused.size > 0 && seenSinceTap) present(status);
       else if (!seenSinceTap) pending = status;
     },
   };

@@ -7,7 +7,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import close_sheet_by_swipe, fill_fixed, form_scroll_to, open_post, relaunch, typed  # noqa: E402
+from bounty import close_sheet_by_swipe, dismiss_keyboard, fill_fixed, form_scroll_to, open_post, relaunch, typed  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
@@ -16,7 +16,7 @@ LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 300
 WORST_TITLE = '帮忙从 Mid Valley Megamall 取 Uniqlo 外套再买两杯 Tealive 🧋送到 Sunway 楼'
-NOTE = 'parcel at the door'
+NOTE = 'Parcel at the door'
 
 ui = UI(*sys.argv[1:])
 
@@ -25,8 +25,28 @@ def picker_value(items, identifier):
     group = by_id(items, identifier)
     if not group:
         return None
+    g = group['frame']
+
+    def inside(f):
+        x, y = f['x'] + f['width'] / 2, f['y'] + f['height'] / 2
+        return g['x'] <= x <= g['x'] + g['width'] and g['y'] <= y <= g['y'] + g['height']
+
     return next((i.get('AXValue') for i in items
-                 if i.get('type') == 'Button' and i['frame'] == group['frame'] and i.get('AXValue')), None)
+                 if i.get('type') == 'Button' and inside(i['frame']) and i.get('AXValue')), None)
+
+
+PM = ('下午', '晚上', 'PM', 'PTG')
+AM = ('凌晨', '上午', 'AM', 'PG')
+
+
+def clock_24h(shown):
+    # The system picker follows the device's 12/24-hour setting; the confirm sheet always writes 24-hour time.
+    hour, minute = map(int, re.search(r'(\d{1,2}):(\d{2})', shown).groups())
+    if any(mark in shown for mark in PM) and hour < 12:
+        hour += 12
+    elif any(mark in shown for mark in AM) and hour == 12:
+        hour = 0
+    return f'{hour:02d}:{minute:02d}'
 
 
 def counter(identifier, count, maximum):
@@ -41,6 +61,7 @@ assert by_id(ui.read(), 'bounty-post-deadline') is None, 'the time row is open b
 ui.capture('01-collapsed')
 
 fill_fixed(ui, slug='other')
+dismiss_keyboard(ui)
 ui.tap('bounty-post-add-time')
 ui.element('bounty-post-deadline')
 ui.element('bounty-post-remove-time')
@@ -50,7 +71,7 @@ row = form_scroll_to(ui, 'bounty-post-deadline')['frame']
 ui.tap_point(row['x'] + 40, row['y'] + row['height'] / 2)
 days = ui.wait(lambda items: [i for i in items if i.get('type') == 'Button' and not i.get('AXUniqueId')
                               and 40 <= i['frame']['width'] <= 48
-                              and 40 <= i['frame']['height'] <= 50] or None, 'the calendar did not open')
+                              and 36 <= i['frame']['height'] <= 50] or None, 'the calendar did not open')
 assert any(day.get('enabled') is False for day in days), 'past days are not disabled in the calendar'
 ui.capture('02a-calendar')
 calendar_bottom = max(day['frame']['y'] + day['frame']['height'] for day in days)
@@ -70,23 +91,23 @@ ui.capture('02-window')
 ui.tap_label(ui.t('bounty.post.form.deadline'))
 ui.element('bounty-post-deadline')
 ui.gone('bounty-post-start')
+chosen = ui.wait(lambda items: picker_value(items, 'bounty-post-deadline'), 'deadline picker has no value')
 
 ui.tap('bounty-post-add-description')
 ui.element('bounty-post-description')
 ui.element('bounty-post-remove-description')
-typed(ui, 'bounty-post-description', NOTE, NOTE.capitalize(), band=False)
-ui.tap('bounty-post-title')
+typed(ui, 'bounty-post-description', NOTE, band=False)
+dismiss_keyboard(ui)
 ui.gone('bounty-post-description-count')
 ui.gone('bounty-post-remove-description')
 ui.capture('03-expanded')
 
-chosen = picker_value(ui.read(), 'bounty-post-deadline')
-clock = re.search(r'\d{1,2}:\d{2}', chosen).group(0)
+clock = clock_24h(chosen)
 ui.tap_label(ui.t('bounty.post.next'))
 ui.element('bounty-post-confirm')
 ui.wait_label('bounty-post-time', lambda label: clock in label and ui.t('bounty.post.confirm.tomorrow') in label,
               f'confirm does not show the chosen deadline (tomorrow {clock}, picker read {chosen!r})')
-ui.wait_label('bounty-post-summary-description', lambda label: NOTE.capitalize() in label,
+ui.wait_label('bounty-post-summary-description', lambda label: NOTE in label,
               'confirm does not show the description')
 ui.capture('04-confirm')
 ui.tap('BackButton')

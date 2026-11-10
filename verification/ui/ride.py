@@ -6,6 +6,7 @@ from board import screen, visible
 from bounty import relaunch
 from choose import defaults
 from driver import by_id, close, dominant, reach_home, token
+from gestures import drag
 
 
 def open_list(ui, ready='ride-screen'):
@@ -87,7 +88,7 @@ def form_scroll_to(ui, identifier, container='ride-form', tries=12):
             last = seen
         x = frame['x'] + frame['width'] / 2
         start, end = (low - 20, top + (low - top) * 0.45) if down else (top + 20, top + (low - top) * 0.55)
-        ui.swipe((x, start), (x, end), 0.4)
+        drag(ui, (x, start), (x, end), duration=0.6, steps=30)
     raise AssertionError(f'{identifier} never came into view between the ticket and the bottom of {container}')
 
 

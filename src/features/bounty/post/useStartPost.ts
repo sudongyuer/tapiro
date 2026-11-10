@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { Alert } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -12,11 +12,12 @@ import type { PostStatus } from './types';
 export const hintGate = createHintGate();
 
 export function useHintFocus(focused: boolean) {
+  const screen = useId();
   useEffect(() => {
-    if (focused) hintGate.formFocused();
-    else hintGate.formBlurred();
-  }, [focused]);
-  useEffect(() => () => hintGate.formBlurred(), []);
+    if (focused) hintGate.formFocused(screen);
+    else hintGate.formBlurred(screen);
+  }, [focused, screen]);
+  useEffect(() => () => hintGate.formBlurred(screen), [screen]);
 }
 
 export function useStartPost({

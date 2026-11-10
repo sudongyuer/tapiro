@@ -8,8 +8,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (  # noqa: E402
-    CNY_RANGE_TEXT, CONFIRM_TITLE, REWARD_RANGE_TEXT, assert_error, assert_preview, assert_title, erase, fill_fixed,
-    TITLE_SHOWN, next_step, open_post, publish_and_close, published_args, reach_confirm, typed, value,
+    CNY_RANGE_TEXT, CONFIRM_TITLE, REWARD_RANGE_TEXT, assert_error, assert_preview, assert_title, dismiss_keyboard, erase,
+    fill_fixed, TITLE_SHOWN, next_step, open_post, publish_and_close, published_args, reach_confirm, typed, value,
 )
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
@@ -22,7 +22,7 @@ DEPS = [
 ]
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-uiVerifyPostCost', 'free']
-BUDGET = 240
+BUDGET = 300
 
 ui = UI(*sys.argv[1:])
 
@@ -62,6 +62,7 @@ assert_amounts([5, 6, 8, 10])
 next_step(ui)
 assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE_TEXT)
 
+dismiss_keyboard(ui)
 ui.tap('bounty-post-currency')
 ui.labelled(item('CNY', '¥'))
 ui.labelled(item('MYR', 'RM'))

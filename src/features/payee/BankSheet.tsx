@@ -7,6 +7,7 @@ import {
   tag,
   textContentType,
   textInputAutocapitalization,
+  scrollDismissesKeyboard,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
@@ -121,7 +122,7 @@ function BankForm({
   return (
     <Host style={styles.host} testID="payee-bank-sheet">
       <SheetChrome title={t('payee.types.bank_account')} onClose={onClose} onSave={submit} />
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
         {shown ? (
           <NoticeCard
             tone="urgent"

@@ -4,6 +4,7 @@ import {
   accessibilityLabel,
   foregroundStyle,
   monospacedDigit,
+  scrollDismissesKeyboard,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, useIsFocused } from 'expo-router';
@@ -123,7 +124,7 @@ function PostFormBody({
           {t('bounty.post.next')}
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
         <FormNotice notice={notice} currency={draft.currency} />
         <PostLiveCard draft={draft} onSwap={(art) => edit({ art })} />
         <Section>

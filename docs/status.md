@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-10 (verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -44,18 +44,24 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
    so `keys.py` taps the pad (`bounty_post_form`, `_art`, `_draft`, `ride_settle_split`, `payee_add_bank` pass);
    a lost AXe automation session now stalls and reboots the Simulator; recorded frames read as sRGB (`bounty_select`
    dark); short in-flight windows, a swipe pull, the tile screen, the split applicant row and early call-log reads.
-   Still failing, each a queue item below: 0a, 0b, and check work in 0c.
-   - 0a. Real bug: with a saved draft the 「先付清再发新的」 hint never shows (`bounty_post_blocked`, `_unpaid_hint`,
-     `_worst`, every locale). A focus-order fix failed 3 of 3 and was reverted; next suspect: the Alert is presented
-     while the sheet or push transition runs.
-   - 0b. Real bug: saving a payee sheet crashed the app 3 times (`payee_list` ms, `payee_qr_real` en dark): SIGABRT in
-     `UICollectionView _resignOrRebaseFirstResponderViewWithIndexPathMapping`, reached from react-native-keyboard-controller's
-     `resignFirstResponder` swizzle during a SwiftUI List update. Same signature on 2026-11-06. Needs a device repro.
-   - 0c. Checks: the pad stays up and covers 时间 and the currency menu (`bounty_post_optional`, `bounty_post_currency`);
-     `ride_create_form` picks KLIA2 from a list under the keyboard; `ride_create_worst` en/ms never scrolls to the seats
-     row; `chat_entry_status` en has nothing under the bar; `home_settled_collect` fails when the card leaves in the same
-     frame the sticker lands (owner: is 「same frame」 a pass?); `live_applicants` (known, open); `bounty_status_poster`
-     (`axe type` repeated a space).
+   Then `fix/post-hint-keypad-crash` (2026-11-10): 0a fixed, the pad defect behind 0c fixed in the product, 0b open.
+   - 0a. Fixed: with a saved draft the 「先付清再发新的」 hint never showed. Logged: the status answered (5 ms), then
+     the tile screen, mounting unfocused under the form, blurred and dropped the waiting answer, then the form focused.
+     The gate now tracks focus per screen and ignores a blur from a screen that was never focused (unit tests fail on
+     the old gate). The code path dates from #40; no run between the 2026-10-31 milestone and this full run ran the
+     three cases.
+   - 0b. Open, owner decision: saving a payee sheet crashed the app 3 times in the full run (SIGABRT, UICollectionView
+     「first responder … refused to resign」 while React removes the sheet's SwiftUI form with its text field still
+     first responder). Not reproduced here: 0 of 15 adds and 0 of 12 `payee_list` re-picks (ms). Same assertion as
+     expo/expo#51674 (closed without a fix); keyboard-controller's swizzle only passes the call through. Options in
+     the PR.
+   - 0c. Number, decimal and phone pads have no Return key, and the SwiftUI forms kept the pad up through a drag
+     (measured, A/B): a real user could not put it away. The forms holding a pad and the place search results now
+     dismiss the keyboard when they scroll (★ 22 in `docs/plans/2026-10-27-bounty-post.md`, for veto). Cases:
+     `bounty_post_optional` and `_currency` drag the form as a person would, `ride_create_form` drags the results
+     before picking KLIA2, `ride.form_scroll_to` uses held drags (`ride_create_worst` en and ms pass),
+     `home_settled_collect` passes when the sticker lands in the frame the card starts to leave (owner ★, below). Still
+     open from the full run: `chat_entry_status` en, `live_applicants`, `bounty_status_poster` (`axe type` spaces).
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
@@ -64,6 +70,12 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Owner decisions pending
 
+- 0b, the payee save crash: which fix (options in the PR `fix/post-hint-keypad-crash`).
+- ★ for veto (2026-11-10): forms that hold a number, decimal or phone pad, and the place search results, dismiss the
+  keyboard as soon as they scroll (`docs/plans/2026-10-27-bounty-post.md` deviation 22).
+- ★ for veto (2026-11-10): `home_settled_collect` passes when the sticker reaches 我的 in the same frame the 已结清
+  card starts to leave; the product timing is unchanged, and the card still leaves in one frame instead of its 320 ms
+  exit on iOS 27.2 (open since the SDK 58 retro).
 - 问小貘 questions 129–149 are unanswered (plan 「Open questions」). The ★ defaults of its server and draft contract are
   listed for veto in the plan's 「★ Server defaults」 (S1–S13).
 - The profile header ★ (P11 in `docs/plans/2026-11-06-reviews-profile-coins.md`): the tier keeps its full width and the

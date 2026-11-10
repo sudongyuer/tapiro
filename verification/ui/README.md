@@ -33,6 +33,11 @@ selection (and checks that every case declares `DEPS` that match real paths, and
 only; paste other text with `bounty.paste_into`, or seed it through a launch argument such as `-uiVerifyApplyNote`.
 `keys.py` types it: on iOS 27.2 the number, decimal and phone pads drop AXe's HID keys (6 of 6, also after waiting), so digits
 go to the on-screen pad keys, and `ui.backspace` to its delete key, whenever the keyboard lists no Return key.
+A pad has no Return key, and the forms that hold one (and the place search results) dismiss the keyboard as soon as
+they scroll, so `bounty.dismiss_keyboard(ui, container)` makes a short upward held drag on the form, as a person would;
+a downward drag at the top of a sheet's form pulls the sheet closed instead (seen once in `bounty_post_optional`).
+`ride.form_scroll_to` uses held drags too: an upward `axe swipe` from the top of the ride form's band did not scroll it
+in en and ms (`ride_create_worst`, 10 of 10 swipes on 2026-11-10).
 `bounty.end_editing` taps the keyboard's own Return (the key is in the accessibility tree with the identifier `Return`) and waits for it to go: on iOS 27.2 `axe key 40` leaves the field focused, 3 of 3 measured, while typed keys land, and a tap meant for a field under the keyboard then types a letter.
 `profile.intrinsic_width` measures footnote text at Large with `textwidth.swift`, spawned the same way as the pasteboard tool, because AX reports neither truncation nor the rendered string: `assert_tier_whole` compares it with the text's frame.
 `paste_into` writes the device pasteboard with `pasteboard.swift`, a UIKit tool run through `simctl spawn`, because
