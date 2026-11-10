@@ -72,7 +72,7 @@ $fn$;
 set local role authenticated;
 select pg_temp.act_as(pg_temp.u('a1'));
 select is(
-  public.publish_bounty(pg_temp.fx('cny800'), '帮取快递', 'pickup', 80000, 'CNY') ->> 'status', 'closed',
+  public.publish_bounty(pg_temp.fx('cny800'), '帮取快递', 'pickup', 80000, 'CNY') ->> 'status', 'open',
   '¥800 is accepted'
 );
 select throws_ok(
