@@ -59,7 +59,7 @@ jobs:
       - run: bun run test:deno
       - name: Serve functions with the fake AI provider
         run: |
-          nohup supabase functions serve --env-file supabase/functions/ai-draft/fake.env > functions.log 2>&1 &
+          nohup supabase functions serve --env-file supabase/functions/local.env > functions.log 2>&1 &
           api=$(supabase status -o env | sed -n 's/^API_URL="\(.*\)"$/\1/p')
           for _ in $(seq 1 60); do
             code=$(curl -s -o /dev/null -w '%{http_code}' -X OPTIONS "$api/functions/v1/ai-draft" || true)
