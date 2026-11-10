@@ -11,5 +11,13 @@
     "types": ["bun"]
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules", "supabase/functions/*/index.ts", "supabase/functions/tests/deno-bun-test.ts"]
+  "exclude": [
+    "node_modules",
+    "supabase/functions/*/index.ts",
+    "supabase/functions/tests/deno-bun-test.ts",
+    "supabase/functions/_shared/iap/apple.ts",
+    "supabase/functions/_shared/iap/runtime.ts",
+    "supabase/functions/_shared/iap/test-pki.ts",
+    "supabase/functions/**/*.deno-test.ts"
+  ]
 }

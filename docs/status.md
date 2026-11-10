@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-11 (266 A: sheets with a SwiftUI text field resign it before they close; the payee save crash reproduced under load, 5 of 72 runs before and 0 of 72 after); 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-11 (266 A: sheets with a SwiftUI text field resign it before they close; the payee save crash reproduced under load, 5 of 72 runs before and 0 of 72 after); 2026-11-11 (#112 review fixes: refund notices in any order, a stricter local gate, the signed path tested in the Edge Runtime; ★ S13; Sandbox on hosted recorded as a launch item); 2026-11-11 (owner answered 268–272 and 279; the coin-purchase server is built and tested locally, not reachable from the app: `iap-verify`, `iap-notify`, refunds take the whole pack back; Apple's server library does not run in the Edge Runtime, so a port is held to its verdicts; ★ S1–S12 for veto); 2026-11-11 (plans for the account-free halves of in-app purchase and the Live Activity; questions 268–278); 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -80,12 +80,34 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      open from the full run: `chat_entry_status` en, `live_applicants`, `bounty_status_poster` (`axe type` spaces).
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.
-2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
+2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The
+   account-free halves are planned (2026-11-11): in-app purchase on the Simulator with a local `.storekit` file, the
+   local stack and a StoreKit 2 wrapper in the kit (`docs/plans/2026-11-11-iap-local.md`). Built 2026-11-11: the server
+   (Task 3: ledger reasons, packs, transactions, `iap-verify`) and the `iap-notify` receiver (Task 9's account-free
+   half); no app code calls them. After the #112 review: refund notices in any order with the credit leave the buyer
+   the pack, the `Xcode` gate needs three independent signs of the CLI's local stack, and the stack test signs Sandbox
+   data through a local test root inside the Edge Runtime. Next: spikes 1–2 and the client core (Task 4); the purchase UI waits on 273. Waiting
+   on the account: real Sandbox data, `IAP_APP_APPLE_ID`, the notification URL, `CONSUMPTION_REQUEST`, the hosted
+   deploy; the Live Activity extension from our own config plugin, started and updated
+   locally (`docs/plans/2026-11-11-live-activity-spike.md`, spikes 1–3 can start, the rest waits on 274–278). Each plan
+   lists what waits on the account.
 3. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
    were HID keys sent to a number pad, which iOS 27.2 ignores; on-screen taps land (see 0).
 
 ## Owner decisions pending
 
+- Answered 2026-11-11: 268 A (a refund takes the whole pack back, the balance may go below 0, free posts still work),
+  269 A (nearest price point not above), 270 A (coins only), 271 A (no limit of ours), 272 A (sandbox coins credit,
+  marked `Sandbox`), 279 B (no RevenueCat; our own StoreKit 2 wrapper and server verification).
+- ★ for veto (2026-11-11): the coin-purchase server defaults S1–S13 in `docs/plans/2026-11-11-iap-local.md` 「★ Server
+  defaults」 (verification port with Apple's library as the oracle, no OCSP yet, `Xcode` only on a local stack, one
+  refund and one reversal per transaction in any order, notifications stored once, a local-only test root), and Task
+  4's rule that the app keeps a transaction unfinished on any rejection.
+- Before launch (owner's call): `Sandbox` purchases credit coins on the hosted project for good (272 A); revisit
+  before the App Store release (plan 「Before launch」).
+- Question 273 (where 买貘币 appears) in `docs/plans/2026-11-11-iap-local.md`, and 274–278 (Live Activity: Lock Screen
+  privacy, start, look, end, shipping before push) in `docs/plans/2026-11-11-live-activity-spike.md`. 273 and 274–277
+  are drawn on the canvas before they are asked.
 - ★ for veto (2026-11-10): forms that hold a number, decimal or phone pad, and the place search results, dismiss the
   keyboard as soon as they scroll (`docs/plans/2026-10-27-bounty-post.md` deviation 22).
 - ★ for veto (2026-11-10): `home_settled_collect` passes when the sticker reaches 我的 in the same frame the 已结清

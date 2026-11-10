@@ -213,6 +213,56 @@ existing accounts the two sign-up grants and returns how many rows it wrote.
 Spends, refunds and help grants take a per-user advisory lock, so concurrent publishes cannot both
 take the last free slot or the last coin, and concurrent settles cannot pass the monthly cap.
 
+### In-app purchase
+
+Plan: `docs/plans/2026-11-11-iap-local.md`. No app code calls these yet.
+
+- `iap_products (product_id, coins)` is the only source of how many coins a pack gives: `app.tapiro.coins.5` → 5,
+  `.11` → 11, `.35` → 35. `iap_transactions` (server only, rows never deleted) holds one row per App Store
+  `transactionId` with its `environment` (`Production`, `Sandbox`, `Xcode`, `LocalTesting`), `credited_at`,
+  `revoked_at` and `refund_reversed_at`; account deletion sets `user_id` to null. `iap_notifications` holds one row per
+  `notificationUUID` with its `outcome`. Ledger rows `purchase` (+pack), `purchase_refund` (−pack) and
+  `purchase_refund_reversed` (+pack) carry `iap_transaction_id`, at most one of each per transaction.
+- `iap_credit(buyer, transaction, original_transaction, product, env, purchased_at)` (service role) credits once and
+  answers `{ status, transactionId, productId, coins, environment, balance }`, `status` `credited`, `duplicate` (seen
+  before, nothing written) or `revoked` (refunded before it was ever credited). `42501 transaction_owned_elsewhere`
+  when another user holds it, `22023 unknown_product`, `22023 invalid_transaction`, `P0002 user_not_found`.
+- `iap_revoke(buyer | null, …, revoked)` (service role) takes the whole pack back, so the balance may go below 0 (268
+  A); free monthly posts still work and coin posts wait until the balance is back above 0. A refund for a transaction
+  never seen is stored as revoked and never credited. A second refund, or a refund after a reversal, answers
+  `duplicate`.
+- `iap_apply_notification(notification, kind, sub, env, signed_at, transaction…, revoked)` (service role) stores the
+  notification once (a repeat answers `duplicate`), applies `REFUND` through `iap_revoke` and `REFUND_REVERSED` once
+  (`reinstated`), and records other types as `ignored`. Notifications and the app's verify may arrive in any order: a
+  reversal for a transaction not seen yet is stored on a new row (so a later refund answers `duplicate` and a later
+  credit pays), and a reversal of a refund that reached the app before any credit pays the pack then. The buyer ends
+  with the pack in all six orders of credit, `REFUND` and `REFUND_REVERSED` (`tests/iap_order.test.sql`).
+- Credit, revoke and reinstate lock the transaction, then the owner's coins, the same per-user lock as `spend_post`.
+
+`iap-verify` (`POST`, user JWT, body `{ signedTransaction }`, StoreKit's `jwsRepresentation`) verifies the JWS, checks
+bundle `app.tapiro`, `type: Consumable`, `quantity: 1` and `appAccountToken` = the caller's user id, then credits, or
+revokes when `revocationDate` is set. It answers 200 with the RPC's answer, or `{ error }`: 400 `invalid_transaction`,
+401 `unauthorized`, 403 `environment_not_accepted`, `wrong_account` or `transaction_owned_elsewhere`, 422
+`unverified`, `not_consumable`, `unsupported_quantity` or `unknown_product`, 503 `verification_unavailable`, 500
+`store_failed`. The app finishes the StoreKit transaction only on 200.
+
+`iap-notify` (`POST`, no JWT, body `{ signedPayload }`, App Store Server Notifications V2) verifies the notification
+and its `signedTransactionInfo`, then calls `iap_apply_notification`: 200 `{ status }`, 400 `invalid_notification`, 403
+`environment_not_accepted`, 422 `unverified`, 500 `store_failed` (Apple delivers it again; the UUID makes that safe).
+
+Environments (`functions/_shared/iap/config.ts`): `Sandbox` always; `Production` once `IAP_APP_APPLE_ID` is set;
+`Xcode` and `LocalTesting` only when `IAP_ALLOW_XCODE=1` on the CLI's local stack. Their transactions carry no App
+Store signature and are only decoded, so a hosted project refuses them whatever its secrets say. The local stack is
+recognised by three independent conditions, all required: `SUPABASE_URL` is a loopback or container host; neither
+`SB_REGION` nor `DENO_DEPLOYMENT_ID` is set (Supabase sets them only in hosted functions,
+https://supabase.com/docs/guides/functions/secrets; `SB_EXECUTION_ID` is set locally too); and
+`SUPABASE_SERVICE_ROLE_KEY` is the CLI's public demo key (`iss: supabase-demo`). On the same stack only,
+`IAP_TEST_ROOT` (base64 DER) adds a trust root next to G3, so `tests/iap.integration.ts` can post Sandbox transactions
+signed by `tests/iap-test-pki.json` (a committed test chain and key) through the Edge Runtime.
+`functions/local.env` sets both. Signed data is checked against Apple Root CA - G3 by a port of the App Store
+Server Library's offline checks (`functions/_shared/iap/apple.ts`): the library itself cannot run in the Edge Runtime,
+and `apple.deno-test.ts` holds both to the same verdicts.
+
 ## 问小貘
 
 Nothing here is reachable from the app yet: no screen calls these, and `ai-draft` is not deployed. Plan:
@@ -353,14 +403,17 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   `supabase start`).
 - `bun run test:stack` runs the `*.integration.ts` tests against the running stack and served
   functions: `account-delete` (user A deletes itself, user B is untouched, calls without a user
-  token are rejected) and the app's profile service under RLS. The tests read the URL and keys from
+  token are rejected), `iap-verify` and `iap-notify` with unsigned `Xcode` transactions, and the app's profile service
+  under RLS. The tests read the URL and keys from
   `supabase status`; set `SUPABASE_LOCAL_API_URL` (and `SUPABASE_LOCAL_ANON_KEY`, `SUPABASE_LOCAL_SERVICE_ROLE_KEY`)
   when the gateway listens on another port than the one `supabase status` reports (`scripts/local-supabase.ts`).
 - `ai-draft` (`POST`, user JWT, body `{ task, input: { text, to? } }`, `task` one of `draft_bounty`, `answer`, `translate`)
   answers `{ task, result, energy, energyFull }`, or `{ error }`: 400 `invalid_request`, 401 `unauthorized`, 403
   `consent_required`, 409 `busy`, 429 `hungry`, 500 `server_error`, 502 `provider_error`. An `error` answer deducts nothing, with one edge: if
   `ai_finish_call` commits and its reply is lost, the answer is a 500 with the energy already spent. `AI_PROVIDER=fake` is the only provider; unset or anything else is a
-  `provider_error`. `bun run fn:serve` passes `functions/ai-draft/fake.env`. `budget.ts` holds an unmeasured placeholder.
-  `bun run test:deno` runs its handler tests in Deno as well (`functions/tests/deno-bun-test.ts` maps `bun:test`).
+  `provider_error`. `bun run fn:serve` passes `functions/local.env`. `budget.ts` holds an unmeasured placeholder.
+  `bun run test:deno` runs its handler tests in Deno as well (`functions/tests/deno-bun-test.ts` maps `bun:test`),
+  plus the Deno-only `*.deno-test.ts` files, which import `npm:` packages that `bun test` cannot load.
 - Request handling lives in `handler.ts` (no Deno APIs), unit-tested by `bun test`; `index.ts` wires
-  Deno and the service-role client and is excluded from `tsc`.
+  Deno and the service-role client and is excluded from `tsc`, as are `_shared/iap/apple.ts` and `runtime.ts`, which
+  import `npm:` packages.

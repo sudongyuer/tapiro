@@ -1022,15 +1022,22 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### coins.purchase 买貘币
 
 - 故事：作为免费名额用完的同学，我想用 App 内购买貘币，以便继续发布。
-- 状态：planned
+- 状态：building
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                | 行为                                                 | 覆盖    |
-| ---------------------- | ---------------------------------------------------- | ------- |
-| coins.purchase.packs   | 三档 RM5=5、RM10=11、RM30=35，服务器验证交易后才入账 | int, ui |
-| coins.purchase.short   | 余额不够时弹出三档和「下个月 1 号还有 3 条免费」     | ui      |
-| coins.purchase.sandbox | 真机沙盒购买成功入账                                 | device  |
+| 验收 id                      | 行为                                                                                                | 覆盖                                                                                                                                                                                                                                                                                            |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| coins.purchase.packs         | 三档 RM5=5、RM10=11、RM30=35，服务器验证交易后才入账；入账多少只看服务器的商品表，不看 App 传来的数 | db:supabase/tests/iap.test.sql, int:supabase/functions/tests/iap.integration.ts#a local StoreKit purchase is credited once, with the pack from the server table, ui                                                                                                                             |
+| coins.purchase.once          | 同一笔交易只入账一次，重发只回「已处理」；交易绑定买的人，别的账号拿着它也不能入账                  | db:supabase/tests/iap.test.sql, int:supabase/functions/tests/iap.integration.ts#another user cannot claim the purchase, with or without its token, unit:supabase/functions/iap-verify/handler.test.ts#a verified purchase is credited to the signed-in user and the answer is returned          |
+| coins.purchase.verified      | 签名不对、链不到 Apple 根证书、别的 App 或别的环境的交易不入账，判定和 Apple 官方库一致             | unit:supabase/functions/_shared/iap/apple.deno-test.ts#our verifier agrees with Apple App Store Server Library 3.1.0, unit:supabase/functions/_shared/iap/apple.deno-test.ts#iap-verify credits a signed purchase and refuses a forged one, int:supabase/functions/tests/iap.integration.ts#a signed purchase is credited and the same JWS with a changed product is refused                                                      |
+| coins.purchase.local-only    | Xcode 本地测试交易和测试根证书只在本地栈（开关打开）生效，托管项目或用了自己密钥的服务器即使设了开关也拒绝 | unit:supabase/functions/_shared/iap/config.test.ts#a hosted project never accepts Xcode or a test root, even with local.env copied there, unit:supabase/functions/_shared/iap/config.test.ts#a local URL is not enough: a server with its own service key is not the local stack, unit:supabase/functions/iap-verify/handler.test.ts#a hosted project refuses Xcode transactions without verifying or writing                                              |
+| coins.purchase.refund        | 退款收回整包貘币，已经花掉时余额可以变成负数；负数时每月免费名额照常，用貘币发布要等余额回正        | db:supabase/tests/iap.test.sql, int:supabase/functions/tests/iap.integration.ts#a refund seen by the app takes the pack back                                                                                                                                                                    |
+| coins.purchase.refund-notice | App Store 服务器通知的退款和撤销退款各只生效一次，重复或乱序送达不会多扣或多给，付了钱的交易也不会因乱序拿不到貘币 | db:supabase/tests/iap.test.sql, db:supabase/tests/iap_order.test.sql, int:supabase/functions/tests/iap.integration.ts#a REFUND notification revokes a purchase once, then a reversal gives it back, unit:supabase/functions/_shared/iap/apple.deno-test.ts#iap-notify applies a signed REFUND only when its transaction is signed too |
+| coins.purchase.sandbox-mark  | 沙盒交易照常入账，并标记为 Sandbox                                                                  | db:supabase/tests/iap.test.sql                                                                                                                                                                                                                                                                  |
+| coins.purchase.negative      | 余额为负时貘币页显示负数和一句原因                                                                  | ui                                                                                                                                                                                                                                                                                              |
+| coins.purchase.short         | 余额不够时弹出三档和「下个月 1 号还有 3 条免费」                                                    | ui                                                                                                                                                                                                                                                                                              |
+| coins.purchase.sandbox       | 真机沙盒购买成功入账                                                                                | device                                                                                                                                                                                                                                                                                          |
 
 ### coins.ledger 发布扣费、退回和余额
 

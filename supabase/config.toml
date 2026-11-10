@@ -303,6 +303,13 @@ verify_jwt = true
 [functions.ai-draft]
 verify_jwt = true
 
+[functions.iap-verify]
+verify_jwt = true
+
+# App Store Server Notifications arrive without a Supabase JWT; the handler verifies Apple's signature instead.
+[functions.iap-notify]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
