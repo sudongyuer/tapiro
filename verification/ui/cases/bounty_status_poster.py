@@ -11,7 +11,7 @@ import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import relaunch, tap_sheet_action  # noqa: E402
+from bounty import paste_into, relaunch, tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
@@ -107,9 +107,7 @@ ui.tap('bounty-status-action-reportIssue')
 reason_field()
 ui.labelled(ui.t('bounty.issue.title', name='阿杰'))
 assert button('bounty-issue-send').get('enabled') is False, '发送 is enabled with an empty reason'
-ui.type(REASON)
-ui.wait(lambda items: (by_id(items, 'bounty-issue-reason') or {}).get('AXValue') == REASON,
-        f'the reason does not read {REASON!r}')
+paste_into(ui, 'bounty-issue-reason', REASON)
 ui.wait(lambda items: any(i.get('AXUniqueId') == 'bounty-issue-send' and i.get('type') == 'Button'
                           and i.get('enabled') is True for i in items), '发送 never enabled after typing')
 ui.at_rest()

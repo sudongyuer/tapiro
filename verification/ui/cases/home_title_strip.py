@@ -10,6 +10,7 @@ DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx
 LOCALES = ['zh-Hans', 'ms']
 STRIP_ROW = 44
 SAMPLE_WIDTH = 40
+BACK_SWIPES = 3
 
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
@@ -96,7 +97,14 @@ shot = ui.snap('03-collapsed-after-tab-switch')
 assert_halo(shot, f, 'collapsed after tab switch')
 assert_strip_under_bar(shot)
 
-ui.swipe((200, 300), (200, 800))
+# The first swipe flings by a varying distance (ms light ended one swipe short of the top, 1 of 4 runs, 2026-11-11), so
+# the way back swipes down again until the large title is back, as a person would.
+for _ in range(BACK_SWIPES):
+    ui.swipe((200, 300), (200, 800))
+    ui.at_rest()
+    shown = heading(ui.read())
+    if shown and shown['frame']['height'] > 30:
+        break
 f = expanded_title()['frame']
 shot = ui.snap('04-expanded-after-tab-switch')
 assert_halo(shot, f, 'expanded after tab switch')

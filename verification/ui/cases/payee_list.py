@@ -72,7 +72,7 @@ items = ui.read()
 cash, bar = by_id(items, 'payee-cash'), accessory(items)
 if bar:
     assert cash['frame']['y'] + cash['frame']['height'] <= bar['frame']['y'], f'cash row {cash["frame"]} sits under the accessory {bar["frame"]}'
-ui.tap('payee-cash')
+ui.flip('payee-cash')
 ui.wait(lambda items: str((by_id(items, 'payee-cash') or {}).get('AXValue')) == '0', 'cash did not turn off')
 ui.capture('04-cash-off')
 

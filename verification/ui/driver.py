@@ -27,6 +27,7 @@ class Transition(AxeError):
 
 STRINGS = Path(__file__).resolve().parents[2] / '.verify/ui-strings.json'
 INTERPOLATION = re.compile(r'\{\{\s*(\w+)\s*\}\}')
+SWITCH_REACH, SWITCH_WIDTH, SWITCH_HOLD_S = 70, 60, 0.2
 HAN = '\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff'
 LATIN_THEN_HAN = re.compile(rf'([A-Za-z])(?=[{HAN}])')
 HAN_THEN_LATIN = re.compile(rf'([{HAN}])(?=[A-Za-z])')
@@ -190,6 +191,15 @@ class UI:
 
     def tap_point(self, x, y):
         self.axe('tap', '-x', str(round(x)), '-y', str(round(y)), '--post-delay', '0.5')
+
+    # A SwiftUI Toggle row reports the whole row as its frame, but only the switch at its trailing end flips it: on
+    # iOS 27.2 a tap on the row centre (also `axe tap --id`) flipped it 0 of 20 times, an instant tap on the switch 1
+    # of 12, a 0.2 s touch on the switch 10 of 10 (2026-11-11).
+    def flip(self, identifier):
+        f = self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
+                         f'{identifier} never settled')['frame']
+        self.press_at({'x': f['x'] + f['width'] - SWITCH_REACH, 'y': f['y'], 'width': SWITCH_WIDTH,
+                       'height': f['height']}, SWITCH_HOLD_S)
 
     def press(self, identifier, seconds):
         f = self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
