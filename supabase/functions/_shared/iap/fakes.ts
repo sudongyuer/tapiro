@@ -4,16 +4,30 @@ import { StoreError, type IapStore, type PurchaseAnswer, type StoreErrorCode } f
 
 export const USER = '0b6f6c1e-7f43-4a5e-9a51-6a4a0a4f0c11';
 
+const part = (value: unknown) =>
+  btoa(JSON.stringify(value)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+export const serviceRoleKey = (iss: string) =>
+  `${part({ alg: 'HS256', typ: 'JWT' })}.${part({ iss, role: 'service_role' })}.c2ln`;
+
+export const LOCAL_ENV: Record<string, string> = {
+  SUPABASE_URL: 'http://kong:8000',
+  SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey('supabase-demo'),
+  IAP_ALLOW_XCODE: '1',
+};
+
 export const HOSTED_CONFIG = iapConfig(
-  (key) => ({ SUPABASE_URL: 'https://abcdefghijklmnop.supabase.co', IAP_ALLOW_XCODE: '1' })[key],
+  (key) =>
+    ({
+      ...LOCAL_ENV,
+      SUPABASE_URL: 'https://abcdefghijklmnop.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey('supabase'),
+      SB_REGION: 'ap-southeast-1',
+    })[key],
 );
-export const LOCAL_CONFIG = iapConfig(
-  (key) => ({ SUPABASE_URL: 'http://kong:8000', IAP_ALLOW_XCODE: '1' })[key],
-);
+export const LOCAL_CONFIG = iapConfig((key) => LOCAL_ENV[key]);
 
 export function unsignedJws(payload: unknown) {
-  const part = (value: unknown) =>
-    btoa(JSON.stringify(value)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
   return `${part({ alg: 'ES256', kid: 'Apple_Xcode_Key' })}.${part(payload)}.c2ln`;
 }
 

@@ -209,6 +209,9 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   updates its criterion in the same task, and `node scripts/check-story-map.mjs` (CI) must pass.
   Reason: suite completeness rested on judgment; the main Alipay/WeChat path shipped untested until the
   walkthrough (KICKOFF 2026-10-15).
+- An Edge Function path that matters (signature checks, crypto, `npm:` libraries) has a stack test that calls it
+  through `supabase functions serve`; Deno-only tests do not count. Reason: the Edge Runtime lacks APIs plain Deno has;
+  twice the IAP signed path passed in Deno and was never run in the runtime (2026-11-11).
 - Report skipped checks and why.
 
 ## Pace

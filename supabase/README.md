@@ -233,7 +233,10 @@ Plan: `docs/plans/2026-11-11-iap-local.md`. No app code calls these yet.
   `duplicate`.
 - `iap_apply_notification(notification, kind, sub, env, signed_at, transaction…, revoked)` (service role) stores the
   notification once (a repeat answers `duplicate`), applies `REFUND` through `iap_revoke` and `REFUND_REVERSED` once
-  (`reinstated`), and records other types as `ignored`.
+  (`reinstated`), and records other types as `ignored`. Notifications and the app's verify may arrive in any order: a
+  reversal for a transaction not seen yet is stored on a new row (so a later refund answers `duplicate` and a later
+  credit pays), and a reversal of a refund that reached the app before any credit pays the pack then. The buyer ends
+  with the pack in all six orders of credit, `REFUND` and `REFUND_REVERSED` (`tests/iap_order.test.sql`).
 - Credit, revoke and reinstate lock the transaction, then the owner's coins, the same per-user lock as `spend_post`.
 
 `iap-verify` (`POST`, user JWT, body `{ signedTransaction }`, StoreKit's `jwsRepresentation`) verifies the JWS, checks
@@ -248,9 +251,15 @@ and its `signedTransactionInfo`, then calls `iap_apply_notification`: 200 `{ sta
 `environment_not_accepted`, 422 `unverified`, 500 `store_failed` (Apple delivers it again; the UUID makes that safe).
 
 Environments (`functions/_shared/iap/config.ts`): `Sandbox` always; `Production` once `IAP_APP_APPLE_ID` is set;
-`Xcode` and `LocalTesting` only when `IAP_ALLOW_XCODE=1` and `SUPABASE_URL` is a local host. Their transactions carry
-no App Store signature and are only decoded, so a hosted project refuses them whatever its secrets say.
-`functions/local.env` sets the flag. Signed data is checked against Apple Root CA - G3 by a port of the App Store
+`Xcode` and `LocalTesting` only when `IAP_ALLOW_XCODE=1` on the CLI's local stack. Their transactions carry no App
+Store signature and are only decoded, so a hosted project refuses them whatever its secrets say. The local stack is
+recognised by three independent conditions, all required: `SUPABASE_URL` is a loopback or container host; neither
+`SB_REGION` nor `DENO_DEPLOYMENT_ID` is set (Supabase sets them only in hosted functions,
+https://supabase.com/docs/guides/functions/secrets; `SB_EXECUTION_ID` is set locally too); and
+`SUPABASE_SERVICE_ROLE_KEY` is the CLI's public demo key (`iss: supabase-demo`). On the same stack only,
+`IAP_TEST_ROOT` (base64 DER) adds a trust root next to G3, so `tests/iap.integration.ts` can post Sandbox transactions
+signed by `tests/iap-test-pki.json` (a committed test chain and key) through the Edge Runtime.
+`functions/local.env` sets both. Signed data is checked against Apple Root CA - G3 by a port of the App Store
 Server Library's offline checks (`functions/_shared/iap/apple.ts`): the library itself cannot run in the Edge Runtime,
 and `apple.deno-test.ts` holds both to the same verdicts.
 

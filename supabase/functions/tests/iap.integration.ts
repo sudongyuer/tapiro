@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { localSupabase } from '../../../scripts/local-supabase';
+import pki from './iap-test-pki.json';
 
 const url = localSupabase('API_URL');
 const anonKey = localSupabase('ANON_KEY');
@@ -19,6 +20,23 @@ function part(value: unknown) {
 
 function xcodeJws(payload: Record<string, unknown>) {
   return `${part({ alg: 'ES256', kid: 'Apple_Xcode_Key' })}.${part(payload)}.c2ln`;
+}
+
+async function testRootJws(payload: Record<string, unknown>) {
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    pki.leafKey,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign'],
+  );
+  const input = `${part({ alg: 'ES256', x5c: [pki.leaf, pki.intermediate, pki.root] })}.${part(payload)}`;
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    key,
+    new TextEncoder().encode(input),
+  );
+  return `${input}.${Buffer.from(signature).toString('base64url')}`;
 }
 
 function xcodeTransaction(id: string, token: string, extra: Record<string, unknown> = {}) {
@@ -184,5 +202,72 @@ describe('iap-verify and iap-notify on the local stack (Xcode environment)', () 
     );
     expect(response.status).toBe(422);
     expect(await coins(alice)).toBe(before);
+  });
+});
+
+describe('a Sandbox transaction signed through the local test root, verified inside the Edge Runtime', () => {
+  const sandboxTransaction = (id: string, buyer: Buyer, extra: Record<string, unknown> = {}) => ({
+    transactionId: id,
+    originalTransactionId: id,
+    bundleId: 'app.tapiro',
+    productId: 'app.tapiro.coins.35',
+    purchaseDate: Date.now(),
+    quantity: 1,
+    type: 'Consumable',
+    appAccountToken: buyer.id,
+    signedDate: Date.now(),
+    environment: 'Sandbox',
+    ...extra,
+  });
+  const notice = async (type: string, signedTransactionInfo: string) =>
+    testRootJws({
+      notificationType: type,
+      notificationUUID: crypto.randomUUID(),
+      version: '2.0',
+      signedDate: Date.now(),
+      data: { bundleId: 'app.tapiro', environment: 'Sandbox', signedTransactionInfo },
+    });
+
+  test('a signed purchase is credited and the same JWS with a changed product is refused', async () => {
+    const id = `sandbox-${run}-1`;
+    const before = await coins(alice);
+    const jws = await testRootJws(sandboxTransaction(id, alice));
+    const response = await verify(jws, alice.token);
+    expect({ status: response.status, body: await response.json() }).toMatchObject({
+      status: 200,
+      body: { status: 'credited', coins: 35, environment: 'Sandbox', balance: before + 35 },
+    });
+    const [header, , signature] = jws.split('.');
+    const forged = `${header}.${part(sandboxTransaction(`sandbox-${run}-2`, alice))}.${signature}`;
+    const refused = await verify(forged, alice.token);
+    expect({ status: refused.status, body: await refused.json() }).toEqual({
+      status: 422,
+      body: { error: 'unverified' },
+    });
+    expect(await coins(alice)).toBe(before + 35);
+  });
+
+  test('signed REFUND and REFUND_REVERSED notifications take the pack back and return it', async () => {
+    const id = `sandbox-${run}-3`;
+    await verify(await testRootJws(sandboxTransaction(id, bob)), bob.token);
+    const before = await coins(bob);
+    const refunded = await testRootJws(sandboxTransaction(id, bob, { revocationDate: Date.now() }));
+    const refund = await notify(await notice('REFUND', refunded));
+    expect({ status: refund.status, body: await refund.json() }).toEqual({
+      status: 200,
+      body: { status: 'revoked' },
+    });
+    expect(await coins(bob)).toBe(before - 35);
+    const reversal = await notify(
+      await notice('REFUND_REVERSED', await testRootJws(sandboxTransaction(id, bob))),
+    );
+    expect(await reversal.json()).toEqual({ status: 'reinstated' });
+    expect(await coins(bob)).toBe(before);
+  });
+
+  test('a notification signed by the test root around an unsigned transaction is refused', async () => {
+    const unsignedInner = xcodeJws(sandboxTransaction(`sandbox-${run}-4`, bob));
+    const response = await notify(await notice('REFUND', unsignedInner));
+    expect(response.status).toBe(422);
   });
 });
