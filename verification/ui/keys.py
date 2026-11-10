@@ -1,9 +1,11 @@
 # `axe type` sends keys with no delay; the SwiftUI TextField re-renders React on every change and dropped trailing
-# keys in dark runs (2026-10-26), so plain lower-case letters and digits go through paced key-sequence instead.
+# keys in dark runs (2026-10-26), and an unpaced space repeated (「see you.      at the lobby」, 2026-11-10), so
+# lower-case letters, digits and spaces go through paced key-sequence instead.
 HID_KEYCODES = {
     **{chr(ord('a') + offset): str(4 + offset) for offset in range(26)},
     **{str(digit): str(29 + digit) for digit in range(1, 10)},
     '0': '39',
+    ' ': '44',
 }
 # On iOS 27.2 the number, decimal and phone pads drop AXe's HID keys (6 of 6 after waits of 1.5 s, 2026-11-10) while
 # taps on their keys land; the alphabetic keyboard, which lists its Return key in the accessibility tree, takes HID

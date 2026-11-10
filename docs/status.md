@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-11 (266 A: sheets with a SwiftUI text field resign it before they close; the payee save crash reproduced under load, 5 of 72 runs before and 0 of 72 after); 2026-11-11 (#112 review fixes: refund notices in any order, a stricter local gate, the signed path tested in the Edge Runtime; ★ S13; Sandbox on hosted recorded as a launch item); 2026-11-11 (owner answered 268–272 and 279; the coin-purchase server is built and tested locally, not reachable from the app: `iap-verify`, `iap-notify`, refunds take the whole pack back; Apple's server library does not run in the Edge Runtime, so a port is held to its verdicts; ★ S1–S12 for veto); 2026-11-11 (plans for the account-free halves of in-app purchase and the Live Activity; questions 268–278); 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-11 (queue 0d: the open UI case failures were checks measuring the wrong thing, fixed; `bounty_post_art`'s lost tap not reproduced); 2026-11-11 (266 A: sheets with a SwiftUI text field resign it before they close; the payee save crash reproduced under load, 5 of 72 runs before and 0 of 72 after); 2026-11-11 (#112 review fixes: refund notices in any order, a stricter local gate, the signed path tested in the Edge Runtime; ★ S13; Sandbox on hosted recorded as a launch item); 2026-11-11 (owner answered 268–272 and 279; the coin-purchase server is built and tested locally, not reachable from the app: `iap-verify`, `iap-notify`, refunds take the whole pack back; Apple's server library does not run in the Edge Runtime, so a port is held to its verdicts; ★ S1–S12 for veto); 2026-11-11 (plans for the account-free halves of in-app purchase and the Live Activity; questions 268–278); 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -65,19 +65,31 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      Native's `Keyboard.dismiss()`, which never reaches a SwiftUI field. A swipe-down of a page sheet is left to UIKit,
      which resigns the field before React unmounts the screen: 11 swipes on the payee phone sheet with the name field
      focused closed it without a crash (one Simulator, no added load; a probe kept out of the repo); the SwiftUI bottom
-     sheets (有问题, ride detail) route their swipe through `afterResign`. Open, not this crash: `payee_list` ms fails 「cash did not
-     turn off」 in 6 of 12 runs both before and after the fix (the switch tap does not flip it), and the payee cases lose
-     typed digits under this load.
+     sheets (有问题, ride detail) route their swipe through `afterResign`. The payee cases lost typed digits under this load
+     (pads typed by tapping since, see 0c).
    - 0c. Number, decimal and phone pads have no Return key, and the SwiftUI forms kept the pad up through a drag
      (measured, A/B): a real user could not put it away. The forms holding a pad and the place search results now
      dismiss the keyboard when they scroll (★ 22 in `docs/plans/2026-10-27-bounty-post.md`, for veto). Cases:
      `bounty_post_optional` and `_currency` drag the form as a person would, `ride_create_form` drags the results
      before picking KLIA2, `ride.form_scroll_to` uses held drags (`ride_create_worst` en and ms pass),
      `home_settled_collect` passes when the sticker lands in the frame the card starts to leave (owner ★, below).
-     Open: `home_settled_collect` en dark, where the 我的 tab region already differs from its resting look at the clip
-     start (share 0.19, threshold 0.12), so its flight check had passed vacuously; a new guard now fails it.
-     `bounty_post_art` zh-Hans lost the art tap with the keyboard up 2 of 6 (both under a three-Simulator batch). Still
-     open from the full run: `chat_entry_status` en, `live_applicants`, `bounty_status_poster` (`axe type` spaces).
+   - 0d. Closed in `fix/open-ui-cases` (2026-11-11), no product bug among them
+     (`docs/retros/2026-11-11-open-ui-cases.md`): `payee_list` tapped the centre of the SwiftUI cash toggle row, which
+     iOS never flips (0 of 20; a 0.2 s touch on the switch 10 of 10), so cases use `UI.flip`; `home_settled_collect`
+     en dark measured the glass tab bar, whose backdrop moves when the taller calm card arrives, and now reads only the
+     我的 glyph (0.00 at the start, 0.3–0.9 while the sticker passes); `live_applicants` read the header after this
+     bounty's signal because the plist lagged (the video showed 3 人申请 until it), and now places each read by the
+     Mac clock (`startedAt` in the verify records); `chat_entry_status` en drags the address card behind each button
+     when the longer copy leaves it lower; `bounty_status_poster` pastes its reason, and typed spaces are paced keys.
+     Reruns after the fixes at load averages of 3–131: `payee_list` zh-Hans 3/3 and ms light 6/6 plus dark 1/1;
+     `home_settled_collect` en dark 3/3, en light 3/3, zh-Hans light and dark 1/1 each; `chat_entry_status` en 3/3,
+     zh-Hans 3/3; `live_applicants` after its last change zh-Hans 3/3 and ms 3/3; `bounty_status_poster` ms 3/3,
+     zh-Hans light 2/2, dark 1/1; `bounty_apply` 3/3.
+     Still open, with what is known: `bounty_post_art` zh-Hans lost the art tap 2 of 6 in an earlier batch and passed
+     7 of 7 here (load averages up to 131); the art sits at the top of the form, well above the keyboard, so it is not
+     hidden by it; no log of the lost tap survives. `pay_sheet_duitnow` zh-Hans dark failed once in the full run and
+     passed 3 of 3 here; no cause found. `home_title_strip` ms: one downward swipe did not always reach the top again
+     (1 of 4), so it swipes until the large title is back (ms needed two in 2 of 3 runs; 3/3 ms, 1/1 zh-Hans).
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The

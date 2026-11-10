@@ -3,14 +3,16 @@ grey 发消息 at the bottom; with the thread lookup failing once, a tap shows �
 opens the bounty's thread in 消息 (the tab switches, the tab bar hides, the safety card and 阿杰's messages show) with the
 消息 list under it. A done bounty puts 发消息 beside 确认完成 on one row, 发消息 on the left and narrower, 有问题 below. The
 grey buttons are opaque, also dimmed while 确认完成 is sending: the 精确地址 card scrolled under the bar does not show
-beside their labels in the run's appearance (light per PR, dark at milestones). An
+beside their labels in the run's appearance (light per PR, dark at milestones); where longer copy leaves the card below a
+button (en: the auto-confirm line wraps to three lines), the case drags the screen up until it sits behind it. An
 open bounty, before anyone is chosen, has no thread and no 发消息."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import assert_fill_hides_content, relaunch, tap_sheet_action  # noqa: E402
+from bounty import assert_fill_hides_content, crosses, label_strips, relaunch, tap_sheet_action  # noqa: E402
 from chat import chat_calls, sheet_action, tab_bar_hidden  # noqa: E402
 from driver import UI, Shot, assert_touch_target, by_id  # noqa: E402
+from gestures import drag  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/chat/', 'src/app/(tabs)/bounty/status/', 'src/ui/PillButton.tsx',
         'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/ios/PinnedBarView.swift', 'src/app/(tabs)/messages/',
@@ -22,15 +24,33 @@ FIRST = ['-uiVerifyBountyStatus', 'assigned']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
         '-uiVerifyChatFail', 'find', '-uiVerifyBountyRole', 'poster', '-uiVerifyBountyStatus', 'assigned']
 
+DRAG_SLOP = 10
+
 ui = UI(*sys.argv[1:])
 
 
-def assert_opaque(path, items, *identifiers):
-    shot = Shot(path, items[0]['frame']['width'])
-    behind = by_id(items, 'bounty-status-address')
+def address_under(items, identifier):
+    behind, button = by_id(items, 'bounty-status-address'), by_id(items, identifier)
     assert behind, 'the 精确地址 card is missing'
+    assert button, f'{identifier} is missing'
+    strips = label_strips(button['frame'], button.get('AXLabel') or '')
+    if not strips or all(crosses(strip, behind['frame']) for strip in strips):
+        return items
+    lift = behind['frame']['y'] - strips[0]['y'] + 4
+    screen = items[0]['frame']
+    start = screen['height'] * 0.45
+    drag(ui, (screen['width'] / 2, start), (screen['width'] / 2, start - lift - DRAG_SLOP))
+    ui.at_rest()
+    return ui.read()
+
+
+def assert_opaque(name, items, *identifiers):
     for identifier in identifiers:
-        assert_fill_hides_content(shot, by_id(items, identifier), behind['frame'], identifier)
+        moved = address_under(items, identifier)
+        shot = Shot(ui.capture(name if moved is items else f'{name}-{identifier}'), items[0]['frame']['width'])
+        assert_fill_hides_content(shot, by_id(moved, identifier), by_id(moved, 'bounty-status-address')['frame'],
+                                  identifier)
+        items = moved
 
 
 message = ui.element('bounty-status-message', timeout=45)
@@ -38,7 +58,7 @@ assert message.get('AXLabel') == ui.t('bounty.status.action.message'), message.g
 assert_touch_target(message, 'bounty-status-message')
 ui.at_rest()
 items = ui.read()
-assert_opaque(ui.capture('01-assigned'), items, 'bounty-status-message')
+assert_opaque('01-assigned', items, 'bounty-status-message')
 
 ui.tap('bounty-status-message')
 ui.labelled(ui.t('chat.entry.failed'), timeout=20)
@@ -74,13 +94,13 @@ assert chat_button['x'] + chat_button['width'] <= confirm['x'], '发消息 is no
 assert chat_button['width'] < confirm['width'], '发消息 is wider than the main action'
 assert issue['y'] >= confirm['y'] + confirm['height'], '有问题 is not below the row'
 ui.at_rest()
-assert_opaque(ui.capture('05-done-row'), ui.read(), 'bounty-status-message', 'bounty-status-action-reportIssue')
+assert_opaque('05-done-row', ui.read(), 'bounty-status-message', 'bounty-status-action-reportIssue')
 
 ui.tap('bounty-status-action-confirm')
 tap_sheet_action(ui, ui.t('bounty.confirm.confirm'), 'bounty-status-action-confirm')
 locked = ui.wait(lambda items: items if (by_id(items, 'bounty-status-action-reportIssue') or {}).get('enabled') is False
                  else None, '有问题 never dimmed while confirm_bounty was in flight', timeout=5)
-assert_opaque(ui.capture('05b-done-sending'), locked, 'bounty-status-action-reportIssue')
+assert_opaque('05b-done-sending', locked, 'bounty-status-action-reportIssue')
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyBountyStatus', 'open', '-uiVerifyScene', SCENE], ready='bounty-status')
 ui.settled(lambda items: by_id(items, 'bounty-status-title'), 'the open bounty never loaded', timeout=45)

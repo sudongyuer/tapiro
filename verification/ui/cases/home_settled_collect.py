@@ -32,6 +32,7 @@ WATCH_S = 3.0
 FRAME_GAP_S = 0.03
 CHANGED = 48
 TAB_HIT = 0.12
+GLYPH_MIN = 200
 CARD_TOLERANCE = 24
 
 ui = UI(*sys.argv[1:])
@@ -42,10 +43,21 @@ def collected():
     return json.loads(text) if text else []
 
 
-def changed_share(shot, rest, f):
+# The tab bar is glass: content scrolling behind it changes its backdrop, and the calm card is taller than the
+# 已结清 card, so the board under the bar moves when the card goes (en dark: 0.19 of the whole icon box differed
+# between the first and last frames with no sticker near, 2026-11-11). Only the 我的 glyph's own pixels, the
+# brightest in dark and the darkest in light, are compared; the backdrop moved none of them.
+def glyph_mask(rest, f):
+    glyph = (lambda p: min(p) > 200) if ui.appearance == 'dark' else (lambda p: max(p) < 60)
+    mask = [i for i, p in enumerate(rest.pixels(f)) if glyph(p)]
+    assert len(mask) >= GLYPH_MIN, f'the 我的 glyph is not found in {f} ({len(mask)} pixels)'
+    return mask
+
+
+def changed_share(shot, rest, f, mask):
     a, b = list(shot.pixels(f)), list(rest.pixels(f))
-    hits = sum(1 for p, q in zip(a, b) if max(abs(x - y) for x, y in zip(p, q)) > CHANGED)
-    return hits / max(1, len(a))
+    hits = sum(1 for i in mask if max(abs(x - y) for x, y in zip(a[i], b[i])) > CHANGED)
+    return hits / len(mask)
 
 
 def card_share(shot, start, f):
@@ -88,7 +100,8 @@ def collect_and_watch(name):
         start, rest = shots[0][0], shots[-1][0]
         assert_colour(start, band, token('--color-on-card-progress', ui.appearance), f'{name}: 收进贴纸本 button',
                       tolerance=16)
-        rows = [(at, changed_share(shot, rest, icon), card_share(shot, start, band)) for shot, at in shots]
+        mask = glyph_mask(rest, icon)
+        rows = [(at, changed_share(shot, rest, icon, mask), card_share(shot, start, band)) for shot, at in shots]
     print(f'{name}: ' + ', '.join(f'{at:.2f}s tab={t:.2f} card={c:.2f}' for at, t, c in rows))
     assert rows[0][2] > 0.8, f'{name}: the card is not on screen at the start of the clip: {rows[0]}'
     assert rows[-1][2] < 0.2, f'{name}: the card is still on screen at the end of the clip: {rows[-1]}'
