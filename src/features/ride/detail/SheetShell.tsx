@@ -15,6 +15,7 @@ import {
   navigationTitle,
   presentationDetents,
   presentationDragIndicator,
+  scrollDismissesKeyboard,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
@@ -66,6 +67,7 @@ export function SheetShell({
                 <Form
                   modifiers={[
                     tint(color('--color-accent')),
+                    scrollDismissesKeyboard('immediately'),
                     navigationTitle(title),
                     navigationBarTitleDisplayMode('inline'),
                     accessibilityIdentifier(testID),

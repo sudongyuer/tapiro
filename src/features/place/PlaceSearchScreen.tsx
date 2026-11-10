@@ -22,12 +22,12 @@ import {
   frame,
   lineLimit,
   listStyle,
+  scrollDismissesKeyboard,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { Stack, useNavigation, type NativeStackNavigationProp } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import type { SearchBarCommands } from 'react-native-screens';
 import type { PlaceResult, PlaceSuggestion, ResolvedPlace } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
@@ -39,12 +39,13 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { currentPlace } from './currentPlace';
 import { placePick, type PlacePurpose } from './placePick';
 import { placeFacade } from './places';
+import { useFocusedSearchBar, useShownItems } from './searchHooks';
 import { usePlaceSearch } from './usePlaceSearch';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const primary = foregroundStyle({ type: 'hierarchical', style: 'primary' });
 const ICON = 20;
-const NO_ITEMS: PlaceSuggestion[] = [];
+const grouped = [listStyle('insetGrouped'), scrollDismissesKeyboard('immediately')];
 const row = frame({ maxWidth: Infinity, minHeight: vars['--touch-min'], alignment: 'leading' });
 
 type Notice = 'denied' | 'noFix' | 'resolveFailed' | 'stale';
@@ -159,7 +160,7 @@ export function PlaceSearchScreen({
           },
         }}
       />
-      <List modifiers={[listStyle('insetGrouped'), tint(color('--color-accent'))]}>
+      <List modifiers={[...grouped, tint(color('--color-accent'))]}>
         {notice ? (
           <NoticeCard
             tone="urgent"
@@ -191,26 +192,6 @@ export function PlaceSearchScreen({
       </List>
     </Host>
   );
-}
-
-function useFocusedSearchBar() {
-  const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
-  const searchBar = useRef<SearchBarCommands>(null);
-  useEffect(
-    () =>
-      navigation.addListener('transitionEnd', (event) => {
-        if (!event.data.closing) searchBar.current?.focus();
-      }),
-    [navigation],
-  );
-  return searchBar;
-}
-
-function useShownItems(state: ReturnType<typeof usePlaceSearch>['state']) {
-  const [items, setItems] = useState(NO_ITEMS);
-  const next = state.kind === 'ready' ? state.items : state.kind === 'loading' ? items : NO_ITEMS;
-  if (next !== items) setItems(next);
-  return next;
 }
 
 function Results({

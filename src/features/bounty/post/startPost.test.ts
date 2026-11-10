@@ -51,7 +51,7 @@ describe('start post (13A)', () => {
     const { start, gate, log } = setup(pending.answer);
     const running = start();
     expect(log).toEqual(['open', 'status']);
-    gate.formFocused();
+    gate.formFocused('form');
     pending.release(BLOCKED);
     await running;
     expect(log).toEqual(['open', 'status', 'hint:1']);
@@ -61,7 +61,27 @@ describe('start post (13A)', () => {
     const { start, gate, log } = setup(async () => BLOCKED);
     await start();
     expect(log).toEqual(['open', 'status']);
-    gate.formFocused();
+    gate.formFocused('form');
+    expect(log).toEqual(['open', 'status', 'hint:1']);
+  });
+
+  test('with a draft, the tile screen mounting unfocused under the form keeps an early answer', async () => {
+    const { start, gate, log } = setup(async () => BLOCKED);
+    await start();
+    gate.formBlurred('pick');
+    gate.formFocused('form');
+    expect(log).toEqual(['open', 'status', 'hint:1']);
+  });
+
+  test('a late answer still hints after the tile screen gives way to the form', async () => {
+    const pending = later();
+    const { start, gate, log } = setup(pending.answer);
+    const running = start();
+    gate.formFocused('pick');
+    gate.formFocused('form');
+    gate.formBlurred('pick');
+    pending.release(BLOCKED);
+    await running;
     expect(log).toEqual(['open', 'status', 'hint:1']);
   });
 
@@ -69,11 +89,11 @@ describe('start post (13A)', () => {
     const pending = later();
     const { start, gate, log } = setup(pending.answer);
     const running = start();
-    gate.formFocused();
-    gate.formBlurred();
+    gate.formFocused('form');
+    gate.formBlurred('form');
     pending.release(BLOCKED);
     await running;
-    gate.formFocused();
+    gate.formFocused('form');
     expect(log).toEqual(['open', 'status']);
   });
 
@@ -81,8 +101,8 @@ describe('start post (13A)', () => {
     const pending = later();
     const { start, gate, log } = setup(pending.answer);
     const running = start();
-    gate.formFocused();
-    gate.formBlurred();
+    gate.formFocused('form');
+    gate.formBlurred('form');
     pending.release(BLOCKED);
     await running;
     expect(log).toEqual(['open', 'status']);
@@ -95,7 +115,7 @@ describe('start post (13A)', () => {
     const running = startFirst();
     const second = createStartPost({ status: async () => STATUS, open: () => {}, gate });
     await second();
-    gate.formFocused();
+    gate.formFocused('form');
     first.release(BLOCKED);
     await running;
     expect(log).toEqual([]);
@@ -104,10 +124,10 @@ describe('start post (13A)', () => {
   test('asks once per tap and hints only when blocked', async () => {
     const free = setup(async () => STATUS);
     await free.start();
-    free.gate.formFocused();
-    free.gate.formBlurred();
+    free.gate.formFocused('form');
+    free.gate.formBlurred('form');
     await free.start();
-    free.gate.formFocused();
+    free.gate.formFocused('form');
     expect(free.log).toEqual(['open', 'status', 'open', 'status']);
   });
 
@@ -116,7 +136,7 @@ describe('start post (13A)', () => {
       throw new TypeError('Network request failed');
     });
     await failing.start();
-    failing.gate.formFocused();
+    failing.gate.formFocused('form');
     expect(failing.log).toEqual(['open', 'status']);
   });
 });

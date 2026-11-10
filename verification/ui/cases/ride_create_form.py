@@ -10,11 +10,13 @@ import time
 from datetime import datetime
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import dismiss_keyboard  # noqa: E402
 from driver import UI, assert_touch_target, by_id, token  # noqa: E402
 from readable import assert_label_reads  # noqa: E402
 from ride import form_scroll_to, open_form, open_list, picker_clock, step  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py', 'verification/ui/readable.py',
+        'verification/ui/bounty.py',
         'src/ui/FieldRow.tsx', 'src/ui/SyncedTextField.tsx']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyPlaces', 'ride']
@@ -34,6 +36,7 @@ def pick_place(row, query, title):
     ui.type(query)
     result = ui.wait(lambda items: next((i for i in items if (i.get('AXUniqueId') or '').startswith('place-search-result-')
                                          and title in (i.get('AXLabel') or '')), None), f'{title} is not listed')
+    dismiss_keyboard(ui, 'place-search')
     ui.tap(result['AXUniqueId'])
     ui.element('ride-form')
 

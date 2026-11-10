@@ -4,6 +4,7 @@ import {
   keyboardType,
   textContentType,
   textInputAutocapitalization,
+  scrollDismissesKeyboard,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
@@ -92,7 +93,7 @@ function PhoneForm({
   return (
     <Host style={styles.host} testID="payee-phone-sheet">
       <SheetChrome title={t('payee.types.duitnow_id')} onClose={onClose} onSave={submit} />
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
         {shown ? (
           <NoticeCard
             tone="urgent"

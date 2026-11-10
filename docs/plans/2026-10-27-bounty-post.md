@@ -635,6 +635,18 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
     stopped by `titleTooLong` on 下一步; the server checks the same code points.
 21. A blocked status with no unpaid payment read yet hides 去付款 and reloads the status once; a payee without a name
     reads as 「对方」 / "the other person" / "pihak lain".
+22. ★ for veto (2026-11-10, `fix/post-hint-keypad-crash`): a form that holds a number, decimal or phone pad dismisses
+    the keyboard as soon as it scrolls (`scrollDismissesKeyboard('immediately')`): the post form, the ride form, the
+    ride detail sheets (`SheetShell`) and the phone and bank payee sheets. Measured on iOS 27.2: these pads have no
+    Return key and the SwiftUI `Form` kept the pad up through an upward and a downward drag (A/B on the post form), so
+    the pad stayed over half the sheet until another text field took focus. `interactively` was tried first and
+    rejected: at the top of the form the downward drag it needs pulls the sheet closed instead. No 完成 bar above
+    the keyboard. The place search results do the same, so a result under the keyboard is one scroll away (the search
+    key still ends editing).
+23. The 13A hint gate tracks focus per screen (2026-11-10). With a draft, the anchor tile screen mounts unfocused under
+    the form; its blur cleared the waiting answer (the fixture answers in 5 ms, before the form focuses), so the hint
+    never showed. A blur from a screen that was never focused is now ignored, and the gate counts as frontmost while
+    any of its screens is focused.
 
 ## Not in this plan
 

@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, close, dominant, reach_home
+from gestures import drag
 from records import reset_records
 from run import REGIONS
 from swifttool import SIMULATOR, compiled
@@ -222,6 +223,14 @@ def form_scroll_to(ui, identifier, tries=6):
         x = f['x'] + f['width'] / 2
         ui.swipe((x, f['y'] + f['height'] * 0.75), (x, f['y'] + f['height'] * 0.4), 0.4)
     return ui.element(identifier, timeout=5)
+
+
+def dismiss_keyboard(ui, container='bounty-post-form'):
+    # A number pad has no Return key; the form dismisses the keyboard when it starts to scroll. A downward drag at the
+    # top of the form would pull the sheet down instead, so the drag goes up.
+    f = ui.element(container)['frame']
+    x = f['x'] + f['width'] / 2
+    drag(ui, (x, f['y'] + 300), (x, f['y'] + 220), duration=0.6, steps=30)
 
 
 def end_editing(ui):

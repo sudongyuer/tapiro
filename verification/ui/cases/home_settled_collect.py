@@ -1,5 +1,6 @@
 """「收进贴纸本」 (73A, ruling 3). A tap writes exactly one collect; the sticker flies from the 已结清 card to the 我的 tab
-and is over its icon before the card starts to leave, then the card fades away and the calm card takes its place.
+and is over its icon no later than the frame the card starts to leave (the same frame passes: owner ★, 2026-11-10),
+then the card fades away and the calm card takes its place.
 With Reduce Motion (`-uiVerifyReduceMotion 1`, because simctl cannot switch the system setting) nothing reaches 我的:
 the card and sticker fade in place, and one collect is still written. Both paths are read from clips
 (`collect-flight.mp4`, `collect-reduced.mp4`) by frame timestamp. The landing haptic and the VoiceOver announcement
@@ -91,6 +92,7 @@ def collect_and_watch(name):
     print(f'{name}: ' + ', '.join(f'{at:.2f}s tab={t:.2f} card={c:.2f}' for at, t, c in rows))
     assert rows[0][2] > 0.8, f'{name}: the card is not on screen at the start of the clip: {rows[0]}'
     assert rows[-1][2] < 0.2, f'{name}: the card is still on screen at the end of the clip: {rows[-1]}'
+    assert rows[0][1] < TAB_HIT, f'{name}: the 我的 tab already differs from its resting look at the start: {rows[0]}'
     shown = max(i for i, (_, _, c) in enumerate(rows) if c >= 0.8)
     leaving = rows[shown + 1][0]
     gone = next(at for at, _, c in rows[shown + 1:] if c < 0.2)
@@ -103,7 +105,7 @@ ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the 已结清 card 
 ui.capture('01-before')
 over_tab, leaving, gone = collect_and_watch('collect-flight')
 assert over_tab, 'the sticker never reached the 我的 tab'
-assert over_tab[0] < leaving, \
+assert over_tab[0] <= leaving, \
     f'the card started to leave at {leaving:.2f}s, before the sticker reached 我的 at {over_tab[0]:.2f}s'
 print(f'flight: over 我的 {over_tab[0]:.2f}-{over_tab[-1]:.2f}s, card leaving {leaving:.2f}s, gone {gone:.2f}s')
 ui.capture('02-collected')

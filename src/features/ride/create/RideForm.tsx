@@ -1,5 +1,5 @@
 import { Form, Host } from '@expo/ui/swift-ui';
-import { tint } from '@expo/ui/swift-ui/modifiers';
+import { scrollDismissesKeyboard, tint } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
@@ -95,7 +95,7 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
       <Host style={styles.host} testID="ride-form">
-        <Form modifiers={[tint(color('--color-accent'))]}>
+        <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
           {noticeText ? (
             <NoticeCard
               tone="urgent"
