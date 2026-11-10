@@ -39,13 +39,16 @@ async function testRootJws(payload: Record<string, unknown>) {
   return `${input}.${Buffer.from(signature).toString('base64url')}`;
 }
 
+const purchasedAt = Date.now();
+const stored = (id: string) => `xcode-${purchasedAt}-${id}`;
+
 function xcodeTransaction(id: string, token: string, extra: Record<string, unknown> = {}) {
   return xcodeJws({
     transactionId: id,
     originalTransactionId: id,
     bundleId: 'app.tapiro',
     productId: 'app.tapiro.coins.11',
-    purchaseDate: Date.now(),
+    purchaseDate: purchasedAt,
     quantity: 1,
     type: 'Consumable',
     appAccountToken: token,
@@ -128,7 +131,7 @@ describe('iap-verify and iap-notify on the local stack (Xcode environment)', () 
       status: 200,
       body: {
         status: 'credited',
-        transactionId: purchase,
+        transactionId: stored(purchase),
         productId: 'app.tapiro.coins.11',
         coins: 11,
         environment: 'Xcode',

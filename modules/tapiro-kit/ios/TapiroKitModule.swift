@@ -3,13 +3,59 @@ import UIKit
 
 public final class TapiroKitModule: Module {
   private let places = PlaceSearch()
+  private let store = Store()
 
   public func definition() -> ModuleDefinition {
     Name("TapiroKit")
 
-    Events("onPlaceSuggestions")
+    Events("onPlaceSuggestions", "onStoreTransaction")
 
     View(TitleHaloView.self) {}
+
+    AsyncFunction("liveActivityStart") { (kind: String, state: LiveActivityStateRecord) -> [String: Any] in
+      MainActor.assumeIsolated { LiveActivities.start(kind: kind, state: state) }
+    }.runOnQueue(.main)
+
+    AsyncFunction("liveActivityUpdate") { (id: String, state: LiveActivityStateRecord) async -> [String: Any] in
+      await LiveActivities.update(id: id, state: state)
+    }
+
+    AsyncFunction("liveActivityEnd") { (id: String, state: LiveActivityStateRecord?, immediately: Bool) async -> [String: Any] in
+      await LiveActivities.end(id: id, state: state, immediately: immediately)
+    }
+
+    AsyncFunction("liveActivityList") { () -> [[String: Any]] in
+      MainActor.assumeIsolated { LiveActivities.list() }
+    }.runOnQueue(.main)
+
+    AsyncFunction("storeProducts") { (ids: [String]) async -> [String: Any] in
+      await self.store.products(ids: ids)
+    }
+
+    AsyncFunction("storePurchase") { (productId: String, accountToken: String) async -> [String: Any] in
+      await self.store.purchase(productId: productId, accountToken: accountToken)
+    }
+
+    AsyncFunction("storeUnfinished") { () async -> [[String: Any]] in
+      await self.store.unfinished()
+    }
+
+    AsyncFunction("storeRevoked") { () async -> [[String: Any]] in
+      await self.store.revoked()
+    }
+
+    AsyncFunction("storeFinish") { (transactionId: String) async -> Bool in
+      await self.store.finish(transactionId: transactionId)
+    }
+
+    AsyncFunction("storeStartUpdates") { [weak self] () async in
+      guard let self else { return }
+      await self.store.startUpdates { [weak self] body in self?.sendEvent("onStoreTransaction", body) }
+    }
+
+    AsyncFunction("storeStopUpdates") { () async in
+      await self.store.stopUpdates()
+    }
 
     View(PinnedBarView.self)
 

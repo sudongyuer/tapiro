@@ -1,0 +1,25 @@
+name: StoreKitHarness
+options:
+  deploymentTarget: { iOS: "26.0" }
+targets:
+  Host:
+    type: application
+    platform: iOS
+    sources: [Host]
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: app.tapiro.storekit-harness
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+  StoreKitUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - UITests
+      - path: ../../ios-config/Tapiro.storekit
+        buildPhase: resources
+    dependencies: [{ target: Host }]
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: app.tapiro.storekit-harness.uitests
+      GENERATE_INFOPLIST_FILE: YES
+      TEST_TARGET_NAME: Host
+      CODE_SIGN_STYLE: Automatic

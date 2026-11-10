@@ -4,7 +4,8 @@
 > tasks marked **account** wait on it (push). Only one Simulator-using agent runs at a time. Live Activity sign-off is
 > on a physical device (foundation Known limits); Simulator runs are for development only.
 
-**Status:** proposed 2026-11-11. Tasks 1 and 2 (spikes) can start now; Task 4 (the look) waits on questions 274–278.
+**Status:** proposed 2026-11-11. Tasks 1 and 2 (spikes) are done (branch `spike/iap-live-activity`, 「Spike results」
+below); Task 3 needs the owner's iPhone; Task 4 (the look) waits on questions 274–278.
 
 **Goal:** While a helper is on the way (bounty `en_route`) or a ride is gathering (集合), the Lock Screen and the
 Dynamic Island show one sentence and a progress line, started and updated by the app. Before the account exists this
@@ -46,7 +47,7 @@ phases). Plan `docs/plans/2026-11-03-realtime-push.md` (step 3 waits on the acco
 | Limits                                   | Up to 8 h active, then up to 4 more on the Lock Screen (12 h max); static plus dynamic data at most 4 KB; `staleDate` marks content outdated                                                                                                                                                                      | same page                                                                                                                       |
 | Xcode previews of every presentation     | Yes, no signing: `ActivityPreviewViewKind` covers the Lock Screen and the Dynamic Island compact, minimal and expanded presentations                                                                                                                                                                              | https://developer.apple.com/documentation/widgetkit/activitypreviewviewkind                                                     |
 | Signing                                  | App groups are allowed for the free 「Apple Developer」 tier; push notifications are not. Our own Swift needs no app group; `expo-widgets` needs one                                                                                                                                                              | https://developer.apple.com/help/account/reference/supported-capabilities-ios                                                   |
-| Simulator display                        | Not stated by Apple. Task 1 measures it on Xcode 27.2 with the iOS 27.2 runtime (an iPhone with a Dynamic Island)                                                                                                                                                                                                 | —                                                                                                                               |
+| Simulator display                        | Not stated by Apple. **Measured 2026-11-11: yes**, Lock Screen and Dynamic Island (compact, expanded) on the iOS 27.2 Simulator (「Spike results」)                                                                                                                                                               | —                                                                                                                               |
 | Push updates, push-to-start, tokens      | No. 「start by adding the Push Notifications capability」; tokens come from ActivityKit (`pushTokenUpdates`, `pushToStartTokenUpdates`) and go to APNs. Push needs `aps-environment`, which `plugins/withoutPushEntitlement.js` strips for the free team                                                          | https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications |
 
 ## Config plugin options
@@ -88,6 +89,67 @@ phases). Plan `docs/plans/2026-11-03-realtime-push.md` (step 3 waits on the acco
   stale treatment with 「可能不是最新」, as in 172 B.
 - **L5 Facade** follows the kit rules: typed result codes from Swift (`unsupported`, `disabled`, `tooMany`, `failed`),
   activity IDs as strings, an event for `activityStateUpdates`, removed on unmount.
+
+## Spike results (2026-11-11, Xcode 27.2, iOS 27.2 Simulator, iPhone 17 Pro)
+
+### Spike A: render
+
+| Question                                                            | Answer                                                                                                                                      | Evidence                               |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Start, update, end from the app (Debug scene `live-activity-spike`) | **Yes.** `start` → `{"status":"ok","id":…}`, `update` and `end` → `ok`, `list` → `[]` after end                                             | scene log, screenshots                 |
+| The Dynamic Island shows it (another app in front)                  | **Yes**: compact (leading symbol, trailing minutes) and expanded on a long press (sentence, progress, `PLACEHOLDER 276`); empty after `end` | DeviceHub window captures, short video |
+| The Lock Screen shows it                                            | **Yes**, with the updated content (4′ and the longer progress line)                                                                         | DeviceHub capture                      |
+| First Lock Screen appearance                                        | iOS asks 「Allow Live Activities from Tapiro?」 under the activity, on the Lock Screen, the first time; not in the app                      | capture `la-5-lock`                    |
+| While Tapiro is in front                                            | The island shows nothing for Tapiro's own activity on the Simulator; Task 3 checks the device                                               | screenshot                             |
+| Accessibility                                                       | The activity is not in the Lock Screen's accessibility tree with a label (the placeholder views have none); Task 4 adds labels              | AXe tree                               |
+
+Two measurement notes: `simctl io screenshot` and `recordVideo` do not capture the island (the Lock Screen and the app
+only), so island evidence comes from the DeviceHub window; and AXe's `home` and `lock` buttons did nothing on this
+runtime (DeviceHub's side button and `simctl launch` of another app were used instead). The chronod log shows the
+extension rendering every presentation (`WidgetRenderer_Activities … app.tapiro.LiveActivity`).
+
+Xcode previews of the four presentations were not run (they need the Xcode GUI; see the IAP plan's spike A note).
+
+### Spike B: plugin shape
+
+- `plugins/withLiveActivity.js` adds the `TapiroLiveActivity` app extension (`app.tapiro.LiveActivity`, widgetkit
+  extension point, iOS 26.0, iPhone only, automatic signing with the app's team when one is set), embeds it in
+  「Embed Foundation Extensions」 with one target dependency, writes its `Info.plist`, and sets
+  `NSSupportsLiveActivities` on the app. No app group, no push entitlement (L2).
+- One copy of each Swift file: `modules/tapiro-kit/ios/LiveActivity/TapiroActivityAttributes.swift` is compiled by the
+  kit pod (its source glob) and, by path reference, by the extension; the extension's views live in
+  `modules/tapiro-kit/widget/` (outside the pod glob). ActivityKit matched the two copies (the activity rendered).
+- `expo prebuild --clean` with the flag twice: the project differs only in the generated object ids; `Info.plist`
+  files are identical. Signed ad hoc for the Simulator; signing was never disabled.
+- Gate: the plugin does nothing unless prebuild runs with `TAPIRO_LIVE_ACTIVITY=1`, so verify and release builds carry
+  no extension and no `NSSupportsLiveActivities` until 274–278 are answered (checked: a plain prebuild has neither).
+  The kit's `LiveActivity` facade (`start`, `update`, `end`, `list`, typed codes `disabled`, `unsupported`, `tooMany`,
+  `tooLarge`, `unentitled`, `failed`) is compiled always and called only from the dev-only scene.
+
+### Spike C (device, skipped: needs the owner's iPhone)
+
+What it would check on a Dynamic Island iPhone with Developer Mode and free provisioning:
+
+1. Whether the island shows Tapiro's own activity while Tapiro is in front (`home.live-activity.in-app`).
+2. Whether an `update` sent while Tapiro is suspended in the background arrives, and how long until iOS stops it.
+3. The Lock Screen consent prompt's timing and what a 「Don't Allow」 does to later starts (`disabled`).
+4. `staleDate` and the stale look after the app stops updating (L4, 278).
+5. Free provisioning signing of the extension (`app.tapiro.LiveActivity` App ID under the free team).
+
+### ★ Spike choices (agent, for veto)
+
+- **L1 decided**: our own `withLiveActivity` (no `@bacons/apple-targets`); it took one prebuild fix (group path) and
+  one (duplicate dependency) inside the time box.
+- **L6** The extension exists only behind `TAPIRO_LIVE_ACTIVITY=1` at prebuild until the owner answers 278; then the
+  flag goes and the plugin always applies.
+- **L7** Placeholder views are marked `PLACEHOLDER 276` on screen and in code; Task 4 replaces them whole.
+
+### What changes in later tasks
+
+- Task 4 replaces `modules/tapiro-kit/widget/TapiroLiveActivityWidget.swift` and adds VoiceOver labels; the attributes
+  type gains the fields 274 and 276 need (both copies change together, being one file).
+- Task 5 uses the kit `LiveActivity` facade and adds the `activityStateUpdates` event (L5), not built in the spike.
+- Island checks in UI cases need a DeviceHub capture or a device; `simctl` screenshots cannot see the island.
 
 ## Tasks
 

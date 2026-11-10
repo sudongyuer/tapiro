@@ -1,0 +1,93 @@
+{
+  "appPolicies": {
+    "eula": "",
+    "policies": [
+      {
+        "locale": "en_US",
+        "policyText": "",
+        "policyURL": ""
+      }
+    ]
+  },
+  "identifier": "7A9E1C33",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "4.90",
+      "familyShareable": false,
+      "internalID": "A0000005",
+      "localizations": [
+        {
+          "description": "5 貘币",
+          "displayName": "5 貘币",
+          "locale": "zh_Hans"
+        },
+        {
+          "description": "5 Tapiro coins",
+          "displayName": "5 coins",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "app.tapiro.coins.5",
+      "referenceName": "Coins 5",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "9.90",
+      "familyShareable": false,
+      "internalID": "A0000011",
+      "localizations": [
+        {
+          "description": "11 貘币",
+          "displayName": "11 貘币",
+          "locale": "zh_Hans"
+        },
+        {
+          "description": "11 Tapiro coins",
+          "displayName": "11 coins",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "app.tapiro.coins.11",
+      "referenceName": "Coins 11",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "29.90",
+      "familyShareable": false,
+      "internalID": "A0000035",
+      "localizations": [
+        {
+          "description": "35 貘币",
+          "displayName": "35 貘币",
+          "locale": "zh_Hans"
+        },
+        {
+          "description": "35 Tapiro coins",
+          "displayName": "35 coins",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "app.tapiro.coins.35",
+      "referenceName": "Coins 35",
+      "type": "Consumable"
+    }
+  ],
+  "settings": {
+    "_askToBuyEnabled": false,
+    "_billingGracePeriodEnabled": false,
+    "_billingIssuesEnabled": false,
+    "_disableDialogs": false,
+    "_failTransactionsEnabled": false,
+    "_locale": "en_MY",
+    "_renewalBillingIssuesEnabled": false,
+    "_storefront": "MYS",
+    "_storeKitErrors": [],
+    "_timeRate": 0
+  },
+  "subscriptionGroups": [],
+  "version": {
+    "major": 4,
+    "minor": 0
+  }
+}

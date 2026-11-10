@@ -1,0 +1,22 @@
+ LOG  [store-spike] signed in 7e570000-0000-4000-8000-00000000a001
+ LOG  [store-spike] purchase app.tapiro.coins.11 pending
+ LOG  [store-spike] tx updates 0 app.tapiro.coins.11 env=Xcode revoked=false verified=true
+ LOG  [store-spike] forward app.tapiro.coins.11 0 {"kind":"finished","answer":{"ok":true,"status":"credited","balance":140}}
+ LOG  [store-spike] signed in 7e570000-0000-4000-8000-00000000a001
+ LOG  [store-spike] purchase app.tapiro.coins.5 cancelled
+ LOG  [store-spike] signed in 7e570000-0000-4000-8000-00000000a001
+ LOG  [store-spike] products {"products":[{"displayPrice":"MYR 29.90","id":"app.tapiro.coins.35","price":29.9,"currencyCode":"MYR","displayName":"35 coins"},{"displayPrice":"MYR 4.90","id":"app.tapiro
+ LOG  [store-spike] signed in 7e570000-0000-4000-8000-00000000a001
+ LOG  [store-spike] purchase app.tapiro.coins.5 purchased
+ LOG  [store-spike] tx purchase 0 app.tapiro.coins.5 env=Xcode revoked=false verified=true
+ LOG  [store-spike] forward app.tapiro.coins.5 0 {"kind":"finished","answer":{"ok":true,"status":"credited","balance":145}}
+ LOG  [store-spike] purchase app.tapiro.coins.11 purchased
+ LOG  [store-spike] tx purchase 1 app.tapiro.coins.11 env=Xcode revoked=false verified=true
+ LOG  [store-spike] forward app.tapiro.coins.11 1 {"kind":"finished","answer":{"ok":true,"status":"credited","balance":156}}
+ LOG  [store-spike] purchase app.tapiro.coins.35 purchased
+ LOG  [store-spike] tx purchase 2 app.tapiro.coins.35 env=Xcode revoked=false verified=true
+ LOG  [store-spike] forward app.tapiro.coins.35 2 {"kind":"finished","answer":{"ok":true,"status":"credited","balance":191}}
+ LOG  [store-spike] signed in 7e570000-0000-4000-8000-00000000a001
+ LOG  [store-spike] purchase app.tapiro.coins.5 purchased
+ LOG  [store-spike] tx updates 0 app.tapiro.coins.5 env=Xcode revoked=false verified=true
+ LOG  [store-spike] forward app.tapiro.coins.5 0 {"kind":"finished","answer":{"ok":true,"status":"credited","balance":196}}

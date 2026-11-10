@@ -86,6 +86,8 @@
       ],
       "./plugins/withoutAppleSignInEntitlement",
       "./plugins/withoutPushEntitlement",
+      "./plugins/withStoreKitConfiguration",
+      "./plugins/withLiveActivity",
       "expo-image",
       "expo-status-bar"
     ],
