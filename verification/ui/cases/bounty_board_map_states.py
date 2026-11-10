@@ -11,11 +11,12 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close  # noqa: E402
+from gestures import drag  # noqa: E402
 from map import CARD_FILL, MAP, map_at_rest, open_scene, pin_id, pins  # noqa: E402
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/debug/BoardMapScene.tsx', 'src/features/home/',
         'src/app/(tabs)/', 'verification/ui/bounty.py',
-        'modules/tapiro-kit/ios/BountyMapView.swift', 'verification/ui/map.py', 'src/features/place/', 'src/features/block/']
+        'modules/tapiro-kit/ios/BountyMapView.swift', 'verification/ui/map.py', 'verification/ui/gestures.py', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-map'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
@@ -98,7 +99,7 @@ map_at_rest(ui)
 items = ui.read()
 assert by_id(items, 'bounty-board-stale') is None, 'the stale notice shows before any pull'
 s = items[0]['frame']
-ui.swipe((s['width'] / 2, s['height'] * PULL[0]), (s['width'] / 2, s['height'] * PULL[1]), 0.6)
+drag(ui, (s['width'] / 2, s['height'] * PULL[0]), (s['width'] / 2, s['height'] * PULL[1]), duration=1.2, steps=80)
 stale_text = re.compile(ui.pattern('bounty.board.state.stale', time=r'\d{2}:\d{2}'))
 ui.wait_label('bounty-board-stale', lambda label: bool(stale_text.fullmatch(label)),
               'a failed refresh shows no stale notice with a time')
@@ -130,7 +131,7 @@ open_scene(ui, *ME, '-uiVerifyBoardFail', 'refresh', drop=NO_ORIGIN, ready=pin_i
 map_at_rest(ui)
 rest_y = ui.element('bounty-filter-all')['frame']['y']
 s = ui.read()[0]['frame']
-ui.swipe((s['width'] / 2, s['height'] * PULL[0]), (s['width'] / 2, s['height'] * PULL[1]), 0.6)
+drag(ui, (s['width'] / 2, s['height'] * PULL[0]), (s['width'] / 2, s['height'] * PULL[1]), duration=1.2, steps=80)
 ui.wait(lambda items: by_id(items, 'bounty-filter-all')
         and abs(by_id(items, 'bounty-filter-all')['frame']['y'] - rest_y) <= 2,
         'the refresh spinner did not end after an instant failure: the chips stay pulled down', timeout=8)

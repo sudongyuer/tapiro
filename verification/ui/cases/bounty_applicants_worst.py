@@ -15,7 +15,7 @@ from bounty import relaunch  # noqa: E402
 from choose import hold_select  # noqa: E402
 from driver import UI, assert_touch_target, by_id, dominant, reach_home  # noqa: E402
 from gestures import drag  # noqa: E402
-from ocr import find, lines  # noqa: E402
+from ocr import find, lines, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/detail/', 'src/features/bounty/board/',
         'src/features/bounty/shared/', 'src/ui/HoldButton.tsx', 'src/ui/TierMark.tsx', 'src/ui/Mascot.tsx',
@@ -34,14 +34,15 @@ META_TOP_PT = 50
 PINNED_MAX_SHARE = 0.38
 DONE_ROW_MAX_PT = 76
 TEXT_CONTRAST_MIN = 4.5
-CHECK_LANE_PT = 40
+CHECK_LANE_PT = 24
 TIER_TAIL_PT = 14
 INK_CONTRAST = 1.5
-TIER_GAP_PT = 6
 TIER_SLACK_PT = 2
-NAME_LINE_PT = 36
+NAME_LINE_PT = 24
 NON_TEXT_CONTRAST_MIN = 3
 HEAD_PITCH_PT = 13
+HEAD_PITCH_SLACK_PT = 0.7
+HEAD_CHAIN = 3
 HEAD_RANK = 4
 HEAD_OUTLINE_MIN_PT2 = 12
 REFERENCE = f'{ROW}04'
@@ -145,25 +146,40 @@ def tier_text_contrast(shot, f, meta_y):
     return max(contrast(rgb, background) for rgb in tail)
 
 
-# The tier is the rightmost run of ink on the name line whose gaps stay under TIER_GAP_PT (heads 1 pt apart, text 3 pt
-# after them); the name ends at least 8 pt to its left. A truncated tier is narrower than the short-name reference row.
+def ink_runs(ink):
+    runs, start = [], None
+    for i, inked in enumerate(ink + [False]):
+        if inked and start is None:
+            start = i
+        elif not inked and start is not None:
+            runs.append((start, i))
+            start = None
+    return runs
+
+
+# The heads are the rightmost chain of at least HEAD_CHAIN equal-width ink runs at HEAD_PITCH_PT; the tier starts
+# HEAD_RANK - 1 pitches left of the chain's last head and ends at the last ink before the check lane. The name's gap
+# to the first head (6 pt beside 「Siti 4」) is as wide as the gaps between heads, so a gap rule cannot split them.
 def tier_bounds(shot, f, bottom, lane=CHECK_LANE_PT):
-    band = {'x': f['x'] + 40, 'y': f['y'] + 4, 'width': f['width'] - 40 - lane, 'height': bottom - f['y'] - 4}
+    band = {'x': f['x'], 'y': f['y'] + 4, 'width': f['width'] - lane, 'height': bottom - f['y'] - 4}
     background = dominant(shot, band)
     x0, x1 = round(band['x'] * shot.scale), round((band['x'] + band['width']) * shot.scale)
     y0, y1 = round(band['y'] * shot.scale), round((band['y'] + band['height']) * shot.scale)
     ink = [any(contrast(shot._px(x, y), background) > INK_CONTRAST for y in range(y0, y1)) for x in range(x0, x1)]
-    assert any(ink), f'no ink on the name line of {f}'
-    right = max(i for i, inked in enumerate(ink) if inked)
-    left, gap = right, 0
-    for i in range(right, -1, -1):
-        if ink[i]:
-            left, gap = i, 0
-        else:
-            gap += 1
-            if gap > TIER_GAP_PT * shot.scale:
-                break
-    return {'left': x0 + left, 'right': x0 + right, 'y0': y0, 'y1': y1, 'background': background}
+    runs = ink_runs(ink)
+    assert runs, f'no ink on the name line of {f}'
+    pitch, slack = HEAD_PITCH_PT * shot.scale, HEAD_PITCH_SLACK_PT * shot.scale
+    last = None
+    for end in range(len(runs) - 1, HEAD_CHAIN - 2, -1):
+        chain = runs[end - HEAD_CHAIN + 1:end + 1]
+        width = chain[-1][1] - chain[-1][0]
+        if all(abs((b[0] - a[0]) - pitch) <= slack for a, b in zip(chain, chain[1:])) \
+                and all(abs((r[1] - r[0]) - width) <= slack for r in chain):
+            last = chain[-1]
+            break
+    assert last, f'no {HEAD_CHAIN} heads at {HEAD_PITCH_PT} pt on the name line of {f}: runs {runs}'
+    left = last[0] - round((HEAD_RANK - 1) * pitch)
+    return {'left': x0 + left, 'right': x0 + runs[-1][1] - 1, 'y0': y0, 'y1': y1, 'background': background}
 
 
 def tier_span(shot, f, bottom, lane=CHECK_LANE_PT):
@@ -222,7 +238,7 @@ assert 'RM' in label('bounty-applicants-reward') and '500' in label('bounty-appl
 ui.settled(lambda items: by_id(items, WORST[0]), 'the worst rows never settled')
 ui.at_rest()
 shot = ui.snap('01-top')
-read = lines(shot)
+read = lines_in(shot, ui.locale)
 assert_row(shot, read, WORST[0])
 
 ui.tap(WORST[0])
@@ -232,12 +248,12 @@ reveal(WORST[1])
 ui.tap(WORST[1])
 assert_hold(NAMES[WORST[1]], '03-hold-cjk')
 shot = ui.snap('03-hold-cjk')
-assert_row(shot, lines(shot), WORST[1])
+assert_row(shot, lines_in(shot, ui.locale), WORST[1])
 
 reveal(WORST[2])
 ui.at_rest()
 shot = ui.snap('04-unbroken')
-assert_row(shot, lines(shot), WORST[2])
+assert_row(shot, lines_in(shot, ui.locale), WORST[2])
 
 relaunch(ui, drop=['-uiVerifyApplicants', 'worst'],
          add=['-uiVerifyScene', SCENE, '-uiVerifyApplicants', 'fifty'], ready=f'{ROW}01')

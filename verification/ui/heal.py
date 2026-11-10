@@ -7,6 +7,9 @@ from dataclasses import dataclass, field
 from breaker import stalled
 
 RETRIED = '(retried after a stalled device)'
+# AXe fails this way on a Simulator that has run for a while (backboardd near 200% CPU) and keeps failing on it until
+# it is shut down; a fresh boot clears it (2026-11-10).
+SESSION_LOST = 'Timed out creating the simulator remote automation session'
 
 
 @dataclass
@@ -16,6 +19,18 @@ class Attempt:
     timeouts: int = 0
     duration: float = 0.0
     log: str = ''
+
+    @property
+    def session_lost(self):
+        return SESSION_LOST in self.message
+
+    @property
+    def stalled(self):
+        return stalled(self.timeouts) or self.session_lost
+
+    @property
+    def stall_reason(self):
+        return 'lost the AXe automation session' if self.session_lost else f'{self.timeouts} command timeouts'
 
 
 @dataclass
@@ -88,7 +103,7 @@ class Scheduler:
 
 
 def settle(ticket, name, attempt):
-    stall = stalled(attempt.timeouts)
+    stall = attempt.stalled
     if ticket.stalled_on is None:
         return Outcome(ticket.job, name, attempt.status, attempt.message, attempt.duration,
                        stalled_devices=[name] if stall else [])
@@ -114,7 +129,7 @@ def work(scheduler, device, attempt, heal, report, halt):
             try:
                 result = attempt(device, ticket.job)
                 report.attempted(name, ticket.job, result)
-                if not stalled(result.timeouts):
+                if not result.stalled:
                     report.finished(settle(ticket, name, result))
                     continue
                 retrying = ticket.stalled_on is None and result.status != 'pass'

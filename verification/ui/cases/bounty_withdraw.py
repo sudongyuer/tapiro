@@ -10,7 +10,7 @@ from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E4
 DEPS = ['src/features/bounty/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py', 'verification/ui/apply.py',
         'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 BUDGET = 300
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardDelayMs', '6000']
 CARD = 'bounty-card-fixture-bounty-03'
 STICKER_BAND = 90
 

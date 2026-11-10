@@ -32,8 +32,10 @@ ui.capture('01-report')
 submit_report(ui)
 ui.element('profile-report-failed', timeout=30)
 assert by_id(ui.read(), 'profile-report'), 'the sheet closed after a failed report'
+assert rep_calls(ui, 'reportReview', 1, timeout=15), 'the first report never reached the call log'
 time.sleep(2)  # a replay would follow the failed answer
-assert len(rep_calls(ui, 'reportReview', 2, timeout=2)) == 1, 'the failed report was sent again on its own'
+sent = rep_calls(ui, 'reportReview', 2, timeout=2)
+assert len(sent) == 1, f'the failed report was sent again on its own: {sent}'
 ui.at_rest()
 ui.capture('02-failed')
 

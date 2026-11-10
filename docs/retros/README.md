@@ -208,3 +208,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-09 | board tier in ms          | pending         | 0             | ~10 min (OCR misreads in ms)                  | 0                       | pending               |
 | 2026-11-09 | paging and post place     | 1               | 3             | ~20 min (draft cases, a killed recorder)      | 0                       | 0                     |
 | 2026-11-09 | ask server core           | pending         | 2             | ~0                                            | 0                       | pending               |
+| 2026-11-10 | verify:full round         | 3               | 2             | ~1.5 h (two attempts lost the AXe session)    | 0                       | 0                     |

@@ -10,7 +10,7 @@ from driver import UI, by_id, reach_home  # noqa: E402
 DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py',
         'verification/ui/apply.py', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
 BUDGET = 360
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardDelayMs', '6000']
 CARD = 'bounty-card-fixture-bounty-01'
 NOTE = 'see you at the lobby'
 OTHER = 'bounty-card-fixture-bounty-02'

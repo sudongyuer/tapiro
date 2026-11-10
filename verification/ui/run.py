@@ -293,9 +293,9 @@ class Report:
     def stalled(self, name, job, attempt, retrying):
         appearance, case, _, locale, _, _ = job
         with self.guard:
-            self.stalls.append(f'{name} ({locale} {appearance} {case}, {attempt.timeouts} command timeouts)')
+            self.stalls.append(f'{name} ({locale} {appearance} {case}, {attempt.stall_reason})')
             then = 'rebooting it and retrying the run once' if retrying else 'rebooting it'
-            print(f'STALL {name}: {attempt.timeouts} command timeouts in {locale} {appearance} {case}; {then}',
+            print(f'STALL {name}: {attempt.stall_reason} in {locale} {appearance} {case}; {then}',
                   flush=True)
 
     def finished(self, outcome):

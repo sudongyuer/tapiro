@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-10 (verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -39,16 +39,28 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Queue
 
-0. `bun run verify:full` has still not run on main since the reviews and coins milestone; run it when the machine is
-   idle. The milestone's remaining en and ms cases ran on 33563b6 (7 en and 16 ms cases, reported done by the main
-   session; artifacts removed with their worktree), and their three layout findings were closed in `fix/ms-layout`.
+0. `bun run verify:full` ran on 271ba41 (2026-11-10, 1174 runs, 7 h 46 min, retro `2026-11-10-verify-full-round`):
+   1052 passed first time, 122 failed. Fixed in `fix/verify-full-round`: number pads drop AXe's HID keys on iOS 27.2,
+   so `keys.py` taps the pad (`bounty_post_form`, `_art`, `_draft`, `ride_settle_split`, `payee_add_bank` pass);
+   a lost AXe automation session now stalls and reboots the Simulator; recorded frames read as sRGB (`bounty_select`
+   dark); short in-flight windows, a swipe pull, the tile screen, the split applicant row and early call-log reads.
+   Still failing, each a queue item below: 0a, 0b, and check work in 0c.
+   - 0a. Real bug: with a saved draft the 「先付清再发新的」 hint never shows (`bounty_post_blocked`, `_unpaid_hint`,
+     `_worst`, every locale). A focus-order fix failed 3 of 3 and was reverted; next suspect: the Alert is presented
+     while the sheet or push transition runs.
+   - 0b. Real bug: saving a payee sheet crashed the app 3 times (`payee_list` ms, `payee_qr_real` en dark): SIGABRT in
+     `UICollectionView _resignOrRebaseFirstResponderViewWithIndexPathMapping`, reached from react-native-keyboard-controller's
+     `resignFirstResponder` swizzle during a SwiftUI List update. Same signature on 2026-11-06. Needs a device repro.
+   - 0c. Checks: the pad stays up and covers 时间 and the currency menu (`bounty_post_optional`, `bounty_post_currency`);
+     `ride_create_form` picks KLIA2 from a list under the keyboard; `ride_create_worst` en/ms never scrolls to the seats
+     row; `chat_entry_status` en has nothing under the bar; `home_settled_collect` fails when the card leaves in the same
+     frame the sticker lands (owner: is 「same frame」 a pass?); `live_applicants` (known, open); `bounty_status_poster`
+     (`axe type` repeated a space).
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 3–10 not started.
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight.
-3. `bounty_post_form`, `bounty_post_optional` and `ride_create_form` were last reported failing on dropped typed keys
-   (2026-11-07). `bounty_post_place` was blamed on the same drop and was not: an `axe key` Return leaves the field focused
-   while typed keys land, and the on-screen Return works (`bounty.end_editing`). Run them again before trusting that
-   diagnosis.
+3. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
+   were HID keys sent to a number pad, which iOS 27.2 ignores; on-screen taps land (see 0).
 
 ## Owner decisions pending
 
