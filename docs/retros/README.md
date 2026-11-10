@@ -210,3 +210,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-09 | ask server core           | pending         | 2             | ~0                                            | 0                       | pending               |
 | 2026-11-10 | verify:full round         | 3               | 2             | ~1.5 h (two attempts lost the AXe session)    | 0                       | 0                     |
 | 2026-11-10 | post hint, keypads, crash | 2               | 1             | ~30 min (crash probes, no repro)              | 0                       | 0                     |
+| 2026-11-10 | CI pgTAP and stack tests  | 0               | 1             | ~5 min (two stale stack tests)                | 0                       | 0                     |

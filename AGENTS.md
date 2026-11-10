@@ -221,8 +221,8 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
 - Each implementation task writes the UI cases for the screens it changes, in the same task. Do not
   collect cases into a separate task at the end.
 - UI checks run at milestones, not per PR. Every PR runs the fast checks (`bun test`, `tsc`, lint on changed files,
-  `format:check`, `check-specs`, `check-story-map`, pgTAP when SQL changed) and `bun run verify:smoke` (a few core
-  cases, zh-Hans light). UI cases for changed screens are still written in the same task, but tasks do not run them:
+  `format:check`, `check-specs`, `check-story-map`; CI's `supabase` job adds pgTAP, `test:deno` and `test:stack` on a fresh
+  stack) and `bun run verify:smoke` (a few core cases, zh-Hans light). UI cases for changed screens are still written in the same task, but tasks do not run them:
   the feature's cases (new and changed, chosen as below) run once, together, when the feature's last task is done, and
   a fix round reruns only what it touched. Reason: per-task runs and reruns repeated the slowest step (user,
   2026-10-29). A milestone (a feature area done, for example payment, bounty or carpool, and before each TestFlight
