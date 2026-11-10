@@ -2,13 +2,23 @@ import { describe, expect, test } from 'bun:test';
 
 import { APPLE_ROOT_CA_G3 } from './appleRoot.ts';
 import { iapConfig } from './config.ts';
+import { LOCAL_ENV, serviceRoleKey } from './fakes.ts';
 import { base64Der, peekNotificationEnvironment, peekTransactionEnvironment } from './jws.ts';
 
 const HOSTED = 'https://abcdefghijklmnop.supabase.co';
-const LOCAL = 'http://kong:8000';
+const TEST_ROOT = 'MIIBtest';
 
 const configFor = (vars: Record<string, string>) => iapConfig((key) => vars[key]);
 const accepted = (vars: Record<string, string>) => [...configFor(vars).accepted].sort();
+const local = (overrides: Record<string, string> = {}) => ({ ...LOCAL_ENV, ...overrides });
+const hosted = (overrides: Record<string, string> = {}) =>
+  local({
+    SUPABASE_URL: HOSTED,
+    SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey('supabase'),
+    SB_REGION: 'ap-southeast-1',
+    DENO_DEPLOYMENT_ID: 'abcdefghijklmnop_fn_3',
+    ...overrides,
+  });
 
 function unsigned(payload: unknown) {
   const part = (value: unknown) =>
@@ -21,27 +31,44 @@ describe('iap config', () => {
     expect(accepted({ SUPABASE_URL: HOSTED })).toEqual(['Sandbox']);
   });
 
-  test('a hosted project never accepts Xcode, even with the local flag set', () => {
-    expect(accepted({ SUPABASE_URL: HOSTED, IAP_ALLOW_XCODE: '1' })).toEqual(['Sandbox']);
+  test('a hosted project never accepts Xcode or a test root, even with local.env copied there', () => {
+    expect(accepted(hosted({ IAP_TEST_ROOT: TEST_ROOT }))).toEqual(['Sandbox']);
+    expect(configFor(hosted({ IAP_TEST_ROOT: TEST_ROOT })).testRoots).toEqual([]);
   });
 
-  test('a local stack accepts Xcode only with the flag', () => {
-    expect(accepted({ SUPABASE_URL: LOCAL })).toEqual(['Sandbox']);
-    expect(accepted({ SUPABASE_URL: LOCAL, IAP_ALLOW_XCODE: '1' })).toEqual([
-      'LocalTesting',
-      'Sandbox',
-      'Xcode',
-    ]);
-    expect(accepted({ SUPABASE_URL: 'http://127.0.0.1:54321', IAP_ALLOW_XCODE: '1' })).toContain(
+  test('the local stack accepts Xcode only with the flag, and a test root only when one is set', () => {
+    expect(accepted(local({ IAP_ALLOW_XCODE: '' }))).toEqual(['Sandbox']);
+    expect(accepted(local())).toEqual(['LocalTesting', 'Sandbox', 'Xcode']);
+    expect(accepted(local({ SUPABASE_URL: 'http://127.0.0.1:54321' }))).toContain('Xcode');
+    expect(configFor(local()).testRoots).toEqual([]);
+    expect(configFor(local({ IAP_TEST_ROOT: TEST_ROOT })).testRoots).toEqual([TEST_ROOT]);
+  });
+
+  test('a local URL is not enough: a server with its own service key is not the local stack', () => {
+    const staging = local({
+      SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey('supabase'),
+      IAP_TEST_ROOT: TEST_ROOT,
+    });
+    expect(accepted(staging)).toEqual(['Sandbox']);
+    expect(configFor(staging).testRoots).toEqual([]);
+    expect(accepted(local({ SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_abc' }))).toEqual(['Sandbox']);
+    expect(accepted(local({ SUPABASE_SERVICE_ROLE_KEY: '' }))).toEqual(['Sandbox']);
+  });
+
+  test('a variable only hosted functions get refuses the local paths', () => {
+    for (const marker of ['SB_REGION', 'DENO_DEPLOYMENT_ID']) {
+      const vars = local({ [marker]: 'x', IAP_TEST_ROOT: TEST_ROOT });
+      expect(accepted(vars)).toEqual(['Sandbox']);
+      expect(configFor(vars).testRoots).toEqual([]);
+    }
+    expect(accepted(local({ SB_EXECUTION_ID: 'b54e2b5b-2253-4a93-a967-090fa2ef2641' }))).toContain(
       'Xcode',
     );
   });
 
   test('a host that only contains a local name is not local', () => {
-    expect(accepted({ SUPABASE_URL: 'https://kong.example.com', IAP_ALLOW_XCODE: '1' })).toEqual([
-      'Sandbox',
-    ]);
-    expect(accepted({ SUPABASE_URL: 'not a url', IAP_ALLOW_XCODE: '1' })).toEqual(['Sandbox']);
+    expect(accepted(local({ SUPABASE_URL: 'https://kong.example.com' }))).toEqual(['Sandbox']);
+    expect(accepted(local({ SUPABASE_URL: 'not a url' }))).toEqual(['Sandbox']);
   });
 
   test('Production is accepted once the numeric app Apple ID is configured', () => {
@@ -49,6 +76,7 @@ describe('iap config', () => {
       bundleId: 'app.tapiro',
       appAppleId: 6740000000,
       accepted: new Set(['Sandbox', 'Production']),
+      testRoots: [],
     });
     expect(accepted({ SUPABASE_URL: HOSTED, IAP_APP_APPLE_ID: 'abc' })).toEqual(['Sandbox']);
   });

@@ -17,6 +17,7 @@
     "supabase/functions/tests/deno-bun-test.ts",
     "supabase/functions/_shared/iap/apple.ts",
     "supabase/functions/_shared/iap/runtime.ts",
+    "supabase/functions/_shared/iap/test-pki.ts",
     "supabase/functions/**/*.deno-test.ts"
   ]
 }
