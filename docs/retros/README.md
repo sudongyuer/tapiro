@@ -213,3 +213,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-10 | CI pgTAP and stack tests    | 0               | 1             | ~5 min (two stale stack tests)                | 0                       | 0                     |
 | 2026-11-11 | IAP and Live Activity plans | 0               | 0             | ~0                                            | 0                       | 0                     |
 | 2026-11-11 | IAP server                  | 0               | 1             | ~40 min (library probe in the Edge Runtime)   | 0                       | pending               |
+| 2026-11-11 | IAP review fixes            | 0               | 1             | ~0                                            | 0                       | 0                     |
