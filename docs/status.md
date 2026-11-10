@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
+Updated: 2026-11-11 (266 A: sheets with a SwiftUI text field resign it before they close; the payee save crash reproduced under load, 5 of 72 runs before and 0 of 72 after); 2026-11-10 (the unpaid hint shows with a draft; forms with a number pad dismiss it on scroll, ★ for veto; the payee save crash waits on an owner choice); 2026-11-10 (CI's `supabase` job runs pgTAP, `test:deno` and `test:stack` on a fresh local stack on every PR; two stale payment stack tests fixed; verify:full on main: 1052 of 1174 first-run passes; number pads typed by tapping; two app bugs queued); 2026-11-09 (the 消息 list no longer stalls around a reload; a head read that shrinks a list asks for the next page, measured on all three lists; `bounty_post_place` passes; a stale 消息 list pages on (★ for veto); 问小貘 server and draft contract built with a fake provider, not reachable from the app; the board card and the map card show the poster's tier whole, name above tier; 264 A: rides closed without a Tapiro payment no longer count toward distinct people); 2026-11-07 (the milestone's en and ms cases done, the profile tier shows whole; reviews, profile, mascot level, coins in 我的, weekly feed and invites done: milestone run and Implementation Record; pinned bottom bars opaque; selected chips and the home status bar readable in dark; review and coin paging no longer stall around a reload; mascot level and weekly feed built; closed rides count toward 靠谱度; reviews can be reported); 2026-11-06 (owner answers: questions 238–255 and every pending ★ accepted; opaque secondary buttons in
 pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, server and client core).
 
 ## Built and merged
@@ -44,17 +44,30 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
    so `keys.py` taps the pad (`bounty_post_form`, `_art`, `_draft`, `ride_settle_split`, `payee_add_bank` pass);
    a lost AXe automation session now stalls and reboots the Simulator; recorded frames read as sRGB (`bounty_select`
    dark); short in-flight windows, a swipe pull, the tile screen, the split applicant row and early call-log reads.
-   Then `fix/post-hint-keypad-crash` (2026-11-10): 0a fixed, the pad defect behind 0c fixed in the product, 0b open.
+   Then `fix/post-hint-keypad-crash` (2026-11-10): 0a fixed, the pad defect behind 0c fixed in the product; 0b fixed
+   in `fix/payee-resign-before-dismiss` (2026-11-11).
    - 0a. Fixed: with a saved draft the 「先付清再发新的」 hint never showed. Logged: the status answered (5 ms), then
      the tile screen, mounting unfocused under the form, blurred and dropped the waiting answer, then the form focused.
      The gate now tracks focus per screen and ignores a blur from a screen that was never focused (unit tests fail on
      the old gate). The code path dates from #40; no run between the 2026-10-31 milestone and this full run ran the
      three cases.
-   - 0b. Open, owner decision: saving a payee sheet crashed the app 3 times in the full run (SIGABRT, UICollectionView
-     「first responder … refused to resign」 while React removes the sheet's SwiftUI form with its text field still
-     first responder). Not reproduced here: 0 of 15 adds and 0 of 12 `payee_list` re-picks (ms). Same assertion as
-     expo/expo#51674 (closed without a fix); keyboard-controller's swizzle only passes the call through. Options in
-     the PR.
+   - 0b. Fixed in `fix/payee-resign-before-dismiss` (266 A): saving a payee sheet crashed the app (SIGABRT,
+     UICollectionView 「first responder … refused to resign」 while React removes the sheet's SwiftUI form with its text
+     field still first responder). Reproduced under load: `payee_list`, `payee_qr_real`, `payee_add_bank`,
+     `payee_add_duitnow`, `payee_qr_alipay` and `payee_qr_wechat` in ms, light and dark, on three Simulators with six
+     busy CPU loops, 6 rounds of 12 runs each (two matched pairs of 3 rounds): before the fix 5 crashes in 72 runs (all
+     this assertion, at a save in `payee_list` twice, `payee_qr_real`, `payee_qr_wechat` and
+     `payee_add_bank`, all dark), with it 0 in 72 (Fisher one-sided
+     p = 0.03). The kit's `resignFocus` ends editing on every window (forced)
+     and resolves on the next main turn; `afterResign` awaits it before every close, save, stage switch or row removal of
+     a form with a SwiftUI field (payee phone, bank and QR sheets, 申请, both 举报 sheets, 回复, 有问题, the ride
+     detail sheets, 清空草稿, removing the place, 输入邀请码). The three report and reply sheets had called React
+     Native's `Keyboard.dismiss()`, which never reaches a SwiftUI field. A swipe-down of a page sheet is left to UIKit,
+     which resigns the field before React unmounts the screen: 11 swipes on the payee phone sheet with the name field
+     focused closed it without a crash (one Simulator, no added load; a probe kept out of the repo); the SwiftUI bottom
+     sheets (有问题, ride detail) route their swipe through `afterResign`. Open, not this crash: `payee_list` ms fails 「cash did not
+     turn off」 in 6 of 12 runs both before and after the fix (the switch tap does not flip it), and the payee cases lose
+     typed digits under this load.
    - 0c. Number, decimal and phone pads have no Return key, and the SwiftUI forms kept the pad up through a drag
      (measured, A/B): a real user could not put it away. The forms holding a pad and the place search results now
      dismiss the keyboard when they scroll (★ 22 in `docs/plans/2026-10-27-bounty-post.md`, for veto). Cases:
@@ -73,7 +86,6 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Owner decisions pending
 
-- 0b, the payee save crash: which fix (options in the PR `fix/post-hint-keypad-crash`).
 - ★ for veto (2026-11-10): forms that hold a number, decimal or phone pad, and the place search results, dismiss the
   keyboard as soon as they scroll (`docs/plans/2026-10-27-bounty-post.md` deviation 22).
 - ★ for veto (2026-11-10): `home_settled_collect` passes when the sticker reaches 我的 in the same frame the 已结清
