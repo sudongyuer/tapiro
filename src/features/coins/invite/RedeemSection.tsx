@@ -18,6 +18,7 @@ import {
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -39,11 +40,11 @@ export function RedeemSection({ redeem }: { redeem: RedeemState }) {
   });
   const sending = redeem.phase === 'sending';
   const empty = typed.trim().length === 0;
-  const send = () => {
+  const send = afterResign(() => {
     const code = field.sync();
     if (code.trim().length === 0 || sending) return;
     void coinsStore.redeem(code);
-  };
+  });
   const error = redeem.phase === 'failed' ? t(`coins.invite.error.${redeem.failure}`) : null;
   return (
     <Section

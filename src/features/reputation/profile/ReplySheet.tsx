@@ -11,9 +11,10 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Keyboard, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
@@ -31,12 +32,13 @@ const wraps = fixedSize({ horizontal: false, vertical: true });
 export function ReplySheet({
   personId,
   reviewId,
-  onClose,
+  onClose: leave,
 }: {
   personId: string;
   reviewId: string;
   onClose: () => void;
 }) {
+  const onClose = afterResign(leave);
   const { t } = useI18n();
   const { color } = useTheme();
   const review = useProfileReview(personId, reviewId);
@@ -55,10 +57,9 @@ export function ReplySheet({
     profileStore.dismissReplyFailure(reviewId);
   }, [reviewId]);
 
-  const send = async () => {
-    Keyboard.dismiss();
+  const send = afterResign(async () => {
     if (await profileStore.reply(reviewId, field.sync())) onClose();
-  };
+  });
 
   const confirm = () => {
     if (!ready) return;

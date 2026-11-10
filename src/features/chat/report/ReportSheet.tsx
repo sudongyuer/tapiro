@@ -12,10 +12,11 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Keyboard, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
 import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
@@ -34,13 +35,14 @@ export function ReportSheet({
   threadId,
   userId,
   messageId,
-  onClose,
+  onClose: leave,
 }: {
   threadId: string;
   userId: string;
   messageId: string | null;
   onClose: () => void;
 }) {
+  const onClose = afterResign(leave);
   const { t } = useI18n();
   const { color } = useTheme();
   const info = useChatThreadInfo(threadId);
@@ -77,11 +79,9 @@ export function ReportSheet({
     );
   };
 
-  const submit = () => {
+  const submit = afterResign(() => {
     const text = note.sync();
     if (!reason || !canSubmit(reason, text, phase)) return;
-    // The Form's collection view aborts when it rebuilds rows while the note field is first responder.
-    Keyboard.dismiss();
     setPhase('sending');
     chatStore
       .report(reportInput({ userId, messageId }, reason, text))
@@ -90,7 +90,7 @@ export function ReportSheet({
         offerBlock();
       })
       .catch(() => setPhase('failed'));
-  };
+  });
 
   return (
     <>

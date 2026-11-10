@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -30,12 +31,13 @@ type PhoneError = 'phoneEmpty' | 'phoneInvalid' | 'nameEmpty' | 'nameInvalid' | 
 export function PhoneSheet({
   userId,
   methodId,
-  onDone,
+  onDone: leave,
 }: {
   userId: string;
   methodId?: string;
   onDone: () => void;
 }) {
+  const onDone = afterResign(leave);
   const editor = useMethodEditor(userId, methodId, onDone);
   const { t } = useI18n();
   const initial = editor.existing?.type === 'duitnow_id' ? editor.existing : null;

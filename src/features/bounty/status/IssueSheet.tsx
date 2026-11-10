@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -42,8 +43,8 @@ export function IssueSheet({
   bountyId,
   open,
   name,
-  onSend,
-  onClose,
+  onSend: sent,
+  onClose: closed,
 }: {
   bountyId: string;
   open: boolean;
@@ -51,6 +52,8 @@ export function IssueSheet({
   onSend: (reason: string) => void;
   onClose: () => void;
 }) {
+  const onSend = afterResign(sent);
+  const onClose = afterResign(closed);
   return (
     <Host matchContents style={styles.anchor}>
       <BottomSheet

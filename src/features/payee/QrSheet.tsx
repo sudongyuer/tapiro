@@ -2,6 +2,7 @@ import { useCameraPermissions } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 
 import { classifyFirst, type ClassifiedQr } from './classifyQr';
 import { methodTitle, walletOf, type QrWallet } from './display';
@@ -35,7 +36,7 @@ export function QrSheet({
   methodId,
   wallet,
   repick = false,
-  onDone,
+  onDone: leave,
 }: {
   userId: string;
   methodId?: string;
@@ -43,6 +44,7 @@ export function QrSheet({
   repick?: boolean;
   onDone: () => void;
 }) {
+  const onDone = afterResign(leave);
   const { t } = useI18n();
   const editor = useMethodEditor(userId, methodId, onDone);
   const [, requestCamera] = useCameraPermissions();
@@ -126,11 +128,11 @@ export function QrSheet({
         onClose={onDone}
         onSave={save}
         onNameEdit={clearNameError}
-        onRetry={() => {
+        onRetry={afterResign(() => {
           setError(null);
           setPicked(null);
           setShowPicker(true);
-        }}
+        })}
         onMakeDefault={editor.makeDefault}
         onDelete={editor.remove}
       />

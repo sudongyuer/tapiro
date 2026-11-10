@@ -21,10 +21,11 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { SyncedTextField, useSyncedText, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
@@ -44,7 +45,9 @@ type Props = {
   onAddPayee: () => void;
 };
 
-export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
+export function ApplySheet({ id, surface, onClose: leave, onAddPayee: addPayee }: Props) {
+  const onClose = useMemo(() => afterResign(leave), [leave]);
+  const onAddPayee = afterResign(addPayee);
   const { t } = useI18n();
   const { color } = useTheme();
   const { state, send } = useApply(id, surface, onClose);
@@ -55,10 +58,10 @@ export function ApplySheet({ id, surface, onClose, onAddPayee }: Props) {
     noteDrafts.set(id, text);
     setTyped(text);
   });
-  const submit = () => {
+  const submit = afterResign(() => {
     note.sync();
     void send();
-  };
+  });
 
   return (
     <>

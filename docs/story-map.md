@@ -273,6 +273,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | payee.list.swipe-delete | 左滑一行删除这个方式                                        | ui:payee_swipe_delete, unit:src/features/payee/methods.test.ts                                                                                                                                                          |
 | payee.list.owner-only   | 别的用户看不到也改不了我的收款方式                          | db:supabase/tests/payee_methods.test.sql, int:src/features/payee/payeeService.integration.ts#another user sees none of them and cannot change them                                                                      |
 | payee.list.load-retry   | 加载失败可以重试；删除失败列表不变                          | unit:src/features/payee/payeeStore.test.ts                                                                                                                                                                              |
+| payee.list.save-closes | 带输入框的表单在保存、关闭或删掉一组输入框之前先收起键盘，收完再关（266 A）；输入框还在编辑时关掉表单曾经闪退 | unit:src/ui/resignFirst.test.ts#the action that unmounts the sheet waits until the resign has finished, ui:payee_list |
 
 ### payee.add-alipay 添加支付宝收钱码
 

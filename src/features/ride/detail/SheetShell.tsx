@@ -22,6 +22,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { afterResign } from '@/ui/afterResign';
 import { useTheme } from '@/ui/theme/useTheme';
 
 export function SheetShell({
@@ -31,8 +32,8 @@ export function SheetShell({
   confirmDisabled = false,
   large = false,
   testID,
-  onConfirm,
-  onClose,
+  onConfirm: confirmTapped,
+  onClose: closed,
   children,
 }: {
   open: boolean;
@@ -45,6 +46,8 @@ export function SheetShell({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const onConfirm = afterResign(confirmTapped);
+  const onClose = afterResign(closed);
   const { t } = useI18n();
   const { color } = useTheme();
   return (
