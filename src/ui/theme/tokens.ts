@@ -12,6 +12,7 @@ export const vars = {
   '--color-urgent-fill': '#FCE6E2',
   '--color-warning-fill': '#FFF2D6',
   '--color-filled-glow': '#FFF4D6',
+  '--color-filled-row': '#FFFFFF',
 
   '--color-moment-bg': '#F4F0E6',
   '--color-moment-grain': '#3C321E21',
@@ -159,6 +160,7 @@ export const vars = {
   '--duration-fade': 150,
   '--duration-settle': 240,
   '--duration-peel': 420,
+  '--duration-sheet-rise': 1500,
   '--duration-filled-hold': 600,
   '--duration-filled-fade': 600,
 } as const;
@@ -178,6 +180,7 @@ export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-urgent-fill': '#3D1D19',
   '--color-warning-fill': '#3A2A0E',
   '--color-filled-glow': '#3D3216',
+  '--color-filled-row': '#1C1C1E',
   '--color-moment-bg': '#24221E',
   '--color-moment-grain': '#F4F0E61A',
   '--color-moment-chip': '#FFFFFF1A',

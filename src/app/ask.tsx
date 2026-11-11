@@ -32,8 +32,8 @@ export default function Ask() {
   const startPost = useStartPost({
     open: () =>
       toForm.current || (userId !== null && hasPostDraft(userId))
-        ? router.navigate('/bounty-post/form', { withAnchor: true })
-        : router.navigate('/bounty-post'),
+        ? router.replace('/bounty-post/form', { withAnchor: true })
+        : router.replace('/bounty-post'),
     pay: (paymentId) => {
       closePostSheet();
       router.push({ pathname: '/pay/[id]', params: { id: paymentId } });
@@ -41,7 +41,6 @@ export default function Ask() {
   });
   const leaveFor = (form: boolean) => {
     toForm.current = form;
-    router.back();
     void startPost();
   };
 
@@ -58,6 +57,7 @@ export default function Ask() {
       tab={isShellTab(tab) ? tab : 'bounty'}
       onClose={() => router.back()}
       showSuggestions={state.turns.length === 0 && !sending}
+      replies={state.turns.length + (state.failed ? 1 : 0) + (sending ? 1 : 0)}
       onSuggestion={(text) => askSession.setText(text)}
       composer={{
         text: state.text,
