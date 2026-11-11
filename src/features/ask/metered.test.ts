@@ -29,7 +29,7 @@ function harness(answer: CloudAnswer, belly: Belly | null = BELLY) {
     }) as Loadable<ConsentStatus>,
     getSnapshot: () => ({ userId: store.userId, status: store.status }),
     applyBelly: (userId: string, next: Belly) => applied.push([userId, next]),
-    refresh: async () => {
+    reread: async () => {
       refreshes += 1;
     },
   };

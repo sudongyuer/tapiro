@@ -90,7 +90,9 @@ export default {
     swapMessage: 'Baki {{count}} Syiling selepas tukar. Daun itu masuk ke balang.',
   },
   pantryFailure: {
-    alreadyFull: 'Tapir sudah kenyang; daun kekal dalam balang.',
+    alreadyFull: 'Tapir sudah kenyang.',
+    hasLeaf: 'Masih ada daun dalam balang; beri yang itu dahulu.',
+    coinKept: '{{reason}} Tiada Syiling digunakan.',
     fedEnough: 'Tapir sudah cukup makan hari ini. Datang lagi esok.',
     noLeaf: 'Balang sudah kosong.',
     noBalance: 'Syiling tidak mencukupi.',

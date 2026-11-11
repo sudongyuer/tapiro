@@ -10,7 +10,7 @@ export type PantryState = {
 export type StatusSource = {
   getSnapshot(): { userId: string | null };
   applyBelly(userId: string, belly: Belly): void;
-  refresh(): Promise<unknown>;
+  reread(): Promise<unknown>;
 };
 
 const EMPTY: PantryState = { writing: null, failure: null, fed: 0 };
@@ -41,7 +41,7 @@ export function createPantryStore({
     if (!result || !result.ok || !result.status.belly) {
       const reason = result && !result.ok ? result.failure : 'failed';
       set({ writing: null, failure: { write: kind, reason } });
-      void status.refresh();
+      void status.reread();
       return false;
     }
     status.applyBelly(userId, result.status.belly);

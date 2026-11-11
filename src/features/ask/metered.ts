@@ -7,7 +7,7 @@ import type { ConsentStatus } from './consent';
 export type MeteredStore = {
   getSnapshot(): { userId: string | null; status: Loadable<ConsentStatus> };
   applyBelly(userId: string, belly: Belly): void;
-  refresh(): Promise<unknown>;
+  reread(): Promise<unknown>;
 };
 
 export function metered(
@@ -22,7 +22,7 @@ export function metered(
     const belly = status.status === 'idle' ? null : (status.data?.belly ?? null);
     const next = answer.ok && belly ? withEnergy(belly, answer.body) : null;
     if (next) store.applyBelly(userId, next);
-    else if (answer.ok || answer.error === 'hungry') void store.refresh();
+    else if (answer.ok || answer.error === 'hungry') void store.reread();
     return answer;
   };
 }

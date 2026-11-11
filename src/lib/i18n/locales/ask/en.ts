@@ -88,7 +88,9 @@ export default {
     swapMessage: '{{count}} coins left after the swap. The leaf goes into the jar.',
   },
   pantryFailure: {
-    alreadyFull: 'Tapir is already full; the leaf stays in the jar.',
+    alreadyFull: 'Tapir is already full.',
+    hasLeaf: 'There is still a leaf in the jar; feed that one first.',
+    coinKept: '{{reason}} No coin was spent.',
     fedEnough: 'Tapir has eaten enough today. Come back tomorrow.',
     noLeaf: 'The jar is empty.',
     noBalance: 'Not enough coins.',

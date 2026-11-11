@@ -21,7 +21,7 @@ function harness() {
     userId: 'u1' as string | null,
     getSnapshot: () => ({ userId: status.userId }),
     applyBelly: (userId: string, belly: Belly) => applied.push([userId, belly]),
-    refresh: async () => {
+    reread: async () => {
       refreshes += 1;
     },
   };

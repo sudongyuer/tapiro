@@ -15,7 +15,8 @@ export type HungryOffer = 'feed' | 'swap' | 'capped' | 'tomorrow';
 
 export type PantryWrite = 'feed' | 'swap' | 'swapFeed';
 
-export type PantryFailure = 'alreadyFull' | 'fedEnough' | 'noLeaf' | 'noBalance' | 'failed';
+export type PantryFailure =
+  'alreadyFull' | 'fedEnough' | 'noLeaf' | 'noBalance' | 'hasLeaf' | 'failed';
 
 const count = (value: unknown) =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
@@ -70,6 +71,7 @@ const FAILURES: Record<string, PantryFailure> = {
   fed_enough: 'fedEnough',
   no_leaf: 'noLeaf',
   no_balance: 'noBalance',
+  has_leaf: 'hasLeaf',
 };
 
 export function toPantryFailure(error: unknown): PantryFailure {

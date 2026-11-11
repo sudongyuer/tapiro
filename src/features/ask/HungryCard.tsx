@@ -133,7 +133,11 @@ export function HungryCard({
       </View>
       {pantry.failure && pantry.failure.write !== 'swap' ? (
         <AppText variant="secondary" style={styles.center} testID="ask-hungry-failure">
-          {t(`ask.pantryFailure.${pantry.failure.reason}`)}
+          {pantry.failure.write === 'swapFeed' && pantry.failure.reason !== 'failed'
+            ? t('ask.pantryFailure.coinKept', {
+                reason: t(`ask.pantryFailure.${pantry.failure.reason}`),
+              })
+            : t(`ask.pantryFailure.${pantry.failure.reason}`)}
         </AppText>
       ) : null}
       {motion.flying && mascot && button ? (

@@ -87,7 +87,9 @@ export default {
     swapMessage: '换完还剩 {{count}} 颗，嫩叶放进罐子。',
   },
   pantryFailure: {
-    alreadyFull: '小貘已经吃饱了，嫩叶留在罐里。',
+    alreadyFull: '小貘已经吃饱了。',
+    hasLeaf: '罐里还有嫩叶，先喂这片。',
+    coinKept: '{{reason}}貘币没有扣。',
     fedEnough: '小貘今天吃撑了，明天再来。',
     noLeaf: '罐里没有嫩叶了。',
     noBalance: '貘币不够了。',

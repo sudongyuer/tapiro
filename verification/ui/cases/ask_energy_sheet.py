@@ -27,9 +27,12 @@ def with_belly(value):
     open_sheet(ui)
 
 
+MOODS = {5: 'full', 4: 'ok', 3: 'ok', 2: 'half', 1: 'low', 0: 'hungry'}
+
+
 def segments(ui, count, timeout=20):
-    ui.wait(lambda items: str((by_id(items, 'ask-belly') or {}).get('AXValue')) == str(count),
-            f'the belly does not read {count} of 5', timeout=timeout)
+    expected = ui.t('ask.belly.a11y', count=count, mood=ui.t(f'ask.belly.mood.{MOODS[count]}'))
+    ui.wait_label('ask-belly', lambda label: label == expected, f'the belly does not read {expected}', timeout=timeout)
 
 
 def first_segment(ui):

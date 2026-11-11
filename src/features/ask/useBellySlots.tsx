@@ -1,11 +1,13 @@
+import { useState } from 'react';
+
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 
 import type { AskSessionState } from './askSession';
-import { bellyMood, isHungry } from './belly';
+import { bellyMood, isHungry, type Belly } from './belly';
 import { BellyBar } from './BellyBar';
 import { confirmSwap } from './confirmSwap';
-import { bellyOf, type ConsentState } from './consentStore';
+import { liveBelly, type ConsentState } from './consentStore';
 import { usePantry } from './hooks';
 import { HungryCard } from './HungryCard';
 import { askSession, pantryStore } from './services';
@@ -25,13 +27,22 @@ export function useBellySlots({
   const { t } = useI18n();
   const pantry = usePantry();
   const motion = useFeedMotion();
-  const belly = bellyOf(consent);
+  const belly = liveBelly(consent);
+  const [held, setHeld] = useState<Belly | null>(null);
 
   const feed = async (write: () => Promise<boolean>) => {
     pantryStore.dismissFailure();
+    setHeld(belly);
     motion.hold();
-    if (await write()) motion.play(askSession.fed);
-    else motion.release();
+    if (await write()) {
+      motion.play(() => {
+        setHeld(null);
+        askSession.fed();
+      });
+      return;
+    }
+    motion.release();
+    setHeld(null);
   };
 
   const swap = async () => {
@@ -46,7 +57,8 @@ export function useBellySlots({
   };
 
   const hungryNow = isHungry(belly) && !session?.sending;
-  const showCard = motion.flying || hungryNow || session?.failed?.reason === 'hungry';
+  const toldHungry = !belly && session?.failed?.reason === 'hungry';
+  const showCard = motion.flying || hungryNow || toldHungry;
 
   return {
     bar: belly ? <BellyBar belly={belly} progress={motion.progress} /> : null,
@@ -58,7 +70,7 @@ export function useBellySlots({
       ) : null,
     hungry: showCard ? (
       <HungryCard
-        belly={belly}
+        belly={held ?? belly}
         pantry={pantry}
         motion={motion}
         actions={{

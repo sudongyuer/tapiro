@@ -102,6 +102,7 @@ test('pantry refusals keep their reason; anything else is a plain failure', () =
   expect(toPantryFailure({ message: 'no_balance' })).toBe('noBalance');
   expect(toPantryFailure({ message: 'already_full' })).toBe('alreadyFull');
   expect(toPantryFailure({ message: 'no_leaf' })).toBe('noLeaf');
+  expect(toPantryFailure({ message: 'has_leaf' })).toBe('hasLeaf');
   expect(toPantryFailure({ message: 'TypeError: Network request failed' })).toBe('failed');
   expect(toPantryFailure(null)).toBe('failed');
 });

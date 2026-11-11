@@ -37,6 +37,7 @@ function pantryRefusal(belly: Belly, kind: PantryWrite): PantryResult | null {
   if (kind !== 'swap' && belly.energy >= belly.full) return { ok: false, failure: 'alreadyFull' };
   if (kind !== 'swap' && belly.feedsLeft <= 0) return { ok: false, failure: 'fedEnough' };
   if (kind === 'feed' && belly.leaves < 1) return { ok: false, failure: 'noLeaf' };
+  if (kind === 'swapFeed' && belly.leaves > 0) return { ok: false, failure: 'hasLeaf' };
   if (kind !== 'feed' && belly.coins < 1) return { ok: false, failure: 'noBalance' };
   return null;
 }

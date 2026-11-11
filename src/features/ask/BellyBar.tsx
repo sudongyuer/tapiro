@@ -55,7 +55,6 @@ export function BellyBar({ belly, progress }: { belly: Belly; progress: SharedVa
       accessibilityRole="button"
       accessibilityLabel={t('ask.belly.a11y', { count: segments, mood: moodText })}
       accessibilityHint={t('ask.belly.hint')}
-      accessibilityValue={{ min: 0, max: BELLY_SEGMENTS, now: segments }}
       hitSlop={{ top: ROW_SLOP, bottom: ROW_SLOP }}
       onPress={explain}
       style={styles.row}

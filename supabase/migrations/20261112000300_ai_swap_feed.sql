@@ -21,6 +21,10 @@ begin
   if private.ai_feeds_today(uid) >= private.ai_feed_limit() then
     raise exception 'fed_enough' using errcode = '55000';
   end if;
+  -- A screen that missed a swap made elsewhere would otherwise spend a coin while a free leaf waits in the jar.
+  if (select coalesce(sum(p.delta), 0) from public.ai_pantry p where p.user_id = uid) > 0 then
+    raise exception 'has_leaf' using errcode = '55000';
+  end if;
   if (select coalesce(sum(l.delta), 0) from public.coin_ledger l where l.user_id = uid) < 1 then
     raise exception 'no_balance' using errcode = '55000';
   end if;

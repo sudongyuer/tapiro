@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(16);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -81,6 +81,13 @@ select pg_temp.set_coins('b2', 0);
 select pg_temp.act_as('b2');
 select pg_temp.hungry('b2');
 select throws_ok('select public.swap_and_feed_leaf()', '55000', 'no_balance', 'another user pays with their own coins');
+
+select pg_temp.set_coins('b2', 2);
+select public.swap_coin_for_leaf();
+select throws_ok(
+  'select public.swap_and_feed_leaf()', '55000', 'has_leaf', 'with a leaf in the jar no coin is swapped'
+);
+select is(pg_temp.coins('b2'), 1::bigint, 'and the coin stays');
 
 select set_config('request.jwt.claim.sub', '', true), set_config('request.jwt.claims', '{}', true);
 select throws_ok('select public.swap_and_feed_leaf()', '42501', 'not_signed_in', 'signed out is refused');
