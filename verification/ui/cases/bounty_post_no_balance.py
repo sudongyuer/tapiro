@@ -70,7 +70,7 @@ ui.wait(lambda items: by_id(items, 'bounty-post-no-balance') is None and by_id(i
         'the notice or the packs stayed after the purchase')
 ui.wait_label('bounty-post-publish', lambda label: label == ui.t('bounty.post.confirm.publishCoin'),
               'the button never turned into 发出去 · 1 貘币')
-assert by_id(ui.read(), 'bounty-post-publish').get('enabled') is not False, '发出去 · 1 貘币 is disabled'
+assert by_id(ui.read(), 'bounty-post-publish').get('enabled') is True, '发出去 · 1 貘币 is disabled'
 assert_preview(ui, DEMO_TITLE, '8')
 ui.at_rest()
 ui.capture('03-bought')

@@ -44,6 +44,6 @@ for cost, notice in (('none', 'ride-confirm-no-balance'), ('blocked', 'ride-conf
                       'the fee line never read the bought coins')
         ui.wait_label('ride-confirm-publish', lambda label: label == ui.t('ride.create.confirm.publishCoin'),
                       'the button never turned into 用 1 貘币发出去')
-        assert by_id(ui.read(), 'ride-confirm-publish').get('enabled') is not False
+        assert by_id(ui.read(), 'ride-confirm-publish').get('enabled') is True
         ui.capture('03-bought')
 print('PASS: coin line and label, no balance offers the packs, blocked disables 发出去')

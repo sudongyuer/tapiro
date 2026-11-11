@@ -156,36 +156,32 @@ function PackRow({
 }
 
 function PurchaseStatus({ testID }: { testID: string }) {
-  const purchase = usePurchase((state) => state.purchase);
-  const kept = usePurchase((state) => state.kept.length);
-  const line =
-    purchaseLine(purchase) ??
-    (kept > 0 ? purchaseLine({ phase: 'processing', productId: '' }) : null);
-  if (!line) return null;
-  const coins = purchase.phase === 'succeeded' ? purchase.coins : 0;
-  return (
-    <Section>
-      <StatusLine line={line} coins={coins} testID={`${testID}-status`} />
-      {line.key === 'coins.buy.processing' ? <RecheckButton testID={`${testID}-recheck`} /> : null}
-    </Section>
-  );
+  return <PurchaseLines testID={testID} settled />;
 }
 
 export function PurchaseWaiting({ testID }: { testID: string }) {
+  return <PurchaseLines testID={testID} settled={false} />;
+}
+
+const PROCESSING = purchaseLine({ phase: 'processing', productId: '', transactionId: '' });
+
+function PurchaseLines({ testID, settled }: { testID: string; settled: boolean }) {
   const purchase = usePurchase((state) => state.purchase);
-  const kept = usePurchase((state) => state.kept.length);
-  const waiting =
-    purchase.phase === 'pending' || purchase.phase === 'processing'
-      ? purchase
-      : kept > 0
-        ? ({ phase: 'processing', productId: '' } as const)
-        : null;
-  const line = waiting ? purchaseLine(waiting) : null;
-  if (!line) return null;
+  const kept = usePurchase((state) => state.kept);
+  const shown =
+    settled || purchase.phase === 'pending' || purchase.phase === 'processing' ? purchase : null;
+  const line = shown ? purchaseLine(shown) : null;
+  const own = purchase.phase === 'processing' ? purchase.transactionId : null;
+  const others = kept.some((id) => id !== own);
+  const recheck = line?.key === 'coins.buy.processing' || others;
+  if (!line && !others) return null;
   return (
     <Section>
-      <StatusLine line={line} coins={0} testID={`${testID}-status`} />
-      {line.key === 'coins.buy.processing' ? <RecheckButton testID={`${testID}-recheck`} /> : null}
+      {line ? <StatusLine line={line} testID={`${testID}-status`} /> : null}
+      {others && line?.key !== 'coins.buy.processing' && PROCESSING ? (
+        <StatusLine line={PROCESSING} testID={line ? `${testID}-kept` : `${testID}-status`} />
+      ) : null}
+      {recheck ? <RecheckButton testID={`${testID}-recheck`} /> : null}
     </Section>
   );
 }
@@ -197,15 +193,7 @@ const TONE_COLOR = {
   progress: '--color-accent',
 } as const;
 
-function StatusLine({
-  line,
-  coins,
-  testID,
-}: {
-  line: PurchaseLine;
-  coins: number;
-  testID: string;
-}) {
+function StatusLine({ line, testID }: { line: PurchaseLine; testID: string }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const tint = color(TONE_COLOR[line.tone]);
@@ -226,7 +214,7 @@ function StatusLine({
       )}
       <VStack alignment="leading" spacing={vars['--space-1']}>
         <Text modifiers={[font({ textStyle: 'headline' }), foregroundStyle(tint)]}>
-          {t(line.key, { coins })}
+          {t(line.key, line.values)}
         </Text>
         {line.body ? (
           <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>{t(line.body)}</Text>

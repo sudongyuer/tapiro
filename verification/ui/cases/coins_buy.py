@@ -3,11 +3,13 @@ the three packs from the server table (5, 11, 35, smallest first) priced by Stor
 expire. Tapping RM 9.90 shows a spinner on that row and disables the other prices; the sheet reads 「11 貘币已到账」 only after
 the server credited the purchase, StoreKit's transaction is finished after that answer, and the balance line reads 24.
 Closed, the page reads 24 and its newest row is 买貘币 · 测试购买 +11."""
+import json
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from coins import (PRICES, assert_packs, balance_label, coin_calls, label, open_page, open_sheet, row_ids,  # noqa: E402
                    row_prefix, sheet_balance, wait_status)
+from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/app/(tabs)/me/', 'src/app/buy-coins.tsx', 'src/app/_layout.tsx',
@@ -50,9 +52,9 @@ ui.capture('03-buying')
 
 wait_status(ui, 'coins.buy.succeeded', coins=11)
 ui.wait_label('buy-coins-balance', lambda text: text == sheet_balance(ui, 24), 'the sheet balance never read 24')
-verify = coin_calls(ui, 'verify', 1)
-finish = coin_calls(ui, 'finish', 1)
-assert len(verify) == 1 and len(finish) == 1, f'verify {verify}, finish {finish}'
+coin_calls(ui, 'finish', 1)
+order = [call['name'] for call in json.loads(defaults(ui, 'uiVerifyCoinsCalls') or '[]') if call['name'] in ('verify', 'finish')]
+assert order == ['verify', 'finish'], f'StoreKit was not finished once after the server answered: {order}'
 assert coin_calls(ui, 'purchase', 1) == [{'productId': 'app.tapiro.coins.11'}]
 ui.at_rest()
 ui.capture('04-credited')

@@ -40,6 +40,7 @@ ui.tap('coins-purchase-recheck')
 ui.wait(lambda items: by_id(items, 'coins-purchase-status') is None, '购买处理中 never went after 再确认一次')
 ui.wait_label('coins-balance', lambda text: text == balance_label(ui, 18, 2), 'the balance never read 18')
 assert len(coin_calls(ui, 'verify', 2)) == 2 and len(coin_calls(ui, 'finish', 1)) == 1
+assert len(coin_calls(ui, 'finish', 2, timeout=2)) == 1, 'finished more than once'
 ui.at_rest()
 ui.capture('03-credited')
 print('PASS: an unconfirmed purchase reads 购买处理中 until the user asks again, then credits once')

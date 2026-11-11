@@ -1,6 +1,5 @@
 """A purchase StoreKit fails reads 「没买成，没有扣款」 in the urgent colour, sends nothing to the server and leaves the balance
-at 13; the prices stay tappable for another try. Prices that did not load read 「价格没加载出来」 with 重试, which loads
-them (the first StoreKit product request fails)."""
+at 13; the prices stay tappable for another try."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -22,7 +21,7 @@ ui.tap('buy-coins-buy-5')
 wait_status(ui, 'coins.buy.failedPurchase')
 assert coin_calls(ui, 'verify', 1, timeout=2) == [], 'a failed purchase reached the server'
 assert ui.element('buy-coins-balance').get('AXLabel') == sheet_balance(ui, 13)
-assert by_id(ui.read(), 'buy-coins-buy-5').get('enabled') is not False, 'the price stays disabled after a failure'
+assert by_id(ui.read(), 'buy-coins-buy-5').get('enabled') is True, 'the price stays disabled after a failure'
 ui.at_rest()
 ui.capture('01-failed')
 print('PASS: a failed purchase says so and credits nothing')

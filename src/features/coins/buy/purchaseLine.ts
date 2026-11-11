@@ -8,10 +8,12 @@ export type PurchaseLine = {
     | 'coins.buy.pending'
     | 'coins.buy.processing'
     | 'coins.buy.succeeded'
+    | 'coins.buy.succeededPlain'
     | 'coins.buy.refunded'
     | 'coins.buy.failedPurchase'
     | 'coins.buy.notAllowed';
   body?: 'coins.buy.pendingBody' | 'coins.buy.processingBody';
+  values?: { coins: number };
   icon: SFSymbol | null;
   tone: 'progress' | 'waiting' | 'success' | 'urgent';
 };
@@ -38,7 +40,14 @@ export function purchaseLine(phase: PurchasePhase): PurchaseLine | null {
         tone: 'waiting',
       };
     case 'succeeded':
-      return { key: 'coins.buy.succeeded', icon: 'checkmark.circle.fill', tone: 'success' };
+      return phase.coins === null
+        ? { key: 'coins.buy.succeededPlain', icon: 'checkmark.circle.fill', tone: 'success' }
+        : {
+            key: 'coins.buy.succeeded',
+            values: { coins: phase.coins },
+            icon: 'checkmark.circle.fill',
+            tone: 'success',
+          };
     case 'refunded':
       return { key: 'coins.buy.refunded', icon: 'arrow.uturn.backward.circle', tone: 'urgent' };
     case 'failed':

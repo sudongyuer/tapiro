@@ -157,7 +157,7 @@ describe('purchase store', () => {
     expect(h.calls.filter((call) => call.startsWith('verify'))).toHaveLength(1);
   });
 
-  test('on start, unfinished transactions of this user are forwarded; another account’s are left alone', async () => {
+  test('on start, unfinished transactions of this user are forwarded; another account’s and untokened ones are left alone', async () => {
     const tx = (id: string, token: string): StoreTransaction => ({
       source: 'unfinished',
       transactionId: id,
@@ -174,6 +174,7 @@ describe('purchase store', () => {
         unfinished: async () => [
           tx('mine', USER.toUpperCase().toLowerCase()),
           tx('theirs', 'other-user'),
+          tx('untokened', ''),
         ],
       },
     });
@@ -225,6 +226,91 @@ describe('purchase store', () => {
     expect(h.purchases.getSnapshot().userId).toBeNull();
     expect(h.purchases.getSnapshot().purchase.phase).toBe('idle');
     expect(deliver).not.toBeNull();
+  });
+});
+
+describe('purchase status settles only for its own transaction', () => {
+  test('with two kept purchases of one pack, 再确认一次 settles the newer one by its own transaction', async () => {
+    const reject = { ok: false, httpStatus: 503, error: 'verification_unavailable' } as const;
+    const h = await started(harness({ answers: [reject, reject] }));
+    await h.purchases.buy('app.tapiro.coins.5');
+    const older = h.purchases.getSnapshot().kept[0];
+    h.purchases.dismiss();
+    await h.purchases.buy('app.tapiro.coins.5');
+    const state = h.purchases.getSnapshot();
+    expect(state.purchase.phase).toBe('processing');
+    expect(state.kept).toHaveLength(2);
+    expect(state.kept[0]).toBe(older);
+    await h.purchases.recheck();
+    expect(h.purchases.getSnapshot().purchase.phase).toBe('succeeded');
+    expect(h.purchases.getSnapshot().kept).toEqual([]);
+  });
+
+  test('a credit for another kept transaction leaves the processing phase', async () => {
+    const reject = { ok: false, httpStatus: 503, error: 'verification_unavailable' } as const;
+    let deliver: ((tx: StoreTransaction) => void) | null = null;
+    const h = harness({
+      answers: [reject],
+      store: {
+        listen: (cb) => {
+          deliver = cb;
+          return { remove: () => undefined };
+        },
+      },
+    });
+    await started(h);
+    await h.purchases.buy('app.tapiro.coins.5');
+    expect(h.purchases.getSnapshot().purchase.phase).toBe('processing');
+    deliver!({
+      source: 'updates',
+      transactionId: 'old-5',
+      originalTransactionId: 'old-5',
+      productId: 'app.tapiro.coins.5',
+      jws: 'jws.5.old',
+      environment: 'Xcode',
+      appAccountToken: USER,
+      revoked: false,
+      verified: true,
+    });
+    await flush();
+    await flush();
+    expect(h.purchases.getSnapshot().purchase.phase).toBe('processing');
+    expect(h.purchases.getSnapshot().kept).toHaveLength(1);
+  });
+
+  test('a wrong_account answer is not shown as 购买处理中', async () => {
+    const h = await started(
+      harness({ answers: [{ ok: false, httpStatus: 403, error: 'wrong_account' }] }),
+    );
+    await h.purchases.buy('app.tapiro.coins.5');
+    expect(h.purchases.getSnapshot().kept).toEqual([]);
+    expect(h.calls.some((call) => call.startsWith('finish'))).toBe(false);
+  });
+
+  test('a credit without a known coin count shows no number', async () => {
+    const h = await started(
+      harness({ answers: [{ ok: true, status: 'credited', balance: 1, coins: null }] }),
+    );
+    await h.purchases.buy('app.tapiro.coins.35');
+    expect(h.purchases.getSnapshot().purchase).toEqual({
+      phase: 'succeeded',
+      productId: 'app.tapiro.coins.35',
+      coins: null,
+    });
+  });
+
+  test('reopening clears a pending Ask to Buy that never came back', async () => {
+    const h = await started(harness({ mode: 'pending' }));
+    await h.purchases.buy('app.tapiro.coins.5');
+    expect(h.purchases.getSnapshot().purchase.phase).toBe('pending');
+    h.purchases.dismiss();
+    expect(h.purchases.getSnapshot().purchase.phase).toBe('idle');
+  });
+
+  test('packs read before the store started fail instead of spinning', async () => {
+    const h = harness();
+    await h.purchases.loadPacks();
+    expect(h.purchases.getSnapshot().packs.status).toBe('failed');
   });
 });
 

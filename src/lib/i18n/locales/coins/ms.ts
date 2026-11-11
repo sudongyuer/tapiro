@@ -69,10 +69,11 @@ const ms: typeof zhHans = {
     pendingBody: 'Selepas ahli keluarga meluluskan, Syiling akan masuk dengan sendirinya',
     processing: 'Pembelian sedang diproses',
     processingBody:
-      'Syiling yang telah dibayar masih disahkan dan akan muncul dalam aktiviti selepas masuk. Tapiro akan menyemak semula apabila dibuka nanti.',
+      'Syiling yang telah dibayar masih disahkan dan akan muncul dalam aktiviti selepas masuk. Tapiro akan menyemak semula apabila dimulakan nanti.',
     recheck: 'Semak Semula',
     rechecking: 'Sedang menyemak',
     succeeded: '{{coins}} Syiling telah masuk',
+    succeededPlain: 'Syiling telah masuk',
     refunded: 'Pembelian ini telah dikembalikan, jadi tiada Syiling ditambah',
     failedPurchase: 'Pembelian tidak berjaya. Anda tidak dicaj.',
     notAllowed: 'Pembelian dalam aplikasi tidak dibenarkan pada peranti ini',

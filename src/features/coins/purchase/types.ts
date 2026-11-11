@@ -27,8 +27,8 @@ export type PurchasePhase =
   | { phase: 'buying'; productId: string }
   | { phase: 'verifying'; productId: string }
   | { phase: 'pending'; productId: string }
-  | { phase: 'processing'; productId: string }
-  | { phase: 'succeeded'; productId: string; coins: number }
+  | { phase: 'processing'; productId: string; transactionId: string }
+  | { phase: 'succeeded'; productId: string; coins: number | null }
   | { phase: 'refunded'; productId: string }
   | { phase: 'failed'; productId: string; reason: 'failed' | 'notAllowed' };
 

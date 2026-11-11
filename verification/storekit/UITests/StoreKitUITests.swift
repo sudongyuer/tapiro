@@ -1,11 +1,8 @@
 import StoreKitTest
 import XCTest
 
-// Runs against the Debug Tapiro.app that run.sh puts in the .xctestrun as UITargetAppPath, so SKTestSession
-// configures StoreKit for app.tapiro. The dev-only scene store-e2e signs in as 小林 and opens the real 貘币 page;
-// the cases buy through the real 买貘币 sheet, the app forwards to the local iap-verify, and the balance line is
-// read back. No refund case: a refund made through SKTestSession never reaches the app
-// (docs/plans/2026-11-11-iap-local.md, spike B).
+// No refund case: a refund made through SKTestSession never reaches the app (docs/plans/2026-11-11-iap-local.md,
+// spike B).
 @MainActor
 final class StoreKitUITests: XCTestCase {
   private var session: SKTestSession!
@@ -19,6 +16,7 @@ final class StoreKitUITests: XCTestCase {
     session.clearTransactions()
     session.disableDialogs = true
     app = XCUIApplication()
+    app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_MY"]
     app.launch()
     try openCoins()
   }
@@ -72,7 +70,9 @@ final class StoreKitUITests: XCTestCase {
     try openSheet()
     let start = try balance()
     app.buttons["buy-coins-buy-5"].tap()
-    XCTAssertTrue(app.buttons["buy-coins-buy-5"].waitForExistence(timeout: 30))
+    let busy = app.descendants(matching: .any)["buy-coins-busy-5"]
+    XCTAssertTrue(busy.waitForExistence(timeout: 10), "the purchase never started")
+    XCTAssertTrue(busy.waitForNonExistence(timeout: 30), "the cancelled purchase never returned")
     XCTAssertFalse(app.descendants(matching: .any)["buy-coins-status"].waitForExistence(timeout: 3))
     XCTAssertEqual(try balance(), start)
     try await session.setSimulatedError(nil, forAPI: .purchase)
@@ -87,6 +87,10 @@ final class StoreKitUITests: XCTestCase {
     XCTAssertTrue(kept.waitForExistence(timeout: 20))
     kept.tap()
     XCTAssertTrue(line(containing: "purchase app.tapiro.coins.5 purchased").waitForExistence(timeout: 30))
+    app.buttons["store-e2e-open-coins"].tap()
+    try openSheet()
+    RunLoop.current.run(until: Date().addingTimeInterval(5))
+    XCTAssertEqual(try balance(), start, "the kept purchase was credited before the relaunch")
     app.terminate()
     app.launch()
     try openCoins()

@@ -69,10 +69,11 @@ const en: typeof zhHans = {
     pendingBody: 'Once a family member approves, the coins arrive on their own',
     processing: 'Purchase processing',
     processingBody:
-      'Your paid coins are still being confirmed and will show in your activity once they arrive. Tapiro checks again next time you open it.',
+      'Your paid coins are still being confirmed and will show in your activity once they arrive. Tapiro checks again the next time it starts.',
     recheck: 'Check Again',
     rechecking: 'Checking',
     succeeded: '{{coins}} coins added',
+    succeededPlain: 'Coins added',
     refunded: 'This purchase was refunded, so no coins were added',
     failedPurchase: 'Purchase didn’t go through. You weren’t charged.',
     notAllowed: 'In-app purchases aren’t allowed on this device',

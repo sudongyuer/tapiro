@@ -5,6 +5,8 @@ import { forwardTransaction, type ForwardOutcome } from './forward';
 import { mergePacks } from './packs';
 import type { Pack, PurchaseDeps, PurchasePhase, StoreTransaction } from './types';
 
+const PACKS_FRESH_MS = 5 * 60_000;
+
 export type PurchaseState = {
   userId: string | null;
   packs: Loadable<Pack[]>;
@@ -25,7 +27,7 @@ const IDLE: PurchaseState = {
 
 const BUSY = new Set<PurchasePhase['phase']>(['buying', 'verifying']);
 
-const SETTLED = new Set<PurchasePhase['phase']>(['succeeded', 'refunded', 'failed']);
+const SETTLED = new Set<PurchasePhase['phase']>(['succeeded', 'refunded', 'failed', 'pending']);
 
 export const purchaseBusy = (phase: PurchasePhase) => BUSY.has(phase.phase);
 
@@ -46,6 +48,29 @@ export function createPurchaseStore(deps: PurchaseDeps) {
   };
 
   const withoutKept = (id: string) => get().kept.filter((kept) => kept !== id);
+  let packsAt = 0;
+
+  function settles(
+    waiting: PurchasePhase,
+    transaction: StoreTransaction,
+    status: 'credited' | 'duplicate' | 'revoked',
+  ) {
+    if (waiting.phase === 'processing') return waiting.transactionId === transaction.transactionId;
+    return (
+      waiting.phase === 'pending' &&
+      transaction.source === 'updates' &&
+      waiting.productId === transaction.productId &&
+      status !== 'duplicate'
+    );
+  }
+
+  const answered = (
+    productId: string,
+    answer: { status: 'credited' | 'duplicate' | 'revoked'; coins?: number | null },
+  ): PurchasePhase =>
+    answer.status === 'revoked'
+      ? { phase: 'refunded', productId }
+      : { phase: 'succeeded', productId, coins: answer.coins ?? coinsOf(productId) };
 
   function forward(transaction: StoreTransaction, userId: string, at: number) {
     const running = inFlight.get(transaction.transactionId);
@@ -57,30 +82,18 @@ export function createPurchaseStore(deps: PurchaseDeps) {
       inFlight.delete(transaction.transactionId);
       if (!live(userId, at)) return outcome;
       if (!outcome || outcome.kind === 'kept') {
-        if (!transaction.revoked && !get().kept.includes(transaction.transactionId)) {
+        const foreign = outcome?.answer.error === 'wrong_account';
+        if (!foreign && !transaction.revoked && !get().kept.includes(transaction.transactionId)) {
           patch({ kept: [...get().kept, transaction.transactionId] });
         }
         return outcome;
       }
       const { answer } = outcome;
-      const waiting = get().purchase;
-      const settles =
-        (waiting.phase === 'pending' || waiting.phase === 'processing') &&
-        waiting.productId === transaction.productId;
       patch({
         kept: withoutKept(transaction.transactionId),
         credits: get().credits + 1,
-        ...(settles
-          ? {
-              purchase:
-                answer.status === 'revoked'
-                  ? { phase: 'refunded', productId: transaction.productId }
-                  : {
-                      phase: 'succeeded',
-                      productId: transaction.productId,
-                      coins: answer.coins ?? coinsOf(transaction.productId) ?? 0,
-                    },
-            }
+        ...(settles(get().purchase, transaction, answer.status)
+          ? { purchase: answered(transaction.productId, answer) }
           : {}),
       });
       deps.onCoinsChanged();
@@ -91,7 +104,7 @@ export function createPurchaseStore(deps: PurchaseDeps) {
   }
 
   const mine = (transaction: StoreTransaction, userId: string) =>
-    transaction.appAccountToken === '' || transaction.appAccountToken === userId.toLowerCase();
+    transaction.appAccountToken !== '' && transaction.appAccountToken === userId.toLowerCase();
 
   async function receive(transaction: StoreTransaction, userId: string, at: number) {
     if (!live(userId, at) || !mine(transaction, userId)) return;
@@ -107,14 +120,19 @@ export function createPurchaseStore(deps: PurchaseDeps) {
 
   async function loadPacks() {
     const { userId } = get();
-    if (!userId) return;
+    if (!userId) {
+      patch({ packs: loadFailed(get().packs) });
+      return;
+    }
     const at = generation;
     patch({ packs: loading(get().packs) });
     try {
       const server = await deps.packs();
       const result = await deps.store.products(server.map((pack) => pack.productId));
       if (result.status !== 'ok') throw new Error(result.code);
-      if (live(userId, at)) patch({ packs: loaded(mergePacks(server, result.products)) });
+      if (!live(userId, at)) return;
+      packsAt = Date.now();
+      patch({ packs: loaded(mergePacks(server, result.products)) });
     } catch {
       if (live(userId, at)) patch({ packs: loadFailed(get().packs) });
     }
@@ -147,19 +165,16 @@ export function createPurchaseStore(deps: PurchaseDeps) {
     const outcome = await forward(result.transaction, userId, at);
     if (!live(userId, at)) return;
     if (!outcome || outcome.kind === 'kept') {
-      patch({ purchase: { phase: 'processing', productId } });
+      patch({
+        purchase: {
+          phase: 'processing',
+          productId,
+          transactionId: result.transaction.transactionId,
+        },
+      });
       return;
     }
-    patch({
-      purchase:
-        outcome.answer.status === 'revoked'
-          ? { phase: 'refunded', productId }
-          : {
-              phase: 'succeeded',
-              productId,
-              coins: outcome.answer.coins ?? coinsOf(productId) ?? 0,
-            },
-    });
+    patch({ purchase: answered(productId, outcome.answer) });
   }
 
   async function recheck() {
@@ -179,7 +194,7 @@ export function createPurchaseStore(deps: PurchaseDeps) {
     generation += 1;
     listener?.remove();
     listener = null;
-    inFlight.clear();
+    packsAt = 0;
     store.set(IDLE);
   }
 
@@ -198,7 +213,8 @@ export function createPurchaseStore(deps: PurchaseDeps) {
     loadPacks,
     openPacks() {
       const { packs } = get();
-      if (packs.status !== 'ready' && packs.status !== 'loading') void loadPacks();
+      if (packs.status === 'loading') return;
+      if (packs.status !== 'ready' || Date.now() - packsAt > PACKS_FRESH_MS) void loadPacks();
     },
     buy,
     recheck,
