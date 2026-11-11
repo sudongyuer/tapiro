@@ -82,6 +82,7 @@ function purchaseDeps(): Omit<PurchaseDeps, 'onCoinsChanged'> {
       store: createFixtureStore({
         mode,
         delayMs,
+        approveAfterMs: Number(uiVerifyArgument('uiVerifyStoreApproveMs') ?? 1500) || 1500,
         userId: () => FIXTURE_USER_ID,
         onCall: recordCall,
       }),

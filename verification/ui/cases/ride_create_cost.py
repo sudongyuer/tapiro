@@ -5,7 +5,7 @@ blocked by an unpaid debt it says so and 发出去 is disabled. 273 A: with no c
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import assert_packs  # noqa: E402
+from coins import tap_price, assert_packs  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 from ride import open_confirm, open_list, relaunch_list  # noqa: E402
 
@@ -34,12 +34,12 @@ for cost, notice in (('none', 'ride-confirm-no-balance'), ('blocked', 'ride-conf
         ui.element('ride-confirm-packs-buy-5', timeout=30)
         items = assert_packs(ui, 'ride-confirm-packs')
         card = by_id(items, notice)['frame']
-        assert card['y'] + card['height'] <= by_id(items, 'ride-confirm-packs-pack-5')['frame']['y'], 'packs not under the notice'
+        assert card['y'] + card['height'] <= by_id(items, 'ride-confirm-packs-buy-5')['frame']['y'], 'packs not under the notice'
     else:
-        assert by_id(ui.read(), 'ride-confirm-packs-pack-5') is None, 'packs show while publishing is blocked'
+        assert by_id(ui.read(), 'ride-confirm-packs-buy-5') is None, 'packs show while publishing is blocked'
     ui.capture(f'02-{cost}')
     if cost == 'none':
-        ui.tap('ride-confirm-packs-buy-5')
+        tap_price(ui, 'ride-confirm-packs-buy-5')
         ui.wait_label('ride-confirm-fee', lambda label: ui.t('ride.create.confirm.coin', balance=5) in label,
                       'the fee line never read the bought coins')
         ui.wait_label('ride-confirm-publish', lambda label: label == ui.t('ride.create.confirm.publishCoin'),

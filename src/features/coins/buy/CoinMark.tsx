@@ -10,16 +10,24 @@ import {
 import { useTheme } from '@/ui/theme/useTheme';
 
 export function CoinMark() {
-  const { color } = useTheme();
+  const { color, theme } = useTheme();
   const saddle = color('--color-mascot-saddle');
+  const ink = color('--color-mascot-ink');
   return (
     <ZStack modifiers={[frame({ width: 24, height: 24 }), accessibilityHidden()]}>
       <Circle
-        modifiers={[foregroundStyle(color('--color-mascot-ink')), frame({ width: 24, height: 24 })]}
+        modifiers={[
+          foregroundStyle(ink),
+          ...(theme === 'dark'
+            ? [strokeBorder({ content: saddle, style: { lineWidth: 1 }, shape: 'circle' })]
+            : []),
+          frame({ width: 24, height: 24 }),
+        ]}
       />
       <Circle
         modifiers={[
-          strokeBorder({ content: saddle, style: { lineWidth: 1.4 } }),
+          foregroundStyle(ink),
+          strokeBorder({ content: saddle, style: { lineWidth: 1.4 }, shape: 'circle' }),
           frame({ width: 17, height: 17 }),
         ]}
       />

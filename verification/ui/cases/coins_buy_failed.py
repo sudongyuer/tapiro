@@ -3,7 +3,7 @@ at 13; the prices stay tappable for another try."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import assert_packs, coin_calls, open_page, sheet_balance, wait_status  # noqa: E402
+from coins import tap_price, assert_packs, coin_calls, open_page, sheet_balance, wait_status  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/app/buy-coins.tsx', 'src/lib/i18n/locales/coins/', 'verification/ui/coins.py']
@@ -17,7 +17,7 @@ ui.tap('coins-buy')
 ui.element('buy-coins', timeout=30)
 ui.element('buy-coins-buy-5', timeout=30)
 assert_packs(ui)
-ui.tap('buy-coins-buy-5')
+tap_price(ui, 'buy-coins-buy-5')
 wait_status(ui, 'coins.buy.failedPurchase')
 assert coin_calls(ui, 'verify', 1, timeout=2) == [], 'a failed purchase reached the server'
 assert ui.element('buy-coins-balance').get('AXLabel') == sheet_balance(ui, 13)

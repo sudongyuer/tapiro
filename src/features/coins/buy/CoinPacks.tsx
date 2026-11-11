@@ -83,6 +83,7 @@ export function CoinPacks({
   }
   return (
     <>
+      <PurchaseStatus testID={testID} />
       <Section footer={footerText}>
         {list.length === 0 ? (
           <Text modifiers={[secondary, accessibilityIdentifier(`${testID}-empty`)]}>
@@ -94,7 +95,6 @@ export function CoinPacks({
           ))
         )}
       </Section>
-      <PurchaseStatus testID={testID} />
     </>
   );
 }
@@ -113,10 +113,7 @@ function PackRow({
   const here = busy && 'productId' in purchase && purchase.productId === pack.productId;
   const name = t('coins.buy.pack', { coins: pack.coins });
   return (
-    <HStack
-      spacing={vars['--space-3']}
-      modifiers={[accessibilityIdentifier(`${testID}-pack-${pack.coins}`)]}
-    >
+    <HStack spacing={vars['--space-3']}>
       <CoinMark />
       <Text
         modifiers={[

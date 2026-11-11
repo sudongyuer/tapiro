@@ -100,8 +100,8 @@ def wait_status(ui, key, prefix='buy-coins', timeout=30, **values):
 
 def assert_packs(ui, prefix='buy-coins'):
     items = ui.read()
-    rows = [by_id(items, f'{prefix}-pack-{coins}') for coins in PACKS]
-    assert all(rows), f'a pack row is missing: {[coins for coins, row in zip(PACKS, rows) if not row]}'
+    rows = [by_id(items, f'{prefix}-buy-{coins}') for coins in PACKS]
+    assert all(rows), f'a pack is missing: {[coins for coins, row in zip(PACKS, rows) if not row]}'
     ys = [row['frame']['y'] for row in rows]
     assert ys == sorted(ys), f'the packs are not smallest first: {ys}'
     for coins in PACKS:
@@ -110,3 +110,9 @@ def assert_packs(ui, prefix='buy-coins'):
         expected = ui.t('coins.buy.packA11y', coins=coins, price=PRICES[coins])
         assert button.get('AXLabel') == expected, f'pack {coins} reads {button.get("AXLabel")!r}, not {expected!r}'
     return items
+
+
+def tap_price(ui, identifier):
+    # The AX frame of a bordered button in a Form row is the whole row; only the capsule on its trailing side takes a tap.
+    f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] - 50, f['y'] + f['height'] / 2)

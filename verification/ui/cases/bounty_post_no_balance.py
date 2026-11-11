@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import DEMO_TITLE, assert_cost, assert_pinned, assert_preview, open_confirm  # noqa: E402
-from coins import assert_packs  # noqa: E402
+from coins import tap_price, assert_packs  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
@@ -58,15 +58,15 @@ assert [i.get('AXUniqueId') for i in below] == ['bounty-post-publish'], f'unexpe
 ui.element('bounty-post-packs-buy-5', timeout=30)
 items = assert_packs(ui, 'bounty-post-packs')
 card = by_id(items, 'bounty-post-no-balance')['frame']
-first = by_id(items, 'bounty-post-packs-pack-5')['frame']
+first = by_id(items, 'bounty-post-packs-buy-5')['frame']
 cost = by_id(items, 'bounty-post-cost')['frame']
 assert card['y'] + card['height'] <= first['y'] < cost['y'], f'the packs are not right under the notice: {card} {first} {cost}'
 ui.at_rest()
 ui.capture('02-packs')
 
-ui.tap('bounty-post-packs-buy-5')
+tap_price(ui, 'bounty-post-packs-buy-5')
 assert_cost(ui, ui.t('bounty.post.cost.coin', balance=5))
-ui.wait(lambda items: by_id(items, 'bounty-post-no-balance') is None and by_id(items, 'bounty-post-packs-pack-5') is None,
+ui.wait(lambda items: by_id(items, 'bounty-post-no-balance') is None and by_id(items, 'bounty-post-packs-buy-5') is None,
         'the notice or the packs stayed after the purchase')
 ui.wait_label('bounty-post-publish', lambda label: label == ui.t('bounty.post.confirm.publishCoin'),
               'the button never turned into 发出去 · 1 貘币')

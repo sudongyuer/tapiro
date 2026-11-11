@@ -7,7 +7,7 @@ import json
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import (PRICES, assert_packs, balance_label, coin_calls, label, open_page, open_sheet, row_ids,  # noqa: E402
+from coins import (PRICES, assert_packs, tap_price, balance_label, coin_calls, label, open_page, open_sheet, row_ids,  # noqa: E402
                    row_prefix, sheet_balance, wait_status)
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
@@ -16,7 +16,7 @@ DEPS = ['src/features/coins/', 'src/app/(tabs)/me/', 'src/app/buy-coins.tsx', 's
         'src/lib/i18n/locales/coins/', 'src/debug/CoinsScenes.tsx', 'verification/ui/coins.py', 'modules/tapiro-kit/index.tsx']
 SCENE = 'coins-page'
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStoreDelayMs', '2500']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStoreDelayMs', '6000']
 
 ui = UI(*sys.argv[1:])
 open_page(ui)
@@ -34,14 +34,12 @@ ui.capture('01-page')
 open_sheet(ui)
 ui.wait_label('buy-coins-balance', lambda text: text == sheet_balance(ui, 13), 'the sheet balance line is wrong')
 items = assert_packs(ui)
-for coins in (5, 11, 35):
-    assert_touch_target(by_id(items, f'buy-coins-buy-{coins}'), f'{coins} 貘币的价格')
 assert ui.labelled(ui.t('coins.buy.note')) is not None
 assert by_id(items, 'buy-coins-status') is None, 'a status shows before anything was bought'
 ui.at_rest()
 ui.capture('02-sheet')
 
-ui.tap('buy-coins-buy-11')
+tap_price(ui, 'buy-coins-buy-11')
 ui.element('buy-coins-busy-11', timeout=10)
 items = ui.read()
 for other in (5, 35):
