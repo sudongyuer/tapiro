@@ -12,16 +12,16 @@ public final class TapiroKitModule: Module {
 
     View(TitleHaloView.self) {}
 
-    AsyncFunction("liveActivityStart") { (kind: String, state: LiveActivityStateRecord) -> [String: Any] in
-      MainActor.assumeIsolated { LiveActivities.start(kind: kind, state: state) }
+    AsyncFunction("liveActivityStart") { (kind: String, link: String?, state: LiveActivityStateRecord) -> [String: Any] in
+      MainActor.assumeIsolated { LiveActivities.start(kind: kind, link: link, state: state) }
     }.runOnQueue(.main)
 
     AsyncFunction("liveActivityUpdate") { (id: String, state: LiveActivityStateRecord) async -> [String: Any] in
       await LiveActivities.update(id: id, state: state)
     }
 
-    AsyncFunction("liveActivityEnd") { (id: String, state: LiveActivityStateRecord?, immediately: Bool) async -> [String: Any] in
-      await LiveActivities.end(id: id, state: state, immediately: immediately)
+    AsyncFunction("liveActivityEnd") { (id: String, state: LiveActivityStateRecord?, dismissAfterSeconds: Double) async -> [String: Any] in
+      await LiveActivities.end(id: id, state: state, dismissAfterSeconds: dismissAfterSeconds)
     }
 
     AsyncFunction("liveActivityList") { () -> [[String: Any]] in

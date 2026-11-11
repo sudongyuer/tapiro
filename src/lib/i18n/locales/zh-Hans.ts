@@ -2,6 +2,7 @@ import ask from './ask/zh-Hans';
 import block from './block/zh-Hans';
 import chat from './chat/zh-Hans';
 import coins from './coins/zh-Hans';
+import liveActivity from './liveActivity/zh-Hans';
 import bounty from './bounty/zh-Hans';
 import pay from './pay/zh-Hans';
 import ride from './ride/zh-Hans';
@@ -137,6 +138,7 @@ export default {
   block,
   chat,
   coins,
+  liveActivity,
   reputation,
   ask,
   bounty,
@@ -322,12 +324,19 @@ export default {
       buyKept: '买 5，不发送到服务器',
     },
     liveActivity: {
-      title: '实时活动试验',
-      start: '开始',
-      update: '更新',
-      end: '结束',
-      sample: '占位：帮手约 {{minutes}} 分钟到',
+      title: '实时活动',
+      bountyOnTheWay: '悬赏 · 在路上',
+      bountyArrived: '悬赏 · 到了（15 分钟后消失）',
+      rideMeetupHome: '拼车 · 集合（从家出发）',
+      rideMeetupPlace: '拼车 · 集合（公共地点）',
+      rideDeparted: '拼车 · 出发了（15 分钟后消失）',
+      stale: '在路上 · 1 分钟后过时',
+      endNow: '马上结束',
       list: '列出',
+      helper: '小林',
+      place: '图书馆',
+      task: '帮取快递',
+      start: '双威 Geo 公寓',
     },
     flight: {
       title: '贴纸飞向我的',

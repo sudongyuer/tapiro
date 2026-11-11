@@ -1,0 +1,28 @@
+export default {
+  unit: '分',
+  stale: '可能不是最新',
+  homeStart: '出发点',
+  pair: '{{first}} · {{second}}',
+  bounty: {
+    onTheWay_one: '{{name}} · 约 {{count}} 分钟到',
+    onTheWay_other: '{{name}} · 约 {{count}} 分钟到',
+    onTheWayStale: '{{name}} · 在路上',
+    left: '出发 {{time}}',
+    eta: '约 {{time}} 到',
+    arrived: '{{name}}到了 · {{place}}',
+    arrivedPlain: '{{name}}到了',
+    arrivedDetail: '去碰面吧',
+    arrivedAt: '{{time}} 到了',
+  },
+  ride: {
+    meetup: '集合 · {{place}}',
+    leaving_one: '{{count}} 分钟后出发 · {{arrived}}/{{total}} 到了',
+    leaving_other: '{{count}} 分钟后出发 · {{arrived}}/{{total}} 到了',
+    gatherAt: '集合 {{time}}',
+    departAt: '{{time}} 出发',
+    departed: '出发了 · {{place}}',
+    aboard_one: '{{count}} 人上车',
+    aboard_other: '{{count}} 人上车',
+    departedAt: '{{time}} 出发了',
+  },
+};
