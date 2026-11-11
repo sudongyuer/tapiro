@@ -33,6 +33,7 @@ const en: typeof zhHans = {
     m12: 'December',
   },
   reason: {
+    pantry_swap: 'Swapped for a leaf',
     new_user: 'Welcome gift',
     onboarding_payee_method: 'Set up a payment method',
     onboarding_first_post: 'First post',

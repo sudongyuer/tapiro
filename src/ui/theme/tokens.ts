@@ -62,6 +62,8 @@ export const vars = {
   '--color-stage-hint': '#E9A23B',
   '--color-leaf': '#7BB661',
   '--color-leaf-vein': '#4E8A3A',
+  '--color-belly': '#3E8A3A',
+  '--color-belly-low': '#C46A00',
 
   '--color-paper': '#FFFDF8',
   '--color-paper-line': '#EDE7DA',
@@ -181,6 +183,8 @@ export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-warning-fill': '#3A2A0E',
   '--color-filled-glow': '#3D3216',
   '--color-filled-row': '#2C2C2E',
+  '--color-belly': '#6CC25A',
+  '--color-belly-low': '#FFB340',
   '--color-moment-bg': '#24221E',
   '--color-moment-grain': '#F4F0E61A',
   '--color-moment-chip': '#FFFFFF1A',

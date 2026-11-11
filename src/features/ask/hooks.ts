@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useLayoutEffect, useSyncExternalStore } from 'react';
 
-import { askSession, consentStore } from './services';
+import { askSession, consentStore, pantryStore } from './services';
 
 export function useConsentState() {
   return useSyncExternalStore(consentStore.subscribe, consentStore.getSnapshot);
@@ -12,6 +12,7 @@ export function useConsentFor(userId: string | null) {
     useCallback(() => {
       if (!userId) return;
       consentStore.dismissFailure();
+      pantryStore.dismissFailure();
       if (consentStore.getSnapshot().userId === userId) void consentStore.refresh();
       else consentStore.start(userId);
     }, [userId]),
@@ -26,4 +27,8 @@ export function useAskSession(userId: string | null) {
   }, [userId]);
   const state = useSyncExternalStore(askSession.subscribe, askSession.getSnapshot);
   return state.userId === userId ? state : null;
+}
+
+export function usePantry() {
+  return useSyncExternalStore(pantryStore.subscribe, pantryStore.getSnapshot);
 }

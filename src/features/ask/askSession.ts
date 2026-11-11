@@ -201,6 +201,9 @@ export function createAskSession(deps: {
       const user: UserTurn = { role: 'user', text: state.text.trim(), via: 'image' };
       return run({ user, image, typed: state.text }, openConsent);
     },
+    fed() {
+      if (state.failed?.reason === 'hungry') set({ failed: null });
+    },
     retry(openConsent: () => void) {
       return state.failed ? run(state.failed.send, openConsent) : Promise.resolve();
     },

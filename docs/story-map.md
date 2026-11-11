@@ -878,7 +878,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ask.sheet.fill       | 草稿卡点「填进表单」打开发布表单，填过的行亮一下再退（1.2 秒，减少动态效果时直接亮再灭），顶上一条「小貘填了 N 项 · 撤销」，小貘听到的地点列出来让人自己在地图上选 | ui:ask_sheet_draft_fill, unit:src/features/bounty/post/aiFill.test.ts                                             |
 | ask.sheet.undo       | 撤销把小貘填的行改回去（之后自己改过的行不动），一次，离开表单后撤销条不再出现                                                                                     | ui:ask_sheet_draft_fill, unit:src/features/bounty/post/aiFill.test.ts                                             |
 | ask.sheet.dropped    | 表单不收的金额和时间不填，写明这一项没改（还是之前的）或没填，不会悄悄留着旧值                                                                                     | ui:ask_sheet_worst, unit:src/features/bounty/post/aiFill.test.ts                                                  |
-| ask.sheet.errors     | 小貘出错显示「小貘晕了，没扣体力」加再试一次和自己填；没网字还在；体力用完只给自己填（体力界面在第 5 步）；别的设备撤回同意时再出同意页，同意后只发一次            | ui:ask_sheet_worst, unit:src/features/ask/askSession.test.ts                                                      |
+| ask.sheet.errors     | 小貘出错显示「小貘晕了，没扣体力」加再试一次和自己填；没网字还在；体力用完出饿了的小貘（ask.energy.hungry）；别的设备撤回同意时再出同意页，同意后只发一次            | ui:ask_sheet_worst, unit:src/features/ask/askSession.test.ts                                                      |
 
 ### ask.consent 第一次用 AI 前同意
 
@@ -906,12 +906,30 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | -------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥                                                 | int:supabase/functions/tests/ai-draft.integration.ts                                                                                          |
 | ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                                                                     | ui:ask_sheet_draft_fill, unit:supabase/functions/ai-draft/handler.test.ts                                                                     |
-| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份；每天最多喂 5 片，第 6 片不收也不扣叶子 | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql, db:supabase/tests/ai_feed_cap.test.sql                        |
+| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份；每天最多喂 5 片，第 6 片不收也不扣叶子 | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql, db:supabase/tests/ai_feed_cap.test.sql, db:supabase/tests/ai_swap_feed.test.sql |
 | ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                                                               | ui:ask_sheet_worst, unit:supabase/functions/ai-draft/handler.test.ts                                                                          |
 | ask.draft.no-store   | 服务器不存提示词和回复，只存用量；日志里也没有                                                           | unit:supabase/functions/ai-draft/handler.test.ts, db:supabase/tests/ai.test.sql                                                               |
 | ask.draft.contract   | 起草结果多一个字段就拒收；能填进发布表单，表单不接受的金额和时间不填并列出来                             | unit:src/lib/drafts/bountyDraft.test.ts, unit:src/features/bounty/post/draftFields.test.ts, unit:supabase/functions/ai-draft/contract.test.ts |
 | ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                                                               | device                                                                                                                                        |
 | ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                                                               | ui, db:supabase/tests/ai.test.sql                                                                                                             |
+
+### ask.energy 小貘体力和储物罐
+
+- 故事：作为同学，我想知道小貘还能帮几次，饿了能喂它，以便需要时不被卡住。
+- 状态：done
+- 版本：v1
+- 规格：[foundation](specs/2026-10-11-foundation-design.md)
+
+| 验收 id             | 行为                                                                                                                                         | 覆盖                                                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| ask.energy.bar      | 半屏顶上小貘旁边 5 格肚子条和一句心情；每次回答后按服务器回的体力变，不多读一次；点它出系统提示说明 6 点吃饱、大约够 3 次起草；读不到时不画空肚子 | ui:ask_energy_sheet, unit:src/features/ask/belly.test.ts, unit:src/features/ask/metered.test.ts                                            |
+| ask.energy.low      | 剩一格时那格变橙色，半屏里一行「小貘有点饿了，还能再帮一次左右」，不弹窗                                                                         | ui:ask_energy_sheet, unit:src/features/ask/belly.test.ts                                                                                   |
+| ask.energy.hungry   | 体力为 0（打开时或回答后）出饿了的小貘：罐里有嫩叶就喂，没有就用 1 颗貘币换，都没有就明早再来，总有自己填；写的字还在，喂完不自动发                     | ui:ask_energy_sheet, ui:ask_sheet_worst, unit:src/features/ask/askSession.test.ts                                                          |
+| ask.energy.feed     | 喂嫩叶只在饿了的那屏：嫩叶飞到小貘嘴边、肚子条一格格填满、一次轻触感，约 0.8 秒，点一下跳过，减少动态效果时直接变满                                   | ui:ask_energy_sheet, unit:src/features/ask/feedMotion.test.ts, unit:src/features/ask/pantryStore.test.ts, device: 真机看嫩叶飞行、落到嘴边的轻触感、点一下跳过和减弱动态效果下直接变满 |
+| ask.energy.swap     | 用貘币换嫩叶先出系统操作表写明换完还剩几颗；饿了那屏换完直接喂（一次服务器调用，喂不了就不扣币）；我的 → 小貘 换的放进罐子                           | ui:ask_energy_sheet, ui:ask_energy_pantry, db:supabase/tests/ai_swap_feed.test.sql, int:supabase/functions/tests/ai-draft.integration.ts |
+| ask.energy.capped   | 当天喂满 5 片后饿了那屏写「小貘今天吃撑了，明天再来」，只给自己填                                                                                 | ui:ask_energy_sheet, db:supabase/tests/ai_feed_cap.test.sql, db:supabase/tests/ai_swap_feed.test.sql                                       |
+| ask.energy.pantry   | 我的 → 小貘 里蜡笔罐子写着几片嫩叶、不会过期，下面用 1 颗貘币换一片和貘币余额；没貘币时不能点                                                         | ui:ask_energy_pantry                                                                                                                       |
+| ask.energy.failures | 换或喂被拒时写明原因并重新读取；没收到回音时说可能没成、重新读取罐子和貘币，不自动重试                                                               | ui:ask_energy_pantry, unit:src/features/ask/pantryStore.test.ts                                                                            |
 
 ### ask.long-press-voice 长按小貘按钮说话
 

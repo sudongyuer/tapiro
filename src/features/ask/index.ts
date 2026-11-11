@@ -5,3 +5,4 @@ export { useAskSession, useConsentFor } from './hooks';
 export { pickScreenshot } from './screenshot';
 export { askSession, cloudCall } from './services';
 export { TapirSettingsScreen } from './TapirSettingsScreen';
+export { useBellySlots } from './useBellySlots';

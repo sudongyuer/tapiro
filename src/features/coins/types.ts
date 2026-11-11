@@ -12,6 +12,7 @@ export const COIN_REASONS = [
   'purchase',
   'purchase_refund',
   'purchase_refund_reversed',
+  'pantry_swap',
 ] as const;
 export type CoinReason = (typeof COIN_REASONS)[number];
 

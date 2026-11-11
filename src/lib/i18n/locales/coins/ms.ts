@@ -33,6 +33,7 @@ const ms: typeof zhHans = {
     m12: 'Disember',
   },
   reason: {
+    pantry_swap: 'Ditukar dengan daun',
     new_user: 'Hadiah pengguna baharu',
     onboarding_payee_method: 'Tetapkan kaedah bayaran',
     onboarding_first_post: 'Siaran pertama',

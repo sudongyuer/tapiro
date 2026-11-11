@@ -40,6 +40,7 @@ function harness(first: ConsentStatus = NOT_GIVEN) {
       writes.push(write);
       return write.promise;
     },
+    pantry: async () => ({ ok: false, failure: 'failed' }),
   };
   const store = createConsentStore(service);
   const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -265,5 +266,41 @@ describe('consent store', () => {
     expect(await asked).toBe('declined');
     expect(h.store.getSnapshot().userId).toBeNull();
     expect(h.store.getSnapshot().status.status).toBe('idle');
+  });
+
+  test('a belly patch survives an older read still out, which is read again', async () => {
+    const belly = { energy: 0, full: 1000, leaves: 1, coins: 0, feedsLeft: 5, nextRefillAt: AT };
+    const fed = { ...belly, energy: 1000, leaves: 0 };
+    const h = harness({ ...GIVEN, belly });
+    await h.startReady();
+    void h.store.refresh();
+    h.store.applyBelly('u1', fed);
+    h.reads[1].resolve({ ...GIVEN, belly });
+    await h.tick();
+    expect(h.store.getSnapshot().status).toEqual({
+      status: 'ready',
+      data: { ...GIVEN, belly: fed },
+    });
+    expect(h.calls).toEqual(['status', 'status', 'status']);
+    h.reads[2].resolve({ ...GIVEN, belly: fed });
+    await h.tick();
+    expect(h.store.getSnapshot().status).toEqual({
+      status: 'ready',
+      data: { ...GIVEN, belly: fed },
+    });
+  });
+
+  test('a belly patch for another user is ignored', async () => {
+    const h = harness(GIVEN);
+    await h.startReady();
+    h.store.applyBelly('u2', {
+      energy: 1,
+      full: 1000,
+      leaves: 0,
+      coins: 0,
+      feedsLeft: 5,
+      nextRefillAt: AT,
+    });
+    expect(h.store.getSnapshot().status).toEqual({ status: 'ready', data: GIVEN });
   });
 });

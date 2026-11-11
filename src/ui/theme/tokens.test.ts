@@ -173,3 +173,10 @@ test('paper and receipt keep their text readable in both themes', () => {
     ).toBeGreaterThanOrEqual(MIN);
   }
 });
+
+test('belly segments stand out from the sheet as graphics (3:1)', () => {
+  for (const name of ['--color-belly', '--color-belly-low'] as const) {
+    expect(contrastRatio(vars[name], '#FFFFFF')).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(dark(name), DARK_SURFACE)).toBeGreaterThanOrEqual(3);
+  }
+});

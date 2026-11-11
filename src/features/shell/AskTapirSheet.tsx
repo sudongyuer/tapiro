@@ -69,6 +69,8 @@ export function AskTapirSheet({
   onSuggestion,
   showSuggestions,
   replies,
+  belly,
+  notice,
   children,
 }: {
   tab: ShellTab;
@@ -77,6 +79,8 @@ export function AskTapirSheet({
   onSuggestion: (text: string) => void;
   showSuggestions: boolean;
   replies: number;
+  belly: ReactNode;
+  notice: ReactNode;
   children: ReactNode;
 }) {
   const { t } = useI18n();
@@ -109,6 +113,7 @@ export function AskTapirSheet({
           <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
             {t(SUBTITLES[tab])}
           </AppText>
+          {belly}
         </View>
         <Pressable
           accessibilityRole="button"
@@ -127,6 +132,7 @@ export function AskTapirSheet({
       </View>
 
       <View style={styles.body} testID="ask-tapir-body">
+        {notice}
         {showSuggestions ? (
           <View style={styles.chips}>
             {suggestions.map((key, index) => (

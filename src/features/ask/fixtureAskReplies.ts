@@ -142,12 +142,14 @@ export function createFixtureSender({
   now = () => new Date(),
   onCall,
   onConsentRequired,
+  meter = () => ({}),
 }: {
   replies: FixtureReply[];
   delayMs: number;
   now?: () => Date;
   onCall: (name: string, args: unknown) => void;
   onConsentRequired: () => void;
+  meter?: () => object | null;
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
@@ -155,11 +157,10 @@ export function createFixtureSender({
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     const reply = queue.length > 1 ? queue.shift()! : queue[0];
     if (reply === 'consentRequired') onConsentRequired();
-    return (
-      REFUSALS[reply] ?? {
-        ok: true,
-        body: { task: request.task, ...(body(reply, now()) as object) },
-      }
-    );
+    const refused = REFUSALS[reply];
+    if (refused) return refused;
+    const spent = meter();
+    if (spent === null) return REFUSALS.hungry!;
+    return { ok: true, body: { task: request.task, ...(body(reply, now()) as object), ...spent } };
   };
 }

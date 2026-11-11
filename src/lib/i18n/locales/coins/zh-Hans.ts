@@ -31,6 +31,7 @@ export default {
     m12: '12 月',
   },
   reason: {
+    pantry_swap: '换嫩叶',
     new_user: '新用户礼物',
     onboarding_payee_method: '设好收款方式',
     onboarding_first_post: '第一次发布',
