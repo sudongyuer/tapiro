@@ -3,6 +3,7 @@ import { Settings } from 'react-native';
 import { deviceCurrency } from '@/lib/deviceCurrency';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
+import { uiVerifyPurchases } from '@/lib/uiVerifyPurchases';
 import { userCleanups } from '@/lib/userCleanups';
 
 import { newDraftId } from './draftId';
@@ -16,8 +17,10 @@ const PUBLISHED_KEY = 'uiVerifyPublishedArgs';
 
 function verifyPostService() {
   Settings.set({ [PUBLISHED_KEY]: '' });
-  return createFixturePostService(fixturePostOptions(uiVerifyArgument, uiVerifyFixture), (args) =>
-    Settings.set({ [PUBLISHED_KEY]: JSON.stringify(args) }),
+  return createFixturePostService(
+    fixturePostOptions(uiVerifyArgument, uiVerifyFixture),
+    (args) => Settings.set({ [PUBLISHED_KEY]: JSON.stringify(args) }),
+    uiVerifyPurchases.coins,
   );
 }
 

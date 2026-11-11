@@ -86,6 +86,7 @@ function publishedRide(args: PublishRideArgs): MyRide {
 export function createFixtureRideService(
   options: FixtureRideOptions,
   onPublished: (args: PublishRideArgs) => void = () => {},
+  bought: () => number = () => 0,
 ): RideService {
   let listLoads = 0;
   const published: MyRide[] = [];
@@ -118,8 +119,10 @@ export function createFixtureRideService(
     },
     async postStatus() {
       await wait();
+      const status = STATUS[options.cost];
       return {
-        ...STATUS[options.cost],
+        ...status,
+        coins: status.coins + bought(),
         nextFreeAt: new Date(options.now() + 10 * 86_400_000).toISOString(),
         hasPayee: options.payee,
       };

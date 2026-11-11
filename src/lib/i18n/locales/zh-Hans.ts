@@ -316,12 +316,9 @@ export default {
     coins: { page: '貘币页', invite: '邀请页' },
     ask: { settings: '我的 → 小貘' },
     store: {
-      title: 'StoreKit 试验',
+      title: 'StoreKit 端到端',
       signIn: '以小林登录',
-      products: '读取商品',
-      buy: '买 {{id}}',
-      unfinished: '处理未完成交易',
-      revoked: '处理已退款交易',
+      openCoins: '打开貘币页',
       buyKept: '买 5，不发送到服务器',
     },
     liveActivity: {

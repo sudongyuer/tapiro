@@ -23,14 +23,16 @@ export function toPublishFailure(error: unknown): PublishRideFailure {
     : 'failed';
 }
 
-const isCount = (value: unknown): value is number => Number.isInteger(value) && Number(value) >= 0;
+const isInteger = (value: unknown): value is number => Number.isInteger(value);
+
+const isCount = (value: unknown): value is number => isInteger(value) && value >= 0;
 
 export function toPostStatus(blocked: unknown, balance: unknown, payees: unknown): RidePostStatus {
   const body = (balance ?? {}) as Record<string, unknown>;
   const { coins, freePostsLeft, freePostsPerMonth, nextFreeAt } = body;
   if (
     typeof blocked !== 'boolean' ||
-    !isCount(coins) ||
+    !isInteger(coins) ||
     !isCount(freePostsLeft) ||
     !isCount(freePostsPerMonth) ||
     typeof nextFreeAt !== 'string' ||

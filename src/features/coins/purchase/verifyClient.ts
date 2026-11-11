@@ -26,11 +26,12 @@ export function createVerifyClient(client: SupabaseClient) {
     if (typeof status !== 'string' || !OK_STATUSES.has(status)) {
       return { ok: false, httpStatus: 200, error: 'unexpected_answer' };
     }
-    const balance = (data as { balance?: unknown }).balance;
+    const { balance, coins } = data as { balance?: unknown; coins?: unknown };
     return {
       ok: true,
       status: status as 'credited' | 'duplicate' | 'revoked',
       balance: typeof balance === 'number' ? balance : null,
+      coins: Number.isInteger(coins) ? Number(coins) : null,
     };
   };
 }

@@ -17,7 +17,7 @@ import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { TaskCard } from '@/ui/TaskCard';
 
 import { costLine, payTarget } from './cost';
-import { CostSection } from './CostSection';
+import { CostSection, type BuyCoinsSlot } from './CostSection';
 import { canPublish, type FlowState } from './postFlow';
 import { draftStore } from './services';
 import { useTimeLine } from './timeLine';
@@ -33,9 +33,10 @@ type ConfirmProps = {
   onPublished: () => void;
   onPay: (paymentId: string) => void;
   onBack: () => void;
+  buyCoins?: BuyCoinsSlot;
 };
 
-export function PostConfirm({ userId, onPublished, onPay, onBack }: ConfirmProps) {
+export function PostConfirm({ userId, onPublished, onPay, onBack, buyCoins }: ConfirmProps) {
   const { t } = useI18n();
   const navigation = useNavigation();
   const current = useDraft(userId);
@@ -96,7 +97,7 @@ export function PostConfirm({ userId, onPublished, onPay, onBack }: ConfirmProps
       <SheetFrame notice={notice} testID="bounty-post-confirm">
         <Actions state={flow.state} onPublish={flow.publish} onPay={onPay} />
         <Preview draft={draft} />
-        <CostSection state={flow.state.status} onRetry={flow.retry} />
+        <CostSection state={flow.state.status} onRetry={flow.retry} buyCoins={buyCoins} />
       </SheetFrame>
     </>
   );

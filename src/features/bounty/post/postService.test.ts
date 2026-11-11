@@ -268,3 +268,17 @@ describe('isPublished', () => {
     );
   });
 });
+
+describe('toBalance', () => {
+  test('a balance below 0 after a refund (268 A) still reads, so free posts stay usable', async () => {
+    const { toBalance } = await import('./postService');
+    const balance = {
+      freePostsLeft: 1,
+      freePostsPerMonth: 3,
+      nextFreeAt: '2026-12-01T00:00:00+08:00',
+    };
+    expect(toBalance({ ...balance, coins: -6 }).coins).toBe(-6);
+    expect(() => toBalance({ ...balance, coins: 1.5 })).toThrow();
+    expect(() => toBalance({ ...balance, coins: -6, freePostsLeft: -1 })).toThrow();
+  });
+});

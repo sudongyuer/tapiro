@@ -1,5 +1,10 @@
 export type VerifyAnswer =
-  | { ok: true; status: 'credited' | 'duplicate' | 'revoked'; balance: number | null }
+  | {
+      ok: true;
+      status: 'credited' | 'duplicate' | 'revoked';
+      balance: number | null;
+      coins?: number | null;
+    }
   | { ok: false; httpStatus: number | null; error: string };
 
 export type ForwardOutcome =

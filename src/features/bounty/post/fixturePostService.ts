@@ -2,7 +2,7 @@ import type { FixtureVariant } from '@/lib/fixtureVariant';
 
 import type { PostService, PublishArgs, PublishOutcome, UnpaidSummary } from './types';
 
-export const POST_COSTS = ['free', 'last', 'coin', 'none'] as const;
+export const POST_COSTS = ['free', 'last', 'coin', 'none', 'negative'] as const;
 export const UNPAID_MIXES = ['none', 'two', 'old'] as const;
 export const PUBLISH_MODES = ['ok', 'failOnce', 'fail', 'alreadySent'] as const;
 
@@ -50,6 +50,7 @@ const BALANCES: Record<PostCost, { freePostsLeft: number; coins: number }> = {
   last: { freePostsLeft: 1, coins: 0 },
   coin: { freePostsLeft: 0, coins: 4 },
   none: { freePostsLeft: 0, coins: 0 },
+  negative: { freePostsLeft: 0, coins: -6 },
 };
 
 const PEOPLE: Record<FixtureVariant, [[string, number], [string, number]]> = {
@@ -105,8 +106,15 @@ export type FixturePostService = PostService & { published(): string[] };
 export function createFixturePostService(
   options: FixturePostOptions,
   onPublished: (args: PublishArgs) => void = () => {},
+  bought: () => number = () => 0,
 ): FixturePostService {
   const balance = { ...BALANCES[options.cost] };
+  let absorbed = 0;
+  const absorb = () => {
+    const total = bought();
+    balance.coins += total - absorbed;
+    absorbed = total;
+  };
   const accepted = new Map<string, PublishOutcome>();
   let statusFailures = options.statusFail ? 1 : 0;
   let sentId: string | null = null;
@@ -114,6 +122,7 @@ export function createFixturePostService(
 
   return {
     async status() {
+      absorb();
       if (statusFailures > 0) {
         statusFailures -= 1;
         throw new TypeError('Network request failed');
@@ -129,6 +138,7 @@ export function createFixturePostService(
       };
     },
     async publish(args) {
+      absorb();
       const first = accepted.get(args.id);
       if (first) return first;
       if (options.publish === 'fail') return { ok: false, reason: 'failed' };
@@ -138,7 +148,7 @@ export function createFixturePostService(
         return { ok: false, reason: 'failed' };
       }
       if (options.unpaid !== 'none') return { ok: false, reason: 'blocked' };
-      if (balance.freePostsLeft === 0 && balance.coins === 0) {
+      if (balance.freePostsLeft === 0 && balance.coins < 1) {
         return { ok: false, reason: 'noBalance' };
       }
       const charge = balance.freePostsLeft > 0 ? 'free' : 'coin';

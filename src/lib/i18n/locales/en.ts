@@ -321,12 +321,9 @@ const en: Translation = {
     coins: { page: 'Coins page', invite: 'Invite page' },
     ask: { settings: 'Me → Tapir' },
     store: {
-      title: 'StoreKit spike',
+      title: 'StoreKit end to end',
       signIn: 'Sign in as Xiaolin',
-      products: 'Load products',
-      buy: 'Buy {{id}}',
-      unfinished: 'Forward unfinished',
-      revoked: 'Forward refunded',
+      openCoins: 'Open coins',
       buyKept: 'Buy 5 without forwarding',
     },
     liveActivity: {
