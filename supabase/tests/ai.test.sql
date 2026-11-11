@@ -92,7 +92,7 @@ select is(
 );
 select is(
   (select array_agg(k order by k) from jsonb_object_keys(pg_temp.status('a1')) k),
-  array['coins', 'consent', 'energy', 'energyFull', 'leaves', 'nextRefillAt'],
+  array['coins', 'consent', 'energy', 'energyFull', 'feedsLeft', 'leaves', 'nextRefillAt'],
   'the status carries exactly these keys: no tokens, no model'
 );
 
@@ -291,7 +291,7 @@ select pg_temp.set_level('a1', 0);
 select public.feed_leaf();
 select public.swap_coin_for_leaf();
 select pg_temp.set_level('a1', 0);
-select lives_ok('select public.feed_leaf()', 'no ceiling on feeding in a day while question 149 is open');
+select lives_ok('select public.feed_leaf()', 'a second feed in a day is within the daily cap (ai_feed_cap.test.sql)');
 select is(pg_temp.level('a1'), 1000, 'the second feed of the day refills too');
 
 create function pg_temp.reject_pantry() returns trigger language plpgsql as $$

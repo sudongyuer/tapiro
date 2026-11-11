@@ -1,0 +1,43 @@
+export default {
+  provider: 'Alibaba Cloud Model Studio (Singapore)',
+  consent: {
+    title: 'Before Tapir helps you write',
+    body: 'Tapir sends what you type or say to <b>{{provider}}</b> to draft bounties, answer questions and translate.',
+    sendsLabel: 'Sent',
+    sends: 'What you type or say, pictures you pick and messages you translate',
+    neverLabel: 'Never sent',
+    never: 'Payee details, and messages or data you did not pick',
+    keptLabel: 'Kept',
+    kept: 'Chats stay on this phone; the server keeps only usage and what you let Tapir remember',
+    withdraw: 'You can turn this off anytime in Me → Tapir.',
+    privacy: 'Privacy Policy',
+    agree: 'Agree and let Tapir help',
+    agreeing: 'Saving…',
+    decline: 'Not now, I’ll fill it in myself',
+    declineFromMe: 'Not now',
+    failed: 'Not saved. Check your connection and tap again.',
+    needsUpdate:
+      'Tapir’s notice has a new version. Update the app to use the cloud. You can still fill things in yourself.',
+    close: 'OK',
+  },
+  composer: {
+    checking: 'Checking…',
+    offline: 'No connection, nothing was sent. Your text is still here.',
+    needsUpdate: 'Update the app to let Tapir use the cloud. You can fill it in yourself.',
+    held: 'Tapir’s drafting arrives in the next version. Your text is kept.',
+  },
+  settings: {
+    title: 'Tapir',
+    cloud: 'Let Tapir use the cloud',
+    givenFooter: '{{provider}} · agreed {{date}}',
+    offFooter:
+      'While off, Tapir does not use the cloud and you fill things in yourself. Turning it on shows what is sent first.',
+    needsUpdateFooter: 'Tapir’s notice has a new version. Update the app to turn this on.',
+    loading: 'Loading',
+    failed: 'Couldn’t load',
+    retry: 'Retry',
+    stale: 'May not be up to date',
+    withdrawing: 'Turning off…',
+    withdrawFailed: 'Not turned off; Tapir still uses the cloud. Try again.',
+  },
+};

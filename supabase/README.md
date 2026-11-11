@@ -265,7 +265,7 @@ and `apple.deno-test.ts` holds both to the same verdicts.
 
 ## 问小貘
 
-Nothing here is reachable from the app yet: no screen calls these, and `ai-draft` is not deployed. Plan:
+The app reads `ai_status()` and calls `record_consent` and `withdraw_consent` (consent, Task 3); nothing calls `ai-draft` yet, and it is not deployed. Plan:
 `docs/plans/2026-10-30-ask-tapir.md`.
 
 - `ai_consent_versions` (no client access): provider and purpose per version; the newest is the one in force.
@@ -280,12 +280,14 @@ Nothing here is reachable from the app yet: no screen calls these, and `ai-draft
 - `ai_pantry`: append-only like `coin_ledger`, with the same `user_id → null` on account deletion; a client reads its own
   rows and never writes. The leaf count is the sum of `delta`; leaves never expire. `swap_coin_for_leaf()` writes a `-1`
   `pantry_swap` row in `coin_ledger` and a `+1` `swap` row pointing at it in one transaction, or `55000 no_balance`.
-  `feed_leaf()` takes a leaf and fills the belly, or raises `55000 already_full` or `55000 no_leaf`. Neither has a daily
-  ceiling: that is question 149.
+  `feed_leaf()` takes a leaf and fills the belly, or raises `55000 already_full`, `55000 fed_enough` (149 A: already 5
+  feeds since the last 06:00, `private.ai_feed_limit()`, provisional until usage is measured; the leaf stays) or
+  `55000 no_leaf`, checked in that order. Swapping has no daily ceiling.
 - `ai_memory`: 小貘记得, full CRUD for the owner under RLS.
 - `ai_metering` (no client access): user, task, model, input and output tokens, energy spent, whether the reply was discarded, time. No prompt or response
   column exists.
-- `ai_status()` (authenticated): `{ consent: { currentVersion, given }, energy, energyFull, leaves, coins, nextRefillAt }`,
+- `ai_status()` (authenticated): `{ consent: { currentVersion, given, acceptedAt }, energy, energyFull, leaves, feedsLeft,
+coins, nextRefillAt }`,
   null when signed out.
 - `ai_begin_call(uid)`, `ai_finish_call(uid, held, task, model, input_tokens, output_tokens, energy_spent)` and
   `ai_abort_call(uid, held)` (service role) are the function's side. Begin answers `{ status }`: `consent_required`,

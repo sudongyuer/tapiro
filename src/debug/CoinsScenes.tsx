@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
-function usePushOnce(path: '/me/coins' | '/me/invite', onReady: () => void) {
+function usePushOnce(path: '/me/coins' | '/me/invite' | '/me/tapir', onReady: () => void) {
   const router = useRouter();
   const pushed = useRef(false);
   useEffect(() => {
@@ -19,5 +19,10 @@ export function CoinsPageScene({ onReady }: { onReady: () => void }) {
 
 export function InvitePageScene({ onReady }: { onReady: () => void }) {
   usePushOnce('/me/invite', onReady);
+  return null;
+}
+
+export function TapirSettingsScene({ onReady }: { onReady: () => void }) {
+  usePushOnce('/me/tapir', onReady);
   return null;
 }

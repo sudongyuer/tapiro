@@ -1,11 +1,19 @@
 import type { ParseKeys } from 'i18next';
 import { SymbolView } from 'expo-symbols';
-import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  PlatformColor,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { Mascot } from '@/ui/Mascot';
-import { vars } from '@/ui/theme/tokens';
+import { PressDim } from '@/ui/PressDim';
+import { typeStyle, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ShellTab } from './tabs';
@@ -38,8 +46,27 @@ const SUBTITLES: Record<ShellTab, ParseKeys> = {
 };
 
 const MIC_SIZE = vars['--touch-min'];
+const BODY = typeStyle('body');
+const PROMPT_LINES = 4;
+const PROMPT_MAX = 2000;
 
-export function AskTapirSheet({ tab, onClose }: { tab: ShellTab; onClose: () => void }) {
+export type AskComposer = {
+  text: string;
+  onChangeText: (text: string) => void;
+  onSend: () => void;
+  checking: boolean;
+  note: string | null;
+};
+
+export function AskTapirSheet({
+  tab,
+  onClose,
+  composer,
+}: {
+  tab: ShellTab;
+  onClose: () => void;
+  composer: AskComposer;
+}) {
   const { t } = useI18n();
   const { color } = useTheme();
   const copy = COPY[tab];
@@ -89,14 +116,39 @@ export function AskTapirSheet({ tab, onClose }: { tab: ShellTab; onClose: () => 
       </View>
 
       <View style={[styles.input, { backgroundColor: PlatformColor('secondarySystemBackground') }]}>
-        <AppText
-          variant="body"
-          tone="tertiaryLabel"
-          style={styles.prompt}
+        <TextInput
           testID="ask-tapir-prompt"
-        >
-          {t(copy.prompt)}
-        </AppText>
+          accessibilityLabel={t(copy.prompt)}
+          style={[styles.prompt, { color: PlatformColor('label') }]}
+          placeholder={t(copy.prompt)}
+          placeholderTextColor={PlatformColor('placeholderText')}
+          multiline
+          maxLength={PROMPT_MAX}
+          value={composer.text}
+          onChangeText={composer.onChangeText}
+        />
+        {composer.checking ? (
+          <View style={styles.mic}>
+            <ActivityIndicator
+              accessibilityLabel={t('ask.composer.checking')}
+              testID="ask-tapir-checking"
+            />
+          </View>
+        ) : composer.text.trim().length > 0 ? (
+          <PressDim
+            testID="ask-tapir-send"
+            accessibilityRole="button"
+            accessibilityLabel={t('shell.ask.send')}
+            style={styles.mic}
+            onPress={composer.onSend}
+          >
+            <SymbolView
+              name="arrow.up.circle.fill"
+              size={MIC_SIZE - vars['--space-3']}
+              tintColor={color('--color-accent')}
+            />
+          </PressDim>
+        ) : null}
         <View
           accessible
           accessibilityRole="button"
@@ -109,6 +161,11 @@ export function AskTapirSheet({ tab, onClose }: { tab: ShellTab; onClose: () => 
           <SymbolView name="mic.fill" size={18} tintColor={PlatformColor('tertiaryLabel')} />
         </View>
       </View>
+      {composer.note ? (
+        <AppText variant="secondary" testID="ask-tapir-note">
+          {composer.note}
+        </AppText>
+      ) : null}
       <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-coming-soon">
         {t('shell.ask.comingSoon')}
       </AppText>
@@ -156,7 +213,13 @@ const styles = StyleSheet.create({
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },
-  prompt: { flex: 1 },
+  prompt: {
+    flex: 1,
+    fontSize: BODY.fontSize,
+    lineHeight: BODY.lineHeight,
+    maxHeight: BODY.lineHeight * PROMPT_LINES + vars['--space-4'],
+    paddingVertical: vars['--space-3'],
+  },
   mic: {
     width: MIC_SIZE,
     height: MIC_SIZE,

@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import ask from './ask/en';
 import block from './block/en';
 import chat from './chat/en';
 import coins from './coins/en';
@@ -142,6 +143,7 @@ const en: Translation = {
   chat,
   coins,
   reputation,
+  ask,
   bounty,
   ride,
   rideReminders,
@@ -186,6 +188,7 @@ const en: Translation = {
         writeBounty: 'Write a bounty for me',
       },
       mic: 'Speak',
+      send: 'Send',
       comingSoon: 'Voice and AI drafts are coming soon',
       close: 'Close',
     },
@@ -316,6 +319,7 @@ const en: Translation = {
     chat: { thread: 'Chat thread (keyboard)' },
     reputation: { profile: 'Profile', review: 'Review sheet', reviewOpen: 'Open the review' },
     coins: { page: 'Coins page', invite: 'Invite page' },
+    ask: { settings: 'Me → Tapir' },
     store: {
       title: 'StoreKit spike',
       signIn: 'Sign in as Xiaolin',
