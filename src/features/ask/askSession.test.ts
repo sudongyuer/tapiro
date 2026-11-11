@@ -114,7 +114,7 @@ describe('the 问小貘 session', () => {
     [
       'a reply the app cannot read',
       { kind: 'answered', body: { tool: 'answer' } },
-      'providerError',
+      'unreadable',
     ],
   ])(
     '%s keeps the words and offers a retry, never replayed on its own',
@@ -249,5 +249,72 @@ describe('the 问小貘 session', () => {
     expect(storage.texts.get('u1')).toBe('');
     expect(storage.chats.get('u1')).toBeNull();
     expect(session.getSnapshot().userId).toBeNull();
+  });
+
+  test('words ending in a newline still clear when the answer arrives', async () => {
+    const { session, storage, openConsent } = setup();
+    session.setText('取快递\n');
+    await session.send(openConsent);
+    expect(session.getSnapshot().text).toBe('');
+    expect(storage.texts.get('u1')).toBe('');
+  });
+
+  test('a reply that lands after sign-out writes nothing back', async () => {
+    let release: (result: CloudResult) => void = () => {};
+    const storage = memoryStorage();
+    const session = createAskSession({
+      call: () => new Promise((resolve) => (release = resolve)),
+      consent: { prepare: async () => 'given', ask: () => ({ outcome: Promise.resolve('given') }) },
+      storage,
+      now: () => NOW,
+    });
+    session.open('u1');
+    session.setText('靠谱度怎么涨？');
+    const sending = session.send(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    session.forget('u1');
+    release(ANSWER);
+    await sending;
+    expect(storage.chats.get('u1')).toBeNull();
+    expect(storage.texts.get('u1')).toBe('');
+  });
+
+  test('a late reply clears the reopened field and joins what was saved since', async () => {
+    const releases: ((result: CloudResult) => void)[] = [];
+    const storage = memoryStorage();
+    const session = createAskSession({
+      call: () => new Promise((resolve) => releases.push(resolve)),
+      consent: { prepare: async () => 'given', ask: () => ({ outcome: Promise.resolve('given') }) },
+      storage,
+      now: () => NOW,
+    });
+    session.open('u1');
+    session.setText('first?');
+    const first = session.send(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    session.open('u1');
+    expect(session.getSnapshot().text).toBe('first?');
+    releases[0](ANSWER);
+    await first;
+    expect(session.getSnapshot().text).toBe('');
+    session.resume();
+    session.setText('second?');
+    const second = session.send(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    session.open('u1');
+    session.resume();
+    session.setText('third?');
+    const third = session.send(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    releases[2](ANSWER);
+    await third;
+    releases[1](ANSWER);
+    await second;
+    const kept = session.getSnapshot().resume ?? null;
+    const words = (storage.chats.get('u1') as { turns: { text?: string }[] }).turns
+      .map((turn) => turn.text)
+      .filter(Boolean);
+    expect(words).toEqual(['first?', 'third?', 'second?']);
+    expect(kept).toBeNull();
   });
 });

@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
 
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
@@ -17,6 +18,7 @@ import { TapirCard, UserBubble } from './TurnCards';
 const FAILURE_KEYS = {
   offline: 'ask.composer.offline',
   providerError: 'ask.sheet.providerError',
+  unreadable: 'ask.sheet.unreadable',
   hungry: 'ask.sheet.hungry',
   busy: 'ask.sheet.busy',
 } as const;
@@ -83,6 +85,7 @@ export function AskConversation({
       {resume ? (
         <PressDim
           accessibilityRole="button"
+          accessibilityLabel={t('ask.sheet.resume', { text: resume })}
           accessibilityHint={t('ask.sheet.resumeHint')}
           onPress={actions.onResume}
           testID="ask-resume"
@@ -91,9 +94,7 @@ export function AskConversation({
           <AppText variant="secondary" tone="secondaryLabel" numberOfLines={1} style={styles.grow}>
             {t('ask.sheet.resume', { text: resume })}
           </AppText>
-          <AppText variant="secondary" tone="tertiaryLabel">
-            ›
-          </AppText>
+          <SymbolView name="chevron.right" size={13} tintColor={PlatformColor('tertiaryLabel')} />
         </PressDim>
       ) : null}
       {state.turns.map((turn, index) =>

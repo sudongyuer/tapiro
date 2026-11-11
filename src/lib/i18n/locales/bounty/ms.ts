@@ -14,10 +14,10 @@ const ms: typeof zhHans = {
   },
   post: {
     aiFill: {
-      filled: 'Tapir mengisi {{count}}',
+      filled: 'Medan yang diisi Tapir: {{count}}',
       none: 'Tapir sudah semak: tiada yang perlu diubah',
       undo: 'Buat asal',
-      undoLabel: 'Buat asal {{count}} yang diisi Tapir',
+      undoLabel: 'Buat asal medan yang diisi Tapir ({{count}})',
       rewardKept:
         'Ganjaran tidak diubah: jumlah Tapir di luar had yang boleh disiarkan, jadi ini masih jumlah yang anda masukkan.',
       rewardEmpty:

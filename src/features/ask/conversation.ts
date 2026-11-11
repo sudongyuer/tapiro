@@ -79,11 +79,9 @@ function parseTurn(turn: Record<string, unknown> | null): Turn | null {
   return reply ? { role: 'tapir', raw, reply } : null;
 }
 
+export const storedTurn = (turn: Turn) =>
+  turn.role === 'user' ? turn : { role: 'tapir', raw: turn.raw };
+
 export function storedForm(conversation: Conversation) {
-  return {
-    updatedAt: conversation.updatedAt,
-    turns: conversation.turns.map((turn) =>
-      turn.role === 'user' ? turn : { role: 'tapir', raw: turn.raw },
-    ),
-  };
+  return { updatedAt: conversation.updatedAt, turns: conversation.turns.map(storedTurn) };
 }

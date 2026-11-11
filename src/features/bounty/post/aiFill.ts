@@ -18,7 +18,7 @@ export type AiFill = {
   rows: FilledRow[];
   before: Partial<PostDraft>;
   after: Partial<PostDraft>;
-  dropped: ('reward' | 'time')[];
+  dropped: { field: 'reward' | 'time'; kept: boolean }[];
   placeHint: string | null;
 };
 
@@ -44,7 +44,10 @@ export function fillFromDraft(form: PostDraft, draft: BountyDraft, now: Date) {
     rows,
     before: pick(form, fields),
     after: pick(next, fields),
-    dropped: patch.dropped,
+    dropped: patch.dropped.map((field) => ({
+      field,
+      kept: field === 'reward' ? form.rewardText.trim() !== '' : form.time.kind !== 'none',
+    })),
     placeHint: patch.placeHint,
   };
   return { patch: pick(next, fields), fill };

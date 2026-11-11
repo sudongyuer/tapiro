@@ -1,22 +1,25 @@
+import { userCleanups } from '@/lib/userCleanups';
+
 import type { BountyDraft } from './bountyDraft';
 
-export type DraftDelivery = { userId: string; draft: BountyDraft };
+export const DRAFT_WAIT_MS = 30_000;
 
-// 问小貘 hands a draft to the post form through here so neither feature imports the other. A draft waits for one form
-// to take it; a newer draft replaces one nobody took, and a user change never sees another user's draft.
-export function createDraftInbox() {
+export type DraftDelivery = { userId: string; draft: BountyDraft; at: number };
+
+// A draft nobody took soon after 填进表单 (the form never opened) must not fill a form the user opens much later.
+export function createDraftInbox(now: () => number = Date.now) {
   let waiting: DraftDelivery | null = null;
   const listeners = new Set<() => void>();
   return {
     put(userId: string, draft: BountyDraft) {
-      waiting = { userId, draft };
+      waiting = { userId, draft, at: now() };
       listeners.forEach((listener) => listener());
     },
     take(userId: string): BountyDraft | null {
       if (waiting?.userId !== userId) return null;
-      const { draft } = waiting;
+      const { draft, at } = waiting;
       waiting = null;
-      return draft;
+      return now() - at <= DRAFT_WAIT_MS ? draft : null;
     },
     clear(userId: string) {
       if (waiting?.userId === userId) waiting = null;
@@ -33,3 +36,5 @@ export function createDraftInbox() {
 export type DraftInbox = ReturnType<typeof createDraftInbox>;
 
 export const bountyDraftInbox = createDraftInbox();
+
+userCleanups.register((userId) => bountyDraftInbox.clear(userId));

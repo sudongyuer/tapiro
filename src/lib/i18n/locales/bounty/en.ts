@@ -14,10 +14,10 @@ const en: typeof zhHans = {
   },
   post: {
     aiFill: {
-      filled: 'Tapir filled in {{count}}',
+      filled: 'Fields Tapir filled in: {{count}}',
       none: 'Tapir checked: nothing to change',
       undo: 'Undo',
-      undoLabel: 'Undo the {{count}} Tapir filled in',
+      undoLabel: 'Undo the fields Tapir filled in ({{count}})',
       rewardKept:
         'Reward unchanged: Tapir’s amount is outside what you can post, so this is still what you entered.',
       rewardEmpty:

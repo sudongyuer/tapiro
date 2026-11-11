@@ -41,8 +41,9 @@ export default {
     window: '{{start}} – {{end}}',
     place: 'Tempat: {{place}} (pilih pada peta dalam borang)',
     providerError: 'Tapir pening. Tiada tenaga digunakan. Teks anda masih di sini.',
+    unreadable: 'Jawapan Tapir tidak dapat dibaca. Teks anda masih di sini; anda boleh cuba lagi.',
     hungry:
-      'Tapir sudah kenyang untuk hari ini; tenaga penuh semula esok. Anda boleh mengisi sendiri.',
+      'Tenaga Tapir sudah habis untuk hari ini; ia penuh semula esok. Anda boleh mengisi sendiri.',
     busy: 'Tapir masih sibuk dengan yang tadi. Cuba lagi sebentar.',
     retry: 'Cuba lagi',
     manual: 'Isi sendiri',

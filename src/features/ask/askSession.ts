@@ -4,15 +4,16 @@ import {
   keptConversation,
   requestText,
   storedForm,
+  storedTurn,
   type Conversation,
   type Turn,
   type UserTurn,
 } from './conversation';
 import type { AskOutcome, PrepareResult } from './consentStore';
 
-export type AskFailure = 'offline' | 'providerError' | 'hungry' | 'busy';
+export type AskFailure = 'offline' | 'providerError' | 'unreadable' | 'hungry' | 'busy';
 
-export type AskSend = { user: UserTurn; image: CloudImage | null };
+export type AskSend = { user: UserTurn; image: CloudImage | null; typed: string | null };
 
 export type AskSessionState = {
   userId: string | null;
@@ -63,6 +64,7 @@ export function createAskSession(deps: {
   const now = deps.now ?? (() => new Date());
   let state = EMPTY;
   let epoch = 0;
+  const forgotten = new Set<string>();
   const listeners = new Set<() => void>();
 
   const set = (next: Partial<AskSessionState>) => {
@@ -120,27 +122,37 @@ export function createAskSession(deps: {
     if (result.kind === 'consentRequired') return stop({});
     const failure = failureOf(result);
     if (failure === 'needsUpdate') return stop({ needsUpdate: true });
+    if (failure) return stop({ failed: { send, reason: failure } });
     const raw = result.kind === 'answered' ? toRawReply(result.body) : null;
     const reply = raw ? parseAskReply(raw) : null;
-    if (failure || !raw || !reply) {
-      return stop({ failed: { send, reason: failure ?? 'providerError' } });
-    }
+    if (!raw || !reply) return stop({ failed: { send, reason: 'unreadable' } });
+    if (forgotten.has(userId)) return;
 
-    const next = [...turns, send.user, { role: 'tapir' as const, raw, reply }];
+    const tapir = { role: 'tapir' as const, raw, reply };
+    const late = !current();
+    const base = late ? laterTurns(userId, turns) : turns;
+    const next = [...base, send.user, tapir];
     const conversation = save(userId, next);
-    const sentText = send.user.via === 'choice' ? null : send.user.text;
-    if (sentText !== null && deps.storage.readText(userId) === sentText) {
+    const { typed } = send;
+    if (typed !== null && deps.storage.readText(userId) === typed) {
       deps.storage.writeText(userId, '');
     }
-    if (!current()) {
-      if (state.userId === userId && state.turns.length === 0) set({ resume: conversation });
+    const text = typed !== null && state.text === typed ? '' : state.text;
+    if (late) {
+      if (state.userId !== userId) return;
+      set({ text, ...(state.turns.length === 0 ? { resume: conversation } : {}) });
       return;
     }
-    set({
-      sending: null,
-      turns: next,
-      text: sentText !== null && state.text === sentText ? '' : state.text,
-    });
+    set({ sending: null, turns: next, text });
+  }
+
+  // A reply that lands after the sheet reopened joins whatever was saved since, when that grew from the same turns.
+  function laterTurns(userId: string, sentFrom: Turn[]) {
+    const saved = keptConversation(deps.storage.readConversation(userId), now())?.turns ?? null;
+    if (!saved || saved.length < sentFrom.length) return sentFrom;
+    const same = (a: Turn, b: Turn) =>
+      JSON.stringify(storedTurn(a)) === JSON.stringify(storedTurn(b));
+    return sentFrom.every((turn, index) => same(turn, saved[index])) ? saved : sentFrom;
   }
 
   return {
@@ -152,6 +164,7 @@ export function createAskSession(deps: {
     },
     getSnapshot: () => state,
     open(userId: string) {
+      forgotten.delete(userId);
       epoch += 1;
       state = {
         ...EMPTY,
@@ -177,14 +190,16 @@ export function createAskSession(deps: {
     send(openConsent: () => void) {
       const text = state.text.trim();
       if (text === '') return Promise.resolve();
-      return run({ user: { role: 'user', text, via: 'typed' }, image: null }, openConsent);
+      const user: UserTurn = { role: 'user', text, via: 'typed' };
+      return run({ user, image: null, typed: state.text }, openConsent);
     },
     choose(answer: string, openConsent: () => void) {
-      return run({ user: { role: 'user', text: answer, via: 'choice' }, image: null }, openConsent);
+      const user: UserTurn = { role: 'user', text: answer, via: 'choice' };
+      return run({ user, image: null, typed: null }, openConsent);
     },
     sendImage(image: CloudImage, openConsent: () => void) {
-      const text = state.text.trim();
-      return run({ user: { role: 'user', text, via: 'image' }, image }, openConsent);
+      const user: UserTurn = { role: 'user', text: state.text.trim(), via: 'image' };
+      return run({ user, image, typed: state.text }, openConsent);
     },
     retry(openConsent: () => void) {
       return state.failed ? run(state.failed.send, openConsent) : Promise.resolve();
@@ -205,6 +220,7 @@ export function createAskSession(deps: {
       set({ turns });
     },
     forget(userId: string) {
+      forgotten.add(userId);
       deps.storage.writeText(userId, '');
       deps.storage.writeConversation(userId, null);
       if (state.userId === userId) {

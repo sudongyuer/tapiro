@@ -18,7 +18,7 @@ const NO_GLOW: FillGlow = { rows: [], lit: false, reduced: true };
 
 export const FillGlowContext = createContext<FillGlow>(NO_GLOW);
 
-// Under Reduce Motion the rows light for the whole 1.2 s and go out at once, as 132 A draws it.
+// Under Reduce Motion the rows stay lit for the whole 1.2 s and go out at once, with no fade.
 export function useFillGlow(rows: readonly FilledRow[] | null, at: number | null): FillGlow {
   const reduced = useReducedMotion() || uiVerifyReduceMotion;
   const [ended, setEnded] = useState<number | null>(null);

@@ -16,31 +16,19 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { AiFill } from './aiFill';
-import type { PostDraft } from './types';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const footnote = font({ textStyle: 'footnote' });
 
-export function AiFillSection({
-  fill,
-  draft,
-  onUndo,
-}: {
-  fill: AiFill;
-  draft: PostDraft;
-  onUndo: () => void;
-}) {
+export function AiFillSection({ fill, onUndo }: { fill: AiFill; onUndo: () => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const count = fill.rows.length;
   const lines = [
-    ...fill.dropped.map((field) => {
-      const kept = field === 'reward' ? draft.rewardText.trim() !== '' : draft.time.kind !== 'none';
-      return {
-        id: `bounty-post-ai-dropped-${field}`,
-        text: t(`bounty.post.aiFill.${field}${kept ? 'Kept' : 'Empty'}`),
-      };
-    }),
+    ...fill.dropped.map(({ field, kept }) => ({
+      id: `bounty-post-ai-dropped-${field}`,
+      text: t(`bounty.post.aiFill.${field}${kept ? 'Kept' : 'Empty'}`),
+    })),
     ...(fill.placeHint
       ? [
           {

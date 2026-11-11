@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import type { BountyDraft } from './bountyDraft';
-import { createDraftInbox } from './inbox';
+import { createDraftInbox, DRAFT_WAIT_MS } from './inbox';
 
 const draft = (title: string): BountyDraft => ({
   title,
@@ -46,6 +46,14 @@ describe('draft inbox', () => {
     inbox.put('u1', draft('y'));
     expect(heard).toBe(1);
     inbox.clear('u1');
+    expect(inbox.take('u1')).toBeNull();
+  });
+
+  test('a draft no form took in time is dropped', () => {
+    let clock = 0;
+    const inbox = createDraftInbox(() => clock);
+    inbox.put('u1', draft('x'));
+    clock = DRAFT_WAIT_MS + 1;
     expect(inbox.take('u1')).toBeNull();
   });
 });

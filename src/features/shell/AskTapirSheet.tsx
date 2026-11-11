@@ -140,7 +140,7 @@ export function AskTapirSheet({
         {composer.sending ? (
           <View style={styles.mic}>
             <ActivityIndicator
-              accessibilityLabel={t('ask.composer.checking')}
+              accessibilityLabel={t('ask.sheet.thinking')}
               testID="ask-tapir-checking"
             />
           </View>

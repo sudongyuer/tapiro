@@ -133,9 +133,7 @@ function PostFormBody({
       <FillGlowContext.Provider value={glow}>
         <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
           <FormNotice notice={notice} currency={draft.currency} />
-          {fill.shown ? (
-            <AiFillSection fill={fill.shown.fill} draft={draft} onUndo={fill.undo} />
-          ) : null}
+          {fill.shown ? <AiFillSection fill={fill.shown.fill} onUndo={fill.undo} /> : null}
           <PostLiveCard draft={draft} onSwap={(art) => edit({ art })} />
           <Section>
             <TitleRow field={titleField}>

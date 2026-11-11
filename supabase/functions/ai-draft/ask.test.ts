@@ -6,13 +6,13 @@ import { captureConsole, expectError, IMAGE, post, replying, setup } from './han
 import { IMAGE_DATA_MAX } from './tools.ts';
 
 describe('ai-draft for the 问小貘 sheet', () => {
-  test('the sheet offers draft, answer and clarify, and pick only with an image', async () => {
+  test('the sheet offers clarify without an image and pick only with one', async () => {
     const { deps, recorded } = setup();
     await handleAiDraft(post({ task: 'ask', input: { text: '帮我取快递' } }), deps);
     await handleAiDraft(post({ task: 'ask', input: { text: '', image: IMAGE } }), deps);
     expect(recorded.provider.map((call) => call.tools.map((tool) => tool.name))).toEqual([
       ['draft_bounty', 'answer', 'clarify'],
-      ['draft_bounty', 'answer', 'clarify', 'pick'],
+      ['draft_bounty', 'answer', 'pick'],
     ]);
   });
 

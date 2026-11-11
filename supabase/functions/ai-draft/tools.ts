@@ -217,12 +217,13 @@ export function validToolResult(tool: AiTool, args: unknown) {
   return true;
 }
 
-// The sheet lets the model choose: draft, answer, or ask one question first. Picking among several requests needs
-// something holding several, so it is offered only with an image.
+// A follow-up goes back as text only, so a question asked about an image would lose the image: with an image the model
+// drafts, answers or offers a pick, and never asks back.
 export function toolsFor(request: AiRequest): AiTool[] {
   if (request.task !== 'ask') return [request.task];
-  const tools: AiTool[] = ['draft_bounty', 'answer', 'clarify'];
-  return request.input.image ? [...tools, 'pick'] : tools;
+  return request.input.image
+    ? ['draft_bounty', 'answer', 'pick']
+    : ['draft_bounty', 'answer', 'clarify'];
 }
 
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;

@@ -75,16 +75,15 @@ ui.at_rest()
 ui.capture('03-undone')
 
 close_sheet_by_swipe(ui)
-open_post_sheet(ui)
-items = ui.read()
-assert by_id(items, 'bounty-post-ai-filled') is None, 'the strip came back after leaving the form'
-if by_id(items, 'bounty-post-form'):
-    assert value(ui, 'bounty-post-title') == '', 'the undone title came back'
+if open_post_sheet(ui).get('AXUniqueId') == 'bounty-post-pick':
+    ui.tap('bounty-post-pick-free')
+ui.element('bounty-post-reward')
+ui.wait(lambda items: by_id(items, 'bounty-post-title') is not None, 'the form never showed its title row')
+assert value(ui, 'bounty-post-title') == '', 'the undone title came back'
+assert by_id(ui.read(), 'bounty-post-ai-filled') is None, 'the strip came back after leaving the form'
+ui.at_rest()
 ui.capture('04-left-after-undo')
-form = by_id(ui.read(), 'bounty-post-form') or by_id(ui.read(), 'bounty-post-pick')
-x = form['frame']['x'] + form['frame']['width'] / 2
-ui.swipe((x, form['frame']['y'] + 12), (x, form['frame']['y'] + form['frame']['height'] * 0.9), 0.3)
-ui.gone(form.get('AXUniqueId'))
+close_sheet_by_swipe(ui)
 
 open_sheet(ui)
 ui.tap('ask-resume')
@@ -94,8 +93,8 @@ ui.element('bounty-post-ai-filled', timeout=20)
 close_sheet_by_swipe(ui)
 open_post_sheet(ui)
 ui.element('bounty-post-form')
+ui.wait(lambda items: value(ui, 'bounty-post-title') == TITLE, 'leaving the form lost the filled title')
 assert by_id(ui.read(), 'bounty-post-ai-filled') is None, 'the strip outlived the form'
-assert value(ui, 'bounty-post-title') == TITLE, 'leaving the form lost the filled title'
 ui.at_rest()
 ui.capture('05-filled-kept')
 print('PASS: long draft card, fill with strip, place hint and a fading glow, 撤销, strip gone after leaving')

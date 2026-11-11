@@ -57,14 +57,14 @@ describe('filling the post form from a draft', () => {
   test('a reward the form refuses is named and the older reward stays', () => {
     const form = { ...BLANK, rewardText: '8' };
     const { patch, fill } = fillFromDraft(form, draft({ rewardMajor: 600 }), NOW);
-    expect(fill.dropped).toEqual(['reward']);
+    expect(fill.dropped).toEqual([{ field: 'reward', kept: true }]);
     expect(fill.rows).not.toContain('reward');
     expect({ ...form, ...patch }.rewardText).toBe('8');
   });
 
   test('a time too far ahead is named and not filled', () => {
     const { fill } = fillFromDraft(BLANK, draft({ deadlineAt: '2027-01-30T18:00:00+08:00' }), NOW);
-    expect(fill.dropped).toEqual(['time']);
+    expect(fill.dropped).toEqual([{ field: 'time', kept: false }]);
     expect(fill.rows).not.toContain('time');
   });
 });
