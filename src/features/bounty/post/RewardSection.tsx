@@ -47,6 +47,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { FieldRow, ROW_INSETS } from '@/ui/FieldRow';
+import { useRowGlow } from './fillGlow';
 import { rewardAmounts, rewardSuggestion } from './postKinds';
 import { rewardLimits } from './validate';
 
@@ -141,6 +142,7 @@ export function RewardSection({
       )
     : null;
   const typed = value.trim();
+  const glow = useRowGlow('reward');
   return (
     <Section
       header={<Text>{t('bounty.post.form.reward')}</Text>}
@@ -152,7 +154,7 @@ export function RewardSection({
         </Text>
       }
     >
-      <FieldRow field={input}>
+      <FieldRow field={input} modifiers={glow}>
         <CurrencyMenu currency={currency} onChange={onCurrency} />
         <Spacer />
         <SyncedTextField

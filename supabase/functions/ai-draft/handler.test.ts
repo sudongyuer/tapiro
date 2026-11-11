@@ -1,95 +1,18 @@
 import { describe, expect, test } from 'bun:test';
 
+import { handleAiDraft } from './handler.ts';
+import { fakeProvider, selectProvider, type ProviderCall } from './provider.ts';
 import {
-  handleAiDraft,
-  type AiDraftDeps,
-  type BeginResult,
-  type DiscardRow,
-  type MeterRow,
-} from './handler.ts';
-import { fakeProvider, selectProvider, type AiProvider, type ProviderCall } from './provider.ts';
-
-const USER = '00000000-0000-4000-8000-00000000000a';
-const SECRET_PROMPT = '帮我取快递，我的手机号 0123456789';
-
-type Recorded = {
-  begins: string[];
-  finishes: MeterRow[];
-  discards: DiscardRow[];
-  aborts: string[];
-  provider: ProviderCall[];
-};
-
-function setup(overrides: Partial<AiDraftDeps> = {}, begin: BeginResult = okBegin(500)) {
-  const recorded: Recorded = { begins: [], finishes: [], discards: [], aborts: [], provider: [] };
-  const deps: AiDraftDeps = {
-    userIdFromToken: async (token) => (token === 'valid' ? USER : null),
-    store: {
-      async begin(userId) {
-        recorded.begins.push(userId);
-        return begin;
-      },
-      async finish(row) {
-        recorded.finishes.push(row);
-        return { energy: 166, energyFull: 1000 };
-      },
-      async discard(row) {
-        recorded.discards.push(row);
-      },
-      async abort(_userId, lease) {
-        recorded.aborts.push(lease);
-      },
-    },
-    provider: {
-      generate(call, signal) {
-        recorded.provider.push(call);
-        return fakeProvider.generate(call, signal);
-      },
-    },
-    ...overrides,
-  };
-  return { deps, recorded };
-}
-
-function okBegin(energy: number): BeginResult {
-  return { status: 'ok', lease: 'lease-1', energy, energyFull: 1000 };
-}
-
-function post(body: unknown, token: string | null = 'valid') {
-  return new Request('http://localhost/ai-draft', {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: typeof body === 'string' ? body : JSON.stringify(body),
-  });
-}
-
-const DRAFT = { task: 'draft_bounty', input: { text: SECRET_PROMPT } };
-
-async function expectError(response: Response, status: number, error: string) {
-  expect(await response.json()).toEqual({ error });
-  expect(response.status).toBe(status);
-}
-
-function replying(reply: Partial<Awaited<ReturnType<AiProvider['generate']>>>): AiProvider {
-  return {
-    async generate(call, signal) {
-      return { ...(await fakeProvider.generate(call, signal)), ...reply };
-    },
-  };
-}
-
-async function captureConsole(run: () => Promise<void>) {
-  const lines: string[] = [];
-  const original = { error: console.error, log: console.log, warn: console.warn };
-  const capture = (...args: unknown[]) => void lines.push(args.map(String).join(' '));
-  Object.assign(console, { error: capture, log: capture, warn: capture });
-  try {
-    await run();
-  } finally {
-    Object.assign(console, original);
-  }
-  return lines;
-}
+  captureConsole,
+  DRAFT,
+  expectError,
+  okBegin,
+  post,
+  replying,
+  SECRET_PROMPT,
+  setup,
+  USER,
+} from './handlerTestKit.ts';
 
 describe('ai-draft', () => {
   test('only POST', async () => {
@@ -165,7 +88,7 @@ describe('ai-draft', () => {
     const [call] = recorded.provider;
     expect(call.task).toBe('translate');
     expect(call.input).toEqual({ text: 'hello', to: 'ms' });
-    expect(call.tool.name).toBe('translate');
+    expect(call.tools.map((tool) => tool.name)).toEqual(['translate']);
   });
 
   test('answer and translate return their text', async () => {
@@ -302,7 +225,7 @@ describe('ai-draft', () => {
   ])('%s in a draft is a provider_error', async (_name, time) => {
     const args = (
       await fakeProvider.generate(
-        { ...DRAFT, tool: {} } as ProviderCall,
+        { ...DRAFT, tools: [] } as ProviderCall,
         new AbortController().signal,
       )
     ).arguments as Record<string, unknown>;

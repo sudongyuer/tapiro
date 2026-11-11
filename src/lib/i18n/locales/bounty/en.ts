@@ -13,6 +13,20 @@ const en: typeof zhHans = {
     other: 'Other',
   },
   post: {
+    aiFill: {
+      filled: 'Fields Tapir filled in: {{count}}',
+      none: 'Tapir checked: nothing to change',
+      undo: 'Undo',
+      undoLabel: 'Undo the fields Tapir filled in ({{count}})',
+      rewardKept:
+        'Reward unchanged: Tapir’s amount is outside what you can post, so this is still what you entered.',
+      rewardEmpty:
+        'Reward not filled: Tapir’s amount is outside what you can post. Please enter one.',
+      timeKept:
+        'Time unchanged: Tapir’s time has passed or is more than 30 days away, so this is still what you picked.',
+      timeEmpty: 'Time not filled: Tapir’s time has passed or is more than 30 days away.',
+      place: 'Place Tapir heard: {{place}}. Pick the place on the map yourself.',
+    },
     unknownName: 'the other person',
     open: 'Post a Bounty',
     title: 'Post a Bounty',

@@ -1,11 +1,11 @@
 """The first 发送 in 问小貘 opens the consent page before anything leaves the phone: it names Alibaba Cloud Model Studio
 (Singapore), the purpose, what is sent, what is never sent and where chats stay. 「先不用，我自己填」 records nothing and
-keeps the typed text, and so does swiping the page down; the next 发送 asks again; 同意 shows progress, records version 1 once and returns to the sheet with
-the text kept (drafting arrives in Task 4, so the stub says so)."""
+keeps the typed text, and so does swiping the page down; the next 发送 asks again; 同意 shows progress, records version 1 once and the text
+goes to 小貘 once, whose answer clears the field; the next 发送 goes straight out."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import TYPED, ai_calls, assert_calls, note, open_sheet, prompt_value, type_and_send  # noqa: E402
+from ask import TYPED, ai_calls, ask_texts, assert_calls, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 from gestures import drag  # noqa: E402
 
@@ -62,14 +62,16 @@ ui.tap('ask-consent-agree')
 ui.wait_label('ask-consent-agree', lambda text: text == ui.t('ask.consent.agreeing'), 'no progress while recording')
 ui.capture('03-recording')
 ui.gone('ask-consent-screen', timeout=30)
-note(ui, 'ask.composer.held')
-assert prompt_value(ui) == TYPED, f'consenting lost the text: {prompt_value(ui)!r}'
+turn(ui, 1)
+assert prompt_value(ui) == '', f'the answer did not clear the field: {prompt_value(ui)!r}'
 assert assert_calls(ui, 'record', 1) == [{'version': 1}]
+assert ask_texts(ui, 1, wait=1) == [TYPED]
 ui.at_rest()
 ui.capture('04-consented')
 
 type_and_send(ui)
-note(ui, 'ask.composer.held')
+turn(ui, 3)
 assert by_id(ui.read(), 'ask-consent-screen') is None, 'the consent page came back after consent'
 assert_calls(ui, 'record', 1, wait=1)
-print('PASS: consent before the first send; decline keeps the text and records nothing; agree records version 1 once')
+assert ask_texts(ui, 2, wait=1) == [TYPED, TYPED]
+print('PASS: consent before the first send; decline keeps the text and records nothing; agree records version 1 once and sends once')

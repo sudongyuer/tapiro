@@ -5,6 +5,7 @@ import {
   listRowInsets,
   onTapGesture,
   shapes,
+  type ModifierConfig,
 } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode, RefObject } from 'react';
 
@@ -27,9 +28,11 @@ export const fullRow = frame({
 export function FieldRow({
   field,
   children,
+  modifiers = [],
 }: {
   field: RefObject<TextFieldRef | null>;
   children: ReactNode;
+  modifiers?: ModifierConfig[];
 }) {
   return (
     <HStack
@@ -41,6 +44,7 @@ export function FieldRow({
           field.current?.focus();
         }),
         ROW_INSETS,
+        ...modifiers,
       ]}
     >
       {children}

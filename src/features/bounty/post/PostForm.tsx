@@ -8,7 +8,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, useIsFocused } from 'expo-router';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -16,9 +16,11 @@ import type { CurrencyCode } from '@/lib/money';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { AiFillSection } from './AiFillSection';
 import { CategoryRow } from './CategoryRow';
 import { ClearSection } from './ClearSection';
 import { FieldRow } from '@/ui/FieldRow';
+import { FillGlowContext, useFillGlow, useRowGlow } from './fillGlow';
 import { FormNotice } from './FormNotice';
 import { useKindCopy } from './kindCopy';
 import { PostLiveCard } from './PostArt';
@@ -28,6 +30,7 @@ import { RewardSection } from './RewardSection';
 import { draftStore } from './services';
 import { titlePatch } from './titleEdit';
 import type { PostDraft } from './types';
+import { useAiFill } from './useAiFill';
 import { formError, useDraft, useFormError } from './useDraft';
 import { useDraftSync } from './useDraftSync';
 import { usePlaceFields } from './usePlaceFields';
@@ -87,6 +90,9 @@ function PostFormBody({
     address: place.address,
   });
 
+  const fill = useAiFill(userId, { title, reward, description }, sync);
+  const glow = useFillGlow(fill.shown?.fill.rows ?? null, fill.shown?.at ?? null);
+
   function pickPlace() {
     sync();
     onPickPlace();
@@ -124,84 +130,102 @@ function PostFormBody({
           {t('bounty.post.next')}
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
-      <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
-        <FormNotice notice={notice} currency={draft.currency} />
-        <PostLiveCard draft={draft} onSwap={(art) => edit({ art })} />
-        <Section>
-          <FieldRow field={titleField}>
-            <SyncedTextField
-              ref={titleField}
-              field={title}
-              maxLength={TITLE_MAX}
-              placeholder={copy.title}
-              onFocusChange={onBlur}
-              testID="bounty-post-title"
+      <FillGlowContext.Provider value={glow}>
+        <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
+          <FormNotice notice={notice} currency={draft.currency} />
+          {fill.shown ? <AiFillSection fill={fill.shown.fill} onUndo={fill.undo} /> : null}
+          <PostLiveCard draft={draft} onSwap={(art) => edit({ art })} />
+          <Section>
+            <TitleRow field={titleField}>
+              <SyncedTextField
+                ref={titleField}
+                field={title}
+                maxLength={TITLE_MAX}
+                placeholder={copy.title}
+                onFocusChange={onBlur}
+                testID="bounty-post-title"
+              />
+              {codePoints(draft.title) >= TITLE_COUNT_FROM ? (
+                <Text
+                  modifiers={[
+                    secondary,
+                    monospacedDigit(),
+                    accessibilityLabel(
+                      t('bounty.post.form.countLabel', {
+                        count: codePoints(draft.title),
+                        max: TITLE_MAX,
+                      }),
+                    ),
+                    accessibilityIdentifier('bounty-post-title-count'),
+                  ]}
+                >
+                  {t('bounty.post.form.count', { count: codePoints(draft.title), max: TITLE_MAX })}
+                </Text>
+              ) : null}
+            </TitleRow>
+            <CategoryRow
+              category={draft.category}
+              source={draft.categorySource}
+              onPick={(category) => edit({ category, categorySource: 'chosen' })}
             />
-            {codePoints(draft.title) >= TITLE_COUNT_FROM ? (
-              <Text
-                modifiers={[
-                  secondary,
-                  monospacedDigit(),
-                  accessibilityLabel(
-                    t('bounty.post.form.countLabel', {
-                      count: codePoints(draft.title),
-                      max: TITLE_MAX,
-                    }),
-                  ),
-                  accessibilityIdentifier('bounty-post-title-count'),
-                ]}
-              >
-                {t('bounty.post.form.count', { count: codePoints(draft.title), max: TITLE_MAX })}
-              </Text>
-            ) : null}
-          </FieldRow>
-          <CategoryRow
+          </Section>
+          <RewardSection
+            field={reward}
+            value={draft.rewardText}
+            currency={draft.currency}
             category={draft.category}
-            source={draft.categorySource}
-            onPick={(category) => edit({ category, categorySource: 'chosen' })}
-          />
-        </Section>
-        <RewardSection
-          field={reward}
-          value={draft.rewardText}
-          currency={draft.currency}
-          category={draft.category}
-          onCurrency={chooseCurrency}
-          onAmount={(text) => {
-            reward.set(text);
-            edit({ rewardText: text });
-          }}
-          onBlur={onBlur}
-        />
-        <Section
-          header={<Text>{t('bounty.post.form.detailsHeader')}</Text>}
-          footer={<Text>{t('bounty.post.form.draftFooter')}</Text>}
-        >
-          <TimeRows time={draft.time} category={draft.category} label={copy.when} onEdit={edit} />
-          <DescriptionRows
-            description={draft.description}
-            field={description}
-            placeholder={copy.description}
+            onCurrency={chooseCurrency}
+            onAmount={(text) => {
+              reward.set(text);
+              edit({ rewardText: text });
+            }}
             onBlur={onBlur}
-            onEdit={edit}
           />
-          {draft.place === null ? <AddPlaceRow label={copy.place} onPick={pickPlace} /> : null}
-        </Section>
-        {draft.place ? (
-          <PlaceSections
-            heading={copy.place}
-            place={draft.place}
-            label={place.label}
-            address={place.address}
-            focusLabel={place.focusLabel}
-            onPick={pickPlace}
-            onBlur={onBlur}
-            onRemove={place.remove}
-          />
-        ) : null}
-        <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} onCleared={onCleared} />
-      </Form>
+          <Section
+            header={<Text>{t('bounty.post.form.detailsHeader')}</Text>}
+            footer={<Text>{t('bounty.post.form.draftFooter')}</Text>}
+          >
+            <TimeRows time={draft.time} category={draft.category} label={copy.when} onEdit={edit} />
+            <DescriptionRows
+              description={draft.description}
+              field={description}
+              placeholder={copy.description}
+              onBlur={onBlur}
+              onEdit={edit}
+            />
+            {draft.place === null ? <AddPlaceRow label={copy.place} onPick={pickPlace} /> : null}
+          </Section>
+          {draft.place ? (
+            <PlaceSections
+              heading={copy.place}
+              place={draft.place}
+              label={place.label}
+              address={place.address}
+              focusLabel={place.focusLabel}
+              onPick={pickPlace}
+              onBlur={onBlur}
+              onRemove={place.remove}
+            />
+          ) : null}
+          <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} onCleared={onCleared} />
+        </Form>
+      </FillGlowContext.Provider>
     </Host>
+  );
+}
+
+function TitleRow({
+  field,
+  children,
+}: {
+  field: RefObject<TextFieldRef | null>;
+  children: ReactNode;
+}) {
+  const glow = useRowGlow('title');
+  return (
+    <FieldRow field={field} modifiers={glow}>
+      {children}
+    </FieldRow>
   );
 }
 

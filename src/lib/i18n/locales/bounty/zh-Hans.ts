@@ -12,6 +12,17 @@ export default {
     other: '其他',
   },
   post: {
+    aiFill: {
+      filled: '小貘填了 {{count}} 项',
+      none: '小貘看过了，表单不用改',
+      undo: '撤销',
+      undoLabel: '撤销小貘填的 {{count}} 项',
+      rewardKept: '赏金没改：小貘说的金额超出能发的范围，这里还是你之前填的。',
+      rewardEmpty: '赏金没填：小貘说的金额超出能发的范围，请自己填。',
+      timeKept: '时间没改：小貘说的时间已经过了或在 30 天以后，这里还是你之前选的。',
+      timeEmpty: '时间没填：小貘说的时间已经过了或在 30 天以后。',
+      place: '小貘听到的地点：{{place}}。地点要你自己在地图上选。',
+    },
     unknownName: '对方',
     open: '发悬赏',
     title: '发悬赏',

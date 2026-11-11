@@ -17,6 +17,7 @@ import {
   shapes,
   tag,
 } from '@expo/ui/swift-ui/modifiers';
+import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
@@ -27,6 +28,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
+import { useRowGlow } from './fillGlow';
 import { TimePicks } from './TimePicks';
 import { addedTime, moveStart, switchKind, timeBounds } from './timeChoice';
 import type { PostDraft, TimeChoice } from './types';
@@ -44,12 +46,14 @@ export function AddRow({
   voiceOver,
   testID,
   onPress,
+  modifiers = [],
 }: {
   label: string;
   value?: string;
   voiceOver: string;
   testID: string;
   onPress: () => void;
+  modifiers?: ModifierConfig[];
 }) {
   const { color } = useTheme();
   return (
@@ -62,6 +66,7 @@ export function AddRow({
         accessibilityHint(voiceOver),
         fullRow,
         ROW_INSETS,
+        ...modifiers,
       ]}
     >
       <HStack spacing={vars['--space-3']} modifiers={[fullRow]}>
@@ -80,14 +85,16 @@ export function AddRow({
 export function HeadingRow({
   label,
   remove,
+  modifiers = [],
 }: {
   label: string;
   remove: { voiceOver: string; testID: string; onPress: () => void } | null;
+  modifiers?: ModifierConfig[];
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   return (
-    <HStack spacing={0} modifiers={[fullRow, ROW_INSETS]}>
+    <HStack spacing={0} modifiers={[fullRow, ROW_INSETS, ...modifiers]}>
       <Text modifiers={[font({ textStyle: 'body', weight: 'semibold' })]}>{label}</Text>
       <Spacer />
       {remove ? (
@@ -128,9 +135,11 @@ export function TimeRows({
   onEdit: Edit;
 }) {
   const { t } = useI18n();
+  const glow = useRowGlow('time');
   if (time.kind === 'none') {
     return (
       <AddRow
+        modifiers={glow}
         label={label}
         value={t('bounty.post.form.noTime')}
         voiceOver={t('bounty.post.form.addTimeLabel')}
@@ -143,6 +152,7 @@ export function TimeRows({
   return (
     <>
       <HeadingRow
+        modifiers={glow}
         label={label}
         remove={{
           voiceOver: t('bounty.post.form.removeTimeLabel'),
@@ -160,7 +170,7 @@ export function TimeRows({
           }
         }}
         testID="bounty-post-time-kind"
-        modifiers={[pickerStyle('segmented'), ROW_INSETS]}
+        modifiers={[pickerStyle('segmented'), ROW_INSETS, ...glow]}
       >
         <Text modifiers={[tag('deadline')]}>{t('bounty.post.form.deadline')}</Text>
         <Text modifiers={[tag('window')]}>{t('bounty.post.form.window')}</Text>
@@ -175,6 +185,7 @@ export function TimeRows({
             onEdit({ time: { kind: 'deadline', deadlineAt: date.toISOString() } })
           }
           testID="bounty-post-deadline"
+          modifiers={glow}
         />
       ) : (
         <>
@@ -185,6 +196,7 @@ export function TimeRows({
             displayedComponents={DATE_PARTS}
             onDateChange={(date) => onEdit({ time: moveStart(time, date) })}
             testID="bounty-post-start"
+            modifiers={glow}
           />
           <DatePicker
             title={t('bounty.post.form.end')}
@@ -193,6 +205,7 @@ export function TimeRows({
             displayedComponents={DATE_PARTS}
             onDateChange={(date) => onEdit({ time: { ...time, endsAt: date.toISOString() } })}
             testID="bounty-post-end"
+            modifiers={glow}
           />
         </>
       )}
@@ -214,10 +227,12 @@ export function DescriptionRows({
   onEdit: Edit;
 }) {
   const { t } = useI18n();
+  const glow = useRowGlow('description');
   const [justAdded, setJustAdded] = useState(false);
   if (description === null) {
     return (
       <AddRow
+        modifiers={glow}
         label={t('bounty.post.form.addDescription')}
         voiceOver={t('bounty.post.form.addDescriptionLabel')}
         testID="bounty-post-add-description"
@@ -233,6 +248,7 @@ export function DescriptionRows({
   return (
     <>
       <HeadingRow
+        modifiers={glow}
         label={t('bounty.post.form.description')}
         remove={
           description.trim() === ''
@@ -256,6 +272,7 @@ export function DescriptionRows({
           lineLimit({ min: 3, max: 8 }),
           accessibilityLabel(t('bounty.post.form.description')),
           ROW_INSETS,
+          ...glow,
         ]}
       />
       {count >= DESCRIPTION_COUNT_FROM ? (

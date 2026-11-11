@@ -14,6 +14,7 @@ import { CATEGORY_SYMBOLS } from '@/ui/categoryArt';
 import { vars } from '@/ui/theme/tokens';
 
 import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
+import { useRowGlow } from './fillGlow';
 import type { CategorySource } from './types';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
@@ -28,8 +29,9 @@ export function CategoryRow({
   onPick: (category: BountyCategory) => void;
 }) {
   const { t } = useI18n();
+  const glow = useRowGlow('category');
   return (
-    <HStack spacing={vars['--space-2']} modifiers={[fullRow, ROW_INSETS]}>
+    <HStack spacing={vars['--space-2']} modifiers={[fullRow, ROW_INSETS, ...glow]}>
       <Text>{t('bounty.post.form.category')}</Text>
       {source === 'auto' ? (
         <Text

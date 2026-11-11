@@ -192,7 +192,7 @@ const ms: Translation = {
       },
       mic: 'Bercakap',
       send: 'Hantar',
-      comingSoon: 'Suara dan draf AI akan datang tidak lama lagi',
+      comingSoon: 'Suara akan datang tidak lama lagi',
       close: 'Tutup',
     },
   },

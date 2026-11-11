@@ -1,12 +1,15 @@
 import type { ParseKeys } from 'i18next';
 import { SymbolView } from 'expo-symbols';
+import { useEffect, useRef, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   PlatformColor,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
+  type ScrollViewInstance,
 } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -54,7 +57,8 @@ export type AskComposer = {
   text: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
-  checking: boolean;
+  onAddImage: () => void;
+  sending: boolean;
   note: string | null;
 };
 
@@ -62,18 +66,38 @@ export function AskTapirSheet({
   tab,
   onClose,
   composer,
+  onSuggestion,
+  showSuggestions,
+  replies,
+  children,
 }: {
   tab: ShellTab;
   onClose: () => void;
   composer: AskComposer;
+  onSuggestion: (text: string) => void;
+  showSuggestions: boolean;
+  replies: number;
+  children: ReactNode;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const scroll = useRef<ScrollViewInstance>(null);
+  useEffect(() => {
+    if (replies > 0) scroll.current?.scrollToEnd({ animated: true });
+  }, [replies]);
   const copy = COPY[tab];
   const suggestions = [...copy.suggestions, 'shell.ask.suggestions.writeBounty' as const];
 
   return (
-    <View style={styles.sheet} testID="ask-tapir-sheet">
+    <ScrollView
+      ref={scroll}
+      style={styles.scroll}
+      contentContainerStyle={styles.sheet}
+      automaticallyAdjustKeyboardInsets
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
+      testID="ask-tapir-sheet"
+    >
       <View style={styles.header}>
         <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
           <Mascot variant="side" size={32} />
@@ -102,74 +126,96 @@ export function AskTapirSheet({
         </Pressable>
       </View>
 
-      <View style={styles.chips}>
-        {suggestions.map((key, index) => (
-          <View
-            key={key}
-            accessible
-            testID={`ask-tapir-suggestion-${index}`}
-            style={[styles.chip, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
-          >
-            <AppText variant="secondary">{t(key)}</AppText>
+      <View style={styles.body} testID="ask-tapir-body">
+        {showSuggestions ? (
+          <View style={styles.chips}>
+            {suggestions.map((key, index) => (
+              <PressDim
+                key={key}
+                accessibilityRole="button"
+                testID={`ask-tapir-suggestion-${index}`}
+                onPress={() => onSuggestion(t(key))}
+                style={[
+                  styles.chip,
+                  { backgroundColor: PlatformColor('secondarySystemBackground') },
+                ]}
+              >
+                <AppText variant="secondary">{t(key)}</AppText>
+              </PressDim>
+            ))}
           </View>
-        ))}
-      </View>
-
-      <View style={[styles.input, { backgroundColor: PlatformColor('secondarySystemBackground') }]}>
-        <TextInput
-          testID="ask-tapir-prompt"
-          accessibilityLabel={t(copy.prompt)}
-          style={[styles.prompt, { color: PlatformColor('label') }]}
-          placeholder={t(copy.prompt)}
-          placeholderTextColor={PlatformColor('placeholderText')}
-          multiline
-          maxLength={PROMPT_MAX}
-          value={composer.text}
-          onChangeText={composer.onChangeText}
-        />
-        {composer.checking ? (
-          <View style={styles.mic}>
-            <ActivityIndicator
-              accessibilityLabel={t('ask.composer.checking')}
-              testID="ask-tapir-checking"
-            />
-          </View>
-        ) : composer.text.trim().length > 0 ? (
-          <PressDim
-            testID="ask-tapir-send"
-            accessibilityRole="button"
-            accessibilityLabel={t('shell.ask.send')}
-            style={styles.mic}
-            onPress={composer.onSend}
-          >
-            <SymbolView
-              name="arrow.up.circle.fill"
-              size={MIC_SIZE - vars['--space-3']}
-              tintColor={color('--color-accent')}
-            />
-          </PressDim>
         ) : null}
+        {children}
         <View
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel={t('shell.ask.mic')}
-          accessibilityHint={t('shell.ask.comingSoon')}
-          accessibilityState={{ disabled: true }}
-          testID="ask-tapir-mic"
-          style={[styles.mic, { backgroundColor: PlatformColor('systemFill') }]}
+          style={[styles.input, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
         >
-          <SymbolView name="mic.fill" size={18} tintColor={PlatformColor('tertiaryLabel')} />
+          <PressDim
+            testID="ask-tapir-add-image"
+            accessibilityRole="button"
+            accessibilityLabel={t('ask.sheet.addImage')}
+            accessibilityState={{ disabled: composer.sending }}
+            disabled={composer.sending}
+            style={styles.mic}
+            onPress={composer.onAddImage}
+          >
+            <SymbolView name="plus" size={20} tintColor={PlatformColor('secondaryLabel')} />
+          </PressDim>
+          <TextInput
+            testID="ask-tapir-prompt"
+            accessibilityLabel={t(copy.prompt)}
+            style={[styles.prompt, { color: PlatformColor('label') }]}
+            placeholder={t(copy.prompt)}
+            placeholderTextColor={PlatformColor('placeholderText')}
+            multiline
+            maxLength={PROMPT_MAX}
+            editable={!composer.sending}
+            value={composer.text}
+            onChangeText={composer.onChangeText}
+          />
+          {composer.sending ? (
+            <View style={styles.mic}>
+              <ActivityIndicator
+                accessibilityLabel={t('ask.sheet.thinking')}
+                testID="ask-tapir-checking"
+              />
+            </View>
+          ) : composer.text.trim().length > 0 ? (
+            <PressDim
+              testID="ask-tapir-send"
+              accessibilityRole="button"
+              accessibilityLabel={t('shell.ask.send')}
+              style={styles.mic}
+              onPress={composer.onSend}
+            >
+              <SymbolView
+                name="arrow.up.circle.fill"
+                size={MIC_SIZE - vars['--space-3']}
+                tintColor={color('--color-accent')}
+              />
+            </PressDim>
+          ) : null}
+          <View
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={t('shell.ask.mic')}
+            accessibilityHint={t('shell.ask.comingSoon')}
+            accessibilityState={{ disabled: true }}
+            testID="ask-tapir-mic"
+            style={[styles.mic, { backgroundColor: PlatformColor('systemFill') }]}
+          >
+            <SymbolView name="mic.fill" size={18} tintColor={PlatformColor('tertiaryLabel')} />
+          </View>
         </View>
-      </View>
-      {composer.note ? (
-        <AppText variant="secondary" testID="ask-tapir-note">
-          {composer.note}
+        {composer.note ? (
+          <AppText variant="secondary" testID="ask-tapir-note">
+            {composer.note}
+          </AppText>
+        ) : null}
+        <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-coming-soon">
+          {t('shell.ask.comingSoon')}
         </AppText>
-      ) : null}
-      <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-coming-soon">
-        {t('shell.ask.comingSoon')}
-      </AppText>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -180,6 +226,8 @@ const styles = StyleSheet.create({
     paddingBottom: vars['--space-6'],
     gap: vars['--space-4'],
   },
+  scroll: { flex: 1 },
+  body: { gap: vars['--space-4'] },
   header: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
   avatar: {
     width: vars['--touch-min'],
@@ -198,18 +246,18 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
   chip: {
-    paddingHorizontal: vars['--space-3'],
-    paddingVertical: vars['--space-2'],
+    minHeight: vars['--touch-min'],
+    justifyContent: 'center',
+    paddingHorizontal: vars['--space-4'],
     borderRadius: vars['--radius-pill'],
     borderCurve: 'continuous',
   },
   input: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: vars['--space-3'],
+    gap: vars['--space-1'],
     minHeight: vars['--touch-min'] + vars['--space-2'],
-    paddingLeft: vars['--space-4'],
-    paddingRight: vars['--space-1'],
+    paddingHorizontal: vars['--space-1'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },
