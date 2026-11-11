@@ -7,7 +7,10 @@ const KIT = '../modules/tapiro-kit';
 const SOURCES = [
   `${KIT}/ios/LiveActivity/TapiroActivityAttributes.swift`,
   `${KIT}/widget/TapiroLiveActivityWidget.swift`,
+  `${KIT}/widget/TapirHead.swift`,
+  `${TARGET}/MascotPaint.swift`,
 ];
+const PAINT = ['ink', 'line', 'saddle', 'blush', 'eye', 'snout'];
 const INFO_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -39,6 +42,22 @@ const INFO_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 `;
 
+function channel(hex, start) {
+  return (parseInt(hex.slice(start, start + 2), 16) / 255).toFixed(4);
+}
+
+function mascotPaintSwift(projectRoot) {
+  const source = fs.readFileSync(path.join(projectRoot, 'src/ui/theme/tokens.ts'), 'utf8');
+  const light = source.slice(0, source.indexOf('export const darkVars'));
+  const lines = PAINT.map((name) => {
+    const match = light.match(new RegExp(`'--color-mascot-${name}': '#([0-9A-Fa-f]{6})'`));
+    if (!match) throw new Error(`withLiveActivity: --color-mascot-${name} not found in tokens.ts`);
+    const hex = match[1];
+    return `  static let ${name} = Color(red: ${channel(hex, 0)}, green: ${channel(hex, 2)}, blue: ${channel(hex, 4)})`;
+  });
+  return `import SwiftUI\n\nenum MascotPaint {\n${lines.join('\n')}\n}\n`;
+}
+
 function withExtensionFiles(config) {
   return withDangerousMod(config, [
     'ios',
@@ -46,6 +65,10 @@ function withExtensionFiles(config) {
       const dir = path.join(config.modRequest.platformProjectRoot, TARGET);
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, 'Info.plist'), INFO_PLIST);
+      fs.writeFileSync(
+        path.join(dir, 'MascotPaint.swift'),
+        mascotPaintSwift(config.modRequest.projectRoot),
+      );
       return config;
     },
   ]);
@@ -102,8 +125,8 @@ function withExtensionTarget(config) {
   });
 }
 
-// Spike gate (docs/plans/2026-11-11-live-activity-spike.md): the extension is generated only when prebuild runs with
-// TAPIRO_LIVE_ACTIVITY=1, so verify and release builds carry no extension until 274–278 are answered.
+// Gate (docs/plans/2026-11-11-live-activity-spike.md, 278 A): the extension is generated only when prebuild runs with
+// TAPIRO_LIVE_ACTIVITY=1, so verify and release builds carry none until it ships together with push.
 module.exports = function withLiveActivity(config) {
   if (process.env.TAPIRO_LIVE_ACTIVITY !== '1') return config;
   config = withInfoPlist(config, (config) => {

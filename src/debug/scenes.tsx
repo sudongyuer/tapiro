@@ -27,7 +27,7 @@ import { PaySheetScene, StickerBookScene } from './PayScenes';
 import { ProfileScene, ReviewSheetScene } from './ReputationScenes';
 import { RideConfirmScene, RideDetailScene, RideFormScene, RideListScene } from './RideScenes';
 import { SignInScene } from './SignInScene';
-import { LiveActivitySpikeScene } from './LiveActivitySpikeScene';
+import { LiveActivityScene } from './LiveActivityScene';
 import { StoreE2EScene } from './StoreE2EScene';
 
 export type Scene = {
@@ -89,9 +89,9 @@ function devOnlyScenes(): Scene[] {
   return [
     { id: 'store-e2e', titleKey: 'debug.store.title', Component: StoreE2EScene },
     {
-      id: 'live-activity-spike',
+      id: 'live-activity',
       titleKey: 'debug.liveActivity.title',
-      Component: LiveActivitySpikeScene,
+      Component: LiveActivityScene,
     },
   ];
 }

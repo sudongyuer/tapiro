@@ -3,9 +3,14 @@ import ExpoModulesCore
 import Foundation
 
 struct LiveActivityStateRecord: Record {
-  @Field var sentence: String = ""
-  @Field var progress: Double = 0
+  @Field var title: String = ""
+  @Field var detail: String = ""
   @Field var minutes: Int?
+  @Field var unit: String = ""
+  @Field var progress: Double = 0
+  @Field var startLabel: String = ""
+  @Field var endLabel: String = ""
+  @Field var staleNote: String = ""
   @Field var staleAfterSeconds: Double?
 }
 
@@ -13,11 +18,11 @@ struct LiveActivityStateRecord: Record {
 enum LiveActivities {
   typealias Activities = Activity<TapiroActivityAttributes>
 
-  static func start(kind: String, state: LiveActivityStateRecord) -> [String: Any] {
+  static func start(kind: String, link: String?, state: LiveActivityStateRecord) -> [String: Any] {
     guard ActivityAuthorizationInfo().areActivitiesEnabled else { return ["status": "disabled"] }
     do {
       let activity = try Activities.request(
-        attributes: TapiroActivityAttributes(kind: kind),
+        attributes: TapiroActivityAttributes(kind: kind, link: link),
         content: content(state),
         pushType: nil
       )
@@ -33,9 +38,11 @@ enum LiveActivities {
     return ["status": "ok"]
   }
 
-  static func end(id: String, state: LiveActivityStateRecord?, immediately: Bool) async -> [String: Any] {
+  static func end(id: String, state: LiveActivityStateRecord?, dismissAfterSeconds: Double) async -> [String: Any] {
     guard let activity = Activities.activities.first(where: { $0.id == id }) else { return ["status": "notFound"] }
-    await activity.end(state.map(content), dismissalPolicy: immediately ? .immediate : .default)
+    let policy: ActivityUIDismissalPolicy =
+      dismissAfterSeconds > 0 ? .after(Date().addingTimeInterval(dismissAfterSeconds)) : .immediate
+    await activity.end(state.map(content), dismissalPolicy: policy)
     return ["status": "ok"]
   }
 
@@ -45,7 +52,16 @@ enum LiveActivities {
 
   private static func content(_ state: LiveActivityStateRecord) -> ActivityContent<TapiroActivityAttributes.ContentState> {
     ActivityContent(
-      state: .init(sentence: state.sentence, progress: min(max(state.progress, 0), 1), minutes: state.minutes),
+      state: .init(
+        title: state.title,
+        detail: state.detail,
+        minutes: state.minutes,
+        unit: state.unit,
+        progress: min(max(state.progress, 0), 1),
+        startLabel: state.startLabel,
+        endLabel: state.endLabel,
+        staleNote: state.staleNote
+      ),
       staleDate: state.staleAfterSeconds.map { Date().addingTimeInterval($0) }
     )
   }
