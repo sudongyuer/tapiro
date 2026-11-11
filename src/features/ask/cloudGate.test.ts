@@ -75,7 +75,11 @@ describe('cloud gate', () => {
     const gate = await gateWith({ currentVersion: 1, given: true, acceptedAt: AT }, [
       { ok: false, error: 'provider_error', status: 502 },
     ]);
-    expect(await gate.call(REQUEST)).toEqual({ kind: 'failed', error: 'provider_error' });
+    expect(await gate.call(REQUEST)).toEqual({
+      kind: 'failed',
+      error: 'provider_error',
+      status: 502,
+    });
     expect(gate.sent).toHaveLength(1);
   });
 });

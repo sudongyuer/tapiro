@@ -28,7 +28,7 @@ export function createFixtureAskService({
   failFirst: Set<FixtureFailPoint>;
   delayMs: number;
   onCall: (name: string, args: unknown) => void;
-}): AskService {
+}): AskService & { withdrawElsewhere(): void } {
   let status: ConsentStatus = {
     currentVersion: consent === 'newer' ? 2 : 1,
     given: consent === 'given',
@@ -54,6 +54,9 @@ export function createFixtureAskService({
       if (version !== status.currentVersion) return { ok: false, failure: 'needsUpdate' };
       if (!status.given) status = { ...status, given: true, acceptedAt: new Date().toISOString() };
       return { ok: true, status };
+    },
+    withdrawElsewhere() {
+      status = { ...status, given: false, acceptedAt: null };
     },
     async withdrawConsent() {
       onCall('withdraw', null);

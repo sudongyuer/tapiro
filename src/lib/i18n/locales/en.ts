@@ -191,7 +191,7 @@ const en: Translation = {
       },
       mic: 'Speak',
       send: 'Send',
-      comingSoon: 'Voice and AI drafts are coming soon',
+      comingSoon: 'Voice is coming soon',
       close: 'Close',
     },
   },

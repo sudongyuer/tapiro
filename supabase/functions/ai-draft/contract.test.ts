@@ -7,6 +7,7 @@ import {
 } from '../../../src/lib/drafts/bountyDraft';
 import { POST_LIMITS } from '../../../src/lib/money';
 import { BOUNTY_CATEGORIES } from '../../../src/lib/stickers/category';
+import { parseAskReply } from '../../../src/features/ask/askReply';
 import { fakeProvider } from './provider.ts';
 import { TOOL_SCHEMAS, validToolResult } from './tools.ts';
 
@@ -41,7 +42,11 @@ describe('the draft_bounty tool and the app contract', () => {
 
   test('what the fake provider drafts, the app parses', async () => {
     const reply = await fakeProvider.generate(
-      { task: 'draft_bounty', input: { text: 'x'.repeat(2000) }, tool: TOOL_SCHEMAS.draft_bounty },
+      {
+        task: 'draft_bounty',
+        input: { text: 'x'.repeat(2000) },
+        tools: [TOOL_SCHEMAS.draft_bounty],
+      },
       new AbortController().signal,
     );
     expect(validToolResult('draft_bounty', reply.arguments)).toBe(true);
@@ -92,5 +97,29 @@ describe('the draft_bounty tool and the app contract', () => {
     const value = { ...VALID, ...change };
     expect(validToolResult('draft_bounty', value)).toBe(accepted);
     expect(parseBountyDraft(value).ok).toBe(accepted);
+  });
+});
+
+describe('the sheet tools and the app', () => {
+  const ITEM = { summary: '搬家具', draft: VALID };
+  test.each<[string, 'answer' | 'clarify' | 'pick', unknown, boolean]>([
+    ['an answer', 'answer', { text: '好' }, true],
+    ['a blank answer', 'answer', { text: '  ' }, false],
+    ['a question', 'clarify', { question: '什么时候要？', choices: ['今晚'] }, true],
+    ['a blank question', 'clarify', { question: ' ', choices: ['今晚'] }, false],
+    ['a blank choice', 'clarify', { question: '?', choices: [' '] }, false],
+    ['four choices', 'clarify', { question: '?', choices: ['a', 'b', 'c', 'd'] }, false],
+    ['a pick of two', 'pick', { items: [ITEM, ITEM] }, true],
+    ['a pick of one', 'pick', { items: [ITEM] }, false],
+    ['a blank summary', 'pick', { items: [ITEM, { ...ITEM, summary: ' ' }] }, false],
+    [
+      'a pick with a broken time',
+      'pick',
+      { items: [ITEM, { ...ITEM, draft: { ...VALID, startsAt: '2026-11-10T10:00:00Z' } }] },
+      false,
+    ],
+  ])('server and app agree on %s', (_name, tool, result, accepted) => {
+    expect(validToolResult(tool, result)).toBe(accepted);
+    expect(parseAskReply({ tool, result }) !== null).toBe(accepted);
   });
 });

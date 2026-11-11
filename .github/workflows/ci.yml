@@ -30,6 +30,7 @@ jobs:
       - run: node scripts/check-specs.mjs --dir docs/specs
       - run: node scripts/check-story-map.mjs
       - run: node scripts/check-file-size.mjs
+      - run: node scripts/check-migrations.mjs
       - run: python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime test_keyboard test_records test_ride test_zone
         working-directory: verification/ui
       - run: node scripts/expo-doctor-ci.mjs

@@ -1,11 +1,14 @@
 import { energyCost, PLACEHOLDER_FULL_BELLY_TOKENS } from './budget.ts';
 import type { AiProvider, ProviderReply } from './provider.ts';
 import {
+  AI_TOOLS,
   parseAiRequest,
   TOOL_SCHEMAS,
+  toolsFor,
   validToolResult,
   type AiRequest,
   type AiTask,
+  type AiTool,
 } from './tools.ts';
 
 export type BeginResult =
@@ -85,7 +88,7 @@ async function callProvider(
     }, timeoutMs);
   });
   try {
-    const call = { ...request, tool: TOOL_SCHEMAS[request.task] };
+    const call = { ...request, tools: toolsFor(request).map((tool) => TOOL_SCHEMAS[tool]) };
     return await Promise.race([provider.generate(call, controller.signal), timedOut]);
   } catch {
     return null;
@@ -97,14 +100,20 @@ async function callProvider(
 const isCount = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 0;
 const hasModel = (reply: ProviderReply) => typeof reply.model === 'string' && reply.model !== '';
 
-function usable(reply: ProviderReply, task: AiTask) {
-  return (
-    reply.toolName === task &&
+function offeredTool(reply: ProviderReply, request: AiRequest): AiTool | null {
+  const tool = AI_TOOLS.find((name) => name === reply.toolName);
+  return tool && toolsFor(request).includes(tool) ? tool : null;
+}
+
+function usable(reply: ProviderReply, request: AiRequest): AiTool | null {
+  const tool = offeredTool(reply, request);
+  const valid =
+    tool !== null &&
     isCount(reply.inputTokens) &&
     isCount(reply.outputTokens) &&
     hasModel(reply) &&
-    validToolResult(task, reply.arguments)
-  );
+    validToolResult(tool, reply.arguments);
+  return valid ? tool : null;
 }
 
 // Logs carry a fixed code and never the caught error: a provider or database error can quote the user's prompt, and no
@@ -143,7 +152,8 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
     await deps.store.abort(userId, begun.lease).catch(() => logCode('abort_failed'));
     return failure(502, 'provider_error');
   }
-  if (!usable(reply, request.task)) {
+  const tool = usable(reply, request);
+  if (tool === null) {
     logCode('reply_discarded');
     await deps.store
       .discard({
@@ -169,7 +179,7 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
       outputTokens: reply.outputTokens,
       energySpent: energyCost(tokens, PLACEHOLDER_FULL_BELLY_TOKENS, begun.energyFull),
     });
-    return json(200, { task: request.task, result: reply.arguments, ...after });
+    return json(200, { task: request.task, tool, result: reply.arguments, ...after });
   } catch {
     logCode('finish_failed');
     return failure(500, 'server_error');
