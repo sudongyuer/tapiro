@@ -117,6 +117,7 @@ actor Store {
       "productId": transaction.productID,
       "jws": result.jwsRepresentation,
       "environment": transaction.environment.rawValue,
+      "appAccountToken": transaction.appAccountToken?.uuidString.lowercased() ?? "",
       "revoked": transaction.revocationDate != nil,
       "verified": false,
     ]

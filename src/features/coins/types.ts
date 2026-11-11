@@ -9,6 +9,9 @@ export const COIN_REASONS = [
   'weekly_feed',
   'invite_inviter',
   'invite_invitee',
+  'purchase',
+  'purchase_refund',
+  'purchase_refund_reversed',
 ] as const;
 export type CoinReason = (typeof COIN_REASONS)[number];
 
@@ -29,6 +32,7 @@ export type CoinRow = {
   at: string;
   month: string;
   item: { kind: ItemKind; id: string; title: string | null } | null;
+  sandbox: boolean;
 };
 
 export type HistoryPage = { items: CoinRow[]; hasMore: boolean; nextCursor: number | null };

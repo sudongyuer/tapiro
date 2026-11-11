@@ -90,7 +90,7 @@ export type PostStatus = {
 export type CostBase =
   | { kind: 'free'; left: number; of: number }
   | { kind: 'coin'; balance: number }
-  | { kind: 'none'; nextFreeAt: string };
+  | { kind: 'none'; nextFreeAt: string; balance: number };
 
 export type CostLine =
   CostBase | { kind: 'blocked'; unpaid: UnpaidSummary[]; under: CostBase['kind'] };

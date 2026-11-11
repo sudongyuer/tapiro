@@ -28,7 +28,7 @@ import { ProfileScene, ReviewSheetScene } from './ReputationScenes';
 import { RideConfirmScene, RideDetailScene, RideFormScene, RideListScene } from './RideScenes';
 import { SignInScene } from './SignInScene';
 import { LiveActivitySpikeScene } from './LiveActivitySpikeScene';
-import { StoreSpikeScene } from './StoreSpikeScene';
+import { StoreE2EScene } from './StoreE2EScene';
 
 export type Scene = {
   id: string;
@@ -86,7 +86,7 @@ export const scenes: Scene[] = [
 
 function devOnlyScenes(): Scene[] {
   return [
-    { id: 'store-spike', titleKey: 'debug.store.title', Component: StoreSpikeScene },
+    { id: 'store-e2e', titleKey: 'debug.store.title', Component: StoreE2EScene },
     {
       id: 'live-activity-spike',
       titleKey: 'debug.liveActivity.title',

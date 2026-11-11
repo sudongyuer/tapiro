@@ -29,7 +29,8 @@ export const rowDate = (at: string, language: string) =>
   );
 
 export function rowTitle(row: CoinRow, t: TFunction) {
-  const reason = t(reasonKey(row.reason));
+  const named = t(reasonKey(row.reason));
+  const reason = row.sandbox ? t('coins.sandbox', { reason: named }) : named;
   const title = row.item?.title?.trim();
   return title ? t('coins.withTitle', { reason, title }) : reason;
 }

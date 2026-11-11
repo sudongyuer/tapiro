@@ -5,7 +5,7 @@ function base(status: PostStatus): CostBase {
     return { kind: 'free', left: status.freePostsLeft, of: status.freePostsPerMonth };
   }
   if (status.coins >= 1) return { kind: 'coin', balance: status.coins };
-  return { kind: 'none', nextFreeAt: status.nextFreeAt };
+  return { kind: 'none', nextFreeAt: status.nextFreeAt, balance: status.coins };
 }
 
 export function costLine(status: PostStatus): CostLine {

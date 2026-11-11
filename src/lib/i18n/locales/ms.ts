@@ -320,12 +320,9 @@ const ms: Translation = {
     reputation: { profile: 'Profil', review: 'Helaian penilaian', reviewOpen: 'Buka penilaian' },
     coins: { page: 'Halaman Syiling', invite: 'Halaman jemputan' },
     store: {
-      title: 'Ujian StoreKit',
+      title: 'StoreKit hujung ke hujung',
       signIn: 'Log masuk sebagai Xiaolin',
-      products: 'Muat produk',
-      buy: 'Beli {{id}}',
-      unfinished: 'Hantar transaksi belum selesai',
-      revoked: 'Hantar transaksi dibayar balik',
+      openCoins: 'Buka Syiling',
       buyKept: 'Beli 5 tanpa hantar',
     },
     liveActivity: {

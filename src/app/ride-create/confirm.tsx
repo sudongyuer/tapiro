@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 
 import { useSignedInUser } from '@/features/account';
+import { CoinPacks } from '@/features/coins';
 import { closeRideSheet, RideConfirm } from '@/features/ride';
 
 export default function RideCreateConfirmRoute() {
@@ -16,6 +17,7 @@ export default function RideCreateConfirmRoute() {
         router.navigate('/me/payee');
       }}
       onBack={() => router.back()}
+      buyCoins={(onCredited) => <CoinPacks testID="ride-confirm-packs" onCredited={onCredited} />}
     />
   );
 }

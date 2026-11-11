@@ -87,6 +87,7 @@ export type StoreTransaction = {
   productId: string;
   jws: string;
   environment: string;
+  appAccountToken: string;
   revoked: boolean;
   verified: boolean;
 };

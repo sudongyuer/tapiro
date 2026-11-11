@@ -5,6 +5,7 @@ import {
   foregroundStyle,
   lineLimit,
 } from '@expo/ui/swift-ui/modifiers';
+import type { ReactNode } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
@@ -98,7 +99,15 @@ export function SummarySection({ draft, now }: { draft: RideDraft; now: number }
   );
 }
 
-export function FeeSection({ state, onRetry }: { state: StatusState; onRetry: () => void }) {
+export function FeeSection({
+  state,
+  onRetry,
+  buyCoins,
+}: {
+  state: StatusState;
+  onRetry: () => void;
+  buyCoins?: (onCredited: () => void) => ReactNode;
+}) {
   const { t, language } = useI18n();
   if (state.kind === 'loading') {
     return (
@@ -131,7 +140,9 @@ export function FeeSection({ state, onRetry }: { state: StatusState; onRetry: ()
   const value =
     cost.kind === 'free'
       ? t('ride.create.confirm.free', { left: cost.left, of: cost.of })
-      : t('ride.create.confirm.coin', { balance: cost.kind === 'coin' ? cost.balance : 0 });
+      : t('ride.create.confirm.coin', {
+          balance: cost.kind === 'coin' ? cost.balance : state.status.coins,
+        });
   const date = new Intl.DateTimeFormat(language, { month: 'long', day: 'numeric' }).format(
     new Date(state.status.nextFreeAt),
   );
@@ -161,6 +172,7 @@ export function FeeSection({ state, onRetry }: { state: StatusState; onRetry: ()
           testID="ride-confirm-no-balance"
         />
       ) : null}
+      {gate === 'noBalance' && buyCoins ? buyCoins(onRetry) : null}
       <Section
         footer={
           <Text>

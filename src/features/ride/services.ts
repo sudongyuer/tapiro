@@ -6,6 +6,7 @@ import { deviceCurrency } from '@/lib/deviceCurrency';
 import { notices } from '@/lib/notifications';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
+import { uiVerifyPurchases } from '@/lib/uiVerifyPurchases';
 import { userCleanups } from '@/lib/userCleanups';
 
 import { createRideDraftStore, isEmptyDraft } from './create/draft';
@@ -30,8 +31,10 @@ const PUBLISHED_KEY = 'uiVerifyRidePublishedArgs';
 
 function verifyRideService() {
   Settings.set({ [PUBLISHED_KEY]: '' });
-  return createFixtureRideService(fixtureRideOptions(uiVerifyArgument, uiVerifyFixture), (args) =>
-    Settings.set({ [PUBLISHED_KEY]: JSON.stringify(args) }),
+  return createFixtureRideService(
+    fixtureRideOptions(uiVerifyArgument, uiVerifyFixture),
+    (args) => Settings.set({ [PUBLISHED_KEY]: JSON.stringify(args) }),
+    uiVerifyPurchases.coins,
   );
 }
 
