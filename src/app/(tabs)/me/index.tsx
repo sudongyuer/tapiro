@@ -30,6 +30,7 @@ export default function Me() {
       coinCount={coins === null ? null : coinCount(coins, language)}
       onOpenCoins={() => router.push('/me/coins')}
       onOpenInvite={() => router.push('/me/invite')}
+      onOpenTapir={() => router.push('/me/tapir')}
       onOpenPayee={() => router.push('/me/payee')}
       onOpenBlocked={() => router.push('/me/blocked')}
       onOpenSettings={() => router.push('/me/settings')}

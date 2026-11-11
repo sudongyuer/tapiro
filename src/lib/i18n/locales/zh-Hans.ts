@@ -1,3 +1,4 @@
+import ask from './ask/zh-Hans';
 import block from './block/zh-Hans';
 import chat from './chat/zh-Hans';
 import coins from './coins/zh-Hans';
@@ -137,6 +138,7 @@ export default {
   chat,
   coins,
   reputation,
+  ask,
   bounty,
   ride,
   rideReminders,
@@ -181,6 +183,7 @@ export default {
         writeBounty: '帮我写一条悬赏',
       },
       mic: '说话',
+      send: '发送',
       comingSoon: '语音和 AI 起草即将推出',
       close: '关闭',
     },
@@ -311,6 +314,7 @@ export default {
     chat: { thread: '聊天线程（键盘）' },
     reputation: { profile: '主页', review: '评价 sheet', reviewOpen: '打开评价' },
     coins: { page: '貘币页', invite: '邀请页' },
+    ask: { settings: '我的 → 小貘' },
     store: {
       title: 'StoreKit 试验',
       signIn: '以小林登录',
