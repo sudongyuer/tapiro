@@ -253,7 +253,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | home.live-activity.in-app    | App 在前台时灵动岛是否显示，先做真机验证                            | device                                                                                                                                                                                                                                            |
 | home.live-activity.lock-copy | 锁屏写对方名字和地点简称；拼车从家出发只写「出发点」（274 A）       | unit:src/lib/live-activity/content.test.ts#a helper on the way shows the name, minutes, place and both times (274 A), unit:src/lib/live-activity/content.test.ts#a ride starting at home never names the place on the Lock Screen (274 A), device |
 | home.live-activity.end       | 到了或上车出发时显示最后一步，15 分钟后消失；取消马上消失（277 A）  | unit:src/lib/live-activity/content.test.ts#arrival and departure linger 15 minutes; a cancel leaves at once (277 A), unit:src/lib/live-activity/content.test.ts#arrival is the final step: full line, no minutes, no stale date (277 A), device   |
-| home.live-activity.stale     | 没有更新时到预计时间 + 5 分钟（拼车到出发时间）显示「可能不是最新」 | unit:src/lib/live-activity/content.test.ts#on-the-way content goes stale five minutes after the ETA (L4), device                                                                                                                                  |
+| home.live-activity.stale     | 没有更新时到预计时间 + 5 分钟（拼车到出发时间）显示「可能不是最新」 | unit:src/lib/live-activity/content.test.ts#on-the-way content goes stale five minutes after the ETA (L4), unit:src/lib/live-activity/content.test.ts#the stale title drops the minutes so an old ETA never reads as live (L4), device                                                                                                                                  |
 
 ## 收款方式
 

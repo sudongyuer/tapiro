@@ -37,7 +37,7 @@ struct TapiroLiveActivityWidget: Widget {
       } minimal: {
         TapirHead(diameter: 22)
           .accessibilityElement()
-          .accessibilityLabel(Text(state.title))
+          .accessibilityLabel(Text(stale ? state.staleTitle : state.title))
       }
       .widgetURL(context.attributes.link.flatMap(URL.init(string:)))
     }
@@ -69,7 +69,7 @@ private struct Sentence: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 2) {
-      Text(state.title)
+      Text(stale ? state.staleTitle : state.title)
         .font(.subheadline.weight(.bold))
         .lineLimit(titleLines)
       Text(stale ? state.staleNote : state.detail)
@@ -115,7 +115,9 @@ private struct CompactMinutes: View {
     .font(.system(.subheadline, design: .rounded).weight(.heavy))
     .foregroundStyle(stale ? .secondary : .primary)
     .accessibilityElement()
-    .accessibilityLabel(Text(state.title))
+    .accessibilityLabel(
+      Text(verbatim: stale ? "\(state.staleTitle), \(state.staleNote)" : "\(state.title), \(state.detail)")
+    )
   }
 }
 

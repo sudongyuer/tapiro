@@ -80,8 +80,7 @@ async function startFixture(fixture: Fixture, t: TFunction) {
   const now = Date.now();
   const subject = subjectFor(fixture, t, now);
   const state = liveActivityContent(subject, t, now);
-  const opening = fixture === 'stale' ? { ...state, staleAfterSeconds: 60 } : state;
-  const result = await LiveActivity.start(subject.kind, liveActivityLink(subject), opening);
+  const result = await LiveActivity.start(subject.kind, liveActivityLink(subject), state);
   const final = FINAL[fixture];
   if (result.status !== 'ok' || !final) return { result, ended: null };
   return { result, ended: await LiveActivity.end(result.id, state, dismissAfterSeconds(final)) };

@@ -8,6 +8,7 @@ const en: typeof zhHans = {
   bounty: {
     onTheWay_one: '{{name}} · about {{count}} min away',
     onTheWay_other: '{{name}} · about {{count}} min away',
+    onTheWayStale: '{{name}} · on the way',
     left: 'Left {{time}}',
     eta: 'Arrives ~{{time}}',
     arrived: '{{name}} is here · {{place}}',

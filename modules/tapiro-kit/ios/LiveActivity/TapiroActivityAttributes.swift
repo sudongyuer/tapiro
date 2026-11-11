@@ -7,6 +7,7 @@ import Foundation
 public struct TapiroActivityAttributes: ActivityAttributes {
   public struct ContentState: Codable, Hashable {
     public var title: String
+    public var staleTitle: String
     public var detail: String
     public var minutes: Int?
     public var unit: String
@@ -17,6 +18,7 @@ public struct TapiroActivityAttributes: ActivityAttributes {
 
     public init(
       title: String,
+      staleTitle: String,
       detail: String,
       minutes: Int?,
       unit: String,
@@ -26,6 +28,7 @@ public struct TapiroActivityAttributes: ActivityAttributes {
       staleNote: String
     ) {
       self.title = title
+      self.staleTitle = staleTitle
       self.detail = detail
       self.minutes = minutes
       self.unit = unit

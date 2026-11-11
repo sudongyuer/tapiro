@@ -8,6 +8,7 @@ const ms: typeof zhHans = {
   bounty: {
     onTheWay_one: '{{name}} · lebih kurang {{count}} minit lagi',
     onTheWay_other: '{{name}} · lebih kurang {{count}} minit lagi',
+    onTheWayStale: '{{name}} · dalam perjalanan',
     left: 'Bertolak {{time}}',
     eta: 'Tiba ~{{time}}',
     arrived: '{{name}} sudah sampai · {{place}}',

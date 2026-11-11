@@ -6,6 +6,7 @@ export default {
   bounty: {
     onTheWay_one: '{{name}} · 约 {{count}} 分钟到',
     onTheWay_other: '{{name}} · 约 {{count}} 分钟到',
+    onTheWayStale: '{{name}} · 在路上',
     left: '出发 {{time}}',
     eta: '约 {{time}} 到',
     arrived: '{{name}}到了 · {{place}}',

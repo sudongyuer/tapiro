@@ -55,6 +55,15 @@ describe('liveActivityContent', () => {
     expect(liveActivityContent(onTheWay, t, NOW).staleAfterSeconds).toBe(11 * 60);
   });
 
+  test('the stale title drops the minutes so an old ETA never reads as live (L4)', () => {
+    const state = liveActivityContent(onTheWay, t, NOW);
+    expect(state.staleTitle).toBe('小林 · 在路上');
+    expect(state.staleNote).toBe('可能不是最新');
+    expect(liveActivityContent(meetup(false), t, NOW).staleTitle).toBe(
+      '集合 · Sunway Geo Residences',
+    );
+  });
+
   test('a late helper still reads at least one minute, never zero', () => {
     const state = liveActivityContent(onTheWay, t, at(13, 20));
     expect(state.minutes).toBe(1);

@@ -4,6 +4,7 @@ import Foundation
 
 struct LiveActivityStateRecord: Record {
   @Field var title: String = ""
+  @Field var staleTitle: String = ""
   @Field var detail: String = ""
   @Field var minutes: Int?
   @Field var unit: String = ""
@@ -54,6 +55,7 @@ enum LiveActivities {
     ActivityContent(
       state: .init(
         title: state.title,
+        staleTitle: state.staleTitle,
         detail: state.detail,
         minutes: state.minutes,
         unit: state.unit,

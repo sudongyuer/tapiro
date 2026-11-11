@@ -176,6 +176,10 @@ Built from the A boards on the canvas (「06++ 买貘币与锁屏实时活动」
   views have no UI case. Evidence is Simulator screenshots (Lock Screen by `simctl`, the island from the Simulator
   window), in the PR.
 
+- Review follow-up for the push half: the minutes are a fixed number between updates, so without push a 「6 分」 stays
+  until the stale time. Before shipping with push, decide whether the minutes render from the ETA with
+  `Text(timerInterval:countsDown:)` instead.
+
 ### ★ View choices (agent, for veto)
 
 | #   | Choice                                                                                                                                                                                                     | Why                                                                                        |
@@ -185,7 +189,7 @@ Built from the A boards on the canvas (「06++ 买貘币与锁屏实时活动」
 | V3  | Bounty arrival reads 「小林到了 · 图书馆」 over a generic 「去碰面吧」 (the board's 「去拿快递吧」 fits only the parcel example)                                                                           | One line for every category                                                                |
 | V4  | Ride departure (277: 「上车出发」 is the last step) reads 「出发了 · {start}」 over 「3 人上车」, full line, end time 「13:20 出发了」, then leaves after 15 minutes                                       | Not drawn; mirrors the bounty's final step                                                 |
 | V5  | After arrival or departure the compact island shows a checkmark in place of the minutes                                                                                                                    | Not drawn; no minutes are left                                                             |
-| V6  | Stale look (L4): the second line becomes 「可能不是最新」 and the minutes turn secondary; stale at ETA + 5 min (bounty) or at departure (ride)                                                             | Not drawn; with 278 A users only see it once push ships, but the rule holds locally        |
+| V6  | Stale look (L4): the first line drops the minutes (「小林 · 在路上」), the second becomes 「可能不是最新」 and the minutes turn secondary; stale at ETA + 5 min (bounty) or at departure (ride)            | Not drawn; with 278 A users only see it once push ships, but the rule holds locally        |
 | V7  | A helper past the ETA still reads 「约 1 分钟到」 (never 0) until the stale time                                                                                                                           | 「约 0 分钟到」 reads as broken                                                            |
 | V8  | The Lock Screen title wraps to two lines (Malay is the longest); the expanded island keeps one line                                                                                                        | The island has less height                                                                 |
 | V9  | All copy and times come from the app in the in-app language (24 h clock); the extension has no strings of its own                                                                                          | The extension cannot read the in-app language choice without an app group (L2)             |

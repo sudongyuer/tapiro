@@ -98,6 +98,7 @@ export type StorePurchaseResult =
 
 export type LiveActivityState = {
   title: string;
+  staleTitle: string;
   detail: string;
   minutes?: number;
   unit: string;
@@ -299,7 +300,11 @@ export const Store = {
 };
 
 export const LiveActivity = {
-  start(kind: string, link: string | null, state: LiveActivityState) {
+  start(
+    kind: string,
+    link: string | null,
+    state: LiveActivityState,
+  ): Promise<LiveActivityStartResult> {
     return kit.liveActivityStart(kind, link, state);
   },
   update(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult> {

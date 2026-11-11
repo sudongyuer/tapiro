@@ -48,7 +48,9 @@ function channel(hex, start) {
 
 function mascotPaintSwift(projectRoot) {
   const source = fs.readFileSync(path.join(projectRoot, 'src/ui/theme/tokens.ts'), 'utf8');
-  const light = source.slice(0, source.indexOf('export const darkVars'));
+  const darkStart = source.indexOf('export const darkVars');
+  if (darkStart < 0) throw new Error('withLiveActivity: darkVars not found in tokens.ts');
+  const light = source.slice(0, darkStart);
   const lines = PAINT.map((name) => {
     const match = light.match(new RegExp(`'--color-mascot-${name}': '#([0-9A-Fa-f]{6})'`));
     if (!match) throw new Error(`withLiveActivity: --color-mascot-${name} not found in tokens.ts`);
@@ -77,7 +79,13 @@ function withExtensionFiles(config) {
 function withExtensionTarget(config) {
   return withXcodeProject(config, (config) => {
     const project = config.modResults;
-    if (project.pbxTargetByName(TARGET)) return config;
+    if (project.pbxTargetByName(TARGET)) {
+      const target = project.findTargetKey(TARGET);
+      const group = project.findPBXGroupKey({ name: TARGET });
+      for (const source of SOURCES)
+        if (!project.hasFile(source)) project.addSourceFile(source, { target }, group);
+      return config;
+    }
     const objects = project.hash.project.objects;
     objects.PBXTargetDependency ??= {};
     objects.PBXContainerItemProxy ??= {};

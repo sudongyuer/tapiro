@@ -48,6 +48,10 @@ function startName(start: LiveActivityPlace, t: TFunction) {
   return start.home ? t('liveActivity.homeStart') : start.name;
 }
 
+function titled(title: string) {
+  return { title, staleTitle: title };
+}
+
 export function liveActivityContent(
   subject: LiveActivitySubject,
   t: TFunction,
@@ -60,6 +64,7 @@ export function liveActivityContent(
       return {
         ...common,
         title: t('liveActivity.bounty.onTheWay', { name: subject.helper, count }),
+        staleTitle: t('liveActivity.bounty.onTheWayStale', { name: subject.helper }),
         detail: subject.place
           ? t('liveActivity.pair', { first: subject.place, second: subject.task })
           : subject.task,
@@ -73,9 +78,11 @@ export function liveActivityContent(
     case 'arrived':
       return {
         ...common,
-        title: subject.place
-          ? t('liveActivity.bounty.arrived', { name: subject.helper, place: subject.place })
-          : t('liveActivity.bounty.arrivedPlain', { name: subject.helper }),
+        ...titled(
+          subject.place
+            ? t('liveActivity.bounty.arrived', { name: subject.helper, place: subject.place })
+            : t('liveActivity.bounty.arrivedPlain', { name: subject.helper }),
+        ),
         detail: t('liveActivity.bounty.arrivedDetail'),
         progress: 1,
         startLabel: t('liveActivity.bounty.left', { time: localClock(subject.leftAt) }),
@@ -85,7 +92,7 @@ export function liveActivityContent(
       const count = minutesUntil(subject.departAt, now);
       return {
         ...common,
-        title: t('liveActivity.ride.meetup', { place: startName(subject.start, t) }),
+        ...titled(t('liveActivity.ride.meetup', { place: startName(subject.start, t) })),
         detail: t('liveActivity.ride.leaving', {
           count,
           arrived: subject.arrived,
@@ -101,7 +108,7 @@ export function liveActivityContent(
     case 'departed':
       return {
         ...common,
-        title: t('liveActivity.ride.departed', { place: startName(subject.start, t) }),
+        ...titled(t('liveActivity.ride.departed', { place: startName(subject.start, t) })),
         detail: t('liveActivity.ride.aboard', { count: subject.aboard }),
         progress: 1,
         startLabel: t('liveActivity.ride.gatherAt', { time: localClock(subject.gatherAt) }),
