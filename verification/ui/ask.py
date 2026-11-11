@@ -4,7 +4,7 @@ import time
 from choose import defaults
 from driver import by_id
 
-TYPED = 'Parcel at Pyramid'
+TYPED = 'Parcel'  # one word: a typed space was turned into 「. 」 once (en dark)
 
 
 def ai_calls(ui, name, count, timeout=10):
@@ -17,6 +17,7 @@ def ai_calls(ui, name, count, timeout=10):
 
 
 def assert_calls(ui, name, count, wait=3):
+    ai_calls(ui, name, count, timeout=15)
     time.sleep(wait)  # a replay would follow the answer
     found = ai_calls(ui, name, count + 1, timeout=1)
     assert len(found) == count, f'{name} was called {len(found)} times, expected {count}: {found}'
@@ -38,7 +39,10 @@ def type_and_send(ui, text=TYPED):
         ui.type(text)
         ui.wait(lambda items: (by_id(items, 'ask-tapir-prompt') or {}).get('AXValue') == text,
                 f'the prompt never read {text}')
-    ui.tap('ask-tapir-send')
+        ui.at_rest()  # the keyboard lifts the sheet to its full detent; a tap during that move landed nowhere (en dark)
+    # An instant AXe tap on 发送 with the keyboard up was dropped 3 times in en dark (frame checked); a finger-length
+    # press lands, as for the SwiftUI switches.
+    ui.press('ask-tapir-send', 0.15)
 
 
 def note(ui, key, timeout=30):

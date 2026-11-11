@@ -18,16 +18,24 @@ export type ConsentState = {
   failure: { write: ConsentWrite; reason: WriteFailure } | null;
 };
 
-export type AskOutcome = 'given' | 'declined';
+export type AskOutcome = 'given' | 'declined' | 'needsUpdate';
 
 export type PrepareResult = CloudAccess | 'offline';
 
 const EMPTY: ConsentState = { userId: null, status: IDLE_LOAD, writing: null, failure: null };
 
+export function consentAccess(state: ConsentState): CloudAccess | null {
+  return state.status.status === 'idle' || !state.status.data
+    ? null
+    : cloudAccess(state.status.data);
+}
+
 export function createConsentStore(service: AskService) {
   let state = EMPTY;
   let epoch = 0;
-  let pendingAsk: ((outcome: AskOutcome) => void) | null = null;
+  let droppedRead = false;
+  let pendingAsk: { token: number; resolve: (outcome: AskOutcome) => void } | null = null;
+  let asks = 0;
   const listeners = new Set<() => void>();
 
   const set = (next: Partial<ConsentState>) => {
@@ -35,35 +43,46 @@ export function createConsentStore(service: AskService) {
     listeners.forEach((listener) => listener());
   };
 
-  const settleAsk = (outcome: AskOutcome) => {
-    const resolve = pendingAsk;
+  const settleAsk = (outcome: AskOutcome, token?: number) => {
+    if (!pendingAsk || (token !== undefined && token !== pendingAsk.token)) return;
+    const { resolve } = pendingAsk;
     pendingAsk = null;
-    resolve?.(outcome);
+    resolve(outcome);
   };
+
+  const currentStatus = () => (state.status.status === 'ready' ? state.status.data : null);
 
   async function refresh(): Promise<ConsentStatus | null> {
     const userId = state.userId;
     if (!userId) return null;
     const startedAt = epoch;
     set({ status: loading(state.status) });
-    try {
-      const status = await service.status();
-      if (state.userId !== userId || epoch !== startedAt) return currentStatus();
-      set({ status: loaded(status) });
-      return status;
-    } catch {
-      if (state.userId !== userId || epoch !== startedAt) return currentStatus();
-      set({ status: loadFailed(state.status) });
-      return null;
+    const status = await service.status().catch(() => null);
+    if (state.userId !== userId) return null;
+    if (epoch !== startedAt) {
+      droppedRead = true;
+      return currentStatus();
     }
+    set({ status: status ? loaded(status) : loadFailed(state.status) });
+    return status;
   }
 
-  const currentStatus = () => (state.status.status === 'ready' ? state.status.data : null);
+  const needingUpdate = (): Loadable<ConsentStatus> => {
+    const data = state.status.status === 'idle' ? null : state.status.data;
+    const known = data ?? { currentVersion: APP_CONSENT_VERSION, given: false, acceptedAt: null };
+    return loaded({
+      ...known,
+      given: false,
+      acceptedAt: null,
+      currentVersion: Math.max(known.currentVersion, APP_CONSENT_VERSION + 1),
+    });
+  };
 
   async function write(kind: ConsentWrite) {
     const userId = state.userId;
     if (!userId || state.writing) return false;
     epoch += 1;
+    droppedRead = false;
     set({ writing: kind, failure: null });
     const result =
       kind === 'record'
@@ -72,9 +91,16 @@ export function createConsentStore(service: AskService) {
     if (state.userId !== userId) return false;
     epoch += 1;
     if (!result || !result.ok) {
-      set({ writing: null, failure: { write: kind, reason: result?.failure ?? 'failed' } });
+      const reason = result?.failure ?? 'failed';
+      set({
+        writing: null,
+        failure: { write: kind, reason },
+        ...(reason === 'needsUpdate' ? { status: needingUpdate() } : {}),
+      });
+      if (droppedRead || state.status.status === 'loading') void refresh();
       return false;
     }
+    droppedRead = false;
     set({ writing: null, failure: null, status: loaded(result.status) });
     if (kind === 'record' && result.status.given) settleAsk('given');
     return kind === 'record' ? result.status.given : !result.status.given;
@@ -108,29 +134,29 @@ export function createConsentStore(service: AskService) {
     record: () => write('record'),
     withdraw: () => write('withdraw'),
     dismissFailure() {
-      if (state.failure) set({ failure: null });
+      if (state.failure && !state.writing) set({ failure: null });
     },
-    ask(): Promise<AskOutcome> {
+    ask(): { token: number; outcome: Promise<AskOutcome> } {
       settleAsk('declined');
-      if (state.failure?.write === 'record') set({ failure: null });
-      return new Promise((resolve) => {
-        pendingAsk = resolve;
+      asks += 1;
+      const token = asks;
+      const outcome = new Promise<AskOutcome>((resolve) => {
+        pendingAsk = { token, resolve };
       });
+      return { token, outcome };
     },
-    decline: () => settleAsk('declined'),
+    pendingAsk: () => pendingAsk?.token ?? null,
+    decline(token?: number) {
+      settleAsk(consentAccess(state) === 'needsUpdate' ? 'needsUpdate' : 'declined', token);
+    },
     markRefused() {
-      if (state.status.status === 'idle' || !state.status.data) return;
+      const status = state.status;
+      if (status.status === 'idle' || !status.data) return;
       epoch += 1;
-      set({ status: loaded({ ...state.status.data, given: false, acceptedAt: null }) });
+      set({ status: { ...status, data: { ...status.data, given: false, acceptedAt: null } } });
       void refresh();
     },
   };
 }
 
 export type ConsentStore = ReturnType<typeof createConsentStore>;
-
-export function consentAccess(state: ConsentState): CloudAccess | null {
-  return state.status.status === 'idle' || !state.status.data
-    ? null
-    : cloudAccess(state.status.data);
-}

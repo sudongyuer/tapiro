@@ -39,9 +39,9 @@ describe('cloud gate', () => {
     expect(gate.sent).toHaveLength(0);
   });
 
-  test('no call leaves the app while the status is unknown', async () => {
+  test('an unknown status is unavailable, never "consent required", and sends nothing', async () => {
     const gate = await gateWith(null, []);
-    expect(await gate.call(REQUEST)).toEqual({ kind: 'consentRequired' });
+    expect(await gate.call(REQUEST)).toEqual({ kind: 'unavailable' });
     expect(gate.sent).toHaveLength(0);
   });
 

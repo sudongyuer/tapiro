@@ -9,7 +9,8 @@ import {
   listRowBackground,
   multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
-import { useEffect } from 'react';
+import { Stack } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -45,13 +46,22 @@ export function ConsentScreen({
   const failed = state.failure?.write === 'record' && state.failure.reason === 'failed';
   const recording = state.writing === 'record';
 
-  useEffect(() => () => consentStore.decline(), []);
+  const [token] = useState(() => consentStore.pendingAsk());
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    consentStore.dismissFailure();
+    return () => {
+      mounted.current = false;
+      if (token !== null) consentStore.decline(token);
+    };
+  }, [token]);
 
   const agree = async () => {
-    if (await consentStore.record()) onDone();
+    if ((await consentStore.record()) && mounted.current) onDone();
   };
   const decline = () => {
-    consentStore.decline();
+    if (token !== null) consentStore.decline(token);
     onDone();
   };
 
@@ -72,56 +82,59 @@ export function ConsentScreen({
   ) : null;
 
   return (
-    <SheetFrame notice={notice} testID="ask-consent-screen">
-      <SheetActions>
-        <View style={styles.actions}>
-          {needsUpdate ? (
-            <PillButton
-              label={t('ask.consent.close')}
-              onPress={decline}
-              testID="ask-consent-close"
-            />
-          ) : (
-            <>
+    <>
+      <Stack.Screen options={{ gestureEnabled: !recording }} />
+      <SheetFrame notice={notice} testID="ask-consent-screen">
+        <SheetActions>
+          <View style={styles.actions}>
+            {needsUpdate ? (
               <PillButton
-                label={t('ask.consent.agree')}
-                loading={recording}
-                loadingLabel={t('ask.consent.agreeing')}
-                onPress={() => void agree()}
-                testID="ask-consent-agree"
-              />
-              <PillButton
-                variant="plain"
-                label={t(from === 'me' ? 'ask.consent.declineFromMe' : 'ask.consent.decline')}
-                disabled={recording}
+                label={t('ask.consent.close')}
                 onPress={decline}
-                testID="ask-consent-decline"
+                testID="ask-consent-close"
               />
-            </>
-          )}
-        </View>
-      </SheetActions>
-      <Header />
-      <Section
-        footer={
-          <Text modifiers={[accessibilityIdentifier('ask-consent-withdraw')]}>
-            {t('ask.consent.withdraw')}
-          </Text>
-        }
-      >
-        <Fact label={t('ask.consent.sendsLabel')} value={t('ask.consent.sends')} id="sends" />
-        <Fact label={t('ask.consent.neverLabel')} value={t('ask.consent.never')} id="never" />
-        <Fact label={t('ask.consent.keptLabel')} value={t('ask.consent.kept')} id="kept" />
-      </Section>
-      <Section>
-        <Button
-          label={t('ask.consent.privacy')}
-          systemImage="hand.raised.fill"
-          onPress={onOpenPrivacy}
-          testID="ask-consent-privacy"
-        />
-      </Section>
-    </SheetFrame>
+            ) : (
+              <>
+                <PillButton
+                  label={t('ask.consent.agree')}
+                  loading={recording}
+                  loadingLabel={t('ask.consent.agreeing')}
+                  onPress={() => void agree()}
+                  testID="ask-consent-agree"
+                />
+                <PillButton
+                  variant="plain"
+                  label={t(from === 'me' ? 'ask.consent.declineFromMe' : 'ask.consent.decline')}
+                  disabled={recording}
+                  onPress={decline}
+                  testID="ask-consent-decline"
+                />
+              </>
+            )}
+          </View>
+        </SheetActions>
+        <Header />
+        <Section
+          footer={
+            <Text modifiers={[accessibilityIdentifier('ask-consent-withdraw')]}>
+              {t('ask.consent.withdraw')}
+            </Text>
+          }
+        >
+          <Fact label={t('ask.consent.sendsLabel')} value={t('ask.consent.sends')} id="sends" />
+          <Fact label={t('ask.consent.neverLabel')} value={t('ask.consent.never')} id="never" />
+          <Fact label={t('ask.consent.keptLabel')} value={t('ask.consent.kept')} id="kept" />
+        </Section>
+        <Section>
+          <Button
+            label={t('ask.consent.privacy')}
+            systemImage="hand.raised.fill"
+            onPress={onOpenPrivacy}
+            testID="ask-consent-privacy"
+          />
+        </Section>
+      </SheetFrame>
+    </>
   );
 }
 

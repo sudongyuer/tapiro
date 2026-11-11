@@ -13,8 +13,10 @@ DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/debug/CoinsScenes.tsx', 
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
 SCENE = 'tapir-settings'
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given', '-uiVerifyAiDelayMs', '1500', '-uiVerifyAiFail', 'load']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiDelayMs', '1500', '-uiVerifyAiConsent', 'given',
+        '-uiVerifyAiFail', 'load']
 
+FAIL_LOAD = ['-uiVerifyAiConsent', 'given', '-uiVerifyAiFail', 'load']  # relaunch starts from ARGS
 ui = UI(*sys.argv[1:])
 ui.element('tapir-settings-failed', timeout=60)
 assert by_id(ui.read(), 'tapir-cloud') is None, 'a failed load shows a switch'
@@ -25,7 +27,8 @@ ui.tap('tapir-settings-retry')
 ui.wait(lambda items: toggle_on(items) is True, '重试 never loaded the switch')
 assert by_id(ui.read(), 'tapir-settings-failed') is None
 
-relaunch(ui, drop=['-uiVerifyAiFail', 'load'], add=['-uiVerifyAiFail', 'withdraw'], ready='tapir-settings-screen')
+relaunch(ui, drop=FAIL_LOAD, add=['-uiVerifyAiConsent', 'given', '-uiVerifyAiFail', 'withdraw', '-uiVerifyScene', SCENE],
+         ready='tapir-settings-screen')
 ui.wait(lambda items: toggle_on(items) is True, 'the switch is not on')
 ui.flip('tapir-cloud')
 ui.element('tapir-settings-withdraw-failed', timeout=30)
@@ -34,8 +37,7 @@ assert_calls(ui, 'withdraw', 1)
 ui.at_rest()
 ui.capture('02-withdraw-failed')
 
-relaunch(ui, drop=['-uiVerifyAiConsent', 'given'], add=['-uiVerifyAiConsent', 'newer'],
-         ready='tapir-settings-screen')
+relaunch(ui, drop=FAIL_LOAD, add=['-uiVerifyAiConsent', 'newer', '-uiVerifyScene', SCENE], ready='tapir-settings-screen')
 ui.wait(lambda items: toggle_on(items) is False, 'the switch is not off for a newer version')
 footer(ui, ui.t('ask.settings.needsUpdateFooter'))
 assert by_id(ui.read(), 'tapir-cloud').get('enabled') is False, 'the switch can be turned on for terms it cannot show'

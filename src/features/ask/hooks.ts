@@ -11,6 +11,7 @@ export function useConsentFor(userId: string | null) {
   useFocusEffect(
     useCallback(() => {
       if (!userId) return;
+      consentStore.dismissFailure();
       if (consentStore.getSnapshot().userId === userId) void consentStore.refresh();
       else consentStore.start(userId);
     }, [userId]),
@@ -41,21 +42,26 @@ export function useAskComposer(userId: string | null, openConsent: () => void) {
     [userId],
   );
 
+  const busy = useRef(false);
   const send = useCallback(async () => {
-    if (!userId || checking || text.trim().length === 0) return;
+    if (!userId || busy.current || text.trim().length === 0) return;
+    busy.current = true;
     setChecking(true);
     setNote(null);
     let access = await consentStore.prepare();
     if (access === 'notGiven' && mounted.current) {
       const asked = consentStore.ask();
       openConsent();
-      access = (await asked) === 'given' ? 'given' : 'notGiven';
+      const outcome = await asked.outcome;
+      access =
+        outcome === 'given' ? 'given' : outcome === 'needsUpdate' ? 'needsUpdate' : 'notGiven';
     }
+    busy.current = false;
     if (!mounted.current) return;
     setChecking(false);
     if (access === 'offline' || access === 'needsUpdate') setNote(access);
     else if (access === 'given') setNote('held');
-  }, [checking, openConsent, text, userId]);
+  }, [openConsent, text, userId]);
 
   return { text, setText, send, checking, note };
 }

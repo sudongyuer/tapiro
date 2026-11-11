@@ -1,13 +1,13 @@
 import type { AskService, ConsentStatus } from './consent';
 
-export type FixtureConsent = 'none' | 'given' | 'newer';
+export type FixtureConsent = 'none' | 'given' | 'newer' | 'bumped';
 export type FixtureFailPoint = 'load' | 'loadAgain' | 'record' | 'withdraw';
 
 const FAIL_POINTS: readonly FixtureFailPoint[] = ['load', 'loadAgain', 'record', 'withdraw'];
 export const FIXTURE_ACCEPTED_AT = '2026-10-31T09:30:00.000Z';
 
 export const fixtureConsent = (value: string | undefined): FixtureConsent =>
-  value === 'given' || value === 'newer' ? value : 'none';
+  value === 'given' || value === 'newer' || value === 'bumped' ? value : 'none';
 
 export const fixtureFailPoints = (value: string | undefined) =>
   new Set(
@@ -50,6 +50,7 @@ export function createFixtureAskService({
       onCall('record', { version });
       await wait();
       if (failsOnce('record')) return { ok: false, failure: 'failed' };
+      if (consent === 'bumped') status = { ...status, currentVersion: 2 };
       if (version !== status.currentVersion) return { ok: false, failure: 'needsUpdate' };
       if (!status.given) status = { ...status, given: true, acceptedAt: new Date().toISOString() };
       return { ok: true, status };

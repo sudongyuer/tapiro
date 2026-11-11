@@ -1,4 +1,4 @@
--- 149 A: at most this many paid leaves a refill day. Provisional until real usage is measured.
+-- At most this many leaves fed per refill day. Provisional until real usage is measured.
 create function private.ai_feed_limit() returns integer
 language sql
 immutable
@@ -15,8 +15,10 @@ set search_path = ''
 as $$
   select count(*)::integer from public.ai_pantry p
   where p.user_id = uid and p.reason = 'feed'
-    and private.ai_refill_day(p.created_at) = private.ai_refill_day(now());
+    and p.created_at >= (private.ai_refill_day(now())::timestamp + interval '6 hours') at time zone 'Asia/Kuala_Lumpur';
 $$;
+
+create index ai_pantry_user_created on public.ai_pantry (user_id, created_at);
 
 revoke all on function private.ai_feed_limit() from public, anon, authenticated;
 revoke all on function private.ai_feeds_today(uuid) from public, anon, authenticated;

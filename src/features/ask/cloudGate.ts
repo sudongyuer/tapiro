@@ -11,6 +11,7 @@ export type CloudResult =
   | { kind: 'answered'; body: unknown }
   | { kind: 'consentRequired' }
   | { kind: 'needsUpdate' }
+  | { kind: 'unavailable' }
   | { kind: 'failed'; error: string | null };
 
 export function createCloudGate({
@@ -22,6 +23,7 @@ export function createCloudGate({
 }) {
   return async function call(request: CloudRequest): Promise<CloudResult> {
     const access = consentAccess(store.getSnapshot());
+    if (access === null) return { kind: 'unavailable' };
     if (access === 'needsUpdate') return { kind: 'needsUpdate' };
     if (access !== 'given') return { kind: 'consentRequired' };
     const answer = await send(request).catch((): CloudAnswer => ({

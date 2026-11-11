@@ -135,19 +135,67 @@ describe('consent store', () => {
     expect(h.calls.filter((call) => call === 'withdraw')).toHaveLength(1);
   });
 
-  test('a stale version answer asks for an app update', async () => {
+  test('a stale version answer asks for an app update and stops offering consent', async () => {
     const h = harness();
     await h.startReady();
+    const asked = h.store.ask().outcome;
     const recorded = h.store.record();
     h.writes[0].resolve({ ok: false, failure: 'needsUpdate' });
     await recorded;
     expect(h.store.getSnapshot().failure).toEqual({ write: 'record', reason: 'needsUpdate' });
+    expect(consentAccess(h.store.getSnapshot())).toBe('needsUpdate');
+    h.store.decline();
+    expect(await asked).toBe('needsUpdate');
+    expect(await h.store.prepare()).toBe('needsUpdate');
+  });
+
+  test('closing an older consent page cannot settle a newer ask', async () => {
+    const h = harness();
+    await h.startReady();
+    const first = h.store.ask();
+    const second = h.store.ask();
+    expect(await first.outcome).toBe('declined');
+    let outcome: string | null = null;
+    void second.outcome.then((value) => {
+      outcome = value;
+    });
+    h.store.decline(first.token);
+    await h.tick();
+    expect(outcome).toBeNull();
+    h.store.decline(second.token);
+    await h.tick();
+    expect(outcome as string | null).toBe('declined');
+  });
+
+  test('a failed write rereads when it dropped a read, so the status never stays loading', async () => {
+    const h = harness();
+    h.store.start('u1');
+    const recorded = h.store.record();
+    h.reads[0].resolve(NOT_GIVEN);
+    await h.tick();
+    h.writes[0].resolve({ ok: false, failure: 'failed' });
+    await recorded;
+    expect(h.calls).toEqual(['status', 'record:1', 'status']);
+    h.reads[1].resolve(NOT_GIVEN);
+    await h.tick();
+    expect(h.store.getSnapshot().status.status).toBe('ready');
+  });
+
+  test('a refusal keeps a stale status stale', async () => {
+    const h = harness(GIVEN);
+    await h.startReady();
+    const refreshing = h.store.refresh();
+    h.reads[1].reject(new Error('offline'));
+    await refreshing;
+    expect(h.store.getSnapshot().status.status).toBe('stale');
+    h.store.markRefused();
+    expect(h.store.getSnapshot().status.status).not.toBe('ready');
   });
 
   test('ask resolves given once consent is recorded', async () => {
     const h = harness();
     await h.startReady();
-    const asked = h.store.ask();
+    const asked = h.store.ask().outcome;
     const recorded = h.store.record();
     h.writes[0].resolve({ ok: true, status: GIVEN });
     await recorded;
@@ -157,7 +205,7 @@ describe('consent store', () => {
   test('ask resolves declined when the screen is declined or dismissed', async () => {
     const h = harness();
     await h.startReady();
-    const asked = h.store.ask();
+    const asked = h.store.ask().outcome;
     h.store.decline();
     expect(await asked).toBe('declined');
   });
@@ -166,7 +214,7 @@ describe('consent store', () => {
     const h = harness();
     await h.startReady();
     let outcome: string | null = null;
-    void h.store.ask().then((value) => {
+    void h.store.ask().outcome.then((value) => {
       outcome = value;
     });
     const first = h.store.record();
@@ -212,7 +260,7 @@ describe('consent store', () => {
   test('signing out drops the state and declines an open ask', async () => {
     const h = harness(GIVEN);
     await h.startReady();
-    const asked = h.store.ask();
+    const asked = h.store.ask().outcome;
     h.store.clear();
     expect(await asked).toBe('declined');
     expect(h.store.getSnapshot().userId).toBeNull();

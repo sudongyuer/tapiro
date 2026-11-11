@@ -1,5 +1,5 @@
 // The version whose copy this build shows on the consent screen. record_consent refuses any other, so it must never
-// come from ai_status() (plan S6); bump it only together with the consent copy.
+// come from ai_status(); bump it only together with the consent copy.
 export const APP_CONSENT_VERSION = 1;
 
 export type ConsentStatus = {
