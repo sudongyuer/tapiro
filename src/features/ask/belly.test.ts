@@ -106,3 +106,14 @@ test('pantry refusals keep their reason; anything else is a plain failure', () =
   expect(toPantryFailure({ message: 'TypeError: Network request failed' })).toBe('failed');
   expect(toPantryFailure(null)).toBe('failed');
 });
+
+test('the verify belly defaults to full when no argument is given', async () => {
+  const { fixtureBelly } = await import('./fixtureAskService');
+  expect(fixtureBelly(undefined)).toMatchObject({
+    energy: 1000,
+    leaves: 0,
+    coins: 0,
+    feedsLeft: 5,
+  });
+  expect(fixtureBelly('0,2,3,0')).toMatchObject({ energy: 0, leaves: 2, coins: 3, feedsLeft: 0 });
+});

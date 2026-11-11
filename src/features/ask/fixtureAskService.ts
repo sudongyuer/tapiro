@@ -17,7 +17,9 @@ export const FIXTURE_CALL_COST = 334;
 
 // `energy,leaves,coins,feedsLeft`, for example `0,2,5,5`: an empty belly with two leaves in the jar.
 export function fixtureBelly(value: string | undefined, now = new Date()): Belly {
-  const [energy, leaves, coins, feedsLeft] = (value ?? '').split(',').map((part) => Number(part));
+  const [energy, leaves, coins, feedsLeft] = (value ?? '')
+    .split(',')
+    .map((part) => (part.trim() === '' ? undefined : Number(part)));
   const whole = (part: number | undefined, fallback: number) =>
     Number.isInteger(part) && (part as number) >= 0 ? (part as number) : fallback;
   const next = new Date(now);
