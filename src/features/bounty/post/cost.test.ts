@@ -47,7 +47,17 @@ describe('costLine', () => {
     expect(costLine(status({ freePostsLeft: 0, coins: 0 }))).toEqual({
       kind: 'none',
       nextFreeAt: NEXT,
+      balance: 0,
     });
+  });
+
+  test('a negative balance after a refund (268 A) costs like none and keeps its number', () => {
+    expect(costLine(status({ freePostsLeft: 0, coins: -6 }))).toEqual({
+      kind: 'none',
+      nextFreeAt: NEXT,
+      balance: -6,
+    });
+    expect(costLine(status({ freePostsLeft: 1, coins: -6 })).kind).toBe('free');
   });
 
   test.each([

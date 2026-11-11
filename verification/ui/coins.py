@@ -76,3 +76,43 @@ def assert_month_labels(ui, items):
         found = by_id(items, f'coins-month-{key}').get('AXLabel') or ''
         assert found == month_label(ui, key), f'month {key} reads {found!r}, expected {month_label(ui, key)!r}'
     return keys
+
+
+PACKS = (5, 11, 35)
+PRICES = {5: 'RM 4.90', 11: 'RM 9.90', 35: 'RM 29.90'}
+
+
+def open_sheet(ui):
+    ui.tap('coins-buy')
+    ui.element('buy-coins', timeout=30)
+    return ui.element('buy-coins-buy-5', timeout=30)
+
+
+def sheet_balance(ui, coins):
+    return ui.t('coins.buy.balance', balance=f'{coins:,}' if coins >= 0 else str(coins))
+
+
+def wait_status(ui, key, prefix='buy-coins', timeout=30, **values):
+    expected = ui.t(key, **values)
+    return ui.wait_label(f'{prefix}-status', lambda text: expected in text, f'the status never read {expected!r}',
+                         timeout=timeout)
+
+
+def assert_packs(ui, prefix='buy-coins'):
+    items = ui.read()
+    rows = [by_id(items, f'{prefix}-buy-{coins}') for coins in PACKS]
+    assert all(rows), f'a pack is missing: {[coins for coins, row in zip(PACKS, rows) if not row]}'
+    ys = [row['frame']['y'] for row in rows]
+    assert ys == sorted(ys), f'the packs are not smallest first: {ys}'
+    for coins in PACKS:
+        button = by_id(items, f'{prefix}-buy-{coins}')
+        assert button is not None, f'pack {coins} has no price button'
+        expected = ui.t('coins.buy.packA11y', coins=coins, price=PRICES[coins])
+        assert button.get('AXLabel') == expected, f'pack {coins} reads {button.get("AXLabel")!r}, not {expected!r}'
+    return items
+
+
+def tap_price(ui, identifier):
+    # The AX frame of a bordered button in a Form row is the whole row; only the capsule on its trailing side takes a tap.
+    f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+    ui.tap_point(f['x'] + f['width'] - 50, f['y'] + f['height'] / 2)

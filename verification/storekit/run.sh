@@ -46,7 +46,8 @@ PY
 
 RESULT="$OUT/result-$(date +%Y%m%d-%H%M%S).xcresult"
 STATUS=0
-xcodebuild test-without-building -xctestrun "$PRODUCTS/tapiro.xctestrun" -destination "platform=iOS Simulator,id=$UDID" \
+# XCUITest's tear-down hung for hours after a failed case (2026-11-12); perl's alarm bounds the run without coreutils.
+perl -e 'alarm shift; exec @ARGV' "${LIMIT_S:-1200}" xcodebuild test-without-building -xctestrun "$PRODUCTS/tapiro.xctestrun" -destination "platform=iOS Simulator,id=$UDID" \
   -resultBundlePath "$RESULT" "${ONLY[@]+"${ONLY[@]}"}" > "$OUT/test.log" 2>&1 || STATUS=$?
 grep -E "Test Case .*(passed|failed)|error:" "$OUT/test.log" || true
 echo "Result bundle: $RESULT"

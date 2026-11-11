@@ -1,5 +1,8 @@
+import { useRouter } from 'expo-router';
+
 import { CoinsScreen } from '@/features/coins';
 
 export default function Coins() {
-  return <CoinsScreen />;
+  const router = useRouter();
+  return <CoinsScreen onBuy={() => router.push('/buy-coins')} />;
 }

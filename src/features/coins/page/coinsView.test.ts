@@ -21,6 +21,7 @@ const row = (overrides: Partial<CoinRow> = {}): CoinRow => ({
   at: '2026-11-02T12:00:00Z',
   month: '2026-11',
   item: { kind: 'bounty', id: 'b1', title: '帮取快递' },
+  sandbox: false,
   ...overrides,
 });
 
@@ -44,6 +45,28 @@ describe('coins page view', () => {
     expect(rowTitle(row({ reason: 'weekly_feed', delta: 1, item: null }), t)).toBe('每周投喂');
     expect(rowTitle(row({ reason: 'other', item: null }), t)).toBe('其他');
     expect(rowTitle(row({ item: { kind: 'ride', id: 'r1', title: '  ' } }), t)).toBe('发布');
+  });
+
+  test('purchase rows read their own reason in every language, and a test purchase says so', () => {
+    const zh = translator('zh-Hans');
+    const purchase = row({ reason: 'purchase', delta: 11, item: null });
+    expect(rowTitle(purchase, zh)).toBe('买貘币');
+    expect(rowTitle({ ...purchase, sandbox: true }, zh)).toBe('买貘币 · 测试购买');
+    expect(rowTitle(row({ reason: 'purchase_refund', delta: -11, item: null }), zh)).toBe(
+      '退款收回',
+    );
+    for (const lng of ['en', 'ms']) {
+      const t = translator(lng);
+      for (const reason of ['purchase', 'purchase_refund', 'purchase_refund_reversed'] as const) {
+        const title = rowTitle(row({ reason, item: null }), t);
+        expect(title).not.toBe(t('coins.reason.other'));
+        expect(title).not.toContain('coins.');
+      }
+    }
+  });
+
+  test('a negative balance after a refund reads with its sign', () => {
+    expect(coinCount(-6, 'en')).toBe('-6');
   });
 
   test('VoiceOver reads the whole title, the signed delta and the date', () => {

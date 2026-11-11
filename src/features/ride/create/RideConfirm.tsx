@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { Stack, useNavigation } from 'expo-router';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -22,9 +22,10 @@ type ConfirmProps = {
   onPublished: () => void;
   onAddPayee: () => void;
   onBack: () => void;
+  buyCoins?: (onCredited: () => void) => ReactNode;
 };
 
-export function RideConfirm({ userId, onPublished, onAddPayee, onBack }: ConfirmProps) {
+export function RideConfirm({ userId, onPublished, onAddPayee, onBack, buyCoins }: ConfirmProps) {
   const { t, language } = useI18n();
   const navigation = useNavigation();
   const now = useNow();
@@ -98,7 +99,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack }: Confirm
       <SheetFrame notice={notice} testID="ride-confirm">
         <Actions state={state} onPublish={publish} onAddPayee={onAddPayee} />
         <SummarySection draft={draft} now={now} />
-        <FeeSection state={state.status} onRetry={flow.load} />
+        <FeeSection state={state.status} onRetry={flow.load} buyCoins={buyCoins} />
       </SheetFrame>
     </TicketFrame>
   );

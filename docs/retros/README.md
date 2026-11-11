@@ -425,5 +425,6 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-11 | IAP review fixes            | 0               | 1             | ~0                                            | 0                       | 0                     |
 | 2026-11-11 | open UI cases               | 0               | 1             | ~1 h (Simulator batches at load 40–131)       | 0                       | 0                     |
 | 2026-11-11 | IAP + Live Activity spikes  | 0               | 1             | ~30 min (in-app SKTestSession dead end)       | 0                       | pending               |
+| 2026-11-12 | buy coins (IAP 4–5)         | 0               | 2             | ~3 h hung harness + ~3 h lock wait            | 1                       | pending               |
 | 2026-11-12 | 问小貘 consent (Task 3)     | 0               | 1             | ~30 min (relaunch args, dropped instant tap)  | 0                       | pending               |
 | 2026-11-12 | 问小貘 sheet (Task 4)       | 0               | 2             | ~4.5 h (Simulator lock held elsewhere)        | 0                       | 0                     |

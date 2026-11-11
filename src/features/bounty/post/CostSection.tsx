@@ -5,6 +5,8 @@ import {
   foregroundStyle,
 } from '@expo/ui/swift-ui/modifiers';
 
+import type { ReactNode } from 'react';
+
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -54,7 +56,7 @@ function BaseSection({ base, status }: { base: CostBase; status: PostStatus }) {
   }
   return (
     <Section footer={<Text>{t('bounty.post.cost.footer.none', { of })}</Text>}>
-      <CostRow value={t('bounty.post.cost.coin', { balance: 0 })} urgent />
+      <CostRow value={t('bounty.post.cost.coin', { balance: base.balance })} urgent />
     </Section>
   );
 }
@@ -93,7 +95,17 @@ function BlockedNotice({ status }: { status: PostStatus }) {
   );
 }
 
-export function CostSection({ state, onRetry }: { state: StatusState; onRetry: () => void }) {
+export type BuyCoinsSlot = (onCredited: () => void) => ReactNode;
+
+export function CostSection({
+  state,
+  onRetry,
+  buyCoins,
+}: {
+  state: StatusState;
+  onRetry: () => void;
+  buyCoins?: BuyCoinsSlot;
+}) {
   const { t, language } = useI18n();
   if (state.kind === 'loading') {
     return (
@@ -134,6 +146,7 @@ export function CostSection({ state, onRetry }: { state: StatusState; onRetry: (
           testID="bounty-post-no-balance"
         />
       ) : null}
+      {base.kind === 'none' && line.kind !== 'blocked' && buyCoins ? buyCoins(onRetry) : null}
       <BaseSection base={base} status={status} />
     </>
   );

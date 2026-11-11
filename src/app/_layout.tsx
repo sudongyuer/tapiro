@@ -4,6 +4,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { useAccountStage } from '@/features/account';
 import { applySheetGone } from '@/features/bounty';
+import { BUY_COINS_SHEET_OPTIONS } from '@/features/coins';
 import { REVIEW_SHEET_OPTIONS, TIER_DROP_SHEET_OPTIONS } from '@/features/reputation';
 import { useRideReminders } from '@/features/ride';
 import { I18nProvider } from '@/lib/i18n';
@@ -75,6 +76,7 @@ function RootStack() {
         />
         <Stack.Screen name="tier-drop" options={TIER_DROP_SHEET_OPTIONS} />
         <Stack.Screen name="review" options={REVIEW_SHEET_OPTIONS} />
+        <Stack.Screen name="buy-coins" options={BUY_COINS_SHEET_OPTIONS} />
         <Stack.Screen
           name="delete-account"
           options={{

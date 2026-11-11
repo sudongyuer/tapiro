@@ -24,5 +24,7 @@ export {
 export { FIXTURE_FRIEND_CODE, FIXTURE_MY_CODE } from './fixtureCoinsService';
 export { useStageFeed } from './feed/useStageFeed';
 export { CoinsScreen } from './page/CoinsScreen';
+export { BUY_COINS_SHEET_OPTIONS, BuyCoinsSheet } from './buy/BuyCoinsSheet';
+export { CoinPacks } from './buy/CoinPacks';
 export { coinCount } from './page/coinsView';
 export { InviteScreen } from './invite/InviteScreen';

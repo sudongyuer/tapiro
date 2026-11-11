@@ -77,6 +77,8 @@ function toRow(value: unknown): CoinRow {
           title: textOrNull(item.title, 'coin item title'),
         }
       : null,
+    sandbox:
+      row.sandbox === undefined || row.sandbox === null ? false : flag(row.sandbox, 'coin sandbox'),
   };
 }
 

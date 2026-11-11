@@ -1,8 +1,11 @@
-import { Form, Host, ProgressView, Section, Text, VStack } from '@expo/ui/swift-ui';
+import { Button, Form, Host, ProgressView, Section, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
   accessibilityLabel,
+  buttonBorderShape,
+  buttonStyle,
+  controlSize,
   font,
   foregroundStyle,
   frame,
@@ -20,6 +23,7 @@ import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { PurchaseWaiting } from '../buy/CoinPacks';
 import { useCoinBalance, useCoinHistory, useCoinsReadFailed } from '../hooks';
 import { coinsStore } from '../services';
 import type { CoinBalance } from '../types';
@@ -29,7 +33,7 @@ import { coinCount } from './coinsView';
 const missing = (value: Loadable<unknown>) => value.status === 'failed';
 const shown = <T,>(value: Loadable<T>) => (value.status === 'idle' ? null : value.data);
 
-export function CoinsScreen() {
+export function CoinsScreen({ onBuy }: { onBuy: () => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const balance = useCoinBalance();
@@ -70,6 +74,8 @@ export function CoinsScreen() {
           />
         ) : null}
         {balanceData ? <BalanceHeader balance={balanceData} /> : null}
+        {balanceData ? <BuyButton onBuy={onBuy} /> : null}
+        <PurchaseWaiting testID="coins-purchase" />
         {historyData ? <CoinsHistory history={historyData} /> : null}
         {(!balanceData && !missing(balance)) || (!historyData && !missing(history)) ? (
           <Section>
@@ -100,7 +106,11 @@ function BalanceHeader({ balance }: { balance: CoinBalance }) {
           frame({ maxWidth: Infinity }),
           accessibilityElement('ignore'),
           accessibilityLabel(
-            [t('coins.balanceA11y', { count: balance.coins }), freePosts].join(t('coins.listJoin')),
+            [
+              t('coins.balanceA11y', { count: balance.coins }),
+              freePosts,
+              ...(balance.coins < 0 ? [t('coins.negative')] : []),
+            ].join(t('coins.listJoin')),
           ),
           accessibilityIdentifier('coins-balance'),
         ]}
@@ -122,7 +132,47 @@ function BalanceHeader({ balance }: { balance: CoinBalance }) {
         >
           {freePosts}
         </Text>
+        {balance.coins < 0 ? (
+          <Text
+            modifiers={[
+              font({ textStyle: 'footnote' }),
+              foregroundStyle({ type: 'hierarchical', style: 'secondary' }),
+              multilineTextAlignment('center'),
+            ]}
+          >
+            {t('coins.negative')}
+          </Text>
+        ) : null}
       </VStack>
+    </Section>
+  );
+}
+
+function BuyButton({ onBuy }: { onBuy: () => void }) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  return (
+    <Section modifiers={[listRowBackground('clear')]}>
+      <Button
+        onPress={onBuy}
+        testID="coins-buy"
+        modifiers={[
+          buttonStyle('borderedProminent'),
+          buttonBorderShape('capsule'),
+          controlSize('large'),
+          frame({ maxWidth: Infinity }),
+        ]}
+      >
+        <Text
+          modifiers={[
+            font({ textStyle: 'body', weight: 'semibold' }),
+            foregroundStyle(color('--color-on-accent')),
+            frame({ maxWidth: Infinity }),
+          ]}
+        >
+          {t('coins.buy.action')}
+        </Text>
+      </Button>
     </Section>
   );
 }

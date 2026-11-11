@@ -8,7 +8,7 @@ import {
   type Invite,
 } from './types';
 
-export const COINS_VARIANTS = ['many', 'one', 'empty', 'failed', 'worst'] as const;
+export const COINS_VARIANTS = ['many', 'one', 'empty', 'failed', 'worst', 'refunded'] as const;
 export type CoinsVariant = (typeof COINS_VARIANTS)[number];
 
 export const coinsVariant = (value: string | undefined): CoinsVariant =>
@@ -63,6 +63,7 @@ function rows(variant: CoinsVariant, now: Date): CoinRow[] {
     offset: number,
     n: number,
     title: string | null = null,
+    sandbox = false,
   ): CoinRow => ({
     id,
     reason,
@@ -70,6 +71,7 @@ function rows(variant: CoinsVariant, now: Date): CoinRow[] {
     at: day(offset, n),
     month: month(offset),
     item: title ? { kind: 'bounty', id: `fixture-coin-item-${id}`, title } : null,
+    sandbox,
   });
   const base = [
     row(9, 'weekly_feed', 1, 0, 3),
@@ -83,12 +85,25 @@ function rows(variant: CoinsVariant, now: Date): CoinRow[] {
     row(1, 'new_user', 5, 1, 8),
   ];
   if (variant === 'one') return [row(1, 'new_user', 5, 0, 1)];
+  if (variant === 'refunded') {
+    return [
+      row(20, 'purchase_refund', -35, 0, 4, null, true),
+      row(19, 'post_spend', -1, 0, 3, '帮取快递'),
+      row(18, 'purchase_refund_reversed', 11, 0, 2),
+      row(17, 'purchase_refund', -11, 0, 2),
+      row(16, 'purchase', 11, 0, 1),
+      row(15, 'purchase', 35, 1, 28, null, true),
+      ...base.slice(3),
+    ];
+  }
   if (variant !== 'worst') return base;
   const extra = Array.from({ length: 120 }, (_, index) =>
     row(1000 - index, 'help_settled', 1, 2 + Math.floor(index / 10), 1 + (index % 10), LONG_TITLE),
   );
   return [...base.map((entry) => ({ ...entry, id: entry.id + 2000 })), ...extra];
 }
+
+export type FixtureCoinsService = CoinsService & { creditPurchase(coins: number): number };
 
 export function createFixtureCoinsService({
   variant,
@@ -104,13 +119,16 @@ export function createFixtureCoinsService({
   delayMs?: number;
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
-}): CoinsService {
+}): FixtureCoinsService {
   const failing = new Set<CoinsFailPoint>(variant === 'failed' ? FIRST_CALLS : failFirst);
   let firstPages = 0;
   let inviteReads = 0;
   const data = variant === 'failed' ? 'many' : variant;
   const ledger = rows(data, now());
-  let coins = ledger.reduce((sum, row) => sum + row.delta, 0) + (data === 'worst' ? 1105 : 0);
+  let coins =
+    data === 'refunded'
+      ? -6
+      : ledger.reduce((sum, row) => sum + row.delta, 0) + (data === 'worst' ? 1105 : 0);
   let fed = fedAtStart ?? data === 'one';
   let nextId = 5000;
   let invite: Invite = {
@@ -154,12 +172,26 @@ export function createFixtureCoinsService({
   };
 
   return {
+    creditPurchase(amount) {
+      coins += amount;
+      const at = now();
+      ledger.unshift({
+        id: nextId++,
+        reason: 'purchase',
+        delta: amount,
+        at: at.toISOString(),
+        month: at.toISOString().slice(0, 7),
+        item: null,
+        sandbox: true,
+      });
+      return coins;
+    },
     async balance() {
       await step('balance', 'balance');
       const next = new Date(Date.UTC(now().getUTCFullYear(), now().getUTCMonth() + 1, 1));
       return {
         coins,
-        freePostsLeft: data === 'empty' ? 3 : data === 'worst' ? 0 : 2,
+        freePostsLeft: data === 'empty' ? 3 : data === 'worst' || data === 'refunded' ? 0 : 2,
         freePostsPerMonth: 3,
         nextFreeAt: next.toISOString(),
       };
@@ -190,6 +222,7 @@ export function createFixtureCoinsService({
         at: at.toISOString(),
         month: at.toISOString().slice(0, 7),
         item: null,
+        sandbox: false,
       });
       return { status: 'fed', ...feedStatus() };
     },

@@ -16,7 +16,9 @@ type UnpaidRow = {
   created_at: string;
 };
 
-const isCount = (value: unknown): value is number => Number.isInteger(value) && Number(value) >= 0;
+const isInteger = (value: unknown): value is number => Number.isInteger(value);
+
+const isCount = (value: unknown): value is number => isInteger(value) && value >= 0;
 
 function unwrap<T extends { error: unknown }>(result: T) {
   if (result.error) throw result.error;
@@ -27,7 +29,7 @@ export function toBalance(value: unknown) {
   const body = (value ?? {}) as Record<string, unknown>;
   const { coins, freePostsLeft, freePostsPerMonth, nextFreeAt } = body;
   if (
-    !isCount(coins) ||
+    !isInteger(coins) ||
     !isCount(freePostsLeft) ||
     !isCount(freePostsPerMonth) ||
     typeof nextFreeAt !== 'string' ||
