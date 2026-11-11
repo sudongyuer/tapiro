@@ -8,6 +8,7 @@ from driver import BUNDLE_ID
 # starts, but NSUserDefaults reaches the plist seconds later, so a case reading early saw the previous launch's
 # calls (chat-calls-stale, 2026-11-06). The runner deletes them before each launch.
 RECORD_KEYS = (
+    'uiVerifyAiCalls',
     'uiVerifyApplicantLoads',
     'uiVerifyBountyLiveLoads',
     'uiVerifyBountySeen',

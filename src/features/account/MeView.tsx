@@ -44,6 +44,7 @@ export function MeView({
   onOpenStickers,
   onOpenCoins,
   onOpenInvite,
+  onOpenTapir,
   onOpenPayee,
   onOpenBlocked,
   onOpenSettings,
@@ -57,6 +58,7 @@ export function MeView({
   onOpenStickers: () => void;
   onOpenCoins: () => void;
   onOpenInvite: () => void;
+  onOpenTapir: () => void;
   onOpenPayee: () => void;
   onOpenBlocked: () => void;
   onOpenSettings: () => void;
@@ -83,6 +85,7 @@ export function MeView({
             testID="me-coins"
           />
           <NavRow label={t('coins.invite.row')} onPress={onOpenInvite} testID="me-invite" />
+          <NavRow label={t('ask.settings.title')} onPress={onOpenTapir} testID="me-tapir" />
           <NavRow
             label={t('payee.meRow')}
             dotLabel={payeeDue ? t('payee.meRowDue') : null}

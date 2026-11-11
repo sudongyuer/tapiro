@@ -56,6 +56,7 @@ function RootStack() {
             sheetGrabberVisible: true,
           }}
         />
+        <Stack.Screen name="ask-consent" options={{ presentation: 'pageSheet' }} />
         <Stack.Screen name="payee/phone" options={PAGE_SHEET} />
         <Stack.Screen name="payee/bank" options={PAGE_SHEET} />
         <Stack.Screen name="payee/qr" options={PAGE_SHEET} />

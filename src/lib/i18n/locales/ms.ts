@@ -1,5 +1,6 @@
 import type { Translation } from '../resources';
 
+import ask from './ask/ms';
 import block from './block/ms';
 import chat from './chat/ms';
 import coins from './coins/ms';
@@ -142,6 +143,7 @@ const ms: Translation = {
   chat,
   coins,
   reputation,
+  ask,
   bounty,
   ride,
   rideReminders,
@@ -189,6 +191,7 @@ const ms: Translation = {
         writeBounty: 'Tuliskan ganjaran untuk saya',
       },
       mic: 'Bercakap',
+      send: 'Hantar',
       comingSoon: 'Suara dan draf AI akan datang tidak lama lagi',
       close: 'Tutup',
     },
@@ -319,6 +322,7 @@ const ms: Translation = {
     chat: { thread: 'Benang sembang (papan kekunci)' },
     reputation: { profile: 'Profil', review: 'Helaian penilaian', reviewOpen: 'Buka penilaian' },
     coins: { page: 'Halaman Syiling', invite: 'Halaman jemputan' },
+    ask: { settings: 'Saya → Tapir' },
     store: {
       title: 'StoreKit hujung ke hujung',
       signIn: 'Log masuk sebagai Xiaolin',

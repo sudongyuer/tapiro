@@ -261,19 +261,19 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                 | 行为                                                        | 覆盖                                                                                                                                                                                                                    |
-| ----------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| payee.list.default      | 默认方式有标记并排在第一，第一个转账方式自动成为默认        | ui:payee_list, unit:src/features/payee/methods.test.ts#default method, db:supabase/tests/payee_methods.test.sql                                                                                                         |
-| payee.list.set-default  | 改默认后只剩一个默认                                        | unit:src/features/payee/methods.test.ts#changing the default leaves exactly one, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete                            |
-| payee.list.masked-bank  | 银行账号只显示后四位                                        | ui:payee_list, unit:src/features/payee/validate.test.ts#masks to the last four digits                                                                                                                                   |
-| payee.list.recheck      | 收款码 90 天没重选时列表顶部黄色提示，「我的」有小红点      | ui:payee_list, unit:src/features/payee/methods.test.ts#a QR method is due after 90 days                                                                                                                                 |
-| payee.list.menu-order   | + 菜单先列支付宝、微信、TNG，然后是「其他」                 | ui:payee_list                                                                                                                                                                                                           |
-| payee.list.long         | 七个长名字的方式滚到底，现金那行完整地在提醒条和 Tab 栏上面 | ui:payee_long, unit:src/features/payee/payeeStore.test.ts#the worst fixture has seven transfer methods including a named bank                                                                                           |
-| payee.list.delete-rule  | 删掉默认方式后最早的转账方式成为默认                        | unit:src/features/payee/methods.test.ts#removing the default promotes the oldest remaining transfer method, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete |
-| payee.list.swipe-delete | 左滑一行删除这个方式                                        | ui:payee_swipe_delete, unit:src/features/payee/methods.test.ts                                                                                                                                                          |
-| payee.list.owner-only   | 别的用户看不到也改不了我的收款方式                          | db:supabase/tests/payee_methods.test.sql, int:src/features/payee/payeeService.integration.ts#another user sees none of them and cannot change them                                                                      |
-| payee.list.load-retry   | 加载失败可以重试；删除失败列表不变                          | unit:src/features/payee/payeeStore.test.ts                                                                                                                                                                              |
-| payee.list.save-closes | 带输入框的表单在保存、关闭或删掉一组输入框之前先收起键盘，收完再关（266 A）；输入框还在编辑时关掉表单曾经闪退 | unit:src/ui/resignFirst.test.ts#the action that unmounts the sheet waits until the resign has finished, ui:payee_list |
+| 验收 id                 | 行为                                                                                                          | 覆盖                                                                                                                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| payee.list.default      | 默认方式有标记并排在第一，第一个转账方式自动成为默认                                                          | ui:payee_list, unit:src/features/payee/methods.test.ts#default method, db:supabase/tests/payee_methods.test.sql                                                                                                         |
+| payee.list.set-default  | 改默认后只剩一个默认                                                                                          | unit:src/features/payee/methods.test.ts#changing the default leaves exactly one, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete                            |
+| payee.list.masked-bank  | 银行账号只显示后四位                                                                                          | ui:payee_list, unit:src/features/payee/validate.test.ts#masks to the last four digits                                                                                                                                   |
+| payee.list.recheck      | 收款码 90 天没重选时列表顶部黄色提示，「我的」有小红点                                                        | ui:payee_list, unit:src/features/payee/methods.test.ts#a QR method is due after 90 days                                                                                                                                 |
+| payee.list.menu-order   | + 菜单先列支付宝、微信、TNG，然后是「其他」                                                                   | ui:payee_list                                                                                                                                                                                                           |
+| payee.list.long         | 七个长名字的方式滚到底，现金那行完整地在提醒条和 Tab 栏上面                                                   | ui:payee_long, unit:src/features/payee/payeeStore.test.ts#the worst fixture has seven transfer methods including a named bank                                                                                           |
+| payee.list.delete-rule  | 删掉默认方式后最早的转账方式成为默认                                                                          | unit:src/features/payee/methods.test.ts#removing the default promotes the oldest remaining transfer method, int:src/features/payee/payeeService.integration.ts#changes the default, updates a QR and promotes on delete |
+| payee.list.swipe-delete | 左滑一行删除这个方式                                                                                          | ui:payee_swipe_delete, unit:src/features/payee/methods.test.ts                                                                                                                                                          |
+| payee.list.owner-only   | 别的用户看不到也改不了我的收款方式                                                                            | db:supabase/tests/payee_methods.test.sql, int:src/features/payee/payeeService.integration.ts#another user sees none of them and cannot change them                                                                      |
+| payee.list.load-retry   | 加载失败可以重试；删除失败列表不变                                                                            | unit:src/features/payee/payeeStore.test.ts                                                                                                                                                                              |
+| payee.list.save-closes  | 带输入框的表单在保存、关闭或删掉一组输入框之前先收起键盘，收完再关（266 A）；输入框还在编辑时关掉表单曾经闪退 | unit:src/ui/resignFirst.test.ts#the action that unmounts the sheet waits until the resign has finished, ui:payee_list                                                                                                   |
 
 ### payee.add-alipay 添加支付宝收钱码
 
@@ -874,15 +874,17 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### ask.consent 第一次用 AI 前同意
 
 - 故事：作为同学，我想第一次用小貘前知道数据发给谁、做什么，以便自己决定要不要用。
-- 状态：building
+- 状态：done
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id             | 行为                                                         | 覆盖                                                                                |
-| ------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| ask.consent.screen  | 同意页写明阿里云百炼（新加坡）、用途和发送的数据，记下时间   | ui, db:supabase/tests/ai.test.sql                                                   |
-| ask.consent.decline | 不同意时每个功能都还能手动完成                               | ui                                                                                  |
-| ask.consent.gate    | 没同意、撤回同意或同意的版本过期时，云端调用被拒绝，不扣体力 | db:supabase/tests/ai.test.sql, int:supabase/functions/tests/ai-draft.integration.ts |
+| 验收 id              | 行为                                                                                                                                                                           | 覆盖                                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| ask.consent.screen   | 第一次在问小貘里点发送时先出同意页，写明阿里云百炼 Model Studio（新加坡）、用途、会发和不会发什么、对话存在哪；点同意记下 App 里写死的版本 1 和时间，只记一次                  | ui:ask_consent_first_send, unit:src/features/ask/consentStore.test.ts, db:supabase/tests/ai.test.sql                         |
+| ask.consent.decline  | 点「先不用，我自己填」或下滑关掉：什么都不记，写的字还在，下次点发送再问；每个功能都还能手动完成                                                                               | ui:ask_consent_first_send                                                                                                    |
+| ask.consent.gate     | 没同意、撤回同意、同意的版本过期或读不到状态时，App 不发出云端调用；服务器拒绝时不扣体力，并把本机的同意关掉                                                                   | unit:src/features/ask/cloudGate.test.ts, db:supabase/tests/ai.test.sql, int:supabase/functions/tests/ai-draft.integration.ts |
+| ask.consent.withdraw | 我的 → 小貘 的「让小貘用云端」开关：开着时写同意日期，关掉时显示进度并撤回一次，打开要先过同意页                                                                               | ui:ask_consent_settings, unit:src/features/ask/consentStore.test.ts                                                          |
+| ask.consent.worst    | 没网时不发也不弹同意页、字还在；记录失败留在同意页说明、不自动重试；撤回失败开关还开着；读失败不显示成「关」；别的设备已同意不再问；服务器版本更新时提示更新 App、开关不能打开 | ui:ask_consent_worst_sheet, ui:ask_consent_worst_settings, unit:src/features/ask/consent.test.ts                             |
 
 ### ask.draft 起草和小貘体力
 
@@ -891,16 +893,16 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id              | 行为                                                                         | 覆盖                                                                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥                     | int:supabase/functions/tests/ai-draft.integration.ts                                                                                          |
-| ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                                         | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
-| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份             | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql                                                                |
-| ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                                   | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
-| ask.draft.no-store   | 服务器不存提示词和回复，只存用量；日志里也没有                               | unit:supabase/functions/ai-draft/handler.test.ts, db:supabase/tests/ai.test.sql                                                               |
-| ask.draft.contract   | 起草结果多一个字段就拒收；能填进发布表单，表单不接受的金额和时间不填并列出来 | unit:src/lib/drafts/bountyDraft.test.ts, unit:src/features/bounty/post/draftFields.test.ts, unit:supabase/functions/ai-draft/contract.test.ts |
-| ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                                   | device                                                                                                                                        |
-| ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                                   | ui, db:supabase/tests/ai.test.sql                                                                                                             |
+| 验收 id              | 行为                                                                                                     | 覆盖                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ask.draft.edge       | 所有云端调用经新加坡的 Edge Function，App 里没有任何密钥                                                 | int:supabase/functions/tests/ai-draft.integration.ts                                                                                          |
+| ask.draft.only-draft | 小貘只起草，不替用户发布、接受或发送                                                                     | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
+| ask.draft.energy     | 按用量扣小貘体力，每天 6 点免费回满；嫩叶不过期，1 颗貘币换 1 份；每天最多喂 5 片，第 6 片不收也不扣叶子 | unit:supabase/functions/ai-draft/budget.test.ts, db:supabase/tests/ai.test.sql, db:supabase/tests/ai_feed_cap.test.sql                        |
+| ask.draft.error      | 服务出错时显示小貘晕了和手动方式，不扣体力                                                               | ui, unit:supabase/functions/ai-draft/handler.test.ts                                                                                          |
+| ask.draft.no-store   | 服务器不存提示词和回复，只存用量；日志里也没有                                                           | unit:supabase/functions/ai-draft/handler.test.ts, db:supabase/tests/ai.test.sql                                                               |
+| ask.draft.contract   | 起草结果多一个字段就拒收；能填进发布表单，表单不接受的金额和时间不填并列出来                             | unit:src/lib/drafts/bountyDraft.test.ts, unit:src/features/bounty/post/draftFields.test.ts, unit:supabase/functions/ai-draft/contract.test.ts |
+| ask.draft.voice      | 半屏里的麦克风说中文、英文、马来文都能识别                                                               | device                                                                                                                                        |
+| ask.draft.memory     | 小貘记得的地点和偏好可以看、可以删、可以关                                                               | ui, db:supabase/tests/ai.test.sql                                                                                                             |
 
 ### ask.long-press-voice 长按小貘按钮说话
 
