@@ -111,11 +111,7 @@ describe('the 问小貘 session', () => {
     ['a server error', { kind: 'failed', error: 'server_error', status: 500 }, 'providerError'],
     ['an empty belly', { kind: 'failed', error: 'hungry', status: 429 }, 'hungry'],
     ['a call still running', { kind: 'failed', error: 'busy', status: 409 }, 'busy'],
-    [
-      'a reply the app cannot read',
-      { kind: 'answered', body: { tool: 'answer' } },
-      'unreadable',
-    ],
+    ['a reply the app cannot read', { kind: 'answered', body: { tool: 'answer' } }, 'unreadable'],
   ])(
     '%s keeps the words and offers a retry, never replayed on its own',
     async (_n, result, reason) => {
