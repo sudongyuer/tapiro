@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { LiveActivity } from 'tapiro-kit';
 
@@ -89,7 +89,6 @@ async function startFixture(fixture: Fixture, t: TFunction) {
 export function LiveActivityScene({ onReady }: { onReady: () => void }) {
   const { t } = useI18n();
   const [lines, setLines] = useState<string[]>([]);
-  const id = useRef<string | null>(null);
 
   const log = useCallback((line: string) => {
     console.log(`[live-activity] ${line}`);
@@ -99,16 +98,14 @@ export function LiveActivityScene({ onReady }: { onReady: () => void }) {
   useEffect(() => onReady(), [onReady]);
 
   const endNow = async () => {
-    if (!id.current) return;
-    log(`end ${JSON.stringify(await LiveActivity.end(id.current, null, 0))}`);
-    id.current = null;
+    for (const { id } of await LiveActivity.list())
+      log(`end ${JSON.stringify(await LiveActivity.end(id, null, 0))}`);
   };
 
   const show = async (fixture: Fixture) => {
     await endNow();
     const { result, ended } = await startFixture(fixture, t);
     log(`start ${fixture} ${JSON.stringify(result)}`);
-    if (result.status === 'ok') id.current = result.id;
     if (ended) log(`end ${JSON.stringify(ended)}`);
   };
 

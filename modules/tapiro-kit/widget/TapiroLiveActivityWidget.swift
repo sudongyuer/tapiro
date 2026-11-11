@@ -13,6 +13,8 @@ struct TapiroLiveActivityWidget: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: TapiroActivityAttributes.self) { context in
       LockScreenView(state: context.state, stale: context.isStale)
+        .activityBackgroundTint(Color(uiColor: .systemBackground).opacity(0.78))
+        .activitySystemActionForegroundColor(.primary)
         .widgetURL(context.attributes.link.flatMap(URL.init(string:)))
     } dynamicIsland: { context in
       let state = context.state
@@ -29,6 +31,8 @@ struct TapiroLiveActivityWidget: Widget {
         }
         DynamicIslandExpandedRegion(.bottom) {
           ProgressLine(state: state)
+            .padding(.horizontal, 8)
+            .padding(.top, 4)
         }
       } compactLeading: {
         TapirHead(diameter: 22)
