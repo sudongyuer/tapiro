@@ -120,6 +120,7 @@ The hold button's track is the accent; the gold fill appears only while the user
 | `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                   |
 | `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)         |
 | `--color-warning-fill` | `#FFF2D6` | `#3A2A0E` | Notice banner behind warning text (re-check prompt) |
+| `--color-filled-glow`  | `#FFF4D6` | `#3D3216` | A post-form row 小貘 just filled (132 A), fades out |
 
 ### Moments, stickers and mascot
 
@@ -389,12 +390,14 @@ translate into all three languages, drop it.
 
 ## Motion
 
-| Token               | Value | Use                                                        |
-| ------------------- | ----- | ---------------------------------------------------------- |
-| `--duration-press`  | `90`  | Press feedback                                             |
-| `--duration-fade`   | `150` | Appear / disappear                                         |
-| `--duration-settle` | `240` | Layout changes, card pop (spring)                          |
-| `--duration-peel`   | `420` | Sticker peels off and flies into the sticker book (spring) |
+| Token                    | Value | Use                                                        |
+| ------------------------ | ----- | ---------------------------------------------------------- |
+| `--duration-press`       | `90`  | Press feedback                                             |
+| `--duration-fade`        | `150` | Appear / disappear                                         |
+| `--duration-settle`      | `240` | Layout changes, card pop (spring)                          |
+| `--duration-peel`        | `420` | Sticker peels off and flies into the sticker book (spring) |
+| `--duration-filled-hold` | `600` | A row 小貘 filled holds its glow before fading             |
+| `--duration-filled-fade` | `600` | Its glow fades out (ease-out); 1.2 s in all (132 A)        |
 
 Motion principles:
 

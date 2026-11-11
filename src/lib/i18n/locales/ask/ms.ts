@@ -25,7 +25,27 @@ export default {
     offline: 'Tiada sambungan, tiada apa-apa dihantar. Teks anda masih di sini.',
     needsUpdate:
       'Kemas kini aplikasi supaya Tapir boleh menggunakan awan. Anda boleh mengisi sendiri.',
-    held: 'Draf Tapir tiba dalam versi seterusnya. Teks anda disimpan.',
+  },
+  sheet: {
+    resume: 'Sambung: {{text}}',
+    resumeHint: 'Membuka perbualan terakhir anda',
+    thinking: 'Tapir sedang berfikir…',
+    skip: 'Langkau',
+    image: 'Tangkapan skrin',
+    imageFailed: 'Gambar itu tidak dapat dibaca. Cuba gambar lain.',
+    addImage: 'Pilih tangkapan skrin',
+    pick: 'Tangkapan skrin ini ada {{count}} permintaan. Yang mana satu?',
+    draftHeader: 'Draf Tapir · Ganjaran',
+    fill: 'Isi dalam borang',
+    deadline: 'Sebelum {{when}}',
+    window: '{{start}} – {{end}}',
+    place: 'Tempat: {{place}} (pilih pada peta dalam borang)',
+    providerError: 'Tapir pening. Tiada tenaga digunakan. Teks anda masih di sini.',
+    hungry:
+      'Tapir sudah kenyang untuk hari ini; tenaga penuh semula esok. Anda boleh mengisi sendiri.',
+    busy: 'Tapir masih sibuk dengan yang tadi. Cuba lagi sebentar.',
+    retry: 'Cuba lagi',
+    manual: 'Isi sendiri',
   },
   settings: {
     title: 'Tapir',

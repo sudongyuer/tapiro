@@ -1,12 +1,12 @@
-"""Worst cases from the sheet. Offline (both status reads fail): 发送 says nothing was sent, keeps the text and opens no
-consent page. A failed record keeps the consent page with 「没记下来」 and is not replayed; 同意 again records once.
+"""Worst cases from the sheet. Offline (both status reads fail): 发送 shows that nothing was sent, keeps the text and opens no
+consent page, and nothing goes to 小貘. A failed record keeps the consent page with 「没记下来」 and is not replayed; 同意 again records once.
 Already consented on another device: 发送 opens no consent page and records nothing. A newer consent version on the
 server: 发送 says to update the app and opens no consent page; a version bumped while the page is open turns 同意 into
 知道了, and the sheet then says to update instead of asking again."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import TYPED, assert_calls, note, open_sheet, prompt_value, type_and_send  # noqa: E402
+from ask import TYPED, assert_calls, failure, note, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
@@ -21,9 +21,10 @@ ui = UI(*sys.argv[1:])
 reach_home(ui)
 open_sheet(ui)
 type_and_send(ui)
-note(ui, 'ask.composer.offline')
+failure(ui, 'offline', 'ask.composer.offline')
 assert by_id(ui.read(), 'ask-consent-screen') is None, 'offline opened the consent page'
 assert prompt_value(ui) == TYPED
+assert_calls(ui, 'ask', 0, wait=1)
 ui.at_rest()
 ui.capture('01-offline')
 
@@ -39,13 +40,14 @@ ui.at_rest()
 ui.capture('02-record-failed')
 ui.tap('ask-consent-agree')
 ui.gone('ask-consent-screen', timeout=30)
-note(ui, 'ask.composer.held')
+turn(ui, 1)
 assert_calls(ui, 'record', 2, wait=1)
+assert_calls(ui, 'ask', 1, wait=1)
 
 relaunch(ui, drop=OFFLINE, add=['-uiVerifyAiConsent', 'given'])
 open_sheet(ui)
 type_and_send(ui)
-note(ui, 'ask.composer.held')
+turn(ui, 1)
 assert by_id(ui.read(), 'ask-consent-screen') is None, 'consent from another device was asked again'
 assert_calls(ui, 'record', 0, wait=1)
 ui.at_rest()

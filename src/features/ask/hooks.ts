@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
-import { askDrafts, consentStore } from './services';
+import { askSession, consentStore } from './services';
 
 export function useConsentState() {
   return useSyncExternalStore(consentStore.subscribe, consentStore.getSnapshot);
@@ -19,57 +19,10 @@ export function useConsentFor(userId: string | null) {
   return useConsentState();
 }
 
-export type ComposerNote = 'offline' | 'needsUpdate' | 'held' | null;
-
-export function useAskComposer(userId: string | null, openConsent: () => void) {
-  const [text, setDraft] = useState(() => (userId ? askDrafts.get(userId) : ''));
-  const [checking, setChecking] = useState(false);
-  const [note, setNote] = useState<ComposerNote>(null);
-  const mounted = useRef(true);
+export function useAskSession(userId: string | null) {
   useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  const setText = useCallback(
-    (next: string) => {
-      setDraft(next);
-      setNote(null);
-      if (userId) askDrafts.set(userId, next);
-    },
-    [userId],
-  );
-
-  const busy = useRef(false);
-  const send = useCallback(async () => {
-    if (!userId || busy.current || text.trim().length === 0) return;
-    busy.current = true;
-    setChecking(true);
-    setNote(null);
-    let access = await consentStore.prepare();
-    if (access === 'notGiven' && mounted.current) {
-      const asked = consentStore.ask();
-      openConsent();
-      const outcome = await asked.outcome;
-      access =
-        outcome === 'given' ? 'given' : outcome === 'needsUpdate' ? 'needsUpdate' : 'notGiven';
-    }
-    busy.current = false;
-    if (!mounted.current) return;
-    setChecking(false);
-    if (access === 'offline' || access === 'needsUpdate') setNote(access);
-    else if (access === 'given') setNote('held');
-  }, [openConsent, text, userId]);
-
-  return { text, setText, send, checking, note };
+    if (userId) askSession.open(userId);
+  }, [userId]);
+  const state = useSyncExternalStore(askSession.subscribe, askSession.getSnapshot);
+  return state.userId === userId ? state : null;
 }
-
-const NOTE_KEYS = {
-  offline: 'ask.composer.offline',
-  needsUpdate: 'ask.composer.needsUpdate',
-  held: 'ask.composer.held',
-} as const;
-
-export const composerNoteKey = (note: ComposerNote) => (note ? NOTE_KEYS[note] : null);

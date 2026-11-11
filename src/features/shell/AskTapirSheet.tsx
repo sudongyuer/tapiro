@@ -1,9 +1,12 @@
 import type { ParseKeys } from 'i18next';
 import { SymbolView } from 'expo-symbols';
+import { useRef, type ReactNode } from 'react';
+import type { ScrollViewInstance } from 'react-native';
 import {
   ActivityIndicator,
   PlatformColor,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -54,7 +57,8 @@ export type AskComposer = {
   text: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
-  checking: boolean;
+  onAddImage: () => void;
+  sending: boolean;
   note: string | null;
 };
 
@@ -62,13 +66,20 @@ export function AskTapirSheet({
   tab,
   onClose,
   composer,
+  onSuggestion,
+  showSuggestions,
+  children,
 }: {
   tab: ShellTab;
   onClose: () => void;
   composer: AskComposer;
+  onSuggestion: (text: string) => void;
+  showSuggestions: boolean;
+  children: ReactNode;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const scroll = useRef<ScrollViewInstance>(null);
   const copy = COPY[tab];
   const suggestions = [...copy.suggestions, 'shell.ask.suggestions.writeBounty' as const];
 
@@ -102,20 +113,18 @@ export function AskTapirSheet({
         </Pressable>
       </View>
 
-      <View style={styles.chips}>
-        {suggestions.map((key, index) => (
-          <View
-            key={key}
-            accessible
-            testID={`ask-tapir-suggestion-${index}`}
-            style={[styles.chip, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
-          >
-            <AppText variant="secondary">{t(key)}</AppText>
-          </View>
-        ))}
-      </View>
-
       <View style={[styles.input, { backgroundColor: PlatformColor('secondarySystemBackground') }]}>
+        <PressDim
+          testID="ask-tapir-add-image"
+          accessibilityRole="button"
+          accessibilityLabel={t('ask.sheet.addImage')}
+          accessibilityState={{ disabled: composer.sending }}
+          disabled={composer.sending}
+          style={styles.mic}
+          onPress={composer.onAddImage}
+        >
+          <SymbolView name="plus" size={20} tintColor={PlatformColor('secondaryLabel')} />
+        </PressDim>
         <TextInput
           testID="ask-tapir-prompt"
           accessibilityLabel={t(copy.prompt)}
@@ -124,10 +133,11 @@ export function AskTapirSheet({
           placeholderTextColor={PlatformColor('placeholderText')}
           multiline
           maxLength={PROMPT_MAX}
+          editable={!composer.sending}
           value={composer.text}
           onChangeText={composer.onChangeText}
         />
-        {composer.checking ? (
+        {composer.sending ? (
           <View style={styles.mic}>
             <ActivityIndicator
               accessibilityLabel={t('ask.composer.checking')}
@@ -166,17 +176,52 @@ export function AskTapirSheet({
           {composer.note}
         </AppText>
       ) : null}
-      <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-coming-soon">
-        {t('shell.ask.comingSoon')}
-      </AppText>
+      <ScrollView
+        ref={scroll}
+        style={styles.body}
+        contentContainerStyle={styles.bodyContent}
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="interactive"
+        onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}
+        testID="ask-tapir-body"
+      >
+        {showSuggestions ? (
+          <View style={styles.chips}>
+            {suggestions.map((key, index) => (
+              <PressDim
+                key={key}
+                accessibilityRole="button"
+                testID={`ask-tapir-suggestion-${index}`}
+                onPress={() => onSuggestion(t(key))}
+                style={[
+                  styles.chip,
+                  { backgroundColor: PlatformColor('secondarySystemBackground') },
+                ]}
+              >
+                <AppText variant="secondary">{t(key)}</AppText>
+              </PressDim>
+            ))}
+          </View>
+        ) : null}
+        {children}
+        <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-coming-soon">
+          {t('shell.ask.comingSoon')}
+        </AppText>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   sheet: {
+    flex: 1,
     paddingHorizontal: vars['--space-5'],
     paddingTop: vars['--space-6'],
+    gap: vars['--space-4'],
+  },
+  body: { flex: 1, marginHorizontal: -vars['--space-5'] },
+  bodyContent: {
+    paddingHorizontal: vars['--space-5'],
     paddingBottom: vars['--space-6'],
     gap: vars['--space-4'],
   },
@@ -198,18 +243,18 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
   chip: {
-    paddingHorizontal: vars['--space-3'],
-    paddingVertical: vars['--space-2'],
+    minHeight: vars['--touch-min'],
+    justifyContent: 'center',
+    paddingHorizontal: vars['--space-4'],
     borderRadius: vars['--radius-pill'],
     borderCurve: 'continuous',
   },
   input: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: vars['--space-3'],
+    gap: vars['--space-1'],
     minHeight: vars['--touch-min'] + vars['--space-2'],
-    paddingLeft: vars['--space-4'],
-    paddingRight: vars['--space-1'],
+    paddingHorizontal: vars['--space-1'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },

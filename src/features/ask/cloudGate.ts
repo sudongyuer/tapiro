@@ -1,8 +1,13 @@
 import { consentAccess, type ConsentStore } from './consentStore';
 
-export type CloudTask = 'draft_bounty' | 'answer' | 'translate';
+export type CloudTask = 'draft_bounty' | 'answer' | 'translate' | 'ask';
 
-export type CloudRequest = { task: CloudTask; input: { text: string; to?: string } };
+export type CloudImage = { mediaType: 'image/jpeg'; data: string };
+
+export type CloudRequest = {
+  task: CloudTask;
+  input: { text: string; to?: string; image?: CloudImage };
+};
 
 export type CloudAnswer =
   { ok: true; body: unknown } | { ok: false; error: string | null; status: number | null };
@@ -12,7 +17,7 @@ export type CloudResult =
   | { kind: 'consentRequired' }
   | { kind: 'needsUpdate' }
   | { kind: 'unavailable' }
-  | { kind: 'failed'; error: string | null };
+  | { kind: 'failed'; error: string | null; status: number | null };
 
 export function createCloudGate({
   store,
@@ -36,7 +41,7 @@ export function createCloudGate({
       store.markRefused();
       return { kind: 'consentRequired' };
     }
-    return { kind: 'failed', error: answer.error };
+    return { kind: 'failed', error: answer.error, status: answer.status };
   };
 }
 

@@ -57,3 +57,17 @@ def footer(ui, text, timeout=30):
 def toggle_on(items):
     toggle = by_id(items, 'tapir-cloud')
     return None if toggle is None else str(toggle.get('AXValue')) == '1'
+
+
+def turn(ui, index, timeout=30):
+    return ui.element(f'ask-turn-{index}', timeout=timeout)
+
+
+def failure(ui, reason, key, timeout=30):
+    ui.element(f'ask-failure-{reason}', timeout=timeout)
+    expected = ui.t(key)
+    ui.wait_label('ask-failure-text', lambda label: label == expected, f'the failure reads not {expected}')
+
+
+def ask_texts(ui, count, wait=3):
+    return [call['text'] for call in assert_calls(ui, 'ask', count, wait=wait)]

@@ -41,7 +41,11 @@ describe('the draft_bounty tool and the app contract', () => {
 
   test('what the fake provider drafts, the app parses', async () => {
     const reply = await fakeProvider.generate(
-      { task: 'draft_bounty', input: { text: 'x'.repeat(2000) }, tool: TOOL_SCHEMAS.draft_bounty },
+      {
+        task: 'draft_bounty',
+        input: { text: 'x'.repeat(2000) },
+        tools: [TOOL_SCHEMAS.draft_bounty],
+      },
       new AbortController().signal,
     );
     expect(validToolResult('draft_bounty', reply.arguments)).toBe(true);

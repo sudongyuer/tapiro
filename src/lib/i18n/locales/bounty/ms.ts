@@ -13,6 +13,20 @@ const ms: typeof zhHans = {
     other: 'Lain-lain',
   },
   post: {
+    aiFill: {
+      filled: 'Tapir mengisi {{count}}',
+      none: 'Tapir sudah semak: tiada yang perlu diubah',
+      undo: 'Buat asal',
+      undoLabel: 'Buat asal {{count}} yang diisi Tapir',
+      rewardKept:
+        'Ganjaran tidak diubah: jumlah Tapir di luar had yang boleh disiarkan, jadi ini masih jumlah yang anda masukkan.',
+      rewardEmpty:
+        'Ganjaran tidak diisi: jumlah Tapir di luar had yang boleh disiarkan. Sila masukkan sendiri.',
+      timeKept:
+        'Masa tidak diubah: masa Tapir sudah berlalu atau lebih 30 hari lagi, jadi ini masih masa yang anda pilih.',
+      timeEmpty: 'Masa tidak diisi: masa Tapir sudah berlalu atau lebih 30 hari lagi.',
+      place: 'Tempat yang Tapir dengar: {{place}}. Pilih tempat itu sendiri pada peta.',
+    },
     unknownName: 'pihak lain',
     open: 'Pasang Ganjaran',
     title: 'Pasang Ganjaran',
