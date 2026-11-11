@@ -97,9 +97,15 @@ export type StorePurchaseResult =
   | { status: 'failed'; code: StoreFailureCode };
 
 export type LiveActivityState = {
-  sentence: string;
-  progress: number;
+  title: string;
+  staleTitle: string;
+  detail: string;
   minutes?: number;
+  unit: string;
+  progress: number;
+  startLabel: string;
+  endLabel: string;
+  staleNote: string;
   staleAfterSeconds?: number;
 };
 export type LiveActivityStartResult =
@@ -127,12 +133,16 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
   resignFocus(): Promise<void>;
-  liveActivityStart(kind: string, state: LiveActivityState): Promise<LiveActivityStartResult>;
+  liveActivityStart(
+    kind: string,
+    link: string | null,
+    state: LiveActivityState,
+  ): Promise<LiveActivityStartResult>;
   liveActivityUpdate(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult>;
   liveActivityEnd(
     id: string,
     state: LiveActivityState | null,
-    immediately: boolean,
+    dismissAfterSeconds: number,
   ): Promise<LiveActivityChangeResult>;
   liveActivityList(): Promise<LiveActivityInfo[]>;
   storeProducts(ids: string[]): Promise<StoreProductsResult>;
@@ -290,14 +300,18 @@ export const Store = {
 };
 
 export const LiveActivity = {
-  start(kind: string, state: LiveActivityState): Promise<LiveActivityStartResult> {
-    return kit.liveActivityStart(kind, state);
+  start(
+    kind: string,
+    link: string | null,
+    state: LiveActivityState,
+  ): Promise<LiveActivityStartResult> {
+    return kit.liveActivityStart(kind, link, state);
   },
   update(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult> {
     return kit.liveActivityUpdate(id, state);
   },
-  end(id: string, state: LiveActivityState | null, immediately: boolean) {
-    return kit.liveActivityEnd(id, state, immediately);
+  end(id: string, state: LiveActivityState | null, dismissAfterSeconds: number) {
+    return kit.liveActivityEnd(id, state, dismissAfterSeconds);
   },
   list(): Promise<LiveActivityInfo[]> {
     return kit.liveActivityList();

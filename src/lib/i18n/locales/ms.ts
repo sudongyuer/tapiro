@@ -4,6 +4,7 @@ import ask from './ask/ms';
 import block from './block/ms';
 import chat from './chat/ms';
 import coins from './coins/ms';
+import liveActivity from './liveActivity/ms';
 import bounty from './bounty/ms';
 import pay from './pay/ms';
 import ride from './ride/ms';
@@ -142,6 +143,7 @@ const ms: Translation = {
   block,
   chat,
   coins,
+  liveActivity,
   reputation,
   ask,
   bounty,
@@ -330,12 +332,19 @@ const ms: Translation = {
       buyKept: 'Beli 5 tanpa hantar',
     },
     liveActivity: {
-      title: 'Ujian Aktiviti Langsung',
-      start: 'Mula',
-      update: 'Kemas kini',
-      end: 'Tamat',
-      sample: 'Pemegang tempat: pembantu kira-kira {{minutes}} minit lagi',
+      title: 'Aktiviti Langsung',
+      bountyOnTheWay: 'Ganjaran · dalam perjalanan',
+      bountyArrived: 'Ganjaran · sudah sampai (hilang dalam 15 minit)',
+      rideMeetupHome: 'Tumpangan · berkumpul (dari rumah)',
+      rideMeetupPlace: 'Tumpangan · berkumpul (tempat awam)',
+      rideDeparted: 'Tumpangan · sudah bertolak (hilang dalam 15 minit)',
+      stale: 'Dalam perjalanan · lapuk dalam 1 minit',
+      endNow: 'Tamatkan sekarang',
       list: 'Senarai',
+      helper: 'Nurul Aisyah binti Ahmad',
+      place: 'Perpustakaan Tun Seri Lanang',
+      task: 'Ambil bungkusan di pejabat pos',
+      start: 'Sunway Geo Residences',
     },
     flight: {
       title: 'Pelekat terbang ke Saya',

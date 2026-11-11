@@ -5,7 +5,8 @@
 > on a physical device (foundation Known limits); Simulator runs are for development only.
 
 **Status:** proposed 2026-11-11. Tasks 1 and 2 (spikes) are done (branch `spike/iap-live-activity`, 「Spike results」
-below); Task 3 needs the owner's iPhone; Task 4 (the look) waits on questions 274–278.
+below); Task 3 needs the owner's iPhone; 274–278 answered A (2026-11-12); Task 4 (the views) built 2026-11-12
+(「Views as built」 below); Task 5 (app wiring) is next.
 
 **Goal:** While a helper is on the way (bounty `en_route`) or a ride is gathering (集合), the Lock Screen and the
 Dynamic Island show one sentence and a progress line, started and updated by the app. Before the account exists this
@@ -142,7 +143,8 @@ What it would check on a Dynamic Island iPhone with Developer Mode and free prov
   one (duplicate dependency) inside the time box.
 - **L6** The extension exists only behind `TAPIRO_LIVE_ACTIVITY=1` at prebuild until the owner answers 278; then the
   flag goes and the plugin always applies.
-- **L7** Placeholder views are marked `PLACEHOLDER 276` on screen and in code; Task 4 replaces them whole.
+- **L7** Placeholder views are marked `PLACEHOLDER 276` on screen and in code; Task 4 replaces them whole (done
+  2026-11-12).
 
 ### What changes in later tasks
 
@@ -150,6 +152,56 @@ What it would check on a Dynamic Island iPhone with Developer Mode and free prov
   type gains the fields 274 and 276 need (both copies change together, being one file).
 - Task 5 uses the kit `LiveActivity` facade and adds the `activityStateUpdates` event (L5), not built in the spike.
 - Island checks in UI cases need a DeviceHub capture or a device; `simctl` screenshots cannot see the island.
+
+## Views as built (Task 4, 2026-11-12)
+
+Built from the A boards on the canvas (「06++ 买貘币与锁屏实时活动」: 274 「锁屏上写什么」, 276 「样子」, 277–278
+「何时消失与上线」), on the iOS 27.2 Simulator.
+
+- `modules/tapiro-kit/widget/TapiroLiveActivityWidget.swift`: the Lock Screen (小貘's head on the cream disc, the
+  sentence in two lines, the minutes trailing in rounded type, a 5 pt progress line with the start and end times
+  under it), the island compact (head leading, 「6 分」 trailing), minimal (head) and expanded (head, sentence,
+  minutes, progress line). `TapirHead.swift` redraws `Mascot`'s front view with SwiftUI shapes; its colours are
+  generated at prebuild from `src/ui/theme/tokens.ts` into `ios/TapiroLiveActivity/MascotPaint.swift` by the plugin.
+- The content state carries ready-to-show strings (`title`, `detail`, `minutes`, `unit`, `progress`, `startLabel`,
+  `endLabel`, `staleNote`); the attributes carry `kind` and the tap `link`.
+- `src/lib/live-activity`: `liveActivityContent(subject, t, now)` turns a bounty on the way or arrived, or a ride at
+  集合 or departed, into that state (274 A: the helper's name and the place's short name; a ride start of kind `home`
+  reads 「出发点」), with `staleAfterSeconds` (L4); `dismissAfterSeconds` (277 A: 15 minutes after arrival or
+  departure, at once on cancel); `liveActivityLink`. Unit tests in `content.test.ts`.
+- The kit's `end` takes `dismissAfterSeconds` (0 = at once) in place of `immediately`; `start` takes the link.
+- Debug scene `live-activity` (dev builds only) starts each state: bounty on the way, arrived (ends with the 15-minute
+  linger), ride 集合 from home and from a public place, departed, and on the way going stale after a minute.
+- 278 A: the `TAPIRO_LIVE_ACTIVITY=1` gate (L6) stays until push; verify and release builds have no extension, so the
+  views have no UI case. Evidence is Simulator screenshots (Lock Screen by `simctl`, the island from the Simulator
+  window), in the PR.
+
+- Measured on the Simulator: once an activity has ended (277's final step), the island drops it at once and only the
+  Lock Screen keeps the final step for the 15 minutes; the compact checkmark (V5) shows only if an update, not an end,
+  carries the final step. Task 5 decides which (end at once with the linger, as built, or update first).
+- Not seen on the Simulator: the stale look. 70 s after a stale date 60 s out, the Lock Screen and the island still
+  drew the fresh content (chronod did not re-render); the stale title and note are covered by unit tests and wait for
+  the device check (spike C item 4).
+- Review follow-up for the push half: the minutes are a fixed number between updates, so without push a 「6 分」 stays
+  until the stale time. Before shipping with push, decide whether the minutes render from the ETA with
+  `Text(timerInterval:countsDown:)` instead.
+
+### ★ View choices (agent, for veto)
+
+| #   | Choice                                                                                                                                                                                                                   | Why                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| V1  | Bounty copy follows the 274 and 277 boards (「小林 · 约 6 分钟到」 over 「图书馆 · 帮取快递」) on the Lock Screen and the expanded island; the 276 board's 「小林在路上 / 约 6 分钟到 图书馆」 is not used               | Two of three boards and the content question (274) agree                                   |
+| V2  | Ride 集合 follows the 274 board: 「集合 · 出发点」 or 「集合 · {start}」 over 「11 分钟后出发 · 2/4 到了」; the 276 board's route line 「双威 → KLIA2」 is not shown                                                     | 274 is the privacy answer; a destination can also be someone's home                        |
+| V3  | Bounty arrival reads 「小林到了 · 图书馆」 over a generic 「去碰面吧」 (the board's 「去拿快递吧」 fits only the parcel example)                                                                                         | One line for every category                                                                |
+| V4  | Ride departure (277: 「上车出发」 is the last step) reads 「出发了 · {start}」 over 「3 人上车」, full line, end time 「13:20 出发了」, then leaves after 15 minutes                                                     | Not drawn; mirrors the bounty's final step                                                 |
+| V5  | After arrival or departure the compact island shows a checkmark in place of the minutes                                                                                                                                  | Not drawn; no minutes are left                                                             |
+| V6  | Stale look (L4): the first line drops the minutes (「小林 · 在路上」), the second becomes 「可能不是最新」 and the minutes turn secondary; stale at ETA + 5 min (bounty) or at departure (ride)                          | Not drawn; with 278 A users only see it once push ships, but the rule holds locally        |
+| V7  | A helper past the ETA still reads 「约 1 分钟到」 (never 0) until the stale time                                                                                                                                         | 「约 0 分钟到」 reads as broken                                                            |
+| V8  | The Lock Screen title wraps to two lines (Malay is the longest); the expanded island keeps one line                                                                                                                      | The island has less height                                                                 |
+| V9  | All copy and times come from the app in the in-app language (24 h clock); the extension has no strings of its own                                                                                                        | The extension cannot read the in-app language choice without an app group (L2)             |
+| V10 | The system Live Activity background and text colours; the progress fill is the primary text colour; no motion of ours                                                                                                    | The boards drew the system material; updates are rare, so the motion gate finds no purpose |
+| V11 | A tap opens the bounty's status page (`tapiro://bounty/status/<id>`) or the ride (`tapiro://ride/<id>`)                                                                                                                  | The 276 board: 「点它回到状态页」                                                          |
+| V12 | The Lock Screen card uses the system background colour at 78 % (white in light mode, black in dark), as the boards drew; the iOS 27.2 Simulator renders it dark in both appearances, so the light card is a device check | The boards drew a light card on a light wallpaper                                          |
 
 ## Tasks
 
@@ -185,6 +237,8 @@ What it would check on a Dynamic Island iPhone with Developer Mode and free prov
    foundation step 9 Implementation Records.
 
 ## Open questions (274–278)
+
+Answered **A** to all five by the owner, 2026-11-12 (recorded in `docs/plans/2026-11-11-iap-local.md`).
 
 Context for all: foundation step 9, Live Activity for bounty `en_route` and ride 集合 (174 A, decided). Each question is
 drawn as Tapiro screens on the canvas before it is asked (AGENTS.md).

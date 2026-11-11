@@ -4,6 +4,7 @@ import ask from './ask/en';
 import block from './block/en';
 import chat from './chat/en';
 import coins from './coins/en';
+import liveActivity from './liveActivity/en';
 import bounty from './bounty/en';
 import pay from './pay/en';
 import ride from './ride/en';
@@ -142,6 +143,7 @@ const en: Translation = {
   block,
   chat,
   coins,
+  liveActivity,
   reputation,
   ask,
   bounty,
@@ -327,12 +329,19 @@ const en: Translation = {
       buyKept: 'Buy 5 without forwarding',
     },
     liveActivity: {
-      title: 'Live Activity spike',
-      start: 'Start',
-      update: 'Update',
-      end: 'End',
-      sample: 'Placeholder: helper about {{minutes}} min away',
+      title: 'Live Activity',
+      bountyOnTheWay: 'Bounty · on the way',
+      bountyArrived: 'Bounty · arrived (leaves in 15 min)',
+      rideMeetupHome: 'Ride · meet up (from home)',
+      rideMeetupPlace: 'Ride · meet up (public place)',
+      rideDeparted: 'Ride · on the way (leaves in 15 min)',
+      stale: 'On the way · stale in 1 min',
+      endNow: 'End now',
       list: 'List',
+      helper: 'Lin',
+      place: 'Library',
+      task: 'Pick up a parcel',
+      start: 'Sunway Geo Residences',
     },
     flight: {
       title: 'Sticker flight to Me',
