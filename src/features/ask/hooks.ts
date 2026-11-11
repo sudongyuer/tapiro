@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useCallback, useLayoutEffect, useSyncExternalStore } from 'react';
 
 import { askSession, consentStore } from './services';
 
@@ -19,8 +19,9 @@ export function useConsentFor(userId: string | null) {
   return useConsentState();
 }
 
+// Opened before paint, so a reopened sheet never shows the previous open's turns for a frame.
 export function useAskSession(userId: string | null) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (userId) askSession.open(userId);
   }, [userId]);
   const state = useSyncExternalStore(askSession.subscribe, askSession.getSnapshot);
