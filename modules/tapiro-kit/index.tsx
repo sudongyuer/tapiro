@@ -117,7 +117,14 @@ export type LiveActivityStartResult =
         'unsupported' | 'disabled' | 'tooMany' | 'tooLarge' | 'unentitled' | 'failed' | 'unknown';
     };
 export type LiveActivityChangeResult = { status: 'ok' | 'notFound' };
-export type LiveActivityInfo = { id: string; kind: string; state: string };
+export type LiveActivityRunState =
+  'active' | 'stale' | 'ended' | 'dismissed' | 'pending' | 'unknown';
+export type LiveActivityInfo = {
+  id: string;
+  kind: string;
+  link: string | null;
+  state: LiveActivityRunState;
+};
 
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
@@ -144,6 +151,7 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
     state: LiveActivityState | null,
     dismissAfterSeconds: number,
   ): Promise<LiveActivityChangeResult>;
+  liveActivityEnabled(): Promise<boolean>;
   liveActivityList(): Promise<LiveActivityInfo[]>;
   storeProducts(ids: string[]): Promise<StoreProductsResult>;
   storePurchase(productId: string, accountToken: string): Promise<StorePurchaseResult>;
@@ -312,6 +320,9 @@ export const LiveActivity = {
   },
   end(id: string, state: LiveActivityState | null, dismissAfterSeconds: number) {
     return kit.liveActivityEnd(id, state, dismissAfterSeconds);
+  },
+  enabled(): Promise<boolean> {
+    return kit.liveActivityEnabled();
   },
   list(): Promise<LiveActivityInfo[]> {
     return kit.liveActivityList();

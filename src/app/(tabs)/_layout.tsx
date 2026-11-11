@@ -18,6 +18,7 @@ import {
 import { homeSignals } from '@/lib/homeSignals';
 import { useI18n } from '@/lib/i18n';
 import { useLive } from '@/lib/live';
+import { useLiveActivities } from '@/lib/live-activity';
 import { useNoticeRouting } from '@/lib/notifications';
 import { usePushRegistration } from '@/lib/push';
 import { useLiveStickers } from '@/lib/stickers';
@@ -39,6 +40,7 @@ export default function TabsLayout() {
   useLiveReputation(userId);
   useLiveCoins(userId);
   useLive(userId);
+  useLiveActivities(userId);
   usePushRegistration(userId);
   useNoticeRouting(
     (route) =>

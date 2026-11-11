@@ -24,6 +24,10 @@ public final class TapiroKitModule: Module {
       await LiveActivities.end(id: id, state: state, dismissAfterSeconds: dismissAfterSeconds)
     }
 
+    AsyncFunction("liveActivityEnabled") { () -> Bool in
+      MainActor.assumeIsolated { LiveActivities.enabled() }
+    }.runOnQueue(.main)
+
     AsyncFunction("liveActivityList") { () -> [[String: Any]] in
       MainActor.assumeIsolated { LiveActivities.list() }
     }.runOnQueue(.main)
