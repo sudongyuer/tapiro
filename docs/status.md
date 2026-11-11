@@ -102,8 +102,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
    (`Store`) and `forwardTransaction` (finish only on a 200), driven from a dev-only Debug scene by
    `verification/storekit` (XCUITest + `SKTestSession`; the scheme's `.storekit` file applies only to Xcode's Run);
    a refund in the test session never reaches the app, so refunds are proven server side only. Built 2026-11-12
-   (`feat/buy-coins`, 273 A): the client core and purchase UI (Tasks 4–5); `verification/storekit` buys through the real
-   sheet. Waiting on the account: real Sandbox data, `IAP_APP_APPLE_ID`, the
+   (`feat/buy-coins`, 273 A): the client core and purchase UI (Tasks 4–5). Open: `verification/storekit`, rewritten to buy through the real
+   sheet, does not pass yet: the test account lands in onboarding on a fresh Simulator, and XCUITest's tear-down hung
+   after the failure (plan 「Client and purchase UI as built」). Waiting on the account: real Sandbox data, `IAP_APP_APPLE_ID`, the
    notification URL, `CONSUMPTION_REQUEST`, the hosted deploy. Live Activity spikes 1–2 done
    (`docs/plans/2026-11-11-live-activity-spike.md`): our own plugin's extension renders on the Simulator Lock Screen and
    Dynamic Island, placeholder views, generated only with `TAPIRO_LIVE_ACTIVITY=1`; spike 3 needs the owner's iPhone;
