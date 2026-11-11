@@ -23,7 +23,7 @@ BUDGET = 480
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
         '-uiVerifyAiDelayMs', '800', '-uiVerifyAiReplies', 'draftFull', '-uiVerifyBountyDraft', 'none']
 TITLE = '帮我去 Sunway Pyramid 取两个快递，送到 Sunway Geo 大堂，顺路买杯少冰奶茶'
-ROW = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
+ROW = {'light': (255, 255, 255), 'dark': (44, 44, 46)}
 
 ui = UI(*sys.argv[1:])
 reach_home(ui)

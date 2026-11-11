@@ -180,7 +180,7 @@ export const darkVars: Partial<Record<TokenName, string | number>> = {
   '--color-urgent-fill': '#3D1D19',
   '--color-warning-fill': '#3A2A0E',
   '--color-filled-glow': '#3D3216',
-  '--color-filled-row': '#1C1C1E',
+  '--color-filled-row': '#2C2C2E',
   '--color-moment-bg': '#24221E',
   '--color-moment-grain': '#F4F0E61A',
   '--color-moment-chip': '#FFFFFF1A',

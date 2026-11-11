@@ -113,15 +113,15 @@ The hold button's track is the accent; the gold fill appears only while the user
 
 ### Status
 
-| Token                  | Light     | Dark      | Use                                                     |
-| ---------------------- | --------- | --------- | ------------------------------------------------------- |
-| `--color-urgent`       | `#C4321F` | `#FF6B5A` | Deadline under 3 h, overdue, destructive                |
-| `--color-success`      | `#187A50` | `#3ECF8E` | Completed                                               |
-| `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                       |
-| `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)             |
-| `--color-warning-fill` | `#FFF2D6` | `#3A2A0E` | Notice banner behind warning text (re-check prompt)     |
-| `--color-filled-glow`  | `#FFF4D6` | `#3D3216` | A post-form row 小貘 just filled (132 A), fades out     |
-| `--color-filled-row`   | `#FFFFFF` | `#1C1C1E` | The grouped row colour the glow fades into (blend only) |
+| Token                  | Light     | Dark      | Use                                                                |
+| ---------------------- | --------- | --------- | ------------------------------------------------------------------ |
+| `--color-urgent`       | `#C4321F` | `#FF6B5A` | Deadline under 3 h, overdue, destructive                           |
+| `--color-success`      | `#187A50` | `#3ECF8E` | Completed                                                          |
+| `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                                  |
+| `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)                        |
+| `--color-warning-fill` | `#FFF2D6` | `#3A2A0E` | Notice banner behind warning text (re-check prompt)                |
+| `--color-filled-glow`  | `#FFF4D6` | `#3D3216` | A post-form row 小貘 just filled (132 A), fades out                |
+| `--color-filled-row`   | `#FFFFFF` | `#2C2C2E` | The grouped row colour in a sheet the glow fades into (blend only) |
 
 ### Moments, stickers and mascot
 
