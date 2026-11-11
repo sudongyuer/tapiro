@@ -110,8 +110,10 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
    after the failure (plan 「Client and purchase UI as built」). Waiting on the account: real Sandbox data, `IAP_APP_APPLE_ID`, the
    notification URL, `CONSUMPTION_REQUEST`, the hosted deploy. Live Activity spikes 1–2 done
    (`docs/plans/2026-11-11-live-activity-spike.md`): our own plugin's extension renders on the Simulator Lock Screen and
-   Dynamic Island, placeholder views, generated only with `TAPIRO_LIVE_ACTIVITY=1`; spike 3 needs the owner's iPhone;
-   the rest waits on 274–278. Each plan lists what waits on the account.
+   Dynamic Island, generated only with `TAPIRO_LIVE_ACTIVITY=1` (kept until push, 278 A); spike 3 needs the owner's
+   iPhone. Views built 2026-11-12 (`feat/live-activity-ui`, 274–277 A): Lock Screen and island compact, minimal and
+   expanded with 小貘's head, the content builder in `src/lib/live-activity`, the Debug scene `live-activity`; next is
+   Task 5 (start on `en_route` / 集合 from the screens, 275 A). Each plan lists what waits on the account.
 3. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
    were HID keys sent to a number pad, which iOS 27.2 ignores; on-screen taps land (see 0).
 
@@ -133,7 +135,11 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 - Before launch (owner's call): `Sandbox` purchases credit coins on the hosted project for good (272 A); revisit
   before the App Store release (plan 「Before launch」).
 - Answered 2026-11-12: 273 A (买貘币 on the 貘币 page; the 「还差 1 貘币」 card lists the three packs), 274–278 A (Live
-  Activity, `docs/plans/2026-11-11-live-activity-spike.md`; not built yet).
+  Activity, `docs/plans/2026-11-11-live-activity-spike.md`; views built, app wiring next).
+- ★ for veto (2026-11-12): Live Activity view choices V1–V11 in `docs/plans/2026-11-11-live-activity-spike.md`
+  「★ View choices」 (274's wording over 276's, ride route not shown, 「去碰面吧」 after arrival, the ride's 「出发了」
+  final step, a checkmark in the compact island after the end, the stale look, at least 「约 1 分钟到」, two-line Lock
+  Screen title, copy from the app, system background, taps open the status page).
 - ★ for veto (2026-11-12): the purchase client and UI defaults B1–B13 in `docs/plans/2026-11-11-iap-local.md` 「★ Client
   and purchase UI defaults」 (packs from the server priced by StoreKit, the sheet stays open after a credit, a cancel shows
   nothing, 购买处理中 with 再确认一次 and no re-send on foreground, another account's transaction left alone, the 测试购买
