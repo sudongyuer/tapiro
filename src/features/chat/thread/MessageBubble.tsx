@@ -174,9 +174,7 @@ export const MessageBubble = memo(
                   >
                     {body}
                   </AppText>
-                  {translated !== null ? (
-                    <TranslatedText text={translated} testID={`chat-translation-${row.key}`} />
-                  ) : null}
+                  {translated !== null ? <TranslatedText text={translated} /> : null}
                 </View>
               </ContextMenuView>
             )}

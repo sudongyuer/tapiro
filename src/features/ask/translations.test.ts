@@ -301,6 +301,21 @@ describe('the device copy', () => {
     expect(t.get()).toBeNull();
   });
 
+  test('a tap queued before sign-out never runs: no consent read, no call, nothing kept', async () => {
+    const reply = deferred<CloudResult>();
+    const t = setup({ results: [reply.promise, translated('第二句')] });
+    t.tap('m1', 'Satu');
+    t.tap('m2', 'Dua');
+    await tick();
+    t.translations.forget('u1');
+    t.setConsentUser(null);
+    reply.resolve(translated('第一句'));
+    await t.translations.idle();
+    expect(t.log.started).toEqual([]);
+    expect(t.requests).toHaveLength(1);
+    expect(t.kept.get('u1')).toBeNull();
+  });
+
   test('forgetting a user clears their kept translations', async () => {
     const t = setup();
     t.tap();
@@ -324,6 +339,42 @@ describe('the device copy', () => {
     expect(kept).toHaveLength(KEPT_TRANSLATIONS);
     expect(kept[0].id).toBe('old-1');
     expect(kept.at(-1)?.id).toBe('m2');
+  });
+
+  test('showing a hidden translation again makes it the newest, so the cap keeps it', async () => {
+    const full: KeptTranslation[] = Array.from({ length: KEPT_TRANSLATIONS }, (_, index) => ({
+      id: `old-${index}`,
+      to: 'zh-Hans',
+      text: `旧 ${index}`,
+      hidden: index === 0,
+    }));
+    const t = setup({ stored: full });
+    t.tap('old-0', '旧');
+    await t.translations.idle();
+    t.tap('m2');
+    await t.translations.idle();
+    const kept = t.kept.get('u1') as KeptTranslation[];
+    expect(kept.map((entry) => entry.id)).toContain('old-0');
+    expect(kept.map((entry) => entry.id)).not.toContain('old-1');
+    expect(t.requests).toHaveLength(1);
+  });
+
+  test('hiding a translation the cap already dropped keeps it, so showing it again is free', async () => {
+    const full: KeptTranslation[] = Array.from({ length: KEPT_TRANSLATIONS }, (_, index) => ({
+      id: `old-${index}`,
+      to: 'zh-Hans',
+      text: `旧 ${index}`,
+      hidden: false,
+    }));
+    const t = setup({ stored: full, results: [translated('新')] });
+    t.tap('m2');
+    await t.translations.idle();
+    expect(t.get('old-0')?.state).toBe('shown');
+    t.translations.hide('u1', 'old-0', 'zh-Hans');
+    t.tap('old-0', '旧');
+    await t.translations.idle();
+    expect(t.get('old-0')).toEqual({ state: 'shown', text: '旧 0' });
+    expect(t.requests).toHaveLength(1);
   });
 
   test('a damaged copy reads as nothing kept', () => {

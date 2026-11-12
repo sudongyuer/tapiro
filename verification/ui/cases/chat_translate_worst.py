@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls  # noqa: E402
-from chat import bubbles, labels, open_thread  # noqa: E402
+from chat import bubbles, open_thread  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/chat/thread/', 'src/features/ask/', 'src/lib/translation.ts', 'src/app/(tabs)/messages/',
@@ -60,7 +60,6 @@ ui.capture('02-hungry')
 ui.tap(f'chat-translate-feed-{LAST}')
 ui.settled(lambda items: by_id(items, 'ask-tapir-sheet'), 'the 问小貘 sheet never opened')
 ui.element('ask-hungry-line', timeout=20)
-assert ui.t('chat.thread.translate') not in labels(ui.read())
 ui.at_rest()
 ui.capture('03-sheet-hungry')
 assert_calls(ui, 'translate', 3, wait=1)

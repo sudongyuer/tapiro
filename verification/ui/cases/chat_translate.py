@@ -82,8 +82,8 @@ ui.wait_label(ARIF, lambda label: label == plain, 'hiding left the translation')
 ui.at_rest()
 menu(ui, ARIF)
 ui.tap_label(translate)
-ui.wait_label(ARIF, lambda label: label == joined, 'the kept translation did not come back')
 assert by_id(ui.read(), WAITING) is None, 'a kept translation went out again'
+ui.wait_label(ARIF, lambda label: label == joined, 'the kept translation did not come back')
 assert_calls(ui, 'translate', 1)
 ui.at_rest()
 

@@ -21,6 +21,8 @@ export type TranslationConsent = ConsentGate & {
   reread(): Promise<{ belly?: Belly | null } | null>;
 };
 
+type Tap = { declines: number; forgets: number };
+
 type UserTranslations = { shown: Map<string, Translation>; kept: KeptTranslation[] };
 
 const keyOf = (messageId: string, to: Language) => `${to}:${messageId}`;
@@ -105,15 +107,15 @@ export function createTranslations(deps: {
     text: string,
     to: Language,
     openConsent: () => void,
-    declinesAtTap: number,
+    tap: Tap,
   ) {
     const key = keyOf(messageId, to);
-    const forgetsAtTap = countOf(forgets, userId);
-    const alive = () => countOf(forgets, userId) === forgetsAtTap;
+    const alive = () => countOf(forgets, userId) === tap.forgets;
     const settle = (next: Translation | null) => {
       if (alive()) place(userId, key, next);
     };
-    if (countOf(declines, userId) !== declinesAtTap) return settle(null);
+    if (!alive()) return;
+    if (countOf(declines, userId) !== tap.declines) return settle(null);
     if (deps.consent.getSnapshot().userId !== userId) deps.consent.start(userId);
 
     const consented = async () => {
@@ -176,18 +178,16 @@ export function createTranslations(deps: {
       if (current?.state === 'waiting' || current?.state === 'shown') return;
       const kept = user.kept.find((entry) => entry.id === messageId && entry.to === to);
       if (kept) {
-        keep(
-          userId,
-          user.kept.map((entry) => (entry === kept ? { ...entry, hidden: false } : entry)),
-        );
+        keep(userId, [...user.kept.filter((entry) => entry !== kept), { ...kept, hidden: false }]);
         place(userId, key, { state: 'shown', text: kept.text });
         return;
       }
       place(userId, key, { state: 'waiting' });
-      const declinesAtTap = countOf(declines, userId);
+      const tap = { declines: countOf(declines, userId), forgets: countOf(forgets, userId) };
       queue = queue
-        .then(() => run(userId, messageId, source, to, openConsent, declinesAtTap))
+        .then(() => run(userId, messageId, source, to, openConsent, tap))
         .catch(() => {
+          if (countOf(forgets, userId) !== tap.forgets) return;
           if (load(userId).shown.get(key)?.state === 'waiting') {
             place(userId, key, { state: 'failed', reason: 'offline' });
           }
@@ -199,12 +199,8 @@ export function createTranslations(deps: {
       const current = user.shown.get(key);
       if (!current || current.state === 'waiting') return;
       if (current.state === 'shown') {
-        keep(
-          userId,
-          user.kept.map((entry) =>
-            entry.id === messageId && entry.to === to ? { ...entry, hidden: true } : entry,
-          ),
-        );
+        const others = user.kept.filter((entry) => entry.id !== messageId || entry.to !== to);
+        keep(userId, [...others, { id: messageId, to, text: current.text, hidden: true }]);
       }
       place(userId, key, null);
     },

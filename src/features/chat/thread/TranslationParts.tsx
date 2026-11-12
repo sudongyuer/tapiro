@@ -24,12 +24,10 @@ const REASON_KEYS = {
   needsUpdate: 'chat.translate.needsUpdate',
 } as const satisfies Record<TranslationFailure, string>;
 
-export function TranslatedText({ text, testID }: { text: string; testID: string }) {
+export function TranslatedText({ text }: { text: string }) {
   return (
     <View style={[styles.translated, { borderTopColor: PlatformColor('separator') }]}>
-      <AppText variant="secondary" testID={testID}>
-        {text}
-      </AppText>
+      <AppText variant="secondary">{text}</AppText>
     </View>
   );
 }
