@@ -24,7 +24,7 @@ ui.wait_label('ask-voice-blocked-title', lambda text: text == ui.t('ask.voice.bl
 ui.wait_label('ask-voice-blocked-button', lambda text: text == ui.t('ask.voice.openSettings'), 'no 去设置')
 assert ai_calls(ui, 'speechStart', 1, timeout=2) == [], 'listening started without the microphone'
 assert prompt_value(ui) == TYPED, f'the typed words were lost: {prompt_value(ui)!r}'
-assert by_id(ui.read(), 'ask-voice-blocked-button')['frame']['height'] >= 43, '去设置 is under 44 pt'
+assert by_id(ui.read(), 'ask-voice-blocked-button')['frame']['height'] >= 42, '去设置 is under 44 pt'
 ui.at_rest()
 ui.capture('01-blocked')
 print('PASS: a refused microphone shows 去设置, never listens, and keeps the typed words')

@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import ai_calls, assert_calls, open_sheet  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/features/shell/AskInput.tsx', 'src/app/ask.tsx',
         'src/app/ask-consent.tsx', 'src/lib/i18n/locales/ask/', 'verification/ui/ask.py']
@@ -23,9 +24,12 @@ ui.tap('ask-tapir-mic')
 ui.wait_label('ask-tapir-mic', lambda label: label == ui.t('ask.voice.stop'), 'the mic did not turn into 停')
 assert by_id(ui.read(), 'ask-voice-explain') is None, 'the card showed although both permissions were granted'
 assert ai_calls(ui, 'speechRequestPermissions', 1, timeout=1) == [], 'granted permissions were asked again'
-ui.wait(lambda items: (by_id(items, 'ask-tapir-prompt') or {}).get('AXValue') == ui.t('ask.voice.listeningCloud'),
-        'the field does not say the words are written down after 停', timeout=10)
-ui.capture('01-listening-cloud')
+ui.at_rest()
+shot = ui.snap('01-listening-cloud')
+hint = ui.t('ask.voice.listeningCloud').split('…')[0]
+field = by_id(ui.read(), 'ask-tapir-prompt')['frame']
+# RN does not expose a multiline field's placeholder to AX, so the hint is read from the pixels.
+assert find(lines_in(shot, ui.locale), hint, field), f'the field does not say {hint} while listening'
 
 ui.tap('ask-tapir-mic')
 ui.element('ask-consent-screen', timeout=30)

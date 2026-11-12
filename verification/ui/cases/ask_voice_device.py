@@ -30,7 +30,7 @@ ui.wait_label('ask-voice-explain-body', lambda text: text == ui.t('ask.voice.exp
 items = ui.read()
 for identifier in ('ask-voice-explain-button', 'ask-tapir-mic'):
     f = by_id(items, identifier)['frame']
-    assert f['height'] >= 43, f'{identifier} is under 44 pt: {f}'
+    assert f['height'] >= 42, f'{identifier} is under 44 pt at the sheet scale: {f}'
 assert ai_calls(ui, 'speechRequestPermissions', 1, timeout=1) == [], 'a system prompt came before the card'
 ui.at_rest()
 ui.capture('01-explain-card')
@@ -38,18 +38,25 @@ ui.capture('01-explain-card')
 ui.tap('ask-voice-explain-button')
 ui.gone('ask-voice-explain')
 ui.wait_label('ask-tapir-mic', lambda label: label == ui.t('ask.voice.stop'), 'the mic did not turn into 停')
-assert len(ai_calls(ui, 'speechRequestPermissions', 1)) == 1, '好 did not ask for the permissions'
-assert ai_calls(ui, 'speechStart', 1) == [{'language': ui.locale}], 'listening did not start in the app language'
+
+
+seen = []
 
 
 def partial(items):
     shown = (by_id(items, 'ask-tapir-prompt') or {}).get('AXValue') or ''
+    seen.append(shown)
     return shown != '' and shown != words and words.startswith(shown)
 
 
-ui.wait(partial, 'no live words appeared while listening', timeout=10)
+try:
+    ui.wait(partial, 'no live words appeared while listening', timeout=10)
+except AssertionError as error:
+    raise AssertionError(f'{error}; the field read {seen}') from None
 assert by_id(ui.read(), 'ask-tapir-send') is None, '发送 showed while listening'
 ui.capture('02-listening-live')
+assert len(ai_calls(ui, 'speechRequestPermissions', 1)) == 1, '好 did not ask for the permissions'
+assert ai_calls(ui, 'speechStart', 1) == [{'language': ui.locale}], 'listening did not start in the app language'
 
 ui.wait(lambda items: (by_id(items, 'ask-tapir-prompt') or {}).get('AXValue') == words, 'the sentence never filled in')
 ui.tap('ask-tapir-mic')

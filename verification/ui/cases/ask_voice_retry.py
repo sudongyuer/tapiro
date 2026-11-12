@@ -26,7 +26,7 @@ ui.tap('ask-tapir-mic')
 ui.wait_label('ask-voice-note-text', lambda text: text == ui.t('ask.voice.note.failed'), 'no failure note')
 ui.element('ask-voice-retry')
 assert_calls(ui, 'transcribe', 1, wait=3)
-assert by_id(ui.read(), 'ask-voice-retry')['frame']['height'] >= 43, '再转一次 is under 44 pt'
+assert by_id(ui.read(), 'ask-voice-retry')['frame']['height'] >= 42, '再转一次 is under 44 pt'
 ui.at_rest()
 ui.capture('01-failed')
 

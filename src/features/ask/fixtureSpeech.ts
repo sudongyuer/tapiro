@@ -7,7 +7,7 @@ export type FixtureVoice = 'undetermined' | 'granted' | 'denied' | 'refuse';
 export type FixtureEngine = 'dictation' | 'cloud' | 'noSpeech' | 'fallback';
 
 const FIXTURE_AUDIO = 'AAAAHGZ0eXBNNEEg';
-const PARTIAL_MS = 500;
+const PARTIAL_MS = 1500;
 
 const PERMISSIONS: Record<FixtureVoice, SpeechPermissions> = {
   undetermined: { microphone: 'undetermined', recognition: 'undetermined' },
@@ -24,9 +24,15 @@ export function fixtureEngine(value: string | undefined): FixtureEngine {
   return value === 'cloud' || value === 'noSpeech' || value === 'fallback' ? value : 'dictation';
 }
 
+const PARTIALS = 8;
+
 export function partialsOf(words: string) {
-  const parts = words.split(' ');
-  return parts.map((_, index) => parts.slice(0, index + 1).join(' '));
+  const letters = [...words];
+  const step = Math.ceil(letters.length / PARTIALS);
+  const ends = Array.from({ length: Math.ceil(letters.length / step) }, (_, index) =>
+    Math.min(letters.length, (index + 1) * step),
+  );
+  return ends.map((end) => letters.slice(0, end).join('').trimEnd());
 }
 
 export function createFixtureSpeech({
