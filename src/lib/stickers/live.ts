@@ -2,6 +2,7 @@ import { Settings } from 'react-native';
 
 import { initI18n } from '@/lib/i18n';
 import { live } from '@/lib/live';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { liveItems } from '@/lib/useLiveItems';
@@ -43,3 +44,5 @@ live.on(['payment.settled'], () => {
   if (state.status !== 'idle') void settledStore.reload(state.userId);
 });
 i18n.on('languageChanged', publish);
+
+sessionEnds.register(() => settledStore.clear());
