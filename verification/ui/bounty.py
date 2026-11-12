@@ -102,6 +102,25 @@ def fill_fixed(ui, slug='pickup', reward='8'):
     typed(ui, 'bounty-post-reward', reward)
 
 
+def assert_category_one_line(ui, slug):
+    name = ui.t(f'bounty.category.{slug}')
+
+    def plain(items, label, within=None):
+        return next((i for i in items if i.get('AXLabel') == label and not i.get('AXUniqueId') and (
+            within is None or (within['x'] <= i['frame']['x'] < within['x'] + within['width']
+                               and within['y'] - within['height'] < i['frame']['y'] < within['y'] + within['height']))), None)
+
+    def shown(items):
+        picker = (by_id(items, 'bounty-post-category') or {}).get('frame')
+        return picker and plain(items, name, picker)
+
+    value = ui.settled(shown, f'the type row does not show {name}')['frame']
+    label = plain(ui.read(), ui.t('bounty.post.form.category'))
+    assert label, 'the type row label is missing'
+    line = label['frame']['height']
+    assert value['height'] < line * 1.5, f'{name} wraps in the type row: {value} beside a {line} pt line'
+
+
 def next_step(ui):
     ui.tap_label(ui.t(NEXT))
 

@@ -1,6 +1,6 @@
 """「+」 on 悬赏 with no draft opens the tile screen; 直接写 opens the 发悬赏 form under the live card. 下一步 on an empty form
 shows the first missing field; typing "parcel" guesses 代取 and marks it 按标题自动 (153A), so the next missing field is
-the reward; the category menu lists all eight types and a manual choice (代排, then back to 代取) drops the mark; the footer suggests RM 5–8;
+the reward, and the type row keeps 代取 on one line beside the mark (ms wrapped it); the category menu lists all eight types and a manual choice (代排, then back to 代取) drops the mark; the footer suggests RM 5–8;
 a reward of 0 or 501 is out of range; the RM 8 button fills the field; a valid form reaches
 确认发布, whose card shows the category. The form sits on the grouped background and every control it touches is 44 pt.
 A 20-key burst typed with no delay lands in full and the title counter stays hidden below 50 characters."""
@@ -8,7 +8,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (  # noqa: E402
-    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_error, assert_grouped_background, assert_title, burst,
+    CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_category_one_line, assert_error,
+    assert_grouped_background, assert_title, burst,
     erase, form_scroll_to, next_step, open_post, pick_category, reach_confirm, typed, value,
 )
 from driver import UI, assert_touch_target  # noqa: E402
@@ -50,6 +51,8 @@ ui.wait_label('bounty-post-category-auto', lambda label: label == ui.t('bounty.p
               'the guessed category is not marked 按标题自动')
 ui.wait_label('bounty-post-live-text', lambda label: label.startswith(ui.t('bounty.category.pickup')),
               'the live card does not show the guessed 代取')
+assert_category_one_line(ui, 'pickup')
+ui.capture('01b-auto-type')
 next_step(ui)
 assert_error(ui, 'bounty.post.error.rewardEmpty')
 
