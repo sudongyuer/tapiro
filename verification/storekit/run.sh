@@ -22,6 +22,8 @@ if [ -z "$APP" ]; then
   APP="$DIR/Tapiro.app"
 fi
 [ -d "$APP" ] || { echo "No Debug Tapiro.app at $APP; build it with bunx expo run:ios first" >&2; exit 1; }
+APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist" 2>/dev/null) \
+  || { echo "$APP has no bundle identifier" >&2; exit 1; }
 curl -sf http://127.0.0.1:8081/status >/dev/null || { echo "Metro is not running on 8081 (bunx expo start)" >&2; exit 1; }
 CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:54321/functions/v1/iap-verify || true)
 [ "$CODE" = "401" ] || { echo "iap-verify answered $CODE, not 401; run bun run fn:serve" >&2; exit 1; }
@@ -44,11 +46,21 @@ for config in run['TestConfigurations']:
 plistlib.dump(run, open(f'{products}/tapiro.xctestrun', 'wb'))
 PY
 
+cleanup() {
+  xcrun simctl terminate "$UDID" app.tapiro.storekit-harness.uitests.xctrunner >/dev/null 2>&1 || true
+  xcrun simctl terminate "$UDID" "$APP_ID" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
 RESULT="$OUT/result-$(date +%Y%m%d-%H%M%S).xcresult"
 STATUS=0
-# XCUITest's tear-down hung for hours after a failed case (2026-11-12); perl's alarm bounds the run without coreutils.
-perl -e 'alarm shift; exec @ARGV' "${LIMIT_S:-1200}" xcodebuild test-without-building -xctestrun "$PRODUCTS/tapiro.xctestrun" -destination "platform=iOS Simulator,id=$UDID" \
+# XCUITest's tear-down hung for hours after a failed case (2026-11-12): the per-test allowance makes XCTest stop a
+# stuck case, and perl's alarm bounds the whole run without coreutils.
+perl -e 'alarm shift; exec @ARGV' "${LIMIT_S:-1500}" xcodebuild test-without-building -xctestrun "$PRODUCTS/tapiro.xctestrun" -destination "platform=iOS Simulator,id=$UDID" \
+  -test-timeouts-enabled YES -default-test-execution-time-allowance "${TEST_LIMIT_S:-240}" \
+  -maximum-test-execution-time-allowance "${TEST_LIMIT_S:-240}" \
   -resultBundlePath "$RESULT" "${ONLY[@]+"${ONLY[@]}"}" > "$OUT/test.log" 2>&1 || STATUS=$?
-grep -E "Test Case .*(passed|failed)|error:" "$OUT/test.log" || true
+grep -E "Test Case .*(passed|failed)|error:|exceeded execution time allowance" "$OUT/test.log" || true
+[ "$STATUS" = 142 ] && echo "Stopped after LIMIT_S=${LIMIT_S:-1500}s" >&2
 echo "Result bundle: $RESULT"
 exit $STATUS

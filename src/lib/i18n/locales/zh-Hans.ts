@@ -321,7 +321,7 @@ export default {
       title: 'StoreKit 端到端',
       signIn: '以小林登录',
       openCoins: '打开貘币页',
-      buyKept: '买 5，不发送到服务器',
+      buyKept: '退出登录，再买 5',
     },
     liveActivity: {
       title: '实时活动',

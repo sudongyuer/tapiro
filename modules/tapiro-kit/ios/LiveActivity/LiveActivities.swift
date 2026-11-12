@@ -47,8 +47,25 @@ enum LiveActivities {
     return ["status": "ok"]
   }
 
+  static func enabled() -> Bool {
+    ActivityAuthorizationInfo().areActivitiesEnabled
+  }
+
   static func list() -> [[String: Any]] {
-    Activities.activities.map { ["id": $0.id, "kind": $0.attributes.kind, "state": String(describing: $0.activityState)] }
+    Activities.activities.map {
+      ["id": $0.id, "kind": $0.attributes.kind, "link": $0.attributes.link as Any, "state": state($0.activityState)]
+    }
+  }
+
+  private static func state(_ state: ActivityState) -> String {
+    switch state {
+    case .active: return "active"
+    case .stale: return "stale"
+    case .ended: return "ended"
+    case .dismissed: return "dismissed"
+    case .pending: return "pending"
+    @unknown default: return "unknown"
+    }
   }
 
   private static func content(_ state: LiveActivityStateRecord) -> ActivityContent<TapiroActivityAttributes.ContentState> {

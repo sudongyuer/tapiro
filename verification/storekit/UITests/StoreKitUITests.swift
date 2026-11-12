@@ -8,7 +8,21 @@ final class StoreKitUITests: XCTestCase {
   private var session: SKTestSession!
   private var app: XCUIApplication!
 
-  override func setUp() async throws {
+  // Synchronous on purpose: a failed assertion with continueAfterFailure = false runs tear-down from inside the
+  // interrupted setUp on the main thread, and XCTest then waits forever for an async @MainActor tearDown that can
+  // never get the main actor (sampled 2026-11-12; the cause of the 3 h hang).
+  // On a fresh install SKTestSession's catalog reaches the app only for sessions made after the app first ran, so
+  // the first case read an empty shop even across relaunches; one launch before any session fixes it (2026-11-12).
+  override class func setUp() {
+    super.setUp()
+    MainActor.assumeIsolated {
+      let app = XCUIApplication()
+      app.launch()
+      app.terminate()
+    }
+  }
+
+  override func setUpWithError() throws {
     continueAfterFailure = false
     let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Tapiro", withExtension: "storekit"))
     session = try SKTestSession(contentsOf: url)
@@ -21,7 +35,7 @@ final class StoreKitUITests: XCTestCase {
     try openCoins()
   }
 
-  override func tearDown() async throws {
+  override func tearDownWithError() throws {
     if let app {
       let shot = XCTAttachment(screenshot: app.screenshot())
       shot.name = name
@@ -69,13 +83,23 @@ final class StoreKitUITests: XCTestCase {
     try await session.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
     try openSheet()
     let start = try balance()
+    // A simulated cancel returns before one accessibility snapshot can see the spinner, so the case proves the
+    // outcome (no transaction, no credit) and that the same button then buys exactly once.
     app.buttons["buy-coins-buy-5"].tap()
-    let busy = app.descendants(matching: .any)["buy-coins-busy-5"]
-    XCTAssertTrue(busy.waitForExistence(timeout: 10), "the purchase never started")
-    XCTAssertTrue(busy.waitForNonExistence(timeout: 30), "the cancelled purchase never returned")
-    XCTAssertFalse(app.descendants(matching: .any)["buy-coins-status"].waitForExistence(timeout: 3))
+    XCTAssertFalse(app.descendants(matching: .any)["buy-coins-status"].waitForExistence(timeout: 5))
+    XCTAssertTrue(session.allTransactions().isEmpty, "a cancelled purchase left a transaction")
     XCTAssertEqual(try balance(), start)
     try await session.setSimulatedError(nil, forAPI: .purchase)
+    // Clearing the simulated error can lag (1 of 4 runs cancelled the next tap too); tap again only while StoreKit
+    // has recorded nothing, so a second purchase can never be made.
+    let status = app.descendants(matching: .any)["buy-coins-status"]
+    for _ in 0..<3 where session.allTransactions().isEmpty {
+      app.buttons["buy-coins-buy-5"].tap()
+      if status.waitForExistence(timeout: 10) { break }
+    }
+    try waitStatus(containing: "5 coins added")
+    try waitBalance(start + 5)
+    XCTAssertEqual(session.allTransactions().count, 1, "the cancelled tap also bought")
   }
 
   func testUnfinishedPurchaseIsCreditedOnNextLaunch() throws {
@@ -83,14 +107,11 @@ final class StoreKitUITests: XCTestCase {
     let start = try balance()
     app.buttons["Close"].tap()
     try openScene()
-    let kept = app.buttons["Buy 5 without forwarding"]
-    XCTAssertTrue(kept.waitForExistence(timeout: 20))
-    kept.tap()
-    XCTAssertTrue(line(containing: "purchase app.tapiro.coins.5 purchased").waitForExistence(timeout: 30))
-    app.buttons["store-e2e-open-coins"].tap()
-    try openSheet()
-    RunLoop.current.run(until: Date().addingTimeInterval(5))
-    XCTAssertEqual(try balance(), start, "the kept purchase was credited before the relaunch")
+    app.buttons["store-e2e-buy-kept"].tap()
+    let result = app.staticTexts["store-e2e-line"]
+    XCTAssertTrue(waitLabel(result, timeout: 40) { $0.hasPrefix("purchase") }, "the kept purchase never returned")
+    XCTAssertEqual(result.label, "purchase app.tapiro.coins.5 purchased, kept unfinished")
+    XCTAssertEqual(session.allTransactions().count, 1)
     app.terminate()
     app.launch()
     try openCoins()
@@ -110,15 +131,27 @@ final class StoreKitUITests: XCTestCase {
     if open.waitForExistence(timeout: 5) { open.tap() }
     let user = app.staticTexts["store-e2e-user"]
     XCTAssertTrue(user.waitForExistence(timeout: 60), "StoreKit scene did not open")
+    XCTAssertTrue(waitLabel(user, timeout: 20) { $0 != "checking" }, "the scene never read the session")
     if !user.label.hasPrefix("signed in") {
-      app.buttons["Sign in as Xiaolin"].tap()
-      XCTAssertTrue(waitLabel(user, prefix: "signed in", timeout: 20), "sign in failed")
+      app.buttons["store-e2e-sign-in"].tap()
+      XCTAssertTrue(
+        waitLabel(user, timeout: 20) { $0.hasPrefix("signed in") },
+        "sign in failed: \(app.staticTexts["store-e2e-line"].label)")
     }
   }
 
   private func openSheet() throws {
     app.buttons["coins-buy"].tap()
-    XCTAssertTrue(app.buttons["buy-coins-buy-5"].waitForExistence(timeout: 30), "the packs never loaded")
+    let pack = app.buttons["buy-coins-buy-5"]
+    let empty = app.descendants(matching: .any)["buy-coins-empty"]
+    let failed = app.descendants(matching: .any)["buy-coins-failed"]
+    let deadline = Date().addingTimeInterval(30)
+    while Date() < deadline, !pack.exists, !empty.exists, !failed.exists {
+      RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+    }
+    XCTAssertFalse(empty.exists, "StoreKit returned no products")
+    XCTAssertFalse(failed.exists, "the packs failed to load")
+    XCTAssertTrue(pack.exists, "the packs never loaded")
   }
 
   private func balance() throws -> Int {
@@ -152,16 +185,12 @@ final class StoreKitUITests: XCTestCase {
     XCTFail("status never read \(text): \(status.exists ? status.label : "missing")")
   }
 
-  private func waitLabel(_ element: XCUIElement, prefix: String, timeout: TimeInterval) -> Bool {
+  private func waitLabel(_ element: XCUIElement, timeout: TimeInterval, until done: (String) -> Bool) -> Bool {
     let deadline = Date().addingTimeInterval(timeout)
     while Date() < deadline {
-      if element.label.hasPrefix(prefix) { return true }
+      if element.exists, done(element.label) { return true }
       RunLoop.current.run(until: Date().addingTimeInterval(0.5))
     }
     return false
-  }
-
-  private func line(containing text: String) -> XCUIElement {
-    app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
   }
 }

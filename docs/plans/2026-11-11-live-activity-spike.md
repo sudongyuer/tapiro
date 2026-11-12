@@ -6,7 +6,8 @@
 
 **Status:** proposed 2026-11-11. Tasks 1 and 2 (spikes) are done (branch `spike/iap-live-activity`, 「Spike results」
 below); Task 3 needs the owner's iPhone; 274–278 answered A (2026-11-12); Task 4 (the views) built 2026-11-12
-(「Views as built」 below); Task 5 (app wiring) is next.
+(「Views as built」 below); Task 5 (app wiring) built 2026-11-12 (「App wiring as built」 below); Tasks 6–9 wait on the
+account.
 
 **Goal:** While a helper is on the way (bounty `en_route`) or a ride is gathering (集合), the Lock Screen and the
 Dynamic Island show one sentence and a progress line, started and updated by the app. Before the account exists this
@@ -202,6 +203,58 @@ Built from the A boards on the canvas (「06++ 买貘币与锁屏实时活动」
 | V10 | The system Live Activity background and text colours; the progress fill is the primary text colour; no motion of ours                                                                                                    | The boards drew the system material; updates are rare, so the motion gate finds no purpose |
 | V11 | A tap opens the bounty's status page (`tapiro://bounty/status/<id>`) or the ride (`tapiro://ride/<id>`)                                                                                                                  | The 276 board: 「点它回到状态页」                                                          |
 | V12 | The Lock Screen card uses the system background colour at 78 % (white in light mode, black in dark), as the boards drew; the iOS 27.2 Simulator renders it dark in both appearances, so the light card is a device check | The boards drew a light card on a light wallpaper                                          |
+
+## App wiring as built (Task 5, 2026-11-12)
+
+275 A: the activity starts by itself while Tapiro is open, as a bounty enters `en_route` or a ride enters 集合; the
+system's per-app switch turns it off. Read the 275 board (「锁屏实时活动 · 写什么、什么时候开始」) before building: it
+draws no Tapiro control, only the system's 「允许来自 Tapiro 的实时活动吗？」 on the Lock Screen the first time.
+
+- Server: `public.live_activity_subjects()` (migration `20261112000400`) returns only what the Lock Screen shows
+  (274 A): for the poster, the helper's display name, the place label, the task, the start and ETA times, or the 完成
+  time; for ride crew, the start's short name and whether it is of kind `home`, the 集合 and departure times, arrived
+  and total, or the departure time and how many boarded. A final step stays listed for its 15 minutes (277 A).
+  pgTAP: `supabase/tests/live_activity_subjects.test.sql`.
+- Client, `src/lib/live-activity`: `parse.ts` reads the rows; `plan.ts` decides start, update and end from the running
+  activities (kit `list`), the rows and the record of items already started; `controller.ts` runs one plan at a time;
+  `instance.ts` reads on sign-in, on return to the foreground, on the `bounty.started`, `bounty.eta_changed`,
+  `bounty.completed`, `bounty.cancelled` and `ride.*` signals, and redraws once a minute while Tapiro is open.
+  `useLiveActivities` is mounted in the tabs layout; its subscriptions are removed on unmount. Signals that arrive
+  together cause one read. Sign out and account deletion end Tapiro's activities at once and pause the wiring until
+  the next account.
+- Kit: `LiveActivity.enabled()` (`areActivitiesEnabled`), and `list()` returns each activity's `link` and an explicit
+  state (`active`, `stale`, `ended`, `dismissed`, `pending`).
+- After a relaunch nothing is held in memory: every plan starts from `list()`, so a running activity is found and
+  updated, or ended with what is left of its 15 minutes, never started twice.
+- Measured in #120: `end()` takes the activity out of the Dynamic Island at once; only the Lock Screen keeps the final
+  step for the 15 minutes. So V5 (the checkmark in the compact island) never shows. W1 below.
+- The Simulator run is in the PR: 阿明 taps 出发了 (`start_bounty` through the local stack) while 小林 has Tapiro open,
+  and 小林's Lock Screen shows the activity.
+
+### ★ Wiring choices (agent, for veto)
+
+| #   | Choice                                                                                                                                                                                                               | Why                                                                                                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| W1  | On 完成 or 出发 the app first updates the activity to the final step, then ends it with a 15-minute dismissal (277 A); the island drops it at once, so V5's checkmark never shows                                    | Keeping it in the island would mean not ending it, and an un-ended activity has no 15-minute exit   |
+| W2  | Bounties: only the poster (the person waiting) gets an activity; the helper on the way gets none                                                                                                                     | The boards drew only the waiting side; the helper's copy (「你在路上」) was never drawn             |
+| W3  | A bounty's final step is the helper's 完成 (`done`): bounties have no separate 到了 state. The copy stays 「小林到了 · 图书馆」 over 「去碰面吧」                                                                    | The state machine is assigned → en_route → done                                                     |
+| W4  | Rides: everyone accepted gets it at 集合, the organiser included; the final 出发了 step only for those who boarded; someone marked 没到 has theirs ended at once                                                     | 174 A names 集合 for the ride, not a role                                                           |
+| W5  | One activity at a time: the item due soonest starts (ties go to the bounty); a running one keeps its place until it ends, then the next one starts                                                                   | Swapping activities as ETAs move would flicker on the Lock Screen                                   |
+| W6  | An activity the user swipes away (or iOS ends) is not started again while its item is live; the record of started items lives on the device and stays through sign out (another account's items never match it)      | Restarting it would override the user's choice                                                      |
+| W7  | While Tapiro is open the activity is redrawn each minute from the last read, so the minutes count down; a read older than 2.5 minutes is read again first. In the background the number holds until push (Tasks 6–8) | The boards draw 「6 分」; `Text(timerInterval:)` would change the look, the owner's call (see Open) |
+| W8  | A failed read changes nothing: no start, no end, no update; the stale date (L4) takes over. A single unreadable row leaves its activity as it is                                                                     | Never show a failure as an end or as fresh data                                                     |
+| W9  | A start the system refuses (Tapiro not in front) is not recorded and is tried again on the next read                                                                                                                 | ActivityKit starts only from the foreground                                                         |
+| W10 | A bounty without an ETA gets none                                                                                                                                                                                    | The app always sends one; the server allows none                                                    |
+| W11 | Activities this wiring did not start (the Debug scene's) are left alone; a running one for a listed item that was never recorded (the app died mid-start) is adopted                                                 | The Debug scene and the wiring run in the same dev build                                            |
+
+### Open
+
+- Remote updates and push-to-start wait on the Apple account (APNs, Tasks 6–8): until then an activity changes only
+  while Tapiro runs, and a locked phone keeps the last minutes until the stale date.
+- Before push ships: whether the minutes render from the ETA with `Text(timerInterval:countsDown:)` (it changes the
+  drawn 「6 分」, so it goes to the owner as a question).
+- Spike C on the owner's iPhone (island while Tapiro is in front, the consent prompt, the stale look, background
+  updates) is still owed.
 
 ## Tasks
 

@@ -16,22 +16,22 @@ export function TermsLine() {
   const router = useRouter();
   return (
     <View style={styles.line}>
-      {linkSegments(t('account.welcome.terms')).map((segment, index) =>
-        segment.link ? (
+      {linkSegments(t('account.welcome.terms')).map(({ text, link }, index) =>
+        link ? (
           <Pressable
             key={index}
             accessibilityRole="link"
             hitSlop={{ top: LINK_SLOP, bottom: LINK_SLOP }}
-            testID={`welcome-${segment.link}-link`}
-            onPress={() => router.push(`/legal/${segment.link}`)}
+            testID={`welcome-${link}-link`}
+            onPress={() => router.push(`/legal/${link}`)}
           >
             <AppText variant="meta" style={[styles.link, { color: color('--color-accent') }]}>
-              {segment.text}
+              {text}
             </AppText>
           </Pressable>
         ) : (
           <AppText key={index} variant="meta" tone="secondaryLabel">
-            {segment.text}
+            {text}
           </AppText>
         ),
       )}
