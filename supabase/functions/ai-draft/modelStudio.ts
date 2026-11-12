@@ -11,8 +11,11 @@ export type ModelStudioConfig = {
 };
 
 export const FALLBACK_WINDOW_MS = 12_000;
+export const UNREACHABLE_WINDOW_MS = 3_000;
 
-const FALLBACK_STATUSES = new Set([404, 429, 500, 502, 503, 504]);
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
+const COMPLETE = new Set(['stop', 'tool_calls']);
+const TOOL_CALL_IN_PROSE = /<\/?tool_call>|^\s*[{[]/;
 const SAFE_CODE = /^[A-Za-z0-9_.-]{1,64}$/;
 
 export class ModelStudioError extends Error {
@@ -60,11 +63,11 @@ function parseArguments(raw: unknown): unknown {
   }
 }
 
-function firstMessage(body: Record<string, unknown>) {
+function completeMessage(body: Record<string, unknown>) {
   const choices = body.choices;
   if (!Array.isArray(choices) || !isRecord(choices[0])) return null;
-  const message = choices[0].message;
-  return isRecord(message) ? message : null;
+  const { message, finish_reason: finish } = choices[0];
+  return isRecord(message) && typeof finish === 'string' && COMPLETE.has(finish) ? message : null;
 }
 
 function toolOf(message: Record<string, unknown> | null, call: ProviderCall) {
@@ -74,7 +77,9 @@ function toolOf(message: Record<string, unknown> | null, call: ProviderCall) {
     return { toolName: typeof name === 'string' ? name : '', arguments: parseArguments(raw) };
   }
   const content = typeof message?.content === 'string' ? message.content.trim() : '';
-  if (content !== '' && call.tools.some((tool) => tool.name === 'answer')) {
+  const prose = content !== '' && !TOOL_CALL_IN_PROSE.test(content);
+  const chosen = call.tools.length > 1;
+  if (prose && chosen && call.tools.some((tool) => tool.name === 'answer')) {
     return { toolName: 'answer', arguments: { text: content } };
   }
   return { toolName: '', arguments: null };
@@ -86,7 +91,7 @@ export function readCompletion(body: unknown, call: ProviderCall, model: string)
   }
   const usage = isRecord(body.usage) ? body.usage : {};
   return {
-    ...toolOf(firstMessage(body), call),
+    ...toolOf(completeMessage(body), call),
     model,
     inputTokens: count(usage.prompt_tokens),
     outputTokens: count(usage.completion_tokens),
@@ -109,6 +114,7 @@ export function modelStudioProvider(config: ModelStudioConfig): AiProvider {
 
   async function attempt(call: ProviderCall, model: string, signal: AbortSignal) {
     let response: Response;
+    const sentAt = now();
     try {
       response = await send(url, {
         method: 'POST',
@@ -122,7 +128,7 @@ export function modelStudioProvider(config: ModelStudioConfig): AiProvider {
     } catch {
       if (signal.aborted) throw new ModelStudioError('aborted', false);
       log('unreachable', model);
-      throw new ModelStudioError('unreachable', true);
+      throw new ModelStudioError('unreachable', now() - sentAt <= UNREACHABLE_WINDOW_MS);
     }
     if (!response.ok) {
       const code = errorCode(response.status, await response.json().catch(() => null));

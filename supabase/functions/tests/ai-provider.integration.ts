@@ -215,12 +215,21 @@ describe('ai-draft runs the Model Studio adapter in the Edge Runtime', () => {
   });
 
   test('a question in ask answered in plain words comes back as an answer', async () => {
+    await refill();
     const response = await ask({ task: 'ask', input: { text: '[answer] 押金要多少？' } });
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
       tool: 'answer',
       result: { text: '一般 RM 10。' },
     });
+    expect((await meterRows()).at(-1)).toMatchObject({
+      task: 'ask',
+      model: QWEN_PLUS,
+      input_tokens: 22,
+      output_tokens: 18,
+      discarded: false,
+    });
+    expect(await energy()).toBeLessThan(1000);
   });
 
   test('a screenshot reaches the model as a JPEG data URL', async () => {

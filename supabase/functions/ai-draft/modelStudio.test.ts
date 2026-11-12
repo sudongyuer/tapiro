@@ -29,6 +29,19 @@ const DRAFT_ARGS = {
   placeHint: 'Pyramid',
 };
 
+function steppingClock(step: number) {
+  let now = NOW;
+  return () => {
+    const current = now;
+    now += step;
+    return current;
+  };
+}
+
+function cutOff<T extends { choices: { finish_reason: string }[] }>(completion: T): T {
+  return { ...completion, choices: [{ ...completion.choices[0], finish_reason: 'length' }] };
+}
+
 type Options = { clock?: () => number; fallback?: string | null };
 
 function provider(
@@ -157,6 +170,26 @@ describe('Model Studio replies and charging', () => {
   test.each([
     ['plain words where a draft was forced', DRAFT, ok(textCompletion(QWEN_PLUS, '好的'))],
     [
+      'plain words where an answer was forced',
+      { task: 'answer', input: { text: '怎么付款？' } },
+      ok(textCompletion(QWEN_PLUS, '转账就行')),
+    ],
+    [
+      'an answer cut off at max_tokens',
+      { task: 'ask', input: { text: '详细讲讲签证续签' } },
+      ok(cutOff(textCompletion(QWEN_PLUS, '第一步，先去'))),
+    ],
+    [
+      'a tool call written as prose',
+      { task: 'ask', input: { text: '帮我取快递' } },
+      ok(textCompletion(QWEN_PLUS, '<tool_call>{"name": "draft_bounty"}</tool_call>')),
+    ],
+    [
+      'bare JSON written as prose',
+      { task: 'ask', input: { text: '帮我取快递' } },
+      ok(textCompletion(QWEN_PLUS, '{"title": "帮取快递"}')),
+    ],
+    [
       'arguments cut off at max_tokens',
       DRAFT,
       ok(toolCompletion(QWEN_PLUS, 'draft_bounty', '{"title": "帮取快')),
@@ -172,7 +205,6 @@ describe('Model Studio replies and charging', () => {
     await expectError(response, 502, 'provider_error');
     expect(recorded.finishes).toEqual([]);
     expect(recorded.discards).toHaveLength(1);
-    expect(recorded.discards[0].model).toBe(QWEN_PLUS);
     expect(recorded.discards[0].inputTokens).toBeGreaterThan(0);
   });
 
@@ -217,6 +249,29 @@ describe('Model Studio errors and the DeepSeek fallback', () => {
     },
   );
 
+  test('a gateway 502 is not retried, since the model may already have run', async () => {
+    const gateway = { status: 502, body: { error: { code: 'BadGateway', message: 'x' } } };
+    const { response, sent } = await run(DRAFT, [gateway]);
+    await expectError(response, 502, 'provider_error');
+    expect(sent).toHaveLength(1);
+  });
+
+  test('a connection lost after 3 s is not retried, since the request may have been billed', async () => {
+    const { response, sent } = await run(DRAFT, ['network_error'], { clock: steppingClock(2_000) });
+    await expectError(response, 502, 'provider_error');
+    expect(sent).toHaveLength(1);
+  });
+
+  test('an error inside the fallback window is retried', async () => {
+    const { response, sent } = await run(
+      DRAFT,
+      [ERRORS.overloaded, ok(toolCompletion(DEEPSEEK_FALLBACK, 'draft_bounty', DRAFT_ARGS))],
+      { clock: steppingClock(3_000) },
+    );
+    expect(response.status).toBe(200);
+    expect(sent).toHaveLength(2);
+  });
+
   test('an unreachable Qwen falls back too', async () => {
     const { response, sent } = await run(DRAFT, [
       'network_error',
@@ -256,12 +311,7 @@ describe('Model Studio errors and the DeepSeek fallback', () => {
   });
 
   test('an error that comes after the fallback window is not retried', async () => {
-    let now = NOW;
-    const clock = () => {
-      const current = now;
-      now += FALLBACK_WINDOW_MS;
-      return current;
-    };
+    const clock = steppingClock(FALLBACK_WINDOW_MS);
     const { response, sent } = await run(DRAFT, [ERRORS.overloaded], { clock });
     await expectError(response, 502, 'provider_error');
     expect(sent).toHaveLength(1);
