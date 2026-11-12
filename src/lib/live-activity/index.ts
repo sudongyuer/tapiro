@@ -7,3 +7,4 @@ export {
   type LiveActivityPlace,
   type LiveActivitySubject,
 } from './content';
+export { liveActivities, useLiveActivities } from './instance';
