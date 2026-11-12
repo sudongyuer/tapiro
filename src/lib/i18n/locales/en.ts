@@ -326,7 +326,7 @@ const en: Translation = {
       title: 'StoreKit end to end',
       signIn: 'Sign in as Xiaolin',
       openCoins: 'Open coins',
-      buyKept: 'Buy 5 without forwarding',
+      buyKept: 'Sign out, then buy 5',
     },
     liveActivity: {
       title: 'Live Activity',

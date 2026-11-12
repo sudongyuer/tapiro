@@ -329,7 +329,7 @@ const ms: Translation = {
       title: 'StoreKit hujung ke hujung',
       signIn: 'Log masuk sebagai Xiaolin',
       openCoins: 'Buka Syiling',
-      buyKept: 'Beli 5 tanpa hantar',
+      buyKept: 'Daftar keluar, kemudian beli 5',
     },
     liveActivity: {
       title: 'Aktiviti Langsung',
