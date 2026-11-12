@@ -2,6 +2,7 @@ import { initI18n } from '@/lib/i18n';
 import { live } from '@/lib/live';
 import { isCurrencyCode } from '@/lib/money';
 import { earnFixtureSticker } from '@/lib/stickers';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { liveItems } from '@/lib/useLiveItems';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
@@ -58,3 +59,5 @@ live.on(['payment.'], () => {
   if (state.status !== 'idle') void paymentStore.reload(state.userId);
 });
 i18n.on('languageChanged', publish);
+
+sessionEnds.register(() => paymentStore.clear());
