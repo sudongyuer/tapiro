@@ -49,20 +49,20 @@ function FailureCard({
       style={[styles.failure, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
       testID={`ask-failure-${reason}`}
     >
-      <View style={styles.failureText}>
-        <Mascot variant="side" size={vars['--touch-min']} />
-        <AppText variant="body" style={styles.grow} testID="ask-failure-text">
+      <Mascot variant="front" size={vars['--touch-min']} dizzy={reason !== 'busy'} />
+      <View style={styles.failureBody}>
+        <AppText variant="title" testID="ask-failure-text">
           {t(FAILURE_KEYS[reason])}
         </AppText>
-      </View>
-      <View style={styles.buttons}>
-        <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
-        <PillButton
-          label={t('ask.sheet.manual')}
-          variant="secondary"
-          onPress={onManual}
-          testID="ask-manual"
-        />
+        <View style={styles.buttons}>
+          <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
+          <PillButton
+            label={t('ask.sheet.manual')}
+            variant="secondary"
+            onPress={onManual}
+            testID="ask-manual"
+          />
+        </View>
       </View>
     </View>
   );
@@ -150,11 +150,13 @@ const styles = StyleSheet.create({
   },
   thinking: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
   failure: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: vars['--space-3'],
     padding: vars['--space-4'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },
-  failureText: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
+  failureBody: { flex: 1, gap: vars['--space-3'] },
   buttons: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
 });

@@ -46,7 +46,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   bubble, kept on the device so it is never charged twice, with dizzy, busy, hungry (去喂小貘 opens the hungry card) and
   吃撑了 lines (★ T1–T12). Task 7 is built: the sheet's microphone with the 143 card, live words in the field, the on-device
   chain in the kit and a cloud fallback through consent, metered as `transcribe` (★ V1–V14); the engines themselves are on
-  the device checklist (`ask.voice.*`). Next: Task 8 (errors and 小貘记得) can start. Nothing is deployed;
+  the device checklist (`ask.voice.*`). Task 8 started (`feat/ask-memory`): the sheet's failure card shows the dizzy 小貘 (144, ★ M1–M2); 小貘记得 (145),
+  133 and 146 wait on questions 281–284. Nothing is deployed;
   the real provider waits on the Model Studio account (148). The token budget is an unmeasured placeholder and no model
   ID is pinned.
 
@@ -142,6 +143,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## Owner decisions pending
 
+- **281–284 (2026-11-13), 小貘记得 privacy**, drawn on the canvas page 「04 问小貘（AI）」 board 「问小貘 · 开工前（四）」 and listed
+  in `docs/plans/2026-10-30-ask-tapir.md` 「Open: 小貘记得 privacy」: where entries come from, what is sent to the model,
+  what the switch stops, and how long entries are kept. Task 8's 小貘记得 page and 133's line wait on them.
 - Answered 2026-11-11: 268 A (a refund takes the whole pack back, the balance may go below 0, free posts still work),
   269 A (nearest price point not above), 270 A (coins only), 271 A (no limit of ours), 272 A (sandbox coins credit,
   marked `Sandbox`), 279 B (no RevenueCat; our own StoreKit 2 wrapper and server verification).
