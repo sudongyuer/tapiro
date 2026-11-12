@@ -46,6 +46,7 @@ function verifyServices() {
     onCall: recordCall,
     onConsentRequired: () => service.withdrawElsewhere(),
     meter: () => service.spend(),
+    onHungry: () => service.starve(),
   });
   return { service, send };
 }

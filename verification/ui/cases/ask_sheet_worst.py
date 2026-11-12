@@ -41,7 +41,7 @@ turn(ui, 1)
 assert by_id(ui.read(), 'ask-failure-providerError') is None, 'the error stayed after the answer'
 assert ask_texts(ui, 2, wait=1) == [TYPED, TYPED]
 
-again('hungry', '-uiVerifyAiBelly', '0,0,0,5')
+again('hungry')
 type_and_send(ui)
 ui.element('ask-hungry-tomorrow', timeout=30)
 assert prompt_value(ui) == TYPED, f'the hungry answer lost the words: {prompt_value(ui)!r}'

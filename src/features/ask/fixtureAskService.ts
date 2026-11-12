@@ -66,6 +66,7 @@ export const fixtureFailPoints = (value: string | undefined) =>
 
 export type FixtureAskService = AskService & {
   withdrawElsewhere(): void;
+  starve(): void;
   spend(): { energy: number; energyFull: number } | null;
 };
 
@@ -111,6 +112,9 @@ export function createFixtureAskService({
     },
     withdrawElsewhere() {
       status = { ...status, given: false, acceptedAt: null };
+    },
+    starve() {
+      if (status.belly) status = { ...status, belly: { ...status.belly, energy: 0 } };
     },
     spend() {
       const current = status.belly;
