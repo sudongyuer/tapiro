@@ -130,6 +130,28 @@ describe('the 问小貘 session', () => {
     },
   );
 
+  test('feeding clears a hungry failure and sends nothing; the words wait for 发送', async () => {
+    const { session, sent, openConsent } = setup({
+      results: [{ kind: 'failed', error: 'hungry', status: 429 }],
+    });
+    session.setText('帮我取快递');
+    await session.send(openConsent);
+    session.fed();
+    expect(session.getSnapshot().failed).toBeNull();
+    expect(session.getSnapshot().text).toBe('帮我取快递');
+    expect(sent).toHaveLength(1);
+  });
+
+  test('feeding leaves any other failure in place', async () => {
+    const { session, openConsent } = setup({
+      results: [{ kind: 'failed', error: 'provider_error', status: 502 }],
+    });
+    session.setText('帮我取快递');
+    await session.send(openConsent);
+    session.fed();
+    expect(session.getSnapshot().failed?.reason).toBe('providerError');
+  });
+
   test('the first send asks for consent, then sends once', async () => {
     const { session, sent, openConsent, pages } = setup({ access: ['notGiven'] });
     session.setText('帮我取快递');

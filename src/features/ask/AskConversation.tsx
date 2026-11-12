@@ -1,4 +1,5 @@
 import { SymbolView } from 'expo-symbols';
+import type { ReactNode } from 'react';
 import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
 
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
@@ -15,13 +16,14 @@ import type { AskFailure, AskSessionState } from './askSession';
 import { resumeLine } from './conversation';
 import { TapirCard, UserBubble } from './TurnCards';
 
+type ShownFailure = Exclude<AskFailure, 'hungry'>;
+
 const FAILURE_KEYS = {
   offline: 'ask.composer.offline',
   providerError: 'ask.sheet.providerError',
   unreadable: 'ask.sheet.unreadable',
-  hungry: 'ask.sheet.hungry',
   busy: 'ask.sheet.busy',
-} as const;
+} as const satisfies Record<ShownFailure, string>;
 
 export type AskActions = {
   onResume: () => void;
@@ -37,7 +39,7 @@ function FailureCard({
   onRetry,
   onManual,
 }: {
-  reason: AskFailure;
+  reason: ShownFailure;
   onRetry: () => void;
   onManual: () => void;
 }) {
@@ -54,9 +56,7 @@ function FailureCard({
         </AppText>
       </View>
       <View style={styles.buttons}>
-        {reason === 'hungry' ? null : (
-          <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
-        )}
+        <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
         <PillButton
           label={t('ask.sheet.manual')}
           variant="secondary"
@@ -72,10 +72,12 @@ export function AskConversation({
   state,
   currency,
   actions,
+  hungry,
 }: {
   state: AskSessionState;
   currency: CurrencyCode;
   actions: AskActions;
+  hungry: ReactNode;
 }) {
   const { t } = useI18n();
   const resume = state.turns.length === 0 ? resumeLine(state.resume) : null;
@@ -122,13 +124,14 @@ export function AskConversation({
           </AppText>
         </View>
       ) : null}
-      {state.failed ? (
+      {state.failed && state.failed.reason !== 'hungry' ? (
         <FailureCard
           reason={state.failed.reason}
           onRetry={actions.onRetry}
           onManual={actions.onManual}
         />
       ) : null}
+      {hungry}
     </View>
   );
 }

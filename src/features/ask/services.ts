@@ -10,7 +10,14 @@ import { createAskSession, type AskStorage } from './askSession';
 import { createCloudGate } from './cloudGate';
 import { createConsentStore } from './consentStore';
 import { createFixtureSender, fixtureReplies } from './fixtureAskReplies';
-import { createFixtureAskService, fixtureConsent, fixtureFailPoints } from './fixtureAskService';
+import {
+  createFixtureAskService,
+  fixtureBelly,
+  fixtureConsent,
+  fixtureFailPoints,
+} from './fixtureAskService';
+import { metered } from './metered';
+import { createPantryStore } from './pantryStore';
 import { createSettingsAskStorage } from './settingsAskStorage';
 
 const CALLS_KEY = 'uiVerifyAiCalls';
@@ -29,6 +36,7 @@ function verifyServices() {
   Settings.set({ [CALLS_KEY]: '[]' });
   const service = createFixtureAskService({
     consent: fixtureConsent(uiVerifyArgument('uiVerifyAiConsent')),
+    belly: fixtureBelly(uiVerifyArgument('uiVerifyAiBelly')),
     failFirst: fixtureFailPoints(uiVerifyArgument('uiVerifyAiFail')),
     delayMs: verifyDelay(),
     onCall: recordCall,
@@ -38,6 +46,8 @@ function verifyServices() {
     delayMs: verifyDelay(),
     onCall: recordCall,
     onConsentRequired: () => service.withdrawElsewhere(),
+    meter: () => service.spend(),
+    onHungry: () => service.starve(),
   });
   return { service, send };
 }
@@ -75,13 +85,18 @@ const verify = uiVerify ? verifyServices() : null;
 
 const deviceStorage = createSettingsAskStorage(Settings);
 
-export const consentStore = createConsentStore(
-  verify?.service ?? createSupabaseAskService(getSupabase()),
-);
+const service = verify?.service ?? createSupabaseAskService(getSupabase());
+
+export const consentStore = createConsentStore(service);
+
+export const pantryStore = createPantryStore({
+  service,
+  status: consentStore,
+});
 
 export const cloudCall = createCloudGate({
   store: consentStore,
-  send: verify?.send ?? createCloudSender(getSupabase()),
+  send: metered(consentStore, verify?.send ?? createCloudSender(getSupabase())),
 });
 
 export const askSession = createAskSession({
@@ -95,7 +110,11 @@ export const askSession = createAskSession({
 
 userCleanups.register((userId) => {
   askSession.forget(userId);
+  pantryStore.clear();
   consentStore.clear();
 });
 
-sessionEnds.register((userId) => askSession.forget(userId));
+sessionEnds.register((userId) => {
+  askSession.forget(userId);
+  pantryStore.clear();
+});

@@ -43,7 +43,8 @@ assert ask_texts(ui, 2, wait=1) == [TYPED, TYPED]
 
 again('hungry')
 type_and_send(ui)
-failure(ui, 'hungry', 'ask.sheet.hungry')
+ui.element('ask-hungry-tomorrow', timeout=30)
+assert prompt_value(ui) == TYPED, f'the hungry answer lost the words: {prompt_value(ui)!r}'
 assert by_id(ui.read(), 'ask-retry') is None, 'an empty belly offered 再试一次'
 ui.at_rest()
 ui.capture('02-hungry')
@@ -96,4 +97,4 @@ calls = assert_calls(ui, 'ask', 1, wait=2)
 assert calls == [{'text': '', 'image': True}], f'the screenshot was sent as {calls}'
 ui.at_rest()
 ui.capture('07-picked-draft')
-print('PASS: provider error and retry, hungry placeholder, offline, consent withdrawn mid-session, dropped fields named, screenshot pick')
+print('PASS: provider error and retry, hungry card, offline, consent withdrawn mid-session, dropped fields named, screenshot pick')

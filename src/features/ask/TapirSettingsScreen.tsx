@@ -15,8 +15,9 @@ import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { consentAccess, type ConsentState } from './consentStore';
-import { useConsentFor } from './hooks';
+import { bellyOf, consentAccess, type ConsentState } from './consentStore';
+import { useConsentFor, usePantry } from './hooks';
+import { PantrySection } from './PantrySection';
 import { consentStore } from './services';
 
 export function consentDate(acceptedAt: string, language: string) {
@@ -37,7 +38,9 @@ export function TapirSettingsScreen({
   const { t } = useI18n();
   const { color } = useTheme();
   const state = useConsentFor(userId);
+  const pantry = usePantry();
   const status = state.status;
+  const belly = bellyOf(state);
   const retry = {
     label: t('ask.settings.retry'),
     onPress: () => void consentStore.refresh(),
@@ -86,6 +89,16 @@ export function TapirSettingsScreen({
         ) : null}
         {status.status !== 'idle' && status.data ? (
           <CloudSection state={state} onOpenConsent={onOpenConsent} />
+        ) : null}
+        {belly ? <PantrySection belly={belly} pantry={pantry} /> : null}
+        {status.status !== 'idle' && status.data && !belly ? (
+          <NoticeCard
+            tone="urgent"
+            icon="exclamationmark.circle.fill"
+            title={t('ask.settings.failed')}
+            action={{ ...retry, testID: 'tapir-pantry-retry' }}
+            testID="tapir-pantry-failed"
+          />
         ) : null}
       </Form>
     </Host>

@@ -7,6 +7,7 @@ import {
   askSession,
   pickScreenshot,
   useAskSession,
+  useBellySlots,
   useConsentFor,
 } from '@/features/ask';
 import { closePostSheet, hasPostDraft, useStartPost } from '@/features/bounty';
@@ -21,7 +22,7 @@ export default function Ask() {
   const { t } = useI18n();
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const userId = useSignedInUser()?.id ?? null;
-  useConsentFor(userId);
+  const consent = useConsentFor(userId);
   const state = useAskSession(userId);
   const [imageFailed, setImageFailed] = useState(false);
   const openConsent = useCallback(
@@ -43,6 +44,12 @@ export default function Ask() {
     toForm.current = form;
     void startPost();
   };
+  const belly = useBellySlots({
+    consent,
+    session: state,
+    onTomorrow: () => router.back(),
+    onManual: () => leaveFor(false),
+  });
 
   if (!userId || !state) return null;
   const sending = state.sending !== null;
@@ -56,8 +63,10 @@ export default function Ask() {
     <AskTapirSheet
       tab={isShellTab(tab) ? tab : 'bounty'}
       onClose={() => router.back()}
-      showSuggestions={state.turns.length === 0 && !sending}
+      showSuggestions={state.turns.length === 0 && !sending && !belly.hungry}
       replies={state.turns.length + (state.failed ? 1 : 0) + (sending ? 1 : 0)}
+      belly={belly.bar}
+      notice={belly.notice}
       onSuggestion={(text) => askSession.setText(text)}
       composer={{
         text: state.text,
@@ -90,6 +99,7 @@ export default function Ask() {
           onRetry: () => void askSession.retry(openConsent),
           onManual: () => leaveFor(false),
         }}
+        hungry={belly.hungry}
       />
     </AskTapirSheet>
   );

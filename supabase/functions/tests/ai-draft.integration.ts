@@ -38,6 +38,7 @@ async function status() {
     energyFull: number;
     leaves: number;
     coins: number;
+    feedsLeft: number;
     consent: { given: boolean };
   };
 }
@@ -137,6 +138,22 @@ describe('ai-draft on the local stack with the fake provider', () => {
     expect(busy.status).toBe(409);
     const released = await admin.rpc('ai_abort_call', { uid: userId, held: held.data.lease });
     expect(released.error).toBeNull();
+    expect((await draft()).status).toBe(200);
+  });
+
+  test('when hungry, one tap swaps a coin and feeds it; a full belly keeps the coin', async () => {
+    for (let calls = 0; calls < 5 && (await status()).energy > 0; calls += 1) await draft();
+    const before = await status();
+    expect(before.energy).toBe(0);
+    const fed = await client.rpc('swap_and_feed_leaf');
+    expect(fed.error).toBeNull();
+    expect(fed.data.energy).toBe(fed.data.energyFull);
+    expect(fed.data.coins).toBe(before.coins - 1);
+    expect(fed.data.leaves).toBe(before.leaves);
+    expect(fed.data.feedsLeft).toBe(before.feedsLeft - 1);
+    const full = await client.rpc('swap_and_feed_leaf');
+    expect(full.error?.message).toBe('already_full');
+    expect((await status()).coins).toBe(before.coins - 1);
     expect((await draft()).status).toBe(200);
   });
 

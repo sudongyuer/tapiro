@@ -121,6 +121,37 @@ export const DRAWINGS = {
 <path class="ln" d="M56 58 C58 60 62 60 64 58"/>`,
 };
 
+// The pantry (137 A): a crayon jar and the leaf that flies to 小貘 (138 A). Not bounty art, so no map-pin copies.
+export const PANTRY_DRAWINGS = {
+  jar: `
+<g transform="translate(15 8)">
+<path class="fl" d="M18 26 L72 26 L76 90 C76 95 72 98 66 98 L24 98 C18 98 14 95 14 90 Z" fill="#E8F1F5"/>
+<path class="fl" d="M24 70 C28 58 38 52 48 54 C44 64 36 70 24 70 Z" fill="#6A9158"/>
+<path class="fl" d="M30 84 C30 70 40 62 52 62 C52 76 42 84 30 84 Z" fill="#7FA96B"/>
+<path class="fl" d="M42 94 C42 80 52 72 64 72 C64 86 54 94 42 94 Z" fill="#8FBF77"/>
+<path class="fl" d="M62 34 L66 34 L68 82 L64 82 Z" fill="#FFFFFF"/>
+<rect class="fl" x="22" y="12" width="46" height="14" rx="4" fill="#C9935B"/>
+<path class="ln" d="M18 26 L72 26 L76 90 C76 95 72 98 66 98 L24 98 C18 98 14 95 14 90 Z"/>
+<path class="ln" d="M22 12 L68 12 L68 26 L22 26 Z"/>
+<path class="ln" d="M24 70 C28 58 38 52 48 54 C44 64 36 70 24 70 Z M30 84 C30 70 40 62 52 62 C52 76 42 84 30 84 Z M42 94 C42 80 52 72 64 72 C64 86 54 94 42 94 Z"/>
+</g>`,
+  'jar-empty': `
+<g transform="translate(15 8)">
+<path class="fl" d="M18 26 L72 26 L76 90 C76 95 72 98 66 98 L24 98 C18 98 14 95 14 90 Z" fill="#E8F1F5"/>
+
+<path class="fl" d="M62 34 L66 34 L68 82 L64 82 Z" fill="#FFFFFF"/>
+<rect class="fl" x="22" y="12" width="46" height="14" rx="4" fill="#C9935B"/>
+<path class="ln" d="M18 26 L72 26 L76 90 C76 95 72 98 66 98 L24 98 C18 98 14 95 14 90 Z"/>
+<path class="ln" d="M22 12 L68 12 L68 26 L22 26 Z"/>
+
+</g>`,
+  leaf: `
+<path class="fl" d="M20 100 C20 52 52 20 100 20 C100 68 68 100 20 100 Z" fill="#7FA96B"/>
+<path class="fl" d="M20 100 L100 20 C100 68 68 100 20 100 Z" fill="#6A9158"/>
+<path class="ln" d="M20 100 C20 52 52 20 100 20 C100 68 68 100 20 100 Z"/>
+<path class="ln" d="M20 100 L80 40 M48 72 L48 56 M62 58 L62 44 M48 72 L64 72"/>`,
+};
+
 export function svgFor(id, { size = 512, border = 0 } = {}) {
   const ring = border
     ? `filter:drop-shadow(${border}px 0 0 #fff) drop-shadow(-${border}px 0 0 #fff) drop-shadow(0 ${border}px 0 #fff) drop-shadow(0 -${border}px 0 #fff)`
@@ -128,6 +159,6 @@ export function svgFor(id, { size = 512, border = 0 } = {}) {
   return `<!doctype html><html><head><style>html,body{margin:0;background:transparent}${LINE_STYLE}
 .wrap{width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center}
 svg{width:${size - border * 4}px;height:${size - border * 4}px;${ring}}</style></head><body><div class="wrap">
-<svg viewBox="0 0 120 120"><defs>${CRAYON_FILTER}</defs><g filter="url(#crayon)">${DRAWINGS[id]}</g></svg>
+<svg viewBox="0 0 120 120"><defs>${CRAYON_FILTER}</defs><g filter="url(#crayon)">${DRAWINGS[id] ?? PANTRY_DRAWINGS[id]}</g></svg>
 </div></body></html>`;
 }

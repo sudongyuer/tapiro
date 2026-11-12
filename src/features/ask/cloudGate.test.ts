@@ -18,6 +18,7 @@ async function gateWith(first: ConsentStatus | null, answers: CloudAnswer[]) {
     },
     recordConsent: async () => ({ ok: false, failure: 'failed' }),
     withdrawConsent: async () => ({ ok: false, failure: 'failed' }),
+    pantry: async () => ({ ok: false, failure: 'failed' }),
   };
   const store = createConsentStore(service);
   store.start('u1');

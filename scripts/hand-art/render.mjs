@@ -5,24 +5,27 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { DRAWINGS, svgFor } from './drawings.mjs';
+import { DRAWINGS, PANTRY_DRAWINGS, svgFor } from './drawings.mjs';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 export const APP_DIR = 'assets/hand-art';
 export const KIT_DIR = 'modules/tapiro-kit/ios/HandArt';
+export const PANTRY_DIR = 'assets/pantry';
 const SIZE = 512;
 const BORDER = 12;
 
 function main() {
-  const { values } = parseArgs({ options: { ids: { type: 'string' } } });
-  const ids = values.ids ? values.ids.split(',') : Object.keys(DRAWINGS);
+  const { values } = parseArgs({ options: { ids: { type: 'string' }, set: { type: 'string' } } });
+  const pantry = values.set === 'pantry';
+  const ids = values.ids ? values.ids.split(',') : Object.keys(pantry ? PANTRY_DRAWINGS : DRAWINGS);
+  const appDir = pantry ? PANTRY_DIR : APP_DIR;
   const scratch = mkdtempSync(join(tmpdir(), 'hand-art-'));
-  mkdirSync(APP_DIR, { recursive: true });
+  mkdirSync(appDir, { recursive: true });
   mkdirSync(KIT_DIR, { recursive: true });
   for (const id of ids) {
     const page = join(scratch, `${id}.html`);
     writeFileSync(page, svgFor(id, { size: SIZE, border: BORDER }));
-    const out = join(APP_DIR, `${id}.png`);
+    const out = join(appDir, `${id}.png`);
     rmSync(out, { force: true });
     spawnSync(
       CHROME,
@@ -39,7 +42,7 @@ function main() {
       { timeout: 30000 },
     );
     if (!existsSync(out)) throw new Error(`Chrome wrote no screenshot for ${id}`);
-    copyFileSync(out, join(KIT_DIR, `hand-art-${id}.png`));
+    if (!pantry) copyFileSync(out, join(KIT_DIR, `hand-art-${id}.png`));
     console.log(`ok ${id}`);
   }
 }

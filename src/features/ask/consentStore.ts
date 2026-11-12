@@ -1,5 +1,6 @@
 import { IDLE_LOAD, loaded, loadFailed, loading, type Loadable } from '@/lib/loadable';
 
+import type { Belly } from './belly';
 import {
   APP_CONSENT_VERSION,
   cloudAccess,
@@ -30,10 +31,20 @@ export function consentAccess(state: ConsentState): CloudAccess | null {
     : cloudAccess(state.status.data);
 }
 
+export function bellyOf(state: ConsentState): Belly | null {
+  return state.status.status === 'idle' ? null : (state.status.data?.belly ?? null);
+}
+
+export function liveBelly(state: ConsentState): Belly | null {
+  return state.status.status === 'stale' ? null : bellyOf(state);
+}
+
 export function createConsentStore(service: AskService) {
   let state = EMPTY;
   let epoch = 0;
   let droppedRead = false;
+  let reads = 0;
+  let bellyWrites = 0;
   let pendingAsk: { token: number; resolve: (outcome: AskOutcome) => void } | null = null;
   let asks = 0;
   const listeners = new Set<() => void>();
@@ -57,7 +68,9 @@ export function createConsentStore(service: AskService) {
     if (!userId) return null;
     const startedAt = epoch;
     set({ status: loading(state.status) });
+    reads += 1;
     const status = await service.status().catch(() => null);
+    reads -= 1;
     if (state.userId !== userId) return null;
     if (epoch !== startedAt) {
       droppedRead = true;
@@ -83,6 +96,7 @@ export function createConsentStore(service: AskService) {
     if (!userId || state.writing) return false;
     epoch += 1;
     droppedRead = false;
+    const bellyAt = bellyWrites;
     set({ writing: kind, failure: null });
     const result =
       kind === 'record'
@@ -101,7 +115,12 @@ export function createConsentStore(service: AskService) {
       return false;
     }
     droppedRead = false;
-    set({ writing: null, failure: null, status: loaded(result.status) });
+    const kept = bellyWrites !== bellyAt ? bellyOf(state) : null;
+    set({
+      writing: null,
+      failure: null,
+      status: loaded(kept ? { ...result.status, belly: kept } : result.status),
+    });
     if (kind === 'record' && result.status.given) settleAsk('given');
     return kind === 'record' ? result.status.given : !result.status.given;
   }
@@ -127,6 +146,11 @@ export function createConsentStore(service: AskService) {
       set(EMPTY);
     },
     refresh,
+    reread() {
+      if (state.writing) return Promise.resolve(currentStatus());
+      epoch += 1;
+      return refresh();
+    },
     async prepare(): Promise<PrepareResult> {
       const status = currentStatus() ?? (await refresh());
       return status ? cloudAccess(status) : 'offline';
@@ -148,6 +172,16 @@ export function createConsentStore(service: AskService) {
     pendingAsk: () => pendingAsk?.token ?? null,
     decline(token?: number) {
       settleAsk(consentAccess(state) === 'needsUpdate' ? 'needsUpdate' : 'declined', token);
+    },
+    applyBelly(userId: string, belly: Belly) {
+      const status = state.status;
+      if (state.userId !== userId || status.status === 'idle' || !status.data) return;
+      // A read already out may predate this write; it is dropped and read again, so it cannot undo the belly.
+      const pending = reads > 0;
+      epoch += 1;
+      bellyWrites += 1;
+      set({ status: { ...status, data: { ...status.data, belly } } });
+      if (pending && !state.writing) void refresh();
     },
     markRefused() {
       const status = state.status;

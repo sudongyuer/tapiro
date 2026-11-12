@@ -1,3 +1,5 @@
+import { toBelly, type Belly, type PantryFailure, type PantryWrite } from './belly';
+
 // The version whose copy this build shows on the consent screen. record_consent refuses any other, so it must never
 // come from ai_status(); bump it only together with the consent copy.
 export const APP_CONSENT_VERSION = 1;
@@ -6,6 +8,7 @@ export type ConsentStatus = {
   currentVersion: number;
   given: boolean;
   acceptedAt: string | null;
+  belly?: Belly | null;
 };
 
 export type CloudAccess = 'given' | 'notGiven' | 'needsUpdate';
@@ -15,10 +18,14 @@ export type WriteFailure = 'failed' | 'needsUpdate';
 export type WriteResult =
   { ok: true; status: ConsentStatus } | { ok: false; failure: WriteFailure };
 
+export type PantryResult =
+  { ok: true; status: ConsentStatus } | { ok: false; failure: PantryFailure };
+
 export type AskService = {
   status(): Promise<ConsentStatus>;
   recordConsent(version: number): Promise<WriteResult>;
   withdrawConsent(): Promise<WriteResult>;
+  pantry(write: PantryWrite): Promise<PantryResult>;
 };
 
 export function cloudAccess(status: ConsentStatus, appVersion = APP_CONSENT_VERSION): CloudAccess {
@@ -51,6 +58,10 @@ export function toConsentStatus(value: unknown): ConsentStatus {
     given: given as boolean,
     acceptedAt: given ? (acceptedAt as string) : null,
   };
+}
+
+export function toAiStatus(value: unknown): ConsentStatus {
+  return { ...toConsentStatus(value), belly: toBelly(value) };
 }
 
 export function toWriteFailure(error: unknown): WriteFailure {

@@ -40,6 +40,7 @@ function harness(first: ConsentStatus = NOT_GIVEN) {
       writes.push(write);
       return write.promise;
     },
+    pantry: async () => ({ ok: false, failure: 'failed' }),
   };
   const store = createConsentStore(service);
   const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -265,5 +266,71 @@ describe('consent store', () => {
     expect(await asked).toBe('declined');
     expect(h.store.getSnapshot().userId).toBeNull();
     expect(h.store.getSnapshot().status.status).toBe('idle');
+  });
+
+  test('a belly patch survives an older read still out, which is read again', async () => {
+    const belly = { energy: 0, full: 1000, leaves: 1, coins: 0, feedsLeft: 5, nextRefillAt: AT };
+    const fed = { ...belly, energy: 1000, leaves: 0 };
+    const h = harness({ ...GIVEN, belly });
+    await h.startReady();
+    void h.store.refresh();
+    h.store.applyBelly('u1', fed);
+    h.reads[1].resolve({ ...GIVEN, belly });
+    await h.tick();
+    expect(h.store.getSnapshot().status).toEqual({
+      status: 'ready',
+      data: { ...GIVEN, belly: fed },
+    });
+    expect(h.calls).toEqual(['status', 'status', 'status']);
+    h.reads[2].resolve({ ...GIVEN, belly: fed });
+    await h.tick();
+    expect(h.store.getSnapshot().status).toEqual({
+      status: 'ready',
+      data: { ...GIVEN, belly: fed },
+    });
+  });
+
+  test('a belly patch for another user is ignored', async () => {
+    const h = harness(GIVEN);
+    await h.startReady();
+    h.store.applyBelly('u2', {
+      energy: 1,
+      full: 1000,
+      leaves: 0,
+      coins: 0,
+      feedsLeft: 5,
+      nextRefillAt: AT,
+    });
+    expect(h.store.getSnapshot().status).toEqual({ status: 'ready', data: GIVEN });
+  });
+
+  test('a consent write answered after a belly patch keeps the patched belly', async () => {
+    const belly = { energy: 0, full: 1000, leaves: 0, coins: 2, feedsLeft: 5, nextRefillAt: AT };
+    const fed = { ...belly, energy: 1000, coins: 1 };
+    const h = harness({ ...NOT_GIVEN, belly });
+    await h.startReady();
+    const recorded = h.store.record();
+    h.store.applyBelly('u1', fed);
+    h.writes[0].resolve({ ok: true, status: { ...GIVEN, belly } });
+    expect(await recorded).toBe(true);
+    expect(h.store.getSnapshot().status).toEqual({
+      status: 'ready',
+      data: { ...GIVEN, belly: fed },
+    });
+  });
+
+  test('a reread drops an older read still out', async () => {
+    const h = harness(GIVEN);
+    await h.startReady();
+    void h.store.refresh();
+    void h.store.reread();
+    h.reads[2].resolve({ ...GIVEN, acceptedAt: '2026-11-12T04:00:00.000Z' });
+    await h.tick();
+    h.reads[1].resolve(GIVEN);
+    await h.tick();
+    expect(h.store.getSnapshot().status).toEqual({
+      status: 'ready',
+      data: { ...GIVEN, acceptedAt: '2026-11-12T04:00:00.000Z' },
+    });
   });
 });
