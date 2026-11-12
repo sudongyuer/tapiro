@@ -302,8 +302,27 @@ def paste_into(ui, identifier, text):
     # Taps only: an AXe ⌘V carries no user authentication, so iOS asks for paste permission and pastes nothing, and AXe
     # key events (⌘A, typed keys) are dropped for seconds at a time on iOS 27. 粘贴 in the edit menu is the user's own
     # paste; 全选 first makes it replace what the field holds.
+    # The app sometimes pastes the value an earlier case left on the pasteboard although simctl pbpaste already reads
+    # the new one (bounty_post_place, 2026-11-10 and 2026-11-13), so a stale paste is written and pasted once more.
+    for attempt in range(2):
+        copy_on_device(ui, text)
+        paste_once(ui, identifier)
+        try:
+            ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text,
+                    f'{identifier} does not read {text!r}', 10 if attempt == 0 else 30)
+            return
+        except AssertionError:
+            try:
+                pasted = (by_id(ui.read(), identifier) or {}).get('AXValue')
+            except AssertionError:
+                pasted = None
+            print(f'paste_into: {identifier} reads {pasted!r} after pasting {text!r} (attempt {attempt + 1})', flush=True)
+            if attempt == 1:
+                raise
+
+
+def paste_once(ui, identifier):
     paste, select_all = PASTE[ui.locale], SELECT_ALL[ui.locale]
-    copy_on_device(ui, text)
     tap_centre(ui, ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled'))
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled after focus')['frame']
     end = (f['x'] + f['width'] - 8, f['y'] + f['height'] / 2)
@@ -321,7 +340,6 @@ def paste_into(ui, identifier, text):
         ui.wait(lambda items: not menu_item(select_all)(items) and menu_item(paste)(items),
                 f'{select_all} did not select the text in {identifier}', 5)
     tap_centre(ui, ui.wait(menu_item(paste), f'{identifier} lost the edit menu', 3))
-    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
 
 
 def published_args(ui, timeout=20):
