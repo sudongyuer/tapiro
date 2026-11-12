@@ -16,6 +16,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
+  s.frameworks = 'Speech', 'AVFAudio'
 
   s.source_files = '**/*.swift'
   s.resource_bundles = { 'TapiroKitHandArt' => ['HandArt/*.png'] }

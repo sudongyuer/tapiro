@@ -4,11 +4,12 @@ import UIKit
 public final class TapiroKitModule: Module {
   private let places = PlaceSearch()
   private let store = Store()
+  private let speech = SpeechSession()
 
   public func definition() -> ModuleDefinition {
     Name("TapiroKit")
 
-    Events("onPlaceSuggestions", "onStoreTransaction")
+    Events("onPlaceSuggestions", "onStoreTransaction", "onSpeech")
 
     View(TitleHaloView.self) {}
 
@@ -59,6 +60,29 @@ public final class TapiroKitModule: Module {
 
     AsyncFunction("storeStopUpdates") { () async in
       await self.store.stopUpdates()
+    }
+
+    AsyncFunction("speechPermissions") { () -> [String: String] in
+      SpeechSession.permissions()
+    }
+
+    AsyncFunction("speechRequestPermissions") { () async -> [String: String] in
+      await SpeechSession.requestPermissions()
+    }
+
+    AsyncFunction("speechStart") { [weak self] (requestId: String, language: String, region: String?) async -> [String: Any] in
+      guard let self else { return ["status": "failed", "code": "unknown"] }
+      return await self.speech.start(requestId: requestId, language: language, region: region) { [weak self] body in
+        self?.sendEvent("onSpeech", body)
+      }
+    }
+
+    AsyncFunction("speechStop") { [weak self] (requestId: String) async in
+      await self?.speech.stop(requestId: requestId)
+    }
+
+    AsyncFunction("speechCancel") { [weak self] (requestId: String) async in
+      await self?.speech.cancel(requestId: requestId)
     }
 
     View(PinnedBarView.self)

@@ -192,6 +192,19 @@ export function createAskSession(deps: {
       const user: UserTurn = { role: 'user', text: state.text.trim(), via: 'image' };
       return run({ user, image, typed: state.text }, openConsent);
     },
+    generation: forgetsOf,
+    writeFor(userId: string, since: number, next: (text: string) => string) {
+      if (forgetsOf(userId) !== since) return false;
+      if (state.userId !== userId) {
+        deps.storage.writeText(userId, next(deps.storage.readText(userId)));
+        return true;
+      }
+      if (state.sending) return false;
+      const text = next(state.text);
+      deps.storage.writeText(userId, text);
+      set({ text, failed: null, needsUpdate: false });
+      return true;
+    },
     fed() {
       if (state.failed?.reason === 'hungry') set({ failed: null });
     },
