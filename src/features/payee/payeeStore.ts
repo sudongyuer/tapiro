@@ -53,6 +53,10 @@ export function createPayeeStore(service: PayeeService) {
       await reload(userId);
     },
 
+    clear() {
+      if (state.status !== 'idle') set({ status: 'idle' });
+    },
+
     add: (userId: string, details: PayeeDetails) => mutate(userId, () => service.add(details)),
     update: (userId: string, id: string, details: PayeeDetails) =>
       mutate(userId, () => service.update(id, details)),

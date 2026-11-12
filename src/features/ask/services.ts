@@ -1,5 +1,6 @@
 import { Settings } from 'react-native';
 
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -96,3 +97,5 @@ userCleanups.register((userId) => {
   askSession.forget(userId);
   consentStore.clear();
 });
+
+sessionEnds.register((userId) => askSession.forget(userId));

@@ -1,3 +1,4 @@
+import { sessionEnds } from '@/lib/sessionEnds';
 import { userCleanups } from '@/lib/userCleanups';
 
 export type ApplySurface = 'card' | 'detail';
@@ -74,3 +75,4 @@ export type JustApplied = ReturnType<typeof createJustApplied>;
 export const justApplied = createJustApplied();
 
 userCleanups.register(() => justApplied.clear());
+sessionEnds.register(() => justApplied.clear());

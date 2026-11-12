@@ -6,6 +6,7 @@ import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import { live } from '@/lib/live';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { uiVerifyPurchases } from '@/lib/uiVerifyPurchases';
 import { userCleanups } from '@/lib/userCleanups';
 
@@ -144,3 +145,7 @@ live.on(
 );
 
 userCleanups.register((userId) => codeDrafts.set(userId, ''));
+sessionEnds.register(() => {
+  coinsStore.clear();
+  purchaseStore.clear();
+});
