@@ -9,7 +9,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import TYPED, open_sheet, turn, type_and_send  # noqa: E402
-from bounty import close_sheet_by_swipe, value  # noqa: E402
+from bounty import assert_category_one_line, close_sheet_by_swipe, value  # noqa: E402
 from bounty import open_sheet as open_post_sheet  # noqa: E402
 from driver import UI, Shot, by_id, close, reach_home, token  # noqa: E402
 from recording import clip, frames  # noqa: E402
@@ -48,6 +48,7 @@ place = ui.t('bounty.post.aiFill.place', place='Sunway Pyramid 北门快递柜')
 ui.wait_label('bounty-post-ai-place', lambda label: label == place, 'the place 小貘 heard is not named')
 assert value(ui, 'bounty-post-title') == TITLE, f'the title is {value(ui, "bounty-post-title")!r}'
 assert value(ui, 'bounty-post-reward') == '15', f'the reward is {value(ui, "bounty-post-reward")!r}'
+assert_category_one_line(ui, 'pickup')
 undo = by_id(ui.read(), 'bounty-post-ai-undo')
 assert undo and undo['frame']['height'] >= 44, f'撤销 is under 44 pt: {undo}'
 
