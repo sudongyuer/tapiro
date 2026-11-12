@@ -9,7 +9,8 @@ import {
   type Turn,
   type UserTurn,
 } from './conversation';
-import type { AskOutcome, PrepareResult } from './consentStore';
+import { askConsent, type ConsentGate } from './consentFlow';
+import type { PrepareResult } from './consentStore';
 
 export type AskFailure = 'offline' | 'providerError' | 'unreadable' | 'hungry' | 'busy';
 
@@ -30,11 +31,6 @@ export type AskStorage = {
   writeText(userId: string, text: string): void;
   readConversation(userId: string): unknown;
   writeConversation(userId: string, conversation: unknown): void;
-};
-
-export type ConsentGate = {
-  prepare(): Promise<PrepareResult>;
-  ask(): { outcome: Promise<AskOutcome> };
 };
 
 const EMPTY: AskSessionState = {
@@ -79,14 +75,8 @@ export function createAskSession(deps: {
     return conversation;
   }
 
-  async function consented(openConsent: () => void): Promise<PrepareResult> {
-    const access = await deps.consent.prepare();
-    if (access !== 'notGiven') return access;
-    const asked = deps.consent.ask();
-    openConsent();
-    const outcome = await asked.outcome;
-    return outcome === 'declined' ? 'notGiven' : outcome;
-  }
+  const consented = (openConsent: () => void): Promise<PrepareResult> =>
+    askConsent(deps.consent, openConsent);
 
   async function run(send: AskSend, openConsent: () => void) {
     const { userId } = state;

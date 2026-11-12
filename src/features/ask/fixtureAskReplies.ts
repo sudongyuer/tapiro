@@ -128,6 +128,21 @@ function body(reply: FixtureReply, now: Date): unknown {
   }
 }
 
+const FIXTURE_TRANSLATIONS: Record<string, Partial<Record<string, string>>> = {
+  'OK, saya sampai 10 minit lagi': {
+    'zh-Hans': '好，我再过 10 分钟到',
+    en: 'OK, I’ll be there in 10 minutes',
+  },
+};
+
+function translation({ input }: CloudRequest) {
+  const to = input.to ?? 'zh-Hans';
+  return {
+    tool: 'translate',
+    result: { text: FIXTURE_TRANSLATIONS[input.text]?.[to] ?? `[${to}] ${input.text}` },
+  };
+}
+
 const REFUSALS: Partial<Record<FixtureReply, CloudAnswer>> = {
   providerError: { ok: false, error: 'provider_error', status: 502 },
   hungry: { ok: false, error: 'hungry', status: 429 },
@@ -150,20 +165,28 @@ export function createFixtureSender({
   now?: () => Date;
   onCall: (name: string, args: unknown) => void;
   onConsentRequired: () => void;
-  meter?: () => object | null;
+  meter?: (task: CloudRequest['task']) => object | null;
   onHungry?: () => void;
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
-    onCall(request.task, { text: request.input.text, image: request.input.image !== undefined });
+    onCall(request.task, {
+      text: request.input.text,
+      image: request.input.image !== undefined,
+      ...(request.input.to ? { to: request.input.to } : {}),
+    });
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     const reply = queue.length > 1 ? queue.shift()! : queue[0];
     if (reply === 'consentRequired') onConsentRequired();
     if (reply === 'hungry') onHungry();
     const refused = REFUSALS[reply];
     if (refused) return refused;
-    const spent = meter();
+    const spent = meter(request.task);
     if (spent === null) return REFUSALS.hungry!;
-    return { ok: true, body: { task: request.task, ...(body(reply, now()) as object), ...spent } };
+    const result =
+      request.task === 'translate' && reply !== 'malformed'
+        ? translation(request)
+        : body(reply, now());
+    return { ok: true, body: { task: request.task, ...(result as object), ...spent } };
   };
 }

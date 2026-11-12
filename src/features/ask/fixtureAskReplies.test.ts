@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { parseAskReply, toRawReply } from './askReply';
 import { createFixtureSender, FIXTURE_REPLIES, fixtureReplies } from './fixtureAskReplies';
+import { translatedText } from './translations';
 
 const NOW = new Date('2026-11-12T04:00:00.000Z');
 
@@ -42,5 +43,33 @@ describe('verify replies', () => {
       { text: 't2', image: false },
     ]);
     expect(fixtureReplies(undefined)).toEqual(['answer']);
+  });
+
+  test('a translation reads as one, costs the translate price and records its language', async () => {
+    const calls: unknown[] = [];
+    const tasks: string[] = [];
+    const send = createFixtureSender({
+      replies: fixtureReplies('answer,malformed'),
+      delayMs: 0,
+      onCall: (_name, args) => calls.push(args),
+      onConsentRequired: () => {},
+      meter: (task) => {
+        tasks.push(task);
+        return {};
+      },
+    });
+    const first = await send({
+      task: 'translate',
+      input: { text: 'OK, saya sampai 10 minit lagi', to: 'zh-Hans' },
+    });
+    expect(first.ok && translatedText(first.body)).toBe('好，我再过 10 分钟到');
+    const other = await send({ task: 'translate', input: { text: 'Hai', to: 'en' } });
+    expect(other.ok && translatedText(other.body)).toBeNull();
+    expect(tasks).toEqual(['translate', 'translate']);
+    expect(calls[0]).toEqual({
+      text: 'OK, saya sampai 10 minit lagi',
+      image: false,
+      to: 'zh-Hans',
+    });
   });
 });

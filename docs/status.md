@@ -41,8 +41,10 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   (★ D1–D15 in the plan). Task 5 is built: the belly bar in the sheet header, the low line, the hungry card with feed,
   swap-and-feed (`swap_and_feed_leaf()`), 吃撑了 and 明早再来, the feed motion, and the pantry jar with the coin swap on
   我的 → 小貘; coin history names a swap 「换嫩叶」 (★ E1–E12). 133's 小貘记得 line waits for Task 8. 149 A is in the server:
-  at most 5 leaves fed per refill day (`fed_enough`); **the 5 is provisional** until real usage is measured. Next: Task 6
-  waits on chat translation; Task 7 (voice) needs a device; Task 8 (errors and 小貘记得) can start. Nothing is deployed;
+  at most 5 leaves fed per refill day (`fed_enough`); **the 5 is provisional** until real usage is measured. Task 6 is
+  built: long-press a message from the other side → 翻译 (consent page first), the translation under the original in the
+  bubble, kept on the device so it is never charged twice, with dizzy, busy, hungry (去喂小貘 opens the hungry card) and
+  吃撑了 lines (★ T1–T12). Next: Task 7 (voice) needs a device; Task 8 (errors and 小貘记得) can start. Nothing is deployed;
   the real provider waits on the Model Studio account (148). The token budget is an unmeasured placeholder and no model
   ID is pinned.
 

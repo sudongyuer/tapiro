@@ -11,6 +11,7 @@ import { createCloudGate } from './cloudGate';
 import { createConsentStore } from './consentStore';
 import { createFixtureSender, fixtureReplies } from './fixtureAskReplies';
 import {
+  FIXTURE_TRANSLATE_COST,
   createFixtureAskService,
   fixtureBelly,
   fixtureConsent,
@@ -18,7 +19,8 @@ import {
 } from './fixtureAskService';
 import { metered } from './metered';
 import { createPantryStore } from './pantryStore';
-import { createSettingsAskStorage } from './settingsAskStorage';
+import { createSettingsAskStorage, createSettingsTranslationStorage } from './settingsAskStorage';
+import { createTranslations, type TranslationStorage } from './translations';
 
 const CALLS_KEY = 'uiVerifyAiCalls';
 const VERIFY_DELAY_MS = 1500;
@@ -46,13 +48,14 @@ function verifyServices() {
     delayMs: verifyDelay(),
     onCall: recordCall,
     onConsentRequired: () => service.withdrawElsewhere(),
-    meter: () => service.spend(),
+    meter: (task) => service.spend(task === 'translate' ? FIXTURE_TRANSLATE_COST : undefined),
     onHungry: () => service.starve(),
   });
   return { service, send };
 }
 
-// Cases share one install, so a verify launch starts with no kept words or conversation unless it asks to keep them.
+// Cases share one install, so a verify launch starts with no kept words, conversation or translations unless it asks to
+// keep them.
 function freshEachLaunch(storage: AskStorage): AskStorage {
   const cleared = new Set<string>();
   const fresh = (userId: string) => {
@@ -81,7 +84,28 @@ function freshEachLaunch(storage: AskStorage): AskStorage {
   };
 }
 
+function freshTranslations(storage: TranslationStorage): TranslationStorage {
+  const cleared = new Set<string>();
+  const fresh = (userId: string) => {
+    if (cleared.has(userId)) return;
+    cleared.add(userId);
+    storage.write(userId, null);
+  };
+  return {
+    read(userId) {
+      fresh(userId);
+      return storage.read(userId);
+    },
+    write(userId, kept) {
+      fresh(userId);
+      storage.write(userId, kept);
+    },
+  };
+}
+
 const verify = uiVerify ? verifyServices() : null;
+
+const keepAsk = uiVerifyArgument('uiVerifyAskKeep') === '1';
 
 const deviceStorage = createSettingsAskStorage(Settings);
 
@@ -102,19 +126,26 @@ export const cloudCall = createCloudGate({
 export const askSession = createAskSession({
   call: cloudCall,
   consent: consentStore,
-  storage:
-    verify && uiVerifyArgument('uiVerifyAskKeep') !== '1'
-      ? freshEachLaunch(deviceStorage)
-      : deviceStorage,
+  storage: verify && !keepAsk ? freshEachLaunch(deviceStorage) : deviceStorage,
+});
+
+const translationStorage = createSettingsTranslationStorage(Settings);
+
+export const translations = createTranslations({
+  call: cloudCall,
+  consent: consentStore,
+  storage: verify && !keepAsk ? freshTranslations(translationStorage) : translationStorage,
 });
 
 userCleanups.register((userId) => {
   askSession.forget(userId);
+  translations.forget(userId);
   pantryStore.clear();
   consentStore.clear();
 });
 
 sessionEnds.register((userId) => {
   askSession.forget(userId);
+  translations.forget(userId);
   pantryStore.clear();
 });
