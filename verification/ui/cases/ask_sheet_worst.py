@@ -97,4 +97,4 @@ calls = assert_calls(ui, 'ask', 1, wait=2)
 assert calls == [{'text': '', 'image': True}], f'the screenshot was sent as {calls}'
 ui.at_rest()
 ui.capture('07-picked-draft')
-print('PASS: provider error and retry, hungry placeholder, offline, consent withdrawn mid-session, dropped fields named, screenshot pick')
+print('PASS: provider error and retry, hungry card, offline, consent withdrawn mid-session, dropped fields named, screenshot pick')
