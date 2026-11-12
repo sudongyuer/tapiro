@@ -9,6 +9,10 @@ import {
   useAskSession,
   useBellySlots,
   useConsentFor,
+  useVoice,
+  voice,
+  VoiceCards,
+  type VoiceState,
 } from '@/features/ask';
 import { closePostSheet, hasPostDraft, useStartPost } from '@/features/bounty';
 import { AskTapirSheet, isShellTab } from '@/features/shell';
@@ -19,7 +23,7 @@ import { useI18n } from '@/lib/i18n';
 
 export default function Ask() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const userId = useSignedInUser()?.id ?? null;
   const consent = useConsentFor(userId);
@@ -29,6 +33,7 @@ export default function Ask() {
     () => router.push({ pathname: '/ask-consent', params: { from: 'sheet' } }),
     [router],
   );
+  const heard = useVoice(language, openConsent);
   const toForm = useRef(false);
   const startPost = useStartPost({
     open: () =>
@@ -64,7 +69,12 @@ export default function Ask() {
       tab={isShellTab(tab) ? tab : 'bounty'}
       onClose={() => router.back()}
       showSuggestions={state.turns.length === 0 && !sending && !belly.hungry}
-      replies={state.turns.length + (state.failed ? 1 : 0) + (sending ? 1 : 0)}
+      replies={
+        state.turns.length +
+        (state.failed ? 1 : 0) +
+        (sending ? 1 : 0) +
+        (voiceShown(heard) ? 1 : 0)
+      }
       belly={belly.bar}
       notice={belly.notice}
       onSuggestion={(text) => askSession.setText(text)}
@@ -72,6 +82,7 @@ export default function Ask() {
         text: state.text,
         onChangeText: (text) => {
           setImageFailed(false);
+          voice.dismiss();
           askSession.setText(text);
         },
         onSend: () => void askSession.send(openConsent),
@@ -83,6 +94,11 @@ export default function Ask() {
         },
         sending,
         note,
+        mic: {
+          state: heard.phase === 'explain' || heard.phase === 'blocked' ? 'idle' : heard.phase,
+          live: heard.live,
+          onMic: () => void voice.tap(),
+        },
       }}
     >
       <AskConversation
@@ -101,6 +117,15 @@ export default function Ask() {
         }}
         hungry={belly.hungry}
       />
+      <VoiceCards
+        state={heard}
+        onAllow={() => void voice.allow()}
+        onRetry={() => void voice.retry()}
+      />
     </AskTapirSheet>
   );
+}
+
+function voiceShown(state: VoiceState) {
+  return state.phase === 'explain' || state.phase === 'blocked' || state.note !== null;
 }

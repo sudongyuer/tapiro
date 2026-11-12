@@ -13,7 +13,9 @@
       "deploymentTarget": "26.0",
       "bundleIdentifier": "app.tapiro",
       "infoPlist": {
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "NSMicrophoneUsageDescription": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop.",
+        "NSSpeechRecognitionUsageDescription": "Turns what you say to Tapir into text. Your phone recognises it first; if it can’t, and you have agreed, the recording goes to Alibaba Cloud (Singapore)."
       }
     },
     "plugins": [
@@ -54,14 +56,14 @@
         {
           "photosPermission": false,
           "cameraPermission": "Scan a receive QR code shown on another screen, or take a photo to send in a chat. The camera opens only when you tap Take Photo or scan; when scanning, Tapiro reads the code only.",
-          "microphonePermission": false
+          "microphonePermission": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop."
         }
       ],
       [
         "expo-camera",
         {
           "cameraPermission": "Scan a receive QR code shown on another screen, or take a photo to send in a chat. The camera opens only when you tap Take Photo or scan; when scanning, Tapiro reads the code only.",
-          "microphonePermission": false,
+          "microphonePermission": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop.",
           "recordAudioAndroid": false
         }
       ],

@@ -18,8 +18,28 @@ describe('verify replies', () => {
       const answer = await send({ task: 'ask', input: { text: 'x' } });
       if (!answer.ok) continue;
       const raw = toRawReply(answer.body);
-      expect(raw === null ? null : parseAskReply(raw) !== null).toBe(reply !== 'malformed');
+      expect(raw !== null && parseAskReply(raw) !== null).toBe(
+        reply !== 'malformed' && reply !== 'silence',
+      );
     }
+  });
+
+  test('a recording comes back written down in its language, or empty for silence', async () => {
+    const calls: unknown[] = [];
+    const send = createFixtureSender({
+      replies: fixtureReplies('answer,silence'),
+      delayMs: 0,
+      onCall: (name, args) => calls.push({ name, args }),
+      onConsentRequired: () => {},
+    });
+    const audio = { mediaType: 'audio/mp4' as const, data: 'AAAAHGZ0eXBNNEEg' };
+    const first = await send({ task: 'transcribe', input: { audio, language: 'ms' } });
+    const second = await send({ task: 'transcribe', input: { audio, language: 'ms' } });
+    expect(first.ok && (first.body as { result: unknown }).result).toEqual({
+      text: 'Tolong ambil bungkusan saya di Pyramid esok',
+    });
+    expect(second.ok && (second.body as { result: unknown }).result).toEqual({ text: '' });
+    expect(calls[0]).toEqual({ name: 'transcribe', args: { language: 'ms', audio: true } });
   });
 
   test('replies run in order and the last one repeats', async () => {

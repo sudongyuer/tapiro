@@ -13,6 +13,7 @@ export const FIXTURE_REPLIES = [
   'offline',
   'consentRequired',
   'malformed',
+  'silence',
 ] as const;
 export type FixtureReply = (typeof FIXTURE_REPLIES)[number];
 
@@ -52,7 +53,18 @@ const EMPTY = {
   placeHint: null,
 };
 
-function body(reply: FixtureReply, now: Date): unknown {
+export const FIXTURE_TRANSCRIPTS: Readonly<Record<string, string>> = {
+  'zh-Hans': '明天帮我去 Pyramid 取快递',
+  en: 'Pick up my parcel at Pyramid tomorrow',
+  ms: 'Tolong ambil bungkusan saya di Pyramid esok',
+};
+
+// A recording is always written down; only a refusal or 'silence' in the queue changes what comes back.
+function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
+  if (request.task === 'transcribe') {
+    const text = reply === 'silence' ? '' : (FIXTURE_TRANSCRIPTS[request.input.language] ?? '');
+    return { tool: 'transcript', result: { text } };
+  }
   switch (reply) {
     case 'answer':
       return {
@@ -155,7 +167,12 @@ export function createFixtureSender({
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
-    onCall(request.task, { text: request.input.text, image: request.input.image !== undefined });
+    onCall(
+      request.task,
+      request.task === 'transcribe'
+        ? { language: request.input.language, audio: request.input.audio.data !== '' }
+        : { text: request.input.text, image: request.input.image !== undefined },
+    );
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     const reply = queue.length > 1 ? queue.shift()! : queue[0];
     if (reply === 'consentRequired') onConsentRequired();
@@ -164,6 +181,9 @@ export function createFixtureSender({
     if (refused) return refused;
     const spent = meter();
     if (spent === null) return REFUSALS.hungry!;
-    return { ok: true, body: { task: request.task, ...(body(reply, now()) as object), ...spent } };
+    return {
+      ok: true,
+      body: { task: request.task, ...(body(reply, now(), request) as object), ...spent },
+    };
   };
 }

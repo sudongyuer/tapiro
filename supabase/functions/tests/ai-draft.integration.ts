@@ -107,6 +107,22 @@ describe('ai-draft on the local stack with the fake provider', () => {
     expect(JSON.stringify(rows)).not.toContain(PROMPT);
   });
 
+  test('a recording comes back as words through the served function and is metered as transcribe', async () => {
+    const before = await status();
+    const response = await ask({
+      task: 'transcribe',
+      input: { audio: { mediaType: 'audio/mp4', data: 'AAAAHGZ0eXBNNEEg' }, language: 'ms' },
+    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toMatchObject({ task: 'transcribe', tool: 'transcript' });
+    expect(body.result.text.length).toBeGreaterThan(0);
+    expect(body.energy).toBeLessThan(before.energy);
+    const rows = await meterRows();
+    expect(rows.map((row) => row.task)).toEqual(['draft_bounty', 'transcribe']);
+    expect(JSON.stringify(rows)).not.toContain('AAAAHGZ0eXBNNEEg');
+  });
+
   test('the same belly gives three drafts, then 小貘 is hungry', async () => {
     expect((await draft()).status).toBe(200);
     expect((await draft()).status).toBe(200);

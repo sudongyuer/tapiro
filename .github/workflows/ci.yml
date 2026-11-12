@@ -26,6 +26,7 @@ jobs:
       - run: bunx tsc --noEmit
       - run: bun run format:check
       - run: bun test
+      - run: bun run test:kit-swift
       - run: node scripts/design-check.mjs
       - run: node scripts/check-specs.mjs --dir docs/specs
       - run: node scripts/check-story-map.mjs

@@ -47,6 +47,18 @@ const EMPTY: AskSessionState = {
   needsUpdate: false,
 };
 
+export async function askConsent(
+  consent: ConsentGate,
+  openConsent: () => void,
+): Promise<PrepareResult> {
+  const access = await consent.prepare();
+  if (access !== 'notGiven') return access;
+  const asked = consent.ask();
+  openConsent();
+  const outcome = await asked.outcome;
+  return outcome === 'declined' ? 'notGiven' : outcome;
+}
+
 function failureOf(result: CloudResult): AskFailure | 'needsUpdate' | null {
   if (result.kind === 'needsUpdate') return 'needsUpdate';
   if (result.kind === 'unavailable') return 'offline';
@@ -79,14 +91,7 @@ export function createAskSession(deps: {
     return conversation;
   }
 
-  async function consented(openConsent: () => void): Promise<PrepareResult> {
-    const access = await deps.consent.prepare();
-    if (access !== 'notGiven') return access;
-    const asked = deps.consent.ask();
-    openConsent();
-    const outcome = await asked.outcome;
-    return outcome === 'declined' ? 'notGiven' : outcome;
-  }
+  const consented = (openConsent: () => void) => askConsent(deps.consent, openConsent);
 
   async function run(send: AskSend, openConsent: () => void) {
     const { userId } = state;
@@ -201,6 +206,20 @@ export function createAskSession(deps: {
     sendImage(image: CloudImage, openConsent: () => void) {
       const user: UserTurn = { role: 'user', text: state.text.trim(), via: 'image' };
       return run({ user, image, typed: state.text }, openConsent);
+    },
+    generation: forgetsOf,
+    // Spoken words land here; while the sheet is closed they go to the kept words, unless the user signed out since.
+    writeFor(userId: string, since: number, next: (text: string) => string) {
+      if (forgetsOf(userId) !== since) return false;
+      if (state.userId !== userId) {
+        deps.storage.writeText(userId, next(deps.storage.readText(userId)));
+        return true;
+      }
+      if (state.sending) return false;
+      const text = next(state.text);
+      deps.storage.writeText(userId, text);
+      set({ text, failed: null, needsUpdate: false });
+      return true;
     },
     fed() {
       if (state.failed?.reason === 'hungry') set({ failed: null });

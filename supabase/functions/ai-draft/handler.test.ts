@@ -293,7 +293,7 @@ describe('ai-draft', () => {
       const failing = setup({
         provider: {
           async generate(call) {
-            throw new Error(`upstream refused: ${call.input.text}`);
+            throw new Error(`upstream refused: ${JSON.stringify(call.input)}`);
           },
         },
       });

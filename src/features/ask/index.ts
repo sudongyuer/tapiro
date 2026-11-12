@@ -1,8 +1,10 @@
 export { AskConversation, type AskActions } from './AskConversation';
 export { APP_CONSENT_VERSION, cloudAccess, type CloudAccess } from './consent';
 export { ConsentScreen, type ConsentFrom } from './ConsentScreen';
-export { useAskSession, useConsentFor } from './hooks';
+export { useAskSession, useConsentFor, useVoice } from './hooks';
 export { pickScreenshot } from './screenshot';
-export { askSession, cloudCall } from './services';
+export { askSession, cloudCall, voice } from './services';
 export { TapirSettingsScreen } from './TapirSettingsScreen';
 export { useBellySlots } from './useBellySlots';
+export { VoiceCards } from './VoiceCards';
+export type { VoiceState } from './voice';

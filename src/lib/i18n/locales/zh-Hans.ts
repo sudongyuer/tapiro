@@ -186,7 +186,6 @@ export default {
       },
       mic: '说话',
       send: '发送',
-      comingSoon: '语音即将推出',
       close: '关闭',
     },
   },

@@ -1,17 +1,29 @@
-export const AI_TASKS = ['draft_bounty', 'answer', 'translate', 'ask'] as const;
+export const AI_TASKS = ['draft_bounty', 'answer', 'translate', 'ask', 'transcribe'] as const;
 export type AiTask = (typeof AI_TASKS)[number];
 
-export const AI_TOOLS = ['draft_bounty', 'answer', 'translate', 'clarify', 'pick'] as const;
+export const AI_TOOLS = [
+  'draft_bounty',
+  'answer',
+  'translate',
+  'clarify',
+  'pick',
+  'transcript',
+] as const;
 export type AiTool = (typeof AI_TOOLS)[number];
 
 export const TRANSLATE_LANGUAGES = ['zh-Hans', 'en', 'ms'] as const;
 export const INPUT_TEXT_MAX = 2000;
 export const IMAGE_DATA_MAX = 1_400_000;
+export const AUDIO_DATA_MAX = 1_400_000;
 const OUTPUT_TEXT_MAX = 4000;
 
+export type AiLanguage = (typeof TRANSLATE_LANGUAGES)[number];
 export type AiImage = { mediaType: 'image/jpeg'; data: string };
-export type AiInput = { text: string; to?: (typeof TRANSLATE_LANGUAGES)[number]; image?: AiImage };
-export type AiRequest = { task: AiTask; input: AiInput };
+export type AiAudio = { mediaType: 'audio/mp4'; data: string };
+export type AiInput = { text: string; to?: AiLanguage; image?: AiImage };
+export type AiRequest =
+  | { task: Exclude<AiTask, 'transcribe'>; input: AiInput }
+  | { task: 'transcribe'; input: { audio: AiAudio; language: AiLanguage } };
 
 type Schema = {
   type: string | readonly string[];
@@ -139,6 +151,17 @@ export const TOOL_SCHEMAS: Readonly<Record<AiTool, ToolSchema>> = {
       properties: { text: { type: 'string', minLength: 1, maxLength: OUTPUT_TEXT_MAX } },
     },
   },
+  transcript: {
+    name: 'transcript',
+    description:
+      "Write down what the user said, in the language they spoke. Empty when nothing was said. The app puts it in the user's field; nothing is sent.",
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['text'],
+      properties: { text: { type: 'string', maxLength: INPUT_TEXT_MAX } },
+    },
+  },
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -220,6 +243,7 @@ export function validToolResult(tool: AiTool, args: unknown) {
 // A follow-up goes back as text only, so a question asked about an image would lose the image: with an image the model
 // drafts, answers or offers a pick, and never asks back.
 export function toolsFor(request: AiRequest): AiTool[] {
+  if (request.task === 'transcribe') return ['transcript'];
   if (request.task !== 'ask') return [request.task];
   return request.input.image
     ? ['draft_bounty', 'answer', 'pick']
@@ -237,6 +261,23 @@ function parseImage(value: unknown): AiImage | null {
   return data.startsWith(JPEG_BASE64_START) ? { mediaType, data } : null;
 }
 
+const MP4_BRAND = 'ftyp';
+
+function parseAudio(value: unknown): AiAudio | null {
+  if (!isRecord(value) || !exactKeys(value, ['mediaType', 'data'])) return null;
+  const { mediaType, data } = value;
+  if (mediaType !== 'audio/mp4' || typeof data !== 'string') return null;
+  if (data.length > AUDIO_DATA_MAX || data.length % 4 !== 0 || !BASE64.test(data)) return null;
+  return atob(data.slice(0, 12)).slice(4, 8) === MP4_BRAND ? { mediaType, data } : null;
+}
+
+function parseTranscribe(input: Record<string, unknown>): AiRequest | null {
+  if (!exactKeys(input, ['audio', 'language'])) return null;
+  const audio = parseAudio(input.audio);
+  const language = TRANSLATE_LANGUAGES.find((candidate) => candidate === input.language);
+  return audio && language ? { task: 'transcribe', input: { audio, language } } : null;
+}
+
 function exactKeys(value: Record<string, unknown>, keys: readonly string[]) {
   const present = Object.keys(value);
   return present.length === keys.length && keys.every((key) => Object.hasOwn(value, key));
@@ -247,6 +288,7 @@ export function parseAiRequest(body: unknown): AiRequest | null {
   if (!isRecord(body) || !exactKeys(body, ['task', 'input']) || !isRecord(body.input)) return null;
   const task = AI_TASKS.find((candidate) => candidate === body.task);
   if (!task) return null;
+  if (task === 'transcribe') return parseTranscribe(body.input);
   const { text, to } = body.input;
   if (typeof text !== 'string') return null;
   const trimmed = text.trim();

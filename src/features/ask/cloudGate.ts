@@ -4,10 +4,11 @@ export type CloudTask = 'draft_bounty' | 'answer' | 'translate' | 'ask';
 
 export type CloudImage = { mediaType: 'image/jpeg'; data: string };
 
-export type CloudRequest = {
-  task: CloudTask;
-  input: { text: string; to?: string; image?: CloudImage };
-};
+export type CloudAudio = { mediaType: 'audio/mp4'; data: string };
+
+export type CloudRequest =
+  | { task: CloudTask; input: { text: string; to?: string; image?: CloudImage } }
+  | { task: 'transcribe'; input: { audio: CloudAudio; language: string } };
 
 export type CloudAnswer =
   { ok: true; body: unknown } | { ok: false; error: string | null; status: number | null };
