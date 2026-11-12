@@ -6,7 +6,9 @@ import {
   fullBellyTokens,
   PLACEHOLDER_FULL_BELLY_TOKENS,
   SENTENCES_PER_FULL_BELLY,
+  transcribeTokens,
   UNMEASURED_PLACEHOLDER_BUDGET,
+  usdPerBudgetToken,
 } from './budget.ts';
 
 const FULL = 1000;
@@ -56,6 +58,29 @@ describe('the placeholder budget', () => {
     expect(callsUntilEmpty(medianDraftTokens, PLACEHOLDER_FULL_BELLY_TOKENS)).toBe(3);
     expect(callsUntilEmpty(medianSentenceTokens, PLACEHOLDER_FULL_BELLY_TOKENS)).toBe(
       SENTENCES_PER_FULL_BELLY,
+    );
+  });
+});
+
+describe('speech priced in belly tokens', () => {
+  test('a second of speech costs what the same money buys of a plus draft', () => {
+    expect(usdPerBudgetToken()).toBeCloseTo(0.6e-6, 12);
+    expect(transcribeTokens(1)).toBe(59);
+    expect(transcribeTokens(6)).toBe(350);
+  });
+
+  test('part of a second is billed as a whole one, and nothing as one', () => {
+    expect(transcribeTokens(0)).toBe(transcribeTokens(1));
+    expect(transcribeTokens(5.2)).toBe(transcribeTokens(6));
+  });
+
+  test('a full 60 s recording costs about one draft, a short one about a sentence', () => {
+    const full = PLACEHOLDER_FULL_BELLY_TOKENS;
+    const minute = energyCost(transcribeTokens(60), full, FULL);
+    const draft = energyCost(UNMEASURED_PLACEHOLDER_BUDGET.medianDraftTokens, full, FULL);
+    expect(Math.abs(minute - draft)).toBeLessThanOrEqual(draft * 0.05);
+    expect(transcribeTokens(6)).toBeLessThanOrEqual(
+      UNMEASURED_PLACEHOLDER_BUDGET.medianSentenceTokens,
     );
   });
 });
