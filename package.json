@@ -74,9 +74,10 @@
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
+    "ai:budget": "bun scripts/ai-budget-measure.ts",
     "db:test-accounts": "bun scripts/db-test-accounts.ts",
     "fn:serve": "supabase functions serve --env-file supabase/functions/local.env",
-    "test:deno": "deno test --no-check --no-lock --node-modules-dir=none --allow-env --import-map=supabase/functions/tests/deno-import-map.json supabase/functions/ai-draft/handler.test.ts supabase/functions/ai-draft/ask.test.ts supabase/functions/ai-draft/budget.test.ts supabase/functions/ai-draft/store.test.ts supabase/functions/_shared/iap/config.test.ts supabase/functions/_shared/iap/apple.deno-test.ts supabase/functions/iap-verify/handler.test.ts supabase/functions/iap-notify/handler.test.ts",
+    "test:deno": "deno test --no-check --no-lock --node-modules-dir=none --allow-env --import-map=supabase/functions/tests/deno-import-map.json supabase/functions/ai-draft/handler.test.ts supabase/functions/ai-draft/ask.test.ts supabase/functions/ai-draft/budget.test.ts supabase/functions/ai-draft/store.test.ts supabase/functions/ai-draft/modelStudio.test.ts supabase/functions/ai-draft/providerConfig.test.ts supabase/functions/_shared/iap/config.test.ts supabase/functions/_shared/iap/apple.deno-test.ts supabase/functions/iap-verify/handler.test.ts supabase/functions/iap-notify/handler.test.ts",
     "test:stack": "bun test ./supabase/functions/tests/*.integration.ts ./src/features/account/*.integration.ts ./src/features/payee/*.integration.ts ./src/features/payment/*.integration.ts ./src/features/bounty/post/*.integration.ts"
   },
   "private": true

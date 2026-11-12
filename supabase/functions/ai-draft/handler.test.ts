@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { handleAiDraft } from './handler.ts';
-import { fakeProvider, selectProvider, type ProviderCall } from './provider.ts';
+import { fakeProvider, type ProviderCall } from './provider.ts';
 import {
   captureConsole,
   DRAFT,
@@ -236,9 +236,6 @@ describe('ai-draft', () => {
   });
 
   test('no provider configured is a provider_error, not the fake', async () => {
-    expect(selectProvider(undefined)).toBeNull();
-    expect(selectProvider('qwen')).toBeNull();
-    expect(selectProvider('fake')).toBe(fakeProvider);
     const { deps, recorded } = setup({ provider: null });
     await captureConsole(async () => {
       await expectError(await handleAiDraft(post(DRAFT), deps), 502, 'provider_error');

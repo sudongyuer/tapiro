@@ -265,7 +265,7 @@ and `apple.deno-test.ts` holds both to the same verdicts.
 
 ## 问小貘
 
-The app reads `ai_status()` and calls `record_consent` and `withdraw_consent` (consent, Task 3); nothing calls `ai-draft` yet, and it is not deployed. Plan:
+The app reads `ai_status()` and calls `record_consent` and `withdraw_consent` (consent, Task 3) and calls `ai-draft` with `ask` and `translate`; the function is not deployed. Plan:
 `docs/plans/2026-10-30-ask-tapir.md`.
 
 - `ai_consent_versions` (no client access): provider and purpose per version; the newest is the one in force.
@@ -409,11 +409,27 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   under RLS. The tests read the URL and keys from
   `supabase status`; set `SUPABASE_LOCAL_API_URL` (and `SUPABASE_LOCAL_ANON_KEY`, `SUPABASE_LOCAL_SERVICE_ROLE_KEY`)
   when the gateway listens on another port than the one `supabase status` reports (`scripts/local-supabase.ts`).
-- `ai-draft` (`POST`, user JWT, body `{ task, input: { text, to? } }`, `task` one of `draft_bounty`, `answer`, `translate`)
+- `ai-draft` (`POST`, user JWT, body `{ task, input: { text, to?, image? } }`, `task` one of `draft_bounty`, `answer`, `translate`, `ask`)
   answers `{ task, result, energy, energyFull }`, or `{ error }`: 400 `invalid_request`, 401 `unauthorized`, 403
   `consent_required`, 409 `busy`, 429 `hungry`, 500 `server_error`, 502 `provider_error`. An `error` answer deducts nothing, with one edge: if
-  `ai_finish_call` commits and its reply is lost, the answer is a 500 with the energy already spent. `AI_PROVIDER=fake` is the only provider; unset or anything else is a
-  `provider_error`. `bun run fn:serve` passes `functions/local.env`. `budget.ts` holds an unmeasured placeholder.
+  `ai_finish_call` commits and its reply is lost, the answer is a 500 with the energy already spent. The provider comes
+  from function env vars read at runtime, never from the repo:
+  - `AI_PROVIDER`: `fake` (local and CI) or `qwen` (Model Studio). Unset or anything else is a `provider_error`.
+  - `MODEL_STUDIO_WORKSPACE_ID`: the Singapore workspace; the endpoint is always
+    `https://<id>.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1` (`models.ts`), so no variable can move it out of
+    Singapore.
+  - `MODEL_STUDIO_API_KEY` (secret): the workspace's API key. With `qwen`, a missing key or workspace is a `provider_error`
+    logged as `provider_not_configured`.
+  - `MODEL_STUDIO_FALLBACK`: `deepseek` turns on the DeepSeek fallback through the same account; anything else leaves
+    it off (off until the owner answers question 281).
+  - Model IDs are pinned in `ai-draft/models.ts` (a deploy, not a secret): Qwen flash for `translate` and `answer`, Qwen
+    plus for `draft_bounty` and `ask`, and the DeepSeek fallback, tried once on 404, 429, 5xx or no connection within
+    12 s. Logs carry the status, Model Studio's error code and the model, never the prompt or reply.
+  - `AI_ALLOW_TEST_PROVIDER=1` and `AI_TEST_MODEL_STUDIO_URL` (`local.env` only) let `tests/ai-provider.integration.ts`
+    send the header `x-tapiro-test-provider: qwen` to run the real adapter against its mock on port 54398; they are
+    ignored unless the function runs on the CLI's local stack.
+  `bun run fn:serve` passes `functions/local.env`. `budget.ts` holds an unmeasured placeholder; `bun run ai:budget`
+  measures it (plan 「Task 9 smoke run」).
   `bun run test:deno` runs its handler tests in Deno as well (`functions/tests/deno-bun-test.ts` maps `bun:test`),
   plus the Deno-only `*.deno-test.ts` files, which import `npm:` packages that `bun test` cannot load.
 - Request handling lives in `handler.ts` (no Deno APIs), unit-tested by `bun test`; `index.ts` wires

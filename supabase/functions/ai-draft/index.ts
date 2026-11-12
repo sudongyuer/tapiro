@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 import { handleAiDraft } from './handler.ts';
-import { selectProvider } from './provider.ts';
+import { localTestProvider, providerFor, providerFromEnv } from './providerConfig.ts';
 import { rpcStore } from './store.ts';
 
 const admin = createClient(
@@ -10,7 +10,9 @@ const admin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } },
 );
 
-const provider = selectProvider(Deno.env.get('AI_PROVIDER'));
+const env = (key: string) => Deno.env.get(key);
+const configured = providerFromEnv(env);
+const test = localTestProvider(env);
 const store = rpcStore(admin);
 
 Deno.serve((req) =>
@@ -20,6 +22,6 @@ Deno.serve((req) =>
       return error ? null : (data.user?.id ?? null);
     },
     store,
-    provider,
+    provider: providerFor(req, configured, test),
   }),
 );

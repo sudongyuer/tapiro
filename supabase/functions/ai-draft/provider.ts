@@ -81,7 +81,3 @@ export const fakeProvider: AiProvider = {
     return { ...usage, toolName: task, arguments: { text } };
   },
 };
-
-export function selectProvider(name: string | undefined): AiProvider | null {
-  return name === 'fake' ? fakeProvider : null;
-}
