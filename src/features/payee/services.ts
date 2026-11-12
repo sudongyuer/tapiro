@@ -1,3 +1,4 @@
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 
@@ -13,3 +14,5 @@ export const payeeStore = createPayeeStore(
 const fixtureScans = uiVerifyArgument('uiVerifyQr');
 
 export const qrSource = fixtureScans ? fixtureQrSource(fixtureScans) : deviceQrSource;
+
+sessionEnds.register(() => payeeStore.clear());

@@ -64,7 +64,8 @@ export function createAskSession(deps: {
   const now = deps.now ?? (() => new Date());
   let state = EMPTY;
   let epoch = 0;
-  const forgotten = new Set<string>();
+  const forgets = new Map<string, number>();
+  const forgetsOf = (userId: string) => forgets.get(userId) ?? 0;
   const listeners = new Set<() => void>();
 
   const set = (next: Partial<AskSessionState>) => {
@@ -91,6 +92,7 @@ export function createAskSession(deps: {
     const { userId } = state;
     if (!userId || state.sending) return;
     const started = epoch;
+    const forgetsAtSend = forgetsOf(userId);
     const turns = state.turns;
     set({ sending: send, failed: null, needsUpdate: false });
     const current = () => state.userId === userId && epoch === started;
@@ -126,7 +128,7 @@ export function createAskSession(deps: {
     const raw = result.kind === 'answered' ? toRawReply(result.body) : null;
     const reply = raw ? parseAskReply(raw) : null;
     if (!raw || !reply) return stop({ failed: { send, reason: 'unreadable' } });
-    if (forgotten.has(userId)) return;
+    if (forgetsOf(userId) !== forgetsAtSend) return;
 
     const tapir = { role: 'tapir' as const, raw, reply };
     const late = !current();
@@ -164,7 +166,6 @@ export function createAskSession(deps: {
     },
     getSnapshot: () => state,
     open(userId: string) {
-      forgotten.delete(userId);
       epoch += 1;
       state = {
         ...EMPTY,
@@ -223,7 +224,7 @@ export function createAskSession(deps: {
       set({ turns });
     },
     forget(userId: string) {
-      forgotten.add(userId);
+      forgets.set(userId, forgetsOf(userId) + 1);
       deps.storage.writeText(userId, '');
       deps.storage.writeConversation(userId, null);
       if (state.userId === userId) {

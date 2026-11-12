@@ -2,6 +2,7 @@ import { Settings } from 'react-native';
 
 import { initI18n } from '@/lib/i18n';
 import { live } from '@/lib/live';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { verifyRecorder } from '@/lib/verifyRecord';
@@ -50,3 +51,5 @@ live.on(['bounty.', 'payment.'], () => {
   if (state.status !== 'idle') void liveBountyStore.reload(state.userId);
 });
 i18n.on('languageChanged', publish);
+
+sessionEnds.register(() => liveBountyStore.clear());

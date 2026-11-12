@@ -1,5 +1,6 @@
 import type { ResolvedPlace } from 'tapiro-kit';
 
+import { sessionEnds } from '@/lib/sessionEnds';
 import { userCleanups } from '@/lib/userCleanups';
 
 export type PlacePurpose = 'post' | 'board' | 'rideStart' | 'rideDest';
@@ -24,3 +25,4 @@ export function createPlacePick() {
 export const placePick = createPlacePick();
 
 userCleanups.register(() => placePick.clear());
+sessionEnds.register(() => placePick.clear());

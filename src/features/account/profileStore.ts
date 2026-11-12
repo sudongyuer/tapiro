@@ -44,6 +44,10 @@ export function createProfileStore(service: ProfileService) {
       return saved;
     },
 
+    clear() {
+      if (state.status !== 'idle') set({ status: 'idle' });
+    },
+
     forget(userId: string) {
       service.forget(userId);
       if (isCurrent(userId)) set({ status: 'idle' });

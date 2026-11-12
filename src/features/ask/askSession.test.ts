@@ -297,6 +297,27 @@ describe('the 问小貘 session', () => {
     expect(storage.texts.get('u1')).toBe('');
   });
 
+  test('a reply sent before sign-out writes nothing back after the same user reopens the sheet', async () => {
+    let release: (result: CloudResult) => void = () => {};
+    const storage = memoryStorage();
+    const session = createAskSession({
+      call: () => new Promise((resolve) => (release = resolve)),
+      consent: { prepare: async () => 'given', ask: () => ({ outcome: Promise.resolve('given') }) },
+      storage,
+      now: () => NOW,
+    });
+    session.open('u1');
+    session.setText('靠谱度怎么涨？');
+    const sending = session.send(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    session.forget('u1');
+    session.open('u1');
+    release(ANSWER);
+    await sending;
+    expect(storage.chats.get('u1')).toBeNull();
+    expect(session.getSnapshot().resume).toBeNull();
+  });
+
   test('a late reply clears the reopened field and joins what was saved since', async () => {
     const releases: ((result: CloudResult) => void)[] = [];
     const storage = memoryStorage();

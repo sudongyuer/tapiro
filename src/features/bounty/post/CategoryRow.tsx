@@ -1,6 +1,7 @@
 import { HStack, Label, Picker, Spacer, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
+  fixedSize,
   font,
   foregroundStyle,
   labelsHidden,
@@ -53,7 +54,7 @@ export function CategoryRow({
           if (picked) onPick(picked);
         }}
         testID="bounty-post-category"
-        modifiers={[pickerStyle('menu'), labelsHidden()]}
+        modifiers={[pickerStyle('menu'), labelsHidden(), fixedSize({ horizontal: true })]}
       >
         {category === null ? (
           <Text modifiers={[tag('')]}>{t('bounty.post.form.categoryPlaceholder')}</Text>

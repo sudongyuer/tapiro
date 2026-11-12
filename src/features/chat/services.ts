@@ -3,6 +3,7 @@ import { Settings } from 'react-native';
 
 import { addBlockFixturePeople, blockEvents, fixtureBlocked } from '@/features/block';
 import { live } from '@/lib/live';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { liveItems } from '@/lib/useLiveItems';
@@ -87,3 +88,5 @@ userCleanups.register((userId) => {
   chatImages.clear();
   clearImageCache();
 });
+
+sessionEnds.register(() => chatStore.clear());

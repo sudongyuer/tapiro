@@ -3,6 +3,7 @@ import { Settings } from 'react-native';
 import { addBlockFixturePeople, blockEvents, fixtureBlocked } from '@/features/block';
 import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import { live } from '@/lib/live';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -105,4 +106,8 @@ blockEvents.onUnblocked((personId) => profileStore.markBlocked(personId, false))
 userCleanups.register((userId) => {
   reviewDrafts.clear(userId);
   growMarks.clear(userId);
+});
+
+sessionEnds.register(() => {
+  for (const store of stores) store.clear();
 });
