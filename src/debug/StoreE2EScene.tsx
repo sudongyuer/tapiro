@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Store } from 'tapiro-kit';
 
+import { accountActions } from '@/features/account';
 import { TEST_ACCOUNT_PASSWORD, TEST_ACCOUNTS } from '@/features/account/testAccounts';
 import { useI18n } from '@/lib/i18n';
 import { getSupabase } from '@/lib/supabase';
@@ -10,16 +11,25 @@ import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
+// Onboarding state is kept on the device, so a fresh Simulator would route the seeded account into onboarding and
+// never open the tabs; the harness tests StoreKit, not onboarding.
+const KEPT_CHECK_MS = 5_000;
+
+function signedIn(userId: string) {
+  accountActions.finishOnboarding(userId);
+  return userId;
+}
+
 export function StoreE2EScene({ onReady }: { onReady: () => void }) {
   const { t } = useI18n();
   const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const [line, setLine] = useState('');
 
   useEffect(() => {
     void getSupabase()
       ?.auth.getUser()
-      .then(({ data }) => setUserId(data.user?.id ?? null));
+      .then(({ data }) => setUserId(data.user ? signedIn(data.user.id) : null));
     onReady();
   }, [onReady]);
 
@@ -31,28 +41,46 @@ export function StoreE2EScene({ onReady }: { onReady: () => void }) {
       password: TEST_ACCOUNT_PASSWORD,
     });
     if (error) return setLine(`sign in failed ${error.message}`);
-    setUserId(data.user.id);
+    setUserId(signedIn(data.user.id));
   };
 
+  // Signed out, no purchase listener runs, so the transaction stays unfinished until the next session sweeps it.
   const buyKept = async () => {
     if (!userId) return setLine('sign in first');
+    await accountActions.signOut();
+    setUserId(null);
     const result = await Store.purchase('app.tapiro.coins.5', userId);
-    setLine(`purchase app.tapiro.coins.5 ${result.status}`);
+    if (result.status !== 'purchased')
+      return setLine(`purchase app.tapiro.coins.5 ${result.status}`);
+    await new Promise((resolve) => setTimeout(resolve, KEPT_CHECK_MS));
+    const unfinished = await Store.unfinished();
+    const kept = unfinished.some((t) => t.transactionId === result.transaction.transactionId);
+    setLine(`purchase app.tapiro.coins.5 purchased, ${kept ? 'kept unfinished' : 'finished'}`);
   };
 
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
       <AppText variant="meta" testID="store-e2e-user">
-        {userId ? `signed in ${userId}` : '-'}
+        {userId === undefined ? 'checking' : userId ? `signed in ${userId}` : '-'}
       </AppText>
       <View style={styles.buttons}>
-        <PillButton label={t('debug.store.signIn')} onPress={signIn} variant="secondary" />
+        <PillButton
+          label={t('debug.store.signIn')}
+          onPress={signIn}
+          variant="secondary"
+          testID="store-e2e-sign-in"
+        />
         <PillButton
           label={t('debug.store.openCoins')}
           onPress={() => router.push('/me/coins')}
           testID="store-e2e-open-coins"
         />
-        <PillButton label={t('debug.store.buyKept')} onPress={buyKept} variant="secondary" />
+        <PillButton
+          label={t('debug.store.buyKept')}
+          onPress={buyKept}
+          variant="secondary"
+          testID="store-e2e-buy-kept"
+        />
       </View>
       <AppText variant="meta" selectable testID="store-e2e-line">
         {line}
