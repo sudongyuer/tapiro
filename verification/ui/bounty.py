@@ -312,7 +312,10 @@ def paste_into(ui, identifier, text):
                     f'{identifier} does not read {text!r}', 10 if attempt == 0 else 30)
             return
         except AssertionError:
-            pasted = (by_id(ui.read(), identifier) or {}).get('AXValue')
+            try:
+                pasted = (by_id(ui.read(), identifier) or {}).get('AXValue')
+            except AssertionError:
+                pasted = None
             print(f'paste_into: {identifier} reads {pasted!r} after pasting {text!r} (attempt {attempt + 1})', flush=True)
             if attempt == 1:
                 raise

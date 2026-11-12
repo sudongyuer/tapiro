@@ -24,7 +24,7 @@ DEPS = [
 ]
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
-# On an idle machine (load average 12, 2026-11-13) the steps before RM 8 alone took 230 s.
+# The steps before RM 8 alone took 230 s at load averages of 10–12 (2026-11-13).
 BUDGET = 360
 # The system menu Picker's hit area is the full row width but 34 pt high and ignores frame modifiers; it is a
 # platform control, so it is checked against its own size instead of being restyled. Text fields report a 22 pt
