@@ -29,7 +29,8 @@ export type VoiceNote =
   | 'busy'
   | 'declined'
   | 'needsUpdate'
-  | 'unreadable';
+  | 'unreadable'
+  | 'notPlaced';
 
 export type VoiceState = {
   phase: VoicePhase;
@@ -88,6 +89,7 @@ export function createVoice(deps: {
 }) {
   let state = IDLE;
   let take: Take | null = null;
+  let early: { requestId: string; events: SpeechEvent[] } | null = null;
   let retry: { audio: string; take: Take } | null = null;
   let language = 'zh-Hans';
   let openConsent: () => void = () => undefined;
@@ -111,9 +113,13 @@ export function createVoice(deps: {
     const requestId = newId();
     set({ phase: 'starting', note: null, canRetry: false, live: false });
     retry = null;
+    early = { requestId, events: [] };
     const result = await deps.speech
       .start(requestId, language)
       .catch((): SpeechStartResult => ({ status: 'failed', code: 'unknown' }));
+    // Events travel apart from the start's answer, so one can arrive before it; it is held and replayed.
+    const held = early?.requestId === requestId ? early.events : [];
+    if (early?.requestId === requestId) early = null;
     if (epoch !== started) {
       if (result.status === 'started') void deps.speech.cancel(requestId);
       return;
@@ -130,6 +136,7 @@ export function createVoice(deps: {
       base: deps.text.getSnapshot().text,
     };
     set({ phase: 'listening', live: result.engine !== 'cloud' });
+    held.forEach(heard);
   }
 
   async function transcribe(audio: string, at: Take) {
@@ -150,19 +157,25 @@ export function createVoice(deps: {
     let result = await deps.call(request);
     if (result.kind === 'consentRequired') {
       access = await askConsent(deps.consent, openConsent);
+      if (epoch !== started) return;
       if (access !== 'given') return fail(access === 'notGiven' ? 'declined' : access);
       result = await deps.call(request);
     }
     const words = result.kind === 'answered' ? transcriptOf(result.body) : null;
     if (words === null) return fail(noteOf(result));
-    if (words.trim() !== '') write(at, (text) => joinSpoken(text, words));
+    const placed = words.trim() === '' || write(at, (text) => joinSpoken(text, words));
     if (epoch !== started) return;
+    if (!placed) return fail('notPlaced');
     set({ ...IDLE, note: words.trim() === '' ? 'noSpeech' : null });
   }
 
   function heard(event: SpeechEvent) {
     const at = take;
-    if (!at || event.requestId !== at.requestId) return;
+    if (!at) {
+      if (early?.requestId === event.requestId) early.events.push(event);
+      return;
+    }
+    if (event.requestId !== at.requestId) return;
     if (event.kind === 'partial') {
       if (state.live) write(at, () => joinSpoken(at.base, event.text));
       return;
@@ -187,7 +200,10 @@ export function createVoice(deps: {
     const at = take;
     take = null;
     retry = null;
+    const starting = early;
+    early = null;
     if (at) void deps.speech.cancel(at.requestId);
+    else if (starting) void deps.speech.cancel(starting.requestId);
     set(IDLE);
   }
 
@@ -231,7 +247,9 @@ export function createVoice(deps: {
       return begin();
     },
     retry() {
-      if (!retry || state.phase !== 'idle') return Promise.resolve();
+      if (!retry || state.phase !== 'idle' || deps.text.getSnapshot().sending) {
+        return Promise.resolve();
+      }
       const { audio, take: at } = retry;
       retry = null;
       return transcribe(audio, at);

@@ -119,6 +119,7 @@ export default function Ask() {
       />
       <VoiceCards
         state={heard}
+        busy={sending}
         onAllow={() => void voice.allow()}
         onRetry={() => void voice.retry()}
       />

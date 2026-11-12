@@ -80,18 +80,32 @@ func convert(_ buffer: AVAudioPCMBuffer, with converter: AVAudioConverter) -> AV
   return status == .error || output.frameLength == 0 ? nil : output
 }
 
+final class LatestText: @unchecked Sendable {
+  private let lock = NSLock()
+  private var text = ""
+
+  var value: String { lock.withLock { text } }
+
+  func set(_ next: String) {
+    lock.withLock { text = next }
+  }
+}
+
 final class AnalyzerRecognizer: SpeechRecognizing, @unchecked Sendable {
+  private let latest: LatestText
   private let analyzer: SpeechAnalyzer
   private let converter: AVAudioConverter
   private let input: AsyncStream<AnalyzerInput>.Continuation
   private let results: Task<String, Never>
 
   private init(
+    latest: LatestText,
     analyzer: SpeechAnalyzer,
     converter: AVAudioConverter,
     input: AsyncStream<AnalyzerInput>.Continuation,
     results: Task<String, Never>
   ) {
+    self.latest = latest
     self.analyzer = analyzer
     self.converter = converter
     self.input = input
@@ -107,6 +121,11 @@ final class AnalyzerRecognizer: SpeechRecognizing, @unchecked Sendable {
   ) async -> AnalyzerRecognizer? {
     let module: any SpeechModule
     let read: @Sendable () async throws -> String
+    let latest = LatestText()
+    let heard: SpeechTextHandler = { text in
+      latest.set(text)
+      onText(text)
+    }
     if engine == .transcriber {
       guard SpeechTranscriber.isAvailable,
         let supported = await SpeechTranscriber.supportedLocale(equivalentTo: locale)
@@ -118,7 +137,7 @@ final class AnalyzerRecognizer: SpeechRecognizing, @unchecked Sendable {
         var transcript = SpeechTranscript()
         for try await result in transcriber.results {
           transcript.apply(String(result.text.characters), isFinal: result.isFinal)
-          onText(transcript.text)
+          heard(transcript.text)
         }
         return transcript.text
       }
@@ -131,7 +150,7 @@ final class AnalyzerRecognizer: SpeechRecognizing, @unchecked Sendable {
         var transcript = SpeechTranscript()
         for try await result in dictation.results {
           transcript.apply(String(result.text.characters), isFinal: result.isFinal)
-          onText(transcript.text)
+          heard(transcript.text)
         }
         return transcript.text
       }
@@ -158,7 +177,8 @@ final class AnalyzerRecognizer: SpeechRecognizing, @unchecked Sendable {
         return ""
       }
     }
-    return AnalyzerRecognizer(analyzer: analyzer, converter: converter, input: input, results: results)
+    return AnalyzerRecognizer(
+      latest: latest, analyzer: analyzer, converter: converter, input: input, results: results)
   }
 
   // Models are system-wide downloads; a missing one is fetched for next time rather than making the user wait now.
@@ -186,7 +206,7 @@ final class AnalyzerRecognizer: SpeechRecognizing, @unchecked Sendable {
     input.finish()
     let analyzer = analyzer
     let results = results
-    return await withDeadline(seconds: 5, fallback: "") {
+    return await withDeadline(seconds: 5, fallback: latest.value) {
       try? await analyzer.finalizeAndFinishThroughEndOfInput()
       return await results.value
     }

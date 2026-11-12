@@ -65,6 +65,7 @@ export default {
       busy: '小貘还在忙上一件，过一会儿再转。',
       declined: '没有同意用云端，这段话没转成字。你可以打字。',
       unreadable: '小貘没看懂这段话，可以再转一次。',
+      notPlaced: '转好的字没能放进输入框，可以再转一次。',
     },
   },
   belly: {

@@ -5,6 +5,7 @@ typealias SpeechEmit = @Sendable ([String: Any]) -> Void
 
 final class SpeechRecording: @unchecked Sendable {
   let url: URL
+  private let lock = NSLock()
   private var file: AVAudioFile?
   private let converter: AVAudioConverter
 
@@ -26,14 +27,19 @@ final class SpeechRecording: @unchecked Sendable {
     self.converter = converter
   }
 
+  // The tap thread may still be inside a write when main stops the engine, so the file is only touched under the lock.
   func write(_ buffer: AVAudioPCMBuffer) {
-    guard let file, let converted = convert(buffer, with: converter) else { return }
-    try? file.write(from: converted)
+    lock.withLock {
+      guard let file, let converted = convert(buffer, with: converter) else { return }
+      try? file.write(from: converted)
+    }
   }
 
   func close() {
-    file?.close()
-    file = nil
+    lock.withLock {
+      file?.close()
+      file = nil
+    }
   }
 
   func base64() -> String? {
@@ -59,7 +65,7 @@ final class SpeechRun: @unchecked Sendable {
   var finishing = false
   var cancelled = false
   var limit: Task<Void, Never>?
-  var interruption: NSObjectProtocol?
+  var observers: [NSObjectProtocol] = []
 
   init(requestId: String, emit: @escaping SpeechEmit, audio: AVAudioEngine, recording: SpeechRecording) {
     self.requestId = requestId
@@ -181,8 +187,13 @@ final class SpeechSession {
       run.attach(made)
       return true
     }
-    guard !run.cancelled, self.run === run else {
+    guard !run.cancelled, !run.finishing, self.run === run else {
       run.detach()?.cancel()
+      run.recording.delete()
+      if self.run === run {
+        self.run = nil
+        Self.release()
+      }
       return Self.failed("cancelled")
     }
     run.engine = engine
@@ -206,16 +217,23 @@ final class SpeechSession {
       guard !Task.isCancelled, let self, let run else { return }
       await self.finish(run, end: .limit)
     }
-    run.interruption = NotificationCenter.default.addObserver(
-      forName: AVAudioSession.interruptionNotification, object: session, queue: .main
-    ) { [weak self, weak run] note in
-      let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
-      guard raw == AVAudioSession.InterruptionType.began.rawValue else { return }
+    let interrupted: @Sendable (Notification) -> Void = { [weak self, weak run] note in
+      if note.name == AVAudioSession.interruptionNotification {
+        let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+        guard raw == AVAudioSession.InterruptionType.began.rawValue else { return }
+      }
       Task { @MainActor in
         guard let self, let run else { return }
         await self.finish(run, end: .interrupted)
       }
     }
+    // A route change (AirPods in or out) stops the engine without an interruption.
+    run.observers = [
+      NotificationCenter.default.addObserver(
+        forName: AVAudioSession.interruptionNotification, object: session, queue: .main, using: interrupted),
+      NotificationCenter.default.addObserver(
+        forName: .AVAudioEngineConfigurationChange, object: run.audio, queue: .main, using: interrupted),
+    ]
     return ["status": "started", "engine": engine.rawValue]
   }
 
@@ -227,6 +245,7 @@ final class SpeechSession {
   func cancel(requestId: String) {
     guard let run, run.requestId == requestId else { return }
     run.cancelled = true
+    if run.finishing { return }
     teardown(run)
     run.detach()?.cancel()
     run.recording.delete()
@@ -257,10 +276,14 @@ final class SpeechSession {
     let text = await recognizer?.finish() ?? ""
     run.recording.close()
     let reason: SpeechEnd = run.failedOver ? .engineFailed : (end == .noSpeech && !text.isEmpty ? .stopped : end)
-    let audio = SpeechChain.keepsAudio(engine: run.engine, end: reason) ? run.recording.base64() : nil
+    let audio =
+      !run.cancelled && SpeechChain.keepsAudio(engine: run.engine, end: reason) ? run.recording.base64() : nil
     run.recording.delete()
-    self.run = nil
-    Self.release()
+    if self.run === run {
+      self.run = nil
+      Self.release()
+    }
+    if run.cancelled { return }
     var body: [String: Any] = [
       "requestId": run.requestId, "kind": "ended", "engine": run.engine.rawValue, "end": reason.rawValue,
       "text": reason == .engineFailed ? "" : text,
@@ -271,8 +294,8 @@ final class SpeechSession {
 
   private func teardown(_ run: SpeechRun) {
     run.limit?.cancel()
-    if let interruption = run.interruption { NotificationCenter.default.removeObserver(interruption) }
-    run.interruption = nil
+    run.observers.forEach { NotificationCenter.default.removeObserver($0) }
+    run.observers = []
     run.audio.inputNode.removeTap(onBus: 0)
     run.audio.stop()
   }

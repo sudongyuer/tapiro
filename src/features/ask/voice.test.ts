@@ -300,6 +300,37 @@ describe('voice in the 问小貘 sheet', () => {
   });
 });
 
+describe('voice timing', () => {
+  test('an event that arrives before the start answers is kept and replayed', async () => {
+    const speech = fakeSpeech();
+    const start = speech.speech.start;
+    speech.speech.start = async (requestId, language) => {
+      speech.emit({ kind: 'ended', engine: 'dictation', end: 'interrupted', text: '明天' });
+      return start(requestId, language);
+    };
+    const { voice, session } = setup({ speech });
+    await voice.tap();
+    expect(session.getSnapshot().text).toBe('明天');
+    expect(voice.getSnapshot().phase).toBe('idle');
+  });
+
+  test('再转一次 does nothing while a send is out', async () => {
+    const speech = fakeSpeech({ start: { status: 'started', engine: 'cloud' } });
+    const failed: CloudResult = { kind: 'failed', error: 'provider_error', status: 502 };
+    const { voice, emit, sent, session, holdCalls } = setup({ speech, results: [failed] });
+    await voice.tap();
+    emit({ kind: 'ended', engine: 'cloud', end: 'stopped', text: '', audio: AUDIO });
+    await flush();
+    session.setText('帮我');
+    holdCalls();
+    void session.send(() => undefined);
+    await flush();
+    await voice.retry();
+    expect(sent.map((request) => request.task)).toEqual(['transcribe', 'ask']);
+    expect(voice.getSnapshot().canRetry).toBe(true);
+  });
+});
+
 describe('voice helpers', () => {
   test.each([
     [{ microphone: 'undetermined', recognition: 'granted' }, 'explain'],

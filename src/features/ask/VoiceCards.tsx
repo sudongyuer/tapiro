@@ -17,6 +17,7 @@ const NOTE_KEYS = {
   declined: 'ask.voice.note.declined',
   needsUpdate: 'ask.composer.needsUpdate',
   unreadable: 'ask.voice.note.unreadable',
+  notPlaced: 'ask.voice.note.notPlaced',
 } as const satisfies Record<VoiceNote, string>;
 
 function Card({
@@ -53,10 +54,12 @@ function Card({
 
 export function VoiceCards({
   state,
+  busy,
   onAllow,
   onRetry,
 }: {
   state: VoiceState;
+  busy: boolean;
   onAllow: () => void;
   onRetry: () => void;
 }) {
@@ -94,6 +97,7 @@ export function VoiceCards({
           <PillButton
             label={t('ask.voice.retry')}
             variant="secondary"
+            disabled={busy}
             onPress={onRetry}
             testID="ask-voice-retry"
           />

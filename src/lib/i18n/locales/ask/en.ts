@@ -69,6 +69,7 @@ export default {
       declined:
         'You didn’t agree to the cloud, so what you said wasn’t written down. You can type.',
       unreadable: 'Tapir couldn’t read that back. You can try again.',
+      notPlaced: 'The words couldn’t go into the field. You can try again.',
     },
   },
   belly: {

@@ -70,6 +70,7 @@ export default {
       declined:
         'Anda tidak bersetuju menggunakan awan, jadi apa yang anda sebut tidak ditulis. Anda boleh menaip.',
       unreadable: 'Tapir tidak dapat membacanya semula. Anda boleh cuba lagi.',
+      notPlaced: 'Perkataan tidak dapat dimasukkan ke dalam ruangan. Anda boleh cuba lagi.',
     },
   },
   belly: {
