@@ -100,6 +100,14 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      passed 3 of 3 here; no cause found. `home_title_strip` ms: one downward swipe did not always reach the top again
      (1 of 4), so it swipes until the large title is back (ms needed two in 2 of 3 runs; 3/3 ms, 1/1 zh-Hans).
 
+   - 0e. `verify:full` on 0784253 (2026-11-13, retro `2026-11-13-verify-full-cases`), stopped at the 4 h limit after
+     230 of 1248 runs (light, `account_*` to `chat_thread_*`; dark and the rest not run): 203 passed, 24 failed, none a
+     product bug. Fixed in `fix/verify-full-cases`: `bounty_post_form` ran out of its budget at load 10–12 in all three
+     locales because the number pad covered the scroll swipe (it was not load), `bounty_applicants_worst`'s budget, and
+     a stale paste in `bounty_post_place`. Open: 19 inputs that never arrived (taps at rest, sheet-dismiss swipes),
+     each on a Simulator 8–40 min after its boot and ahead of a lost AXe session; 13 of 14 passed on fresh boots. A
+     runner rule for it is not chosen yet.
+
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 1–5 built; 6–10 not started.
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The
    account-free halves are planned (2026-11-11): in-app purchase on the Simulator with a local `.storekit` file, the

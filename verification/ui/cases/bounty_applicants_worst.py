@@ -23,7 +23,8 @@ DEPS = ['src/features/bounty/select/', 'src/features/bounty/detail/', 'src/featu
         'verification/ui/choose.py', 'verification/ui/board.py', 'verification/ui/ocr.py', 'src/features/place/', 'src/features/block/']
 SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']
-BUDGET = 600
+# Its legs end at 595 s on an idle machine (en and ms, 2026-11-13); 600 left no room for one slow AXe call.
+BUDGET = 900
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoard', 'worst',
         '-uiVerifyDetailId', 'fixture-worst-01', '-uiVerifyApplicants', 'worst']
 HOLD = 'bounty-select-hold'
