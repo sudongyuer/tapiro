@@ -10,7 +10,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import (  # noqa: E402
     CATEGORIES, CONFIRM_TITLE, REWARD_RANGE_TEXT, TITLE, TITLE_SHOWN, TITLE_TYPED, assert_category_one_line, assert_error,
     assert_grouped_background, assert_title, burst,
-    erase, form_scroll_to, next_step, open_post, pick_category, reach_confirm, typed, value,
+    dismiss_keyboard, erase, form_scroll_to, next_step, open_post, pick_category, reach_confirm, typed, value,
 )
 from driver import UI, assert_touch_target  # noqa: E402
 
@@ -24,7 +24,8 @@ DEPS = [
 ]
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
-BUDGET = 240
+# On an idle machine (load average 12, 2026-11-13) the steps before RM 8 alone took 230 s.
+BUDGET = 360
 # The system menu Picker's hit area is the full row width but 34 pt high and ignores frame modifiers; it is a
 # platform control, so it is checked against its own size instead of being restyled. Text fields report a 22 pt
 # frame; bounty.typed taps 9 pt outside it, inside the 44 pt frame the form gives them, so typing proves the target.
@@ -76,6 +77,8 @@ for wrong in ('0', '501'):
 assert_touch_target(ui.element('bounty-post-amount-8'), 'RM 8')
 ui.tap('bounty-post-amount-8')
 ui.wait(lambda items: value(ui, 'bounty-post-reward') == '8', 'the RM 8 button did not fill the reward')
+# The reward's number pad stays up and covers the lower form, where form_scroll_to swipes.
+dismiss_keyboard(ui)
 
 assert_touch_target(form_scroll_to(ui, 'bounty-post-clear'), '清空草稿')
 ui.capture('03-filled')
