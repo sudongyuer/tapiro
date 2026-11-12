@@ -6,3 +6,4 @@ export { pickScreenshot } from './screenshot';
 export { askSession, cloudCall } from './services';
 export { TapirSettingsScreen } from './TapirSettingsScreen';
 export { useBellySlots } from './useBellySlots';
+export { useMessageTranslator } from './useMessageTranslator';

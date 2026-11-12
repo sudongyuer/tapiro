@@ -28,7 +28,7 @@ import { consentStore } from './services';
 const MASCOT = 56;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
-export type ConsentFrom = 'sheet' | 'me';
+export type ConsentFrom = 'sheet' | 'me' | 'chat';
 
 export function ConsentScreen({
   from,
@@ -104,7 +104,7 @@ export function ConsentScreen({
                 />
                 <PillButton
                   variant="plain"
-                  label={t(from === 'me' ? 'ask.consent.declineFromMe' : 'ask.consent.decline')}
+                  label={t(from === 'sheet' ? 'ask.consent.decline' : 'ask.consent.declineFromMe')}
                   disabled={recording}
                   onPress={decline}
                   testID="ask-consent-decline"

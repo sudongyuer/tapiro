@@ -14,6 +14,7 @@ const FAIL_POINTS: readonly FixtureFailPoint[] = [
 export const FIXTURE_ACCEPTED_AT = '2026-10-31T09:30:00.000Z';
 export const FIXTURE_FULL = 1000;
 export const FIXTURE_CALL_COST = 334;
+export const FIXTURE_TRANSLATE_COST = 33;
 
 // `energy,leaves,coins,feedsLeft`, for example `0,2,5,5`: an empty belly with two leaves in the jar.
 export function fixtureBelly(value: string | undefined, now = new Date()): Belly {
@@ -67,7 +68,7 @@ export const fixtureFailPoints = (value: string | undefined) =>
 export type FixtureAskService = AskService & {
   withdrawElsewhere(): void;
   starve(): void;
-  spend(): { energy: number; energyFull: number } | null;
+  spend(cost?: number): { energy: number; energyFull: number } | null;
 };
 
 export function createFixtureAskService({
@@ -116,10 +117,10 @@ export function createFixtureAskService({
     starve() {
       if (status.belly) status = { ...status, belly: { ...status.belly, energy: 0 } };
     },
-    spend() {
+    spend(cost = FIXTURE_CALL_COST) {
       const current = status.belly;
       if (!current || current.energy <= 0) return null;
-      const energy = Math.max(0, current.energy - FIXTURE_CALL_COST);
+      const energy = Math.max(0, current.energy - cost);
       status = { ...status, belly: { ...current, energy } };
       return { energy, energyFull: current.full };
     },

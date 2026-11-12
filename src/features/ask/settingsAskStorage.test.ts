@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { createSettingsAskStorage } from './settingsAskStorage';
+import { createSettingsAskStorage, createSettingsTranslationStorage } from './settingsAskStorage';
 
 function fakeSettings() {
   const values = new Map<string, unknown>();
@@ -37,5 +37,17 @@ describe('ask storage on the device', () => {
     const settings = fakeSettings();
     settings.set({ 'tapiro.askConversation.u1': '{' });
     expect(createSettingsAskStorage(settings).readConversation('u1')).toBeNull();
+  });
+
+  test('keeps translations per user and forgets them with an empty string', () => {
+    const settings = fakeSettings();
+    const storage = createSettingsTranslationStorage(settings);
+    const kept = [{ id: 'm2', to: 'zh-Hans' as const, text: '好', hidden: false }];
+    storage.write('u1', kept);
+    expect(storage.read('u1')).toEqual(kept);
+    expect(storage.read('u2')).toBeNull();
+    storage.write('u1', null);
+    expect([...settings.values.values()]).not.toContain(null);
+    expect(storage.read('u1')).toBeNull();
   });
 });
