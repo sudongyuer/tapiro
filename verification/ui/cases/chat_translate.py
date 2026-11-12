@@ -13,7 +13,7 @@ from driver import UI, by_id  # noqa: E402
 DEPS = ['src/features/chat/thread/', 'src/features/ask/', 'src/lib/translation.ts', 'src/app/(tabs)/messages/',
         'src/app/ask-consent.tsx', 'src/lib/i18n/locales/chat/', 'verification/ui/chat.py', 'verification/ui/ask.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
-        '-uiVerifyAiConsent', 'none', '-uiVerifyAiDelayMs', '2500']
+        '-uiVerifyAiConsent', 'none', '-uiVerifyAiDelayMs', '5000']
 BUDGET = 240
 TITLE = '双威 → KLIA2'
 ARIF = 'chat-bubble-fixture-chat-ride-m2'

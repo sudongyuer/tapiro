@@ -12,7 +12,8 @@ DEPS = ['src/features/chat/thread/', 'src/features/ask/', 'src/lib/translation.t
         'src/app/ask.tsx', 'src/lib/i18n/locales/chat/', 'verification/ui/chat.py', 'verification/ui/ask.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
-        '-uiVerifyAiReplies', 'providerError,answer,hungry', '-uiVerifyAiDelayMs', '800']
+        '-uiVerifyAiConsent', 'given', '-uiVerifyAiReplies', 'providerError,answer,hungry',
+        '-uiVerifyAiDelayMs', '800']
 BUDGET = 240
 FIRST, LAST = 'fixture-chat-bounty-m1', 'fixture-chat-bounty-m3'
 
