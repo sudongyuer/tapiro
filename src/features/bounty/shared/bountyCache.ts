@@ -1,3 +1,4 @@
+import { sessionEnds } from '@/lib/sessionEnds';
 import { userCleanups } from '@/lib/userCleanups';
 
 import type { BoardRow, BountyDetail } from '../board/types';
@@ -74,3 +75,4 @@ export type BountyCache = ReturnType<typeof createBountyCache>;
 export const bountyCache = createBountyCache();
 
 userCleanups.register(() => bountyCache.clear());
+sessionEnds.register(() => bountyCache.clear());

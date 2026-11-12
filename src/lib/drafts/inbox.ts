@@ -1,3 +1,4 @@
+import { sessionEnds } from '@/lib/sessionEnds';
 import { userCleanups } from '@/lib/userCleanups';
 
 import type { BountyDraft } from './bountyDraft';
@@ -38,3 +39,4 @@ export type DraftInbox = ReturnType<typeof createDraftInbox>;
 export const bountyDraftInbox = createDraftInbox();
 
 userCleanups.register((userId) => bountyDraftInbox.clear(userId));
+sessionEnds.register((userId) => bountyDraftInbox.clear(userId));

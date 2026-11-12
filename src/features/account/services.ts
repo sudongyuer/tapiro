@@ -36,4 +36,5 @@ export const accountActions = createAccountActions({
   },
 });
 
+sessionEnds.register(() => profileStore.clear());
 followSessionEnds(authService, sessionEnds);
