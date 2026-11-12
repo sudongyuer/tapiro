@@ -46,6 +46,33 @@ export default {
     retry: 'Cuba lagi',
     manual: 'Isi sendiri',
   },
+  voice: {
+    explainTitle: 'Bercakap dengan Tapir',
+    explainBody:
+      'Ini menggunakan mikrofon dan pengecaman pertuturan. Telefon anda mencuba dahulu; jika tidak berjaya, rakaman dihantar ke Alibaba Cloud (Singapura).',
+    explainOk: 'OK',
+    blockedTitle: 'Mikrofon dimatikan',
+    blockedBody:
+      'Benarkan Tapiro menggunakan mikrofon dalam Tetapan untuk bercakap dengan Tapir. Anda juga boleh menaip.',
+    openSettings: 'Buka Tetapan',
+    listening: 'Mendengar… ketik henti apabila selesai',
+    listeningCloud: 'Mendengar… ketik henti apabila selesai, kemudian Tapir menulisnya',
+    stop: 'Henti',
+    transcribing: 'Menulis apa yang anda sebut…',
+    retry: 'Cuba lagi',
+    note: {
+      noSpeech: 'Tidak dapat ditangkap. Cuba sebut sekali lagi.',
+      micFailed: 'Mikrofon tidak dapat dimulakan. Ketik sekali lagi, atau taip.',
+      failed: 'Tapir pening. Tiada tenaga digunakan. Apa yang anda sebut tidak ditulis.',
+      offline: 'Tiada sambungan. Apa yang anda sebut tidak ditulis.',
+      hungry: 'Tapir lapar. Apa yang anda sebut tidak ditulis.',
+      busy: 'Tapir masih sibuk dengan yang tadi. Cuba lagi sebentar.',
+      declined:
+        'Anda tidak bersetuju menggunakan awan, jadi apa yang anda sebut tidak ditulis. Anda boleh menaip.',
+      unreadable: 'Tapir tidak dapat membacanya semula. Anda boleh cuba lagi.',
+      notPlaced: 'Perkataan tidak dapat dimasukkan ke dalam ruangan. Anda boleh cuba lagi.',
+    },
+  },
   belly: {
     a11y: 'Tenaga Tapir: {{count}} daripada 5, {{mood}}',
     hint: 'Tunjukkan cara tenaga dikira',

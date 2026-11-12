@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useLayoutEffect, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
 
-import { askSession, consentStore, pantryStore } from './services';
+import { askSession, consentStore, pantryStore, voice } from './services';
 
 export function useConsentState() {
   return useSyncExternalStore(consentStore.subscribe, consentStore.getSnapshot);
@@ -31,4 +31,9 @@ export function useAskSession(userId: string | null) {
 
 export function usePantry() {
   return useSyncExternalStore(pantryStore.subscribe, pantryStore.getSnapshot);
+}
+
+export function useVoice(language: string, openConsent: () => void) {
+  useEffect(() => voice.attach({ language, openConsent }), [language, openConsent]);
+  return useSyncExternalStore(voice.subscribe, voice.getSnapshot);
 }

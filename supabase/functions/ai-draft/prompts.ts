@@ -1,4 +1,7 @@
+import type { ChatTask } from './models.ts';
 import type { AiRequest, TRANSLATE_LANGUAGES } from './tools.ts';
+
+export type ChatRequest = Extract<AiRequest, { task: ChatTask }>;
 
 type Language = (typeof TRANSLATE_LANGUAGES)[number];
 
@@ -30,7 +33,7 @@ export function malaysiaNow(now: Date): string {
   return `${local.toISOString().slice(0, 16)}+08:00 (${weekday}, Malaysia time)`;
 }
 
-function taskRules(request: AiRequest): string {
+function taskRules(request: ChatRequest): string {
   switch (request.task) {
     case 'translate':
       return (
@@ -51,7 +54,7 @@ function taskRules(request: AiRequest): string {
   }
 }
 
-export function systemPrompt(request: AiRequest, now: Date): string {
+export function systemPrompt(request: ChatRequest, now: Date): string {
   return `${PERSONA}\nNow: ${malaysiaNow(now)}.\n${taskRules(request)}`;
 }
 
@@ -60,7 +63,7 @@ export const SCREENSHOT_ONLY = '截图';
 type TextPart = { type: 'text'; text: string };
 type ImagePart = { type: 'image_url'; image_url: { url: string } };
 
-export function userContent(request: AiRequest): string | (TextPart | ImagePart)[] {
+export function userContent(request: ChatRequest): string | (TextPart | ImagePart)[] {
   const { text, image } = request.input;
   if (!image) return text;
   const picture: ImagePart = {

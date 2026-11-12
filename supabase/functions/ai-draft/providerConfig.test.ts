@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { LOCAL_ENV } from '../_shared/iap/fakes.ts';
 import { captureConsole } from './handlerTestKit.ts';
-import { DEEPSEEK_FALLBACK, QWEN_FLASH, singaporeBaseUrl } from './models.ts';
+import { DEEPSEEK_FALLBACK, QWEN_FLASH, singaporeOrigin } from './models.ts';
 import { fakeProvider } from './provider.ts';
 import {
   localTestProvider,
@@ -26,7 +26,7 @@ const QWEN = {
 const LOCAL_TEST = {
   ...LOCAL_ENV,
   AI_ALLOW_TEST_PROVIDER: '1',
-  AI_TEST_MODEL_STUDIO_URL: 'http://host.docker.internal:54398/compatible-mode/v1',
+  AI_TEST_MODEL_STUDIO_URL: 'http://host.docker.internal:54398',
 };
 
 function request(header?: string) {
@@ -82,11 +82,9 @@ describe('provider selection', () => {
   });
 
   test('the endpoint is always the Singapore workspace domain', () => {
-    expect(singaporeBaseUrl('WS-abc123')).toBe(
-      'https://ws-abc123.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1',
-    );
+    expect(singaporeOrigin('WS-abc123')).toBe('https://ws-abc123.ap-southeast-1.maas.aliyuncs.com');
     for (const bad of ['', 'evil.example.com/x', 'a.b', '-ws', 'ws_1']) {
-      expect(singaporeBaseUrl(bad)).toBeNull();
+      expect(singaporeOrigin(bad)).toBeNull();
     }
   });
 

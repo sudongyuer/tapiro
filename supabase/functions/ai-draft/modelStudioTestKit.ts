@@ -3,7 +3,7 @@ export type Sent = { url: string; headers: Record<string, string>; body: Record<
 export type Scripted =
   { status: number; body: unknown } | { raw: string } | 'network_error' | 'hang';
 
-export const BASE_URL = 'https://ws-test.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1';
+export const ORIGIN = 'https://ws-test.ap-southeast-1.maas.aliyuncs.com';
 export const API_KEY = 'sk-test-secret-key';
 
 export function scriptedFetch(script: Scripted[]) {

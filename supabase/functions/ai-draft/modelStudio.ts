@@ -1,9 +1,10 @@
-import { MAX_OUTPUT_TOKENS, PRIMARY_MODEL } from './models.ts';
-import { systemPrompt, userContent } from './prompts.ts';
+import { ASR_PATH, CHAT_PATH, PRIMARY_MODEL } from './models.ts';
+import { asrBody, readTranscript } from './modelStudioAsr.ts';
+import { isRecord, readCompletion, requestBody, type ChatCall } from './modelStudioChat.ts';
 import type { AiProvider, ProviderCall, ProviderReply } from './provider.ts';
 
 export type ModelStudioConfig = {
-  baseUrl: string;
+  origin: string;
   apiKey: string;
   fallback: string | null;
   fetch?: typeof fetch;
@@ -14,8 +15,6 @@ export const FALLBACK_WINDOW_MS = 12_000;
 export const UNREACHABLE_WINDOW_MS = 3_000;
 
 const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
-const COMPLETE = new Set(['stop', 'tool_calls']);
-const TOOL_CALL_IN_PROSE = /<\/?tool_call>|^\s*[{[]/;
 const SAFE_CODE = /^[A-Za-z0-9_.-]{1,64}$/;
 
 export class ModelStudioError extends Error {
@@ -27,79 +26,9 @@ export class ModelStudioError extends Error {
   }
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const count = (value: unknown) =>
-  Number.isSafeInteger(value) && (value as number) >= 0 ? (value as number) : Number.NaN;
-
-export function requestBody(call: ProviderCall, model: string, now: Date) {
-  const tools = call.tools.map((tool) => ({
-    type: 'function',
-    function: { name: tool.name, description: tool.description, parameters: tool.parameters },
-  }));
-  const only = call.tools.length === 1 ? call.tools[0].name : null;
-  return {
-    model,
-    messages: [
-      { role: 'system', content: systemPrompt(call, now) },
-      { role: 'user', content: userContent(call) },
-    ],
-    tools,
-    tool_choice: only ? { type: 'function', function: { name: only } } : 'auto',
-    parallel_tool_calls: false,
-    enable_thinking: false,
-    max_tokens: MAX_OUTPUT_TOKENS[call.task],
-    stream: false,
-  };
-}
-
-function parseArguments(raw: unknown): unknown {
-  if (typeof raw !== 'string') return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function completeMessage(body: Record<string, unknown>) {
-  const choices = body.choices;
-  if (!Array.isArray(choices) || !isRecord(choices[0])) return null;
-  const { message, finish_reason: finish } = choices[0];
-  return isRecord(message) && typeof finish === 'string' && COMPLETE.has(finish) ? message : null;
-}
-
-function toolOf(message: Record<string, unknown> | null, call: ProviderCall) {
-  const calls = message?.tool_calls;
-  if (Array.isArray(calls) && isRecord(calls[0]) && isRecord(calls[0].function)) {
-    const { name, arguments: raw } = calls[0].function;
-    return { toolName: typeof name === 'string' ? name : '', arguments: parseArguments(raw) };
-  }
-  const content = typeof message?.content === 'string' ? message.content.trim() : '';
-  const prose = content !== '' && !TOOL_CALL_IN_PROSE.test(content);
-  const chosen = call.tools.length > 1;
-  if (prose && chosen && call.tools.some((tool) => tool.name === 'answer')) {
-    return { toolName: 'answer', arguments: { text: content } };
-  }
-  return { toolName: '', arguments: null };
-}
-
-export function readCompletion(body: unknown, call: ProviderCall, model: string): ProviderReply {
-  if (!isRecord(body)) {
-    return { toolName: '', arguments: null, model, inputTokens: NaN, outputTokens: NaN };
-  }
-  const usage = isRecord(body.usage) ? body.usage : {};
-  return {
-    ...toolOf(completeMessage(body), call),
-    model,
-    inputTokens: count(usage.prompt_tokens),
-    outputTokens: count(usage.completion_tokens),
-  };
-}
-
 export function errorCode(status: number, body: unknown): string {
-  const code = isRecord(body) && isRecord(body.error) ? body.error.code : undefined;
+  const nested = isRecord(body) && isRecord(body.error) ? body.error.code : undefined;
+  const code = nested ?? (isRecord(body) ? body.code : undefined);
   return typeof code === 'string' && SAFE_CODE.test(code) ? code : `http_${status}`;
 }
 
@@ -110,9 +39,31 @@ function log(code: string, model: string) {
 export function modelStudioProvider(config: ModelStudioConfig): AiProvider {
   const send = config.fetch ?? fetch;
   const now = config.now ?? Date.now;
-  const url = `${config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
+  const origin = config.origin.replace(/\/+$/, '');
 
-  async function attempt(call: ProviderCall, model: string, signal: AbortSignal) {
+  function request(call: ProviderCall, model: string) {
+    if (call.task === 'transcribe') {
+      return {
+        url: `${origin}${ASR_PATH}`,
+        headers: { 'X-DashScope-SSE': 'disable' } as Record<string, string>,
+        body: asrBody(call, model),
+        read: (body: unknown) => readTranscript(body, model),
+      };
+    }
+    return {
+      url: `${origin}${CHAT_PATH}`,
+      headers: {} as Record<string, string>,
+      body: requestBody(call as ChatCall, model, new Date(now())),
+      read: (body: unknown) => readCompletion(body, call, model),
+    };
+  }
+
+  async function attempt(
+    call: ProviderCall,
+    model: string,
+    signal: AbortSignal,
+  ): Promise<ProviderReply> {
+    const { url, headers, body: payload, read } = request(call, model);
     let response: Response;
     const sentAt = now();
     try {
@@ -121,8 +72,9 @@ export function modelStudioProvider(config: ModelStudioConfig): AiProvider {
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
           'Content-Type': 'application/json',
+          ...headers,
         },
-        body: JSON.stringify(requestBody(call, model, new Date(now()))),
+        body: JSON.stringify(payload),
         signal,
       });
     } catch {
@@ -143,7 +95,7 @@ export function modelStudioProvider(config: ModelStudioConfig): AiProvider {
       log('unreadable_body', model);
       body = null;
     }
-    return readCompletion(body, call, model);
+    return read(body);
   }
 
   return {
@@ -152,7 +104,7 @@ export function modelStudioProvider(config: ModelStudioConfig): AiProvider {
       try {
         return await attempt(call, PRIMARY_MODEL[call.task], signal);
       } catch (error) {
-        const { fallback } = config;
+        const fallback = call.task === 'transcribe' ? null : config.fallback;
         const late = now() - started > FALLBACK_WINDOW_MS;
         const retryable = error instanceof ModelStudioError && error.fallback;
         if (!fallback || !retryable || signal.aborted || late) throw error;

@@ -17,10 +17,13 @@ import {
   fixtureConsent,
   fixtureFailPoints,
 } from './fixtureAskService';
+import { createFixtureSpeech, fixtureEngine, fixtureVoice } from './fixtureSpeech';
 import { metered } from './metered';
 import { createPantryStore } from './pantryStore';
 import { createSettingsAskStorage, createSettingsTranslationStorage } from './settingsAskStorage';
+import { kitSpeech } from './speech';
 import { createTranslations, type TranslationStorage } from './translations';
+import { createVoice } from './voice';
 
 const CALLS_KEY = 'uiVerifyAiCalls';
 const VERIFY_DELAY_MS = 1500;
@@ -51,7 +54,12 @@ function verifyServices() {
     meter: (task) => service.spend(task === 'translate' ? FIXTURE_TRANSLATE_COST : undefined),
     onHungry: () => service.starve(),
   });
-  return { service, send };
+  const speech = createFixtureSpeech({
+    voice: fixtureVoice(uiVerifyArgument('uiVerifyVoice')),
+    engine: fixtureEngine(uiVerifyArgument('uiVerifyVoiceEngine')),
+    onCall: recordCall,
+  });
+  return { service, send, speech };
 }
 
 // Cases share one install, so a verify launch starts with no kept words, conversation or translations unless it asks to
@@ -137,7 +145,15 @@ export const translations = createTranslations({
   storage: verify && !keepAsk ? freshTranslations(translationStorage) : translationStorage,
 });
 
+export const voice = createVoice({
+  speech: verify?.speech ?? kitSpeech,
+  text: askSession,
+  call: cloudCall,
+  consent: consentStore,
+});
+
 userCleanups.register((userId) => {
+  voice.forget();
   askSession.forget(userId);
   translations.forget(userId);
   pantryStore.clear();
@@ -145,6 +161,7 @@ userCleanups.register((userId) => {
 });
 
 sessionEnds.register((userId) => {
+  voice.forget();
   askSession.forget(userId);
   translations.forget(userId);
   pantryStore.clear();

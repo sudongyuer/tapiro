@@ -45,6 +45,33 @@ export default {
     retry: 'Try again',
     manual: 'Fill it in myself',
   },
+  voice: {
+    explainTitle: 'Talk to Tapir',
+    explainBody:
+      'This uses the microphone and speech recognition. Your phone tries first; if it can’t, the recording goes to Alibaba Cloud (Singapore).',
+    explainOk: 'OK',
+    blockedTitle: 'The microphone is off',
+    blockedBody:
+      'Allow Tapiro to use the microphone in Settings to talk to Tapir. You can also type.',
+    openSettings: 'Open Settings',
+    listening: 'Listening… tap stop when you’re done',
+    listeningCloud: 'Listening… tap stop when you’re done, then Tapir writes it down',
+    stop: 'Stop',
+    transcribing: 'Writing down what you said…',
+    retry: 'Try again',
+    note: {
+      noSpeech: 'Didn’t catch that. Try saying it again.',
+      micFailed: 'The microphone didn’t start. Tap again, or type.',
+      failed: 'Tapir got dizzy. No energy was used. What you said wasn’t written down.',
+      offline: 'No connection. What you said wasn’t written down.',
+      hungry: 'Tapir is hungry. What you said wasn’t written down.',
+      busy: 'Tapir is still on the last one. Try again in a moment.',
+      declined:
+        'You didn’t agree to the cloud, so what you said wasn’t written down. You can type.',
+      unreadable: 'Tapir couldn’t read that back. You can try again.',
+      notPlaced: 'The words couldn’t go into the field. You can try again.',
+    },
+  },
   belly: {
     a11y: 'Tapir’s energy: {{count}} of 5, {{mood}}',
     hint: 'Shows how energy works',

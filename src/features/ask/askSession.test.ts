@@ -210,7 +210,7 @@ describe('the 问小貘 session', () => {
     await session.send(openConsent);
     session.setText('别的');
     await session.choose('今晚', openConsent);
-    expect(sent[1].input.text).toBe('取快递\n什么时候要？ 今晚');
+    expect(sent[1].input).toMatchObject({ text: '取快递\n什么时候要？ 今晚' });
     expect(session.getSnapshot().text).toBe('别的');
   });
 

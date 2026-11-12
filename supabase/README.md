@@ -415,18 +415,19 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   `ai_finish_call` commits and its reply is lost, the answer is a 500 with the energy already spent. The provider comes
   from function env vars read at runtime, never from the repo:
   - `AI_PROVIDER`: `fake` (local and CI) or `qwen` (Model Studio). Unset or anything else is a `provider_error`.
-  - `MODEL_STUDIO_WORKSPACE_ID`: the Singapore workspace; the endpoint is always
-    `https://<id>.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1` (`models.ts`), so no variable can move it out of
-    Singapore.
+  - `MODEL_STUDIO_WORKSPACE_ID`: the Singapore workspace; the origin is always
+    `https://<id>.ap-southeast-1.maas.aliyuncs.com` (`models.ts`: chat completions for text, DashScope's
+    `multimodal-generation` for speech), so no variable can move it out of Singapore.
   - `MODEL_STUDIO_API_KEY` (secret): the workspace's API key. With `qwen`, a missing key or workspace is a `provider_error`
     logged as `provider_not_configured`.
   - `MODEL_STUDIO_FALLBACK`: `deepseek` turns on the DeepSeek fallback through the same account; anything else leaves
     it off (off until the owner answers question 281).
   - Model IDs are pinned in `ai-draft/models.ts` (a deploy, not a secret): Qwen flash for `translate` and `answer`, Qwen
-    plus for `draft_bounty` and `ask`, and the DeepSeek fallback, tried once on 404, 429, 500, 503 or a connection that
+    plus for `draft_bounty` and `ask`, Qwen ASR for `transcribe` (charged per billed second at price parity with a
+    draft, `budget.ts`), and the DeepSeek fallback (text only), tried once on 404, 429, 500, 503 or a connection that
     fails within 3 s, when Qwen failed within 12 s. Logs carry the status, Model Studio's error code and the model, never the prompt or reply.
   - `AI_ALLOW_TEST_PROVIDER=1` and `AI_TEST_MODEL_STUDIO_URL` (`local.env` only) let `tests/ai-provider.integration.ts`
-    send the header `x-tapiro-test-provider: qwen` to run the real adapter against its mock on port 54398; they are
+    send the header `x-tapiro-test-provider: qwen` to run the real adapter against its mock origin on port 54398; they are
     ignored unless the function runs on the CLI's local stack.
   - `bun run fn:serve` passes `functions/local.env`. `budget.ts` holds an unmeasured placeholder; `bun run ai:budget`
     measures it (plan 「Token budget measurement」).

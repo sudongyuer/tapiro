@@ -3,8 +3,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { parseBountyDraft } from '../../../src/lib/drafts/bountyDraft';
 import { localSupabase } from '../../../scripts/local-supabase';
-import { DEEPSEEK_FALLBACK, QWEN_FLASH, QWEN_PLUS } from '../ai-draft/models';
-import { ERRORS, textCompletion, toolCompletion } from '../ai-draft/modelStudioFixtures';
+import { DEEPSEEK_FALLBACK, QWEN_ASR, QWEN_FLASH, QWEN_PLUS } from '../ai-draft/models';
+import { asrResult, ERRORS, textCompletion, toolCompletion } from '../ai-draft/modelStudioFixtures';
+import { transcribeTokens } from '../ai-draft/budget';
 import { LOCAL_MOCK_KEY, TEST_PROVIDER_HEADER } from '../ai-draft/providerConfig';
 
 const MOCK_PORT = 54398;
@@ -27,6 +28,8 @@ const DRAFT_ARGS = {
   placeHint: 'Pyramid',
 };
 const USAGE = { prompt_tokens: 1800, completion_tokens: 360 };
+const ASR_SECONDS = 9;
+const AUDIO = 'AAAAHGZ0eXBNNEEg';
 
 type Seen = {
   authorization: string | null;
@@ -65,7 +68,20 @@ const mock = Bun.serve({
   port: MOCK_PORT,
   hostname: '0.0.0.0',
   async fetch(req) {
-    if (new URL(req.url).pathname !== '/compatible-mode/v1/chat/completions') {
+    const path = new URL(req.url).pathname;
+    if (path === '/api/v1/services/aigc/multimodal-generation/generation') {
+      const body = await req.json();
+      const [audio] = body.input.messages[0].content;
+      seen.push({
+        authorization: req.headers.get('authorization'),
+        model: body.model,
+        enableThinking: undefined,
+        toolChoice: body.parameters,
+        userContent: audio.input_audio.data,
+      });
+      return Response.json(asrResult('Tolong ambil bungkusan saya', ASR_SECONDS));
+    }
+    if (path !== '/compatible-mode/v1/chat/completions') {
       return new Response('not found', { status: 404 });
     }
     const body = await req.json();
@@ -256,6 +272,36 @@ describe('ai-draft runs the Model Studio adapter in the Edge Runtime', () => {
       result: { text: '好，我 10 分钟到' },
     });
     expect(seen.map((call) => call.model)).toEqual([QWEN_FLASH]);
+  });
+
+  test('a recording goes to the pinned ASR model and is charged by its billed seconds', async () => {
+    await refill();
+    seen.length = 0;
+    const response = await ask({
+      task: 'transcribe',
+      input: { audio: { mediaType: 'audio/mp4', data: AUDIO }, language: 'ms' },
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      tool: 'transcript',
+      result: { text: 'Tolong ambil bungkusan saya' },
+    });
+    expect(seen).toEqual([
+      expect.objectContaining({
+        model: QWEN_ASR,
+        toolChoice: { format: 'm4a', sample_rate: '16000', language_hints: ['ms'] },
+        userContent: `data:audio/mp4;base64,${AUDIO}`,
+      }),
+    ]);
+    const rows = await meterRows();
+    expect(rows.at(-1)).toMatchObject({
+      task: 'transcribe',
+      model: QWEN_ASR,
+      input_tokens: transcribeTokens(ASR_SECONDS),
+      output_tokens: 0,
+      discarded: false,
+    });
+    expect(JSON.stringify(rows)).not.toContain(AUDIO);
   });
 
   test('without the header the function keeps the fake', async () => {

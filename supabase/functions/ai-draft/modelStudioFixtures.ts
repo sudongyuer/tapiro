@@ -123,3 +123,25 @@ export const ERRORS = {
   },
   modelNotFound: { status: 404, body: errorBody('ModelNotFound', 'Model not exist.') },
 } as const;
+
+export const ASR_SOURCE =
+  'https://www.alibabacloud.com/help/en/model-studio/qwen-audio-asr-http-api (Non-streaming response, Nov 03, 2026)';
+
+export function asrResult(text: string, duration: number) {
+  return {
+    output: {
+      sentence: {
+        begin_time: 760,
+        channel_id: 0,
+        end_time: 3800,
+        sentence_end: true,
+        sentence_id: 1,
+        text,
+        words: [],
+      },
+      text,
+    },
+    usage: { duration },
+    request_id: '40e0734d-096f-9ae3-86c1-a8c013287561',
+  };
+}

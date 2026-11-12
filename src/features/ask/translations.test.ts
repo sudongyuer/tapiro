@@ -146,11 +146,15 @@ describe('translating a chat message', () => {
     t.tap('m1', 'Satu');
     t.tap('m2', 'Dua');
     await tick();
-    expect(t.requests.map((request) => request.input.text)).toEqual(['Satu']);
+    expect(
+      t.requests.map((request) => ('text' in request.input ? request.input.text : null)),
+    ).toEqual(['Satu']);
     expect(t.get('m2')).toEqual({ state: 'waiting' });
     first.resolve(translated('第一句'));
     await t.translations.idle();
-    expect(t.requests.map((request) => request.input.text)).toEqual(['Satu', 'Dua']);
+    expect(
+      t.requests.map((request) => ('text' in request.input ? request.input.text : null)),
+    ).toEqual(['Satu', 'Dua']);
     expect(t.get('m1')).toEqual({ state: 'shown', text: '第一句' });
     expect(t.get('m2')).toEqual({ state: 'shown', text: '第二句' });
   });

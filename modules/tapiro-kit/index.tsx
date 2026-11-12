@@ -126,9 +126,33 @@ export type LiveActivityInfo = {
   state: LiveActivityRunState;
 };
 
+export type SpeechPermission = 'granted' | 'denied' | 'restricted' | 'undetermined';
+export type SpeechPermissions = {
+  microphone: Exclude<SpeechPermission, 'restricted'>;
+  recognition: SpeechPermission;
+};
+export type SpeechEngine = 'transcriber' | 'dictation' | 'recognizer' | 'cloud';
+export type SpeechStartResult =
+  | { status: 'started'; engine: SpeechEngine }
+  | { status: 'failed'; code: 'busy' | 'micDenied' | 'audio' | 'cancelled' | 'unknown' };
+export type SpeechEnd =
+  'stopped' | 'limit' | 'interrupted' | 'engineFailed' | 'noSpeech' | 'audioFailed';
+export type SpeechEvent =
+  | { requestId: string; kind: 'partial'; text: string }
+  | { requestId: string; kind: 'fallback' }
+  | {
+      requestId: string;
+      kind: 'ended';
+      engine: SpeechEngine;
+      end: SpeechEnd;
+      text: string;
+      audio?: string;
+    };
+
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
   onStoreTransaction(event: StoreTransaction): void;
+  onSpeech(event: SpeechEvent): void;
 };
 
 declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
@@ -160,6 +184,15 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   storeFinish(transactionId: string): Promise<boolean>;
   storeStartUpdates(): Promise<void>;
   storeStopUpdates(): Promise<void>;
+  speechPermissions(): Promise<SpeechPermissions>;
+  speechRequestPermissions(): Promise<SpeechPermissions>;
+  speechStart(
+    requestId: string,
+    language: string,
+    region: string | null,
+  ): Promise<SpeechStartResult>;
+  speechStop(requestId: string): Promise<void>;
+  speechCancel(requestId: string): Promise<void>;
 }
 
 const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
@@ -326,5 +359,26 @@ export const LiveActivity = {
   },
   list(): Promise<LiveActivityInfo[]> {
     return kit.liveActivityList();
+  },
+};
+
+export const Speech = {
+  permissions(): Promise<SpeechPermissions> {
+    return kit.speechPermissions();
+  },
+  requestPermissions(): Promise<SpeechPermissions> {
+    return kit.speechRequestPermissions();
+  },
+  start(requestId: string, language: string, region: string | null): Promise<SpeechStartResult> {
+    return kit.speechStart(requestId, language, region);
+  },
+  stop(requestId: string): Promise<void> {
+    return kit.speechStop(requestId);
+  },
+  cancel(requestId: string): Promise<void> {
+    return kit.speechCancel(requestId);
+  },
+  listen(cb: (event: SpeechEvent) => void): { remove(): void } {
+    return kit.addListener('onSpeech', cb);
   },
 };

@@ -11,9 +11,9 @@ import {
   setup,
 } from './handlerTestKit.ts';
 import { DEEPSEEK_FALLBACK, QWEN_FLASH, QWEN_PLUS } from './models.ts';
-import { FALLBACK_WINDOW_MS, modelStudioProvider } from './modelStudio.ts';
+import { FALLBACK_WINDOW_MS, modelStudioProvider, UNREACHABLE_WINDOW_MS } from './modelStudio.ts';
 import { ERRORS, textCompletion, toolCompletion } from './modelStudioFixtures.ts';
-import { API_KEY, BASE_URL, ok, scriptedFetch, type Scripted } from './modelStudioTestKit.ts';
+import { API_KEY, ORIGIN, ok, scriptedFetch, type Scripted } from './modelStudioTestKit.ts';
 
 const NOW = Date.parse('2026-11-13T04:30:00Z');
 
@@ -52,7 +52,7 @@ function provider(
   return {
     ...scripted,
     provider: modelStudioProvider({
-      baseUrl: BASE_URL,
+      origin: ORIGIN,
       apiKey: API_KEY,
       fallback,
       fetch: scripted.fetch,
@@ -76,7 +76,7 @@ describe('Model Studio request', () => {
     const { sent } = await run(DRAFT, [ok(toolCompletion(QWEN_PLUS, 'draft_bounty', DRAFT_ARGS))]);
     expect(sent).toHaveLength(1);
     const [request] = sent;
-    expect(request.url).toBe(`${BASE_URL}/chat/completions`);
+    expect(request.url).toBe(`${ORIGIN}/compatible-mode/v1/chat/completions`);
     expect(request.headers.authorization).toBe(`Bearer ${API_KEY}`);
     expect(request.body).toMatchObject({
       model: QWEN_PLUS,
@@ -257,9 +257,25 @@ describe('Model Studio errors and the DeepSeek fallback', () => {
   });
 
   test('a connection lost after 3 s is not retried, since the request may have been billed', async () => {
-    const { response, sent } = await run(DRAFT, ['network_error'], { clock: steppingClock(2_000) });
-    await expectError(response, 502, 'provider_error');
-    expect(sent).toHaveLength(1);
+    let now = NOW;
+    let calls = 0;
+    const slowFailure = (async () => {
+      calls += 1;
+      now += UNREACHABLE_WINDOW_MS + 1;
+      throw new TypeError('connection reset');
+    }) as unknown as typeof fetch;
+    const lost = modelStudioProvider({
+      origin: ORIGIN,
+      apiKey: API_KEY,
+      fallback: DEEPSEEK_FALLBACK,
+      fetch: slowFailure,
+      now: () => now,
+    });
+    const { deps } = setup({ provider: lost, timeoutMs: 200 });
+    await captureConsole(async () => {
+      await expectError(await handleAiDraft(post(DRAFT), deps), 502, 'provider_error');
+    });
+    expect(calls).toBe(1);
   });
 
   test('an error inside the fallback window is retried', async () => {

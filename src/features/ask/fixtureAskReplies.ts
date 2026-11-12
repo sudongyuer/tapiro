@@ -1,4 +1,4 @@
-import type { CloudAnswer, CloudRequest } from './cloudGate';
+import type { CloudAnswer, CloudRequest, TextRequest } from './cloudGate';
 
 export const FIXTURE_REPLIES = [
   'answer',
@@ -13,6 +13,7 @@ export const FIXTURE_REPLIES = [
   'offline',
   'consentRequired',
   'malformed',
+  'silence',
 ] as const;
 export type FixtureReply = (typeof FIXTURE_REPLIES)[number];
 
@@ -52,7 +53,18 @@ const EMPTY = {
   placeHint: null,
 };
 
-function body(reply: FixtureReply, now: Date): unknown {
+export const FIXTURE_TRANSCRIPTS: Readonly<Record<string, string>> = {
+  'zh-Hans': '明天帮我去 Pyramid 取快递',
+  en: 'Pick up my parcel at Pyramid tomorrow',
+  ms: 'Tolong ambil bungkusan saya di Pyramid esok',
+};
+
+// A recording is always written down; only a refusal or 'silence' in the queue changes what comes back.
+function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
+  if (request.task === 'transcribe') {
+    const text = reply === 'silence' ? '' : (FIXTURE_TRANSCRIPTS[request.input.language] ?? '');
+    return { tool: 'transcript', result: { text } };
+  }
   switch (reply) {
     case 'answer':
       return {
@@ -135,7 +147,7 @@ const FIXTURE_TRANSLATIONS: Record<string, Partial<Record<string, string>>> = {
   },
 };
 
-function translation({ input }: CloudRequest) {
+function translation({ input }: TextRequest) {
   const to = input.to ?? 'zh-Hans';
   return {
     tool: 'translate',
@@ -170,11 +182,16 @@ export function createFixtureSender({
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
-    onCall(request.task, {
-      text: request.input.text,
-      image: request.input.image !== undefined,
-      ...(request.input.to ? { to: request.input.to } : {}),
-    });
+    onCall(
+      request.task,
+      request.task === 'transcribe'
+        ? { language: request.input.language, audio: request.input.audio.data !== '' }
+        : {
+            text: request.input.text,
+            image: request.input.image !== undefined,
+            ...(request.input.to ? { to: request.input.to } : {}),
+          },
+    );
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     const reply = queue.length > 1 ? queue.shift()! : queue[0];
     if (reply === 'consentRequired') onConsentRequired();
@@ -186,7 +203,7 @@ export function createFixtureSender({
     const result =
       request.task === 'translate' && reply !== 'malformed'
         ? translation(request)
-        : body(reply, now());
+        : body(reply, now(), request);
     return { ok: true, body: { task: request.task, ...(result as object), ...spent } };
   };
 }

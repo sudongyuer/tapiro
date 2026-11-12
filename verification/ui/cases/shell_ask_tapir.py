@@ -31,8 +31,8 @@ def open_sheet(tab, name):
     for identifier in ('ask-tapir-close', 'ask-tapir-mic'):
         f = by_id(items, identifier)['frame']
         assert min(f['width'], f['height']) >= floor, f'{identifier} is under 44 pt at sheet scale {scale:.3f}: {f}'
-    assert by_id(items, 'ask-tapir-mic').get('enabled') is False, 'the mic is not marked disabled'
-    for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-suggestion-2', 'ask-tapir-prompt', 'ask-tapir-coming-soon'):
+    assert by_id(items, 'ask-tapir-mic').get('enabled') is not False, 'the mic is disabled'
+    for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-suggestion-2', 'ask-tapir-prompt', 'ask-tapir-mic'):
         f, edge = by_id(items, identifier)['frame'], sheet['frame']
         assert f['x'] >= edge['x'] and f['x'] + f['width'] <= edge['x'] + edge['width'], f'{identifier} overflows the sheet: {f}'
     shot = ui.snap(name)

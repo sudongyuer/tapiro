@@ -194,7 +194,6 @@ const ms: Translation = {
       },
       mic: 'Bercakap',
       send: 'Hantar',
-      comingSoon: 'Suara akan datang tidak lama lagi',
       close: 'Tutup',
     },
   },

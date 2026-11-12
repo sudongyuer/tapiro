@@ -1,4 +1,5 @@
-import type { AiRequest, AiTask, ToolSchema } from './tools.ts';
+import { transcribeTokens } from './budget.ts';
+import type { AiInput, AiLanguage, AiRequest, AiTask, ToolSchema } from './tools.ts';
 import { TOOL_SCHEMAS } from './tools.ts';
 
 export type ProviderCall = AiRequest & { tools: ToolSchema[] };
@@ -19,11 +20,18 @@ export type AiProvider = {
 };
 
 const FAKE_MODEL = 'fake';
+const FAKE_RECORDING_SECONDS = 6;
 const FAKE_USAGE: Readonly<Record<AiTask, { inputTokens: number; outputTokens: number }>> = {
   draft_bounty: { inputTokens: 3000, outputTokens: 600 },
   answer: { inputTokens: 1500, outputTokens: 300 },
   translate: { inputTokens: 300, outputTokens: 60 },
   ask: { inputTokens: 3000, outputTokens: 600 },
+  transcribe: { inputTokens: transcribeTokens(FAKE_RECORDING_SECONDS), outputTokens: 0 },
+};
+const FAKE_TRANSCRIPTS: Readonly<Record<AiLanguage, string>> = {
+  'zh-Hans': '明天帮我去 Pyramid 取快递',
+  en: 'Pick up my parcel at Pyramid tomorrow',
+  ms: 'Tolong ambil bungkusan saya di Pyramid esok',
 };
 const FAKE_TITLE_MAX = TOOL_SCHEMAS.draft_bounty.parameters.properties!.title.maxLength!;
 const FAKE_CLARIFY_UNDER = 7;
@@ -52,7 +60,7 @@ const FAKE_PICK = {
   ],
 };
 
-function fakeAsk({ input }: AiRequest) {
+function fakeAsk({ input }: { input: AiInput }) {
   const text = input.text;
   if (input.image) return { toolName: 'pick', arguments: FAKE_PICK };
   if (/[?？]$/.test(text)) return { toolName: 'answer', arguments: { text: `[fake] ${text}` } };
@@ -72,8 +80,12 @@ function fakeDraft(text: string) {
 export const fakeProvider: AiProvider = {
   async generate(call) {
     const usage = { model: FAKE_MODEL, ...FAKE_USAGE[call.task] };
+    if (call.task === 'transcribe') {
+      const text = FAKE_TRANSCRIPTS[call.input.language];
+      return { ...usage, toolName: 'transcript', arguments: { text } };
+    }
+    if (call.task === 'ask') return { ...usage, ...fakeAsk(call) };
     const { task, input } = call;
-    if (task === 'ask') return { ...usage, ...fakeAsk(call) };
     if (task === 'draft_bounty') {
       return { ...usage, toolName: task, arguments: fakeDraft(input.text) };
     }
