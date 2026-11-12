@@ -10,6 +10,8 @@ export type CloudRequest =
   | { task: CloudTask; input: { text: string; to?: string; image?: CloudImage } }
   | { task: 'transcribe'; input: { audio: CloudAudio; language: string } };
 
+export type TextRequest = Exclude<CloudRequest, { task: 'transcribe' }>;
+
 export type CloudAnswer =
   { ok: true; body: unknown } | { ok: false; error: string | null; status: number | null };
 

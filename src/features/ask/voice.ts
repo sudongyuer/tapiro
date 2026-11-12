@@ -1,6 +1,6 @@
 import type { SpeechEvent, SpeechPermissions, SpeechStartResult } from 'tapiro-kit';
 
-import { askConsent, type ConsentGate } from './askSession';
+import { askConsent, type ConsentGate } from './consentFlow';
 import type { CloudCall, CloudResult } from './cloudGate';
 
 export type SpeechService = {

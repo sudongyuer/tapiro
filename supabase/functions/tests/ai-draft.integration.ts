@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+import { translatedText } from '../../../src/features/ask/translations';
 import { parseBountyDraft } from '../../../src/lib/drafts/bountyDraft';
 import { localSupabase } from '../../../scripts/local-supabase';
 
@@ -11,6 +12,7 @@ const endpoint = `${url}/functions/v1/ai-draft`;
 const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 const password = `pw-${crypto.randomUUID()}`;
 const PROMPT = '帮我取快递，今晚之前';
+const MESSAGE = 'OK, saya sampai 10 minit lagi';
 
 let userId = '';
 let token = '';
@@ -107,6 +109,28 @@ describe('ai-draft on the local stack with the fake provider', () => {
     expect(JSON.stringify(rows)).not.toContain(PROMPT);
   });
 
+  test('a chat message translates in the shape the app reads, for a small slice of the belly', async () => {
+    const before = (await status()).energy;
+    const response = await ask({ task: 'translate', input: { text: MESSAGE, to: 'zh-Hans' } });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(translatedText(body)).toBe(`[zh-Hans] ${MESSAGE}`);
+    const rows = await meterRows();
+    const row = rows.find((candidate) => candidate.task === 'translate');
+    expect(row).toMatchObject({ model: 'fake', input_tokens: 300, output_tokens: 60 });
+    expect(row.energy_spent).toBeGreaterThan(0);
+    expect(row.energy_spent * 10).toBeLessThan(before);
+    expect(body.energy).toBe(before - row.energy_spent);
+    expect(JSON.stringify(rows)).not.toContain(MESSAGE);
+  });
+
+  test('a translation names its language; anything else is refused and costs nothing', async () => {
+    const before = (await status()).energy;
+    const response = await ask({ task: 'translate', input: { text: MESSAGE, to: 'fr' } });
+    expect(response.status).toBe(400);
+    expect((await status()).energy).toBe(before);
+  });
+
   test('a recording comes back as words through the served function and is metered as transcribe', async () => {
     const before = await status();
     const response = await ask({
@@ -119,7 +143,7 @@ describe('ai-draft on the local stack with the fake provider', () => {
     expect(body.result.text.length).toBeGreaterThan(0);
     expect(body.energy).toBeLessThan(before.energy);
     const rows = await meterRows();
-    expect(rows.map((row) => row.task)).toEqual(['draft_bounty', 'transcribe']);
+    expect(rows.filter((row) => row.task === 'transcribe')).toHaveLength(1);
     expect(JSON.stringify(rows)).not.toContain('AAAAHGZ0eXBNNEEg');
   });
 

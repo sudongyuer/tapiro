@@ -1,5 +1,5 @@
-"""Long-press menu (121 A, the system context menu): holding 阿杰's message lifts it with 复制 and 举报, 举报 in its own
-last group and no 翻译 (hidden until step 8) and no unsend; your own message offers only 复制. 举报 opens the 举报 sheet
+"""Long-press menu (121 A, the system context menu): holding 阿杰's message lifts it with 复制, 翻译 (141, covered by
+chat_translate) and 举报, 举报 in its own last group, and no unsend; your own message offers only 复制. 举报 opens the 举报 sheet
 (122 A, covered by chat_report_message); 取消 closes it without sending anything."""
 import sys
 

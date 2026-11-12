@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { memo, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
-import { ContextMenuView, type ContextMenuAction } from 'tapiro-kit';
+import { ContextMenuView } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -9,10 +9,13 @@ import { PressDim } from '@/ui/PressDim';
 import { space, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { bubbleMenu } from './bubbleMenu';
 import { ImageBubble } from './ImageBubble';
 import { askResend, copyMessage } from './messageActions';
 import { ThreadActionsContext } from './threadActions';
 import { canRetry, sameRow, type BubbleRow } from './threadView';
+import { TranslatedText, TranslationStatus } from './TranslationParts';
+import { useMessageTranslation } from './useMessageTranslation';
 
 const SPINNER_DELAY_MS = 500;
 const STATUS = vars['--touch-min'];
@@ -33,10 +36,17 @@ function useLate(active: boolean) {
 
 export const MessageBubble = memo(
   function MessageBubble({ row }: { row: BubbleRow }) {
-    const { t } = useI18n();
+    const { t, language } = useI18n();
     const { color } = useTheme();
     const actionsOf = useContext(ThreadActionsContext);
+    const { translator } = actionsOf;
     const { item, mine, body, image } = row;
+    const messageId =
+      translator && item.kind === 'stored' && !mine && !row.folded && !image && body.trim() !== ''
+        ? item.message.id
+        : null;
+    const translation = useMessageTranslation(translator, messageId, language);
+    const translated = translation?.state === 'shown' ? translation.text : null;
     const pending = item.kind === 'pending' ? item.pending : null;
     const sending = pending?.state === 'sending';
     const late = useLate(sending);
@@ -49,26 +59,25 @@ export const MessageBubble = memo(
         ? t('chat.thread.a11yFailed', { label: spoken })
         : pending
           ? t('chat.thread.a11ySending', { label: spoken })
-          : spoken;
+          : translated !== null
+            ? t('chat.thread.a11yTranslated', { label: spoken, translation: translated })
+            : spoken;
     const reportTarget =
       item.kind === 'stored' && row.reportable
         ? { userId: item.message.senderId, messageId: item.message.id }
         : null;
-    const actions: ContextMenuAction[] = [
-      { id: 'copy', title: t('chat.thread.copy'), systemImage: 'doc.on.doc' },
-      ...(reportTarget
-        ? [
-            {
-              id: 'report',
-              title: t('chat.thread.report'),
-              systemImage: 'exclamationmark.bubble',
-              separate: true,
-            },
-          ]
-        : []),
-    ];
+    const actions = bubbleMenu(t, {
+      translatable: messageId !== null,
+      translation,
+      reportable: reportTarget !== null,
+    });
+    const translate = () => {
+      if (translator && messageId) translator.translate(messageId, body, language);
+    };
     const act = (id: string) => {
       if (id === 'copy') copyMessage(body);
+      if (id === 'translate') translate();
+      if (id === 'hideTranslation' && translator && messageId) translator.hide(messageId, language);
       if (id === 'report' && reportTarget) actionsOf.report(reportTarget);
     };
 
@@ -165,11 +174,20 @@ export const MessageBubble = memo(
                   >
                     {body}
                   </AppText>
+                  {translated !== null ? <TranslatedText text={translated} /> : null}
                 </View>
               </ContextMenuView>
             )}
           </View>
         )}
+        {translation && translation.state !== 'shown' && translator ? (
+          <TranslationStatus
+            translation={translation}
+            rowKey={row.key}
+            onRetry={translate}
+            onFeed={translator.feed}
+          />
+        ) : null}
         {pending?.state === 'failed' && !canRetry(pending.failure) ? (
           <AppText
             variant="meta"

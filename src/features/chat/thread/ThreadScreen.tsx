@@ -1,7 +1,6 @@
 import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   PlatformColor,
   StyleSheet,
@@ -17,9 +16,9 @@ import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
+import type { MessageTranslator } from '@/lib/translation';
 import { AppText } from '@/ui/AppText';
-import { InlineState } from '@/ui/InlineState';
-import { space, vars } from '@/ui/theme/tokens';
+import { space } from '@/ui/theme/tokens';
 
 import { PAGE_SIZE } from '../chatService';
 import { useChatThread, useChatUserId } from '../hooks';
@@ -30,10 +29,10 @@ import { ChatScrollView } from './ChatScrollView';
 import { Composer, COMPOSER_INPUT_ID, COMPOSER_MIN_HEIGHT } from './Composer';
 import { MessageBubble } from './MessageBubble';
 import { blockedFooter } from './safetyView';
-import { SafetyCard } from './SafetyCard';
 import type { ImageFrom } from './AttachMenu';
 import { pickAndSend } from './sendImage';
 import { ThreadActionsContext, type ReportTarget } from './threadActions';
+import { ThreadListHeader } from './ThreadListHeader';
 import { ThreadMenu } from './ThreadMenu';
 import { ThreadTop } from './ThreadTop';
 import { bubbleRows, type BubbleRow } from './threadView';
@@ -50,10 +49,12 @@ export function ThreadScreen({
   threadId,
   onOpenItem,
   onReport,
+  translator = null,
 }: {
   threadId: string;
   onOpenItem: (info: ThreadInfo) => void;
   onReport: (target: ReportTarget) => void;
+  translator?: MessageTranslator | null;
 }) {
   const { t, language } = useI18n();
   const userId = useChatUserId();
@@ -70,8 +71,9 @@ export function ThreadScreen({
     () => ({
       report: onReport,
       reveal: (key: string) => setRevealed((shown) => new Set(shown).add(key)),
+      translator,
     }),
-    [onReport],
+    [onReport, translator],
   );
   const safety = useThreadSafety({ info, onOpenItem, onReport });
   const blocked = info ? blockedFooter(info) : null;
@@ -151,47 +153,7 @@ export function ThreadScreen({
     });
   };
 
-  const loading = !thread || (thread.status === 'loading' && !info);
-  const failed = thread?.status === 'failed' && !info;
-  const header = (
-    <View>
-      {thread?.older === 'loading' ? <ActivityIndicator style={styles.older} /> : null}
-      {thread?.older === 'failed' ? (
-        <View style={styles.inset}>
-          <InlineState
-            text={t('chat.thread.olderFailed')}
-            action={{
-              label: t('chat.thread.retry'),
-              onPress: () => void chatStore.loadOlder(threadId),
-              testID: 'chat-thread-older-retry',
-            }}
-            testID="chat-thread-older-failed"
-          />
-        </View>
-      ) : null}
-      {info && !thread?.hasMore ? <SafetyCard /> : null}
-      {loading ? (
-        <ActivityIndicator
-          style={styles.loading}
-          accessibilityLabel={t('chat.thread.loading')}
-          testID="chat-thread-loading"
-        />
-      ) : null}
-      {failed ? (
-        <View style={styles.inset}>
-          <InlineState
-            text={t('chat.thread.loadFailed')}
-            action={{
-              label: t('chat.thread.retry'),
-              onPress: () => void chatStore.reloadThread(threadId),
-              testID: 'chat-thread-retry',
-            }}
-            testID="chat-thread-failed"
-          />
-        </View>
-      ) : null}
-    </View>
-  );
+  const header = <ThreadListHeader threadId={threadId} thread={thread} />;
 
   return (
     <KeyboardGestureArea
@@ -284,9 +246,6 @@ export function ThreadScreen({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: PlatformColor('systemBackground') },
   placing: { opacity: 0 },
-  inset: { marginHorizontal: space.md, marginBottom: space.md },
-  older: { minHeight: vars['--touch-min'] },
-  loading: { minHeight: vars['--touch-min'] * 2 },
   left: {
     backgroundColor: PlatformColor('systemBackground'),
     position: 'absolute',

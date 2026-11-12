@@ -9,7 +9,8 @@ import {
   type Turn,
   type UserTurn,
 } from './conversation';
-import type { AskOutcome, PrepareResult } from './consentStore';
+import { askConsent, type ConsentGate } from './consentFlow';
+import type { PrepareResult } from './consentStore';
 
 export type AskFailure = 'offline' | 'providerError' | 'unreadable' | 'hungry' | 'busy';
 
@@ -32,11 +33,6 @@ export type AskStorage = {
   writeConversation(userId: string, conversation: unknown): void;
 };
 
-export type ConsentGate = {
-  prepare(): Promise<PrepareResult>;
-  ask(): { outcome: Promise<AskOutcome> };
-};
-
 const EMPTY: AskSessionState = {
   userId: null,
   turns: [],
@@ -46,18 +42,6 @@ const EMPTY: AskSessionState = {
   failed: null,
   needsUpdate: false,
 };
-
-export async function askConsent(
-  consent: ConsentGate,
-  openConsent: () => void,
-): Promise<PrepareResult> {
-  const access = await consent.prepare();
-  if (access !== 'notGiven') return access;
-  const asked = consent.ask();
-  openConsent();
-  const outcome = await asked.outcome;
-  return outcome === 'declined' ? 'notGiven' : outcome;
-}
 
 function failureOf(result: CloudResult): AskFailure | 'needsUpdate' | null {
   if (result.kind === 'needsUpdate') return 'needsUpdate';
@@ -91,7 +75,8 @@ export function createAskSession(deps: {
     return conversation;
   }
 
-  const consented = (openConsent: () => void) => askConsent(deps.consent, openConsent);
+  const consented = (openConsent: () => void): Promise<PrepareResult> =>
+    askConsent(deps.consent, openConsent);
 
   async function run(send: AskSend, openConsent: () => void) {
     const { userId } = state;
@@ -208,7 +193,6 @@ export function createAskSession(deps: {
       return run({ user, image, typed: state.text }, openConsent);
     },
     generation: forgetsOf,
-    // Spoken words land here; while the sheet is closed they go to the kept words, unless the user signed out since.
     writeFor(userId: string, since: number, next: (text: string) => string) {
       if (forgetsOf(userId) !== since) return false;
       if (state.userId !== userId) {

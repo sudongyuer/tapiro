@@ -41,10 +41,12 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   (★ D1–D15 in the plan). Task 5 is built: the belly bar in the sheet header, the low line, the hungry card with feed,
   swap-and-feed (`swap_and_feed_leaf()`), 吃撑了 and 明早再来, the feed motion, and the pantry jar with the coin swap on
   我的 → 小貘; coin history names a swap 「换嫩叶」 (★ E1–E12). 133's 小貘记得 line waits for Task 8. 149 A is in the server:
-  at most 5 leaves fed per refill day (`fed_enough`); **the 5 is provisional** until real usage is measured. Task 7 is
-  built: the sheet's microphone with the 143 card, live words in the field, the on-device chain in the kit and a cloud
-  fallback through consent, metered as `transcribe` (★ V1–V14); the engines themselves are on the device checklist
-  (`ask.voice.*`). Next: Task 6 waits on chat translation; Task 8 (errors and 小貘记得) can start. Nothing is deployed;
+  at most 5 leaves fed per refill day (`fed_enough`); **the 5 is provisional** until real usage is measured. Task 6 is
+  built: long-press a message from the other side → 翻译 (consent page first), the translation under the original in the
+  bubble, kept on the device so it is never charged twice, with dizzy, busy, hungry (去喂小貘 opens the hungry card) and
+  吃撑了 lines (★ T1–T12). Task 7 is built: the sheet's microphone with the 143 card, live words in the field, the on-device
+  chain in the kit and a cloud fallback through consent, metered as `transcribe` (★ V1–V14); the engines themselves are on
+  the device checklist (`ask.voice.*`). Next: Task 8 (errors and 小貘记得) can start. Nothing is deployed;
   the real provider waits on the Model Studio account (148). The token budget is an unmeasured placeholder and no model
   ID is pinned.
 
@@ -110,7 +112,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      each on a Simulator 8–40 min after its boot and ahead of a lost AXe session; 13 of 14 passed on fresh boots. A
      runner rule for it is not chosen yet.
 
-1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 1–5 and 7 built; 6 and 8–10 not started.
+1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 1–7 built; 8–10 not started.
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The
    account-free halves are planned (2026-11-11): in-app purchase on the Simulator with a local `.storekit` file, the
    local stack and a StoreKit 2 wrapper in the kit (`docs/plans/2026-11-11-iap-local.md`). Built 2026-11-11: the server
@@ -175,7 +177,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   card starts to leave; the product timing is unchanged, and the card still leaves in one frame instead of its 320 ms
   exit on iOS 27.2 (open since the SDK 58 retro).
 - 问小貘 ★ for veto: server and draft contract (S1–S13), consent (C1–C11), sheet (D1–D15), energy and pantry (E1–E12),
-  voice (V1–V14), all in `docs/plans/2026-10-30-ask-tapir.md`.
+  translation (T1–T12), voice (V1–V14), all in `docs/plans/2026-10-30-ask-tapir.md`.
 - The profile header ★ (P11 in `docs/plans/2026-11-06-reviews-profile-coins.md`): the tier keeps its full width and the
   note beside it wraps to a second line when both do not fit.
 - The board card ★ (P12, same plan): on the bounty board card and the map card's back the poster's name sits over the

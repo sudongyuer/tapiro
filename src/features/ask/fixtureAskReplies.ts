@@ -1,4 +1,4 @@
-import type { CloudAnswer, CloudRequest } from './cloudGate';
+import type { CloudAnswer, CloudRequest, TextRequest } from './cloudGate';
 
 export const FIXTURE_REPLIES = [
   'answer',
@@ -140,6 +140,21 @@ function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
   }
 }
 
+const FIXTURE_TRANSLATIONS: Record<string, Partial<Record<string, string>>> = {
+  'OK, saya sampai 10 minit lagi': {
+    'zh-Hans': '好，我再过 10 分钟到',
+    en: 'OK, I’ll be there in 10 minutes',
+  },
+};
+
+function translation({ input }: TextRequest) {
+  const to = input.to ?? 'zh-Hans';
+  return {
+    tool: 'translate',
+    result: { text: FIXTURE_TRANSLATIONS[input.text]?.[to] ?? `[${to}] ${input.text}` },
+  };
+}
+
 const REFUSALS: Partial<Record<FixtureReply, CloudAnswer>> = {
   providerError: { ok: false, error: 'provider_error', status: 502 },
   hungry: { ok: false, error: 'hungry', status: 429 },
@@ -162,7 +177,7 @@ export function createFixtureSender({
   now?: () => Date;
   onCall: (name: string, args: unknown) => void;
   onConsentRequired: () => void;
-  meter?: () => object | null;
+  meter?: (task: CloudRequest['task']) => object | null;
   onHungry?: () => void;
 }) {
   const queue = [...replies];
@@ -171,7 +186,11 @@ export function createFixtureSender({
       request.task,
       request.task === 'transcribe'
         ? { language: request.input.language, audio: request.input.audio.data !== '' }
-        : { text: request.input.text, image: request.input.image !== undefined },
+        : {
+            text: request.input.text,
+            image: request.input.image !== undefined,
+            ...(request.input.to ? { to: request.input.to } : {}),
+          },
     );
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     const reply = queue.length > 1 ? queue.shift()! : queue[0];
@@ -179,11 +198,12 @@ export function createFixtureSender({
     if (reply === 'hungry') onHungry();
     const refused = REFUSALS[reply];
     if (refused) return refused;
-    const spent = meter();
+    const spent = meter(request.task);
     if (spent === null) return REFUSALS.hungry!;
-    return {
-      ok: true,
-      body: { task: request.task, ...(body(reply, now(), request) as object), ...spent },
-    };
+    const result =
+      request.task === 'translate' && reply !== 'malformed'
+        ? translation(request)
+        : body(reply, now(), request);
+    return { ok: true, body: { task: request.task, ...(result as object), ...spent } };
   };
 }
