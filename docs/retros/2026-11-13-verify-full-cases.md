@@ -20,7 +20,7 @@ Follow-up to `2026-11-13-ms-type-row` (#2: `bounty_post_form` never finished und
 | Quality   | Escaped defects         | 0; no product bug among the 24 failures                                                                    |
 | Quality   | Vacuous checks          | 0                                                                                                          |
 | Quality   | Skipped verifications   | The full matrix stopped after 230 of 1248 runs (light only, `account_*` to `chat_thread_*`), the 4 h limit |
-| Speed     | Wall-clock              | About 4 h of Simulator time; 1.1 runs a minute on three Simulators, half the 11-10 rate                    |
+| Speed     | Wall-clock              | About 3 h of Simulator time; 1.5 runs a minute on three Simulators, 60 % of the 11-10 rate                 |
 | Autonomy  | Avoidable interventions | 0                                                                                                          |
 | Loop      | Minutes on this retro   | 10                                                                                                         |
 
