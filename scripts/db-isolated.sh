@@ -10,7 +10,6 @@ fi
 name="$1"
 prefix="$2"
 root="$(cd "$(dirname "$0")/.." && pwd)"
-work="${TMPDIR:-/tmp}/tapiro-db-${name}"
 
 for port in "${prefix}20" "${prefix}21" "${prefix}22" "${prefix}23" "${prefix}24" "${prefix}27" "${prefix}29"; do
   if lsof -iTCP:"$port" -sTCP:LISTEN -nP >/dev/null 2>&1; then
@@ -19,7 +18,13 @@ for port in "${prefix}20" "${prefix}21" "${prefix}22" "${prefix}23" "${prefix}24
   fi
 done
 
-rm -rf "$work"
+# A fresh path per run: Docker Desktop keeps a deleted bind source cached, so a recreated workdir cannot be bind-mounted.
+work="$(mktemp -d "${TMPDIR:-/tmp}/tapiro-db-${name}.XXXXXX")"
+stop() {
+  supabase stop --no-backup --workdir "$work" >/dev/null 2>&1 || true
+  rm -rf "$work"
+}
+trap stop EXIT
 mkdir -p "$work/supabase"
 rsync -a --exclude .temp --exclude .branches "$root/supabase/" "$work/supabase/"
 sed -i '' -E \
@@ -27,9 +32,6 @@ sed -i '' -E \
   -e "s/^inspector_port = 8083/inspector_port = 1${prefix}3/" \
   -e "s/^(port|shadow_port) = 543([0-9]{2})$/\1 = ${prefix}\2/" \
   "$work/supabase/config.toml"
-
-stop() { supabase stop --no-backup --workdir "$work" >/dev/null 2>&1 || true; }
-trap stop EXIT
 
 supabase start --workdir "$work" -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,inbucket >/dev/null
 supabase test db --workdir "$work"
