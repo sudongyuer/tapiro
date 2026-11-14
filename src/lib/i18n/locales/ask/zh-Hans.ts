@@ -183,6 +183,7 @@ export default {
       labelTaken: '已经有一条叫这个名字了。',
       notFound: '这一条已经不在了。',
       invalid: '名字最多 40 个字，内容最多 200 个字。',
+      private: '看起来像账号或电话号码，小貘不记这类东西。',
       failed: '没保存上，检查网络后再试。',
     },
     used: '{{label}}用的是你记得的 {{content}}',
@@ -190,6 +191,8 @@ export default {
     editA11y: '改小貘记得的「{{label}}」',
     offer: {
       title: '要小貘记住吗？',
+      replaceTitle: '把「{{label}}」改成这个？',
+      now: '现在记的是 {{content}}',
       pair: '{{label}} = {{content}}',
       save: '记住',
       saving: '正在记…',

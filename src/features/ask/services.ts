@@ -140,6 +140,7 @@ export const consentStore = createConsentStore(service);
 
 export const memoryStore = createMemoryStore(
   verify?.memory ?? createSupabaseMemoryService(getSupabase()),
+  (userId, ids) => askSession.dropMemoryUse(userId, ids),
 );
 
 export const pantryStore = createPantryStore({

@@ -140,6 +140,25 @@ export function createAskSession(deps: {
     set({ sending: null, turns: next, text });
   }
 
+  // Applies to the live turns when they are on screen, and to the kept conversation either way, so a mark made while the
+  // sheet reread its turns still lands.
+  function rewrite(userId: string, change: (turns: Turn[]) => Turn[] | null) {
+    if (state.userId === userId) {
+      const live = change(state.turns);
+      if (live) {
+        save(userId, live);
+        set({ turns: live });
+        return;
+      }
+    }
+    const saved = keptConversation(deps.storage.readConversation(userId), now());
+    const turns = saved ? change(saved.turns) : null;
+    if (!saved || !turns) return;
+    const conversation = { ...saved, turns };
+    deps.storage.writeConversation(userId, storedForm(conversation));
+    if (state.userId === userId && state.resume) set({ resume: conversation });
+  }
+
   // A reply that lands after the sheet reopened joins whatever was saved since, when that grew from the same turns.
   function laterTurns(userId: string, sentFrom: Turn[]) {
     const saved = keptConversation(deps.storage.readConversation(userId), now())?.turns ?? null;
@@ -226,24 +245,30 @@ export function createAskSession(deps: {
     },
     settleOffer(userId: string, since: number, turn: Turn, offer: OfferState) {
       if (forgetsOf(userId) !== since) return;
-      const mark = (turns: Turn[]) =>
-        turns.map((each) => (each === turn && each.role === 'tapir' ? { ...each, offer } : each));
-      if (state.userId === userId && state.turns.includes(turn)) {
-        const turns = mark(state.turns);
-        save(userId, turns);
-        set({ turns });
-        return;
-      }
-      const saved = keptConversation(deps.storage.readConversation(userId), now());
-      if (!saved) return;
       const same = JSON.stringify(storedTurn(turn));
-      const index = saved.turns.findIndex((each) => JSON.stringify(storedTurn(each)) === same);
-      if (index < 0) return;
-      const turns = saved.turns.map((each, at) =>
-        at === index && each.role === 'tapir' ? { ...each, offer } : each,
-      );
-      save(userId, turns);
-      if (state.userId === userId && state.resume) set({ resume: { ...saved, turns } });
+      const mark = (turns: Turn[]) => {
+        const index = turns.findIndex((each) => JSON.stringify(storedTurn(each)) === same);
+        return index < 0
+          ? null
+          : turns.map((each, at) =>
+              at === index && each.role === 'tapir' ? { ...each, offer } : each,
+            );
+      };
+      rewrite(userId, mark);
+    },
+    dropMemoryUse(userId: string, ids: string[] | 'all') {
+      const gone = (id: string) => ids === 'all' || ids.includes(id);
+      rewrite(userId, (turns) => {
+        let changed = false;
+        const next = turns.map((each): Turn => {
+          if (each.role !== 'tapir' || !each.memory?.used.some((use) => gone(use.id))) return each;
+          changed = true;
+          const used = each.memory.used.filter((use) => !gone(use.id));
+          const raw = { ...each.raw, memory: { ...(each.raw.memory as object), used } };
+          return { ...each, raw, memory: { ...each.memory, used } };
+        });
+        return changed ? next : null;
+      });
     },
     forget(userId: string) {
       forgets.set(userId, forgetsOf(userId) + 1);

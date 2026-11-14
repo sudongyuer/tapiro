@@ -13,7 +13,9 @@ export type MemoryContext = { entries: MemoryEntry[]; remembering: boolean };
 
 export type MemoryOffer = { kind: MemoryKind; label: string; content: string };
 
-export type MemoryOutcome = { used: MemoryEntry[]; offer: MemoryOffer | null };
+export type MemoryOfferOut = MemoryOffer & { replaces: string | null };
+
+export type MemoryOutcome = { used: MemoryEntry[]; offer: MemoryOfferOut | null };
 
 const MEMORY_TASKS: readonly AiTask[] = ['ask', 'draft_bounty', 'answer'];
 const MEMORY_TOOLS: readonly AiTool[] = ['draft_bounty', 'answer'];
@@ -104,25 +106,51 @@ export function memoryPrompt(context: MemoryContext | null): string {
 
 const sameLabel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
+const LONG_NUMBER = /\d{8,}/;
+
+// The consent page promises payee details are never sent; a remembered account or phone number would be sent with every
+// draft, so anything holding a long run of digits is never offered (the save function refuses it too).
+export const looksPrivate = (text: string) => LONG_NUMBER.test(text.replace(/[\s-]/g, ''));
+
+function within(value: unknown, max: number) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed !== '' && [...trimmed].length <= max ? trimmed : null;
+}
+
+function readOffer(value: unknown): MemoryOffer | null {
+  if (!isRecord(value)) return null;
+  const kind = MEMORY_KINDS.find((candidate) => candidate === value.kind);
+  const label = within(value.label, MEMORY_LIMITS.labelMax);
+  const content = within(value.content, MEMORY_LIMITS.contentMax);
+  if (!kind || !label || !content || looksPrivate(label) || looksPrivate(content)) return null;
+  return { kind, label, content };
+}
+
+export function withoutMemory(args: unknown, context: MemoryContext | null): unknown {
+  if (!context || !isRecord(args) || !Object.hasOwn(args, 'memory')) return args;
+  const { memory: _memory, ...rest } = args;
+  return rest;
+}
+
+// The memory field is read leniently: a draft or answer that is fine stays usable even when its memory part is not.
 export function splitMemory(
   args: unknown,
   context: MemoryContext | null,
 ): { result: unknown; memory: MemoryOutcome | null } {
   if (!context) return { result: args, memory: null };
-  if (!isRecord(args) || !isRecord(args.memory)) {
-    return { result: args, memory: { used: [], offer: null } };
-  }
-  const { memory, ...result } = args;
+  const result = withoutMemory(args, context);
+  const memory = isRecord(args) && isRecord(args.memory) ? args.memory : {};
   const refs = Array.isArray(memory.used) ? memory.used : [];
-  const used = context.entries.filter((_, index) => refs.includes(memoryRef(index)));
-  const remember = isRecord(memory.remember) ? (memory.remember as MemoryOffer) : null;
+  const used = context.entries
+    .filter((_, index) => refs.includes(memoryRef(index)))
+    .slice(0, MEMORY_LIMITS.usedMax);
+  const remember = context.remembering ? readOffer(memory.remember) : null;
   const kept = remember
     ? context.entries.find((entry) => sameLabel(entry.label, remember.label))
     : undefined;
-  const repeats = kept !== undefined && kept.content.trim() === remember?.content.trim();
-  const offer =
-    context.remembering && remember && !repeats
-      ? { kind: remember.kind, label: remember.label.trim(), content: remember.content.trim() }
-      : null;
-  return { result, memory: { used, offer } };
+  if (!remember || kept?.content.trim() === remember.content) {
+    return { result, memory: { used, offer: null } };
+  }
+  return { result, memory: { used, offer: { ...remember, replaces: kept?.content ?? null } } };
 }

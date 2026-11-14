@@ -24,7 +24,7 @@ describe('小貘记得 on the phone', () => {
       parseMemoryOutcome({ used: [], offer: { kind: 'place', label: ' 学校 ', content: 'SU' } }),
     ).toEqual({
       used: [],
-      offer: { kind: 'place', label: '学校', content: 'SU' },
+      offer: { kind: 'place', label: '学校', content: 'SU', replaces: null },
     });
     expect(
       parseMemoryOutcome({
@@ -54,6 +54,7 @@ describe('小貘记得 on the phone', () => {
     ['label_taken', 'labelTaken'],
     ['memory_not_found', 'notFound'],
     ['invalid_memory', 'invalid'],
+    ['memory_private', 'private'],
     ['something else', 'failed'],
   ])('the server refusal %s reads as %s', (message, failure) => {
     expect(toMemoryFailure({ message }) as string).toBe(failure);

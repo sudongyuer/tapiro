@@ -196,6 +196,7 @@ export default {
       labelTaken: 'Nota dengan nama ini sudah ada.',
       notFound: 'Nota ini sudah tiada.',
       invalid: 'Nama sehingga 40 aksara, nota sehingga 200.',
+      private: 'Itu kelihatan seperti nombor akaun atau telefon. Tapir tidak menyimpannya.',
       failed: 'Tidak disimpan. Semak sambungan anda dan cuba lagi.',
     },
     used: '{{label}}: guna {{content}} yang anda simpan',
@@ -203,6 +204,8 @@ export default {
     editA11y: 'Ubah nota “{{label}}” yang disimpan',
     offer: {
       title: 'Mahu Tapir ingat ini?',
+      replaceTitle: 'Tukar “{{label}}” kepada ini?',
+      now: 'Disimpan sekarang: {{content}}',
       pair: '{{label}} = {{content}}',
       save: 'Ingat',
       saving: 'Menyimpan…',

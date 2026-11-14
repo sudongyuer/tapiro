@@ -80,7 +80,8 @@ export function OfferCard({
     memoryStore.attach(userId);
     setSaving(true);
     setFailure(null);
-    const result = await memoryStore.save({ id: null, ...offer });
+    const { kind, label, content } = offer;
+    const result = await memoryStore.save({ id: null, kind, label, content });
     setSaving(false);
     if (result.ok) askSession.settleOffer(userId, since, turn, 'saved');
     else setFailure(result.failure);
@@ -88,10 +89,19 @@ export function OfferCard({
 
   return (
     <View style={[styles.card, { borderColor: PlatformColor('separator') }]} testID={testID}>
-      <AppText variant="title">{t('ask.memory.offer.title')}</AppText>
+      <AppText variant="title">
+        {offer.replaces
+          ? t('ask.memory.offer.replaceTitle', { label: offer.label })
+          : t('ask.memory.offer.title')}
+      </AppText>
       <AppText variant="secondary" tone="secondaryLabel" testID={`${testID}-pair`}>
         {t('ask.memory.offer.pair', { label: offer.label, content: offer.content })}
       </AppText>
+      {offer.replaces ? (
+        <AppText variant="secondary" tone="secondaryLabel" testID={`${testID}-now`}>
+          {t('ask.memory.offer.now', { content: offer.replaces })}
+        </AppText>
+      ) : null}
       <View style={styles.buttons}>
         <PillButton
           label={t('ask.memory.offer.save')}

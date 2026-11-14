@@ -60,9 +60,48 @@ afterAll(async () => {
 });
 
 describe('小貘记得 through the served ai-draft', () => {
-  test('consent version 1 no longer lets a call through', async () => {
-    const { data } = await client.rpc('ai_status');
-    expect((data as { consent: { currentVersion: number } }).consent.currentVersion).toBe(2);
+  test('someone who agreed only to consent version 1 is asked again and nothing is called', async () => {
+    const email = `ai-memory-v1-${crypto.randomUUID()}@example.test`;
+    const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+    if (created.error) throw created.error;
+    const earlier = created.data.user.id;
+    try {
+      const inserted = await admin.from('ai_consents').insert({
+        user_id: earlier,
+        version: 1,
+        provider: 'Alibaba Cloud Model Studio (Singapore)',
+        purpose: 'bounty_draft,answer,translate',
+      });
+      expect(inserted.error).toBeNull();
+      const other = createClient(url, anonKey, { auth: { persistSession: false } });
+      const signIn = await other.auth.signInWithPassword({ email, password });
+      if (signIn.error) throw signIn.error;
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${signIn.data.session.access_token}`,
+          apikey: anonKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ task: 'ask', input: { text: '从宿舍帮我取快递' } }),
+      });
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: 'consent_required' });
+      const meters = await admin.from('ai_metering').select('id').eq('user_id', earlier);
+      expect(meters.data).toEqual([]);
+    } finally {
+      await admin.auth.admin.deleteUser(earlier);
+    }
+  });
+
+  test('a remembered account number is refused by the server', async () => {
+    const saved = await client.rpc('save_ai_memory', {
+      entry: null,
+      kind: 'preference',
+      label: '收款',
+      content: 'Maybank 1234-5678-90',
+    });
+    expect(saved.error?.message).toBe('memory_private');
   });
 
   test('a draft names the entry the server read for it', async () => {
@@ -82,6 +121,7 @@ describe('小貘记得 through the served ai-draft', () => {
       kind: 'place',
       label: '学校',
       content: 'Sunway University',
+      replaces: null,
     });
     const { count } = await admin
       .from('ai_memory')

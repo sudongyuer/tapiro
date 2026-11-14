@@ -4,6 +4,7 @@ import {
   splitMemory,
   usesMemory,
   withMemoryField,
+  withoutMemory,
   type MemoryContext,
   type MemoryForCall,
 } from './memory.ts';
@@ -129,7 +130,7 @@ function usable(
     isCount(reply.inputTokens) &&
     isCount(reply.outputTokens) &&
     hasModel(reply) &&
-    validToolResult(tool, reply.arguments, withMemoryField(TOOL_SCHEMAS[tool], memory));
+    validToolResult(tool, withoutMemory(reply.arguments, memory));
   return valid ? tool : null;
 }
 

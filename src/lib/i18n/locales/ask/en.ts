@@ -192,6 +192,7 @@ export default {
       labelTaken: 'A note with this name already exists.',
       notFound: 'This note is gone.',
       invalid: 'Names are up to 40 characters, notes up to 200.',
+      private: 'That looks like an account or phone number. Tapir does not keep those.',
       failed: 'Not saved. Check your connection and try again.',
     },
     used: '{{label}}: used your saved {{content}}',
@@ -199,6 +200,8 @@ export default {
     editA11y: 'Edit the saved note “{{label}}”',
     offer: {
       title: 'Should Tapir remember this?',
+      replaceTitle: 'Change “{{label}}” to this?',
+      now: 'Saved now: {{content}}',
       pair: '{{label}} = {{content}}',
       save: 'Remember',
       saving: 'Saving…',

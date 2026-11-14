@@ -35,9 +35,13 @@ function merged(entries: MemoryEntry[], saved: MemoryEntry) {
   return [saved, ...rest];
 }
 
-export function createMemoryStore(service: MemoryService) {
+export function createMemoryStore(
+  service: MemoryService,
+  onRemoved: (userId: string, ids: string[] | 'all') => void = () => undefined,
+) {
   let state = EMPTY;
   let epoch = 0;
+  let writes = 0;
   const listeners = new Set<() => void>();
 
   const set = (next: Partial<MemoryState>) => {
@@ -49,10 +53,13 @@ export function createMemoryStore(service: MemoryService) {
     const { userId } = state;
     if (!userId) return;
     const started = epoch;
+    const writesAtStart = writes;
     set({ status: state.data ? state.status : 'loading' });
     try {
       const data = await service.list();
-      if (epoch === started) set({ status: 'ready', data });
+      if (epoch !== started) return;
+      if (writes !== writesAtStart) return void load();
+      set({ status: 'ready', data });
     } catch {
       if (epoch === started) set({ status: state.data ? 'stale' : 'failed' });
     }
@@ -74,6 +81,7 @@ export function createMemoryStore(service: MemoryService) {
       void load();
       return result;
     }
+    writes += 1;
     set({ writing: null, data: state.data ? apply(result.value, state.data) : state.data });
     return result;
   }
@@ -118,14 +126,17 @@ export function createMemoryStore(service: MemoryService) {
         (_value, data) => ({ ...data, entries: data.entries.filter((entry) => entry.id !== id) }),
       );
       set({ removing: state.removing.filter((pending) => pending !== id) });
+      if (result.ok && state.userId) onRemoved(state.userId, [id]);
       return result;
     },
-    clearAll() {
-      return write(
+    async clearAll() {
+      const result = await write(
         'clear',
         () => service.clear(),
         (_value, data) => ({ ...data, entries: [] }),
       );
+      if (result.ok && state.userId) onRemoved(state.userId, 'all');
+      return result;
     },
     setEnabled(enabled: boolean) {
       return write(

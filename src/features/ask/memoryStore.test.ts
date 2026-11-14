@@ -118,4 +118,19 @@ describe('the 小貘记得 store', () => {
     await cleared;
     expect(store.getSnapshot()).toMatchObject({ userId: null, data: null, writing: null });
   });
+
+  test('a list read that started before a save does not undo it', async () => {
+    const { store, lists, writes } = harness();
+    void store.start('u1');
+    lists[0].resolve({ enabled: true, entries: [] });
+    await settle();
+    void store.refresh();
+    const saved = store.save({ id: null, kind: 'place', label: '宿舍', content: 'Geo' });
+    writes[0].resolve({ ok: true, value: DORM });
+    await saved;
+    lists[1].resolve({ enabled: true, entries: [] });
+    await settle();
+    expect(store.getSnapshot().data?.entries).toEqual([DORM]);
+    expect(lists).toHaveLength(3);
+  });
 });

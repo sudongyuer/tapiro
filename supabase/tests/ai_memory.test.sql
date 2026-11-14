@@ -1,5 +1,5 @@
 begin;
-select plan(37);
+select plan(41);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -57,6 +57,24 @@ select throws_ok(
   'a label over 40 characters is refused'
 );
 
+select throws_ok(
+  $$select public.save_ai_memory(null, 'preference', '收款', 'Maybank 1234-5678-90')$$, '22023', 'memory_private',
+  'an account number is never kept'
+);
+select throws_ok(
+  $$select public.save_ai_memory(null, 'place', '电话 012 345 6789', 'x')$$, '22023', 'memory_private',
+  'nor a phone number in a label'
+);
+select lives_ok(
+  $$select public.save_ai_memory(null, 'place', '公寓', 'Jalan PJS 11/28, 46150')$$, 'a short number such as a postcode is fine'
+);
+select throws_ok(
+  format($$select public.ai_memory_for_call(%L)$$, pg_temp.uid('f2')), '42501', null,
+  'a signed-in user cannot read the entries a call would send'
+);
+select public.clear_ai_memory();
+select public.save_ai_memory(null, 'place', '宿舍', 'Sunway Geo');
+select public.save_ai_memory(null, 'preference', '赏金一般给', 'RM 10–15');
 reset role;
 create temp table ids as select id, label from public.ai_memory;
 grant all on ids to authenticated;

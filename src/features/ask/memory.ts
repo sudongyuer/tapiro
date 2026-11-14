@@ -19,11 +19,14 @@ export type MemoryDraft = { id: string | null; kind: MemoryKind; label: string; 
 
 export type MemoryOffer = { kind: MemoryKind; label: string; content: string };
 
+export type ShownOffer = MemoryOffer & { replaces: string | null };
+
 export type MemoryUse = { id: string; kind: MemoryKind; label: string; content: string };
 
-export type MemoryOutcome = { used: MemoryUse[]; offer: MemoryOffer | null };
+export type MemoryOutcome = { used: MemoryUse[]; offer: ShownOffer | null };
 
-export type MemoryFailure = 'off' | 'full' | 'labelTaken' | 'notFound' | 'invalid' | 'failed';
+export type MemoryFailure =
+  'off' | 'full' | 'labelTaken' | 'notFound' | 'invalid' | 'private' | 'failed';
 
 export type MemoryResult<T> = { ok: true; value: T } | { ok: false; failure: MemoryFailure };
 
@@ -60,12 +63,13 @@ export function parseMemoryEntry(value: unknown): MemoryEntry | null {
   return typeof updatedAt === 'string' ? { ...use, updatedAt } : null;
 }
 
-function parseOffer(value: unknown): MemoryOffer | null {
+function parseOffer(value: unknown): ShownOffer | null {
   if (!isRecord(value)) return null;
   const kind = kindOf(value.kind);
   const label = filled(value.label, MEMORY_LIMITS.labelMax);
   const content = filled(value.content, MEMORY_LIMITS.contentMax);
-  return kind && label && content ? { kind, label, content } : null;
+  const replaces = filled(value.replaces, MEMORY_LIMITS.contentMax);
+  return kind && label && content ? { kind, label, content, replaces } : null;
 }
 
 export function parseMemoryOutcome(value: unknown): MemoryOutcome | null {
@@ -95,6 +99,7 @@ const FAILURES: Record<string, MemoryFailure> = {
   label_taken: 'labelTaken',
   memory_not_found: 'notFound',
   invalid_memory: 'invalid',
+  memory_private: 'private',
 };
 
 export function toMemoryFailure(error: unknown): MemoryFailure {

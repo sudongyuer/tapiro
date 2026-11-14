@@ -90,6 +90,12 @@ begin
     or clean_content is null or char_length(clean_content) not between 1 and 200 then
     raise exception 'invalid_memory' using errcode = '22023';
   end if;
+  -- The consent page promises payee details are never sent, and every entry goes out with each draft: a long run of
+  -- digits (an account, a phone or an ID number) is never kept.
+  if regexp_replace(clean_label, '[[:space:]-]', '', 'g') ~ '[0-9]{8,}'
+    or regexp_replace(clean_content, '[[:space:]-]', '', 'g') ~ '[0-9]{8,}' then
+    raise exception 'memory_private' using errcode = '22023';
+  end if;
   perform pg_advisory_xact_lock(hashtextextended('ai_memory:' || uid::text, 0));
 
   select * into existing from public.ai_memory m

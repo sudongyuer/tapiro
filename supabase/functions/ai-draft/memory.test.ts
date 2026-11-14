@@ -46,7 +46,28 @@ describe('小貘记得 in ai-draft', () => {
       kind: 'place',
       label: '学校',
       content: 'Sunway University',
+      replaces: null,
     });
+  });
+
+  test('an offer for a kept label says what it replaces', async () => {
+    const { deps } = setup({}, undefined, KEPT);
+    const body = await (await handleAiDraft(ask('记住宿舍 = Sunway Pyramid'), deps)).json();
+    expect(body.memory.offer).toEqual({
+      kind: 'place',
+      label: '宿舍',
+      content: 'Sunway Pyramid',
+      replaces: 'Sunway Geo',
+    });
+  });
+
+  test.each([
+    ['an account number', '记住收款 = Maybank 1234 5678 90'],
+    ['a phone number', '记住电话 = 012-345 6789'],
+  ])('an offer holding %s is never made', async (_name, text) => {
+    const { deps } = setup({}, undefined, KEPT);
+    const body = await (await handleAiDraft(ask(text), deps)).json();
+    expect(body.memory.offer).toBeNull();
   });
 
   test('an offer of what is already kept is dropped', async () => {
@@ -133,15 +154,35 @@ describe('小貘记得 in ai-draft', () => {
   });
 
   test.each([
-    ['an unknown kind', { used: [], remember: { kind: 'habit', label: 'x', content: 'y' } }],
-    ['too many ids', { used: ['m1', 'm2', 'm1', 'm2'], remember: null }],
-    ['an extra key', { used: [], remember: null, note: 'x' }],
-  ])('a memory field with %s is discarded', async (_name, memory) => {
-    const provider = replying({ toolName: 'answer', arguments: { text: 'ok', memory } });
-    const { deps, recorded } = setup({ provider }, undefined, KEPT);
-    expect((await handleAiDraft(ask('靠谱度怎么涨？'), deps)).status).toBe(502);
-    expect(recorded.discards).toHaveLength(1);
-  });
+    [
+      'an unknown kind',
+      { used: ['m1'], remember: { kind: 'habit', label: 'x', content: 'y' } },
+      1,
+      false,
+    ],
+    ['too many ids', { used: ['m1', 'm2', 'm1', 'm2'], remember: null }, 2, false],
+    ['an extra key', { used: ['m1'], remember: null, note: 'x' }, 1, false],
+    [
+      'a label over 40 characters',
+      { used: [], remember: { kind: 'place', label: 'x'.repeat(41), content: 'y' } },
+      0,
+      false,
+    ],
+    ['no remember key', { used: ['m2'] }, 1, false],
+  ])(
+    'a memory field with %s keeps the answer and reads what it can',
+    async (_name, memory, usedCount) => {
+      const provider = replying({ toolName: 'answer', arguments: { text: 'ok', memory } });
+      const { deps, recorded } = setup({ provider }, undefined, KEPT);
+      const response = await handleAiDraft(ask('靠谱度怎么涨？'), deps);
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.result).toEqual({ text: 'ok' });
+      expect(body.memory.used).toHaveLength(usedCount);
+      expect(body.memory.offer).toBeNull();
+      expect(recorded.discards).toEqual([]);
+    },
+  );
 
   test('an id the call did not send is ignored', async () => {
     const provider = replying({
