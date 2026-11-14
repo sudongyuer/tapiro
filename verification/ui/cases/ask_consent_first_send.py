@@ -1,6 +1,6 @@
 """The first 发送 in 问小貘 opens the consent page before anything leaves the phone: it names Alibaba Cloud Model Studio
 (Singapore), the purpose, what is sent, what is never sent and where chats stay. 「先不用，我自己填」 records nothing and
-keeps the typed text, and so does swiping the page down; the next 发送 asks again; 同意 shows progress, records version 1 once and the text
+keeps the typed text, and so does swiping the page down; the next 发送 asks again; 同意 shows progress, records version 2 once and the text
 goes to 小貘 once, whose answer clears the field; the next 发送 goes straight out."""
 import sys
 
@@ -74,4 +74,4 @@ turn(ui, 3)
 assert by_id(ui.read(), 'ask-consent-screen') is None, 'the consent page came back after consent'
 assert_calls(ui, 'record', 1, wait=1)
 assert ask_texts(ui, 2, wait=1) == [TYPED, TYPED]
-print('PASS: consent before the first send; decline keeps the text and records nothing; agree records version 1 once and sends once')
+print('PASS: consent before the first send; decline keeps the text and records nothing; agree records version 2 once and sends once')

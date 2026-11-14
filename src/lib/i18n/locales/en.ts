@@ -90,7 +90,7 @@ const en: Translation = {
         collect:
           'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; the bounties and rides you post, chat messages and images, and reviews; the payment methods you add (DuitNow number, bank account, and the text read from a receive QR code, never the image); screenshots you attach when paying (visible to both sides and moderators); your reports and blocks; payment records (who paid whom, the amount and whether it was confirmed); your coin ledger and App Store purchase records; and a device token for push notifications.',
         aiTitle: 'Ask Tapir',
-        ai: 'Only after you agree: what you send to Ask Tapir goes through our server to Alibaba Cloud Model Studio (Singapore). Conversations and drafts stay on your phone; the places and preferences in Tapir Remembers are synced, and you can view and delete them.',
+        ai: 'Only after you agree: what you type or say, pictures you pick, messages you translate and the places and habits in Tapir Remembers go through our server to Alibaba Cloud Model Studio (Singapore). Conversations and drafts stay on your phone; the server keeps only consent records and usage, never the conversation; Tapir Remembers is synced, and you can view, change and delete it.',
         storeTitle: 'Where It’s Stored',
         store:
           'Data is stored with Supabase in Singapore (ap‑southeast‑1). Your sign-in session stays in your phone’s Keychain.',
@@ -173,20 +173,26 @@ const en: Translation = {
     ask: {
       title: 'Ask Tapir',
       subtitle: {
-        bounty: 'On Bounties · write a bounty or find one to take',
-        ride: 'On Rides · find riders and split the fare',
-        messages: 'On Messages · reply or translate',
-        me: 'On Me · see what Tapir remembers',
+        bounty: 'On Bounties · write a bounty or answer a question',
+        ride: 'On Rides · answer a question or write a bounty',
+        messages: 'On Messages · touch and hold someone’s message to translate it',
+        me: 'On Me · write a bounty or answer a question',
       },
       prompt: {
         bounty: 'What do you need? One sentence is enough',
-        ride: 'Who’s heading back to YC? When, and from where?',
-        messages: 'Reply to Ah Kit, or translate something',
+        ride: 'Ask anything, like how to get to the airport',
+        messages: 'Ask anything, like how to say something in Malay',
       },
       suggestions: {
-        bounty: { first: 'Pick up my parcel', second: 'What can I take nearby?' },
-        ride: { first: 'Who’s going back to YC at 5 pm?', second: 'Split this Grab receipt' },
-        messages: { first: 'Translate Aiman’s message', second: 'Tell Ah Kit: wait in the lobby' },
+        bounty: { first: 'Pick up my parcel', second: 'What do I need to pick up a parcel?' },
+        ride: {
+          first: 'Cheapest way from Sunway to KLIA?',
+          second: 'Find someone to bring my things back to YC',
+        },
+        messages: {
+          first: 'How do I say “wait in the lobby” in Malay?',
+          second: 'How do I tell my landlord the heater broke?',
+        },
         writeBounty: 'Write a bounty for me',
       },
       mic: 'Speak',

@@ -90,7 +90,7 @@ const ms: Translation = {
         collect:
           'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; rekod bayaran (siapa membayar siapa, jumlah dan sama ada telah disahkan); lejar syiling dan rekod pembelian App Store anda; serta token peranti untuk pemberitahuan tolak.',
         aiTitle: 'Tanya Tapir',
-        ai: 'Hanya selepas anda bersetuju: apa yang anda hantar kepada Tanya Tapir melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura). Perbualan dan draf kekal dalam telefon anda; tempat dan pilihan dalam Tapir Ingat disegerakkan, dan anda boleh melihat serta memadamnya.',
+        ai: 'Hanya selepas anda bersetuju: apa yang anda taip atau sebut, gambar yang anda pilih, mesej yang anda terjemah dan tempat serta tabiat dalam Tapir Ingat dihantar melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura). Perbualan dan draf kekal dalam telefon anda; pelayan hanya menyimpan rekod persetujuan dan penggunaan, bukan perbualan; Tapir Ingat disegerakkan, dan anda boleh melihat, mengubah serta memadamnya.',
         storeTitle: 'Di Mana Ia Disimpan',
         store:
           'Data disimpan dengan Supabase di Singapura (ap‑southeast‑1). Sesi daftar masuk anda kekal dalam Keychain telefon anda.',
@@ -173,23 +173,29 @@ const ms: Translation = {
     ask: {
       title: 'Tanya Tapir',
       subtitle: {
-        bounty: 'Di Ganjaran · tulis ganjaran atau cari yang boleh diambil',
-        ride: 'Di Tumpangan · cari penumpang dan bahagikan tambang',
-        messages: 'Di Mesej · balas atau terjemah',
-        me: 'Di Saya · lihat apa yang Tapir ingat',
+        bounty: 'Di Ganjaran · tulis ganjaran atau jawab soalan',
+        ride: 'Di Tumpangan · jawab soalan atau tulis ganjaran',
+        messages: 'Di Mesej · sentuh dan tahan mesej orang lain untuk menterjemahkannya',
+        me: 'Di Saya · tulis ganjaran atau jawab soalan',
       },
       prompt: {
         bounty: 'Perlukan bantuan apa? Satu ayat pun cukup',
-        ride: 'Siapa nak balik ke YC? Pukul berapa, dari mana?',
-        messages: 'Balas Ah Kit, atau terjemah sesuatu',
+        ride: 'Tanya apa sahaja, contohnya cara ke lapangan terbang',
+        messages: 'Tanya apa sahaja, contohnya maksud satu perkataan',
       },
       suggestions: {
-        bounty: { first: 'Ambil bungkusan saya', second: 'Apa yang boleh saya ambil berdekatan?' },
-        ride: {
-          first: 'Siapa nak balik ke YC pukul 5 petang?',
-          second: 'Bahagikan resit Grab ini',
+        bounty: {
+          first: 'Ambil bungkusan saya',
+          second: 'Apa perlu dibawa untuk ambil bungkusan?',
         },
-        messages: { first: 'Terjemah mesej Aiman', second: 'Beritahu Ah Kit: tunggu di lobi' },
+        ride: {
+          first: 'Cara paling murah dari Sunway ke KLIA?',
+          second: 'Cari orang bawa barang saya balik ke YC',
+        },
+        messages: {
+          first: 'Apa “wait in the lobby” dalam bahasa Melayu?',
+          second: 'Macam mana nak beritahu tuan rumah pemanas rosak?',
+        },
         writeBounty: 'Tuliskan ganjaran untuk saya',
       },
       mic: 'Bercakap',
