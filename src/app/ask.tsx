@@ -68,7 +68,7 @@ export default function Ask() {
     <AskTapirSheet
       tab={isShellTab(tab) ? tab : 'bounty'}
       onClose={() => router.back()}
-      showSuggestions={state.turns.length === 0 && !sending && !belly.hungry}
+      showSuggestions={state.turns.length === 0 && !sending && !state.failed && !belly.hungry}
       replies={
         state.turns.length +
         (state.failed ? 1 : 0) +

@@ -1,4 +1,6 @@
-"""With no live items, home shows the calm stage and the calm card with the 问小貘 entry, and no tab shows the accessory."""
+"""With no live items, home shows the calm stage and the calm card with the 问小貘 entry, and no tab shows the accessory.
+The card's sample tags are things 问小貘 can do today (a question and two bounties); they are text, not buttons, and
+stay inside the card."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -21,6 +23,11 @@ assert_touch_target(by_id(items, 'home-ask'), 'home-ask')
 ask = by_id(items, 'home-ask')['frame']
 assert ask['x'] + ask['width'] <= items[0]['frame']['width'], f'home-ask overflows: {ask}'
 assert not any(by_id(items, a) for a in ACCESSORIES), 'accessory shown with no live items'
+for index, key in enumerate(('chipQuestion', 'chipParcel', 'chipStudy')):
+    chip = by_id(items, f'home-calm-chip-{index}')
+    assert chip and chip.get('AXLabel') == ui.t(f'home.card.calm.{key}'), f'tag {index} reads {chip and chip.get("AXLabel")}'
+    assert chip.get('type') != 'Button', f'tag {index} reads as a button'
+    assert chip['frame']['x'] + chip['frame']['width'] <= ask['x'] + ask['width'], f'tag {index} overflows: {chip["frame"]}'
 
 ui.tap('tab-ride')
 ui.element('ride-screen')

@@ -1,5 +1,5 @@
-"""Worst cases in 问小貘. A provider error shows 小貘晕了 with 再试一次 and 自己填, keeps the words, and is not sent
-again until 再试一次. An empty belly (placeholder until Task 5) offers only 自己填, which opens the post form. A failed
+"""Worst cases in 问小貘. A provider error shows 小貘晕了 with 再试一次 and 自己填 in place of the suggestions, as the
+hungry card does, keeps the words, and is not sent again until 再试一次. An empty belly (placeholder until Task 5) offers only 自己填, which opens the post form. A failed
 connection keeps the words. Consent withdrawn on another device mid-session brings the consent page back; 同意 sends
 the same words once. A draft whose reward and time the form refuses fills the rest, keeps the older reward and names
 both. A screenshot holding two requests offers both; picking one gives its draft with no second call."""
@@ -32,8 +32,10 @@ type_and_send(ui)
 failure(ui, 'providerError', 'ask.sheet.providerError')
 assert prompt_value(ui) == TYPED, f'the error lost the words: {prompt_value(ui)!r}'
 assert_calls(ui, 'ask', 1, wait=3)
+items = ui.read()
 for identifier in ('ask-retry', 'ask-manual'):
-    assert by_id(ui.read(), identifier)['frame']['height'] >= 44, f'{identifier} is under 44 pt'
+    assert by_id(items, identifier)['frame']['height'] >= 44, f'{identifier} is under 44 pt'
+assert by_id(items, 'ask-tapir-suggestion-0') is None, 'suggestions stayed beside 小貘晕了'
 ui.at_rest()
 ui.capture('01-provider-error')
 ui.tap('ask-retry')
@@ -45,7 +47,9 @@ again('hungry')
 type_and_send(ui)
 ui.element('ask-hungry-tomorrow', timeout=30)
 assert prompt_value(ui) == TYPED, f'the hungry answer lost the words: {prompt_value(ui)!r}'
-assert by_id(ui.read(), 'ask-retry') is None, 'an empty belly offered 再试一次'
+items = ui.read()
+assert by_id(items, 'ask-retry') is None, 'an empty belly offered 再试一次'
+assert by_id(items, 'ask-tapir-suggestion-0') is None, 'suggestions stayed beside the hungry card'
 ui.at_rest()
 ui.capture('02-hungry')
 ui.tap('ask-manual')
@@ -55,6 +59,7 @@ assert by_id(ui.read(), 'ask-tapir-sheet') is None, 'the sheet stayed over the p
 again('offline')
 type_and_send(ui)
 failure(ui, 'offline', 'ask.composer.offline')
+assert by_id(ui.read(), 'ask-tapir-suggestion-0') is None, 'suggestions stayed beside the offline card'
 assert prompt_value(ui) == TYPED
 ui.at_rest()
 ui.capture('03-offline')

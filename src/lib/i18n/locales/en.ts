@@ -281,7 +281,7 @@ const en: Translation = {
         evening: 'Good evening, {{name}}',
         ask: 'Say it and Tapir posts the bounty',
         askHint: 'Opens Ask Tapir',
-        chipRide: 'Who’s heading back to YC at five?',
+        chipQuestion: 'Cheapest way to KLIA?',
         chipParcel: 'Pick up my parcel',
         chipStudy: 'Find someone to explain calculus',
       },
