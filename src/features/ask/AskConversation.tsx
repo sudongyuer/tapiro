@@ -51,7 +51,7 @@ function FailureCard({
       style={[styles.failure, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
       testID={`ask-failure-${reason}`}
     >
-      <Mascot variant="front" size={vars['--touch-min']} dizzy={reason !== 'busy'} />
+      <Mascot variant="front" size={vars['--touch-min']} dizzy={reason !== 'busy'} darkOutline />
       <View style={styles.failureBody}>
         <AppText variant="title" testID="ask-failure-text">
           {t(FAILURE_KEYS[reason])}
