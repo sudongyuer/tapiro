@@ -32,14 +32,12 @@ const LONG: MemoryEntry[] = [
 export const fixtureMemory = (value: string | undefined): FixtureMemory =>
   value === 'some' || value === 'off' || value === 'full' || value === 'long' ? value : 'none';
 
-export const fixtureMemoryFails = (value: string | undefined) =>
-  new Set(
-    (value ?? '')
-      .split(',')
-      .filter((point): point is FixtureMemoryFail =>
-        ['load', 'save', 'remove', 'clear', 'switch'].includes(point),
-      ),
-  );
+export const fixtureMemoryFails = (value: string | undefined): FixtureMemoryFail[] =>
+  (value ?? '')
+    .split(',')
+    .filter((point): point is FixtureMemoryFail =>
+      ['load', 'save', 'remove', 'clear', 'switch'].includes(point),
+    );
 
 function initial(kind: FixtureMemory): MemoryEntry[] {
   if (kind === 'some' || kind === 'off') return SOME;
@@ -61,7 +59,7 @@ export function createFixtureMemoryService({
   onCall,
 }: {
   memory: FixtureMemory;
-  failFirst: Set<FixtureMemoryFail>;
+  failFirst: FixtureMemoryFail[];
   delayMs: number;
   onCall: (name: string, args: unknown) => void;
 }): MemoryService & { usedFor(text: string | null): MemoryEntry[]; remembering(): boolean } {
@@ -69,7 +67,12 @@ export function createFixtureMemoryService({
   let enabled = memory !== 'off';
   let next = 0;
   const wait = () => new Promise((resolve) => setTimeout(resolve, delayMs));
-  const fails = (point: FixtureMemoryFail) => failFirst.delete(point);
+  const pending = [...failFirst];
+  const fails = (point: FixtureMemoryFail) => {
+    const index = pending.indexOf(point);
+    if (index >= 0) pending.splice(index, 1);
+    return index >= 0;
+  };
   const refuse = (failure: MemoryFailure) => ({ ok: false as const, failure });
 
   return {

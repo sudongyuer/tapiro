@@ -64,11 +64,14 @@ function verifyServices() {
     onConsentRequired: () => service.withdrawElsewhere(),
     meter: (task) => service.spend(task === 'translate' ? FIXTURE_TRANSLATE_COST : undefined),
     onHungry: () => service.starve(),
-    memory: (text, offers) => ({
+    memory: (text, reply) => ({
       used: memory
-        .usedFor(text)
+        .usedFor(reply === 'draftMemory' ? null : text)
         .map(({ id, kind, label, content }) => ({ id, kind, label, content })),
-      offer: offers && memory.remembering() ? FIXTURE_OFFER : null,
+      offer:
+        reply === 'answerOffer' && memory.remembering()
+          ? { ...FIXTURE_OFFER, replaces: null }
+          : null,
     }),
   });
   const speech = createFixtureSpeech({

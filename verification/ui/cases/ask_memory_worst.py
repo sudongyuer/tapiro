@@ -12,16 +12,21 @@ DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/app/ask-memory-entry.tsx
         'src/ui/NoticeCard.tsx', 'verification/ui/ask.py', 'verification/ui/bounty.py']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
-LONG = ['-uiVerifyAiMemory', 'long', '-uiVerifyAiMemoryFail', 'load,save']
+LONG = ['-uiVerifyAiMemory', 'long', '-uiVerifyAiMemoryFail', 'load,load,save']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
-        '-uiVerifyAiDelayMs', '1200', '-uiVerifyAiMemory', 'long', '-uiVerifyAiMemoryFail', 'load,save']
+        '-uiVerifyAiDelayMs', '1200', '-uiVerifyAiMemory', 'long', '-uiVerifyAiMemoryFail', 'load,load,save']
 
 ui = UI(*sys.argv[1:])
 
 
-def open_page():
+def open_page(count=None):
     ui.tap('tab-me')
     ui.tap('me-tapir')
+    if count is None:
+        ui.element('tapir-memory-row', timeout=30)
+        assert_calls(ui, 'memoryList', 1)
+        label = (by_id(ui.read(), 'tapir-memory-row') or {}).get('AXLabel') or ''
+        assert label == ui.t('ask.memory.title'), f'a failed load shows a count: {label!r}'
     ui.tap('tapir-memory-row')
     ui.element('memory-screen', timeout=30)
 
@@ -55,8 +60,16 @@ ui.tap_label(ui.t('ask.memory.entry.close'))
 ui.gone('memory-entry-sheet')
 
 relaunch(ui, drop=LONG, add=['-uiVerifyAiMemory', 'full'])
-open_page()
-ui.element('memory-full', timeout=30)
+open_page(count=50)
+ui.element('memory-row-mem-1', timeout=30)
+screen = by_id(ui.read(), 'memory-screen')['frame']
+x = screen['x'] + screen['width'] / 2
+for _ in range(12):
+    if by_id(ui.read(), 'memory-full'):
+        break
+    ui.swipe((x, screen['y'] + screen['height'] * 0.75), (x, screen['y'] + screen['height'] * 0.2), 0.3)
+ui.element('memory-full', timeout=10)
+ui.at_rest()
 add = by_id(ui.read(), 'memory-add')
 assert add and add.get('enabled') is False, f'添加一条 is enabled on a full list: {add}'
 ui.capture('04-full')

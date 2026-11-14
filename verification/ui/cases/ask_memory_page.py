@@ -6,16 +6,26 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls  # noqa: E402
-from driver import UI, assert_appearance, by_id, reach_home  # noqa: E402
+from bounty import tap_sheet_action  # noqa: E402
+from driver import UI, by_id, luma, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/app/ask-memory-entry.tsx', 'src/app/_layout.tsx',
-        'src/lib/i18n/locales/ask/', 'src/ui/NoticeCard.tsx', 'src/ui/SyncedTextField.tsx', 'verification/ui/ask.py']
+        'src/lib/i18n/locales/ask/', 'src/ui/NoticeCard.tsx', 'src/ui/SyncedTextField.tsx', 'verification/ui/ask.py',
+        'verification/ui/bounty.py']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
         '-uiVerifyAiMemory', 'some', '-uiVerifyAiDelayMs', '1200']
 
 ui = UI(*sys.argv[1:])
+
+
+def assert_background(shot, x, y, name):
+    shade = luma(shot.rgb(x, y))
+    if ui.appearance == 'dark':
+        assert shade < 80, f'{name} is light ({shade:.0f}) in dark appearance'
+    else:
+        assert shade > 175, f'{name} is dark ({shade:.0f}) in light appearance'
 
 
 def rows(items):
@@ -42,9 +52,9 @@ assert dorm in rows(ui.read()), f'宿舍 is not listed as {dorm}: {rows(ui.read(
 ui.labelled(ui.t('ask.memory.kind.place'))
 ui.labelled(ui.t('ask.memory.kind.preference'))
 ui.at_rest()
-shot = ui.capture('01-list')
+shot = ui.snap('01-list')
 screen = by_id(ui.read(), 'memory-screen')['frame']
-assert_appearance(shot, ui.appearance, screen['x'] + 4, screen['y'] + screen['height'] - 40, 'the page background')
+assert_background(shot, screen['x'] + 4, screen['y'] + screen['height'] / 2, 'the page background')
 
 school = ui.element('memory-row-mem-school')['frame']
 y = school['y'] + school['height'] / 2
@@ -89,9 +99,10 @@ ui.at_rest()
 ui.capture('04-off')
 
 ui.tap('memory-clear')
-ui.labelled(ui.t('ask.memory.clearTitle', count=2))
+ui.at_rest()
 ui.capture('05-clear-confirm')
-ui.tap('memory-clear-confirm')
+assert_calls(ui, 'memoryClear', 0, wait=1)
+tap_sheet_action(ui, ui.t('ask.memory.clearConfirm'), 'memory-clear')
 ui.element('memory-empty', timeout=30)
 assert_calls(ui, 'memoryClear', 1)
 ui.at_rest()
