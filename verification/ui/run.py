@@ -15,7 +15,7 @@ from pathlib import Path
 from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
-from heal import Attempt, Scheduler, work
+from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
 from recording import stop_all
@@ -211,12 +211,27 @@ def run_script(case, extra, budget, locale, appearance, udid, out, after, zone):
     return 'pass' if proc.returncode == 0 else 'fail', lines[-1] if lines else '', proc.stdout + proc.stderr
 
 
-def run_case(case, scene, extra, budget, locale, appearance, device, out):
+def clear_output(out, keep_first):
+    out.mkdir(parents=True, exist_ok=True)
+    first = out / FIRST_ATTEMPT
+    shutil.rmtree(first, ignore_errors=True)
+    if keep_first:
+        first.mkdir()
+    for stale in out.iterdir():
+        if stale == first:
+            continue
+        if keep_first:
+            stale.rename(first / stale.name)
+        elif stale.is_dir():
+            shutil.rmtree(stale)
+        else:
+            stale.unlink()
+
+
+def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_first=False):
     name, udid, _ = device
     started = time.monotonic()
-    out.mkdir(parents=True, exist_ok=True)
-    for stale in out.glob('*'):
-        stale.unlink()
+    clear_output(out, keep_first)
     zone = case_zone(case)
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
@@ -261,7 +276,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out):
     log = '\n'.join([f'device: {name} ({udid})', *before, case_log.rstrip('\n'), *after])
     log += f'\n{summary(name, log)}\n'
     (out / 'log.txt').write_text(log)
-    return Attempt(status, message, timeouts(log), round(time.monotonic() - started, 1), log)
+    return Attempt(status, message, timeouts(log), round(time.monotonic() - started, 1))
 
 
 def print_timings(timings, total):
@@ -275,7 +290,7 @@ class Report:
     def __init__(self, output, meta, multi, halt):
         self.output, self.meta, self.multi, self.halt = output, meta, multi, halt
         self.guard = threading.Lock()
-        self.timings, self.stopped, self.stalls = [], [], []
+        self.timings, self.stopped, self.reboots = [], [], []
         self.results = {}
 
     def where(self, name):
@@ -290,26 +305,29 @@ class Report:
                 self.stopped.append(tripped_class)
                 self.halt.set()
 
-    def stalled(self, name, job, attempt, retrying):
+    def rebooting(self, name, job, attempt, retrying):
         appearance, case, _, locale, _, _ = job
         with self.guard:
-            self.stalls.append(f'{name} ({locale} {appearance} {case}, {attempt.stall_reason})')
+            self.reboots.append(f'{name} ({locale} {appearance} {case}, {attempt.reboot_reason})')
             then = 'rebooting it and retrying the run once' if retrying else 'rebooting it'
-            print(f'STALL {name}: {attempt.stall_reason} in {locale} {appearance} {case}; {then}',
-                  flush=True)
+            print(f'{"STALL" if attempt.stalled else "REBOOT"} {name}: {attempt.reboot_reason} in {locale} '
+                  f'{appearance} {case}; {then}', flush=True)
 
     def finished(self, outcome):
         appearance, case, _, locale, extra, _ = outcome.job
         out = self.output / locale / appearance / case
         name, udid, runtime = self.meta['devices'][outcome.device]
-        if outcome.first:
-            (out / 'stalled-log.txt').write_text(outcome.first.log)
+        first = outcome.first and {
+            'device': outcome.first_device, 'status': outcome.first.status, 'message': outcome.first.message,
+            'duration_s': outcome.first.duration, 'stalled': outcome.first.stalled,
+            'evidence': FIRST_ATTEMPT if outcome.retried_on else '.',
+        }
         (out / 'result.json').write_text(json.dumps({
             'case': case, 'locale': locale, 'appearance': appearance, 'args': extra,
             'status': outcome.status, 'message': outcome.message,
             'duration_s': outcome.duration, 'commit': self.meta['sha'], 'dirty': self.meta['dirty'],
             'xcode': self.meta['xcode'], 'device': {'name': name, 'udid': udid, 'runtime': runtime},
-            'stalledDevice': outcome.stalled_device, 'retriedOn': outcome.retried_on,
+            'firstAttempt': first, 'retriedOn': outcome.retried_on, 'stalledDevices': outcome.stalled_devices,
             'app': self.meta['app'], 'videos': [v.name for v in videos(out)],
         }, indent=2))
         stalled_note = f'  stalled: {", ".join(outcome.stalled_devices)}' if outcome.stalled_devices else ''
@@ -417,9 +435,10 @@ def main():
     report = Report(output, meta, len(devices) > 1, halt)
     scheduler = Scheduler(jobs, [name for name, _, _ in devices])
 
-    def attempt(device, job):
+    def attempt(device, job, retry):
         appearance, case, scene, locale, extra, budget = job
-        return run_case(case, scene, extra, budget, locale, appearance, device, output / locale / appearance / case)
+        return run_case(case, scene, extra, budget, locale, appearance, device, output / locale / appearance / case,
+                        keep_first=retry)
 
     run_started = time.monotonic()
     threads = [guarded(work, scheduler, device, attempt, lambda d: heal(d, app), report, halt) for device in devices]
@@ -429,21 +448,19 @@ def main():
         thread.join()
     for name, udid, _ in devices[1:]:
         subprocess.run(['xcrun', 'simctl', 'shutdown', udid], capture_output=True)
+    for outcome in scheduler.unretried():
+        report.finished(outcome)
     if errors:
         raise errors[0]
     timings = report.timings
-    failures = sum(status != 'pass' for _, status, _, _, _ in timings)
     stopped = report.stopped[0] if report.stopped else None
+    failures, lines = summarize(timings, report.reboots, stopped)
 
     print_timings(timings, time.monotonic() - run_started)
-    if report.stalls:
-        print('stalled Simulators (shut down, rebooted, failed run retried once):')
-        for stall in report.stalls:
-            print(f'  {stall}')
+    for text in lines:
+        print(text)
     if stopped:
-        print(f'stopped: 3 consecutive {stopped} timeouts on one Simulator — environment or screen problem')
         print(render_cpu_sample())
-        failures += 1
     print(f'Artifacts: {args.output}')
     if not timings:
         sys.exit('no case ran')
