@@ -1,0 +1,10 @@
+{
+  "name": "tapiro",
+  "compatibility_date": "2026-11-13",
+  "account_id": "1718b868c8aec5b7282d776e2d423f1d",
+  "assets": { "directory": ".", "html_handling": "auto-trailing-slash" },
+  "routes": [
+    { "pattern": "tapiro.app", "custom_domain": true },
+    { "pattern": "www.tapiro.app", "custom_domain": true }
+  ]
+}

@@ -92,6 +92,9 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 - A status bar style for a tab's screen goes on the root screen holding NativeTabs (`statusBarStyle` through
   `setOptions`). Reason: options on screens under the tabs never reach UIKit, and `expo-status-bar`'s component does
   nothing with view-controller-based appearance (the home clock stayed white over the stage; 2026-11-07).
+- A scratch Supabase workdir gets a new path each time (`mktemp -d`); never recreate one at the same path. Reason:
+  Docker Desktop keeps the deleted bind source cached, and `functions serve` fails with 「destination … must be a
+  directory」 until something binds that path again (2026-11-13).
 - The expo-location plugin adds Always and motion usage strings by default; set them to
   `false` unless a spec requires them. Reason: unused permission strings draw review questions.
 

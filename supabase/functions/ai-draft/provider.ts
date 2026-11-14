@@ -1,3 +1,4 @@
+import { transcribeTokens } from './budget.ts';
 import type { AiInput, AiLanguage, AiRequest, AiTask, ToolSchema } from './tools.ts';
 import { TOOL_SCHEMAS } from './tools.ts';
 
@@ -19,12 +20,13 @@ export type AiProvider = {
 };
 
 const FAKE_MODEL = 'fake';
+const FAKE_RECORDING_SECONDS = 6;
 const FAKE_USAGE: Readonly<Record<AiTask, { inputTokens: number; outputTokens: number }>> = {
   draft_bounty: { inputTokens: 3000, outputTokens: 600 },
   answer: { inputTokens: 1500, outputTokens: 300 },
   translate: { inputTokens: 300, outputTokens: 60 },
   ask: { inputTokens: 3000, outputTokens: 600 },
-  transcribe: { inputTokens: 300, outputTokens: 60 },
+  transcribe: { inputTokens: transcribeTokens(FAKE_RECORDING_SECONDS), outputTokens: 0 },
 };
 const FAKE_TRANSCRIPTS: Readonly<Record<AiLanguage, string>> = {
   'zh-Hans': '明天帮我去 Pyramid 取快递',
@@ -91,7 +93,3 @@ export const fakeProvider: AiProvider = {
     return { ...usage, toolName: task, arguments: { text } };
   },
 };
-
-export function selectProvider(name: string | undefined): AiProvider | null {
-  return name === 'fake' ? fakeProvider : null;
-}

@@ -18,7 +18,7 @@ describe('ai-draft cloud transcription', () => {
     expect(recorded.provider.map((call) => call.tools.map((tool) => tool.name))).toEqual([
       ['transcript'],
     ]);
-    expect(recorded.finishes[0]).toMatchObject({ task: 'transcribe', inputTokens: 300 });
+    expect(recorded.finishes[0]).toMatchObject({ task: 'transcribe', inputTokens: 350 });
   });
 
   test('silence comes back as empty words and is still metered', async () => {
