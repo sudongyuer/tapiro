@@ -37,7 +37,10 @@ def open_sheet(tab, name):
         assert f['x'] >= edge['x'] and f['x'] + f['width'] <= edge['x'] + edge['width'], f'{identifier} overflows the sheet: {f}'
     shot = ui.snap(name)
     f = sheet['frame']
-    background = luma(shot.rgb(f['x'] + 8, f['y'] + f['height'] - 8))
+    # The half-detent sheet is glass: the page behind shows through its bottom edge, and in ms a ride card's text sat
+    # under a single sample point (160). The median of five points along the edge measures the sheet, not that text.
+    samples = sorted(luma(shot.rgb(f['x'] + 8 + i * (f['width'] - 16) / 4, f['y'] + f['height'] - 8)) for i in range(5))
+    background = samples[2]
     if ui.appearance == 'dark':
         assert background < 80, f'sheet background is light ({background:.0f}) in dark appearance'
     else:

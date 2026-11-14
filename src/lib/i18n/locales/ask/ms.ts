@@ -56,8 +56,8 @@ export default {
     blockedBody:
       'Benarkan Tapiro menggunakan mikrofon dalam Tetapan untuk bercakap dengan Tapir. Anda juga boleh menaip.',
     openSettings: 'Buka Tetapan',
-    listening: 'Mendengar… ketik henti apabila selesai',
-    listeningCloud: 'Mendengar… ketik henti apabila selesai, kemudian Tapir menulisnya',
+    listening: 'Mendengar… ketik Henti apabila selesai',
+    listeningCloud: 'Mendengar… ketik Henti apabila selesai, kemudian Tapir menulisnya',
     stop: 'Henti',
     transcribing: 'Menulis apa yang anda sebut…',
     retry: 'Cuba lagi',
@@ -76,7 +76,7 @@ export default {
   },
   belly: {
     a11y: 'Tenaga Tapir: {{count}} daripada 5, {{mood}}',
-    hint: 'Tunjukkan cara tenaga dikira',
+    hint: 'Menunjukkan cara tenaga dikira',
     mood: {
       full: 'Kenyang',
       ok: 'Masih agak kenyang',
@@ -135,7 +135,7 @@ export default {
       'Semasa dimatikan, Tapir tidak menggunakan awan dan anda mengisi sendiri. Menghidupkannya akan menunjukkan dahulu apa yang dihantar.',
     needsUpdateFooter: 'Notis Tapir ada versi baharu. Kemas kini aplikasi untuk menghidupkannya.',
     loading: 'Memuatkan',
-    failed: 'Gagal dimuatkan',
+    failed: 'Tidak dapat dimuatkan',
     retry: 'Cuba lagi',
     stale: 'Mungkin bukan yang terkini',
     withdrawing: 'Mematikan…',
@@ -146,7 +146,7 @@ export default {
     count: '{{count}}',
     switch: 'Benarkan Tapir ingat',
     onFooter:
-      'Tapir bertanya dahulu sebelum mengingati tempat atau tabiat baharu. Semasa merangka atau menjawab, Tapir menghantar nota di bawah kepada {{provider}}.',
+      'Tapir bertanya dahulu sebelum mengingati tempat atau tabiat baharu. Semasa mendraf atau menjawab, Tapir menghantar nota di bawah kepada {{provider}}.',
     offFooter:
       'Mati: Tapir tidak mengingati apa-apa yang baharu dan tidak menggunakan nota di bawah.',
     kind: { place: 'Tempat', preference: 'Tabiat' },
@@ -183,7 +183,7 @@ export default {
       content: 'Apa itu',
       contentPlaceholder: 'Contoh: Sunway Geo',
       footer:
-        'Dihantar kepada {{provider}} semasa merangka atau menjawab. Jangan tulis nombor telefon, butiran penerima bayaran atau butiran orang lain.',
+        'Dihantar kepada {{provider}} semasa mendraf atau menjawab. Jangan tulis nombor telefon, butiran penerima bayaran atau butiran orang lain.',
       delete: 'Padam Nota Ini',
       gone: 'Nota ini sudah tiada dalam Tapir Ingat.',
       close: 'Tutup',

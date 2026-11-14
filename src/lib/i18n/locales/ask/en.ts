@@ -43,7 +43,7 @@ export default {
     providerError: 'Tapir got dizzy. No energy was used. Your text is still here.',
     unreadable: 'Tapir’s answer could not be read. Your text is still here; you can try again.',
     busy: 'Tapir is still on the last one. Try again in a moment.',
-    retry: 'Try again',
+    retry: 'Try Again',
     manual: 'Fill it in myself',
   },
   voice: {
@@ -55,11 +55,11 @@ export default {
     blockedBody:
       'Allow Tapiro to use the microphone in Settings to talk to Tapir. You can also type.',
     openSettings: 'Open Settings',
-    listening: 'Listening… tap stop when you’re done',
-    listeningCloud: 'Listening… tap stop when you’re done, then Tapir writes it down',
+    listening: 'Listening… tap Stop when you’re done',
+    listeningCloud: 'Listening… tap Stop when you’re done, then Tapir writes it down',
     stop: 'Stop',
     transcribing: 'Writing down what you said…',
-    retry: 'Try again',
+    retry: 'Try Again',
     note: {
       noSpeech: 'Didn’t catch that. Try saying it again.',
       micFailed: 'The microphone didn’t start. Tap again, or type.',
@@ -75,7 +75,7 @@ export default {
   },
   belly: {
     a11y: 'Tapir’s energy: {{count}} of 5, {{mood}}',
-    hint: 'Shows how energy works',
+    hint: 'Shows how energy is counted',
     mood: {
       full: 'Full',
       ok: 'Still quite full',

@@ -106,7 +106,7 @@ export default {
     busy: 'Tapir masih sibuk dengan yang tadi. Cuba lagi sebentar.',
     hungry: 'Tapir lapar. Tidak diterjemah.',
     capped: 'Tapir sudah cukup makan hari ini. Datang lagi esok.',
-    needsUpdate: 'Kemas kini app supaya Tapir boleh menterjemah.',
+    needsUpdate: 'Kemas kini aplikasi supaya Tapir boleh menterjemah.',
     retry: 'Cuba lagi',
     feed: 'Beri Tapir makan',
   },

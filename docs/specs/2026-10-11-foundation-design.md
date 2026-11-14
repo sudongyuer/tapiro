@@ -827,3 +827,93 @@ account, and steps 8 and 9 remain; the spec stays `approved`.
 - 258 A opens farming through Grab rides with friends (plan, 「★ 258 defaults」); tuned after launch.
 - Accessory art is stand-in. A reload that shrinks a long list may need a scroll to page again (`docs/status.md`, Queue).
 - No admin tool for the report queue (`private.report_queue`, service role only).
+
+## Implementation Record (2026-11-15) — step 8: 问小貘
+
+PR: #106, #117, #118, #122, #127, #128, #129, #130, #134, and `feat/ask-wrap` (this PR) · Plan:
+`docs/plans/2026-10-30-ask-tapir.md` (Tasks 1–10; ★ choices C, D, E, T, V, P, M, K). Retros:
+`docs/retros/2026-11-09-ask-server-core.md`, `2026-11-12-ask-{consent,sheet,energy}.md`,
+`2026-11-13-ask-{translate,voice,provider,memory}.md`, `2026-11-15-ask-wrap.md`. Step 8 is built on the fake provider
+except the parts listed under 「Not built」; with steps 5 (IAP) and 9 still open, the spec stays `approved`.
+
+### What was built
+
+- Server (#106, #117, #122, #128, #129, #134): consents with versions, energy (0–1000, refilled at 06:00 Malaysia time),
+  the pantry ledger, metering, the 5-a-day feed cap, swap-and-feed in one transaction, `transcribe`, 小貘记得 with a switch
+  and a cap of 50, all behind `ai-draft` in `ap-southeast-1`. Evidence: `supabase/migrations/20261109000100_ai_coin_reason.sql`
+  to `20261115000100_ai_memory.sql`; pgTAP `supabase/tests/ai.test.sql`, `ai_feed_cap.test.sql`, `ai_swap_feed.test.sql`,
+  `ai_ask_task.test.sql`, `ai_transcribe_task.test.sql`, `ai_memory.test.sql`; stack tests
+  `supabase/functions/tests/ai-draft.integration.ts`, `ai-memory.integration.ts`, `ai-provider.integration.ts`.
+- The real provider (#129): Qwen on Model Studio Singapore with dated pins, Qwen ASR for speech, a DeepSeek fallback in the
+  same workspace (285 A), tested against recorded fixtures and a mock Model Studio in the Edge Runtime
+  (`supabase/functions/ai-draft/modelStudio.test.ts`, `modelStudioAsr.test.ts`). `AI_PROVIDER=fake` stays the default.
+- Consent before the first cloud call (129–131), version 2 since 282 A; 我的 → 小貘 with the cloud switch (#117, #134). Cases
+  `ask_consent_*`.
+- The sheet (132–134, #118): one `ask` task that drafts, answers, asks one question with buttons or lists a screenshot's
+  requests; a draft fills the post form in place with the glow and 撤销; words and the last conversation kept on the
+  device. Cases `ask_sheet_*`, `shell_ask_tapir`.
+- 小貘体力 and the pantry (135–140, 149, #122): the belly bar, the low line, the hungry card with feeding, the coin swap and
+  the jar. Cases `ask_energy_*`.
+- Chat translation (141, #127): 翻译 in the message menu, under the original, kept on the device. Cases `chat_translate*`.
+- Voice (142–143, #128): the microphone in the sheet, the 143 card, the on-device chain in the kit
+  (`modules/tapiro-kit/ios/Speech*.swift`) and the cloud fallback. Cases `ask_voice_*`; `bun run test:kit-swift`.
+- The dizzy card and 小貘记得 (144–145, 133, 281–284, #134). Cases `ask_memory_*`.
+- Copy pass (this PR): the sheet's tab copy promises only what works now; the in-app privacy paragraph matches the
+  consent page; Malay terms unified (plan 「★ Task 10 copy choices」).
+
+### Deviations from the design
+
+| Design said                                          | Shipped                                                                                         | Why                                                                                 | Confirmed by                             |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------- |
+| Consent names Alibaba Cloud Model Studio (Singapore) | Also names what is sent, what is not, where it is kept; version 2 adds 小貘记得                 | 129 A board; 282 A                                                                  | owner, 2026-11-12 and 2026-11-15         |
+| The sheet hosts the ten patterns                     | ①③④⑦⑧ built; ② is the draft card with 填进表单; ⑤ is the 「小貘填了 N 项」 strip and 133's line | Receipts (`draft_split`), ride and reply drafts are later tasks; ⑨ and ⑩ not traced | plan Tasks 4, 8; ★ D1–D15                |
+| Speech: on-device first, cloud Qwen ASR as fallback  | As designed; the engines run only on a device                                                   | No engine produces output on the Simulator (AGENTS.md)                              | ★ V1–V14                                 |
+| On-device Foundation Models calls consume nothing    | Not built: every call is cloud and metered                                                      | Its own task (which tasks, draft quality, a device check)                           | ★ M12, story `ask.on-device`             |
+| Long-press on the 小貘 button after a spike          | Not built; microphone in the sheet only                                                         | The spike needs a device                                                            | plan 「Decided」, `ask.long-press-voice` |
+| Daily limit                                          | The belly is the free limit; paid leaves capped at 5 fed per refill day                         | 149 A; the 5 is provisional                                                         | owner, 2026-11-12                        |
+| Suggestions per tab                                  | Only what the sheet can do: draft a bounty, answer; 消息 points to long-press 翻译              | No ride, receipt or reply drafting yet; a ride sentence would become a bounty draft | ★ K1, for veto                           |
+
+### Not built (blocks `implemented`)
+
+- On-device Foundation Models (146 A, M12): no `OnDeviceModel.swift`; story `ask.on-device` is planned.
+- The long-press spike (`ask.long-press-voice.spike`, device).
+- Patterns ⑨ (one dismissible hint) and ⑩ (mascot size by screen class) were not traced to a screen. Unverified.
+
+### Waiting on the owner or a device (does not block)
+
+- The Model Studio account (148): the smoke run and the measured token budget (plan 「Task 9 smoke run」,
+  story `ask.real-run`, planned); `UNMEASURED_PLACEHOLDER_BUDGET` stays. 149's 5 and S10's 20 are revisited with it.
+- Device checklist: `ask.voice.*` (three languages, engines, prompts, 60 s, a call), `ask.energy.feed` motion and haptic,
+  `ask.translate.layout` at the largest text size.
+
+### Bugs fixed during implementation
+
+- See the retros above (each lists symptom, root cause and fix). The ones that reached the Simulator: a nested scroll view
+  pinned over the sheet header, `back()` then `navigate()` in one tick, the glow counted from mount, an empty belly from
+  `''.split(',')`, the 晕 face invisible in dark (`docs/retros/2026-11-12-ask-sheet.md`, `2026-11-12-ask-energy.md`,
+  `2026-11-13-ask-memory.md`).
+
+### Verification
+
+- Fast checks on this PR: `bun test` 2895 pass; `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map`, `check:size`, `design-check` pass; `verify:smoke` 4 of 4.
+  pgTAP, Deno and stack tests run in CI (no SQL or function change here); each task ran its own (retros above).
+- Milestone run (2026-11-15, app built from cdbd1f7 plus this branch; selection and reasons in
+  `docs/retros/2026-11-15-ask-wrap.md` and the walkthrough): all 19 问小貘 cases (`ask_*`, `chat_translate*`,
+  `shell_ask_tapir`) plus 7 regression cases for code the feature touched (`bounty_post_form`, `bounty_post_optional`,
+  `bounty_post_worst`, `chat_thread_menu`, `chat_thread_states`, `coins_page`, `mascot_level_up`) in zh-Hans and en light,
+  and each case's declared `ms`: 72 runs, 60 pass, 11 flaky (passed only on a retry on a fresh Simulator; lost input,
+  lost taps and AXe session timeouts at load average 60–85), 1 fail. zh-Hans dark for the sheet, hungry card, consent,
+  pantry, 小貘记得 and translation (8 cases): 8 pass.
+- The one failure, `ms light shell_ask_tapir` (「sheet background is dark (160)」), failed the same way on a build of
+  `main`: one sample pixel saw a ride card's text through the glass sheet. The case now takes the median of five points;
+  the fix round passed ms light, zh-Hans light and dark, and the copy changed after the run passed in zh-Hans, en and ms
+  (`shell_ask_tapir`) and en (`ask_sheet_worst`, `ask_voice_retry`, `chat_translate_worst`).
+- Copy: the 问小貘 strings in zh-Hans, en and ms read for terms and voice; fixes and choices in the plan's 「★ Task 10 copy
+  choices」. One review round (copy, story map); its 2 Critical and 4 Important findings are fixed in this PR.
+
+### Known limits
+
+- The consent page's long rows wrap with trailing alignment under a stacked label (LabeledContent); readable, not polished.
+- The home calm card's example chip 「五点回 YC 谁一起」 is decorative, not a suggestion, but reads as a ride request.
+- M18: content the platform blocks stays 小貘晕了; revisit after the smoke run.
