@@ -284,7 +284,7 @@ const ms: Translation = {
         evening: 'Selamat malam, {{name}}',
         ask: 'Sebut sahaja, Tapir siarkan ganjaran',
         askHint: 'Membuka Tanya Tapir',
-        chipRide: 'Siapa balik ke YC pukul lima?',
+        chipQuestion: 'Cara murah ke KLIA?',
         chipParcel: 'Ambilkan bungkusan saya',
         chipStudy: 'Cari orang terangkan kalkulus',
       },

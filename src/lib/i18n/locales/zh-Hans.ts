@@ -270,7 +270,7 @@ export default {
         evening: '晚上好，{{name}}',
         ask: '说一句话，小貘帮你发悬赏',
         askHint: '打开问小貘',
-        chipRide: '五点回 YC 谁一起',
+        chipQuestion: '去 KLIA 怎么走划算',
         chipParcel: '帮我取个快递',
         chipStudy: '找人讲微积分',
       },

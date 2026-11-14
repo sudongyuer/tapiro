@@ -24,7 +24,7 @@ export function CalmCard({ name, onAsk }: { name: string; onAsk: () => void }) {
   const { color } = useTheme();
   const { ink, surface } = useLiveCardPaint('calm');
   const chips = [
-    t('home.card.calm.chipRide'),
+    t('home.card.calm.chipQuestion'),
     t('home.card.calm.chipParcel'),
     t('home.card.calm.chipStudy'),
   ];
@@ -60,7 +60,7 @@ export function CalmCard({ name, onAsk }: { name: string; onAsk: () => void }) {
         </View>
       </PressDim>
       <View style={styles.chips}>
-        {chips.map((chip) => (
+        {chips.map((chip, index) => (
           <View key={chip} style={[styles.chip, { backgroundColor: surface }]}>
             <View
               style={[
@@ -69,7 +69,12 @@ export function CalmCard({ name, onAsk }: { name: string; onAsk: () => void }) {
                 { backgroundColor: color('--color-stage-bubble') },
               ]}
             />
-            <AppText variant="meta" numberOfLines={1} style={{ color: ink }}>
+            <AppText
+              variant="meta"
+              numberOfLines={1}
+              style={{ color: ink }}
+              testID={`home-calm-chip-${index}`}
+            >
               {chip}
             </AppText>
           </View>

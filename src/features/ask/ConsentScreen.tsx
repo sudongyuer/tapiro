@@ -1,4 +1,4 @@
-import { Button, LabeledContent, RNHostView, Section, Text, VStack } from '@expo/ui/swift-ui';
+import { Button, RNHostView, Section, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityAddTraits,
   accessibilityElement,
@@ -182,12 +182,18 @@ function Header() {
 
 function Fact({ label, value, id }: { label: string; value: string; id: string }) {
   return (
-    <LabeledContent
-      label={label}
-      modifiers={[accessibilityElement('combine'), accessibilityIdentifier(`ask-consent-${id}`)]}
+    <VStack
+      alignment="leading"
+      spacing={vars['--space-1']}
+      modifiers={[
+        frame({ maxWidth: Infinity, alignment: 'leading' }),
+        accessibilityElement('combine'),
+        accessibilityIdentifier(`ask-consent-${id}`),
+      ]}
     >
-      <Text modifiers={[secondary, multilineTextAlignment('trailing')]}>{value}</Text>
-    </LabeledContent>
+      <Text>{label}</Text>
+      <Text modifiers={[secondary]}>{value}</Text>
+    </VStack>
   );
 }
 
