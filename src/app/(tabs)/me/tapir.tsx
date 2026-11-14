@@ -10,6 +10,7 @@ export default function Tapir() {
     <TapirSettingsScreen
       userId={userId}
       onOpenConsent={() => router.push({ pathname: '/ask-consent', params: { from: 'me' } })}
+      onOpenMemory={() => router.push('/me/tapir-memory')}
     />
   );
 }

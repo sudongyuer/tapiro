@@ -85,7 +85,7 @@ describe('ai-draft on the local stack with the fake provider', () => {
   });
 
   test('after consent a draft comes back in the shape the app parses, and energy drops', async () => {
-    const { error } = await client.rpc('record_consent', { version: 1 });
+    const { error } = await client.rpc('record_consent', { version: 2 });
     expect(error).toBeNull();
     const response = await draft();
     expect(response.status).toBe(200);

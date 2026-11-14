@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useSyncExternalStore } from 'react';
 
-import { askSession, consentStore, pantryStore, voice } from './services';
+import { askSession, consentStore, memoryStore, pantryStore, voice } from './services';
 
 export function useConsentState() {
   return useSyncExternalStore(consentStore.subscribe, consentStore.getSnapshot);
@@ -36,4 +36,16 @@ export function usePantry() {
 export function useVoice(language: string, openConsent: () => void) {
   useEffect(() => voice.attach({ language, openConsent }), [language, openConsent]);
   return useSyncExternalStore(voice.subscribe, voice.getSnapshot);
+}
+
+export function useMemoryFor(userId: string | null) {
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      memoryStore.dismissFailure();
+      void memoryStore.start(userId);
+    }, [userId]),
+  );
+  const state = useSyncExternalStore(memoryStore.subscribe, memoryStore.getSnapshot);
+  return state.userId === userId ? state : null;
 }

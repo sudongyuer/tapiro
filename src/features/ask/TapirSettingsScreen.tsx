@@ -1,9 +1,22 @@
-import { Form, HStack, Host, ProgressView, Section, Spacer, Text, Toggle } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Form,
+  HStack,
+  Host,
+  Image,
+  ProgressView,
+  Section,
+  Spacer,
+  Text,
+  Toggle,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
+  accessibilityHidden,
   accessibilityIdentifier,
   accessibilityLabel,
   disabled,
+  foregroundStyle,
   frame,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
@@ -16,7 +29,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { bellyOf, consentAccess, type ConsentState } from './consentStore';
-import { useConsentFor, usePantry } from './hooks';
+import { useConsentFor, useMemoryFor, usePantry } from './hooks';
 import { PantrySection } from './PantrySection';
 import { consentStore } from './services';
 
@@ -31,9 +44,11 @@ export function consentDate(acceptedAt: string, language: string) {
 export function TapirSettingsScreen({
   userId,
   onOpenConsent,
+  onOpenMemory,
 }: {
   userId: string | null;
   onOpenConsent: () => void;
+  onOpenMemory: () => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -90,6 +105,7 @@ export function TapirSettingsScreen({
         {status.status !== 'idle' && status.data ? (
           <CloudSection state={state} onOpenConsent={onOpenConsent} />
         ) : null}
+        <MemoryRow userId={userId} onPress={onOpenMemory} />
         {belly ? <PantrySection belly={belly} pantry={pantry} /> : null}
         {status.status !== 'idle' && status.data && !belly ? (
           <NoticeCard
@@ -158,6 +174,45 @@ function CloudSection({
           modifiers={[disabled(access === 'needsUpdate' || state.writing !== null)]}
         />
       )}
+    </Section>
+  );
+}
+
+function MemoryRow({ userId, onPress }: { userId: string | null; onPress: () => void }) {
+  const { t } = useI18n();
+  const memory = useMemoryFor(userId);
+  const count = memory?.data ? t('ask.memory.count', { count: memory.data.entries.length }) : null;
+  return (
+    <Section>
+      <Button onPress={onPress} testID="tapir-memory-row">
+        <HStack
+          modifiers={[
+            frame({ minHeight: vars['--touch-min'] }),
+            accessibilityElement('combine'),
+            accessibilityLabel(
+              count ? `${t('ask.memory.title')}, ${count}` : t('ask.memory.title'),
+            ),
+          ]}
+        >
+          <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>
+            {t('ask.memory.title')}
+          </Text>
+          <Spacer />
+          {count ? (
+            <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'secondary' })]}>
+              {count}
+            </Text>
+          ) : null}
+          <Image
+            systemName="chevron.right"
+            size={14}
+            modifiers={[
+              foregroundStyle({ type: 'hierarchical', style: 'tertiary' }),
+              accessibilityHidden(),
+            ]}
+          />
+        </HStack>
+      </Button>
     </Section>
   );
 }

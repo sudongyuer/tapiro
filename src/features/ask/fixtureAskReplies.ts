@@ -2,6 +2,7 @@ import type { CloudAnswer, CloudRequest, TextRequest } from './cloudGate';
 
 export const FIXTURE_REPLIES = [
   'answer',
+  'answerOffer',
   'clarify',
   'draft',
   'draftFull',
@@ -72,6 +73,11 @@ function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
         result: {
           text: '靠谱度按近 180 天算。帮不同的人完成任务、收到「开心」评价、按时付款，这三件事最有用。',
         },
+      };
+    case 'answerOffer':
+      return {
+        tool: 'answer',
+        result: { text: '好，从学校出发的话，下午 5 点前后最容易找到人一起。' },
       };
     case 'clarify':
       return {
@@ -171,6 +177,7 @@ export function createFixtureSender({
   onConsentRequired,
   meter = () => ({}),
   onHungry = () => undefined,
+  memory = () => null,
 }: {
   replies: FixtureReply[];
   delayMs: number;
@@ -179,6 +186,7 @@ export function createFixtureSender({
   onConsentRequired: () => void;
   meter?: (task: CloudRequest['task']) => object | null;
   onHungry?: () => void;
+  memory?: (text: string, offers: boolean) => object | null;
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
@@ -204,6 +212,9 @@ export function createFixtureSender({
       request.task === 'translate' && reply !== 'malformed'
         ? translation(request)
         : body(reply, now(), request);
-    return { ok: true, body: { task: request.task, ...(result as object), ...spent } };
+    const kept =
+      request.task === 'ask' ? memory(request.input.text, reply === 'answerOffer') : null;
+    const used = kept ? { memory: kept } : {};
+    return { ok: true, body: { task: request.task, ...(result as object), ...used, ...spent } };
   };
 }

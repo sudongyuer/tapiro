@@ -1,8 +1,9 @@
 import { transcribeTokens } from './budget.ts';
+import { memoryRef, type MemoryContext } from './memory.ts';
 import type { AiInput, AiLanguage, AiRequest, AiTask, ToolSchema } from './tools.ts';
 import { TOOL_SCHEMAS } from './tools.ts';
 
-export type ProviderCall = AiRequest & { tools: ToolSchema[] };
+export type ProviderCall = AiRequest & { tools: ToolSchema[]; memory?: MemoryContext | null };
 
 export type ProviderReply = {
   toolName: string;
@@ -77,6 +78,36 @@ function fakeDraft(text: string) {
   return { ...EMPTY_DRAFT, title: [...text].slice(0, FAKE_TITLE_MAX).join('').trim() };
 }
 
+const FAKE_REMEMBER = /记住[：:]?\s*(.+?)\s*[=＝]\s*(.+)$/;
+
+function fakeMemory(text: string, memory: MemoryContext) {
+  const used = memory.entries
+    .map((entry, index) => (text.includes(entry.label) ? memoryRef(index) : null))
+    .filter((ref): ref is string => ref !== null)
+    .slice(0, 3);
+  const match = memory.remembering ? FAKE_REMEMBER.exec(text) : null;
+  const remember = match ? { kind: 'place', label: match[1], content: match[2] } : null;
+  return { used, remember };
+}
+
+function withFakeMemory(
+  reply: { toolName: string; arguments: unknown },
+  text: string,
+  memory: MemoryContext | null | undefined,
+) {
+  if (!memory || (reply.toolName !== 'draft_bounty' && reply.toolName !== 'answer')) return reply;
+  const args = reply.arguments as Record<string, unknown>;
+  return { ...reply, arguments: { ...args, memory: fakeMemory(text, memory) } };
+}
+
+function fakeChat(call: Exclude<ProviderCall, { task: 'transcribe' }>) {
+  if (call.task === 'ask') return fakeAsk(call);
+  const { task, input } = call;
+  if (task === 'draft_bounty') return { toolName: task, arguments: fakeDraft(input.text) };
+  const text = task === 'translate' ? `[${input.to}] ${input.text}` : `[fake] ${input.text}`;
+  return { toolName: task, arguments: { text } };
+}
+
 export const fakeProvider: AiProvider = {
   async generate(call) {
     const usage = { model: FAKE_MODEL, ...FAKE_USAGE[call.task] };
@@ -84,12 +115,6 @@ export const fakeProvider: AiProvider = {
       const text = FAKE_TRANSCRIPTS[call.input.language];
       return { ...usage, toolName: 'transcript', arguments: { text } };
     }
-    if (call.task === 'ask') return { ...usage, ...fakeAsk(call) };
-    const { task, input } = call;
-    if (task === 'draft_bounty') {
-      return { ...usage, toolName: task, arguments: fakeDraft(input.text) };
-    }
-    const text = task === 'translate' ? `[${input.to}] ${input.text}` : `[fake] ${input.text}`;
-    return { ...usage, toolName: task, arguments: { text } };
+    return { ...usage, ...withFakeMemory(fakeChat(call), call.input.text, call.memory) };
   },
 };

@@ -24,6 +24,7 @@ export default function MeLayout() {
       />
       <Stack.Screen name="coins" options={{ title: t('coins.title') }} />
       <Stack.Screen name="tapir" options={{ title: t('ask.settings.title') }} />
+      <Stack.Screen name="tapir-memory" options={{ title: t('ask.memory.title') }} />
       <Stack.Screen name="invite" options={{ title: t('coins.invite.title') }} />
       <Stack.Screen name="payee" options={{ title: t('payee.title') }} />
       <Stack.Screen name="blocked" options={{ title: t('block.list.title') }} />

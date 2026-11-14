@@ -1,3 +1,4 @@
+import { memoryPrompt, type MemoryContext } from './memory.ts';
 import type { ChatTask } from './models.ts';
 import type { AiRequest, TRANSLATE_LANGUAGES } from './tools.ts';
 
@@ -54,8 +55,11 @@ function taskRules(request: ChatRequest): string {
   }
 }
 
-export function systemPrompt(request: ChatRequest, now: Date): string {
-  return `${PERSONA}\nNow: ${malaysiaNow(now)}.\n${taskRules(request)}`;
+export function systemPrompt(
+  request: ChatRequest & { memory?: MemoryContext | null },
+  now: Date,
+): string {
+  return `${PERSONA}\nNow: ${malaysiaNow(now)}.\n${taskRules(request)}${memoryPrompt(request.memory ?? null)}`;
 }
 
 export const SCREENSHOT_ONLY = '截图';

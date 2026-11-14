@@ -155,7 +155,7 @@ beforeAll(async () => {
   const signIn = await client.auth.signInWithPassword({ email, password });
   if (signIn.error) throw signIn.error;
   token = signIn.data.session.access_token;
-  const consent = await client.rpc('record_consent', { version: 1 });
+  const consent = await client.rpc('record_consent', { version: 2 });
   if (consent.error) throw consent.error;
 });
 

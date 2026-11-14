@@ -32,7 +32,7 @@ select is((public.ai_status() ->> 'feedsLeft')::integer, 5, 'a new day allows fi
 select is(
   public.ai_status() #>> '{consent,acceptedAt}', null, 'no consent, no consent time'
 );
-select public.record_consent(1);
+select public.record_consent(2);
 select isnt(public.ai_status() #>> '{consent,acceptedAt}', null, 'the status carries when consent was given');
 select is(
   (public.ai_status() #>> '{consent,acceptedAt}')::timestamptz,

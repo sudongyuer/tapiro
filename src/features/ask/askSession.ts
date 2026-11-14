@@ -5,7 +5,9 @@ import {
   requestText,
   storedForm,
   storedTurn,
+  tapirTurn,
   type Conversation,
+  type OfferState,
   type Turn,
   type UserTurn,
 } from './conversation';
@@ -120,7 +122,7 @@ export function createAskSession(deps: {
     if (!raw || !reply) return stop({ failed: { send, reason: 'unreadable' } });
     if (forgetsOf(userId) !== forgetsAtSend) return;
 
-    const tapir = { role: 'tapir' as const, raw, reply };
+    const tapir = tapirTurn(raw, reply);
     const late = !current();
     const base = late ? laterTurns(userId, turns) : turns;
     const next = [...base, send.user, tapir];
@@ -217,14 +219,31 @@ export function createAskSession(deps: {
       const turns: Turn[] = [
         ...state.turns,
         { role: 'user', text: item.summary, via: 'choice' },
-        {
-          role: 'tapir',
-          raw: { tool: 'draft_bounty', result: item.raw },
-          reply: { kind: 'draft', draft: item.draft },
-        },
+        tapirTurn({ tool: 'draft_bounty', result: item.raw }, { kind: 'draft', draft: item.draft }),
       ];
       save(userId, turns);
       set({ turns });
+    },
+    settleOffer(userId: string, since: number, turn: Turn, offer: OfferState) {
+      if (forgetsOf(userId) !== since) return;
+      const mark = (turns: Turn[]) =>
+        turns.map((each) => (each === turn && each.role === 'tapir' ? { ...each, offer } : each));
+      if (state.userId === userId && state.turns.includes(turn)) {
+        const turns = mark(state.turns);
+        save(userId, turns);
+        set({ turns });
+        return;
+      }
+      const saved = keptConversation(deps.storage.readConversation(userId), now());
+      if (!saved) return;
+      const same = JSON.stringify(storedTurn(turn));
+      const index = saved.turns.findIndex((each) => JSON.stringify(storedTurn(each)) === same);
+      if (index < 0) return;
+      const turns = saved.turns.map((each, at) =>
+        at === index && each.role === 'tapir' ? { ...each, offer } : each,
+      );
+      save(userId, turns);
+      if (state.userId === userId && state.resume) set({ resume: { ...saved, turns } });
     },
     forget(userId: string) {
       forgets.set(userId, forgetsOf(userId) + 1);

@@ -2,7 +2,7 @@ import { toBelly, type Belly, type PantryFailure, type PantryWrite } from './bel
 
 // The version whose copy this build shows on the consent screen. record_consent refuses any other, so it must never
 // come from ai_status(); bump it only together with the consent copy.
-export const APP_CONSENT_VERSION = 1;
+export const APP_CONSENT_VERSION = 2;
 
 export type ConsentStatus = {
   currentVersion: number;

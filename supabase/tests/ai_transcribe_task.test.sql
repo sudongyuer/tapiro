@@ -7,7 +7,7 @@ values ('00000000-0000-0000-0000-0000000000e6', '00000000-0000-0000-0000-0000000
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000e6', true),
        set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000e6","role":"authenticated"}', true);
-select public.record_consent(1);
+select public.record_consent(2);
 
 create temp table held as
 select (public.ai_begin_call('00000000-0000-0000-0000-0000000000e6') ->> 'lease')::uuid as lease;

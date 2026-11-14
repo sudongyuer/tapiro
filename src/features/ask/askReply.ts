@@ -10,7 +10,7 @@ export type AskReply =
   | { kind: 'clarify'; question: string; choices: string[] }
   | { kind: 'pick'; items: PickItem[] };
 
-export type RawReply = { tool: string; result: unknown };
+export type RawReply = { tool: string; result: unknown; memory?: unknown };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -27,7 +27,8 @@ function parsePickItem(value: unknown): PickItem | null {
 
 export function toRawReply(body: unknown): RawReply | null {
   if (!isRecord(body) || typeof body.tool !== 'string') return null;
-  return { tool: body.tool, result: body.result };
+  const memory = Object.hasOwn(body, 'memory') ? { memory: body.memory } : {};
+  return { tool: body.tool, result: body.result, ...memory };
 }
 
 export function parseAskReply(raw: RawReply): AskReply | null {

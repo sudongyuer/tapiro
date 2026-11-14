@@ -230,8 +230,8 @@ function validDraftTime(args: Record<string, unknown>): boolean {
   );
 }
 
-export function validToolResult(tool: AiTool, args: unknown) {
-  if (!matches(TOOL_SCHEMAS[tool].parameters, args)) return false;
+export function validToolResult(tool: AiTool, args: unknown, schema = TOOL_SCHEMAS[tool]) {
+  if (!matches(schema.parameters, args)) return false;
   if (tool === 'draft_bounty') return validDraftTime(args as Record<string, unknown>);
   if (tool === 'pick') {
     const { items } = args as { items: { draft: Record<string, unknown> }[] };

@@ -27,7 +27,7 @@ async function main() {
     const client = createClient(url, anonKey, { auth: { persistSession: false } });
     const signIn = await client.auth.signInWithPassword({ email, password });
     if (signIn.error) throw signIn.error;
-    const consent = await client.rpc('record_consent', { version: 1 });
+    const consent = await client.rpc('record_consent', { version: 2 });
     if (consent.error) throw consent.error;
 
     const calls = [

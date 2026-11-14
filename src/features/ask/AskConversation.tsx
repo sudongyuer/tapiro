@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
 
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
@@ -14,6 +14,7 @@ import { vars } from '@/ui/theme/tokens';
 import type { PickItem } from './askReply';
 import type { AskFailure, AskSessionState } from './askSession';
 import { resumeLine } from './conversation';
+import { OfferCard } from './MemoryCards';
 import { TapirCard, UserBubble } from './TurnCards';
 
 type ShownFailure = Exclude<AskFailure, 'hungry'>;
@@ -32,6 +33,7 @@ export type AskActions = {
   onFill: (draft: BountyDraft) => void;
   onRetry: () => void;
   onManual: () => void;
+  onEditMemory: (id: string) => void;
 };
 
 function FailureCard({
@@ -103,17 +105,23 @@ export function AskConversation({
         turn.role === 'user' ? (
           <UserBubble key={index} turn={turn} testID={`ask-turn-${index}`} />
         ) : (
-          <TapirCard
-            key={index}
-            reply={turn.reply}
-            latest={index === last}
-            busy={state.sending !== null}
-            currency={currency}
-            onChoose={actions.onChoose}
-            onPick={actions.onPick}
-            onFill={actions.onFill}
-            testID={`ask-turn-${index}`}
-          />
+          <Fragment key={index}>
+            <TapirCard
+              reply={turn.reply}
+              memory={turn.memory}
+              latest={index === last}
+              busy={state.sending !== null}
+              currency={currency}
+              onChoose={actions.onChoose}
+              onPick={actions.onPick}
+              onFill={actions.onFill}
+              onEditMemory={actions.onEditMemory}
+              testID={`ask-turn-${index}`}
+            />
+            {state.userId ? (
+              <OfferCard userId={state.userId} turn={turn} testID={`ask-offer-${index}`} />
+            ) : null}
+          </Fragment>
         ),
       )}
       {state.sending ? (

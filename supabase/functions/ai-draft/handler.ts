@@ -1,4 +1,12 @@
 import { energyCost, PLACEHOLDER_FULL_BELLY_TOKENS } from './budget.ts';
+import {
+  memoryContext,
+  splitMemory,
+  usesMemory,
+  withMemoryField,
+  type MemoryContext,
+  type MemoryForCall,
+} from './memory.ts';
 import type { AiProvider, ProviderReply } from './provider.ts';
 import {
   AI_TOOLS,
@@ -32,6 +40,7 @@ export type AiStore = {
   finish(row: MeterRow): Promise<{ energy: number; energyFull: number }>;
   discard(row: DiscardRow): Promise<void>;
   abort(userId: string, lease: string): Promise<void>;
+  memory(userId: string): Promise<MemoryForCall>;
 };
 
 export type AiDraftDeps = {
@@ -74,9 +83,13 @@ async function readRequest(req: Request): Promise<AiRequest | null> {
   }
 }
 
+const offeredSchemas = (request: AiRequest, memory: MemoryContext | null) =>
+  toolsFor(request).map((tool) => withMemoryField(TOOL_SCHEMAS[tool], memory));
+
 async function callProvider(
   provider: AiProvider,
   request: AiRequest,
+  memory: MemoryContext | null,
   timeoutMs: number,
 ): Promise<ProviderReply | null> {
   const controller = new AbortController();
@@ -88,7 +101,7 @@ async function callProvider(
     }, timeoutMs);
   });
   try {
-    const call = { ...request, tools: toolsFor(request).map((tool) => TOOL_SCHEMAS[tool]) };
+    const call = { ...request, memory, tools: offeredSchemas(request, memory) };
     return await Promise.race([provider.generate(call, controller.signal), timedOut]);
   } catch {
     return null;
@@ -105,14 +118,18 @@ function offeredTool(reply: ProviderReply, request: AiRequest): AiTool | null {
   return tool && toolsFor(request).includes(tool) ? tool : null;
 }
 
-function usable(reply: ProviderReply, request: AiRequest): AiTool | null {
+function usable(
+  reply: ProviderReply,
+  request: AiRequest,
+  memory: MemoryContext | null,
+): AiTool | null {
   const tool = offeredTool(reply, request);
   const valid =
     tool !== null &&
     isCount(reply.inputTokens) &&
     isCount(reply.outputTokens) &&
     hasModel(reply) &&
-    validToolResult(tool, reply.arguments);
+    validToolResult(tool, reply.arguments, withMemoryField(TOOL_SCHEMAS[tool], memory));
   return valid ? tool : null;
 }
 
@@ -146,13 +163,29 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
   }
   if (begun.status !== 'ok') return failure(REFUSALS[begun.status], begun.status);
 
-  const reply = await callProvider(deps.provider, request, deps.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  let memory: MemoryContext | null = null;
+  if (usesMemory(request.task)) {
+    try {
+      memory = memoryContext(await deps.store.memory(userId));
+    } catch {
+      logCode('memory_failed');
+      await deps.store.abort(userId, begun.lease).catch(() => logCode('abort_failed'));
+      return failure(500, 'server_error');
+    }
+  }
+
+  const reply = await callProvider(
+    deps.provider,
+    request,
+    memory,
+    deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  );
   if (reply === null) {
     logCode('provider_error');
     await deps.store.abort(userId, begun.lease).catch(() => logCode('abort_failed'));
     return failure(502, 'provider_error');
   }
-  const tool = usable(reply, request);
+  const tool = usable(reply, request, memory);
   if (tool === null) {
     logCode('reply_discarded');
     await deps.store
@@ -179,7 +212,11 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
       outputTokens: reply.outputTokens,
       energySpent: energyCost(tokens, PLACEHOLDER_FULL_BELLY_TOKENS, begun.energyFull),
     });
-    return json(200, { task: request.task, tool, result: reply.arguments, ...after });
+    const split = splitMemory(reply.arguments, memory);
+    const outcome = usesMemory(request.task)
+      ? { memory: split.memory ?? { used: [], offer: null } }
+      : {};
+    return json(200, { task: request.task, tool, result: split.result, ...outcome, ...after });
   } catch {
     logCode('finish_failed');
     return failure(500, 'server_error');
