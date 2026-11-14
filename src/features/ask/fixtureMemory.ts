@@ -64,7 +64,7 @@ export function createFixtureMemoryService({
   failFirst: Set<FixtureMemoryFail>;
   delayMs: number;
   onCall: (name: string, args: unknown) => void;
-}): MemoryService & { usedFor(text: string): MemoryEntry[]; remembering(): boolean } {
+}): MemoryService & { usedFor(text: string | null): MemoryEntry[]; remembering(): boolean } {
   let entries = initial(memory);
   let enabled = memory !== 'off';
   let next = 0;
@@ -122,7 +122,10 @@ export function createFixtureMemoryService({
       return { ok: true, value: on };
     },
     usedFor(text) {
-      return enabled ? entries.filter((entry) => text.includes(entry.label)).slice(0, 3) : [];
+      if (!enabled) return [];
+      return text === null
+        ? entries.slice(0, 1)
+        : entries.filter((entry) => text.includes(entry.label)).slice(0, 3);
     },
     remembering: () => enabled && entries.length < MEMORY_LIMITS.entriesMax,
   };

@@ -5,6 +5,7 @@ export const FIXTURE_REPLIES = [
   'answerOffer',
   'clarify',
   'draft',
+  'draftMemory',
   'draftFull',
   'draftDropped',
   'pick',
@@ -93,6 +94,17 @@ function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
           category: 'pickup',
           rewardMajor: 15,
           deadlineAt: daysAhead(now, 1, 18),
+        },
+      };
+    case 'draftMemory':
+      return {
+        tool: 'draft_bounty',
+        result: {
+          ...EMPTY,
+          title: '从宿舍帮我取快递',
+          category: 'pickup',
+          rewardMajor: 10,
+          placeHint: 'Sunway Geo',
         },
       };
     case 'draftFull':
@@ -186,7 +198,7 @@ export function createFixtureSender({
   onConsentRequired: () => void;
   meter?: (task: CloudRequest['task']) => object | null;
   onHungry?: () => void;
-  memory?: (text: string, offers: boolean) => object | null;
+  memory?: (text: string, reply: FixtureReply) => object | null;
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
@@ -212,8 +224,7 @@ export function createFixtureSender({
       request.task === 'translate' && reply !== 'malformed'
         ? translation(request)
         : body(reply, now(), request);
-    const kept =
-      request.task === 'ask' ? memory(request.input.text, reply === 'answerOffer') : null;
+    const kept = request.task === 'ask' ? memory(request.input.text, reply) : null;
     const used = kept ? { memory: kept } : {};
     return { ok: true, body: { task: request.task, ...(result as object), ...used, ...spent } };
   };

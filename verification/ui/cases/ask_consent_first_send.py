@@ -64,7 +64,7 @@ ui.capture('03-recording')
 ui.gone('ask-consent-screen', timeout=30)
 turn(ui, 1)
 assert prompt_value(ui) == '', f'the answer did not clear the field: {prompt_value(ui)!r}'
-assert assert_calls(ui, 'record', 1) == [{'version': 1}]
+assert assert_calls(ui, 'record', 1) == [{'version': 2}]
 assert ask_texts(ui, 1, wait=1) == [TYPED]
 ui.at_rest()
 ui.capture('04-consented')

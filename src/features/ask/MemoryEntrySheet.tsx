@@ -8,7 +8,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -79,7 +79,11 @@ export function MemoryEntrySheet({
   const onDone = afterResign(leave);
   const state = useMemoryFor(userId);
   const title = t(entryId ? 'ask.memory.entry.editTitle' : 'ask.memory.entry.addTitle');
-  const entry = entryId ? (state?.data?.entries.find((each) => each.id === entryId) ?? null) : null;
+  const kept = useRef<MemoryEntry | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  const found = entryId ? (state?.data?.entries.find((each) => each.id === entryId) ?? null) : null;
+  if (found) kept.current = found;
+  const entry = found ?? (leaving ? kept.current : null);
   if (entryId && !entry) {
     const loading = !state?.data && state?.status !== 'failed';
     return (
@@ -107,16 +111,26 @@ export function MemoryEntrySheet({
       </Host>
     );
   }
-  return <EntryForm key={entry?.id ?? 'new'} entry={entry} title={title} onDone={onDone} />;
+  return (
+    <EntryForm
+      key={entry?.id ?? 'new'}
+      entry={entry}
+      title={title}
+      onLeaving={setLeaving}
+      onDone={onDone}
+    />
+  );
 }
 
 function EntryForm({
   entry,
   title,
+  onLeaving,
   onDone,
 }: {
   entry: MemoryEntry | null;
   title: string;
+  onLeaving: (leaving: boolean) => void;
   onDone: () => void;
 }) {
   const { t } = useI18n();
@@ -147,11 +161,13 @@ function EntryForm({
   async function remove() {
     if (!entry || saving) return;
     setSaving(true);
+    onLeaving(true);
     const result = await memoryStore.remove(entry.id);
     setSaving(false);
     memoryStore.dismissFailure();
-    if (result.ok) onDone();
-    else setError('ask.memory.failure.remove');
+    if (result.ok) return onDone();
+    onLeaving(false);
+    setError('ask.memory.failure.remove');
   }
 
   return (
