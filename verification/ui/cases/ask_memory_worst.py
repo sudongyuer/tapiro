@@ -14,7 +14,7 @@ LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
 LONG = ['-uiVerifyAiMemory', 'long', '-uiVerifyAiMemoryFail', 'load,save']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
-        '-uiVerifyAiDelayMs', '1200', *LONG]
+        '-uiVerifyAiDelayMs', '1200', '-uiVerifyAiMemory', 'long', '-uiVerifyAiMemoryFail', 'load,save']
 
 ui = UI(*sys.argv[1:])
 
