@@ -1,5 +1,5 @@
 begin;
-select plan(111);
+select plan(109);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -37,7 +37,7 @@ $$;
 create function pg_temp.consent(k text) returns void language plpgsql as $$
 begin
   perform pg_temp.act_as(k);
-  perform public.record_consent(1);
+  perform public.record_consent(2);
 end;
 $$;
 
@@ -100,16 +100,16 @@ select is(pg_temp.begin_status('a1'), 'consent_required', 'no call starts before
 select is(pg_temp.level('a1'), null, 'a refused call stores no energy row');
 
 select pg_temp.act_as('a1');
-select throws_ok('select public.record_consent(2)', '22023', 'stale_consent_version', 'an unknown version is refused');
+select throws_ok('select public.record_consent(3)', '22023', 'stale_consent_version', 'an unknown version is refused');
 select throws_ok('select public.record_consent(null)', '22023', 'stale_consent_version', 'a null version is refused');
-select is(public.record_consent(1) #>> '{consent,given}', 'true', 'consent is recorded and answered by the status');
+select is(public.record_consent(2) #>> '{consent,given}', 'true', 'consent is recorded and answered by the status');
 select is(
   (select row(version, provider, purpose)::text from public.ai_consents where user_id = pg_temp.uid('a1')),
-  row(1, 'Alibaba Cloud Model Studio (Singapore)', 'bounty_draft,answer,translate')::text,
+  row(2, 'Alibaba Cloud Model Studio (Singapore)', 'bounty_draft,answer,translate')::text,
   'the record names the provider and purpose from the server'
 );
 select isnt((select accepted_at from public.ai_consents where user_id = pg_temp.uid('a1')), null, 'with a timestamp');
-select lives_ok('select public.record_consent(1)', 'consenting twice is harmless');
+select lives_ok('select public.record_consent(2)', 'consenting twice is harmless');
 select is(
   (select count(*) from public.ai_consents where user_id = pg_temp.uid('a1')), 1::bigint,
   'a repeat writes no second row'
@@ -121,7 +121,7 @@ select isnt(
   (select withdrawn_at from public.ai_consents where user_id = pg_temp.uid('a1')), null, 'the withdrawal is stamped'
 );
 select lives_ok('select public.withdraw_consent()', 'withdrawing twice is harmless');
-select public.record_consent(1);
+select public.record_consent(2);
 select is(
   (select count(*) from public.ai_consents where user_id = pg_temp.uid('a1')), 2::bigint,
   'consenting again keeps the withdrawn record'
@@ -135,7 +135,7 @@ select is(
   (select count(*) from public.ai_consents), 2::bigint, 'a client reads only its own consents'
 );
 select throws_ok(
-  $$insert into public.ai_consents (user_id, version, provider, purpose) values (auth.uid(), 1, 'x', 'y')$$,
+  $$insert into public.ai_consents (user_id, version, provider, purpose) values (auth.uid(), 2, 'x', 'y')$$,
   '42501', null, 'a client cannot write a consent'
 );
 select throws_ok('select * from public.ai_energy', '42501', null, 'a client cannot read energy directly');
@@ -321,33 +321,25 @@ select throws_ok(
   'delete from public.ai_pantry', '55000', 'ledger_is_append_only', 'the pantry cannot be deleted from'
 );
 
--- 小貘记得
+-- 小貘记得 (more in ai_memory.test.sql)
 select pg_temp.act_as('a1');
 set local role authenticated;
-insert into public.ai_memory (kind, content) values ('place', '宿舍 Sunway Geo');
+select public.save_ai_memory(null, 'place', '宿舍', 'Sunway Geo');
 select is((select count(*) from public.ai_memory), 1::bigint, 'the owner reads its entry');
 select is(
-  (select user_id from public.ai_memory), pg_temp.uid('a1'), 'an entry belongs to whoever wrote it'
+  (select user_id from public.ai_memory), pg_temp.uid('a1'), 'an entry belongs to whoever saved it'
 );
 select throws_ok(
-  $$insert into public.ai_memory (user_id, kind, content)
-    values ('00000000-0000-0000-0000-0000000000b2', 'place', 'x')$$,
-  '42501', null, 'a client cannot write into another user''s memory'
-);
-select throws_ok(
-  $$insert into public.ai_memory (kind, content) values ('place', '   ')$$, '23514', null, 'a blank entry is refused'
+  $$insert into public.ai_memory (kind, label, content) values ('place', 'x', 'y')$$,
+  '42501', null, 'a client cannot insert past the save function'
 );
 select pg_temp.act_as('b2');
 select is((select count(*) from public.ai_memory), 0::bigint, 'another user sees nothing');
 delete from public.ai_memory;
-update public.ai_memory set content = 'changed';
 select pg_temp.act_as('a1');
-select is((select content from public.ai_memory), '宿舍 Sunway Geo', 'another user cannot change or delete it');
-update public.ai_memory set content = '宿舍 Sunway Pyramid';
-select is((select content from public.ai_memory), '宿舍 Sunway Pyramid', 'the owner can change it');
+select is((select count(*) from public.ai_memory), 1::bigint, 'another user cannot delete it');
 delete from public.ai_memory;
 select is((select count(*) from public.ai_memory), 0::bigint, 'the owner can delete it');
-insert into public.ai_memory (kind, content) values ('preference', '不吃辣');
 reset role;
 set local role anon;
 select throws_ok('select * from public.ai_memory', '42501', null, 'anon cannot read memory');
@@ -355,18 +347,18 @@ reset role;
 
 -- A new consent version asks again
 insert into public.ai_consent_versions (version, provider, purpose)
-values (2, 'Alibaba Cloud Model Studio (Singapore)', 'bounty_draft,answer,translate,receipt_split');
+values (3, 'Alibaba Cloud Model Studio (Singapore)', 'bounty_draft,answer,translate,receipt_split');
 select is(pg_temp.status('b2') #>> '{consent,given}', 'false', 'a new consent version asks again');
-select is((pg_temp.status('b2') #>> '{consent,currentVersion}')::integer, 2, 'the status names the version to show');
+select is((pg_temp.status('b2') #>> '{consent,currentVersion}')::integer, 3, 'the status names the version to show');
 select is(pg_temp.begin_status('b2'), 'consent_required', 'and gates the call');
 select pg_temp.act_as('b2');
-select throws_ok('select public.record_consent(1)', '22023', 'stale_consent_version', 'the old screen cannot consent');
-select is(public.record_consent(2) #>> '{consent,given}', 'true', 'the new version can');
+select throws_ok('select public.record_consent(2)', '22023', 'stale_consent_version', 'the old screen cannot consent');
+select is(public.record_consent(3) #>> '{consent,given}', 'true', 'the new version can');
 
 -- Deleting the account
-insert into public.ai_memory (user_id, kind, content) values (pg_temp.uid('d4'), 'place', 'x');
+insert into public.ai_memory (user_id, kind, label, content) values (pg_temp.uid('d4'), 'place', 'x', 'y');
 select pg_temp.act_as('d4');
-select public.record_consent(2);
+select public.record_consent(3);
 select public.ai_begin_call(pg_temp.uid('d4'));
 select pg_temp.finish('d4', gen_random_uuid(), 1);
 select pg_temp.act_as('d4');

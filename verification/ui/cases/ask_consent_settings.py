@@ -55,7 +55,7 @@ ui.gone('ask-consent-screen', timeout=30)
 ui.wait(lambda items: toggle_on(items) is True, 'the switch did not turn on after 同意')
 if ui.locale == 'zh-Hans':
     footer(ui, given_footer(date.today()))
-assert assert_calls(ui, 'record', 1) == [{'version': 1}]
+assert assert_calls(ui, 'record', 1) == [{'version': 2}]
 assert by_id(ui.read(), 'tapir-settings-withdraw-failed') is None
 ui.at_rest()
 ui.capture('04-on-again')

@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
 
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
@@ -14,6 +14,7 @@ import { vars } from '@/ui/theme/tokens';
 import type { PickItem } from './askReply';
 import type { AskFailure, AskSessionState } from './askSession';
 import { resumeLine } from './conversation';
+import { OfferCard } from './MemoryCards';
 import { TapirCard, UserBubble } from './TurnCards';
 
 type ShownFailure = Exclude<AskFailure, 'hungry'>;
@@ -32,6 +33,7 @@ export type AskActions = {
   onFill: (draft: BountyDraft) => void;
   onRetry: () => void;
   onManual: () => void;
+  onEditMemory: (id: string) => void;
 };
 
 function FailureCard({
@@ -49,20 +51,20 @@ function FailureCard({
       style={[styles.failure, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
       testID={`ask-failure-${reason}`}
     >
-      <View style={styles.failureText}>
-        <Mascot variant="side" size={vars['--touch-min']} />
-        <AppText variant="body" style={styles.grow} testID="ask-failure-text">
+      <Mascot variant="front" size={vars['--touch-min']} dizzy={reason !== 'busy'} darkOutline />
+      <View style={styles.failureBody}>
+        <AppText variant="title" testID="ask-failure-text">
           {t(FAILURE_KEYS[reason])}
         </AppText>
-      </View>
-      <View style={styles.buttons}>
-        <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
-        <PillButton
-          label={t('ask.sheet.manual')}
-          variant="secondary"
-          onPress={onManual}
-          testID="ask-manual"
-        />
+        <View style={styles.buttons}>
+          <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
+          <PillButton
+            label={t('ask.sheet.manual')}
+            variant="secondary"
+            onPress={onManual}
+            testID="ask-manual"
+          />
+        </View>
       </View>
     </View>
   );
@@ -103,17 +105,23 @@ export function AskConversation({
         turn.role === 'user' ? (
           <UserBubble key={index} turn={turn} testID={`ask-turn-${index}`} />
         ) : (
-          <TapirCard
-            key={index}
-            reply={turn.reply}
-            latest={index === last}
-            busy={state.sending !== null}
-            currency={currency}
-            onChoose={actions.onChoose}
-            onPick={actions.onPick}
-            onFill={actions.onFill}
-            testID={`ask-turn-${index}`}
-          />
+          <Fragment key={index}>
+            <TapirCard
+              reply={turn.reply}
+              memory={turn.memory}
+              latest={index === last}
+              busy={state.sending !== null}
+              currency={currency}
+              onChoose={actions.onChoose}
+              onPick={actions.onPick}
+              onFill={actions.onFill}
+              onEditMemory={actions.onEditMemory}
+              testID={`ask-turn-${index}`}
+            />
+            {state.userId ? (
+              <OfferCard userId={state.userId} turn={turn} testID={`ask-offer-${index}`} />
+            ) : null}
+          </Fragment>
         ),
       )}
       {state.sending ? (
@@ -150,11 +158,13 @@ const styles = StyleSheet.create({
   },
   thinking: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
   failure: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: vars['--space-3'],
     padding: vars['--space-4'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },
-  failureText: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
+  failureBody: { flex: 1, gap: vars['--space-3'] },
   buttons: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
 });

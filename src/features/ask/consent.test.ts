@@ -9,15 +9,17 @@ describe('toConsentStatus', () => {
   test('reads the consent part of ai_status', () => {
     expect(
       toConsentStatus({
-        consent: { currentVersion: 1, given: true, acceptedAt: AT },
+        consent: { currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: AT },
         energy: 1000,
       }),
-    ).toEqual({ currentVersion: 1, given: true, acceptedAt: AT });
+    ).toEqual({ currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: AT });
   });
 
   test('a missing acceptedAt reads as none when not given', () => {
-    expect(toConsentStatus({ consent: { currentVersion: 1, given: false } })).toEqual({
-      currentVersion: 1,
+    expect(
+      toConsentStatus({ consent: { currentVersion: APP_CONSENT_VERSION, given: false } }),
+    ).toEqual({
+      currentVersion: APP_CONSENT_VERSION,
       given: false,
       acceptedAt: null,
     });
@@ -27,33 +29,47 @@ describe('toConsentStatus', () => {
     ['null', null],
     ['no consent', { energy: 1 }],
     ['a version below 1', { consent: { currentVersion: 0, given: false } }],
-    ['a string flag', { consent: { currentVersion: 1, given: 'true' } }],
-    ['given without a time', { consent: { currentVersion: 1, given: true, acceptedAt: null } }],
-    ['a broken time', { consent: { currentVersion: 1, given: true, acceptedAt: 'soon' } }],
+    ['a string flag', { consent: { currentVersion: APP_CONSENT_VERSION, given: 'true' } }],
+    [
+      'given without a time',
+      { consent: { currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: null } },
+    ],
+    [
+      'a broken time',
+      { consent: { currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: 'soon' } },
+    ],
   ])('refuses %s instead of guessing', (_, value) => {
     expect(() => toConsentStatus(value)).toThrow();
   });
 });
 
 describe('cloudAccess', () => {
-  test('the app pins version 1, the copy it shows', () => {
-    expect(APP_CONSENT_VERSION).toBe(1);
+  test('the app pins version 2, the copy it shows', () => {
+    expect(APP_CONSENT_VERSION).toBe(2);
   });
 
   test('given consent opens the cloud', () => {
-    expect(cloudAccess({ currentVersion: 1, given: true, acceptedAt: AT })).toBe('given');
+    expect(cloudAccess({ currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: AT })).toBe(
+      'given',
+    );
   });
 
   test('not given at the app version asks for consent', () => {
-    expect(cloudAccess({ currentVersion: 1, given: false, acceptedAt: null })).toBe('notGiven');
+    expect(
+      cloudAccess({ currentVersion: APP_CONSENT_VERSION, given: false, acceptedAt: null }),
+    ).toBe('notGiven');
   });
 
   test('a newer server version cannot be agreed from this build', () => {
-    expect(cloudAccess({ currentVersion: 2, given: false, acceptedAt: null })).toBe('needsUpdate');
+    expect(
+      cloudAccess({ currentVersion: APP_CONSENT_VERSION + 1, given: false, acceptedAt: null }),
+    ).toBe('needsUpdate');
   });
 
   test('consent to the newer version given on another device still counts', () => {
-    expect(cloudAccess({ currentVersion: 2, given: true, acceptedAt: AT })).toBe('given');
+    expect(
+      cloudAccess({ currentVersion: APP_CONSENT_VERSION + 1, given: true, acceptedAt: AT }),
+    ).toBe('given');
   });
 });
 

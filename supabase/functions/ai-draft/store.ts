@@ -1,4 +1,5 @@
 import type { AiStore, BeginResult } from './handler.ts';
+import { parseMemoryForCall } from './memory.ts';
 
 type RpcClient = {
   rpc(
@@ -40,6 +41,9 @@ export function rpcStore(client: RpcClient): AiStore {
     },
     async abort(userId, lease) {
       await call('ai_abort_call', { uid: userId, held: lease });
+    },
+    async memory(userId) {
+      return parseMemoryForCall(await call('ai_memory_for_call', { uid: userId }));
     },
   };
 }

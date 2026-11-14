@@ -2,8 +2,10 @@ import type { CloudAnswer, CloudRequest, TextRequest } from './cloudGate';
 
 export const FIXTURE_REPLIES = [
   'answer',
+  'answerOffer',
   'clarify',
   'draft',
+  'draftMemory',
   'draftFull',
   'draftDropped',
   'pick',
@@ -73,6 +75,11 @@ function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
           text: '靠谱度按近 180 天算。帮不同的人完成任务、收到「开心」评价、按时付款，这三件事最有用。',
         },
       };
+    case 'answerOffer':
+      return {
+        tool: 'answer',
+        result: { text: '好，从学校出发的话，下午 5 点前后最容易找到人一起。' },
+      };
     case 'clarify':
       return {
         tool: 'clarify',
@@ -87,6 +94,17 @@ function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
           category: 'pickup',
           rewardMajor: 15,
           deadlineAt: daysAhead(now, 1, 18),
+        },
+      };
+    case 'draftMemory':
+      return {
+        tool: 'draft_bounty',
+        result: {
+          ...EMPTY,
+          title: '从宿舍帮我取快递',
+          category: 'pickup',
+          rewardMajor: 10,
+          placeHint: 'Sunway Geo',
         },
       };
     case 'draftFull':
@@ -171,6 +189,7 @@ export function createFixtureSender({
   onConsentRequired,
   meter = () => ({}),
   onHungry = () => undefined,
+  memory = () => null,
 }: {
   replies: FixtureReply[];
   delayMs: number;
@@ -179,6 +198,7 @@ export function createFixtureSender({
   onConsentRequired: () => void;
   meter?: (task: CloudRequest['task']) => object | null;
   onHungry?: () => void;
+  memory?: (text: string, reply: FixtureReply) => object | null;
 }) {
   const queue = [...replies];
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
@@ -204,6 +224,8 @@ export function createFixtureSender({
       request.task === 'translate' && reply !== 'malformed'
         ? translation(request)
         : body(reply, now(), request);
-    return { ok: true, body: { task: request.task, ...(result as object), ...spent } };
+    const kept = request.task === 'ask' ? memory(request.input.text, reply) : null;
+    const used = kept ? { memory: kept } : {};
+    return { ok: true, body: { task: request.task, ...(result as object), ...used, ...spent } };
   };
 }

@@ -12,7 +12,7 @@ from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/ask.tsx', 'src/app/ask-consent.tsx',
         'src/lib/drafts/', 'src/features/bounty/post/', 'src/lib/i18n/locales/ask/', 'src/lib/i18n/locales/bounty/',
-        'verification/ui/ask.py', 'verification/ui/bounty.py']
+        'verification/ui/ask.py', 'verification/ui/bounty.py', 'src/ui/Mascot.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 600
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',

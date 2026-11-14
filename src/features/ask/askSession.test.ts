@@ -356,4 +356,81 @@ describe('the 问小貘 session', () => {
     expect(words).toEqual(['first?', 'third?', 'second?']);
     expect(kept).toBeNull();
   });
+
+  test('小貘记得: the entries a reply used and its offer are kept with the turn, and a settled offer stays settled', async () => {
+    const used = { id: 'e1', kind: 'place' as const, label: '宿舍', content: 'Sunway Geo' };
+    const offer = {
+      kind: 'place' as const,
+      label: '学校',
+      content: 'Sunway University',
+      replaces: null,
+    };
+    const { session, storage, openConsent } = setup({
+      results: [
+        {
+          kind: 'answered',
+          body: {
+            ...(ANSWER.kind === 'answered' ? (ANSWER.body as object) : {}),
+            memory: { used: [used], offer },
+          },
+        },
+      ],
+    });
+    session.setText('宿舍到学校多远？');
+    await session.send(openConsent);
+    const tapir = session.getSnapshot().turns[1];
+    expect(tapir.role === 'tapir' && tapir.memory).toEqual({ used: [used], offer });
+    session.settleOffer('u1', session.generation('u1'), tapir, 'saved');
+    session.open('u1');
+    session.resume();
+    const kept = session.getSnapshot().turns[1];
+    expect(kept.role === 'tapir' && kept.offer).toBe('saved');
+    expect(kept.role === 'tapir' && kept.memory?.used).toEqual([used]);
+    expect(JSON.stringify(storage.chats.get('u1'))).toContain('"offer":"saved"');
+  });
+
+  test('小貘记得: an offer settled after sign-out is dropped', async () => {
+    const offer = {
+      kind: 'place' as const,
+      label: '学校',
+      content: 'Sunway University',
+      replaces: null,
+    };
+    const { session, storage, openConsent } = setup({
+      results: [
+        {
+          kind: 'answered',
+          body: { tool: 'answer', result: { text: 'ok' }, memory: { used: [], offer } },
+        },
+      ],
+    });
+    session.setText('x');
+    await session.send(openConsent);
+    const tapir = session.getSnapshot().turns[1];
+    const since = session.generation('u1');
+    session.forget('u1');
+    session.settleOffer('u1', since, tapir, 'saved');
+    expect(storage.chats.get('u1')).toBeNull();
+  });
+
+  test('小貘记得: a deleted entry is taken out of the kept replies that named it', async () => {
+    const used = { id: 'e1', kind: 'place' as const, label: '宿舍', content: 'Sunway Geo' };
+    const { session, storage, openConsent } = setup({
+      results: [
+        {
+          kind: 'answered',
+          body: { tool: 'answer', result: { text: 'ok' }, memory: { used: [used], offer: null } },
+        },
+      ],
+    });
+    session.setText('x');
+    await session.send(openConsent);
+    session.close();
+    session.dropMemoryUse('u1', ['e1']);
+    expect(JSON.stringify(storage.chats.get('u1'))).not.toContain('Sunway Geo');
+    session.open('u1');
+    session.resume();
+    const kept = session.getSnapshot().turns[1];
+    expect(kept.role === 'tapir' && kept.memory).toBeNull();
+  });
 });

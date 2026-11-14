@@ -17,7 +17,10 @@ import {
   fixtureConsent,
   fixtureFailPoints,
 } from './fixtureAskService';
+import { createFixtureMemoryService, fixtureMemory, fixtureMemoryFails } from './fixtureMemory';
 import { createFixtureSpeech, fixtureEngine, fixtureVoice } from './fixtureSpeech';
+import { createSupabaseMemoryService } from './memory';
+import { createMemoryStore } from './memoryStore';
 import { metered } from './metered';
 import { createPantryStore } from './pantryStore';
 import { createSettingsAskStorage, createSettingsTranslationStorage } from './settingsAskStorage';
@@ -35,6 +38,8 @@ function recordCall(name: string, args: unknown) {
   Settings.set({ [CALLS_KEY]: JSON.stringify(calls) });
 }
 
+const FIXTURE_OFFER = { kind: 'place', label: '图书馆', content: 'Sunway University 图书馆' };
+
 const verifyDelay = () => Number(uiVerifyArgument('uiVerifyAiDelayMs') ?? VERIFY_DELAY_MS) || 0;
 
 function verifyServices() {
@@ -46,6 +51,12 @@ function verifyServices() {
     delayMs: verifyDelay(),
     onCall: recordCall,
   });
+  const memory = createFixtureMemoryService({
+    memory: fixtureMemory(uiVerifyArgument('uiVerifyAiMemory')),
+    failFirst: fixtureMemoryFails(uiVerifyArgument('uiVerifyAiMemoryFail')),
+    delayMs: verifyDelay(),
+    onCall: recordCall,
+  });
   const send = createFixtureSender({
     replies: fixtureReplies(uiVerifyArgument('uiVerifyAiReplies')),
     delayMs: verifyDelay(),
@@ -53,13 +64,22 @@ function verifyServices() {
     onConsentRequired: () => service.withdrawElsewhere(),
     meter: (task) => service.spend(task === 'translate' ? FIXTURE_TRANSLATE_COST : undefined),
     onHungry: () => service.starve(),
+    memory: (text, reply) => ({
+      used: memory
+        .usedFor(reply === 'draftMemory' ? null : text)
+        .map(({ id, kind, label, content }) => ({ id, kind, label, content })),
+      offer:
+        reply === 'answerOffer' && memory.remembering()
+          ? { ...FIXTURE_OFFER, replaces: null }
+          : null,
+    }),
   });
   const speech = createFixtureSpeech({
     voice: fixtureVoice(uiVerifyArgument('uiVerifyVoice')),
     engine: fixtureEngine(uiVerifyArgument('uiVerifyVoiceEngine')),
     onCall: recordCall,
   });
-  return { service, send, speech };
+  return { service, send, speech, memory };
 }
 
 // Cases share one install, so a verify launch starts with no kept words, conversation or translations unless it asks to
@@ -121,6 +141,11 @@ const service = verify?.service ?? createSupabaseAskService(getSupabase());
 
 export const consentStore = createConsentStore(service);
 
+export const memoryStore = createMemoryStore(
+  verify?.memory ?? createSupabaseMemoryService(getSupabase()),
+  (userId, ids) => askSession.dropMemoryUse(userId, ids),
+);
+
 export const pantryStore = createPantryStore({
   service,
   status: consentStore,
@@ -158,6 +183,7 @@ userCleanups.register((userId) => {
   translations.forget(userId);
   pantryStore.clear();
   consentStore.clear();
+  memoryStore.forget();
 });
 
 sessionEnds.register((userId) => {
@@ -165,4 +191,5 @@ sessionEnds.register((userId) => {
   askSession.forget(userId);
   translations.forget(userId);
   pantryStore.clear();
+  memoryStore.forget();
 });

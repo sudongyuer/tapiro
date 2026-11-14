@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
@@ -12,6 +13,8 @@ import { useTheme } from '@/ui/theme/useTheme';
 import type { AskReply, PickItem } from './askReply';
 import type { UserTurn } from './conversation';
 import { draftLines } from './draftLines';
+import type { MemoryOutcome } from './memory';
+import { UsedMemory } from './MemoryCards';
 
 export function UserBubble({ turn, testID }: { turn: UserTurn; testID: string }) {
   const { t } = useI18n();
@@ -57,11 +60,13 @@ function Chip({
 
 function DraftCard({
   draft,
+  used,
   currency,
   onFill,
   testID,
 }: {
   draft: BountyDraft;
+  used: ReactNode;
   currency: CurrencyCode;
   onFill: (draft: BountyDraft) => void;
   testID: string;
@@ -85,6 +90,7 @@ function DraftCard({
           {draft.description}
         </AppText>
       ) : null}
+      {used}
       <View style={styles.action}>
         <PillButton
           label={t('ask.sheet.fill')}
@@ -98,34 +104,45 @@ function DraftCard({
 
 export function TapirCard({
   reply,
+  memory,
   latest,
   busy,
   currency,
   onChoose,
   onPick,
   onFill,
+  onEditMemory,
   testID,
 }: {
   reply: AskReply;
+  memory: MemoryOutcome | null;
   latest: boolean;
   busy: boolean;
   currency: CurrencyCode;
   onChoose: (answer: string) => void;
   onPick: (item: PickItem) => void;
   onFill: (draft: BountyDraft) => void;
+  onEditMemory: (id: string) => void;
   testID: string;
 }) {
   const { t } = useI18n();
   const closed = !latest || busy;
+  const used =
+    memory && memory.used.length > 0 && (reply.kind === 'draft' || reply.kind === 'answer') ? (
+      <UsedMemory used={memory.used} onEdit={onEditMemory} testID={testID} />
+    ) : null;
   return (
     <View
       style={[styles.card, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
       testID={testID}
     >
       {reply.kind === 'answer' ? (
-        <AppText variant="body" testID={`${testID}-text`}>
-          {reply.text}
-        </AppText>
+        <>
+          <AppText variant="body" testID={`${testID}-text`}>
+            {reply.text}
+          </AppText>
+          {used}
+        </>
       ) : null}
       {reply.kind === 'clarify' ? (
         <>
@@ -164,7 +181,13 @@ export function TapirCard({
         </>
       ) : null}
       {reply.kind === 'draft' ? (
-        <DraftCard draft={reply.draft} currency={currency} onFill={onFill} testID={testID} />
+        <DraftCard
+          draft={reply.draft}
+          used={used}
+          currency={currency}
+          onFill={onFill}
+          testID={testID}
+        />
       ) : null}
     </View>
   );

@@ -1,10 +1,22 @@
 import { parseAskReply, type AskReply, type RawReply } from './askReply';
+import { parseMemoryOutcome, type MemoryOutcome } from './memory';
 
 export const CONVERSATION_KEEP_MS = 7 * 24 * 3_600_000;
 export const REQUEST_TEXT_MAX = 2000;
 
 export type UserTurn = { role: 'user'; text: string; via: 'typed' | 'choice' | 'image' };
-export type TapirTurn = { role: 'tapir'; raw: RawReply; reply: AskReply };
+export type OfferState = 'saved' | 'dismissed';
+export type TapirTurn = {
+  role: 'tapir';
+  raw: RawReply;
+  reply: AskReply;
+  memory: MemoryOutcome | null;
+  offer?: OfferState;
+};
+
+export function tapirTurn(raw: RawReply, reply: AskReply): TapirTurn {
+  return { role: 'tapir', raw, reply, memory: parseMemoryOutcome(raw.memory) };
+}
 export type Turn = UserTurn | TapirTurn;
 
 export type Conversation = { turns: Turn[]; updatedAt: string };
@@ -76,11 +88,16 @@ function parseTurn(turn: Record<string, unknown> | null): Turn | null {
   if (turn.role !== 'tapir' || typeof turn.raw !== 'object' || turn.raw === null) return null;
   const raw = turn.raw as RawReply;
   const reply = parseAskReply(raw);
-  return reply ? { role: 'tapir', raw, reply } : null;
+  if (!reply) return null;
+  const offer: { offer?: OfferState } =
+    turn.offer === 'saved' || turn.offer === 'dismissed' ? { offer: turn.offer } : {};
+  return { ...tapirTurn(raw, reply), ...offer };
 }
 
 export const storedTurn = (turn: Turn) =>
-  turn.role === 'user' ? turn : { role: 'tapir', raw: turn.raw };
+  turn.role === 'user'
+    ? turn
+    : { role: 'tapir', raw: turn.raw, ...(turn.offer ? { offer: turn.offer } : {}) };
 
 export function storedForm(conversation: Conversation) {
   return { updatedAt: conversation.updatedAt, turns: conversation.turns.map(storedTurn) };

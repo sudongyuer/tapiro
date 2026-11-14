@@ -18,6 +18,7 @@ const tapir = (reply: AskReply, result: unknown = {}): Turn => ({
   role: 'tapir',
   raw: { tool: reply.kind === 'draft' ? 'draft_bounty' : reply.kind, result },
   reply,
+  memory: null,
 });
 const ASKED = tapir({ kind: 'clarify', question: '什么时候要？', choices: ['今晚'] });
 const ANSWERED = tapir({ kind: 'answer', text: '好' });

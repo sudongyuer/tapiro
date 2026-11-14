@@ -1,5 +1,10 @@
 import type { Belly, PantryWrite } from './belly';
-import type { AskService, ConsentStatus, PantryResult } from './consent';
+import {
+  APP_CONSENT_VERSION,
+  type AskService,
+  type ConsentStatus,
+  type PantryResult,
+} from './consent';
 
 export type FixtureConsent = 'none' | 'given' | 'newer' | 'bumped';
 export type FixtureFailPoint = 'load' | 'loadAgain' | 'record' | 'withdraw' | 'pantry';
@@ -85,7 +90,7 @@ export function createFixtureAskService({
   onCall: (name: string, args: unknown) => void;
 }): FixtureAskService {
   let status: ConsentStatus = {
-    currentVersion: consent === 'newer' ? 2 : 1,
+    currentVersion: consent === 'newer' ? APP_CONSENT_VERSION + 1 : APP_CONSENT_VERSION,
     given: consent === 'given',
     acceptedAt: consent === 'given' ? FIXTURE_ACCEPTED_AT : null,
     belly,
@@ -106,7 +111,7 @@ export function createFixtureAskService({
       onCall('record', { version });
       await wait();
       if (failsOnce('record')) return { ok: false, failure: 'failed' };
-      if (consent === 'bumped') status = { ...status, currentVersion: 2 };
+      if (consent === 'bumped') status = { ...status, currentVersion: APP_CONSENT_VERSION + 1 };
       if (version !== status.currentVersion) return { ok: false, failure: 'needsUpdate' };
       if (!status.given) status = { ...status, given: true, acceptedAt: new Date().toISOString() };
       return { ok: true, status };

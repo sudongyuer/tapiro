@@ -1,6 +1,7 @@
 import { expect } from 'bun:test';
 
 import { type AiDraftDeps, type BeginResult, type DiscardRow, type MeterRow } from './handler.ts';
+import type { MemoryForCall } from './memory.ts';
 import { fakeProvider, type AiProvider, type ProviderCall } from './provider.ts';
 
 export const USER = '00000000-0000-4000-8000-00000000000a';
@@ -11,11 +12,25 @@ export type Recorded = {
   finishes: MeterRow[];
   discards: DiscardRow[];
   aborts: string[];
+  memoryReads: string[];
   provider: ProviderCall[];
 };
 
-export function setup(overrides: Partial<AiDraftDeps> = {}, begin: BeginResult = okBegin(500)) {
-  const recorded: Recorded = { begins: [], finishes: [], discards: [], aborts: [], provider: [] };
+export const NO_MEMORY: MemoryForCall = { enabled: true, full: false, entries: [] };
+
+export function setup(
+  overrides: Partial<AiDraftDeps> = {},
+  begin: BeginResult = okBegin(500),
+  memory: MemoryForCall | (() => Promise<MemoryForCall>) = NO_MEMORY,
+) {
+  const recorded: Recorded = {
+    begins: [],
+    finishes: [],
+    discards: [],
+    aborts: [],
+    memoryReads: [],
+    provider: [],
+  };
   const deps: AiDraftDeps = {
     userIdFromToken: async (token) => (token === 'valid' ? USER : null),
     store: {
@@ -32,6 +47,10 @@ export function setup(overrides: Partial<AiDraftDeps> = {}, begin: BeginResult =
       },
       async abort(_userId, lease) {
         recorded.aborts.push(lease);
+      },
+      async memory(userId) {
+        recorded.memoryReads.push(userId);
+        return typeof memory === 'function' ? memory() : memory;
       },
     },
     provider: {

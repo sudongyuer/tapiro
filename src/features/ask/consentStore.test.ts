@@ -1,11 +1,20 @@
 import { describe, expect, test } from 'bun:test';
 
-import type { AskService, ConsentStatus, WriteResult } from './consent';
+import {
+  APP_CONSENT_VERSION,
+  type AskService,
+  type ConsentStatus,
+  type WriteResult,
+} from './consent';
 import { consentAccess, createConsentStore } from './consentStore';
 
 const AT = '2026-11-12T03:00:00.000Z';
-const NOT_GIVEN: ConsentStatus = { currentVersion: 1, given: false, acceptedAt: null };
-const GIVEN: ConsentStatus = { currentVersion: 1, given: true, acceptedAt: AT };
+const NOT_GIVEN: ConsentStatus = {
+  currentVersion: APP_CONSENT_VERSION,
+  given: false,
+  acceptedAt: null,
+};
+const GIVEN: ConsentStatus = { currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: AT };
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -70,13 +79,13 @@ describe('consent store', () => {
   });
 
   test('records the version compiled into the app, not the server one', async () => {
-    const h = harness({ currentVersion: 2, given: false, acceptedAt: null });
+    const h = harness({ currentVersion: APP_CONSENT_VERSION + 1, given: false, acceptedAt: null });
     await h.startReady();
     const recorded = h.store.record();
     expect(h.store.getSnapshot().writing).toBe('record');
     h.writes[0].resolve({ ok: true, status: GIVEN });
     expect(await recorded).toBe(true);
-    expect(h.calls).toEqual(['status', 'record:1']);
+    expect(h.calls).toEqual(['status', `record:${APP_CONSENT_VERSION}`]);
     expect(consentAccess(h.store.getSnapshot())).toBe('given');
   });
 
@@ -176,7 +185,7 @@ describe('consent store', () => {
     await h.tick();
     h.writes[0].resolve({ ok: false, failure: 'failed' });
     await recorded;
-    expect(h.calls).toEqual(['status', 'record:1', 'status']);
+    expect(h.calls).toEqual(['status', `record:${APP_CONSENT_VERSION}`, 'status']);
     h.reads[1].resolve(NOT_GIVEN);
     await h.tick();
     expect(h.store.getSnapshot().status.status).toBe('ready');

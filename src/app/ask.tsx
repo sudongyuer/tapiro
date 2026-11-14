@@ -114,6 +114,7 @@ export default function Ask() {
           },
           onRetry: () => void askSession.retry(openConsent),
           onManual: () => leaveFor(false),
+          onEditMemory: (id) => router.push({ pathname: '/ask-memory-entry', params: { id } }),
         }}
         hungry={belly.hungry}
       />

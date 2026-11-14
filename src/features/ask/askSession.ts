@@ -5,7 +5,9 @@ import {
   requestText,
   storedForm,
   storedTurn,
+  tapirTurn,
   type Conversation,
+  type OfferState,
   type Turn,
   type UserTurn,
 } from './conversation';
@@ -120,7 +122,7 @@ export function createAskSession(deps: {
     if (!raw || !reply) return stop({ failed: { send, reason: 'unreadable' } });
     if (forgetsOf(userId) !== forgetsAtSend) return;
 
-    const tapir = { role: 'tapir' as const, raw, reply };
+    const tapir = tapirTurn(raw, reply);
     const late = !current();
     const base = late ? laterTurns(userId, turns) : turns;
     const next = [...base, send.user, tapir];
@@ -136,6 +138,25 @@ export function createAskSession(deps: {
       return;
     }
     set({ sending: null, turns: next, text });
+  }
+
+  // Applies to the live turns when they are on screen, and to the kept conversation either way, so a mark made while the
+  // sheet reread its turns still lands.
+  function rewrite(userId: string, change: (turns: Turn[]) => Turn[] | null) {
+    if (state.userId === userId) {
+      const live = change(state.turns);
+      if (live) {
+        save(userId, live);
+        set({ turns: live });
+        return;
+      }
+    }
+    const saved = keptConversation(deps.storage.readConversation(userId), now());
+    const turns = saved ? change(saved.turns) : null;
+    if (!saved || !turns) return;
+    const conversation = { ...saved, turns };
+    deps.storage.writeConversation(userId, storedForm(conversation));
+    if (state.userId === userId && state.resume) set({ resume: conversation });
   }
 
   // A reply that lands after the sheet reopened joins whatever was saved since, when that grew from the same turns.
@@ -217,14 +238,37 @@ export function createAskSession(deps: {
       const turns: Turn[] = [
         ...state.turns,
         { role: 'user', text: item.summary, via: 'choice' },
-        {
-          role: 'tapir',
-          raw: { tool: 'draft_bounty', result: item.raw },
-          reply: { kind: 'draft', draft: item.draft },
-        },
+        tapirTurn({ tool: 'draft_bounty', result: item.raw }, { kind: 'draft', draft: item.draft }),
       ];
       save(userId, turns);
       set({ turns });
+    },
+    settleOffer(userId: string, since: number, turn: Turn, offer: OfferState) {
+      if (forgetsOf(userId) !== since) return;
+      const same = JSON.stringify(storedTurn(turn));
+      const mark = (turns: Turn[]) => {
+        const index = turns.findIndex((each) => JSON.stringify(storedTurn(each)) === same);
+        return index < 0
+          ? null
+          : turns.map((each, at) =>
+              at === index && each.role === 'tapir' ? { ...each, offer } : each,
+            );
+      };
+      rewrite(userId, mark);
+    },
+    dropMemoryUse(userId: string, ids: string[] | 'all') {
+      const gone = (id: string) => ids === 'all' || ids.includes(id);
+      rewrite(userId, (turns) => {
+        let changed = false;
+        const next = turns.map((each): Turn => {
+          if (each.role !== 'tapir' || !each.memory?.used.some((use) => gone(use.id))) return each;
+          changed = true;
+          const used = each.memory.used.filter((use) => !gone(use.id));
+          const raw = { ...each.raw, memory: { ...(each.raw.memory as object), used } };
+          return { ...each, raw, memory: { ...each.memory, used } };
+        });
+        return changed ? next : null;
+      });
     },
     forget(userId: string) {
       forgets.set(userId, forgetsOf(userId) + 1);
