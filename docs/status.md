@@ -112,9 +112,14 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      product bug. Fixed in `fix/verify-full-cases`: `bounty_post_form` ran out of its budget at load 10–12 in all three
      locales because the number pad covered the scroll swipe (it was not load), `bounty_applicants_worst`'s budget, and
      a stale paste in `bounty_post_place`. Open: 19 inputs that never arrived (taps at rest, sheet-dismiss swipes),
-     each on a Simulator 8–40 min after its boot and ahead of a lost AXe session; 13 of 14 passed on fresh boots. A
-     runner rule for it is not chosen yet. `chat_report_message`'s missed reason tap was measured (2026-11-13,
-     `fix/report-reason-tap`): 0 misses in 45 taps on the row, instant or held, so it is not the picker and the case
+     each on a Simulator 8–40 min after its boot and ahead of a lost AXe session; 13 of 14 passed on fresh boots. Runner
+     rule B (owner, 2026-11-15; `fix/runner-retry`, retro `2026-11-15-runner-retry`): any failed run reboots its
+     Simulator and retries once on another one; a pass on retry is reported `flaky` with the first run kept in
+     `first-attempt/`. Measured on the 15 cases that failed on 11-13, 4 rounds each in zh-Hans light (60 runs, three
+     Simulators, load median 11): before, 9 of 60 failed (all 8–36 min after boot, 7 on one Simulator); after, 5 first
+     runs failed, 4 passed on the retry and 1 failed twice (`ask_sheet_worst`, which also failed 2 of 4 before, once
+     at the same 「Parcel」 prompt step; open), for 150 s more wall-clock (42 min 16 s against 39 min 44 s).
+     `chat_report_message`'s missed reason tap was measured (2026-11-13, `fix/report-reason-tap`): 0 misses in 45 taps on the row, instant or held, so it is not the picker and the case
      is unchanged; two of its three misses fit the same aging-Simulator loss, one is unexplained.
 
 1. Plan partly built: 问小貘 (`docs/plans/2026-10-30-ask-tapir.md`, step 8), Tasks 1–7 built; 8–10 not started.
