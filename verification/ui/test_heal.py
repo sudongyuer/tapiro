@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import subprocess
 import tempfile
@@ -5,7 +7,7 @@ import threading
 import unittest
 from pathlib import Path
 
-from heal import RETRIED, Attempt, Outcome, Scheduler, work
+from heal import FLAKY, RETRIED, Attempt, Outcome, Scheduler, summarize, work
 from latency import line, summary, timed, timeouts
 
 A = ('Tapiro Verify', 'udid-a', 'ios')
@@ -17,34 +19,37 @@ LOST = Attempt('fail', 'driver.AxeError: axe describe-ui failed: Error: Timed ou
 PASS = Attempt('pass', 'PASS: shown')
 
 
+FAILED = Attempt('fail', "AssertionError: 'sheet-dismiss' still shown after 10 s")
+
+
 class FakeReport:
     def __init__(self):
-        self.attempts, self.stalls, self.outcomes = [], [], []
+        self.attempts, self.reboots, self.outcomes = [], [], []
         self.guard = threading.Lock()
 
     def attempted(self, name, job, attempt):
         with self.guard:
             self.attempts.append((name, job, attempt.status))
 
-    def stalled(self, name, job, attempt, retrying):
+    def rebooting(self, name, job, attempt, retrying):
         with self.guard:
-            self.stalls.append((name, job, retrying))
+            self.reboots.append((name, job, retrying))
 
     def finished(self, outcome):
         with self.guard:
             self.outcomes.append(outcome)
 
 
-def drive(devices, jobs, script):
+def drive(devices, jobs, script, halt=None):
     calls, healed = [], []
     guard = threading.Lock()
 
-    def attempt(device, job):
+    def attempt(device, job, retry):
         with guard:
-            calls.append((device[0], job))
+            calls.append((device[0], job, retry))
             return script(device[0], job, len(calls))
 
-    report, halt = FakeReport(), threading.Event()
+    report, halt = FakeReport(), halt or threading.Event()
     scheduler = Scheduler(jobs, [d[0] for d in devices])
     threads = [threading.Thread(target=work, args=(scheduler, d, attempt, healed.append, report, halt)) for d in devices]
     for thread in threads:
@@ -52,59 +57,103 @@ def drive(devices, jobs, script):
     for thread in threads:
         thread.join(timeout=10)
         assert not thread.is_alive(), 'worker did not finish'
+    report.outcomes += scheduler.unretried()
     return calls, healed, report
 
 
+def first_fails(failure):
+    return lambda name, job, n: failure if n == 1 else PASS
+
+
 class Heal(unittest.TestCase):
-    def test_two_timeouts_reboot_and_retry_on_another_device(self):
-        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: STALL if n == 1 else PASS)
+    def test_a_failed_run_reboots_and_retries_on_another_device(self):
+        calls, healed, report = drive([A, B], ['case'], first_fails(FAILED))
+        (first, _, retry1), (second, _, retry2) = calls
+        self.assertNotEqual(first, second)
+        self.assertEqual((retry1, retry2), (False, True))
+        self.assertEqual([d[0] for d in healed], [first])
+        self.assertEqual(report.reboots, [(first, 'case', True)])
+        [outcome] = report.outcomes
+        self.assertEqual((outcome.status, outcome.first_device, outcome.retried_on, outcome.device),
+                         (FLAKY, first, second, second))
+        self.assertEqual(outcome.stalled_devices, [])
+
+    def test_a_stall_reboots_and_retries_on_another_device(self):
+        calls, healed, report = drive([A, B], ['case'], first_fails(STALL))
         first, second = calls[0][0], calls[1][0]
         self.assertNotEqual(first, second)
         self.assertEqual([d[0] for d in healed], [first])
-        self.assertEqual(report.stalls, [(first, 'case', True)])
         [outcome] = report.outcomes
-        self.assertEqual((outcome.stalled_device, outcome.retried_on, outcome.device), (first, second, second))
+        self.assertEqual((outcome.status, outcome.stalled_devices, outcome.retried_on), (FLAKY, [first], second))
 
     def test_a_lost_automation_session_reboots_and_retries_on_another_device(self):
-        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: LOST if n == 1 else PASS)
+        calls, healed, report = drive([A, B], ['case'], first_fails(LOST))
         first, second = calls[0][0], calls[1][0]
         self.assertNotEqual(first, second)
         self.assertEqual([d[0] for d in healed], [first])
         [outcome] = report.outcomes
-        self.assertEqual((outcome.status, outcome.stalled_device, outcome.retried_on), ('pass', first, second))
+        self.assertEqual((outcome.status, outcome.stalled_devices, outcome.retried_on), (FLAKY, [first], second))
         self.assertEqual(LOST.stall_reason, 'lost the AXe automation session')
 
-    def test_a_pass_on_retry_is_a_flagged_pass(self):
-        _, _, report = drive([A, B], ['case'], lambda name, job, n: STALL if n == 1 else PASS)
+    def test_a_single_timeout_failure_also_retries(self):
+        calls, healed, report = drive([A, B], ['case'], first_fails(SLOW))
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(len(healed), 1)
         [outcome] = report.outcomes
-        self.assertEqual(outcome.status, 'pass')
-        self.assertTrue(outcome.message.endswith(RETRIED))
-        self.assertEqual(outcome.first, STALL)
+        self.assertEqual(outcome.status, FLAKY)
 
-    def test_a_second_stall_on_the_retry_fails_naming_both(self):
-        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: STALL)
+    def test_a_pass_on_retry_is_flaky_and_keeps_the_first_failure(self):
+        calls, _, report = drive([A, B], ['case'], first_fails(FAILED))
+        [outcome] = report.outcomes
+        self.assertEqual(outcome.status, FLAKY)
+        self.assertIn(RETRIED.format(device=calls[0][0]), outcome.message)
+        self.assertIn(FAILED.message, outcome.message)
+        self.assertEqual(outcome.first, FAILED)
+
+    def test_a_pass_is_not_retried_and_does_not_reboot(self):
+        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: PASS)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual((healed, report.reboots), ([], []))
+        [outcome] = report.outcomes
+        self.assertEqual((outcome.status, outcome.retried_on, outcome.first), ('pass', None, None))
+
+    def test_a_second_failure_fails_naming_both_devices(self):
+        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: FAILED)
         self.assertEqual(len(calls), 2)
         [outcome] = report.outcomes
         self.assertEqual(outcome.status, 'fail')
         self.assertIn(A[0], outcome.message)
         self.assertIn(B[0], outcome.message)
-        self.assertEqual(sorted(outcome.stalled_devices), sorted([A[0], B[0]]))
+        self.assertEqual(outcome.first, FAILED)
         self.assertEqual(sorted(d[0] for d in healed), sorted([A[0], B[0]]))
+        self.assertEqual([r[2] for r in report.reboots], [True, False])
 
-    def test_a_single_timeout_does_not_reboot(self):
-        calls, healed, report = drive([A, B], ['case'], lambda name, job, n: SLOW)
-        self.assertEqual(len(calls), 1)
-        self.assertEqual(healed, [])
+    def test_a_retry_that_passes_with_a_stall_is_flaky_and_names_both(self):
+        _, healed, report = drive([A, B], ['case'], lambda name, job, n: STALL if n == 1 else Attempt('pass', 'PASS', 2))
         [outcome] = report.outcomes
-        self.assertEqual((outcome.status, outcome.retried_on, outcome.stalled_devices), ('fail', None, []))
-        self.assertNotIn(RETRIED, outcome.message)
+        self.assertEqual(outcome.status, FLAKY)
+        self.assertEqual(sorted(outcome.stalled_devices), sorted([A[0], B[0]]))
+        self.assertEqual(len(healed), 2)
+
+    def test_a_second_stall_fails_naming_both(self):
+        _, _, report = drive([A, B], ['case'], lambda name, job, n: STALL)
+        [outcome] = report.outcomes
+        self.assertEqual(outcome.status, 'fail')
+        self.assertEqual(sorted(outcome.stalled_devices), sorted([A[0], B[0]]))
 
     def test_one_device_retries_on_itself_after_the_reboot(self):
-        calls, healed, report = drive([A], ['case'], lambda name, job, n: STALL if n == 1 else PASS)
+        calls, healed, report = drive([A], ['case'], first_fails(FAILED))
         self.assertEqual([c[0] for c in calls], [A[0], A[0]])
         self.assertEqual(healed, [A])
         [outcome] = report.outcomes
-        self.assertEqual((outcome.status, outcome.stalled_device, outcome.retried_on), ('pass', A[0], A[0]))
+        self.assertEqual((outcome.status, outcome.first_device, outcome.retried_on), (FLAKY, A[0], A[0]))
+
+    def test_one_device_failing_twice_fails(self):
+        calls, healed, report = drive([A], ['case'], lambda name, job, n: FAILED)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(healed, [A, A])
+        [outcome] = report.outcomes
+        self.assertEqual(outcome.status, 'fail')
 
     def test_a_stall_in_a_passing_run_reboots_without_a_retry(self):
         calls, healed, report = drive([A, B], ['case'], lambda name, job, n: Attempt('pass', 'PASS', 2))
@@ -112,39 +161,108 @@ class Heal(unittest.TestCase):
         self.assertEqual(len(healed), 1)
         [outcome] = report.outcomes
         self.assertEqual((outcome.status, outcome.retried_on), ('pass', None))
-        self.assertEqual(outcome.stalled_device, calls[0][0])
+        self.assertEqual(outcome.stalled_devices, [calls[0][0]])
 
-    def test_every_job_finishes_once_around_a_retry(self):
+    def test_every_job_finishes_once_around_retries(self):
         jobs = [f'case{i}' for i in range(6)]
         seen = set()
 
         def script(name, job, n):
             first = job not in seen
             seen.add(job)
-            return STALL if job == 'case2' and first else PASS
+            return FAILED if job in ('case1', 'case4') and first else PASS
 
-        calls, _, report = drive([A, B], jobs, script)
-        self.assertEqual(len(calls), 7)
+        calls, _, report = drive([A, B, ('Tapiro Verify 3', 'udid-c', 'ios')], jobs, script)
+        self.assertEqual(len(calls), 8)
         self.assertEqual(sorted(o.job for o in report.outcomes), jobs)
-        self.assertTrue(all(o.status == 'pass' for o in report.outcomes))
+        self.assertEqual(sorted(o.job for o in report.outcomes if o.status == FLAKY), ['case1', 'case4'])
+
+    def test_a_retry_left_by_a_stopped_run_is_reported_as_a_failure(self):
+        halt = threading.Event()
+
+        def script(name, job, n):
+            halt.set()
+            return FAILED
+
+        calls, healed, report = drive([A, B], ['case'], script, halt)
+        self.assertEqual(len(calls), 1)
+        [outcome] = report.outcomes
+        self.assertEqual((outcome.status, outcome.retried_on, outcome.first), ('fail', None, FAILED))
+        self.assertIn('not retried', outcome.message)
+        self.assertEqual(healed, [])
+
+
+def timing(status, case='case'):
+    return (1.0, status, 'zh-Hans', 'light', case)
+
+
+class Summary(unittest.TestCase):
+    def test_flaky_runs_do_not_fail_and_are_listed(self):
+        failures, lines = summarize([timing('pass'), timing(FLAKY, 'chat_list')], ['Tapiro Verify (x, failed)'], None)
+        self.assertEqual(failures, 0)
+        self.assertTrue(any(line.startswith('flaky: 1 runs') for line in lines))
+        self.assertIn('  zh-Hans light chat_list', lines)
+        self.assertIn('  Tapiro Verify (x, failed)', lines)
+
+    def test_a_failure_fails(self):
+        self.assertEqual(summarize([timing('pass'), timing('fail')], [], None)[0], 1)
+
+    def test_a_green_run_prints_nothing_extra(self):
+        self.assertEqual(summarize([timing('pass')], [], None), (0, []))
+
+    def test_a_breaker_stop_fails(self):
+        failures, lines = summarize([timing('pass')], [], 'axe tap')
+        self.assertEqual(failures, 1)
+        self.assertTrue(lines[-1].startswith('stopped: 3 consecutive axe tap'))
+
+
+JOB = ('light', 'home_one_card', None, 'zh-Hans', [], 180)
+
+
+def result_for(tmp, outcome):
+    from run import Report
+    out = Path(tmp) / 'zh-Hans' / 'light' / 'home_one_card'
+    out.mkdir(parents=True, exist_ok=True)
+    meta = {'sha': 'abc', 'dirty': False, 'xcode': 'Xcode 26', 'app': 'Tapiro.app', 'devices': {A[0]: A, B[0]: B}}
+    printed = io.StringIO()
+    with contextlib.redirect_stdout(printed):
+        Report(Path(tmp), meta, True, threading.Event()).finished(outcome)
+    return json.loads((out / 'result.json').read_text()), printed.getvalue()
 
 
 class ResultFile(unittest.TestCase):
-    def test_a_retried_run_records_both_devices(self):
-        from run import Report
+    def test_a_pass_on_retry_is_labelled_flaky_with_both_attempts(self):
         with tempfile.TemporaryDirectory() as tmp:
-            job = ('light', 'home_one_card', None, 'zh-Hans', [], 180)
-            out = Path(tmp) / 'zh-Hans' / 'light' / 'home_one_card'
-            out.mkdir(parents=True)
-            meta = {'sha': 'abc', 'dirty': False, 'xcode': 'Xcode 26', 'app': 'Tapiro.app',
-                    'devices': {A[0]: A, B[0]: B}}
-            report = Report(Path(tmp), meta, True, threading.Event())
-            report.finished(Outcome(job, B[0], 'pass', f'PASS {RETRIED}', 30.0,
-                                    stalled_devices=[A[0]], retried_on=B[0], first=STALL))
-            result = json.loads((out / 'result.json').read_text())
-            self.assertEqual((result['stalledDevice'], result['retriedOn']), (A[0], B[0]))
-            self.assertEqual(result['device']['name'], B[0])
-            self.assertTrue((out / 'stalled-log.txt').exists())
+            result, printed = result_for(tmp, Outcome(JOB, B[0], FLAKY, f'PASS {RETRIED.format(device=A[0])}', 30.0,
+                                                      retried_on=B[0], first=FAILED, first_device=A[0]))
+            self.assertEqual(result['status'], 'flaky')
+            self.assertEqual((result['firstAttempt']['device'], result['firstAttempt']['status']), (A[0], 'fail'))
+            self.assertEqual(result['firstAttempt']['message'], FAILED.message)
+            self.assertEqual(result['firstAttempt']['evidence'], 'first-attempt')
+            self.assertEqual((result['retriedOn'], result['device']['name']), (B[0], B[0]))
+            self.assertTrue(printed.startswith('FLAKY'))
+
+    def test_a_clean_pass_has_no_first_attempt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result, printed = result_for(tmp, Outcome(JOB, A[0], 'pass', 'PASS: shown', 10.0))
+            self.assertEqual((result['status'], result['firstAttempt'], result['retriedOn']), ('pass', None, None))
+            self.assertTrue(printed.startswith('PASS'))
+
+    def test_a_retry_keeps_the_first_run_files(self):
+        from heal import FIRST_ATTEMPT
+        from run import clear_output
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / 'case'
+            clear_output(out, keep_first=False)
+            for name in ('failure.png', 'run.mp4', 'log.txt'):
+                (out / name).write_text(name)
+            clear_output(out, keep_first=True)
+            self.assertEqual(sorted(p.name for p in out.iterdir()), [FIRST_ATTEMPT])
+            self.assertEqual(sorted(p.name for p in (out / FIRST_ATTEMPT).iterdir()),
+                             ['failure.png', 'log.txt', 'run.mp4'])
+            (out / 'run.mp4').write_text('second')
+            clear_output(out, keep_first=False)
+            self.assertEqual(list(out.iterdir()), [])
 
 
 class Latency(unittest.TestCase):
