@@ -432,4 +432,5 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-15 | 问小貘 errors + 记得 (Task 8) | 0                  | 2             | ~1 h (Simulator lock held elsewhere)          | 0                       | 0                     |
 | 2026-11-15 | 问小貘 review leftovers       | 3 (Task 10 review) | 0             | ~0                                            | 0                       | 0                     |
 | 2026-11-15 | 问小貘 decisions              | 0                  | 0             | ~0                                            | 0                       | 0                     |
+| 2026-11-16 | local refund trace            | 0                  | 0             | ~0                                            | 0                       | 0                     |
 | 2026-11-16 | session lifetimes             | 1 (ride reminders) | 0             | ~0                                            | 0                       | 0                     |
