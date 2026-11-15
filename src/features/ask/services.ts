@@ -177,19 +177,14 @@ export const voice = createVoice({
   consent: consentStore,
 });
 
-userCleanups.register((userId) => {
+function forgetAsk(userId: string) {
   voice.forget();
   askSession.forget(userId);
   translations.forget(userId);
   pantryStore.clear();
   consentStore.clear();
   memoryStore.forget();
-});
+}
 
-sessionEnds.register((userId) => {
-  voice.forget();
-  askSession.forget(userId);
-  translations.forget(userId);
-  pantryStore.clear();
-  memoryStore.forget();
-});
+userCleanups.register(forgetAsk);
+sessionEnds.register(forgetAsk);
