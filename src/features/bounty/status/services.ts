@@ -1,6 +1,7 @@
 import { Settings } from 'react-native';
 
 import { deviceCurrency } from '@/lib/deviceCurrency';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -30,3 +31,4 @@ export const statusService: StatusService =
 export const issueDrafts = createNoteDrafts();
 
 userCleanups.register(() => issueDrafts.clear());
+sessionEnds.register(() => issueDrafts.clear());

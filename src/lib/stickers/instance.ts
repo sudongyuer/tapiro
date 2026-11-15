@@ -1,3 +1,4 @@
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 
@@ -14,3 +15,5 @@ export const stickerStore = createStickerStore(
 );
 
 export const earnFixtureSticker = fixture?.earn;
+
+sessionEnds.register(() => stickerStore.clear());

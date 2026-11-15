@@ -4,6 +4,7 @@ import { Settings } from 'react-native';
 import { addBlockFixturePeople } from '@/features/block';
 import { deviceCurrency } from '@/lib/deviceCurrency';
 import { notices } from '@/lib/notifications';
+import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
 import { uiVerifyPurchases } from '@/lib/uiVerifyPurchases';
@@ -14,7 +15,7 @@ import { createRecentRoutes } from './create/recentRoutes';
 import { fixtureRecentRoutes, fixtureRideDraft } from './fixtureCreate';
 import { createFixtureRideService, fixtureRideOptions } from './fixtureRideService';
 import { createSupabaseRideDetailService } from './detail/detailService';
-import { applyNotes, detailsDrafts, splitDrafts } from './detail/drafts';
+import { applyNotes, detailsDrafts, disputeNotes, splitDrafts } from './detail/drafts';
 import { fixtureReceiptImage, readReceiptBytes } from './detail/receiptDevice';
 import {
   createFixtureRideDetailService,
@@ -76,10 +77,15 @@ export const rideDraftStore = createRideDraftStore(Settings, randomUUID, deviceC
 
 export const recentRoutes = createRecentRoutes(Settings);
 
-userCleanups.register((userId) => {
+function forgetSessionDrafts() {
   applyNotes.reset();
   detailsDrafts.reset();
   splitDrafts.reset();
+  disputeNotes.reset();
+}
+
+userCleanups.register((userId) => {
+  forgetSessionDrafts();
   rideDraftStore.clear(userId);
   recentRoutes.clear(userId);
   void rideReminders.clear();
@@ -115,6 +121,12 @@ export const rideCache = {
 };
 
 userCleanups.register(() => shown.clear());
+
+sessionEnds.register(() => {
+  forgetSessionDrafts();
+  shown.clear();
+  void rideReminders.clear();
+});
 
 let closeSheet: (() => void) | null = null;
 
