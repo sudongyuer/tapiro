@@ -5,6 +5,6 @@
     "NSPhotoLibraryAddUsageDescription": "Simpan kod QR terima penerima ke Foto supaya anda boleh mengimbasnya dalam aplikasi e-dompet. Tapiro hanya menambah imej ini.",
     "NSLocationWhenInUseUsageDescription": "Susun ganjaran berhampiran mengikut jarak, atau guna lokasi anda sekarang sebagai tempat ganjaran. Hanya digunakan semasa anda menggunakan Tapiro.",
     "NSMicrophoneUsageDescription": "Merakam suara anda semasa bercakap dengan Tapir, untuk menukarnya menjadi teks dalam ruangan. Rakaman bermula hanya apabila anda ketik mikrofon dan tamat apabila anda ketik henti.",
-    "NSSpeechRecognitionUsageDescription": "Menukar apa yang anda sebut kepada Tapir menjadi teks. Telefon anda mengecamnya dahulu; jika tidak dapat, dan anda telah bersetuju, rakaman dihantar ke Alibaba Cloud (Singapura)."
+    "NSSpeechRecognitionUsageDescription": "Menukar apa yang anda sebut kepada Tapir menjadi teks. Telefon anda mengecamnya dahulu; jika tidak dapat, dan anda telah bersetuju, rakaman dihantar ke Alibaba Cloud Model Studio (Singapura)."
   }
 }

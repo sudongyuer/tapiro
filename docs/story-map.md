@@ -61,10 +61,11 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id              | 行为                                         | 覆盖                                                             |
-| -------------------- | -------------------------------------------- | ---------------------------------------------------------------- |
-| welcome.legal.opens  | 条款行里的两个链接分别打开用户协议和隐私政策 | ui:welcome_legal, unit:src/features/account/linkSegments.test.ts |
-| welcome.legal.closes | 关闭按钮和下滑都回到同一个登录面板           | ui:welcome_legal                                                 |
+| 验收 id               | 行为                                                       | 覆盖                                                             |
+| --------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| welcome.legal.opens   | 条款行里的两个链接分别打开用户协议和隐私政策               | ui:welcome_legal, unit:src/features/account/linkSegments.test.ts |
+| welcome.legal.closes  | 关闭按钮和下滑都回到同一个登录面板                         | ui:welcome_legal                                                 |
+| welcome.legal.contact | 隐私政策写真实的联系邮箱，凡提到阿里云都用完整的服务商名称 | unit:src/lib/i18n/resources.test.ts                              |
 
 ### account.sign-in 用 Apple 或 Google 登录
 
@@ -935,7 +936,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 
 | 验收 id             | 行为                                                                                                                                                    | 覆盖                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ask.voice.explain   | 第一次点麦克风先在半屏里出一张小卡，说明要用麦克风和语音识别、识别不了时发到阿里云（新加坡）；点「好」才弹系统框（143 A）                               | ui:ask_voice_device, unit:src/features/ask/voice.test.ts#the first tap explains before any system prompt; 好 asks, then listening starts, device: 真机上两个系统框的文案三种语言各看一遍                                                                                                                                                                      |
+| ask.voice.explain   | 第一次点麦克风先在半屏里出一张小卡，说明要用麦克风和语音识别、识别不了时发到阿里云百炼 Model Studio（新加坡）；点「好」才弹系统框（143 A）              | ui:ask_voice_device, unit:src/features/ask/voice.test.ts#the first tap explains before any system prompt; 好 asks, then listening starts, device: 真机上两个系统框的文案三种语言各看一遍                                                                                                                                                                      |
 | ask.voice.live      | 点一下开始听，麦克风变成红色「停」，字实时出现在输入框、接在已写的字后面；再点停，字留在输入框，要自己点发送（142 A）                                   | ui:ask_voice_device, unit:src/features/ask/voice.test.ts#on-device words fill the field live after what was typed, and nothing is sent, device: 真机上用中文、英文、马来文各说一句，字边说边出                                                                                                                                                                |
 | ask.voice.chain     | 先在手机上识别，依次试 SpeechTranscriber、DictationTranscriber、SFSpeechRecognizer（只在手机上）；没有语音识别权限或都不行时用云端；en-MY 按 en-US 识别 | unit:modules/tapiro-kit/tests/speech/main.swift#the chain tries SpeechTranscriber, then DictationTranscriber, then SFSpeechRecognizer, unit:modules/tapiro-kit/tests/speech/main.swift#en-MY maps to en-US, device: 真机上看三种语言各用了哪个引擎，以及只给麦克风、拒绝语音识别时走云端                                                                      |
 | ask.voice.cloud     | 手机上识别不了时照样录音（最长 60 秒），点停后先过同意页再把录音发到新加坡的云端，按用量扣小貘体力；转出的字填进输入框，不替用户发送                    | ui:ask_voice_cloud, unit:src/features/ask/voice.test.ts#a cloud recording asks for consent first, then its words fill the field and nothing else is sent, unit:supabase/functions/ai-draft/transcribe.test.ts, db:supabase/tests/ai_transcribe_task.test.sql, int:supabase/functions/tests/ai-draft.integration.ts, device: 真机上录满 60 秒自动停            |

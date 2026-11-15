@@ -49,7 +49,7 @@ export default {
   voice: {
     explainTitle: 'Talk to Tapir',
     explainBody:
-      'This uses the microphone and speech recognition. Your phone tries first; if it can’t, the recording goes to Alibaba Cloud (Singapore).',
+      'This uses the microphone and speech recognition. Your phone tries first; if it can’t, the recording goes to Alibaba Cloud Model Studio (Singapore).',
     explainOk: 'OK',
     blockedTitle: 'The microphone is off',
     blockedBody:

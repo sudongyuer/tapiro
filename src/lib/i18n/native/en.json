@@ -5,6 +5,6 @@
     "NSPhotoLibraryAddUsageDescription": "Save a payee's receive QR code to Photos so you can scan it from your wallet app. Tapiro only adds this one image.",
     "NSLocationWhenInUseUsageDescription": "Sort nearby bounties by how far they are, or use where you are now as a bounty's place. Used only while you use Tapiro.",
     "NSMicrophoneUsageDescription": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop.",
-    "NSSpeechRecognitionUsageDescription": "Turns what you say to Tapir into text. Your phone recognises it first; if it can’t, and you have agreed, the recording goes to Alibaba Cloud (Singapore)."
+    "NSSpeechRecognitionUsageDescription": "Turns what you say to Tapir into text. Your phone recognises it first; if it can’t, and you have agreed, the recording goes to Alibaba Cloud Model Studio (Singapore)."
   }
 }

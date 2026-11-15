@@ -46,7 +46,8 @@ export default {
   },
   voice: {
     explainTitle: '说话让小貘听',
-    explainBody: '要用麦克风和语音识别。先在手机上识别，不行再发到阿里云（新加坡）。',
+    explainBody:
+      '要用麦克风和语音识别。先在手机上识别，不行再发到阿里云百炼 Model Studio（新加坡）。',
     explainOk: '好',
     blockedTitle: '麦克风没打开',
     blockedBody: '在「设置」里允许 Tapiro 使用麦克风，就能说话让小貘听。你也可以打字。',
