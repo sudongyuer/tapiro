@@ -134,7 +134,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 ## Owner decisions pending
 
 - Waiting on the owner's review, not to be merged before it: #137 (the public privacy page, `docs/website-privacy`)
-  and the in-app privacy copy PR (`fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
+  and #141 (the in-app privacy copy, `fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
   deletion, 小貘记得 sent only with drafts and answers, location, no training per Alibaba Cloud's terms, one provider
   name everywhere).
 - Answered 2026-11-15: on-device Foundation Models A (not now; all 问小貘 calls are cloud), Jev A (not adopted;
