@@ -1,3 +1,4 @@
+import { sessionEnds } from '@/lib/sessionEnds';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
 
@@ -9,3 +10,4 @@ export const noteDrafts = createNoteDrafts(
 );
 
 userCleanups.register(() => noteDrafts.clear());
+sessionEnds.register(() => noteDrafts.clear());
