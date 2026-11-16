@@ -5,6 +5,7 @@ import {
   foregroundStyle,
   monospacedDigit,
   scrollDismissesKeyboard,
+  scrollEdgeEffectStyle,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, useIsFocused } from 'expo-router';
@@ -119,6 +120,21 @@ function PostFormBody({
     onNext();
   }
 
+  const draftFooter = (
+    <Text modifiers={[accessibilityIdentifier('bounty-post-draft-footer')]}>
+      {t('bounty.post.form.draftFooter')}
+    </Text>
+  );
+  const descriptionRows = (
+    <DescriptionRows
+      description={draft.description}
+      field={description}
+      placeholder={copy.description}
+      onBlur={onBlur}
+      onEdit={edit}
+    />
+  );
+
   return (
     <Host style={styles.host} testID="bounty-post-form">
       <Stack.Toolbar placement="right">
@@ -131,7 +147,13 @@ function PostFormBody({
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
       <FillGlowContext.Provider value={glow}>
-        <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
+        <Form
+          modifiers={[
+            tint(color('--color-accent')),
+            scrollDismissesKeyboard('immediately'),
+            scrollEdgeEffectStyle('soft', 'top'),
+          ]}
+        >
           <FormNotice notice={notice} currency={draft.currency} />
           {fill.shown ? <AiFillSection fill={fill.shown.fill} onUndo={fill.undo} /> : null}
           <PostLiveCard draft={draft} onSwap={(art) => edit({ art })} />
@@ -144,6 +166,7 @@ function PostFormBody({
                 placeholder={copy.title}
                 onFocusChange={onBlur}
                 testID="bounty-post-title"
+                modifiers={[accessibilityLabel(t('bounty.post.form.titleLabel'))]}
               />
               {codePoints(draft.title) >= TITLE_COUNT_FROM ? (
                 <Text
@@ -183,29 +206,30 @@ function PostFormBody({
           />
           <Section
             header={<Text>{t('bounty.post.form.detailsHeader')}</Text>}
-            footer={<Text>{t('bounty.post.form.draftFooter')}</Text>}
+            footer={draft.place ? undefined : draftFooter}
           >
             <TimeRows time={draft.time} category={draft.category} label={copy.when} onEdit={edit} />
-            <DescriptionRows
-              description={draft.description}
-              field={description}
-              placeholder={copy.description}
-              onBlur={onBlur}
-              onEdit={edit}
-            />
-            {draft.place === null ? <AddPlaceRow label={copy.place} onPick={pickPlace} /> : null}
+            {draft.place ? null : (
+              <>
+                <AddPlaceRow label={copy.place} onPick={pickPlace} />
+                {descriptionRows}
+              </>
+            )}
           </Section>
           {draft.place ? (
-            <PlaceSections
-              heading={copy.place}
-              place={draft.place}
-              label={place.label}
-              address={place.address}
-              focusLabel={place.focusLabel}
-              onPick={pickPlace}
-              onBlur={onBlur}
-              onRemove={place.remove}
-            />
+            <>
+              <PlaceSections
+                heading={copy.place}
+                place={draft.place}
+                label={place.label}
+                address={place.address}
+                focusLabel={place.focusLabel}
+                onPick={pickPlace}
+                onBlur={onBlur}
+                onRemove={place.remove}
+              />
+              <Section footer={draftFooter}>{descriptionRows}</Section>
+            </>
           ) : null}
           <ClearSection userId={userId} empty={draftStore.isEmpty(draft)} onCleared={onCleared} />
         </Form>

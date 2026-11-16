@@ -1,15 +1,16 @@
 """Hand art on the live card (86A, 94A, 152A): through 直接写 with an empty title the card shows the 其他 drawing; half a
 second after typing "parcel" the card's art reads 配图：快递箱 and the field stays where it was (the card has a fixed
-height); tapping the art swaps it for the next drawing (the milk-tea cup), and publishing sends that art id with the
+height); the 56 pt drawing carries the swap badge on its corner (152A, accent pixels); tapping the art swaps it for the next drawing (the milk-tea cup), and publishing sends that art id with the
 bounty. The landing on the new home card is checked on a device."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import pick_category, publish_and_close, published_args, reach_confirm, typed, open_post  # noqa: E402
 from driver import UI, assert_touch_target  # noqa: E402
+from post_layout import assert_swap_badge  # noqa: E402
 
 DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'src/lib/handArt/', 'assets/hand-art/',
-        'src/ui/TaskCard.tsx', 'verification/ui/bounty.py', 'src/features/place/']
+        'src/ui/TaskCard.tsx', 'verification/ui/bounty.py', 'verification/ui/post_layout.py', 'src/features/place/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-uiVerifyPostCost', 'free']
 ART = 'bounty-post-live-art'
@@ -38,6 +39,7 @@ shot = ui.snap('01-parcel')
 drawn = shot.count(art['frame'], lambda rgb: max(rgb) - min(rgb) > 40)
 print(f'art pixels: {drawn}')
 assert drawn > COLOURFUL_MIN, f'the art area draws nothing ({drawn} colourful pixels)'
+assert_swap_badge(ui, shot, art)
 
 ui.tap(ART)
 wait_art(ui, 'tea')

@@ -1,5 +1,6 @@
 import { HStack, type TextFieldRef } from '@expo/ui/swift-ui';
 import {
+  alignmentGuide,
   contentShape,
   frame,
   listRowInsets,
@@ -14,9 +15,13 @@ import { vars } from '@/ui/theme/tokens';
 export const ROW_INSETS = listRowInsets({
   top: vars['--space-1'],
   bottom: vars['--space-1'],
-  leading: vars['--space-4'],
-  trailing: vars['--space-4'],
+  leading: vars['--space-5'],
+  trailing: vars['--space-5'],
 });
+
+// SwiftUI starts a row's separator at the row's first Text; a row that leads with a field or a button would
+// get a hairline starting at a counter or a chip label.
+export const edgeSeparator = alignmentGuide('listRowSeparatorLeading', 0);
 
 export const fullRow = frame({
   maxWidth: Infinity,
@@ -44,6 +49,7 @@ export function FieldRow({
           field.current?.focus();
         }),
         ROW_INSETS,
+        edgeSeparator,
         ...modifiers,
       ]}
     >

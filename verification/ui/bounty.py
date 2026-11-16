@@ -87,11 +87,31 @@ def erase(ui, identifier):
 
 
 def pick_category(ui, slug):
-    picker = ui.element('bounty-post-category')['frame']
+    # The wanted name can already be on screen twice (the live card's kicker and the picker's own value), so
+    # `axe tap --label` is ambiguous; the menu counts as open once a type that was not on screen shows, and the
+    # option is the element with that name that is neither identified nor inside the picker.
+    name = ui.t(f'bounty.category.{slug}')
+    names = [ui.t(f'bounty.category.{other}') for other in CATEGORIES]
+    before = ui.settled(lambda items: by_id(items, 'bounty-post-category') and items, 'the type picker never settled')
+    picker = by_id(before, 'bounty-post-category')['frame']
+    shown = {i.get('AXLabel') for i in before}
+    probe = next(other for other in names if other not in shown)
+
+    def inside(f):
+        return picker['x'] <= f['x'] + f['width'] / 2 <= picker['x'] + picker['width'] and \
+            picker['y'] <= f['y'] + f['height'] / 2 <= picker['y'] + picker['height']
+
+    def option(items):
+        if not any(i.get('AXLabel') == probe for i in items):
+            return None
+        return next((i for i in items if i.get('AXLabel') == name and not i.get('AXUniqueId')
+                     and not inside(i['frame'])), None)
+
     ui.tap_point(picker['x'] + picker['width'] / 2, picker['y'] + picker['height'] / 2)
-    ui.tap_label(ui.t(f'bounty.category.{slug}'))
-    ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.post.form.categoryPlaceholder') for i in items),
-            'category placeholder still shown')
+    tap_centre(ui, ui.settled(option, f'the type menu does not offer {name}'))
+    ui.wait(lambda items: not any(i.get('AXLabel') == probe for i in items)
+            and (by_id(items, 'bounty-post-live-kicker') or {}).get('AXLabel') == name,
+            f'the live card does not read {name} after the menu closed')
 
 
 TITLE_TYPED, TITLE_SHOWN = 'Parcel', 'Parcel'
@@ -391,3 +411,4 @@ def assert_fill_hides_content(shot, element, behind, name):
     assert strips, f'{name} {f} leaves no fill beside its label'
     for strip in strips:
         assert_bar_hides_content(shot, strip, behind, name, tolerance=24)
+
