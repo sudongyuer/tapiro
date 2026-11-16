@@ -11,7 +11,10 @@ DEPS = [
     'src/app/(tabs)/_layout.tsx',
     'src/app/(tabs)/bounty/',
     'src/app/ask.tsx',
+    'src/ui/MascotStage',
+    'src/ui/stagePose.ts',
     'verification/ui/walk.py',
+    'verification/ui/stage.py',
 ]
 
 ARGS = ['-uiVerifyFixture', 'one', '-uiVerifySignedIn', 'onboarded']

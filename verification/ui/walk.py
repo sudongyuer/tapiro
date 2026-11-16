@@ -1,5 +1,6 @@
 """Shared walk for the worst-case home cases: accessory and badge on 拼车, then home stacked, fanned and scrolled."""
 from driver import accessory, by_id, reach_home
+from stage import assert_bubble_clear, assert_bubble_whole
 
 PAYEE = {'worst': 'Wan Nurul Aisyah', 'one': 'Jo'}
 AMOUNT = {'worst': '12,345.60', 'one': '0.50'}
@@ -26,7 +27,11 @@ def walk_home(ui, variant, steps=14):
     stage = by_id(ui.read(), 'home-stage-urgent').get('AXLabel') or ''
     say = ui.t('home.say.payNamed', name='').strip()
     assert stage.endswith(say), f'stage line {stage}'
-    ui.snap('01-stacked')
+    shot = ui.snap('01-stacked')
+    f = by_id(ui.read(), 'home-stage-urgent')['frame']
+    assert_bubble_clear(shot, f, 'urgent', ui.appearance, wraps=variant == 'worst')
+    if variant == 'worst':
+        assert_bubble_whole(ui, shot, f, 'urgent', stage)
 
     ui.tap('tab-ride')
     items = ui.wait(lambda items: accessory(items) and items, 'accessory missing on 拼车')
