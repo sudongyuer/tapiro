@@ -9,6 +9,7 @@ export type ReviewEntry = {
   title: string;
   detail: string | null;
   trailing: string | null;
+  trailingIsAction: boolean;
   label: string;
   target: ReviewTarget | null;
 };
@@ -45,7 +46,7 @@ function lines(pair: ReviewPair, over: boolean, canOpen: boolean, now: Date, t: 
   return pair.theyReviewed
     ? {
         title,
-        detail: `${t('reputation.entry.sealedTheirs', { name })} · ${days}`,
+        detail: `${t('reputation.entry.sealedTheirs', { name })}\u00a0· ${days}`,
         trailing: null,
       }
     : { title, detail: null, trailing: days };
@@ -60,6 +61,7 @@ export function reviewEntry(pair: ReviewPair, index: number, now: Date, t: TFunc
     title,
     detail,
     trailing,
+    trailingIsAction: pair.state === 'sealed' && trailing !== null,
     label: [title, detail, trailing].filter(Boolean).join(t('reputation.profile.listJoin')),
     target,
   };
@@ -72,15 +74,18 @@ const HOME_LINE: Record<Role, 'helpedYou' | 'helpedThem' | 'rode'> = {
   rider: 'rode',
 };
 
-const TITLE_SHOWN = 24;
+const NAME_SHOWN = 16;
 
-export function shortTitle(title: string) {
-  const letters = [...title];
-  return letters.length > TITLE_SHOWN ? `${letters.slice(0, TITLE_SHOWN).join('')}…` : title;
+export function shortName(name: string) {
+  const letters = [...name];
+  return letters.length > NAME_SHOWN ? `${letters.slice(0, NAME_SHOWN).join('')}…` : name;
 }
 
-export const pendingLine = (row: PendingReview, name: string, title: string, t: TFunction) =>
-  t(`reputation.home.${HOME_LINE[row.role]}`, { title, name });
+export const pendingWho = (row: PendingReview, name: string, t: TFunction) =>
+  t(`reputation.home.${HOME_LINE[row.role]}`, { name });
+
+export const pendingLabel = (row: PendingReview, name: string, t: TFunction) =>
+  `${row.title} · ${pendingWho(row, name, t)}`;
 
 export const stillOpen = (row: PendingReview, now: Date) =>
   Date.parse(row.closesAt) > now.getTime();

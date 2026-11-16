@@ -70,8 +70,8 @@ export default {
   },
   entry: {
     review: '评价 {{name}}',
-    daysLeft_one: '还剩 {{count}} 天',
-    daysLeft_other: '还剩 {{count}} 天',
+    daysLeft_one: '还\u2060剩\u00a0{{count}}\u00a0天',
+    daysLeft_other: '还\u2060剩\u00a0{{count}}\u00a0天',
     reviewed: '已评价',
     sealedMine: '等{{name}}评完一起公开',
     sealedTheirs: '{{name}}已经评价你了，你评完就能一起看到',
@@ -84,9 +84,9 @@ export default {
     stale: '没刷新成功 · 下面是上次加载的评价',
   },
   home: {
-    helpedYou: '{{title}} · {{name}}帮你办成了',
-    helpedThem: '{{title}} · 你帮{{name}}办成了',
-    rode: '{{title}} · 和{{name}}一起坐的车',
+    helpedYou: '{{name}}帮你办成了',
+    helpedThem: '你帮{{name}}办成了',
+    rode: '和{{name}}一起坐的车',
     ask: '这次怎么样？',
     action: '评价',
   },

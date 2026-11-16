@@ -72,8 +72,8 @@ const en: typeof zhHans = {
   },
   entry: {
     review: 'Review {{name}}',
-    daysLeft_one: '{{count}} day left',
-    daysLeft_other: '{{count}} days left',
+    daysLeft_one: '{{count}}\u00a0day\u00a0left',
+    daysLeft_other: '{{count}}\u00a0days\u00a0left',
     reviewed: 'Reviewed',
     sealedMine: 'Both reviews show once {{name}} reviews too',
     sealedTheirs: '{{name}} has reviewed you. Review them to see both',
@@ -86,9 +86,9 @@ const en: typeof zhHans = {
     stale: 'Couldn’t refresh · Showing the reviews from last time',
   },
   home: {
-    helpedYou: '{{title}} · {{name}} got it done for you',
-    helpedThem: '{{title}} · You got it done for {{name}}',
-    rode: '{{title}} · Rode with {{name}}',
+    helpedYou: '{{name}} got it done for you',
+    helpedThem: 'You got it done for {{name}}',
+    rode: 'Rode with {{name}}',
     ask: 'How did it go?',
     action: 'Review',
   },

@@ -37,8 +37,10 @@ export function ReviewDetails({
         disabled={disabled}
         onToggle={(chip) => onChange(toggleChip(draft, role, chip))}
       />
+      {/* An empty multiline input reads its label and then its placeholder (RCTUITextView accessibilityLabel);
+          both are the same sentence here, so the label is given only once there is text. */}
       <TextInput
-        accessibilityLabel={t('reputation.sheet.sentence')}
+        accessibilityLabel={draft.sentence ? t('reputation.sheet.sentence') : undefined}
         editable={!disabled}
         multiline
         onChangeText={(sentence) => onChange({ ...draft, sentence })}

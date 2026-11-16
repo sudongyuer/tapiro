@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { TFunction } from 'i18next';
 
 import type { MyReview, PendingReview, Review, ReviewPair } from '../types';
-import { pendingLine, reviewEntry, shortTitle, stillOpen } from './entryView';
+import { pendingLabel, pendingWho, reviewEntry, shortName, stillOpen } from './entryView';
 
 const t = ((key: string, values?: Record<string, unknown>) =>
   values ? `${key} ${JSON.stringify(values)}` : key) as unknown as TFunction;
@@ -39,6 +39,7 @@ describe('a review entry', () => {
     const entry = reviewEntry(pair, 0, now, t);
     expect(entry.title).toContain('reputation.entry.review');
     expect(entry.trailing).toContain('"count":5');
+    expect(entry.trailingIsAction).toBe(false);
     expect(entry.detail).toBeNull();
     expect(entry.target).toEqual({ kind: 'bounty', itemId: 'b1', reviewee: 'p1' });
   });
@@ -55,6 +56,7 @@ describe('a review entry', () => {
     expect(entry.title).toBe('reputation.entry.reviewed');
     expect(entry.detail).toContain('reputation.entry.sealedMine');
     expect(entry.trailing).toBe('reputation.entry.edit');
+    expect(entry.trailingIsAction).toBe(true);
     expect(entry.target).not.toBeNull();
   });
 
@@ -121,21 +123,25 @@ describe('a home card', () => {
   };
 
   test('says who did what by the other side’s role', () => {
-    expect(pendingLine(row, '小林', row.title, t)).toContain('reputation.home.helpedYou');
-    expect(pendingLine({ ...row, role: 'poster' }, '小林', row.title, t)).toContain(
+    expect(pendingWho(row, '小林', t)).toContain('reputation.home.helpedYou');
+    expect(pendingWho({ ...row, role: 'poster' }, '小林', t)).toContain(
       'reputation.home.helpedThem',
     );
-    expect(pendingLine({ ...row, role: 'rider' }, '小林', row.title, t)).toContain(
-      'reputation.home.rode',
-    );
-    expect(pendingLine({ ...row, role: 'organiser' }, '小林', row.title, t)).toContain(
-      'reputation.home.rode',
-    );
+    expect(pendingWho({ ...row, role: 'rider' }, '小林', t)).toContain('reputation.home.rode');
+    expect(pendingWho({ ...row, role: 'organiser' }, '小林', t)).toContain('reputation.home.rode');
   });
 
-  test('a long title is cut so the name stays on the card', () => {
-    expect(shortTitle('帮取快递')).toBe('帮取快递');
-    expect([...shortTitle('字'.repeat(80))]).toHaveLength(25);
+  test('VoiceOver reads the whole title and the whole name', () => {
+    const long = { ...row, title: '字'.repeat(80) };
+    const label = pendingLabel(long, '名'.repeat(40), t);
+    expect(label.startsWith(`${long.title} · `)).toBe(true);
+    expect(label).toContain('名'.repeat(40));
+  });
+
+  test('a long name is cut so what they did stays on the card', () => {
+    expect(shortName('小林')).toBe('小林');
+    expect(shortName('Muhammad Aiman bin Abdullah Hakimi Zulkarnain')).toBe('Muhammad Aiman b…');
+    expect([...shortName('👩‍🎓'.repeat(30))]).toHaveLength(17);
   });
 
   test('goes away when the window ends', () => {

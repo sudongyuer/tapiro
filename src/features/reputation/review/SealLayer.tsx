@@ -29,6 +29,7 @@ const HEIGHT = 96;
 const FLAP_HEIGHT = 58;
 const SEAL_SIZE = 34;
 const SEAL_ART = 22;
+const RIM = 1;
 const FALLBACK_LIFT = -160;
 
 export type ScreenRect = { x: number; y: number; width: number; height: number };
@@ -46,7 +47,6 @@ function Envelope({
 }) {
   const { theme, color } = useTheme();
   const paint = mascotPaint(theme);
-  const rim = theme === 'dark' ? { stroke: paint.rim, strokeWidth: 1 } : null;
   const { clock, press, reduced } = seal;
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
   const slot = useRef<ViewInstance>(null);
@@ -96,11 +96,23 @@ function Envelope({
     <View ref={slot} style={styles.slot} onLayout={measure} testID="review-envelope">
       <Animated.View style={[StyleSheet.absoluteFill, envelope]}>
         <Svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} accessible={false}>
-          <Rect x={0} y={0} width={WIDTH} height={HEIGHT} rx={10} fill={paint.ink} {...rim} />
+          <Rect x={0} y={0} width={WIDTH} height={HEIGHT} rx={10} fill={paint.ink} />
           <Path
             d="M0 34 L70 72 L140 34 L140 86 Q140 96 130 96 L10 96 Q0 96 0 86 Z"
             fill={paint.snout}
           />
+          {theme === 'dark' ? (
+            <Rect
+              x={RIM / 2}
+              y={RIM / 2}
+              width={WIDTH - RIM}
+              height={HEIGHT - RIM}
+              rx={10 - RIM / 2}
+              fill="none"
+              stroke={paint.rim}
+              strokeWidth={RIM}
+            />
+          ) : null}
         </Svg>
       </Animated.View>
       {face && offset && !reduced ? (
@@ -182,6 +194,7 @@ export function SealLayer({
               variant="title"
               accessibilityRole="header"
               testID="review-sealed-title"
+              lineBreakStrategyIOS="push-out"
               style={styles.text}
             >
               {title}
@@ -190,6 +203,7 @@ export function SealLayer({
               variant="secondary"
               tone="secondaryLabel"
               testID="review-sealed-note"
+              lineBreakStrategyIOS="push-out"
               style={styles.text}
             >
               {note}

@@ -74,8 +74,8 @@ const ms: typeof zhHans = {
   },
   entry: {
     review: 'Nilai {{name}}',
-    daysLeft_one: '{{count}} hari lagi',
-    daysLeft_other: '{{count}} hari lagi',
+    daysLeft_one: '{{count}}\u00a0hari\u00a0lagi',
+    daysLeft_other: '{{count}}\u00a0hari\u00a0lagi',
     reviewed: 'Sudah dinilai',
     sealedMine: 'Kedua-dua penilaian dipaparkan selepas {{name}} menilai',
     sealedTheirs: '{{name}} sudah menilai anda. Nilai dia untuk melihat kedua-duanya',
@@ -88,9 +88,9 @@ const ms: typeof zhHans = {
     stale: 'Tidak dapat dimuat semula · Ini penilaian yang dimuatkan sebelum ini',
   },
   home: {
-    helpedYou: '{{title}} · {{name}} sudah selesaikan untuk anda',
-    helpedThem: '{{title}} · Anda sudah selesaikan untuk {{name}}',
-    rode: '{{title}} · Menumpang bersama {{name}}',
+    helpedYou: '{{name}} sudah selesaikan untuk anda',
+    helpedThem: 'Anda sudah selesaikan untuk {{name}}',
+    rode: 'Menumpang bersama {{name}}',
     ask: 'Bagaimana pengalaman anda?',
     action: 'Nilai',
   },

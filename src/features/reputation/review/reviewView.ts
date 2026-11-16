@@ -17,10 +17,25 @@ const REVIEW_WINDOW_DAYS = 7;
 export const pairName = (pair: ReviewPair, t: TFunction) =>
   personName(pair.counterpart?.name ?? null, t);
 
-export function sheetSubtitle(title: string | null, pair: ReviewPair, language: string) {
+const NO_BREAK_SPACE = '\u00a0';
+const WORD_JOINER = '\u2060';
+
+export const unbroken = (text: string) =>
+  [...text.replaceAll(' ', NO_BREAK_SPACE)].join(WORD_JOINER);
+
+function openedDate(pair: ReviewPair, language: string) {
   const opened = Date.parse(pair.closesAt) - REVIEW_WINDOW_DAYS * DAY;
-  const date = noShowDate(new Date(opened).toISOString(), language);
+  return noShowDate(new Date(opened).toISOString(), language);
+}
+
+export function sheetSubtitle(title: string | null, pair: ReviewPair, language: string) {
+  const date = openedDate(pair, language);
   return title ? `${title} · ${date}` : date;
+}
+
+export function sheetSubtitleShown(title: string | null, pair: ReviewPair, language: string) {
+  const date = unbroken(openedDate(pair, language));
+  return title ? `${title}${NO_BREAK_SPACE}· ${date}` : date;
 }
 
 export const windowOver = (pair: ReviewPair, now: Date) =>
