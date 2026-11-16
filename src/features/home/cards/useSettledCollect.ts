@@ -42,7 +42,7 @@ export function useSettledCollect({
   const opacity = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
-  // A landed card leaves through the stack's exiting animation, so the next card can rise while it goes.
+  // A landed card leaves through the stack's leave animation, so the next card can rise while it goes.
   const exit = (kind: SettledExit) =>
     kind === 'leave'
       ? Promise.resolve()

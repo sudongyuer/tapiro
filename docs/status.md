@@ -20,7 +20,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 | Chat (foundation 7)     | `docs/specs/2026-10-11-foundation-design.md`       | Plan `docs/plans/2026-10-30-chat.md` done: server, 消息 list, thread, images, report and block, entries (#63, #72, #74–#77, #79 and this PR); milestone in the step 7 record                                                                                                                                                                                                          |
 | 问小貘 (foundation 8)   | `docs/specs/2026-10-11-foundation-design.md`       | Plan `docs/plans/2026-10-30-ask-tapir.md` Tasks 1–10 (#106, #117, #118, #122, #127–#130, #134 and `feat/ask-wrap`): consent v2, the sheet, 小貘体力 and the pantry, chat translation, voice, 小貘记得, the Model Studio provider; on the fake provider. Not built: on-device Foundation Models (M12; not now, owner 2026-11-15), the long-press spike. Milestone in the step 8 record |
 | Reviews, profile, coins | `docs/specs/2026-10-11-foundation-design.md`       | Foundation step 6 and the account-free part of step 5, plan `docs/plans/2026-11-06-reviews-profile-coins.md` done (#85–#98); 258 A, 259 A, 264 A (an unpaid ride adds settled, not people); milestone in the record of 2026-11-07. Accessory art is stand-in; 买貘币 built locally 2026-11-12, real purchases wait on the paid account                                                |
-| Expo SDK 58             | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; open, not SDK 58: the 已结清 exit animation (retro); `home_fan_out` fixed (scroll steps, 2026-11-06)                                                                                                                                                                                                                                     |
+| Expo SDK 58             | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; `home_fan_out` fixed (scroll steps, 2026-11-06)                                                                                                                                                                                                                                                                                          |
 
 ## In progress
 
@@ -127,14 +127,17 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      relaunch; the recordings show iOS's press-and-hold accent menu for 「l」 (ł ļ ľ) over the field from the end of
      `axe type Parcel` until the press, which only closed the menu. Holding `l` with `axe key 15 --duration 1.5`
      opens it 10 of 10; unpaced `axe type Parcel` left it 2 of 12 and 0 of 20; arrow and Escape keys do not close it,
-     a tap on the sheet top does (2 of 2). An outside cause (AXe's unpaced typing leaves its last key held); case
-     unchanged. The full run had two more first-attempt 「the prompt never read Parcel」: in `ask_memory_sheet` the tap
+     a tap on the sheet top does (2 of 2). An outside cause (AXe's unpaced typing leaves its last key held). Fixed in
+     `fix/ask-typing-paced`: the 问小貘 cases type `parcel` through paced HID keys, and the prompt is tapped until the
+     keyboard shows (up to three taps; a tap after a reboot once left no focus). 10 runs of `ask_sheet_worst`, zh-Hans
+     light: 9 pass, 0 flaky, 1 fail (run 6: a lost AXe session, then on the retry the first tap on the prompt brought no
+     keyboard; the focus retry was added after it and runs 8–10 passed with it). No run showed the accent menu. The full run had two more first-attempt 「the prompt never read Parcel」: in `ask_memory_sheet` the tap
      on the prompt never focused it (no keyboard, empty field).
-     The 已结清 card's one-frame exit is confirmed by recording (`home_settled_collect`, zh-Hans light, origin/main:
-     every pixel of the card region goes from start to end between two frames 7 ms apart, against the agreed 320 ms
-     `leaveUp`). Ruled out by A/B builds: the stack hiding itself while the calm card measures, and the calm card
-     drawing over the leaving one (both changed, still one frame). The Reduce Motion fade on the same card plays over
-     about 200 ms, so Reanimated timing on the card works; the `exiting` animation does not run. Not fixed.
+     The 已结清 card's one-frame exit is fixed (`fix/settled-exit`, 2026-11-16): the `exiting` animation did run, but a
+     Reanimated exiting view keeps its host index and the calm card mounted in the same commit is inserted after it, so
+     it drew over the leave from the first frame (a 1.5 s `FadeIn` on the calm card showed the leave underneath). The
+     stack keeps the leaving card as a live child on top until its 320 ms leave ends; `home_settled_collect` now asserts
+     the change across the card spans at least 0.2 s (before: 0.00 s, fails; after: 0.27–0.30 s, light and dark).
 
 1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The

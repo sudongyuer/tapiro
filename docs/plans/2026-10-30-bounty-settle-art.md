@@ -315,3 +315,11 @@ so the card does not flip live (11), 先付 (12).
   (`home.card.settled.badge`, `--color-paper-green`) shows for about 1 s. The card leaves through the stack's
   exiting animation (up 24 pt, scale 0.92, fade, 320 ms) while the stack restacks over 420 ms, and the card behind
   fades its strip, so there is no blank card between the two. `flyToTab` takes `anchorTag` and the badge fields.
+- 2026-11-16, fix: the leave above never showed. A Reanimated `exiting` view stays at its host index and the views
+  mounted in the same commit are inserted after it, so the calm card covered it in the first frame (zIndex does not
+  reach a removed view); a probe with a 1.5 s `FadeOut` and one with a 1.5 s `FadeIn` on the calm card showed the
+  leave running underneath. The stack now keeps the collected card as a live child on top (`useLeavingCard`) and plays
+  the same motion with an animated style. ★ for veto: when no card was behind it, the card that takes its place (the
+  calm card) rises from the back-card pose (40 pt lower, scale 0.95) over the stack's 420 ms restack, as the board's
+  ④A draws the next card rising, starting with the leave rather than 130 ms after it. The home board below still
+  moves to the calm card's height in one frame.
