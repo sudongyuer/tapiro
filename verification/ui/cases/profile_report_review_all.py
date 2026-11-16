@@ -40,7 +40,7 @@ ui.gone('profile-report', timeout=30)
 
 scroll_to(ui, review_id(4))
 ui.at_rest()
-ui.press(review_id(4), 1.2)
+ui.press(review_id(4), 1.2, expect_change=False)
 time.sleep(1)  # the menu of review 1 had risen by now
 items = ui.read()
 assert not [i for i in items if i.get('AXLabel') == ui.t('chat.thread.report')], 'my own review offers 举报'

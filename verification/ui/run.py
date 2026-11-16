@@ -20,6 +20,7 @@ from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
 from recording import stop_all
 from records import reset_records
+from taps import retries
 
 MACHINE_LOCK = '/tmp/ios-ui-verify.lock'
 HERE = Path(__file__).resolve().parent
@@ -276,7 +277,8 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     log = '\n'.join([f'device: {name} ({udid})', *before, case_log.rstrip('\n'), *after])
     log += f'\n{summary(name, log)}\n'
     (out / 'log.txt').write_text(log)
-    return Attempt(status, message, timeouts(log), round(time.monotonic() - started, 1))
+    tapped, notes = retries(log)
+    return Attempt(status, message, timeouts(log), round(time.monotonic() - started, 1), tapped, tuple(notes))
 
 
 def print_timings(timings, total):
@@ -290,7 +292,7 @@ class Report:
     def __init__(self, output, meta, multi, halt):
         self.output, self.meta, self.multi, self.halt = output, meta, multi, halt
         self.guard = threading.Lock()
-        self.timings, self.stopped, self.reboots = [], [], []
+        self.timings, self.stopped, self.reboots, self.tapped = [], [], [], []
         self.results = {}
 
     def where(self, name):
@@ -329,12 +331,17 @@ class Report:
             'xcode': self.meta['xcode'], 'device': {'name': name, 'udid': udid, 'runtime': runtime},
             'firstAttempt': first, 'retriedOn': outcome.retried_on, 'stalledDevices': outcome.stalled_devices,
             'app': self.meta['app'], 'videos': [v.name for v in videos(out)],
+            'tapRetries': {'count': outcome.tap_retries, 'targets': list(outcome.tap_notes)},
         }, indent=2))
         stalled_note = f'  stalled: {", ".join(outcome.stalled_devices)}' if outcome.stalled_devices else ''
+        tap_note = f'  tap retries: {"; ".join(outcome.tap_notes)}' if outcome.tap_retries else ''
         with self.guard:
             self.timings.append((outcome.duration, outcome.status, locale, appearance, case))
+            if outcome.tap_retries:
+                self.tapped.append((outcome.tap_retries, f'{locale} {appearance} {case} [{outcome.status}]: '
+                                                         f'{"; ".join(outcome.tap_notes)}'))
             print(f'{outcome.status.upper():4} {locale:7} {appearance:5} {case}: {outcome.message}'
-                  + self.where(name) + stalled_note, flush=True)
+                  + self.where(name) + stalled_note + tap_note, flush=True)
 
 
 def main():
@@ -454,7 +461,7 @@ def main():
         raise errors[0]
     timings = report.timings
     stopped = report.stopped[0] if report.stopped else None
-    failures, lines = summarize(timings, report.reboots, stopped)
+    failures, lines = summarize(timings, report.reboots, stopped, report.tapped)
 
     print_timings(timings, time.monotonic() - run_started)
     for text in lines:

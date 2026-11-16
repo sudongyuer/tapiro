@@ -48,7 +48,7 @@ def hold_select(ui, seconds=1.5):
 
 
 def release_early(ui, seconds=0.4):
-    return ui.press(HOLD, seconds)
+    return ui.press(HOLD, seconds, expect_change=False)
 
 
 def defaults(ui, key):

@@ -36,19 +36,10 @@ def prompt_value(ui):
     return (by_id(ui.read(), 'ask-tapir-prompt') or {}).get('AXValue') or ''
 
 
-# A tap on the prompt right after a Simulator reboot left the screen unchanged, no focus and no keyboard, so the typed
-# keys went nowhere (ask_sheet_worst retry, 2026-11-16; ask_memory_sheet, 2026-11-16). The keyboard's Return key in the
-# tree shows the tap landed.
-def focus_prompt(ui, taps=3):
-    for attempt in range(taps):
-        ui.tap('ask-tapir-prompt')
-        try:
-            ui.wait(lambda items: any(i.get('AXUniqueId') == 'Return' for i in items) or None,
-                    'no keyboard after the tap on the prompt', 5)
-            return
-        except AssertionError:
-            print(f'focus_prompt: no keyboard after tap {attempt + 1}', flush=True)
-    raise AssertionError(f'{taps} taps on the prompt never brought up the keyboard')
+def focus_prompt(ui):
+    ui.tap('ask-tapir-prompt')
+    ui.wait(lambda items: any(i.get('AXUniqueId') == 'Return' for i in items) or None,
+            'no keyboard after the tap on the prompt', 5)
 
 
 def type_and_send(ui, text=TYPED):

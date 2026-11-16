@@ -1,0 +1,141 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.3s simctl appearance
+  0.2s simctl launch
+glow lit for 0.86 s, faded over 5 frames, plain after 1.36 s
+PASS: long draft card, fill with strip, place hint and a fading glow, 撤销, strip gone after leaving
+  5.9s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  2.7s axe tap --id tab-ask-tapir --post-delay 0.5
+  1.8s axe describe-ui
+  2.3s axe describe-ui
+  1.7s axe describe-ui
+  1.8s axe describe-ui
+  1.5s axe describe-ui
+  1.7s axe describe-ui
+  3.4s axe tap --id ask-tapir-prompt --post-delay 0.5
+  1.9s axe describe-ui
+  1.0s axe key-sequence --keycodes 19,4,21,6,8,15 --delay 0.08
+  1.3s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.7s axe touch -x 308 -y 328 --down --up --delay 0.15
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.4s screenshot 01-long-draft-card
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  2.6s axe tap --id ask-turn-1-fill --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+tap retry: ask-turn-1-fill: unchanged 3.7 s after tap 1; tapping again (retry 1 of 2)
+  2.6s axe tap --id ask-turn-1-fill --post-delay 0.5
+  1.6s axe describe-ui
+tap retry: ask-turn-1-fill: changed after retry 1 (7.9 s after the first tap)
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 02-filled-strip
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  2.8s axe tap --id bounty-post-ai-undo --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+tap retry: bounty-post-ai-undo: unchanged 4.0 s after tap 1; tapping again (retry 1 of 2)
+  2.7s axe tap --id bounty-post-ai-undo --post-delay 0.5
+  1.2s axe describe-ui
+tap retry: bounty-post-ai-undo: changed after retry 1 (7.9 s after the first tap)
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 03-undone
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe swipe --start-x 201 --start-y 74 --end-x 201 --end-y 793 --duration 0.3
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.4s axe tap --label 发悬赏 --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.4s axe describe-ui
+  2.6s axe tap --id bounty-post-pick-free --post-delay 0.5
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 04-left-after-undo
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.7s axe swipe --start-x 201 --start-y 74 --end-x 201 --end-y 793 --duration 0.3
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  2.3s axe tap --id tab-ask-tapir --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  2.6s axe tap --id ask-resume --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  2.6s axe tap --id ask-turn-1-fill --post-delay 0.5
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe swipe --start-x 201 --start-y 74 --end-x 201 --end-y 793 --duration 0.3
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.2s axe tap --label 发悬赏 --post-delay 0.5
+  1.3s axe describe-ui
+  1.6s axe describe-ui
+  2.0s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 05-filled-kept
+  1.2s axe describe-ui
+latency on Tapiro Verify 3: 132 commands, median 1.2 s, max 5.9 s (axe describe-ui), 0 timeouts

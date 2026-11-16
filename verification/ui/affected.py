@@ -16,6 +16,8 @@ SHARED = [
     'tsconfig.json',
     'verification/ui/driver.py',
     'verification/ui/keys.py',
+    'verification/ui/taps.py',
+    'verification/ui/pngread.py',
     'verification/ui/run.py',
     'verification/ui/affected.py',
     'verification/ui/breaker.py',

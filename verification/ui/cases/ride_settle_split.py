@@ -43,7 +43,7 @@ def calls(name, count, timeout=15):
 
 def clear_share(identifier):
     shown = ui.element(identifier).get('AXValue') or ''
-    ui.tap_point(*field_point(ui.element(identifier)['frame'], below=True))
+    ui.tap_point(*field_point(ui.element(identifier)['frame'], below=True), expect_change=False)
     ui.backspace(len(shown) + 1)
     empty = ('', ui.t('rideSettle.sheet.placeholder'))
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') in empty, f'{identifier} is not empty')

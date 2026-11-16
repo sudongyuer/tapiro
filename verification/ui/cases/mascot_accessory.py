@@ -41,7 +41,7 @@ assert_touch_target(row, name('backpack'))
 ui.at_rest()
 ui.capture('01-picker')
 
-ui.tap('profile-accessory-umbrella')
+ui.tap('profile-accessory-umbrella', expect_change=False)
 time.sleep(1.5)
 assert not rep_calls(ui, 'setAccessory', 1, timeout=0), 'a tap on what you wear sent a write'
 
