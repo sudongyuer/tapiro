@@ -40,9 +40,12 @@ export function stageColor(state: StageState): TokenName {
 
 type AnimatedStyle = ComponentProps<typeof Animated.View>['style'];
 
+export type StageSayCoin = { lead: string; tail: string };
+
 export type StageActor = {
   wear: MascotWear | null;
   say: string | null;
+  sayCoin?: StageSayCoin | null;
   sayOverLive?: boolean;
   hint: 'star' | 'leaf' | null;
   onPress: (() => void) | null;
@@ -173,6 +176,7 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
         <SpeechBubble
           key={speaking ? 'say' : 'line'}
           line={say ?? line}
+          coin={speaking ? (actor?.sayCoin ?? null) : null}
           style={bubbleStyle}
           reveal={reveal}
           rise={rise}
