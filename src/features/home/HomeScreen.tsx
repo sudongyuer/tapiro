@@ -198,6 +198,7 @@ export function HomeScreen({
         >
           <LiveCardStack
             cards={cards}
+            heights={heights}
             layout={layout}
             ready={ready}
             open={open}

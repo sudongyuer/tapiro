@@ -1,6 +1,7 @@
 """「收进贴纸本」 (73A, ruling 3). A tap writes exactly one collect; the sticker flies from the 已结清 card to the 我的 tab
 and is over its icon no later than the frame the card starts to leave (the same frame passes: owner ★, 2026-11-10),
-then the card fades away and the calm card takes its place.
+then the card leaves upward (up 24 pt, scale 0.92, fade, 320 ms; ④A on the canvas) over the calm card, which rises from
+behind; the change across the card is spread over at least LEAVE_MIN_S of frames, not one.
 With Reduce Motion (`-uiVerifyReduceMotion 1`, because simctl cannot switch the system setting) nothing reaches 我的:
 the card and sticker fade in place, and one collect is still written. Both paths are read from clips
 (`collect-flight.mp4`, `collect-reduced.mp4`) by frame timestamp. The landing haptic and the VoiceOver announcement
@@ -34,6 +35,7 @@ CHANGED = 48
 TAB_HIT = 0.12
 GLYPH_MIN = 200
 CARD_TOLERANCE = 24
+LEAVE_MIN_S = 0.2
 
 ui = UI(*sys.argv[1:])
 
@@ -66,6 +68,16 @@ def card_share(shot, start, f):
     return same / max(1, len(a))
 
 
+# How far a frame has gone from the first frame to the last over the card, 0 to 1, by mean colour distance: a fade
+# and a slide move it frame by frame, a card swapped in one frame jumps it (0.04 to 1.00 in 33 ms before the leave
+# was kept on top, 2026-11-16).
+def card_progress(shot, start, rest, f):
+    now, a, b = list(shot.pixels(f)), list(start.pixels(f)), list(rest.pixels(f))
+    away = sum(sum(abs(x - y) for x, y in zip(p, q)) for p, q in zip(now, a))
+    left = sum(sum(abs(x - y) for x, y in zip(p, q)) for p, q in zip(now, b))
+    return away / (away + left) if away + left else 0
+
+
 def icon_box(tab):
     f = tab['frame']
     return {'x': f['x'], 'y': f['y'], 'width': f['width'], 'height': f['height'] * 0.6}
@@ -84,6 +96,7 @@ def collect_and_watch(name):
     ui.wait(lambda items: collected() == [] or None, f'a collect was written before the tap: {collected()}',
             timeout=15)
     button = ui.element('settled-card-collect')['frame']
+    card = by_id(items, 'live-card-settled')['frame']
     band = button_band(button)
     with clip(ui, name) as video:
         ui.axe('tap', '-x', str(round(button['x'] + button['width'] / 2)),
@@ -102,6 +115,7 @@ def collect_and_watch(name):
                       tolerance=16)
         mask = glyph_mask(rest, icon)
         rows = [(at, changed_share(shot, rest, icon, mask), card_share(shot, start, band)) for shot, at in shots]
+        progress = [(at, card_progress(shot, start, rest, card)) for shot, at in shots]
     print(f'{name}: ' + ', '.join(f'{at:.2f}s tab={t:.2f} card={c:.2f}' for at, t, c in rows))
     assert rows[0][2] > 0.8, f'{name}: the card is not on screen at the start of the clip: {rows[0]}'
     assert rows[-1][2] < 0.2, f'{name}: the card is still on screen at the end of the clip: {rows[-1]}'
@@ -110,21 +124,27 @@ def collect_and_watch(name):
     leaving = rows[shown + 1][0]
     gone = next(at for at, _, c in rows[shown + 1:] if c < 0.2)
     over_tab = [at for at, t, _ in rows if t >= TAB_HIT]
-    return over_tab, leaving, gone
+    after = [(at, p) for at, p in progress if at >= rows[shown][0]]
+    began = next(at for at, p in after if p >= 0.1)
+    settled = next(at for at, p in after if p >= 0.9)
+    print(f'{name}: card change ' + ', '.join(f'{at:.2f}s {p:.2f}' for at, p in after if at <= settled + 0.1))
+    return over_tab, leaving, gone, settled - began
 
 
 reach_home(ui)
 ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the 已结清 card is not in front')
 ui.capture('01-before')
-over_tab, leaving, gone = collect_and_watch('collect-flight')
+over_tab, leaving, gone, span = collect_and_watch('collect-flight')
 assert over_tab, 'the sticker never reached the 我的 tab'
 assert over_tab[0] <= leaving, \
     f'the card started to leave at {leaving:.2f}s, before the sticker reached 我的 at {over_tab[0]:.2f}s'
-print(f'flight: over 我的 {over_tab[0]:.2f}-{over_tab[-1]:.2f}s, card leaving {leaving:.2f}s, gone {gone:.2f}s')
+assert span >= LEAVE_MIN_S, f'the card left in {span:.2f}s, not over the agreed 320 ms'
+print(f'flight: over 我的 {over_tab[0]:.2f}-{over_tab[-1]:.2f}s, card leaving {leaving:.2f}s, gone {gone:.2f}s, '
+      f'change over {span:.2f}s')
 ui.capture('02-collected')
 
 relaunch(ui, drop=[], add=['-uiVerifyReduceMotion', '1'])
-over_tab, leaving, gone = collect_and_watch('collect-reduced')
+over_tab, leaving, gone, _ = collect_and_watch('collect-reduced')
 assert not over_tab, f'with Reduce Motion something reached the 我的 tab at {over_tab}'
 print(f'reduced: card leaving {leaving:.2f}s, gone {gone:.2f}s')
 ui.capture('03-reduced-collected')

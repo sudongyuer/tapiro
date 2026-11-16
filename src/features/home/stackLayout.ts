@@ -1,7 +1,7 @@
 export const PEEK = 40;
 export const STACK_GAP = 12;
 export const MAX_STACKED = 3;
-const SCALE_STEP = 0.05;
+export const SCALE_STEP = 0.05;
 
 export type CardPlacement = { y: number; scale: number; visible: boolean };
 
