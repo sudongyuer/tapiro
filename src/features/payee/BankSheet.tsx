@@ -133,7 +133,7 @@ function BankForm({
             testID="payee-form-error"
           />
         ) : null}
-        <Section footer={<Text>{t('payee.form.accountFooter')}</Text>}>
+        <Section>
           <Picker
             label={t('payee.form.bankLabel')}
             selection={bank}
@@ -166,11 +166,16 @@ function BankForm({
               ]}
             />
           ) : null}
+        </Section>
+        <Section
+          title={t('payee.form.accountLabel')}
+          footer={<Text>{t('payee.form.accountFooter')}</Text>}
+        >
           <SyncedTextField
             field={accountText}
-            placeholder={t('payee.form.accountLabel')}
+            placeholder={t('payee.form.accountPlaceholder')}
             testID="payee-account-input"
-            modifiers={[keyboardType('numeric')]}
+            modifiers={[accessibilityLabel(t('payee.form.accountLabel')), keyboardType('numeric')]}
           />
         </Section>
         <Section
@@ -183,6 +188,7 @@ function BankForm({
             placeholder={t('payee.form.namePlaceholder')}
             testID="payee-name-input"
             modifiers={[
+              accessibilityLabel(t('payee.form.nameLabel')),
               textContentType('name'),
               textInputAutocapitalization('characters'),
               autocorrectionDisabled(),

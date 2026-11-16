@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: vars['--radius-card'],
+    borderCurve: 'continuous',
   },
   dashed: { borderWidth: 2, borderStyle: 'dashed' },
   filled: { alignItems: 'center', justifyContent: 'center', opacity: 0.9 },
@@ -171,5 +172,6 @@ const styles = StyleSheet.create({
     right: -GLOW_SPREAD,
     bottom: -GLOW_SPREAD,
     borderRadius: vars['--radius-card'] + GLOW_SPREAD,
+    borderCurve: 'continuous',
   },
 });

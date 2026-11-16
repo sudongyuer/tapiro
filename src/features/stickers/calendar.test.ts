@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { byDay, monthGrid, monthRange, shiftMonth } from './calendar';
+import { byDay, monthGrid, monthRange, monthWeeks, shiftMonth } from './calendar';
 
 const at = (year: number, month: number, day: number, hour = 12) =>
   new Date(year, month, day, hour).toISOString();
@@ -17,6 +17,33 @@ describe('month grid', () => {
     expect(monthGrid({ year: 2026, month: 5 })[0]).toBe(1);
     const february = monthGrid({ year: 2027, month: 1 });
     expect(Math.max(...february.filter((cell): cell is number => cell !== null))).toBe(28);
+  });
+});
+
+describe('month weeks', () => {
+  test('every week holds seven cells and each day sits in its Monday-first weekday column', () => {
+    for (const month of [
+      { year: 2026, month: 9 },
+      { year: 2026, month: 5 },
+      { year: 2027, month: 1 },
+      { year: 2026, month: 10 },
+    ]) {
+      const weeks = monthWeeks(month);
+      expect(weeks.every((week) => week.length === 7)).toBe(true);
+      weeks.forEach((week) =>
+        week.forEach((day, column) => {
+          if (day === null) return;
+          expect((new Date(month.year, month.month, day).getDay() + 6) % 7).toBe(column);
+        }),
+      );
+      expect(weeks.flat().filter((day) => day !== null)).toHaveLength(
+        new Date(month.year, month.month + 1, 0).getDate(),
+      );
+    }
+  });
+
+  test('12 October 2026, a Monday, opens the third week', () => {
+    expect(monthWeeks({ year: 2026, month: 9 })[2][0]).toBe(12);
   });
 });
 

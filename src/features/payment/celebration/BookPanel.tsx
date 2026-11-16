@@ -181,6 +181,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: vars['--radius-sheet'],
+    borderCurve: 'continuous',
     overflow: 'hidden',
   },
   rule: { position: 'absolute', left: 0, right: 0, height: 1 },

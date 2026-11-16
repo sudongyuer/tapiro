@@ -672,7 +672,7 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
       rows and the ride detail amount fields move 4 pt onto the system edge too.
     - ★ 24h New copy: 「悬赏板上会这样显示」 / "How it will look on the board" / "Begini paparannya di papan ganjaran";
       VoiceOver 「标题」 / "Title" / "Tajuk".
-    - Quick-time and amount rows: 12 pt above and below the quick times, 16 pt under the amounts (the board's 12 pt
+    - ★ 24i Quick-time and amount rows: 12 pt above and below the quick times, 16 pt under the amounts (the board's 12 pt
       at a 14 pt side inset, scaled to the 20 pt side inset).
 
 ## Not in this plan

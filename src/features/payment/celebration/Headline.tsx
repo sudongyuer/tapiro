@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderRadius: vars['--radius-chip'],
+    borderCurve: 'continuous',
     paddingHorizontal: vars['--space-3'],
     paddingVertical: vars['--space-1'],
   },
