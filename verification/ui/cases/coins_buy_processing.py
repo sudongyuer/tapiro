@@ -17,6 +17,12 @@ LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStore', 'processing']
 
 ui = UI(*sys.argv[1:])
+
+
+def calls():
+    # NSUserDefaults reaches the plist asynchronously; ms dark read it before the verify call (2026-11-16).
+    return [call['name'] for call in json.loads(defaults(ui, 'uiVerifyCoinsCalls') or '[]')]
+
 open_page(ui)
 open_sheet(ui)
 tap_price(ui, 'buy-coins-buy-5')
@@ -24,8 +30,9 @@ wait_status(ui, 'coins.buy.processing')
 status = ui.element('buy-coins-status').get('AXLabel') or ''
 assert ui.t('coins.buy.processingBody') in status, status
 ui.element('buy-coins-recheck')
+ui.wait(lambda items: 'verify' in calls() or None, 'the verify call never reached the plist')
 time.sleep(4)
-sent = [call['name'] for call in json.loads(defaults(ui, 'uiVerifyCoinsCalls') or '[]')]
+sent = calls()
 assert sent.count('verify') == 1, f'the purchase was sent again on its own: {sent}'
 assert coin_calls(ui, 'finish', 1, timeout=1) == [], 'a purchase the server did not confirm was finished'
 assert ui.element('buy-coins-balance').get('AXLabel') == sheet_balance(ui, 13)

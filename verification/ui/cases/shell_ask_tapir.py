@@ -37,10 +37,14 @@ def open_sheet(tab, name):
         assert f['x'] >= edge['x'] and f['x'] + f['width'] <= edge['x'] + edge['width'], f'{identifier} overflows the sheet: {f}'
     shot = ui.snap(name)
     f = sheet['frame']
-    # The half-detent sheet is glass: the page behind shows through its bottom edge, and in ms a ride card's text sat
-    # under a single sample point (160). The median of five points along the edge measures the sheet, not that text.
-    samples = sorted(luma(shot.rgb(f['x'] + 8 + i * (f['width'] - 16) / 4, f['y'] + f['height'] - 8)) for i in range(5))
-    background = samples[2]
+    # The half-detent sheet is glass, so its edge shows the page behind: in ms dark a ride card read 96 there along
+    # the whole edge (2026-11-16). The prompt field is opaque; five points of it around its buttons measure the sheet.
+    p, plus, mic = (by_id(items, i)['frame'] for i in ('ask-tapir-prompt', 'ask-tapir-add-image', 'ask-tapir-mic'))
+    points = [(plus['x'] + plus['width'] / 2, plus['y'] - 8), (mic['x'] + mic['width'] / 2, mic['y'] - 8),
+              ((plus['x'] + plus['width'] + p['x']) / 2, p['y'] + p['height'] / 2),
+              ((p['x'] + p['width'] + mic['x']) / 2, p['y'] + p['height'] / 2),
+              (plus['x'] + plus['width'] / 2, plus['y'] + plus['height'] + 8)]
+    background = sorted(luma(shot.rgb(x, y)) for x, y in points)[2]
     if ui.appearance == 'dark':
         assert background < 80, f'sheet background is light ({background:.0f}) in dark appearance'
     else:

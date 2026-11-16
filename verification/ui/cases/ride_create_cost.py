@@ -23,6 +23,19 @@ ui.wait_label('ride-confirm-publish', lambda label: label == ui.t('ride.create.c
               'the coin publish label is wrong')
 ui.capture('01-coin')
 
+def reveal_packs():
+    # Form rows below the fold are not in the accessibility tree; in en the longer notice puts the 35 pack there.
+    for _ in range(4):
+        items = ui.read()
+        last, publish = by_id(items, 'ride-confirm-packs-buy-35'), by_id(items, 'ride-confirm-publish')
+        if last and last['frame']['y'] + last['frame']['height'] <= publish['frame']['y']:
+            return
+        screen = items[0]['frame']
+        x = screen['width'] / 2
+        ui.swipe((x, screen['height'] * 0.6), (x, screen['height'] * 0.4), 0.4)
+        ui.at_rest()
+
+
 for cost, notice in (('none', 'ride-confirm-no-balance'), ('blocked', 'ride-confirm-blocked')):
     relaunch_list(ui, drop=COIN, add=['-uiVerifyRideCost', cost])
     open_confirm(ui)
@@ -32,6 +45,7 @@ for cost, notice in (('none', 'ride-confirm-no-balance'), ('blocked', 'ride-conf
     assert by_id(ui.read(), 'ride-confirm-add-payee') is None
     if cost == 'none':
         ui.element('ride-confirm-packs-buy-5', timeout=30)
+        reveal_packs()
         items = assert_packs(ui, 'ride-confirm-packs')
         card = by_id(items, notice)['frame']
         assert card['y'] + card['height'] <= by_id(items, 'ride-confirm-packs-buy-5')['frame']['y'], 'packs not under the notice'
