@@ -1,0 +1,38 @@
+Booting Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3 and installing the app
+Running 12 runs on 3 Simulators: Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3
+PASS zh-Hans light ask_sheet_draft_fill: PASS: long draft card, fill with strip, place hint and a fading glow, 撤销, strip gone after leaving  [Tapiro Verify 3]
+PASS zh-Hans light ask_sheet_answer: PASS: suggestion fills, answer, one question with buttons, a draft; each open new with 接着上次; words kept on the device  [Tapiro Verify 2]
+PASS zh-Hans light ask_memory_sheet: PASS: a draft names the entry it used with 改; an offer saves only on 记住, once  [Tapiro Verify 3]
+PASS zh-Hans light ask_consent_settings: PASS: 我的 → 小貘 switch withdraws with progress and re-consents through the consent page  [Tapiro Verify 2]
+PASS zh-Hans light ask_sheet_worst: PASS: provider error and retry, hungry card, offline, consent withdrawn mid-session, dropped fields named, screenshot pick  [Tapiro Verify]
+PASS zh-Hans light profile_report_review_all: PASS: 全部评价 reports a review and my own review has no menu  [Tapiro Verify 2]
+PASS zh-Hans light payee_list: PASS: list states, QR replacement, accessory clearance and menu order  [Tapiro Verify]
+PASS zh-Hans light profile_report_review: PASS: a review reports with its copy quoted, once per tap, and a hidden reviewer stays hidden  [Tapiro Verify 3]
+REBOOT Tapiro Verify 3: failed in zh-Hans light chat_list; rebooting it and retrying the run once
+PASS zh-Hans light chat_report_message: PASS: report sheet with quote, reasons and note; report sent with reason and note; offered block replaces the composer with the blocked footer and keeps the history  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in zh-Hans light chat_thread_menu; rebooting it and retrying the run once
+FLAKY zh-Hans light chat_list: PASS: rows newest first with title, side, last line and dot; push, deselect on return, read clears the badge (passed on retry; the first run on Tapiro Verify 3 failed): AssertionError: Missing element labelled 阿杰  [Tapiro Verify]
+PASS zh-Hans light bounty_status_poster: PASS: confirm sheet with the amount then the pay sheet, issue sheet with a failed send kept as a draft and a manual resend, cancel copy for the late helper and the helper waiver, close from the applicant list  [Tapiro Verify 2]
+FLAKY zh-Hans light chat_thread_menu: PASS: peer menu 复制 and 举报 (opens the sheet, 取消 sends nothing); own menu only 复制 (passed on retry; the first run on Tapiro Verify 3 failed): AssertionError: the menu stayed open  [Tapiro Verify]
+
+ seconds  status locale  look  case
+   176.5  pass   zh-Hans light ask_sheet_draft_fill
+   214.5  pass   zh-Hans light ask_sheet_answer
+   113.3  pass   zh-Hans light ask_memory_sheet
+    76.6  pass   zh-Hans light ask_consent_settings
+   309.1  pass   zh-Hans light ask_sheet_worst
+   102.3  pass   zh-Hans light profile_report_review_all
+    91.8  pass   zh-Hans light payee_list
+   142.7  pass   zh-Hans light profile_report_review
+   135.8  pass   zh-Hans light chat_report_message
+   101.5  flaky  zh-Hans light chat_list
+   235.3  pass   zh-Hans light bounty_status_poster
+   152.7  flaky  zh-Hans light chat_thread_menu
+   649.9  total (12 runs, 10 min 49 s)
+rebooted Simulators (shut down and booted after a failed or stalled run; a failed run retried once):
+  Tapiro Verify 3 (zh-Hans light chat_list, failed)
+  Tapiro Verify 3 (zh-Hans light chat_thread_menu, failed)
+flaky: 2 runs failed first and passed only on the retry; the first run is kept in first-attempt/:
+  zh-Hans light chat_list
+  zh-Hans light chat_thread_menu
+Artifacts: /private/tmp/claude-501/-Users-sudongyu-work-tapiro/545c257a-be97-40cb-ad45-d5e6ff36549f/scratchpad/tr-base1

@@ -1,0 +1,42 @@
+Booting Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3 and installing the app
+Running 12 runs on 3 Simulators: Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3
+PASS zh-Hans light ask_sheet_draft_fill: PASS: long draft card, fill with strip, place hint and a fading glow, 撤销, strip gone after leaving  [Tapiro Verify 3]
+PASS zh-Hans light ask_sheet_answer: PASS: suggestion fills, answer, one question with buttons, a draft; each open new with 接着上次; words kept on the device  [Tapiro Verify 2]
+PASS zh-Hans light ask_memory_sheet: PASS: a draft names the entry it used with 改; an offer saves only on 记住, once  [Tapiro Verify 3]
+PASS zh-Hans light ask_consent_settings: PASS: 我的 → 小貘 switch withdraws with progress and re-consents through the consent page  [Tapiro Verify 2]
+STALL Tapiro Verify: lost the AXe automation session in zh-Hans light ask_sheet_worst; rebooting it and retrying the run once
+REBOOT Tapiro Verify 3: failed in zh-Hans light profile_report_review; rebooting it and retrying the run once
+PASS zh-Hans light profile_report_review_all: PASS: 全部评价 reports a review and my own review has no menu  [Tapiro Verify 2]
+PASS zh-Hans light payee_list: PASS: list states, QR replacement, accessory clearance and menu order  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in zh-Hans light ask_sheet_worst; rebooting it
+FAIL zh-Hans light ask_sheet_worst: failed on Tapiro Verify (driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session) and again on Tapiro Verify 3: AssertionError: Missing ask-turn-1  [Tapiro Verify 3]  stalled: Tapiro Verify
+STALL Tapiro Verify 3: lost the AXe automation session in zh-Hans light chat_report_message; rebooting it and retrying the run once
+PASS zh-Hans light chat_list: PASS: rows newest first with title, side, last line and dot; push, deselect on return, read clears the badge  [Tapiro Verify 3]
+FLAKY zh-Hans light profile_report_review: PASS: a review reports with its copy quoted, once per tap, and a hidden reviewer stays hidden (passed on retry; the first run on Tapiro Verify 3 failed): AssertionError: Missing profile-report  [Tapiro Verify 2]
+PASS zh-Hans light chat_thread_menu: PASS: peer menu 复制 and 举报 (opens the sheet, 取消 sends nothing); own menu only 复制  [Tapiro Verify 3]
+PASS zh-Hans light bounty_status_poster: PASS: confirm sheet with the amount then the pay sheet, issue sheet with a failed send kept as a draft and a manual resend, cancel copy for the late helper and the helper waiver, close from the applicant list  [Tapiro Verify]
+FLAKY zh-Hans light chat_report_message: PASS: report sheet with quote, reasons and note; report sent with reason and note; offered block replaces the composer with the blocked footer and keeps the history (passed on retry; the first run on Tapiro Verify 3 failed): driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session  [Tapiro Verify 2]  stalled: Tapiro Verify 3
+
+ seconds  status locale  look  case
+   183.8  pass   zh-Hans light ask_sheet_draft_fill
+   211.8  pass   zh-Hans light ask_sheet_answer
+   101.4  pass   zh-Hans light ask_memory_sheet
+    75.9  pass   zh-Hans light ask_consent_settings
+   112.1  pass   zh-Hans light profile_report_review_all
+    99.0  pass   zh-Hans light payee_list
+   388.7  fail   zh-Hans light ask_sheet_worst
+    51.8  pass   zh-Hans light chat_list
+   215.3  flaky  zh-Hans light profile_report_review
+    58.8  pass   zh-Hans light chat_thread_menu
+   241.1  pass   zh-Hans light bounty_status_poster
+   137.7  flaky  zh-Hans light chat_report_message
+   673.1  total (12 runs, 11 min 13 s)
+rebooted Simulators (shut down and booted after a failed or stalled run; a failed run retried once):
+  Tapiro Verify (zh-Hans light ask_sheet_worst, lost the AXe automation session)
+  Tapiro Verify 3 (zh-Hans light profile_report_review, failed)
+  Tapiro Verify 3 (zh-Hans light ask_sheet_worst, failed)
+  Tapiro Verify 3 (zh-Hans light chat_report_message, lost the AXe automation session)
+flaky: 2 runs failed first and passed only on the retry; the first run is kept in first-attempt/:
+  zh-Hans light profile_report_review
+  zh-Hans light chat_report_message
+Artifacts: /private/tmp/claude-501/-Users-sudongyu-work-tapiro/545c257a-be97-40cb-ad45-d5e6ff36549f/scratchpad/tr-base2

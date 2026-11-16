@@ -1,0 +1,137 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.3s simctl appearance
+  0.2s simctl launch
+PASS: 到了 opens the split sheet, equal rows round up, 220 A blocks and remainders, one send with the receipt
+  3.7s axe describe-ui
+  1.3s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 01-on-the-way
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  3.7s axe tap --id ride-detail-reach --post-delay 0.5
+  1.9s axe describe-ui
+  2.1s axe describe-ui
+  1.6s axe describe-ui
+  1.6s axe describe-ui
+  2.2s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  2.1s axe tap -x 359 -y 521 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 67 -y 728 --post-delay 0.5
+  1.8s axe tap -x 67 -y 674 --post-delay 0.5
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  2.6s axe tap --id ride-split-receipt-add --post-delay 0.5
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 02-sheet-equal
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 368 -y 505 --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.7s axe tap -x 335 -y 782 --post-delay 0.5
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.8s axe tap -x 366 -y 465 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+tap retry: (366, 465) on ride-detail-step-full: unchanged 4.0 s after tap 1; tapping again (retry 1 of 2)
+  1.8s axe tap -x 366 -y 465 --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+tap retry: (366, 465) on ride-detail-step-full: unchanged 3.8 s after tap 2; tapping again (retry 2 of 2)
+  1.8s axe tap -x 366 -y 465 --post-delay 0.5
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+tap retry: (366, 465) on ride-detail-step-full: still unchanged after 2 retries (15.3 s); the case goes on
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 335 -y 674 --post-delay 0.5
+  1.8s axe tap -x 201 -y 782 --post-delay 0.5
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe tap -x 368 -y 505 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.8s axe tap -x 335 -y 782 --post-delay 0.5
+  1.7s axe tap -x 335 -y 782 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 366 -y 465 --post-delay 0.5
+  1.1s axe describe-ui
+  2.2s axe describe-ui
+tap retry: (366, 465) on ride-detail-step-full: unchanged 3.5 s after tap 1; tapping again (retry 1 of 2)
+  2.1s axe tap -x 366 -y 465 --post-delay 0.5
+  1.3s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+tap retry: (366, 465) on ride-detail-step-full: unchanged 3.9 s after tap 2; tapping again (retry 2 of 2)
+  1.7s axe tap -x 366 -y 465 --post-delay 0.5
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+tap retry: (366, 465) on ride-detail-step-full: still unchanged after 2 retries (15.0 s); the case goes on
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 201 -y 620 --post-delay 0.5
+  1.7s axe tap -x 201 -y 782 --post-delay 0.5
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 03-sheet-edited
+  1.8s axe describe-ui
+  1.5s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe tap -x 335 -y 100 --post-delay 0.5
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.4s screenshot 04-sent
+  1.0s axe describe-ui
+latency on Tapiro Verify 2: 127 commands, median 1.2 s, max 3.7 s (axe describe-ui), 0 timeouts

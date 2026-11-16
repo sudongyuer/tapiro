@@ -140,7 +140,7 @@ the time waited; the run prints them after the case, `result.json` has `tapRetri
 final report lists every run that needed one, with its status. Such a run still passes: the same target retried in
 every run is a product bug or a missing opt-out, not the Simulator. A tap meant to change nothing passes
 `expect_change=False` (a disabled row in `pay_sheet_no_rate`, the worn accessory in `mascot_accessory`, an ended row in
-`review_entry_ride`), and so do the number pad keys and the helpers that focus a field before typing or erasing
+`review_entry_ride`, the long press on your own review in `profile_report_review_all`, `choose.release_early`), and so do the number pad keys and the helpers that focus a field before typing or erasing
 (`bounty.typed`, `burst`, `erase`, `ride_settle_split`'s `clear_share`): moving focus between fields under a number
 pad changes nothing in the tree, and a second tap on a focused field opens its edit menu. A tap on a text field or
 area is not retried while the keyboard's Return key shows, for the same reason. Swipes, typed keys and raw `ui.axe`

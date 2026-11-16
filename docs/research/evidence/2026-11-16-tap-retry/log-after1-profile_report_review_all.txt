@@ -1,0 +1,97 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl launch
+PASS: 全部评价 reports a review and my own review has no menu
+  0.8s axe describe-ui
+  0.7s axe describe-ui
+  1.3s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  2.8s axe drag --start-x 201 --start-y 612 --end-x 201 --end-y 262 --duration 1.0 --steps 40
+  2.0s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  2.9s axe tap --id profile-all-reviews --post-delay 0.5
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.5s axe touch -x 201 -y 240 --down --up --delay 1.2
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  2.4s axe tap --label 举报 --post-delay 0.5
+  1.7s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 01-report
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  1.7s axe tap -x 55 -y 347 --post-delay 0.5
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  2.5s axe touch -x 201 -y 342 --down --up --delay 1.2
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  2.4s axe tap --label 举报 --post-delay 0.5
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+tap retry: '举报': unchanged 3.4 s after tap 1; tapping again (retry 1 of 2)
+  2.4s axe tap --label 举报 --post-delay 0.5
+  1.2s axe describe-ui
+tap retry: '举报': changed after retry 1 (7.0 s after the first tap)
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  2.7s axe tap --label 其他 --post-delay 0.5
+  1.5s axe describe-ui
+  1.8s axe tap -x 347 -y 347 --post-delay 0.5
+  1.2s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 02-gone
+  1.3s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe tap -x 201 -y 474 --post-delay 0.5
+  1.4s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.4s axe touch -x 201 -y 518 --down --up --delay 1.2
+  0.9s axe describe-ui
+  1.1s axe describe-ui
+  0.9s axe describe-ui
+tap retry: profile-review-fixture-profile-review-004: unchanged 3.3 s after tap 1; tapping again (retry 1 of 2)
+  2.4s axe touch -x 201 -y 518 --down --up --delay 1.2
+  0.9s axe describe-ui
+  2.0s axe describe-ui
+tap retry: profile-review-fixture-profile-review-004: unchanged 3.1 s after tap 2; tapping again (retry 2 of 2)
+  2.4s axe touch -x 201 -y 518 --down --up --delay 1.2
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+tap retry: profile-review-fixture-profile-review-004: still unchanged after 2 retries (14.5 s); the case goes on
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot 03-own-review
+  0.9s axe describe-ui
+latency on Tapiro Verify 3: 88 commands, median 1.0 s, max 2.9 s (axe tap --id profile-all-reviews --post-delay 0.5), 0 timeouts
