@@ -1,13 +1,13 @@
 """Block from the thread ⋯ (127 A, 123 A): ⋯ (更多) holds 看详情, then 举报阿杰 and a red 屏蔽阿杰 in their own group. 屏蔽阿杰
 opens the system action sheet that says neither side can send here and the history stays; 屏蔽 shows progress in place
-of ⋯. The first block fails (`-uiVerifyBlock failOnce`): 没屏蔽成功 and the composer stays. The second replaces the
+of ⋯. The first block fails (`-uiVerifyBlock failOnce`): 没屏蔽成功 on a red card and the composer stays. The second replaces the
 composer with 「你屏蔽了阿杰 · 解除」, keeps the messages, and ⋯ now offers 解除屏蔽阿杰. 解除 asks first; the first unblock
-fails with 没解除成功 under the footer, the second brings the composer back. Dark covers the footer over the transcript."""
+fails with a red ! and 没解除成功 under the footer, the second brings the composer back. Dark covers the footer over the transcript."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from chat import bubbles, labels, menu_pick, open_menu, open_thread, sheet_action  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, assert_colour, by_id, token  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/features/block/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
@@ -49,9 +49,12 @@ ui.tap_point(20, 400)
 ui.at_rest()
 
 block_once()
-ui.element('chat-thread-safety-failed', timeout=20)
+card = ui.element('chat-thread-safety-failed', timeout=20)
+assert card.get('AXLabel') == ui.t('block.failed'), card.get('AXLabel')
 assert by_id(ui.read(), 'chat-composer-input'), 'the composer went away after a failed block'
-ui.capture('02-block-failed')
+ui.at_rest()
+shot = ui.snap('02-block-failed')
+assert_colour(shot, card['frame'], token('--color-urgent-fill', ui.appearance), 'the failed block card')
 
 block_once()
 footer = ui.element('chat-thread-blocked', timeout=20)
@@ -79,7 +82,12 @@ items = ui.read()
 top = min(i['frame']['y'] for i in items if (i.get('AXUniqueId') or '') in ('chat-thread-blocked', 'chat-thread-unblock'))
 low = max(b['frame']['y'] + b['frame']['height'] for b in bubbles(items))
 assert low <= top + 1, f'the newest message ({low}) is under the taller footer ({top})'
-ui.capture('05-unblock-failed')
+shot = ui.snap('05-unblock-failed')
+line = by_id(items, 'chat-thread-unblock-failed')['frame']
+beside = {'x': line['x'] - 20, 'y': line['y'] - 2, 'width': 18, 'height': line['height'] + 4}
+red = token('--color-urgent', ui.appearance)[0]
+urgent = shot.count(beside, lambda rgb: abs(rgb[0] - red) < 30 and rgb[1] < 140)
+assert urgent > 40, f'没解除成功 has no red symbol before it ({urgent} pixels)'
 unblock_once()
 ui.element('chat-composer-input', timeout=20)
 ui.gone('chat-thread-blocked')

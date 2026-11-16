@@ -1,6 +1,6 @@
 """A failed send (120 A): the first send fails (`-uiVerifyChatFail send`), so the bubble keeps its text with a red ! beside
-it and reads 没发出去; nothing is sent again on its own. Tapping ! asks 「重发该消息？」 with 重发, 删除 and 取消; 重发 sends it
-once more under the same client id and the bubble turns plain. Dark adds the bubble colours."""
+it (4 pt away) and reads 没发出去; nothing is sent again on its own. Tapping ! asks 「重发该消息？」 with 重发, 删除 and 取消; 重发 sends it
+once more under the same client id and the bubble turns plain without moving. Dark adds the bubble colours."""
 import sys
 import time
 
@@ -10,6 +10,8 @@ from driver import UI, assert_colour, by_id, token  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
 DRAFT = '在大堂等你'
+# Half the 22 pt symbol and a 4 pt gap, with a point to spare.
+NEAR = 16
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
         '-uiVerifyChatFail', 'send', '-uiVerifyChatDraft', 'fixture-chat-bounty|在大堂等你']
 
@@ -31,6 +33,8 @@ items = ui.wait(lambda items: retries(items) and any(b.get('AXLabel') == failed 
 assert retry.get('AXLabel') == ui.t('chat.thread.failed'), retry.get('AXLabel')
 bubble = next(b for b in bubbles(items) if b.get('AXLabel') == failed)
 assert retry['frame']['x'] + retry['frame']['width'] <= bubble['frame']['x'] + 1, 'the ! is not beside the bubble'
+reach = bubble['frame']['x'] - retry['frame']['x'] - retry['frame']['width'] / 2
+assert reach <= NEAR, f'the ! sits {reach} pt from the bubble, centre to edge'
 ui.at_rest()
 shot = ui.snap('01-failed')
 assert_colour(shot, bubble['frame'], token('--color-accent', ui.appearance), 'your bubble')
@@ -45,7 +49,8 @@ assert chat_calls(ui, 'send', 1), 'the first send never reached the call log'
 time.sleep(2)  # a replay would follow the failed answer
 assert len(chat_calls(ui, 'send', 2, 0)) == 1, 'a failed message was sent again on its own'
 
-ui.tap(retry['AXUniqueId'])
+# 8 pt left of the 22 pt symbol: inside its 44 pt target, outside what is drawn.
+ui.tap_point(retry['frame']['x'] - 8, retry['frame']['y'] + retry['frame']['height'] / 2)
 ui.labelled(ui.t('chat.thread.resendTitle'))
 for label in ('chat.thread.resend', 'chat.thread.discard', 'chat.thread.cancel'):
     ui.labelled(ui.t(label))
@@ -53,6 +58,10 @@ ui.capture('02-resend')
 tap_button(ui, ui.t('chat.thread.resend'))
 ui.wait(lambda items: not retries(items) and any(b.get('AXLabel') == mine for b in bubbles(items)),
         'the resent message never turned stored')
+ui.at_rest()
+stored = next(b for b in bubbles(ui.read()) if b.get('AXLabel') == mine)
+moved = max(abs(stored['frame'][k] - bubble['frame'][k]) for k in ('x', 'y', 'width', 'height'))
+assert moved <= 0.5, f'the bubble moved between failed and sent: {bubble["frame"]} then {stored["frame"]}'
 first, second = chat_calls(ui, 'send', 2)
 assert first['clientId'] == second['clientId'], f'the retry used another client id: {first} {second}'
 ui.at_rest()

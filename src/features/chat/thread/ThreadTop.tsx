@@ -10,6 +10,7 @@ import { space } from '@/ui/theme/tokens';
 import type { ThreadState } from '../chatStore';
 import { chatStore } from '../services';
 import type { ThreadInfo } from '../types';
+import { FailureCard } from './FailureCard';
 import { ItemCard } from './ItemCard';
 
 export function ThreadTop({
@@ -17,14 +18,14 @@ export function ThreadTop({
   thread,
   top,
   now,
-  warning,
+  failure,
   onOpenItem,
 }: {
   threadId: string;
   thread: ThreadState | undefined;
   top: number;
   now: number;
-  warning: string | null;
+  failure: string | null;
   onOpenItem: (info: ThreadInfo) => void;
 }) {
   const { t } = useI18n();
@@ -33,11 +34,7 @@ export function ThreadTop({
   return (
     <View style={[styles.top, { paddingTop: top + space.sm }]}>
       {thread?.info ? <ItemCard info={thread.info} now={now} onOpen={onOpenItem} /> : null}
-      {warning ? (
-        <View style={styles.inset}>
-          <InlineState tone="warning" text={warning} testID="chat-thread-safety-failed" />
-        </View>
-      ) : null}
+      {failure ? <FailureCard text={failure} testID="chat-thread-safety-failed" /> : null}
       {offline ? <OfflineLine text={t('live.offline')} testID="chat-thread-offline" /> : null}
       {stale ? (
         <View style={styles.inset}>
@@ -58,6 +55,6 @@ export function ThreadTop({
 }
 
 const styles = StyleSheet.create({
-  top: { gap: space.sm },
+  top: { gap: space.sm, paddingBottom: space.sm },
   inset: { marginHorizontal: space.md },
 });

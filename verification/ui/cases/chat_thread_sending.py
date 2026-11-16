@@ -1,7 +1,7 @@
 """Delivery states (120 A, drawn as the WeChat style on the canvas): a draft kept on the device is in the composer when
 the thread opens; 发送 empties the composer at once and the new bubble shows a spinner beside it, without dimming,
 while the send is outstanding (the fixture holds it for 6 s); once the server stores it the spinner goes and the
-bubble reads plain. The draft does not come back after sending."""
+bubble reads plain, where it was. The draft does not come back after sending."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -41,6 +41,9 @@ assert spinner['frame']['x'] + spinner['frame']['width'] <= bubble['frame']['x']
 ui.wait(lambda items: any(b.get('AXLabel') == mine for b in bubbles(items)) and not spinners(items),
         'the bubble never turned stored', 20)
 ui.at_rest()
+stored = next(b for b in bubbles(ui.read()) if b.get('AXLabel') == mine)
+moved = max(abs(stored['frame'][k] - bubble['frame'][k]) for k in ('x', 'y', 'width', 'height'))
+assert moved <= 0.5, f'the bubble moved between sending and sent: {bubble["frame"]} then {stored["frame"]}'
 ui.capture('02-stored')
 assert not by_id(ui.read(), 'chat-composer-send'), 'the draft came back after sending'
 print('PASS: kept draft, spinner while sending, plain once stored, draft cleared')
