@@ -1,13 +1,15 @@
 """小貘记得 (145, 283, 284). 我的 → 小貘 shows the 小貘记得 row with its count and pushes the grouped list: 地方 and 习惯, the
 switch on top with the on footer. Swiping a row deletes it once; a row opens its editor, which shows its values and
 deletes it; 添加一条 saves a new entry into its section. Turning the switch off says nothing new is kept or used and
-hides 添加; 全部删除 asks first and leaves the empty state."""
+hides 添加; 全部删除 asks first and leaves the empty state, which says to turn the switch on."""
+import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import assert_calls  # noqa: E402
+from ask import assert_calls, assert_switch_green  # noqa: E402
 from bounty import tap_sheet_action  # noqa: E402
 from driver import UI, by_id, luma, reach_home  # noqa: E402
+from ocr import lines_in  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/app/ask-memory-entry.tsx', 'src/app/_layout.tsx',
         'src/lib/i18n/locales/ask/', 'src/ui/NoticeCard.tsx', 'src/ui/SyncedTextField.tsx', 'verification/ui/ask.py',
@@ -55,6 +57,11 @@ ui.at_rest()
 shot = ui.snap('01-list')
 screen = by_id(ui.read(), 'memory-screen')['frame']
 assert_background(shot, screen['x'] + 4, screen['y'] + screen['height'] / 2, 'the page background')
+assert_switch_green(shot, by_id(ui.read(), 'memory-switch')['frame'], '让小貘记得')
+clear = [line for line in lines_in(shot, ui.locale) if re.search(re.escape(ui.t('ask.memory.clearAll')), line['text'])]
+assert clear, '全部删除 is not on the page'
+off = clear[0]['x'] + clear[0]['width'] / 2 - (screen['x'] + screen['width'] / 2)
+assert abs(off) < 12, f'全部删除 is {off:.0f} pt off the centre of its row (284 A centres it)'
 
 school = ui.element('memory-row-mem-school')['frame']
 y = school['y'] + school['height'] / 2
@@ -105,6 +112,8 @@ assert_calls(ui, 'memoryClear', 0, wait=1)
 tap_sheet_action(ui, ui.t('ask.memory.clearConfirm'), 'memory-clear')
 ui.element('memory-empty', timeout=30)
 assert_calls(ui, 'memoryClear', 1)
+empty = by_id(ui.read(), 'memory-empty').get('AXLabel') or ''
+assert ui.t('ask.memory.emptyBodyOff') in empty, f'the empty page with the switch off offers adding: {empty!r}'
 ui.at_rest()
 ui.capture('06-empty')
 print('PASS: 小貘记得 lists, deletes by swipe and in the editor, adds, switches off and clears after asking')

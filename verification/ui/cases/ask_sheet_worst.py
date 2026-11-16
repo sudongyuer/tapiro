@@ -35,6 +35,10 @@ assert_calls(ui, 'ask', 1, wait=3)
 items = ui.read()
 for identifier in ('ask-retry', 'ask-manual'):
     assert by_id(items, identifier)['frame']['height'] >= 44, f'{identifier} is under 44 pt'
+lead, rest = by_id(items, 'ask-failure-text'), by_id(items, 'ask-failure-text-rest')
+assert rest, 'the failure card has no second line: the whole sentence is the title'
+if ui.locale == 'zh-Hans':
+    assert lead['frame']['height'] < 1.6 * rest['frame']['height'], f'the failure title wraps: {lead["frame"]}'
 assert by_id(items, 'ask-tapir-suggestion-0') is None, 'suggestions stayed beside 小貘晕了'
 ui.at_rest()
 ui.capture('01-provider-error')

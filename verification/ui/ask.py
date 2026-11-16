@@ -2,7 +2,8 @@ import json
 import time
 
 from choose import defaults
-from driver import by_id
+from driver import by_id, close, luma, token
+from taps import walk
 
 # One word: a typed space was turned into 「. 」 once (en dark). Lower case, so it goes through paced HID keys: an
 # unpaced `axe type Parcel` left iOS's press-and-hold accent menu for 「l」 over the field in 2 of 32 probes, and
@@ -54,9 +55,55 @@ def type_and_send(ui, text=TYPED):
     ui.press('ask-tapir-send', 0.15)
 
 
+def said(items, identifier):
+    parts = [(by_id(items, name) or {}).get('AXLabel') or '' for name in (identifier, f'{identifier}-rest')]
+    return ''.join(''.join(parts).split())
+
+
+def wait_said(ui, identifier, key, timeout=30):
+    expected = ''.join(ui.t(key).split())
+    ui.wait(lambda items: said(items, identifier) == expected, f'{identifier} does not read {ui.t(key)}', timeout)
+
+
 def note(ui, key, timeout=30):
-    expected = ui.t(key)
-    ui.wait_label('ask-tapir-note', lambda label: label == expected, f'the sheet note is not {expected}', timeout=timeout)
+    wait_said(ui, 'ask-tapir-note', key, timeout)
+
+
+def captured(ui, name):
+    return list(walk(json.loads((ui.output / f'{name}.json').read_text())))
+
+
+def lift(shot, f):
+    band = {'y': f['y'] + f['height'] * 0.3, 'height': f['height'] * 0.4, 'width': 5}
+
+    def middle(x):
+        shades = sorted(luma(rgb) for rgb in shot.pixels({**band, 'x': x}))
+        return shades[len(shades) // 2]
+
+    return middle(f['x'] + 3) - middle(f['x'] - 9)
+
+
+# On the audit's captures an unfilled card read 0.9 (light) and 4.0 (dark), a dark card on the opaque background -13.8
+# to 4.1, and a filled light chip 14 to 33 (2026-11-17).
+def assert_lifted(shot, f, name, least=8):
+    found = lift(shot, f)
+    print(f'{name}: {found:.1f} brighter than the sheet beside it')
+    assert found >= least, f'{name} is only {found:.1f} brighter than the sheet beside it: it has no fill of its own'
+
+
+def assert_switch_green(shot, f, name):
+    end = {**f, 'x': f['x'] + f['width'] - 70, 'width': 70}
+    found = shot.count(end, lambda rgb: rgb[1] > rgb[0] + 60 and rgb[1] > rgb[2] + 60)
+    assert found >= 300, f'{name} is on without the system green track ({found} green pixels)'
+
+
+def assert_grabber_clear(ui, shot):
+    items = ui.read()
+    sheet, belly = by_id(items, 'ask-tapir-sheet')['frame'], by_id(items, 'ask-belly')['frame']
+    green = token('--color-belly', ui.appearance)
+    band = {'x': belly['x'], 'y': sheet['y'], 'width': belly['width'], 'height': 14}
+    found = shot.count(band, lambda rgb: close(rgb, green, 40))
+    assert found < 50, f'{found} belly-green pixels beside the grabber: the content scrolled behind it'
 
 
 def footer(ui, text, timeout=30):
@@ -74,8 +121,7 @@ def turn(ui, index, timeout=30):
 
 def failure(ui, reason, key, timeout=30):
     ui.element(f'ask-failure-{reason}', timeout=timeout)
-    expected = ui.t(key)
-    ui.wait_label('ask-failure-text', lambda label: label == expected, f'the failure reads not {expected}')
+    wait_said(ui, 'ask-failure-text', key)
 
 
 def ask_texts(ui, count, wait=3):

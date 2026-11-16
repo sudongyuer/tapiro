@@ -2,6 +2,7 @@ import { Button, Form, Host, Picker, Section, Text } from '@expo/ui/swift-ui';
 import {
   disabled,
   foregroundStyle,
+  frame,
   pickerStyle,
   scrollDismissesKeyboard,
   tag,
@@ -220,12 +221,15 @@ function EntryForm({
         {entry ? (
           <Section>
             <Button
-              label={t('ask.memory.entry.delete')}
               role="destructive"
               onPress={() => void remove()}
               testID="memory-entry-delete"
               modifiers={[foregroundStyle(color('--color-urgent')), disabled(saving)]}
-            />
+            >
+              <Text modifiers={[frame({ maxWidth: Infinity })]}>
+                {t('ask.memory.entry.delete')}
+              </Text>
+            </Button>
           </Section>
         ) : null}
       </Form>

@@ -1,7 +1,6 @@
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import {
-  PlatformColor,
   Pressable,
   StyleSheet,
   View,
@@ -15,6 +14,7 @@ import { AppText } from '@/ui/AppText';
 import { Mascot } from '@/ui/Mascot';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
+import { useSheetFill } from '@/ui/theme/useSheetFill';
 
 import { hungryOffer, type Belly, type HungryOffer } from './belly';
 import { leafAt } from './feedMotion';
@@ -81,6 +81,7 @@ export function HungryCard({
   actions: HungryActions;
 }) {
   const { t } = useI18n();
+  const fill = useSheetFill();
   const [mascot, setMascot] = useState<LayoutRectangle | null>(null);
   const [button, setButton] = useState<LayoutRectangle | null>(null);
   const offer = belly ? hungryOffer(belly) : null;
@@ -93,11 +94,11 @@ export function HungryCard({
 
   return (
     <View
-      style={[styles.card, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
+      style={[styles.card, { backgroundColor: fill }]}
       testID={`ask-hungry-${offer ?? 'unknown'}`}
     >
       <View onLayout={measure(setMascot)}>
-        <Mascot variant="front" size={MASCOT} />
+        <Mascot variant="front" size={MASCOT} darkOutline />
       </View>
       <AppText variant="title" style={styles.center} accessibilityRole="header">
         {t('ask.hungry.title')}
@@ -159,8 +160,8 @@ export function HungryCard({
 const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
-    gap: vars['--space-3'],
-    padding: vars['--space-5'],
+    gap: vars['--space-2'],
+    padding: vars['--space-4'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },

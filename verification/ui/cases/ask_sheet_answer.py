@@ -6,7 +6,7 @@ sheet and restarting the app keep them."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import TYPED, ask_texts, close_sheet, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
+from ask import TYPED, ask_texts, captured, close_sheet, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
@@ -14,7 +14,7 @@ DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/as
         'src/lib/i18n/locales/ask/', 'verification/ui/ask.py', 'verification/ui/bounty.py']
 BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
-        '-uiVerifyAiDelayMs', '2500', '-uiVerifyAiReplies', 'answer,clarify,draft']
+        '-uiVerifyAiDelayMs', '8000', '-uiVerifyAiReplies', 'answer,clarify,draft']
 
 ui = UI(*sys.argv[1:])
 reach_home(ui)
@@ -30,6 +30,8 @@ type_and_send(ui, suggestion)
 ui.element('ask-thinking', timeout=10)
 ui.element('ask-tapir-checking', timeout=5)
 ui.capture('02-thinking')
+# The tree is written after the picture, so progress in the tree means progress in the picture.
+assert by_id(captured(ui, '02-thinking'), 'ask-thinking'), 'the answer came before 02-thinking was captured'
 turn(ui, 1)
 ui.element('ask-turn-1-text')
 assert by_id(ui.read(), 'ask-tapir-suggestion-0') is None, 'suggestions stayed over the conversation'
@@ -66,6 +68,9 @@ resume = ui.t('ask.sheet.resume', text=suggestion)
 ui.wait_label('ask-resume', lambda label: label.startswith(resume), f'the resume line is not {resume}')
 assert prompt_value(ui) == 'Keep', f'closing the sheet lost the typed words: {prompt_value(ui)!r}'
 ui.at_rest()
+sheet, manual = (by_id(ui.read(), name)['frame'] for name in ('ask-tapir-sheet', 'ask-manual'))
+assert manual['y'] + manual['height'] <= sheet['y'] + sheet['height'], \
+    f'自己填 is cut by the sheet bottom under 接着上次: {manual} in {sheet}'
 ui.capture('06-new-with-resume')
 
 relaunch(ui, drop=[], add=['-uiVerifyAskKeep', '1'])

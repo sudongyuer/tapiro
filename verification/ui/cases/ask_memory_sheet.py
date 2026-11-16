@@ -4,8 +4,8 @@ entry's editor over the sheet. An answer that offers to remember something shows
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import assert_calls, open_sheet, turn, type_and_send  # noqa: E402
-from driver import UI, by_id, luma, reach_home  # noqa: E402
+from ask import assert_calls, assert_lifted, open_sheet, turn, type_and_send  # noqa: E402
+from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/ask.tsx', 'src/app/ask-memory-entry.tsx',
         'src/lib/i18n/locales/ask/', 'verification/ui/ask.py']
@@ -17,12 +17,6 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 ui = UI(*sys.argv[1:])
 
 
-def assert_background(shot, x, y, name):
-    shade = luma(shot.rgb(x, y))
-    if ui.appearance == 'dark':
-        assert shade < 80, f'{name} is light ({shade:.0f}) in dark appearance'
-    else:
-        assert shade > 175, f'{name} is dark ({shade:.0f}) in light appearance'
 reach_home(ui)
 open_sheet(ui)
 type_and_send(ui)
@@ -32,8 +26,7 @@ ui.wait_label('ask-turn-1-used-0', lambda label: label == used, f'the draft does
 assert by_id(ui.read(), 'ask-offer-1') is None, 'a draft with no offer shows an offer card'
 ui.at_rest()
 shot = ui.snap('01-used')
-card = by_id(ui.read(), 'ask-turn-1')['frame']
-assert_background(shot, card['x'] + 6, card['y'] + card['height'] / 2, 'the draft card')
+assert_lifted(shot, by_id(ui.read(), 'ask-turn-1')['frame'], 'the draft card')
 
 ui.tap('ask-turn-1-used-0-edit')
 ui.element('memory-entry-sheet', timeout=30)
@@ -49,7 +42,8 @@ pair = ui.t('ask.memory.offer.pair', label='图书馆', content='Sunway Universi
 ui.wait_label('ask-offer-3-pair', lambda label: label == pair, f'the offer does not read {pair}')
 assert_calls(ui, 'memorySave', 0, wait=1)
 ui.at_rest()
-ui.capture('03-offer')
+shot = ui.snap('03-offer')
+assert_lifted(shot, by_id(ui.read(), 'ask-offer-3')['frame'], 'the 要小貘记住吗 card')
 ui.tap('ask-offer-3-save')
 ui.element('ask-offer-3-saved', timeout=30)
 saved = assert_calls(ui, 'memorySave', 1)

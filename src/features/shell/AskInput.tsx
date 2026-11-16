@@ -5,6 +5,7 @@ import { ActivityIndicator, PlatformColor, StyleSheet, TextInput, View } from 'r
 import { useI18n } from '@/lib/i18n';
 import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
+import { useSheetFill } from '@/ui/theme/useSheetFill';
 import { useTheme } from '@/ui/theme/useTheme';
 
 const MIC_SIZE = vars['--touch-min'];
@@ -24,30 +25,33 @@ export type AskComposer = {
   onSend: () => void;
   onAddImage: () => void;
   sending: boolean;
-  note: string | null;
   mic: AskMic;
 };
 
 export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: ParseKeys }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const fill = useSheetFill();
   const { mic } = composer;
   const listening = mic.state === 'listening';
   const working = composer.sending || mic.state === 'starting' || mic.state === 'transcribing';
   const quiet = mic.state === 'idle';
   const placeholder = listening
     ? t(mic.live ? 'ask.voice.listening' : 'ask.voice.listeningCloud')
-    : t(prompt);
+    : mic.state === 'transcribing'
+      ? t('ask.voice.transcribing')
+      : t(prompt);
+  const held = listening && composer.text === '' ? styles.held : null;
 
   return (
-    <View style={[styles.input, { backgroundColor: PlatformColor('secondarySystemBackground') }]}>
+    <View style={[styles.input, { backgroundColor: fill }]} testID="ask-tapir-field">
       <PressDim
         testID="ask-tapir-add-image"
         accessibilityRole="button"
         accessibilityLabel={t('ask.sheet.addImage')}
         accessibilityState={{ disabled: composer.sending || !quiet }}
         disabled={composer.sending || !quiet}
-        style={styles.button}
+        style={[styles.button, held]}
         onPress={composer.onAddImage}
       >
         <SymbolView name="plus" size={20} tintColor={PlatformColor('secondaryLabel')} />
@@ -98,6 +102,7 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
           onPress={mic.onMic}
           style={[
             styles.button,
+            held,
             {
               backgroundColor: listening ? PlatformColor('systemRed') : PlatformColor('systemFill'),
             },
@@ -138,4 +143,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // A hint that wraps makes the field taller; the buttons keep their place so 停 stays under the finger that tapped.
+  held: { alignSelf: 'flex-start', marginTop: vars['--space-1'] },
 });
