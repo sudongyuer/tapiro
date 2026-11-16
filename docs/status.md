@@ -131,8 +131,8 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      `fix/ask-typing-paced`: the 问小貘 cases type `parcel` through paced HID keys, and the prompt is tapped until the
      keyboard shows (up to three taps; a tap after a reboot once left no focus). 10 runs of `ask_sheet_worst`, zh-Hans
      light: 9 pass, 0 flaky, 1 fail (run 6: a lost AXe session, then on the retry the first tap on the prompt brought no
-     keyboard; the focus retry was added after it and runs 8–10 passed with it). No run showed the accent menu. The full run had two more first-attempt 「the prompt never read Parcel」: in `ask_memory_sheet` the tap
-     on the prompt never focused it (no keyboard, empty field).
+     keyboard; the focus retry was added after it and runs 8–10 passed with it). No run showed the accent menu. The full run's two
+     other first-attempt 「the prompt never read Parcel」 were the same unfocused prompt (`ask_memory_sheet`).
      The 已结清 card's one-frame exit is fixed (`fix/settled-exit`, 2026-11-16): the `exiting` animation did run, but a
      Reanimated exiting view keeps its host index and the calm card mounted in the same commit is inserted after it, so
      it drew over the leave from the first frame (a 1.5 s `FadeIn` on the calm card showed the leave underneath). The
