@@ -434,3 +434,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-15 | 问小貘 decisions              | 0                  | 0             | ~0                                            | 0                       | 0                     |
 | 2026-11-16 | local refund trace            | 0                  | 0             | ~0                                            | 0                       | 0                     |
 | 2026-11-16 | session lifetimes             | 1 (ride reminders) | 0             | ~0                                            | 0                       | 0                     |
+| 2026-11-16 | verify:full 11-16             | 0                  | 0             | ~80 min (ask_sheet_worst past its time-box)   | 1                       | 0                     |
