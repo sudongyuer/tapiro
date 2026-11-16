@@ -185,8 +185,14 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 - Waiting on the owner's review, not to be merged before it: #137 (the public privacy page, `docs/website-privacy`)
   and #141 (the in-app privacy copy, `fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
-  deletion, 小貘记得 sent only with drafts and answers, location, no training per Alibaba Cloud's terms, one provider
-  name everywhere).
+  deletion, 小貘记得 sent only with drafts and answers, location, no training per Alibaba Cloud's terms, Model Studio's
+  retention of at most 30 days, one provider name everywhere, the location permission string naming rides and place
+  search). #137 also carries the 30-day retention sentence. The permission string reaches the app only after prebuild.
+- Answered 2026-11-16: 9 A (a refund through `iap-notify` while the app is open: the balance still refreshes on the
+  next return to the foreground; plan `docs/plans/2026-11-11-iap-local.md` 「Refund trace」), 10 A (the location
+  permission string names bounties, rides and place search, #141), 11 A (Model Studio's retention looked up: prompts
+  and responses at most 30 days by default, longer when the law or service security needs it, flagged content at most
+  2 years; `docs/research/2026-10-04-ai-providers.md` section 7; in the in-app policy on #141 and the website on #137).
 - ★ for veto (2026-11-16): the driver sends a tap again when the accessibility tree stays identical for 3 s, at most
   twice, and a run that needed it still passes but is listed (`verification/ui/README.md` 「★ Tap retries」).
 - Answered 2026-11-15: on-device Foundation Models A (not now; all 问小貘 calls are cloud), Jev A (not adopted;
