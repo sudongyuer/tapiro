@@ -122,8 +122,11 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      relaunch; the recordings show iOS's press-and-hold accent menu for 「l」 (ł ļ ľ) over the field from the end of
      `axe type Parcel` until the press, which only closed the menu. Holding `l` with `axe key 15 --duration 1.5`
      opens it 10 of 10; unpaced `axe type Parcel` left it 2 of 12 and 0 of 20; arrow and Escape keys do not close it,
-     a tap on the sheet top does (2 of 2). An outside cause (AXe's unpaced typing leaves its last key held); case
-     unchanged. The full run had two more first-attempt 「the prompt never read Parcel」: in `ask_memory_sheet` the tap
+     a tap on the sheet top does (2 of 2). An outside cause (AXe's unpaced typing leaves its last key held). Fixed in
+     `fix/ask-typing-paced`: the 问小貘 cases type `parcel` through paced HID keys, and the prompt is tapped until the
+     keyboard shows (up to three taps; a tap after a reboot once left no focus). 10 runs of `ask_sheet_worst`, zh-Hans
+     light: 9 pass, 0 flaky, 1 fail (run 6: a lost AXe session, then on the retry the first tap on the prompt brought no
+     keyboard; the focus retry was added after it and runs 8–10 passed with it). No run showed the accent menu. The full run had two more first-attempt 「the prompt never read Parcel」: in `ask_memory_sheet` the tap
      on the prompt never focused it (no keyboard, empty field).
      The 已结清 card's one-frame exit is fixed (`fix/settled-exit`, 2026-11-16): the `exiting` animation did run, but a
      Reanimated exiting view keeps its host index and the calm card mounted in the same commit is inserted after it, so

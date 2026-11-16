@@ -53,7 +53,9 @@ current (`KeyboardsCurrentAndNext`, `KeyboardLastUsed`) and turns off `KeyboardP
 prediction and autocorrection rewrite words (`klia` became `Kline`). The settings apply to the next app launch without
 a reboot; `simctl erase` drops them, and the next run writes them again. Simulators run headless, so there is no
 hardware keyboard: the software keyboard shows, and AXe's typed keys are not autocapitalised, so type text in the case
-it should read (`Parcel`, not `parcel`).
+it should read. Text with a capital goes through unpaced `axe type`, which sometimes leaves its last key held long
+enough for iOS's press-and-hold accent menu (「ł ļ ľ」 for `l`); the menu is modal and swallows the next touch, so text
+followed by a tap the case depends on (the 问小貘 prompt before 发送) is lower case and goes through paced HID keys.
 Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:
 a PR run uses zh-Hans, a milestone run (`--locales`, and the full matrix) adds `en` for every case, and `ms` exists
 only to catch truncation of the longest copy, so a case that shows long copy declares
