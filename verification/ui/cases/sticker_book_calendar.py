@@ -1,11 +1,13 @@
 """月历 (86C, 96A): the native 卡堆 / 月历 switch turns the book into this month's calendar; the choice survives a
 relaunch. Days with a done errand show its hand art and read the date, the count and the titles; empty days show only
-the number. The month line counts 7 done, and its handwritten heading reads in light and dark. Tapping 帮取快递's day switches back to 卡堆 with that card in front."""
+the number. Each week row holds seven days, so a day sits under its weekday (Monday first in every locale): 12 October
+2026, a Monday, in the first column, the 18th, a Sunday, in the last, on the same row. The enabled month chevron is drawn
+in the accent, not system blue. The month line counts 7 done, and its handwritten heading reads in light and dark. Tapping 帮取快递's day switches back to 卡堆 with that card in front."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/', 'verification/ui/bounty.py']
 LOCALES = ['zh-Hans', 'ms']
@@ -13,6 +15,7 @@ SEED = ['-uiVerifyBookView', 'stack']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'seven', '-uiVerifyBookView', 'stack']
 DAY = 'sticker-calendar-day-'
 COLOURFUL_MIN = 300
+WEEKDAY_COLUMNS = {12: 0, 14: 2, 18: 6, 24: 5}
 
 ui = UI(*sys.argv[1:])
 
@@ -50,6 +53,13 @@ tea = day_with(items, '帮买奶茶')
 parcel = day_with(items, '帮取快递')
 assert tea and parcel, 'the days with 帮买奶茶 and 帮取快递 are missing'
 assert_touch_target(tea, 'a done day')
+grid = ui.element('sticker-calendar')['frame']
+for day, column in WEEKDAY_COLUMNS.items():
+    cell = by_id(items, f'{DAY}{day}')['frame']
+    found = int((cell['x'] + cell['width'] / 2 - grid['x']) // (grid['width'] / 7))
+    assert found == column, f'October {day} sits in column {found}, its weekday is column {column} (Monday first)'
+monday, sunday = (by_id(items, f'{DAY}{day}')['frame'] for day in (12, 18))
+assert abs(monday['y'] - sunday['y']) < 1, f'Monday the 12th and Sunday the 18th are not on one week row: {monday} {sunday}'
 empty = next(
     (item for item in items
      if (item.get('AXUniqueId') or '').startswith(DAY)
@@ -63,6 +73,12 @@ blank = shot.count(empty['frame'], lambda rgb: max(rgb) - min(rgb) > 40)
 print(f'colourful pixels: done day {drawn}, empty day {blank}')
 assert drawn > COLOURFUL_MIN, f'the done day draws no hand art ({drawn})'
 assert blank < 20, f'an empty day draws something ({blank})'
+chevron = ui.element('sticker-calendar-next')['frame']
+accent = token('--color-accent', ui.appearance)
+tinted = shot.count(chevron, lambda rgb: close(rgb, accent, 24))
+blue = shot.count(chevron, lambda rgb: rgb[2] - rgb[0] > 60)
+print(f'next-month chevron: {tinted} accent pixels, {blue} blue pixels')
+assert tinted > 20 and blue == 0, f'the next-month chevron is not drawn in the accent ({tinted} accent, {blue} blue)'
 ink = shot.count(month['frame'], (lambda rgb: max(rgb) > 200) if ui.appearance == 'dark' else (lambda rgb: max(rgb) < 80))
 print(f'month heading ink pixels: {ink}')
 assert ink > 200, f'the handwritten month heading does not contrast with the {ui.appearance} background ({ink})'

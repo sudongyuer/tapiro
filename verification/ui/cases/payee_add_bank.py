@@ -70,6 +70,13 @@ save()
 error('name')
 ui.capture('03-name-required')
 typed('payee-name-input', HOLDER)
+items = ui.read()
+for identifier, key in (('payee-account-input', 'payee.form.accountLabel'), ('payee-name-input', 'payee.form.nameLabel')):
+    field = by_id(items, identifier)
+    assert field.get('AXLabel') == ui.t(key), f'the filled {identifier} reads {field.get("AXLabel")!r}, not {ui.t(key)!r}'
+    title = next((i for i in items if i.get('AXUniqueId') != identifier
+                  and (i.get('AXLabel') or '').casefold() == ui.t(key).casefold()), None)
+    assert title and title['frame']['y'] < field['frame']['y'], f'no visible {ui.t(key)!r} title above the filled {identifier}'
 ui.capture('04-filled')
 save()
 ui.gone('payee-bank-sheet')

@@ -223,6 +223,7 @@ function Settled({ data }: { data: SheetData }) {
   const { t, language } = useI18n();
   const { color } = useTheme();
   const amount = formatMoney(paidAmount(data.payment), language);
+  const payee = data.payment.role === 'payee';
   return (
     <Section>
       <HStack
@@ -236,12 +237,12 @@ function Settled({ data }: { data: SheetData }) {
         />
         <VStack alignment="leading" spacing={vars['--space-1'] / 2}>
           <Text modifiers={[font({ textStyle: 'headline' })]}>
-            {data.payment.role === 'payee'
-              ? t('pay.celebrate.tick', { amount })
-              : t('pay.sheet.settled.title')}
+            {payee ? t('pay.celebrate.tick', { amount }) : t('pay.sheet.settled.title')}
           </Text>
           <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>
-            {t('pay.sheet.settled.body', { amount, title: data.payment.title })}
+            {payee
+              ? data.payment.title
+              : t('pay.sheet.settled.body', { amount, title: data.payment.title })}
           </Text>
         </VStack>
       </HStack>
