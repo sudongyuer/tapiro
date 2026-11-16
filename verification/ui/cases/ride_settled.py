@@ -10,7 +10,7 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from ride import within_screen  # noqa: E402
+from ride import assert_stamp_under_sticker, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'src/lib/i18n/locales/rideSettle/', 'src/lib/stickers/',
         'supabase/migrations/20261102000900_ride_settle_reads.sql']
@@ -47,6 +47,7 @@ assert_touch_target(collect, '收进贴纸本')
 for identifier in ('ride-detail-ticket', 'ride-settle-sticker'):
     within_screen(items, identifier)
 ui.at_rest()
+assert_stamp_under_sticker(ui.read(), 'ride-detail-stamp-settled')
 ui.snap('01-settled')
 
 ui.tap('ride-settle-collect')

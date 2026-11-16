@@ -5,10 +5,11 @@ confirm rows stay inside the sheet, in zh-Hans and ms."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+import ocr  # noqa: E402
 from driver import UI  # noqa: E402
 from ride import form_scroll_to, open_form, open_list, picker_clock, within_screen  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py']
+DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py', 'verification/ui/ocr.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDraft', 'worst']
 TIME_ZONE = 'Europe/London'
@@ -21,7 +22,13 @@ ticket = ui.wait_label('ride-form-ticket', lambda label: '谷中城北庭正门�
 height = ticket['frame']['height']
 assert '¥' in ticket.get('AXLabel', '') and '267' in ticket.get('AXLabel', ''), ticket.get('AXLabel')
 within_screen(ui.read(), 'ride-form-ticket')
-ui.capture('01-form-top')
+ui.at_rest()
+shot = ui.snap('01-form-top')
+lines = ocr.find(ocr.lines_in(shot, ui.locale), r'\S', ui.element('ride-form-start')['frame'])
+name = sorted(lines, key=lambda line: line['y'])[:2]
+assert len(name) == 2, f'the start place should read on two lines: {[line["text"] for line in lines]}'
+drift = abs(name[0]['x'] - name[1]['x'])
+assert drift <= 4, f'the two-line place name is not left-aligned: {[(line["text"], round(line["x"])) for line in name]}'
 form_scroll_to(ui, 'ride-form-seats-label')
 ui.wait_label('ride-form-seats-label', lambda label: ui.t('ride.create.form.sixSeats', count=5) in label,
               'the 6-seat hint is missing')

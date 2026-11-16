@@ -1,4 +1,4 @@
-import { Button, HStack, Image, Section, Spacer, Text, VStack } from '@expo/ui/swift-ui';
+import { Button, HStack, Image, Section, Spacer, Text, VStack, ZStack } from '@expo/ui/swift-ui';
 import {
   accessibilityHidden,
   accessibilityIdentifier,
@@ -8,8 +8,11 @@ import {
   font,
   foregroundStyle,
   frame,
+  hidden,
   lineLimit,
   monospacedDigit,
+  multilineTextAlignment,
+  padding,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
@@ -25,6 +28,9 @@ import { codePoints } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const row = frame({ maxWidth: Infinity, minHeight: vars['--touch-min'], alignment: 'leading' });
+const SUBLINE_GAP = vars['--space-1'] / 2;
+const FOOTNOTE_LINE = 18;
+const EDIT_OVERHANG = (vars['--touch-min'] - FOOTNOTE_LINE) / 2;
 
 type Which = 'start' | 'dest';
 
@@ -96,7 +102,7 @@ function PlaceRows({
           size={12}
           modifiers={[accessibilityHidden()]}
         />
-        <VStack alignment="leading" spacing={vars['--space-1'] / 2}>
+        <ZStack alignment="bottomLeading">
           <Button
             onPress={onPick}
             testID={`ride-form-${which}`}
@@ -105,15 +111,21 @@ function PlaceRows({
               accessibilityLabel(place ? `${placeholder}: ${place.label}` : placeholder),
             ]}
           >
-            <HStack spacing={vars['--space-2']}>
-              <Text
-                modifiers={[
-                  place ? foregroundStyle(color('--color-accent')) : secondary,
-                  lineLimit(2),
-                ]}
-              >
-                {place?.label ?? placeholder}
-              </Text>
+            <HStack spacing={vars['--space-2']} modifiers={[row, contentShape(shapes.rectangle())]}>
+              <VStack alignment="leading" spacing={SUBLINE_GAP}>
+                <Text
+                  modifiers={[
+                    place ? foregroundStyle(color('--color-accent')) : secondary,
+                    lineLimit(2),
+                    multilineTextAlignment('leading'),
+                  ]}
+                >
+                  {place?.label ?? placeholder}
+                </Text>
+                {subline ? (
+                  <Text modifiers={[font({ textStyle: 'footnote' }), hidden()]}>{subline}</Text>
+                ) : null}
+              </VStack>
               <Spacer />
               <Image systemName="chevron.right" size={13} modifiers={[secondary]} />
             </HStack>
@@ -135,6 +147,7 @@ function PlaceRows({
                 modifiers={[
                   buttonStyle('borderless'),
                   accessibilityLabel(t('ride.create.form.shortEditLabel')),
+                  padding({ vertical: -EDIT_OVERHANG }),
                 ]}
               >
                 <Text
@@ -149,7 +162,7 @@ function PlaceRows({
               </Button>
             </HStack>
           ) : null}
-        </VStack>
+        </ZStack>
       </HStack>
       {editing && place ? (
         <HStack spacing={vars['--space-3']} modifiers={[row]}>

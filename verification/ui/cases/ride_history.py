@@ -14,6 +14,8 @@ ui = UI(*sys.argv[1:])
 open_list(ui)
 row = ui.element('ride-list-history')
 assert row.get('AXLabel') == ui.tn('ride.list.history', 3), row.get('AXLabel')
+heading = ui.element('ride-list-mine').get('AXLabel')
+assert heading == ui.t('ride.list.mine'), f'我的拼车 counts past rides or shows 0: {heading}'
 items = ui.read()
 assert by_id(items, 'ride-empty') is None, 'past rides alone showed the empty moment screen'
 ui.element('ride-list-joinable-empty')
