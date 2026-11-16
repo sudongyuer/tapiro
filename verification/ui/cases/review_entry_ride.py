@@ -30,7 +30,7 @@ text = label(ui, SITI)
 assert ui.t('reputation.entry.ended') in text and 'Siti' in text, text
 ui.at_rest()
 shot(ui, '01-rows')
-ui.tap(SITI)
+ui.tap(SITI, expect_change=False)
 assert by_id(ui.read(), SHEET) is None, '评价已结束 opened the sheet'
 ui.tap(MEI)
 ui.element(SHEET, timeout=20)

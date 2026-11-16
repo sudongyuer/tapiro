@@ -41,7 +41,8 @@ assert home['x'] + home['width'] <= middle['x'] and middle['x'] + middle['width'
 assert abs(ask['width'] - 48) < 1 and abs(home['width'] - 48) < 1, f'minimised buttons are not 48 pt: {home} {ask}'
 assert parts['inline']['AXLabel'].startswith(ui.t('pay.live.owe', name='阿杰')) and '15.00' in parts['inline']['AXLabel'], f'inline accessory label {parts["inline"]["AXLabel"]}'
 shot = ui.snap('02-minimised')
-assert_tapir_button(shot, ask, ui.appearance, '48 pt 小貘 button')
+# The minimised 小貘 button floats over whichever part of a board card the swipes stop at, an Apply button included.
+assert_tapir_button(shot, ask, ui.appearance, '48 pt 小貘 button', glass=False)
 
 ui.tap_point(home['x'] + home['width'] / 2, home['y'] + home['height'] / 2)
 ui.settled(lambda items: by_id(items, 'tab-bounty') if by_id(items, 'urgent-accessory') else None,

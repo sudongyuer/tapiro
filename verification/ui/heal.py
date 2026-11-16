@@ -20,6 +20,8 @@ class Attempt:
     message: str
     timeouts: int = 0
     duration: float = 0.0
+    tap_retries: int = 0
+    tap_notes: tuple = ()
 
     @property
     def session_lost(self):
@@ -49,6 +51,8 @@ class Outcome:
     retried_on: str | None = None
     first: Attempt | None = None
     first_device: str | None = None
+    tap_retries: int = 0
+    tap_notes: tuple = ()
 
 
 @dataclass
@@ -112,14 +116,16 @@ class Scheduler:
 def abandon(ticket):
     first, name = ticket.first, ticket.failed_on
     return Outcome(ticket.job, name, 'fail', f'{first.message}; not retried, the run stopped', first.duration,
-                   stalled_devices=[name] if first.stalled else [], first=first, first_device=name)
+                   stalled_devices=[name] if first.stalled else [], first=first, first_device=name,
+                   tap_retries=first.tap_retries, tap_notes=first.tap_notes)
 
 
 def settle(ticket, name, attempt):
     stall = attempt.stalled
     if ticket.failed_on is None:
         return Outcome(ticket.job, name, attempt.status, attempt.message, attempt.duration,
-                       stalled_devices=[name] if stall else [])
+                       stalled_devices=[name] if stall else [], tap_retries=attempt.tap_retries,
+                       tap_notes=attempt.tap_notes)
     first, failed_on = ticket.first, ticket.failed_on
     duration = round(first.duration + attempt.duration, 1)
     if attempt.status == 'pass':
@@ -128,7 +134,7 @@ def settle(ticket, name, attempt):
         status, message = 'fail', f'failed on {failed_on} ({first.message}) and again on {name}: {attempt.message}'
     stalled_devices = [d for d, a in ((failed_on, first), (name, attempt)) if a.stalled]
     return Outcome(ticket.job, name, status, message, duration, stalled_devices=stalled_devices, retried_on=name,
-                   first=first, first_device=failed_on)
+                   first=first, first_device=failed_on, tap_retries=attempt.tap_retries, tap_notes=attempt.tap_notes)
 
 
 def work(scheduler, device, attempt, heal, report, halt):
@@ -159,7 +165,7 @@ def work(scheduler, device, attempt, heal, report, halt):
         scheduler.leave(name)
 
 
-def summarize(timings, reboots, stopped):
+def summarize(timings, reboots, stopped, tapped=()):
     failures = sum(status not in ('pass', FLAKY) for _, status, _, _, _ in timings)
     flaky = [f'{locale} {appearance} {case}' for _, status, locale, appearance, case in timings if status == FLAKY]
     lines = []
@@ -170,6 +176,11 @@ def summarize(timings, reboots, stopped):
         lines.append(f'flaky: {len(flaky)} runs failed first and passed only on the retry; '
                      f'the first run is kept in {FIRST_ATTEMPT}/:')
         lines += [f'  {run}' for run in flaky]
+    if tapped:
+        count = sum(retries for retries, _ in tapped)
+        lines.append(f'tap retries: {count} in {len(tapped)} runs (a tap left the accessibility tree unchanged and was '
+                     'sent again; a pass here needed it):')
+        lines += [f'  {run}' for _, run in tapped]
     if stopped:
         lines.append(f'stopped: 3 consecutive {stopped} timeouts on one Simulator — environment or screen problem')
         failures += 1

@@ -5,36 +5,31 @@ import Animated, {
   Easing,
   interpolate,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
-import { AppText } from '@/ui/AppText';
-import { useLiveCardPaint, type LiveCardTone } from '@/ui/LiveCard';
+import { uiVerifyReduceMotion } from '@/lib/uiVerify';
+import type { LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
-import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
 
+import { BackFace } from './BackFace';
 import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
-import { PEEK, type CardPlacement, type StackLayout } from './stackLayout';
+import { useLeavingCard } from './leavingCard';
+import { PEEK, SCALE_STEP, type CardPlacement, type StackLayout } from './stackLayout';
 
 const MAX_Z = 10;
 const RESTACK = { duration: 420, easing: Easing.bezier(0.2, 0.9, 0.3, 1) };
 const LEAVE = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
-
-function leaveUp() {
-  'worklet';
-  return {
-    initialValues: { opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }] },
-    animations: {
-      opacity: withTiming(0, LEAVE),
-      transform: [{ translateY: withTiming(-24, LEAVE) }, { scale: withTiming(0.92, LEAVE) }],
-    },
-  };
-}
+const LEAVE_RISE = 24;
+const LEAVE_SHRINK = 0.08;
+const FRONT: CardPlacement = { y: 0, scale: 1, visible: true };
 
 const TONE: Record<LiveCardModel['kind'], LiveCardTone> = {
   oweMoney: 'pay',
@@ -65,6 +60,7 @@ export type HomeChat = { open: (bountyId: string) => void; opening: string | nul
 
 export type LiveCardStackProps = {
   cards: readonly LiveCardModel[];
+  heights: readonly number[];
   layout: StackLayout;
   ready: boolean;
   open: boolean;
@@ -77,19 +73,38 @@ export type LiveCardStackProps = {
 };
 
 export function LiveCardStack(props: LiveCardStackProps) {
-  const { cards, layout, ready } = props;
+  const { cards, heights, layout, ready } = props;
+  const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
+  const { leaving, rising, left } = useLeavingCard(cards, !reduceMotion);
+  const [shown, setShown] = useState(ready);
+  if (ready && !shown) setShown(true);
   return (
-    <View style={[styles.cards, { opacity: ready ? 1 : 0 }]}>
-      {cards.map((card, index) => (
-        <StackedCard
-          key={card.id}
-          {...props}
-          card={card}
-          index={index}
-          stacked={layout.stacked[index]}
-          fanned={layout.fanned[index]}
-        />
-      ))}
+    <View style={[styles.cards, { opacity: shown ? 1 : 0 }]}>
+      {[...cards, ...(leaving ? [leaving] : [])].map((card, index) =>
+        card === leaving ? (
+          <StackedCard
+            key={card.id}
+            {...props}
+            card={card}
+            index={0}
+            stacked={FRONT}
+            fanned={FRONT}
+            measured
+            onLeft={left}
+          />
+        ) : (
+          <StackedCard
+            key={card.id}
+            {...props}
+            card={card}
+            index={index}
+            stacked={layout.stacked[index]}
+            fanned={layout.fanned[index]}
+            measured={heights[index] > 0}
+            rising={card.id === rising}
+          />
+        ),
+      )}
     </View>
   );
 }
@@ -99,6 +114,9 @@ type StackedCardProps = LiveCardStackProps & {
   index: number;
   stacked: CardPlacement;
   fanned: CardPlacement;
+  measured: boolean;
+  rising?: boolean;
+  onLeft?: (id: string) => void;
 };
 
 function StackedCard({
@@ -106,6 +124,9 @@ function StackedCard({
   index,
   stacked,
   fanned,
+  measured,
+  rising,
+  onLeft,
   open,
   progress,
   ready,
@@ -120,25 +141,46 @@ function StackedCard({
   const bounty = bountyDetail(card);
   const behind = index > 0 && !open;
   const hidden = !stacked.visible && !open;
-  const y = useSharedValue(stacked.y);
-  const scale = useSharedValue(stacked.scale);
+  const y = useSharedValue(rising ? stacked.y + PEEK : stacked.y);
+  const scale = useSharedValue(rising ? stacked.scale - SCALE_STEP : stacked.scale);
   const faceShown = useSharedValue(index > 0 ? 1 : 0);
+  const leave = useSharedValue(0);
+  const leaving = onLeft !== undefined;
   const wasReady = useRef(ready);
   useEffect(() => {
-    const animate = wasReady.current && ready;
-    wasReady.current = ready;
+    if (leaving || !ready) return;
+    const animate = wasReady.current || rising === true;
+    wasReady.current = true;
     y.set(animate ? withTiming(stacked.y, RESTACK) : stacked.y);
     scale.set(animate ? withTiming(stacked.scale, RESTACK) : stacked.scale);
     const face = index > 0 ? 1 : 0;
     faceShown.set(animate ? withTiming(face, RESTACK) : face);
-  }, [ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
-  const motion = useAnimatedStyle(() => ({
-    opacity: stacked.visible ? 1 : progress.value,
-    transform: [
-      { translateY: interpolate(progress.value, [0, 1], [y.get(), fanned.y]) },
-      { scale: interpolate(progress.value, [0, 1], [scale.get(), fanned.scale]) },
-    ],
-  }));
+  }, [leaving, rising, ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
+  useEffect(() => {
+    if (!onLeft) return;
+    const id = card.id;
+    leave.set(
+      withTiming(1, LEAVE, (finished) => {
+        if (finished) scheduleOnRN(onLeft, id);
+      }),
+    );
+  }, [onLeft, card.id, leave]);
+  const motion = useAnimatedStyle(() => {
+    const gone = leave.get();
+    return {
+      opacity: (measured ? 1 : 0) * (stacked.visible ? 1 : progress.value) * (1 - gone),
+      transform: [
+        {
+          translateY: interpolate(progress.value, [0, 1], [y.get(), fanned.y]) - LEAVE_RISE * gone,
+        },
+        {
+          scale:
+            interpolate(progress.value, [0, 1], [scale.get(), fanned.scale]) *
+            (1 - LEAVE_SHRINK * gone),
+        },
+      ],
+    };
+  });
   const face = useAnimatedStyle(() => ({ opacity: faceShown.get() * (1 - progress.value) }));
   const peek = bounty
     ? t('home.card.bounty.line', { title: bounty.title, line: bounty.line })
@@ -180,10 +222,10 @@ function StackedCard({
   return (
     <Animated.View
       onLayout={onCardLayout(card.id)}
-      exiting={card.kind === 'settled' ? leaveUp : undefined}
-      accessibilityElementsHidden={hidden}
-      importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
-      style={[styles.card, { zIndex: MAX_Z - index }, motion]}
+      pointerEvents={leaving ? 'none' : 'auto'}
+      accessibilityElementsHidden={hidden || leaving}
+      importantForAccessibility={hidden || leaving ? 'no-hide-descendants' : 'auto'}
+      style={[styles.card, { zIndex: leaving ? MAX_Z + 1 : MAX_Z - index }, motion]}
     >
       {behind ? (
         <PressDim
@@ -221,25 +263,6 @@ function StackedCard({
   );
 }
 
-function BackFace({
-  tone,
-  label,
-  style,
-}: {
-  tone: LiveCardTone;
-  label: string;
-  style: ReturnType<typeof useAnimatedStyle>;
-}) {
-  const { surface, ink } = useLiveCardPaint(tone);
-  return (
-    <Animated.View pointerEvents="none" style={[styles.face, { backgroundColor: surface }, style]}>
-      <AppText variant="meta" numberOfLines={1} style={[styles.faceLabel, { color: ink }]}>
-        {label}
-      </AppText>
-    </Animated.View>
-  );
-}
-
 const styles = StyleSheet.create({
   cards: { flex: 1 },
   card: {
@@ -248,19 +271,5 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     transformOrigin: 'bottom',
-  },
-  face: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: vars['--radius-sheet'],
-    borderCurve: 'continuous',
-    justifyContent: 'flex-end',
-  },
-  faceLabel: {
-    height: PEEK,
-    lineHeight: PEEK,
-    textAlign: 'center',
-    fontWeight: '700',
-    opacity: MUTED_TEXT_OPACITY,
-    paddingHorizontal: vars['--space-5'],
   },
 });

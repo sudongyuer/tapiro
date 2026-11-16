@@ -45,7 +45,8 @@ def keypad(ui, text):
 
 def tap_pad_key(ui, screen, key):
     row, column = key
-    ui.tap_point(screen['width'] * PAD_COLUMNS[column], screen['height'] - PAD_ROWS_FROM_BOTTOM[row])
+    ui.tap_point(screen['width'] * PAD_COLUMNS[column], screen['height'] - PAD_ROWS_FROM_BOTTOM[row],
+                 expect_change=False)
 
 
 def backspace(ui, times):

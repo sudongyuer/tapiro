@@ -207,6 +207,37 @@ describe('purchase store', () => {
     expect(h.purchases.getSnapshot().kept).toEqual([]);
   });
 
+  test('a refund StoreKit delivers while the app is open is sent to the server and refreshes the balance', async () => {
+    let deliver: (transaction: StoreTransaction) => void = () => undefined;
+    const h = harness({
+      answers: [{ ok: true, status: 'revoked', balance: -3, coins: 5 }],
+      store: {
+        listen: (cb) => {
+          deliver = cb;
+          return { remove: () => undefined };
+        },
+      },
+    });
+    await h.purchases.start(USER);
+    expect(h.changed()).toBe(0);
+    deliver({
+      source: 'updates',
+      transactionId: 'r2',
+      originalTransactionId: 'r2',
+      productId: 'app.tapiro.coins.5',
+      jws: 'jws-r2',
+      environment: 'Xcode',
+      appAccountToken: USER,
+      revoked: true,
+      verified: true,
+    });
+    await flush();
+    await flush();
+    expect(h.calls[0]).toBe('verify jws-r2');
+    expect(h.changed()).toBe(1);
+    expect(h.purchases.getSnapshot().kept).toEqual([]);
+  });
+
   test('signing out stops the listener and drops a late answer', async () => {
     let removed = 0;
     let deliver: ((tx: StoreTransaction) => void) | null = null;

@@ -89,4 +89,7 @@ userCleanups.register((userId) => {
   clearImageCache();
 });
 
-sessionEnds.register(() => chatStore.clear());
+sessionEnds.register(() => {
+  chatStore.clear();
+  chatImages.clear();
+});

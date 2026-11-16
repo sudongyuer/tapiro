@@ -1,0 +1,14 @@
+Booting Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3 and installing the app
+Running 4 runs on 3 Simulators: Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3
+PASS zh-Hans light sign_in_fixture: PASS: signed out, then signed in as the fixture user after tapping Apple  [Tapiro Verify 2]
+PASS zh-Hans light app_launches: PASS: welcome screen visible and full-size without network or login  [Tapiro Verify]
+PASS zh-Hans light home_one_card: PASS: one card, no peeks, no toggle  [Tapiro Verify 2]
+PASS zh-Hans light shell_tabs: PASS: tabs, badge, 小貘 button and accessory placement  [Tapiro Verify 3]
+
+ seconds  status locale  look  case
+    22.3  pass   zh-Hans light sign_in_fixture
+    28.2  pass   zh-Hans light app_launches
+    15.6  pass   zh-Hans light home_one_card
+    53.4  pass   zh-Hans light shell_tabs
+    55.3  total (4 runs, 0 min 55 s)
+Artifacts: /private/tmp/claude-501/-Users-sudongyu-work-tapiro/545c257a-be97-40cb-ad45-d5e6ff36549f/scratchpad/tr-smoke

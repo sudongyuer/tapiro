@@ -48,6 +48,8 @@ HEAD_RANK = 4
 HEAD_OUTLINE_MIN_PT2 = 12
 REFERENCE = f'{ROW}04'
 
+OCR_EDGE = 4
+
 ui = UI(*sys.argv[1:])
 
 
@@ -100,7 +102,9 @@ def assert_row(shot, read, identifier):
     assert (row.get('AXLabel') or '').startswith(expected), f'{identifier} reads {row.get("AXLabel")!r}'
     assert NOTES[identifier].strip() in (row.get('AXLabel') or ''), f'{identifier} label lacks the full note'
     assert_touch_target(row, identifier)
-    helped = find(read, meta.replace(' ', r'\s?'), f)
+    # Vision's box for a line that starts at the row's leading edge can begin 2 pt before it (Helped 128 times at
+    # x 90.0 against the row's 92 in en dark, 2026-11-16), so the row is widened by OCR_EDGE on both sides.
+    helped = find(read, meta.replace(' ', r'\s?'), {**f, 'x': f['x'] - OCR_EDGE, 'width': f['width'] + 2 * OCR_EDGE})
     assert helped, f'{meta} is not shown in {identifier}: {[l["text"] for l in read]}'
     assert helped[0]['y'] - f['y'] <= META_TOP_PT, \
         f'{meta} sits {helped[0]["y"] - f["y"]:.0f} pt into {identifier}: the name wraps instead of truncating'
