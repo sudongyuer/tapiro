@@ -43,6 +43,11 @@ def inside(f, outer, slack=1):
             and f['y'] + f['height'] <= outer['y'] + outer['height'] + slack)
 
 
+def overlaps(a, b):
+    return not (a['x'] + a['width'] <= b['x'] or b['x'] + b['width'] <= a['x']
+                or a['y'] + a['height'] <= b['y'] or b['y'] + b['height'] <= a['y'])
+
+
 def contains(f, x, y, pad=0):
     return f['x'] - pad <= x <= f['x'] + f['width'] + pad and f['y'] - pad <= y <= f['y'] + f['height'] + pad
 

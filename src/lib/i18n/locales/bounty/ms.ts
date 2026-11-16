@@ -308,6 +308,7 @@ const ms: typeof zhHans = {
       details: 'Lihat Butiran',
       expand: 'Besarkan Peta',
       close: 'Tutup Peta',
+      noOrigin: 'Pilih tempat atau benarkan lokasi, dan peta akan dipaparkan di sini',
     },
     state: {
       loading: 'Memuatkan ganjaran',

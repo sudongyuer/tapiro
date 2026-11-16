@@ -117,6 +117,10 @@ row = ui.wait_label('bounty-place-row', lambda label: ui.t('bounty.board.place.p
                     'the map view without a location does not offer 选一个地方')
 assert_touch_target(row, '选一个地方')
 assert not cards(ui.read()), 'cards show in map view without a location'
+hint = ui.element('bounty-map-no-origin')
+assert hint.get('AXLabel') == ui.t('bounty.board.map.noOrigin'), hint.get('AXLabel')
+assert hint['frame']['y'] >= row['frame']['y'] + row['frame']['height'], \
+    f'the hint is not under 选一个地方: {hint["frame"]} / {row["frame"]}'
 visible(ui, 'bounty-view-map')
 ui.at_rest()
 assert_selected('05-denied-map', 'map')
@@ -125,6 +129,8 @@ relaunch(ui, drop=[*PLACE_ARGS, *SEED],
          add=['-uiVerifyBoardPlace', 'none', '-uiVerifyLocation', 'undetermined', '-uiVerifyBoardView', 'map'])
 visible(ui, 'bounty-location-card')
 assert by_id(ui.read(), 'bounty-place-row') is None, 'the place row shows beside the location card'
+assert ui.element('bounty-map-no-origin').get('AXLabel') == ui.t('bounty.board.map.noOrigin'), \
+    'the location card in map view lacks the line about the map'
 visible(ui, 'bounty-view-map')
 ui.at_rest()
 assert_selected('06-undetermined-map', 'map')

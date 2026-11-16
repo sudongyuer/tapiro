@@ -3,18 +3,22 @@ VoiceOver as 全屏看地图; it presents the map as a full-screen cover that fi
 急 / 塞得进空档 chips floating under the safe area, a close button top-left read as 关闭地图 and the system location
 button bottom-right (the board origin is the user's location); a pin opens its card there, and 看详情 dismisses the cover
 and pushes the detail; the 急 filter chosen in full screen is the board's own, so closing the cover returns to the board
-in map view with 急 still selected."""
+in map view with 急 still selected; on the `long` board the cover's 「地图上 20 / 45」 chip floats under the filter chips,
+44 pt, clear of the close button, the location button and MapKit's legal link."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import screen, visible  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
-from map import BACK, FRONT, MAP, close_card, face_box, inside, map_at_rest, pin_id, pins, tap_pin  # noqa: E402
+from bounty import relaunch  # noqa: E402
+from driver import UI, assert_touch_target, bottom, by_id, reach_home  # noqa: E402
+from map import (BACK, FRONT, MAP, close_card, face_box, inside, map_at_rest, overlaps, pin_id, pins,  # noqa: E402
+                 tap_pin)
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/app/bounty-map.tsx', 'src/app/_layout.tsx',
         'src/app/(tabs)/bounty/', 'src/features/home/', 'modules/tapiro-kit/ios/BountyMapView.swift',
-        'modules/tapiro-kit/ios/BountyPinView.swift', 'verification/ui/map.py', 'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
-BUDGET = 360
+        'modules/tapiro-kit/ios/BountyPinView.swift', 'verification/ui/map.py', 'verification/ui/board.py', 'src/features/place/', 'src/features/block/',
+        'verification/ui/bounty.py']
+BUDGET = 450
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardPlace', 'none',
         '-uiVerifyBoardView', 'map']
@@ -27,6 +31,8 @@ FIRST_TITLE = '帮取快递'
 CORNER = 24
 EDGE = 1
 STATUS_BAR = 44
+MORE = 'bounty-map-more'
+MORE_GAP = 24
 
 ui = UI(*sys.argv[1:])
 
@@ -130,5 +136,26 @@ ui.tap('map-card-details')
 ui.element('bounty-detail-title', timeout=40)
 assert by_id(ui.read(), COVER) is None, 'the cover is still up over the detail'
 ui.capture('06-detail')
+
+relaunch(ui, drop=[], add=['-uiVerifyBoard', 'long'])
+visible(ui, EXPAND)
+ui.tap(EXPAND)
+ui.element(COVER)
+ui.element(MORE)
+map_at_rest(ui)
+items = ui.read()
+more = by_id(items, MORE)
+assert_touch_target(more, 'the more chip on the cover')
+under = max(bottom(by_id(items, c)) for c in CHIPS)
+assert under - EDGE <= more['frame']['y'] <= under + MORE_GAP, \
+    f'the more chip is not right under the filter chips ({under}): {more["frame"]}'
+legal = [i for i in items if i.get('type') == 'Link']
+assert legal, 'MapKit\'s legal link is not on the cover, so the chip check would prove nothing'
+for name, other in (('the close button', close_button(items)), ('the location button', by_id(items, LOCATE)),
+                    ('the legal link', legal[0])):
+    assert other and not overlaps(more['frame'], other['frame']), \
+        f'the more chip covers {name}: {more["frame"]} / {other and other["frame"]}'
+ui.capture('07-cover-more')
 print('PASS: 44 pt expand at the map corner, edge-to-edge cover with chips, close and location button, pin card on '
-      'the cover, 急 shared with the board after closing, 看详情 dismisses the cover and pushes the detail')
+      'the cover, 急 shared with the board after closing, 看详情 dismisses the cover and pushes the detail, the more '
+      'chip under the filter chips clear of the controls and the legal link')
