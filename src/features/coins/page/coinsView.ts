@@ -5,10 +5,7 @@ import type { CoinRow } from '../types';
 
 const locale = (language: string) => `${language}-MY`;
 
-export function coinCount(coins: number, language: string) {
-  const count = new Intl.NumberFormat(locale(language)).format(Math.abs(coins));
-  return coins < 0 ? `−${count}` : count;
-}
+export { coinCount } from '@/lib/coinCount';
 
 const malaysiaYear = (now: Date) =>
   Number(
