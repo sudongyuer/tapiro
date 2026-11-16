@@ -323,3 +323,15 @@ so the card does not flip live (11), 先付 (12).
   calm card) rises from the back-card pose (40 pt lower, scale 0.95) over the stack's 420 ms restack, as the board's
   ④A draws the next card rising, starting with the leave rather than 130 ms after it. The home board below still
   moves to the calm card's height in one frame.
+- 2026-11-16, answered 12 A (owner, through the main session): the home board under the stack follows the stack's
+  height change over the same 420 ms restack and curve (`RESTACK`, bezier 0.2, 0.9, 0.3, 1) instead of moving in one
+  frame. The stack container still takes its new height at once; the board starts where it was by a `translateY` that
+  eases to 0 (`useStackFollow`), so nothing animates layout. Reduce Motion keeps the jump. Measured frame by frame in
+  `home_settled_collect` (zh-Hans light): before, the board moved 45 pt between two frames 33 ms apart; after, 45 → 23
+  → 14 → 11 → 5 → 3 → 2 → 1 → 0 pt over 0.25 s, with no frame out of order. ★ for veto: (a) every height change of the
+  closed stack after its first layout follows the same way, not only the 已结清 leave (a card that arrives or grows
+  restacks over 420 ms already); while the stack is fanned out, and when it opens or closes, nothing changes. (b) While
+  a new card measures, the container keeps the last measured height instead of collapsing to 0 for a frame. (c) The
+  calm card rises from the pose it would really have behind the leaving card (`backOffset`: one peek lower only when it
+  is not taller), not always 40 pt lower; the fixed 40 pt drew the taller calm card over the board's title for the
+  first frames (85 pt below the leaving card), seen in the recording before this change.
