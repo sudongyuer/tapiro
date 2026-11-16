@@ -58,6 +58,7 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
         style={[styles.prompt, { color: PlatformColor('label') }]}
         placeholder={placeholder}
         placeholderTextColor={PlatformColor('placeholderText')}
+        selectionColor={color('--color-accent')}
         multiline
         maxLength={PROMPT_MAX}
         editable={!composer.sending && quiet}

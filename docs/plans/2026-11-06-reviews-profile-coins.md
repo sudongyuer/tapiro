@@ -485,10 +485,10 @@ recorded here with the level card's. No board decides these details; each follow
 | P5  | The level card takes level and stickers from whichever read has the higher level (the profile card or my mascot) and uses that one for the title, the bar and the rows                                         | The level never goes down, so the higher read is the newer one; a card that says Lv.4 over an unlocked Lv.5 row is stale data shown as live (ACC-3)                                           |
 | P6  | The name field's caret and selection use the accent; each row of the delete sheet is one VoiceOver element reading its text; the continue button sits one `--space-4` above the keyboard                       | One accent; decorative symbols are not read; spacing tokens (ACC-6, ACC-7, ACC-9)                                                                                                             |
 
-Listed, not changed (other areas): `selectionColor` is unset on the chat composer, the 问小貘 input and the review
-sentence field (system blue caret); zh-Hans strings with a space before `{{name}}` remain in `reputation` (评价, 举报,
-屏蔽, 解除屏蔽), `pay.nameCheck`, `coins.redeemedRow` and `bounty` 截止时间选; the welcome sign-in panel uses
-`secondarySystemGroupedBackground` over the moment paper.
+The accent caret (P6) also applies to the other RN text inputs: the chat composer, the 问小貘 input and the review
+sentence field. Listed, not changed: zh-Hans strings with a space before `{{name}}` remain in `reputation` (评价, 举报,
+屏蔽, 解除屏蔽), `pay.nameCheck`, `coins.redeemedRow` and `bounty` 截止时间选 (follow-up). The welcome sign-in panel
+stays `#1C1C1E` in dark: WelcomeAPick draws it that way (`.ph.dark .signsheet`).
 
 ## Answers (canvas 「06+ 评价、主页与小貘等级」, 238–255; owner 2026-11-06, all ★, 249 B)
 

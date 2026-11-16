@@ -44,6 +44,7 @@ export function ReviewDetails({
         onChangeText={(sentence) => onChange({ ...draft, sentence })}
         placeholder={t('reputation.sheet.sentence')}
         placeholderTextColor={PlatformColor('placeholderText')}
+        selectionColor={color('--color-accent')}
         style={[styles.sentence, { color: PlatformColor('label') }]}
         testID="review-sentence"
         value={draft.sentence}
