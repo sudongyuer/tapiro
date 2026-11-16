@@ -31,6 +31,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { accessoryPriority } from '@/lib/liveItems';
+import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT, type StageActor } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
@@ -42,6 +43,7 @@ import { StackToggle } from './StackToggle';
 import { homeCardDetails } from './services';
 import { followShift, stackHeight, stackLayout } from './stackLayout';
 import { useStackProgress } from './useLiveStack';
+import { useStackFollow } from './useStackFollow';
 
 const CARD_OVERLAP = STAGE_HILL_HEIGHT - 18;
 const STRIP_FADE = 80;
@@ -96,10 +98,16 @@ export function HomeScreen({
   const state = stageState(accessory, issues);
   const { key, ...values } = stageLine(cards);
   const line = t(`home.say.${key}`, values);
-  const { heights, ready, onCardLayout } = useCardHeights(cards);
+  const { heights, heightOf, ready, onCardLayout } = useCardHeights(cards);
   const layout = stackLayout(heights);
   const progress = useStackProgress(open);
   const extra = layout.fannedHeight - layout.stackedHeight;
+  const follow = useStackFollow(
+    stackHeight(layout, open),
+    ready,
+    open,
+    !(reduceMotion || uiVerifyReduceMotion),
+  );
 
   useEffect(() => {
     if (ready) markShownOneTime(shownOneTimeCards(cards, open));
@@ -162,7 +170,7 @@ export function HomeScreen({
   });
 
   const followStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: followShift(progress.value, extra, open) }],
+    transform: [{ translateY: followShift(progress.value, extra, open) + follow.offset.get() }],
   }));
 
   const attachScroll = useCallback(
@@ -194,11 +202,12 @@ export function HomeScreen({
         <View
           testID="home-live-cards"
           onLayout={onLiveCardsLayout}
-          style={[styles.stack, { height: stackHeight(layout, open) }]}
+          style={[styles.stack, { height: follow.height }]}
         >
           <LiveCardStack
             cards={cards}
             heights={heights}
+            heightOf={heightOf}
             layout={layout}
             ready={ready}
             open={open}
