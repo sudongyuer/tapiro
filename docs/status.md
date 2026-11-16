@@ -111,13 +111,18 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      calls plist before the verify call reached it (it waits for it). Reruns after the fixes: the four cases in zh-Hans
      light and dark, en and ms light and dark where they run, 17 pass and 3 flaky (two lost sessions, one
      `bounty_status_helper` zh-Hans light 「the old time never shows struck after 好」, after the wheel step), smoke 4/4.
-     Open, with what is known: `profile_report_review` and `_all` zh-Hans light (the 举报 menu stayed open, no sheet;
-     the second attempt read the sheet still on screen or lost the session); `pay_sheet_duitnow` zh-Hans light (the two
-     attempts read the pasteboard contradicting each other; still no cause, as in 0d); `payee_list` ms dark (wallet and
-     cash switches not confirmed); `bounty_post_place` zh-Hans dark (address and place label); `bounty_applicants_worst`
-     en dark (OCR did not find 「Helped 128 times」); `bounty_post_optional`, `ask_memory_sheet` zh-Hans dark and
-     `profile_report_review_all` failed first on an assertion and then on a lost session; `shell_minimise` en dark flaky
-     on the same glass sampling as `shell_ask_tapir` (134), not changed.
+     Rerun with the runner on 2026-11-16 (`fix/verify-followups-1116`, retro `2026-11-16-verify-followups`): fixed,
+     both broken cases: `bounty_applicants_worst` en dark failed again on both attempts because Vision's box for
+     「Helped 128 times」 starts at x 90.0 against the row's 92 (slack 1); the row is widened by 4 pt for that read (then
+     en dark, zh-Hans light and dark pass). `shell_minimise` en dark was flaky again at 135 with the minimised 小貘 button
+     over a light Apply button; the minimised button no longer asserts its glass luma (backdrop not chosen by the
+     case), the opaque head still must show its dark or light form (then en dark, zh-Hans light and dark pass). Passed
+     on rerun with no change, cause not reproduced: `profile_report_review` 3 of 3, `_all` 2 pass and 1 flaky (the tap on
+     全部评价 changed nothing, a different step from the night's open 举报 menu), `payee_list` ms dark,
+     `bounty_post_place` and `ask_memory_sheet` zh-Hans dark, `bounty_post_optional` zh-Hans light, 1 of 1 each. The
+     night's menu that stayed open, the flaky `_all` and the two flaky 问小貘 cases in `fix/ask-typing-paced` are all a
+     tap that left the screen unchanged; recordings show no app reaction, so they are counted with the aging-Simulator
+     input loss of 0e. `pay_sheet_duitnow` (pasteboard, 0d) not rerun.
      `ask_sheet_worst` measured (2026-11-16): 2 of 10 first runs failed (loads 3–83), both at the 发送 after the
      relaunch; the recordings show iOS's press-and-hold accent menu for 「l」 (ł ļ ľ) over the field from the end of
      `axe type Parcel` until the press, which only closed the menu. Holding `l` with `axe key 15 --duration 1.5`

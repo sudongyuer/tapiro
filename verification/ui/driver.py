@@ -439,17 +439,18 @@ def glass_luma(shot, f):
     return rim[len(rim) // 2]
 
 
-def assert_tapir_button(shot, f, appearance, name):
+# glass=False: the glass shows its backdrop (135 over a light Apply button in en dark, 2026-11-16); the head is opaque.
+def assert_tapir_button(shot, f, appearance, name, glass=True):
     snout = {**f, 'width': f['width'] * 0.4}
     outline = shot.count(snout, lambda rgb: luma(rgb) > 235)
     ink = shot.count(f, lambda rgb: luma(rgb) < 60)
-    glass = glass_luma(shot, f)
-    print(f'{name}: glass luma {glass:.0f}, {outline} white snout-outline pixels, {ink} ink pixels')
+    rim = glass_luma(shot, f)
+    print(f'{name}: glass luma {rim:.0f}, {outline} white snout-outline pixels, {ink} ink pixels')
     if appearance == 'dark':
-        assert glass < 80, f'{name}: button glass is light ({glass:.0f}) in dark appearance'
+        assert not glass or rim < 80, f'{name}: button glass is light ({rim:.0f}) in dark appearance'
         assert outline > 150, f'{name}: no white outline around the head on dark glass ({outline} pixels)'
     else:
-        assert glass > 175, f'{name}: button glass is dark ({glass:.0f}) in light appearance'
+        assert not glass or rim > 175, f'{name}: button glass is dark ({rim:.0f}) in light appearance'
         assert ink > 800, f'{name}: the head ink is missing ({ink} pixels)'
 
 
