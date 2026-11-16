@@ -36,7 +36,10 @@ assert_appearance(shot, ui.appearance, 20, 2500, 'sheet background')
 
 ui.tap('payee-name-input')
 ui.type('TANMEILING')
-ui.wait(lambda items: (by_id(items, 'payee-name-input') or {}).get('AXValue') == 'TANMEILING', 'name not typed')
+items = ui.wait(lambda items: (by_id(items, 'payee-name-input') or {}).get('AXValue') == 'TANMEILING' and items, 'name not typed')
+for identifier, key in (('payee-phone-input', 'payee.form.phoneLabel'), ('payee-name-input', 'payee.form.nameLabel')):
+    label = by_id(items, identifier).get('AXLabel')
+    assert label == ui.t(key), f'the filled {identifier} reads {label!r}, not {ui.t(key)!r}'
 ui.tap_label(ui.t(SAVE))
 ui.gone('payee-phone-sheet')
 items = ui.wait(lambda items: row_labels(items) and items, 'saved method did not appear')

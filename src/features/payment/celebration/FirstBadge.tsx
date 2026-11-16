@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
   badge: {
     borderWidth: 2.5,
     borderRadius: vars['--radius-chip'],
+    borderCurve: 'continuous',
     paddingHorizontal: vars['--space-2'],
     paddingVertical: 2,
     shadowOffset: { width: 0, height: 3 },

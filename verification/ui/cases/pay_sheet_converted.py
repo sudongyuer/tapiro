@@ -3,7 +3,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id  # noqa: E402
+from driver import UI, assert_touch_target, by_id  # noqa: E402
 from pay import find, method_ids, open_sheet, scroll_to  # noqa: E402
 
 DEPS = ['src/features/payment/', 'src/app/pay/', 'src/lib/money.ts', 'verification/ui/pay.py']
@@ -34,7 +34,9 @@ ui.tap(phone['AXUniqueId'])
 footer = scroll_to(ui, 'pay-rate-footer')
 rate = r'¥1\s=\sRM\s?0\.6122'
 assert re.search(ui.pattern('pay.sheet.rateFooter', date=r'.+', rate=rate), footer.get('AXLabel') or ''), footer.get('AXLabel')
-assert by_id(ui.read(), 'pay-fx-source'), 'BNM source link missing'
+source = by_id(ui.read(), 'pay-fx-source')
+assert source, 'BNM source link missing'
+assert_touch_target(source, 'the BNM source link')
 ui.capture('02-rate-footer')
 ui.tap('pay-mark-paid')
 waiting = ui.wait_label('pay-amount', lambda text: re.search(RM_30, text), 'the waiting header does not show RM 30.61')
