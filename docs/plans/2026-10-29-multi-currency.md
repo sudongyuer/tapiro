@@ -52,6 +52,20 @@
    - A locale-file test fails on `RM` or `¥` inside any string.
 5. **The last-used currency** is stored with the post draft on the device, not on the server.
 
+### ★ UI polish, payment, payee methods and sticker book (2026-11-17, for veto)
+
+Fixes from the UI audit of 2026-11-16 (PAY-01 to PAY-05, PAY-08, PAY-09, PAY-11 to PAY-14). The payee forms and the
+sticker book have no plan of their own, so their choices are listed here. No amount, state or order of actions changed.
+
+| #   | Choice (★ taken)                                                                                                                                                                                                                                                     | Alternative                                                    |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| P1  | 复制 / 已复制 use the system large control size (about 50 pt high) so the target reaches 44 pt (PAY-04).                                                                                                                                                             | Keep the small pill and grow only the row's tap area.          |
+| P2  | The bank sheet's 账号 field moves into its own section titled 账号, like 手机号 on the DuitNow sheet, with the footer 「只填数字…」 under it; its placeholder becomes a new example, 「例如 512345678901」 / 「e.g. 512345678901」 / 「cth. 512345678901」 (PAY-14). | A label on the left of the row (LabeledContent), no new copy.  |
+| P3  | The QR add sheet's 用相机扫 is the system bordered capsule (grey fill), full width under the accent 从相册选截图; both keep their symbols (PAY-08; PayeeSetupPick ③ A draws a white secondary button and no symbols).                                                | A white fill drawn by hand; no symbols.                        |
+| P4  | 汇率来源 is a footnote-size link in the accent with a 44 pt high, full-width target under the rate line (PAY-03).                                                                                                                                                    | Secondary colour with an underline.                            |
+| P5  | The payee's settled row keeps 「已结清 · 收到 RM 8.00」 and its second line is the errand title only; the payer's row is unchanged (PAY-09).                                                                                                                         | Keep the amount on the second line and drop it from the first. |
+| P6  | The rate footer ends with a full stop in zh-Hans, en and ms (PAY-12); method row amounts are SF Rounded like the header (PAY-13); celebration slots, badge, chip and ruled paper use continuous corners (PAY-11).                                                    | —                                                              |
+
 ## Contracts
 
 - **`currencies`**: rows `('MYR', 2, 'RM', true)` and `('CNY', 2, '¥', true)`.

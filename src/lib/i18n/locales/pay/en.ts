@@ -24,7 +24,7 @@ export default {
     amountLabel: 'Amount {{amount}}',
     original: 'Originally {{amount}}',
     rateFooter:
-      'Converted at the BNM middle rate of {{date}}, {{rate}}, locked when this payment opened',
+      'Converted at the BNM middle rate of {{date}}, {{rate}}, locked when this payment opened.',
     noRate: 'Can’t convert to {{currency}} right now',
     noCurrency: '{{name}} has no way to receive {{currency}} yet',
     currencyName: { MYR: 'ringgit', CNY: 'yuan' },
