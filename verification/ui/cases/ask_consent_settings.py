@@ -31,7 +31,7 @@ if ui.locale == 'zh-Hans':
 ui.at_rest()
 shot = ui.snap('01-on')
 switch, memory = (by_id(ui.read(), name)['frame'] for name in ('tapir-cloud', 'tapir-memory-row'))
-assert_switch_green(shot, switch, '让小貘用云端')
+assert_switch_green(shot, switch, '让小貘用云端', ui.appearance)
 assert memory['height'] <= switch['height'] + 1, f'the 小貘记得 row is taller than the switch row: {memory} and {switch}'
 
 ui.flip('tapir-cloud')

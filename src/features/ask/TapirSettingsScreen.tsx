@@ -21,7 +21,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -170,7 +170,10 @@ function CloudSection({
           isOn={access === 'given'}
           onIsOnChange={onChange}
           testID="tapir-cloud"
-          modifiers={[tint('green'), disabled(access === 'needsUpdate' || state.writing !== null)]}
+          modifiers={[
+            tint(PlatformColor('systemGreen')),
+            disabled(access === 'needsUpdate' || state.writing !== null),
+          ]}
         />
       )}
     </Section>

@@ -29,7 +29,7 @@ assert ai_calls(ui, 'speechRequestPermissions', 1, timeout=1) == [], 'granted pe
 ui.at_rest()
 shot = ui.snap('01-listening-cloud')
 hint = ui.t('ask.voice.listeningCloud').split('…')[0]
-field = by_id(ui.read(), 'ask-tapir-prompt')['frame']
+field = by_id(ui.read(), 'ask-tapir-field')['frame']
 # RN does not expose a multiline field's placeholder to AX, so the hint is read from the pixels.
 assert find(lines_in(shot, ui.locale), hint, field), f'the field does not say {hint} while listening'
 now = {name: by_id(ui.read(), name)['frame'] for name in idle}

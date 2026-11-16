@@ -41,7 +41,6 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
     : mic.state === 'transcribing'
       ? t('ask.voice.transcribing')
       : t(prompt);
-  const held = listening && composer.text === '' ? styles.held : null;
 
   return (
     <View style={[styles.input, { backgroundColor: fill }]} testID="ask-tapir-field">
@@ -51,7 +50,7 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
         accessibilityLabel={t('ask.sheet.addImage')}
         accessibilityState={{ disabled: composer.sending || !quiet }}
         disabled={composer.sending || !quiet}
-        style={[styles.button, held]}
+        style={styles.button}
         onPress={composer.onAddImage}
       >
         <SymbolView name="plus" size={20} tintColor={PlatformColor('secondaryLabel')} />
@@ -102,7 +101,6 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
           onPress={mic.onMic}
           style={[
             styles.button,
-            held,
             {
               backgroundColor: listening ? PlatformColor('systemRed') : PlatformColor('systemFill'),
             },
@@ -122,7 +120,8 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
 const styles = StyleSheet.create({
   input: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // Top-aligned: a hint or words that wrap make the field taller, and 停 must stay under the finger that tapped it.
+    alignItems: 'flex-start',
     gap: vars['--space-1'],
     minHeight: vars['--touch-min'] + vars['--space-2'],
     paddingHorizontal: vars['--space-1'],
@@ -131,6 +130,7 @@ const styles = StyleSheet.create({
   },
   prompt: {
     flex: 1,
+    alignSelf: 'center',
     fontSize: BODY.fontSize,
     lineHeight: BODY.lineHeight,
     maxHeight: BODY.lineHeight * PROMPT_LINES + vars['--space-4'],
@@ -140,9 +140,8 @@ const styles = StyleSheet.create({
     width: MIC_SIZE,
     height: MIC_SIZE,
     borderRadius: MIC_SIZE / 2,
+    marginTop: vars['--space-1'],
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // A hint that wraps makes the field taller; the buttons keep their place so 停 stays under the finger that tapped.
-  held: { alignSelf: 'flex-start', marginTop: vars['--space-1'] },
 });

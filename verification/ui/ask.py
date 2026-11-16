@@ -91,32 +91,41 @@ def assert_lifted(shot, f, name, least=8):
     assert found >= least, f'{name} is only {found:.1f} brighter than the sheet beside it: it has no fill of its own'
 
 
-def assert_switch_green(shot, f, name):
+SYSTEM_GREEN = {'light': (52, 199, 89), 'dark': (48, 209, 88)}
+
+
+def assert_switch_green(shot, f, name, appearance):
     end = {**f, 'x': f['x'] + f['width'] - 70, 'width': 70}
-    found = shot.count(end, lambda rgb: rgb[1] > rgb[0] + 60 and rgb[1] > rgb[2] + 60)
-    assert found >= 300, f'{name} is on without the system green track ({found} green pixels)'
+    track = [rgb for rgb in shot.pixels(end) if rgb[1] > rgb[0] + 60 and rgb[1] > rgb[2] + 60]
+    assert len(track) >= 300, f'{name} is on without a green track ({len(track)} green pixels)'
+    found = max(set(track), key=track.count)
+    assert close(found, SYSTEM_GREEN[appearance], 12), f'{name} is on in {found}, not the system green'
 
 
-def assert_grabber_clear(ui, shot):
+def header_drop(ui):
+    items = ui.read()
+    return by_id(items, 'ask-tapir-close')['frame']['y'] - by_id(items, 'ask-tapir-sheet')['frame']['y']
+
+
+# `ask-tapir-sheet` is the scroll view. With the header at rest 20 pt under its top (it was 36 pt when the scroll
+# view began at the sheet's edge, behind the grabber), nothing may be drawn above it once the content has scrolled.
+def assert_grabber_clear(ui, shot, drop):
+    assert drop < 30, f'the header rests {drop:.0f} pt under the scroll view top: the scroll view starts behind the grabber'
     items = ui.read()
     sheet, belly = by_id(items, 'ask-tapir-sheet')['frame'], by_id(items, 'ask-belly')['frame']
+    assert belly['y'] < sheet['y'], f'the belly bar did not scroll past the top: {belly} in {sheet}'
     green = token('--color-belly', ui.appearance)
-    band = {'x': belly['x'], 'y': sheet['y'], 'width': belly['width'], 'height': 14}
+    band = {'x': belly['x'], 'y': sheet['y'] - 15, 'width': belly['width'], 'height': 14}
     found = shot.count(band, lambda rgb: close(rgb, green, 40))
     assert found < 50, f'{found} belly-green pixels beside the grabber: the content scrolled behind it'
 
 
-def footer(ui, text, timeout=30):
-    ui.wait_label('tapir-cloud-footer', lambda label: label == text, f'the footer is not {text}', timeout=timeout)
-
-
-def toggle_on(items):
-    toggle = by_id(items, 'tapir-cloud')
-    return None if toggle is None else str(toggle.get('AXValue')) == '1'
-
-
-def turn(ui, index, timeout=30):
-    return ui.element(f'ask-turn-{index}', timeout=timeout)
+def ink_centre(shot, f, inked):
+    x0, x1 = round(f['x'] * shot.scale), round((f['x'] + f['width']) * shot.scale)
+    y = round((f['y'] + f['height'] / 2) * shot.scale)
+    found = [x for x in range(x0, x1) for dy in range(-12, 13, 3) if inked(shot._px(x, y + dy))]
+    assert found, f'no ink of that colour in {f}'
+    return (min(found) + max(found)) / 2 / shot.scale
 
 
 def failure(ui, reason, key, timeout=30):

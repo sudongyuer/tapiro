@@ -26,7 +26,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -140,7 +140,7 @@ function SwitchSection({ state, enabled }: { state: MemoryState; enabled: boolea
             void memoryStore.setEnabled(on);
           }}
           testID="memory-switch"
-          modifiers={[tint('green'), disabled(state.writing !== null)]}
+          modifiers={[tint(PlatformColor('systemGreen')), disabled(state.writing !== null)]}
         />
       )}
     </Section>

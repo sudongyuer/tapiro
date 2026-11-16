@@ -8,7 +8,7 @@ import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
-import { useSheetFill } from '@/ui/theme/useSheetFill';
+import { useSheetFill, useSheetInsetFill } from '@/ui/theme/useSheetFill';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { AskReply, PickItem } from './askReply';
@@ -128,6 +128,7 @@ export function TapirCard({
 }) {
   const { t } = useI18n();
   const fill = useSheetFill();
+  const inset = useSheetInsetFill();
   const closed = !latest || busy;
   const used =
     memory && memory.used.length > 0 && (reply.kind === 'draft' || reply.kind === 'answer') ? (
@@ -172,7 +173,7 @@ export function TapirCard({
               disabled={closed}
               onPress={() => onPick(item)}
               testID={`${testID}-item-${index}`}
-              style={[styles.item, { backgroundColor: PlatformColor('systemBackground') }]}
+              style={[styles.item, { backgroundColor: inset }]}
             >
               <AppText variant="body">{item.summary}</AppText>
             </PressDim>

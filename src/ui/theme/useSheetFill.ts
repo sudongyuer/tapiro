@@ -6,3 +6,7 @@ export function useSheetFill() {
     useColorScheme() === 'dark' ? 'secondarySystemFill' : 'secondarySystemBackground',
   );
 }
+
+export function useSheetInsetFill() {
+  return PlatformColor(useColorScheme() === 'dark' ? 'tertiarySystemFill' : 'systemBackground');
+}

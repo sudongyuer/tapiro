@@ -4,7 +4,7 @@ field as they are heard; 停 leaves the whole sentence in the field with 发送 
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import ai_calls, assert_calls, assert_grabber_clear, assert_lifted, open_sheet, prompt_value  # noqa: E402
+from ask import ai_calls, assert_calls, assert_grabber_clear, assert_lifted, header_drop, open_sheet, prompt_value  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/features/shell/AskInput.tsx', 'src/app/ask.tsx',
@@ -23,6 +23,7 @@ reach_home(ui)
 open_sheet(ui)
 ui.wait_label('ask-tapir-mic', lambda label: label == ui.t('shell.ask.mic'), 'the mic is not 说话')
 
+drop = header_drop(ui)
 ui.tap('ask-tapir-mic')
 ui.element('ask-voice-explain')
 ui.wait_label('ask-voice-explain-title', lambda text: text == ui.t('ask.voice.explainTitle'), 'explain title is wrong')
@@ -35,7 +36,7 @@ assert ai_calls(ui, 'speechRequestPermissions', 1, timeout=1) == [], 'a system p
 ui.at_rest()
 shot = ui.snap('01-explain-card')
 assert_lifted(shot, by_id(ui.read(), 'ask-voice-explain')['frame'], 'the explain card')
-assert_grabber_clear(ui, shot)
+assert_grabber_clear(ui, shot, drop)
 
 ui.tap('ask-voice-explain-button')
 ui.gone('ask-voice-explain')
