@@ -4,7 +4,10 @@ import time
 from choose import defaults
 from driver import by_id
 
-TYPED = 'Parcel'  # one word: a typed space was turned into 「. 」 once (en dark)
+# One word: a typed space was turned into 「. 」 once (en dark). Lower case, so it goes through paced HID keys: an
+# unpaced `axe type Parcel` left iOS's press-and-hold accent menu for 「l」 over the field in 2 of 32 probes, and
+# the menu swallowed the press on 发送 (2026-11-16).
+TYPED = 'parcel'
 
 
 def ai_calls(ui, name, count, timeout=10):
@@ -33,9 +36,24 @@ def prompt_value(ui):
     return (by_id(ui.read(), 'ask-tapir-prompt') or {}).get('AXValue') or ''
 
 
+# A tap on the prompt right after a Simulator reboot left the screen unchanged, no focus and no keyboard, so the typed
+# keys went nowhere (ask_sheet_worst retry, 2026-11-16; ask_memory_sheet, 2026-11-16). The keyboard's Return key in the
+# tree shows the tap landed.
+def focus_prompt(ui, taps=3):
+    for attempt in range(taps):
+        ui.tap('ask-tapir-prompt')
+        try:
+            ui.wait(lambda items: any(i.get('AXUniqueId') == 'Return' for i in items) or None,
+                    'no keyboard after the tap on the prompt', 5)
+            return
+        except AssertionError:
+            print(f'focus_prompt: no keyboard after tap {attempt + 1}', flush=True)
+    raise AssertionError(f'{taps} taps on the prompt never brought up the keyboard')
+
+
 def type_and_send(ui, text=TYPED):
     if prompt_value(ui) != text:
-        ui.tap('ask-tapir-prompt')
+        focus_prompt(ui)
         ui.type(text)
         ui.wait(lambda items: (by_id(items, 'ask-tapir-prompt') or {}).get('AXValue') == text,
                 f'the prompt never read {text}')

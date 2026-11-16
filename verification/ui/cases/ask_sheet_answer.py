@@ -6,7 +6,7 @@ sheet and restarting the app keep them."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import ask_texts, close_sheet, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
+from ask import TYPED, ask_texts, close_sheet, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
@@ -38,7 +38,7 @@ assert ask_texts(ui, 1) == [suggestion]
 ui.at_rest()
 ui.capture('03-answer')
 
-type_and_send(ui, 'Parcel')
+type_and_send(ui, TYPED)
 turn(ui, 3)
 ui.element('ask-turn-3-question')
 skip = by_id(ui.read(), 'ask-turn-3-choice-3')
@@ -51,7 +51,7 @@ ui.capture('04-question')
 ui.tap('ask-turn-3-choice-1')
 turn(ui, 5)
 ui.element('ask-turn-5-fill')
-assert ask_texts(ui, 3)[2] == 'Parcel\n什么时候要？ 今晚', 'the button answer went without its question'
+assert ask_texts(ui, 3)[2] == f'{TYPED}\n什么时候要？ 今晚', 'the button answer went without its question'
 assert by_id(ui.read(), 'ask-turn-3-choice-0').get('enabled') is False, 'an answered question still takes taps'
 ui.at_rest()
 ui.capture('05-draft-after-button')
