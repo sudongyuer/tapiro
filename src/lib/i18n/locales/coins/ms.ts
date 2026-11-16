@@ -14,7 +14,6 @@ const ms: typeof zhHans = {
   listJoin: ', ',
   more: 'Muatkan aktiviti lebih awal',
   moreFailed: 'Aktiviti lebih awal tidak dapat dimuatkan',
-  moreFailedRetry: '{{failed}} · {{retry}}',
   withTitle: '{{reason}} · {{title}}',
   month: '{{name}}',
   monthYear: '{{name}} {{year}}',

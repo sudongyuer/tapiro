@@ -26,6 +26,7 @@ import {
 import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { nameInitial } from '@/lib/nameInitial';
 import { Avatar } from '@/ui/Avatar';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -121,7 +122,12 @@ function ProfileRow({
       ]}
     >
       <RNHostView matchContents>
-        <Avatar uri={avatarUrl} size={AVATAR_SIZE} label={t('account.name.avatar')} />
+        <Avatar
+          uri={avatarUrl}
+          size={AVATAR_SIZE}
+          label={t('account.name.avatar')}
+          initial={nameInitial(name)}
+        />
       </RNHostView>
       <Text
         modifiers={[

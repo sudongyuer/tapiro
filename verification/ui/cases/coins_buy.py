@@ -1,6 +1,6 @@
 """273 A: the 貘币 page has a black 买貘币 pill right under the balance; it opens a sheet titled 买貘币 with the balance line,
 the three packs from the server table (5, 11, 35, smallest first) priced by StoreKit, and the note that bought coins never
-expire. Tapping RM 9.90 shows a spinner on that row and disables the other prices; the sheet reads 「11 貘币已到账」 only after
+expire. Tapping RM 9.90 shows a spinner in that price's place, so the rows keep their height, and disables the other prices; the sheet reads 「11 貘币已到账」 only after
 the server credited the purchase, StoreKit's transaction is finished after that answer, and the balance line reads 24.
 Closed, the page reads 24 and its newest row is 买貘币 · 测试购买 +11."""
 import json
@@ -38,10 +38,13 @@ assert ui.labelled(ui.t('coins.buy.note')) is not None
 assert by_id(items, 'buy-coins-status') is None, 'a status shows before anything was bought'
 ui.at_rest()
 ui.capture('02-sheet')
+last_pack_y = by_id(items, 'buy-coins-buy-35')['frame']['y']
 
 tap_price(ui, 'buy-coins-buy-11')
 ui.element('buy-coins-busy-11', timeout=10)
 items = ui.read()
+moved = by_id(items, 'buy-coins-buy-35')['frame']['y'] - last_pack_y
+assert abs(moved) <= 0.5, f'the 35 pack moved {moved:.1f} pt when the 11 pack went busy'
 for other in (5, 35):
     assert by_id(items, f'buy-coins-buy-{other}').get('enabled') is False, f'{other} stays tappable while buying'
 assert ui.t('coins.buy.succeeded', coins=11) not in (by_id(items, 'buy-coins-status') or {}).get('AXLabel', ''), \

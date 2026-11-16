@@ -14,7 +14,6 @@ const en: typeof zhHans = {
   listJoin: ', ',
   more: 'Load earlier activity',
   moreFailed: 'Earlier activity didn’t load',
-  moreFailedRetry: '{{failed}} · {{retry}}',
   withTitle: '{{reason}} · {{title}}',
   month: '{{name}}',
   monthYear: '{{name}} {{year}}',

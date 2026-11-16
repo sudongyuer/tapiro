@@ -89,7 +89,23 @@ def open_sheet(ui):
 
 
 def sheet_balance(ui, coins):
-    return ui.t('coins.buy.balance', balance=f'{coins:,}' if coins >= 0 else str(coins))
+    return ui.t('coins.buy.balance', balance=f'{coins:,}' if coins >= 0 else f'−{-coins:,}')
+
+
+def right_edge(shot, f, is_ink):
+    step = 1 / shot.scale
+    rows = [f['y'] + f['height'] * part for part in (0.3, 0.4, 0.5, 0.6, 0.7)]
+    x = f['x'] + f['width'] - step
+    while x >= f['x']:
+        if any(is_ink(shot.rgb(x, y)) for y in rows):
+            return x
+        x -= step
+    raise AssertionError(f'no ink in {f}')
+
+
+def strong_ink(appearance):
+    from driver import luma
+    return (lambda rgb: luma(rgb) > 225) if appearance == 'dark' else (lambda rgb: luma(rgb) < 60)
 
 
 def wait_status(ui, key, prefix='buy-coins', timeout=30, **values):

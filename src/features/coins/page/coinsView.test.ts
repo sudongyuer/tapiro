@@ -65,8 +65,9 @@ describe('coins page view', () => {
     }
   });
 
-  test('a negative balance after a refund reads with its sign', () => {
-    expect(coinCount(-6, 'en')).toBe('-6');
+  test('a negative balance uses the minus sign the history rows use', () => {
+    expect(coinCount(-6, 'en')).toBe('−6');
+    expect(coinCount(-1234, 'zh-Hans')).toBe('−1,234');
   });
 
   test('VoiceOver reads the whole title, the signed delta and the date', () => {

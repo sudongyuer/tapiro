@@ -4,7 +4,8 @@ title; back returns to 我的 with the row deselected."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import assert_month_labels, balance_label, label, month, month_ids, open_page, row_ids, row_prefix  # noqa: E402
+from coins import (assert_month_labels, balance_label, label, month, month_ids, open_page, right_edge, row_ids,  # noqa: E402
+                   row_prefix, strong_ink)
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 from gestures import drag  # noqa: E402
 
@@ -51,7 +52,19 @@ items = ui.read()
 assert by_id(items, 'coins-row-1') is not None or by_id(items, 'coins-row-2') is not None, row_ids(items)
 assert row_ids(items) == sorted(row_ids(items), reverse=True), row_ids(items)
 ui.at_rest()
-ui.capture('03-last-month')
+shot = ui.snap('03-last-month')
+items = ui.read()
+rows = [by_id(items, f'coins-row-{row}') for row in row_ids(items)]
+edges = {}
+for found in rows:
+    f = found['frame']
+    if f['y'] < 110 or f['y'] + f['height'] > h - 100:
+        continue
+    amount_side = {**f, 'x': f['x'] + f['width'] / 2, 'width': f['width'] / 2}
+    edges[found['AXUniqueId']] = right_edge(shot, amount_side, strong_ink(ui.appearance))
+dates = {found['AXLabel'].split(ui.t('coins.listJoin'))[-1] for found in rows}
+assert len({len(date) for date in dates}) > 1, f'every date is the same length, so the column cannot shift: {dates}'
+assert max(edges.values()) - min(edges.values()) <= 1, f'the amounts do not end on one line: {edges}'
 
 ui.tap('BackButton')
 ui.gone('coins-screen')
