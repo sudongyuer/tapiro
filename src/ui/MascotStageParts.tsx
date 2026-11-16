@@ -6,6 +6,13 @@ import Svg, { Path } from 'react-native-svg';
 import { AppText } from './AppText';
 import { Mascot, MascotWearLayer } from './Mascot';
 import type { StageActor } from './MascotStage';
+import {
+  BUBBLE_LEFT,
+  BUBBLE_MAX_LINES,
+  BUBBLE_PADDING,
+  BUBBLE_SLOT,
+  BUBBLE_TAIL,
+} from './stagePose';
 import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
@@ -91,6 +98,7 @@ export function Snore({ color }: { color: string }) {
 export function SpeechBubble({
   line,
   style,
+  maxWidth,
   reveal,
   rise,
   speaking,
@@ -98,6 +106,7 @@ export function SpeechBubble({
 }: {
   line: string;
   style: AnimatedStyle;
+  maxWidth: number;
   reveal: SharedValue<number>;
   rise: number;
   speaking: boolean;
@@ -119,13 +128,13 @@ export function SpeechBubble({
         <Animated.View
           style={[
             styles.bubble,
-            { backgroundColor: fill, shadowColor: color('--color-sticker-shadow') },
+            { maxWidth, backgroundColor: fill, shadowColor: color('--color-sticker-shadow') },
             style,
           ]}
         >
           <AppText
             variant="secondary"
-            numberOfLines={3}
+            numberOfLines={BUBBLE_MAX_LINES}
             style={[styles.say, { color: color('--color-on-stage') }]}
           >
             {line}
@@ -143,17 +152,16 @@ const styles = StyleSheet.create({
   layer: { position: 'absolute', left: 0, top: 0 },
   feet: { transformOrigin: '50% 90%' },
   snore: { position: 'absolute', left: 80, top: -14 },
-  bubbleSlot: { position: 'absolute', left: vars['--space-4'], top: 18 },
+  bubbleSlot: { position: 'absolute', left: BUBBLE_LEFT, ...BUBBLE_SLOT },
   bubble: {
-    maxWidth: 230,
     borderRadius: vars['--space-5'],
     borderCurve: 'continuous',
-    paddingVertical: 9,
-    paddingHorizontal: 13,
+    paddingVertical: BUBBLE_PADDING.vertical,
+    paddingHorizontal: BUBBLE_PADDING.horizontal,
     shadowOffset: { width: 0, height: vars['--space-2'] },
     shadowOpacity: 1,
     shadowRadius: vars['--space-3'],
   },
   say: { fontWeight: '700' },
-  tail: { position: 'absolute', right: -8, bottom: 14 },
+  tail: { position: 'absolute', right: -BUBBLE_TAIL, bottom: 14 },
 });

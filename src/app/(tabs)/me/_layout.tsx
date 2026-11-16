@@ -17,7 +17,10 @@ export default function MeLayout() {
         name="index"
         options={{ title: t('shell.tabs.me'), headerLargeTitleEnabled: true }}
       />
-      <Stack.Screen name="settings" options={{ title: t('account.settings.title') }} />
+      <Stack.Screen
+        name="settings"
+        options={{ title: t('account.settings.title'), headerBackTitle: t('shell.tabs.me') }}
+      />
       <Stack.Screen
         name="stickers"
         options={{ title: t('stickers.book.title'), headerTitle: '' }}

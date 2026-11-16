@@ -1,7 +1,7 @@
 """Push token registration (spec, Permission and Push copy): with provisional authorisation the signed-in app registers its
 Expo push token once with register_push_token in the app language; choosing another language in settings registers this
 device again with that language (not set_push_language, which would change every device), and choosing the launch
-language again does the same; 退出登录 sends unregister_push_token for the same token before the session ends and lands on
+language again does the same, and the back button beside the settings title follows each change; 退出登录 sends unregister_push_token for the same token before the session ends and lands on
 welcome. The verify build replaces the token and the RPCs at their boundary and records each call in the defaults key
 uiVerifyPushCalls."""
 import json
@@ -42,11 +42,13 @@ ui.wait_label('settings-sign-out', lambda label: label == ui.t_in(other, 'accoun
               f'settings did not switch to {other}')
 language = {'name': 'register_push_token', 'args': {'token': TOKEN, 'language': other}}
 wait_calls([registered, language])
+ui.wait_label('BackButton', lambda label: label == ui.t_in(other, 'shell.tabs.me'), f'the back title did not switch to {other}')
 ui.capture('01-language')
 ui.tap_label(ui.t_in(other, 'languages.' + ui.locale))
 ui.wait_label('settings-sign-out', lambda label: label == ui.t('account.settings.signOut'), 'settings did not switch back')
 back = registered
 wait_calls([registered, language, back])
+ui.wait_label('BackButton', lambda label: label == ui.t('shell.tabs.me'), 'the back title did not switch back')
 
 ui.tap('settings-sign-out')
 ui.element('sign-in-apple', timeout=30)
