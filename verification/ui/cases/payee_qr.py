@@ -1,4 +1,4 @@
-"""From 支付宝收钱码, the sheet shows Alipay's save steps; a picked paying code shows the red 付款码 card and saves nothing; a DuitNow screenshot next is accepted with a wallet-switch line and 发布者会看到 name · bank, and saving adds the row. Both picks are injected at the decode boundary (`-uiVerifyQr`), so the system photo picker never opens and every capture after 01 carries the `injected-` prefix."""
+"""From 支付宝收钱码, the sheet shows Alipay's save steps over two full-width buttons outside the list rows (从相册选截图 filled with the accent, 用相机扫 under it, each at least 44 pt high); a picked paying code shows the red 付款码 card and saves nothing; a DuitNow screenshot next is accepted with a wallet-switch line and 发布者会看到 name · bank, and saving adds the row. Both picks are injected at the decode boundary (`-uiVerifyQr`), so the system photo picker never opens and every capture after 01 carries the `injected-` prefix."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -27,7 +27,15 @@ assert len(before) == 1, f'fixture "one" should seed one method, got {before}'
 add_from_menu(ui, ALIPAY)
 ui.element('payee-qr-sheet')
 ui.wait_label('payee-qr-steps', lambda label: ui.t('payee.qr.steps.alipay').splitlines()[0] in label, 'Alipay save steps missing')
-ui.capture('01-pick')
+shot = ui.snap('01-pick')
+steps, pick, scan = (ui.element(f'payee-qr-{part}')['frame'] for part in ('steps', 'pick', 'scan'))
+for name, f in (('从相册选截图', pick), ('用相机扫', scan)):
+    assert f['height'] >= 43.99, f'{name} is {f["height"]} pt high'
+    assert abs(f['x'] - steps['x']) <= 20 and f['width'] >= steps['width'], f'{name} is not as wide as the steps card: {f}'
+assert pick['height'] < 70, f'从相册选截图 is still a list row ({pick["height"]} pt high)'
+assert scan['y'] >= pick['y'] + pick['height'], f'用相机扫 overlaps 从相册选截图: {pick} {scan}'
+assert_colour(shot, {'x': pick['x'] + pick['width'] - 48, 'width': 8, 'y': pick['y'] + pick['height'] / 2 - 4, 'height': 8},
+              token('--color-accent', ui.appearance), 'the right end of 从相册选截图', tolerance=12)
 
 ui.tap('payee-qr-pick')
 card = ui.wait_label('payee-qr-error-payingCode', lambda label: ui.t('payee.qr.error.payingCode.title') in label, 'paying-code card missing')
