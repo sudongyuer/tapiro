@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     minHeight: ASK_HEIGHT,
     marginTop: vars['--space-4'],
     paddingLeft: vars['--space-5'],
-    paddingRight: 6,
+    paddingRight: (ASK_HEIGHT - MIC) / 2,
     borderRadius: ASK_HEIGHT / 2,
     shadowOffset: { width: 0, height: vars['--space-1'] },
     shadowOpacity: 1,
@@ -145,7 +145,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: vars['--space-3'] },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: vars['--space-2'],
+    marginTop: vars['--space-3'],
+  },
   chip: {
     minHeight: 30,
     paddingHorizontal: vars['--space-3'],

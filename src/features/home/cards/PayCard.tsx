@@ -71,7 +71,7 @@ export function PayCard({ detail }: { detail: PayDetail }) {
 
 const styles = StyleSheet.create({
   note: { marginTop: vars['--space-3'] },
-  title: { fontWeight: '700', marginTop: 2 },
+  title: { fontWeight: '700', marginTop: vars['--space-1'] },
   amount: { marginTop: vars['--space-2'], marginBottom: vars['--space-4'] },
   cents: {
     ...typeStyle('moment-title'),
