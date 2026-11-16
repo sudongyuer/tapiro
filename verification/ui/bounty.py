@@ -65,7 +65,8 @@ def field_point(f, below=False):
 
 def typed(ui, identifier, text, shows=None, band=True):
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
-    ui.tap_point(*(field_point(f) if band else (f['x'] + f['width'] - 4, f['y'] + f['height'] / 2)))
+    ui.tap_point(*(field_point(f) if band else (f['x'] + f['width'] - 4, f['y'] + f['height'] / 2)),
+                 expect_change=False)
     ui.type(text)
     shows = shows or text
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
@@ -73,14 +74,14 @@ def typed(ui, identifier, text, shows=None, band=True):
 
 def burst(ui, identifier, text):
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
-    ui.tap_point(*field_point(f))
+    ui.tap_point(*field_point(f), expect_change=False)
     ui.axe('type', text)
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
 
 
 def erase(ui, identifier):
     f = ui.element(identifier)['frame']
-    ui.tap_point(*field_point(f, below=True))
+    ui.tap_point(*field_point(f, below=True), expect_change=False)
     ui.backspace(len(value(ui, identifier)) + 1)
     ui.wait(lambda items: by_id(items, identifier) and not field_text(ui, items, identifier), f'{identifier} is not empty')
 

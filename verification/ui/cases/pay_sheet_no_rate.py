@@ -33,7 +33,7 @@ for row in blocked:
     assert row.get('enabled') is False, f'a ringgit row can be chosen without a rate: {row}'
 assert by_id(items, 'pay-rate-footer') is None, 'a rate footer is shown without a locked rate'
 ui.capture('01-no-rate')
-ui.tap(blocked[0]['AXUniqueId'])
+ui.tap(blocked[0]['AXUniqueId'], expect_change=False)
 assert by_id(ui.read(), 'pay-mark-paid') is None, 'a disabled row was chosen'
 ui.tap(rows['alipay']['AXUniqueId'])
 ui.element('pay-qr-image')

@@ -5,13 +5,14 @@ import re
 import struct
 import sys
 import tempfile
-import zlib
 import subprocess
 import time
 from pathlib import Path
 
 from keys import backspace, type_text
 from latency import timed
+from pngread import pixel
+from taps import REUSE_S, canonical, hit, name, tap_checked, walk
 
 BUNDLE_ID = 'app.tapiro'
 TRANSITION_ERROR = 'No translation object returned for simulator'
@@ -40,14 +41,13 @@ def latin_spacing(locale, text):
     return HAN_THEN_LATIN.sub(r'\1 ', LATIN_THEN_HAN.sub(r'\1 ', text))
 
 
-
-
 class UI:
     def __init__(self, udid, output, appearance='light', locale='zh-Hans'):
         self.udid, self.output, self.appearance, self.locale = udid, Path(output), appearance, locale
         self.output.mkdir(parents=True, exist_ok=True)
         self.launch_args = os.environ.get('TAPIRO_VERIFY_ARGS', '').split()
         self.strings = json.loads(STRINGS.read_text())
+        self.tree = self.reuse = None
 
     def t(self, key, **values):
         return self.t_in(self.locale, key, **values)
@@ -86,29 +86,34 @@ class UI:
     def axe(self, *args, timeout=20):
         # With AXe 1.8.0 on iOS 27 a tap whose axe process exits at once never fires a Pressable's onPress (2026-11-03).
         args = (*args, '--post-delay', '0.5') if args[:1] == ('tap',) and '--post-delay' not in args else args
-        proc =timed(f'axe {" ".join(args)}', ['axe', *args, '--udid', self.udid], timeout, text=True)
+        if args[:1] != ('describe-ui',):
+            self.tree = self.reuse = None
+        proc = timed(f'axe {" ".join(args)}', ['axe', *args, '--udid', self.udid], timeout, text=True)
         error = proc.stderr.strip() or proc.stdout.strip()
         if proc.returncode != 0 or proc.stdout.startswith('Error:'):
             raise AxeError(f'axe {" ".join(args)} failed: {error}')
         return proc.stdout
 
     def state(self):
-        def walk(node):
-            if isinstance(node, dict):
-                yield node
-                for child in node.get('children', []):
-                    yield from walk(child)
-            elif isinstance(node, list):
-                for child in node:
-                    yield from walk(child)
-
+        reuse, self.reuse = getattr(self, 'reuse', None), None
+        if reuse and time.monotonic() - reuse[0] <= REUSE_S:
+            return reuse[2]
         try:
-            tree = self.axe('describe-ui')
+            tree = json.loads(self.axe('describe-ui'))
         except AxeError as error:
             if TRANSITION_ERROR in str(error):
                 raise Transition(str(error)) from None
             raise
-        return list(walk(json.loads(tree)))
+        items = list(walk(tree))
+        self.tree = (time.monotonic(), canonical(tree), items)
+        return items
+
+    def snapshot(self):
+        try:
+            self.state()
+        except Transition:
+            return None
+        return self.tree
 
     def read(self, timeout=30):
         previous = None
@@ -179,32 +184,37 @@ class UI:
 
     # A target found during a push, pop or sheet transition is still moving, and a tap at its
     # activation point can land beside it; tap only once two reads give the same frame.
-    def tap(self, identifier):
-        self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
-                     f'{identifier} never settled')
-        self.axe('tap', '--id', identifier, '--post-delay', '0.5')
+    def tap(self, identifier, expect_change=True):
+        self.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')
+        tap_checked(self, identifier, lambda: self.axe('tap', '--id', identifier, '--post-delay', '0.5'),
+                    lambda items: by_id(items, identifier), expect_change)
 
-    def tap_label(self, label):
-        self.settled(lambda items: next((i for i in items if i.get('AXLabel') == label), None),
-                     f'element labelled {label} never settled')
-        self.axe('tap', '--label', label, '--post-delay', '0.5')
+    def tap_label(self, label, expect_change=True):
+        def find(items):
+            return next((i for i in items if i.get('AXLabel') == label), None)
 
-    def tap_point(self, x, y):
-        self.axe('tap', '-x', str(round(x)), '-y', str(round(y)), '--post-delay', '0.5')
+        self.settled(find, f'element labelled {label} never settled')
+        tap_checked(self, repr(label), lambda: self.axe('tap', '--label', label, '--post-delay', '0.5'), find,
+                    expect_change)
+
+    def tap_point(self, x, y, expect_change=True):
+        x, y = round(x), round(y)
+        tap_checked(self, lambda items: f'({x}, {y}) on {name(hit(items, x, y))}',
+                    lambda: self.axe('tap', '-x', str(x), '-y', str(y), '--post-delay', '0.5'),
+                    lambda items: hit(items, x, y), expect_change)
 
     # A SwiftUI Toggle row reports the whole row as its frame, but only the switch at its trailing end flips it: on
     # iOS 27.2 a tap on the row centre (also `axe tap --id`) flipped it 0 of 20 times, an instant tap on the switch 1
     # of 12, a 0.2 s touch on the switch 10 of 10 (2026-11-11).
-    def flip(self, identifier):
-        f = self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
-                         f'{identifier} never settled')['frame']
-        self.press_at({'x': f['x'] + f['width'] - SWITCH_REACH, 'y': f['y'], 'width': SWITCH_WIDTH,
-                       'height': f['height']}, SWITCH_HOLD_S)
+    def flip(self, identifier, expect_change=True):
+        f = self.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+        switch = {'x': f['x'] + f['width'] - SWITCH_REACH, 'y': f['y'], 'width': SWITCH_WIDTH, 'height': f['height']}
+        tap_checked(self, identifier, lambda: self.press_at(switch, SWITCH_HOLD_S), None, expect_change)
 
-    def press(self, identifier, seconds):
-        f = self.settled(lambda items: next((i for i in items if i.get('AXUniqueId') == identifier), None),
-                         f'{identifier} never settled')['frame']
-        self.press_at(f, seconds)
+    def press(self, identifier, seconds, expect_change=True):
+        f = self.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
+        tap_checked(self, identifier, lambda: self.press_at(f, seconds), lambda items: by_id(items, identifier),
+                    expect_change)
         return f
 
     def press_at(self, f, seconds):
@@ -310,38 +320,6 @@ def assert_touch_target(element, name):
     f = frame(element)
     # AX frames carry float32 noise (44 reads 43.99997); a real shortfall is a whole 1/3 pt pixel.
     assert min(f['width'], f['height']) >= 43.99, f'{name} needs a 44 pt target, got {f["width"]}x{f["height"]}'
-
-
-def pixel(png_path, x, y):
-    data = Path(png_path).read_bytes()
-    width, height, depth, color_type = struct.unpack('>IIBB', data[16:26])
-    assert depth == 8 and color_type in (2, 6), f'unsupported PNG format {depth}/{color_type}'
-    channels = 4 if color_type == 6 else 3
-    pos, idat = 8, b''
-    while pos < len(data):
-        length, kind = struct.unpack('>I4s', data[pos:pos + 8])
-        if kind == b'IDAT':
-            idat += data[pos + 8:pos + 8 + length]
-        pos += 12 + length
-    raw, stride, prev = zlib.decompress(idat), width * channels, bytearray(width * channels)
-    for row in range(y + 1):
-        start = row * (stride + 1)
-        kind, line = raw[start], bytearray(raw[start + 1:start + 1 + stride])
-        for i in range(stride):
-            a = line[i - channels] if i >= channels else 0
-            b, c = prev[i], prev[i - channels] if i >= channels else 0
-            if kind == 1:
-                line[i] = (line[i] + a) & 0xFF
-            elif kind == 2:
-                line[i] = (line[i] + b) & 0xFF
-            elif kind == 3:
-                line[i] = (line[i] + (a + b) // 2) & 0xFF
-            elif kind == 4:
-                p = a + b - c
-                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
-                line[i] = (line[i] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 0xFF
-        prev = line
-    return tuple(prev[x * channels:x * channels + 3])
 
 
 def assert_appearance(png_path, appearance, x, y, name):
