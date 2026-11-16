@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import {
   createFixtureAuthService,
+  fixtureDeletion,
   fixtureUnsettledPayment,
   fixtureUser,
 } from './fixtureAuthService';
@@ -49,5 +50,19 @@ describe('fixture auth service', () => {
       payments: [fixtureUnsettledPayment],
     });
     expect(service.getState().status).toBe('signedIn');
+  });
+
+  test('the many-payments fixture refuses deletion with six distinct payments', async () => {
+    const service = createFixtureAuthService({ signedInAs: 'apple', deletion: 'blockedMany' });
+    const result = await service.deleteAccount();
+    if (result.ok || result.reason !== 'blocked') throw new Error('deletion was not blocked');
+    expect(new Set(result.payments.map((payment) => payment.id)).size).toBe(6);
+    expect(result.payments[0]).toEqual(fixtureUnsettledPayment);
+  });
+
+  test('an unknown deletion argument leaves deletion allowed', () => {
+    expect(fixtureDeletion(undefined)).toBe('allowed');
+    expect(fixtureDeletion('nonsense')).toBe('allowed');
+    expect(fixtureDeletion('blockedMany')).toBe('blockedMany');
   });
 });

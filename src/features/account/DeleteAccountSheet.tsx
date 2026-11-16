@@ -1,7 +1,8 @@
 import type { ParseKeys } from 'i18next';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { useState } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { PlatformColor, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
@@ -33,6 +34,8 @@ export function DeleteAccountSheet({
 }) {
   const { t, language } = useI18n();
   const { color } = useTheme();
+  const { height } = useWindowDimensions();
+  const { top, bottom } = useSafeAreaInsets();
   const [guard] = useState(createInFlightGuard);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<DeleteAccountFailure | null>(null);
@@ -51,56 +54,71 @@ export function DeleteAccountSheet({
   }
 
   return (
-    <View style={styles.sheet} onLayout={onLayout} testID="delete-account-sheet">
-      <View style={styles.text}>
-        <AppText variant="title" accessibilityRole="header">
-          {t('account.delete.title')}
-        </AppText>
-        <AppText variant="secondary" tone="secondaryLabel">
-          {t('account.delete.intro')}
-        </AppText>
-      </View>
-      <View style={styles.items}>
-        {ITEMS.map((item) => (
-          <View key={item.key} style={styles.item}>
-            <SymbolView name={item.symbol} size={22} tintColor={PlatformColor('secondaryLabel')} />
-            <AppText variant="body" style={styles.itemLabel}>
-              {t(item.key)}
-            </AppText>
-          </View>
-        ))}
-      </View>
-      {failure && (
-        <AppText
-          variant="secondary"
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          testID={`delete-account-message-${failure}`}
-          style={{ color: color('--color-urgent') }}
-        >
-          {t(`account.delete.error.${failure}`)}
-        </AppText>
-      )}
-      {payments.length > 0 && (
-        <View style={styles.payments}>
-          {payments.map((payment) => (
-            <View
-              key={payment.id}
-              accessible
-              testID={`delete-account-payment-${payment.id}`}
-              style={styles.payment}
-            >
-              <AppText variant="body">{payment.title}</AppText>
-              <AppText variant="secondary" tone="secondaryLabel">
-                {t(`account.delete.payment.${payment.direction}`, {
-                  name: payment.counterpartName,
-                  amount: formatMoney(payment.amount, language),
-                })}
+    <View
+      style={[styles.sheet, { maxHeight: height - top - bottom - vars['--space-6'] }]}
+      onLayout={onLayout}
+      testID="delete-account-sheet"
+    >
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        alwaysBounceVertical={false}
+        testID="delete-account-scroll"
+      >
+        <View style={styles.text}>
+          <AppText variant="title" accessibilityRole="header">
+            {t('account.delete.title')}
+          </AppText>
+          <AppText variant="secondary" tone="secondaryLabel">
+            {t('account.delete.intro')}
+          </AppText>
+        </View>
+        <View style={styles.items}>
+          {ITEMS.map((item) => (
+            <View key={item.key} accessible accessibilityLabel={t(item.key)} style={styles.item}>
+              <SymbolView
+                name={item.symbol}
+                size={22}
+                tintColor={PlatformColor('secondaryLabel')}
+              />
+              <AppText variant="body" style={styles.itemLabel}>
+                {t(item.key)}
               </AppText>
             </View>
           ))}
         </View>
-      )}
+        {failure && (
+          <AppText
+            variant="secondary"
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            testID={`delete-account-message-${failure}`}
+            style={{ color: color('--color-urgent') }}
+          >
+            {t(`account.delete.error.${failure}`)}
+          </AppText>
+        )}
+        {payments.length > 0 && (
+          <View style={styles.payments}>
+            {payments.map((payment) => (
+              <View
+                key={payment.id}
+                accessible
+                testID={`delete-account-payment-${payment.id}`}
+                style={styles.payment}
+              >
+                <AppText variant="body">{payment.title}</AppText>
+                <AppText variant="secondary" tone="secondaryLabel">
+                  {t(`account.delete.payment.${payment.direction}`, {
+                    name: payment.counterpartName,
+                    amount: formatMoney(payment.amount, language),
+                  })}
+                </AppText>
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
       <View style={styles.actions}>
         <PillButton
           label={pending ? t('account.delete.deleting') : t('account.delete.confirm')}
@@ -123,17 +141,19 @@ export function DeleteAccountSheet({
 }
 
 const styles = StyleSheet.create({
-  sheet: {
+  sheet: { flexShrink: 1, paddingBottom: vars['--space-2'] },
+  scroll: { flexGrow: 0 },
+  content: {
     paddingHorizontal: vars['--space-5'],
     paddingTop: vars['--space-6'],
-    paddingBottom: vars['--space-2'],
+    paddingBottom: vars['--space-5'],
     gap: vars['--space-5'],
   },
   text: { gap: vars['--space-2'] },
   items: { gap: vars['--space-3'] },
   item: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
   itemLabel: { flex: 1 },
-  actions: { gap: vars['--space-2'] },
+  actions: { paddingHorizontal: vars['--space-5'], gap: vars['--space-2'] },
   payments: {
     borderRadius: vars['--radius-chip'],
     borderCurve: 'continuous',

@@ -65,7 +65,7 @@ export function NameStep({
 
   return (
     <MomentBackground onLayout={onLayout} testID="name-step">
-      <KeyboardAvoidingView behavior="padding" style={styles.fill}>
+      <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={-bottom} style={styles.fill}>
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps="handled"
@@ -81,7 +81,15 @@ export function NameStep({
             </AppText>
           </View>
           <View style={styles.group}>
-            <View style={[styles.card, { shadowColor: color('--color-sticker-shadow') }]}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: color('--color-filled-row'),
+                  shadowColor: color('--color-sticker-shadow'),
+                },
+              ]}
+            >
               <TextInput
                 value={value}
                 onChangeText={(text) => {
@@ -91,6 +99,7 @@ export function NameStep({
                 onSubmitEditing={submit}
                 placeholder={t('account.name.placeholder')}
                 placeholderTextColor={PlatformColor('placeholderText')}
+                selectionColor={color('--color-accent')}
                 accessibilityLabel={t('account.name.label')}
                 autoCorrect={false}
                 textContentType="name"
@@ -139,7 +148,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
-    backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
     paddingHorizontal: vars['--space-4'],
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 1,

@@ -471,6 +471,25 @@ coins defaults (C1–C9) came after and stay listed for veto.
      chips and sentence like a chat message; a report never hides the review by itself; **B** only report the person
      from ⋯. Touches safety and moderation.
 
+## ★ UI polish, account and mascot level (2026-11-17, for veto)
+
+Fixes from the UI audit of 2026-11-16 (ACC-1 to ACC-12). The account area has no plan of its own, so its choices are
+recorded here with the level card's. No board decides these details; each follows HIG and the neighbouring screens.
+
+| #   | Decision ★                                                                                                                                                                                                     | Why                                                                                                                                                                                           |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1  | The delete-account sheet caps its height at the window minus both safe areas and one `--space-6`; title, list, reason and payments scroll, 删除账号 and 取消 sit below the scroll area on the sheet background | The primary action never clips (ACC-4). `SheetFrame`'s `SheetActions` needs a full-height SwiftUI Form, and this sheet fits its contents, so the bar is a plain view under an RN `ScrollView` |
+| P2  | The onboarding language picker has no 「语言」 header and its section sits on the 24 pt column of the name step (`listSectionMargins`); Settings keeps the header and the system margins                       | WelcomeAPick ⑤ A draws one column; the question above the rows already names them (ACC-1, ACC-11)                                                                                             |
+| P3  | Rows and fields on the moment paper use `--color-filled-row` (name field, language rows, the 解锁了 card); light mode pixels do not change                                                                     | NameAvatarPick A dark draws the field `#2C2C2E`; `secondarySystemGroupedBackground` is `#1C1C1E`, darker than the paper (ACC-2)                                                               |
+| P4  | Settings shows `Avatar` at 44 pt, the size of the symbol it replaces, and VoiceOver reads 头像 before the name as on 我的                                                                                      | Same person, same picture on both screens (ACC-10)                                                                                                                                            |
+| P5  | The level card takes level and stickers from whichever read has the higher level (the profile card or my mascot) and uses that one for the title, the bar and the rows                                         | The level never goes down, so the higher read is the newer one; a card that says Lv.4 over an unlocked Lv.5 row is stale data shown as live (ACC-3)                                           |
+| P6  | The name field's caret and selection use the accent; each row of the delete sheet is one VoiceOver element reading its text; the continue button sits one `--space-4` above the keyboard                       | One accent; decorative symbols are not read; spacing tokens (ACC-6, ACC-7, ACC-9)                                                                                                             |
+
+Listed, not changed (other areas): `selectionColor` is unset on the chat composer, the 问小貘 input and the review
+sentence field (system blue caret); zh-Hans strings with a space before `{{name}}` remain in `reputation` (评价, 举报,
+屏蔽, 解除屏蔽), `pay.nameCheck`, `coins.redeemedRow` and `bounty` 截止时间选; the welcome sign-in panel uses
+`secondarySystemGroupedBackground` over the moment paper.
+
 ## Answers (canvas 「06+ 评价、主页与小貘等级」, 238–255; owner 2026-11-06, all ★, 249 B)
 
 See `docs/plans/2026-10-30-coins-reputation-remaining.md`, 「Answers」, for the one-line answers; the drawings on the
