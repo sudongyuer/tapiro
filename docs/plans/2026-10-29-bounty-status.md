@@ -243,3 +243,42 @@ and the Live Activity (11), 先付 (12).
   bottom quarter inside the sheet (it is no longer below the form), `pay.scroll_to` stops at the top of the pinned
   actions, and `bounty_post_no_balance` looks for buttons in the bar instead of under the form.
 - 2026-10-29, controller: `formatRinggit` always writes `RM ` (ms locale data had no space); a sentence whose template opens with an interpolated name starts upper-case through the i18n post-processor `sentenceStart`, replacing the per-call `sentence()` helper. Open items 1A, 2A, 3B (overdue ETA is a story-map gap), 4A (no applicant 「这单过期了」 card): the recommended options, confirmed by the user (「按推荐来」, 2026-10-29).
+- 2026-11-17, UI polish (audit BS-4…BS-15; boards 4A, 6A, 7A, 8A, 59B, 60A). ★ choices for veto:
+  - P1 ★ The line under the title is one status line (`shared/StatusLine.tsx`, in the bounty feature because the
+    inventory's `src/ui/StatusBadge` does not exist): symbol and colour from the Status language. Needs you (warning,
+    `exclamationmark.circle.fill`) when the live step waits on the viewer, and for the poster when the helper is late;
+    the poster's on-time `assigned` is Accepted (accent, `circle.inset.filled`); `en_route` is In progress (accent,
+    `circle.fill`) for both roles, as 7A and 59B draw 你在路上, although the helper's 完成 step is marked needs-you;
+    settled is Done. No pulse (no new motion). It keeps the headline size in the centred header as built; the boards
+    draw 13 pt bold in a left-aligned card.
+  - P2 ★ The cancelled and closed lines use `xmark.circle` in the secondary label, not the table's tertiary: tertiary text is
+    about 1.8:1 on the grouped background. The applicant screen's cancelled line is the same component, so both screens
+    match (BS-14); its other lines (等你选人 · N 人申请, 等人申请) are still plain secondary text although 57A draws them
+    with a symbol: not changed here.
+  - P3 ★ Timeline (7A): a 2 pt rail in the tertiary label joins the marks; each row owns its 16 pt vertical padding
+    (`listRowInsets` 0) so the rail crosses the row edge. Done labels are regular in the secondary label; upcoming
+    labels stay secondary too (the board's lighter grey would be under contrast as text); the needs-you label is in the
+    warning colour. Step times stay on the right, as built.
+  - P4 ★ First-load failure, the stale notice and 这单的状态变了 are `InlineState` cards (head ≤ 32 pt, one line, 重试
+    with its spinner in place), as on the applicant screen and the ride detail; the last two in the warning tone.
+    `NoticeCard` stays for form errors. The bounty detail still uses `NoticeCard` for its load-failed and stale states.
+  - P5 ★ Apply without a payee method (4A other states): an `InlineState` card (title and body joined by a newline, as
+    47A's empty card) and 添加收款方式 as the accent pill in the pinned bar (`SheetFrame`); the action is unchanged
+    (36A).
+  - P6 ★ 出发 / 好 in the ETA sheet and 发送 in the issue sheet are `buttonStyle('glassProminent')` tinted with the
+    accent, the look of 发送 on the apply sheet. The ride sheets (`ride/detail/SheetShell.tsx`) still have the plain
+    confirm.
+  - P7 ★ The n/140 counter is in the section footer, right of the first footer line, footnote size (4A), on the apply
+    sheet and the issue sheet; over the limit it turns urgent as before.
+  - P8 ★ The pinned button that is sending keeps its fill and shows the spinner; only the other buttons dim. Fixed at
+    the call site (`StatusActions`); `PillButton` is unchanged. Case `bounty_status_helper` runs with a 6 s fixture
+    delay (was 4 s) so the screenshot and its tree are both taken while 完成 is in flight.
+  - P9 ★ The hold hint is the 13 pt meta role (6A). Its gap to the button stays 8 pt: the board has a 6 pt stack gap
+    plus a 4 pt margin, 10 pt, and 8 is the nearer token.
+  - P10 Not changed, ruling 2 stands: in `disputed` the reason sits under 点完成 and that step is the live one, so it
+    shows no check and no time (BS-15). The 7A board (「等处理 disputed」) keeps 点完成 done with its time and puts
+    等阿杰处理 / 小林说有问题 with the reason on the confirm step. Asked of the owner.
+  - BS-13 (1 px line between rows), looked at only: in `bounty_applicants_progress/02-assigned-status` the 出发 row's
+    frame ends at 505.0 pt and the next begins at 505.33 pt, so one device pixel of the list background shows between
+    two cells when a row's height is not a whole pixel (the default row padding is fractional). The timeline rows now
+    carry whole-point padding; whether the line is gone there is checked in the milestone screenshots.
