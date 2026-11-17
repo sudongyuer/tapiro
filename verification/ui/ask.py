@@ -2,7 +2,7 @@ import json
 import time
 
 from choose import defaults
-from driver import by_id, close, luma, token
+from driver import by_id, close, luma
 from taps import walk
 
 # One word: a typed space was turned into 「. 」 once (en dark). Lower case, so it goes through paced HID keys: an
@@ -115,22 +115,28 @@ def turn(ui, index, timeout=30):
     return ui.element(f'ask-turn-{index}', timeout=timeout)
 
 
+def close_button(ui, items=None):
+    label = ui.t('shell.ask.close')
+    return next((i for i in (items or ui.read()) if i.get('AXLabel') == label and i.get('type') == 'Button'), None)
+
+
+# The sheet's own header rests under the system bar that holds the close button, and scrolled content passes under
+# that bar (its scroll edge effect) while the close button stays where it was.
 def header_drop(ui):
     items = ui.read()
-    return by_id(items, 'ask-tapir-close')['frame']['y'] - by_id(items, 'ask-tapir-sheet')['frame']['y']
+    button = close_button(ui, items)
+    assert button, 'the 问小貘 sheet has no system close button'
+    belly = by_id(items, 'ask-belly')['frame']
+    assert button['frame']['x'] < belly['x'], f'the close button is not at the leading edge: {button["frame"]}'
+    return button['frame']
 
 
-# `ask-tapir-sheet` is the scroll view. With the header at rest 20 pt under its top (it was 36 pt when the scroll
-# view began at the sheet's edge, behind the grabber), nothing may be drawn above it once the content has scrolled.
-def assert_grabber_clear(ui, shot, drop):
-    assert drop < 30, f'the header rests {drop:.0f} pt under the scroll view top: the scroll view starts behind the grabber'
+def assert_scrolled_under_bar(ui, rest):
     items = ui.read()
-    sheet, belly = by_id(items, 'ask-tapir-sheet')['frame'], by_id(items, 'ask-belly')['frame']
-    assert belly['y'] < sheet['y'], f'the belly bar did not scroll past the top: {belly} in {sheet}'
-    green = token('--color-belly', ui.appearance)
-    band = {'x': belly['x'], 'y': sheet['y'] - 15, 'width': belly['width'], 'height': 14}
-    found = shot.count(band, lambda rgb: close(rgb, green, 40))
-    assert found < 50, f'{found} belly-green pixels beside the grabber: the content scrolled behind it'
+    button, belly = close_button(ui, items), by_id(items, 'ask-belly')
+    assert button and button['frame'] == rest, f'the close button moved with the content: {button and button["frame"]}'
+    assert belly is None or belly['frame']['y'] < rest['y'] + rest['height'], \
+        f'the belly bar did not scroll under the bar: {belly and belly["frame"]}'
 
 
 def ink_centre(shot, f, inked):
@@ -151,13 +157,5 @@ def ask_texts(ui, count, wait=3):
 
 
 def close_sheet(ui):
-    for _ in range(4):
-        close = by_id(ui.read(), 'ask-tapir-close')
-        if close and close['frame']['y'] > by_id(ui.read(), 'ask-tapir-sheet')['frame']['y']:
-            break
-        sheet = by_id(ui.read(), 'ask-tapir-sheet')['frame']
-        x = sheet['x'] + sheet['width'] / 2
-        ui.swipe((x, sheet['y'] + sheet['height'] * 0.4), (x, sheet['y'] + sheet['height'] * 0.8), 0.4)
-        ui.at_rest()
-    ui.tap('ask-tapir-close')
+    ui.tap_label(ui.t('shell.ask.close'))
     ui.gone('ask-tapir-sheet')

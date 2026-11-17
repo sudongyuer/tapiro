@@ -3,12 +3,14 @@ import { describe, expect, test } from 'bun:test';
 import {
   bellyMood,
   bellySegments,
+  draftWaitsOnTop,
   hungryOffer,
   toBelly,
   toPantryFailure,
   withEnergy,
   type Belly,
 } from './belly';
+import type { Turn } from './conversation';
 
 const NEXT = '2026-11-12T22:00:00.000Z';
 const STATUS = {
@@ -116,4 +118,26 @@ test('the verify belly defaults to full when no argument is given', async () => 
     feedsLeft: 5,
   });
   expect(fixtureBelly('0,2,3,0')).toMatchObject({ energy: 0, leaves: 2, coins: 3, feedsLeft: 0 });
+});
+
+describe('draftWaitsOnTop', () => {
+  const user: Turn = { role: 'user', text: '帮我取快递', via: 'typed' };
+  const tapir = (reply: Extract<Turn, { role: 'tapir' }>['reply']): Turn => ({
+    role: 'tapir',
+    raw: {} as Extract<Turn, { role: 'tapir' }>['raw'],
+    reply,
+    memory: null,
+  });
+  const draft = tapir({ kind: 'draft', draft: { title: '取快递' } as never });
+
+  test('a draft just made keeps the hungry card back until the next ask', () => {
+    expect(draftWaitsOnTop([user, draft], false)).toBe(true);
+  });
+
+  test('a failed next ask, an answer or an open user turn shows the hungry card', () => {
+    expect(draftWaitsOnTop([user, draft], true)).toBe(false);
+    expect(draftWaitsOnTop([user, tapir({ kind: 'answer', text: '好' })], false)).toBe(false);
+    expect(draftWaitsOnTop([user, draft, user], false)).toBe(false);
+    expect(draftWaitsOnTop([], false)).toBe(false);
+  });
 });

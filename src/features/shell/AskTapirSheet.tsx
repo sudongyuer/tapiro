@@ -1,14 +1,8 @@
 import type { ParseKeys } from 'i18next';
-import { SymbolView } from 'expo-symbols';
+import { Stack } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useEffect, useRef, type ReactNode } from 'react';
-import {
-  PlatformColor,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-  type ScrollViewInstance,
-} from 'react-native';
+import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -41,9 +35,6 @@ const COPY: Record<ShellTab, AskCopy> = {
   me: BOUNTY_COPY,
 };
 
-// The scroll view starts under the grabber, so scrolled content is cut there instead of passing behind it.
-const GRABBER_ZONE = vars['--space-4'];
-
 const SUBTITLES: Record<ShellTab, ParseKeys> = {
   bounty: 'shell.ask.subtitle.bounty',
   ride: 'shell.ask.subtitle.ride',
@@ -75,6 +66,7 @@ export function AskTapirSheet({
   const { t } = useI18n();
   const { color } = useTheme();
   const fill = useSheetFill();
+  const headerHeight = useHeaderHeight();
   const scroll = useRef<ScrollViewInstance>(null);
   useEffect(() => {
     if (replies > 0) scroll.current?.scrollToEnd({ animated: true });
@@ -83,76 +75,71 @@ export function AskTapirSheet({
   const suggestions = [...copy.suggestions, 'shell.ask.suggestions.writeBounty' as const];
 
   return (
-    <ScrollView
-      ref={scroll}
-      style={styles.scroll}
-      contentContainerStyle={styles.sheet}
-      automaticallyAdjustKeyboardInsets
-      keyboardShouldPersistTaps="handled"
-      keyboardDismissMode="interactive"
-      testID="ask-tapir-sheet"
-    >
-      <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
-          <Mascot variant="side" size={32} />
-        </View>
-        <View style={styles.headerText}>
-          <AppText variant="title" accessibilityRole="header">
-            {t('shell.ask.title')}
-          </AppText>
-          <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
-            {t(SUBTITLES[tab])}
-          </AppText>
-          {belly}
-        </View>
-        <Pressable
-          accessibilityRole="button"
+    <>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button
+          icon="xmark"
           accessibilityLabel={t('shell.ask.close')}
-          testID="ask-tapir-close"
           onPress={onClose}
-          hitSlop={vars['--space-2']}
-          style={({ pressed }) => [styles.close, pressed && styles.pressed]}
-        >
-          <SymbolView
-            name="xmark.circle.fill"
-            size={30}
-            tintColor={PlatformColor('tertiaryLabel')}
-          />
-        </Pressable>
-      </View>
-
-      <View style={styles.body} testID="ask-tapir-body">
-        {notice}
-        {showSuggestions ? (
-          <View style={styles.chips}>
-            {suggestions.map((key, index) => (
-              <PressDim
-                key={key}
-                accessibilityRole="button"
-                testID={`ask-tapir-suggestion-${index}`}
-                onPress={() => onSuggestion(t(key))}
-                style={[styles.chip, { backgroundColor: fill }]}
-              >
-                <AppText variant="secondary">{t(key)}</AppText>
-              </PressDim>
-            ))}
+        />
+      </Stack.Toolbar>
+      {/* The header's inset is padding, not the automatic content inset: automaticallyAdjustKeyboardInsets scrolls to
+          an offset clamped to -contentInset.top, which leaves the automatic inset out (see ReviewSheet). */}
+      <ScrollView
+        ref={scroll}
+        contentInsetAdjustmentBehavior="never"
+        contentContainerStyle={[styles.sheet, { paddingTop: headerHeight + vars['--space-2'] }]}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        testID="ask-tapir-sheet"
+      >
+        <View style={styles.header}>
+          <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
+            <Mascot variant="side" size={32} />
           </View>
-        ) : null}
-        {children}
-        <AskInput composer={composer} prompt={copy.prompt} />
-      </View>
-    </ScrollView>
+          <View style={styles.headerText}>
+            <AppText variant="title" accessibilityRole="header">
+              {t('shell.ask.title')}
+            </AppText>
+            <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
+              {t(SUBTITLES[tab])}
+            </AppText>
+            {belly}
+          </View>
+        </View>
+
+        <View style={styles.body} testID="ask-tapir-body">
+          {notice}
+          {showSuggestions ? (
+            <View style={styles.chips}>
+              {suggestions.map((key, index) => (
+                <PressDim
+                  key={key}
+                  accessibilityRole="button"
+                  testID={`ask-tapir-suggestion-${index}`}
+                  onPress={() => onSuggestion(t(key))}
+                  style={[styles.chip, { backgroundColor: fill }]}
+                >
+                  <AppText variant="secondary">{t(key)}</AppText>
+                </PressDim>
+              ))}
+            </View>
+          ) : null}
+          {children}
+          <AskInput composer={composer} prompt={copy.prompt} />
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   sheet: {
     paddingHorizontal: vars['--space-5'],
-    paddingTop: vars['--space-6'] - GRABBER_ZONE,
     paddingBottom: vars['--space-6'],
     gap: vars['--space-4'],
   },
-  scroll: { flex: 1, marginTop: GRABBER_ZONE },
   body: { gap: vars['--space-4'] },
   header: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
   avatar: {
@@ -163,13 +150,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: { flex: 1, minWidth: 0 },
-  close: {
-    width: vars['--touch-min'],
-    height: vars['--touch-min'],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: { opacity: 0.6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
   chip: {
     minHeight: vars['--touch-min'],

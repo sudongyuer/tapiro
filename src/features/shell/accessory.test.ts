@@ -5,6 +5,7 @@ import {
   accessoryPriority,
   type AccessoryItem,
   type AccessoryKind,
+  type BountyCardDetail,
   fixtureLiveItems,
 } from '@/lib/liveItems';
 
@@ -52,6 +53,18 @@ describe('pickMostUrgent', () => {
     const result = pickMostUrgent([...ACCESSORY_KINDS].reverse().map((kind) => item(kind, kind)));
     expect(result?.item.kind).toBe('oweMoney');
     expect(result?.more).toBe(ACCESSORY_KINDS.length - 2);
+  });
+
+  test('the item whose screen is on top leaves the strip to the next one', () => {
+    const choose = {
+      ...item('choose', 'bountyAction'),
+      bounty: { target: '/bounty/applicants/b1' } as BountyCardDetail,
+    };
+    const progress = item('progress', 'bountyInProgress');
+    const next = pickMostUrgent([choose, progress], '/bounty/applicants/b1');
+    expect([next?.item.id, next?.more]).toEqual(['progress', 0]);
+    expect(pickMostUrgent([choose], '/bounty/applicants/b1')).toBeNull();
+    expect(pickMostUrgent([choose, progress], '/bounty/b1')?.item.id).toBe('choose');
   });
 
   test('a ride within the hour beats money owed to you', () => {

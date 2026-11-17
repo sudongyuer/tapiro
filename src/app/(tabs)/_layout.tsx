@@ -1,4 +1,4 @@
-import { useRouter, useSegments } from 'expo-router';
+import { usePathname, useRouter, useSegments } from 'expo-router';
 import { useCallback } from 'react';
 import { NativeTabs } from 'expo-router/native-tabs';
 
@@ -53,7 +53,8 @@ export default function TabsLayout() {
   useTierDropPrompt(tierDropCanShow(segments), openTierDrop);
   const feed = useLiveItems();
   const liveCardsOnScreen = useLiveCardsOnScreen();
-  const urgent = pickMostUrgent(feed.accessory);
+  const pathname = usePathname();
+  const urgent = pickMostUrgent(feed.accessory, pathname);
   const badge = badgeText(feed.unreadMessages);
   const inThread = location.tab === 'messages' && !location.onRoot;
   const showAccessory =

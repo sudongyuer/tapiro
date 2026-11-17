@@ -1,10 +1,13 @@
-"""问小貘 opens as a sheet from 悬赏 and from 拼车 with suggestions for that tab, and closing it leaves the same tab selected."""
+"""问小貘 opens as a sheet from 悬赏 and from 拼车 with suggestions for that tab; it closes with the system close button at the
+leading end of its bar, like the other sheets (no drawn close button), and closing it leaves the same tab selected."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from ask import close_button  # noqa: E402
 from driver import UI, by_id, luma, reach_home, selected  # noqa: E402
 
-DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
+DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx', 'src/app/_layout.tsx',
+        'verification/ui/ask.py']
 
 LOCALES = ['zh-Hans', 'ms']
 COPY = {
@@ -28,8 +31,12 @@ def open_sheet(tab, name):
     assert not searching, f'tapping 小貘 activated a search field: {searching}'
     scale =min(1.0, max(0.9, by_id(items, 'ask-tapir-sheet')['frame']['width'] / items[0]['frame']['width']))
     floor = 44 * scale - (0.5 if scale < 1 else 0)
-    for identifier in ('ask-tapir-close', 'ask-tapir-mic'):
-        f = by_id(items, identifier)['frame']
+    assert by_id(items, 'ask-tapir-close') is None, 'the sheet still draws its own close button'
+    button = close_button(ui, items)
+    assert button, 'the sheet has no system close button'
+    edge = by_id(items, 'ask-tapir-sheet')['frame']
+    assert button['frame']['x'] < edge['x'] + edge['width'] / 3, f'the close button is not at the leading end: {button}'
+    for f, identifier in ((button['frame'], 'close'), (by_id(items, 'ask-tapir-mic')['frame'], 'ask-tapir-mic')):
         assert min(f['width'], f['height']) >= floor, f'{identifier} is under 44 pt at sheet scale {scale:.3f}: {f}'
     assert by_id(items, 'ask-tapir-mic').get('enabled') is not False, 'the mic is disabled'
     for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-suggestion-2', 'ask-tapir-prompt', 'ask-tapir-mic'):
@@ -49,7 +56,7 @@ def open_sheet(tab, name):
         assert background < 80, f'sheet background is light ({background:.0f}) in dark appearance'
     else:
         assert background > 175, f'sheet background is dark ({background:.0f}) in light appearance'
-    ui.tap('ask-tapir-close')
+    ui.tap_label(ui.t('shell.ask.close'))
     ui.gone('ask-tapir-sheet')
     ui.wait(lambda items: selected(items) == [tab], f'{tab} is not selected after closing the sheet')
 

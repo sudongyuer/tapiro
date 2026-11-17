@@ -54,6 +54,10 @@ function RootStack() {
             presentation: 'formSheet',
             sheetAllowedDetents: [0.5, 1],
             sheetGrabberVisible: true,
+            headerShown: true,
+            title: '',
+            headerLargeTitleEnabled: false,
+            scrollEdgeEffects: { top: 'automatic' },
           }}
         />
         <Stack.Screen name="ask-consent" options={{ presentation: 'pageSheet' }} />

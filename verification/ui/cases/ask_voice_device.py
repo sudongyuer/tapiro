@@ -4,7 +4,7 @@ field as they are heard; 停 leaves the whole sentence in the field with 发送 
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import ai_calls, assert_calls, assert_grabber_clear, assert_lifted, header_drop, open_sheet, prompt_value  # noqa: E402
+from ask import ai_calls, assert_calls, assert_lifted, assert_scrolled_under_bar, header_drop, open_sheet, prompt_value  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/features/shell/AskInput.tsx', 'src/app/ask.tsx',
@@ -36,7 +36,7 @@ assert ai_calls(ui, 'speechRequestPermissions', 1, timeout=1) == [], 'a system p
 ui.at_rest()
 shot = ui.snap('01-explain-card')
 assert_lifted(shot, by_id(ui.read(), 'ask-voice-explain')['frame'], 'the explain card')
-assert_grabber_clear(ui, shot, drop)
+assert_scrolled_under_bar(ui, drop)
 
 ui.tap('ask-voice-explain-button')
 ui.gone('ask-voice-explain')
