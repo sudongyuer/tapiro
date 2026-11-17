@@ -125,8 +125,9 @@ def assert_coin(ui, shot, box, name, minimum=60):
 def assert_pack_coins(ui, shot, prefix='buy-coins'):
     items = ui.read()
     for coins in PACKS:
-        row = by_id(items, f'{prefix}-buy-{coins}')['frame']
-        assert_coin(ui, shot, {**row, 'width': 70}, f'pack {coins}')
+        coin = by_id(items, f'{prefix}-coin-{coins}')
+        assert coin is not None, f'pack {coins} has no 貘币'
+        assert_coin(ui, shot, coin['frame'], f'pack {coins}')
 
 
 def tap_price(ui, identifier):

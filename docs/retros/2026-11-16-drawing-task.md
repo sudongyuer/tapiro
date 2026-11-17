@@ -4,7 +4,7 @@ date: 2026-11-16
 pr: the 貘币, the four accessories and the leaf drawn from the canvas and placed where the answered boards put them (13 C)
 title: deferred art landed ten days late because the plan parked it as 「a separate drawing task」 nobody scheduled
 escaped: 1
-rework: 0
+rework: 1
 interventions: 1
 overturned: 0
 ---
@@ -34,6 +34,7 @@ ever scheduled it. The owner answered question 13 C (all of it now, no new motio
 | 2   | The canvas draws the weekly-feed thanks twice (253 A 「谢谢！+1 ◎」, 257 c1 「谢谢！◎ +1 貘币」) and the 嫩叶 in two styles (teardrop, crayon)                                                                   | boards answered on different days | ★ G3 and G8 for veto                                                                 |
 | 3   | No crayon accessory exists on the canvas, although the brief pointed there; 250 A itself says 「先用占位图，画风按 93A 再出图」                                                                                  | expected                          | Drawn in the 93 A pipeline (`drawings.mjs`), shapes from `RepBC` and `Motion257Grow` |
 | 4   | `CoinMark` was a SwiftUI shape, so the coin had to move into the RN tree; `RNHostView matchContents` already carries RN art into Form rows (`TierMark`, `TaskCard`)                                              | existing pattern                  | One `TapirCoin` in `src/ui`, hosted the same way                                     |
+| 5   | `coins_buy` (finishing run, 2026-11-17) looked for the pack coin inside the price button's frame, which is now the capsule on the trailing side, not the whole row: 0 gold px                                    | assertion written blind           | `assert_pack_coins` reads each coin's own `buy-coins-coin-N` frame                   |
 
 ## Root cause
 
