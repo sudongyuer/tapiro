@@ -109,6 +109,7 @@ const en: typeof zhHans = {
     form: {
       art: 'Picture: {{name}}',
       swapArt: 'Another Picture',
+      titleLabel: 'Title',
       titlePlaceholder: 'What do you need? One line',
       count: '{{count}}/{{max}}',
       countLabel: '{{count}} of {{max}} characters',
@@ -179,6 +180,7 @@ const en: typeof zhHans = {
       time: 'Time',
       description: 'Details',
       rewardLabel: 'Reward {{amount}}',
+      previewHeader: 'How it will look on the board',
       place: 'Place',
       addressNote: 'Only the person you choose sees the exact address',
       meta: '{{place}} · {{time}}',

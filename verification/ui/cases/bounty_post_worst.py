@@ -1,4 +1,6 @@
-"""Worst-case data on the form and confirm: a 60-code-point title wraps without hiding RM 500, the 500-code-point
+"""Worst-case data on the form and confirm: a 60-code-point title wraps without hiding RM 500, the live card and the
+confirm card draw the whole time window (read from the pixels; the place is what truncates), the hairline under the
+title starts at the row edge and not at the 60/60 counter, the 500-code-point
 description counts 500/500, two 40-character unpaid names with RM 12,345.60 read in full in the notice, and the pinned
 buttons stay 44 pt above the home indicator in both scroll positions. A relaunch with the RM 1 draft without optional
 rows shows RM 1 and no summary rows."""
@@ -8,8 +10,10 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import assert_preview, close_sheet_by_swipe, dismiss_hint, next_step, open_post, relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from post_layout import assert_row_edges, assert_time_whole  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
+        'verification/ui/post_layout.py', 'verification/ui/ocr.py', 'verification/ui/ocr.swift', 'src/ui/FieldRow.tsx',
         'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'worst', '-uiVerifyUnpaid', 'two',
@@ -55,7 +59,9 @@ open_post(ui)
 dismiss_hint(ui)
 ui.wait_label('bounty-post-title-count', lambda label: label == ui.t('bounty.post.form.countLabel', count=60, max=60),
               'title counter is not 60/60')
-ui.capture('01-form-top')
+ui.at_rest()
+assert_time_whole(ui, ui.snap('01-form-top'), 'bounty-post-live')
+assert_row_edges(ui, ui.read(), ['bounty-post-title'], least=2)
 scroll('bounty-post-form', True)
 ui.wait_label('bounty-post-description-count',
               lambda label: label == ui.t('bounty.post.form.countLabel', count=500, max=500), 'description is not 500/500')
@@ -65,7 +71,8 @@ next_step(ui)
 ui.element('bounty-post-confirm')
 assert_card(WORST_TITLE, '500', wraps=True)
 assert_actions(['bounty-post-pay', 'bounty-post-publish'])
-ui.capture('03-confirm-top')
+ui.at_rest()
+assert_time_whole(ui, ui.snap('03-confirm-top'), 'bounty-post-preview')
 scroll('bounty-post-confirm', True)
 notice = ui.element('bounty-post-blocked').get('AXLabel') or ''
 for name in NAMES:

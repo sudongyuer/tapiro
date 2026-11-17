@@ -1,6 +1,7 @@
 """The tile screen (157 C+A, 158A, 159A, 162A): with no draft 「+」 opens 「要帮什么忙？」 with six hand-drawn tiles and
 「都不像，直接写」, each tile 44 pt and read with its hint. 取快递 opens the form with 代取 and the parcel on the live
-card, the parcel title example, 「几点前」 and 「在哪取」 rows and RM 5 / 6 / 8 / 10. The system back 「‹ 换一件事」 returns
+card, the parcel title example, 「几点前」 and 「在哪取」 rows and RM 5 / 6 / 8 / 10; the optional rows run time, place,
+description (156A). The system back 「‹ 换一件事」 returns
 to the tiles; 排队 keeps the typed title and switches the card to 代排, the amounts to RM 15 / 20 / 25 / 30 and the time
 row to 「哪天」. A relaunch with the draft kept opens the form directly with the tiles beneath it, and 清空草稿 returns
 to the tiles."""
@@ -49,6 +50,8 @@ assert_kind('pickup', 'parcel', [5, 6, 8, 10])
 ui.wait(lambda items: (by_id(items, 'bounty-post-title') or {}).get('AXValue') == ui.t('bounty.post.kind.pickup.title'),
         'the title field does not show the parcel example')
 ui.capture('02-form-pickup')
+rows = [ui.element(row)['frame']['y'] for row in ('bounty-post-add-time', 'bounty-post-add-place', 'bounty-post-add-description')]
+assert rows == sorted(rows), f'the optional rows are not time, place, description from the top: {rows}'
 typed(ui, 'bounty-post-title', TITLE_TYPED, TITLE_SHOWN)
 place = form_scroll_to(ui, 'bounty-post-add-place')
 assert place.get('AXLabel') == ui.t('bounty.post.kind.pickup.place'), place.get('AXLabel')

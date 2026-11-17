@@ -5,9 +5,11 @@ import {
   buttonBorderShape,
   buttonStyle,
   controlSize,
+  fixedSize,
   foregroundStyle,
   frame,
   lineLimit,
+  listRowInsets,
   multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
 
@@ -16,10 +18,17 @@ import type { BountyCategory } from '@/lib/stickers/category';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { ROW_INSETS } from '@/ui/FieldRow';
+import { edgeSeparator } from '@/ui/FieldRow';
 import { shownPicks } from './postKinds';
 import { CHIP_LABEL_HEIGHT } from './RewardSection';
 import type { PostDraft, TimeChoice } from './types';
+
+const PICKS_INSETS = listRowInsets({
+  top: vars['--space-3'],
+  bottom: vars['--space-3'],
+  leading: vars['--space-5'],
+  trailing: vars['--space-5'],
+});
 
 export function TimePicks({
   time,
@@ -36,7 +45,10 @@ export function TimePicks({
   if (picks.length === 0) return null;
   const chosen = time.kind === 'deadline' ? Date.parse(time.deadlineAt) : null;
   return (
-    <HStack spacing={vars['--space-2']} modifiers={[ROW_INSETS]}>
+    <HStack
+      spacing={vars['--space-2']}
+      modifiers={[fixedSize({ horizontal: false, vertical: true }), PICKS_INSETS, edgeSeparator]}
+    >
       {picks.map((pick) => {
         const name = t(`bounty.post.timePick.${pick.id}`);
         const on = chosen === pick.at.getTime();
@@ -51,7 +63,7 @@ export function TimePicks({
               buttonStyle(on ? 'borderedProminent' : 'bordered'),
               buttonBorderShape('capsule'),
               controlSize('regular'),
-              frame({ maxWidth: Infinity }),
+              frame({ maxWidth: Infinity, maxHeight: Infinity }),
               accessibilityLabel(t('bounty.post.timePick.label', { name })),
               ...(on ? [accessibilityAddTraits(['isSelected'])] : []),
             ]}
@@ -60,7 +72,7 @@ export function TimePicks({
               modifiers={[
                 lineLimit(2),
                 multilineTextAlignment('center'),
-                frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+                frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT, maxHeight: Infinity }),
                 ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
               ]}
             >
