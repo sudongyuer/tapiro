@@ -439,3 +439,5 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-17 | UI polish, home               | 0                  | 0             | ~75 min (Simulator lock held by another capture) | 0                       | 0                     |
 | 2026-11-17 | UI polish, pay and payee      | 1 (calendar)       | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-17 | UI polish, 问小貘             | 0                  | 1             | ~30 min (case helpers deleted, Simulator lock)   | 0                       | 0                     |
+| 2026-11-17 | UI polish, chat               | 0                  | 1             | ~25 min (Simulator lock)                         | 0                       | 0                     |
+| 2026-11-16 | drawing task                  | 1 (coin art)       | 1             | ~0                                               | 1                       | 0                     |

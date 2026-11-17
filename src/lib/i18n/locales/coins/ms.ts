@@ -83,6 +83,8 @@ const ms: typeof zhHans = {
     waiting: '…',
     idle: 'Minggu baharu, ketik saya untuk sehelai daun',
     fed: 'Terima kasih! +1 Syiling',
+    fedLead: 'Terima kasih!',
+    fedTail: '+1 Syiling',
     alreadyFed: 'Saya dah kenyang minggu ini. Datang lagi hari Isnin',
     failed: 'Tak berjaya. Ketik saya sekali lagi',
     action: 'Beri tapir makan',
