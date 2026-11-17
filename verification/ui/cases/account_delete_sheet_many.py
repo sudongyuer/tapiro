@@ -17,13 +17,13 @@ BUTTONS = ('delete-account-confirm', 'delete-account-cancel')
 def sheet_frame(items, when):
     sheet = by_id(items, 'delete-account-scroll')['frame']
     assert sheet['y'] >= 44, f'the sheet runs under the status bar {when}: {sheet}'
-    assert bottom(sheet) <= items[0]['frame']['height'] + 1, f'the sheet runs off the screen {when}: {sheet}'
+    assert (sheet['y'] + sheet['height']) <= items[0]['frame']['height'] + 1, f'the sheet runs off the screen {when}: {sheet}'
     return sheet
 
 
 def on_screen(items, identifier, sheet):
     element = by_id(items, identifier)
-    return element is not None and element['frame']['y'] >= sheet['y'] and bottom(element) <= bottom(sheet)
+    return element is not None and element['frame']['y'] >= sheet['y'] and bottom(element) <= (sheet['y'] + sheet['height'])
 
 
 ui = UI(*sys.argv[1:])
@@ -44,7 +44,7 @@ width = items[0]['frame']['width']
 for _ in range(6):
     if on_screen(ui.read(), BUTTONS[1], sheet):
         break
-    drag(ui, (width / 2, bottom(sheet) - 120), (width / 2, bottom(sheet) - 420))
+    drag(ui, (width / 2, (sheet['y'] + sheet['height']) - 120), (width / 2, (sheet['y'] + sheet['height']) - 420))
 ui.at_rest()
 items = ui.read()
 sheet_frame(items, 'after scrolling')
