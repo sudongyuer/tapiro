@@ -1,6 +1,7 @@
 export { AskConversation, type AskActions } from './AskConversation';
 export { APP_CONSENT_VERSION, cloudAccess, type CloudAccess } from './consent';
 export { ConsentScreen, type ConsentFrom } from './ConsentScreen';
+export { FailureCard } from './FailureCard';
 export { useAskSession, useConsentFor, useVoice } from './hooks';
 export { MemoryEntrySheet } from './MemoryEntrySheet';
 export { MemoryScreen } from './MemoryScreen';

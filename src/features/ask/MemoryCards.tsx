@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
+import { useSheetFill } from '@/ui/theme/useSheetFill';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { TapirTurn } from './conversation';
@@ -64,6 +65,7 @@ export function OfferCard({
   const { t } = useI18n();
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<MemoryFailure | null>(null);
+  const fill = useSheetFill();
   const offer = turn.memory?.offer;
   if (!offer || turn.offer === 'dismissed') return null;
   if (turn.offer === 'saved') {
@@ -88,7 +90,7 @@ export function OfferCard({
   };
 
   return (
-    <View style={[styles.card, { borderColor: PlatformColor('separator') }]} testID={testID}>
+    <View style={[styles.card, { backgroundColor: fill }]} testID={testID}>
       <AppText variant="title">
         {offer.replaces
           ? t('ask.memory.offer.replaceTitle', { label: offer.label })
@@ -135,7 +137,6 @@ const styles = StyleSheet.create({
     padding: vars['--space-4'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
-    borderWidth: StyleSheet.hairlineWidth,
   },
   buttons: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
   used: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },

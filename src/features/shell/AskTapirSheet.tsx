@@ -15,6 +15,7 @@ import { AppText } from '@/ui/AppText';
 import { Mascot } from '@/ui/Mascot';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
+import { useSheetFill } from '@/ui/theme/useSheetFill';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { AskInput, type AskComposer } from './AskInput';
@@ -39,6 +40,9 @@ const COPY: Record<ShellTab, AskCopy> = {
   },
   me: BOUNTY_COPY,
 };
+
+// The scroll view starts under the grabber, so scrolled content is cut there instead of passing behind it.
+const GRABBER_ZONE = vars['--space-4'];
 
 const SUBTITLES: Record<ShellTab, ParseKeys> = {
   bounty: 'shell.ask.subtitle.bounty',
@@ -70,6 +74,7 @@ export function AskTapirSheet({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const fill = useSheetFill();
   const scroll = useRef<ScrollViewInstance>(null);
   useEffect(() => {
     if (replies > 0) scroll.current?.scrollToEnd({ animated: true });
@@ -126,10 +131,7 @@ export function AskTapirSheet({
                 accessibilityRole="button"
                 testID={`ask-tapir-suggestion-${index}`}
                 onPress={() => onSuggestion(t(key))}
-                style={[
-                  styles.chip,
-                  { backgroundColor: PlatformColor('secondarySystemBackground') },
-                ]}
+                style={[styles.chip, { backgroundColor: fill }]}
               >
                 <AppText variant="secondary">{t(key)}</AppText>
               </PressDim>
@@ -138,11 +140,6 @@ export function AskTapirSheet({
         ) : null}
         {children}
         <AskInput composer={composer} prompt={copy.prompt} />
-        {composer.note ? (
-          <AppText variant="secondary" testID="ask-tapir-note">
-            {composer.note}
-          </AppText>
-        ) : null}
       </View>
     </ScrollView>
   );
@@ -151,11 +148,11 @@ export function AskTapirSheet({
 const styles = StyleSheet.create({
   sheet: {
     paddingHorizontal: vars['--space-5'],
-    paddingTop: vars['--space-6'],
+    paddingTop: vars['--space-6'] - GRABBER_ZONE,
     paddingBottom: vars['--space-6'],
     gap: vars['--space-4'],
   },
-  scroll: { flex: 1 },
+  scroll: { flex: 1, marginTop: GRABBER_ZONE },
   body: { gap: vars['--space-4'] },
   header: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
   avatar: {
