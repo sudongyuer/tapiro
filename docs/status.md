@@ -184,14 +184,14 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
    with `list` after a relaunch; one server read `live_activity_subjects()`. V5's island checkmark never shows (the
    island drops an ended activity). Remote updates wait on APNs (Tasks 6–8). Each plan lists what waits on the
    account.
-3. After #137 merges (Q8 A): one PR aligns the 「AI drafting」 wording in `website/index.html`, `coins.html` and
-   `terms.html` with the in-app policy.
+3. Done 2026-11-17 (Q8 A): `website/index.html`, `coins.html` and `terms.html` describe 问小貘 as the app does
+   (drafts, answers, translation, cloud speech fallback, 小貘记得, consent first, coins swap for leaves).
 4. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
    were HID keys sent to a number pad, which iOS 27.2 ignores; on-screen taps land (see 0).
 
 ## Owner decisions pending
 
-- Merged under the owner's delegation (2026-11-17): #137 (the public privacy page; deploy pending) and #141 (the in-app privacy copy, `fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
+- Merged under the owner's delegation (2026-11-17): #137 (the public privacy page; deployed 2026-11-17 (version facaca3a)) and #141 (the in-app privacy copy, `fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
   deletion, 小貘记得 sent only with drafts and answers, location, no training per Alibaba Cloud's terms, Model Studio's
   retention of at most 30 days, one provider name everywhere, the location permission string naming rides and place
   search). #137 also carries the 30-day retention sentence. The permission string reaches the app only after prebuild.
@@ -299,7 +299,6 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   `docs/plans/2026-10-30-ask-tapir.md`.
 - 问小貘 walkthrough on a device: `docs/walkthroughs/2026-11-15-ask.md`; afterwards, which 问小貘 calls move to the
   on-device model (M12).
-- Review and merge #137: `website/privacy.html`'s AI section aligned with the in-app policy, then deploy the site.
 - 148, when the account exists: the plan's 「Task 9 smoke run」 (workspace, a key limited to the four pinned models, a
   local run, `bun run ai:budget`, then hosted secrets on the owner's go-ahead).
 - The profile header ★ (P11 in `docs/plans/2026-11-06-reviews-profile-coins.md`): the tier keeps its full width and the
