@@ -71,7 +71,7 @@ const ms: Translation = {
     legal: {
       draft: 'Draf: teks ini akan diganti sebelum dikeluarkan di App Store.',
       close: 'Tutup',
-      contact: 'Hubungi kami: [e-mel hubungan]',
+      contact: 'Hubungi kami: sudongyu3@gmail.com',
       terms: {
         title: 'Terma Penggunaan',
         aboutTitle: 'Apa Itu Tapiro',
@@ -88,15 +88,15 @@ const ms: Translation = {
         title: 'Dasar Privasi',
         collectTitle: 'Apa Yang Kami Kumpul',
         collect:
-          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; rekod bayaran (siapa membayar siapa, jumlah dan sama ada telah disahkan); lejar syiling dan rekod pembelian App Store anda; serta token peranti untuk pemberitahuan tolak.',
+          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; rekod bayaran (siapa membayar siapa, jumlah dan sama ada telah disahkan); lejar syiling dan rekod pembelian App Store anda; serta token peranti untuk pemberitahuan tolak. Jika anda membenarkan lokasi, Tapiro membaca lokasi anda hanya semasa anda menggunakannya, untuk menyusun ganjaran dan perjalanan berdekatan mengikut jarak, untuk menunjukkan tempat berdekatan dahulu semasa anda mencari tempat, atau untuk menggunakan tempat anda berada sebagai tempat ganjaran atau perjalanan yang anda siarkan. Lokasi anda hanya dihantar bersama carian itu ke pelayan kami atau Apple Maps, dan kami tidak menyimpannya melainkan anda menyiarkannya sebagai tempat ganjaran atau perjalanan.',
         aiTitle: 'Tanya Tapir',
-        ai: 'Hanya selepas anda bersetuju: apa yang anda taip atau sebut, gambar yang anda pilih, mesej yang anda terjemah dan tempat serta tabiat dalam Tapir Ingat dihantar melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura). Perbualan dan draf kekal dalam telefon anda; pelayan hanya menyimpan rekod persetujuan dan penggunaan, bukan perbualan; Tapir Ingat disegerakkan, dan anda boleh melihat, mengubah serta memadamnya.',
+        ai: 'Hanya selepas anda bersetuju: apa yang anda taip atau sebut, gambar yang anda pilih, dan mesej yang anda terjemah dihantar melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura); tempat serta tabiat dalam Tapir Ingat dihantar bersama hanya semasa mendraf dan menjawab, bukan semasa menterjemah atau menukar suara kepada teks. Terma Alibaba Cloud menyatakan ia tidak menggunakan data ini untuk melatih atau menambah baik modelnya. Dasar penyimpanan datanya menyatakan permintaan dan jawapan ini disimpan tidak lebih daripada 30 hari secara lalai, dan mungkin disimpan lebih lama jika dikehendaki oleh undang-undang, untuk keselamatan perkhidmatan, atau jika penapis keselamatannya menandakan kandungan itu. Perbualan dan draf kekal dalam telefon anda; pelayan hanya menyimpan rekod persetujuan dan penggunaan, bukan perbualan; Tapir Ingat disegerakkan, dan anda boleh melihat, mengubah serta memadamnya.',
         storeTitle: 'Di Mana Ia Disimpan',
         store:
           'Data disimpan dengan Supabase di Singapura (ap‑southeast‑1). Sesi daftar masuk anda kekal dalam Keychain telefon anda.',
         deleteTitle: 'Memadam Akaun Anda',
         delete:
-          'Padam akaun anda dalam Saya → Tetapan → Padam Akaun. Dipadam: profil, kaedah bayaran, mesej dan ulasan anda, Tapir Ingat, syiling dan pelekat. Disimpan: sebelah pihak lain dalam setiap sembang (tanpa mesej anda), serta rekod lejar syiling dan pembelian dalam aplikasi yang dinyahnamakan. Anda tidak boleh memadam semasa ada bayaran belum selesai; Tapiro menunjukkan yang mana satu.',
+          'Padam akaun anda dalam Saya → Tetapan → Padam Akaun. Dipadam: profil, kaedah bayaran, mesej dan ulasan anda, Tapir Ingat, syiling dan pelekat. Disimpan: sebelah pihak lain dalam setiap sembang (tanpa mesej anda), serta rekod yang dinyahnamakan bagi lejar syiling, pembelian dalam aplikasi, penggunaan Tanya Tapir dan daun dalam Balang anda. Anda tidak boleh memadam semasa ada bayaran belum selesai; Tapiro menunjukkan yang mana satu.',
       },
     },
     me: {

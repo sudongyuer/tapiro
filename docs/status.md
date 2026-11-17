@@ -184,11 +184,22 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
    with `list` after a relaunch; one server read `live_activity_subjects()`. V5's island checkmark never shows (the
    island drops an ended activity). Remote updates wait on APNs (Tasks 6–8). Each plan lists what waits on the
    account.
-3. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
+3. After #137 merges (Q8 A): one PR aligns the 「AI drafting」 wording in `website/index.html`, `coins.html` and
+   `terms.html` with the in-app policy.
+4. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
    were HID keys sent to a number pad, which iOS 27.2 ignores; on-screen taps land (see 0).
 
 ## Owner decisions pending
 
+- Merged under the owner's delegation (2026-11-17): #137 (the public privacy page; deploy pending) and #141 (the in-app privacy copy, `fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
+  deletion, 小貘记得 sent only with drafts and answers, location, no training per Alibaba Cloud's terms, Model Studio's
+  retention of at most 30 days, one provider name everywhere, the location permission string naming rides and place
+  search). #137 also carries the 30-day retention sentence. The permission string reaches the app only after prebuild.
+- Answered 2026-11-16: 9 A (a refund through `iap-notify` while the app is open: the balance still refreshes on the
+  next return to the foreground; plan `docs/plans/2026-11-11-iap-local.md` 「Refund trace」), 10 A (the location
+  permission string names bounties, rides and place search, #141), 11 A (Model Studio's retention looked up: prompts
+  and responses at most 30 days by default, longer when the law or service security needs it, flagged content at most
+  2 years; `docs/research/2026-10-04-ai-providers.md` section 7; in the in-app policy on #141 and the website on #137).
 - ★ for veto (2026-11-17): carpool polish in `docs/plans/2026-11-02-carpool-foundation.md` (「★ UI polish, carpool」,
   R1–R8): the stamp under the car sticker with text ending before it, 44 pt quick-time chips, the place row as one
   button with 改 overhanging, the compact organiser link, 8 pt under the detail's pinned bar and no bar without an

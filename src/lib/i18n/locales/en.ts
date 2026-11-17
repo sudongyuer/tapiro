@@ -71,7 +71,7 @@ const en: Translation = {
     legal: {
       draft: 'Draft: this text will be replaced before the App Store release.',
       close: 'Close',
-      contact: 'Contact us: [contact email]',
+      contact: 'Contact us: sudongyu3@gmail.com',
       terms: {
         title: 'Terms of Use',
         aboutTitle: 'What Tapiro Is',
@@ -88,15 +88,15 @@ const en: Translation = {
         title: 'Privacy Policy',
         collectTitle: 'What We Collect',
         collect:
-          'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; the bounties and rides you post, chat messages and images, and reviews; the payment methods you add (DuitNow number, bank account, and the text read from a receive QR code, never the image); screenshots you attach when paying (visible to both sides and moderators); your reports and blocks; payment records (who paid whom, the amount and whether it was confirmed); your coin ledger and App Store purchase records; and a device token for push notifications.',
+          'The name, email (Apple relay addresses accepted) and photo that Apple or Google provide at sign-in; the display name you choose; the bounties and rides you post, chat messages and images, and reviews; the payment methods you add (DuitNow number, bank account, and the text read from a receive QR code, never the image); screenshots you attach when paying (visible to both sides and moderators); your reports and blocks; payment records (who paid whom, the amount and whether it was confirmed); your coin ledger and App Store purchase records; and a device token for push notifications. If you allow location, Tapiro reads your location only while you use it, to sort nearby bounties and rides by distance, to show nearby places first when you search for one, or to use where you are as the place of a bounty or ride you post. Your location goes only with those lookups to our server or Apple Maps, and we don’t keep it unless you post it as a bounty’s or ride’s place.',
         aiTitle: 'Ask Tapir',
-        ai: 'Only after you agree: what you type or say, pictures you pick, messages you translate and the places and habits in Tapir Remembers go through our server to Alibaba Cloud Model Studio (Singapore). Conversations and drafts stay on your phone; the server keeps only consent records and usage, never the conversation; Tapir Remembers is synced, and you can view, change and delete it.',
+        ai: 'Only after you agree: what you type or say, pictures you pick, and messages you translate go through our server to Alibaba Cloud Model Studio (Singapore); the places and habits in Tapir Remembers go along only with drafts and answers, never with translations or voice-to-text. Alibaba Cloud’s terms say it does not use this data to train or improve its models. Its data retention policy says it keeps these requests and replies for no longer than 30 days by default, and may keep them longer when the law requires it, to keep the service secure, or when its safety filters flag the content. Conversations and drafts stay on your phone; the server keeps only consent records and usage, never the conversation; Tapir Remembers is synced, and you can view, change and delete it.',
         storeTitle: 'Where It’s Stored',
         store:
           'Data is stored with Supabase in Singapore (ap‑southeast‑1). Your sign-in session stays in your phone’s Keychain.',
         deleteTitle: 'Deleting Your Account',
         delete:
-          'Delete your account in Me → Settings → Delete Account. Deleted: your profile, payment methods, your messages and reviews, Tapir Remembers, coins and stickers. Kept: the other person’s side of each chat (without your messages), and anonymised coin ledger and in-app purchase records. You can’t delete while a payment is unsettled; Tapiro shows which one.',
+          'Delete your account in Me → Settings → Delete Account. Deleted: your profile, payment methods, your messages and reviews, Tapir Remembers, coins and stickers. Kept: the other person’s side of each chat (without your messages), and anonymised records of your coin ledger, in-app purchases, Ask Tapir usage and the leaves in your Jar. You can’t delete while a payment is unsettled; Tapiro shows which one.',
       },
     },
     me: {

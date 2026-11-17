@@ -50,7 +50,7 @@ export default {
   voice: {
     explainTitle: 'Bercakap dengan Tapir',
     explainBody:
-      'Ini menggunakan mikrofon dan pengecaman pertuturan. Telefon anda mencuba dahulu; jika tidak berjaya, rakaman dihantar ke Alibaba Cloud (Singapura).',
+      'Ini menggunakan mikrofon dan pengecaman pertuturan. Telefon anda mencuba dahulu; jika tidak berjaya, rakaman dihantar ke Alibaba Cloud Model Studio (Singapura).',
     explainOk: 'OK',
     blockedTitle: 'Mikrofon dimatikan',
     blockedBody:

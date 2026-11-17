@@ -3,6 +3,9 @@ import { describe, expect, test } from 'bun:test';
 import { CURRENCIES } from '@/lib/money';
 
 import { LANGUAGES } from './languages';
+import en from './native/en.json';
+import ms from './native/ms.json';
+import zhHans from './native/zh-Hans.json';
 import { resources } from './resources';
 
 function entries(value: object, prefix = ''): [string, string][] {
@@ -56,6 +59,30 @@ describe('resources', () => {
         symbols.some((symbol) => text.includes(symbol)),
       );
       expect(found).toEqual([]);
+    },
+  );
+
+  const native = { 'zh-Hans': zhHans, en, ms } as const;
+
+  test.each(LANGUAGES.map((language) => language.code))(
+    '%s names the AI provider in full wherever Alibaba Cloud appears',
+    (code) => {
+      const provider = resources[code].translation.ask.provider;
+      const texts = [
+        ...entries(resources[code].translation).map(([, text]) => text),
+        ...Object.values(native[code].ios),
+      ];
+      const partial = texts.filter(
+        (text) => /阿里云|Alibaba Cloud/.test(text) && !text.includes(provider),
+      );
+      expect(partial).toEqual([]);
+    },
+  );
+
+  test.each(LANGUAGES.map((language) => language.code))(
+    '%s gives a real contact address in the legal pages',
+    (code) => {
+      expect(resources[code].translation.account.legal.contact).toMatch(/\S+@\S+\.\S+$/);
     },
   );
 });
