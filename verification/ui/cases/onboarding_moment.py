@@ -1,4 +1,5 @@
-"""The name step sits on the moment background with 小貘's head and the moment title, and keeps a 40-character name in a full-size field."""
+"""The name step sits on the moment background with 小貘's head and the moment title, and keeps a 40-character name in a full-size field
+drawn in the filled-row colour."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -21,6 +22,8 @@ screen = ui.read()[0]['frame']
 assert button['frame']['y'] + button['frame']['height'] <= screen['height'], f'continue button is off screen: {button["frame"]}'
 assert title['frame']['y'] < field['frame']['y'] < button['frame']['y'], 'title, field and button are out of order'
 shot = ui.snap('name-step')
+assert_colour(shot, {'x': field['frame']['x'] - 12, 'y': field['frame']['y'] + 20, 'width': 8, 'height': 10},
+              token('--color-filled-row', ui.appearance), 'name field')
 assert_colour(shot, {'x': 2, 'y': field['frame']['y'] + field['frame']['height'] + 60, 'width': 12, 'height': 12},
               token('--color-moment-bg', ui.appearance), 'moment background')
 print('PASS: the name step uses the moment background and fits a 40-character name')

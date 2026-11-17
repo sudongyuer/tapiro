@@ -1,7 +1,7 @@
 """Distance axis (27A, 35A, 40A): from 你 the axis marks the located bounties within 2 km as 44 pt stickers labelled with
 their titles and distance, merging neighbours closer than 44 pt; tapping the 1.6 km sticker scrolls 搬两个箱子上楼 from
 below the screen into view and a 2 pt accent ring shows around it once, then goes; 「+2 更远」 does the same for 帮我去 JPJ
-排号. The ring is timed from the frame timestamps of a clip recorded around each tap (ring-move.mp4, ring-jpj.mp4)."""
+排号; the origin label 你 is centred under the origin dot. The ring is timed from the frame timestamps of a clip recorded around each tap (ring-move.mp4, ring-jpj.mp4)."""
 import re
 import sys
 import tempfile
@@ -9,7 +9,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import BOTTOM_CLEAR, in_view, ink_box, screen, visible  # noqa: E402
-from driver import UI, Shot, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, Shot, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 from recording import clip, frames  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
@@ -25,6 +25,9 @@ FRAME_GAP_S = 0.03
 RING_HOLD_MS, RING_FADE_OUT_MS, SLACK_MS = 1200, 240, 100
 SPAN_MIN = (RING_HOLD_MS - SLACK_MS) / 1000
 SPAN_MAX = (RING_HOLD_MS + RING_FADE_OUT_MS + SLACK_MS) / 1000
+CARD_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
+DOT, DOT_REACH, TRACK = 10, 16, 44
+CENTRED = 1.5
 
 ui = UI(*sys.argv[1:])
 
@@ -42,6 +45,22 @@ def ring_pixels(shot, f):
         stroke = RING_WIDTH * shot.scale
         counts.append(box['count'] / (length * stroke) if box else 0)
     return round(min(counts) * 100)
+
+
+def assert_origin_centred(shot, legend):
+    fill = CARD_FILL[ui.appearance]
+    x0, x1 = round(legend['x'] * shot.scale), round((legend['x'] + legend['width']) * shot.scale)
+    y0, y1 = round(legend['y'] * shot.scale), round((legend['y'] + legend['height']) * shot.scale)
+    xs = [px for py in range(y0, y1) for px in range(x0, x1) if not close(shot._px(px, py), fill, 60)]
+    assert xs, f'the origin label is not drawn in {legend}'
+    text = (min(xs) + max(xs) + 1) / 2 / shot.scale
+    middle = legend['x'] + legend['width'] / 2
+    above = {'x': middle - DOT_REACH, 'y': legend['y'] - TRACK, 'width': 2 * DOT_REACH, 'height': TRACK - 2}
+    dot = ink_box(shot, above, token('--color-accent', ui.appearance), 24)
+    assert dot and abs(dot['width'] - DOT) <= 2, f'no {DOT} pt origin dot above the label: {dot}'
+    centre = dot['x'] + dot['width'] / 2
+    print(f'origin dot centre {centre:.1f}, label ink centre {text:.1f}')
+    assert abs(centre - text) <= CENTRED, f'the origin label is {text - centre:+.1f} pt off the dot centre'
 
 
 def tap_and_watch(target, card_id, tag):
@@ -98,7 +117,7 @@ more = ui.element('bounty-axis-more')
 assert more.get('AXLabel') == ui.t('bounty.board.axis.moreLabel', count=2), more.get('AXLabel')
 assert_touch_target(more, '+2 更远')
 ui.at_rest()
-ui.capture('01-axis')
+assert_origin_centred(ui.snap('01-axis'), ui.element('bounty-axis')['frame'])
 print(f'{len(marks)} marks, {len(merged)} merged: {[m.get("AXLabel") for m in merged]}')
 
 tap_and_watch(MARK, MOVE_CARD, 'move')

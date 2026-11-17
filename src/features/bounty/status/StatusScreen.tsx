@@ -6,13 +6,13 @@ import { PlatformColor, StyleSheet, View } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { useLiveOffline } from '@/lib/live';
 import { InlineState } from '@/ui/InlineState';
-import { NoticeCard } from '@/ui/NoticeCard';
 import { OfflineSection } from '@/ui/OfflineLine';
 import { SheetFrame, SheetLayer } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
 import { AddressSection } from '../shared/AddressSection';
 import { addressView } from '../shared/exactAddress';
+import { StateRow } from '../shared/StateRow';
 import { EtaSheet } from './EtaSheet';
 import { IssueSheet } from './IssueSheet';
 import { PinnedActions, StatusMenu, type StatusMessage } from './StatusActions';
@@ -80,7 +80,7 @@ export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: St
     label: t('bounty.status.retry'),
     onPress: () => void refresh(),
     testID: 'bounty-status-retry',
-    busyLabel: busy ? t('bounty.status.loading') : undefined,
+    busy,
   });
 
   return (
@@ -98,35 +98,37 @@ export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: St
               <OfflineSection text={t('live.offline')} testID="bounty-status-offline" />
             ) : null}
             {action.kind === 'changed' ? (
-              <NoticeCard
-                tone="warning"
-                icon="arrow.triangle.2.circlepath"
-                title={t('bounty.status.stateChanged')}
-                testID="bounty-status-changed"
-              />
+              <StateRow>
+                <InlineState
+                  tone="warning"
+                  text={t('bounty.status.stateChanged')}
+                  testID="bounty-status-changed"
+                />
+              </StateRow>
             ) : null}
             {load.kind === 'ready' && load.refreshFailed ? (
-              <NoticeCard
-                tone="warning"
-                icon="exclamationmark.triangle.fill"
-                title={t('bounty.status.refreshFailed', {
-                  time: statusClock(load.loadedAt, { t, language, now: new Date() }),
-                })}
-                action={retry(load.refreshing)}
-                testID="bounty-status-stale"
-              />
+              <StateRow>
+                <InlineState
+                  tone="warning"
+                  text={t('bounty.status.refreshFailed', {
+                    time: statusClock(load.loadedAt, { t, language, now: new Date() }),
+                  })}
+                  action={retry(load.refreshing)}
+                  testID="bounty-status-stale"
+                />
+              </StateRow>
             ) : null}
           </>
         }
       >
         {load.kind === 'failed' ? (
-          <NoticeCard
-            tone="urgent"
-            icon="exclamationmark.circle.fill"
-            title={t('bounty.status.loadFailed')}
-            action={retry(load.retrying)}
-            testID="bounty-status-load-failed"
-          />
+          <StateRow>
+            <InlineState
+              text={t('bounty.status.loadFailed')}
+              action={retry(load.retrying)}
+              testID="bounty-status-load-failed"
+            />
+          </StateRow>
         ) : detail ? (
           <>
             <StatusHeader detail={detail} />

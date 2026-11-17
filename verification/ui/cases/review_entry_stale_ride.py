@@ -8,7 +8,7 @@ from gestures import pull  # noqa: E402
 from profile import label  # noqa: E402
 from review import shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/lib/i18n/locales/reputation/', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/gestures.py', 'src/features/ride/detail/', 'src/app/(tabs)/ride/']
+DEPS = ['src/features/reputation/', 'src/lib/i18n/locales/reputation/', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/ocr.py', 'verification/ui/profile.py', 'verification/ui/gestures.py', 'src/features/ride/detail/', 'src/app/(tabs)/ride/']
 SCENE = 'ride-detail'
 BUDGET = 200
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'settledOrganiser', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'stateAgain']

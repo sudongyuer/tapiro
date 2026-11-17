@@ -1,4 +1,4 @@
-"""Applicant screen 6A pushed from the bounty-applicants scene with a back button to 悬赏令: the header shows 帮取快递, 等你选人 · 3 人申请 and RM 8; the grouped list holds 阿杰, Hana and Aiman in application order, each with the tier and 帮过 N 次 or 还没帮过 (阿杰 also with his note); before a choice the pinned hold button reads 先选一个人 and is disabled, with the hint counting the other 2; tapping Hana puts the accent checkmark on Hana only and names her on the button, tapping 阿杰 moves the check; rows and the button are at least 44 pt. A pull on the list brings in Mei Ling, who applied
+"""Applicant screen 6A pushed from the bounty-applicants scene with a back button to 悬赏令: the header shows 帮取快递, 等你选人 · 3 人申请 and RM 8; the grouped list holds 阿杰, Hana and Aiman in application order, each with the tier and 帮过 N 次 or 还没帮过 (阿杰 also with his note); before a choice the pinned hold button reads 先选一个人 and is disabled, with the hint counting the other 2 in the 13 pt meta size (18 pt lines); tapping Hana puts the accent checkmark on Hana only and names her on the button, tapping 阿杰 moves the check; rows and the button are at least 44 pt. A pull on the list brings in Mei Ling, who applied
 after it loaded, below the other three and counts 4 人申请. With no applicants the header reads 等人申请 with one inline card and no button; a failed first load shows 没加载出来 and a status line without a count, and 重试 loads the three rows."""
 import re
 import sys
@@ -23,6 +23,7 @@ CHECK_SLACK = 4
 CHECK_MIN = 12
 CHECK_SPAN = (8, CHECK_SIZE + CHECK_SLACK)
 FOOTER_PAD = 12
+META_LINE = 18
 
 ui = UI(*sys.argv[1:])
 
@@ -92,6 +93,9 @@ assert hold.get('enabled') is False, f'the hold button is enabled before a choic
 assert_touch_target(hold, 'hold button')
 hint_text = ui.tn('bounty.select.hold.hint', 2)
 assert label(f'{HOLD}-hint') == hint_text, label(f'{HOLD}-hint')
+hint_height = ui.element(f'{HOLD}-hint')['frame']['height']
+assert abs(hint_height - META_LINE * max(1, round(hint_height / META_LINE))) <= 1, \
+    f'the hold hint is {hint_height} pt tall, not whole {META_LINE} pt meta lines'
 shot = assert_checked('01-no-choice', None)
 f = hold['frame']
 assert_grouped_background(ui, shot, {'x': 0, 'y': f['y'], 'width': 12, 'height': f['height']}, 'pinned footer')

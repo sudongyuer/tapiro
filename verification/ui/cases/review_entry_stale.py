@@ -8,7 +8,7 @@ from gestures import pull  # noqa: E402
 from profile import label  # noqa: E402
 from review import shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/lib/i18n/locales/reputation/', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/gestures.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/']
+DEPS = ['src/features/reputation/', 'src/lib/i18n/locales/reputation/', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/ocr.py', 'verification/ui/profile.py', 'verification/ui/gestures.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/']
 SCENE = 'bounty-status'
 BUDGET = 200
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'settled', '-uiVerifyBountyRole', 'poster', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'stateAgain']
