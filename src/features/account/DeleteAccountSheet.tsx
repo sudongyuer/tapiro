@@ -59,6 +59,9 @@ export function DeleteAccountSheet({
       onLayout={onLayout}
       testID="delete-account-sheet"
     >
+      {/* react-native-screens resizes the first ScrollView on a form sheet's first-subview chain to the whole
+          screen frame, which moved this list below the sheet; this spacer keeps the list off that chain. */}
+      <View collapsable={false} style={styles.top} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -142,10 +145,10 @@ export function DeleteAccountSheet({
 
 const styles = StyleSheet.create({
   sheet: { flexShrink: 1, paddingBottom: vars['--space-2'] },
+  top: { height: vars['--space-6'] },
   scroll: { flexGrow: 0 },
   content: {
     paddingHorizontal: vars['--space-5'],
-    paddingTop: vars['--space-6'],
     paddingBottom: vars['--space-5'],
     gap: vars['--space-5'],
   },
