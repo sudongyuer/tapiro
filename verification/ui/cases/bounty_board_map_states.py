@@ -1,5 +1,6 @@
 """Map view states (Debug scene `bounty-map`, the production BoardMapBody; the board switch lands in Task 5): with
-location denied and no place there is no map and no pin, only 选一个地方, which asks for a place; a chosen place shows
+location denied and no place there is no map and no pin, only 选一个地方, which asks for a place, and under it the line
+选好地点或允许定位后，这里变成地图; a chosen place shows
 the place row, the map with its 「这里」 marker and the pins; a first-load failure shows 没加载出来 in the map's place,
 never a map or a count, and 重试 brings the pins; an empty 急 filter keeps the map with no pins under 看全部; on the home
 board in map view a failed pull keeps the pins under the stale notice above the map; in the Debug scene the refresh
@@ -52,6 +53,10 @@ row = ui.wait_label('bounty-place-row', lambda label: ui.t('bounty.board.place.p
                     'no 选一个地方 row without a location or place')
 map_at_rest(ui)
 assert_no_map(ui.read(), 'no origin')
+hint = ui.element('bounty-map-no-origin')
+assert hint.get('AXLabel') == ui.t('bounty.board.map.noOrigin'), hint.get('AXLabel')
+assert hint['frame']['y'] >= row['frame']['y'] + row['frame']['height'], \
+    f'the hint is not under the place row: {hint["frame"]} / {row["frame"]}'
 ui.capture('01-no-origin')
 ui.tap('bounty-place-row')
 ui.element('bounty-map-scene-pick-place')

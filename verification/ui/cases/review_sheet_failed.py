@@ -1,15 +1,15 @@
 """A failed submit (-uiVerifyRepFail submit) keeps the sheet and the draft, says why, and sends nothing on its own; the
 draft survives closing and reopening; 提交 again goes through and seals. A failed first read shows 没加载出来 with 重试,
-never an empty form."""
+never an empty form, on the warning fill so the card does not vanish into the sheet."""
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id  # noqa: E402
+from driver import UI, Shot, assert_colour, by_id, token  # noqa: E402
 from profile import label, rep_calls  # noqa: E402
 from review import SHEET, enabled, sealed, shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/ocr.py', 'verification/ui/profile.py']
 SCENE = 'review-sheet'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'one', '-uiVerifyRepFail', 'state,submit']
@@ -19,7 +19,11 @@ ui.element('review-unavailable', timeout=45)
 assert ui.t('reputation.profile.failed') in label(ui, 'review-unavailable')
 assert by_id(ui.read(), 'review-face-happy') is None, 'a failed read shows the form'
 ui.at_rest()
-shot(ui, '01-read-failed')
+items = ui.read()
+message = by_id(items, 'review-unavailable')['frame']
+gap = {'x': message['x'] + message['width'] + 2, 'width': 8, 'y': message['y'] + message['height'] / 2 - 4, 'height': 8}
+assert_colour(Shot(shot(ui, '01-read-failed'), items[0]['frame']['width']), gap,
+              token('--color-warning-fill', ui.appearance), 'the failed read card')
 ui.tap('review-retry')
 ui.element('review-face-happy', timeout=30)
 

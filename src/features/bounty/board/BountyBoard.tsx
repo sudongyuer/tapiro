@@ -64,7 +64,7 @@ export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBo
             <MapBody board={board} {...handlers} />
           ) : (
             <>
-              <OriginBar board={board} axis onPickPlace={handlers.onPickPlace} />
+              <OriginBar board={board} axis stale onPickPlace={handlers.onPickPlace} />
               <BoardBody board={board} {...handlers} />
             </>
           )}
@@ -78,9 +78,6 @@ function MapBody({ board, ...handlers }: Handlers & { board: BountyBoardModel })
   const { origin } = board;
   const { onPickPlace } = handlers;
   if (!origin) return <BoardLoading testID="bounty-board-loading" />;
-  if (origin.kind === 'none') {
-    return <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />;
-  }
   return (
     <>
       <OriginBar board={board} axis={false} onPickPlace={onPickPlace} />
@@ -92,23 +89,37 @@ function MapBody({ board, ...handlers }: Handlers & { board: BountyBoardModel })
 function OriginBar({
   board,
   axis: withAxis,
+  stale: withStale = false,
   onPickPlace,
 }: {
   board: BountyBoardModel;
   axis: boolean;
+  stale?: boolean;
   onPickPlace: () => void;
 }) {
   const { origin, state } = board;
-  if (!origin) return null;
+  const stale =
+    withStale &&
+    state.kind === 'ready' &&
+    state.refreshFailed &&
+    boardBody(state, board.refreshing) !== 'failed' ? (
+      <BoardStale loadedAt={state.loadedAt} busy={board.retryBusy} onRetry={board.retryRefresh} />
+    ) : null;
+  if (!origin) return stale;
   if (origin.kind === 'none') {
-    return origin.reason === 'undetermined' ? (
-      <LocationCard
-        busy={board.allowing}
-        onAllow={board.allowLocation}
-        onLater={board.dismissLocation}
-      />
-    ) : (
-      <PlaceRow chosen={null} onPick={onPickPlace} />
+    return (
+      <>
+        {origin.reason === 'undetermined' ? (
+          <LocationCard
+            busy={board.allowing}
+            onAllow={board.allowLocation}
+            onLater={board.dismissLocation}
+          />
+        ) : (
+          <PlaceRow chosen={null} onPick={onPickPlace} />
+        )}
+        {stale}
+      </>
     );
   }
   const axis =
@@ -121,13 +132,12 @@ function OriginBar({
         onFocus={board.focus.focus}
       />
     ) : null;
-  return origin.kind === 'place' ? (
+  return (
     <>
-      <PlaceRow chosen={origin.label} onPick={onPickPlace} />
+      {origin.kind === 'place' ? <PlaceRow chosen={origin.label} onPick={onPickPlace} /> : null}
+      {stale}
       {axis}
     </>
-  ) : (
-    axis
   );
 }
 
@@ -139,9 +149,6 @@ function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: Bount
   const firstUnlocated = unlocatedFrom(board.origin, state.rows);
   return (
     <>
-      {state.refreshFailed ? (
-        <BoardStale loadedAt={state.loadedAt} busy={board.retryBusy} onRetry={board.retryRefresh} />
-      ) : null}
       {body === 'loading' ? (
         <BoardLoading testID="bounty-board-loading" />
       ) : body === 'empty' ? (

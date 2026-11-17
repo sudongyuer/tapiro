@@ -4,11 +4,12 @@ title; back returns to 我的 with the row deselected."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import assert_month_labels, balance_label, label, month, month_ids, open_page, row_ids, row_prefix  # noqa: E402
+from coins import (assert_coin, assert_month_labels, balance_label, label, month, month_ids, open_page, right_edge,  # noqa: E402
+                   row_ids, row_prefix, strong_ink)
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 from gestures import drag  # noqa: E402
 
-DEPS = ['src/features/coins/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/coins/', 'src/lib/loadable.ts', 'src/ui/NoticeCard.tsx', 'src/debug/CoinsScenes.tsx', 'verification/ui/coins.py']
+DEPS = ['src/features/coins/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/coins/', 'src/lib/loadable.ts', 'src/ui/NoticeCard.tsx', 'src/debug/CoinsScenes.tsx', 'src/ui/TapirCoin.tsx', 'verification/ui/coins.py']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 
@@ -25,7 +26,7 @@ assert_touch_target(coins, '貘币那行')
 stickers = by_id(items, 'me-stickers')['frame']
 assert 0 < coins['frame']['y'] - stickers['y'] <= stickers['height'] + 1, '貘币 is not right under 一起办成的事'
 ui.at_rest()
-ui.capture('01-me')
+assert_coin(ui, ui.snap('01-me'), {**coins['frame'], 'width': 60}, 'the 貘币 row')
 
 ui.tap('me-coins')
 open_page(ui)
@@ -42,7 +43,7 @@ assert by_id(items, 'coins-failed') is None and by_id(items, 'coins-empty') is N
 balance = by_id(items, 'coins-balance')['frame']
 assert balance['y'] < by_id(items, 'coins-row-9')['frame']['y'], 'the balance is not above the history'
 ui.at_rest()
-ui.capture('02-page')
+assert_coin(ui, ui.snap('02-page'), {**balance, 'height': 52}, 'the balance', minimum=300)
 
 w, h = items[0]['frame']['width'], items[0]['frame']['height']
 drag(ui, (w / 2, h * 0.75), (w / 2, h * 0.3))
@@ -51,7 +52,20 @@ items = ui.read()
 assert by_id(items, 'coins-row-1') is not None or by_id(items, 'coins-row-2') is not None, row_ids(items)
 assert row_ids(items) == sorted(row_ids(items), reverse=True), row_ids(items)
 ui.at_rest()
-ui.capture('03-last-month')
+shot = ui.snap('03-last-month')
+items = ui.read()
+rows = [by_id(items, f'coins-row-{row}') for row in row_ids(items)]
+edges = {}
+for found in rows:
+    f = found['frame']
+    if f['y'] < 110 or f['y'] + f['height'] > h - 100:
+        continue
+    amount_side = {**f, 'x': f['x'] + f['width'] / 2, 'width': f['width'] / 2}
+    edges[found['AXUniqueId']] = right_edge(shot, amount_side, strong_ink(ui.appearance))
+dates = {found['AXLabel'].split(ui.t('coins.listJoin'))[-1] for found in rows}
+assert len({len(date) for date in dates}) > 1, f'every date is the same length, so the column cannot shift: {dates}'
+# The ink of 「+1」 ends up to 2.7 pt before that of 「+5」 in the same box; before the date column the boxes were 9 pt apart.
+assert max(edges.values()) - min(edges.values()) <= 3.5, f'the amounts do not end on one line: {edges}'
 
 ui.tap('BackButton')
 ui.gone('coins-screen')

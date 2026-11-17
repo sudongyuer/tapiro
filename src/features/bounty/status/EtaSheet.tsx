@@ -12,6 +12,7 @@ import {
 } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
+  buttonStyle,
   datePickerStyle,
   disabled,
   font,
@@ -24,12 +25,14 @@ import {
   padding,
   presentationDetents,
   presentationDragIndicator,
+  tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import { earliestEta, sameMinute } from './etaTime';
 
@@ -92,6 +95,7 @@ function EtaPicker({
   onClose: () => void;
 }) {
   const { t } = useI18n();
+  const { color } = useTheme();
   const [picked, setPicked] = useState(request.initial);
   const start = request.mode === 'start';
   const unchanged = !start && sameMinute(picked, request.current);
@@ -142,7 +146,12 @@ function EtaPicker({
             <Button
               label={t(start ? 'bounty.eta.start' : 'bounty.eta.ok')}
               onPress={() => onConfirm(request.mode, picked)}
-              modifiers={[disabled(unchanged), accessibilityIdentifier('bounty-eta-confirm')]}
+              modifiers={[
+                buttonStyle('glassProminent'),
+                tint(color('--color-accent')),
+                disabled(unchanged),
+                accessibilityIdentifier('bounty-eta-confirm'),
+              ]}
             />
           </ToolbarItem>
         </Toolbar.Content>

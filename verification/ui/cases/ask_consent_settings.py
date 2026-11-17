@@ -5,14 +5,14 @@ import sys
 from datetime import date
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import assert_calls, footer, toggle_on  # noqa: E402
+from ask import assert_calls, assert_switch_green, captured, footer, toggle_on  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/app/ask-consent.tsx',
         'src/lib/i18n/locales/ask/', 'src/ui/NoticeCard.tsx', 'verification/ui/ask.py']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given', '-uiVerifyAiDelayMs', '2500']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given', '-uiVerifyAiDelayMs', '8000']
 
 ui = UI(*sys.argv[1:])
 
@@ -29,11 +29,18 @@ ui.wait(lambda items: toggle_on(items) is True, 'the switch is not on for a give
 if ui.locale == 'zh-Hans':
     footer(ui, given_footer(date(2026, 10, 31)))
 ui.at_rest()
-ui.capture('01-on')
+shot = ui.snap('01-on')
+switch, memory = (by_id(ui.read(), name)['frame'] for name in ('tapir-cloud', 'tapir-memory-row'))
+assert_switch_green(shot, switch, '让小貘用云端', ui.appearance)
+assert memory['height'] <= switch['height'] + 1, f'the 小貘记得 row is taller than the switch row: {memory} and {switch}'
 
 ui.flip('tapir-cloud')
 ui.element('tapir-cloud-withdrawing', timeout=10)
 ui.capture('02-withdrawing')
+during = captured(ui, '02-withdrawing')
+assert by_id(during, 'tapir-cloud-withdrawing'), 'the switch finished before 02-withdrawing was captured'
+moved = by_id(during, 'tapir-memory-row')['frame']['y'] - memory['y']
+assert abs(moved) < 1, f'the rows under the switch jump {moved:.0f} pt while it withdraws'
 ui.wait(lambda items: toggle_on(items) is False, 'the switch did not turn off')
 footer(ui, ui.t('ask.settings.offFooter'))
 assert_calls(ui, 'withdraw', 1)

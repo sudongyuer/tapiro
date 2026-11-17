@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: vars['--space-2'],
     minHeight: vars['--touch-min'],
-    maxWidth: '90%',
+    maxWidth: '100%',
     paddingHorizontal: vars['--space-4'],
     borderRadius: vars['--radius-pill'],
     borderCurve: 'continuous',

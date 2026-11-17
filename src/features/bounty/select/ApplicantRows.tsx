@@ -23,12 +23,10 @@ import {
   layoutPriority,
   lineLimit,
   listRowBackground,
-  listRowInsets,
   multilineTextAlignment,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
-import type { ReactElement } from 'react';
 
 import type { BlockedPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
@@ -39,6 +37,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { BountyDetail } from '../board/types';
+import { StatusLine } from '../shared/StatusLine';
 import { tierName, tierRank } from '../shared/tierCopy';
 import { AvatarButton } from './AvatarButton';
 import { helpedLine } from './selectCopy';
@@ -55,16 +54,17 @@ const target = [
   contentShape(shapes.rectangle()),
   multilineTextAlignment('leading'),
 ];
-const NO_INSETS = listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 });
 
 export function ApplicantsHeader({
   detail,
   status,
   done = false,
+  ended = false,
 }: {
   detail: BountyDetail | null;
   status: string | null;
   done?: boolean;
+  ended?: boolean;
 }) {
   const { t, language } = useI18n();
   const reward = detail ? formatMoney(detail.reward, language, { whole: true }) : null;
@@ -88,7 +88,9 @@ export function ApplicantsHeader({
             </Text>
           </>
         ) : null}
-        {status === null ? null : (
+        {status === null ? null : ended ? (
+          <StatusLine tone="ended" text={status} testID="bounty-applicants-status" />
+        ) : (
           <Text
             modifiers={[
               done ? font({ textStyle: 'headline' }) : font({ textStyle: 'subheadline' }),
@@ -113,14 +115,6 @@ export function ApplicantsHeader({
           </Text>
         ) : null}
       </VStack>
-    </Section>
-  );
-}
-
-export function StateRow({ children }: { children: ReactElement }) {
-  return (
-    <Section modifiers={[listRowBackground('clear'), NO_INSETS]}>
-      <RNHostView matchContents={{ vertical: true }}>{children}</RNHostView>
     </Section>
   );
 }

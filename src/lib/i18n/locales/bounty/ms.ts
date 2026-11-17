@@ -109,6 +109,7 @@ const ms: typeof zhHans = {
     form: {
       art: 'Gambar: {{name}}',
       swapArt: 'Tukar Gambar',
+      titleLabel: 'Tajuk',
       titlePlaceholder: 'Perlukan bantuan apa? Satu ayat',
       count: '{{count}}/{{max}}',
       countLabel: '{{count}} daripada {{max}} aksara',
@@ -179,6 +180,7 @@ const ms: typeof zhHans = {
       time: 'Masa',
       description: 'Butiran',
       rewardLabel: 'Ganjaran {{amount}}',
+      previewHeader: 'Begini paparannya di papan ganjaran',
       place: 'Tempat',
       addressNote: 'Hanya orang yang anda pilih nampak alamat tepat',
       meta: '{{place}} · {{time}}',
@@ -308,6 +310,7 @@ const ms: typeof zhHans = {
       details: 'Lihat Butiran',
       expand: 'Besarkan Peta',
       close: 'Tutup Peta',
+      noOrigin: 'Pilih tempat atau benarkan lokasi, dan peta akan dipaparkan di sini',
     },
     state: {
       loading: 'Memuatkan ganjaran',

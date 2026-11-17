@@ -269,6 +269,20 @@ export function statusSummary(
   }
 }
 
+export type StatusTone = 'accepted' | 'inProgress' | 'needsYou' | 'done' | 'ended';
+
+export function statusTone(detail: StatusDetail, role: StatusRole): StatusTone {
+  if (detail.status === 'settled') return 'done';
+  if (detail.status === 'cancelled' || detail.status === 'closed') return 'ended';
+  if (detail.status === 'en_route') return 'inProgress';
+  if (detail.status === 'assigned' && role === 'poster') {
+    return detail.startLate ? 'needsYou' : 'accepted';
+  }
+  const { index } = reached(detail);
+  const step = STEP_IDS[index];
+  return step && waitsOn(detail, step) === role ? 'needsYou' : 'inProgress';
+}
+
 export const STATUS_ACTIONS = [
   'start',
   'changeEta',

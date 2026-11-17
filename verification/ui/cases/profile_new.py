@@ -1,5 +1,6 @@
 """A new user (246 A, `-uiVerifyProfile empty`): 新朋友 · 刚来 Tapiro, 帮过的人 0, 完成率 满 5 单显示 (never 0%), 评价 0, one
-「还没有评价」 row with no faces line and no 全部评价, and the 小貘 row reads Lv.1 貘宝宝 · 0 张贴纸."""
+「还没有评价」 row with no faces line and no 全部评价, and the 小貘 row reads Lv.1 貘宝宝 · 0 张贴纸. The three labels end on one
+line, so 完成率 sits beside its neighbours."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -21,6 +22,10 @@ assert '%' not in rate, rate
 assert label(ui, 'profile-count-reviews') == f"{ui.t('reputation.profile.reviews')} 0"
 ui.element('profile-no-reviews')
 items = ui.read()
+# Bottoms, not heights: the frame of the 完成率 column leaves out the hidden number that sizes it.
+ends = {name: by_id(items, name)['frame']['y'] + by_id(items, name)['frame']['height']
+        for name in ('profile-helped', 'profile-rate', 'profile-count-reviews')}
+assert max(ends.values()) - min(ends.values()) <= 0.5, f'the three labels do not end on one line: {ends}'
 assert by_id(items, 'profile-no-reviews').get('AXLabel') == ui.t('reputation.profile.noReviews')
 for missing in ('profile-faces', 'profile-all-reviews'):
     assert by_id(items, missing) is None, f'{missing} shows with no reviews'

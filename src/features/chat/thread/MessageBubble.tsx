@@ -18,7 +18,8 @@ import { TranslatedText, TranslationStatus } from './TranslationParts';
 import { useMessageTranslation } from './useMessageTranslation';
 
 const SPINNER_DELAY_MS = 500;
-const STATUS = vars['--touch-min'];
+const STATUS = vars['--touch-min'] / 2;
+const STATUS_SLOP = (vars['--touch-min'] - STATUS) / 2;
 const RADIUS = vars['--radius-card'];
 
 function useLate(active: boolean) {
@@ -121,18 +122,19 @@ export const MessageBubble = memo(
                     : t('chat.thread.undeliverable')
                 }
                 testID={`chat-retry-${row.key}`}
-                style={styles.status}
+                hitSlop={STATUS_SLOP}
+                style={[styles.status, styles.failed]}
                 onPress={() => askResend(pending, t)}
               >
                 <SymbolView
                   name="exclamationmark.circle.fill"
-                  size={STATUS / 2}
+                  size={STATUS}
                   tintColor={color('--color-urgent')}
                 />
               </PressDim>
             ) : null}
             {sending ? (
-              <View style={styles.spinner}>
+              <View style={styles.status}>
                 {late ? <ActivityIndicator testID={`chat-sending-${row.key}`} /> : null}
               </View>
             ) : null}
@@ -225,8 +227,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
   },
-  status: { width: STATUS, height: STATUS, alignItems: 'center', justifyContent: 'center' },
-  spinner: { width: STATUS / 2, marginRight: space.xs },
+  status: { width: STATUS, marginRight: space.xs },
+  failed: { height: STATUS, alignItems: 'center', justifyContent: 'center' },
   break: { textAlign: 'center', paddingVertical: space.sm },
   name: { paddingLeft: space.md, paddingBottom: 2 },
   read: { textAlign: 'right', paddingTop: space.xs / 2, paddingRight: space.xs },

@@ -6,14 +6,15 @@ import type { BountyDraft } from '@/lib/drafts/bountyDraft';
 import { useI18n } from '@/lib/i18n';
 import type { CurrencyCode } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
-import { Mascot } from '@/ui/Mascot';
 import { PillButton } from '@/ui/PillButton';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
+import { useSheetFill } from '@/ui/theme/useSheetFill';
 
 import type { PickItem } from './askReply';
 import type { AskFailure, AskSessionState } from './askSession';
 import { resumeLine } from './conversation';
+import { FailureCard } from './FailureCard';
 import { OfferCard } from './MemoryCards';
 import { TapirCard, UserBubble } from './TurnCards';
 
@@ -36,40 +37,6 @@ export type AskActions = {
   onEditMemory: (id: string) => void;
 };
 
-function FailureCard({
-  reason,
-  onRetry,
-  onManual,
-}: {
-  reason: ShownFailure;
-  onRetry: () => void;
-  onManual: () => void;
-}) {
-  const { t } = useI18n();
-  return (
-    <View
-      style={[styles.failure, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
-      testID={`ask-failure-${reason}`}
-    >
-      <Mascot variant="front" size={vars['--touch-min']} dizzy={reason !== 'busy'} darkOutline />
-      <View style={styles.failureBody}>
-        <AppText variant="title" testID="ask-failure-text">
-          {t(FAILURE_KEYS[reason])}
-        </AppText>
-        <View style={styles.buttons}>
-          <PillButton label={t('ask.sheet.retry')} onPress={onRetry} testID="ask-retry" />
-          <PillButton
-            label={t('ask.sheet.manual')}
-            variant="secondary"
-            onPress={onManual}
-            testID="ask-manual"
-          />
-        </View>
-      </View>
-    </View>
-  );
-}
-
 export function AskConversation({
   state,
   currency,
@@ -82,6 +49,7 @@ export function AskConversation({
   hungry: ReactNode;
 }) {
   const { t } = useI18n();
+  const fill = useSheetFill();
   const resume = state.turns.length === 0 ? resumeLine(state.resume) : null;
   const last = state.turns.length - 1;
   return (
@@ -93,7 +61,7 @@ export function AskConversation({
           accessibilityHint={t('ask.sheet.resumeHint')}
           onPress={actions.onResume}
           testID="ask-resume"
-          style={[styles.resume, { backgroundColor: PlatformColor('secondarySystemBackground') }]}
+          style={[styles.resume, { backgroundColor: fill }]}
         >
           <AppText variant="secondary" tone="secondaryLabel" numberOfLines={1} style={styles.grow}>
             {t('ask.sheet.resume', { text: resume })}
@@ -134,10 +102,19 @@ export function AskConversation({
       ) : null}
       {state.failed && state.failed.reason !== 'hungry' ? (
         <FailureCard
-          reason={state.failed.reason}
-          onRetry={actions.onRetry}
-          onManual={actions.onManual}
-        />
+          text={t(FAILURE_KEYS[state.failed.reason])}
+          dizzy={state.failed.reason !== 'busy'}
+          testID={`ask-failure-${state.failed.reason}`}
+          textTestID="ask-failure-text"
+        >
+          <PillButton label={t('ask.sheet.retry')} onPress={actions.onRetry} testID="ask-retry" />
+          <PillButton
+            label={t('ask.sheet.manual')}
+            variant="secondary"
+            onPress={actions.onManual}
+            testID="ask-manual"
+          />
+        </FailureCard>
       ) : null}
       {hungry}
     </View>
@@ -157,14 +134,4 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
   thinking: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
-  failure: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: vars['--space-3'],
-    padding: vars['--space-4'],
-    borderRadius: vars['--radius-card'],
-    borderCurve: 'continuous',
-  },
-  failureBody: { flex: 1, gap: vars['--space-3'] },
-  buttons: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
 });

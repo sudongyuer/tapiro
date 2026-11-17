@@ -1,11 +1,11 @@
-"""Apply 4A from a board card: 申请 opens the full-height sheet titled 申请帮忙 with the note field, a 0/140 counter and the footer naming 小林; typing a note updates the counter; a seeded 好👍🏽 reads 3 (code points, not UTF-16 units or graphemes), and 71 👍🏽 read 142/140 with 发送 disabled; 发送 turns into progress while the request runs, the sheet closes, and the card shows 已申请 · 等对方选 with the 已申请 stamp and no 申请 (the stamp motion is in the video); the detail then reads 已申请 · 等小林选 and 你写的：<note>."""
+"""Apply 4A from a board card: 申请 opens the full-height sheet titled 申请帮忙 with the note field, the footer naming 小林 and a 0/140 counter in that footer, under the card; typing a note updates the counter; a seeded 好👍🏽 reads 3 (code points, not UTF-16 units or graphemes), and 71 👍🏽 read 142/140 with 发送 disabled; 发送 turns into progress while the request runs, the sheet closes, and the card shows 已申请 · 等对方选 with the 已申请 stamp and no 申请 (the stamp motion is in the video); the detail then reads 已申请 · 等小林选 and 你写的：<note>."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import count_reads, has_stamp, open_from_card, send, send_button, type_note  # noqa: E402
 from board import apply_pill  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, by_id, reach_home  # noqa: E402
+from driver import UI, by_id, close, reach_home  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py',
         'verification/ui/apply.py', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
@@ -27,7 +27,14 @@ ui.labelled(ui.t('bounty.apply.footerWithdraw'))
 shown = type_note(ui, NOTE)
 count_reads(ui, len(NOTE))
 ui.at_rest()
-ui.capture('01-sheet')
+shot = ui.snap('01-sheet')
+counter, field = ui.element('bounty-apply-count')['frame'], ui.element('bounty-apply-note')['frame']
+assert counter['y'] >= field['y'] + field['height'], f'the counter is not under the note: {counter} / {field}'
+middle = counter['y'] + counter['height'] / 2
+beside, ground, card = (shot.rgb(counter['x'] + counter['width'] + 4, middle), shot.rgb(3, middle),
+                        shot.rgb(field['x'] - 4, field['y'] + field['height'] / 2))
+assert close(beside, ground, 6), f'the counter sits on {beside}, not on the sheet ground {ground} under the card'
+assert not close(card, ground, 6), f'the card {card} and the ground {ground} look alike, so the measure cannot tell'
 
 send(ui)
 ui.element('bounty-apply-sending', timeout=5)

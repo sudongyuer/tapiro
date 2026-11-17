@@ -22,10 +22,11 @@ import {
   frame,
   lineLimit,
   listStyle,
+  multilineTextAlignment,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -38,6 +39,7 @@ import type { MemoryState } from './memoryStore';
 import { memoryStore } from './services';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 
 export function MemoryScreen({
   userId,
@@ -99,7 +101,9 @@ export function MemoryScreen({
           />
         ) : null}
         {data && state ? <SwitchSection state={state} enabled={data.enabled} /> : null}
-        {data && state ? <Entries state={state} entries={data.entries} onEdit={onEdit} /> : null}
+        {data && state ? (
+          <Entries state={state} entries={data.entries} enabled={data.enabled} onEdit={onEdit} />
+        ) : null}
         {data && data.enabled ? (
           <AddSection full={data.entries.length >= MEMORY_LIMITS.entriesMax} onAdd={onAdd} />
         ) : null}
@@ -121,11 +125,7 @@ function SwitchSection({ state, enabled }: { state: MemoryState; enabled: boolea
     <Section footer={<Text modifiers={[accessibilityIdentifier('memory-footer')]}>{footer}</Text>}>
       {state.writing === 'switch' ? (
         <HStack
-          modifiers={[
-            frame({ minHeight: vars['--touch-min'] }),
-            accessibilityElement('combine'),
-            accessibilityIdentifier('memory-switching'),
-          ]}
+          modifiers={[accessibilityElement('combine'), accessibilityIdentifier('memory-switching')]}
         >
           <Text>{t('ask.memory.switch')}</Text>
           <Spacer />
@@ -141,7 +141,7 @@ function SwitchSection({ state, enabled }: { state: MemoryState; enabled: boolea
             void memoryStore.setEnabled(on);
           }}
           testID="memory-switch"
-          modifiers={[disabled(state.writing !== null)]}
+          modifiers={[tint(PlatformColor('systemGreen')), disabled(state.writing !== null)]}
         />
       )}
     </Section>
@@ -151,10 +151,12 @@ function SwitchSection({ state, enabled }: { state: MemoryState; enabled: boolea
 function Entries({
   state,
   entries,
+  enabled,
   onEdit,
 }: {
   state: MemoryState;
   entries: MemoryEntry[];
+  enabled: boolean;
   onEdit: (id: string) => void;
 }) {
   const { t } = useI18n();
@@ -169,7 +171,7 @@ function Entries({
         >
           <Text modifiers={[font({ textStyle: 'headline' })]}>{t('ask.memory.emptyTitle')}</Text>
           <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>
-            {t('ask.memory.emptyBody')}
+            {t(enabled ? 'ask.memory.emptyBody' : 'ask.memory.emptyBodyOff')}
           </Text>
         </VStack>
       </Section>
@@ -216,7 +218,9 @@ function EntryRow({ entry, onPress }: { entry: MemoryEntry; onPress: () => void 
           {entry.label}
         </Text>
         <Spacer />
-        <Text modifiers={[secondary, lineLimit(2)]}>{entry.content}</Text>
+        <Text modifiers={[secondary, lineLimit(2), multilineTextAlignment('trailing')]}>
+          {entry.content}
+        </Text>
       </HStack>
     </Button>
   );
@@ -236,7 +240,7 @@ function AddSection({ full, onAdd }: { full: boolean; onAdd: () => void }) {
         systemImage="plus"
         onPress={onAdd}
         testID="memory-add"
-        modifiers={[disabled(full)]}
+        modifiers={[...(full ? [tertiary] : []), disabled(full)]}
       />
     </Section>
   );
@@ -256,12 +260,13 @@ function ClearSection({ count, busy }: { count: number; busy: boolean }) {
       >
         <ConfirmationDialog.Trigger>
           <Button
-            label={t('ask.memory.clearAll')}
             role="destructive"
             onPress={() => setAsking(true)}
             testID="memory-clear"
             modifiers={[foregroundStyle(color('--color-urgent')), disabled(busy)]}
-          />
+          >
+            <Text modifiers={[frame({ maxWidth: Infinity })]}>{t('ask.memory.clearAll')}</Text>
+          </Button>
         </ConfirmationDialog.Trigger>
         <ConfirmationDialog.Actions>
           <Button

@@ -648,6 +648,33 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
     never showed. A blur from a screen that was never focused is now ignored, and the gate counts as frontmost while
     any of its screens is focused.
 
+24. UI polish from the 2026-11-17 audit (`fix/ui-polish-post`, findings BP-1 to BP-11), built from the boards 「发悬赏 ·
+    方向 A」 and 「发悬赏 · C+A 合起来」: the card's time line stays whole and the place truncates; the live card's art is
+    56 pt with the swap badge (152 A); the confirm card sits under 「悬赏板上会这样显示」 (155 A); the suggestion is inside
+    the reward card under the amount (160 A); optional rows run time, place, description with the draft footer last
+    (156 A); custom rows start on the system row edge (20 pt) and hairlines start there; the title field has a
+    VoiceOver label. ★ for veto, where no board decides:
+    - ★ 24a The suggestion line is secondary footnote text, right-aligned in the same row as the amount buttons, and
+      the reward card has no hairlines. The board draws it green and bold; the form's other board-green text
+      (「按标题自动」) was already built secondary, and the design language has one accent.
+    - ★ 24b With a place picked, the optional group splits into cards in the board's order: time, the place cards
+      (地点, 地点名称, 精确地址 with their 33A footers), then 说明 with the draft footer. The board draws one group with
+      a single place row; the 33A fields need their own headers and footers.
+    - ★ 24c A time too long for the card's line (a window across days) wraps to a second line instead of ending in
+      「…」; with a place on the same line the place gives way first.
+    - ★ 24d When one quick time needs two lines (「明天中午前」 at three across, most `ms` labels) all three take that
+      height; the label is not shrunk.
+    - ★ 24e The confirm card's art is 56 pt like the live card (the board draws 64 pt), and 「点图换一张」 stays under
+      the live card next to the new badge.
+    - ★ 24f The form's bar uses the soft scroll edge (`scrollEdgeEffectStyle('soft', 'top')` on the SwiftUI `Form`);
+      the Stack also declares `scrollEdgeEffects`, which alone left the hard band because the scroll view is SwiftUI's.
+    - ★ 24g `ROW_INSETS` (20 pt sides) and the hairline guide live in `src/ui/FieldRow.tsx`, so the ride form's custom
+      rows and the ride detail amount fields move 4 pt onto the system edge too.
+    - ★ 24h New copy: 「悬赏板上会这样显示」 / "How it will look on the board" / "Begini paparannya di papan ganjaran";
+      VoiceOver 「标题」 / "Title" / "Tajuk".
+    - ★ 24i Quick-time and amount rows: 12 pt above and below the quick times, 16 pt under the amounts (the board's 12 pt
+      at a 14 pt side inset, scaled to the 20 pt side inset).
+
 ## Not in this plan
 
 | Item | Owning step |

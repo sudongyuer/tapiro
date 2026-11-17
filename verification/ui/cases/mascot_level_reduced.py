@@ -35,5 +35,5 @@ with tempfile.TemporaryDirectory() as tmp:
 tops = [top for top in tops if top is not None]
 assert tops and max(tops) - min(tops) <= 2, f'小貘 changed size under Reduce Motion: {tops}'
 ui.at_rest()
-assert_grown(ui, ui.snap('01-reduced'), element, width, '--color-wear-red')
+assert_grown(ui, ui.snap('01-reduced'), element, width, 'red')
 print(f'PASS: the Reduce Motion swap took {span:.2f} s')

@@ -3,16 +3,19 @@ exact-address row; 移除地点 collapses back to 「＋ 地点」; picking 用�
 fixture answers the prompt with 允许, so no system alert is drawn) and fills the reverse-geocoded name, renamed by hand;
 confirm shows the renamed place and the exact-address note, and the published draft carries the edited name, the
 point's coordinates and the address (read from the fixture's record in the app's defaults). The search bar is focused
-on arrival: typing lands without a tap."""
+on arrival: typing lands without a tap. The optional rows run time, place, description (156A) with the draft footer
+last, also once a place is picked; the confirm card draws the whole time beside the place (pixels)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import (DEMO_TITLE, assert_grouped_background, end_editing, field_text, form_scroll_to, next_step, open_post, paste_into,  # noqa: E402
                     publish_and_close, published_args, search_places)
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from post_layout import assert_time_whole  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'src/lib/location/',
-        'verification/ui/bounty.py', 'verification/ui/pasteboard.swift', 'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
+        'verification/ui/bounty.py', 'verification/ui/post_layout.py', 'verification/ui/ocr.py', 'verification/ui/ocr.swift',
+        'verification/ui/pasteboard.swift', 'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyLocation', 'undetermined']
 BUDGET = 300
@@ -34,6 +37,15 @@ def counter(count):
     ui.wait_label('bounty-post-place-label-count', lambda label: label == expected, f'the place counter is not {count}/80')
 
 
+def assert_order(identifiers):
+    items = ui.read()
+    found = [(identifier, by_id(items, identifier)) for identifier in identifiers]
+    missing = [identifier for identifier, element in found if element is None]
+    assert not missing, f'{missing} not on screen with {identifiers}'
+    tops = [element['frame']['y'] for _, element in found]
+    assert tops == sorted(tops), f'{identifiers} are not in this order from the top: {tops}'
+
+
 def open_search():
     add = form_scroll_to(ui, 'bounty-post-add-place')
     assert_touch_target(add, '＋ 地点')
@@ -48,8 +60,11 @@ form_scroll_to(ui, 'bounty-post-add-place')
 ui.wait_label('bounty-post-add-place', lambda label: label == ui.t('bounty.post.kind.pickup.place'),
               '「＋ 在哪取」 has no label')
 assert by_id(ui.read(), 'bounty-post-address') is None, 'the address row shows before a place is picked'
+assert_order(['bounty-post-add-place', 'bounty-post-description'])
 shot = ui.snap('01-no-place')
 assert_grouped_background(ui, shot, ui.element('bounty-post-form')['frame'], 'post form')
+form_scroll_to(ui, 'bounty-post-draft-footer')
+assert_order(['bounty-post-description', 'bounty-post-draft-footer'])
 
 open_search()
 search_places(ui, 'sunway', focused=True)
@@ -63,6 +78,9 @@ label_reads(GEO)
 counter(len(GEO))
 ui.wait_label('bounty-post-place', lambda label: GEO in label, 'the 地点 row does not show the pick')
 ui.capture('03-picked')
+form_scroll_to(ui, 'bounty-post-draft-footer')
+assert_order(['bounty-post-address', 'bounty-post-description', 'bounty-post-draft-footer'])
+form_scroll_to(ui, 'bounty-post-place-label')
 
 paste_into(ui, 'bounty-post-place-label', EDITED)
 counter(13)
@@ -92,7 +110,8 @@ ui.element('bounty-post-confirm')
 ui.wait_label('bounty-post-preview-text', lambda label: PYRAMID_EDITED in label, 'the preview card does not show the place')
 ui.wait_label('bounty-post-summary-place', lambda label: PYRAMID_EDITED in label, 'the summary has no place row')
 ui.labelled(ui.t('bounty.post.confirm.addressNote'))
-ui.capture('07-confirm')
+ui.at_rest()
+assert_time_whole(ui, ui.snap('07-confirm'), 'bounty-post-preview')
 
 publish_and_close(ui)
 sent = published_args(ui)

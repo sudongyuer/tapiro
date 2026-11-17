@@ -105,6 +105,7 @@ export default {
     form: {
       art: '配图：{{name}}',
       swapArt: '换一张',
+      titleLabel: '标题',
       titlePlaceholder: '要帮什么忙？一句话说清楚',
       count: '{{count}}/{{max}}',
       countLabel: '已写 {{count}} 个字，最多 {{max}} 个',
@@ -175,6 +176,7 @@ export default {
       time: '时间',
       description: '说明',
       rewardLabel: '赏金 {{amount}}',
+      previewHeader: '悬赏板上会这样显示',
       place: '地点',
       addressNote: '精确地址只给选中的人看',
       meta: '{{place}} · {{time}}',
@@ -300,6 +302,7 @@ export default {
       details: '看详情',
       expand: '全屏看地图',
       close: '关闭地图',
+      noOrigin: '选好地点或允许定位后，这里变成地图',
     },
     state: {
       loading: '正在加载悬赏',

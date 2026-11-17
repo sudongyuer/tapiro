@@ -404,3 +404,17 @@ Task 5 imports `BoardMap` by the contract and lands after 6. **Then Task 7, then
   `justApplied` entry (surface `card`) is waiting, then the pin springs to 8° and the stamp scales in from 1.4 after
   80 ms (stiffness 220, damping 14) with a success haptic; Reduce Motion fades the stamp in 150 ms. The map takes the
   entry, so the list does not replay it later.
+- 2026-11-17, UI polish (audit BB-1, BB-2, BB-3, BB-4, BB-7, BB-11; ★ = chosen without a board, for veto):
+  - BB-1: the card's urgent time is drawn like the list card's (26A, Status language): `--color-urgent`, semibold,
+    after `clock.badge.exclamationmark`, on both faces. ★ The clock is inline in the text, so a wrapped place line
+    returns to the text edge.
+  - BB-2 (ruling 12 of the board plan): ★ the back's poster row is the list card's: a 24 pt initial avatar, the name
+    over the tier with its heads (`TierHeads`, the RN half of `TierMark`, with the dark saddle outline).
+  - BB-3 (79A 「顶上一颗胶囊」): the 「地图上 20 / 45」 chip moves from the bottom, where it covered MapKit's legal
+    link, to the top. ★ Embedded map: 12 pt under the top edge, centred, kept 68 pt from each side so it clears the
+    expand button. ★ Full-screen map: 8 pt under the filter chips (under a stale or empty card when one shows), same
+    side insets. A long label wraps to two lines.
+  - BB-4 (81A): the line 「选好地点或允许定位后，这里变成地图」 (`bounty.board.map.noOrigin`) stands where the map
+    would be. ★ It shows under the location card and under 选一个地方 alike.
+  - BB-7 (ruling 10): the card's 已申请 line carries `circle.inset.filled`, as on the list card.
+  - BB-11: the card's reward has no line limit.

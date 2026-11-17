@@ -8,6 +8,7 @@ import type { BountyCategory } from '@/lib/stickers/category';
 import { TaskCard } from '@/ui/TaskCard';
 
 import { useTimeLine } from './timeLine';
+import { splitMeta } from './timeText';
 import type { PostDraft } from './types';
 import { parseReward } from './validate';
 
@@ -47,10 +48,7 @@ export function PostLiveCard({
     ? formatMoney(reward, language, { whole: true })
     : `${CURRENCIES[draft.currency].symbol} –`;
   const place = draft.place?.label.trim() || null;
-  const meta =
-    place && time
-      ? t('bounty.post.confirm.meta', { place, time })
-      : (place ?? time ?? t('bounty.post.live.noMeta'));
+  const meta = splitMeta(place, time, t);
   return (
     <Section
       header={<Text>{t('bounty.post.live.header')}</Text>}
@@ -68,7 +66,8 @@ export function PostLiveCard({
             : t('bounty.post.form.categoryPlaceholder')
         }
         title={title || t('bounty.post.live.title')}
-        meta={meta}
+        meta={meta.place ?? (meta.time ? null : t('bounty.post.live.noMeta'))}
+        time={meta.time}
         reward={amount}
         rewardLabel={t('bounty.post.confirm.rewardLabel', { amount })}
         titleLines={1}
