@@ -46,6 +46,11 @@ open_form(ui)
 ticket = ui.element('ride-form-ticket')
 height = ticket['frame']['height']
 assert ui.t('ride.create.form.liveHint') in (ticket.get('AXLabel') or ''), ticket.get('AXLabel')
+back = ui.element('BackButton').get('AXLabel')
+assert back != ui.t('ride.create.title'), f'the back button repeats the title: {back}'
+if ui.locale == 'zh-Hans':
+    assert back == ui.t('ride.create.pick.heading'), f'the back button reads {back}'
+assert_touch_target(ui.element('ride-form-start'), '从哪出发')
 ui.capture('01-empty-form')
 
 pick_place('ride-form-start', 'sunway', 'Sunway Geo Residences')
@@ -56,8 +61,13 @@ ui.wait_label('ride-form-dest-short', lambda label: label == ui.t('ride.create.f
               'the destination short name is not KLIA2')
 ui.wait_label('ride-form-ticket', lambda label: '双威 → KLIA2' in label, 'the ticket does not read 双威 → KLIA2')
 assert_touch_target(ui.element('ride-form-start-short-edit'), '改')
+start, dest = ui.element('ride-form-start'), ui.element('ride-form-dest')
+assert_touch_target(start, 'the filled start place')
+pitch = dest['frame']['y'] - start['frame']['y']
+assert pitch <= 80, f'a filled place row is {pitch:.0f} pt tall (name, short name and the row insets fit in 80)'
 ui.capture('02-places')
 
+assert_touch_target(ui.element('ride-form-pick-0'), 'quick time')
 opened = time.time()
 picked = re.search(r'\d{2}:\d{2}', ui.element('ride-form-pick-0').get('AXLabel') or '').group()
 local = {first_quick_time(at) for at in (opened - 120, opened)}
@@ -85,7 +95,7 @@ ui.wait_label('ride-form-fare-footer', lambda label: '13' in label and '6' in la
               'the footer does not split RM 76 among 6')
 ui.wait_label('ride-form-ticket', lambda label: '13' in label, 'the ticket stub does not show 每人约 RM 13')
 assert abs(ui.element('ride-form-ticket')['frame']['height'] - height) < 1, 'the live ticket changed height'
-form_scroll_to(ui, 'ride-form-airport-remove')
+assert_touch_target(form_scroll_to(ui, 'ride-form-airport-remove'), '移除')
 ui.element('ride-form-bags')
 ui.capture('03-filled')
 

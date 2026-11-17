@@ -36,6 +36,9 @@ for identifier in (f'ride-settle-proof-{MING}', f'ride-settle-not-received-{MING
     button = by_id(items, identifier)
     assert button, f'{identifier} is missing'
     assert_touch_target(button, identifier)
+for member in (MING, YA):
+    indent = by_id(items, f'ride-settle-sub-{member}')['frame']['x'] - by_id(items, f'ride-settle-row-{member}')['frame']['x']
+    assert indent >= 35.5, f'{member} has no avatar before the name: text starts {indent:.0f} pt into the row'
 assert by_id(items, f'ride-settle-confirm-{YA}') is None, 'an unpaid row offers 已收到'
 assert by_id(items, 'ride-settle-reminder'), 'the Tapiro reminder line is missing'
 assert not any('提醒一下' in (i.get('AXLabel') or '') for i in items), 'an organiser nudge button appeared (216 A)'

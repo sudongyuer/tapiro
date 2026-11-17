@@ -13,10 +13,13 @@ import {
   accessibilityIdentifier,
   accessibilityLabel,
   buttonStyle,
+  contentShape,
   foregroundStyle,
+  frame,
   labelsHidden,
   lineLimit,
   monospacedDigit,
+  shapes,
 } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
@@ -32,6 +35,8 @@ import { codePoints, NOTE_MAX } from './validate';
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const NOTE_COUNT_FROM = NOTE_MAX - 20;
 const DEFAULT_FLIGHT = '09:00';
+const ICON_COLUMN = 28;
+const iconColumn = frame({ width: ICON_COLUMN, alignment: 'leading' });
 
 type Edit = (patch: Partial<RideDraft>) => void;
 
@@ -56,7 +61,7 @@ function AddRow({
       <HStack spacing={vars['--space-3']} modifiers={[fullRow]}>
         <Image
           systemName="plus.circle.fill"
-          modifiers={[foregroundStyle(color('--color-accent')), accessibilityHidden()]}
+          modifiers={[foregroundStyle(color('--color-accent')), iconColumn, accessibilityHidden()]}
         />
         <Text>{label}</Text>
         <Spacer />
@@ -77,7 +82,7 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
   return (
     <>
       <HStack spacing={vars['--space-3']} modifiers={[fullRow]}>
-        <Image systemName="airplane" modifiers={[accessibilityHidden()]} />
+        <Image systemName="airplane" modifiers={[iconColumn, accessibilityHidden()]} />
         <Text>{t('ride.create.form.airport')}</Text>
         <Spacer />
         <Button
@@ -85,7 +90,17 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
           testID="ride-form-airport-remove"
           modifiers={[buttonStyle('borderless')]}
         >
-          <Text modifiers={[foregroundStyle(color('--color-urgent'))]}>
+          <Text
+            modifiers={[
+              foregroundStyle(color('--color-urgent')),
+              frame({
+                minWidth: vars['--touch-min'],
+                minHeight: vars['--touch-min'],
+                alignment: 'trailing',
+              }),
+              contentShape(shapes.rectangle()),
+            ]}
+          >
             {t('ride.create.form.remove')}
           </Text>
         </Button>

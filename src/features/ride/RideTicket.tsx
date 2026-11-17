@@ -46,17 +46,17 @@ export function RideTicket({
           <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
           <AppText variant="meta" numberOfLines={1} style={[styles.status, { color: toneInk }]}>
             {view.status}
-            {view.time ? (
-              <AppText variant="meta" style={styles.dot}>
-                {'  ·  '}
-              </AppText>
-            ) : null}
-            {view.time ? (
-              <AppText variant="meta" style={styles.time}>
-                {view.time}
-              </AppText>
-            ) : null}
           </AppText>
+          {view.time ? (
+            <AppText variant="meta" style={styles.dot}>
+              ·
+            </AppText>
+          ) : null}
+          {view.time ? (
+            <AppText variant="meta" numberOfLines={1} style={styles.time}>
+              {view.time}
+            </AppText>
+          ) : null}
         </View>
         <AppText
           variant="reward"
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
   status: { flexShrink: 1, fontWeight: '700' },
-  dot: { color: ink, opacity: MUTED_TEXT_OPACITY },
+  dot: { color: ink, opacity: MUTED_TEXT_OPACITY, marginHorizontal: vars['--space-1'] },
   time: { color: ink, fontWeight: '700' },
   route: { color: ink },
   labels: { color: ink, opacity: MUTED_TEXT_OPACITY },

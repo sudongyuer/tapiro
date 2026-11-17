@@ -1,4 +1,5 @@
 import { SymbolView } from 'expo-symbols';
+import { useState } from 'react';
 import { PlatformColor, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -15,6 +16,7 @@ const NOTCH = 14;
 const STICKER = 52;
 const ICON = 13;
 const STAMP_TILT = -8;
+const STAMP_TOP = vars['--space-2'] + STICKER + vars['--space-1'];
 const MIN_ROUTE_SCALE = 0.5;
 
 const ink = token('--color-on-card-ride') as string;
@@ -34,6 +36,10 @@ export function FullTicket({
   const { t } = useI18n();
   const surface = token(view.muted ? '--color-card-calm' : '--color-ride') as string;
   const toneInk = TONE_INK[view.tone];
+  const [stampWidth, setStampWidth] = useState(0);
+  const besideStamp = view.stamp
+    ? { paddingRight: Math.max(STICKER, stampWidth + vars['--space-2']) }
+    : null;
   return (
     <View
       style={[styles.ticket, { backgroundColor: surface }]}
@@ -69,7 +75,7 @@ export function FullTicket({
           </AppText>
         </View>
         {view.countdown ? (
-          <View style={styles.countdown}>
+          <View style={[styles.countdown, besideStamp]}>
             {view.countdown.number ? (
               <AppText variant="amount-compact" style={styles.ink} testID="ride-detail-lead-number">
                 {view.countdown.number}
@@ -90,17 +96,21 @@ export function FullTicket({
           numberOfLines={2}
           adjustsFontSizeToFit
           minimumFontScale={MIN_ROUTE_SCALE}
-          style={[styles.ink, styles.route]}
+          style={[styles.ink, styles.route, besideStamp]}
           onLayout={onLayout}
         >
           {view.route}
         </AppText>
         {view.labels ? (
-          <AppText variant="meta" numberOfLines={2} style={[styles.ink, styles.muted]}>
+          <AppText
+            variant="meta"
+            numberOfLines={2}
+            style={[styles.ink, styles.muted, view.countdown ? null : besideStamp]}
+          >
             {view.labels}
           </AppText>
         ) : null}
-        <Stamp kind={view.stamp} />
+        <Stamp kind={view.stamp} onWidth={setStampWidth} />
       </View>
       <Tear />
       <CellRow cells={view.cells} />
@@ -114,13 +124,20 @@ export function FullTicket({
   );
 }
 
-function Stamp({ kind }: { kind: FullTicketView['stamp'] }) {
+function Stamp({
+  kind,
+  onWidth,
+}: {
+  kind: FullTicketView['stamp'];
+  onWidth: (width: number) => void;
+}) {
   const { t } = useI18n();
   const { color } = useTheme();
   const landing = useStampLanding(kind !== null, STAMP_TILT);
   return (
     <Animated.View
       pointerEvents="none"
+      onLayout={(event) => onWidth(event.nativeEvent.layout.width)}
       style={[
         styles.stamp,
         { borderColor: color('--color-success'), backgroundColor: color('--color-receipt') },
@@ -195,7 +212,12 @@ const styles = StyleSheet.create({
   dot: { color: ink, opacity: MUTED_TEXT_OPACITY },
   time: { color: ink, fontWeight: '700' },
   struck: { textDecorationLine: 'line-through', opacity: MUTED_TEXT_OPACITY },
-  countdown: { flexDirection: 'row', alignItems: 'baseline', gap: vars['--space-1'] },
+  countdown: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: vars['--space-1'],
+    paddingRight: STICKER,
+  },
   countdownText: { flexShrink: 1, fontWeight: '700' },
   route: { paddingRight: STICKER },
   ink: { color: ink },
@@ -205,7 +227,7 @@ const styles = StyleSheet.create({
   stamp: {
     position: 'absolute',
     right: vars['--space-4'],
-    bottom: -vars['--space-1'],
+    top: STAMP_TOP,
     borderWidth: vars['--sticker-border-small'],
     borderRadius: vars['--space-2'],
     borderCurve: 'continuous',

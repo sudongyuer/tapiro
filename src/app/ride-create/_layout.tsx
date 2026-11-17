@@ -14,15 +14,14 @@ export default function RideCreateLayout() {
     <Stack screenOptions={{ headerTransparent: true }}>
       <Stack.Screen
         name="index"
-        options={{
-          title: t('ride.create.pick.heading'),
-          headerLargeTitle: true,
-          headerBackTitle: t('ride.create.pick.heading'),
-        }}
+        options={{ title: t('ride.create.pick.heading'), headerLargeTitle: true }}
       />
       <Stack.Screen
         name="form"
-        options={{ title: t('ride.create.title'), headerBackTitle: t('ride.create.title') }}
+        options={{
+          title: t('ride.create.title'),
+          headerBackTitle: t('ride.create.pick.heading'),
+        }}
       />
       <Stack.Screen name="confirm" options={{ title: t('ride.create.confirm.title') }} />
       <Stack.Screen name="place" options={{ title: t('ride.create.form.start') }} />

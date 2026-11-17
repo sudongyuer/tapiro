@@ -10,7 +10,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 import { localClock } from '@/lib/deviceClock';
 
-import { displayName } from './Avatars';
+import { displayName, Initial } from './Avatars';
 import { owedDays } from './settleModel';
 import type { RideDetail, SettleRider } from './types';
 
@@ -74,36 +74,39 @@ export function OrganiserRows({
                 : t('rideSettle.rows.due');
         const target = (action: string) => busy?.action === action && busy.target === rider.id;
         return (
-          <View key={rider.id} style={styles.row} testID={`ride-settle-row-${rider.id}`}>
-            <View style={styles.line}>
-              <AppText variant="body" style={[styles.flex, styles.bold]} numberOfLines={2}>
-                {t('rideSettle.rows.share', { name, amount: formatMoney(rider.share, language) })}
+          <View key={rider.id} style={styles.person} testID={`ride-settle-row-${rider.id}`}>
+            <Initial name={name} dark={rider.id === viewerId} />
+            <View style={[styles.row, styles.flex]}>
+              <View style={styles.line}>
+                <AppText variant="body" style={[styles.flex, styles.bold]} numberOfLines={2}>
+                  {t('rideSettle.rows.share', { name, amount: formatMoney(rider.share, language) })}
+                </AppText>
+                {rider.paid === 'settled' ? <Tick /> : null}
+              </View>
+              <AppText variant="meta" tone="secondaryLabel" testID={`ride-settle-sub-${rider.id}`}>
+                {sub}
               </AppText>
-              {rider.paid === 'settled' ? <Tick /> : null}
+              {rider.dispute ? (
+                <AppText
+                  variant="meta"
+                  style={[styles.bold, { color: color('--color-warning') }]}
+                  testID={`ride-settle-dispute-${rider.id}`}
+                >
+                  {rider.dispute.note
+                    ? t('rideSettle.rows.disputed', { note: rider.dispute.note })
+                    : t('rideSettle.rows.disputedNoNote')}
+                </AppText>
+              ) : null}
+              {rider.paymentId && rider.paid !== 'settled' ? (
+                <RowActions
+                  rider={rider}
+                  locked={locked}
+                  busy={target}
+                  actions={actions}
+                  paymentId={rider.paymentId}
+                />
+              ) : null}
             </View>
-            <AppText variant="meta" tone="secondaryLabel" testID={`ride-settle-sub-${rider.id}`}>
-              {sub}
-            </AppText>
-            {rider.dispute ? (
-              <AppText
-                variant="meta"
-                style={[styles.bold, { color: color('--color-warning') }]}
-                testID={`ride-settle-dispute-${rider.id}`}
-              >
-                {rider.dispute.note
-                  ? t('rideSettle.rows.disputed', { note: rider.dispute.note })
-                  : t('rideSettle.rows.disputedNoNote')}
-              </AppText>
-            ) : null}
-            {rider.paymentId && rider.paid !== 'settled' ? (
-              <RowActions
-                rider={rider}
-                locked={locked}
-                busy={target}
-                actions={actions}
-                paymentId={rider.paymentId}
-              />
-            ) : null}
           </View>
         );
       })}
@@ -179,17 +182,20 @@ export function RiderRows({ ride, viewerId }: { ride: RideDetail; viewerId: stri
   return (
     <View style={styles.rows}>
       {organiser ? (
-        <View style={styles.row} testID="ride-settle-row-organiser">
-          <AppText variant="body" style={styles.bold} numberOfLines={2}>
-            {displayName(organiser, viewerId, t)}
-          </AppText>
-          <AppText variant="meta" tone="secondaryLabel">
-            {t('rideSettle.rows.organiser', {
-              amount: ride.settle?.organiserShare
-                ? formatMoney(ride.settle.organiserShare, language)
-                : '',
-            })}
-          </AppText>
+        <View style={styles.person} testID="ride-settle-row-organiser">
+          <Initial name={displayName(organiser, viewerId, t)} dark={organiser.id === viewerId} />
+          <View style={[styles.row, styles.flex]}>
+            <AppText variant="body" style={styles.bold} numberOfLines={2}>
+              {displayName(organiser, viewerId, t)}
+            </AppText>
+            <AppText variant="meta" tone="secondaryLabel">
+              {t('rideSettle.rows.organiser', {
+                amount: ride.settle?.organiserShare
+                  ? formatMoney(ride.settle.organiserShare, language)
+                  : '',
+              })}
+            </AppText>
+          </View>
         </View>
       ) : null}
       {(ride.settle?.riders ?? []).map((rider) => {
@@ -198,11 +204,12 @@ export function RiderRows({ ride, viewerId }: { ride: RideDetail; viewerId: stri
         return (
           <View
             key={rider.id}
-            style={[styles.row, styles.line]}
+            style={styles.line}
             accessible
             accessibilityLabel={t('rideSettle.rows.a11y', { name, state })}
             testID={`ride-settle-row-${rider.id}`}
           >
+            <Initial name={name} dark={rider.id === viewerId} />
             <AppText variant="body" style={[styles.flex, styles.bold]} numberOfLines={2}>
               {name}
             </AppText>
@@ -224,6 +231,7 @@ export function RiderRows({ ride, viewerId }: { ride: RideDetail; viewerId: stri
 const styles = StyleSheet.create({
   rows: { gap: vars['--space-3'], marginTop: vars['--space-2'] },
   row: { gap: vars['--space-1'] },
+  person: { flexDirection: 'row', alignItems: 'flex-start', gap: vars['--space-2'] },
   line: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
   flex: { flex: 1, minWidth: 0 },
   bold: { fontWeight: '600' },

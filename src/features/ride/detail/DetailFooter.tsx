@@ -55,7 +55,7 @@ export function DetailFooter({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  if (footer.kind === 'none' && !error) return <SafeAreaView edges={['bottom']} />;
+  if (footer.kind === 'none' && !error) return null;
   return (
     <SafeAreaView edges={['bottom']} style={styles.bar} testID="ride-detail-footer">
       {error ? (
@@ -240,6 +240,7 @@ const styles = StyleSheet.create({
   bar: {
     paddingHorizontal: vars['--space-4'],
     paddingTop: vars['--space-2'],
+    paddingBottom: vars['--space-2'],
     gap: vars['--space-2'],
     backgroundColor: PlatformColor('systemGroupedBackground'),
   },

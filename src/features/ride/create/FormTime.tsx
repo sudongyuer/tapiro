@@ -22,6 +22,8 @@ import type { RideDraft } from './draft';
 import { customStart, gatherTime, quickPicks } from './timePicks';
 import { DEPART_AHEAD_MS } from './validate';
 
+// A regular bordered button adds 7 pt above and below its label (measured 34 pt around a 20 pt label).
+const CHIP_LABEL_HEIGHT = vars['--touch-min'] - 14;
 const DATE_PARTS: ('date' | 'hourAndMinute')[] = ['date', 'hourAndMinute'];
 
 export function FormTime({
@@ -89,7 +91,7 @@ export function FormTime({
               <Text
                 modifiers={[
                   lineLimit(1),
-                  frame({ maxWidth: Infinity }),
+                  frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
                   ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
                 ]}
               >
@@ -109,7 +111,12 @@ export function FormTime({
               frame({ maxWidth: Infinity }),
             ]}
           >
-            <Text modifiers={[lineLimit(1), frame({ maxWidth: Infinity })]}>
+            <Text
+              modifiers={[
+                lineLimit(1),
+                frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+              ]}
+            >
               {t('ride.create.form.pickTime')}
             </Text>
           </Button>
