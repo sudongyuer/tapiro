@@ -67,8 +67,8 @@ for identifier in ('ride-detail-ticket', 'ride-detail-apply'):
     within_screen(items, identifier)
 assert by_id(items, 'ride-detail-arrivals') is None, 'a non-member must not see the arrival row'
 assert_touch_target(organiser, '小林 · 靠谱')
-below = by_id(items, 'ride-detail-seats')['frame']['y'] - bottom(organiser)
-assert below < 30, f'the organiser link pads the 发起 step: {below:.0f} pt to the seats'
+step = by_id(items, 'ride-detail-step-published')['frame']['height']
+assert step < 70, f'the organiser link pads the 发起 step to {step:.0f} pt'
 gap = tab_bar_top(items) - bottom(by_id(items, 'ride-detail-apply'))
 assert gap >= 7, f'申请上车 sits {gap:.1f} pt above the tab bar'
 shot = ui.snap('01-viewer')
