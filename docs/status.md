@@ -210,6 +210,11 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   rulings」 (suggestion line style, split optional group with a place, wrapping time line, equal quick times, 56 pt
   confirm art, soft bar edge, shared row inset reaching the ride form, new copy), and 24i: 12 pt above and below the
   quick times, 16 pt under the amount buttons.
+- ★ for veto (2026-11-17, `fix/ui-polish-time-format`, BP-13 and RIDE-19): every clock the app writes follows the
+  device's 12/24-hour setting in the app language, so the system pickers and the text beside them agree (ruling 25 in
+  `docs/plans/2026-10-27-bounty-post.md`, R9 in the carpool plan). Verify runs pin the Simulator to 24 hours unless a
+  case chooses 12. Open: the post form's 开始 picker shows the short date (「18/11/26」) because it lays out narrower
+  than 结束; the cause of that layout is not found.
 - ★ for veto (2026-11-17): UI polish choices on the bounty map, board and detail (chip position on both maps, the
   map card's poster row, where the no-location hint shows, spacing and alignment) in
   `docs/plans/2026-10-30-bounty-map.md` 「Deviations and rulings」 and `docs/plans/2026-10-27-bounty-board.md`
