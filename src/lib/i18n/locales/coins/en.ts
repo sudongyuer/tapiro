@@ -83,6 +83,8 @@ const en: typeof zhHans = {
     waiting: '…',
     idle: 'New week. Tap me for a leaf',
     fed: 'Thanks! +1 coin',
+    fedLead: 'Thanks!',
+    fedTail: '+1 coin',
     alreadyFed: 'I’m full this week. Come back Monday',
     failed: 'That didn’t go through. Tap me again',
     action: 'Feed the tapir',

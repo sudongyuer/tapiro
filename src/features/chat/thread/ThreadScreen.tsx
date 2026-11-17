@@ -167,7 +167,7 @@ export function ThreadScreen({
         thread={thread}
         top={headerHeight}
         now={now}
-        warning={
+        failure={
           safety.failure === 'block'
             ? t('block.failed')
             : safety.failure === 'unblock' && !blocked
@@ -189,7 +189,6 @@ export function ThreadScreen({
           onContentSizeChange={onContentSizeChange}
           ListHeaderComponent={header}
           contentContainerStyle={{
-            paddingTop: space.sm,
             paddingBottom:
               (composing
                 ? COMPOSER_MIN_HEIGHT + bottom
