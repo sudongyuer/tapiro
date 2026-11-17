@@ -69,7 +69,7 @@ export function CopyRow({
         testID={`${testID}-copy`}
         modifiers={[
           buttonStyle('bordered'),
-          controlSize('small'),
+          controlSize('large'),
           accessibilityIdentifier(`${testID}-copy`),
         ]}
       />

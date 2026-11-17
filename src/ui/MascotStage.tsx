@@ -4,6 +4,7 @@ import {
   PlatformColor,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
   type ViewProps,
 } from 'react-native';
@@ -16,23 +17,17 @@ import Svg, { Line, Path } from 'react-native-svg';
 
 import type { MascotWear } from './MascotWear';
 import { Snore, SpeechBubble, StageBody, StageLeaf, Star } from './MascotStageParts';
+import { bubbleMaxWidth, CAR_OVERHANG, POSE, STAGE_HEIGHT, type StageState } from './stagePose';
 import { CarArt, ParcelArt, StickerShadow } from './StickerArt';
 import { vars, type TokenName } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
-export type StageState = 'urgent' | 'live' | 'calm';
+export { STAGE_HEIGHT, type StageState };
 
-export const STAGE_HEIGHT = 200;
 export const STAGE_HILL_HEIGHT = 110;
 const BLEED = 1000;
 const SUN_SIZE = 70;
 const LEAF_HINT = 20;
-
-const POSE: Record<StageState, { size: number; right: number; top: number; sunTop: number }> = {
-  urgent: { size: 96, right: 58, top: -8, sunTop: -60 },
-  live: { size: 86, right: 54, top: 2, sunTop: -54 },
-  calm: { size: 96, right: 58, top: -8, sunTop: 10 },
-};
 
 export function stageColor(state: StageState): TokenName {
   return `--color-stage-${state}`;
@@ -73,6 +68,7 @@ const MASCOT_ACTION = 'mascot';
 export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }: MascotStageProps) {
   const { color } = useTheme();
   const pose = POSE[state];
+  const { width } = useWindowDimensions();
   const ink = color('--color-on-stage');
   const say = stageSay(actor, state);
   const sleeping = state === 'calm' && say === null;
@@ -178,6 +174,7 @@ export function MascotStage({ state, line, bubbleStyle, actor, style, ...rest }:
           line={say ?? line}
           coin={speaking ? (actor?.sayCoin ?? null) : null}
           style={bubbleStyle}
+          maxWidth={bubbleMaxWidth(state, width)}
           reveal={reveal}
           rise={rise}
           speaking={speaking}
@@ -204,6 +201,6 @@ const styles = StyleSheet.create({
   actor: { position: 'absolute' },
   star: { position: 'absolute', left: 20, top: -14 },
   leafHint: { position: 'absolute', right: -14, top: '38%' },
-  car: { position: 'absolute', left: -30, bottom: -6 },
+  car: { position: 'absolute', left: -CAR_OVERHANG, bottom: -6 },
   parcel: { position: 'absolute', right: -38, bottom: 0, transform: [{ rotate: '8deg' }] },
 });

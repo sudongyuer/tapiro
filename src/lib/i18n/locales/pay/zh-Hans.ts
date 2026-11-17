@@ -20,7 +20,7 @@ export default {
     payTo: '付给{{name}}',
     amountLabel: '金额 {{amount}}',
     original: '原价 {{amount}}',
-    rateFooter: '按 {{date}} BNM 中间价换算，{{rate}}，付款单打开时锁定',
+    rateFooter: '按 {{date}} BNM 中间价换算，{{rate}}，付款单打开时锁定。',
     noRate: '暂时不能换算成 {{currency}}',
     noCurrency: '{{name}}还没有能收{{currency}}的方式',
     currencyName: { MYR: '令吉', CNY: '人民币' },

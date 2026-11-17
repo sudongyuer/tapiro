@@ -24,7 +24,7 @@ export default {
     amountLabel: 'Jumlah {{amount}}',
     original: 'Asalnya {{amount}}',
     rateFooter:
-      'Ditukar pada kadar tengah BNM {{date}}, {{rate}}, dikunci semasa bayaran ini dibuka',
+      'Ditukar pada kadar tengah BNM {{date}}, {{rate}}, dikunci semasa bayaran ini dibuka.',
     noRate: 'Belum boleh ditukar ke {{currency}}',
     noCurrency: '{{name}} belum ada cara menerima {{currency}}',
     currencyName: { MYR: 'ringgit', CNY: 'yuan' },
