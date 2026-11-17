@@ -96,8 +96,12 @@ def assert_grown(ui, shot, element, width, wear, state='calm'):
     assert white > 200, f'the bubble is not visible: {white} px'
 
 
+# Fills of the crayon accessories in scripts/hand-art/drawings.mjs (WEAR_DRAWINGS).
+CRAYON = {'red': (226, 85, 75), 'bag': (243, 193, 75), 'blue': (91, 141, 184)}
+
+
 def assert_wearing(ui, shot, element, width, wear, state='calm'):
-    worn = colour_count(shot, mascot_box(element, width, state), token(wear, ui.appearance))
+    worn = colour_count(shot, mascot_box(element, width, state), CRAYON[wear])
     assert worn > 40, f'小貘 wears nothing at rest: {worn} px of {wear}'
 
 
