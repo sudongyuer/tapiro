@@ -284,3 +284,26 @@ and the Live Activity (11), 先付 (12).
     frame ends at 505.0 pt and the next begins at 505.33 pt, so one device pixel of the list background shows between
     two cells when a row's height is not a whole pixel (the default row padding is fractional). The timeline rows now
     carry whole-point padding; whether the line is gone there is checked in the milestone screenshots.
+- 2026-11-17, UI polish (audit BS-2, BS-3; boards BountyPickProgress 8A, BountyPickPost 4A). ★ choices for veto:
+  - Cause, measured with a scratch UIKit/SwiftUI app on the iOS 27.2 Simulator: since iOS 26 an iPhone action sheet
+    (`UIAlertController` `.actionSheet`, SwiftUI `confirmationDialog`) with a source is a popover from that source and
+    drops its cancel-style action (a tap outside cancels); without a source it is centred like an alert, two buttons
+    side by side. React Native's `ActionSheetIOS` sets the `anchor` only on iPad (`RCTActionSheetManager.mm`), so every
+    confirmation built on it was the centred alert (BS-2), and the SwiftUI dialogs anchored to their button showed no
+    keep button (BS-3). The full-width bottom sheet with a separate Cancel that 8A draws is no longer what iOS presents.
+  - C1 ★ Every confirmation is the system action sheet as a popover from the control that asked: destructive (or
+    confirm) on top, the keep button visible under it as a default-style action, a tap outside also keeps. It is the
+    platform control, ordered as 8A and 4A draw it; only the separate Cancel slot is gone. The alternative of the
+    centred alert (no source) puts the two buttons side by side, which 8B rejected as easy to mis-tap.
+  - C2 ★ One rule, two entry points with one copy shape (`ConfirmCopy`): RN controls call `askConfirm` (`src/ui/confirm.ts`
+    → the kit's `confirm`, `ConfirmDialog.swift`), anchored to the tapped view, or to the trailing bar button (`'bar'`,
+    the ⋯ that holds a menu) when the action came from a toolbar menu or the toolbar's 提交; SwiftUI controls in a Form
+    (清空草稿, 删除全部, 撤回申请, 换一片, the applicant row's 屏蔽) use `src/ui/ConfirmDialog.tsx`, SwiftUI's own dialog
+    attached to the control, keep without a cancel role. The popover is placed at the source's frame when it opens, so a
+    toolbar that swaps ⋯ for a spinner and back does not move or close it.
+  - C3 ★ Covered: 确认完成, 取消这单 / 不帮了 (pinned or ⋯), 关掉这单, 选这个人 (VoiceOver activate of the hold button),
+    屏蔽 / 解除屏蔽 everywhere (⋯ menus, the thread's 解除, the report sheet's offer, the applicant row), the ride's
+    撤回申请 / 不来了 / 取消这趟, 换一片 (both), 清空草稿, 删除小貘记得的全部. `ActionSheetIOS` and the two per-feature helpers
+    (`bounty/shared/askSheet.ts`, `ask/confirmSwap.ts`) are gone.
+  - C4 Not changed: confirmations raised by `Alert.alert` (an undeliverable message's 删除, 重发, the post hint, the
+    applicant race) stay alerts; they answer something the app reports rather than an action the user started.

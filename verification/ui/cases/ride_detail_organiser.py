@@ -9,9 +9,11 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch, tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/block/']
+DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/block/',
+        'verification/ui/confirm.py', 'src/ui/confirm.ts', 'modules/tapiro-kit/ios/ConfirmDialog.swift']
 SCENE = 'ride-detail'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
@@ -37,6 +39,8 @@ ui.capture('01-menu')
 ui.tap_label(ui.t('ride.detail.menu.cancel'))
 ui.labelled(ui.t('ride.detail.cancel.title'))
 ui.labelled(ui.t('ride.detail.cancel.members'))
+assert_dialog(ui, ui.t('ride.detail.cancel.title'), ui.t('ride.detail.cancel.confirm'), ui.t('ride.detail.cancel.keep'),
+              source_label=ui.t('ride.detail.more'))
 tap_sheet_action(ui, ui.t('ride.detail.cancel.keep'), 'ride-detail-ticket')
 time.sleep(1.0)  # a stray cancel would reach the plist within this
 assert not [c for c in sent() if c['name'] == 'cancel'], 'cancel was sent after 不取消'

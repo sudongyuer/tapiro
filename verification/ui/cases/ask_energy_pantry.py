@@ -7,10 +7,11 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/ask/', 'assets/pantry/',
-        'verification/ui/ask.py']
+        'verification/ui/ask.py', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
@@ -47,6 +48,8 @@ ui.capture('01-jar')
 
 ui.tap('tapir-pantry-swap')
 ui.labelled(ui.t('ask.pantry.swapTitle'))
+assert_dialog(ui, ui.t('ask.pantry.swapTitle'), ui.t('ask.hungry.swapConfirm'), ui.t('ask.hungry.cancel'),
+              source='tapir-pantry-swap')
 ui.capture('02-confirm')
 tap_sheet_action(ui, ui.t('ask.hungry.cancel'), 'tapir-pantry-swap')
 assert_calls(ui, 'pantry', 0, wait=1)

@@ -1,12 +1,13 @@
 import { useState } from 'react';
+import type { GestureResponderEvent } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { askConfirm, pressAnchor, type ConfirmAnchor } from '@/ui/confirm';
 
 import type { AskSessionState } from './askSession';
 import { bellyMood, isHungry, type Belly } from './belly';
 import { BellyBar } from './BellyBar';
-import { confirmSwap } from './confirmSwap';
 import { liveBelly, type ConsentState } from './consentStore';
 import { usePantry } from './hooks';
 import { HungryCard } from './HungryCard';
@@ -45,14 +46,18 @@ export function useBellySlots({
     setHeld(null);
   };
 
-  const swap = async () => {
+  const swap = async (anchor: ConfirmAnchor) => {
     if (!belly) return;
-    const yes = await confirmSwap({
-      title: t('ask.hungry.swapTitle'),
-      message: t('ask.hungry.swapMessage', { count: Math.max(0, belly.coins - 1) }),
-      confirm: t('ask.hungry.swapConfirm'),
-      cancel: t('ask.hungry.cancel'),
-    });
+    const yes = await askConfirm(
+      {
+        title: t('ask.hungry.swapTitle'),
+        message: t('ask.hungry.swapMessage', { count: Math.max(0, belly.coins - 1) }),
+        confirm: t('ask.hungry.swapConfirm'),
+        keep: t('ask.hungry.cancel'),
+      },
+      false,
+      anchor,
+    );
     if (yes) await feed(pantryStore.swapAndFeed);
   };
 
@@ -75,7 +80,7 @@ export function useBellySlots({
         motion={motion}
         actions={{
           onFeed: () => void feed(pantryStore.feed),
-          onSwap: () => void swap(),
+          onSwap: (event: GestureResponderEvent) => void swap(pressAnchor(event)),
           onTomorrow,
           onManual,
         }}

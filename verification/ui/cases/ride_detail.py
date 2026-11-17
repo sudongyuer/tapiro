@@ -2,7 +2,8 @@
 the 集合 / 座位 / 每人约 cells and the airport cells (航班起飞 09:10, 2 件大行李), the six-step timeline with 「现在」 at
 凑齐, the organiser 小林 · 靠谱, the organiser's seat plus a filled and a dashed seat (members hidden, 188 A), the privacy
 line and 申请上车. 申请上车 opens the note sheet; 申请 sends request_ride once, the ticket gets the 已申请 stamp and the
-bottom reads 等小林通过 with 撤回申请 (192 A); 撤回申请 asks first and withdraws. The organiser of the same ride sees the
+bottom reads 等小林通过 with 撤回申请 (192 A); 撤回申请 asks first, in a popover from that button with the
+confirm stacked above a visible keep button, and withdraws. The organiser of the same ride sees the
 application card with 阿杰's note and 通过 / 拒绝 (189 A); 通过 sends decide_ride_request once, the card goes and the
 ride reads 3/3. Scrolling the ticket away puts 「双威 → KLIA2」 in the nav bar (186 A)."""
 import json
@@ -13,11 +14,13 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import screen  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, bottom, by_id  # noqa: E402
 from ride import assert_stamp_under_sticker, assert_ticket_colour, tab_bar_top, tap_bar, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/block/',
+        'verification/ui/confirm.py', 'src/ui/confirm.ts', 'modules/tapiro-kit/ios/ConfirmDialog.swift',
         'src/ui/PillButton.tsx', 'src/ui/SyncedTextField.tsx', 'supabase/migrations/20261102000700_ride_detail.sql']
 SCENE = 'ride-detail'
 LOCALES = ['zh-Hans', 'ms']
@@ -89,7 +92,8 @@ assert_stamp_under_sticker(ui.read(), 'ride-detail-stamp')
 ui.capture('02-applied')
 
 ui.tap('ride-detail-withdraw')
-ui.labelled(ui.t('ride.detail.applied.confirmTitle'))
+assert_dialog(ui, ui.t('ride.detail.applied.confirmTitle'), ui.t('ride.detail.applied.confirm'),
+              ui.t('ride.detail.applied.keep'), source='ride-detail-withdraw')
 tap_sheet_action(ui, ui.t('ride.detail.applied.confirm'), 'ride-detail-withdraw')
 ui.element('ride-detail-apply')
 wait_calls('withdraw', 1)

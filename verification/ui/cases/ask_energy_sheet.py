@@ -11,10 +11,11 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 import recording  # noqa: E402
 from ask import ai_calls, assert_calls, assert_lifted, open_sheet, turn, type_and_send  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, assert_colour, by_id, close, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/ask.tsx', 'src/lib/i18n/locales/ask/',
-        'src/ui/theme/tokens.ts', 'assets/pantry/', 'verification/ui/ask.py']
+        'src/ui/theme/tokens.ts', 'assets/pantry/', 'verification/ui/ask.py', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 600
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
@@ -102,6 +103,8 @@ with_belly('0,0,3,5')
 offer(ui, 'swap', ui.t('ask.hungry.swap'))
 ui.tap('ask-hungry-offer')
 ui.labelled(ui.t('ask.hungry.swapTitle'))
+assert_dialog(ui, ui.t('ask.hungry.swapTitle'), ui.t('ask.hungry.swapConfirm'), ui.t('ask.hungry.cancel'),
+              source='ask-hungry-offer')
 ui.capture('06-swap-confirm')
 tap_sheet_action(ui, ui.t('ask.hungry.cancel'), 'ask-hungry-offer')
 ui.element('ask-hungry-swap')

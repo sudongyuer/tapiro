@@ -1,6 +1,5 @@
 import {
   Button,
-  ConfirmationDialog,
   HStack,
   Host,
   List,
@@ -29,6 +28,7 @@ import { useState } from 'react';
 import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -252,35 +252,28 @@ function ClearSection({ count, busy }: { count: number; busy: boolean }) {
   const [asking, setAsking] = useState(false);
   return (
     <Section>
-      <ConfirmationDialog
-        title={t('ask.memory.clearTitle', { count })}
-        titleVisibility="visible"
-        isPresented={asking}
-        onIsPresentedChange={setAsking}
+      <ConfirmDialog
+        copy={{
+          title: t('ask.memory.clearTitle', { count }),
+          message: t('ask.memory.clearMessage'),
+          confirm: t('ask.memory.clearConfirm'),
+          keep: t('ask.memory.cancel'),
+        }}
+        destructive
+        presented={asking}
+        onPresentedChange={setAsking}
+        onConfirm={() => void memoryStore.clearAll()}
+        confirmTestID="memory-clear-confirm"
       >
-        <ConfirmationDialog.Trigger>
-          <Button
-            role="destructive"
-            onPress={() => setAsking(true)}
-            testID="memory-clear"
-            modifiers={[foregroundStyle(color('--color-urgent')), disabled(busy)]}
-          >
-            <Text modifiers={[frame({ maxWidth: Infinity })]}>{t('ask.memory.clearAll')}</Text>
-          </Button>
-        </ConfirmationDialog.Trigger>
-        <ConfirmationDialog.Actions>
-          <Button
-            label={t('ask.memory.clearConfirm')}
-            role="destructive"
-            onPress={() => void memoryStore.clearAll()}
-            testID="memory-clear-confirm"
-          />
-          <Button label={t('ask.memory.cancel')} role="cancel" />
-        </ConfirmationDialog.Actions>
-        <ConfirmationDialog.Message>
-          <Text>{t('ask.memory.clearMessage')}</Text>
-        </ConfirmationDialog.Message>
-      </ConfirmationDialog>
+        <Button
+          role="destructive"
+          onPress={() => setAsking(true)}
+          testID="memory-clear"
+          modifiers={[foregroundStyle(color('--color-urgent')), disabled(busy)]}
+        >
+          <Text modifiers={[frame({ maxWidth: Infinity })]}>{t('ask.memory.clearAll')}</Text>
+        </Button>
+      </ConfirmDialog>
     </Section>
   );
 }

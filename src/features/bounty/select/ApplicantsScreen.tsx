@@ -203,7 +203,7 @@ export function ApplicantsScreen({
             canBlock={blocking.state !== 'busy' && (send.kind === 'idle' || send.kind === 'failed')}
             motion={motion}
             onChoose={model.chose}
-            onBlock={blocking.ask}
+            onBlock={blocking}
             onOpenProfile={onOpenProfile}
           />
         )}
