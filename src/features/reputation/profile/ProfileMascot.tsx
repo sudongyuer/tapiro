@@ -15,6 +15,7 @@ import {
   accessibilityIdentifier,
   contentShape,
   accessibilityLabel,
+  alignmentGuide,
   fixedSize,
   font,
   foregroundStyle,
@@ -34,7 +35,7 @@ import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 import { useMyMascot } from '../hooks';
 import type { PublicMascot } from '../types';
 import { AccessoryRows } from './AccessoryRows';
-import { levelLabel, levelProgress } from './profileView';
+import { levelCardMascot, levelLabel, levelProgress } from './profileView';
 
 const ROW_HEAD = 28;
 const CARD_HEAD = 72;
@@ -72,7 +73,8 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
   const mine = useMyMascot();
   const myMascot = mine.status === 'idle' ? null : mine.data;
   const worn = myMascot?.accessory ?? mascot.accessory;
-  const progress = levelProgress(mascot.level, mascot.stickers);
+  const shown = levelCardMascot(mascot, myMascot);
+  const progress = levelProgress(shown.level, shown.stickers);
   const next = t('reputation.profile.nextLevel', {
     count: progress.toGo,
     label: levelLabel(progress.next, t),
@@ -88,6 +90,7 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
           accessibilityElement('combine'),
           accessibilityIdentifier('profile-level'),
           listRowBackground(color('--color-moment-bg')),
+          alignmentGuide('listRowSeparatorLeading', 0),
         ]}
       >
         <RNHostView matchContents>
@@ -95,7 +98,7 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
         </RNHostView>
         <VStack alignment="leading" spacing={vars['--space-2']} modifiers={[fill]}>
           <Text modifiers={[font({ textStyle: 'headline' }), wraps]}>
-            {levelLabel(mascot.level, t)}
+            {levelLabel(shown.level, t)}
           </Text>
           <ProgressView
             value={progress.fraction}
@@ -104,7 +107,7 @@ export function LevelCard({ mascot }: { mascot: PublicMascot }) {
           <Text modifiers={[font({ textStyle: 'footnote' }), secondary, wraps]}>{next}</Text>
         </VStack>
       </HStack>
-      <AccessoryRows level={Math.max(mascot.level, myMascot?.level ?? 0)} worn={worn} />
+      <AccessoryRows level={shown.level} worn={worn} />
     </Section>
   );
 }

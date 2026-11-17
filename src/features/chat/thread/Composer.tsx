@@ -72,6 +72,7 @@ export function Composer({
             style={[styles.input, { color: PlatformColor('label') }]}
             placeholder={t('chat.thread.placeholder')}
             placeholderTextColor={PlatformColor('placeholderText')}
+            selectionColor={color('--color-accent')}
             multiline
             maxLength={MESSAGE_MAX}
             value={body}

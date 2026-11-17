@@ -121,8 +121,8 @@ export default {
       cancel: '取消',
       deleting: '正在删除账号',
       payment: {
-        owe: '付给 {{name}} {{amount}}',
-        owed: '{{name}} 付给你 {{amount}}',
+        owe: '付给{{name}} {{amount}}',
+        owed: '{{name}}付给你 {{amount}}',
       },
       error: {
         blocked: '你还有没结清的付款，结清后才能删除账号。',

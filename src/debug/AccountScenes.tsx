@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useState } from 'react';
-import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
+import { PlatformColor, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   DeleteAccountSheet,
@@ -10,6 +12,7 @@ import {
   WelcomeScreen,
   createFixtureAuthService,
 } from '@/features/account';
+import { uiVerifyArgument } from '@/lib/uiVerify';
 
 import { LONG_NAME, longNameUser } from './accountFixtures';
 
@@ -53,6 +56,7 @@ export function SettingsScene({ onReady }: SceneProps) {
       <SettingsView
         name={LONG_NAME}
         email={longNameUser.email}
+        avatarUrl={null}
         onSignOut={() => {}}
         onDeleteAccount={() => {}}
       />
@@ -61,13 +65,18 @@ export function SettingsScene({ onReady }: SceneProps) {
 }
 
 export function DeleteBlockedScene({ onReady }: SceneProps) {
+  const paddingTop = useHeaderHeight();
+  const { bottom: paddingBottom } = useSafeAreaInsets();
   const [service] = useState(() =>
-    createFixtureAuthService({ signedInAs: 'apple', deletion: 'blocked' }),
+    createFixtureAuthService({
+      signedInAs: 'apple',
+      deletion: uiVerifyArgument('uiVerifyDeletion') === 'blockedMany' ? 'blockedMany' : 'blocked',
+    }),
   );
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.sheetBackground}>
+    <View style={[styles.sheetBackground, { paddingTop, paddingBottom }]}>
       <DeleteAccountSheet onDelete={service.deleteAccount} onCancel={() => {}} onLayout={onReady} />
-    </ScrollView>
+    </View>
   );
 }
 

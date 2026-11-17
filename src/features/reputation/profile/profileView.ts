@@ -5,6 +5,7 @@ import {
   TIERS,
   type Face,
   type ProfileCard,
+  type PublicMascot,
   type ProfileReview,
   type Role,
   type Tier,
@@ -80,6 +81,9 @@ export function levelLabel(level: number, t: TFunction) {
     name: t(levelNameKey(level) as 'reputation.level.lv1'),
   });
 }
+
+export const levelCardMascot = (card: PublicMascot, mine: PublicMascot | null) =>
+  mine && mine.level > card.level ? mine : card;
 
 export function levelProgress(level: number, stickers: number) {
   const from = levelStartsAt(level);
