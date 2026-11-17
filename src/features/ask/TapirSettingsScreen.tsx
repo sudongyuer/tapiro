@@ -21,7 +21,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { PlatformColor, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -155,7 +155,6 @@ function CloudSection({
       {state.writing === 'withdraw' ? (
         <HStack
           modifiers={[
-            frame({ minHeight: vars['--touch-min'] }),
             accessibilityElement('combine'),
             accessibilityIdentifier('tapir-cloud-withdrawing'),
           ]}
@@ -171,7 +170,10 @@ function CloudSection({
           isOn={access === 'given'}
           onIsOnChange={onChange}
           testID="tapir-cloud"
-          modifiers={[disabled(access === 'needsUpdate' || state.writing !== null)]}
+          modifiers={[
+            tint(PlatformColor('systemGreen')),
+            disabled(access === 'needsUpdate' || state.writing !== null),
+          ]}
         />
       )}
     </Section>
@@ -187,7 +189,6 @@ function MemoryRow({ userId, onPress }: { userId: string | null; onPress: () => 
       <Button onPress={onPress} testID="tapir-memory-row">
         <HStack
           modifiers={[
-            frame({ minHeight: vars['--touch-min'] }),
             accessibilityElement('combine'),
             accessibilityLabel(
               count ? `${t('ask.memory.title')}, ${count}` : t('ask.memory.title'),

@@ -1,4 +1,5 @@
-"""The applicant's two outcomes in the detail (53A, 54A). Not selected: 这次没选上 with 小林选了别人…, 你写的 with the note,
+"""The applicant's two outcomes in the detail (53A, 54A). Not selected: 这次没选上 with 小林选了别人…, 你写的 with the note
+at least 12 pt above the button,
 no 已申请 stamp and the sticker untilted (its rotated frame is as narrow as the sticker, while the applied fixture's tilted
 sticker is wider); the fixture recorded exactly one seen mark for the bounty after the load; 看看附近别的悬赏 pops to the
 board and scrolls it back to the top. Selected: 小林选了你 and 看进度 pinned (at least 44 pt), and the exact address
@@ -12,7 +13,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import ink_box, screen, visible  # noqa: E402
 from bounty import assert_grouped_background, relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, bottom, by_id, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/(tabs)/bounty/', 'src/features/home/useHomeScroll.ts',
         'src/lib/homeSignals.ts', 'src/lib/useHomeSignals.ts', 'verification/ui/board.py',
@@ -33,6 +34,7 @@ NOTE = '我下午三点前都在宿舍，可以顺路帮你拿上来。'
 SCROLL_PT = 160
 STICKER_BAND = 90
 STAMP_MIN = 40
+NOTE_GAP_MIN = 12
 
 ui = UI(*sys.argv[1:])
 
@@ -101,6 +103,8 @@ assert note == f"{ui.t('bounty.detail.notSelected.yourNote')} {NOTE}", f'the not
 browse = ui.element('bounty-detail-browse')
 assert browse.get('AXLabel') == ui.t('bounty.detail.notSelected.browse'), browse.get('AXLabel')
 assert_touch_target(browse, ui.t('bounty.detail.notSelected.browse'))
+note_gap = browse['frame']['y'] - bottom(ui.element('bounty-detail-not-selected-note'))
+assert note_gap >= NOTE_GAP_MIN, f'the note ends {note_gap:.1f} pt above the button'
 items = ui.read()
 for absent in ('bounty-detail-stamp', 'bounty-detail-applied', 'bounty-detail-withdraw', 'bounty-detail-apply',
                'bounty-detail-address'):

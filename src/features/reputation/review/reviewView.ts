@@ -17,10 +17,34 @@ const REVIEW_WINDOW_DAYS = 7;
 export const pairName = (pair: ReviewPair, t: TFunction) =>
   personName(pair.counterpart?.name ?? null, t);
 
-export function sheetSubtitle(title: string | null, pair: ReviewPair, language: string) {
+const NO_BREAK_SPACE = '\u00a0';
+const WORD_JOINER = '\u2060';
+
+export const unbroken = (text: string) =>
+  [...text.replaceAll(' ', NO_BREAK_SPACE)].join(WORD_JOINER);
+
+export function unbrokenTail(text: string, letters = 4) {
+  const all = [...text];
+  if (all.length <= letters) return text;
+  return `${all.slice(0, -letters).join('')}${all.slice(-letters).join(WORD_JOINER)}`;
+}
+
+export const spoken = (text: string) =>
+  text.replaceAll(WORD_JOINER, '').replaceAll(NO_BREAK_SPACE, ' ');
+
+function openedDate(pair: ReviewPair, language: string) {
   const opened = Date.parse(pair.closesAt) - REVIEW_WINDOW_DAYS * DAY;
-  const date = noShowDate(new Date(opened).toISOString(), language);
+  return noShowDate(new Date(opened).toISOString(), language);
+}
+
+export function sheetSubtitle(title: string | null, pair: ReviewPair, language: string) {
+  const date = openedDate(pair, language);
   return title ? `${title} · ${date}` : date;
+}
+
+export function sheetSubtitleShown(title: string | null, pair: ReviewPair, language: string) {
+  const date = unbroken(openedDate(pair, language));
+  return title ? `${title}${NO_BREAK_SPACE}· ${date}` : date;
 }
 
 export const windowOver = (pair: ReviewPair, now: Date) =>

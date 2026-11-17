@@ -84,9 +84,9 @@ export default {
     stale: '没刷新成功 · 下面是上次加载的评价',
   },
   home: {
-    helpedYou: '{{title}} · {{name}}帮你办成了',
-    helpedThem: '{{title}} · 你帮{{name}}办成了',
-    rode: '{{title}} · 和{{name}}一起坐的车',
+    helpedYou: '{{name}}帮你办成了',
+    helpedThem: '你帮{{name}}办成了',
+    rode: '和{{name}}一起坐的车',
     ask: '这次怎么样？',
     action: '评价',
   },

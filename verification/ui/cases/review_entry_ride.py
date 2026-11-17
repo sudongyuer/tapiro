@@ -8,7 +8,7 @@ from driver import UI, by_id  # noqa: E402
 from profile import label  # noqa: E402
 from review import SHEET, on_screen_row, shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/ride/detail/', 'src/app/(tabs)/ride/', 'verification/ui/gestures.py']
+DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/ocr.py', 'verification/ui/profile.py', 'src/features/ride/detail/', 'src/app/(tabs)/ride/', 'verification/ui/gestures.py']
 SCENE = 'ride-detail'
 BUDGET = 240
 LOCALES = ['zh-Hans', 'ms']

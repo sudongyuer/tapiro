@@ -162,3 +162,59 @@ svg{width:${size - border * 4}px;height:${size - border * 4}px;${ring}}</style><
 <svg viewBox="0 0 120 120"><defs>${CRAYON_FILTER}</defs><g filter="url(#crayon)">${DRAWINGS[id] ?? PANTRY_DRAWINGS[id]}</g></svg>
 </div></body></html>`;
 }
+
+export const WEAR_BOX = { x: 6.667, y: 23.333, size: 106.667 };
+
+export const WEAR_FILTER = `<filter id="crayon" x="-15%" y="-15%" width="130%" height="130%">
+<feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="3" result="warp"/>
+<feDisplacementMap in="SourceGraphic" in2="warp" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="wobble"/>
+<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="9" result="grain"/>
+<feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.45" result="mask"/>
+<feComposite in="wobble" in2="mask" operator="in"/>
+</filter>
+<filter id="wobble" x="-15%" y="-15%" width="130%" height="130%">
+<feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="3" result="warp"/>
+<feDisplacementMap in="SourceGraphic" in2="warp" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+</filter>`;
+
+export const WEAR_LINE_STYLE =
+  '.ln{fill:none;stroke:#3A2E2A;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}' +
+  '.paper .fl{fill:#FFFDF8}.paper .ln{stroke:#FFFDF8}';
+
+export const WEAR_DRAWINGS = {
+  red_hat: `
+<path class="fl" d="M47 57 C51 46 55 37 61 31 C68 37 76 42 85 47 C72 47 59 51 47 57 Z" fill="#E2554B"/>
+<path class="fl" d="M61 31 C68 37 76 42 85 47 C78 47 72 47.5 66 49 C66 42 64 36 61 31 Z" fill="#C8463A"/>
+<path class="fl" d="M44 59 C57 50 72 46 88 46 L88.5 51.5 C73 51.5 59 55 46 64 Z" fill="#FBF6EC"/>
+<circle class="fl" cx="61" cy="30.5" r="5" fill="#FBF6EC"/>
+<path class="ln" d="M47 57 C51 46 55 37 61 31 C68 37 76 42 85 47 M44 59 C57 50 72 46 88 46 L88.5 51.5 C73 51.5 59 55 46 64 Z"/>
+<circle class="ln" cx="61" cy="30.5" r="5"/>`,
+  backpack: `
+<g transform="translate(-2.5 0)">
+<path class="fl" d="M91 64 C101 58 112 62 112 74 L112 103 C112 109 107 112 101 112 L93 112 C99 96 99 78 91 64 Z" fill="#F3C14B"/>
+<path class="fl" d="M99 86 L111 86 L111 100 C111 102 110 103 108 103 L100 103 C99 98 99 92 99 86 Z" fill="#E9A23B"/>
+<path class="fl" d="M84 62 C99 74 96 96 90 113 L84 112 C90 94 92 78 80 66 Z" fill="#C9935B"/>
+<path class="ln" d="M91 64 C101 58 112 62 112 74 L112 103 C112 109 107 112 101 112 L93 112 M99 86 L111 86 M84 62 C99 74 96 96 90 113 L84 112 C90 94 92 78 80 66 Z"/>
+</g>`,
+  umbrella: `
+<g transform="translate(2 0)">
+<path class="fl" d="M26 44 L29 44 L29 103 C29 110 19 110 19 104 L22 104 C22 106.5 26 106.5 26 103 Z" fill="#6B4430"/>
+<path class="fl" d="M7 46 C8 34 17 27 27.5 27 C38 27 47 34 48 46 C44 41.5 39.5 41.5 37.75 46 C34.5 41.5 30.5 41.5 27.5 46 C24.5 41.5 20.5 41.5 17.25 46 C15.5 41.5 11 41.5 7 46 Z" fill="#5B8DB8"/>
+<path class="fl" d="M27.5 27 C22 31 18.5 38 17.25 46 C20.5 41.5 24.5 41.5 27.5 46 C30.5 41.5 34.5 41.5 37.75 46 C36.5 38 33 31 27.5 27 Z" fill="#8FB5D6"/>
+<path class="ln" d="M7 46 C8 34 17 27 27.5 27 C38 27 47 34 48 46 C44 41.5 39.5 41.5 37.75 46 C34.5 41.5 30.5 41.5 27.5 46 C24.5 41.5 20.5 41.5 17.25 46 C15.5 41.5 11 41.5 7 46 Z M27.5 27 L27.5 24.5"/>
+<path class="ln" d="M27.5 46 L27.5 103 C27.5 109 20.5 109 20.5 104"/>
+</g>`,
+  scarf: `
+<path class="fl" d="M52 101 C69 112 88 110 104 97 L108 107 C90 121 68 122 49 111 Z" fill="#E2554B"/>
+<path class="fl" d="M64 108 L70 110 L67 119 L61 117 Z M80 109 L86 108 L86 118 L80 119 Z M95 104 L100 101 L103 110 L98 113 Z" fill="#FBF6EC"/>
+<path class="fl" d="M84 112 L96 109 L99 124 L87 126 Z" fill="#C8463A"/>
+<path class="ln" d="M52 101 C69 112 88 110 104 97 L108 107 C90 121 68 122 49 111 Z M84 112 L96 109 L99 124 L87 126 Z"/>`,
+};
+
+export function wearSvgFor(id, { size = 384, mascot = '' } = {}) {
+  const { x, y, size: box } = WEAR_BOX;
+  return `<!doctype html><html><head><style>html,body{margin:0;background:transparent}${WEAR_LINE_STYLE}
+svg{display:block;width:${size}px;height:${size}px}</style></head><body>
+<svg viewBox="${x} ${y} ${box} ${box}"><defs>${WEAR_FILTER}</defs>${mascot}<g class="paper" filter="url(#wobble)">${WEAR_DRAWINGS[id]}</g><g filter="url(#crayon)">${WEAR_DRAWINGS[id]}</g></svg>
+</body></html>`;
+}

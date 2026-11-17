@@ -7,6 +7,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 
+import { coinCount } from '@/lib/coinCount';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -141,7 +142,7 @@ export function FeeSection({
     cost.kind === 'free'
       ? t('ride.create.confirm.free', { left: cost.left, of: cost.of })
       : t('ride.create.confirm.coin', {
-          balance: cost.kind === 'coin' ? cost.balance : state.status.coins,
+          balance: coinCount(cost.kind === 'coin' ? cost.balance : state.status.coins, language),
         });
   const date = new Intl.DateTimeFormat(language, { month: 'long', day: 'numeric' }).format(
     new Date(state.status.nextFreeAt),

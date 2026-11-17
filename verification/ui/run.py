@@ -77,7 +77,14 @@ def keyboard_commands(udid):
         [*spawn, KEYBOARD_PREFS, 'KeyboardsCurrentAndNext', '-array', KEYBOARDS[0], KEYBOARDS[0]],
         [*spawn, KEYBOARD_PREFS, 'KeyboardLastUsed', '-string', KEYBOARDS[0]],
         *([*spawn, KEYBOARD_PREFS, key, '-bool', 'false'] for key in ('KeyboardPrediction', 'KeyboardAutocorrection')),
+        *software_keyboard_commands(udid),
     ]
+
+
+def software_keyboard_commands(udid):
+    spawn = ['xcrun', 'simctl', 'spawn', udid, 'defaults', 'write']
+    return [[*spawn, KEYBOARD_PREFS, key, '-bool', 'false']
+            for key in ('AutomaticMinimizationEnabled', 'HardwareKeyboardLastSeen')]
 
 
 def prepare(device, app):
@@ -237,6 +244,8 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
+    for command in software_keyboard_commands(udid):
+        subprocess.run(command, capture_output=True, timeout=30)
     reset_records(udid)
     video = out / 'run.mp4'
     recorder = subprocess.Popen(

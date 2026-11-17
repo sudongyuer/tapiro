@@ -88,9 +88,9 @@ const ms: typeof zhHans = {
     stale: 'Tidak dapat dimuat semula · Ini penilaian yang dimuatkan sebelum ini',
   },
   home: {
-    helpedYou: '{{title}} · {{name}} sudah selesaikan untuk anda',
-    helpedThem: '{{title}} · Anda sudah selesaikan untuk {{name}}',
-    rode: '{{title}} · Menumpang bersama {{name}}',
+    helpedYou: '{{name}} sudah selesaikan untuk anda',
+    helpedThem: 'Anda sudah selesaikan untuk {{name}}',
+    rode: 'Menumpang bersama {{name}}',
     ask: 'Bagaimana pengalaman anda?',
     action: 'Nilai',
   },

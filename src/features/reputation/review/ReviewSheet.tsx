@@ -1,7 +1,9 @@
 import { Stack } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View, type ViewInstance } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -11,7 +13,7 @@ import { vars } from '@/ui/theme/tokens';
 
 import { daysLeft, pickFace } from '../model';
 import type { ReviewPair, ReviewTarget } from '../types';
-import { pairName, sheetSubtitle } from './reviewView';
+import { pairName, sheetSubtitle, sheetSubtitleShown } from './reviewView';
 import { ReviewDetails } from './ReviewDetails';
 import { FacePicker } from './ReviewPickers';
 import { SealLayer } from './SealLayer';
@@ -31,6 +33,8 @@ export function ReviewSheet({
   onClose: () => void;
 }) {
   const { t, language } = useI18n();
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
   const face = useRef<ViewInstance>(null);
   const name = pairName(pair, t);
   const sheet = useReviewSheet(pair, target, face, name);
@@ -63,20 +67,30 @@ export function ReviewSheet({
         pointerEvents={outcome ? 'none' : 'auto'}
         accessibilityElementsHidden={outcome !== null}
       >
+        {/* The header's inset is padding, not the system's automatic content inset: on every keyboard frame change
+            automaticallyAdjustKeyboardInsets scrolls to an offset clamped to -contentInset.top, which leaves the
+            automatic inset out, so the content jumped up under the header (RCTScrollViewComponentView scrollTo:). */}
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
+          contentInsetAdjustmentBehavior="never"
           automaticallyAdjustKeyboardInsets
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[
+            styles.content,
+            {
+              paddingTop: headerHeight + vars['--space-2'],
+              paddingBottom: insets.bottom + vars['--space-3'],
+            },
+          ]}
         >
           <AppText
             variant="secondary"
             tone="secondaryLabel"
+            accessibilityLabel={sheetSubtitle(title, pair, language)}
             style={styles.subtitle}
             testID="review-subtitle"
           >
-            {sheetSubtitle(title, pair, language)}
+            {sheetSubtitleShown(title, pair, language)}
           </AppText>
           <FacePicker
             picked={draft.face}
@@ -136,8 +150,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: {
     paddingHorizontal: vars['--space-5'],
-    paddingTop: vars['--space-2'],
-    paddingBottom: vars['--space-3'],
     gap: vars['--space-5'],
   },
   subtitle: { textAlign: 'center' },

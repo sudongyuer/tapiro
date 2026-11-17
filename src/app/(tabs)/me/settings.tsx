@@ -13,11 +13,12 @@ export default function Settings() {
   const user = useSignedInUser();
   const profile = useProfile(user);
   const signingOut = useSigningOut();
-  const name = (profile.status === 'ready' ? profile.profile?.displayName : null) ?? user?.name;
+  const ready = profile.status === 'ready' ? profile.profile : null;
   return (
     <SettingsView
-      name={name ?? ''}
+      name={ready?.displayName ?? user?.name ?? ''}
       email={user?.email ?? null}
+      avatarUrl={ready?.avatarUrl ?? user?.avatarUrl ?? null}
       signingOut={signingOut}
       onSignOut={() => void accountActions.signOut()}
       onDeleteAccount={() => router.push('/delete-account')}

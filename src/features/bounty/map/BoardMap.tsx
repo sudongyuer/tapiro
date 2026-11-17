@@ -24,7 +24,7 @@ import { useStampHold } from './useStampHold';
 
 const MAP_CHROME = 270;
 const MAP_MIN = 320;
-const COVER_CHIP_INSET = vars['--touch-min'] + vars['--space-4'] * 2;
+const CHIP_INSET = vars['--touch-min'] + vars['--space-3'] * 2;
 
 export type BoardMapProps = {
   rows: BoardRow[];
@@ -151,7 +151,7 @@ export function BoardMap({
       {chip ? (
         <View
           pointerEvents="box-none"
-          style={[styles.chip, cover && { ...styles.coverChip, bottom: cover.bottom }]}
+          style={[styles.chip, cover && { top: cover.top + vars['--space-2'] }]}
         >
           <MoreChip chip={chip} onPress={onShowMore} />
         </View>
@@ -182,11 +182,10 @@ const styles = StyleSheet.create({
   map: { borderRadius: vars['--radius-card'], borderCurve: 'continuous', overflow: 'hidden' },
   chip: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: vars['--space-3'],
+    left: CHIP_INSET,
+    right: CHIP_INSET,
+    top: vars['--space-3'],
     alignItems: 'center',
   },
-  coverChip: { left: COVER_CHIP_INSET, right: COVER_CHIP_INSET },
   cardArea: { position: 'absolute', left: 0, right: 0 },
 });

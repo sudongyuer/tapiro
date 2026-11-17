@@ -15,11 +15,11 @@ import {
   disabled,
   font,
   foregroundStyle,
-  frame,
 } from '@expo/ui/swift-ui/modifiers';
 import { Image } from 'expo-image';
 
 import { useI18n } from '@/lib/i18n';
+import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 
 import type { Belly } from './belly';
@@ -41,7 +41,7 @@ export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryS
   const failure = pantry.failure?.write === 'swap' ? pantry.failure.reason : null;
   const footer = [
     belly.coins > 0 ? t('ask.pantry.coins', { count: belly.coins }) : t('ask.pantry.noCoins'),
-    failure ? t(`ask.pantryFailure.${failure}`) : t('ask.pantry.footer'),
+    t('ask.pantry.footer'),
   ].join('\n');
 
   const swap = async () => {
@@ -55,6 +55,41 @@ export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryS
     if (yes) await pantryStore.swap();
   };
 
+  return (
+    <>
+      {failure ? (
+        <NoticeCard
+          tone="urgent"
+          icon="exclamationmark.circle.fill"
+          title={t(`ask.pantryFailure.${failure}`)}
+          testID="tapir-pantry-swap-failed"
+        />
+      ) : null}
+      <PantryJar
+        belly={belly}
+        swapping={swapping}
+        footer={footer}
+        onSwap={() => void swap()}
+        busy={pantry.writing !== null}
+      />
+    </>
+  );
+}
+
+function PantryJar({
+  belly,
+  swapping,
+  busy,
+  footer,
+  onSwap,
+}: {
+  belly: Belly;
+  swapping: boolean;
+  busy: boolean;
+  footer: string;
+  onSwap: () => void;
+}) {
+  const { t } = useI18n();
   return (
     <Section
       title={t('ask.pantry.title')}
@@ -88,7 +123,6 @@ export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryS
       {swapping ? (
         <HStack
           modifiers={[
-            frame({ minHeight: vars['--touch-min'] }),
             accessibilityElement('combine'),
             accessibilityIdentifier('tapir-pantry-swapping'),
           ]}
@@ -100,10 +134,9 @@ export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryS
       ) : (
         <Button
           label={t('ask.pantry.swap')}
-          onPress={() => void swap()}
+          onPress={onSwap}
           modifiers={[
-            disabled(belly.coins < 1 || pantry.writing !== null),
-            frame({ minHeight: vars['--touch-min'] }),
+            disabled(belly.coins < 1 || busy),
             accessibilityIdentifier('tapir-pantry-swap'),
           ]}
         />

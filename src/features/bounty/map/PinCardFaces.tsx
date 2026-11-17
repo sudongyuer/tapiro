@@ -1,16 +1,28 @@
+import { SymbolView } from 'expo-symbols';
 import type { Ref } from 'react';
-import { type AccessibilityActionEvent, StyleSheet, View, type ViewInstance } from 'react-native';
+import {
+  type AccessibilityActionEvent,
+  PlatformColor,
+  StyleSheet,
+  View,
+  type ViewInstance,
+} from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { Avatar } from '@/ui/Avatar';
 import { HandArtSticker } from '@/ui/HandArt';
 import { PillButton } from '@/ui/PillButton';
+import { TierHeads } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import type { CardCopy } from '../board/cardCopy';
 import type { BoardRow } from '../board/types';
 
 const STICKER = 44;
+const AVATAR = 24;
+const SYMBOL = vars['--text-meta'];
 
 type FaceProps = {
   row: BoardRow;
@@ -36,8 +48,46 @@ function useSummaryActions({ onFlip, onOpen }: Pick<FaceProps, 'onFlip' | 'onOpe
 function Applied({ testID }: { testID: string }) {
   const { t } = useI18n();
   return (
-    <AppText variant="meta" testID={testID} style={styles.applied}>
-      {t('bounty.board.applied')}
+    <View style={styles.applied}>
+      <SymbolView name="circle.inset.filled" size={SYMBOL} tintColor={PlatformColor('label')} />
+      <AppText variant="meta" testID={testID} style={styles.appliedText}>
+        {t('bounty.board.applied')}
+      </AppText>
+    </View>
+  );
+}
+
+function WhenWhere({
+  urgent,
+  when,
+  place,
+  lines,
+}: {
+  urgent: boolean;
+  when: string | null;
+  place: string | null;
+  lines?: number;
+}) {
+  const { color } = useTheme();
+  const ink = color('--color-urgent');
+  return (
+    <AppText variant="meta" tone="secondaryLabel" numberOfLines={lines}>
+      {urgent ? (
+        <>
+          <SymbolView name="clock.badge.exclamationmark" size={SYMBOL} tintColor={ink} />{' '}
+        </>
+      ) : null}
+      {when ? (
+        <AppText
+          variant="meta"
+          tone="secondaryLabel"
+          style={urgent && [styles.urgent, { color: ink }]}
+        >
+          {when}
+        </AppText>
+      ) : null}
+      {when && place ? ' ' : null}
+      {place}
     </AppText>
   );
 }
@@ -45,7 +95,6 @@ function Applied({ testID }: { testID: string }) {
 export function CardFront({ row, copy, summaryRef, onFlip, onApply, onOpen }: FaceProps) {
   const { t } = useI18n();
   const actions = useSummaryActions({ onFlip, onOpen });
-  const meta = copy.when ? `${copy.when} ${copy.place}` : copy.place;
   return (
     <>
       <View
@@ -68,12 +117,10 @@ export function CardFront({ row, copy, summaryRef, onFlip, onApply, onOpen }: Fa
             </AppText>
           </View>
         </View>
-        <AppText variant="meta" tone="secondaryLabel" numberOfLines={2}>
-          {meta}
-        </AppText>
+        <WhenWhere urgent={row.urgent} when={copy.when} place={copy.place} lines={2} />
       </View>
       <View style={styles.foot}>
-        <AppText variant="reward" numberOfLines={1} style={styles.reward}>
+        <AppText variant="reward" style={styles.reward}>
           {copy.reward}
         </AppText>
         {row.appliedByMe ? (
@@ -104,24 +151,28 @@ export function CardBack({ row, copy, summaryRef, onFlip, onApply, onOpen }: Fac
           <AppText variant="body" numberOfLines={2} style={[styles.title, styles.headText]}>
             {row.title}
           </AppText>
-          <AppText variant="reward" numberOfLines={1} style={styles.reward}>
+          <AppText variant="reward" style={styles.reward}>
             {copy.reward}
           </AppText>
         </View>
-        {copy.when ? (
-          <AppText variant="meta" tone="secondaryLabel">
-            {copy.when}
-          </AppText>
-        ) : null}
+        {copy.when ? <WhenWhere urgent={row.urgent} when={copy.when} place={null} /> : null}
         <AppText variant="meta" tone="secondaryLabel" numberOfLines={3}>
           {copy.place}
         </AppText>
-        <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
-          {copy.name}
-        </AppText>
-        <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
-          {copy.tier}
-        </AppText>
+        <View style={styles.poster}>
+          <Avatar uri={null} size={AVATAR} label={copy.name} initial={copy.initial} />
+          <View style={styles.headText}>
+            <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
+              {copy.name}
+            </AppText>
+            <View style={styles.tier}>
+              <TierHeads rank={copy.rank} />
+              <AppText variant="meta" tone="secondaryLabel" numberOfLines={1} style={styles.shrink}>
+                {copy.tier}
+              </AppText>
+            </View>
+          </View>
+        </View>
         {row.appliedByMe ? <Applied testID="map-card-back-applied" /> : null}
       </View>
       <View style={styles.actions}>
@@ -159,7 +210,18 @@ const styles = StyleSheet.create({
     gap: vars['--space-3'],
   },
   reward: { flexShrink: 0 },
-  applied: { flexShrink: 1, fontWeight: '600', textAlign: 'right' },
+  applied: {
+    flexShrink: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: vars['--space-1'],
+  },
+  appliedText: { flexShrink: 1, fontWeight: '600' },
+  urgent: { fontWeight: '600' },
+  poster: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
+  tier: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  shrink: { flexShrink: 1 },
   actions: { flexDirection: 'row', gap: vars['--space-2'] },
   action: { flex: 1 },
 });
