@@ -32,6 +32,7 @@ const ms: typeof zhHans = {
         completed: '{{name}} tandakan siap',
         confirm: 'Anda sahkan siap',
         confirmed: 'Anda sudah sahkan',
+        waitFix: 'Menunggu {{name}} selesaikan',
         paid: 'Bayar {{name}} {{amount}}',
       },
       helper: {
@@ -41,8 +42,15 @@ const ms: typeof zhHans = {
         complete: 'Siap',
         completed: 'Anda tandakan siap',
         confirmed: '{{name}} sahkan',
+        fix: '{{name}} laporkan masalah',
         paid: 'Terima {{amount}}',
       },
+    },
+    ended: {
+      posterYou: 'Anda batalkan ganjaran ini',
+      posterThem: '{{name}} batalkan ganjaran ini',
+      helperYou: 'Anda tarik diri',
+      helperThem: '{{name}} tarik diri',
     },
     note: {
       departBy: 'Janji bertolak sebelum {{time}}. Ketik di bawah semasa keluar.',
@@ -94,6 +102,7 @@ const ms: typeof zhHans = {
       current: 'langkah semasa',
       needsYou: 'perlu tindakan anda',
       upcoming: 'belum lagi',
+      ended: 'tamat',
     },
   },
   eta: {

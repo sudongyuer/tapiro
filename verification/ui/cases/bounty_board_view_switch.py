@@ -1,5 +1,6 @@
 """List / map switch (V2, ruling 8, Q75A, Q80, Q81): beside 能接的悬赏 two stickers 列表 and 地图, each a 44 pt tab read by
-VoiceOver with its name, the selected one filled in the accent colour; 地图 hides the cards and the distance axis, keeps
+VoiceOver with its name, the selected one filled in the accent colour; in dark, where the accent is cream like the
+paper, the unselected one drops to the grouped fill instead of paper; 地图 hides the cards and the distance axis, keeps
 the chips and the chosen place row, and scrolls home so the title sits under the strip; 列表 brings the cards back at the
 scroll position they had; the 急 filter and the chosen place survive both switches; without a location the map view
 shows 选一个地方 (denied) or the location card (undetermined) in the map's place, with 地图 still selected."""
@@ -28,11 +29,15 @@ SELECTED_MIN = 400
 ui = UI(*sys.argv[1:])
 
 
-def accent_pixels(shot, element):
+def token_pixels(shot, element, name):
     f = element['frame']
     box = {'x': f['x'] - 6, 'y': f['y'] - 6, 'width': f['width'] + 12, 'height': f['height'] + 12}
-    found = ink_box(shot, box, token('--color-accent', ui.appearance), 8)
+    found = ink_box(shot, box, token(name, ui.appearance), 8)
     return found['count'] if found else 0
+
+
+def accent_pixels(shot, element):
+    return token_pixels(shot, element, '--color-accent')
 
 
 def assert_selected(name, view):
@@ -42,6 +47,10 @@ def assert_selected(name, view):
     other = accent_pixels(shot, by_id(items, f'bounty-view-{"map" if view == "list" else "list"}'))
     assert chosen >= SELECTED_MIN and chosen > SELECTED_RATIO * other, \
         f'{view} is not drawn as the selected sticker: {chosen} accent px against {other}'
+    if ui.appearance == 'dark':
+        unselected = by_id(items, f'bounty-view-{"map" if view == "list" else "list"}')
+        paper = token_pixels(shot, unselected, '--color-paper')
+        assert paper < SELECTED_MIN / 4, f'the unselected sticker is still paper in dark ({paper} px), close to the accent'
     print(f'{name}: {view} selected ({chosen} accent px against {other})')
 
 

@@ -120,6 +120,7 @@ The hold button's track is the accent; the gold fill appears only while the user
 | `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                                  |
 | `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)                        |
 | `--color-warning-fill` | `#FFF2D6` | `#3A2A0E` | Notice banner behind warning text (re-check prompt)                |
+| `--color-success-fill` | `#E3F3EA` | `#12301F` | Notice banner behind success text (a post that already went out)   |
 | `--color-filled-glow`  | `#FFF4D6` | `#3D3216` | A post-form row 小貘 just filled (132 A), fades out                |
 | `--color-filled-row`   | `#FFFFFF` | `#2C2C2E` | The grouped row colour in a sheet the glow fades into (blend only) |
 | `--color-belly`        | `#3E8A3A` | `#6CC25A` | A filled segment of 小貘's belly bar (135 A)                       |
