@@ -7,13 +7,13 @@ import json
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import (PRICES, assert_packs, tap_price, balance_label, coin_calls, label, open_page, open_sheet, row_ids,  # noqa: E402
+from coins import (PRICES, assert_pack_coins, assert_packs, tap_price, balance_label, coin_calls, label, open_page, open_sheet, row_ids,  # noqa: E402
                    row_prefix, sheet_balance, wait_status)
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/app/(tabs)/me/', 'src/app/buy-coins.tsx', 'src/app/_layout.tsx',
-        'src/lib/i18n/locales/coins/', 'src/debug/CoinsScenes.tsx', 'verification/ui/coins.py', 'modules/tapiro-kit/index.tsx']
+        'src/lib/i18n/locales/coins/', 'src/debug/CoinsScenes.tsx', 'src/ui/TapirCoin.tsx', 'verification/ui/coins.py', 'modules/tapiro-kit/index.tsx']
 SCENE = 'coins-page'
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStoreDelayMs', '6000']
@@ -37,7 +37,7 @@ items = assert_packs(ui)
 assert ui.labelled(ui.t('coins.buy.note')) is not None
 assert by_id(items, 'buy-coins-status') is None, 'a status shows before anything was bought'
 ui.at_rest()
-ui.capture('02-sheet')
+assert_pack_coins(ui, ui.snap('02-sheet'))
 
 tap_price(ui, 'buy-coins-buy-11')
 ui.element('buy-coins-busy-11', timeout=10)

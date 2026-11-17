@@ -1,6 +1,6 @@
 """253 A, 254 A, 257 c1: a week not yet fed: the bubble invites and a tap drops a leaf at once. With a slow answer the leaf
 waits at the mouth under 「…」, nothing reads as paid; on `fed` 小貘 chews (feed.mp4, the top of 小貘 dips) and 「谢谢！+1 貘币」
-shows, then the stage goes back to its own line and the invitation is gone. One write. Motion: one appearance with video."""
+shows with the 貘币 between 谢谢！ and +1 (Motion257Leaf), then the stage goes back to its own line and the invitation is gone. One write. Motion: one appearance with video."""
 import sys
 import time
 
@@ -10,7 +10,7 @@ from feed import assert_one_feed, assert_thanks, back_to, body_tops, bubble_pixe
 from mascot import mascot_box, says, stage, tap_mascot  # noqa: E402
 from recording import clip  # noqa: E402
 
-DEPS = ['src/features/coins/', 'src/features/home/', 'src/ui/MascotStage.tsx', 'src/ui/MascotStageParts.tsx', 'src/lib/i18n/locales/coins/', 'src/app/(tabs)/bounty/', 'verification/ui/feed.py', 'verification/ui/mascot.py', 'verification/ui/recording.py']
+DEPS = ['src/features/coins/', 'src/features/home/', 'src/ui/MascotStage.tsx', 'src/ui/MascotStageParts.tsx', 'src/ui/TapirCoin.tsx', 'assets/pantry/', 'src/lib/i18n/locales/coins/', 'src/app/(tabs)/bounty/', 'verification/ui/feed.py', 'verification/ui/mascot.py', 'verification/ui/recording.py']
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyCoins', 'many', '-uiVerifyCoinsDelayMs', '6000']
 LOCALES = ['zh-Hans', 'ms']
@@ -34,7 +34,7 @@ leaf = leaf_pixels(ui, waiting, element, width)
 assert leaf > 40, f'no leaf at the mouth while waiting: {leaf} px'
 dots = bubble_pixels(ui, waiting, element)
 assert dots > 200, f'the waiting bubble is not visible: {dots} px'
-assert_thanks(fed)
+assert_thanks(fed, ui, element)
 tops = body_tops(ui, video, mascot_box(element, width), width)
 assert max(tops) - min(tops) >= CHEW_DIP, f'小貘 never chewed: tops {min(tops)}..{max(tops)}'
 assert_one_feed(ui, 'the tap did not send one feed')

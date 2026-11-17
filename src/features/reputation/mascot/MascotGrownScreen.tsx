@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -90,7 +90,10 @@ export function MascotGrownScreen({
           {t('reputation.grown.body')}
         </AppText>
         {lines.unlocked.length > 0 ? (
-          <View style={styles.card} testID="mascot-grown-unlocked">
+          <View
+            style={[styles.card, { backgroundColor: color('--color-filled-row') }]}
+            testID="mascot-grown-unlocked"
+          >
             <AppText variant="title">{t('reputation.grown.unlockedTitle')}</AppText>
             {lines.unlocked.map(({ accessory, line }) => (
               <View key={accessory} style={styles.row} accessible accessibilityLabel={line}>
@@ -133,7 +136,6 @@ const styles = StyleSheet.create({
     padding: vars['--space-4'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
-    backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
   rowText: { flex: 1 },

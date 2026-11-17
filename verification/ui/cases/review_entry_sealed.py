@@ -1,14 +1,14 @@
 """The other side's lines on the status screen (242 A): when they reviewed first the row says so with the days left and no
 content; a submit makes both public and the row reads 评价已公开 with no way back into the sheet. A failed read reads 评价没加载
-出来 with 重试, never an empty screen."""
+出来 with 重试, never an empty screen. The days left stay on one line (OCR: the tree does not say where a line breaks)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
 from profile import label  # noqa: E402
-from review import SHEET, on_screen_row, shot, submit_happy  # noqa: E402
+from review import SHEET, on_screen_row, one_line, read_shot, shot, submit_happy  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/', 'verification/ui/gestures.py']
+DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/ocr.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/', 'verification/ui/gestures.py']
 SCENE = 'bounty-status'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'settled', '-uiVerifyBountyRole', 'poster', '-uiVerifyReviews', 'many', '-uiVerifyRepFail', 'state']
@@ -29,7 +29,9 @@ text = label(ui, ROW)
 assert ui.t('reputation.entry.sealedTheirs', name='小林') in text, text
 assert ui.tn('reputation.entry.daysLeft', 7) in text, text
 ui.at_rest()
-shot(ui, '02-they-reviewed')
+_, read = read_shot(ui, '02-they-reviewed')
+days = ui.tn('reputation.entry.daysLeft', 7)
+assert one_line(read, days, by_id(ui.read(), ROW)['frame']), f'{days} is split over two lines'
 ui.tap(ROW)
 ui.element(SHEET, timeout=20)
 submit_happy(ui)

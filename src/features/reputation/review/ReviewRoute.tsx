@@ -53,10 +53,12 @@ function PlainHeader({ onClose }: { onClose: () => void }) {
 
 function Unavailable({
   text,
+  tone,
   onRetry,
   onClose,
 }: {
   text: string;
+  tone?: 'warning';
   onRetry: (() => void) | null;
   onClose: () => void;
 }) {
@@ -66,6 +68,7 @@ function Unavailable({
       <PlainHeader onClose={onClose} />
       <InlineState
         text={text}
+        tone={tone}
         testID="review-unavailable"
         action={
           onRetry
@@ -92,6 +95,7 @@ function ReviewLoader({
     return (
       <Unavailable
         text={t('reputation.profile.failed')}
+        tone="warning"
         onRetry={() => void reviewStore.reloadItem(target.kind, target.itemId)}
         onClose={onClose}
       />

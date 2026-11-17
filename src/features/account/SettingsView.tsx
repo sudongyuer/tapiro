@@ -3,15 +3,14 @@ import {
   Form,
   HStack,
   Host,
-  Image,
   ProgressView,
+  RNHostView,
   Section,
   Text,
   VStack,
 } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
-  accessibilityHidden,
   accessibilityIdentifier,
   font,
   foregroundStyle,
@@ -20,22 +19,26 @@ import {
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { Avatar } from '@/ui/Avatar';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { LanguagePickerSection } from './LanguagePicker';
 
+const AVATAR_SIZE = 44;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
 export function SettingsView({
   name,
   email,
+  avatarUrl,
   onSignOut,
   onDeleteAccount,
   signingOut = false,
 }: {
   name: string;
   email: string | null;
+  avatarUrl: string | null;
   signingOut?: boolean;
   onSignOut: () => void;
   onDeleteAccount: () => void;
@@ -53,11 +56,9 @@ export function SettingsView({
               accessibilityIdentifier('settings-profile'),
             ]}
           >
-            <Image
-              systemName="person.crop.circle.fill"
-              size={44}
-              modifiers={[secondary, accessibilityHidden()]}
-            />
+            <RNHostView matchContents>
+              <Avatar uri={avatarUrl} size={AVATAR_SIZE} label={t('account.name.avatar')} />
+            </RNHostView>
             <VStack alignment="leading" spacing={vars['--space-1']}>
               <Text>{name}</Text>
               {email ? (

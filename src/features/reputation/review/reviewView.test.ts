@@ -2,7 +2,15 @@ import { describe, expect, test } from 'bun:test';
 
 import { draftFromReview, EMPTY_DRAFT } from '../model';
 import type { MyReview, ReviewDraft, ReviewPair } from '../types';
-import { blockedBy, canSend, findPair, sheetSubtitle } from './reviewView';
+import {
+  blockedBy,
+  canSend,
+  findPair,
+  sheetSubtitle,
+  sheetSubtitleShown,
+  spoken,
+  unbrokenTail,
+} from './reviewView';
 
 const pair: ReviewPair = {
   kind: 'bounty',
@@ -36,6 +44,21 @@ describe('the review sheet', () => {
   test('shows the item and the day the review window opened', () => {
     expect(sheetSubtitle('帮取快递', pair, 'en')).toBe('帮取快递 · 6 Nov');
     expect(sheetSubtitle(null, pair, 'en')).toBe('6 Nov');
+  });
+
+  test('draws the date so that no line break can fall inside it', () => {
+    const shown = sheetSubtitleShown('帮取快递', pair, 'zh-Hans');
+    expect(shown.startsWith('帮取快递\u00a0· ')).toBe(true);
+    const date = shown.slice('帮取快递\u00a0· '.length);
+    expect(date).not.toContain(' ');
+    expect(date.replaceAll('\u2060', '')).toBe(sheetSubtitle(null, pair, 'zh-Hans'));
+    expect(date.split('\u2060')).toHaveLength([...sheetSubtitle(null, pair, 'zh-Hans')].length);
+  });
+
+  test('keeps the last four characters of the sealed copy on one line', () => {
+    expect(unbrokenTail('等小林评完一起公开')).toBe('等小林评完一\u2060起\u2060公\u2060开');
+    expect(unbrokenTail('好的')).toBe('好的');
+    expect(spoken(unbrokenTail('等小林评完一起公开'))).toBe('等小林评完一起公开');
   });
 
   test('needs a face before it can send', () => {

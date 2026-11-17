@@ -57,7 +57,7 @@ function EntryBody({ entry, target }: { entry: ReviewEntry; target: ReviewTarget
       {entry.trailing ? (
         <Text
           modifiers={[
-            target ? foregroundStyle(color('--color-accent')) : secondary,
+            entry.trailingIsAction ? foregroundStyle(color('--color-accent')) : secondary,
             font({ textStyle: 'footnote' }),
           ]}
         >

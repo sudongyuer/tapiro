@@ -49,7 +49,7 @@ export function TranslationStatus({
     const waiting = t('chat.translate.waiting');
     return (
       <View
-        style={styles.status}
+        style={[styles.status, styles.bare]}
         accessible
         accessibilityLabel={waiting}
         testID={`chat-translating-${rowKey}`}
@@ -68,7 +68,7 @@ export function TranslationStatus({
       ? { label: t('chat.translate.feed'), onPress: onFeed, id: 'feed' }
       : null;
   return (
-    <View style={styles.status}>
+    <View style={[styles.status, !action && styles.bare]}>
       <AppText
         variant="meta"
         tone="secondaryLabel"
@@ -105,10 +105,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     columnGap: space.sm,
-    minHeight: vars['--touch-min'],
     paddingLeft: space.xs,
     paddingRight: space.xxxl * 2,
   },
+  bare: { paddingTop: space.xs },
   reason: { flexShrink: 1 },
   action: { minHeight: vars['--touch-min'], justifyContent: 'center' },
 });
