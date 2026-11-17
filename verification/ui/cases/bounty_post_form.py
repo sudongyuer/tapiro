@@ -82,11 +82,11 @@ for wrong in ('0', '501'):
     next_step(ui)
     assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE_TEXT)
     erase(ui, 'bounty-post-reward')
+# The reward's number pad stays up and covers the amount buttons under the suggestion line.
+dismiss_keyboard(ui)
 assert_touch_target(ui.element('bounty-post-amount-8'), 'RM 8')
 ui.tap('bounty-post-amount-8')
 ui.wait(lambda items: value(ui, 'bounty-post-reward') == '8', 'the RM 8 button did not fill the reward')
-# The reward's number pad stays up and covers the lower form, where form_scroll_to swipes.
-dismiss_keyboard(ui)
 
 assert_touch_target(form_scroll_to(ui, 'bounty-post-clear'), '清空草稿')
 ui.at_rest()

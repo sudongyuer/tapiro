@@ -93,6 +93,7 @@ ui.element('bounty-post-deadline')
 ui.gone('bounty-post-start')
 chosen = ui.wait(lambda items: picker_value(items, 'bounty-post-deadline'), 'deadline picker has no value')
 
+form_scroll_to(ui, 'bounty-post-add-description')
 ui.tap('bounty-post-add-description')
 form_scroll_to(ui, 'bounty-post-description')
 ui.element('bounty-post-remove-description')

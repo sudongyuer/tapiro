@@ -67,6 +67,10 @@ def typed(ui, identifier, text, shows=None, band=True):
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
     ui.tap_point(*(field_point(f) if band else (f['x'] + f['width'] - 4, f['y'] + f['height'] / 2)),
                  expect_change=False)
+    if text.isdigit():
+        # A focus move from a text field swaps the keyboard for the number pad; until the swap ends neither shows a
+        # Return key, so pad taps sent then land on the form behind it.
+        ui.at_rest()
     ui.type(text)
     shows = shows or text
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
@@ -89,23 +93,18 @@ def erase(ui, identifier):
 def pick_category(ui, slug):
     # The wanted name can already be on screen twice (the live card's kicker and the picker's own value), so
     # `axe tap --label` is ambiguous; the menu counts as open once a type that was not on screen shows, and the
-    # option is the element with that name that is neither identified nor inside the picker.
+    # option is the Button with that name (menu items carry their symbol name as identifier; the picker is a
+    # PopUpButton).
     name = ui.t(f'bounty.category.{slug}')
     names = [ui.t(f'bounty.category.{other}') for other in CATEGORIES]
-    before = ui.settled(lambda items: by_id(items, 'bounty-post-category') and items, 'the type picker never settled')
-    picker = by_id(before, 'bounty-post-category')['frame']
-    shown = {i.get('AXLabel') for i in before}
-    probe = next(other for other in names if other not in shown)
-
-    def inside(f):
-        return picker['x'] <= f['x'] + f['width'] / 2 <= picker['x'] + picker['width'] and \
-            picker['y'] <= f['y'] + f['height'] / 2 <= picker['y'] + picker['height']
+    picker = ui.settled(lambda items: by_id(items, 'bounty-post-category'), 'the type picker never settled')['frame']
+    shown = {i.get('AXLabel') for i in ui.read()}
+    probe = next(other for other in names if other not in shown and other != name)
 
     def option(items):
         if not any(i.get('AXLabel') == probe for i in items):
             return None
-        return next((i for i in items if i.get('AXLabel') == name and not i.get('AXUniqueId')
-                     and not inside(i['frame'])), None)
+        return next((i for i in items if i.get('AXLabel') == name and i.get('type') == 'Button'), None)
 
     ui.tap_point(picker['x'] + picker['width'] / 2, picker['y'] + picker['height'] / 2)
     tap_centre(ui, ui.settled(option, f'the type menu does not offer {name}'))
