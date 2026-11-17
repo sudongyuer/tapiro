@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, by_id, reach_home  # noqa: E402
+from driver import UI, by_id, luma, reach_home  # noqa: E402
 from ocr import lines_in  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/app/ask-memory-entry.tsx', 'src/lib/i18n/locales/ask/',
@@ -78,5 +78,9 @@ ui.element('memory-full', timeout=10)
 ui.at_rest()
 add = by_id(ui.read(), 'memory-add')
 assert add and add.get('enabled') is False, f'添加一条 is enabled on a full list: {add}'
-ui.capture('04-full')
+shot = ui.snap('04-full')
+f = add['frame']
+shades = [luma(rgb) for rgb in shot.pixels({'x': f['x'] + 16, 'y': f['y'] + 10, 'width': 140, 'height': f['height'] - 20})]
+ink = min(shades) if ui.appearance == 'light' else max(shades)
+assert (ink > 110) if ui.appearance == 'light' else (ink < 150), f'the disabled 添加一条 is drawn in full ink (luma {ink:.0f})'
 print('PASS: a failed load is not empty, long entries wrap, a refused save keeps the words, a full list says why')

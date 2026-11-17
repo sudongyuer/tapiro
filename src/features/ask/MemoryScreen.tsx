@@ -39,6 +39,7 @@ import type { MemoryState } from './memoryStore';
 import { memoryStore } from './services';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 
 export function MemoryScreen({
   userId,
@@ -239,7 +240,7 @@ function AddSection({ full, onAdd }: { full: boolean; onAdd: () => void }) {
         systemImage="plus"
         onPress={onAdd}
         testID="memory-add"
-        modifiers={[disabled(full)]}
+        modifiers={[...(full ? [tertiary] : []), disabled(full)]}
       />
     </Section>
   );

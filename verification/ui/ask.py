@@ -102,6 +102,19 @@ def assert_switch_green(shot, f, name, appearance):
     assert close(found, SYSTEM_GREEN[appearance], 12), f'{name} is on in {found}, not the system green'
 
 
+def footer(ui, text, timeout=30):
+    ui.wait_label('tapir-cloud-footer', lambda label: label == text, f'the footer is not {text}', timeout=timeout)
+
+
+def toggle_on(items):
+    toggle = by_id(items, 'tapir-cloud')
+    return None if toggle is None else str(toggle.get('AXValue')) == '1'
+
+
+def turn(ui, index, timeout=30):
+    return ui.element(f'ask-turn-{index}', timeout=timeout)
+
+
 def header_drop(ui):
     items = ui.read()
     return by_id(items, 'ask-tapir-close')['frame']['y'] - by_id(items, 'ask-tapir-sheet')['frame']['y']
