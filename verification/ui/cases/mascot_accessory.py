@@ -1,13 +1,15 @@
 """250 A: your own profile offers the accessories you unlocked. 雨伞 is worn by default (the newest), 围巾 stays locked;
-a tap on 书包 sends one write and the check moves after the server answers; a tap on what you wear sends nothing."""
+a tap on 书包 sends one write and the check moves after the server answers; a tap on what you wear sends nothing. The level
+card's 小貘 wears the crayon art by pixel: the blue umbrella, then the yellow backpack."""
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_touch_target, by_id, close  # noqa: E402
+from mascot import CRAYON, colour_count  # noqa: E402
 from profile import assert_tier_whole, label, open_profile, rep_calls, scroll_to  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'verification/ui/gestures.py']
+DEPS = ['src/features/reputation/', 'src/features/home/HomeScreen.tsx', 'src/ui/MascotStage.tsx', 'src/ui/Mascot.tsx', 'src/ui/MascotWear.tsx', 'src/lib/i18n/locales/reputation/', 'src/app/(tabs)/bounty/', 'verification/ui/mascot.py', 'verification/ui/recording.py', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'verification/ui/gestures.py', 'assets/wear/']
 SCENE = 'profile'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',
@@ -39,6 +41,13 @@ def assert_separator_spans_row(shot, first_row, left, right):
         f'the separator under the level head does not reach x {left}: {shot.rgb(left, y)} vs {shot.rgb(right, y)}'
 
 
+def assert_card_wears(shot, colour, what):
+    f = by_id(ui.read(), 'profile-level')['frame']
+    art = {'x': f['x'], 'y': f['y'], 'width': 100, 'height': f['height']}
+    worn = colour_count(shot, art, CRAYON[colour])
+    assert worn > 40, f'the level card 小貘 does not wear the {what}: {worn} px'
+
+
 ui = UI(*sys.argv[1:])
 open_profile(ui)
 assert_tier_whole(ui)
@@ -51,6 +60,7 @@ assert row.get('type') == 'Button', row.get('type')
 assert_touch_target(row, name('backpack'))
 ui.at_rest()
 shot = ui.snap('01-picker')
+assert_card_wears(shot, 'blue', 'umbrella')
 head, first = by_id(ui.read(), 'profile-level'), by_id(ui.read(), 'profile-accessory-red_hat')
 assert_separator_spans_row(shot, first, head['frame']['x'] + 24, first['frame']['x'] + first['frame']['width'] - 60)
 
@@ -64,5 +74,5 @@ assert label(ui, 'profile-accessory-umbrella') == open_row('umbrella')
 assert rep_calls(ui, 'setAccessory', 1) == [{'accessory': 'backpack'}], 'the write was not recorded'
 assert len(rep_calls(ui, 'setAccessory', 2, timeout=2)) == 1, 'the write was sent twice'
 ui.at_rest()
-ui.capture('02-changed')
+assert_card_wears(ui.snap('02-changed'), 'bag', 'backpack')
 print('PASS: the picker shows what is worn, changes after the server answers and ignores a tap on the worn one')

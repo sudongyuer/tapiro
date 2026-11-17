@@ -1,6 +1,8 @@
 """Worst case in a thread (break-ui): the 60-character bounty title stays one line in the item card with 看详情 still on
 it; the safety card wraps whole; 2000-character messages from both sides wrap inside the screen with room on the
-opposite side; the composer and 已读 stay on screen. Runs zh-Hans and ms (the longest safety copy)."""
+opposite side; the composer and 已读 stay on screen; the long name in the navigation bar ends before ⋯; a long bubble
+scrolled under the item card is cut a gap below the card, not at its edge. Runs zh-Hans and ms (the longest safety
+copy)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -21,6 +23,10 @@ items = ui.read()
 card = by_id(items, 'chat-item-card')
 within_screen(items, card)
 assert card['frame']['height'] <= ONE_LINE_CARD, f'the long title wrapped in the item card: {card["frame"]}'
+title = by_id(items, 'chat-thread-title')
+more = next(i for i in items if i.get('AXLabel') == ui.t('chat.menu.more'))
+assert title['frame']['x'] + title['frame']['width'] <= more['frame']['x'] + 0.5, \
+    f'the title runs under ⋯: title {title["frame"]}, ⋯ {more["frame"]}'
 within_screen(items, safety)
 assert safety.get('AXLabel') == ui.t('chat.thread.safety'), safety.get('AXLabel')
 ui.at_rest()
@@ -43,5 +49,12 @@ for bubble in bubbles(items):
     f = bubble['frame']
     assert f['width'] <= width - 60, f'{bubble["AXUniqueId"]} leaves no room on the other side: {f}'
 assert composer['frame']['y'] + composer['frame']['height'] <= items[0]['frame']['height'], 'composer off'
-ui.capture('02-end')
+shot = ui.snap('02-end')
+card = by_id(items, 'chat-item-card')['frame']
+edge = card['y'] + card['height']
+assert mine['frame']['y'] < edge, f'the long bubble does not reach the item card: {mine["frame"]}'
+under = shot.rgb(mine['frame']['x'] + 4, edge + 4)
+ground = shot.rgb(2, edge + 4)
+assert max(abs(a - b) for a, b in zip(under, ground)) <= 6, \
+    f'the bubble is cut at the item card\'s edge: {under} right under it, ground {ground}'
 print('PASS: one-line item card, whole safety card, long bubbles inside the screen, composer and 已读 on screen')

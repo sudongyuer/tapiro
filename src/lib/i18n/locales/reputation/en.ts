@@ -86,9 +86,9 @@ const en: typeof zhHans = {
     stale: 'Couldn’t refresh · Showing the reviews from last time',
   },
   home: {
-    helpedYou: '{{title}} · {{name}} got it done for you',
-    helpedThem: '{{title}} · You got it done for {{name}}',
-    rode: '{{title}} · Rode with {{name}}',
+    helpedYou: '{{name}} got it done for you',
+    helpedThem: 'You got it done for {{name}}',
+    rode: 'Rode with {{name}}',
     ask: 'How did it go?',
     action: 'Review',
   },

@@ -2,13 +2,14 @@ import type { TFunction } from 'i18next';
 
 import { canReview, daysLeft } from '../model';
 import type { PendingReview, ReviewPair, ReviewTarget, Role } from '../types';
-import { pairName, windowOver } from './reviewView';
+import { pairName, spoken, unbroken, windowOver } from './reviewView';
 
 export type ReviewEntry = {
   id: string;
   title: string;
   detail: string | null;
   trailing: string | null;
+  trailingIsAction: boolean;
   label: string;
   target: ReviewTarget | null;
 };
@@ -18,7 +19,7 @@ const targetOf = (pair: ReviewPair): ReviewTarget | null =>
 
 function lines(pair: ReviewPair, over: boolean, canOpen: boolean, now: Date, t: TFunction) {
   const name = pairName(pair, t);
-  const days = t('reputation.entry.daysLeft', { count: daysLeft(pair.closesAt, now) });
+  const days = unbroken(t('reputation.entry.daysLeft', { count: daysLeft(pair.closesAt, now) }));
   if (pair.state === 'ended' || (pair.state === 'open' && over)) {
     return { title: t('reputation.entry.ended'), detail: name, trailing: null };
   }
@@ -45,7 +46,7 @@ function lines(pair: ReviewPair, over: boolean, canOpen: boolean, now: Date, t: 
   return pair.theyReviewed
     ? {
         title,
-        detail: `${t('reputation.entry.sealedTheirs', { name })} · ${days}`,
+        detail: `${t('reputation.entry.sealedTheirs', { name })}\u00a0· ${days}`,
         trailing: null,
       }
     : { title, detail: null, trailing: days };
@@ -60,7 +61,8 @@ export function reviewEntry(pair: ReviewPair, index: number, now: Date, t: TFunc
     title,
     detail,
     trailing,
-    label: [title, detail, trailing].filter(Boolean).join(t('reputation.profile.listJoin')),
+    trailingIsAction: pair.state === 'sealed' && trailing !== null,
+    label: spoken([title, detail, trailing].filter(Boolean).join(t('reputation.profile.listJoin'))),
     target,
   };
 }
@@ -72,15 +74,18 @@ const HOME_LINE: Record<Role, 'helpedYou' | 'helpedThem' | 'rode'> = {
   rider: 'rode',
 };
 
-const TITLE_SHOWN = 24;
+const NAME_SHOWN = 16;
 
-export function shortTitle(title: string) {
-  const letters = [...title];
-  return letters.length > TITLE_SHOWN ? `${letters.slice(0, TITLE_SHOWN).join('')}…` : title;
+export function shortName(name: string) {
+  const letters = [...name];
+  return letters.length > NAME_SHOWN ? `${letters.slice(0, NAME_SHOWN).join('')}…` : name;
 }
 
-export const pendingLine = (row: PendingReview, name: string, title: string, t: TFunction) =>
-  t(`reputation.home.${HOME_LINE[row.role]}`, { title, name });
+export const pendingWho = (row: PendingReview, name: string, t: TFunction) =>
+  t(`reputation.home.${HOME_LINE[row.role]}`, { name });
+
+export const pendingLabel = (row: PendingReview, name: string, t: TFunction) =>
+  `${row.title} · ${pendingWho(row, name, t)}`;
 
 export const stillOpen = (row: PendingReview, now: Date) =>
   Date.parse(row.closesAt) > now.getTime();

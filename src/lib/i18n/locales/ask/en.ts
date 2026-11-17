@@ -150,6 +150,8 @@ export default {
     emptyTitle: 'Nothing remembered yet',
     emptyBody:
       'Tapir asks you before it remembers a place or habit. You can also add one yourself.',
+    emptyBodyOff:
+      'Turn on “Let Tapir remember” and Tapir asks you before it remembers a place or habit. You can also add one yourself.',
     add: 'Add a note',
     fullFooter: 'Tapir keeps up to {{count}} notes. Delete some to remember new ones.',
     clearAll: 'Delete All',

@@ -46,7 +46,7 @@ assert 6 <= depth <= 26, f'the crouch moved the top of 小貘 by {depth:.0f} pt:
 assert defaults(ui, 'uiVerifyMascotPlayed') == '5', 'the played level was not stored'
 ui.at_rest()
 grown_shot = ui.snap('01-grown')
-assert_grown(ui, grown_shot, element, width, '--color-wear-red')
+assert_grown(ui, grown_shot, element, width, 'red')
 full_top = ink_top(grown_shot, mascot_box(element, width), ui)
 assert not seen_levels(ui, timeout=1), 'the level was marked seen before the tap'
 
@@ -64,7 +64,7 @@ ui.gone(GROWN)
 says(ui, calm)
 ui.at_rest()
 back_shot = ui.snap('03-back')
-assert_wearing(ui, back_shot, element, width, '--color-wear-red')
+assert_wearing(ui, back_shot, element, width, 'red')
 back_top = ink_top(back_shot, mascot_box(element, width), ui)
 assert full_top is not None and abs(full_top - back_top) <= 2, f'小貘 rests at another size: {full_top} vs {back_top}'
 tap_mascot(ui, element)
@@ -80,7 +80,7 @@ element = stage(ui)
 replayed = last_run(moved_at(video, mascot_box(element, width), width))
 assert len(replayed) <= 3, f'the growth played again: {replayed}'
 ui.at_rest()
-assert_grown(ui, ui.snap('03-relaunched'), element, width, '--color-wear-red')
+assert_grown(ui, ui.snap('03-relaunched'), element, width, 'red')
 ui.tap_point(70, element['frame']['y'] + 40)
 ui.element(GROWN, timeout=20)
 scroll_to(ui, 'mascot-grown-go')

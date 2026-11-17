@@ -10,7 +10,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import { usePendingReviews } from '../hooks';
 import { personName } from '../profile/profileView';
 import type { PendingReview } from '../types';
-import { pendingLine, shortTitle, stillOpen } from './entryView';
+import { pendingLabel, pendingWho, shortName, stillOpen } from './entryView';
 import { reviewHref } from './ReviewRoute';
 
 function PendingCard({ row, reviewee }: { row: PendingReview; reviewee: string }) {
@@ -18,8 +18,7 @@ function PendingCard({ row, reviewee }: { row: PendingReview; reviewee: string }
   const { color } = useTheme();
   const router = useRouter();
   const name = personName(row.counterpart?.name ?? null, t);
-  const line = pendingLine(row, name, shortTitle(row.title), t);
-  const whole = pendingLine(row, name, row.title, t);
+  const whole = pendingLabel(row, name, t);
   const ask = t('reputation.home.ask');
   const action = t('reputation.home.action');
   return (
@@ -34,9 +33,14 @@ function PendingCard({ row, reviewee }: { row: PendingReview; reviewee: string }
       testID={`home-review-${row.kind}-${row.itemId}-${reviewee}`}
     >
       <View style={styles.text}>
-        <AppText variant="body" numberOfLines={2} style={styles.line}>
-          {line}
-        </AppText>
+        <View style={styles.line}>
+          <AppText variant="body" numberOfLines={1} style={styles.part}>
+            {`${row.title} ·`}
+          </AppText>
+          <AppText variant="body" numberOfLines={2} style={styles.part}>
+            {pendingWho(row, shortName(name), t)}
+          </AppText>
+        </View>
         <AppText variant="meta" tone="secondaryLabel">
           {ask}
         </AppText>
@@ -85,7 +89,8 @@ const styles = StyleSheet.create({
     backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
   },
   text: { flex: 1, gap: 2 },
-  line: { fontWeight: '600' },
+  line: { flexDirection: 'row', flexWrap: 'wrap', columnGap: vars['--space-1'] },
+  part: { fontWeight: '600', maxWidth: '100%' },
   pill: {
     paddingHorizontal: vars['--space-3'],
     paddingVertical: vars['--space-2'],
