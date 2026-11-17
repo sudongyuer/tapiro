@@ -7,7 +7,7 @@ from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
 from profile import label  # noqa: E402
 from review import SHEET, on_screen_row, shot, submit_happy  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'src/features/home/', 'src/app/(tabs)/bounty/index.tsx', 'verification/ui/gestures.py']
+DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/ocr.py', 'verification/ui/profile.py', 'src/features/home/', 'src/app/(tabs)/bounty/index.tsx', 'verification/ui/gestures.py']
 BUDGET = 240
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'many']
@@ -19,7 +19,7 @@ reach_home(ui)
 ui.element(BOUNTY, timeout=30)
 card = on_screen_row(ui, BOUNTY)
 text = label(ui, BOUNTY)
-assert ui.t('reputation.home.helpedYou', title='帮取快递', name='小林') in text, text
+assert f"帮取快递 · {ui.t('reputation.home.helpedYou', name='小林')}" in text, text
 assert ui.t('reputation.home.ask') in text, text
 assert_touch_target(card, 'the home review card')
 assert by_id(ui.read(), RIDE), 'the second pending review has no card'
