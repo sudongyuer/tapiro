@@ -300,6 +300,7 @@ export default {
       details: '看详情',
       expand: '全屏看地图',
       close: '关闭地图',
+      noOrigin: '选好地点或允许定位后，这里变成地图',
     },
     state: {
       loading: '正在加载悬赏',

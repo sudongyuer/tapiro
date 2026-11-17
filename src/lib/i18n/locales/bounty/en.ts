@@ -306,6 +306,7 @@ const en: typeof zhHans = {
       details: 'View Details',
       expand: 'Expand Map',
       close: 'Close Map',
+      noOrigin: 'Choose a place or allow location, and the map shows here',
     },
     state: {
       loading: 'Loading bounties',

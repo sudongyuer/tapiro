@@ -1,4 +1,4 @@
-"""Detail 3A pushed from a board card: tapping the card body opens the detail with the same title and RM 8; the rows read the place with 约 300 m · 精确地址只给选中的人, the deadline with 急 in the urgent colour, and 小林 · 靠谱; 申请 is a 44 pt pinned button above the tab bar; the back button returns to the board (an AXe edge swipe does not pop on iOS 27.2; the interactive pop is a device check) at the same scroll position with the card deselected, and from a page-two card of the `long` board it returns to that card with every loaded page kept; a worst row's 500-character description scrolls while 申请 stays put; a failed load shows 没加载出来 with 重试 and no rows, and a gone bounty shows 这条悬赏已经不在了 with 返回."""
+"""Detail 3A pushed from a board card: tapping the card body opens the detail with the same title and RM 8; the rows read the place with 约 300 m · 精确地址只给选中的人, the deadline with 急 in the urgent colour, and 小林 · 靠谱, the place and the poster's name starting at the same x; 申请 is a 44 pt pinned button above the tab bar; the back button returns to the board (an AXe edge swipe does not pop on iOS 27.2; the interactive pop is a device check) at the same scroll position with the card deselected, and from a page-two card of the `long` board it returns to that card with every loaded page kept; a worst row's 500-character description scrolls while 申请 stays put; a failed load shows 没加载出来 with 重试 and no rows, and a gone bounty shows 这条悬赏已经不在了 with 返回."""
 import re
 import sys
 
@@ -6,9 +6,11 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import cards, distance_text, ink_box, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, bottom, by_id, close, reach_home, token  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
-        'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
+        'verification/ui/board.py', 'src/features/place/', 'src/features/block/', 'verification/ui/ocr.py',
+        'verification/ui/ocr.swift']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
@@ -20,6 +22,7 @@ DESCRIPTION_LENGTH = 500
 CARD_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 URGENT_MIN = 20
 SAME_PLACE = 2
+TEXT_EDGE = 2.5
 
 ui = UI(*sys.argv[1:])
 
@@ -73,6 +76,13 @@ shot = ui.snap('01-detail')
 time_row = ui.element('bounty-detail-time')['frame']
 urgent = ink_box(shot, time_row, token('--color-urgent', ui.appearance), 40)
 assert urgent and urgent['count'] >= URGENT_MIN, f'急 is not drawn in the urgent colour: {urgent}'
+read = lines_in(shot, ui.locale)
+place_text = find(read, r'^\s*Sunway Geo', ui.element('bounty-detail-place')['frame'])
+name_text = find(read, r'^\s*小林', ui.element('bounty-detail-poster')['frame'])
+assert place_text and name_text, f'the place or the poster name was not read: {[line["text"] for line in read]}'
+print(f"detail text edges: place {place_text[0]['x']:.1f}, poster {name_text[0]['x']:.1f}")
+assert abs(place_text[0]['x'] - name_text[0]['x']) <= TEXT_EDGE, \
+    f'the place starts at {place_text[0]["x"]:.1f} pt and the poster name at {name_text[0]["x"]:.1f} pt'
 print(f'detail: 申请 {pinned["width"]:.0f} x {pinned["height"]:.0f} pt at y {pinned["y"]:.1f}')
 
 ui.tap('BackButton')

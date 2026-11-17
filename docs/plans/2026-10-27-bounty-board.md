@@ -1048,3 +1048,14 @@ the reason; "cost" is what it costs if the ruling is wrong.
 - The device checklist is the story map's `device:` entries; Task 14 added the precise/When In Use prompt in three
   languages, reduced-accuracy distances, MapKit search on a real network, Instruments board scrolling with 45 cards, the
   600 ms stamp fallback, the swipe-down last key and the swiped 屏蔽名单 row.
+
+### UI polish (2026-11-17; audit BB-6, BB-8, BB-9, BB-10; ★ = chosen without a board, for veto)
+
+- BB-6 (32A ②): the stale notice sits above the distance axis. ★ With a chosen place the order is place row, notice,
+  axis.
+- BB-8: ★ the detail's row icons take the avatar's 28 pt column, so the place, the time and the poster's name start at
+  one x.
+- BB-9: ★ 16 pt between 这次没选上's last line and 看看附近别的悬赏, the distance 小林选了你 already keeps from 看进度.
+- BB-10 (27A): the origin label (你 / 这里) is centred under the origin dot.
+- BB-12 not built: `@expo/ui`'s `Text` joins only `Text` children (`TextView.swift`), so the clock cannot sit inside
+  the wrapping line without a Swift view in the kit; the wrapped place lines keep their indent after the clock.
