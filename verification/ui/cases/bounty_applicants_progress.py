@@ -1,12 +1,12 @@
 """The poster's applicant screen keys on the bounty status (Task 9, ruling 1). Assigned with 阿杰 chosen: 选好了阿杰 with
 阿杰 as one row and 看进度 pinned (at least 44 pt), which pushes the poster's status screen (阿杰接了). Cancelled after
 selection: the header reads 这单取消了 with no 选好了阿杰, no chosen row and no hold button, and 看进度 pushes the status
-screen reading 这单取消了."""
+screen reading 这单取消了; the line has the same height on both screens (one status line) and is not at full contrast."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, by_id  # noqa: E402
+from driver import UI, assert_touch_target, by_id, luma  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/',
         'src/features/bounty/status/', 'src/ui/PillButton.tsx', 'src/ui/SheetFrame.tsx', 'src/app/(tabs)/bounty/',
@@ -15,8 +15,18 @@ SCENE = 'bounty-applicants'
 BUDGET = 240
 FIRST = ['-uiVerifyPosted', 'assigned', '-uiVerifyBountyStatus', 'assigned']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyPosted', 'assigned', '-uiVerifyBountyStatus', 'assigned']
+INK_CONTRAST = 40
+# Full-contrast label ink is luma 0 in light and 255 in dark; the secondary label lands near 138 and 152.
+QUIET = {'light': lambda inks: min(inks) > 70, 'dark': lambda inks: max(inks) < 215}
 
 ui = UI(*sys.argv[1:])
+
+
+def assert_quiet(shot, f, name):
+    ground = luma(shot.rgb(f['x'] - 40, f['y'] + f['height'] / 2))
+    inks = [luma(rgb) for rgb in shot.pixels(f) if abs(luma(rgb) - ground) > INK_CONTRAST]
+    assert len(inks) > 50, f'{name} shows no ink in {f}'
+    assert QUIET[ui.appearance](inks), f'{name} is at full contrast (ink luma {min(inks):.0f}–{max(inks):.0f})'
 
 
 def progress_to_status(summary, shot):
@@ -29,7 +39,7 @@ def progress_to_status(summary, shot):
                   f'看进度 did not push the status screen reading {summary}')
     ui.element('bounty-status-step-selected')
     ui.at_rest()
-    ui.capture(shot)
+    return ui.snap(shot)
 
 
 ui.wait_label('bounty-select-done', lambda text: text == ui.t('bounty.select.done.title', name='阿杰'),
@@ -50,6 +60,12 @@ for absent in ('bounty-select-done', 'bounty-select-done-row', 'bounty-select-ho
 assert not any((item.get('AXLabel') or '') == ui.t('bounty.select.done.title', name='阿杰') for item in items), \
     '选好了阿杰 is still shown after the cancel'
 ui.at_rest()
-ui.capture('03-cancelled')
-progress_to_status(ui.t('bounty.status.summary.poster.cancelled'), '04-cancelled-status')
+shot = ui.snap('03-cancelled')
+on_list = ui.element('bounty-applicants-status')['frame']
+assert_quiet(shot, on_list, '这单取消了 on the applicant screen')
+shot = progress_to_status(ui.t('bounty.status.summary.poster.cancelled'), '04-cancelled-status')
+on_status = ui.element('bounty-status-summary')['frame']
+assert_quiet(shot, on_status, '这单取消了 on the status screen')
+assert abs(on_list['height'] - on_status['height']) <= 0.5, \
+    f'这单取消了 is set in two sizes: {on_list["height"]} pt on the applicant screen, {on_status["height"]} pt on the status screen'
 print('PASS: assigned shows 选好了阿杰 and 看进度 to the status screen; cancelled shows 这单取消了 and 看进度, never 选好了')

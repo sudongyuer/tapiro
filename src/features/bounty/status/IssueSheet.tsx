@@ -7,7 +7,6 @@ import {
   HStack,
   NavigationStack,
   Section,
-  Spacer,
   Text,
   Toolbar,
   ToolbarItem,
@@ -16,14 +15,18 @@ import {
   accessibilityHint,
   accessibilityIdentifier,
   accessibilityLabel,
+  buttonStyle,
   disabled,
+  fixedSize,
   foregroundStyle,
+  frame,
   lineLimit,
   monospacedDigit,
   navigationBarTitleDisplayMode,
   navigationTitle,
   presentationDetents,
   presentationDragIndicator,
+  tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -31,13 +34,12 @@ import { StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { afterResign } from '@/ui/afterResign';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { issueCount, issueReady } from './actionCopy';
 import { issueDrafts } from './services';
 import { ISSUE_REASON_MAX } from './types';
-
-const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
 export function IssueSheet({
   bountyId,
@@ -105,7 +107,28 @@ function IssueForm({
             navigationBarTitleDisplayMode('inline'),
           ]}
         >
-          <Section footer={<Text>{t('bounty.issue.footer', { name })}</Text>}>
+          <Section
+            footer={
+              <HStack alignment="top" spacing={vars['--space-2']}>
+                <Text modifiers={[frame({ maxWidth: Infinity, alignment: 'leading' })]}>
+                  {t('bounty.issue.footer', { name })}
+                </Text>
+                <Text
+                  modifiers={[
+                    ...(count > ISSUE_REASON_MAX ? [foregroundStyle(color('--color-urgent'))] : []),
+                    monospacedDigit(),
+                    fixedSize(),
+                    accessibilityLabel(
+                      t('bounty.issue.countLabel', { count, max: ISSUE_REASON_MAX }),
+                    ),
+                    accessibilityIdentifier('bounty-issue-count'),
+                  ]}
+                >
+                  {t('bounty.issue.count', { count, max: ISSUE_REASON_MAX })}
+                </Text>
+              </HStack>
+            }
+          >
             <SyncedTextField
               field={reason}
               axis="vertical"
@@ -118,21 +141,6 @@ function IssueForm({
                 accessibilityLabel(t('bounty.issue.title', { name })),
               ]}
             />
-            <HStack spacing={0}>
-              <Spacer />
-              <Text
-                modifiers={[
-                  count > ISSUE_REASON_MAX ? foregroundStyle(color('--color-urgent')) : secondary,
-                  monospacedDigit(),
-                  accessibilityLabel(
-                    t('bounty.issue.countLabel', { count, max: ISSUE_REASON_MAX }),
-                  ),
-                  accessibilityIdentifier('bounty-issue-count'),
-                ]}
-              >
-                {t('bounty.issue.count', { count, max: ISSUE_REASON_MAX })}
-              </Text>
-            </HStack>
           </Section>
         </Form>
         <Toolbar.Content>
@@ -148,6 +156,8 @@ function IssueForm({
               label={t('bounty.issue.send')}
               onPress={send}
               modifiers={[
+                buttonStyle('glassProminent'),
+                tint(color('--color-accent')),
                 disabled(!ready),
                 ...(count === 0 ? [accessibilityHint(t('bounty.issue.empty'))] : []),
                 accessibilityIdentifier('bounty-issue-send'),

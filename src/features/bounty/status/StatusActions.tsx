@@ -96,17 +96,20 @@ export function PinnedActions({
 
   if (actions.length === 0 && !notice && !message) return null;
   const locked = actionLocked(state);
-  const buttons = actions.map((action, index) => (
-    <PillButton
-      key={action}
-      label={t(actionKey(action, role))}
-      variant={index === 0 ? 'primary' : 'secondary'}
-      loading={locked && 'action' in state && state.action === action}
-      disabled={locked}
-      onPress={() => onAction(action)}
-      testID={`bounty-status-action-${action}`}
-    />
-  ));
+  const buttons = actions.map((action, index) => {
+    const sending = locked && 'action' in state && state.action === action;
+    return (
+      <PillButton
+        key={action}
+        label={t(actionKey(action, role))}
+        variant={index === 0 ? 'primary' : 'secondary'}
+        loading={sending}
+        disabled={locked && !sending}
+        onPress={() => onAction(action)}
+        testID={`bounty-status-action-${action}`}
+      />
+    );
+  });
   const chat = message ? (
     <PillButton
       label={t('bounty.status.action.message')}
