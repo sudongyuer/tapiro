@@ -4,11 +4,11 @@ title; back returns to 我的 with the row deselected."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import assert_month_labels, balance_label, label, month, month_ids, open_page, row_ids, row_prefix  # noqa: E402
+from coins import assert_coin, assert_month_labels, balance_label, label, month, month_ids, open_page, row_ids, row_prefix  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
 from gestures import drag  # noqa: E402
 
-DEPS = ['src/features/coins/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/coins/', 'src/lib/loadable.ts', 'src/ui/NoticeCard.tsx', 'src/debug/CoinsScenes.tsx', 'verification/ui/coins.py']
+DEPS = ['src/features/coins/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/coins/', 'src/lib/loadable.ts', 'src/ui/NoticeCard.tsx', 'src/debug/CoinsScenes.tsx', 'src/ui/TapirCoin.tsx', 'verification/ui/coins.py']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 
@@ -25,7 +25,7 @@ assert_touch_target(coins, '貘币那行')
 stickers = by_id(items, 'me-stickers')['frame']
 assert 0 < coins['frame']['y'] - stickers['y'] <= stickers['height'] + 1, '貘币 is not right under 一起办成的事'
 ui.at_rest()
-ui.capture('01-me')
+assert_coin(ui, ui.snap('01-me'), {**coins['frame'], 'width': 60}, 'the 貘币 row')
 
 ui.tap('me-coins')
 open_page(ui)
@@ -42,7 +42,7 @@ assert by_id(items, 'coins-failed') is None and by_id(items, 'coins-empty') is N
 balance = by_id(items, 'coins-balance')['frame']
 assert balance['y'] < by_id(items, 'coins-row-9')['frame']['y'], 'the balance is not above the history'
 ui.at_rest()
-ui.capture('02-page')
+assert_coin(ui, ui.snap('02-page'), {**balance, 'height': 52}, 'the balance', minimum=300)
 
 w, h = items[0]['frame']['width'], items[0]['frame']['height']
 drag(ui, (w / 2, h * 0.75), (w / 2, h * 0.3))

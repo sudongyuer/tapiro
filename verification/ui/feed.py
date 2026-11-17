@@ -1,6 +1,6 @@
 import tempfile
 
-from coins import coin_calls
+from coins import coin_calls, coin_pixels
 from driver import Shot, token
 from mascot import colour_count, ink_top, mascot_box, says
 from ocr import lines
@@ -13,10 +13,15 @@ def line(ui, name):
     return ui.t(f'{KEY}.{name}')
 
 
+def leafy(rgb):
+    r, g, b = rgb
+    return g - r > 22 and g - b > 30
+
+
 def leaf_pixels(ui, shot, element, width, state='calm'):
     box = mascot_box(element, width, state)
     wide = {**box, 'x': box['x'] - 10, 'width': box['width'] + 40, 'height': box['height'] + 40}
-    return colour_count(shot, wide, token('--color-leaf', ui.appearance), tolerance=20)
+    return shot.count(wide, leafy)
 
 
 def body_tops(ui, video, box, width):
@@ -39,14 +44,18 @@ def leaf_peak(ui, video, element, width):
 def leaf_above(ui, video, element, width):
     box = mascot_box(element, width)
     band = {**box, 'x': box['x'] - 10, 'y': box['y'] - 60, 'height': 118}
-    leaf = token('--color-leaf', ui.appearance)
     with tempfile.TemporaryDirectory() as tmp:
-        return max(colour_count(Shot(path, width), band, leaf, tolerance=20) for path, _ in frames(video, tmp, 0.03))
+        return max(Shot(path, width).count(band, leafy) for path, _ in frames(video, tmp, 0.03))
 
 
-def assert_thanks(shot):
+def assert_thanks(shot, ui=None, element=None):
     read = lines(shot)
     assert [item for item in read if '+1' in item['text']], f'the thanks is not on screen: {[i["text"] for i in read]}'
+    if ui is not None:
+        f = element['frame']
+        bubble = {'x': 16, 'y': f['y'] + 14, 'width': 240, 'height': 70}
+        gold = coin_pixels(ui, shot, bubble)
+        assert gold > 60, f'the thanks bubble has no 貘币: {gold} gold px'
 
 
 def feeds(ui, count, timeout=10):

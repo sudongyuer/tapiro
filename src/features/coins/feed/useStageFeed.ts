@@ -201,6 +201,8 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
 
   return {
     say,
+    sayCoin:
+      step === 'fed' ? { lead: t('coins.feed.fedLead'), tail: t('coins.feed.fedTail') } : null,
     sayOverLive: step === 'waiting' || step === 'chewing' || feedAnswered(step),
     hint: step === 'idle' && hungry ? 'leaf' : null,
     onPress: press,
