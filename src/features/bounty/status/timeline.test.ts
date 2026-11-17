@@ -10,8 +10,10 @@ import {
   hasThread,
   statusActions,
   statusSummary,
+  statusTone,
   timeline,
   type StatusActions,
+  type StatusTone,
   type StepState,
 } from './timeline';
 import type { StatusDetail, StatusRole } from './types';
@@ -60,6 +62,35 @@ const STATES: [StatusScenario, StatusRole, StepState[]][] = [
   ['cancelled', 'poster', [D, U, U, U, U]],
   ['cancelled', 'helper', [D, U, U, U, U]],
 ];
+
+const TONES: [StatusScenario, StatusRole, StatusTone][] = [
+  ['open', 'poster', 'needsYou'],
+  ['assigned', 'poster', 'accepted'],
+  ['assigned', 'helper', 'needsYou'],
+  ['assignedLate', 'poster', 'needsYou'],
+  ['assignedLate', 'helper', 'needsYou'],
+  ['enRoute', 'poster', 'inProgress'],
+  ['enRoute', 'helper', 'inProgress'],
+  ['enRouteChanged', 'helper', 'inProgress'],
+  ['done', 'poster', 'needsYou'],
+  ['done', 'helper', 'inProgress'],
+  ['disputed', 'poster', 'inProgress'],
+  ['disputed', 'helper', 'needsYou'],
+  ['confirmed', 'poster', 'needsYou'],
+  ['confirmed', 'helper', 'inProgress'],
+  ['markedPaid', 'poster', 'inProgress'],
+  ['markedPaid', 'helper', 'needsYou'],
+  ['settled', 'poster', 'done'],
+  ['settled', 'helper', 'done'],
+  ['cancelled', 'poster', 'ended'],
+  ['cancelled', 'helper', 'ended'],
+];
+
+describe('statusTone', () => {
+  test.each(TONES)('%s as %s reads %s', async (scenario, role, tone) => {
+    expect(statusTone(await detailOf(scenario, role), role)).toBe(tone);
+  });
+});
 
 describe('timeline', () => {
   test.each(STATES)('%s as %s', async (scenario, role, states) => {

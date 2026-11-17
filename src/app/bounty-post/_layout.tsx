@@ -11,7 +11,7 @@ export default function BountyPostLayout() {
   const navigation = useNavigation();
   useEffect(() => registerPostSheet(() => navigation.goBack()), [navigation]);
   return (
-    <Stack screenOptions={{ headerTransparent: true }}>
+    <Stack screenOptions={{ headerTransparent: true, scrollEdgeEffects: { top: 'automatic' } }}>
       <Stack.Screen
         name="index"
         options={{

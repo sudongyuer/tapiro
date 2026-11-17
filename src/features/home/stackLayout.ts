@@ -48,3 +48,22 @@ export function followShift(progress: number, extra: number, open: boolean) {
   'worklet';
   return progress * extra - (open ? extra : 0);
 }
+
+export type HeldStack = { height: number; open: boolean; shift: number };
+
+export function holdStack(
+  held: HeldStack,
+  height: number,
+  ready: boolean,
+  open: boolean,
+  animate: boolean,
+): HeldStack {
+  if (!ready || (held.height === height && held.open === open)) return held;
+  const follow = animate && !open && !held.open && held.height > 0;
+  return { height, open, shift: follow ? held.height - height : 0 };
+}
+
+export function backOffset(front: number, back: number) {
+  if (front <= 0 || back <= 0) return PEEK;
+  return stackLayout([front, back]).stacked[1].y;
+}

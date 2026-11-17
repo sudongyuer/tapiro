@@ -1,4 +1,4 @@
-"""The board under home shows 没加载出来 with no count on the chips and 重试 loads the rows; an empty board offers 发悬赏, which opens the post sheet; a failed pull to refresh keeps the rows under a warning with the data time, and its 重试 recovers; an empty 急 filter offers 看全部; the end of the list reads 就这些了. Inline cards sit on the grouped background with a head of at most 32 pt."""
+"""The board under home shows 没加载出来 with no count on the chips and 重试 loads the rows; an empty board offers 发悬赏, which opens the post sheet; a failed pull to refresh keeps the rows under a warning with the data time, above the distance axis (32A), and its 重试 recovers; an empty 急 filter offers 看全部; the end of the list reads 就这些了. Inline cards sit on the grouped background with a head of at most 32 pt."""
 import re
 import sys
 
@@ -89,7 +89,11 @@ items = ui.read()
 assert by_id(items, FIRST_CARD), 'rows vanished after a failed refresh'
 assert by_id(items, 'bounty-board-failed') is None, 'a failed refresh replaced the rows with the failed card'
 assert_touch_target(ui.element('bounty-board-retry'), 'stale retry button')
-visible('bounty-board-stale')
+stale = visible('bounty-board-stale')['frame']
+axis = by_id(ui.read(), 'bounty-axis')
+assert axis, 'the distance axis is gone under the stale notice'
+assert stale['y'] + stale['height'] <= axis['frame']['y'], \
+    f'the stale notice is not above the distance axis: {stale} / {axis["frame"]}'
 ui.capture('06-stale')
 ui.tap('bounty-board-retry')
 ui.gone('bounty-board-stale')

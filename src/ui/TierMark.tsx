@@ -13,6 +13,16 @@ import { Mascot } from './Mascot';
 
 const HEAD = 12;
 
+export function TierHeads({ rank }: { rank: 1 | 2 | 3 | 4 }) {
+  return (
+    <View style={styles.heads}>
+      {Array.from({ length: rank }, (_, index) => (
+        <Mascot key={index} variant="front" size={HEAD} darkOutline />
+      ))}
+    </View>
+  );
+}
+
 export function TierMark({
   label,
   rank,
@@ -28,11 +38,7 @@ export function TierMark({
       modifiers={[accessibilityElement('ignore'), accessibilityLabel(label), ...modifiers]}
     >
       <RNHostView matchContents>
-        <View style={styles.heads}>
-          {Array.from({ length: rank }, (_, index) => (
-            <Mascot key={index} variant="front" size={HEAD} darkOutline />
-          ))}
-        </View>
+        <TierHeads rank={rank} />
       </RNHostView>
       <Text
         modifiers={[

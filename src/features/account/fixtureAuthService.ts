@@ -28,9 +28,31 @@ export const fixtureUnsettledPayment: UnsettledPayment = {
   direction: 'owe',
 };
 
+const MANY_UNSETTLED: Pick<UnsettledPayment, 'title' | 'counterpartName' | 'direction'>[] = [
+  { title: '帮忙从 Mid Valley 带一份奶茶', counterpartName: '陈嘉欣', direction: 'owe' },
+  { title: '代取 Shopee 包裹送到 Block C 楼下', counterpartName: 'Aiman', direction: 'owed' },
+  { title: '周五拼车去 KLIA2', counterpartName: '欧阳娜娜', direction: 'owe' },
+  { title: '打印 40 页讲义并装订', counterpartName: 'Nur Aisyah', direction: 'owed' },
+  { title: '排队买演唱会门票', counterpartName: '阿杰', direction: 'owe' },
+  { title: '周日拼车回 Sunway', counterpartName: '林美玲', direction: 'owe' },
+];
+
+export const fixtureUnsettledPayments: UnsettledPayment[] = MANY_UNSETTLED.map(
+  (payment, index) => ({
+    ...payment,
+    id: `00000000-0000-4000-8000-0000000000a${index + 1}`,
+    amount: { minor: 1250 + index * 475, currency: 'MYR' },
+  }),
+);
+
+export type FixtureDeletion = 'allowed' | 'blocked' | 'blockedMany';
+
+export const fixtureDeletion = (value: string | undefined): FixtureDeletion =>
+  value === 'blocked' || value === 'blockedMany' ? value : 'allowed';
+
 export type FixtureAuthOptions = {
   signedInAs?: AuthProvider;
-  deletion?: 'allowed' | 'blocked';
+  deletion?: FixtureDeletion;
   variant?: FixtureVariant;
 };
 
@@ -56,8 +78,10 @@ export function createFixtureAuthService({
     },
     async deleteAccount() {
       if (store.get().status !== 'signedIn') return { ok: false, reason: 'signedOut' };
-      if (deletion === 'blocked') {
-        return { ok: false, reason: 'blocked', payments: [fixtureUnsettledPayment] };
+      if (deletion !== 'allowed') {
+        const payments =
+          deletion === 'blocked' ? [fixtureUnsettledPayment] : fixtureUnsettledPayments;
+        return { ok: false, reason: 'blocked', payments };
       }
       store.set({ status: 'signedOut' });
       return { ok: true };

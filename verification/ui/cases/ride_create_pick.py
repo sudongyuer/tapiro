@@ -1,13 +1,16 @@
 """＋ opens 「去哪儿？」 (200 A): two recent routes, then 回住处 / 去学校 / 去商场 / 去机场 and 「都不像，直接写」, each 44 pt and
 read with its hint. 去机场 opens the form with 航班和行李 already open and the destination asking 「去哪个机场」; back
 returns to the tiles, and a recent route fills both places and the people count on the live ticket."""
+import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+import ocr  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from ride import form_scroll_to, open_create, open_list  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py']
+DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py',
+        'verification/ui/ocr.py', 'src/ui/FieldRow.tsx']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideRecent', 'two']
 TILES = ['home', 'campus', 'mall', 'airport']
@@ -36,7 +39,15 @@ assert dest.get('AXLabel') == ui.t('ride.create.pick.tile.airport.dest'), dest.g
 form_scroll_to(ui, 'ride-form-airport-remove')
 ticket = ui.element('ride-form-ticket')
 assert ui.t('ride.create.form.liveRoute') in (ticket.get('AXLabel') or ''), ticket.get('AXLabel')
-ui.capture('02-form-airport')
+ui.at_rest()
+shot = ui.snap('02-form-airport')
+if ui.locale == 'zh-Hans':
+    read = ocr.lines_in(shot, ui.locale)
+    form = ui.element('ride-form')['frame']
+    edges = [ocr.find(read, re.escape(ui.t(f'ride.create.form.{key}')), form) for key in ('airport', 'flightAdd')]
+    assert all(edges), f'航班和行李 and 加起飞时间 are not both readable: {[line["text"] for line in read]}'
+    drift = abs(edges[0][0]['x'] - edges[1][0]['x'])
+    assert drift <= 3, f'the icon rows of 加点细节 start their labels {drift:.0f} pt apart'
 
 ui.tap('BackButton')
 ui.element('ride-pick')

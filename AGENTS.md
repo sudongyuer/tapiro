@@ -27,8 +27,10 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   120 A's line said "dim while sending"; the board the owner answered drew a spinner and no dimming (2026-11-06).
 - A new feature area starts with reference research and a direction agreed with the owner, then one screen at a
   time. Reason: the first carpool round, drawn without research, was rejected whole (2026-10-31).
-- Push and open PRs on your own branches, and squash-merge your own PRs once CI is green, without asking. Ask before
-  paid services, accounts or certificates, deletes, force-push and the hosted Supabase project.
+- Push and open PRs on your own branches, and squash-merge your own PRs without asking, only through
+  `scripts/merge-when-green.sh <pr>`, never `gh pr merge` directly. Reason: `checks --watch; merge` and a watch that
+  returned before any check registered merged two PRs before CI finished (2026-11-17). Ask before paid services,
+  accounts or certificates, deletes, force-push and the hosted Supabase project.
 - One review round per step; fix every finding at once and re-review only after an Important or Critical finding.
 - When the owner is away, continue into the next step with the ★ options and list them for veto in the return
   summary.

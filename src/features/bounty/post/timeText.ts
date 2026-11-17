@@ -53,3 +53,8 @@ export function timeLine(time: TimeChoice, t: TFunction, language: string, now: 
   }
   return null;
 }
+
+export function splitMeta(place: string | null, time: string | null, t: TFunction) {
+  if (!place || !time) return { place, time };
+  return { place, time: t('bounty.post.confirm.meta', { place: '', time }).trim() };
+}

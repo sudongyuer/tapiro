@@ -6,6 +6,7 @@ import { resources } from '@/lib/i18n/resources';
 import type { ProfileCard, ProfileReview } from '../types';
 import {
   canReply,
+  levelCardMascot,
   levelProgress,
   rateText,
   reviewLabel,
@@ -107,5 +108,14 @@ describe('profile view', () => {
     expect(levelProgress(4, 23)).toEqual({ next: 5, toGo: 2, fraction: 0.8 });
     expect(levelProgress(1, 0)).toEqual({ next: 2, toGo: 3, fraction: 0 });
     expect(levelProgress(85, 1234)).toEqual({ next: 86, toGo: 6, fraction: 0.6 });
+  });
+
+  test('the level card never shows a level below the one that unlocked its rows', () => {
+    const card = { level: 4, stickers: 23, accessory: 'umbrella' } as const;
+    const grown = { level: 5, stickers: 25, accessory: 'scarf' } as const;
+    expect(levelCardMascot(card, grown)).toBe(grown);
+    expect(levelCardMascot(grown, card)).toBe(grown);
+    expect(levelCardMascot(card, null)).toBe(card);
+    expect(levelCardMascot(card, { ...card, stickers: 24 })).toBe(card);
   });
 });

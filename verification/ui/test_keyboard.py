@@ -1,6 +1,6 @@
 import unittest
 
-from run import keyboard_commands
+from run import keyboard_commands, software_keyboard_commands
 
 UDID = 'A5CC377F-F7C4-4AC8-9AE2-269111818C19'
 
@@ -23,6 +23,13 @@ class KeyboardCommandsTest(unittest.TestCase):
         self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardPrediction'), [['-bool', 'false']])
         self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardAutocorrection'), [['-bool', 'false']])
         self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardAutocapitalization'), [])
+
+    def test_keeps_the_software_keyboard_up_after_typed_hid_keys(self):
+        self.assertEqual(writes('com.apple.keyboard.preferences', 'AutomaticMinimizationEnabled'), [['-bool', 'false']])
+        self.assertEqual(writes('com.apple.keyboard.preferences', 'HardwareKeyboardLastSeen'), [['-bool', 'false']])
+        for command in software_keyboard_commands(UDID):
+            self.assertIn(command, keyboard_commands(UDID))
+        self.assertEqual(len(software_keyboard_commands(UDID)), 2)
 
     def test_makes_us_english_the_current_keyboard(self):
         (value,) = writes('com.apple.keyboard.preferences', 'KeyboardsCurrentAndNext')

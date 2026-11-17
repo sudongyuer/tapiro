@@ -21,6 +21,7 @@ import { CostSection, type BuyCoinsSlot } from './CostSection';
 import { canPublish, type FlowState } from './postFlow';
 import { draftStore } from './services';
 import { useTimeLine } from './timeLine';
+import { splitMeta } from './timeText';
 import type { PostDraft } from './types';
 import { formError, useDraft } from './useDraft';
 import { usePostFlow } from './usePostFlow';
@@ -112,16 +113,17 @@ function Preview({ draft }: { draft: PostDraft }) {
   const address = draft.place?.address?.trim() || null;
   if (!draft.category || reward === null) return null;
   const amount = formatMoney(reward, language, { whole: true });
-  const meta = place && time ? t('bounty.post.confirm.meta', { place, time }) : (place ?? time);
+  const meta = splitMeta(place, time, t);
   return (
     <>
-      <Section>
+      <Section header={<Text>{t('bounty.post.confirm.previewHeader')}</Text>}>
         <TaskCard
           art={handArtFor(draft)}
           kicker={t(`bounty.category.${draft.category}`)}
           title={draft.title.trim()}
           titleLines={3}
-          meta={meta}
+          meta={meta.place}
+          time={meta.time}
           reward={amount}
           rewardLabel={t('bounty.post.confirm.rewardLabel', { amount })}
           testID="bounty-post-preview"

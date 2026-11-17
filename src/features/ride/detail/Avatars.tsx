@@ -24,10 +24,19 @@ export function displayName(
   return member.name ?? t('bounty.post.unknownName');
 }
 
-function Initial({ name, size, dark }: { name: string; size: number; dark?: boolean }) {
+export function Initial({
+  name,
+  size = SEAT,
+  dark,
+}: {
+  name: string;
+  size?: number;
+  dark?: boolean;
+}) {
   const { color } = useTheme();
   return (
     <View
+      accessibilityElementsHidden
       style={[
         styles.initial,
         { width: size, height: size, borderRadius: size / 2 },

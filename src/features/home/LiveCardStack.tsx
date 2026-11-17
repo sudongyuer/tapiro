@@ -22,10 +22,10 @@ import { BackFace } from './BackFace';
 import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
 import { useLeavingCard } from './leavingCard';
-import { PEEK, SCALE_STEP, type CardPlacement, type StackLayout } from './stackLayout';
+import { backOffset, PEEK, SCALE_STEP, type CardPlacement, type StackLayout } from './stackLayout';
+import { RESTACK } from './useStackFollow';
 
 const MAX_Z = 10;
-const RESTACK = { duration: 420, easing: Easing.bezier(0.2, 0.9, 0.3, 1) };
 const LEAVE = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
 const LEAVE_RISE = 24;
 const LEAVE_SHRINK = 0.08;
@@ -48,6 +48,7 @@ export function useCardHeights(cards: readonly LiveCardModel[]) {
   const heights = cards.map((card) => measured[card.id] ?? 0);
   return {
     heights,
+    heightOf: (id: string) => measured[id] ?? 0,
     ready: heights.every((height) => height > 0),
     onCardLayout: (id: string) => (event: LayoutChangeEvent) => {
       const height = Math.round(event.nativeEvent.layout.height);
@@ -61,6 +62,7 @@ export type HomeChat = { open: (bountyId: string) => void; opening: string | nul
 export type LiveCardStackProps = {
   cards: readonly LiveCardModel[];
   heights: readonly number[];
+  heightOf: (id: string) => number;
   layout: StackLayout;
   ready: boolean;
   open: boolean;
@@ -102,6 +104,11 @@ export function LiveCardStack(props: LiveCardStackProps) {
             fanned={layout.fanned[index]}
             measured={heights[index] > 0}
             rising={card.id === rising}
+            riseFrom={
+              card.id === rising && leaving
+                ? backOffset(props.heightOf(leaving.id), heights[index])
+                : PEEK
+            }
           />
         ),
       )}
@@ -116,6 +123,7 @@ type StackedCardProps = LiveCardStackProps & {
   fanned: CardPlacement;
   measured: boolean;
   rising?: boolean;
+  riseFrom?: number;
   onLeft?: (id: string) => void;
 };
 
@@ -126,6 +134,7 @@ function StackedCard({
   fanned,
   measured,
   rising,
+  riseFrom = PEEK,
   onLeft,
   open,
   progress,
@@ -150,12 +159,16 @@ function StackedCard({
   useEffect(() => {
     if (leaving || !ready) return;
     const animate = wasReady.current || rising === true;
+    if (rising && !wasReady.current) {
+      y.set(stacked.y + riseFrom);
+      scale.set(stacked.scale - SCALE_STEP);
+    }
     wasReady.current = true;
     y.set(animate ? withTiming(stacked.y, RESTACK) : stacked.y);
     scale.set(animate ? withTiming(stacked.scale, RESTACK) : stacked.scale);
     const face = index > 0 ? 1 : 0;
     faceShown.set(animate ? withTiming(face, RESTACK) : face);
-  }, [leaving, rising, ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
+  }, [leaving, rising, riseFrom, ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
   useEffect(() => {
     if (!onLeft) return;
     const id = card.id;

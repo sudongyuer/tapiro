@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
-from driver import UI  # noqa: E402
+from driver import UI, by_id  # noqa: E402
 from ride import within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/lib/i18n/locales/rideSettle/']
@@ -40,6 +40,10 @@ ticket = ui.element('ride-detail-ticket').get('AXLabel') or ''
 assert re.search(r'¥\s?1,?600\.00', ticket), ticket
 fits('ride-detail-ticket', 'ride-detail-paid', 'ride-detail-paid-view')
 ui.at_rest()
+items = ui.read()
+lead, ticket = by_id(items, 'ride-detail-lead')['frame'], by_id(items, 'ride-detail-ticket')['frame']
+clear = ticket['x'] + ticket['width'] - (lead['x'] + lead['width'])
+assert clear >= 64, f'the lead line runs under the car sticker: it ends {clear:.0f} pt from the ticket edge'
 ui.snap('02-cny-limit')
 
 relaunch(ui, drop=['-uiVerifyRideDetail', 'settleCny'], add=['-uiVerifyRideDetail', 'settleOne', '-uiVerifyScene', SCENE],

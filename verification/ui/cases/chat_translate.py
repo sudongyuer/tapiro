@@ -61,6 +61,7 @@ ui.gone('ask-consent-screen', timeout=30)
 waiting = ui.element(WAITING, timeout=20)
 assert waiting.get('AXLabel') == ui.t('chat.translate.waiting'), waiting.get('AXLabel')
 assert waiting['frame']['y'] >= before['frame']['y'] + before['frame']['height'] - 1, 'the line is not under the bubble'
+assert waiting['frame']['height'] < 32, f'the line without a button reserves a button\'s height: {waiting["frame"]}'
 ui.capture('03-translating')
 
 expected = TRANSLATED.get(ui.locale, f'[{ui.locale}] {SAID}')

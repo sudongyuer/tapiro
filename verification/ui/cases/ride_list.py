@@ -6,11 +6,12 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+import ocr  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 from ride import add_button, assert_ticket_colour, label, open_list, ticket, within_screen  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/HandArt.tsx',
-        'src/ui/InlineState.tsx']
+DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'verification/ui/ocr.py',
+        'src/ui/HandArt.tsx', 'src/ui/InlineState.tsx']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 
@@ -37,6 +38,10 @@ for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
     within_screen(items, identifier)
 shot = ui.snap('01-mine')
 assert_ticket_colour(ui, shot, by_id(items, 'ride-ticket-ride-leaving'), '--color-ride', 'mine ticket')
+read = ocr.lines_in(shot, ui.locale)
+for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
+    clocks = ocr.find(read, r'\d{2}[:.]\d{2}', by_id(items, identifier)['frame'])
+    assert clocks, f'{identifier} cuts its departure time: {[line["text"] for line in read]}'
 
 history = ticket(ui, 'ride-list-history')
 assert history.get('AXLabel') == plural('ride.list.history', 2), history.get('AXLabel')

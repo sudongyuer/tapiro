@@ -1,4 +1,9 @@
+import { StyleSheet } from 'react-native';
 import type { BountyMapCamera } from 'tapiro-kit';
+
+import { useI18n } from '@/lib/i18n';
+import { AppText } from '@/ui/AppText';
+import { vars } from '@/ui/theme/tokens';
 
 import { BoardEmpty, BoardFailed, BoardLoading, BoardStale } from '../board/BoardStates';
 import { boardBody } from '../board/boardState';
@@ -19,8 +24,21 @@ export function BoardMapBody({
   radiusM,
   ...handlers
 }: Handlers & { board: BountyBoardModel }) {
+  const { t } = useI18n();
   const { state } = board;
   const body = boardBody(state, board.refreshing);
+  if (board.origin?.kind === 'none') {
+    return (
+      <AppText
+        variant="meta"
+        tone="secondaryLabel"
+        testID="bounty-map-no-origin"
+        style={styles.noOrigin}
+      >
+        {t('bounty.board.map.noOrigin')}
+      </AppText>
+    );
+  }
   if (state.kind === 'loading' || body === 'loading') {
     return <BoardLoading testID="bounty-board-loading" />;
   }
@@ -52,3 +70,7 @@ export function BoardMapBody({
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  noOrigin: { paddingHorizontal: vars['--space-4'] },
+});

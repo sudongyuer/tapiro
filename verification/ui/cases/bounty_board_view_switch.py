@@ -20,6 +20,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 PLACE = 'Sunway Geo Residences'
 ANCHOR = 'bounty-axis'
 UNDER_STRIP = 48
+LOWER = 60
 KEPT = 3
 SELECTED_RATIO = 3
 SELECTED_MIN = 400
@@ -68,6 +69,15 @@ for view in ('list', 'map'):
 ui.at_rest()
 assert_selected('01-list', 'list')
 
+visible(ui, ANCHOR)
+for _ in range(3):
+    items = ui.read()
+    title_y = by_id(items, 'bounty-board-title')['frame']['y']
+    if title_y > top_clear(items) + UNDER_STRIP + LOWER:
+        break
+    s = screen(items)
+    ui.swipe((s['width'] / 2, s['height'] * 0.4), (s['width'] / 2, s['height'] * 0.4 + LOWER), 1.2)
+    ui.at_rest()
 anchor_y = visible(ui, ANCHOR)['frame']['y']
 items = ui.read()
 switch = by_id(items, 'bounty-view-map')
@@ -119,12 +129,19 @@ assert_touch_target(row, '选一个地方')
 assert not cards(ui.read()), 'cards show in map view without a location'
 visible(ui, 'bounty-view-map')
 ui.at_rest()
+items = ui.read()
+hint, row = by_id(items, 'bounty-map-no-origin'), by_id(items, 'bounty-place-row')
+assert hint and hint.get('AXLabel') == ui.t('bounty.board.map.noOrigin'), hint
+assert hint['frame']['y'] >= row['frame']['y'] + row['frame']['height'], \
+    f'the hint is not under 选一个地方: {hint["frame"]} / {row["frame"]}'
 assert_selected('05-denied-map', 'map')
 
 relaunch(ui, drop=[*PLACE_ARGS, *SEED],
          add=['-uiVerifyBoardPlace', 'none', '-uiVerifyLocation', 'undetermined', '-uiVerifyBoardView', 'map'])
 visible(ui, 'bounty-location-card')
 assert by_id(ui.read(), 'bounty-place-row') is None, 'the place row shows beside the location card'
+assert ui.element('bounty-map-no-origin').get('AXLabel') == ui.t('bounty.board.map.noOrigin'), \
+    'the location card in map view lacks the line about the map'
 visible(ui, 'bounty-view-map')
 ui.at_rest()
 assert_selected('06-undetermined-map', 'map')

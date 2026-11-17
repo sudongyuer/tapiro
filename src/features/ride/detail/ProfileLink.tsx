@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { PressDim } from '@/ui/PressDim';
-import { vars } from '@/ui/theme/tokens';
+import { typeStyle, vars } from '@/ui/theme/tokens';
 import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import type { RideDetail } from './types';
@@ -20,18 +20,21 @@ export function ProfileLink({
   personId,
   name,
   label,
+  lineHeight,
   testID,
   children,
 }: {
   personId: string;
   name: string;
   label: string;
+  lineHeight?: number;
   testID?: string;
   children: ReactNode;
 }) {
   const { t } = useI18n();
   const open = useContext(OpenProfile);
   const { select, highlight } = useSelectedUntilReturn();
+  const overhang = lineHeight ? (vars['--touch-min'] - lineHeight) / 2 : 0;
   if (!open) {
     return (
       <View accessible accessibilityLabel={label} testID={testID}>
@@ -49,9 +52,12 @@ export function ProfileLink({
         select();
         open(personId);
       }}
-      style={styles.link}
+      style={[styles.link, { paddingVertical: overhang, marginVertical: -overhang }]}
     >
-      <Animated.View pointerEvents="none" style={[styles.selected, highlight]} />
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.selected, { marginVertical: overhang }, highlight]}
+      />
       <View style={styles.content}>{children}</View>
       <SymbolView
         name="chevron.right"
@@ -86,7 +92,13 @@ export function OrganiserLink({
     );
   }
   return (
-    <ProfileLink personId={organiser.id} name={name} label={label} testID="ride-detail-organiser">
+    <ProfileLink
+      personId={organiser.id}
+      name={name}
+      label={label}
+      lineHeight={typeStyle('meta').lineHeight}
+      testID="ride-detail-organiser"
+    >
       {children(label)}
     </ProfileLink>
   );

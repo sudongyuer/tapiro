@@ -1,11 +1,12 @@
 """Worst data (`-uiVerifyCoins worst`): before the first deal, with a 41-character invited name; in ms the code, both
-buttons, the reward line, the field with its placeholder and 好, and the invited rows all stay inside the screen, and the
+buttons, the reward line, the field with its placeholder and 好 (whose glyph ends on the row's trailing edge, like the rows
+below it), and the invited rows all stay inside the screen, and the
 long name is cut on one line while VoiceOver reads it whole."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from coins import label  # noqa: E402
-from driver import UI, assert_touch_target, by_id  # noqa: E402
+from coins import label, right_edge  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close  # noqa: E402
 from profile import scroll_to, within_width  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/coins/', 'src/lib/loadable.ts', 'src/ui/SyncedTextField.tsx', 'src/ui/NoticeCard.tsx', 'src/debug/CoinsScenes.tsx', 'verification/ui/coins.py', 'verification/ui/bounty.py', 'verification/ui/profile.py']
@@ -24,7 +25,12 @@ assert_touch_target(by_id(items, 'invite-submit'), '好')
 copy, share = by_id(items, 'invite-copy')['frame'], by_id(items, 'invite-share')['frame']
 assert copy['x'] + copy['width'] <= share['x'], 'the buttons overlap'
 ui.at_rest()
-ui.capture('01-top')
+shot = ui.snap('01-top')
+submit = by_id(items, 'invite-submit')['frame']
+cell = shot.rgb(submit['x'] + 1, submit['y'] + 2)
+glyph_end = right_edge(shot, submit, lambda rgb: not close(rgb, cell, 24))
+short = submit['x'] + submit['width'] - glyph_end
+assert short <= 3, f'好 ends {short:.1f} pt short of the trailing edge of its 44 pt target'
 row = scroll_to(ui, 'invite-friend-1')
 items = ui.read()
 within_width(items, 'invite-friend-1')

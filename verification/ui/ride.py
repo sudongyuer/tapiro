@@ -119,6 +119,15 @@ def tap_bar(ui, identifier):
     ui.tap_point(f['x'] + f['width'] / 2, f['y'] + f['height'] / 2)
 
 
+def assert_stamp_under_sticker(items, identifier):
+    # The stamp hangs from the top of the ticket, under the car sticker (192 A), clear of the tear above the cells.
+    stamp, ticket_frame = by_id(items, identifier)['frame'], by_id(items, 'ride-detail-ticket')['frame']
+    cells = min(i['frame']['y'] for i in items if (i.get('AXUniqueId') or '').startswith('ride-detail-cell-'))
+    drop = stamp['y'] - ticket_frame['y']
+    assert 48 <= drop <= 70, f'{identifier} sits {drop:.0f} pt below the ticket top, expected under the sticker'
+    assert stamp['y'] + stamp['height'] <= cells - 16, f'{identifier} crosses the tear: {stamp}, cells at {cells}'
+
+
 def tab_bar_top(items):
     tabs = [i['frame']['y'] for i in items if (i.get('AXUniqueId') or '').startswith('tab-')]
     return min(tabs) if tabs else screen(items)['height']

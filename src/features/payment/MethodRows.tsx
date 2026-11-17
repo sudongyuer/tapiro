@@ -5,10 +5,13 @@ import {
   accessibilityHidden,
   accessibilityHint,
   accessibilityIdentifier,
+  contentShape,
   disabled,
   font,
   foregroundStyle,
+  frame,
   monospacedDigit,
+  shapes,
 } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
@@ -58,13 +61,26 @@ export function MethodRows({
           ) : null}
           {locked ? (
             <Link
-              label={t('pay.sheet.fxSource')}
               destination={FX_TERMS_URL}
               modifiers={[
                 accessibilityHint(t('pay.sheet.fxSourceHint')),
                 accessibilityIdentifier('pay-fx-source'),
               ]}
-            />
+            >
+              <Text
+                modifiers={[
+                  font({ textStyle: 'footnote' }),
+                  frame({
+                    maxWidth: Infinity,
+                    minHeight: vars['--touch-min'],
+                    alignment: 'leading',
+                  }),
+                  contentShape(shapes.rectangle()),
+                ]}
+              >
+                {t('pay.sheet.fxSource')}
+              </Text>
+            </Link>
           ) : null}
         </VStack>
       }
@@ -128,7 +144,7 @@ function MethodRowButton({
         {amount ? (
           <Text
             modifiers={[
-              font({ textStyle: 'body', weight: 'semibold' }),
+              font({ textStyle: 'body', weight: 'semibold', design: 'rounded' }),
               monospacedDigit(),
               foregroundStyle({ type: 'hierarchical', style: 'primary' }),
             ]}

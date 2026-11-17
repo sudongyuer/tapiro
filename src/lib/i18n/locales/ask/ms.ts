@@ -153,6 +153,8 @@ export default {
     emptyTitle: 'Belum ada yang diingati',
     emptyBody:
       'Tapir akan bertanya dahulu sebelum mengingati tempat atau tabiat. Anda juga boleh menambahnya sendiri.',
+    emptyBodyOff:
+      'Hidupkan “Benarkan Tapir ingat” dan Tapir akan bertanya dahulu sebelum mengingati tempat atau tabiat. Anda juga boleh menambahnya sendiri.',
     add: 'Tambah nota',
     fullFooter:
       'Tapir menyimpan sehingga {{count}} nota. Padam sebahagian untuk mengingati yang baharu.',

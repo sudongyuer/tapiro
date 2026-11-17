@@ -84,7 +84,7 @@ function ListBody({
         <View style={styles.section}>
           <SectionHeading
             title={t('ride.list.mine')}
-            count={model.mine.length}
+            count={model.mine.length > 0 ? model.mine.length : undefined}
             testID="ride-list-mine"
           />
           {model.mine.map((ride) => (

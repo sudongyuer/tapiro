@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import {
   ActivityIndicator,
   PlatformColor,
@@ -13,6 +14,8 @@ import { space, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ChatMember } from '../types';
+
+const FAILED_ICON = 14;
 
 export function BlockedFooter({
   member,
@@ -62,13 +65,20 @@ export function BlockedFooter({
         </PressDim>
       </View>
       {failed ? (
-        <AppText
-          variant="meta"
-          style={[styles.failed, { color: color('--color-urgent') }]}
-          testID="chat-thread-unblock-failed"
-        >
-          {t('chat.blocked.unblockFailed')}
-        </AppText>
+        <View style={styles.failed}>
+          <SymbolView
+            name="exclamationmark.circle.fill"
+            size={FAILED_ICON}
+            tintColor={color('--color-urgent')}
+          />
+          <AppText
+            variant="meta"
+            style={[styles.failedText, { color: color('--color-urgent') }]}
+            testID="chat-thread-unblock-failed"
+          >
+            {t('chat.blocked.unblockFailed')}
+          </AppText>
+        </View>
       ) : null}
     </View>
   );
@@ -100,5 +110,6 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: '600' },
   hidden: { opacity: 0 },
-  failed: { textAlign: 'center' },
+  failed: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs },
+  failedText: { flexShrink: 1 },
 });

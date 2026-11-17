@@ -1,12 +1,13 @@
-"""Entry from 我的: the name row is a 44 pt button with a chevron; a tap pushes your own profile in the 我的
+"""Entry from 我的: the name row is a 44 pt button with a chevron and, with no photo, the cream initial disc the profile
+shows; a tap pushes your own profile in the 我的
 tab (one read for your id) with the level card, and back returns with the row deselected."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 from profile import open_profile, rep_calls  # noqa: E402
 
-DEPS = ['src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
+DEPS = ['src/features/account/MeView.tsx', 'src/ui/Avatar.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 
@@ -16,6 +17,11 @@ ui.tap('tab-me')
 row = ui.element('me-profile', timeout=30)
 assert row.get('type') == 'Button', row.get('type')
 assert_touch_target(row, '我的名字那行')
+ui.at_rest()
+shot = ui.snap('00-me')
+f = row['frame']
+disc = shot.rgb(f['x'] + 30, f['y'] + f['height'] / 2 - 15)
+assert close(disc, token('--color-card-calm', ui.appearance), 8), f'the avatar is not the cream initial disc: {disc}'
 ui.tap('me-profile')
 open_profile(ui)
 assert [call['personId'] for call in rep_calls(ui, 'profile', 1)] == ['00000000-0000-4000-8000-000000000001']

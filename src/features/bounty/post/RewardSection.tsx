@@ -8,6 +8,7 @@ import {
   Spacer,
   Text,
   type TextFieldRef,
+  VStack,
 } from '@expo/ui/swift-ui';
 import {
   accessibilityAddTraits,
@@ -24,6 +25,8 @@ import {
   frame,
   imageScale,
   keyboardType,
+  listRowInsets,
+  listRowSeparator,
   menuStyle,
   multilineTextAlignment,
   pickerStyle,
@@ -46,7 +49,7 @@ import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { FieldRow, ROW_INSETS } from '@/ui/FieldRow';
+import { FieldRow } from '@/ui/FieldRow';
 import { useRowGlow } from './fillGlow';
 import { rewardAmounts, rewardSuggestion } from './postKinds';
 import { rewardLimits } from './validate';
@@ -54,6 +57,13 @@ import { rewardLimits } from './validate';
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 // A regular bordered button adds 7 pt above and below its label (measured 34 pt around a 20 pt label).
 export const CHIP_LABEL_HEIGHT = vars['--touch-min'] - 14;
+const AMOUNTS_INSETS = listRowInsets({
+  top: 0,
+  bottom: vars['--space-4'],
+  leading: vars['--space-5'],
+  trailing: vars['--space-5'],
+});
+const noSeparator = listRowSeparator('hidden');
 
 function CurrencyMenu({
   currency,
@@ -148,13 +158,11 @@ export function RewardSection({
       header={<Text>{t('bounty.post.form.reward')}</Text>}
       footer={
         <Text modifiers={[accessibilityIdentifier('bounty-post-reward-footer')]}>
-          {range
-            ? `${t('bounty.post.form.rewardSuggest', { range })}\n${t('bounty.post.form.rewardFooter')}`
-            : t('bounty.post.form.rewardFooter')}
+          {t('bounty.post.form.rewardFooter')}
         </Text>
       }
     >
-      <FieldRow field={input} modifiers={glow}>
+      <FieldRow field={input} modifiers={[...glow, noSeparator]}>
         <CurrencyMenu currency={currency} onChange={onCurrency} />
         <Spacer />
         <SyncedTextField
@@ -172,37 +180,54 @@ export function RewardSection({
           ]}
         />
       </FieldRow>
-      <HStack spacing={vars['--space-2']} modifiers={[ROW_INSETS]}>
-        {rewardAmounts(category, currency).map((major) => {
-          const label = money(major);
-          const on = typed === String(major);
-          return (
-            <Button
-              key={major}
-              onPress={() => onAmount(String(major))}
-              testID={`bounty-post-amount-${major}`}
-              modifiers={[
-                buttonStyle(on ? 'borderedProminent' : 'bordered'),
-                buttonBorderShape('capsule'),
-                controlSize('regular'),
-                frame({ maxWidth: Infinity }),
-                accessibilityLabel(t('bounty.post.form.amountLabel', { amount: label })),
-                ...(on ? [accessibilityAddTraits(['isSelected'])] : []),
-              ]}
-            >
-              <Text
+      <VStack
+        alignment="trailing"
+        spacing={vars['--space-2']}
+        modifiers={[AMOUNTS_INSETS, noSeparator]}
+      >
+        {range ? (
+          <Text
+            modifiers={[
+              font({ textStyle: 'footnote' }),
+              secondary,
+              accessibilityIdentifier('bounty-post-reward-suggest'),
+            ]}
+          >
+            {t('bounty.post.form.rewardSuggest', { range })}
+          </Text>
+        ) : null}
+        <HStack spacing={vars['--space-2']}>
+          {rewardAmounts(category, currency).map((major) => {
+            const label = money(major);
+            const on = typed === String(major);
+            return (
+              <Button
+                key={major}
+                onPress={() => onAmount(String(major))}
+                testID={`bounty-post-amount-${major}`}
                 modifiers={[
-                  lineLimit(1),
-                  frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
-                  ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
+                  buttonStyle(on ? 'borderedProminent' : 'bordered'),
+                  buttonBorderShape('capsule'),
+                  controlSize('regular'),
+                  frame({ maxWidth: Infinity }),
+                  accessibilityLabel(t('bounty.post.form.amountLabel', { amount: label })),
+                  ...(on ? [accessibilityAddTraits(['isSelected'])] : []),
                 ]}
               >
-                {label}
-              </Text>
-            </Button>
-          );
-        })}
-      </HStack>
+                <Text
+                  modifiers={[
+                    lineLimit(1),
+                    frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+                    ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Button>
+            );
+          })}
+        </HStack>
+      </VStack>
     </Section>
   );
 }

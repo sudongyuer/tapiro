@@ -1,7 +1,8 @@
-import { Form, Group, Host, RNHostView } from '@expo/ui/swift-ui';
+import { Form, Host, RNHostView, Section } from '@expo/ui/swift-ui';
 import {
   listRowBackground,
   listRowInsets,
+  listSectionMargins,
   scrollContentBackground,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
@@ -16,7 +17,7 @@ import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { LanguagePickerSection } from './LanguagePicker';
+import { LanguagePickerSection, MOMENT_COLUMN } from './LanguagePicker';
 
 export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayout?: () => void }) {
   const { t } = useI18n();
@@ -26,10 +27,12 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
     <MomentBackground onLayout={onLayout} testID="language-step">
       <Host style={styles.form}>
         <Form modifiers={[tint(color('--color-accent')), scrollContentBackground('hidden')]}>
-          <Group
+          <Section
             modifiers={[
               listRowBackground('clear'),
               listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 }),
+              listSectionMargins({ length: 0, edges: 'top' }),
+              MOMENT_COLUMN,
             ]}
           >
             <RNHostView matchContents={{ vertical: true }}>
@@ -40,8 +43,8 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
                 </AppText>
               </View>
             </RNHostView>
-          </Group>
-          <LanguagePickerSection footer={t('account.language.footer')} />
+          </Section>
+          <LanguagePickerSection footer={t('account.language.footer')} onMoment />
         </Form>
       </Host>
       <View style={[styles.actions, { paddingBottom: bottom + vars['--space-4'] }]}>
@@ -53,10 +56,6 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
 
 const styles = StyleSheet.create({
   form: { flex: 1 },
-  heading: {
-    gap: vars['--space-6'],
-    paddingTop: vars['--space-4'],
-    paddingHorizontal: vars['--space-5'],
-  },
+  heading: { gap: vars['--space-6'], paddingTop: vars['--space-4'] },
   actions: { paddingHorizontal: vars['--space-6'], paddingTop: vars['--space-2'] },
 });

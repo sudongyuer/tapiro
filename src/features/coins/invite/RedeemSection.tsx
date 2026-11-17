@@ -28,6 +28,11 @@ import { coinsStore } from '../services';
 import { SAMPLE_CODE } from './inviteView';
 
 const CODE_MAX = 12;
+const TRAILING_TARGET = frame({
+  minWidth: vars['--touch-min'],
+  minHeight: vars['--touch-min'],
+  alignment: 'trailing',
+});
 
 export function RedeemSection({ redeem }: { redeem: RedeemState }) {
   const { t } = useI18n();
@@ -85,7 +90,7 @@ export function RedeemSection({ redeem }: { redeem: RedeemState }) {
             modifiers={[
               accessibilityLabel(t('coins.invite.sending')),
               accessibilityIdentifier('invite-sending'),
-              frame({ minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] }),
+              TRAILING_TARGET,
             ]}
           />
         ) : (
@@ -99,12 +104,7 @@ export function RedeemSection({ redeem }: { redeem: RedeemState }) {
               accessibilityIdentifier('invite-submit'),
             ]}
           >
-            <Text
-              modifiers={[
-                frame({ minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] }),
-                contentShape(shapes.rectangle()),
-              ]}
-            >
+            <Text modifiers={[TRAILING_TARGET, contentShape(shapes.rectangle())]}>
               {t('coins.invite.submit')}
             </Text>
           </Button>

@@ -113,7 +113,7 @@ function InfoRow({
       spacing={vars['--space-3']}
       modifiers={[accessibilityElement('combine'), accessibilityIdentifier(testID)]}
     >
-      <Image systemName={icon} size={ICON} modifiers={[ink, frame({ width: ICON + 6 })]} />
+      <Image systemName={icon} size={ICON} modifiers={[ink, frame({ width: AVATAR })]} />
       <VStack alignment="leading" spacing={2} modifiers={[fill]}>
         <Text modifiers={[wraps]}>{title}</Text>
         {detail ? (

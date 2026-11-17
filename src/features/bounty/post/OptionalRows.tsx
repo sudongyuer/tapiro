@@ -27,7 +27,7 @@ import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
+import { edgeSeparator, fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { useRowGlow } from './fillGlow';
 import { TimePicks } from './TimePicks';
 import { addedTime, moveStart, switchKind, timeBounds } from './timeChoice';
@@ -170,7 +170,7 @@ export function TimeRows({
           }
         }}
         testID="bounty-post-time-kind"
-        modifiers={[pickerStyle('segmented'), ROW_INSETS, ...glow]}
+        modifiers={[pickerStyle('segmented'), ROW_INSETS, edgeSeparator, ...glow]}
       >
         <Text modifiers={[tag('deadline')]}>{t('bounty.post.form.deadline')}</Text>
         <Text modifiers={[tag('window')]}>{t('bounty.post.form.window')}</Text>
@@ -272,11 +272,15 @@ export function DescriptionRows({
           lineLimit({ min: 3, max: 8 }),
           accessibilityLabel(t('bounty.post.form.description')),
           ROW_INSETS,
+          edgeSeparator,
           ...glow,
         ]}
       />
       {count >= DESCRIPTION_COUNT_FROM ? (
-        <HStack spacing={0} modifiers={[ROW_INSETS, accessibilityElement('combine')]}>
+        <HStack
+          spacing={0}
+          modifiers={[ROW_INSETS, edgeSeparator, accessibilityElement('combine')]}
+        >
           <Spacer />
           <Text
             modifiers={[

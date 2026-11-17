@@ -13,8 +13,9 @@ import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 import { localClock } from '@/lib/deviceClock';
 
+import { StateRow } from '../shared/StateRow';
 import { selectedHelper } from './applicantsController';
-import { ApplicantSection, ApplicantsHeader, StateRow } from './ApplicantRows';
+import { ApplicantSection, ApplicantsHeader } from './ApplicantRows';
 import { applicantsView } from './applicantsView';
 import { CloseMenu } from './CloseMenu';
 import { SelectedSummary } from './SelectedSummary';
@@ -105,6 +106,7 @@ export function ApplicantsScreen({
         ) : (
           <ApplicantsHeader
             detail={detail}
+            ended={view.body === 'cancelled'}
             status={
               view.body === 'closed'
                 ? null

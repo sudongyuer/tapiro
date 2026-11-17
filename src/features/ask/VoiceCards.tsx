@@ -1,10 +1,12 @@
-import { Linking, PlatformColor, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
+import { useSheetFill } from '@/ui/theme/useSheetFill';
 
+import { FailureCard } from './FailureCard';
 import type { VoiceNote, VoiceState } from './voice';
 
 const NOTE_KEYS = {
@@ -20,6 +22,8 @@ const NOTE_KEYS = {
   notPlaced: 'ask.voice.note.notPlaced',
 } as const satisfies Record<VoiceNote, string>;
 
+const DIZZY: readonly VoiceNote[] = ['failed', 'offline', 'unreadable'];
+
 function Card({
   title,
   body,
@@ -33,12 +37,9 @@ function Card({
   onPress: () => void;
   testID: string;
 }) {
+  const fill = useSheetFill();
   return (
-    <View
-      style={[styles.card, { borderColor: PlatformColor('separator') }]}
-      testID={testID}
-      accessible={false}
-    >
+    <View style={[styles.card, { backgroundColor: fill }]} testID={testID} accessible={false}>
       <AppText variant="title" testID={`${testID}-title`}>
         {title}
       </AppText>
@@ -88,22 +89,22 @@ export function VoiceCards({
   }
   if (!state.note) return null;
   return (
-    <View style={styles.note} testID="ask-voice-note">
-      <AppText variant="secondary" testID="ask-voice-note-text">
-        {t(NOTE_KEYS[state.note])}
-      </AppText>
+    <FailureCard
+      text={t(NOTE_KEYS[state.note])}
+      dizzy={DIZZY.includes(state.note)}
+      testID="ask-voice-note"
+      textTestID="ask-voice-note-text"
+    >
       {state.canRetry ? (
-        <View style={styles.button}>
-          <PillButton
-            label={t('ask.voice.retry')}
-            variant="secondary"
-            disabled={busy}
-            onPress={onRetry}
-            testID="ask-voice-retry"
-          />
-        </View>
+        <PillButton
+          label={t('ask.voice.retry')}
+          variant="secondary"
+          disabled={busy}
+          onPress={onRetry}
+          testID="ask-voice-retry"
+        />
       ) : null}
-    </View>
+    </FailureCard>
   );
 }
 
@@ -111,10 +112,8 @@ const styles = StyleSheet.create({
   card: {
     gap: vars['--space-2'],
     padding: vars['--space-4'],
-    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
   },
-  note: { gap: vars['--space-2'] },
   button: { alignSelf: 'flex-start' },
 });

@@ -7,6 +7,7 @@ import {
 
 import type { ReactNode } from 'react';
 
+import { coinCount } from '@/lib/coinCount';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -38,7 +39,7 @@ function CostRow({ value, urgent = false }: { value: string; urgent?: boolean })
 }
 
 function BaseSection({ base, status }: { base: CostBase; status: PostStatus }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const of = status.freePostsPerMonth;
   if (base.kind === 'free') {
     return (
@@ -50,13 +51,18 @@ function BaseSection({ base, status }: { base: CostBase; status: PostStatus }) {
   if (base.kind === 'coin') {
     return (
       <Section footer={<Text>{t('bounty.post.cost.footer.coin', { of })}</Text>}>
-        <CostRow value={t('bounty.post.cost.coin', { balance: base.balance })} />
+        <CostRow
+          value={t('bounty.post.cost.coin', { balance: coinCount(base.balance, language) })}
+        />
       </Section>
     );
   }
   return (
     <Section footer={<Text>{t('bounty.post.cost.footer.none', { of })}</Text>}>
-      <CostRow value={t('bounty.post.cost.coin', { balance: base.balance })} urgent />
+      <CostRow
+        value={t('bounty.post.cost.coin', { balance: coinCount(base.balance, language) })}
+        urgent
+      />
     </Section>
   );
 }

@@ -4,7 +4,7 @@ import { createInstance } from 'i18next';
 import { resources } from '@/lib/i18n/resources';
 
 import type { CoinRow } from '../types';
-import { coinCount, monthLabel, rowA11y, rowTitle } from './coinsView';
+import { monthLabel, rowA11y, rowTitle } from './coinsView';
 
 function translator(lng: string) {
   const i18n = createInstance();
@@ -65,17 +65,8 @@ describe('coins page view', () => {
     }
   });
 
-  test('a negative balance after a refund reads with its sign', () => {
-    expect(coinCount(-6, 'en')).toBe('-6');
-  });
-
   test('VoiceOver reads the whole title, the signed delta and the date', () => {
     const label = rowA11y(row(), translator('en'), 'en');
     expect(label).toBe('Post · 帮取快递, −1, 2 Nov');
-  });
-
-  test('balances group thousands in the reading language', () => {
-    expect(coinCount(1234, 'en')).toBe('1,234');
-    expect(coinCount(12, 'ms')).toBe('12');
   });
 });

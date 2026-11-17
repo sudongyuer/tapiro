@@ -234,7 +234,7 @@ export function HoldButton({
       </Pressable>
       {hint ? (
         <AppText
-          variant="secondary"
+          variant="meta"
           tone="secondaryLabel"
           style={styles.hint}
           testID={testID ? `${testID}-hint` : undefined}

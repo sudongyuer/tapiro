@@ -11,10 +11,11 @@ import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from board import screen  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import UI, assert_touch_target, by_id  # noqa: E402
-from ride import assert_ticket_colour, tap_bar, within_screen  # noqa: E402
+from driver import UI, assert_touch_target, bottom, by_id  # noqa: E402
+from ride import assert_stamp_under_sticker, assert_ticket_colour, tab_bar_top, tap_bar, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/block/',
         'src/ui/PillButton.tsx', 'src/ui/SyncedTextField.tsx', 'supabase/migrations/20261102000700_ride_detail.sql']
@@ -65,6 +66,11 @@ items = ui.read()
 for identifier in ('ride-detail-ticket', 'ride-detail-apply'):
     within_screen(items, identifier)
 assert by_id(items, 'ride-detail-arrivals') is None, 'a non-member must not see the arrival row'
+assert_touch_target(organiser, '小林 · 靠谱')
+step = by_id(items, 'ride-detail-step-published')['frame']['height']
+assert step < 70, f'the organiser link pads the 发起 step to {step:.0f} pt'
+gap = tab_bar_top(items) - bottom(by_id(items, 'ride-detail-apply'))
+assert gap >= 7, f'申请上车 sits {gap:.1f} pt above the tab bar'
 shot = ui.snap('01-viewer')
 assert_ticket_colour(ui, shot, ticket, '--color-ride', 'detail ticket')
 
@@ -79,6 +85,7 @@ withdraw = ui.element('ride-detail-withdraw')
 assert withdraw.get('AXLabel') == ui.t('ride.detail.applied.withdraw'), withdraw.get('AXLabel')
 wait_calls('request', 1)
 ui.at_rest()
+assert_stamp_under_sticker(ui.read(), 'ride-detail-stamp')
 ui.capture('02-applied')
 
 ui.tap('ride-detail-withdraw')
@@ -99,6 +106,10 @@ for identifier, key in (('ride-detail-approve-fixture-ride-ajie', 'approve'),
     assert button.get('AXLabel') == ui.t(f'ride.detail.requests.{key}'), button.get('AXLabel')
     assert_touch_target(button, key)
 assert ticket_label().startswith(ui.tn('ride.ticket.requests', 1)), ticket_label()
+items = ui.read()
+assert by_id(items, 'ride-detail-footer') is None, 'an organiser before 集合 has no pinned bar'
+assert bottom(by_id(items, 'ride-detail')) >= screen(items)['height'] - 1, \
+    'with no pinned bar the page still stops above the tab bar'
 ui.at_rest()
 ui.capture('03-organiser')
 ui.tap('ride-detail-approve-fixture-ride-ajie')

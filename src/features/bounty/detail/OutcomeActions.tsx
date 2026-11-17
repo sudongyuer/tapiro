@@ -111,6 +111,7 @@ export function NotSelectedActions({
           {` ${note}`}
         </AppText>
       ) : null}
+      <View style={styles.beforeAction} />
       <PillButton
         label={t('bounty.detail.notSelected.browse')}
         onPress={onBrowse}
@@ -131,4 +132,5 @@ const styles = StyleSheet.create({
   },
   shrink: { flexShrink: 1 },
   centred: { textAlign: 'center' },
+  beforeAction: { height: vars['--space-2'] },
 });

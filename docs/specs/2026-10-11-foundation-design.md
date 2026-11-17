@@ -786,7 +786,7 @@ account, and steps 8 and 9 remain; the spec stays `approved`.
 | Purchase through a StoreKit sheet                            | 买貘币 is not shown; IAP not built                                                                                                      | Waits on the paid account                                                  | owner, 2026-11-06 (252 A)                   |
 | (not in the design) ride reviews on public profiles          | Others read only 「拼车」, without route or reviewer                                                                                    | A ride's start can point at a home                                         | owner, 2026-11-06 (256 A)                   |
 | (not in the design) reporting a review                       | Long-press 举报 on a shown review                                                                                                       | A review sentence is public free text                                      | owner, 2026-11-06 (259 A)                   |
-| Lv2–5 accessories hand drawn                                 | Stand-in art for 小红帽, 书包, 雨伞, 围巾                                                                                               | The art is a separate drawing task                                         | plan gap 5                                  |
+| Lv2–5 accessories hand drawn                                 | Stand-in art for 小红帽, 书包, 雨伞, 围巾; replaced by 93 A crayon art on 2026-11-16 (drawing task, plan G6)                            | The art was a separate drawing task, scheduled by owner question 13 C      | plan gap 5                                  |
 | UI details beyond the answers                                | The ★ defaults in the plan's sections (server, client core, review, entries, profile, tier drop, mascot, coins, feed, invite, 258, 259) | Owner: decide UI details and record them                                   | ★; Tasks 1, 2, 5, 6 accepted, the rest veto |
 
 ### Bugs fixed during implementation
@@ -825,7 +825,7 @@ account, and steps 8 and 9 remain; the spec stays `approved`.
   covered by unit and pgTAP only (`docs/story-map.md`).
 - Device checks: the seal's motion and haptic, the grow and chew motion, VoiceOver actions on the stage, the share sheet.
 - 258 A opens farming through Grab rides with friends (plan, 「★ 258 defaults」); tuned after launch.
-- Accessory art is stand-in. A reload that shrinks a long list may need a scroll to page again (`docs/status.md`, Queue).
+- A reload that shrinks a long list may need a scroll to page again (`docs/status.md`, Queue).
 - No admin tool for the report queue (`private.report_queue`, service role only).
 
 ## Implementation Record (2026-11-15) — step 8: 问小貘

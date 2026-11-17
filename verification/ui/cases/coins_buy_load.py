@@ -1,12 +1,13 @@
-"""Worst loads of the packs: the first StoreKit product request fails, so the sheet reads 「价格没加载出来」 with 重试 and no
+"""Worst loads of the packs: the first StoreKit product request fails, so the sheet reads 「价格没加载出来」 on the urgent card (its fill by pixel) with 重试 and no
 pack and no price (never an empty shop); 重试 loads the three packs."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from coins import assert_packs, open_page  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, assert_colour, by_id, token  # noqa: E402
 
-DEPS = ['src/features/coins/', 'src/app/buy-coins.tsx', 'src/lib/i18n/locales/coins/', 'verification/ui/coins.py']
+DEPS = ['src/features/coins/', 'src/app/buy-coins.tsx', 'src/lib/i18n/locales/coins/', 'src/ui/NoticeCard.tsx',
+        'verification/ui/coins.py']
 SCENE = 'coins-page'
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStore', 'productsFailed']
@@ -20,7 +21,9 @@ assert failed.get('AXLabel') == ui.t('coins.buy.failed'), failed.get('AXLabel')
 items = ui.read()
 assert by_id(items, 'buy-coins-empty') is None and by_id(items, 'buy-coins-buy-5') is None
 ui.at_rest()
-ui.capture('01-failed')
+shot = ui.snap('01-failed')
+assert_colour(shot, by_id(ui.read(), 'buy-coins-failed')['frame'], token('--color-urgent-fill', ui.appearance),
+              'the failed prices card')
 ui.tap('buy-coins-retry')
 ui.element('buy-coins-buy-5', timeout=30)
 assert_packs(ui)
