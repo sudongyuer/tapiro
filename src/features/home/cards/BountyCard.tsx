@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: vars['--space-3'],
-    marginTop: 2,
+    marginTop: vars['--space-1'],
   },
   titleStacked: { flexDirection: 'column', alignItems: 'stretch', gap: vars['--space-1'] },
   title: { flex: 1, fontWeight: '700' },

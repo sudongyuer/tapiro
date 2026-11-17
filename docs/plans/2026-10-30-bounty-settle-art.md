@@ -335,3 +335,14 @@ so the card does not flip live (11), 先付 (12).
   calm card rises from the pose it would really have behind the leaving card (`backOffset`: one peek lower only when it
   is not taller), not always 40 pt lower; the fixed 40 pt drew the taller calm card over the board's title for the
   first frames (85 pt below the leaving card), seen in the recording before this change.
+- 2026-11-17, UI polish audit, home (HOME-1, -2, -4, -8; no board decides these details). ★ for veto: (a) 小貘's
+  bubble takes its width from the pose instead of a fixed 230 pt: screen − the pose's right inset and size − the car's
+  30 pt overhang on the live stage − the 8 pt tail − 8 pt of air − the 16 pt left margin, which is 200 pt beside the
+  car and 216 pt beside 小貘 alone on a 402 pt screen (`src/ui/stagePose.ts`; HomeGPhone draws 210). (b) The bubble
+  shows up to four lines instead of three, since a 40-character name in en or ms needs four at that width; lines one
+  to three start 18 pt under the stage top as before and a fourth grows upward, because the front card begins 14 pt
+  under a three-line bubble. A bounty line longer than four lines still ends in an ellipsis. (c) The home screen's
+  navigation bar is always in the light interface style (`headerUserInterfaceStyle: 'light'`), like the status bar
+  over the stage, so 「+」 is a dark glyph on light glass in dark mode too; pushed screens follow the appearance.
+  (d) Spacing on tokens: bubble padding 9/13 → 8/12, calm chips 6 → 8 pt apart, the title under a card's meta line
+  2 → 4 pt (bounty, pay and ride cards); the calm card's mic keeps its 6 pt inset, now derived from the two sizes.

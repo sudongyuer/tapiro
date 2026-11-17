@@ -47,7 +47,9 @@ def fill_wallet_name(ui, wallet, name=WALLET_PAYEE):
     ui.capture('name-required')
     ui.tap('payee-name-input')
     ui.type(name)
-    ui.wait(lambda items: (by_id(items, 'payee-name-input') or {}).get('AXValue') == name, 'wallet name not typed')
+    items = ui.wait(lambda items: (by_id(items, 'payee-name-input') or {}).get('AXValue') == name and items, 'wallet name not typed')
+    label = by_id(items, 'payee-name-input').get('AXLabel')
+    assert label == ui.t(f'payee.qr.nameLabel.{wallet}'), f'the filled wallet name field reads {label!r}'
     seen = ui.t('payee.qr.seen', name=name, bank=short)
     ui.wait_label('payee-qr-seen', lambda label: label == seen, f'confirm line is not {seen!r}')
     return seen

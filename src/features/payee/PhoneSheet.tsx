@@ -1,5 +1,6 @@
 import { Form, Host, Section, Text } from '@expo/ui/swift-ui';
 import {
+  accessibilityLabel,
   autocorrectionDisabled,
   keyboardType,
   textContentType,
@@ -109,7 +110,11 @@ function PhoneForm({
             field={phoneText}
             placeholder={t('payee.form.phonePlaceholder')}
             testID="payee-phone-input"
-            modifiers={[keyboardType('phone-pad'), textContentType('telephoneNumber')]}
+            modifiers={[
+              accessibilityLabel(t('payee.form.phoneLabel')),
+              keyboardType('phone-pad'),
+              textContentType('telephoneNumber'),
+            ]}
           />
         </Section>
         <Section
@@ -122,6 +127,7 @@ function PhoneForm({
             placeholder={t('payee.form.namePlaceholder')}
             testID="payee-name-input"
             modifiers={[
+              accessibilityLabel(t('payee.form.nameLabel')),
               textContentType('name'),
               textInputAutocapitalization('characters'),
               autocorrectionDisabled(),

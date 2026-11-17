@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: vars['--space-2'],
   },
   where: { flex: 1, minWidth: 0 },
-  route: { fontWeight: '700', marginTop: 2 },
+  route: { fontWeight: '700', marginTop: vars['--space-1'] },
   countdown: { alignItems: 'flex-end' },
   routeLine: { height: 30, marginTop: vars['--space-1'], marginHorizontal: vars['--space-2'] },
   done: { position: 'absolute', left: 0, top: 13, height: 4, borderRadius: 2 },
