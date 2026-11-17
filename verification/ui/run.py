@@ -33,6 +33,13 @@ DEFAULT_TIME_ZONE = 'Asia/Kuala_Lumpur'
 DEFAULT_ZONE_OFFSET = 8
 SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
+HOUR_KEYS = ('-AppleICUForce24HourTime', '-AppleICUForce12HourTime')
+
+
+def locale_args(locale, args):
+    # The Malaysian regions default to 12-hour time; a case gets 24 hours unless its ARGS choose a cycle.
+    hours = [] if any(key in args for key in HOUR_KEYS) else ['-AppleICUForce24HourTime', 'YES']
+    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale], *hours]
 KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # With no AppleKeyboards the app derives its keyboards from -AppleLanguages, so zh-Hans gets Pinyin and typed ASCII
 # becomes candidates; on the English keyboard prediction and autocorrection rewrite typed words (klia -> Kline, see you at
@@ -254,7 +261,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     )
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
-        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
+        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, *locale_args(locale, extra),
         *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(zone))
     if stuck:
         status, message = 'fail', stuck

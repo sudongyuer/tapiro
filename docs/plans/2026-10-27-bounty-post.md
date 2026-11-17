@@ -675,6 +675,29 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
     - ★ 24i Quick-time and amount rows: 12 pt above and below the quick times, 16 pt under the amounts (the board's 12 pt
       at a 14 pt side inset, scaled to the 20 pt side inset).
 
+25. Time format, one rule for the app (2026-11-17, `fix/ui-polish-time-format`, audit BP-13 and RIDE-19). ★ for veto:
+    every clock the app writes follows the device's 12/24-hour setting in the app language (「晚上9:00」 / 9:00 PM /
+    9:00 PTG on a 12-hour device, 21:00 on a 24-hour one). `I18nProvider` reads `useCalendars()[0].uses24hourClock`
+    (expo-localization 58.0.5) into `setClockStyle`; `localClock` and `clockOptions()` in `src/lib/deviceClock.ts` are
+    the only clock formats, and the post time parts and 问小貘 draft lines use them. Reason: HIG asks apps to respect
+    the user's date and time settings, and the system pickers already follow this one, so the picker and the text
+    beside it agree only this way; before, the picker read 「晚上9:00」 and the card 21:00.
+    - The pickers keep the system locale. `@expo/ui` 58.0.27's `environment('locale', …)` accepts only an identifier
+      in `Locale.availableIdentifiers` (`ios/Modifiers/EnvironmentModifier.swift`), and a locale built from one drops
+      the user's hour-cycle and region overrides, so forcing the app language would break the hour agreement. Left
+      open: after an in-app language switch away from the system language, the picker's words (晚上 / PM) stay in the
+      system language, the same root as HOME-4. A change of the device setting while the app runs shows on the next
+      render of each screen.
+    - The date half of BP-13 is not a format rule and is not built. In every recorded run (zh-Hans, en, ms on 11-13,
+      zh-Hans on 11-16) the 开始 picker's own accessibility value is the short date (「14/11/26」) while 结束 in the
+      same row width reads 「2026年11月14日」: the start picker lays out 11 pt narrower (253 vs 264 pt) and the compact
+      `UIDatePicker` falls back to its short style. App code does not format that text; why the start picker gets the
+      narrower layout is open (Simulator investigation).
+    - Verify runs pin the Simulator to 24 hours (`-AppleICUForce24HourTime YES`; `zh_MY`, `en_MY` and `ms_MY` default
+      to 12) unless a case's ARGS choose a cycle. `bounty_post_optional` and `ride_create_form` run in 12 hours and
+      assert that the picker's time text appears as is in the live card, the ticket, the quick time and confirm;
+      `bounty_status_helper` swipes the minute column of the 24-hour wheel.
+
 ## Not in this plan
 
 | Item | Owning step |

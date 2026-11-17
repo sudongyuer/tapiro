@@ -12,9 +12,22 @@ export function localDayKey(time: number) {
   return keyOf(new Date(time));
 }
 
-export function localClock(time: number) {
+let clockStyle = { language: 'zh-Hans', uses24hourClock: true };
+
+export function setClockStyle(language: string, uses24hourClock: boolean) {
+  clockStyle = { language, uses24hourClock };
+}
+
+export function clockOptions(): Intl.DateTimeFormatOptions {
+  return clockStyle.uses24hourClock
+    ? { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+    : { hour: 'numeric', minute: '2-digit', hourCycle: 'h12' };
+}
+
+export function localClock(time: number, language = clockStyle.language) {
   const date = new Date(time);
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  if (clockStyle.uses24hourClock) return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return new Intl.DateTimeFormat(language, clockOptions()).format(date);
 }
 
 export function localTimeOn(dayKey: string, hours: number, minutes: number) {
