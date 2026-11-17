@@ -265,6 +265,8 @@ and the Live Activity (11), 先付 (12).
   - P5 ★ Apply without a payee method (4A other states): an `InlineState` card (title and body joined by a newline, as
     47A's empty card) and 添加收款方式 as the accent pill in the pinned bar (`SheetFrame`); the action is unchanged
     (36A).
+    `StateRow` gives the card the row's width (window less 16 pt each side): inside `RNHostView` in a Form row the card
+    was measured at its unwrapped width, and the no-payee body ran past the card edge, cut mid-sentence.
   - P6 ★ 出发 / 好 in the ETA sheet and 发送 in the issue sheet are `buttonStyle('glassProminent')` tinted with the
     accent, the look of 发送 on the apply sheet. The ride sheets (`ride/detail/SheetShell.tsx`) still have the plain
     confirm.
