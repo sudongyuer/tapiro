@@ -33,6 +33,8 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   `scripts/merge-when-green.sh <pr>`, never `gh pr merge` directly. Reason: `checks --watch; merge` and a watch that
   returned before any check registered merged two PRs before CI finished (2026-11-17). Ask before paid services,
   accounts or certificates, deletes, force-push and the hosted Supabase project.
+- Website changes (`website/`) deploy after merge with `cd website && bunx wrangler deploy` from the updated main
+  checkout and are checked live afterwards. Reason: the owner allowed it (2026-11-17).
 - One review round per step; fix every finding at once and re-review only after an Important or Critical finding.
 - When the owner is away, continue into the next step with the ★ options and list them for veto in the return
   summary.
