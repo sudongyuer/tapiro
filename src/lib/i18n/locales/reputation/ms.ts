@@ -74,8 +74,8 @@ const ms: typeof zhHans = {
   },
   entry: {
     review: 'Nilai {{name}}',
-    daysLeft_one: '{{count}}\u00a0hari\u00a0lagi',
-    daysLeft_other: '{{count}}\u00a0hari\u00a0lagi',
+    daysLeft_one: '{{count}} hari lagi',
+    daysLeft_other: '{{count}} hari lagi',
     reviewed: 'Sudah dinilai',
     sealedMine: 'Kedua-dua penilaian dipaparkan selepas {{name}} menilai',
     sealedTheirs: '{{name}} sudah menilai anda. Nilai dia untuk melihat kedua-duanya',

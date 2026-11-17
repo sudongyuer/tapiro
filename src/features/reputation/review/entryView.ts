@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 
 import { canReview, daysLeft } from '../model';
 import type { PendingReview, ReviewPair, ReviewTarget, Role } from '../types';
-import { pairName, windowOver } from './reviewView';
+import { pairName, spoken, unbroken, windowOver } from './reviewView';
 
 export type ReviewEntry = {
   id: string;
@@ -19,7 +19,7 @@ const targetOf = (pair: ReviewPair): ReviewTarget | null =>
 
 function lines(pair: ReviewPair, over: boolean, canOpen: boolean, now: Date, t: TFunction) {
   const name = pairName(pair, t);
-  const days = t('reputation.entry.daysLeft', { count: daysLeft(pair.closesAt, now) });
+  const days = unbroken(t('reputation.entry.daysLeft', { count: daysLeft(pair.closesAt, now) }));
   if (pair.state === 'ended' || (pair.state === 'open' && over)) {
     return { title: t('reputation.entry.ended'), detail: name, trailing: null };
   }
@@ -62,7 +62,7 @@ export function reviewEntry(pair: ReviewPair, index: number, now: Date, t: TFunc
     detail,
     trailing,
     trailingIsAction: pair.state === 'sealed' && trailing !== null,
-    label: [title, detail, trailing].filter(Boolean).join(t('reputation.profile.listJoin')),
+    label: spoken([title, detail, trailing].filter(Boolean).join(t('reputation.profile.listJoin'))),
     target,
   };
 }

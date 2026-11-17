@@ -14,6 +14,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 import type { Face } from '../types';
 import { FACE_SIZE } from './ReviewPickers';
 import { ReviewFace } from './ReviewFace';
+import { unbrokenTail } from './reviewView';
 import {
   easeEnter,
   easeMove,
@@ -193,20 +194,20 @@ export function SealLayer({
             <AppText
               variant="title"
               accessibilityRole="header"
+              accessibilityLabel={title}
               testID="review-sealed-title"
-              lineBreakStrategyIOS="push-out"
               style={styles.text}
             >
-              {title}
+              {unbrokenTail(title)}
             </AppText>
             <AppText
               variant="secondary"
               tone="secondaryLabel"
+              accessibilityLabel={note}
               testID="review-sealed-note"
-              lineBreakStrategyIOS="push-out"
               style={styles.text}
             >
-              {note}
+              {unbrokenTail(note)}
             </AppText>
           </Animated.View>
         </View>

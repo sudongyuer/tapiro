@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { TFunction } from 'i18next';
 
 import type { MyReview, PendingReview, Review, ReviewPair } from '../types';
+import { spoken } from './reviewView';
 import { pendingLabel, pendingWho, reviewEntry, shortName, stillOpen } from './entryView';
 
 const t = ((key: string, values?: Record<string, unknown>) =>
@@ -38,7 +39,7 @@ describe('a review entry', () => {
   test('open: 评价 name with the days left, and it opens the sheet', () => {
     const entry = reviewEntry(pair, 0, now, t);
     expect(entry.title).toContain('reputation.entry.review');
-    expect(entry.trailing).toContain('"count":5');
+    expect(spoken(entry.trailing ?? '')).toContain('"count":5');
     expect(entry.trailingIsAction).toBe(false);
     expect(entry.detail).toBeNull();
     expect(entry.target).toEqual({ kind: 'bounty', itemId: 'b1', reviewee: 'p1' });
@@ -46,8 +47,8 @@ describe('a review entry', () => {
 
   test('open after they reviewed: says so, never what they wrote', () => {
     const entry = reviewEntry({ ...pair, theyReviewed: true }, 0, now, t);
-    expect(entry.detail).toContain('reputation.entry.sealedTheirs');
-    expect(entry.detail).toContain('"count":5');
+    expect(spoken(entry.detail ?? '')).toContain('reputation.entry.sealedTheirs');
+    expect(spoken(entry.detail ?? '')).toContain('"count":5');
     expect(entry.trailing).toBeNull();
   });
 
@@ -101,6 +102,14 @@ describe('a review entry', () => {
     expect(first.trailing).toBeNull();
     expect(first.target).toBeNull();
     expect(first.id).not.toBe(reviewEntry(gone, 1, now, t).id);
+  });
+
+  test('the days left cannot break inside, and VoiceOver gets plain text', () => {
+    const entry = reviewEntry(pair, 0, now, t);
+    expect(entry.trailing).not.toContain(' ');
+    expect(entry.trailing).toContain('\u2060');
+    expect(entry.label).not.toContain('\u2060');
+    expect(entry.label).not.toContain('\u00a0');
   });
 
   test('VoiceOver reads every part of the row', () => {

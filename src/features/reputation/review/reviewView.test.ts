@@ -2,7 +2,15 @@ import { describe, expect, test } from 'bun:test';
 
 import { draftFromReview, EMPTY_DRAFT } from '../model';
 import type { MyReview, ReviewDraft, ReviewPair } from '../types';
-import { blockedBy, canSend, findPair, sheetSubtitle, sheetSubtitleShown } from './reviewView';
+import {
+  blockedBy,
+  canSend,
+  findPair,
+  sheetSubtitle,
+  sheetSubtitleShown,
+  spoken,
+  unbrokenTail,
+} from './reviewView';
 
 const pair: ReviewPair = {
   kind: 'bounty',
@@ -45,6 +53,12 @@ describe('the review sheet', () => {
     expect(date).not.toContain(' ');
     expect(date.replaceAll('\u2060', '')).toBe(sheetSubtitle(null, pair, 'zh-Hans'));
     expect(date.split('\u2060')).toHaveLength([...sheetSubtitle(null, pair, 'zh-Hans')].length);
+  });
+
+  test('keeps the last four characters of the sealed copy on one line', () => {
+    expect(unbrokenTail('等小林评完一起公开')).toBe('等小林评完一\u2060起\u2060公\u2060开');
+    expect(unbrokenTail('好的')).toBe('好的');
+    expect(spoken(unbrokenTail('等小林评完一起公开'))).toBe('等小林评完一起公开');
   });
 
   test('needs a face before it can send', () => {

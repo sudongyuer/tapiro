@@ -72,8 +72,8 @@ const en: typeof zhHans = {
   },
   entry: {
     review: 'Review {{name}}',
-    daysLeft_one: '{{count}}\u00a0day\u00a0left',
-    daysLeft_other: '{{count}}\u00a0days\u00a0left',
+    daysLeft_one: '{{count}} day left',
+    daysLeft_other: '{{count}} days left',
     reviewed: 'Reviewed',
     sealedMine: 'Both reviews show once {{name}} reviews too',
     sealedTheirs: '{{name}} has reviewed you. Review them to see both',

@@ -70,8 +70,8 @@ export default {
   },
   entry: {
     review: '评价 {{name}}',
-    daysLeft_one: '还\u2060剩\u00a0{{count}}\u00a0天',
-    daysLeft_other: '还\u2060剩\u00a0{{count}}\u00a0天',
+    daysLeft_one: '还剩 {{count}} 天',
+    daysLeft_other: '还剩 {{count}} 天',
     reviewed: '已评价',
     sealedMine: '等{{name}}评完一起公开',
     sealedTheirs: '{{name}}已经评价你了，你评完就能一起看到',

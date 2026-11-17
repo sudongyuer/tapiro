@@ -3,7 +3,7 @@ import time
 
 from driver import Shot, assert_appearance, bottom, by_id, luma
 from gestures import drag
-from ocr import find, inside, lines_in
+from ocr import find, inside, lines, lines_in
 from profile import label, rep_calls
 
 SHEET = 'review-sheet'
@@ -86,9 +86,12 @@ def loose(text):
     return re.sub(r'[\s\u00a0\u2060]+', '', text)
 
 
-def text_inside(read, f):
-    rows = sorted((line for line in read if inside(line, f, slack=4)), key=lambda line: (line['y'], line['x']))
-    return loose(''.join(line['text'] for line in rows))
+def drawn_inside(picture, locale, f):
+    # One string per OCR pass: `lines_in` reads Latin locales twice, and the two readings must not be interleaved.
+    passes = [lines(picture)] + ([] if locale == 'zh-Hans' else [lines(picture, ['en-US', 'zh-Hans'])])
+    return [loose(''.join(line['text'] for line in sorted((line for line in read if inside(line, f, slack=4)),
+                                                         key=lambda line: (line['y'], line['x']))))
+            for read in passes]
 
 
 def one_line(read, phrase, f):
