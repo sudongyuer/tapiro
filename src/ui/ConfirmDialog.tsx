@@ -32,7 +32,10 @@ export function ConfirmDialog({
         <Button
           label={copy.confirm}
           role={destructive ? 'destructive' : undefined}
-          onPress={onConfirm}
+          onPress={() => {
+            onPresentedChange(false);
+            onConfirm();
+          }}
           testID={confirmTestID}
         />
         {/* No cancel role: iOS 26+ hides a cancel action in a popover; see ConfirmDialog.swift in the kit. */}

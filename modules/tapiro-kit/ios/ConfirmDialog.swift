@@ -17,9 +17,13 @@ struct ConfirmOptions: Record {
 // as keep. Measured on the iOS 27.2 Simulator, 2026-11-17.
 @MainActor
 enum ConfirmDialog {
+  // Released without an answer (the present failed, or the screen under it went away in code): that is keep, so the
+  // caller's promise always settles.
   private final class Outcome: NSObject, UIPopoverPresentationControllerDelegate {
-    private var done: ((Bool) -> Void)?
+    nonisolated(unsafe) private var done: ((Bool) -> Void)?
     init(_ done: @escaping (Bool) -> Void) { self.done = done }
+
+    deinit { done?(false) }
 
     func settle(_ confirmed: Bool) {
       done?(confirmed)
@@ -32,6 +36,7 @@ enum ConfirmDialog {
   }
 
   static func ask(_ options: ConfirmOptions, anchor: UIView?, done: @escaping (Bool) -> Void) {
+    let anchor = anchor?.window == nil ? nil : anchor
     guard let window = anchor?.window ?? keyWindow(), let presenter = topController(window.rootViewController),
       !(presenter is UIAlertController), let host = presenter.view
     else { return done(false) }

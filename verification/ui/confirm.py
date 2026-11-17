@@ -5,8 +5,9 @@ from driver import by_id
 NEAR = 64
 
 
-def button(items, label):
-    return next((i for i in reversed(items) if i.get('AXLabel') == label and i.get('type') == 'Button'), None)
+def button(items, label, besides=None):
+    return next((i for i in reversed(items) if i.get('AXLabel') == label and i.get('type') == 'Button'
+                 and (besides is None or i.get('AXUniqueId') != besides)), None)
 
 
 def bar_button(items, label):
@@ -16,7 +17,7 @@ def bar_button(items, label):
 def assert_dialog(ui, title, confirm, keep, source=None, source_label=None):
     def found(items):
         heading = next((i for i in items if i.get('AXLabel') == title and i.get('type') != 'Button'), None)
-        yes, no = button(items, confirm), button(items, keep)
+        yes, no = button(items, confirm, source), button(items, keep, source)
         return (heading, yes, no) if heading and yes and no else None
 
     heading, yes, no = ui.settled(found, f'the dialog {title} with {confirm} and a visible {keep} never settled')
