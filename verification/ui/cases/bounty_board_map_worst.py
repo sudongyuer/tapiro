@@ -164,7 +164,7 @@ assert applied.get('AXLabel') == ui.t('bounty.board.applied'), applied.get('AXLa
 face = face_box(ui, FRONT, ['map-card-applied'])
 assert inside(face, m), f'the applied card leaves the map: {face}'
 shot = ui.snap('04-applied')
-tail = re.escape(ui.t('bounty.board.applied').split('·')[-1].strip())
+tail = re.escape(ui.t('bounty.board.applied').split()[-1])
 status = in_card(shot, face, tail, 'the applied line')[0]
 assert not re.search(r'…|\.\.\.$', status['text']), f'the applied line is truncated: {status["text"]!r}'
 assert_symbol(shot, applied, 'applied card')

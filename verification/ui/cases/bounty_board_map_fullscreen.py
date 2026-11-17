@@ -138,7 +138,15 @@ assert by_id(ui.read(), COVER) is None, 'the cover is still up over the detail'
 ui.capture('06-detail')
 
 relaunch(ui, drop=[], add=['-uiVerifyBoard', 'long'])
-visible(ui, EXPAND)
+expand = visible(ui, EXPAND)
+map_at_rest(ui)
+items = ui.read()
+more, embedded = by_id(items, MORE), by_id(items, MAP)['frame']
+assert more and inside(more['frame'], embedded), f'the more chip is not on the embedded map: {more}'
+assert more['frame']['y'] - embedded['y'] <= MORE_GAP, f'the more chip is not at the map\'s top: {more["frame"]}'
+assert not overlaps(more['frame'], by_id(items, EXPAND)['frame']), \
+    f'the more chip covers the expand button: {more["frame"]} / {expand["frame"]}'
+ui.capture('07-embedded-more')
 ui.tap(EXPAND)
 ui.element(COVER)
 ui.element(MORE)
@@ -155,7 +163,7 @@ for name, other in (('the close button', close_button(items)), ('the location bu
                     ('the legal link', legal[0])):
     assert other and not overlaps(more['frame'], other['frame']), \
         f'the more chip covers {name}: {more["frame"]} / {other and other["frame"]}'
-ui.capture('07-cover-more')
+ui.capture('08-cover-more')
 print('PASS: 44 pt expand at the map corner, edge-to-edge cover with chips, close and location button, pin card on '
       'the cover, 急 shared with the board after closing, 看详情 dismisses the cover and pushes the detail, the more '
       'chip under the filter chips clear of the controls and the legal link')
