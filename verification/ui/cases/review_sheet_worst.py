@@ -1,12 +1,16 @@
 """Worst case: the longest name and the poster's Malay chips wrap inside the sheet, nothing runs off its edge; the long
-sealed copy wraps above 好的."""
+sealed copy wraps above 好的. The date under the title is never split over two lines, and the sealed title's last line
+is not a single character.
+
+Text is read by OCR: the accessibility tree does not say where a line breaks."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
-from review import open_sheet, shot  # noqa: E402
+from ocr import inside  # noqa: E402
+from review import loose, open_sheet, read_shot  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/ui/Mascot.tsx', 'src/ui/mascotPaint.ts', 'src/lib/uiVerify.ts', 'src/app/review.tsx', 'src/app/_layout.tsx', 'src/debug/ReputationScenes.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/PillButton.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/ocr.py']
 SCENE = 'review-sheet'
 BUDGET = 200
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyReviews', 'worst', '-uiVerifyReviewPerson', 'fixture-person-aiman', '-uiVerifyReviewTitle', 'Ambil bungkusan besar dari Sunway Pyramid ke Sunway Geo Residences blok C tingkat 23']
@@ -26,7 +30,11 @@ for chip in CHIPS:
     ui.tap(f'review-chip-{chip}')
 assert by_id(ui.read(), 'review-submit'), '提交 is missing'
 ui.at_rest()
-shot(ui, '01-long-chips')
+_, read = read_shot(ui, '01-long-chips')
+subtitle = by_id(ui.read(), 'review-subtitle')
+date = loose(subtitle['AXLabel'].rsplit(' · ', 1)[1])
+whole = [line for line in read if inside(line, subtitle['frame'], slack=4) and date in loose(line['text'])]
+assert whole, f"the date {date} is split over two lines: {[line['text'] for line in read if inside(line, subtitle['frame'], slack=4)]}"
 ui.tap('review-submit')
 ui.element('review-sealed-ok', timeout=20)
 items = ui.read()
@@ -35,5 +43,10 @@ ok = by_id(items, 'review-sealed-ok')['frame']
 assert note['y'] + note['height'] <= ok['y'], 'the sealed copy runs into 好的'
 assert title['height'] > 40, f'the long sealed title did not wrap: {title}'
 ui.at_rest()
-shot(ui, '02-sealed')
+_, read = read_shot(ui, '02-sealed')
+rows = sorted((line for line in read if inside(line, title, slack=4)), key=lambda line: line['y'])
+assert rows, 'the sealed title was not read'
+last = rows[-1]
+assert last['y'] > title['y'] + title['height'] * 0.6, f"the last line of the sealed title was not read: {[line['text'] for line in rows]}"
+assert len(loose(last['text'])) >= 2, f"the sealed title ends on a lone character: {[line['text'] for line in rows]}"
 print('PASS: long chips and names wrap inside the sheet')

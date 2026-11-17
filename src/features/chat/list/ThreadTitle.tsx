@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { PlatformColor, StyleSheet } from 'react-native';
+import { PlatformColor, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -12,6 +12,7 @@ import type { ThreadInfo } from '../types';
 import { threadTitle } from './rowView';
 
 const CHEVRON = 11;
+const BAR_SIDE = vars['--space-4'] + vars['--touch-min'] + vars['--space-2'];
 
 const titlePeer = (info: ThreadInfo) =>
   info.kind === 'bounty' ? (info.members.find((member) => !member.left) ?? null) : null;
@@ -24,6 +25,7 @@ export function ThreadTitle({
   onOpenProfile?: (personId: string) => void;
 }) {
   const { t } = useI18n();
+  const { width } = useWindowDimensions();
   const info = useChatThreadInfo(threadId);
   const title = info ? threadTitle(info, t) : '';
   const peer = info && onOpenProfile ? titlePeer(info) : null;
@@ -39,7 +41,7 @@ export function ThreadTitle({
             accessibilityHint={t('reputation.profile.open', { name: title })}
             testID="chat-thread-title"
             onPress={() => onOpenProfile(peer.id)}
-            style={styles.title}
+            style={[styles.title, { maxWidth: width - 2 * BAR_SIDE }]}
           >
             <AppText variant="body" numberOfLines={1} style={styles.text}>
               {title}

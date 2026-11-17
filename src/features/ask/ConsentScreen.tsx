@@ -146,7 +146,7 @@ function Header() {
     <Section modifiers={[listRowBackground('clear')]}>
       <VStack spacing={vars['--space-3']} modifiers={[frame({ maxWidth: Infinity })]}>
         <RNHostView matchContents>
-          <Mascot variant="front" size={MASCOT} />
+          <Mascot variant="front" size={MASCOT} darkOutline />
         </RNHostView>
         <Text
           modifiers={[

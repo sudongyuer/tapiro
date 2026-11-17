@@ -1,5 +1,5 @@
 """Thread states: a first load that fails (`-uiVerifyChatFail thread`) shows 「对话没加载出来」 with 重试, and no safety card,
-item card or composer, never an empty thread; 重试 loads it. A ride group you left (`-uiVerifyChatLeft 1`) keeps its
+item card or composer, never an empty thread, on a card that stands out from the thread's ground; 重试 loads it. A ride group you left (`-uiVerifyChatLeft 1`) keeps its
 messages and shows 「你已离开这个拼车，不能再发消息」 on an opaque bar in place of the composer."""
 import sys
 
@@ -8,7 +8,9 @@ from bounty import relaunch  # noqa: E402
 from chat import bubbles, open_list  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
+CARD_PADDING = 16
+
+DEPS = ['src/features/chat/', 'src/ui/InlineState.tsx', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
         '-uiVerifyChatFail', 'thread']
 
@@ -22,7 +24,10 @@ for absent in ('chat-safety', 'chat-composer-input'):
     assert by_id(items, absent) is None, f'{absent} shows on a thread that failed to load'
 assert not bubbles(items), 'a failed thread shows messages'
 ui.at_rest()
-ui.capture('01-failed')
+shot = ui.snap('01-failed')
+middle = failed['frame']['y'] + failed['frame']['height'] / 2
+fill, ground = shot.rgb(failed['frame']['x'] - CARD_PADDING / 2, middle), shot.rgb(2, middle)
+assert max(abs(a - b) for a, b in zip(fill, ground)) >= 8, f'the failed card {fill} melts into the ground {ground}'
 ui.tap('chat-thread-retry')
 ui.element('chat-safety', timeout=30)
 ui.wait(lambda items: len(bubbles(items)) == 3 and by_id(items, 'chat-composer-input'), '重试 did not load the thread')

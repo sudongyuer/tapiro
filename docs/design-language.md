@@ -127,28 +127,32 @@ The hold button's track is the accent; the gold fill appears only while the user
 
 ### Moments, stickers and mascot
 
-| Token                    | Light       | Dark        | Use                             |
-| ------------------------ | ----------- | ----------- | ------------------------------- |
-| `--color-moment-bg`      | `#F4F0E6`   | `#24221E`   | Moment screen background        |
-| `--color-moment-grain`   | `#3C321E21` | `#F4F0E61A` | Speckle dots on moment screens  |
-| `--color-sticker-border` | `#FFFFFF`   | `#FFFFFF`   | Die-cut border of every sticker |
-| `--color-sticker-shadow` | `#1E1B222E` | `#0000004D` | Sticker drop shadow             |
-| `--color-mascot-ink`     | `#2E2B35`   |             | 小貘 head, legs, rump           |
-| `--color-mascot-line`    | `#1E1C22`   |             | 小貘 outline                    |
-| `--color-mascot-saddle`  | `#F3EFE6`   |             | 小貘 saddle and ear rims        |
-| `--color-mascot-blush`   | `#FF8A7A`   |             | 小貘 cheeks                     |
-| `--color-mascot-eye`     | `#FFFFFF`   |             | 小貘 eye whites and highlights  |
-| `--color-mascot-snout`   | `#3A3742`   |             | 小貘 front-view snout           |
-| `--color-wear-red`       | `#C8463A`   |             | 小红帽 and 围巾 (stand-in art)  |
-| `--color-wear-red-deep`  | `#A83A30`   |             | Their shaded parts              |
-| `--color-wear-bag`       | `#E9A23B`   |             | 书包 (stand-in art)             |
-| `--color-wear-bag-deep`  | `#B97A22`   |             | 书包 strap                      |
-| `--color-wear-canopy`    | `#4F86C6`   |             | 雨伞 canopy (stand-in art)      |
-| `--color-wear-handle`    | `#6B4F3A`   |             | 雨伞 handle                     |
-| `--color-stage-hint`     | `#E9A23B`   |             | Star over 小貘 on a busy stage  |
-| `--color-leaf`           | `#7BB661`   |             | Weekly-feed leaf                |
-| `--color-leaf-vein`      | `#4E8A3A`   |             | Its vein                        |
-| `--color-moment-chip`    | `#FFFFFFBF` | `#FFFFFF1A` | Info chip on moment screens     |
+| Token                      | Light       | Dark        | Use                               |
+| -------------------------- | ----------- | ----------- | --------------------------------- |
+| `--color-moment-bg`        | `#F4F0E6`   | `#24221E`   | Moment screen background          |
+| `--color-moment-grain`     | `#3C321E21` | `#F4F0E61A` | Speckle dots on moment screens    |
+| `--color-sticker-border`   | `#FFFFFF`   | `#FFFFFF`   | Die-cut border of every sticker   |
+| `--color-sticker-shadow`   | `#1E1B222E` | `#0000004D` | Sticker drop shadow               |
+| `--color-mascot-ink`       | `#2E2B35`   |             | 小貘 head, legs, rump             |
+| `--color-mascot-line`      | `#1E1C22`   |             | 小貘 outline                      |
+| `--color-mascot-saddle`    | `#F3EFE6`   |             | 小貘 saddle and ear rims          |
+| `--color-mascot-blush`     | `#FF8A7A`   |             | 小貘 cheeks                       |
+| `--color-mascot-eye`       | `#FFFFFF`   |             | 小貘 eye whites and highlights    |
+| `--color-mascot-snout`     | `#3A3742`   |             | 小貘 front-view snout             |
+| `--color-stage-hint`       | `#E9A23B`   |             | Star over 小貘 on a busy stage    |
+| `--color-coin-gold-light`  | `#FBEFCF`   |             | 貘币 rim gradient, light end      |
+| `--color-coin-gold`        | `#D2AE6A`   |             | Rim gradient middle, gold wire    |
+| `--color-coin-gold-deep`   | `#94703A`   |             | Rim gradient dark end, inner ring |
+| `--color-coin-dot`         | `#FFF4D6`   |             | Dotted ring on the rim (70 %)     |
+| `--color-coin-ink-light`   | `#4A4552`   |             | Ink face highlight                |
+| `--color-coin-ink`         | `#25232B`   |             | Ink face, the tapir eye           |
+| `--color-coin-ink-deep`    | `#17151B`   |             | Ink face edge                     |
+| `--color-coin-cream-light` | `#FFFBF2`   |             | Cream band and tapir, top         |
+| `--color-coin-cream`       | `#E9E1D1`   |             | Cream band and tapir, bottom      |
+| `--color-coin-blush`       | `#FF8F80`   |             | The coin tapir cheek              |
+| `--color-coin-shine`       | `#FFFFFF`   |             | Gloss and face ring               |
+| `--color-coin-shadow`      | `#1E1B2252` |             | Coin drop shadow                  |
+| `--color-moment-chip`      | `#FFFFFFBF` | `#FFFFFF1A` | Info chip on moment screens       |
 
 In dark mode only, the 12 pt tier heads (`TierMark`, on the board, the detail and the applicant rows) add a 1 pt
 outer outline in `--color-mascot-saddle`, so the dark ink head keeps at least 3:1 against the dark grouped
@@ -380,6 +384,11 @@ Radii are continuous corners. Buttons are pills.
   New poses do not have to relate to bounties.
 - While 小貘 drafts a bounty it shows its thinking expression next to the draft.
 - Animated with Rive (see AGENTS.md). Final character art comes from a designer, following C1.
+- **The coin** is the canvas `CoinD` (墨奶双色珐琅), one static vector `TapirCoin` in `src/ui`, coloured by the
+  `--color-coin-*` tokens and the same in light and dark: the gold rim keeps it readable on dark rows. It appears only
+  where an answered board draws it (plan `2026-11-06-reviews-profile-coins`, G1–G5).
+- **Accessories and the 嫩叶** are 93 A crayon art from `scripts/hand-art/drawings.mjs` (`render.mjs --set wear`,
+  `--set pantry`); an accessory PNG covers the mascot's 64 pt art box exactly, and its sticker rim stays vector.
 
 ## Voice
 
