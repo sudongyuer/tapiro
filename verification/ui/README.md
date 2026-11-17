@@ -27,9 +27,11 @@ picks each case whose `DEPS` prefixes (or its own file) match one, printing why.
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording, records and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
 `--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
-before TestFlight. `python3 -m unittest test_affected test_breaker test_pool test_heal test_strings test_driver test_runtime test_keyboard test_ride test_zone test_taps` in `verification/ui` covers the
+before TestFlight. `python3 -m unittest discover -p 'test_*.py'` in `verification/ui` covers the
 selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
-`ARGS`, `BUDGET`, `TIME_ZONE` and `LOCAL_HOURS` are plain literals the runner reads without running the case); CI runs it. `ui.type` sends ASCII
+`ARGS`, `BUDGET`, `TIME_ZONE` and `LOCAL_HOURS` are plain literals the runner reads without running the case); CI runs it. `test_imports` reads every case and helper and fails when one imports a
+module, a name or a `module.attr` that no longer exists in `verification/ui`, so a removed helper fails CI instead of the
+Simulator run. `ui.type` sends ASCII
 only; paste other text with `bounty.paste_into`, or seed it through a launch argument such as `-uiVerifyApplyNote`.
 `keys.py` types it. Lower-case letters, digits and spaces go as paced HID keys: an unpaced space from `axe type`
 repeated, and the keyboard turned the double space into 「. 」 (「see you. at the lobby」). On iOS 27.2 the number, decimal and phone pads drop AXe's HID keys (6 of 6, also after waiting), so digits
