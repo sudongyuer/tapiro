@@ -21,6 +21,13 @@ def retries(items):
 
 
 
+# The read time under an earlier bubble goes once this one is stored, shifting the whole transcript; the bubble is
+# measured from the peer bubble above it.
+def placed(bubble, items):
+    above = by_id(items, 'chat-bubble-fixture-chat-bounty-m3')['frame']
+    return {**bubble['frame'], 'y': bubble['frame']['y'] - above['y']}
+
+
 ui = UI(*sys.argv[1:])
 open_thread(ui, 'fixture-chat-bounty', '阿杰')
 ui.wait(lambda items: (by_id(items, 'chat-composer-input') or {}).get('AXValue') == DRAFT, 'no kept draft')
@@ -59,9 +66,10 @@ tap_button(ui, ui.t('chat.thread.resend'))
 ui.wait(lambda items: not retries(items) and any(b.get('AXLabel') == mine for b in bubbles(items)),
         'the resent message never turned stored')
 ui.at_rest()
-stored = next(b for b in bubbles(ui.read()) if b.get('AXLabel') == mine)
-moved = max(abs(stored['frame'][k] - bubble['frame'][k]) for k in ('x', 'y', 'width', 'height'))
-assert moved <= 0.5, f'the bubble moved between failed and sent: {bubble["frame"]} then {stored["frame"]}'
+after = ui.read()
+stored = next(b for b in bubbles(after) if b.get('AXLabel') == mine)
+moved = max(abs(placed(stored, after)[k] - placed(bubble, items)[k]) for k in ('x', 'y', 'width', 'height'))
+assert moved <= 0.5, f'the bubble moved between failed and sent: {placed(bubble, items)} then {placed(stored, after)}'
 first, second = chat_calls(ui, 'send', 2)
 assert first['clientId'] == second['clientId'], f'the retry used another client id: {first} {second}'
 ui.at_rest()

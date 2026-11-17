@@ -18,6 +18,13 @@ def spinners(items):
     return [i for i in items if (i.get('AXUniqueId') or '').startswith('chat-sending-')]
 
 
+# The read time under an earlier bubble goes once this one is stored, shifting the whole transcript; the bubble is
+# measured from the peer bubble above it.
+def placed(bubble, items):
+    above = by_id(items, 'chat-bubble-fixture-chat-bounty-m3')['frame']
+    return {**bubble['frame'], 'y': bubble['frame']['y'] - above['y']}
+
+
 ui = UI(*sys.argv[1:])
 open_thread(ui, 'fixture-chat-bounty', '阿杰')
 ui.wait(lambda items: (by_id(items, 'chat-composer-input') or {}).get('AXValue') == DRAFT,
@@ -41,9 +48,10 @@ assert spinner['frame']['x'] + spinner['frame']['width'] <= bubble['frame']['x']
 ui.wait(lambda items: any(b.get('AXLabel') == mine for b in bubbles(items)) and not spinners(items),
         'the bubble never turned stored', 20)
 ui.at_rest()
-stored = next(b for b in bubbles(ui.read()) if b.get('AXLabel') == mine)
-moved = max(abs(stored['frame'][k] - bubble['frame'][k]) for k in ('x', 'y', 'width', 'height'))
-assert moved <= 0.5, f'the bubble moved between sending and sent: {bubble["frame"]} then {stored["frame"]}'
+after = ui.read()
+stored = next(b for b in bubbles(after) if b.get('AXLabel') == mine)
+moved = max(abs(placed(stored, after)[k] - placed(bubble, items)[k]) for k in ('x', 'y', 'width', 'height'))
+assert moved <= 0.5, f'the bubble moved between sending and sent: {placed(bubble, items)} then {placed(stored, after)}'
 ui.capture('02-stored')
 assert not by_id(ui.read(), 'chat-composer-send'), 'the draft came back after sending'
 print('PASS: kept draft, spinner while sending, plain once stored, draft cleared')
