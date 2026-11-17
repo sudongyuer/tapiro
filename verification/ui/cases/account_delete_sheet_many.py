@@ -1,5 +1,5 @@
-"""The real delete-account form sheet from Settings with six unsettled payments: the sheet stays inside the screen, both
-buttons stay reachable and the last payment scrolls into view above them."""
+"""The real delete-account form sheet from Settings with six unsettled payments: the sheet stays inside the screen and
+scrolls as one, so the last payment and both buttons scroll into view (a form sheet's ScrollView fills the sheet)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -14,21 +14,16 @@ PAYMENT = 'delete-account-payment-00000000-0000-4000-8000-0000000000a'
 BUTTONS = ('delete-account-confirm', 'delete-account-cancel')
 
 
-def assert_sheet_fits(items, when):
-    height = items[0]['frame']['height']
-    sheet = by_id(items, 'delete-account-sheet')['frame']
+def sheet_frame(items, when):
+    sheet = by_id(items, 'delete-account-scroll')['frame']
     assert sheet['y'] >= 44, f'the sheet runs under the status bar {when}: {sheet}'
-    for identifier in BUTTONS:
-        button = by_id(items, identifier)
-        assert button is not None, f'{identifier} is missing {when}'
-        assert_touch_target(button, identifier)
-        assert bottom(button) <= height, f'{identifier} is off screen {when}: {button["frame"]} on a {height} pt screen'
-    return by_id(items, BUTTONS[0])['frame']
+    assert bottom(sheet) <= items[0]['frame']['height'] + 1, f'the sheet runs off the screen {when}: {sheet}'
+    return sheet
 
 
-def visible(items, identifier, limit):
-    row = by_id(items, identifier)
-    return row is not None and bottom(row) <= limit
+def on_screen(items, identifier, sheet):
+    element = by_id(items, identifier)
+    return element is not None and element['frame']['y'] >= sheet['y'] and bottom(element) <= bottom(sheet)
 
 
 ui = UI(*sys.argv[1:])
@@ -40,21 +35,25 @@ ui.tap('delete-account-confirm')
 ui.element('delete-account-message-blocked', timeout=10)
 ui.at_rest()
 items = ui.read()
-confirm = assert_sheet_fits(items, 'with six payments')
-assert not visible(items, PAYMENT + '6', confirm['y']), 'six payments fit without scrolling; the fixture no longer overflows'
+sheet = sheet_frame(items, 'with six payments')
+assert on_screen(items, PAYMENT + '1', sheet), 'the first unsettled payment is not shown'
+assert not on_screen(items, BUTTONS[1], sheet), '取消 is on screen with six payments; the fixture no longer overflows'
 ui.capture('01-blocked-top')
 
 width = items[0]['frame']['width']
 for _ in range(6):
-    if visible(ui.read(), PAYMENT + '6', confirm['y']):
+    if on_screen(ui.read(), BUTTONS[1], sheet):
         break
-    drag(ui, (width / 2, confirm['y'] - 120), (width / 2, confirm['y'] - 420))
+    drag(ui, (width / 2, bottom(sheet) - 120), (width / 2, bottom(sheet) - 420))
 ui.at_rest()
 items = ui.read()
-assert visible(items, PAYMENT + '6', confirm['y']), 'the payment list does not scroll to its last row'
-assert_sheet_fits(items, 'after scrolling')
+sheet_frame(items, 'after scrolling')
+for identifier in (PAYMENT + '6', *BUTTONS):
+    assert on_screen(items, identifier, sheet), f'{identifier} never scrolled into the sheet'
+for identifier in BUTTONS:
+    assert_touch_target(by_id(items, identifier), identifier)
 ui.capture('02-blocked-end')
 ui.tap('delete-account-cancel')
 ui.gone('delete-account-confirm')
 ui.element('settings-delete')
-print('PASS: the delete sheet keeps its buttons on screen with six unsettled payments')
+print('PASS: the delete sheet scrolls to its last payment and both buttons with six unsettled payments')

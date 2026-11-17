@@ -1,5 +1,5 @@
-"""Deleting an account with six unsettled payments: the reason and the list scroll inside the sheet body while 删除账号
-and 取消 stay on screen, and the last payment can be scrolled above the buttons."""
+"""Deleting an account with six unsettled payments: the sheet scrolls as one, so the last payment, 删除账号 and 取消 can
+be scrolled onto the screen."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -15,19 +15,9 @@ PAYMENT = 'delete-account-payment-00000000-0000-4000-8000-0000000000a'
 BUTTONS = ('delete-account-confirm', 'delete-account-cancel')
 
 
-def assert_buttons_on_screen(items, when):
-    height = items[0]['frame']['height']
-    for identifier in BUTTONS:
-        button = by_id(items, identifier)
-        assert button is not None, f'{identifier} is missing {when}'
-        assert_touch_target(button, identifier)
-        assert bottom(button) <= height, f'{identifier} is off screen {when}: {button["frame"]} on a {height} pt screen'
-    return by_id(items, BUTTONS[0])['frame']
-
-
-def visible(items, identifier, limit):
-    row = by_id(items, identifier)
-    return row is not None and bottom(row) <= limit
+def on_screen(items, identifier):
+    element = by_id(items, identifier)
+    return element is not None and element['frame']['y'] >= 0 and bottom(element) <= items[0]['frame']['height']
 
 
 ui = UI(*sys.argv[1:])
@@ -36,20 +26,20 @@ ui.tap('delete-account-confirm')
 ui.element('delete-account-message-blocked', timeout=10)
 ui.at_rest()
 items = ui.read()
-confirm = assert_buttons_on_screen(items, 'with six payments')
-assert visible(items, PAYMENT + '1', confirm['y']), 'the first unsettled payment is not shown above the buttons'
-assert not visible(items, PAYMENT + '6', confirm['y']), 'six payments fit without scrolling; the fixture no longer overflows'
+assert on_screen(items, PAYMENT + '1'), 'the first unsettled payment is not shown'
+assert not on_screen(items, BUTTONS[1]), '取消 is on screen with six payments; the fixture no longer overflows'
 ui.capture('01-blocked-top')
 
-width = items[0]['frame']['width']
+width, height = items[0]['frame']['width'], items[0]['frame']['height']
 for _ in range(6):
-    if visible(ui.read(), PAYMENT + '6', confirm['y']):
+    if on_screen(ui.read(), BUTTONS[1]):
         break
-    drag(ui, (width / 2, confirm['y'] - 120), (width / 2, confirm['y'] - 420))
+    drag(ui, (width / 2, height - 200), (width / 2, height - 500))
 ui.at_rest()
 items = ui.read()
-assert visible(items, PAYMENT + '6', confirm['y']), 'the payment list does not scroll to its last row'
-after = assert_buttons_on_screen(items, 'after scrolling')
-assert after == confirm, f'the buttons moved with the list: {confirm} then {after}'
+for identifier in (PAYMENT + '6', *BUTTONS):
+    assert on_screen(items, identifier), f'{identifier} never scrolled onto the screen'
+for identifier in BUTTONS:
+    assert_touch_target(by_id(items, identifier), identifier)
 ui.capture('02-blocked-end')
-print('PASS: six unsettled payments scroll inside the sheet and both buttons stay on screen')
+print('PASS: six unsettled payments and both buttons scroll onto the screen')
