@@ -9,9 +9,9 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 import recording  # noqa: E402
-from ask import ai_calls, assert_calls, open_sheet, turn, type_and_send  # noqa: E402
+from ask import ai_calls, assert_calls, assert_lifted, open_sheet, turn, type_and_send  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
-from driver import UI, assert_colour, by_id, reach_home, token  # noqa: E402
+from driver import UI, assert_colour, by_id, close, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/ask.tsx', 'src/lib/i18n/locales/ask/',
         'src/ui/theme/tokens.ts', 'assets/pantry/', 'verification/ui/ask.py']
@@ -74,13 +74,22 @@ ui.wait_label('ask-belly-low', lambda text: text == ui.t('ask.belly.low'), 'the 
 ui.at_rest()
 shot = ui.snap('03-low')
 assert_colour(shot, first_segment(ui), token('--color-belly-low', ui.appearance), 'the last segment')
+for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-field'):
+    assert_lifted(shot, by_id(ui.read(), identifier)['frame'], identifier)
 
 with_belly('0,2,3,5')
 segments(ui, 0)
 offer(ui, 'feed', ui.t('ask.hungry.feed', count=2))
 ui.wait_label('ask-hungry-line', lambda text: text == ui.t('ask.hungry.refill'), 'the refill line is missing')
 ui.at_rest()
-ui.capture('04-hungry-leaf')
+shot = ui.snap('04-hungry-leaf')
+if ui.appearance == 'dark':
+    card = by_id(ui.read(), 'ask-hungry-feed')['frame']
+    head = {'x': card['x'] + card['width'] / 2 - 40, 'y': card['y'] + 4, 'width': 80, 'height': 80}
+    saddle = token('--color-mascot-saddle', 'dark')
+    # Without the outline the face alone has 375 such pixels (audit capture, 2026-11-17).
+    rim = shot.count(head, lambda rgb: close(rgb, saddle, 12))
+    assert rim >= 1000, f'小貘 on the hungry card has no outline in dark ({rim} saddle pixels)'
 with recording.clip(ui, 'feed'):
     ui.tap('ask-hungry-offer')
     segments(ui, 5)

@@ -5,6 +5,7 @@ import { useSignedInUser } from '@/features/account';
 import {
   AskConversation,
   askSession,
+  FailureCard,
   pickScreenshot,
   useAskSession,
   useBellySlots,
@@ -73,7 +74,8 @@ export default function Ask() {
         state.turns.length +
         (state.failed ? 1 : 0) +
         (sending ? 1 : 0) +
-        (voiceShown(heard) ? 1 : 0)
+        (voiceShown(heard) ? 1 : 0) +
+        (note ? 1 : 0)
       }
       belly={belly.bar}
       notice={belly.notice}
@@ -93,7 +95,6 @@ export default function Ask() {
           else setImageFailed(picked.kind === 'failed');
         },
         sending,
-        note,
         mic: {
           state: heard.phase === 'explain' || heard.phase === 'blocked' ? 'idle' : heard.phase,
           live: heard.live,
@@ -124,6 +125,14 @@ export default function Ask() {
         onAllow={() => void voice.allow()}
         onRetry={() => void voice.retry()}
       />
+      {note ? (
+        <FailureCard
+          text={note}
+          dizzy={false}
+          testID="ask-tapir-note-card"
+          textTestID="ask-tapir-note"
+        />
+      ) : null}
     </AskTapirSheet>
   );
 }
