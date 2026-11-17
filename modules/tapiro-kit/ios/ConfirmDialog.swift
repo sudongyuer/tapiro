@@ -72,8 +72,8 @@ enum ConfirmDialog {
     }
     guard let items = bars.last?.topItem?.rightBarButtonItems else { return nil }
     let item = items.first { $0.menu != nil && !$0.isHidden } ?? items.first { !$0.isHidden } ?? items[0]
-    let frame = item.frame(in: host)
-    return frame.isNull || frame.isEmpty ? nil : frame
+    guard let frame = item.frame(in: host), !frame.isNull, !frame.isEmpty else { return nil }
+    return frame
   }
 
   private static func navigationBars(in view: UIView) -> [UINavigationBar] {
