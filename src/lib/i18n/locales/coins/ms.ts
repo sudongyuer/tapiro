@@ -6,6 +6,9 @@ const ms: typeof zhHans = {
   freePosts: '{{left}} daripada {{total}} siaran percuma lagi bulan ini',
   empty: 'Belum ada aktiviti',
   failed: 'Tidak dapat dimuatkan',
+  historyFailed: 'Aktiviti tidak dapat dimuatkan',
+  historyFailedBody:
+    'Ketik Cuba Lagi atau tarik ke bawah untuk memuatkannya semula. Baki anda tidak terjejas.',
   retry: 'Cuba Lagi',
   stale: 'Tidak dapat dimuat semula · Ini Syiling yang dimuatkan sebelum ini',
   loading: 'Memuatkan Syiling',

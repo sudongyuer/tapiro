@@ -112,3 +112,16 @@ def assert_grey(picture, box, appearance, name):
 def assert_ink(picture, box, appearance, name):
     value = ink_luma(picture, box, appearance)
     assert (value >= 200) if appearance == 'dark' else (value <= 90), f'{name} is not drawn in the accent: luma {value:.0f}'
+
+
+def assert_envelope(ui, picture, read, f, name):
+    phrase = loose(ui.t('reputation.entry.reviewed'))
+    found = one_line(read, phrase, f)
+    assert found, f'{name}: {phrase} was not read on the row'
+    line = found[0]
+    if loose(line['text']).split(phrase)[0]:
+        return
+    box = {'x': line['x'] - 10, 'y': line['y'] + 2, 'width': 8, 'height': max(4, line['height'] - 4)}
+    value = ink_luma(picture, box, ui.appearance)
+    drawn = value >= 200 if ui.appearance == 'dark' else value <= 90
+    assert drawn, f'{name}: no envelope before {phrase} (luma {value:.0f} at {box})'

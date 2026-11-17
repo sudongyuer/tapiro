@@ -1,12 +1,13 @@
 """Sign in with the fixture, blank the name (spaces only) and see the error, paste a name, pick a language, reach home, sign out and back in, then delete the account and land on welcome.
 On the way: the continue button sits one space-4 above the keyboard, the caret is the accent, the language step shares the
-name step's column and bubble height, settings shows the avatar, and the delete sheet reads no symbol names."""
+name step's column and bubble height, the moment titles have their white outline in light, settings shows the avatar and opens 用户协议 and 隐私政策, and the delete sheet reads no symbol names."""
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import paste_into  # noqa: E402
 from driver import UI, assert_appearance, assert_touch_target, bottom, by_id, close, sign_in_apple, token  # noqa: E402
+from halo import assert_title_halo  # noqa: E402
 
 DEPS = [
     'src/features/account/',
@@ -14,14 +15,16 @@ DEPS = [
     'src/app/onboarding/',
     'src/app/(tabs)/',
     'src/app/delete-account.tsx',
+    'src/app/legal/',
     'src/features/shell/',
     'src/features/home/',
     'verification/ui/bounty.py',
     'verification/ui/pasteboard.swift',
+    'verification/ui/halo.py',
 ]
 
 LOCALES = ['zh-Hans', 'ms']
-BUDGET = 280
+BUDGET = 320
 NAME = 'Lin Mo'
 BLANK = '   '
 DELETE_ITEMS = ['profile', 'payee', 'messages', 'memory', 'coins', 'stickers']
@@ -91,7 +94,7 @@ assert_touch_target(ui.element('name-input'), 'name field')
 assert_touch_target(ui.element('name-continue'), 'continue button')
 name_title = ui.labelled(ui.t('account.name.question'))['frame']
 name_bubble = ui.labelled(ui.t('account.name.greeting'))['frame']
-ui.capture('02-name-prefilled')
+assert_title_halo(ui, ui.snap('02-name-prefilled'), name_title, 'name question')
 
 paste_into(ui, 'name-input', BLANK)
 ui.tap('name-continue')
@@ -112,7 +115,7 @@ row = ui.labelled(ui.t('languages.en'))['frame']
 assert abs(title['x'] - name_title['x']) <= 1, f'language title starts at {title["x"]}, the name title at {name_title["x"]}'
 assert abs(row['x'] - name_title['x']) <= 1, f'language rows start at {row["x"]}, the name title at {name_title["x"]}'
 assert abs(bubble['y'] - name_bubble['y']) <= 2, f'language bubble at y {bubble["y"]}, the name bubble at {name_bubble["y"]}'
-ui.capture('04-language')
+assert_title_halo(ui, ui.snap('04-language'), title, 'language question')
 other = ui.other_locale()
 ui.tap_label(ui.t('languages.' + other))
 ui.wait_label('language-done', lambda label: label == ui.t_in(other, 'account.language.done'), f'language did not switch to {other}')
@@ -132,6 +135,18 @@ profile_row, avatar = by_id(items, 'settings-profile'), ui.t('account.name.avata
 inside = [i for i in items if i.get('AXLabel') == avatar and profile_row['frame']['y'] <= i['frame']['y'] <= bottom(profile_row)]
 assert inside or avatar in profile_row.get('AXLabel'), f'settings shows no avatar in the profile row: {profile_row.get("AXLabel")!r}'
 ui.capture('06-settings')
+for page in ('terms', 'privacy'):
+    row = ui.element(f'settings-{page}')
+    assert ui.t(f'account.legal.{page}.title') in (row.get('AXLabel') or ''), f'settings {page} row reads {row.get("AXLabel")!r}'
+    assert_touch_target(row, f'settings-{page}')
+    ui.tap(f'settings-{page}')
+    ui.wait_label('legal-draft', lambda text: text.startswith(ui.t('account.legal.draft')), f'{page} page did not open from settings')
+    ui.labelled(ui.t(f'account.legal.{page}.title'))
+    ui.at_rest()
+    ui.capture(f'06-settings-{page}')
+    ui.tap_label(ui.t('account.legal.close'))
+    ui.gone('legal-draft')
+    ui.element('settings-sign-out')
 ui.tap('settings-sign-out')
 ui.gone('settings-sign-out')
 ui.element('sign-in-apple')

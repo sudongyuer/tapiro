@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { AppText } from '@/ui/AppText';
+import { InkText } from '@/ui/InkText';
 import { MascotSays } from '@/ui/MascotSays';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
@@ -73,9 +74,15 @@ export function NameStep({
         >
           <MascotSays line={t('account.name.greeting')} />
           <View style={styles.heading}>
-            <AppText variant="moment-title" accessibilityRole="header">
+            <InkText
+              variant="moment-title"
+              outline={vars['--sticker-border']}
+              ink={PlatformColor('label')}
+              accessibilityRole="header"
+              testID="name-question"
+            >
               {t('account.name.question')}
-            </AppText>
+            </InkText>
             <AppText variant="secondary" tone="secondaryLabel">
               {t('account.name.footer')}
             </AppText>

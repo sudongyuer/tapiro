@@ -59,6 +59,7 @@ export function SettingsScene({ onReady }: SceneProps) {
         avatarUrl={null}
         onSignOut={() => {}}
         onDeleteAccount={() => {}}
+        onOpenLegal={() => {}}
       />
     </View>
   );

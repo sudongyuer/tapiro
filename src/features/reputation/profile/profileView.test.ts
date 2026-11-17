@@ -14,6 +14,7 @@ import {
   reviewQuote,
   reviewSource,
   showsAllReviews,
+  standingOf,
 } from './profileView';
 
 const i18n = createInstance();
@@ -117,5 +118,33 @@ describe('profile view', () => {
     expect(levelCardMascot(grown, card)).toBe(grown);
     expect(levelCardMascot(card, null)).toBe(card);
     expect(levelCardMascot(card, { ...card, stickers: 24 })).toBe(card);
+  });
+});
+
+describe('my standing on 我的', () => {
+  const grown = { level: 5, stickers: 25, accessory: 'scarf' } as const;
+
+  test('a ready card gives the tier and the higher of the two levels', () => {
+    expect(standingOf({ status: 'ready', data: card() }, { status: 'idle' }, t)).toEqual({
+      tier: '很靠谱',
+      rank: 3,
+      level: 'Lv.4 少年貘',
+    });
+    expect(
+      standingOf({ status: 'ready', data: card() }, { status: 'ready', data: grown }, t)?.level,
+    ).toBe('Lv.5 青年貘');
+  });
+
+  test('a card that is loading, failed or stale shows no line', () => {
+    expect(standingOf(undefined, { status: 'idle' }, t)).toBeNull();
+    expect(standingOf({ status: 'loading', data: null }, { status: 'idle' }, t)).toBeNull();
+    expect(standingOf({ status: 'failed', data: null }, { status: 'idle' }, t)).toBeNull();
+    expect(standingOf({ status: 'stale', data: card() }, { status: 'idle' }, t)).toBeNull();
+  });
+
+  test('a stale mascot read does not raise the level', () => {
+    expect(
+      standingOf({ status: 'ready', data: card() }, { status: 'stale', data: grown }, t)?.level,
+    ).toBe('Lv.4 少年貘');
   });
 });

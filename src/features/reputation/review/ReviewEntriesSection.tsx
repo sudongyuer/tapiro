@@ -24,6 +24,7 @@ import type { ReviewEntry } from './entryView';
 import { useReviewEntries } from './useReviewEntries';
 
 const HEAD = 22;
+const ENVELOPE = 15;
 const primary = foregroundStyle({ type: 'hierarchical', style: 'primary' });
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
@@ -47,7 +48,18 @@ function EntryBody({ entry, target }: { entry: ReviewEntry; target: ReviewTarget
         <Mascot variant="side" size={HEAD} darkOutline />
       </RNHostView>
       <VStack alignment="leading" spacing={2} modifiers={[fill]}>
-        <Text modifiers={[primary, font({ weight: 'semibold' }), lineLimit(1)]}>{entry.title}</Text>
+        <HStack spacing={vars['--space-1']}>
+          {entry.sealed ? (
+            <Image
+              systemName="envelope"
+              size={ENVELOPE}
+              modifiers={[primary, accessibilityHidden()]}
+            />
+          ) : null}
+          <Text modifiers={[primary, font({ weight: 'semibold' }), lineLimit(1)]}>
+            {entry.title}
+          </Text>
+        </HStack>
         {entry.detail ? (
           <Text modifiers={[secondary, font({ textStyle: 'footnote' }), wraps]}>
             {entry.detail}

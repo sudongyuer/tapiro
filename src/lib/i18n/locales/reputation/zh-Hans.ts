@@ -46,6 +46,7 @@ export default {
   sheet: {
     title: '评价{{name}}',
     cancel: '取消',
+    close: '关闭',
     submit: '提交',
     goodChips: '夸夸 TA（可多选）',
     badChips: '哪里不太好？（可多选）',

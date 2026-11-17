@@ -1,20 +1,26 @@
 """Entry from 我的: the name row is a 44 pt button with a chevron and, with no photo, the cream initial disc the profile
-shows; a tap pushes your own profile in the 我的
-tab (one read for your id) with the level card, and back returns with the row deselected."""
+shows, with the tier and the level under the name (CoinPick1 251 A); a tap pushes your own profile in the 我的
+tab (one read for your id, made by the tab) with the level card, and back returns with the row deselected. When that
+read fails, the row shows the name alone, never a tier it does not have."""
 import sys
+import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 from profile import open_profile, rep_calls  # noqa: E402
 
-DEPS = ['src/features/account/MeView.tsx', 'src/ui/Avatar.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
+DEPS = ['src/features/account/MeView.tsx', 'src/ui/Avatar.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'src/ui/TierMark.tsx', 'src/features/reputation/hooks.ts', 'verification/ui/profile.py', 'verification/ui/bounty.py']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 
 ui = UI(*sys.argv[1:])
+tier = ui.t('bounty.tier.very_reliable')
+level = ui.t('reputation.level.label', level=4, name=ui.t('reputation.level.lv4'))
 reach_home(ui)
 ui.tap('tab-me')
-row = ui.element('me-profile', timeout=30)
+row = ui.wait_label('me-profile', lambda text: tier in text and level in text,
+                    'the name row never showed the tier and the level', timeout=30)
 assert row.get('type') == 'Button', row.get('type')
 assert_touch_target(row, '我的名字那行')
 ui.at_rest()
@@ -36,4 +42,14 @@ shot = ui.snap('02-back')
 f = by_id(ui.read(), 'me-profile')['frame']
 fill = shot.rgb(f['x'] + f['width'] * 0.8, f['y'] + f['height'] / 2)
 assert close(fill, CELL[ui.appearance], 8), f'the name row stays highlighted: {fill}'
-print('PASS: the 我的 name row pushes your own profile')
+
+relaunch(ui, drop=[], add=['-uiVerifyRepFail', 'profile'])
+ui.tap('tab-me')
+ui.element('me-profile', timeout=30)
+assert rep_calls(ui, 'profile', 1), 'the 我的 tab never read the profile'
+time.sleep(2)  # the failed answer has landed; a line now would be data the read did not return
+text = by_id(ui.read(), 'me-profile').get('AXLabel') or ''
+assert tier not in text and 'Lv.' not in text, f'the name row shows a tier after a failed read: {text!r}'
+ui.at_rest()
+ui.capture('03-failed')
+print('PASS: the 我的 name row shows the tier and level, pushes your own profile, and drops the line on a failed read')

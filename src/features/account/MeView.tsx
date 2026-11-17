@@ -8,6 +8,7 @@ import {
   Section,
   Spacer,
   Text,
+  VStack,
 } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
@@ -16,7 +17,9 @@ import {
   accessibilityIdentifier,
   accessibilityLabel,
   contentShape,
+  fixedSize,
   font,
+  layoutPriority,
   foregroundStyle,
   lineLimit,
   listRowBackground,
@@ -29,6 +32,7 @@ import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
 import { Avatar } from '@/ui/Avatar';
 import { TapirCoin } from '@/ui/TapirCoin';
+import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
@@ -36,10 +40,14 @@ import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 const AVATAR_SIZE = 60;
 const ROW_COIN = 18;
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
+const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+
+export type MeStanding = { tier: string; rank: 1 | 2 | 3 | 4; level: string };
 
 export function MeView({
   name,
   avatarUrl,
+  standing,
   payeeDue,
   stickerCount,
   coinCount,
@@ -54,6 +62,7 @@ export function MeView({
 }: {
   name: string;
   avatarUrl: string | null;
+  standing: MeStanding | null;
   payeeDue: boolean;
   stickerCount: number | null;
   coinCount: string | null;
@@ -72,7 +81,12 @@ export function MeView({
     <Host style={styles.host} testID="me-screen">
       <Form modifiers={[tint(color('--color-accent'))]}>
         <Section>
-          <ProfileRow name={name} avatarUrl={avatarUrl} onPress={onOpenProfile} />
+          <ProfileRow
+            name={name}
+            avatarUrl={avatarUrl}
+            standing={standing}
+            onPress={onOpenProfile}
+          />
         </Section>
         <Section>
           <NavRow
@@ -107,10 +121,12 @@ export function MeView({
 function ProfileRow({
   name,
   avatarUrl,
+  standing,
   onPress,
 }: {
   name: string;
   avatarUrl: string | null;
+  standing: MeStanding | null;
   onPress: (() => void) | null;
 }) {
   const { t } = useI18n();
@@ -132,15 +148,29 @@ function ProfileRow({
           initial={nameInitial(name)}
         />
       </RNHostView>
-      <Text
-        modifiers={[
-          font({ textStyle: 'title2', weight: 'bold' }),
-          foregroundStyle({ type: 'hierarchical', style: 'primary' }),
-          lineLimit(2),
-        ]}
-      >
-        {name}
-      </Text>
+      <VStack alignment="leading" spacing={vars['--space-1']}>
+        <Text
+          modifiers={[
+            font({ textStyle: 'title2', weight: 'bold' }),
+            foregroundStyle({ type: 'hierarchical', style: 'primary' }),
+            lineLimit(2),
+          ]}
+        >
+          {name}
+        </Text>
+        {standing ? (
+          <HStack alignment="top" spacing={vars['--space-2']}>
+            <TierMark
+              label={standing.tier}
+              rank={standing.rank}
+              modifiers={[fixedSize(), layoutPriority(1)]}
+            />
+            <Text modifiers={[font({ textStyle: 'footnote' }), secondary, lineLimit(2)]}>
+              {standing.level}
+            </Text>
+          </HStack>
+        ) : null}
+      </VStack>
       {onPress ? (
         <>
           <Spacer />
