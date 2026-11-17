@@ -1,23 +1,24 @@
 """Status screen 7A pushed from the bounty-status scene with a back button to 悬赏. Poster, en route with a changed ETA:
-阿杰在路上, the 出发了 step done with 预计 … 到, the old time 原来是 … drawn struck through (a continuous ink run across
+阿杰在路上 with the accent symbol before it, a rail joining the step marks across the row edge, done steps in the
+secondary ink, the 出发了 step done with 预计 … 到, the old time 原来是 … drawn struck through (a continuous ink run across
 the line, unlike the ETA line above it), 阿杰 … 改了时间, the 点完成 step current, no pinned button and the ⋯ menu.
-Poster, done: 等你确认, the confirm step needs you with the auto-confirm date and 47–48 hours left, and 确认完成 and 有问题
+Poster, done: 等你确认 and the confirm step's label in the warning colour with the warning symbol, the confirm step needs you with the auto-confirm date and 47–48 hours left, and 确认完成 and 有问题
 pinned below the list, at least 44 pt. Helper, disputed: 小林说有问题, the 完成 step needs you with the poster's reason
 and the 48-hour line, and 处理好了，再点完成 pinned. Scrolled to the end, the pay step and the rows below it stay above the
-pinned actions, which float over the list with the system scroll edge effect. A first-load failure shows only the load-failed card, and 重试 brings
-the timeline. A failed pull keeps the timeline under the refresh notice with the time of the data."""
+pinned actions, which float over the list with the system scroll edge effect. A first-load failure shows only the inline load-failed card
+(the row colour, not the urgent fill, 重试 on the card), and 重试 brings the timeline. A failed pull keeps the timeline under the refresh notice with the time of the data."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import screen  # noqa: E402
+from board import ink_box, screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from gestures import pull  # noqa: E402
-from driver import UI, assert_touch_target, by_id, luma  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close, luma, token  # noqa: E402
 from ocr import lines  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/shared/', 'src/features/bounty/post/timeText.ts',
-        'src/ui/NoticeCard.tsx', 'src/ui/PillButton.tsx',
+        'src/ui/InlineState.tsx', 'src/ui/PillButton.tsx',
         'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
         'verification/ui/ocr.py', 'verification/ui/gestures.py']
 SCENE = 'bounty-status'
@@ -30,6 +31,15 @@ CLOCK = r'\d{1,2}[:.]\d{2}'
 LIST_ROWS = ('bounty-status-step-', 'bounty-status-address')
 STRUCK_SHARE = 0.6
 INK_CONTRAST = 40
+SYMBOL_LANE = 26
+SYMBOL_MIN = 200
+TINT = 30
+TINTED_TEXT_MIN = 40
+RAIL_CONTRAST = 20
+MARK_COLUMN = 50
+ROW_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
+# Full-contrast label ink is luma 0 in light and 255 in dark; the secondary label lands near 138 and 152.
+QUIET = {'light': lambda inks: min(inks) > 70, 'dark': lambda inks: max(inks) < 215}
 
 ui = UI(*sys.argv[1:])
 # Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
@@ -75,6 +85,39 @@ def ocr_line(read, key):
     found = [line for line in read if pattern.search(line['text'])]
     assert found, f'no line matching {pattern.pattern!r} in {[line["text"] for line in read]}'
     return found[0]
+
+
+def frame_of(identifier):
+    found = by_id(ui.read(), identifier)
+    assert found, f'{identifier} is missing'
+    return found['frame']
+
+
+def assert_symbol(shot, colour, name):
+    f = frame_of('bounty-status-summary')
+    lane = {'x': f['x'] - SYMBOL_LANE, 'y': f['y'], 'width': SYMBOL_LANE - 2, 'height': f['height']}
+    found = ink_box(shot, lane, token(colour, ui.appearance), TINT)
+    assert found and found['count'] >= SYMBOL_MIN, f'no {colour} symbol before {name}: {found}'
+
+
+def tinted(shot, f, colour):
+    found = ink_box(shot, f, token(colour, ui.appearance), TINT)
+    return found['count'] if found else 0
+
+
+def mark(shot, row, colour):
+    column = {'x': row['x'], 'y': row['y'], 'width': MARK_COLUMN, 'height': row['height']}
+    found = ink_box(shot, column, token(colour, ui.appearance), TINT)
+    assert found, f'no {colour} mark in the row at {row}'
+    return found
+
+
+def label_inks(shot, row, after):
+    fill = ROW_FILL[ui.appearance]
+    text = {'x': after['x'] + after['width'] + 8, 'y': row['y'], 'width': 120, 'height': row['height']}
+    inks = [luma(rgb) for rgb in shot.pixels(text) if abs(luma(rgb) - luma(fill)) > INK_CONTRAST]
+    assert len(inks) > 50, f'no label ink right of the mark in {row}'
+    return inks
 
 
 def list_bottom(items):
@@ -127,6 +170,16 @@ plain = longest_run(shot, ocr_line(read, 'bounty.status.note.eta'))
 print(f'ink run across the old time {struck:.2f}, across the ETA {plain:.2f}')
 assert struck >= STRUCK_SHARE, f'the old time is not struck through (longest ink run {struck:.2f} of its width)'
 assert plain < STRUCK_SHARE, f'the ETA line looks struck too ({plain:.2f}), so the measure cannot tell'
+assert_symbol(shot, '--color-accent', '阿杰在路上')
+first_row, second_row = frame_of('bounty-status-step-selected'), frame_of('bounty-status-step-started')
+check = mark(shot, first_row, '--color-success')
+rail_x = check['x'] + check['width'] / 2
+for name, y in (('under the first mark', second_row['y'] - 4), ('above the second mark', second_row['y'] + 4)):
+    rail, card = shot.rgb(rail_x, y), shot.rgb(first_row['x'] + 6, y)
+    assert abs(luma(rail) - luma(card)) > RAIL_CONTRAST, f'no rail {name}: {rail} on {card}'
+inks = label_inks(shot, first_row, check)
+assert QUIET[ui.appearance](inks), \
+    f'the done step is at full contrast (ink luma {min(inks):.0f}–{max(inks):.0f}), not the secondary label'
 
 restart('done', 'poster')
 assert label('bounty-status-summary') == ui.t('bounty.status.summary.poster.done'), label('bounty-status-summary')
@@ -134,6 +187,16 @@ confirm = step('confirmed')
 auto = ui.pattern('bounty.status.note.autoConfirmPoster_other', date='.+', count='4[78]')
 assert re.search(auto, confirm), f'no auto-confirm line in {confirm!r}'
 assert confirm.endswith(state('needsYou')), confirm
+ui.at_rest()
+shot = ui.snap('02-poster-done-top')
+assert_symbol(shot, '--color-warning', '等你确认')
+warm = tinted(shot, frame_of('bounty-status-summary'), '--color-warning')
+assert warm >= TINTED_TEXT_MIN, f'等你确认 is not in the warning colour ({warm} pixels)'
+confirm_row = frame_of('bounty-status-step-confirmed')
+bang = mark(shot, confirm_row, '--color-warning')
+beside = {'x': bang['x'] + bang['width'] + 8, 'y': confirm_row['y'], 'width': 160, 'height': 40}
+warm = tinted(shot, beside, '--color-warning')
+assert warm >= TINTED_TEXT_MIN, f'the step that needs you is not labelled in the warning colour ({warm} pixels)'
 assert_pinned_below('bounty-status-action-confirm', '确认完成')
 assert_pinned_below('bounty-status-action-reportIssue', '有问题')
 items = ui.read()
@@ -162,7 +225,13 @@ items = ui.read()
 for absent in ('bounty-status-step-selected', 'bounty-status-summary', 'bounty-status-stale'):
     assert by_id(items, absent) is None, f'a failed first load still shows {absent}'
 ui.at_rest()
-ui.capture('04-first-load-failed')
+shot = ui.snap('04-first-load-failed')
+card, retry = frame_of('bounty-status-load-failed'), frame_of('bounty-status-retry')
+fills = [shot.rgb(card['x'] - 8, card['y'] + card['height'] / 2),
+         shot.rgb(retry['x'] + retry['width'] + 6, retry['y'] + retry['height'] / 2)]
+for fill in fills:
+    assert close(fill, ROW_FILL[ui.appearance], 8), \
+        f'the load-failed card is {fill}, not the inline row colour {ROW_FILL[ui.appearance]} with 重试 on it'
 ui.tap('bounty-status-retry')
 step('started')
 ui.gone('bounty-status-load-failed')

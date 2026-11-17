@@ -1,4 +1,4 @@
-import { HStack, Image, RNHostView, Section, Text, VStack } from '@expo/ui/swift-ui';
+import { HStack, Image, Rectangle, RNHostView, Section, Text, VStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
@@ -8,8 +8,11 @@ import {
   foregroundStyle,
   frame,
   listRowBackground,
+  listRowInsets,
   listRowSeparator,
   multilineTextAlignment,
+  opacity,
+  padding,
   strikethrough,
 } from '@expo/ui/swift-ui/modifiers';
 import type { SFSymbol } from 'sf-symbols-typescript';
@@ -21,6 +24,7 @@ import { HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
+import { StatusLine } from '../shared/StatusLine';
 import {
   etaChangedText,
   headerReward,
@@ -31,12 +35,21 @@ import {
   summaryText,
   type CopyContext,
 } from './statusCopy';
-import { timeline, type StepState, type TimelineStep } from './timeline';
+import { statusTone, timeline, type StepState, type TimelineStep } from './timeline';
 import type { StatusDetail } from './types';
 import { useEtaFlip } from './useEtaFlip';
 
 const STICKER = 48;
 const ICON = 20;
+const RAIL = 2;
+const ROW_PAD = vars['--space-4'];
+// The rail has to cross the row's own vertical inset to meet the next row, so the row owns its padding.
+const ROW_INSETS = listRowInsets({
+  top: 0,
+  bottom: 0,
+  leading: vars['--space-5'],
+  trailing: vars['--space-5'],
+});
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 const wraps = fixedSize({ horizontal: false, vertical: true });
@@ -70,16 +83,11 @@ export function StatusHeader({ detail }: { detail: StatusDetail }) {
           {detail.title}
         </Text>
         {summary ? (
-          <Text
-            modifiers={[
-              font({ textStyle: 'headline' }),
-              multilineTextAlignment('center'),
-              wraps,
-              accessibilityIdentifier('bounty-status-summary'),
-            ]}
-          >
-            {summary}
-          </Text>
+          <StatusLine
+            tone={statusTone(detail, detail.viewerRole)}
+            text={summary}
+            testID="bounty-status-summary"
+          />
         ) : null}
         <VStack spacing={vars['--space-1']}>
           <Text
@@ -110,16 +118,34 @@ export function StatusHeader({ detail }: { detail: StatusDetail }) {
 
 type LineMotion = Partial<Record<TimelineStep['lines'][number]['kind'], ModifierConfig[]>>;
 
+function Rail({ shown, grows = false }: { shown: boolean; grows?: boolean }) {
+  return (
+    <Rectangle
+      modifiers={[
+        grows
+          ? frame({ minWidth: RAIL, maxWidth: RAIL, maxHeight: Infinity })
+          : frame({ width: RAIL, height: ROW_PAD }),
+        tertiary,
+        opacity(shown ? 1 : 0),
+      ]}
+    />
+  );
+}
+
 function StepRow({
   step,
   extra,
   motion,
   copy,
+  first,
+  last,
 }: {
   step: TimelineStep;
   extra: string | null;
   motion: LineMotion;
   copy: CopyContext;
+  first: boolean;
+  last: boolean;
 }) {
   const { color } = useTheme();
   const text = stepText(step, copy);
@@ -134,25 +160,35 @@ function StepRow({
         : step.state === 'upcoming'
           ? tertiary
           : foregroundStyle({ type: 'hierarchical', style: 'primary' });
-  const upcoming = step.state === 'upcoming';
+  const quiet = step.state === 'upcoming' || step.state === 'done';
   return (
     <HStack
       alignment="top"
       spacing={vars['--space-3']}
       modifiers={[
+        ROW_INSETS,
         listRowSeparator('hidden'),
         accessibilityElement('ignore'),
         accessibilityLabel(stepLabel(step, [text, time, ...shown], copy)),
         accessibilityIdentifier(`bounty-status-step-${step.id}`),
       ]}
     >
-      <Image systemName={ICONS[step.state]} size={ICON} modifiers={[icon]} />
-      <VStack alignment="leading" spacing={vars['--space-1']} modifiers={[fill]}>
+      <VStack spacing={0}>
+        <Rail shown={!first} />
+        <Image systemName={ICONS[step.state]} size={ICON} modifiers={[icon]} />
+        <Rail shown={!last} grows />
+      </VStack>
+      <VStack
+        alignment="leading"
+        spacing={vars['--space-1']}
+        modifiers={[fill, padding({ vertical: ROW_PAD })]}
+      >
         <HStack spacing={vars['--space-2']} alignment="firstTextBaseline">
           <Text
             modifiers={[
               font({ textStyle: 'body', weight: step.state === 'done' ? 'regular' : 'semibold' }),
-              ...(upcoming ? [secondary] : []),
+              ...(step.state === 'needsYou' ? [foregroundStyle(color('--color-warning'))] : []),
+              ...(quiet ? [secondary] : []),
               fill,
               wraps,
             ]}
@@ -212,9 +248,11 @@ export function StatusTimeline({ detail, now }: { detail: StatusDetail; now: Dat
   const motion: LineMotion = { eta: flip.eta, etaPrevious: flip.previous };
   return (
     <Section title={t('bounty.status.progress')}>
-      {steps.map((step) => (
+      {steps.map((step, index) => (
         <StepRow
           key={step.id}
+          first={index === 0}
+          last={index === steps.length - 1}
           step={step}
           extra={step.id === 'started' ? changed : null}
           motion={step.id === 'started' ? motion : {}}

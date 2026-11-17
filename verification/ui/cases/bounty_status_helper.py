@@ -1,8 +1,10 @@
 """Helper actions on the 7A status screen (59B, 60A, 61A). Assigned: 出发 opens the ETA sheet (a medium-detent sheet with
-the system wheel) at now + 30 minutes rounded up to five, and nothing is sent while it is open; 出发 in the sheet sends
+the system wheel) at now + 30 minutes rounded up to five, its 出发 filled with the accent while 取消 stays plain glass,
+and nothing is sent while it is open; 出发 in the sheet sends
 start_bounty with that time and the timeline shows 你出发了 with 预计 … 到. 改预计到达时间 opens the same sheet at the current
 ETA with 好 disabled until the wheel moves; after 好 the new time flips in and the old one is struck through (clip
-eta-change). 完成 shows progress in the button while complete_bounty is in flight, then 等小林确认. With
+eta-change). 完成 shows progress in the button while complete_bounty is in flight, still filled with the accent (not
+dimmed), then 等小林确认. With
 complete_bounty failing once, 完成 shows 没发出去，再试一次 under the buttons and the button comes back; the next tap
 completes. Closing the sheet with 取消 sends nothing."""
 import json
@@ -16,8 +18,9 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import assert_touch_target, by_id, UI  # noqa: E402
+from driver import assert_touch_target, by_id, close, luma, token, UI  # noqa: E402
 from recording import clip, frames  # noqa: E402
+from taps import walk  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/shared/', 'src/ui/SheetFrame.tsx', 'src/ui/PillButton.tsx',
         'modules/tapiro-kit/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'verification/ui/choose.py',
@@ -29,9 +32,12 @@ FIRST = ['-uiVerifyBountyStatus', 'assigned', '-uiVerifyBountyRole', 'helper']
 # The minute column, which wraps; in 12-hour locales 0.62 lands on AM/PM, which cannot move past PM in the afternoon.
 MINUTES, MINUTES_12H = {'zh-Hans': 0.62}, 0.49
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'assigned', '-uiVerifyBountyRole', 'helper',
-        '-uiVerifyBountyStatusDelayMs', '4000']
+        '-uiVerifyBountyStatusDelayMs', '6000']
 CALLS = 'uiVerifyBountyStatusCalls'
 CLOCK = r'\d{1,2}[:.]\d{2}'
+PROMINENT_SHARE = 0.35
+FILL_SHARE = 0.6
+FILL_TOLERANCE = 12
 
 ui = UI(*sys.argv[1:])
 # Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
@@ -103,6 +109,12 @@ def confirm_button():
     return bar_button('bounty-eta-confirm')
 
 
+def accent_share(shot, f):
+    accent = luma(token('--color-accent', ui.appearance))
+    near = shot.count(f, lambda rgb: abs(luma(rgb) - accent) < 45)
+    return near / (f['width'] * f['height'] * shot.scale ** 2)
+
+
 step('selected')
 summary('bounty.status.summary.helper.assigned')
 start = by_id(ui.read(), 'bounty-status-action-start')
@@ -112,7 +124,12 @@ assert_touch_target(start, '出发')
 opened = datetime.now()
 open_sheet('start', 'bounty.eta.title')
 assert confirm_button().get('AXLabel') == ui.t('bounty.eta.start'), confirm_button()
-ui.capture('01-eta-sheet')
+shot = ui.snap('01-eta-sheet')
+filled = accent_share(shot, confirm_button()['frame'])
+plain = accent_share(shot, bar_button('bounty-eta-cancel')['frame'])
+print(f'accent share of 出发 {filled:.2f}, of 取消 {plain:.2f}')
+assert filled >= PROMINENT_SHARE, f'出发 in the ETA sheet is not filled with the accent ({filled:.2f} of its frame)'
+assert plain < PROMINENT_SHARE, f'取消 looks filled too ({plain:.2f}), so the measure cannot tell'
 assert not sent('start_bounty'), f'start_bounty was sent while the sheet was open: {sent("start_bounty")}'
 
 tap_bar('bounty-eta-cancel')
@@ -177,7 +194,16 @@ assert len(samples) >= 3, f'the ETA change clip has {len(samples)} distinct fram
 ui.tap('bounty-status-action-complete')
 ui.wait(lambda items: (by_id(items, 'bounty-status-action-complete') or {}).get('enabled') is False,
         '完成 shows no progress while complete_bounty is in flight', timeout=5)
-ui.capture('05-completing')
+shot = ui.snap('05-completing')
+after = list(walk(json.loads((ui.output / '05-completing.json').read_text())))
+sending = by_id(after, 'bounty-status-action-complete')
+assert sending and sending.get('enabled') is False, f'完成 was no longer sending when the screenshot was taken: {sending}'
+accent = token('--color-accent', ui.appearance)
+kept = shot.count(sending['frame'], lambda rgb: close(rgb, accent, FILL_TOLERANCE)) / (
+    sending['frame']['width'] * sending['frame']['height'] * shot.scale ** 2)
+assert kept >= FILL_SHARE, f'完成 lost its accent fill while sending ({kept:.2f} of its frame is the accent)'
+waiting = by_id(after, 'bounty-status-action-changeEta')
+assert waiting and waiting.get('enabled') is False, f'改预计到达时间 can be tapped while 完成 is sending: {waiting}'
 summary('bounty.status.summary.helper.done', name='小林')
 ui.gone('bounty-status-action-complete')
 assert len(wait_sent('complete_bounty', 1)) == 1, sent('complete_bounty')
