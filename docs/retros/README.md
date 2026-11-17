@@ -449,3 +449,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-17 | UI polish, bounty board       | 0                  | 1             | ~120 min (Simulator lock held by other agents)   | 0                       | 0                     |
 | 2026-11-17 | UI polish, bounty post        | 0                  | 6             | ~180 min (Simulator lock, helper reruns)         | 0                       | 0                     |
 | 2026-11-17 | merge guard                   | 0                  | 0             | ~0                                               | 0                       | 0                     |
+| 2026-11-17 | UI polish, owner rows         | 0                  | 0             | lock wait (verify:full)                          | 0                       | 0                     |
