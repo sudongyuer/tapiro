@@ -56,6 +56,7 @@ export default {
     bankNameLabel: '银行名称',
     bankNamePlaceholder: '例如 Bank Rakyat',
     accountLabel: '账号',
+    accountPlaceholder: '例如 512345678901',
     accountFooter: '只填数字，保存后只显示尾号。',
     error: {
       phoneEmpty: '请输入手机号',

@@ -38,5 +38,8 @@ ui.tap('pay-celebration-done')
 ui.gone('pay-celebration')
 settled = ui.element('pay-settled')
 assert re.search(ui.pattern('pay.celebrate.tick', amount=r'RM\s?8\.00'), settled.get('AXLabel') or ''), settled.get('AXLabel')
+paid = re.findall(r'RM\s?8\.00', settled.get('AXLabel') or '')
+assert len(paid) == 1, f'the settled row shows the amount {len(paid)} times: {settled.get("AXLabel")!r}'
+assert '帮带一杯咖啡' in (settled.get('AXLabel') or ''), settled.get('AXLabel')
 ui.capture('04-settled')
 print('PASS: payee nudges, then confirms with the routine celebration')

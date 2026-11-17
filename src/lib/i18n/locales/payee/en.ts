@@ -66,6 +66,7 @@ const en: typeof zhHans = {
     bankNameLabel: 'Bank name',
     bankNamePlaceholder: 'e.g. Bank Rakyat',
     accountLabel: 'Account number',
+    accountPlaceholder: 'e.g. 512345678901',
     accountFooter: 'Digits only. Only the last 4 digits are shown after saving.',
     error: {
       phoneEmpty: 'Enter a phone number.',
