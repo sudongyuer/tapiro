@@ -78,6 +78,8 @@ export default {
     waiting: '…',
     idle: '新的一周，点我喂片叶子',
     fed: '谢谢！+1 貘币',
+    fedLead: '谢谢！',
+    fedTail: '+1 貘币',
     alreadyFed: '这周吃饱啦，周一再来',
     failed: '没喂上，再点一下试试',
     action: '喂小貘',

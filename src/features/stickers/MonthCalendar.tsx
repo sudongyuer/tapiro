@@ -9,13 +9,14 @@ import { HandArt } from '@/ui/HandArt';
 import { HandText } from '@/ui/HandText';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import {
   byDay,
-  monthGrid,
   monthIndex,
   monthOf,
   monthRange,
+  monthWeeks,
   shiftMonth,
   type Month,
 } from './calendar';
@@ -89,50 +90,54 @@ export function MonthCalendar({
         ))}
       </View>
       <View style={styles.grid}>
-        {monthGrid(month).map((day, cell) => {
-          if (day === null) return <View key={cell} style={styles.cell} />;
-          const list = days.get(day) ?? [];
-          const date = dayName.format(new Date(month.year, month.month, day));
-          const testID = `sticker-calendar-day-${day}`;
-          if (list.length === 0) {
-            return (
-              <View
-                key={cell}
-                style={styles.cell}
-                accessible
-                accessibilityLabel={date}
-                testID={testID}
-              >
-                <AppText variant="meta" tone="tertiaryLabel">
-                  {day}
-                </AppText>
-              </View>
-            );
-          }
-          const titles = list
-            .map((sticker) => stickerLabel(sticker, t).title)
-            .join(t('stickers.calendar.join'));
-          return (
-            <PressDim
-              key={cell}
-              style={styles.cell}
-              accessibilityRole="button"
-              accessibilityLabel={t('stickers.calendar.dayDone', {
-                date,
-                count: list.length,
-                titles,
-              })}
-              accessibilityHint={t('stickers.calendar.open')}
-              onPress={() => onOpen(list[0].id)}
-              testID={testID}
-            >
-              <AppText variant="meta" style={styles.doneDay}>
-                {day}
-              </AppText>
-              <HandArt id={stickerArt(list[0])} size={CELL_ART} />
-            </PressDim>
-          );
-        })}
+        {monthWeeks(month).map((week, row) => (
+          <View key={row} style={styles.row}>
+            {week.map((day, cell) => {
+              if (day === null) return <View key={cell} style={styles.cell} />;
+              const list = days.get(day) ?? [];
+              const date = dayName.format(new Date(month.year, month.month, day));
+              const testID = `sticker-calendar-day-${day}`;
+              if (list.length === 0) {
+                return (
+                  <View
+                    key={cell}
+                    style={styles.cell}
+                    accessible
+                    accessibilityLabel={date}
+                    testID={testID}
+                  >
+                    <AppText variant="meta" tone="tertiaryLabel">
+                      {day}
+                    </AppText>
+                  </View>
+                );
+              }
+              const titles = list
+                .map((sticker) => stickerLabel(sticker, t).title)
+                .join(t('stickers.calendar.join'));
+              return (
+                <PressDim
+                  key={cell}
+                  style={styles.cell}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('stickers.calendar.dayDone', {
+                    date,
+                    count: list.length,
+                    titles,
+                  })}
+                  accessibilityHint={t('stickers.calendar.open')}
+                  onPress={() => onOpen(list[0].id)}
+                  testID={testID}
+                >
+                  <AppText variant="meta" style={styles.doneDay}>
+                    {day}
+                  </AppText>
+                  <HandArt id={stickerArt(list[0])} size={CELL_ART} />
+                </PressDim>
+              );
+            })}
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -151,6 +156,7 @@ function Step({
   onPress: () => void;
   testID: string;
 }) {
+  const { color } = useTheme();
   return (
     <PressDim
       style={styles.step}
@@ -164,7 +170,7 @@ function Step({
       <SymbolView
         name={symbol}
         size={vars['--text-body']}
-        tintColor={PlatformColor(enabled ? 'link' : 'tertiaryLabel')}
+        tintColor={enabled ? color('--color-accent') : PlatformColor('tertiaryLabel')}
       />
     </PressDim>
   );
@@ -177,7 +183,7 @@ const styles = StyleSheet.create({
   step: { width: TAP, height: TAP, alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row' },
   weekday: { flex: 1, textAlign: 'center' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: vars['--space-2'] },
-  cell: { width: `${100 / 7}%`, minHeight: 60, alignItems: 'center', gap: 2 },
+  grid: { gap: vars['--space-2'] },
+  cell: { flex: 1, minHeight: 60, alignItems: 'center', gap: 2 },
   doneDay: { fontWeight: '700' },
 });

@@ -28,11 +28,13 @@ import { PlatformColor, StyleSheet } from 'react-native';
 import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
 import { Avatar } from '@/ui/Avatar';
+import { TapirCoin } from '@/ui/TapirCoin';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 const AVATAR_SIZE = 60;
+const ROW_COIN = 18;
 const tertiary = foregroundStyle({ type: 'hierarchical', style: 'tertiary' });
 
 export function MeView({
@@ -81,6 +83,7 @@ export function MeView({
           />
           <NavRow
             label={t('coins.row')}
+            coin
             value={coinCount}
             onPress={onOpenCoins}
             testID="me-coins"
@@ -170,12 +173,14 @@ function ProfileRow({
 
 function NavRow({
   label,
+  coin = false,
   value = null,
   dotLabel = null,
   onPress,
   testID,
 }: {
   label: string;
+  coin?: boolean;
   value?: string | null;
   dotLabel?: string | null;
   onPress: () => void;
@@ -193,6 +198,11 @@ function NavRow({
       modifiers={selected ? [listRowBackground(PlatformColor('systemGray4'))] : []}
     >
       <HStack spacing={vars['--space-2']}>
+        {coin ? (
+          <RNHostView matchContents>
+            <TapirCoin size={ROW_COIN} testID={`${testID}-coin`} />
+          </RNHostView>
+        ) : null}
         <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>
           {label}
         </Text>

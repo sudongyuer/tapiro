@@ -3,7 +3,8 @@
 tapping the button writes one collect and leaves the calm card. Behind an 欠钱 card it is only the strip
 「帮买奶茶 · 办成了」, the accessory on 我的 shows the payment without counting it, and fanning out reaches its button.
 Two settles make two cards, each collected on its own. The worst case (40-code-point name, 120-code-point title, an
-unnamed payee and a ride) keeps the card and its button on screen."""
+unnamed payee and a ride) keeps the card and its button on screen, and 小貘's bubble wraps the whole line without
+reaching the car."""
 import json
 import re
 import sys
@@ -12,6 +13,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, accessory, assert_colour, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from stage import assert_bubble_clear, assert_bubble_whole  # noqa: E402
 
 DEPS = [
     'src/features/home/',
@@ -21,7 +23,12 @@ DEPS = [
     'src/app/(tabs)/_layout.tsx',
     'src/ui/LiveCard.tsx',
     'src/ui/HandArt.tsx',
+    'src/ui/MascotStage',
+    'src/ui/stagePose.ts',
     'verification/ui/bounty.py',
+    'verification/ui/stage.py',
+    'verification/ui/ocr.py',
+    'verification/ui/ocr.swift',
 ]
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySettled', 'one', '-uiVerifyShellFeed', 'none', '-uiVerifySignedIn', 'onboarded']
@@ -138,7 +145,10 @@ card = ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the worst se
 assert_card(card, ui.element('settled-card-collect'), 'worst')
 toggle = ui.element('live-cards-toggle')
 assert toggle.get('AXLabel') == ui.t('home.stack.fanOut', count=3), toggle.get('AXLabel')
-ui.snap('09-worst')
+shot = ui.snap('09-worst')
+stage = ui.element('home-stage-live')
+assert_bubble_clear(shot, stage['frame'], 'live', ui.appearance, wraps=True)
+assert_bubble_whole(ui, shot, stage['frame'], 'live', stage.get('AXLabel') or '')
 ui.tap('live-cards-toggle')
 ui.wait_label('live-cards-toggle', lambda label: label == ui.t('home.stack.collapse'), 'the worst stack did not fan out')
 items = ui.read()

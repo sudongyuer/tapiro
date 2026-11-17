@@ -1,11 +1,25 @@
-import { Button, Form, Host, LabeledContent, Section, Text } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Form,
+  Host,
+  Label,
+  LabeledContent,
+  Section,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
+  accessibilityLabel,
   autocorrectionDisabled,
+  buttonBorderShape,
   buttonStyle,
   controlSize,
   font,
   foregroundStyle,
+  frame,
+  listRowBackground,
+  listRowInsets,
   textContentType,
   textInputAutocapitalization,
   tint,
@@ -15,6 +29,7 @@ import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { ClassifiedQr, QrRejection } from './classifyQr';
@@ -26,6 +41,10 @@ import { PAYEE_NAME_MAX } from './validate';
 
 export type QrError =
   QrRejection | 'denied' | 'unavailable' | 'failed' | 'saveFailed' | 'nameEmpty' | 'nameInvalid';
+
+const NO_INSETS = listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 });
+const WIDE = frame({ maxWidth: Infinity });
+const WIDE_BUTTON = [buttonBorderShape('capsule'), controlSize('large'), WIDE];
 
 function QrErrorCard({ error, wallet }: { error: QrError; wallet: string }) {
   const { t } = useI18n();
@@ -80,7 +99,7 @@ export function QrPickForm({
       <SheetChrome title={title} onClose={onClose} />
       <Form modifiers={[tint(color('--color-accent'))]}>
         {error ? <QrErrorCard error={error} wallet="" /> : null}
-        <Section footer={<Text>{t('payee.qr.footer')}</Text>}>
+        <Section>
           <Text
             modifiers={[
               font({ textStyle: 'subheadline' }),
@@ -89,24 +108,35 @@ export function QrPickForm({
           >
             {wallet ? t(`payee.qr.steps.${wallet}`) : t('payee.qr.hint')}
           </Text>
-          <Button
-            label={t('payee.qr.pick')}
-            systemImage="photo.on.rectangle"
-            onPress={onPick}
-            testID="payee-qr-pick"
-            modifiers={[
-              buttonStyle('borderedProminent'),
-              controlSize('large'),
-              foregroundStyle(color('--color-on-accent')),
-            ]}
-          />
-          <Button
-            label={t('payee.qr.scan')}
-            systemImage="qrcode.viewfinder"
-            onPress={onScan}
-            testID="payee-qr-scan"
-            modifiers={[foregroundStyle(color('--color-accent'))]}
-          />
+        </Section>
+        <Section
+          footer={<Text>{t('payee.qr.footer')}</Text>}
+          modifiers={[listRowBackground('clear')]}
+        >
+          <VStack spacing={vars['--space-2']} modifiers={[NO_INSETS]}>
+            <Button
+              onPress={onPick}
+              testID="payee-qr-pick"
+              modifiers={[buttonStyle('borderedProminent'), ...WIDE_BUTTON]}
+            >
+              <Label
+                title={t('payee.qr.pick')}
+                systemImage="photo.on.rectangle"
+                modifiers={[WIDE, foregroundStyle(color('--color-on-accent'))]}
+              />
+            </Button>
+            <Button
+              onPress={onScan}
+              testID="payee-qr-scan"
+              modifiers={[buttonStyle('bordered'), ...WIDE_BUTTON]}
+            >
+              <Label
+                title={t('payee.qr.scan')}
+                systemImage="qrcode.viewfinder"
+                modifiers={[WIDE, foregroundStyle(color('--color-accent'))]}
+              />
+            </Button>
+          </VStack>
         </Section>
       </Form>
     </Host>
@@ -202,6 +232,7 @@ export function QrConfirmForm({
               placeholder={t(`payee.qr.namePlaceholder.${wallet}`)}
               testID="payee-name-input"
               modifiers={[
+                accessibilityLabel(t(`payee.qr.nameLabel.${wallet}`)),
                 textContentType('name'),
                 textInputAutocapitalization('never'),
                 autocorrectionDisabled(),

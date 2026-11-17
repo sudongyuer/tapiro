@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from choose import defaults
-from driver import by_id
+from driver import by_id, token
 
 SCENE = 'coins-page'
 BASE_ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
@@ -126,6 +126,24 @@ def assert_packs(ui, prefix='buy-coins'):
         expected = ui.t('coins.buy.packA11y', coins=coins, price=PRICES[coins])
         assert button.get('AXLabel') == expected, f'pack {coins} reads {button.get("AXLabel")!r}, not {expected!r}'
     return items
+
+
+def coin_pixels(ui, shot, box):
+    gold = token('--color-coin-gold', ui.appearance)
+    return shot.count(box, lambda p: max(abs(a - b) for a, b in zip(p, gold)) < 40)
+
+
+def assert_coin(ui, shot, box, name, minimum=60):
+    gold = coin_pixels(ui, shot, box)
+    assert gold > minimum, f'{name} shows no 貘币: {gold} gold px'
+
+
+def assert_pack_coins(ui, shot, prefix='buy-coins'):
+    items = ui.read()
+    for coins in PACKS:
+        coin = by_id(items, f'{prefix}-coin-{coins}')
+        assert coin is not None, f'pack {coins} has no 貘币'
+        assert_coin(ui, shot, coin['frame'], f'pack {coins}')
 
 
 def tap_price(ui, identifier):

@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
@@ -5,13 +6,23 @@ import Svg, { Path } from 'react-native-svg';
 
 import { AppText } from './AppText';
 import { Mascot, MascotWearLayer } from './Mascot';
-import type { StageActor } from './MascotStage';
+import type { StageActor, StageSayCoin } from './MascotStage';
+import {
+  BUBBLE_LEFT,
+  BUBBLE_MAX_LINES,
+  BUBBLE_PADDING,
+  BUBBLE_SLOT,
+  BUBBLE_TAIL,
+} from './stagePose';
+import { TapirCoin } from './TapirCoin';
 import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
 type AnimatedStyle = ComponentProps<typeof Animated.View>['style'];
 
 const BUBBLE_SLOP = { top: 6, bottom: 6 };
+const BUBBLE_COIN = 18;
+const LEAF_IMAGE = require('@/assets/pantry/leaf.png');
 
 export function StageBody({
   size,
@@ -40,15 +51,14 @@ export function StageBody({
 }
 
 export function StageLeaf({ size }: { size: number }) {
-  const { color } = useTheme();
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path
-        d="M12 3 C7 8 6 12 8 16 C9.5 19 14.5 19 16 16 C18 12 17 8 12 3 Z"
-        fill={color('--color-leaf')}
-      />
-      <Path d="M12 6 V17" stroke={color('--color-leaf-vein')} strokeWidth={1.4} />
-    </Svg>
+    <Image
+      source={LEAF_IMAGE}
+      style={{ width: size, height: size }}
+      contentFit="contain"
+      accessible={false}
+      testID="stage-leaf"
+    />
   );
 }
 
@@ -90,14 +100,18 @@ export function Snore({ color }: { color: string }) {
 
 export function SpeechBubble({
   line,
+  coin = null,
   style,
+  maxWidth,
   reveal,
   rise,
   speaking,
   onPress,
 }: {
   line: string;
+  coin?: StageSayCoin | null;
   style: AnimatedStyle;
+  maxWidth: number;
   reveal: SharedValue<number>;
   rise: number;
   speaking: boolean;
@@ -119,17 +133,35 @@ export function SpeechBubble({
         <Animated.View
           style={[
             styles.bubble,
-            { backgroundColor: fill, shadowColor: color('--color-sticker-shadow') },
+            { maxWidth, backgroundColor: fill, shadowColor: color('--color-sticker-shadow') },
             style,
           ]}
         >
-          <AppText
-            variant="secondary"
-            numberOfLines={3}
-            style={[styles.say, { color: color('--color-on-stage') }]}
-          >
-            {line}
-          </AppText>
+          {coin ? (
+            <View style={styles.coinLine} testID="stage-say-coin">
+              <AppText
+                variant="secondary"
+                style={[styles.say, { color: color('--color-on-stage') }]}
+              >
+                {coin.lead}
+              </AppText>
+              <TapirCoin size={BUBBLE_COIN} />
+              <AppText
+                variant="secondary"
+                style={[styles.say, { color: color('--color-on-stage') }]}
+              >
+                {coin.tail}
+              </AppText>
+            </View>
+          ) : (
+            <AppText
+              variant="secondary"
+              numberOfLines={BUBBLE_MAX_LINES}
+              style={[styles.say, { color: color('--color-on-stage') }]}
+            >
+              {line}
+            </AppText>
+          )}
           <Svg style={styles.tail} width={9} height={18} viewBox="0 0 9 18">
             <Path d="M0 0 L9 9 L0 18 Z" fill={fill} />
           </Svg>
@@ -143,17 +175,22 @@ const styles = StyleSheet.create({
   layer: { position: 'absolute', left: 0, top: 0 },
   feet: { transformOrigin: '50% 90%' },
   snore: { position: 'absolute', left: 80, top: -14 },
-  bubbleSlot: { position: 'absolute', left: vars['--space-4'], top: 18 },
+  bubbleSlot: { position: 'absolute', left: BUBBLE_LEFT, ...BUBBLE_SLOT },
   bubble: {
-    maxWidth: 230,
     borderRadius: vars['--space-5'],
     borderCurve: 'continuous',
-    paddingVertical: 9,
-    paddingHorizontal: 13,
+    paddingVertical: BUBBLE_PADDING.vertical,
+    paddingHorizontal: BUBBLE_PADDING.horizontal,
     shadowOffset: { width: 0, height: vars['--space-2'] },
     shadowOpacity: 1,
     shadowRadius: vars['--space-3'],
   },
   say: { fontWeight: '700' },
-  tail: { position: 'absolute', right: -8, bottom: 14 },
+  coinLine: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: vars['--space-1'],
+  },
+  tail: { position: 'absolute', right: -BUBBLE_TAIL, bottom: 14 },
 });

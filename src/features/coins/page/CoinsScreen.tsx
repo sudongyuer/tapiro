@@ -1,4 +1,13 @@
-import { Button, Form, Host, ProgressView, Section, Text, VStack } from '@expo/ui/swift-ui';
+import {
+  Button,
+  Form,
+  Host,
+  ProgressView,
+  RNHostView,
+  Section,
+  Text,
+  VStack,
+} from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
@@ -20,6 +29,7 @@ import { StyleSheet } from 'react-native';
 import type { Loadable } from '@/lib/loadable';
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { TapirCoin } from '@/ui/TapirCoin';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -30,6 +40,7 @@ import type { CoinBalance } from '../types';
 import { CoinsHistory } from './CoinsHistory';
 import { coinCount } from './coinsView';
 
+const BALANCE_COIN = 40;
 const missing = (value: Loadable<unknown>) => value.status === 'failed';
 const shown = <T,>(value: Loadable<T>) => (value.status === 'idle' ? null : value.data);
 
@@ -115,6 +126,9 @@ function BalanceHeader({ balance }: { balance: CoinBalance }) {
           accessibilityIdentifier('coins-balance'),
         ]}
       >
+        <RNHostView matchContents>
+          <TapirCoin size={BALANCE_COIN} testID="coins-balance-coin" />
+        </RNHostView>
         <Text
           modifiers={[
             font({ textStyle: 'largeTitle', weight: 'bold', design: 'rounded' }),

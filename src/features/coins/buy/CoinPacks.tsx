@@ -3,6 +3,7 @@ import {
   HStack,
   Image,
   ProgressView,
+  RNHostView,
   Section,
   Spacer,
   Text,
@@ -27,6 +28,7 @@ import { useEffect } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
+import { TapirCoin } from '@/ui/TapirCoin';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -34,9 +36,9 @@ import { useOnCredited, usePurchase } from '../purchase/hooks';
 import { purchaseBusy } from '../purchase/purchaseStore';
 import type { Pack, PurchasePhase } from '../purchase/types';
 import { purchaseStore } from '../services';
-import { CoinMark } from './CoinMark';
 import { purchaseLine, type PurchaseLine } from './purchaseLine';
 
+const PACK_COIN = 22;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
 export function CoinPacks({
@@ -118,7 +120,9 @@ function PackRow({
   const name = t('coins.buy.pack', { coins: pack.coins });
   return (
     <HStack spacing={vars['--space-3']}>
-      <CoinMark />
+      <RNHostView matchContents>
+        <TapirCoin size={PACK_COIN} testID={`${testID}-coin-${pack.coins}`} />
+      </RNHostView>
       <Text
         modifiers={[
           font({ textStyle: 'body', weight: 'semibold', design: 'rounded' }),

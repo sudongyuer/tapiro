@@ -36,6 +36,13 @@ export function monthGrid({ year, month }: Month): (number | null)[] {
   return cells;
 }
 
+export function monthWeeks(month: Month): (number | null)[][] {
+  const cells = monthGrid(month);
+  return Array.from({ length: cells.length / DAYS_IN_WEEK }, (_, week) =>
+    cells.slice(week * DAYS_IN_WEEK, (week + 1) * DAYS_IN_WEEK),
+  );
+}
+
 export function byDay<T extends { earnedAt: string }>(items: readonly T[], { year, month }: Month) {
   const days = new Map<number, T[]>();
   for (const item of items) {
