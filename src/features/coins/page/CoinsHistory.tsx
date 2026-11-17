@@ -5,6 +5,7 @@ import {
   accessibilityLabel,
   font,
   foregroundStyle,
+  frame,
   layoutPriority,
   lineLimit,
   monospacedDigit,
@@ -23,6 +24,7 @@ import type { CoinRow } from '../types';
 import { monthLabel, rowA11y, rowDate, rowTitle } from './coinsView';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+const DATE_COLUMN = frame({ minWidth: 68, alignment: 'trailing' });
 
 export function CoinsHistory({ history }: { history: History }) {
   const { t } = useI18n();
@@ -87,6 +89,7 @@ function HistoryRow({ row, last }: { row: CoinRow; last: boolean }) {
           font({ textStyle: 'subheadline' }),
           secondary,
           monospacedDigit(),
+          DATE_COLUMN,
           layoutPriority(1),
         ]}
       >
@@ -108,21 +111,16 @@ function MoreRow({ more }: { more: History['more'] }) {
     );
   }
   if (more !== 'failed') return null;
-  const text = t('coins.moreFailedRetry', {
-    failed: t('coins.moreFailed'),
-    retry: t('coins.retry'),
-  });
   return (
     <Section>
+      <Text modifiers={[secondary, accessibilityIdentifier('coins-more-failed')]}>
+        {t('coins.moreFailed')}
+      </Text>
       <Button
+        label={t('coins.retry')}
         onPress={() => void coinsStore.loadMoreHistory()}
         testID="coins-more-retry"
-        modifiers={[
-          accessibilityLabel([t('coins.moreFailed'), t('coins.retry')].join(t('coins.listJoin'))),
-        ]}
-      >
-        <Text>{text}</Text>
-      </Button>
+      />
     </Section>
   );
 }

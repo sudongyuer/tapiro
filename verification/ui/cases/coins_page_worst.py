@@ -41,8 +41,11 @@ for _ in range(40):
     drag(ui, (w / 2, h * 0.8), (w / 2, h * 0.2))
 else:
     raise AssertionError(f'the next page never failed into view: {row_ids(ui.read())[-3:]}')
-retry = by_id(ui.read(), 'coins-more-retry')
-assert retry.get('AXLabel') == ui.t('coins.moreFailed') + ui.t('coins.listJoin') + ui.t('coins.retry'), retry.get('AXLabel')
+items = ui.read()
+failed, retry = by_id(items, 'coins-more-failed'), by_id(items, 'coins-more-retry')
+assert failed is not None and failed.get('AXLabel') == ui.t('coins.moreFailed'), failed
+assert retry.get('AXLabel') == ui.t('coins.retry') and retry.get('type') == 'Button', retry
+assert failed['frame']['y'] + failed['frame']['height'] <= retry['frame']['y'] + 1, '重试 is not its own row under the reason'
 assert 959 not in row_ids(ui.read())
 assert_clears_tab_bar(ui, 'coins-more-retry')
 ui.capture('02-more-failed')

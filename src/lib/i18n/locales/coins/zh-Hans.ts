@@ -12,7 +12,6 @@ export default {
   listJoin: '，',
   more: '加载更早的明细',
   moreFailed: '更早的明细没加载出来',
-  moreFailedRetry: '{{failed}} · {{retry}}',
   withTitle: '{{reason}} · {{title}}',
   month: '{{name}}',
   monthYear: '{{year}} 年 {{name}}',

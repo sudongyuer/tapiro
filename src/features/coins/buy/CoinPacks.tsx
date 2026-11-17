@@ -8,6 +8,7 @@ import {
   Spacer,
   Text,
   VStack,
+  ZStack,
 } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
@@ -20,11 +21,13 @@ import {
   disabled,
   font,
   foregroundStyle,
+  hidden,
   monospacedDigit,
 } from '@expo/ui/swift-ui/modifiers';
 import { useEffect } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { NoticeCard } from '@/ui/NoticeCard';
 import { TapirCoin } from '@/ui/TapirCoin';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -59,16 +62,17 @@ export function CoinPacks({
   const footerText = footer ? <Text>{footer}</Text> : undefined;
   if (packs.status === 'failed' || (packs.status === 'stale' && list === null)) {
     return (
-      <Section footer={footerText}>
-        <Text modifiers={[secondary, accessibilityIdentifier(`${testID}-failed`)]}>
-          {t('coins.buy.failed')}
-        </Text>
-        <Button
-          label={t('coins.buy.retry')}
-          onPress={() => void purchaseStore.loadPacks()}
-          testID={`${testID}-retry`}
-        />
-      </Section>
+      <NoticeCard
+        tone="urgent"
+        icon="exclamationmark.circle.fill"
+        title={t('coins.buy.failed')}
+        action={{
+          label: t('coins.buy.retry'),
+          onPress: () => void purchaseStore.loadPacks(),
+          testID: `${testID}-retry`,
+        }}
+        testID={`${testID}-failed`}
+      />
     );
   }
   if (list === null) {
@@ -122,21 +126,13 @@ function PackRow({
       <Text
         modifiers={[
           font({ textStyle: 'body', weight: 'semibold', design: 'rounded' }),
-          monospacedDigit(),
           accessibilityHidden(),
         ]}
       >
         {name}
       </Text>
       <Spacer />
-      {here ? (
-        <ProgressView
-          modifiers={[
-            accessibilityLabel(t('coins.buy.buying')),
-            accessibilityIdentifier(`${testID}-busy-${pack.coins}`),
-          ]}
-        />
-      ) : (
+      <ZStack>
         <Button
           label={pack.price}
           onPress={() => void purchaseStore.buy(pack.productId)}
@@ -149,9 +145,18 @@ function PackRow({
             monospacedDigit(),
             accessibilityLabel(t('coins.buy.packA11y', { coins: pack.coins, price: pack.price })),
             disabled(busy),
+            hidden(here),
           ]}
         />
-      )}
+        {here ? (
+          <ProgressView
+            modifiers={[
+              accessibilityLabel(t('coins.buy.buying')),
+              accessibilityIdentifier(`${testID}-busy-${pack.coins}`),
+            ]}
+          />
+        ) : null}
+      </ZStack>
     </HStack>
   );
 }
@@ -167,6 +172,7 @@ export function PurchaseWaiting({ testID }: { testID: string }) {
 const PROCESSING = purchaseLine({ phase: 'processing', productId: '', transactionId: '' });
 
 function PurchaseLines({ testID, settled }: { testID: string; settled: boolean }) {
+  const { t } = useI18n();
   const purchase = usePurchase((state) => state.purchase);
   const kept = usePurchase((state) => state.kept);
   const shown =
@@ -176,14 +182,27 @@ function PurchaseLines({ testID, settled }: { testID: string; settled: boolean }
   const others = kept.some((id) => id !== own);
   const recheck = line?.key === 'coins.buy.processing' || others;
   if (!line && !others) return null;
+  const failure = line?.tone === 'urgent' ? line : null;
   return (
-    <Section>
-      {line ? <StatusLine line={line} testID={`${testID}-status`} /> : null}
-      {others && line?.key !== 'coins.buy.processing' && PROCESSING ? (
-        <StatusLine line={PROCESSING} testID={line ? `${testID}-kept` : `${testID}-status`} />
+    <>
+      {failure ? (
+        <NoticeCard
+          tone="urgent"
+          icon={failure.icon ?? 'exclamationmark.circle.fill'}
+          title={t(failure.key, failure.values)}
+          testID={`${testID}-status`}
+        />
       ) : null}
-      {recheck ? <RecheckButton testID={`${testID}-recheck`} /> : null}
-    </Section>
+      {(line && !failure) || recheck ? (
+        <Section>
+          {line && !failure ? <StatusLine line={line} testID={`${testID}-status`} /> : null}
+          {others && line?.key !== 'coins.buy.processing' && PROCESSING ? (
+            <StatusLine line={PROCESSING} testID={line ? `${testID}-kept` : `${testID}-status`} />
+          ) : null}
+          {recheck ? <RecheckButton testID={`${testID}-recheck`} /> : null}
+        </Section>
+      ) : null}
+    </>
   );
 }
 

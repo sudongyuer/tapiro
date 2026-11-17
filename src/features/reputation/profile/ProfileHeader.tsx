@@ -1,4 +1,4 @@
-import { HStack, RNHostView, Section, Text, VStack } from '@expo/ui/swift-ui';
+import { HStack, RNHostView, Section, Text, VStack, ZStack } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
@@ -7,9 +7,12 @@ import {
   font,
   foregroundStyle,
   frame,
+  hidden,
   layoutPriority,
   lineLimit,
   listRowBackground,
+  listRowInsets,
+  listSectionSpacing,
   monospacedDigit,
   multilineTextAlignment,
   truncationMode,
@@ -27,6 +30,17 @@ import { countText, isNewcomer, personName, rateText, tierLabel, tierRank } from
 const AVATAR = 56;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const fill = frame({ maxWidth: Infinity, alignment: 'leading' });
+const NUMBER = [
+  font({ textStyle: 'title2', weight: 'heavy', design: 'rounded' }),
+  monospacedDigit(),
+  lineLimit(1),
+];
+const HEADER_INSETS = listRowInsets({
+  top: 0,
+  leading: vars['--space-5'],
+  bottom: 0,
+  trailing: vars['--space-5'],
+});
 
 export function ProfileHeader({ card }: { card: ProfileCard }) {
   const { t } = useI18n();
@@ -34,8 +48,8 @@ export function ProfileHeader({ card }: { card: ProfileCard }) {
   const tier = tierLabel(card.tier, t);
   const note = isNewcomer(card) ? t('reputation.profile.newcomer') : t('reputation.profile.recent');
   return (
-    <Section modifiers={[listRowBackground('clear')]}>
-      <HStack spacing={vars['--space-3']}>
+    <Section modifiers={[listRowBackground('clear'), listSectionSpacing('compact')]}>
+      <HStack spacing={vars['--space-3']} modifiers={[HEADER_INSETS]}>
         <RNHostView matchContents>
           <Avatar uri={card.avatarUrl} size={AVATAR} label={name} initial={nameInitial(name)} />
         </RNHostView>
@@ -107,23 +121,17 @@ function Stat({
         accessibilityIdentifier(testID),
       ]}
     >
-      <Text
-        modifiers={
-          muted
-            ? [
-                font({ textStyle: 'footnote', weight: 'semibold' }),
-                secondary,
-                frame({ minHeight: 28 }),
-              ]
-            : [
-                font({ textStyle: 'title2', weight: 'heavy', design: 'rounded' }),
-                monospacedDigit(),
-                lineLimit(1),
-              ]
-        }
-      >
-        {value}
-      </Text>
+      {muted ? (
+        // The hidden number gives the muted text the height of its neighbours' numbers, so the labels share a line.
+        <ZStack>
+          <Text modifiers={[...NUMBER, hidden()]}>0</Text>
+          <Text modifiers={[font({ textStyle: 'footnote', weight: 'semibold' }), secondary]}>
+            {value}
+          </Text>
+        </ZStack>
+      ) : (
+        <Text modifiers={NUMBER}>{value}</Text>
+      )}
       <Text
         modifiers={[font({ textStyle: 'footnote' }), secondary, multilineTextAlignment('center')]}
       >

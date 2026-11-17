@@ -1,4 +1,5 @@
-"""Someone else's profile (245 A, 246 A): Mei's header reads her name and 很靠谱 · 近 180 天; the three numbers read 帮过的人 9,
+"""Someone else's profile (245 A, 246 A): Mei's header reads her name and 很靠谱 · 近 180 天 and sits close above the numbers
+card; the three numbers read 帮过的人 9,
 完成率 96%, 评价 24; the reviews come before the one 小貘 row; 开心 20 · 一般 3 · 不开心 1 heads the latest 3 rows, the second
 shows 不开心 · 迟到 with Mei's reply under it, the third is a ride review that reads only 拼车 (the fixture strips the route and reviewer as the server does, 256 A;
 the server side is pgTAP);
@@ -16,6 +17,7 @@ SCENE = 'profile'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson', 'fixture-person-mei']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
+HEADER_GAP = 50
 
 ui = UI(*sys.argv[1:])
 open_profile(ui)
@@ -25,6 +27,10 @@ assert ui.t('bounty.tier.very_reliable') in tier and ui.t('reputation.profile.re
 assert label(ui, 'profile-helped') == f"{ui.t('reputation.profile.helped')} 9", label(ui, 'profile-helped')
 assert label(ui, 'profile-rate') == f"{ui.t('reputation.profile.completionRate')} 96%", label(ui, 'profile-rate')
 assert label(ui, 'profile-count-reviews') == f"{ui.t('reputation.profile.reviews')} 24", label(ui, 'profile-count-reviews')
+items = ui.read()
+header, numbers = by_id(items, 'profile-tier')['frame'], by_id(items, 'profile-helped')['frame']
+gap = numbers['y'] - (header['y'] + header['height'])
+assert 0 < gap <= HEADER_GAP, f'the header floats {gap:.1f} pt above the numbers card'
 assert label(ui, 'profile-faces') == ui.t('reputation.profile.faces', happy=20, okay=3, unhappy=1), \
     label(ui, 'profile-faces')
 
