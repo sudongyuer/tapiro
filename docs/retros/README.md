@@ -443,6 +443,7 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-17 | UI polish, account            | 0                  | 2             | ~25 min (Simulator lock)                         | 0                       | 1 (★ P1 pinned bar)   |
 | 2026-11-17 | UI polish, reviews            | 0                  | 1             | ~0                                               | 0                       | 0                     |
 | 2026-11-17 | UI polish, 问小貘             | 0                  | 1             | ~30 min (case helpers deleted, Simulator lock)   | 0                       | 0                     |
+| 2026-11-17 | UI polish, confirmations      | 0                  | 2             | lock wait (see retro)                            | 0                       | 0                     |
 | 2026-11-17 | UI polish, chat               | 0                  | 1             | ~25 min (Simulator lock)                         | 0                       | 0                     |
 | 2026-11-16 | drawing task                  | 1 (coin art)       | 1             | ~0                                               | 1                       | 0                     |
 | 2026-11-17 | UI polish, 我的 and coins     | 0                  | 1             | ~0                                               | 0                       | 0                     |
