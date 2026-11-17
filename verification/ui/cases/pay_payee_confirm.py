@@ -1,4 +1,4 @@
-"""The payee sheet is titled 收款 and shows 小林说已付款 with the method and screenshot note, with 已收到 as the primary button pinned at the bottom and 还没收到 under it; the screenshot opens; 还没收到 shows the reminder card and the 24-hour report placeholder; 已收到 after an earlier settle plays the routine celebration (又帮成一单, sticker 2 in the first slot with sticker 1 after it, one centred group, no badge) and 好的 returns to the 已结清 sheet."""
+"""The payee sheet is titled 收款 and shows 小林说已付款 with the method and screenshot note, with 已收到 as the primary button pinned at the bottom and 还没收到 under it; the screenshot opens; 还没收到 shows the reminder card with no report promise; 已收到 after an earlier settle plays the routine celebration (又帮成一单, sticker 2 in the first slot with sticker 1 after it, one centred group, no badge) and 好的 returns to the 已结清 sheet."""
 import re
 import sys
 
@@ -28,7 +28,8 @@ ui.tap('pay-proof-close')
 ui.gone('pay-proof-image')
 ui.tap('pay-not-received')
 nudged = ui.element('pay-payee-nudged')
-assert ui.t('pay.payee.report') in (nudged.get('AXLabel') or ''), nudged.get('AXLabel')
+nudged_label = nudged.get('AXLabel') or ''
+assert ui.t('pay.payee.nudged', name='小林') in nudged_label and '举报' not in nudged_label, nudged_label
 assert by_id(ui.read(), 'pay-not-received') is None, '还没收到 still offered'
 assert_pinned(ui, 'pay-confirm', '已收到')
 ui.capture('02-nudged')

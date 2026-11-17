@@ -45,9 +45,7 @@ export function DoneCard({
       </HandText>
       <HandText
         hand="caption"
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.7}
+        numberOfLines={2}
         style={[styles.center, { color: color('--color-on-paper') }]}
       >
         {line1}

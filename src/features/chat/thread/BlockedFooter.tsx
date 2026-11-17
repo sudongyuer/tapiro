@@ -86,7 +86,7 @@ export function BlockedFooter({
 
 const styles = StyleSheet.create({
   footer: {
-    backgroundColor: PlatformColor('systemBackground'),
+    backgroundColor: PlatformColor('systemGroupedBackground'),
     position: 'absolute',
     left: 0,
     right: 0,

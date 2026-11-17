@@ -1,5 +1,5 @@
 """The organiser at 07:40, one paid and one not (214 A, 216 A, 218 A). The ticket leads with 「0/2 人的钱收到了」 and the
-cells 每人 RM 24.70 / 你出 RM 24.60; the 结清 step reads 等你确认 1 笔. 阿明's row says TNG · hh:mm 说已付 · 有截图 with 看截图,
+cells Grab 总价 RM 74.00 / 每人 RM 24.70 / 你出 RM 24.60, in that order; the 结清 step reads 等你确认 1 笔. 阿明's row says TNG · hh:mm 说已付 · 有截图 with 看截图,
 还没收到 and 已收到; 小雅's row says 还没付 with no button, and the footnote says Tapiro reminds, with no nudge button.
 已收到 on 阿明 sends one confirm and plays no celebration (小雅 still owes); the row then reads 收到."""
 import json
@@ -26,6 +26,8 @@ ui = UI(*sys.argv[1:])
 
 ticket = ui.element('ride-detail-ticket').get('AXLabel') or ''
 assert f"0/2 {ui.t('rideSettle.ticket.leadReceived')}" in ticket, ticket
+cells = [ticket.find(ui.t(f'rideSettle.ticket.{key}')) for key in ('total', 'each', 'yours')]
+assert -1 not in cells and cells == sorted(cells), f'the ticket does not read Grab 总价, 每人, 你出 in order: {ticket!r}'
 assert ui.element('ride-detail-settle-title').get('AXLabel') == ui.tn('rideSettle.steps.settleConfirm', 1)
 sub = ui.element(f'ride-settle-sub-{MING}').get('AXLabel') or ''
 assert re.fullmatch(ui.pattern('rideSettle.rows.saidPaid', method='.+', time=CLOCK) + re.escape(ui.t('rideSettle.rows.proof')),

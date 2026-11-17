@@ -62,10 +62,14 @@ have no plan of their own, so their choices are listed here. No amount, arithmet
 | R8  | The icons of 加点细节 share one 28 pt column, so 航班和行李, 加起飞时间 and 集合说明 start on one edge; 236's 12 pt between icon and label is kept as the minimum (RIDE-16).                                                                      | —                                                                                                          |
 
 Skipped, with the deciding line: RIDE-14, RideMeetup1 198 A draws the tile as 「填车牌 / VEN 2381 · 白色 Alza」 after the
-organiser booked, which is what ships. RIDE-15, the pinned live ticket is a recorded deviation (step 4: 「It is pinned
-above the scrolling Form」) and a soft edge under it would let rows cross the caption, which the opaque-bar rule
-excludes (`docs/design-language.md`, owner 2026-11-06); asked as an owner question. RIDE-10, the spec's settle section
-does not say which cells the organiser's ticket shows; asked as an owner question.
+organiser booked, which is what ships.
+
+Owner rows of the same audit, decided under the owner's delegation (2026-11-17, ★ for veto):
+
+| #   | Choice (★ taken)                                                                                                                                                                                                                                                                                                                                                            | Alternative                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| R9  | The organiser's settling ticket shows three cells, Grab 总价 / 每人 / 你出, as RideSettle1 214 A draws them; the spec's settle section does not say which cells it shows, so the board decides. When the shares are not equal 每人 is left out and the ticket keeps Grab 总价 / 你出. No amount changed (RIDE-10).                                                          | Keep two cells (每人 or the total, and 你出).                    |
+| R10 | The create form's ticket and caption sit in a top safe-area bar of the Form (kit `PinnedBar header`) with the system hard scroll edge, so rows scrolled under the ticket meet the system edge instead of a clipped view; no overlay is drawn. Hard, not soft, so scrolled rows never cross the caption (the opaque-bar rule). The confirm page uses the same bar (RIDE-15). | The system soft edge, letting rows show faded under the caption. |
 
 ## Rejection reasons
 
@@ -97,7 +101,7 @@ does not say which cells the organiser's ticket shows; asked as an owner questio
 - [ ] `src/features/place/index.ts` facade; bounty imports `@/features/place` only; `PlaceSearchScreen` exported from
       bounty's index unchanged for the routes.
 - [ ] `bun test` (place and board tests unchanged), `tsc`, lint; commit `refactor(place): move place search and the
-  origin store out of bounty`.
+origin store out of bounty`.
 
 ### Task 2: shared block module
 
@@ -155,7 +159,7 @@ does not say which cells the organiser's ticket shows; asked as an owner questio
 
 - [ ] `nearby_rides(latitude, longitude, page_after, page_size, reference_currency)`: joinable rides, ordered by
       Malaysia day, then start distance (or departure without a location), then departure, id; cursor `{id,
-  latitude, longitude}`; organiser only, no members. `my_rides()` (24 h rule) and `ride_history()`.
+latitude, longitude}`; organiser only, no members. `my_rides()` (24 h rule) and `ride_history()`.
 - [ ] pgTAP `ride_nearby.test.sql`. Commit `feat(carpool): nearby rides by day with a cursor`.
 
 ### Task 10: records and PR
