@@ -64,7 +64,8 @@ for found in rows:
     edges[found['AXUniqueId']] = right_edge(shot, amount_side, strong_ink(ui.appearance))
 dates = {found['AXLabel'].split(ui.t('coins.listJoin'))[-1] for found in rows}
 assert len({len(date) for date in dates}) > 1, f'every date is the same length, so the column cannot shift: {dates}'
-assert max(edges.values()) - min(edges.values()) <= 1, f'the amounts do not end on one line: {edges}'
+# The ink of 「+1」 ends up to 2.7 pt before that of 「+5」 in the same box; before the date column the boxes were 9 pt apart.
+assert max(edges.values()) - min(edges.values()) <= 3.5, f'the amounts do not end on one line: {edges}'
 
 ui.tap('BackButton')
 ui.gone('coins-screen')

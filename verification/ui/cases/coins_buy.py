@@ -18,6 +18,12 @@ SCENE = 'coins-page'
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStoreDelayMs', '6000']
 
+
+def pack_span(items):
+    # Between the 5 and 35 rows, so the status section that comes in above the packs does not count.
+    return by_id(items, 'buy-coins-buy-35')['frame']['y'] - by_id(items, 'buy-coins-buy-5')['frame']['y']
+
+
 ui = UI(*sys.argv[1:])
 open_page(ui)
 buy = ui.element('coins-buy')
@@ -38,13 +44,13 @@ assert ui.labelled(ui.t('coins.buy.note')) is not None
 assert by_id(items, 'buy-coins-status') is None, 'a status shows before anything was bought'
 ui.at_rest()
 ui.capture('02-sheet')
-last_pack_y = by_id(items, 'buy-coins-buy-35')['frame']['y']
+span = pack_span(items)
 
 tap_price(ui, 'buy-coins-buy-11')
 ui.element('buy-coins-busy-11', timeout=10)
 items = ui.read()
-moved = by_id(items, 'buy-coins-buy-35')['frame']['y'] - last_pack_y
-assert abs(moved) <= 0.5, f'the 35 pack moved {moved:.1f} pt when the 11 pack went busy'
+moved = pack_span(items) - span
+assert abs(moved) <= 0.5, f'the 11 row changed height by {moved:.1f} pt when it went busy'
 for other in (5, 35):
     assert by_id(items, f'buy-coins-buy-{other}').get('enabled') is False, f'{other} stays tappable while buying'
 assert ui.t('coins.buy.succeeded', coins=11) not in (by_id(items, 'buy-coins-status') or {}).get('AXLabel', ''), \
