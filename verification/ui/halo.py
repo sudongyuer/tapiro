@@ -1,10 +1,10 @@
-from driver import dominant, glow
+from driver import glow
 
 
 def assert_title_halo(ui, shot, f, name):
     if ui.appearance == 'dark':
         return
-    background = dominant(shot, f)
+    background = shot.rgb(max(2, f['x'] - 12), f['y'] + f['height'] / 2)
     ink, light = glow(shot, f, background)
     print(f'{name}: background {background}, ink {ink}, halo {light}')
     assert ink > 200, f'{name}: title glyphs missing ({ink} ink pixels)'
