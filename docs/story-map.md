@@ -1193,3 +1193,21 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | 验收 id            | 行为                     | 覆盖 |
 | ------------------ | ------------------------ | ---- |
 | rep.vouching.vouch | 担保规则等信誉调研后再定 | db   |
+
+## 无障碍（贯穿各页）
+
+### a11y.core 读屏、点按范围和大字号
+
+- 故事：作为用读屏、大字号或手不太稳的同学，我想核心流程都能用，以便不靠别人也能发悬赏、付款、拼车和聊天。
+- 状态：done
+- 版本：v1
+- 规格：[无障碍计划](plans/2026-11-18-accessibility-pass.md)
+
+| 验收 id              | 行为                                                                                                            | 覆盖                                                                                                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| a11y.core.labels     | 核心页面每个可操作元素都有读屏标签（中文、English、Bahasa Melayu），标签不是标识符或 SF Symbol 名字             | ui:a11y_screens, unit:verification/ui/test_a11y.py                                                       |
+| a11y.core.targets    | 自己画的按钮和链接至少 44 pt（浮起的半屏按它自己的比例算；开关、步进器、菜单选择器和输入框由 44 pt 的整行负责） | ui:a11y_screens, unit:verification/ui/test_a11y.py                                                       |
+| a11y.core.contrast   | 文字 token 在浅色和深色下对底色至少 4.5:1；拼车票上的状态行用票专用的深色；印章在白底上用纸绿                   | unit:src/ui/theme/tokens.test.ts                                                                         |
+| a11y.core.voiceover  | 旁白真机走一遍核心流程：卡片读成一句、选中和不可用读得出来、金额和时间读得自然                                  | device: 按 docs/walkthroughs/2026-11-18-accessibility.md 的旁白一节走                                    |
+| a11y.core.large-text | 最大字号（AX5）下核心页面文字变大、不重叠不截断，没有第二套布局                                                 | gap: --text-size ax5 跑 a11y_screens 只出截图供人看，断言按 Large 写, device: 设置里把字号拖到最大走一遍 |
+| a11y.core.motion     | 减弱动态效果时庆祝直接淡入、卡片和轴的动画直接到位                                                              | ui:weekly_feed_reduced, ui:mascot_level_reduced, device: 打开「减弱动态效果」走一遍                      |
