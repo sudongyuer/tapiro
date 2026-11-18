@@ -1,0 +1,7 @@
+ride_create_worst zh-Hans dark, app d06ce59, first attempt of run 1 (2026-11-18 12:0x), row ride-form-start frame
+{'x': 62, 'y': 323, 'width': 304, 'height': 60}. Vision lines (x, y, width, height in pt):
+60.9 327.7 216.9 16.7 Sunway Pyramid Convention        <- starts 1.1 pt left of the row, outside inside()'s 1 pt slack
+53.3 348.0 279.0 19.1 Centre 旁边 Sunway Lagoon 正…..   <- box takes in the row's start dot
+62.1 367.0 158.5 15.4 票上叫「谷中城北庭正门口」
+244.8 367.1 13.9 14.0 改
+First ink column of each place-name line (measured on this branch, not merged), same frame and runs 2 and 3: 63.0 and 63.0. #174's clamp reads drift 0 on this frame.

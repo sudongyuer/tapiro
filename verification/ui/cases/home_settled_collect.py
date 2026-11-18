@@ -37,7 +37,7 @@ CHANGED = 48
 TAB_HIT = 0.12
 GLYPH_MIN = 200
 CARD_TOLERANCE = 24
-LEAVE_MIN_S = 0.2
+LEAVE_MIN_S = 0.12
 FOLLOW_MIN_S = 0.12
 FOLLOW_JUMP_S = 0.07
 FOLLOW_MIN_PT = 8
@@ -107,9 +107,9 @@ def board_follow(shots, start_at, title_before, title_after, width):
             for shot, at in shots if start_at - 0.1 <= at <= start_at + 1.2]
     print('board offset ' + ', '.join(f'{at:.2f}s {d}pt (err {e:.0f})' for at, e, d in rows))
     covered = [(at, 1 - d / move) for at, _, d in rows]
-    began = next(at for at, p in covered if p >= 0.1)
-    settled = next(at for at, p in covered if p >= 0.95)
-    return settled - began
+    last = next(i for i in range(len(covered)) if all(p >= 0.95 for _, p in covered[i:]))
+    began = next(at for at, p in covered[:last + 1] if p >= 0.1)
+    return covered[last][0] - began
 
 
 def icon_box(tab):

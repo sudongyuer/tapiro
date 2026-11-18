@@ -1,0 +1,50 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl launch
+collect-flight: 0.00s tab=0.00 card=1.00, 1.81s tab=0.00 card=1.00, 1.84s tab=0.00 card=1.00, 1.87s tab=0.00 card=0.00, 1.90s tab=0.00 card=0.00, 1.94s tab=0.00 card=0.00, 1.97s tab=0.00 card=0.00, 2.00s tab=0.00 card=1.00, 2.04s tab=0.00 card=1.00, 2.07s tab=0.00 card=1.00, 2.10s tab=0.00 card=1.00, 2.38s tab=0.00 card=1.00, 2.42s tab=0.00 card=1.00, 2.45s tab=0.00 card=1.00, 2.49s tab=0.00 card=1.00, 2.52s tab=0.00 card=1.00, 2.55s tab=0.00 card=1.00, 2.58s tab=0.00 card=1.00, 2.62s tab=0.00 card=1.00, 2.65s tab=0.00 card=1.00, 2.69s tab=0.00 card=1.00, 2.72s tab=0.00 card=1.00, 2.75s tab=0.00 card=1.00, 2.79s tab=0.00 card=1.00, 2.82s tab=0.00 card=1.00, 2.85s tab=0.00 card=1.00, 2.89s tab=0.00 card=1.00, 2.92s tab=0.00 card=1.00, 2.95s tab=0.32 card=1.00, 2.98s tab=0.36 card=1.00, 3.04s tab=0.86 card=1.00, 3.07s tab=0.32 card=1.00, 3.11s tab=0.32 card=0.00, 3.14s tab=0.37 card=0.00, 3.17s tab=0.37 card=0.00, 3.21s tab=0.71 card=0.00, 3.24s tab=0.25 card=0.00, 3.27s tab=0.09 card=0.00, 3.31s tab=0.09 card=0.00, 3.34s tab=0.03 card=0.00, 3.37s tab=0.00 card=0.00, 3.40s tab=0.06 card=0.00, 3.44s tab=0.00 card=0.00, 3.47s tab=0.00 card=0.00, 3.50s tab=0.00 card=0.00, 3.53s tab=0.00 card=0.00, 3.56s tab=0.00 card=0.00, 3.60s tab=0.00 card=0.00, 4.05s tab=0.00 card=0.00, 4.09s tab=0.00 card=0.00, 4.12s tab=0.00 card=0.00, 4.15s tab=0.00 card=0.00, 4.18s tab=0.00 card=0.00, 4.22s tab=0.00 card=0.00, 4.25s tab=0.00 card=0.00, 4.29s tab=0.00 card=0.00, 4.32s tab=0.00 card=0.00, 4.35s tab=0.00 card=0.00, 4.39s tab=0.00 card=0.00
+board offset 2.98s 45pt (err 1), 3.04s 44pt (err 5), 3.07s 23pt (err 7), 3.11s 14pt (err 11), 3.14s 9pt (err 14), 3.17s 5pt (err 14), 3.21s 3pt (err 10), 3.24s 2pt (err 3), 3.27s 1pt (err 5), 3.31s 0pt (err 16), 3.34s 0pt (err 9), 3.37s 0pt (err 3), 3.40s 0pt (err 1), 3.44s 0pt (err 1), 3.47s 0pt (err 0), 3.50s 0pt (err 0), 3.53s 0pt (err 0), 3.56s 0pt (err 0), 3.60s 0pt (err 0), 4.05s 0pt (err 0), 4.09s 0pt (err 0), 4.12s 0pt (err 0), 4.15s 0pt (err 0), 4.18s 0pt (err 0), 4.22s 0pt (err 0), 4.25s 0pt (err 0)
+collect-flight: card change 3.07s 0.30, 3.11s 0.46, 3.14s 0.59, 3.17s 0.69, 3.21s 0.78, 3.24s 0.87, 3.27s 0.93, 3.31s 0.96, 3.34s 0.98, 3.37s 0.99
+flight: over 我的 2.95-3.24s, card leaving 3.11s, gone 3.11s, change over 0.20s, board followed over 0.17s
+collect-reduced: 0.00s tab=0.00 card=1.00, 1.14s tab=0.00 card=1.00, 1.18s tab=0.00 card=1.00, 1.21s tab=0.00 card=1.00, 1.25s tab=0.00 card=1.00, 1.28s tab=0.00 card=0.00, 1.31s tab=0.00 card=0.00, 1.34s tab=0.00 card=0.00, 1.38s tab=0.00 card=0.00
+board offset 1.18s 0pt (err 1), 1.21s 0pt (err 1), 1.25s 0pt (err 1), 1.28s 0pt (err 1), 1.31s 0pt (err 0), 1.34s 0pt (err 0), 1.38s 0pt (err 0)
+collect-reduced: card change 1.25s 0.69, 1.28s 0.85, 1.31s 0.92, 1.34s 1.00, 1.38s 1.00
+reduced: card leaving 1.28s, gone 1.28s, board moved over 0.00s
+  4.5s axe describe-ui
+  1.7s axe describe-ui
+  1.4s axe describe-ui
+  0.4s screenshot 01-before
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  2.2s axe tap -x 201 -y 431 --post-delay 0.5
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.5s screenshot 02-collected
+  1.0s axe describe-ui
+  0.8s axe describe-ui
+  2.1s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.5s axe tap -x 201 -y 431 --post-delay 0.5
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.4s screenshot 03-reduced-collected
+  0.9s axe describe-ui
+latency on Tapiro Verify 2: 39 commands, median 1.0 s, max 4.5 s (axe describe-ui), 0 timeouts

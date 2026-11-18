@@ -154,6 +154,17 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      retries on a Return key reported at y 1087, below the screen); `pay_sheet_duitnow` en and ms light (pasteboard,
      0d); `bounty_apply_failed` en light, `payee_add_bank` en dark, `bounty_post_no_balance` ms light second attempt,
      `ask_energy_sheet` zh-Hans dark and `ride_create_form` zh-Hans dark (lost AXe sessions on one or both attempts).
+     Follow-ups (2026-11-18, PRs #171–#173 and `fix/verify-ride-settled`; retros `2026-11-18-hid-reward`,
+     `-glass-ink`, `-affected-ms`, `-ride-settled-cases`): the HID 「0 in the field」 was the reward's placeholder, which an
+     empty field reports as its value. A probe (number pad up, HID `5`) left the grey placeholder, so the form was right
+     to say 填一下赏金; no product change. `bounty.typed` now refuses placeholder text, and the zero reward types `00` (#171).
+     `shell_ask_tapir` and `shell_minimise` check the appearance by label ink against its ground, not by glass luma (#172).
+     `--affected` adds `ms` (`en` without `ms`) to a changed screen's cases (#173). `ride_create_worst` dark: Vision's
+     box took in the start dot (reproduced 1 of 3 on main), a case flaw. #174 fixed it by clamping such a box to the row's
+     edge; that fix reads drift 0–0.1 pt on all 14 saved screenshots, the night's failure and ms dark included. `home_settled_collect` dark: the leave measured 0.20–0.23 s in 8 runs,
+     against a limit of exactly 0.2, now 0.12. Open: the night's one-frame board read at its final place (0.00 s follow)
+     was not seen in 8 runs (follow 0.15–0.19 s). The follow is now measured to the first frame of its final settled run; if a one-frame jump
+     is real, only a recording of it will show it.
      The 已结清 card's one-frame exit is fixed (`fix/settled-exit`, 2026-11-16): the `exiting` animation did run, but a
      Reanimated exiting view keeps its host index and the calm card mounted in the same commit is inserted after it, so
      it drew over the leave from the first frame (a 1.5 s `FadeIn` on the calm card showed the leave underneath). The
