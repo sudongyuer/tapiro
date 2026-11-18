@@ -76,6 +76,7 @@ for tab, ready, name, allow in TABS:
         if not LARGE_TEXT:
             raise
         skipped.append(name)
+        ui.capture(f'00-{name}-unreached')
         continue
     ui.read()
     check(f'00-{name}', allow)
