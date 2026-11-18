@@ -24,6 +24,9 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
 
 ## In progress
 
+- Accessibility pass on the core flows (`docs/plans/2026-11-18-accessibility-pass.md`, decisions A1–A10 for veto):
+  the check and the core-screen tour (`fix/a11y-checks`), contrast fixes (`fix/a11y-contrast`) and type roles that stop
+  at their iOS AX5 size (`fix/a11y-dynamic-type`). Device checks: `docs/walkthroughs/2026-11-18-accessibility.md`.
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). The `ride.remind.*`
   device checks wait for TestFlight. The local pgTAP `rides_schema` test 39 failure is gone: the main session reset the
   local database on 2026-11-06 (`supabase db reset --local`, test accounts reseeded) and all 49 files, 1721 tests pass.
