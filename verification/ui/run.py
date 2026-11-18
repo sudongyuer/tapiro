@@ -365,8 +365,7 @@ def main():
     parser.add_argument('--output', help='default .verify/ui, or .verify/ui-<size> for another --text-size')
     parser.add_argument('--text-size', choices=sorted(TEXT_SIZES), default='large',
                         help='Dynamic Type for the app under test; acceptance runs at large')
-    parser.add_argument('--hour-cycle', type=int, choices=[24, 12], default=24,
-                        help='12 runs every case in 12-hour time; a case that names it in ARGS gets 12 either way')
+    parser.add_argument('--hour-cycle', type=int, choices=[24, 12], default=24, help='12: every case in 12-hour time')
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
     parser.add_argument('--locale', choices=sorted(REGIONS))
     parser.add_argument('--affected', action='store_true',
@@ -380,7 +379,6 @@ def main():
     args = parser.parse_args()
     if args.output is None:
         args.output = str(ROOT / ('.verify/ui' if args.text_size == 'large' else f'.verify/ui-{args.text_size}'))
-
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
     tiered = args.affected or args.smoke
     layout = set()
