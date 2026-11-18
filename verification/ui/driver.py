@@ -427,21 +427,15 @@ def glass_luma(shot, f):
 
 # Glass shows whatever lies behind it, so its luma depends on the backdrop (105 over a light ride card in en dark,
 # 2026-11-18); the label drawn on it follows the appearance: light ink above its ground in dark, dark ink in light.
-def label_ink(shot, f):
+def assert_label_ink(shot, f, appearance, name, contrast=60):
     values = sorted(luma(rgb) for rgb in shot.pixels(f))
     assert values, f'region {f} is off screen'
     ground, edge = values[len(values) // 2], len(values) // 100
-    darkest, brightest = values[edge], values[-1 - edge]
-    return ground, brightest if brightest - ground > ground - darkest else darkest
-
-
-def assert_label_ink(shot, f, appearance, name, contrast=60):
-    ground, ink = label_ink(shot, f)
+    ink = max(values[edge], values[-1 - edge], key=lambda value: abs(value - ground))
+    light = appearance == 'dark'
     print(f'{name}: ink luma {ink:.0f} on ground {ground:.0f}')
-    if appearance == 'dark':
-        assert ink - ground > contrast, f'{name} is not light ink on its ground ({ink:.0f} on {ground:.0f}) in dark'
-    else:
-        assert ground - ink > contrast, f'{name} is not dark ink on its ground ({ink:.0f} on {ground:.0f}) in light'
+    assert (ink - ground if light else ground - ink) > contrast, \
+        f'{name} is not {"light" if light else "dark"} ink on its ground ({ink:.0f} on {ground:.0f}) in {appearance}'
 
 
 # glass=False: the glass shows its backdrop (135 over a light Apply button in en dark, 2026-11-16); the head is opaque.
