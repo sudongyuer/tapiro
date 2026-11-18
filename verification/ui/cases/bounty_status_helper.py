@@ -29,8 +29,8 @@ SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
 FIRST = ['-uiVerifyBountyStatus', 'assigned', '-uiVerifyBountyRole', 'helper']
-# The minute column, which wraps; in 12-hour locales 0.62 lands on AM/PM, which cannot move past PM in the afternoon.
-MINUTES, MINUTES_12H = {'zh-Hans': 0.62}, 0.49
+# The minute column of the 24-hour wheel the runner pins; it wraps, so a swipe always moves it.
+MINUTES = 0.62
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'assigned', '-uiVerifyBountyRole', 'helper',
         '-uiVerifyBountyStatusDelayMs', '6000']
 CALLS = 'uiVerifyBountyStatusCalls'
@@ -165,7 +165,7 @@ ok = confirm_button()
 assert ok.get('AXLabel') == ui.t('bounty.eta.ok'), ok
 assert ok.get('enabled') is False, f'好 is enabled before the wheel moved: {ok}'
 wheel = ui.element('bounty-eta-picker')['frame']
-x = wheel['x'] + wheel['width'] * MINUTES.get(ui.locale, MINUTES_12H)
+x = wheel['x'] + wheel['width'] * MINUTES
 middle = wheel['y'] + wheel['height'] / 2
 ui.swipe((x, middle + 40), (x, middle - 40), 0.4)
 ui.wait(lambda items: any(i.get('AXUniqueId') == 'bounty-eta-confirm' and i.get('type') == 'Button'

@@ -1,10 +1,13 @@
-"""问小貘 opens as a sheet from 悬赏 and from 拼车 with suggestions for that tab, and closing it leaves the same tab selected."""
+"""问小貘 opens as a sheet from 悬赏 and from 拼车 with suggestions for that tab; it closes with the system close button at the
+trailing end of its bar (no drawn close button), and closing it leaves the same tab selected."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from ask import close_button  # noqa: E402
 from driver import UI, assert_label_ink, by_id, reach_home, selected  # noqa: E402
 
-DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
+DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx', 'src/app/_layout.tsx',
+        'verification/ui/ask.py']
 
 LOCALES = ['zh-Hans', 'ms']
 COPY = {
@@ -28,9 +31,16 @@ def open_sheet(tab, name):
     assert not searching, f'tapping 小貘 activated a search field: {searching}'
     scale =min(1.0, max(0.9, by_id(items, 'ask-tapir-sheet')['frame']['width'] / items[0]['frame']['width']))
     floor = 44 * scale - (0.5 if scale < 1 else 0)
-    for identifier in ('ask-tapir-close', 'ask-tapir-mic'):
-        f = by_id(items, identifier)['frame']
-        assert min(f['width'], f['height']) >= floor, f'{identifier} is under 44 pt at sheet scale {scale:.3f}: {f}'
+    assert by_id(items, 'ask-tapir-close') is None, 'the sheet still draws its own close button'
+    button = close_button(ui, items)
+    assert button, 'the sheet has no system close button'
+    edge = by_id(items, 'ask-tapir-sheet')['frame']
+    assert button['frame']['x'] > edge['x'] + edge['width'] * 2 / 3, f'the close button is not at the trailing end: {button}'
+    title = by_id(items, 'ask-tapir-subtitle')['frame']
+    assert title['x'] + title['width'] <= button['frame']['x'], f'the header runs under the close button: {title}'
+    # The system bar button draws a 36 pt glass circle and owns its own hit area; only the mic is ours to size.
+    f = by_id(items, 'ask-tapir-mic')['frame']
+    assert min(f['width'], f['height']) >= floor, f'ask-tapir-mic is under 44 pt at sheet scale {scale:.3f}: {f}'
     assert by_id(items, 'ask-tapir-mic').get('enabled') is not False, 'the mic is disabled'
     for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-suggestion-2', 'ask-tapir-prompt', 'ask-tapir-mic'):
         f, edge = by_id(items, identifier)['frame'], sheet['frame']
@@ -38,7 +48,7 @@ def open_sheet(tab, name):
     shot = ui.snap(name)
     title = next(i for i in items if i.get('type') == 'Heading' and i.get('AXLabel') == ui.t('shell.ask.title'))
     assert_label_ink(shot, title['frame'], ui.appearance, f'{name}: sheet title')
-    ui.tap('ask-tapir-close')
+    ui.tap_label(ui.t('shell.ask.close'))
     ui.gone('ask-tapir-sheet')
     ui.wait(lambda items: selected(items) == [tab], f'{tab} is not selected after closing the sheet')
 

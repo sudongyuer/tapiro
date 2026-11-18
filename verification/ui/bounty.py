@@ -7,7 +7,7 @@ from pathlib import Path
 from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, close, dominant, reach_home
 from gestures import drag
 from records import reset_records
-from run import REGIONS
+from run import locale_args
 from swifttool import SIMULATOR, compiled
 
 OPEN = 'bounty.post.open'
@@ -64,6 +64,9 @@ def field_point(f, below=False):
 
 
 def typed(ui, identifier, text, shows=None, band=True):
+    shows = shows or text
+    # An empty field reports its placeholder as its value, so typing the placeholder's own text proves nothing.
+    assert shows not in placeholders(ui).get(identifier, ()), f'{identifier} reads {shows!r} when empty'
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
     ui.tap_point(*(field_point(f) if band else (f['x'] + f['width'] - 4, f['y'] + f['height'] / 2)),
                  expect_change=False)
@@ -72,7 +75,6 @@ def typed(ui, identifier, text, shows=None, band=True):
         # Return key, so pad taps sent then land on the form behind it.
         ui.at_rest()
     ui.type(text)
-    shows = shows or text
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
 
 
@@ -178,8 +180,8 @@ def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll', keep_records=Fal
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
     if not keep_records:
         reset_records(ui.udid)
-    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, '-AppleLanguages', f'({ui.locale})',
-                    '-AppleLocale', REGIONS[ui.locale], *args, *add], check=True, capture_output=True, timeout=60)
+    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, *locale_args(ui.locale), *args, *add],
+                   check=True, capture_output=True, timeout=60)
     ui.element(ready, timeout=60)
 
 

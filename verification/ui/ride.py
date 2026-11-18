@@ -154,6 +154,13 @@ def tap_clear(ui, identifier, tries=6):
 
 CLOCK_IN_VALUE = re.compile(r'([^\d\s,]*)\s*(\d{1,2})[:.](\d{2})\s*([^\d\s,]*)')
 AFTERNOON = ('PM', 'PTG', 'P.M.', '下午', '晚上')
+MORNING = ('AM', 'PG', 'A.M.', '凌晨', '上午', '早上')
+TIME_TEXT = re.compile(r'(?:凌晨|早上|上午|中午|下午|晚上)?\d{1,2}[:.]\d{2}(?:\s?(?:AM|PM|PG|PTG|A\.M\.|P\.M\.))?')
+
+
+def time_text(label):
+    found = TIME_TEXT.search(' '.join((label or '').split()))
+    return found.group() if found else None
 
 
 def picker_clock(ui, identifier):
@@ -171,6 +178,8 @@ def clock_24h(text):
     # zh-Hans puts 下午 before the clock (下午5:00), so the date may run into it: 2026年11月3日下午5:00.
     if (suffix in AFTERNOON or any(marker.endswith(m) for m in AFTERNOON)) and hours < 12:
         hours += 12
+    elif (suffix in MORNING or any(marker.endswith(m) for m in MORNING)) and hours == 12:
+        hours = 0
     return f'{hours:02d}:{minutes}'
 
 

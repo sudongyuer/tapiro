@@ -124,6 +124,7 @@ export type LiveItems = {
     retry?: () => void,
   ) => void;
   retry: (name: string) => void;
+  retryIssues: () => void;
   setUnreadMessages: (count: number | null) => void;
 };
 
@@ -161,6 +162,10 @@ export function createLiveItems(initial: LiveItemsSnapshot = EMPTY_LIVE_ITEMS): 
     },
     retry(name) {
       retries.get(name)?.();
+    },
+    retryIssues() {
+      for (const [name, { status }] of sources)
+        if (status === 'failed' || status === 'stale') retries.get(name)?.();
     },
     setUnreadMessages(count) {
       if (count === unread) return;

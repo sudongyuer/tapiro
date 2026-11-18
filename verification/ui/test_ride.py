@@ -14,6 +14,11 @@ class Clock24hTest(unittest.TestCase):
         self.assertEqual(clock_24h('5.00 PTG'), '17:00')
         self.assertEqual(clock_24h('17:00'), '17:00')
 
+    def test_reads_midnight_and_noon_in_twelve_hours(self):
+        self.assertEqual(clock_24h('凌晨12:30'), '00:30')
+        self.assertEqual(clock_24h('12:30 AM'), '00:30')
+        self.assertEqual(clock_24h('中午12:30'), '12:30')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,3 +1,5 @@
+import type { Turn } from './conversation';
+
 export const BELLY_SEGMENTS = 5;
 
 export type Belly = {
@@ -77,4 +79,9 @@ const FAILURES: Record<string, PantryFailure> = {
 export function toPantryFailure(error: unknown): PantryFailure {
   const message = (error as { message?: unknown } | null)?.message;
   return (typeof message === 'string' && FAILURES[message]) || 'failed';
+}
+
+export function draftWaitsOnTop(turns: readonly Turn[], failed: boolean) {
+  const last = turns.at(-1);
+  return !failed && last?.role === 'tapir' && last.reply.kind === 'draft';
 }
