@@ -40,8 +40,7 @@ KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # the lobby -> See lobby). Autocapitalisation is off too: with the software keyboard kept up, AXe's first key was
 # sometimes capitalised (parcel -> Parcel, 2026-11-17). Non-ASCII text is pasted instead.
 KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
-# Every run sets the Simulator's text size, so a large-text run never leaks into the next case. The launch argument
-# -UIPreferredContentSizeCategoryName left a scene-based app at Large (2026-11-18).
+# Set on every run so a large-text run never leaks; the -UIPreferredContentSizeCategoryName argument did nothing here.
 TEXT_SIZES = {'large': 'large', 'ax5': 'accessibility-extra-extra-extra-large'}
 
 
@@ -473,6 +472,9 @@ def main():
         thread.start()
     for thread in threads:
         thread.join()
+    # A runner from an older checkout does not set the size, so a large-text run hands the Simulators back at Large.
+    for name, udid, _ in devices:
+        subprocess.run(['xcrun', 'simctl', 'ui', udid, 'content_size', TEXT_SIZES['large']], capture_output=True)
     for name, udid, _ in devices[1:]:
         subprocess.run(['xcrun', 'simctl', 'shutdown', udid], capture_output=True)
     for outcome in scheduler.unretried():
