@@ -6,11 +6,11 @@ import {
   scrollContentBackground,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { StyleSheet, View } from 'react-native';
+import { PlatformColor, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
-import { AppText } from '@/ui/AppText';
+import { InkText } from '@/ui/InkText';
 import { MascotSays } from '@/ui/MascotSays';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
@@ -38,9 +38,15 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
             <RNHostView matchContents={{ vertical: true }}>
               <View style={styles.heading}>
                 <MascotSays line={t('account.language.greeting')} />
-                <AppText variant="moment-title" accessibilityRole="header">
+                <InkText
+                  variant="moment-title"
+                  outline={vars['--sticker-border']}
+                  ink={PlatformColor('label')}
+                  accessibilityRole="header"
+                  testID="language-question"
+                >
                   {t('account.language.question')}
-                </AppText>
+                </InkText>
               </View>
             </RNHostView>
           </Section>

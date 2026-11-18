@@ -48,6 +48,7 @@ const ms: typeof zhHans = {
   sheet: {
     title: 'Nilai {{name}}',
     cancel: 'Batal',
+    close: 'Tutup',
     submit: 'Hantar',
     goodChips: 'Apa yang baik (pilih mana-mana)',
     badChips: 'Apa yang tidak kena (pilih mana-mana)',

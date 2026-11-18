@@ -41,6 +41,7 @@ describe('a review entry', () => {
     expect(entry.title).toContain('reputation.entry.review');
     expect(spoken(entry.trailing ?? '')).toContain('"count":5');
     expect(entry.trailingIsAction).toBe(false);
+    expect(entry.sealed).toBe(false);
     expect(entry.detail).toBeNull();
     expect(entry.target).toEqual({ kind: 'bounty', itemId: 'b1', reviewee: 'p1' });
   });
@@ -58,6 +59,7 @@ describe('a review entry', () => {
     expect(entry.detail).toContain('reputation.entry.sealedMine');
     expect(entry.trailing).toBe('reputation.entry.edit');
     expect(entry.trailingIsAction).toBe(true);
+    expect(entry.sealed).toBe(true);
     expect(entry.target).not.toBeNull();
   });
 
@@ -75,6 +77,7 @@ describe('a review entry', () => {
   test('revealed: names their face and does not open', () => {
     const entry = reviewEntry({ ...pair, state: 'revealed', mine, theirs }, 0, now, t);
     expect(entry.title).toBe('reputation.entry.public');
+    expect(entry.sealed).toBe(false);
     expect(entry.detail).toContain('reputation.entry.publicDetail');
     expect(entry.target).toBeNull();
   });
