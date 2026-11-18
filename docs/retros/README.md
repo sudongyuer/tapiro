@@ -907,3 +907,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-18 | 问小貘 switch + sheet follow  | 2                  | 1             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | affected adds ms              | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | HID reward (placeholder)      | 0                  | 0             | ~100 min (Simulator lock)                        | 0                       | 0                     |
+| 2026-11-18 | Simulator lock queue          | 0                  | 0             | ~0                                               | 0                       | 0                     |

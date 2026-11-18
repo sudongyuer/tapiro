@@ -211,6 +211,9 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   per-task `-derivedDataPath`, copy the checkout to a temp directory, or call `simctl create`
   directly; the runner owns the `Tapiro Verify` Simulators (three, one when under 15 GB free).
   Reason: the disk incident below.
+- Parallel agents take the Simulator only through `scripts/sim-lock.sh run <name> -- <cmd>` (FIFO tickets, dead or
+  over-age holders taken over; `status` shows the queue). Reason: ad-hoc `mkdir` locks polled at different rates let
+  5 s pollers starve 10 min pollers, PRs waited 15–17 h, and dead agents' locks were cleared by hand (2026-11-18).
 - Verify mode (`EXPO_PUBLIC_UI_VERIFY=1`) replaces services at their boundary only; it never ships
   enabled.
 - Requirements and acceptance criteria live in `docs/story-map.md`; each criterion names its test
