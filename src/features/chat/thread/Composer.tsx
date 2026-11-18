@@ -68,7 +68,7 @@ export function Composer({
           <TextInput
             nativeID={COMPOSER_INPUT_ID}
             testID="chat-composer-input"
-            accessibilityLabel={t('chat.thread.placeholder')}
+            accessibilityLabel={t('chat.thread.composerLabel')}
             style={[styles.input, { color: PlatformColor('label') }]}
             placeholder={t('chat.thread.placeholder')}
             placeholderTextColor={PlatformColor('placeholderText')}

@@ -67,6 +67,7 @@ export default {
     openSettings: 'Buka Tetapan',
     cameraUnavailable: 'Kamera tidak tersedia pada peranti ini',
     placeholder: 'Mesej',
+    composerLabel: 'Tulis mesej',
     send: 'Hantar',
     failed: 'Tidak dihantar. Ketik untuk cuba lagi.',
     safety:
