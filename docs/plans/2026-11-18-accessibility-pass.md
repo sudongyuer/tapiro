@@ -1,0 +1,38 @@
+# Accessibility Pass Plan
+
+**Goal:** VoiceOver, touch-target, Dynamic Type, Reduce Motion and contrast pass over the core flows (sign-in and
+onboarding, home, posting, applying / selecting / status, payment and payee methods, carpool, chat, 问小貘, 我的 /
+貘币 / settings), with checks that keep the fixes from regressing.
+
+**Architecture:** a runner helper reads the accessibility tree each case already saves; a runner flag sets the
+Simulator's text size for an AX5 audit run; contrast stays in `src/ui/theme/tokens.test.ts`; type roles stop growing at
+the size their iOS text style reaches at AX5.
+
+**Tech stack:** Python runner (`verification/ui`), `bun test`, Expo SDK 58 / React Native 0.88.
+
+**Spec:** none; the visual design is unchanged at Large. Rules are in `docs/design-language.md` (contrast, typography)
+and `AGENTS.md` (UI baseline).
+
+## Global constraints
+
+- Acceptance runs at Large. Larger text sizes use the same layout: fix clipping by wrapping and flexible layout, never a
+  second layout or remount.
+- Touch targets ≥ 44 pt; every interactive element has a VoiceOver label in zh-Hans, en and ms; decorative symbols are
+  hidden; state is a trait or value, not only colour.
+- Text contrast ≥ 4.5:1 (3:1 for 18 pt+ or 14 pt bold+), measured from tokens in both appearances.
+- Real VoiceOver gestures, speech and Instruments are device checks (`docs/walkthroughs/`), not faked on the Simulator.
+
+## Decisions (★ chosen for veto)
+
+| #   | Question                                                                       | ★ Choice                                                                                                                                                                        | Reason                                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | How the runner sets a large text size                                          | `simctl ui <udid> content_size`, set on every run (Large by default), `--text-size ax5` writes to `.verify/ui-ax5/`                                                             | The `-UIPreferredContentSizeCategoryName` launch argument left this scene-based app at Large; setting it every run keeps it from leaking into the next case |
+| A2  | Which elements the touch-target check measures                                 | Interactive elements carrying a Tapiro `testID`; switches, steppers, menu pickers and text fields are left to their 44 pt row; nav bar, keyboard and segmented controls skipped | Apple's controls keep Apple's sizes; our own pressables all carry a `testID` (README rule 3); `FieldRow` already makes a field's row the target             |
+| A3  | Floating sheets at a lower detent                                              | Measure in the sheet's own points (undo the card's scale)                                                                                                                       | iOS 26 scales the card to 386/402: 44 pt buttons report 42.2 pt; the system owns that scale                                                                 |
+| A4  | Ride ticket status line (urgent / needs-you) on the peach ticket               | Darker ticket-only inks `--color-on-ride-urgent` `#A22818` (4.8:1) and `--color-on-ride-warning` `#7A4A00` (4.9:1)                                                              | The status colours measure 3.6:1 on `--color-ride`; the ticket keeps its tone instead of turning the line black                                             |
+| A5  | 已申请 / 已结清 stamps and the map pin stamp in dark mode                      | Paper green `#187A50` in both appearances                                                                                                                                       | The stamp sits on the white receipt in both appearances; dark success green on white is 2.0:1                                                               |
+| A6  | Tertiary-label text (「你的留言」 on 没选上, empty days in the month calendar) | Secondary label                                                                                                                                                                 | Tertiary label is 1.7:1 on white; it stays for icons and dividers only                                                                                      |
+| A7  | System secondary label as text (3.4:1 light)                                   | Keep                                                                                                                                                                            | It is the HIG's secondary text colour and rises with Increase Contrast; replacing it everywhere would leave the platform look                               |
+| A8  | How far each type role grows                                                   | Each role stops at the size its iOS text style reaches at AX5 (`maxFontSizeMultiplier`), so body still reaches ~53 pt                                                           | React Native multiplies every size by 3.57 at AX5: a 62 pt amount became 221 pt; iOS text styles grow less the larger they start                            |
+| A9  | 小貘's stage speech bubble at large text sizes                                 | Stays at the Large size                                                                                                                                                         | It is part of a fixed 200 pt illustration and is hidden from VoiceOver (the strip reads the same line); at AX5 it covered the title and the status bar      |
+| A10 | Initials in ride avatars and the stacked card's back face                      | Hidden from VoiceOver                                                                                                                                                           | The ride card read 「M, 杰, H, 林」 and repeated its own peek title; the count is already in 「4/4 人齐」                                                   |
