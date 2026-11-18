@@ -3,6 +3,7 @@ import { scrollDismissesKeyboard, tint } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
+import { PinnedBar } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoneyRange } from '@/lib/money';
@@ -19,7 +20,7 @@ import { FormPlaces } from './FormPlaces';
 import { DetailsSection } from './FormDetails';
 import { FareSection, SeatsSection } from './FormFare';
 import { FormTime } from './FormTime';
-import { TicketFrame } from './TicketFrame';
+import { TicketBarHost, TicketScreen } from './TicketFrame';
 import {
   editDraft,
   rideFormError,
@@ -81,10 +82,7 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
           : null;
 
   return (
-    <TicketFrame
-      view={draftTicketView(draft, now, t, language, deviceDecimal())}
-      testID="ride-form"
-    >
+    <TicketScreen>
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
           variant="prominent"
@@ -95,30 +93,36 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
         </Stack.Toolbar.Button>
       </Stack.Toolbar>
       <Host style={styles.host} testID="ride-form">
-        <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
-          {noticeText ? (
-            <NoticeCard
-              tone="urgent"
-              icon="exclamationmark.circle.fill"
-              title={noticeText}
-              testID="ride-form-notice"
-            />
-          ) : null}
-          <FormPlaces
-            draft={draft}
-            onPick={(which) => {
-              sync();
-              onPickPlace(which);
-            }}
-            onEdit={edit}
+        <PinnedBar header>
+          <TicketBarHost
+            view={draftTicketView(draft, now, t, language, deviceDecimal())}
+            testID="ride-form"
           />
-          <FormTime draft={draft} now={now} onEdit={edit} />
-          <SeatsSection seats={draft.seats} onEdit={edit} />
-          <FareSection draft={draft} field={estimate} onEdit={edit} onBlur={onBlur} />
-          <DetailsSection draft={draft} note={note} onEdit={edit} onBlur={onBlur} />
-        </Form>
+          <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
+            {noticeText ? (
+              <NoticeCard
+                tone="urgent"
+                icon="exclamationmark.circle.fill"
+                title={noticeText}
+                testID="ride-form-notice"
+              />
+            ) : null}
+            <FormPlaces
+              draft={draft}
+              onPick={(which) => {
+                sync();
+                onPickPlace(which);
+              }}
+              onEdit={edit}
+            />
+            <FormTime draft={draft} now={now} onEdit={edit} />
+            <SeatsSection seats={draft.seats} onEdit={edit} />
+            <FareSection draft={draft} field={estimate} onEdit={edit} onBlur={onBlur} />
+            <DetailsSection draft={draft} note={note} onEdit={edit} onBlur={onBlur} />
+          </Form>
+        </PinnedBar>
       </Host>
-    </TicketFrame>
+    </TicketScreen>
   );
 }
 

@@ -101,7 +101,7 @@ export function ReviewRow({
     </VStack>
   );
   return (
-    <VStack alignment="leading" spacing={vars['--space-2']} modifiers={[fill, ...modifiers]}>
+    <HStack alignment="top" spacing={vars['--space-2']} modifiers={[fill, ...modifiers]}>
       {review.reportable ? (
         <ContextMenu>
           <ContextMenu.Items>
@@ -133,7 +133,7 @@ export function ReviewRow({
               frame({
                 minWidth: vars['--touch-min'],
                 minHeight: vars['--touch-min'],
-                alignment: 'leading',
+                alignment: 'topTrailing',
               }),
               contentShape(shapes.rectangle()),
             ]}
@@ -142,6 +142,6 @@ export function ReviewRow({
           </Text>
         </Button>
       ) : null}
-    </VStack>
+    </HStack>
   );
 }

@@ -1,5 +1,6 @@
 """A failed load is never 0 or empty. With the balance failing once (`-uiVerifyCoinsFail balance,history`), 我的 shows
-「貘币」 with no number; the page's first history read fails too and shows 「没加载出来」 with 重试 and no 还没有明细; 重试
+「貘币」 with no number; the page's first history read fails too and shows 「明细没加载出来」 and how to retry under 买貘币, where the history goes,
+with 重试 and no 还没有明细 and no page-wide card above the balance; 重试
 loads it, and no read repeats on its own (every fixture call takes 1 s, and the checks wait past it). A failed pull to refresh (`historyAgain`) keeps the rows with 「没刷新成功 ·
 下面是上次加载的貘币」 and 重试, which brings them back to current."""
 import sys
@@ -13,6 +14,7 @@ from gestures import pull  # noqa: E402
 
 DEPS = ['src/features/coins/', 'src/features/account/MeView.tsx', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/coins/', 'src/lib/loadable.ts', 'src/ui/NoticeCard.tsx', 'src/debug/CoinsScenes.tsx', 'verification/ui/coins.py', 'verification/ui/gestures.py', 'verification/ui/bounty.py']
 BUDGET = 300
+LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyCoinsFail', 'balance,history',
         '-uiVerifyCoinsDelayMs', '1000']
 
@@ -27,18 +29,22 @@ ui.at_rest()
 ui.capture('01-me-failed')
 
 ui.tap('me-coins')
-ui.element('coins-failed', timeout=45)
+ui.element('coins-history-failed', timeout=45)
 items = ui.read()
-assert ui.t('coins.failed') in (by_id(items, 'coins-failed').get('AXLabel') or '')
+failed_label = by_id(items, 'coins-history-failed').get('AXLabel') or ''
+assert ui.t('coins.historyFailed') in failed_label and ui.t('coins.historyFailedBody') in failed_label, failed_label
+assert by_id(items, 'coins-failed') is None, 'a failed history still shows the page-wide card above the balance'
+buy = by_id(items, 'coins-buy')['frame']
+assert by_id(items, 'coins-history-failed')['frame']['y'] >= buy['y'] + buy['height'], 'the history failure sits above the balance'
 assert by_id(items, 'coins-empty') is None and not row_ids(items), 'a failed history reads as empty'
 assert coin_calls(ui, 'history', 1, timeout=10)
 time.sleep(2)  # a replay would follow the failed answer
 assert len(coin_calls(ui, 'history', 2, timeout=2)) == 1, 'the failed read was repeated on its own'
 ui.at_rest()
 ui.capture('02-failed')
-ui.tap('coins-retry')
+ui.tap('coins-history-retry')
 ui.wait(lambda items: len(row_ids(items)) >= 3, '重试 never loaded the history')
-assert by_id(ui.read(), 'coins-failed') is None
+assert by_id(ui.read(), 'coins-history-failed') is None
 ui.at_rest()
 ui.capture('03-retried')
 

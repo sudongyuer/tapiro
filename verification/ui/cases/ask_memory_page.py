@@ -7,11 +7,12 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls, assert_switch_green, ink_centre  # noqa: E402
 from bounty import tap_sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, by_id, luma, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/app/ask-memory-entry.tsx', 'src/app/_layout.tsx',
         'src/lib/i18n/locales/ask/', 'src/ui/NoticeCard.tsx', 'src/ui/SyncedTextField.tsx', 'verification/ui/ask.py',
-        'verification/ui/bounty.py']
+        'verification/ui/bounty.py', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
@@ -103,6 +104,8 @@ ui.at_rest()
 ui.capture('04-off')
 
 ui.tap('memory-clear')
+assert_dialog(ui, ui.t('ask.memory.clearTitle', count=2), ui.t('ask.memory.clearConfirm'), ui.t('ask.memory.cancel'),
+              source='memory-clear')
 ui.at_rest()
 ui.capture('05-clear-confirm')
 assert_calls(ui, 'memoryClear', 0, wait=1)

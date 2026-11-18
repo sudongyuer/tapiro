@@ -27,6 +27,8 @@ import { LanguagePickerSection } from './LanguagePicker';
 
 const AVATAR_SIZE = 44;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+const primary = foregroundStyle({ type: 'hierarchical', style: 'primary' });
+const LEGAL_PAGES = ['terms', 'privacy'] as const;
 
 export function SettingsView({
   name,
@@ -34,6 +36,7 @@ export function SettingsView({
   avatarUrl,
   onSignOut,
   onDeleteAccount,
+  onOpenLegal,
   signingOut = false,
 }: {
   name: string;
@@ -42,6 +45,7 @@ export function SettingsView({
   signingOut?: boolean;
   onSignOut: () => void;
   onDeleteAccount: () => void;
+  onOpenLegal: (page: 'terms' | 'privacy') => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -68,6 +72,13 @@ export function SettingsView({
           </HStack>
         </Section>
         <LanguagePickerSection />
+        <Section>
+          {LEGAL_PAGES.map((page) => (
+            <Button key={page} onPress={() => onOpenLegal(page)} testID={`settings-${page}`}>
+              <Text modifiers={[primary]}>{t(`account.legal.${page}.title`)}</Text>
+            </Button>
+          ))}
+        </Section>
         <Section>
           {signingOut ? (
             <HStack

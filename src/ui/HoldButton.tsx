@@ -45,7 +45,7 @@ export type HoldButtonProps = {
   accessibilityHint?: string;
   state: HoldButtonState;
   onComplete: () => void;
-  onAccessibilityActivate: () => void;
+  onAccessibilityActivate: (event: AccessibilityActionEvent) => void;
   testID?: string;
 };
 
@@ -173,7 +173,7 @@ export function HoldButton({
 
   const activate = (event: AccessibilityActionEvent) => {
     if (event.nativeEvent.actionName === 'activate' && state === 'ready') {
-      onAccessibilityActivate();
+      onAccessibilityActivate(event);
     }
   };
 

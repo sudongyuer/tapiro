@@ -1,15 +1,17 @@
 """⋯ on someone else's profile: 举报 Mei opens the report sheet (为什么举报Mei？, the four reasons); a failed 提交
 (`-uiVerifyRepFail report`) keeps the sheet and the reason with 没举报成功 and sends nothing on its own; 提交 again records
-one person report with no message and offers 「收到了，我们会看。也屏蔽Mei？」; 屏蔽 closes the sheet, the profile reads
+one person report with no message and offers 「收到了，我们会看。也屏蔽Mei？」 as a popover from 提交, 屏蔽 above a visible
+不屏蔽; 屏蔽 closes the sheet, the profile reads
 你屏蔽了Mei and ⋯ now offers 解除屏蔽 Mei, which asks first and clears the line."""
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 from profile import label, menu_more, open_profile, rep_calls, tap_button, tap_item  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py']
+DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/confirm.py', 'src/ui/confirm.ts']
 SCENE = 'profile'
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson', 'fixture-person-mei', '-uiVerifyRepFail', 'report', '-uiVerifyBlockDelayMs', '800']
@@ -47,6 +49,8 @@ ui.labelled(ui.t('chat.report.offerBlock', name='Mei'))
 calls = rep_calls(ui, 'reportPerson', 2)
 assert calls == [{'personId': 'fixture-person-mei', 'reason': 'off_platform_payment', 'note': None}] * 2, calls
 ui.at_rest()
+assert_dialog(ui, ui.t('chat.report.offerBlock', name='Mei'), ui.t('block.confirm.confirm'), ui.t('block.confirm.cancel'),
+              source_label=ui.t('chat.report.submit'))
 ui.capture('03-offer')
 tap_button(ui, ui.t('block.confirm.confirm'))
 ui.gone('profile-report', timeout=30)
@@ -57,7 +61,8 @@ ui.capture('04-blocked')
 
 menu_more(ui)
 tap_item(ui, ui.t('reputation.profile.unblock', name='Mei'))
-ui.labelled(ui.t('block.unblock.title', name='Mei'))
+assert_dialog(ui, ui.t('block.unblock.title', name='Mei'), ui.t('block.unblock.confirm'), ui.t('block.unblock.cancel'),
+              source_label=ui.t('reputation.profile.more'))
 tap_button(ui, ui.t('block.unblock.confirm'))
 ui.gone('profile-blocked', timeout=30)
 menu_more(ui)

@@ -284,3 +284,40 @@ and the Live Activity (11), 先付 (12).
     frame ends at 505.0 pt and the next begins at 505.33 pt, so one device pixel of the list background shows between
     two cells when a row's height is not a whole pixel (the default row padding is fractional). The timeline rows now
     carry whole-point padding; whether the line is gone there is checked in the milestone screenshots.
+- 2026-11-17, UI polish delegated rows (audit BS-1, BS-15; the owner delegated these choices, PR #162). ★ for veto:
+  - BS-15 ★ Follows the 7A board's 「等处理 disputed」 frame and overturns P10 above (and ruling 2's "reason under
+    点完成"): in `disputed` the 点完成 step stays done with its check and time; the next step is the live one and carries
+    the reason and the 48-hour line. The poster reads 等{name}处理 there (current dot, as drawn); the helper, who has to
+    act, reads {name}说有问题 with the needs-you mark (not drawn; the summary's copy). The step order does not change
+    and the header status line is unchanged (poster in progress, helper needs you).
+  - BS-1 ★ A cancelled (or closed) bounty keeps only the steps that happened and ends on one more row: `xmark.circle`
+    in the secondary label (P2's ended symbol), the label naming who ended it, and its time on the right like other
+    steps: 你取消了这单 / {name}取消了这单 (poster), 你退出了这单 / {name}退出了这单 (helper; 退出 is the cancel sheet's
+    word), 这单取消了 when the event has no actor, 这条悬赏已经关闭了 for closed. Steps after the cancel are not drawn,
+    so nothing reads as pending. Reason: AGENTS data integrity (an ended bounty must not look live) and 7A draws no
+    cancelled state. VoiceOver reads the row's state as 已结束. New keys `bounty.status.ended.*`,
+    `bounty.status.step.poster.waitFix`, `bounty.status.step.helper.fix`, `bounty.status.a11y.ended` in all three
+    locales.
+- 2026-11-17, UI polish (audit BS-2, BS-3; boards BountyPickProgress 8A, BountyPickPost 4A). ★ choices for veto:
+  - Cause, measured with a scratch UIKit/SwiftUI app on the iOS 27.2 Simulator: since iOS 26 an iPhone action sheet
+    (`UIAlertController` `.actionSheet`, SwiftUI `confirmationDialog`) with a source is a popover from that source and
+    drops its cancel-style action (a tap outside cancels); without a source it is centred like an alert, two buttons
+    side by side. React Native's `ActionSheetIOS` sets the `anchor` only on iPad (`RCTActionSheetManager.mm`), so every
+    confirmation built on it was the centred alert (BS-2), and the SwiftUI dialogs anchored to their button showed no
+    keep button (BS-3). The full-width bottom sheet with a separate Cancel that 8A draws is no longer what iOS presents.
+  - C1 ★ Every confirmation is the system action sheet as a popover from the control that asked: destructive (or
+    confirm) on top, the keep button visible under it as a default-style action, a tap outside also keeps. It is the
+    platform control, ordered as 8A and 4A draw it; only the separate Cancel slot is gone. The alternative of the
+    centred alert (no source) puts the two buttons side by side, which 8B rejected as easy to mis-tap.
+  - C2 ★ One rule, two entry points with one copy shape (`ConfirmCopy`): RN controls call `askConfirm` (`src/ui/confirm.ts`
+    → the kit's `confirm`, `ConfirmDialog.swift`), anchored to the tapped view, or to the trailing bar button (`'bar'`,
+    the ⋯ that holds a menu) when the action came from a toolbar menu or the toolbar's 提交; SwiftUI controls in a Form
+    (清空草稿, 删除全部, 撤回申请, 换一片, the applicant row's 屏蔽) use `src/ui/ConfirmDialog.tsx`, SwiftUI's own dialog
+    attached to the control, keep without a cancel role. The popover is placed at the source's frame when it opens, so a
+    toolbar that swaps ⋯ for a spinner and back does not move or close it.
+  - C3 ★ Covered: 确认完成, 取消这单 / 不帮了 (pinned or ⋯), 关掉这单, 选这个人 (VoiceOver activate of the hold button),
+    屏蔽 / 解除屏蔽 everywhere (⋯ menus, the thread's 解除, the report sheet's offer, the applicant row), the ride's
+    撤回申请 / 不来了 / 取消这趟, 换一片 (both), 清空草稿, 删除小貘记得的全部. `ActionSheetIOS` and the two per-feature helpers
+    (`bounty/shared/askSheet.ts`, `ask/confirmSwap.ts`) are gone.
+  - C4 Not changed: confirmations raised by `Alert.alert` (an undeliverable message's 删除, 重发, the post hint, the
+    applicant race) stay alerts; they answer something the app reports rather than an action the user started.

@@ -2,6 +2,7 @@ export {
   useAccessoryState,
   useLiveReputation,
   useMyMascot,
+  useMyStanding,
   usePendingReviews,
   useProfile,
   useProfileGone,
@@ -14,6 +15,7 @@ export {
 export { meStore, profileStore, reviewStore } from './services';
 export type { Loadable } from '@/lib/loadable';
 export type { AccessoryState, MeState } from './meStore';
+export type { Standing } from './profile/profileView';
 export type { ProfilesState, ReplyState, ReviewList } from './profileStore';
 export type { ReviewsState, SubmitState } from './reviewStore';
 export {

@@ -1,6 +1,7 @@
+import { RNHostView } from '@expo/ui/swift-ui';
 import { useHeaderHeight } from 'expo-router/react-navigation';
 import type { ReactNode } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { PlatformColor, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -9,33 +10,42 @@ import { vars } from '@/ui/theme/tokens';
 import { RideTicket } from '../RideTicket';
 import type { TicketView } from '../ticketView';
 
-// The ticket sits above the Form, not in a Form row: it stays in view while the Form scrolls (RideCreate1
-// 「往下滑到底」), and an RN view in a Form row was measured at its unwrapped width (TaskCard).
-export function TicketFrame({
+export function TicketScreen({ children }: { children: ReactNode }) {
+  const headerHeight = useHeaderHeight();
+  return <View style={[styles.screen, { paddingTop: headerHeight }]}>{children}</View>;
+}
+
+// The ticket stays pinned above the Form in its top safe-area bar (RideCreate1 「往下滑到底」); an RN view in a
+// Form row was measured at its unwrapped width (TaskCard). Inside the bar the hosted view laid the ticket out wider
+// than the bar and cut its stub, so it takes the screen width explicitly.
+export function TicketBar({
   view,
   caption = true,
   testID,
-  children,
 }: {
   view: TicketView;
   caption?: boolean;
   testID: string;
-  children: ReactNode;
 }) {
   const { t } = useI18n();
-  const headerHeight = useHeaderHeight();
+  const { width } = useWindowDimensions();
   return (
-    <View style={[styles.screen, { paddingTop: headerHeight }]}>
-      <View style={styles.ticket}>
-        <RideTicket view={view} fixed testID={`${testID}-ticket`} />
-        {caption ? (
-          <AppText variant="meta" tone="secondaryLabel" style={styles.caption}>
-            {t('ride.create.form.caption')}
-          </AppText>
-        ) : null}
-      </View>
-      <View style={styles.body}>{children}</View>
+    <View style={[styles.ticket, { width }]}>
+      <RideTicket view={view} fixed testID={`${testID}-ticket`} />
+      {caption ? (
+        <AppText variant="meta" tone="secondaryLabel" style={styles.caption}>
+          {t('ride.create.form.caption')}
+        </AppText>
+      ) : null}
     </View>
+  );
+}
+
+export function TicketBarHost(props: Parameters<typeof TicketBar>[0]) {
+  return (
+    <RNHostView matchContents={{ vertical: true }}>
+      <TicketBar {...props} />
+    </RNHostView>
   );
 }
 
@@ -44,8 +54,8 @@ const styles = StyleSheet.create({
   ticket: {
     paddingHorizontal: vars['--space-4'],
     paddingTop: vars['--space-2'],
+    paddingBottom: vars['--space-2'],
     gap: vars['--space-1'],
   },
   caption: { paddingHorizontal: vars['--space-4'] },
-  body: { flex: 1 },
 });

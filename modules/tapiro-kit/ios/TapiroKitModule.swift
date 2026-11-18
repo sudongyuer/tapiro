@@ -152,6 +152,14 @@ public final class TapiroKitModule: Module {
       }
     }.runOnQueue(.main)
 
+    AsyncFunction("confirm") { [weak self] (options: ConfirmOptions, promise: Promise) in
+      MainActor.assumeIsolated {
+        let anchor = options.anchorTag == 0
+          ? nil : self?.appContext?.findView(withTag: options.anchorTag, ofType: UIView.self)
+        ConfirmDialog.ask(options, anchor: anchor) { promise.resolve($0) }
+      }
+    }.runOnQueue(.main)
+
     // Forced, on every window: a polite resign can be refused, and a SwiftUI field resigned later, while React removes
     // its Form rows, re-enters the list's batch update and trips UICollectionView's first-responder assertion.
     // Resolving on the next main turn lets SwiftUI apply the focus change before JS mutates the tree.

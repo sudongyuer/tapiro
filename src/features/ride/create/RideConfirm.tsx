@@ -14,7 +14,7 @@ import { useNow } from '../useNow';
 import { FeeSection, SummarySection } from './ConfirmParts';
 import { draftTicketView } from './draftTicket';
 import { canPublish, createPublishFlow, rideGate, type PublishState } from './publishFlow';
-import { TicketFrame } from './TicketFrame';
+import { TicketBar, TicketScreen } from './TicketFrame';
 import { rideFormError, useRideDraft } from './useRideDraft';
 
 type ConfirmProps = {
@@ -90,18 +90,24 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack, buyCoins 
     ) : null;
 
   return (
-    <TicketFrame
-      view={draftTicketView(draft, now, t, language, deviceDecimal())}
-      caption={false}
-      testID="ride-confirm"
-    >
+    <TicketScreen>
       <Stack.Screen options={{ headerBackVisible: !state.busy, gestureEnabled: !state.busy }} />
-      <SheetFrame notice={notice} testID="ride-confirm">
+      <SheetFrame
+        header={
+          <TicketBar
+            view={draftTicketView(draft, now, t, language, deviceDecimal())}
+            caption={false}
+            testID="ride-confirm"
+          />
+        }
+        notice={notice}
+        testID="ride-confirm"
+      >
         <Actions state={state} onPublish={publish} onAddPayee={onAddPayee} />
         <SummarySection draft={draft} now={now} />
         <FeeSection state={state.status} onRetry={flow.load} buyCoins={buyCoins} />
       </SheetFrame>
-    </TicketFrame>
+    </TicketScreen>
   );
 }
 

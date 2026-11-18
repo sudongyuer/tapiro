@@ -91,7 +91,6 @@ export default {
     received: '已收到',
     notReceived: '还没收到',
     nudged: '已告诉{{name}}还没收到。',
-    report: '24 小时后还没收到，可以举报（即将开放）',
     dueCash: '{{name}}还没标记付款',
     dueCashBody: '如果对方当面给了现金，点「已收到」就结清。',
     dueWait: '等{{name}}付款',

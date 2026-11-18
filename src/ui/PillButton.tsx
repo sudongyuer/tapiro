@@ -1,5 +1,12 @@
 import { createContext, useContext } from 'react';
-import { ActivityIndicator, PlatformColor, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  PlatformColor,
+  Pressable,
+  StyleSheet,
+  View,
+  type GestureResponderEvent,
+} from 'react-native';
 
 import { AppText } from './AppText';
 import { vars } from './theme/tokens';
@@ -13,7 +20,7 @@ export const PinnedSurface = createContext(false);
 
 export type PillButtonProps = {
   label: string;
-  onPress: () => void;
+  onPress: (event: GestureResponderEvent) => void;
   variant?: Variant;
   loading?: boolean;
   loadingLabel?: string;

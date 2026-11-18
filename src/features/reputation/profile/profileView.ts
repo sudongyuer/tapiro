@@ -1,5 +1,7 @@
 import type { TFunction } from 'i18next';
 
+import type { Loadable } from '@/lib/loadable';
+
 import { levelNameKey, levelStartsAt } from '../model';
 import {
   TIERS,
@@ -93,5 +95,21 @@ export function levelProgress(level: number, stickers: number) {
     next: level + 1,
     toGo: Math.max(0, next - stickers),
     fraction: Math.min(1, Math.max(0, (stickers - from) / span)),
+  };
+}
+
+export type Standing = { tier: string; rank: TierRank; level: string };
+
+export function standingOf(
+  card: Loadable<ProfileCard> | undefined,
+  mine: Loadable<PublicMascot>,
+  t: TFunction,
+): Standing | null {
+  if (card?.status !== 'ready' || !card.data) return null;
+  const mascot = levelCardMascot(card.data.mascot, mine.status === 'ready' ? mine.data : null);
+  return {
+    tier: tierLabel(card.data.tier, t),
+    rank: tierRank(card.data.tier),
+    level: levelLabel(mascot.level, t),
   };
 }

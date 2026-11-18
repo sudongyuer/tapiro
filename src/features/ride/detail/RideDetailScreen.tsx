@@ -114,8 +114,8 @@ export function RideDetailScreen({
           onChoose={(item) => {
             if (!ride) return;
             if (item === 'block' && ride.organiser) blocking.ask(ride.organiser);
-            if (item === 'leave') void actions.leave();
-            if (item === 'cancel') void actions.cancel();
+            if (item === 'leave') void actions.leave('bar');
+            if (item === 'cancel') void actions.cancel('bar');
             if (item === 'reviseTime') sheets.openTime();
             if (item === 'editDetails') sheets.openDetails();
           }}
@@ -210,11 +210,11 @@ export function RideDetailScreen({
           error={action.kind === 'failed' ? t(`ride.detail.errors.${action.reason}`) : null}
           actions={{
             apply: sheets.openApply,
-            withdraw: () => void actions.withdraw(),
+            withdraw: (anchor) => void actions.withdraw(anchor),
             arrive: actions.arrive,
             undoArrive: actions.undoArrive,
             late: actions.late,
-            notComing: () => void actions.leave(),
+            notComing: (anchor) => void actions.leave(anchor),
             depart: sheets.openDepart,
             settle: {
               reach: () => void settleSheets.reach(),

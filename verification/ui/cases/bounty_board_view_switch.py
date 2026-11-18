@@ -1,5 +1,6 @@
 """List / map switch (V2, ruling 8, Q75A, Q80, Q81): beside 能接的悬赏 two stickers 列表 and 地图, each a 44 pt tab read by
-VoiceOver with its name, the selected one filled in the accent colour; 地图 hides the cards and the distance axis, keeps
+VoiceOver with its name, the selected one filled in the accent colour; in dark, where the accent is cream like the
+paper, the unselected one drops to the grouped fill instead of paper; 地图 hides the cards and the distance axis, keeps
 the chips and the chosen place row, and scrolls home so the title sits under the strip; 列表 brings the cards back at the
 scroll position they had; the 急 filter and the chosen place survive both switches; without a location the map view
 shows 选一个地方 (denied) or the location card (undetermined) in the map's place, with 地图 still selected."""
@@ -8,7 +9,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import cards, in_view, ink_box, screen, top_clear, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, luma, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
@@ -24,6 +25,7 @@ LOWER = 60
 KEPT = 3
 SELECTED_RATIO = 3
 SELECTED_MIN = 400
+LIGHT_SHARE = 0.25
 
 ui = UI(*sys.argv[1:])
 
@@ -42,6 +44,11 @@ def assert_selected(name, view):
     other = accent_pixels(shot, by_id(items, f'bounty-view-{"map" if view == "list" else "list"}'))
     assert chosen >= SELECTED_MIN and chosen > SELECTED_RATIO * other, \
         f'{view} is not drawn as the selected sticker: {chosen} accent px against {other}'
+    if ui.appearance == 'dark':
+        unselected = by_id(items, f'bounty-view-{"map" if view == "list" else "list"}')
+        f = unselected['frame']
+        light = shot.count(f, lambda rgb: luma(rgb) > 200) / shot.count(f, lambda rgb: True)
+        assert light < LIGHT_SHARE, f'{light:.0%} of the unselected sticker is light in dark, as light as the accent one'
     print(f'{name}: {view} selected ({chosen} accent px against {other})')
 
 

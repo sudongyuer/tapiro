@@ -16,6 +16,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 const TONES = {
   urgent: { text: '--color-urgent', fill: '--color-urgent-fill' },
   warning: { text: '--color-warning', fill: '--color-warning-fill' },
+  success: { text: '--color-success', fill: '--color-success-fill' },
 } as const;
 
 export function NoticeCard({

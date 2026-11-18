@@ -51,16 +51,14 @@ const STATES: [StatusScenario, StatusRole, StepState[]][] = [
   ['enRouteChanged', 'helper', [D, D, N, U, U]],
   ['done', 'poster', [D, D, D, N, U]],
   ['done', 'helper', [D, D, D, C, U]],
-  ['disputed', 'poster', [D, D, C, U, U]],
-  ['disputed', 'helper', [D, D, N, U, U]],
+  ['disputed', 'poster', [D, D, D, C, U]],
+  ['disputed', 'helper', [D, D, D, N, U]],
   ['confirmed', 'poster', [D, D, D, D, N]],
   ['confirmed', 'helper', [D, D, D, D, C]],
   ['markedPaid', 'poster', [D, D, D, D, C]],
   ['markedPaid', 'helper', [D, D, D, D, N]],
   ['settled', 'poster', [D, D, D, D, D]],
   ['settled', 'helper', [D, D, D, D, D]],
-  ['cancelled', 'poster', [D, U, U, U, U]],
-  ['cancelled', 'helper', [D, U, U, U, U]],
 ];
 
 const TONES: [StatusScenario, StatusRole, StatusTone][] = [
@@ -183,9 +181,11 @@ describe('timeline', () => {
     expect(later).toEqual([]);
   });
 
-  test('disputed shows the reason under 点完成 as a warning, worded per role', async () => {
+  test('disputed keeps 点完成 done with its time and puts the reason on the next step', async () => {
     const helper = timeline(await detailOf('disputed', 'helper'), 'helper').steps;
-    expect(helper[2].lines).toEqual([
+    expect(helper[2]).toMatchObject({ state: 'done', at: at(-30), lines: [] });
+    expect(helper[3].key).toBe('bounty.status.step.helper.fix');
+    expect(helper[3].lines).toEqual([
       {
         kind: 'reason',
         key: 'bounty.status.note.reason',
@@ -202,11 +202,12 @@ describe('timeline', () => {
       },
     ]);
     const poster = timeline(await detailOf('disputed', 'poster'), 'poster').steps;
-    expect(poster[2].lines.map((line) => [line.key, line.params, line.tone])).toEqual([
+    expect(poster[2]).toMatchObject({ state: 'done', at: at(-30), lines: [] });
+    expect(poster[3].key).toBe('bounty.status.step.poster.waitFix');
+    expect(poster[3].lines.map((line) => [line.key, line.params, line.tone])).toEqual([
       ['bounty.status.note.yourReason', { reason: FIXTURE_REASON, at: at(-10) }, 'warning'],
       ['bounty.status.note.disputePoster', { name: '阿杰' }, 'plain'],
     ]);
-    expect(poster[3].lines).toEqual([]);
   });
 
   test('done shows the auto-confirm time on the confirm step, worded per role', async () => {
@@ -249,11 +250,13 @@ describe('timeline', () => {
       kind: 'cancelled',
       at: at(-5),
       by: 'you',
+      actor: 'poster',
     });
     expect(timeline(await detailOf('cancelled', 'helper'), 'helper').ended).toEqual({
       kind: 'cancelled',
       at: at(-5),
       by: 'them',
+      actor: 'poster',
     });
     expect(timeline(await detailOf('settled', 'poster'), 'poster').ended).toBeNull();
     const closed: StatusDetail = {
@@ -261,14 +264,63 @@ describe('timeline', () => {
       status: 'closed',
       events: [],
     };
-    expect(timeline(closed, 'poster').ended).toEqual({ kind: 'closed', at: null, by: null });
-    expect(timeline(closed, 'poster').steps.every((step) => step.state === 'upcoming')).toBe(true);
+    expect(timeline(closed, 'poster').ended).toEqual({
+      kind: 'closed',
+      at: null,
+      by: null,
+      actor: null,
+    });
+    expect(timeline(closed, 'poster').steps.map((step) => [step.id, step.key])).toEqual([
+      ['ended', 'bounty.select.closed'],
+    ]);
   });
 
-  test('a bounty cancelled en route keeps 出发了 done', async () => {
+  test('a cancelled bounty keeps its done steps and ends on who cancelled and when', async () => {
+    const steps = (role: StatusRole) => async () =>
+      timeline(await detailOf('cancelled', role), role).steps.map((step) => ({
+        id: step.id,
+        state: step.state,
+        key: step.key,
+        at: step.at,
+      }));
+    expect(await steps('poster')()).toEqual([
+      {
+        id: 'selected',
+        state: D,
+        key: 'bounty.status.step.poster.selected',
+        at: expect.any(String),
+      },
+      { id: 'ended', state: 'ended', key: 'bounty.status.ended.posterYou', at: at(-5) },
+    ]);
+    expect((await steps('helper')())[1]).toMatchObject({
+      key: 'bounty.status.ended.posterThem',
+    });
+    const helperDetail = await detailOf('cancelled', 'helper');
+    const withdrew: StatusDetail = {
+      ...helperDetail,
+      events: helperDetail.events.map((event) =>
+        event.kind === 'cancelled' ? { ...event, actor: 'helper' } : event,
+      ),
+    };
+    expect(timeline(withdrew, 'helper').steps.at(-1)?.key).toBe('bounty.status.ended.helperYou');
+    expect(timeline(withdrew, 'poster').steps.at(-1)?.key).toBe('bounty.status.ended.helperThem');
+    const unknown: StatusDetail = {
+      ...helperDetail,
+      events: helperDetail.events.map((event) =>
+        event.kind === 'cancelled' ? { ...event, actor: null } : event,
+      ),
+    };
+    expect(timeline(unknown, 'helper').steps.at(-1)?.key).toBe('bounty.status.cancelled');
+  });
+
+  test('a bounty cancelled en route keeps 出发了 done and draws nothing after it', async () => {
     const detail = await detailOf('enRoute', 'helper');
     const cancelled: StatusDetail = { ...detail, status: 'cancelled' };
-    expect(timeline(cancelled, 'helper').steps.map((step) => step.state)).toEqual([D, D, U, U, U]);
+    expect(timeline(cancelled, 'helper').steps.map((step) => [step.id, step.state])).toEqual([
+      ['selected', D],
+      ['started', D],
+      ['ended', 'ended'],
+    ]);
   });
 });
 

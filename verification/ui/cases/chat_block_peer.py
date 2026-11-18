@@ -1,15 +1,18 @@
 """Block from the thread ⋯ (127 A, 123 A): ⋯ (更多) holds 看详情, then 举报阿杰 and a red 屏蔽阿杰 in their own group. 屏蔽阿杰
-opens the system action sheet that says neither side can send here and the history stays; 屏蔽 shows progress in place
+opens the system confirmation as a popover from ⋯ (屏蔽 stacked above a visible 不屏蔽) that says neither side can send
+here and the history stays; 屏蔽 shows progress in place
 of ⋯. The first block fails (`-uiVerifyBlock failOnce`): 没屏蔽成功 on a red card and the composer stays. The second replaces the
-composer with 「你屏蔽了阿杰 · 解除」, keeps the messages, and ⋯ now offers 解除屏蔽阿杰. 解除 asks first; the first unblock
+composer with 「你屏蔽了阿杰 · 解除」, keeps the messages, and ⋯ now offers 解除屏蔽阿杰. 解除 asks first, in a popover from 解除 with 解除屏蔽 above a visible keep button; the first unblock
 fails with a red ! and 没解除成功 under the footer, the second brings the composer back. Dark covers the footer over the transcript."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from chat import bubbles, labels, menu_pick, open_menu, open_thread, sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, assert_colour, by_id, token  # noqa: E402
 
-DEPS = ['src/features/chat/', 'src/features/block/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
+DEPS = ['src/features/chat/', 'src/features/block/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py',
+        'verification/ui/confirm.py', 'src/ui/confirm.ts', 'modules/tapiro-kit/ios/ConfirmDialog.swift']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
         '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '3000']
 NAME = '阿杰'
@@ -20,6 +23,8 @@ def block_once():
     menu_pick(ui, ui.t('chat.menu.block', name=NAME))
     ui.labelled(ui.t('block.confirm.title', name=NAME))
     ui.labelled(ui.t('block.confirm.threadBody', name=NAME))
+    assert_dialog(ui, ui.t('block.confirm.title', name=NAME), ui.t('block.confirm.confirm'), ui.t('block.confirm.cancel'),
+                  source_label=ui.t('chat.menu.more'))
     sheet_action(ui, ui.t('block.confirm.confirm'))
     busy = ui.element('chat-thread-menu-busy', timeout=5)
     assert busy.get('AXLabel') == ui.t('chat.menu.busy'), busy
@@ -28,6 +33,8 @@ def block_once():
 def unblock_once():
     ui.tap('chat-thread-unblock')
     ui.labelled(ui.t('block.unblock.title', name=NAME))
+    assert_dialog(ui, ui.t('block.unblock.title', name=NAME), ui.t('block.unblock.confirm'),
+                  ui.t('block.unblock.cancel'), source='chat-thread-unblock')
     sheet_action(ui, ui.t('block.unblock.confirm'))
 
 

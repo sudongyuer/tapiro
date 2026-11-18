@@ -5,6 +5,7 @@ import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { useLiveOffline } from '@/lib/live';
+import type { ConfirmAnchor } from '@/ui/confirm';
 import { InlineState } from '@/ui/InlineState';
 import { OfflineSection } from '@/ui/OfflineLine';
 import { SheetFrame, SheetLayer } from '@/ui/SheetFrame';
@@ -55,7 +56,7 @@ export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: St
   const detail = load.kind === 'ready' ? load.detail : null;
   const role = detail?.viewerRole ?? 'poster';
   const actions = detail ? statusActions(detail, role) : { pinned: [], menu: [] };
-  const run = (chosen: StatusAction) => {
+  const run = (chosen: StatusAction, anchor: ConfirmAnchor) => {
     if (!detail) return;
     switch (chosen) {
       case 'start':
@@ -69,11 +70,11 @@ export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: St
         if (detail.payment) onPay(detail.payment.id);
         return;
       case 'confirm':
-        return void poster.confirm(detail);
+        return void poster.confirm(detail, anchor);
       case 'reportIssue':
         return poster.issue.show();
       case 'cancel':
-        return void poster.cancel(detail);
+        return void poster.cancel(detail, anchor);
     }
   };
   const retry = (busy: boolean) => ({
@@ -85,7 +86,12 @@ export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: St
 
   return (
     <>
-      <StatusMenu actions={actions.menu} role={role} state={action} onAction={run} />
+      <StatusMenu
+        actions={actions.menu}
+        role={role}
+        state={action}
+        onAction={(chosen) => run(chosen, 'bar')}
+      />
       <SheetFrame
         testID="bounty-status"
         onRefresh={async () => {

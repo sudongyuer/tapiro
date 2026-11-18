@@ -211,6 +211,9 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
   per-task `-derivedDataPath`, copy the checkout to a temp directory, or call `simctl create`
   directly; the runner owns the `Tapiro Verify` Simulators (three, one when under 15 GB free).
   Reason: the disk incident below.
+- Parallel agents take the Simulator only through `scripts/sim-lock.sh run <name> -- <cmd>` (FIFO tickets, dead or
+  over-age holders taken over; `status` shows the queue). Reason: ad-hoc `mkdir` locks polled at different rates let
+  5 s pollers starve 10 min pollers, PRs waited 15–17 h, and dead agents' locks were cleared by hand (2026-11-18).
 - Verify mode (`EXPO_PUBLIC_UI_VERIFY=1`) replaces services at their boundary only; it never ships
   enabled.
 - Requirements and acceptance criteria live in `docs/story-map.md`; each criterion names its test
@@ -245,7 +248,8 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   `--affected` lists candidates; it is not the selection. Reason: a runner change selected all 72 cases (79 min) and the
   planned milestone ran every case in dark, en and ms whatever had changed (user, 2026-10-28).
   - Logic only: unit tests; no UI case.
-  - A screen's layout or copy: that screen's cases, zh-Hans light; add `ms` when its copy can be long.
+  - A screen's layout or copy: that screen's cases in zh-Hans light and in `ms` (`en` for a case without `ms`), as
+    `--affected` picks them for a changed `.tsx`. Reason: two #152 faults showed only in en and ms (2026-11-18).
   - Colours, tokens, or a surface drawn over other content: those screens' cases in dark as well.
   - New or changed copy keys: `en` for the cases that show them.
   - Runner or driver: the runner's unit tests, smoke, and one case per touched helper.

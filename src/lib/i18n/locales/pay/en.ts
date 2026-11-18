@@ -98,7 +98,6 @@ export default {
     received: 'Received',
     notReceived: 'Not received yet',
     nudged: 'We told {{name}} you haven’t received it.',
-    report: 'If it still hasn’t arrived after 24 hours, you can report it (coming soon)',
     dueCash: '{{name}} hasn’t marked it paid',
     dueCashBody: 'If they paid you cash in person, tap Received to settle.',
     dueWait: 'Waiting for {{name}} to pay',

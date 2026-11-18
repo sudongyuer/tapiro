@@ -3,6 +3,7 @@ import { Linking, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { pressAnchor } from '@/ui/confirm';
 import { vars } from '@/ui/theme/tokens';
 import { localClock } from '@/lib/deviceClock';
 
@@ -131,7 +132,7 @@ export function DetailBody({
               label: t('ride.detail.goOrCancel.cancel'),
               variant: 'secondary',
               loading: busy === 'cancel',
-              onPress: () => void actions.cancel(),
+              onPress: (event) => void actions.cancel(pressAnchor(event)),
               testID: 'ride-detail-go-cancel',
             },
           ]}

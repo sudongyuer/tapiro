@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     marginHorizontal: space.md,
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
-    backgroundColor: PlatformColor('secondarySystemBackground'),
+    backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,

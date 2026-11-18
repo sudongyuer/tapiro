@@ -166,7 +166,7 @@ export const MessageBubble = memo(
                     {
                       backgroundColor: mine
                         ? color('--color-accent')
-                        : PlatformColor('secondarySystemFill'),
+                        : PlatformColor('secondarySystemGroupedBackground'),
                     },
                   ]}
                 >

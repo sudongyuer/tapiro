@@ -1,6 +1,6 @@
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
@@ -74,7 +74,7 @@ function ViewSticker({
   testID: string;
   onPress: () => void;
 }) {
-  const { color } = useTheme();
+  const { color, theme } = useTheme();
   const lift = useSharedValue(selected ? 1 : 0);
   useEffect(() => {
     lift.set(
@@ -87,7 +87,18 @@ function ViewSticker({
   const motion = useAnimatedStyle(() => ({
     transform: [{ rotate: `${lift.get() * TILT_DEG}deg` }, { scale: 1 + lift.get() * LIFT }],
   }));
-  const ink = color(selected ? '--color-on-accent' : '--color-on-paper');
+  // In dark the accent is cream like the paper, so the unselected sticker drops to the grouped fill to recede.
+  const recedes = !selected && theme === 'dark';
+  const ink = selected
+    ? color('--color-on-accent')
+    : recedes
+      ? PlatformColor('label')
+      : color('--color-on-paper');
+  const fill = selected
+    ? color('--color-accent')
+    : recedes
+      ? PlatformColor('secondarySystemGroupedBackground')
+      : color('--color-paper');
   return (
     <Pressable
       accessibilityRole="tab"
@@ -103,8 +114,8 @@ function ViewSticker({
             style={[
               styles.sticker,
               {
-                borderColor: color('--color-sticker-border'),
-                backgroundColor: color(selected ? '--color-accent' : '--color-paper'),
+                borderColor: recedes ? fill : color('--color-sticker-border'),
+                backgroundColor: fill,
               },
             ]}
           >

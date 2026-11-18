@@ -8,12 +8,19 @@ accessibility tree, and captures screenshots and video in light and dark.
 bun run verify:build          # prebuild if needed, Release build into .verify/DerivedData
 bun run verify:ui             # all cases, light + dark → .verify/ui/<locale>/<appearance>/<case>/
 bun run verify:smoke          # app_launches, sign_in_fixture, shell_tabs, home_one_card; zh-Hans light
-bun run verify:ui --affected  # cases whose DEPS meet the diff against main; zh-Hans light
+bun run verify:ui --affected  # cases whose DEPS meet the diff against main; zh-Hans light, plus ms for a changed .tsx
 bun run verify:ui --affected --base main --dark --locales   # also dark, also en and each case's LOCALES
 bun run verify:full           # the full matrix: every case, light + dark, zh-Hans + en + every declared locale
 bun run verify:ui design_tokens --appearance dark   # named cases run zh-Hans; add --locales or --locale en
 bun run verify:clean
 ```
+
+When agents run in parallel, wrap every Simulator command in the shared queue, for example
+`scripts/sim-lock.sh run <agent-name> -- bun run verify:ui bounty_apply`. It serves waiters first come, first served,
+always releases when the command ends, and takes over a lock whose holder died or held it past 4 h
+(`TAPIRO_SIM_LOCK_MAX_AGE`); `scripts/sim-lock.sh status` shows the holder and the queue. The lock lives in
+`$TAPIRO_SIM_LOCK_DIR` (default `~/.cache/tapiro/sim-lock`), so worktrees share it. `acquire` alone binds the lock to
+the calling shell, which an agent's one-off tool shell leaves at once; use `run`.
 
 The runner owns three named Simulators, `Tapiro Verify`, `Tapiro Verify 2` and `Tapiro Verify 3` (iPhone 17 Pro,
 newest iOS runtime that offers it, skipping device-specific ones), creates each once if missing, and hands the runs to them from one queue; `--workers N` sets how many
@@ -26,7 +33,8 @@ picks each case whose `DEPS` prefixes (or its own file) match one, printing why.
 (`affected.SHARED`: `src/ui/`, `src/lib/`, the root layout and index route, the Debug scenes (`src/debug/`, `src/app/debug/`), `modules/`, `plugins/`, `assets/`,
 `app.json`, `package.json`, `bun.lock`, `tsconfig.json`, the runner, driver, selector, breaker, heal, latency, recording, records and Swift tool helpers, build script and string export)
 picks every case; a case without `DEPS` always runs. Smoke and affected run zh-Hans light unless `--dark` or
-`--locales` is given; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
+`--locales` is given, and affected adds `ms` (`en` for a case that declares no `ms`) to a case whose own `DEPS` meet a
+changed `.tsx` under `src/`, since layout faults show in the longest copy first; the PR gate is smoke plus affected, and the full matrix runs when the machine is idle and
 before TestFlight. `python3 -m unittest discover -p 'test_*.py'` in `verification/ui` covers the
 selection (and checks that every case declares `DEPS` that match real paths, and that `DEPS`, `SCENE`, `LOCALES`,
 `ARGS`, `BUDGET`, `TIME_ZONE` and `LOCAL_HOURS` are plain literals the runner reads without running the case); CI runs it. `test_imports` reads every case and helper and fails when one imports a

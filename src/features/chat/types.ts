@@ -70,6 +70,7 @@ export type ChatSubject =
       to: string;
       departsAt: string;
       status: (typeof RIDE_PHASES)[number];
+      need: number;
     };
 
 export type ThreadInfo = {

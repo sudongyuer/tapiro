@@ -1,14 +1,16 @@
-"""Withdraw 31A from an applied detail: the detail shows 已申请 · 等阿杰选 and 撤回申请; 撤回申请 opens the system action sheet 撤回申请？, 不撤回 (on iPhone the popover's cancel is a tap outside it) leaves the application in place, and 撤回申请 in the sheet shows progress, then brings 申请 back and removes the stamp; back on the board the card shows 申请 again without the stamp."""
+"""Withdraw 31A from an applied detail: the detail shows 已申请 · 等阿杰选 and 撤回申请; 撤回申请 opens the system confirmation as a popover from that button, 撤回申请 stacked above a visible 不撤回 (BS-3); 不撤回, and a tap outside the dialog, leave the application in place, and 撤回申请 in the sheet shows progress, then brings 申请 back and removes the stamp; back on the board the card shows 申请 again without the stamp."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import STAMP_MIN, has_stamp  # noqa: E402
 from board import apply_pill, ink_box, screen, visible  # noqa: E402
 from bounty import tap_sheet_action  # noqa: E402
+from confirm import assert_dialog, tap  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/(tabs)/bounty/', 'verification/ui/board.py', 'verification/ui/apply.py',
-        'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
+        'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/', 'verification/ui/confirm.py',
+        'src/ui/ConfirmDialog.tsx']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardDelayMs', '6000']
 CARD = 'bounty-card-fixture-bounty-03'
@@ -51,16 +53,22 @@ ui.tap('bounty-detail-withdraw')
 ui.labelled(ui.t('bounty.detail.withdrawConfirm.title'))
 ui.labelled(ui.t('bounty.detail.withdrawConfirm.body', name='阿杰'))
 ui.at_rest()
+_, keep = assert_dialog(ui, ui.t('bounty.detail.withdrawConfirm.title'), ui.t('bounty.detail.withdrawConfirm.confirm'),
+                        ui.t('bounty.detail.withdrawConfirm.cancel'), source='bounty-detail-withdraw')
 ui.capture('02-confirm')
-cancel = next((i for i in ui.read() if i.get('AXLabel') == ui.t('bounty.detail.withdrawConfirm.cancel')), None)
-if cancel:
-    ui.tap_label(ui.t('bounty.detail.withdrawConfirm.cancel'))
-else:
-    reward = ui.element('bounty-detail-reward')['frame']
-    ui.tap_point(reward['x'] + reward['width'] / 2, reward['y'] + reward['height'] / 2)
+tap(ui, keep)
 ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.detail.withdrawConfirm.title') for i in items),
         'the action sheet stayed open after 不撤回')
 still_applied('after 不撤回')
+
+ui.tap('bounty-detail-withdraw')
+assert_dialog(ui, ui.t('bounty.detail.withdrawConfirm.title'), ui.t('bounty.detail.withdrawConfirm.confirm'),
+              ui.t('bounty.detail.withdrawConfirm.cancel'), source='bounty-detail-withdraw')
+reward = ui.element('bounty-detail-reward')['frame']
+ui.tap_point(reward['x'] + reward['width'] / 2, reward['y'] + reward['height'] / 2)
+ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.detail.withdrawConfirm.title') for i in items),
+        'the dialog stayed open after a tap outside it')
+still_applied('after a tap outside the dialog')
 
 ui.tap('bounty-detail-withdraw')
 ui.labelled(ui.t('bounty.detail.withdrawConfirm.title'))

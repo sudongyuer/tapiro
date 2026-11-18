@@ -12,7 +12,7 @@ LOCALES = ['zh-Hans', 'ms']
 ui = UI(*sys.argv[1:])
 ui.element('ui-verify-ready')
 ui.wait_label('settings-profile', lambda label: '欧阳娜娜' * 10 in label, 'settings does not show the long name')
-for identifier in ('settings-sign-out', 'settings-delete'):
+for identifier in ('settings-terms', 'settings-privacy', 'settings-sign-out', 'settings-delete'):
     assert_touch_target(ui.element(identifier), identifier)
 shot = ui.capture('settings')
 assert_appearance(shot, ui.appearance, 20, 2500, 'screen background')
