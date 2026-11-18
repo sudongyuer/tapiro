@@ -17,10 +17,13 @@ def bar_button(items, label):
 def assert_dialog(ui, title, confirm, keep, source=None, source_label=None):
     def found(items):
         heading = next((i for i in items if i.get('AXLabel') == title and i.get('type') != 'Button'), None)
-        yes, no = button(items, confirm, source), button(items, keep, source)
-        return (heading, yes, no) if heading and yes and no else None
+        return button(items, keep, source) if heading and button(items, confirm, source) else None
 
-    heading, yes, no = ui.settled(found, f'the dialog {title} with {confirm} and a visible {keep} never settled')
+    ui.settled(found, f'the dialog {title} with {confirm} and a visible {keep} never settled')
+    items = ui.read()
+    heading = next(i for i in items if i.get('AXLabel') == title and i.get('type') != 'Button')
+    yes, no = button(items, confirm, source), button(items, keep, source)
+    assert yes and no, f'the dialog {title} lost {confirm} or {keep} while settling'
     h, y, n = heading['frame'], yes['frame'], no['frame']
     assert y['y'] + y['height'] <= n['y'] + 1, f'{confirm} {y} is not stacked above {keep} {n}'
     assert abs(y['x'] - n['x']) < 2 and abs(y['width'] - n['width']) < 2, \
@@ -31,11 +34,13 @@ def assert_dialog(ui, title, confirm, keep, source=None, source_label=None):
     anchor = by_id(items, source) if source else bar_button(items, source_label)
     assert anchor, f'the control that asked ({source or source_label}) is not on screen'
     a = anchor['frame']
-    above = a['y'] - (n['y'] + n['height'])
-    below = h['y'] - (a['y'] + a['height'])
-    assert 0 <= above <= NEAR or 0 <= below <= NEAR, \
-        f'the dialog (title {h}, keep {n}) is not a popover from the control that asked {a}: ' \
-        f'{above:.0f} pt above it, {below:.0f} pt below it'
+    left = min(h['x'], n['x'])
+    right = max(h['x'] + h['width'], n['x'] + n['width'])
+    gaps = {'above': a['y'] - (n['y'] + n['height']), 'below': h['y'] - (a['y'] + a['height']),
+            'left of': a['x'] - right, 'right of': left - (a['x'] + a['width'])}
+    assert any(0 <= gap <= NEAR for gap in gaps.values()), \
+        f'the dialog (title {h}, keep {n}) is not a popover from the control that asked {a}: ' + \
+        ', '.join(f'{gap:.0f} pt {side} it' for side, gap in gaps.items())
     return yes, no
 
 

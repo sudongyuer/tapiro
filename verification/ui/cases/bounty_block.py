@@ -84,11 +84,11 @@ ui.tap_label(ui.t('block.menu', name=NAME))
 ui.labelled(ui.t('block.confirm.title', name=NAME))
 ui.labelled(ui.t('block.confirm.body', name=NAME))
 ui.at_rest()
-assert_dialog(ui, ui.t('block.confirm.title', name=NAME), ui.t('block.confirm.confirm'),
+_, keep = assert_dialog(ui, ui.t('block.confirm.title', name=NAME), ui.t('block.confirm.confirm'),
                         ui.t('block.confirm.cancel'), source_label=ui.t('bounty.detail.more'))
 ui.capture('02-confirm')
-title = ui.element('bounty-detail-title')['frame']
-ui.tap_point(title['x'] + title['width'] / 2, title['y'] + title['height'] / 2)
+below = keep['frame']
+ui.tap_point(32, below['y'] + below['height'] + 160)
 ui.wait(lambda items: not sheet_open(items), 'the dialog stayed open after a tap outside it')
 ui.element('bounty-detail-title')
 assert by_id(ui.read(), 'bounty-detail-blocking') is None, 'a tap outside the dialog started a block'
