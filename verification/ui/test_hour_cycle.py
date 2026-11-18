@@ -1,6 +1,6 @@
 import unittest
 
-from run import hour_cycle_commands
+from hourcycle import hour_cycle_commands
 
 UDID = 'A5CC377F-F7C4-4AC8-9AE2-269111818C19'
 

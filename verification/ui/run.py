@@ -15,6 +15,7 @@ from pathlib import Path
 from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from hourcycle import hour_cycle_commands
 from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
@@ -33,26 +34,16 @@ DEFAULT_TIME_ZONE = 'Asia/Kuala_Lumpur'
 DEFAULT_ZONE_OFFSET = 8
 SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
-TWELVE_HOURS = '-AppleICUForce12HourTime'
-
-
-def locale_args(locale):
-    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale]]
-
-
-def hour_cycle_commands(udid, args):
-    # The Malaysian regions default to 12-hour time; a case gets 24 hours unless its ARGS name TWELVE_HOURS. A launch
-    # argument reaches UIDatePicker but not Locale.current.hourCycle, so the setting goes where Settings writes it.
-    twelve = TWELVE_HOURS in args
-    spawn = ['xcrun', 'simctl', 'spawn', udid, 'defaults', 'write', '-g']
-    return [[*spawn, 'AppleICUForce24HourTime', '-bool', 'false' if twelve else 'true'],
-            [*spawn, 'AppleICUForce12HourTime', '-bool', 'true' if twelve else 'false']]
 KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # With no AppleKeyboards the app derives its keyboards from -AppleLanguages, so zh-Hans gets Pinyin and typed ASCII
 # becomes candidates; on the English keyboard prediction and autocorrection rewrite typed words (klia -> Kline, see you at
 # the lobby -> See lobby). Autocapitalisation is off too: with the software keyboard kept up, AXe's first key was
 # sometimes capitalised (parcel -> Parcel, 2026-11-17). Non-ASCII text is pasted instead.
 KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
+
+
+def locale_args(locale):
+    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale]]
 
 
 def sh(*args, **kwargs):
