@@ -1,0 +1,147 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.2s simctl launch
+paste_into: name-input reads '   ' after pasting 'Lin Mo' (attempt 1)
+paste_into: name-input reads '   ' after pasting 'Lin Mo' (attempt 2)
+  1.1s axe describe-ui
+  1.3s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.6s screenshot frame
+  1.1s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.5s screenshot frame
+  0.4s screenshot frame
+  0.5s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 01-welcome
+  0.9s axe describe-ui
+  0.8s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.8s axe describe-ui
+  0.8s axe describe-ui
+  2.2s axe tap --id sign-in-apple --post-delay 0.5
+  1.0s axe describe-ui
+  0.8s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot 02-name-prefilled
+  0.8s axe describe-ui
+  0.8s axe describe-ui
+  0.9s axe describe-ui
+  1.5s axe tap -x 201 -y 301 --post-delay 0.5
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.6s axe tap -x 354 -y 301 --post-delay 0.5
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  2.8s axe tap -x 354 -y 301 --post-delay 0.5
+  1.0s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.7s axe tap -x 51 -y 253 --post-delay 0.5
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  1.4s axe describe-ui
+  2.3s axe tap --id name-continue --post-delay 0.5
+  1.2s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot 03-caret
+  0.9s axe describe-ui
+  0.4s screenshot 03-caret
+  0.9s axe describe-ui
+  0.4s screenshot 03-name-empty
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.5s axe tap -x 201 -y 301 --post-delay 0.5
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 354 -y 301 --post-delay 0.5
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  1.6s axe describe-ui
+  2.2s axe tap -x 354 -y 301 --post-delay 0.5
+  1.8s axe describe-ui
+  1.8s axe describe-ui
+  1.3s axe describe-ui
+  1.7s axe describe-ui
+  1.9s axe tap -x 51 -y 253 --post-delay 0.5
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.6s axe tap -x 201 -y 301 --post-delay 0.5
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.6s axe tap -x 354 -y 301 --post-delay 0.5
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.6s axe tap -x 354 -y 301 --post-delay 0.5
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.7s axe tap -x 51 -y 253 --post-delay 0.5
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/account_flow.py", line 103, in <module>
+    paste_into(ui, 'name-input', NAME)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/bounty.py", line 331, in paste_into
+    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text,
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 142, in wait
+    raise AssertionError(message)
+AssertionError: name-input does not read 'Lin Mo'
+  0.4s screenshot failure
+latency on Tapiro Verify 3: 134 commands, median 1.0 s, max 2.8 s (axe tap -x 354 -y 301 --post-delay 0.5), 0 timeouts

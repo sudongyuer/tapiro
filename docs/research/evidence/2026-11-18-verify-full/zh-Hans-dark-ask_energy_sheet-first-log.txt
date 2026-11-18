@@ -1,0 +1,21 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.3s simctl launch
+  5.5s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/ask_energy_sheet.py", line 54, in <module>
+    reach_home(ui)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 276, in reach_home
+    ui.element('home-scroll')
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 162, in element
+    return self.wait(
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 134, in wait
+    items = self.state()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 102, in state
+    tree = json.loads(self.axe('describe-ui'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 94, in axe
+    raise AxeError(f'axe {" ".join(args)} failed: {error}')
+driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session
+  0.6s screenshot failure
+latency on Tapiro Verify 2: 4 commands, median 0.6 s, max 5.5 s (axe describe-ui), 0 timeouts

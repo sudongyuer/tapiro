@@ -252,10 +252,10 @@ def assert_preview(ui, title, amount, symbol='RM'):
 PUBLISHED_KEY = 'uiVerifyPublishedArgs'
 
 
-def form_scroll_to(ui, identifier, tries=6):
+def form_scroll_to(ui, identifier, tries=6, container='bounty-post-form'):
     for _ in range(tries):
         items = ui.read()
-        found, form = by_id(items, identifier), by_id(items, 'bounty-post-form')
+        found, form = by_id(items, identifier), by_id(items, container)
         f = form['frame']
         if found and found['frame']['y'] >= f['y'] + 100 and bottom(found) <= f['y'] + f['height'] - 40:
             return found
