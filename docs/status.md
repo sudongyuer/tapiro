@@ -136,7 +136,7 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      key before it taps the pad, and still taps it when neither shows; the pad is often on screen but not in the tree, so such an entry costs the
      whole 8 s (`payee_add_bank` gets 300 s). This closes `bounty_post_form` zh-Hans light
      (step 1 on main: 3 of 3 runs failed, 6 of 6 attempts, all on `Tapiro Verify`, the pad taps opening 选地点; with the
-     change 3 of 3 passed first time on `Tapiro Verify`) and the same failure in `bounty_post_currency` (three locales)
+     change 4 of 5 runs passed first time on `Tapiro Verify`, the fifth flaky at the earlier 填一下赏金 step) and the same failure in `bounty_post_currency` (three locales)
      and `payee_add_bank` en (each passed on the rerun). On `Tapiro Verify` the pad rose up to 7 s after the focus;
      `HardwareKeyboardLastSeen` and `AutomaticMinimizationEnabled` read 1 again by the reward focus (probe) and writing
      them false mid-case changed nothing; typing the digits as HID keys when no pad showed put `0` in the field without
