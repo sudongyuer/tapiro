@@ -22,6 +22,7 @@ QUIET = ['-uiVerifyShellFeed', 'none']
 TERMS = ['welcome-terms-link', 'welcome-privacy-link']
 BELLY = ['ask-belly']
 
+# A scene that pushes a screen leaves its ready marker under it, so those wait for the pushed screen instead.
 SCENES = [
     ('welcome', [], TERMS, True),
     ('sign-in', [], TERMS, True),
@@ -30,18 +31,18 @@ SCENES = [
     ('bounty-post', [*QUIET, '-uiVerifyBountyDraft', 'demo'], [], False),
     ('bounty-confirm', [*QUIET, '-uiVerifyBountyDraft', 'demo'], [], False),
     ('bounty-detail', QUIET, [], False),
-    ('bounty-applicants', QUIET, [], False),
-    ('bounty-status', [*QUIET, '-uiVerifyBountyStatus', 'done'], [], False),
+    ('bounty-applicants', QUIET, [], False, 'bounty-applicants'),
+    ('bounty-status', [*QUIET, '-uiVerifyBountyStatus', 'done'], [], False, 'bounty-status-title'),
     ('pay-sheet', [], [], False),
     ('ride-list', QUIET, [], False),
     ('ride-form', QUIET, [], False),
     ('ride-confirm', QUIET, [], False),
-    ('ride-detail', [*QUIET, '-uiVerifyRideDetail', 'viewer'], [], False),
-    ('chat-thread', [*QUIET, '-uiVerifyChat', '1'], [], False),
-    ('profile', QUIET, [], False),
-    ('coins-page', [*QUIET, '-uiVerifyCoins', 'many'], [], False),
+    ('ride-detail', [*QUIET, '-uiVerifyRideDetail', 'viewer'], [], False, 'ride-detail-ticket'),
+    ('chat-thread', [*QUIET, '-uiVerifyChat', '1'], [], False, 'chat-composer-input'),
+    ('profile', QUIET, [], False, 'profile-screen'),
+    ('coins-page', [*QUIET, '-uiVerifyCoins', 'many'], [], False, 'coins-screen'),
     ('settings', QUIET, [], False),
-    ('tapir-settings', QUIET, [], False),
+    ('tapir-settings', QUIET, [], False, 'tapir-settings-screen'),
     ('sticker-book', [*QUIET, '-uiVerifyStickers', 'seven'], [], False),
 ]
 TABS = [('tab-me', 'me-payee', 'me', []), ('me-payee', None, 'payee', []), ('tab-messages', None, 'messages', []),
@@ -67,9 +68,9 @@ for tab, ready, name, allow in TABS:
     ui.read()
     check(f'00-{name}', allow)
 
-for index, (scene, extra, allow, signed_out) in enumerate(SCENES, start=1):
+for index, (scene, extra, allow, signed_out, *pushed) in enumerate(SCENES, start=1):
     relaunch(ui, drop=SIGNED_IN if signed_out else (), add=['-uiVerifyScene', scene, *extra],
-             ready='ui-verify-ready')
+             ready=pushed[0] if pushed else 'ui-verify-ready')
     ui.read()
     check(f'{index:02d}-{scene}', allow)
 
