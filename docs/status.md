@@ -123,22 +123,37 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
      night's menu that stayed open, the flaky `_all` and the two flaky 问小貘 cases in `fix/ask-typing-paced` are all a
      tap that left the screen unchanged; recordings show no app reaction, so they are counted with the aging-Simulator
      input loss of 0e. `pay_sheet_duitnow` (pasteboard, 0d) not rerun.
-     Open from the post-form polish (2026-11-17, `fix/ui-polish-post`): `bounty_post_form` zh-Hans light fails at
-     「赏金 0」 in about half the runs (dark and ms passed, light passed once on a retry). Its recording
-     (`run.mp4`, frames around the reward tap) shows the reward field focused with no number pad on screen; `keys.on_pad`
-     reads 「no Return key」 as the pad, so the pad taps land on the 在哪取 row behind and open 选地点. Typing the
-     digits as HID keys instead made the pad stay away in later fields (`bounty_post_currency`), so it was dropped. Next:
-     make `on_pad` require the pad itself, and find what keeps the pad from showing after the type menu closes.
-     `ask_sheet_worst` measured (2026-11-16): 2 of 10 first runs failed (loads 3–83), both at the 发送 after the
-     relaunch; the recordings show iOS's press-and-hold accent menu for 「l」 (ł ļ ľ) over the field from the end of
-     `axe type Parcel` until the press, which only closed the menu. Holding `l` with `axe key 15 --duration 1.5`
-     opens it 10 of 10; unpaced `axe type Parcel` left it 2 of 12 and 0 of 20; arrow and Escape keys do not close it,
-     a tap on the sheet top does (2 of 2). An outside cause (AXe's unpaced typing leaves its last key held). Fixed in
-     `fix/ask-typing-paced`: the 问小貘 cases type `parcel` through paced HID keys, and the prompt is tapped until the
-     keyboard shows (up to three taps; a tap after a reboot once left no focus). 10 runs of `ask_sheet_worst`, zh-Hans
-     light: 9 pass, 0 flaky, 1 fail (run 6: a lost AXe session, then on the retry the first tap on the prompt brought no
-     keyboard; the focus retry was added after it and runs 8–10 passed with it). No run showed the accent menu. The full run's two
-     other first-attempt 「the prompt never read Parcel」 were the same unfocused prompt (`ask_memory_sheet`).
+     `verify:full` on 7c2a719 (2026-11-18, retro `2026-11-18-verify-full-1118`, 1326 runs, 11 h 38 min, 137 reboots;
+     a first start under four sibling Release builds, load 880, was stopped after 30 min and restarted): 1204 passed
+     first time, 19 passed with a tap retry (no target retried in most of its runs), 69 flaky (37 first attempts an
+     assertion, 28 a lost AXe session, 4 a timeout), 34 failed on both attempts. Evidence and the run log:
+     `docs/research/evidence/2026-11-18-verify-full/`. Fixed (`fix/verify-full-1118-cases`): the runner turns off
+     `KeyboardAutocapitalization` (the software keyboard #153 keeps up capitalised AXe's first key: 「the prompt never
+     read parcel」 read `Parcel`: 8 flaky 问小貘 runs and the first attempts of two failures); `ocr.lines_in` keeps a line both reads agree on once
+     (`ask_memory_worst` en and ms counted four lines for two; `chat_entry_home` ms and en read the pill with the zh-Hans
+     pass only, now both); `bounty_post_selected_chips` pins 14:00 (今晚 is hidden after 21:00); `bounty_post_no_balance`
+     ms scrolls to the cost row under the packs; `keys.on_pad` waits up to 8 s for the pad's Delete key or a Return
+     key before it taps the pad, and still taps it when neither shows; the pad is often on screen but not in the tree, so such an entry costs the
+     whole 8 s (`payee_add_bank` gets 300 s). This closes `bounty_post_form` zh-Hans light
+     (step 1 on main: 3 of 3 runs failed, 6 of 6 attempts, all on `Tapiro Verify`, the pad taps opening 选地点; with the
+     change 4 of 5 runs passed first time on `Tapiro Verify`, the fifth flaky at the earlier 填一下赏金 step) and the same failure in `bounty_post_currency` (three locales)
+     and `payee_add_bank` en (each passed on the rerun). On `Tapiro Verify` the pad rose up to 7 s after the focus;
+     `HardwareKeyboardLastSeen` and `AutomaticMinimizationEnabled` read 1 again by the reward focus (probe) and writing
+     them false mid-case changed nothing; typing the digits as HID keys when no pad showed put `0` in the field without
+     the form taking it (填一下赏金), so that fallback was dropped; a `simctl erase` of `Tapiro Verify` changed nothing.
+     First attempts failed 36 times on `Tapiro Verify` against 9 and 10 on the other two. Fixed in the product
+     (#168): 我的 → 小貘 in ms, the spinner that replaces the switch while
+     withdrawing let the label unwrap and the rows below jump 20 pt (a hidden, zero-height switch now holds its width);
+     the 问小貘 sheet stayed at the top after 知道了 closed the consent page, so in en and ms the note card (#152) pushed
+     the composer off the screen (the sheet now follows its content after a reply until the user drags). Open, cause not found: `shell_ask_tapir` en and ms dark read the
+     sheet at 105 (the prompt field is translucent since #152, so the sample sees the light ride card; the case's
+     opaque-field premise no longer holds); `ride_create_worst` zh-Hans dark (the two-line place name read as not
+     left-aligned, both attempts; light passed); `home_settled_collect` zh-Hans dark (0.00 s board follow, then 0.20 s
+     leave); `account_flow` zh-Hans light (the paste of `Lin Mo` left the blank `   `, then the 280 s budget; flaky in
+     all three dark runs); `bounty_post_place` en and ms light, zh-Hans dark (「Return is still on screen」 after two
+     retries on a Return key reported at y 1087, below the screen); `pay_sheet_duitnow` en and ms light (pasteboard,
+     0d); `bounty_apply_failed` en light, `payee_add_bank` en dark, `bounty_post_no_balance` ms light second attempt,
+     `ask_energy_sheet` zh-Hans dark and `ride_create_form` zh-Hans dark (lost AXe sessions on one or both attempts).
      The 已结清 card's one-frame exit is fixed (`fix/settled-exit`, 2026-11-16): the `exiting` animation did run, but a
      Reanimated exiting view keeps its host index and the calm card mounted in the same commit is inserted after it, so
      it drew over the leave from the first frame (a 1.5 s `FadeIn` on the calm card showed the leave underneath). The
@@ -210,6 +225,11 @@ pinned bars; reviews, profile, mascot level, weekly feed and invites: plan, serv
   rulings」 (suggestion line style, split optional group with a place, wrapping time line, equal quick times, 56 pt
   confirm art, soft bar edge, shared row inset reaching the ride form, new copy), and 24i: 12 pt above and below the
   quick times, 16 pt under the amount buttons.
+- ★ for veto (2026-11-17, `fix/ui-polish-time-format`, BP-13 and RIDE-19): every clock the app writes follows the
+  device's 12/24-hour setting in the app language, so the system pickers and the text beside them agree (ruling 25 in
+  `docs/plans/2026-10-27-bounty-post.md`, R9 in the carpool plan). Verify runs set the Simulator to 24 hours unless a
+  case chooses 12. The post form's 开始 picker showing the short date (「18/11/26」) did not recur on this build; cause
+  not found, and `bounty_post_optional` now fails if it returns.
 - ★ for veto (2026-11-17): UI polish choices on the bounty map, board and detail (chip position on both maps, the
   map card's poster row, where the no-location hint shows, spacing and alignment) in
   `docs/plans/2026-10-30-bounty-map.md` 「Deviations and rulings」 and `docs/plans/2026-10-27-bounty-board.md`

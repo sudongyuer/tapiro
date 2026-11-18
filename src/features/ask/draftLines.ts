@@ -1,15 +1,16 @@
 import type { TFunction } from 'i18next';
 
+import { clockOptions } from '@/lib/deviceClock';
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
 import { CURRENCIES, formatMoney, type CurrencyCode } from '@/lib/money';
 
-const CLOCK = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' } as const;
 const DAY = { month: 'short', day: 'numeric', weekday: 'short' } as const;
 
 function when(iso: string, language: string, withDay = true) {
-  return new Intl.DateTimeFormat(language, withDay ? { ...DAY, ...CLOCK } : CLOCK).format(
-    new Date(iso),
-  );
+  return new Intl.DateTimeFormat(
+    language,
+    withDay ? { ...DAY, ...clockOptions() } : clockOptions(),
+  ).format(new Date(iso));
 }
 
 const sameDay = (a: string, b: string) => new Date(a).toDateString() === new Date(b).toDateString();
