@@ -15,7 +15,7 @@ from pathlib import Path
 from affected import SMOKE, layout_cases, parse_declarations, parse_deps, run_locales, select
 from breaker import render_cpu_sample, tripped
 from driver import BUNDLE_ID
-from hourcycle import hour_cycle_commands
+from hourcycle import hour_cycle_commands, with_hour_cycle
 from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
@@ -365,6 +365,8 @@ def main():
     parser.add_argument('--output', help='default .verify/ui, or .verify/ui-<size> for another --text-size')
     parser.add_argument('--text-size', choices=sorted(TEXT_SIZES), default='large',
                         help='Dynamic Type for the app under test; acceptance runs at large')
+    parser.add_argument('--hour-cycle', type=int, choices=[24, 12], default=24,
+                        help='12 runs every case in 12-hour time; a case that names it in ARGS gets 12 either way')
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
     parser.add_argument('--locale', choices=sorted(REGIONS))
     parser.add_argument('--affected', action='store_true',
@@ -419,7 +421,7 @@ def main():
                                                                          layout=case in layout),
              extra, budget)
             for case, scene, locales, extra, budget in runs]
-    jobs = [(appearance, case, scene, locale, extra, budget)
+    jobs = [(appearance, case, scene, locale, with_hour_cycle(extra, args.hour_cycle), budget)
             for appearance in appearances
             for case, scene, locales, extra, budget in runs
             for locale in locales]

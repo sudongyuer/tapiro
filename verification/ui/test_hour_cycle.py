@@ -1,6 +1,6 @@
 import unittest
 
-from hourcycle import hour_cycle_commands
+from hourcycle import TWELVE_HOURS, hour_cycle_commands, with_hour_cycle
 
 UDID = 'A5CC377F-F7C4-4AC8-9AE2-269111818C19'
 
@@ -21,6 +21,15 @@ class HourCycleTest(unittest.TestCase):
     def test_a_case_that_names_12_hours_gets_12(self):
         self.assertEqual(cycle(['-uiVerifySignedIn', 'onboarded', '-AppleICUForce12HourTime', 'YES']),
                          {'AppleICUForce24HourTime': 'false', 'AppleICUForce12HourTime': 'true'})
+
+    def test_a_12_hour_run_switches_every_case_once(self):
+        self.assertEqual(cycle(with_hour_cycle(['-uiVerifySignedIn', 'onboarded'], 12)),
+                         {'AppleICUForce24HourTime': 'false', 'AppleICUForce12HourTime': 'true'})
+        named = ['-uiVerifySignedIn', 'onboarded', TWELVE_HOURS, 'YES']
+        self.assertEqual(with_hour_cycle(named, 12), named)
+
+    def test_a_24_hour_run_leaves_the_case_args_alone(self):
+        self.assertEqual(with_hour_cycle(['-uiVerifySignedIn', 'onboarded'], 24), ['-uiVerifySignedIn', 'onboarded'])
 
 
 if __name__ == '__main__':
