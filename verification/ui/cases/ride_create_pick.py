@@ -46,7 +46,9 @@ if ui.locale == 'zh-Hans':
     form = ui.element('ride-form')['frame']
     edges = [ocr.find(read, re.escape(ui.t(f'ride.create.form.{key}')), form) for key in ('airport', 'flightAdd')]
     assert all(edges), f'航班和行李 and 加起飞时间 are not both readable: {[line["text"] for line in read]}'
-    drift = abs(edges[0][0]['x'] - edges[1][0]['x'])
+    # Vision sometimes reads the plane icon into 航班和行李's box (「→ 航班和行李」), moving its left edge. Both labels
+    # are five CJK characters at one size, so equal right edges mean equal left edges.
+    drift = abs(sum(edges[0][0][k] for k in ('x', 'width')) - sum(edges[1][0][k] for k in ('x', 'width')))
     assert drift <= 3, f'the icon rows of 加点细节 start their labels {drift:.0f} pt apart'
 
 ui.tap('BackButton')

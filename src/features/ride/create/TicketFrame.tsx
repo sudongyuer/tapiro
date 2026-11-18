@@ -1,7 +1,7 @@
 import { RNHostView } from '@expo/ui/swift-ui';
 import { useHeaderHeight } from 'expo-router/react-navigation';
 import type { ReactNode } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { PlatformColor, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
@@ -16,7 +16,8 @@ export function TicketScreen({ children }: { children: ReactNode }) {
 }
 
 // The ticket stays pinned above the Form in its top safe-area bar (RideCreate1 「往下滑到底」); an RN view in a
-// Form row was measured at its unwrapped width (TaskCard).
+// Form row was measured at its unwrapped width (TaskCard). Inside the bar the hosted view laid the ticket out wider
+// than the bar and cut its stub, so it takes the screen width explicitly.
 export function TicketBar({
   view,
   caption = true,
@@ -27,8 +28,9 @@ export function TicketBar({
   testID: string;
 }) {
   const { t } = useI18n();
+  const { width } = useWindowDimensions();
   return (
-    <View style={styles.ticket}>
+    <View style={[styles.ticket, { width }]}>
       <RideTicket view={view} fixed testID={`${testID}-ticket`} />
       {caption ? (
         <AppText variant="meta" tone="secondaryLabel" style={styles.caption}>

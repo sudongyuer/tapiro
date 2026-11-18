@@ -26,8 +26,10 @@ ui = UI(*sys.argv[1:])
 
 ticket = ui.element('ride-detail-ticket').get('AXLabel') or ''
 assert f"0/2 {ui.t('rideSettle.ticket.leadReceived')}" in ticket, ticket
-cells = [ticket.find(ui.t(f'rideSettle.ticket.{key}')) for key in ('total', 'each', 'yours')]
-assert -1 not in cells and cells == sorted(cells), f'the ticket does not read Grab 总价, 每人, 你出 in order: {ticket!r}'
+total = ticket.find(ui.t('rideSettle.ticket.total'))
+cells = ticket[total:] if total >= 0 else ''
+order = [cells.find(f"{ui.t(f'rideSettle.ticket.{key}')} ") for key in ('total', 'each', 'yours')]
+assert -1 not in order and order == sorted(order), f'the ticket does not read Grab 总价, 每人, 你出 in order: {ticket!r}'
 assert ui.element('ride-detail-settle-title').get('AXLabel') == ui.tn('rideSettle.steps.settleConfirm', 1)
 sub = ui.element(f'ride-settle-sub-{MING}').get('AXLabel') or ''
 assert re.fullmatch(ui.pattern('rideSettle.rows.saidPaid', method='.+', time=CLOCK) + re.escape(ui.t('rideSettle.rows.proof')),
