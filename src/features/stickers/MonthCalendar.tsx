@@ -106,7 +106,7 @@ export function MonthCalendar({
                     accessibilityLabel={date}
                     testID={testID}
                   >
-                    <AppText variant="meta" tone="tertiaryLabel">
+                    <AppText variant="meta" tone="secondaryLabel">
                       {day}
                     </AppText>
                   </View>

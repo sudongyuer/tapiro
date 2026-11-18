@@ -143,7 +143,7 @@ export function AppliedSticker({
             style={[
               styles.stamp,
               {
-                borderColor: color('--color-success'),
+                borderColor: color('--color-paper-green'),
                 backgroundColor: color('--color-receipt'),
               },
               motion.mark,
@@ -154,7 +154,7 @@ export function AppliedSticker({
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={STAMP_MIN_SCALE}
-              style={[styles.stampText, { color: color('--color-success') }]}
+              style={[styles.stampText, { color: color('--color-paper-green') }]}
             >
               {t('bounty.stamp')}
             </AppText>

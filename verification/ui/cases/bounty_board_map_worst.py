@@ -6,7 +6,7 @@ tier, read whole by OCR, with the tier's 小貘 heads before it; the urgent time
 faces, starting at the card's text edge; the applied bounty at 1.8 km, near the
 map's top edge, opens a card that still fits on the map and shows 已申请 · 等对方选 with its status symbol instead of
 申请; its pin (84A) wears the
-list's 已申请 stamp in the success colour under the sticker and VoiceOver reads 已申请，等对方选 after the reward, while
+list's 已申请 stamp in the paper green under the sticker and VoiceOver reads 已申请，等对方选 after the reward, while
 no other pin carries a stamp; the 「地图上 20 / 45」 chip sits at the top of the map, 44 pt, clear of MapKit's legal
 link."""
 import re
@@ -51,7 +51,7 @@ def stamp_area(pin):
 
 
 def stamp_ink(shot, pin):
-    found = ink_box(shot, stamp_area(pin), token('--color-success', ui.appearance), 6)
+    found = ink_box(shot, stamp_area(pin), token('--color-paper-green', ui.appearance), 6)
     return found['count'] if found else 0
 
 
@@ -103,15 +103,15 @@ assert applied_pin, 'the applied pin is not on the map'
 assert (applied_pin.get('AXLabel') or '').endswith(applied_said), \
     f'VoiceOver does not read the applied state on the pin: {applied_pin.get("AXLabel")!r}'
 stamped = stamp_ink(shot, applied_pin)
-print(f'applied pin stamp: {stamped} success px')
-assert stamped >= STAMP_MIN, f'the applied pin wears no 已申请 stamp ({stamped} success px)'
+print(f'applied pin stamp: {stamped} stamp-ink px')
+assert stamped >= STAMP_MIN, f'the applied pin wears no 已申请 stamp ({stamped} stamp-ink px)'
 applied = [pin for pin in pins(items) if (pin.get('AXLabel') or '').endswith(applied_said)]
 unstamped = [pin for pin in pins(items) if pin not in applied
              and not any(overlaps(stamp_area(pin), stamp_area(other)) for other in applied)]
 assert unstamped, 'no unapplied pin stands clear of the stamps, so the no-stamp check would prove nothing'
 for pin in unstamped:
     stray = stamp_ink(shot, pin)
-    assert stray <= STAMP_STRAY, f'{pin["AXUniqueId"]} is not applied but carries a stamp ({stray} success px)'
+    assert stray <= STAMP_STRAY, f'{pin["AXUniqueId"]} is not applied but carries a stamp ({stray} stamp-ink px)'
 print(f'{len(applied)} pins read as applied, {len(unstamped)} clear unapplied pins carry no stamp')
 more = ui.element('bounty-map-more')
 assert_touch_target(more, 'the more chip')

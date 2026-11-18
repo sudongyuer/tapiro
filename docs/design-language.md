@@ -175,6 +175,8 @@ background and their text stays dark ink. The only exception is the pay card, wh
 | `--color-card-calm`         | `#F4F0E6` |           | Live card: nothing pending                      |
 | `--color-on-card-calm`      | `#1C1C1E` |           | Text and icons on the calm card                 |
 | `--color-ride`              | `#F5C8A0` |           | Ride identity colour (same value as the card)   |
+| `--color-on-ride-urgent`    | `#A22818` |           | Urgent status line on a ride ticket             |
+| `--color-on-ride-warning`   | `#7A4A00` |           | Needs-you status line on a ride ticket          |
 | `--color-stage-urgent`      | `#FBE1D3` |           | Home mascot stage: something urgent             |
 | `--color-stage-live`        | `#F9E3CC` |           | Home mascot stage: in progress (no yellow)      |
 | `--color-stage-calm`        | `#DCE5EE` |           | Home mascot stage: nothing pending              |
@@ -198,20 +200,20 @@ background and their text stays dark ink. The only exception is the pay card, wh
 Paper surfaces of the settlement celebration and the sticker book. They are paper, so dark mode keeps the same
 values, as it does for stickers.
 
-| Token                    | Light       | Use                                                        |
-| ------------------------ | ----------- | ---------------------------------------------------------- |
-| `--color-paper`          | `#FFFDF8`   | Sticker book page in the celebration                       |
-| `--color-paper-line`     | `#EDE7DA`   | Ruled lines on the page                                    |
-| `--color-paper-slot`     | `#D6D1C6`   | Dashed outline of an empty slot, binding dots              |
-| `--color-paper-landed`   | `#187A5014` | Fill of the slot a sticker just landed in                  |
-| `--color-on-paper`       | `#25232B`   | Text on paper and on the receipt                           |
-| `--color-on-paper-muted` | `#6C6C70`   | Secondary text on paper, the receipt and sticker labels    |
-| `--color-receipt`        | `#FFFFFF`   | Receipt card the sticker is peeled from; sticker labels    |
-| `--color-paper-green`    | `#187A50`   | Green on paper: 第一次收款 badge fill, receipt amount      |
-| `--color-glow`           | `#3ECF8E8C` | Glow centre when a sticker lands                           |
-| `--color-glow-clear`     | `#3ECF8E00` | Glow edge                                                  |
-| `--color-shine`          | `#FFFFFFB3` | Centre of the shine that sweeps the sticker and the amount |
-| `--color-shine-clear`    | `#FFFFFF00` | Shine edge                                                 |
+| Token                    | Light       | Use                                                                               |
+| ------------------------ | ----------- | --------------------------------------------------------------------------------- |
+| `--color-paper`          | `#FFFDF8`   | Sticker book page in the celebration                                              |
+| `--color-paper-line`     | `#EDE7DA`   | Ruled lines on the page                                                           |
+| `--color-paper-slot`     | `#D6D1C6`   | Dashed outline of an empty slot, binding dots                                     |
+| `--color-paper-landed`   | `#187A5014` | Fill of the slot a sticker just landed in                                         |
+| `--color-on-paper`       | `#25232B`   | Text on paper and on the receipt                                                  |
+| `--color-on-paper-muted` | `#6C6C70`   | Secondary text on paper, the receipt and sticker labels                           |
+| `--color-receipt`        | `#FFFFFF`   | Receipt card the sticker is peeled from; sticker labels                           |
+| `--color-paper-green`    | `#187A50`   | Green on paper: 第一次收款 badge fill, receipt amount, the 已申请 / 已结清 stamps |
+| `--color-glow`           | `#3ECF8E8C` | Glow centre when a sticker lands                                                  |
+| `--color-glow-clear`     | `#3ECF8E00` | Glow edge                                                                         |
+| `--color-shine`          | `#FFFFFFB3` | Centre of the shine that sweeps the sticker and the amount                        |
+| `--color-shine-clear`    | `#FFFFFF00` | Shine edge                                                                        |
 
 ### Object stickers
 
@@ -264,6 +266,9 @@ Contrast rules, enforced by `src/ui/theme/tokens.test.ts`:
 - Each `--color-on-card-*` ≥ 4.5:1 on its card, also at the 72 % muted opacity used for
   secondary card lines; `--color-on-stage` on every stage and on the bubble; and
   `--color-on-sticker` on every category colour, in light and dark.
+- The ride ticket's status inks ≥ 4.5:1 on the ride and the muted (calm) ticket; the status colours themselves
+  measure 3.6:1 on the peach ticket. Stamps sit on the white receipt in both appearances, so they use paper green
+  (5.3:1), never the dark-mode success green (2.0:1 on white).
 - Each hold label ≥ 4.5:1 on its surface in light and dark: on-hold-track on the track 15.5:1 (light) and
   13.5:1 (dark); on-hold-fill on the gold 9.8:1 (light) and 6.4:1 (dark).
 - Yellow is never a brand colour; it is owned by 美团 / 闲鱼 / Timee in this market. The one exception (12A) is

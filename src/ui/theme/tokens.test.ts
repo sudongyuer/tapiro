@@ -180,3 +180,19 @@ test('belly segments stand out from the sheet as graphics (3:1)', () => {
     expect(contrastRatio(dark(name), DARK_SURFACE)).toBeGreaterThanOrEqual(3);
   }
 });
+
+test('ride ticket status inks are readable on the ride and muted tickets', () => {
+  for (const ink of ['--color-on-ride-urgent', '--color-on-ride-warning'] as const) {
+    for (const surface of ['--color-ride', '--color-card-calm'] as const) {
+      expect(contrastRatio(vars[ink], vars[surface])).toBeGreaterThanOrEqual(MIN);
+    }
+  }
+});
+
+test('stamps on the white receipt read in both themes', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    expect(
+      contrastRatio(resolved('--color-paper-green', theme), resolved('--color-receipt', theme)),
+    ).toBeGreaterThanOrEqual(MIN);
+  }
+});

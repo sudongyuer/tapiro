@@ -41,7 +41,7 @@ ui.at_rest()
 items = ui.read()
 title = by_id(items, 'bounty-detail-title')['frame']
 band = {'x': 0, 'y': title['y'] - 90, 'width': screen(items)['width'], 'height': 90}
-ink = ink_box(ui.snap('01-detail-stamped'), band, token('--color-success', ui.appearance), 40)
+ink = ink_box(ui.snap('01-detail-stamped'), band, token('--color-paper-green', ui.appearance), 40)
 assert ink and ink['count'] >= STAMP_MIN, f'the detail shows no 已申请 stamp: {ink}'
 
 ui.tap('BackButton')
