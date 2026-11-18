@@ -19,6 +19,7 @@ import {
   foregroundStyle,
   frame,
   listRowBackground,
+  listRowInsets,
   monospacedDigit,
   multilineTextAlignment,
   refreshable,
@@ -41,6 +42,12 @@ import { CoinsHistory } from './CoinsHistory';
 import { coinCount } from './coinsView';
 
 const BALANCE_COIN = 40;
+const EDGE_TO_EDGE = listRowInsets({
+  top: vars['--space-2'],
+  leading: 0,
+  bottom: vars['--space-2'],
+  trailing: 0,
+});
 const missing = (value: Loadable<unknown>) => value.status === 'failed';
 const shown = <T,>(value: Loadable<T>) => (value.status === 'idle' ? null : value.data);
 
@@ -75,7 +82,7 @@ export function CoinsScreen({ onBuy }: { onBuy: () => void }) {
             testID="coins-stale"
           />
         ) : null}
-        {missing(balance) || missing(history) ? (
+        {missing(balance) ? (
           <NoticeCard
             tone="urgent"
             icon="exclamationmark.circle.fill"
@@ -87,6 +94,20 @@ export function CoinsScreen({ onBuy }: { onBuy: () => void }) {
         {balanceData ? <BalanceHeader balance={balanceData} /> : null}
         {balanceData ? <BuyButton onBuy={onBuy} /> : null}
         <PurchaseWaiting testID="coins-purchase" />
+        {missing(history) && !missing(balance) ? (
+          <NoticeCard
+            tone="urgent"
+            icon="exclamationmark.circle.fill"
+            title={t('coins.historyFailed')}
+            body={t('coins.historyFailedBody')}
+            action={{
+              label: t('coins.retry'),
+              onPress: () => void coinsStore.reloadHistory(),
+              testID: 'coins-history-retry',
+            }}
+            testID="coins-history-failed"
+          />
+        ) : null}
         {historyData ? <CoinsHistory history={historyData} /> : null}
         {(!balanceData && !missing(balance)) || (!historyData && !missing(history)) ? (
           <Section>
@@ -175,6 +196,7 @@ function BuyButton({ onBuy }: { onBuy: () => void }) {
           buttonBorderShape('capsule'),
           controlSize('large'),
           frame({ maxWidth: Infinity }),
+          EDGE_TO_EDGE,
         ]}
       >
         <Text

@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { AccessibilityInfo, ActionSheetIOS, StyleSheet } from 'react-native';
+import { AccessibilityInfo, StyleSheet, type AccessibilityActionEvent } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { askConfirm, pressAnchor } from '@/ui/confirm';
 import { HoldButton } from '@/ui/HoldButton';
 import { SheetActions } from '@/ui/SheetFrame';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -32,18 +33,18 @@ export function SelectFooter({
       ? t('bounty.select.hold.hintAlone')
       : t('bounty.select.hold.hint', { count: footer?.others ?? 0 });
 
-  const confirm = () => {
+  const confirm = async (event: AccessibilityActionEvent) => {
     if (name === null) return;
-    ActionSheetIOS.showActionSheetWithOptions(
+    const sure = await askConfirm(
       {
         title: t('bounty.select.confirm.title', { name }),
-        options: [t('bounty.select.confirm.confirm', { name }), t('bounty.select.confirm.cancel')],
-        cancelButtonIndex: 1,
+        confirm: t('bounty.select.confirm.confirm', { name }),
+        keep: t('bounty.select.confirm.cancel'),
       },
-      (index) => {
-        if (index === 0) onHold();
-      },
+      false,
+      pressAnchor(event),
     );
+    if (sure) onHold();
   };
 
   return (
@@ -69,7 +70,7 @@ export function SelectFooter({
           accessibilityHint={t('bounty.select.hold.a11yHint')}
           state={footer.state}
           onComplete={onHold}
-          onAccessibilityActivate={confirm}
+          onAccessibilityActivate={(event) => void confirm(event)}
           testID="bounty-select-hold"
         />
       ) : null}

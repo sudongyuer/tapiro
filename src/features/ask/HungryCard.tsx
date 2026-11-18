@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  type GestureResponderEvent,
   type LayoutChangeEvent,
   type LayoutRectangle,
 } from 'react-native';
@@ -27,7 +28,7 @@ const LEAF_IMAGE = require('@/assets/pantry/leaf.png');
 
 export type HungryActions = {
   onFeed: () => void;
-  onSwap: () => void;
+  onSwap: (event: GestureResponderEvent) => void;
   onTomorrow: () => void;
   onManual: () => void;
 };

@@ -245,7 +245,8 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   `--affected` lists candidates; it is not the selection. Reason: a runner change selected all 72 cases (79 min) and the
   planned milestone ran every case in dark, en and ms whatever had changed (user, 2026-10-28).
   - Logic only: unit tests; no UI case.
-  - A screen's layout or copy: that screen's cases, zh-Hans light; add `ms` when its copy can be long.
+  - A screen's layout or copy: that screen's cases in zh-Hans light and in `ms` (`en` for a case without `ms`), as
+    `--affected` picks them for a changed `.tsx`. Reason: two #152 faults showed only in en and ms (2026-11-18).
   - Colours, tokens, or a surface drawn over other content: those screens' cases in dark as well.
   - New or changed copy keys: `en` for the cases that show them.
   - Runner or driver: the runner's unit tests, smoke, and one case per touched helper.

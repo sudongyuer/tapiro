@@ -674,6 +674,11 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
       VoiceOver 「标题」 / "Title" / "Tajuk".
     - ★ 24i Quick-time and amount rows: 12 pt above and below the quick times, 16 pt under the amounts (the board's 12 pt
       at a 14 pt side inset, scaled to the 20 pt side inset).
+    - ★ BP-12 (audit, delegated 2026-11-17) 「上次那条已经发出去了」 is a success notice: `NoticeCard` gains a
+      `success` tone, the success text colour on a new `--color-success-fill` (`#E3F3EA` light, `#12301F` dark;
+      4.6:1 and 7.2:1 for the green headline), added to `docs/design-language.md` Status and `tokens.ts`. Reason: the
+      outcome is good news (the post is live), and the warning fill with a check mixed two statuses of the Status
+      language. `bounty_post_failed` samples the card fill against the token.
 
 25. Time format, one rule for the app (2026-11-17, `fix/ui-polish-time-format`, audit BP-13 and RIDE-19). ★ for veto:
     every clock the app writes follows the device's 12/24-hour setting in the app language (「晚上9:00」 / 9:00 PM /

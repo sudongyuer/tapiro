@@ -1,5 +1,5 @@
-"""Block from the applicant list (5A): long-pressing Hana's row offers a destructive 屏蔽Hana; the action sheet 屏蔽Hana？
-states that Hana's application disappears too; 屏蔽 shows progress on Hana's row, the first call fails
+"""Block from the applicant list (5A): long-pressing Hana's row offers a destructive 屏蔽Hana; the system confirmation 屏蔽Hana？,
+a popover from Hana's row with 屏蔽 stacked above a visible 不屏蔽, states that Hana's application disappears too; 屏蔽 shows progress on Hana's row, the first call fails
 (`-uiVerifyBlock failOnce`) and the row stays with 没屏蔽成功; the second removes Hana and the hint counts the other 1.
 With Aiman chosen, blocking Aiman clears the check and the button returns to 先选一个人, disabled. 我的 → 屏蔽名单
 lists Aiman and Hana."""
@@ -8,11 +8,13 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import tap_sheet_action  # noqa: E402
 from choose import AIMAN, HANA, HOLD, JIE, hold_reads, row_id  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 from gestures import drag  # noqa: E402
 
 DEPS = ['src/features/bounty/select/', 'src/features/bounty/shared/', 'src/features/bounty/board/', 'src/ui/TierMark.tsx', 'src/features/block/', 'src/ui/HoldButton.tsx',
-        'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py', 'verification/ui/gestures.py', 'src/features/place/']
+        'src/app/(tabs)/bounty/', 'verification/ui/choose.py', 'verification/ui/bounty.py', 'verification/ui/gestures.py', 'src/features/place/',
+        'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
 SCENE = 'bounty-applicants'
 BUDGET = 360
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '6000']
@@ -67,6 +69,8 @@ ui.tap_label(ui.t('block.menu', name='Hana'))
 ui.labelled(ui.t('block.confirm.title', name='Hana'))
 ui.labelled(ui.t('block.confirm.applicantBody', name='Hana'))
 ui.at_rest()
+assert_dialog(ui, ui.t('block.confirm.title', name='Hana'), ui.t('block.confirm.confirm'), ui.t('block.confirm.cancel'),
+              source=row_id(HANA))
 ui.capture('02-confirm')
 tap_sheet_action(ui, ui.t('block.confirm.confirm'), TITLE)
 blocking(HANA)

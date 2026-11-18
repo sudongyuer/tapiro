@@ -1,6 +1,6 @@
 """晚到 for a member at 集合 (196 A, 228). 晚到 opens the system menu with 晚到 5 / 10 / 15 分钟 and 不来了…; 晚到 5 分钟
 sends report_ride_late once with 5 and your avatar reads 晚到 5 分; the menu then offers 不晚到了, which clears it.
-不来了… asks with the system action sheet that leaving now counts as a no-show (the ride leaves in 10 minutes) and that
+不来了… asks, in a popover from 晚到 with 不来了 above a visible 不退出, that leaving now counts as a no-show (the ride leaves in 10 minutes) and that
 the first in 60 days does not count; 不退出 sends nothing."""
 import json
 import sys
@@ -9,9 +9,11 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py']
+DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'verification/ui/confirm.py',
+        'src/ui/confirm.ts', 'modules/tapiro-kit/ios/ConfirmDialog.swift']
 SCENE = 'ride-detail'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'meetup']
@@ -59,6 +61,8 @@ ui.tap('ride-detail-late')
 ui.tap_label(ui.t('ride.detail.meetup.notComing'))
 ui.labelled(ui.t('ride.detail.leave.title'))
 ui.labelled(ui.t('ride.detail.noShow.counts') + ui.t('ride.detail.noShow.waiver'))
+assert_dialog(ui, ui.t('ride.detail.leave.title'), ui.t('ride.detail.leave.confirm'), ui.t('ride.detail.leave.keep'),
+              source='ride-detail-late')
 ui.capture('03-leave')
 tap_sheet_action(ui, ui.t('ride.detail.leave.keep'), 'ride-detail-late')
 time.sleep(1.0)  # a stray leave would reach the plist within this

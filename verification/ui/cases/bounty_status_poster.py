@@ -1,24 +1,28 @@
-"""Poster actions on the 7A status screen (62A, 8A, 58A). Done: 确认完成 opens a system action sheet that states RM 8 for
-阿杰; its 确认完成 sends confirm_bounty once and pushes the pay sheet for the payment in the reply. 有问题 opens a sheet
+"""Poster actions on the 7A status screen (62A, 8A, 58A). Done: 确认完成 opens the system confirmation as a popover from
+that button, 确认完成 stacked above a visible 再看看, stating RM 8 for 阿杰; its 确认完成 sends confirm_bounty once and pushes the pay sheet for the payment in the reply. 有问题 opens a sheet
 with an empty reason and 发送 disabled; once typed, 发送 is filled with the accent while 取消 stays plain glass, and the
 n/140 counter sits in the footer under the card; with report_bounty_problem failing once, 发送 closes the sheet, 有问题 comes back
-with 没发出去，再试一次 and nothing is resent; reopening shows the kept draft, and the second 发送 reaches 等阿杰处理 with
-the reason in the timeline. Cancel after selection from ⋯: the poster with 阿杰 30 minutes late reads 取消这单？ and that it
-counts against 阿杰, and 不取消 sends nothing; the helper with a waiver left reads 不帮了？ and the waiver line, and 不帮了
-cancels. Close before selection: the applicant list's ⋯ offers a red 关掉这单, the sheet says this month's free post
+with 没发出去，再试一次 and nothing is resent; reopening shows the kept draft, and the second 发送 reaches 等阿杰处理: 阿杰点完成 stays done with its time and the next step reads 等阿杰处理 with
+the reason. Cancel after selection from ⋯: the dialog hangs from ⋯ with the destructive action above a visible keep
+button; the poster with 阿杰 30 minutes late reads 取消这单？ and that it counts against 阿杰, and 不取消 sends nothing;
+the helper with a waiver left reads 不帮了？ and the waiver line, and 不帮了
+cancels: the timeline keeps 小林选了你 and ends on 你退出了这单 with its time, with no pending steps after it. Close before selection: the applicant list's ⋯ offers a red 关掉这单, the sheet says this month's free post
 comes back and the 3 applicants see it, and 关掉这单 sends close_bounty once and shows the closed state."""
 import json
+import re
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import paste_into, relaunch, tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
+from confirm import assert_dialog, tap  # noqa: E402
 from driver import UI, by_id, close, luma, token  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/select/', 'src/features/bounty/shared/',
         'src/ui/SheetFrame.tsx', 'src/ui/SyncedTextField.tsx', 'src/ui/PillButton.tsx', 'modules/tapiro-kit/',
-        'src/app/(tabs)/bounty/', 'src/app/pay/', 'verification/ui/bounty.py', 'verification/ui/choose.py', 'src/features/block/']
+        'src/app/(tabs)/bounty/', 'src/app/pay/', 'verification/ui/bounty.py', 'verification/ui/choose.py', 'src/features/block/',
+        'verification/ui/confirm.py', 'src/ui/confirm.ts', 'src/ui/HoldButton.tsx']
 SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 480
@@ -95,6 +99,8 @@ def reason_field():
 summary('bounty.status.summary.poster.done')
 ui.tap('bounty-status-action-confirm')
 sheet_reads(ui.t('bounty.confirm.title', name='阿杰'), ui.t('bounty.confirm.body', name='阿杰', amount='RM\u00a08'))
+assert_dialog(ui, ui.t('bounty.confirm.title', name='阿杰'), ui.t('bounty.confirm.confirm'), ui.t('bounty.confirm.cancel'),
+              source='bounty-status-action-confirm')
 ui.capture('01-confirm-sheet')
 assert not sent('confirm_bounty'), 'confirm_bounty was sent before the sheet was answered'
 tap_sheet_action(ui, ui.t('bounty.confirm.confirm'), 'bounty-status-action-confirm')
@@ -150,7 +156,12 @@ ui.wait(lambda items: (by_id(items, 'bounty-issue-reason') or {}).get('AXValue')
 tap_button('bounty-issue-send')
 summary('bounty.status.summary.poster.disputed', name='阿杰')
 assert len(wait_sent('report_bounty_problem', 2)) == 2
-ui.wait_label('bounty-status-step-completed', lambda text: REASON in text, 'the reason is not in the timeline')
+ui.wait_label('bounty-status-step-confirmed',
+              lambda text: text.startswith(ui.t('bounty.status.step.poster.waitFix', name='阿杰')) and REASON in text,
+              'the reason is not on the 等阿杰处理 step')
+completed = ui.element('bounty-status-step-completed').get('AXLabel') or ''
+assert re.search(r'\d{1,2}:\d{2}', completed), f'点完成 lost its time: {completed!r}'
+assert completed.endswith(ui.t('bounty.status.a11y.done')), completed
 ui.gone('bounty-status-failed')
 ui.at_rest()
 ui.capture('05-issue-sent')
@@ -160,8 +171,12 @@ summary('bounty.status.summary.poster.late', name='阿杰')
 open_menu(ui.t('bounty.status.action.cancel'))
 sheet_reads(ui.t('bounty.cancel.titlePoster'), ui.t('bounty.cancel.otherLate', name='阿杰'))
 assert len(wait_sent('bounty_cancel_preview', 1)) == 1
+_, keep = assert_dialog(ui, ui.t('bounty.cancel.titlePoster'), ui.t('bounty.cancel.confirmPoster'),
+                        ui.t('bounty.cancel.keepPoster'), source_label=ui.t('bounty.status.action.more'))
 ui.capture('06-cancel-other-late')
-tap_sheet_action(ui, ui.t('bounty.cancel.keepPoster'), '')
+tap(ui, keep)
+ui.wait(lambda items: not any(i.get('AXLabel') == ui.t('bounty.cancel.titlePoster') for i in items),
+        'the dialog stayed open after 不取消')
 assert_not_sent('cancel_bounty')
 summary('bounty.status.summary.poster.late', name='阿杰')
 
@@ -170,10 +185,21 @@ again(SCENE, 'bounty-status-step-selected', '-uiVerifyBountyStatus', 'assigned',
 summary('bounty.status.summary.helper.assigned')
 open_menu(ui.t('bounty.status.action.withdraw'))
 sheet_reads(ui.t('bounty.cancel.titleHelper'), ui.t('bounty.cancel.waiverHelper', name='小林'))
+yes, _ = assert_dialog(ui, ui.t('bounty.cancel.titleHelper'), ui.t('bounty.cancel.confirmHelper'),
+                       ui.t('bounty.cancel.keepHelper'), source_label=ui.t('bounty.status.action.more'))
 ui.capture('07-cancel-helper-waiver')
-tap_sheet_action(ui, ui.t('bounty.cancel.confirmHelper'), '')
+tap(ui, yes)
 summary('bounty.status.summary.helper.cancelled')
 assert len(wait_sent('cancel_bounty', 1)) == 1
+ended = ui.wait_label('bounty-status-step-ended',
+                      lambda text: text.startswith(ui.t('bounty.status.ended.helperYou')),
+                      'the timeline does not end on 你退出了这单').get('AXLabel') or ''
+assert re.search(r'\d{1,2}:\d{2}', ended), f'the end row has no time: {ended!r}'
+assert ended.endswith(ui.t('bounty.status.a11y.ended')), ended
+items = ui.read()
+assert by_id(items, 'bounty-status-step-selected'), 'the done step before the cancel is gone'
+for after in ('started', 'completed', 'confirmed', 'payment'):
+    assert not by_id(items, f'bounty-status-step-{after}'), f'{after} is still drawn after the cancel'
 ui.at_rest()
 ui.capture('08-cancelled')
 
@@ -182,9 +208,11 @@ again('bounty-applicants', 'bounty-applicants-title', '-uiVerifyBountyStatus', '
 ui.settled(lambda items: by_id(items, 'bounty-select-hold'), 'the applicant list never settled')
 open_menu(ui.t('bounty.close.menu'))
 sheet_reads(ui.t('bounty.close.title'), ui.tn('bounty.close.free', 3))
+yes, _ = assert_dialog(ui, ui.t('bounty.close.title'), ui.t('bounty.close.confirm'), ui.t('bounty.close.keep'),
+                       source_label=ui.t('bounty.status.action.more'))
 ui.capture('09-close-sheet')
 assert not sent('close_bounty'), 'close_bounty was sent before the sheet was answered'
-tap_sheet_action(ui, ui.t('bounty.close.confirm'), '')
+tap(ui, yes)
 ui.element('bounty-applicants-closed', timeout=30)
 assert len(wait_sent('close_bounty', 1)) == 1
 assert_not_sent('close_bounty', 1)

@@ -4,6 +4,7 @@ import { AccessibilityInfo, ActivityIndicator, StyleSheet, View } from 'react-na
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { pressAnchor, type ConfirmAnchor } from '@/ui/confirm';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
@@ -84,7 +85,7 @@ export function PinnedActions({
   role: StatusRole;
   state: ActionState;
   message: StatusMessage | null;
-  onAction: (action: StatusAction) => void;
+  onAction: (action: StatusAction, anchor: ConfirmAnchor) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
@@ -105,7 +106,7 @@ export function PinnedActions({
         variant={index === 0 ? 'primary' : 'secondary'}
         loading={sending}
         disabled={locked && !sending}
-        onPress={() => onAction(action)}
+        onPress={(event) => onAction(action, pressAnchor(event))}
         testID={`bounty-status-action-${action}`}
       />
     );

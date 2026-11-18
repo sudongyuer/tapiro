@@ -1,4 +1,4 @@
-import { PlatformColor, StyleSheet, TextInput } from 'react-native';
+import { PlatformColor, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -8,7 +8,7 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { textLength, toggleChip } from '../model';
 import { REVIEW_TEXT_MAX, type ReviewDraft, type Role } from '../types';
-import { ChipPicker } from './ReviewPickers';
+import { ChipPicker, PickedChips } from './ReviewPickers';
 
 const REVEAL_IN = FadeIn.duration(vars['--duration-settle']).reduceMotion(ReduceMotion.Never);
 
@@ -16,16 +16,19 @@ export function ReviewDetails({
   draft,
   role,
   disabled,
+  locked,
   onChange,
 }: {
   draft: ReviewDraft;
   role: Role;
   disabled: boolean;
+  locked: boolean;
   onChange: (next: ReviewDraft) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const count = textLength(draft.sentence);
+  if (locked) return <LockedDetails draft={draft} role={role} />;
   return (
     <Animated.View entering={REVEAL_IN} style={styles.details}>
       <AppText variant="body" style={styles.heading} testID="review-chips-title">
@@ -66,6 +69,26 @@ export function ReviewDetails({
         {t('reputation.reply.count', { count, max: REVIEW_TEXT_MAX })}
       </AppText>
     </Animated.View>
+  );
+}
+
+function LockedDetails({ draft, role }: { draft: ReviewDraft; role: Role }) {
+  const { t } = useI18n();
+  if (draft.chips.length === 0 && !draft.sentence) return null;
+  return (
+    <View style={styles.details}>
+      {draft.chips.length > 0 ? (
+        <AppText variant="body" style={styles.heading} testID="review-chips-title">
+          {t(`reputation.sheet.${draft.face === 'happy' ? 'goodChips' : 'badChips'}`)}
+        </AppText>
+      ) : null}
+      <PickedChips draft={draft} role={role} />
+      {draft.sentence ? (
+        <AppText variant="body" testID="review-sentence-shown">
+          {draft.sentence}
+        </AppText>
+      ) : null}
+    </View>
   );
 }
 

@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@/lib/i18n';
 import type { MessageTranslator } from '@/lib/translation';
 import { AppText } from '@/ui/AppText';
+import { pressAnchor } from '@/ui/confirm';
 import { space } from '@/ui/theme/tokens';
 
 import { PAGE_SIZE } from '../chatService';
@@ -225,7 +226,7 @@ export function ThreadScreen({
           busy={safety.unblocking}
           failed={safety.failure === 'unblock'}
           onLayout={onFooterLayout}
-          onUnblock={() => safety.askUnblock(blocked)}
+          onUnblock={(event) => safety.askUnblock(blocked, pressAnchor(event))}
         />
       ) : info && userId ? (
         <Composer
@@ -243,10 +244,10 @@ export function ThreadScreen({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: PlatformColor('systemBackground') },
+  root: { flex: 1, backgroundColor: PlatformColor('systemGroupedBackground') },
   placing: { opacity: 0 },
   left: {
-    backgroundColor: PlatformColor('systemBackground'),
+    backgroundColor: PlatformColor('systemGroupedBackground'),
     position: 'absolute',
     left: 0,
     right: 0,

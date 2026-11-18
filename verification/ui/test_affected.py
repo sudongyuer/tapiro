@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
+from affected import SMOKE, layout_cases, parse_declarations, parse_deps, run_locales, select
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -54,6 +54,20 @@ class Select(unittest.TestCase):
         changed = [f'src/ui/{n}.tsx' for n in 'abcde']
         reason = select({'home_calm': []}, changed)['home_calm'][0]
         self.assertEqual(reason, 'shared: src/ui/a.tsx, src/ui/b.tsx, src/ui/c.tsx (+2 more)')
+
+
+class Layout(unittest.TestCase):
+    def test_a_screen_component_change_marks_its_cases(self):
+        self.assertEqual(layout_cases(CASES, ['src/app/(tabs)/me/payee.tsx']), {'payee_list'})
+
+    def test_logic_tests_and_shared_components_mark_nothing(self):
+        changed = ['src/features/payee/classifyQr.ts', 'src/features/home/stack.test.tsx', 'src/ui/FieldRow.tsx']
+        self.assertEqual(layout_cases(CASES, changed), set())
+
+    def test_a_layout_change_adds_ms_or_else_english(self):
+        self.assertEqual(run_locales(['zh-Hans', 'ms'], False, layout=True), ['zh-Hans', 'ms'])
+        self.assertEqual(run_locales(['zh-Hans'], False, layout=True), ['zh-Hans', 'en'])
+        self.assertEqual(run_locales(['zh-Hans', 'ms'], True, layout=True), ['zh-Hans', 'en', 'ms'])
 
 
 class Runner(unittest.TestCase):

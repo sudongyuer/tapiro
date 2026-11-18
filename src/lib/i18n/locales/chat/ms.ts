@@ -42,7 +42,6 @@ export default {
       cancelled: 'Dibatalkan',
     },
     ride: {
-      open: 'Dibuka',
       gathering: 'Sedang berkumpul',
       departed: 'Sudah bertolak',
       arrived: 'Sudah sampai · bahagi tambang',

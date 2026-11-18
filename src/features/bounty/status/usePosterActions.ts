@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { askConfirm, type ConfirmAnchor } from '@/ui/confirm';
 
-import { askSheet } from '../shared/askSheet';
 import { cancelSheetCopy, confirmSheetCopy } from './actionCopy';
 import { askThenSend, previewThenSend } from './actionFlow';
 import { issueDrafts, statusService } from './services';
@@ -21,10 +21,10 @@ export function usePosterActions(bountyId: string, act: Act, onPay: (paymentId: 
   const [issueOpen, setIssueOpen] = useState(false);
 
   const confirm = useCallback(
-    async (detail: StatusDetail) => {
+    async (detail: StatusDetail, anchor: ConfirmAnchor) => {
       const name = counterpartName(detail, 'poster') ?? t('bounty.post.unknownName');
       const result = await askThenSend(
-        () => askSheet(confirmSheetCopy(name, detail.reward, { t, language }), false),
+        () => askConfirm(confirmSheetCopy(name, detail.reward, { t, language }), false, anchor),
         () => act('confirm', () => statusService.confirm(bountyId)),
       );
       if (result?.ok) onPay(result.value.paymentId);
@@ -45,12 +45,13 @@ export function usePosterActions(bountyId: string, act: Act, onPay: (paymentId: 
   );
 
   const cancel = useCallback(
-    (detail: StatusDetail) => {
+    (detail: StatusDetail, anchor: ConfirmAnchor) => {
       const role = detail.viewerRole;
       const name = counterpartName(detail, role) ?? t('bounty.post.unknownName');
       return previewThenSend(
         () => act('cancelPreview', () => statusService.cancelPreview(bountyId), { reload: false }),
-        (preview) => askSheet(cancelSheetCopy(preview, role, name, { t, language }), true),
+        (preview) =>
+          askConfirm(cancelSheetCopy(preview, role, name, { t, language }), true, anchor),
         () => act('cancel', () => statusService.cancel(bountyId)),
       );
     },

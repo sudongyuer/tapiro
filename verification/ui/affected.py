@@ -98,8 +98,25 @@ def select(cases, changed, shared=SHARED):
     return picked
 
 
-def run_locales(declared, with_declared):
+def layout_change(path):
+    return path.startswith('src/') and path.endswith('.tsx') and not path.endswith('.test.tsx')
+
+
+# Shared code picks every case already; adding a locale there would double the whole matrix, so only own DEPS count.
+def layout_cases(cases, changed):
+    layouts = [path for path in changed if layout_change(path)]
+    return {case for case, deps in cases.items()
+            if any(matches(path, prefix) for prefix in deps or [] for path in layouts)}
+
+
+def layout_locale(declared):
+    return 'ms' if 'ms' in declared else 'en'
+
+
+def run_locales(declared, with_declared, layout=False):
     if with_declared:
         wanted = {*MILESTONE_LOCALES, *declared}
         return sorted(wanted, key=lambda l: (LANGUAGE_ORDER.index(l) if l in LANGUAGE_ORDER else len(LANGUAGE_ORDER), l))
-    return [DEFAULT_LOCALE] if DEFAULT_LOCALE in declared else declared[:1]
+    first = [DEFAULT_LOCALE] if DEFAULT_LOCALE in declared else declared[:1]
+    extra = layout_locale(declared)
+    return first + [extra] if layout and extra not in first else first

@@ -52,7 +52,7 @@ const message = (senderId: string, body: string, createdAt = at(6, 12, 2)) => ({
 const rideRow = (over: Partial<ThreadSummary> = {}): ThreadSummary =>
   bountyRow({
     kind: 'ride',
-    item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7), status: 'open' },
+    item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7), status: 'open', need: 2 },
     members: [member('mei', '美玲'), member('arif', 'Arif'), member('gone', 'Gone', true)],
     ...over,
   });

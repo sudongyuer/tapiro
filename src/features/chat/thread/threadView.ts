@@ -10,7 +10,6 @@ import type { ChatSubject, SendFailure, ThreadInfo, ThreadItem } from '../types'
 export type ItemCardView = { art: RowArt; title: string; status: string; a11y: string };
 
 const RIDE_STATUS_KEYS = {
-  open: 'chat.item.ride.open',
   gathering: 'chat.item.ride.gathering',
   departed: 'chat.item.ride.departed',
   arrived: 'chat.item.ride.arrived',
@@ -66,7 +65,12 @@ export function itemCardView(
   const title = t('chat.list.route', { from: item.from, to: item.to });
   const status = t('chat.item.rideStatus', {
     when: departLabel(item.departsAt, now, t, language),
-    status: t(RIDE_STATUS_KEYS[item.status]),
+    status:
+      item.status === 'open'
+        ? item.need > 0
+          ? t('ride.ticket.need', { count: item.need })
+          : t('ride.ticket.full')
+        : t(RIDE_STATUS_KEYS[item.status]),
   });
   return {
     art: { kind: 'ride', id: 'car' },

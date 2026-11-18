@@ -13,15 +13,21 @@ import type { ReviewEntry } from './entryView';
 import { useReviewEntries } from './useReviewEntries';
 
 const CHEVRON = 13;
+const ENVELOPE = 15;
 
 function EntryRow({ entry, onOpen }: { entry: ReviewEntry; onOpen: (() => void) | null }) {
   const { color } = useTheme();
   const body = (
     <>
       <View style={styles.text}>
-        <AppText variant="body" numberOfLines={1} style={styles.title}>
-          {entry.title}
-        </AppText>
+        <View style={styles.titleLine}>
+          {entry.sealed ? (
+            <SymbolView name="envelope" size={ENVELOPE} tintColor={PlatformColor('label')} />
+          ) : null}
+          <AppText variant="body" numberOfLines={1} style={styles.title}>
+            {entry.title}
+          </AppText>
+        </View>
         {entry.detail ? (
           <AppText variant="meta" tone="secondaryLabel">
             {entry.detail}
@@ -147,5 +153,6 @@ const styles = StyleSheet.create({
     paddingVertical: vars['--space-3'],
   },
   text: { flex: 1, gap: 2 },
-  title: { fontWeight: '600' },
+  titleLine: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
+  title: { flexShrink: 1, fontWeight: '600' },
 });

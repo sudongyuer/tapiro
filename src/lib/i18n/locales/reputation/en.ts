@@ -48,6 +48,7 @@ const en: typeof zhHans = {
   sheet: {
     title: 'Review {{name}}',
     cancel: 'Cancel',
+    close: 'Close',
     submit: 'Submit',
     goodChips: 'What went well (pick any)',
     badChips: 'What went wrong (pick any)',

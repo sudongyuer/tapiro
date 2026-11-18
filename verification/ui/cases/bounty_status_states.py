@@ -3,8 +3,8 @@
 secondary ink, the 出发了 step done with 预计 … 到, the old time 原来是 … drawn struck through (a continuous ink run across
 the line, unlike the ETA line above it), 阿杰 … 改了时间, the 点完成 step current, no pinned button and the ⋯ menu.
 Poster, done: 等你确认 and the confirm step's label in the warning colour with the warning symbol, the confirm step needs you with the auto-confirm date and 47–48 hours left, and 确认完成 and 有问题
-pinned below the list, at least 44 pt. Helper, disputed: 小林说有问题, the 完成 step needs you with the poster's reason
-and the 48-hour line, and 处理好了，再点完成 pinned. Scrolled to the end, the pay step and the rows below it stay above the
+pinned below the list, at least 44 pt. Helper, disputed: 小林说有问题, the 你点了完成 step stays done with its check and time,
+the next step reads 小林说有问题 and needs you with the poster's reason and the 48-hour line, and 处理好了，再点完成 pinned. Scrolled to the end, the pay step and the rows below it stay above the
 pinned actions, which float over the list with the system scroll edge effect. A first-load failure shows only the inline load-failed card
 (the row colour, not the urgent fill, 重试 on the card), and 重试 brings the timeline. A failed pull keeps the timeline under the refresh notice with the time of the data."""
 import re
@@ -211,9 +211,14 @@ restart('disputed', 'helper')
 assert label('bounty-status-summary') == ui.t('bounty.status.summary.helper.disputed', name='小林'), \
     label('bounty-status-summary')
 completed = step('completed')
-assert ui.t('bounty.status.note.reason', reason=REASON) in completed, completed
-assert ui.t('bounty.status.note.disputeHelper') in completed, completed
-assert completed.endswith(state('needsYou')), completed
+assert completed.startswith(ui.t('bounty.status.step.helper.completed')), completed
+assert re.search(CLOCK, completed), f'the 完成 step lost its time: {completed!r}'
+assert completed.endswith(state('done')), completed
+issue = step('confirmed')
+assert issue.startswith(ui.t('bounty.status.step.helper.fix', name='小林')), issue
+assert ui.t('bounty.status.note.reason', reason=REASON) in issue, issue
+assert ui.t('bounty.status.note.disputeHelper') in issue, issue
+assert issue.endswith(state('needsYou')), issue
 again = assert_pinned_below('bounty-status-action-completeAgain', '处理好了，再点完成')
 assert again.get('AXLabel') == ui.t('bounty.status.action.completeAgain'), again.get('AXLabel')
 ui.at_rest()

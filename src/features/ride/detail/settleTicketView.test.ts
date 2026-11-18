@@ -31,3 +31,27 @@ describe('the settled ticket (217 A, 218 A)', () => {
     expect(ticket?.cells.map((c) => c.value)).toContain(t('rideSettle.ticket.fareGrab'));
   });
 });
+
+describe('the organiser’s settling ticket (214 A)', () => {
+  test('equal shares show the Grab total, each and yours', () => {
+    const ticket = settleTicket(settleScene('paidSome', NOW), FIXTURE_VIEWER, NOW, t, 'zh-Hans');
+    expect(ticket?.cells.map((c) => c.key)).toEqual(['total', 'each', 'yours']);
+  });
+
+  test('unequal shares drop 每人 and keep the total and yours', () => {
+    const scene = settleScene('paidSome', NOW);
+    const settle = scene.settle;
+    if (!settle) throw new Error('paidSome has no split');
+    const uneven = {
+      ...scene,
+      settle: {
+        ...settle,
+        riders: settle.riders.map((r, i) =>
+          i === 0 ? { ...r, share: { ...r.share, minor: r.share.minor + 100 } } : r,
+        ),
+      },
+    };
+    const ticket = settleTicket(uneven, FIXTURE_VIEWER, NOW, t, 'zh-Hans');
+    expect(ticket?.cells.map((c) => c.key)).toEqual(['total', 'yours']);
+  });
+});

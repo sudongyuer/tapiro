@@ -37,6 +37,7 @@ const RIDE_ITEM = {
   to: 'KLIA2',
   departsAt: '2026-11-07T01:00:00+00:00',
   status: 'open' as const,
+  need: 2,
 };
 
 const THREAD = {

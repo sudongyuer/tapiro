@@ -41,7 +41,6 @@ export default {
       cancelled: 'Cancelled',
     },
     ride: {
-      open: 'Open',
       gathering: 'Meeting up',
       departed: 'On the way',
       arrived: 'Arrived · split the fare',

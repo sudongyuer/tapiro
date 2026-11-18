@@ -4,6 +4,7 @@ import {
   PlatformColor,
   StyleSheet,
   View,
+  type GestureResponderEvent,
   type LayoutChangeEvent,
 } from 'react-native';
 
@@ -29,7 +30,7 @@ export function BlockedFooter({
   bottom: number;
   busy: boolean;
   failed: boolean;
-  onUnblock: () => void;
+  onUnblock: (event: GestureResponderEvent) => void;
   onLayout: (event: LayoutChangeEvent) => void;
 }) {
   const { t } = useI18n();
@@ -86,7 +87,7 @@ export function BlockedFooter({
 
 const styles = StyleSheet.create({
   footer: {
-    backgroundColor: PlatformColor('systemBackground'),
+    backgroundColor: PlatformColor('systemGroupedBackground'),
     position: 'absolute',
     left: 0,
     right: 0,
