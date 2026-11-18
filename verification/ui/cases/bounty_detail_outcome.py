@@ -62,7 +62,7 @@ def stamp_ink(name):
     band = {'x': 0, 'y': title['y'] - STICKER_BAND, 'width': screen(items)['width'], 'height': STICKER_BAND}
     shot = ui.snap(name)
     assert_grouped_background(ui, shot, {'x': 0, 'y': title['y'], 'width': 12, 'height': title['height']}, name)
-    return ink_box(shot, band, token('--color-success', ui.appearance), 40)
+    return ink_box(shot, band, token('--color-paper-green', ui.appearance), 40)
 
 
 def progress_to_status(summary_key, shot):

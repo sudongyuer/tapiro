@@ -41,7 +41,7 @@ export function mapPins(
 ): MapPin[] {
   const stamp = {
     text: t('bounty.stamp'),
-    ink: String(token('--color-success', theme)),
+    ink: String(token('--color-paper-green', theme)),
     fill: String(token('--color-receipt', theme)),
   };
   const seen = new Set<string>();

@@ -35,6 +35,8 @@ export const vars = {
   '--color-card-calm': '#F4F0E6',
   '--color-on-card-calm': '#1C1C1E',
   '--color-ride': '#F5C8A0',
+  '--color-on-ride-urgent': '#A22818',
+  '--color-on-ride-warning': '#7A4A00',
 
   '--color-stage-urgent': '#FBE1D3',
   '--color-stage-live': '#F9E3CC',

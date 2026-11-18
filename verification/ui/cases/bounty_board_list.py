@@ -52,7 +52,7 @@ def column(f, left, width):
 
 def assert_stamp(shot, card, name):
     f = card['frame']
-    stamp = ink_box(shot, column(f, -STAMP_REACH, STAMP_REACH + 110), token('--color-success', ui.appearance), 40)
+    stamp = ink_box(shot, column(f, -STAMP_REACH, STAMP_REACH + 110), token('--color-paper-green', ui.appearance), 40)
     assert stamp and stamp['count'] >= STAMP_MIN, f'{name} has no 已申请 stamp: {stamp}'
     assert stamp['x'] >= f['x'], f'{name}: the stamp starts at {stamp["x"]:.1f} pt, left of the card edge {f["x"]} pt'
     right = stamp['x'] + stamp['width']

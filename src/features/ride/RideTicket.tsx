@@ -17,8 +17,8 @@ const MIN_ROUTE_SCALE = 0.55;
 
 const ink = token('--color-on-card-ride') as string;
 const TONE_INK = {
-  urgent: token('--color-urgent') as string,
-  warning: token('--color-warning') as string,
+  urgent: token('--color-on-ride-urgent') as string,
+  warning: token('--color-on-ride-warning') as string,
   plain: ink,
 };
 
