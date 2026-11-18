@@ -57,7 +57,7 @@ const imageOf = (kind: FixtureImageKind | undefined): ChatImage | null => {
 
 type Item =
   | Omit<Extract<ChatSubject, { kind: 'bounty' }>, 'kind' | 'status'>
-  | Omit<Extract<ChatSubject, { kind: 'ride' }>, 'kind' | 'status' | 'departsAt'>;
+  | Omit<Extract<ChatSubject, { kind: 'ride' }>, 'kind' | 'status' | 'departsAt' | 'need'>;
 
 const bounty = (
   title: string,
@@ -73,6 +73,7 @@ function subject(item: Item, now: Date): ChatSubject {
     ...item,
     departsAt: new Date(now.getTime() + 180 * MINUTE_MS).toISOString(),
     status: 'open',
+    need: 2,
   };
 }
 

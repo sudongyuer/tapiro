@@ -1,5 +1,5 @@
 begin;
-select plan(8);
+select plan(9);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -69,7 +69,7 @@ select pg_temp.act_as(pg_temp.u('a1'));
 select public.decide_ride_request('a2000000-0000-4000-8000-000000000009', pg_temp.u('c3'), true);
 
 select is(
-  pg_temp.listed_item('c3', 'ride') - 'departsAt',
+  pg_temp.listed_item('c3', 'ride') - 'departsAt' - 'need',
   '{"from": "双威", "to": "KLIA2", "status": "open"}'::jsonb,
   'a ride row carries the short route and the ride status'
 );
@@ -77,6 +77,10 @@ select is(
   (pg_temp.listed_item('c3', 'ride') ->> 'departsAt')::timestamptz,
   (select private.ride_departs_at(r) from public.rides r where r.id = 'a2000000-0000-4000-8000-000000000009'),
   'a ride row carries the departure time'
+);
+select is(
+  (pg_temp.listed_item('c3', 'ride') ->> 'need')::integer, 4,
+  'a ride row carries the open seats: six seats less the organiser and Chen'
 );
 
 update public.rides set depart_at = now() + interval '20 minutes'

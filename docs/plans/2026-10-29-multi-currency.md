@@ -66,6 +66,14 @@ sticker book have no plan of their own, so their choices are listed here. No amo
 | P5  | The payee's settled row keeps 「已结清 · 收到 RM 8.00」 and its second line is the errand title only; the payer's row is unchanged (PAY-09).                                                                                                                         | Keep the amount on the second line and drop it from the first. |
 | P6  | The rate footer ends with a full stop in zh-Hans, en and ms (PAY-12); method row amounts are SF Rounded like the header (PAY-13); celebration slots, badge, chip and ruled paper use continuous corners (PAY-11).                                                    | —                                                              |
 
+Owner rows of the same audit, decided under the owner's delegation (2026-11-17, ★ for veto):
+
+| #   | Choice (★ taken)                                                                                                                                                                                                                                                                                                 | Alternative                                       |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| P7  | After 还没收到 the payee's card says only 「已告诉小林还没收到。」; the 「24 小时后还没收到，可以举报（即将开放）」 line is removed in zh-Hans, en and ms until payment reporting exists, since it promised an action the app does not have (PAY-07).                                                            | Keep the line with 「即将开放」.                  |
+| P8  | A done card's handwritten caption keeps the board's size (HandArtQ2 97 A, 30 pt) and wraps to a second line; it no longer shrinks to fit one line, which put a long Latin name below the 15 pt title. The card keeps its fixed 380 pt height (PAY-06).                                                           | Shrink to one line as before.                     |
+| P9  | Not built: the landed celebration sticker keeps resting at 0.42 of the 170 pt flight art (about 71 pt) beside 44 pt older slots, because the final board draws exactly that (SettleCelebrateG `scale(0.42)` against 46 pt slots; PayWalkFixes 3A 66 against 40). The larger rest marks the new sticker (PAY-10). | Shrink it to the older slot's size after landing. |
+
 ## Contracts
 
 - **`currencies`**: rows `('MYR', 2, 'RM', true)` and `('CNY', 2, '¥', true)`.

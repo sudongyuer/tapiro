@@ -24,7 +24,12 @@ assert '¥' in ticket.get('AXLabel', '') and '267' in ticket.get('AXLabel', ''),
 within_screen(ui.read(), 'ride-form-ticket')
 ui.at_rest()
 shot = ui.snap('01-form-top')
-lines = ocr.find(ocr.lines_in(shot, ui.locale), r'\S', ui.element('ride-form-start')['frame'])
+row = ui.element('ride-form-start')['frame']
+# Vision sometimes reads the row's ○ marker into the second line's box, which then starts left of the row; text cannot
+# start there, so such a box is clamped to the row's edge and a right-shifted line still counts as drift.
+lines = [{**line, 'x': max(line['x'], row['x'])} for line in ocr.lines_in(shot, ui.locale)
+         if row['y'] <= line['y'] + line['height'] / 2 <= row['y'] + row['height']
+         and line['x'] + line['width'] > row['x'] and line['x'] < row['x'] + row['width']]
 name = sorted(lines, key=lambda line: line['y'])[:2]
 assert len(name) == 2, f'the start place should read on two lines: {[line["text"] for line in lines]}'
 drift = abs(name[0]['x'] - name[1]['x'])

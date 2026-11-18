@@ -1,12 +1,13 @@
 """A failed send (120 A): the first send fails (`-uiVerifyChatFail send`), so the bubble keeps its text with a red ! beside
 it (4 pt away) and reads 没发出去; nothing is sent again on its own. Tapping ! asks 「重发该消息？」 with 重发, 删除 and 取消; 重发 sends it
-once more under the same client id and the bubble turns plain without moving. Dark adds the bubble colours."""
+once more under the same client id and the bubble turns plain without moving. The thread is an everyday grouped screen
+(ChatPick1 118 A): grey ground, their bubble the grouped card colour. Dark adds the bubble colours."""
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from chat import bubbles, chat_calls, open_thread, tap_button  # noqa: E402
-from driver import UI, assert_colour, by_id, token  # noqa: E402
+from driver import UI, assert_colour, by_id, close, token  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
 DRAFT = '在大堂等你'
@@ -49,6 +50,9 @@ peer = next(b for b in bubbles(items) if b['AXUniqueId'] == 'chat-bubble-fixture
 theirs = shot.rgb(peer['frame']['x'] + 6, peer['frame']['y'] + peer['frame']['height'] / 2)
 ground = shot.rgb(2, peer['frame']['y'] + peer['frame']['height'] / 2)
 assert max(abs(a - b) for a, b in zip(theirs, ground)) >= 12, f'their bubble {theirs} melts into the ground {ground}'
+GROUPED = {'light': ((242, 242, 247), (255, 255, 255)), 'dark': ((0, 0, 0), (28, 28, 30))}[ui.appearance]
+assert close(ground, GROUPED[0]), f'the thread ground is {ground}, not systemGroupedBackground {GROUPED[0]}'
+assert close(theirs, GROUPED[1]), f'their bubble is {theirs}, not secondarySystemGroupedBackground {GROUPED[1]}'
 urgent = shot.count(retry['frame'], lambda rgb: abs(rgb[0] - token('--color-urgent', ui.appearance)[0]) < 30
                     and rgb[1] < 140)
 assert urgent > 40, f'the ! is not drawn in the urgent colour ({urgent} pixels)'
