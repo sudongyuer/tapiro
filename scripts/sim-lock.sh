@@ -89,7 +89,7 @@ first_ticket() {
 OWNERLESS_SINCE=""
 
 holder_stale_reason() {
-  local owner="$HELD/owner" pid since age
+  local owner="$HELD/owner" pid since age limit
   if [ ! -f "$owner" ]; then
     [ -n "$OWNERLESS_SINCE" ] || OWNERLESS_SINCE=$(now)
     if [ $(($(now) - OWNERLESS_SINCE)) -ge "$OWNERLESS_GRACE" ]; then
@@ -100,20 +100,22 @@ holder_stale_reason() {
   OWNERLESS_SINCE=""
   pid=$(field "$owner" pid)
   since=$(field "$owner" since)
+  limit=$(field "$owner" max_age)
   if ! alive "$pid"; then
     echo "holder $(field "$owner" name) pid $pid is gone"
     return
   fi
   age=$(($(now) - ${since:-0}))
-  if [ "$age" -gt "$MAX_AGE" ]; then
-    echo "holder $(field "$owner" name) held it ${age}s, over the max age of ${MAX_AGE}s"
+  limit=${limit:-$MAX_AGE}
+  if [ "$age" -gt "$limit" ]; then
+    echo "holder $(field "$owner" name) held it ${age}s, over the max age of ${limit}s"
   fi
 }
 
 take_lock() {
   local name="$1" pid="$2"
   mkdir "$HELD" 2>/dev/null || return 1
-  printf 'name=%s\npid=%s\nsince=%s\n' "$name" "$pid" "$(now)" >"$HELD/owner.tmp"
+  printf 'name=%s\npid=%s\nsince=%s\nmax_age=%s\n' "$name" "$pid" "$(now)" "$MAX_AGE" >"$HELD/owner.tmp"
   mv "$HELD/owner.tmp" "$HELD/owner"
 }
 
@@ -171,12 +173,13 @@ release() {
 }
 
 status() {
-  local t pid state
+  local t pid state limit
   init
   if [ -f "$HELD/owner" ]; then
     pid=$(field "$HELD/owner" pid)
     alive "$pid" && state=alive || state=gone
-    echo "held by $(field "$HELD/owner" name) (pid $pid, $state) for $(($(now) - $(field "$HELD/owner" since)))s"
+    limit=$(field "$HELD/owner" max_age)
+    echo "held by $(field "$HELD/owner" name) (pid $pid, $state) for $(($(now) - $(field "$HELD/owner" since)))s, max age ${limit:-$MAX_AGE}s"
   elif [ -d "$HELD" ]; then
     echo "held (owner record not written yet)"
   else

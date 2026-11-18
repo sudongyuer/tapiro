@@ -123,29 +123,43 @@ describe('sim-lock', () => {
   );
 
   test(
-    'takes over from a live holder past the max age, and not before',
+    'takes over from a live holder past the max age it declared, and not before',
     async () => {
       setup();
       const holder = sleeper();
       const other = sleeper();
-      expect(lock('acquire', 'a', '--pid', String(holder.pid)).code).toBe(0);
-      expect(
-        lock('acquire', 'b', '--pid', String(other.pid), '--timeout', '1', '--max-age', '100').code,
-      ).toBe(75);
+      expect(lock('acquire', 'a', '--pid', String(holder.pid), '--max-age', '2').code).toBe(0);
+      expect(lock('status').out).toContain('max age 2s');
+      expect(lock('acquire', 'b', '--pid', String(other.pid), '--timeout', '1').code).toBe(75);
       await Bun.sleep(2100);
-      const taken = lock(
+      const taken = lock('acquire', 'b', '--pid', String(other.pid), '--timeout', '5');
+      expect(taken.code).toBe(0);
+      expect(taken.err).toContain('over the max age of 2s');
+      expect(lock('status').out).toContain('held by b');
+    },
+    SLOW,
+  );
+
+  test(
+    'keeps a live holder that declared a long max age, whatever the waiter passes',
+    async () => {
+      setup();
+      const holder = sleeper();
+      const other = sleeper();
+      expect(lock('acquire', 'a', '--pid', String(holder.pid), '--max-age', '100').code).toBe(0);
+      await Bun.sleep(1100);
+      const refused = lock(
         'acquire',
         'b',
         '--pid',
         String(other.pid),
         '--timeout',
-        '5',
+        '2',
         '--max-age',
-        '1',
+        '0',
       );
-      expect(taken.code).toBe(0);
-      expect(taken.err).toContain('over the max age of 1s');
-      expect(lock('status').out).toContain('held by b');
+      expect(refused.code).toBe(75);
+      expect(lock('status').out).toContain('held by a');
     },
     SLOW,
   );

@@ -8,3 +8,9 @@ def hour_cycle_commands(udid, args):
     spawn = ['xcrun', 'simctl', 'spawn', udid, 'defaults', 'write', '-g']
     return [[*spawn, 'AppleICUForce24HourTime', '-bool', 'false' if twelve else 'true'],
             [*spawn, 'AppleICUForce12HourTime', '-bool', 'true' if twelve else 'false']]
+
+
+def with_hour_cycle(args, hours):
+    if hours == 12 and TWELVE_HOURS not in args:
+        return [*args, TWELVE_HOURS, 'YES']
+    return list(args)

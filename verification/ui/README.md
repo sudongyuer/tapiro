@@ -12,13 +12,15 @@ bun run verify:ui --affected  # cases whose DEPS meet the diff against main; zh-
 bun run verify:ui --affected --base main --dark --locales   # also dark, also en and each case's LOCALES
 bun run verify:full           # the full matrix: every case, light + dark, zh-Hans + en + every declared locale
 bun run verify:ui design_tokens --appearance dark   # named cases run zh-Hans; add --locales or --locale en
+bun run verify:ui ride_list --hour-cycle 12         # 12-hour time; every other run forces 24-hour per case
 bun run verify:clean
 ```
 
 When agents run in parallel, wrap every Simulator command in the shared queue, for example
 `scripts/sim-lock.sh run <agent-name> -- bun run verify:ui bounty_apply`. It serves waiters first come, first served,
-always releases when the command ends, and takes over a lock whose holder died or held it past 4 h
-(`TAPIRO_SIM_LOCK_MAX_AGE`); `scripts/sim-lock.sh status` shows the holder and the queue. The lock lives in
+always releases when the command ends, and takes over a lock whose holder died or held it past the max age the
+holder declared (`--max-age <s>`, default 4 h or `TAPIRO_SIM_LOCK_MAX_AGE`; `verify:full` takes about 12 h, so pass
+`--max-age 50400`); `scripts/sim-lock.sh status` shows the holder and the queue. The lock lives in
 `$TAPIRO_SIM_LOCK_DIR` (default `~/.cache/tapiro/sim-lock`), so worktrees share it. `acquire` alone binds the lock to
 the calling shell, which an agent's one-off tool shell leaves at once; use `run`.
 
