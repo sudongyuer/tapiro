@@ -58,6 +58,11 @@ def where(node):
            f"{f.get('width', 0):.0f}x{f.get('height', 0):.0f}"
 
 
+def repeated(label):
+    half = len(label) // 2
+    return len(label) % 2 == 1 and label[half] == ' ' and label[:half] == label[half + 1:]
+
+
 def ours(node):
     return bool(TEST_ID.match(node.get('AXUniqueId') or ''))
 
@@ -84,6 +89,8 @@ def problems(tree, allow=()):
             found.append(f'no VoiceOver label: {where(node)}')
         elif RAW_LABEL.match(label) or label == node.get('AXUniqueId'):
             found.append(f'label is an identifier, not words: {where(node)}')
+        elif repeated(label):
+            found.append(f'label says the same words twice (a field labelled with its own placeholder): {where(node)}')
         if not ours(node) or kind in SYSTEM_SIZED:
             continue
         if too_small(node, scale):

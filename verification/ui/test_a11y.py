@@ -29,6 +29,12 @@ class Problems(unittest.TestCase):
     def test_symbol_name_label_fails(self):
         self.assertIn('identifier', problems(screen(node('Button', 'close', 'xmark.circle')))[0])
 
+    def test_field_labelled_with_its_placeholder_fails(self):
+        found = problems(screen(node('TextArea', 'chat-composer-input', 'Mesej Mesej', 300, 44)))
+        self.assertEqual(len(found), 1)
+        self.assertIn('same words twice', found[0])
+        self.assertEqual(problems(screen(node('TextArea', 'ask-tapir-prompt', '问小貘 说一句话', 300, 44))), [])
+
     def test_small_target_fails(self):
         found = problems(screen(node('Button', 'ask-tapir-close', '关闭', 42, 42)))
         self.assertEqual(len(found), 1)
