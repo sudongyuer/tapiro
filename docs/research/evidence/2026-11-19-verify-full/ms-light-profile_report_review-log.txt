@@ -1,0 +1,57 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl content_size
+  0.2s simctl launch
+  0.8s axe describe-ui
+  0.7s axe describe-ui
+  1.5s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.6s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  2.9s axe touch -x 201 -y 571 --down --up --delay 1.2
+  1.4s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 00-menu
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  3.0s axe tap --label Laporkan --post-delay 0.5
+  4.0s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  3.2s axe tap --label Gangguan atau ugutan --post-delay 0.5
+  2.5s axe describe-ui
+  1.8s axe describe-ui
+tap retry: 'Gangguan atau ugutan': unchanged 4.5 s after tap 1; tapping again (retry 1 of 2)
+  3.1s axe tap --label Gangguan atau ugutan --post-delay 0.5
+  5.2s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/profile_report_review.py", line 29, in <module>
+    ui.tap_label(ui.t('chat.report.reason.harassment'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 197, in tap_label
+    tap_checked(self, repr(label), lambda: self.axe('tap', '--label', label, '--post-delay', '0.5'), find,
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/taps.py", line 92, in tap_checked
+    waited = quiet(ui, before, clock, sleep)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/taps.py", line 64, in quiet
+    after = ui.snapshot()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 113, in snapshot
+    self.state()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 102, in state
+    tree = json.loads(self.axe('describe-ui'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 94, in axe
+    raise AxeError(f'axe {" ".join(args)} failed: {error}')
+driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session
+  0.4s screenshot failure
+latency on Tapiro Verify 3: 37 commands, median 1.3 s, max 5.2 s (axe describe-ui), 0 timeouts

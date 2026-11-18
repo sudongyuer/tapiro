@@ -79,6 +79,8 @@ window = [picker_time(value) for value in values]
 dates = [value.partition(',')[2].strip() for value in values]
 assert dates[0] == dates[1], f'开始 and 结束 on one day write the date differently: {dates} (BP-13)'
 assert all(':' in shown for shown in window), f'the window pickers show no time: {window}'
+# The live card heads the form; in ms the longer rows leave it scrolled off, out of the tree.
+form_scroll_to(ui, 'bounty-post-live-text', up=True)
 ui.wait_label('bounty-post-live-text', lambda label: all(shown in plain(label) for shown in window),
               f'the live card does not write the picked times {window}')
 ui.capture('02-window')

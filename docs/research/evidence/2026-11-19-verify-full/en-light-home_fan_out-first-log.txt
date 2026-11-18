@@ -1,0 +1,90 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl content_size
+  0.1s simctl launch
+step 0: last card bottom 789, bar bottom 116, accessory False
+step 1: last card bottom 531, bar bottom 116, accessory False
+step 2: last card bottom 150, bar bottom 116, accessory False
+step 3: last card bottom 86, bar bottom 116, accessory True
+  0.9s axe describe-ui
+  0.7s axe describe-ui
+  1.2s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot 01-stacked
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.4s axe tap --id live-cards-toggle --post-delay 0.5
+  2.3s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  0.5s screenshot 02-fanned
+  1.0s axe describe-ui
+  6.9s axe drag --start-x 200 --start-y 650 --end-x 200 --end-y 350 --duration 1.5 --steps 80
+  1.8s axe describe-ui
+  1.3s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot 03-last-card-on-screen-0
+  0.9s axe describe-ui
+ 11.1s axe drag --start-x 200 --start-y 650 --end-x 200 --end-y 350 --duration 1.5 --steps 80
+  1.5s axe describe-ui
+  2.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.4s screenshot 03-last-card-on-screen-1
+  0.9s axe describe-ui
+  8.7s axe drag --start-x 200 --start-y 650 --end-x 200 --end-y 350 --duration 1.5 --steps 80
+  1.6s axe describe-ui
+  1.2s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot 03-last-card-on-screen-2
+  1.0s axe describe-ui
+  7.7s axe drag --start-x 200 --start-y 650 --end-x 200 --end-y 570 --duration 1.3333333333333333 --steps 40
+  2.8s axe describe-ui
+  1.3s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.4s screenshot 04-last-card-under-bar
+  1.1s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  2.8s axe swipe --start-x 200 --start-y 400 --end-x 200 --end-y 550 --duration 1.5
+  5.0s axe describe-ui
+  2.9s axe describe-ui
+  1.2s axe describe-ui
+  1.0s axe describe-ui
+  2.3s axe tap --id live-cards-toggle --post-delay 0.5
+  5.2s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/home_fan_out.py", line 107, in <module>
+    ui.tap('live-cards-toggle')
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 189, in tap
+    tap_checked(self, identifier, lambda: self.axe('tap', '--id', identifier, '--post-delay', '0.5'),
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/taps.py", line 92, in tap_checked
+    waited = quiet(ui, before, clock, sleep)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/taps.py", line 64, in quiet
+    after = ui.snapshot()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 113, in snapshot
+    self.state()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 102, in state
+    tree = json.loads(self.axe('describe-ui'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 94, in axe
+    raise AxeError(f'axe {" ".join(args)} failed: {error}')
+driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session
+  0.4s screenshot failure
+latency on Tapiro Verify 3: 67 commands, median 1.0 s, max 11.1 s (axe drag --start-x 200 --start-y 650 --end-x 200 --end-y 350 --duration 1.5 --steps 80), 0 timeouts

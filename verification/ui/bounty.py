@@ -254,15 +254,17 @@ def assert_preview(ui, title, amount, symbol='RM'):
 PUBLISHED_KEY = 'uiVerifyPublishedArgs'
 
 
-def form_scroll_to(ui, identifier, tries=6, container='bounty-post-form'):
+def form_scroll_to(ui, identifier, tries=6, container='bounty-post-form', up=False):
+    # Up drags are short and slow, so reaching the top of the form springs back instead of pulling the sheet down.
+    start, end, duration = (0.4, 0.65, 0.6) if up else (0.75, 0.4, 0.4)
     for _ in range(tries):
         items = ui.read()
         found, form = by_id(items, identifier), by_id(items, container)
         f = form['frame']
-        if found and found['frame']['y'] >= f['y'] + 100 and bottom(found) <= f['y'] + f['height'] - 40:
+        if found and found['frame']['y'] >= f['y'] + (0 if up else 100) and bottom(found) <= f['y'] + f['height'] - 40:
             return found
         x = f['x'] + f['width'] / 2
-        ui.swipe((x, f['y'] + f['height'] * 0.75), (x, f['y'] + f['height'] * 0.4), 0.4)
+        ui.swipe((x, f['y'] + f['height'] * start), (x, f['y'] + f['height'] * end), duration)
     return ui.element(identifier, timeout=5)
 
 
@@ -328,6 +330,8 @@ def paste_into(ui, identifier, text):
     # the new one (bounty_post_place, 2026-11-10 and 2026-11-13), so a stale paste is written and pasted once more.
     for attempt in range(2):
         copy_on_device(ui, text)
+        if attempt:
+            refresh_pasteboard(ui, identifier)
         paste_once(ui, identifier)
         try:
             ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text,
@@ -341,6 +345,16 @@ def paste_into(ui, identifier, text):
             print(f'paste_into: {identifier} reads {pasted!r} after pasting {text!r} (attempt {attempt + 1})', flush=True)
             if attempt == 1:
                 raise
+
+
+def refresh_pasteboard(ui, identifier):
+    # The retry pasted the same stale text again (A-12-03 for Sunway Pyramid 北门 and '   ' for Lin Mo, both attempts,
+    # 2026-11-18): the app keeps its own copy of the pasteboard while it stays active. Leaving it and coming back makes
+    # it read the pasteboard again; the running process keeps the screen.
+    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, 'com.apple.Preferences'], capture_output=True, timeout=60)
+    ui.gone(identifier)
+    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID], capture_output=True, timeout=60)
+    ui.element(identifier)
 
 
 def paste_once(ui, identifier):

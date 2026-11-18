@@ -30,10 +30,21 @@ HOLDER = 'TANMEILING'
 ui = UI(*sys.argv[1:])
 
 
+# Pad taps carry no check of their own, and under load some were lost (2 of 6 deletes and the 3 of 1234564821, ms,
+# 2026-11-18), so a field that reads wrong is cleared and typed once more.
 def typed(identifier, text):
-    ui.tap(identifier)
-    ui.type(text)
-    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text, f'{identifier} does not read {text!r}')
+    for attempt in range(2):
+        ui.tap(identifier)
+        if attempt:
+            ui.backspace(len((by_id(ui.read(), identifier) or {}).get('AXValue') or '') + 2)
+        ui.type(text)
+        try:
+            ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text,
+                    f'{identifier} does not read {text!r}', 10 if attempt == 0 else 30)
+            return
+        except AssertionError:
+            if attempt:
+                raise
 
 
 def pick_bank(label):

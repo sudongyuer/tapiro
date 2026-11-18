@@ -8,6 +8,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import paste_into  # noqa: E402
 from driver import UI, assert_appearance, assert_touch_target, bottom, by_id, close, sign_in_apple, token  # noqa: E402
 from halo import assert_title_halo  # noqa: E402
+from keys import backspace, type_text  # noqa: E402
 
 DEPS = [
     'src/features/account/',
@@ -21,6 +22,7 @@ DEPS = [
     'verification/ui/bounty.py',
     'verification/ui/pasteboard.swift',
     'verification/ui/halo.py',
+    'verification/ui/keys.py',
 ]
 
 LOCALES = ['zh-Hans', 'ms']
@@ -38,6 +40,16 @@ def value(identifier):
 
 def sign_in():
     sign_in_apple(ui)
+
+
+# One paste per launch: a second paste in the same launch sometimes inserted the pasteboard of the first although
+# pbpaste read the new text, on both of paste_into's attempts (2026-11-17, 2026-11-18), so the blank name is typed.
+def blank_name():
+    ui.tap('name-input', expect_change=False)
+    backspace(ui, 8)
+    type_text(ui, BLANK)
+    ui.wait(lambda items: (by_id(items, 'name-input') or {}).get('AXValue') == BLANK,
+            'name-input does not read the blank name')
 
 
 def open_me():
@@ -96,7 +108,7 @@ name_title = ui.labelled(ui.t('account.name.question'))['frame']
 name_bubble = ui.labelled(ui.t('account.name.greeting'))['frame']
 assert_title_halo(ui, ui.snap('02-name-prefilled'), name_title, 'name question')
 
-paste_into(ui, 'name-input', BLANK)
+blank_name()
 ui.tap('name-continue')
 ui.element('name-error')
 gap = keyboard_gap()
