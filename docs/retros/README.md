@@ -913,4 +913,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-18 | a11y contrast                           | 0                  | 1             | ~25 min (dark rerun, missed helper)              | 0                       | 0                     |
 | 2026-11-18 | a11y large text + labels                | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | a11y checks + tour                      | 0                  | 1             | ~40 min (40-case audit before the tour)          | 0                       | 0                     |
-| 2026-11-18 | ride ticket status wrap                 | 0                  | 0             | ~10 min (proof build)                            | 0                       | 0                     |
+| 2026-11-18 | ride ticket status wrap                 | 0                  | 1             | ~35 min (proof build, dot loop round)            | 0                       | 0                     |
