@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import cards, in_view, ink_box, screen, top_clear, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, luma, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
@@ -25,19 +25,16 @@ LOWER = 60
 KEPT = 3
 SELECTED_RATIO = 3
 SELECTED_MIN = 400
+LIGHT_SHARE = 0.25
 
 ui = UI(*sys.argv[1:])
 
 
-def token_pixels(shot, element, name):
+def accent_pixels(shot, element):
     f = element['frame']
     box = {'x': f['x'] - 6, 'y': f['y'] - 6, 'width': f['width'] + 12, 'height': f['height'] + 12}
-    found = ink_box(shot, box, token(name, ui.appearance), 8)
+    found = ink_box(shot, box, token('--color-accent', ui.appearance), 8)
     return found['count'] if found else 0
-
-
-def accent_pixels(shot, element):
-    return token_pixels(shot, element, '--color-accent')
 
 
 def assert_selected(name, view):
@@ -49,8 +46,9 @@ def assert_selected(name, view):
         f'{view} is not drawn as the selected sticker: {chosen} accent px against {other}'
     if ui.appearance == 'dark':
         unselected = by_id(items, f'bounty-view-{"map" if view == "list" else "list"}')
-        paper = token_pixels(shot, unselected, '--color-paper')
-        assert paper < SELECTED_MIN / 4, f'the unselected sticker is still paper in dark ({paper} px), close to the accent'
+        f = unselected['frame']
+        light = shot.count(f, lambda rgb: luma(rgb) > 200) / shot.count(f, lambda rgb: True)
+        assert light < LIGHT_SHARE, f'{light:.0%} of the unselected sticker is light in dark, as light as the accent one'
     print(f'{name}: {view} selected ({chosen} accent px against {other})')
 
 
