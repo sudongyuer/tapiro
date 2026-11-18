@@ -71,8 +71,8 @@ width = screen(ui.read())['width']
 for name, element in (('title', title), ('reward', reward)):
     f = element['frame']
     assert f['x'] >= EDGE and f['x'] + f['width'] <= width - EDGE, f'the {name} runs off the screen: {f}'
-completed = label('bounty-status-step-completed')
-assert REASON_START in completed and REASON_END in completed, f'the reason is cut: {completed!r}'
+issue = label('bounty-status-step-confirmed')
+assert REASON_START in issue and REASON_END in issue, f'the reason is cut: {issue!r}'
 ui.at_rest()
 ui.capture('01-poster-disputed-top')
 items = scroll_end(ui.read())

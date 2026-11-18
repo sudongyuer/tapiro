@@ -450,6 +450,7 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-17 | UI polish, bounty post        | 0                  | 6             | ~180 min (Simulator lock, helper reruns)         | 0                       | 0                     |
 | 2026-11-17 | UI polish, time format        | 0                  | 3             | ~14 h (Simulator lock held by verify-full)       | 0                       | 0                     |
 | 2026-11-17 | merge guard                   | 0                  | 0             | ~0                                               | 0                       | 0                     |
+| 2026-11-17 | UI polish, bounty owner rows  | 0                  | 1             | ~17 h (Simulator lock)                           | 0                       | 1 (P10, delegated)    |
 | 2026-11-17 | UI polish, owner rows         | 0                  | 2             | ~14 h (Simulator lock held by verify:full)       | 0                       | 0                     |
 | 2026-11-17 | UI polish, home + ask owner   | 0                  | 0             | Simulator lock wait                              | 0                       | 0                     |
 | 2026-11-17 | owner delegation              | 0                  | 0             | ~0                                               | 0                       | 0                     |

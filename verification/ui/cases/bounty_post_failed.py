@@ -1,15 +1,15 @@
 """A failed publish shows 没发出去，再试一次 and keeps the form filled; the second 发出去 (same draft) succeeds and closes
 the sheet. Started on confirm with the first status load failing, the cost shows 发布费没加载出来 with 重试 and no free
 line until 重试 loads it. When the server says the draft's id already went out (on publish, or found when the form
-opens), the draft is cleared and the form says 上次那条已经发出去了."""
+opens), the draft is cleared and the form says 上次那条已经发出去了 on the success fill (green tint), not the warning fill."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import DEMO_TITLE, assert_cost, close_sheet_by_swipe, open_confirm, open_post, relaunch, value  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, assert_colour, by_id, token  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
+        'src/ui/NoticeCard.tsx', 'src/ui/theme/tokens.ts', 'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyPublish', 'failOnce']
 BUDGET = 300
 
@@ -50,7 +50,9 @@ ui.wait_label('bounty-post-already-sent', lambda label: ui.t('bounty.post.form.a
               'the form does not say the last post already went out')
 ui.wait(lambda items: value(ui, 'bounty-post-title') == '' and value(ui, 'bounty-post-reward') == '',
         'the already-sent draft is still in the form')
-ui.capture('04-already-sent-on-publish')
+shot = ui.snap('04-already-sent-on-publish')
+assert_colour(shot, ui.element('bounty-post-already-sent')['frame'], token('--color-success-fill', ui.appearance),
+              'the already-sent notice')
 
 close_sheet_by_swipe(ui)
 relaunch(ui, drop=['-uiVerifyPublish', 'failOnce'], add=['-uiVerifyDraftSent', '1'])
@@ -58,5 +60,7 @@ open_post(ui)
 ui.wait_label('bounty-post-already-sent', lambda label: ui.t('bounty.post.form.alreadySent') in label,
               'opening a draft that was already published does not say so')
 ui.wait(lambda items: value(ui, 'bounty-post-title') == '', 'the published draft is still in the form')
-ui.capture('05-already-sent-on-open')
+shot = ui.snap('05-already-sent-on-open')
+assert_colour(shot, ui.element('bounty-post-already-sent')['frame'], token('--color-success-fill', ui.appearance),
+              'the already-sent notice')
 print('PASS: a failed publish keeps the draft and retries; a failed cost shows 重试; an already-sent draft is cleared')
