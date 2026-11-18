@@ -15,6 +15,7 @@ from pathlib import Path
 from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from hourcycle import hour_cycle_commands
 from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
@@ -39,6 +40,10 @@ KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # the lobby -> See lobby). Autocapitalisation is off too: with the software keyboard kept up, AXe's first key was
 # sometimes capitalised (parcel -> Parcel, 2026-11-17). Non-ASCII text is pasted instead.
 KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
+
+
+def locale_args(locale):
+    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale]]
 
 
 def sh(*args, **kwargs):
@@ -246,7 +251,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
-    for command in software_keyboard_commands(udid):
+    for command in [*software_keyboard_commands(udid), *hour_cycle_commands(udid, extra)]:
         subprocess.run(command, capture_output=True, timeout=30)
     reset_records(udid)
     video = out / 'run.mp4'
@@ -256,7 +261,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     )
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
-        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
+        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, *locale_args(locale),
         *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(zone))
     if stuck:
         status, message = 'fail', stuck

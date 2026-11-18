@@ -283,6 +283,14 @@ def reach_home(ui):
     ui.element('home-scroll')
 
 
+def plain(text):
+    return ' '.join((text or '').split())
+
+
+def picker_time(value):
+    return plain(value.split(',')[0])
+
+
 def by_id(items, identifier):
     return next((i for i in items if i.get('AXUniqueId') == identifier), None)
 

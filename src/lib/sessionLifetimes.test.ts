@@ -68,6 +68,7 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/features/ride/services.ts#closeSheet': 'kept: the mounted sheet',
   'src/features/stickers/bookView.ts#bookViewStore': 'account',
   'src/features/stickers/bookView.ts#seed': 'kept: a verify-mode seed',
+  'src/lib/deviceClock.ts#clockStyle': 'kept: the app language and the device hour cycle',
   'src/lib/drafts/inbox.ts#bountyDraftInbox': 'session',
   'src/lib/handArt/arrival.ts#pending': 'kept: a one-minute arrival mark for a bounty id',
   'src/lib/homeSignals.ts#liveCardsOnScreen': 'kept: home layout signal',
