@@ -50,7 +50,8 @@ def hour_cycle_commands(udid, args):
 KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # With no AppleKeyboards the app derives its keyboards from -AppleLanguages, so zh-Hans gets Pinyin and typed ASCII
 # becomes candidates; on the English keyboard prediction and autocorrection rewrite typed words (klia -> Kline, see you at
-# the lobby -> See lobby). Autocapitalisation stays on. Non-ASCII text is pasted instead.
+# the lobby -> See lobby). Autocapitalisation is off too: with the software keyboard kept up, AXe's first key was
+# sometimes capitalised (parcel -> Parcel, 2026-11-17). Non-ASCII text is pasted instead.
 KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
 
 
@@ -90,7 +91,8 @@ def keyboard_commands(udid):
         [*spawn, '-g', 'AppleKeyboards', '-array', *KEYBOARDS],
         [*spawn, KEYBOARD_PREFS, 'KeyboardsCurrentAndNext', '-array', KEYBOARDS[0], KEYBOARDS[0]],
         [*spawn, KEYBOARD_PREFS, 'KeyboardLastUsed', '-string', KEYBOARDS[0]],
-        *([*spawn, KEYBOARD_PREFS, key, '-bool', 'false'] for key in ('KeyboardPrediction', 'KeyboardAutocorrection')),
+        *([*spawn, KEYBOARD_PREFS, key, '-bool', 'false']
+          for key in ('KeyboardPrediction', 'KeyboardAutocorrection', 'KeyboardAutocapitalization')),
         *software_keyboard_commands(udid),
     ]
 

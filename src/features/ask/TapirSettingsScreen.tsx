@@ -9,6 +9,7 @@ import {
   Spacer,
   Text,
   Toggle,
+  ZStack,
 } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
@@ -18,6 +19,8 @@ import {
   disabled,
   foregroundStyle,
   frame,
+  hidden,
+  labelsHidden,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
@@ -161,7 +164,15 @@ function CloudSection({
         >
           <Text>{t('ask.settings.cloud')}</Text>
           <Spacer />
-          <ProgressView modifiers={[accessibilityLabel(t('ask.settings.withdrawing'))]} />
+          {/* A hidden switch with no height keeps the switch's width, so the label wraps as it does beside the switch
+          (ms) and the row keeps the spinner's height (zh-Hans); the rows below stay put. */}
+          <ZStack>
+            <Toggle
+              isOn
+              modifiers={[labelsHidden(), frame({ height: 0 }), hidden(), accessibilityHidden()]}
+            />
+            <ProgressView modifiers={[accessibilityLabel(t('ask.settings.withdrawing'))]} />
+          </ZStack>
         </HStack>
       ) : (
         <Toggle

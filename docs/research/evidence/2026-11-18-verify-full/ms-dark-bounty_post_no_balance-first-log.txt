@@ -1,0 +1,48 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl launch
+  0.9s axe describe-ui
+  0.7s axe describe-ui
+  1.3s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  2.3s axe tap --label Pasang Ganjaran --post-delay 0.5
+  1.7s axe describe-ui
+  1.7s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  2.8s axe tap --label Seterusnya --post-delay 0.5
+  2.1s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.7s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.7s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.8s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/bounty_post_no_balance.py", line 43, in <module>
+    assert_cost(ui, ui.t('bounty.post.cost.coin', balance=0))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/bounty.py", line 217, in assert_cost
+    return ui.wait_label('bounty-post-cost', lambda label: expected in label, f'cost row does not read {expected!r}')
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 176, in wait_label
+    return self.wait(
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 142, in wait
+    raise AssertionError(message)
+AssertionError: cost row does not read '1 syiling · baki 0'
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 35 commands, median 1.3 s, max 2.8 s (axe tap --label Seterusnya --post-delay 0.5), 0 timeouts
