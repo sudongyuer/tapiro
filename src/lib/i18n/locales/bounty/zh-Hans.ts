@@ -100,7 +100,7 @@ export default {
       tomorrowMorning: '明天上午',
       tomorrow: '明天',
       weekend: '这周末',
-      label: '截止时间选 {{name}}',
+      label: '截止时间：{{name}}',
     },
     form: {
       art: '配图：{{name}}',

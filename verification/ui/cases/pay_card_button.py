@@ -1,4 +1,5 @@
-"""The home pay card shows a 去付款 button instead of the slider; tapping the button (the card's only touch target) opens the pay sheet for that payment (付给阿杰, RM 15.00)."""
+"""The home pay card shows a 去付款 button instead of the slider; tapping the button (the card's only touch target) opens the pay sheet for that payment (付给阿杰, RM 15.00).
+VoiceOver reads the card as one sentence that ends with its footer, without the chevron's symbol name or the back face."""
 import re
 import sys
 
@@ -14,6 +15,8 @@ ui = UI(*sys.argv[1:])
 reach_home(ui)
 card = ui.settled(lambda items: by_id(items, 'live-card-oweMoney'), 'pay card missing')
 assert ui.t('home.card.pay.buttonLabel', amount='RM\u00a015') in (card.get('AXLabel') or ''), f'card label {card.get("AXLabel")!r}'
+spoken = card.get('AXLabel') or ''
+assert spoken.endswith(ui.t('home.card.pay.footer', name='阿杰')), f'the pay card reads past its footer: {spoken!r}'
 assert 'Button' in (card.get('role') or '') or 'button' in (card.get('role_description') or ''), card.get('role')
 ui.capture('01-card')
 # The card is one accessibility element whose action opens the sheet; a touch has to land on the 去付款

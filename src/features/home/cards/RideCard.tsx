@@ -61,7 +61,11 @@ export function RideCard({ detail }: { detail: RideDetail }) {
         <Stop label={t('home.card.ride.destination')} value={detail.destination} ink={ink} />
       </View>
       <View style={styles.bottom}>
-        <View style={styles.riders} accessible={false}>
+        <View
+          style={styles.riders}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {detail.riders.map((rider, index) => (
             <View
               key={`${rider}-${index}`}

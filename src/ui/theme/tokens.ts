@@ -226,6 +226,27 @@ export const typeRoles = [
 ] as const;
 export type TypeRole = (typeof typeRoles)[number];
 
+// React Native multiplies every size by the same factor (3.57 at AX5), while iOS text styles grow less the larger they
+// start. Each role stops at the size its iOS text style reaches at AX5 (UIFont.preferredFont on iOS 27.2), so body text
+// still reaches 53 pt and a 62 pt amount does not become 221 pt.
+const AX5_SIZE: Record<TypeRole, number> = {
+  wordmark: 60,
+  'amount-hero': 60,
+  amount: 60,
+  'amount-compact': 60,
+  'large-title': 60,
+  'moment-title': 58,
+  reward: 56,
+  title: 55,
+  body: 53,
+  secondary: 49,
+  meta: 44,
+};
+
+export function maxTextScale(role: TypeRole) {
+  return Math.max(1, AX5_SIZE[role] / vars[`--text-${role}`]);
+}
+
 export function typeStyle(role: TypeRole) {
   return {
     fontSize: vars[`--text-${role}`],

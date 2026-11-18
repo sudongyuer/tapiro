@@ -22,6 +22,9 @@ type AnimatedStyle = ComponentProps<typeof Animated.View>['style'];
 
 const BUBBLE_SLOP = { top: 6, bottom: 6 };
 const BUBBLE_COIN = 18;
+// The bubble lives in the fixed 200 pt stage and is hidden from VoiceOver (the strip reads its line); larger text would
+// push it over the title and the status bar.
+const BUBBLE_TEXT_SCALE = 1;
 const LEAF_IMAGE = require('@/assets/pantry/leaf.png');
 
 export function StageBody({
@@ -141,6 +144,7 @@ export function SpeechBubble({
             <View style={styles.coinLine} testID="stage-say-coin">
               <AppText
                 variant="secondary"
+                maxFontSizeMultiplier={BUBBLE_TEXT_SCALE}
                 style={[styles.say, { color: color('--color-on-stage') }]}
               >
                 {coin.lead}
@@ -148,6 +152,7 @@ export function SpeechBubble({
               <TapirCoin size={BUBBLE_COIN} />
               <AppText
                 variant="secondary"
+                maxFontSizeMultiplier={BUBBLE_TEXT_SCALE}
                 style={[styles.say, { color: color('--color-on-stage') }]}
               >
                 {coin.tail}
@@ -156,6 +161,7 @@ export function SpeechBubble({
           ) : (
             <AppText
               variant="secondary"
+              maxFontSizeMultiplier={BUBBLE_TEXT_SCALE}
               numberOfLines={BUBBLE_MAX_LINES}
               style={[styles.say, { color: color('--color-on-stage') }]}
             >

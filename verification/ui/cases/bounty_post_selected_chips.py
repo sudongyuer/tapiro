@@ -1,6 +1,7 @@
 """The chips picked in the post form read against their fill: with 取快递 open, a tapped amount and a tapped quick time
 fill with the accent and carry the on-accent label (WCAG 4.5:1, pixels, light and dark). The three quick times are one
 height (161A) and sit 12 pt from the hairlines around them, and the title field starts where the system 截止 row does.
+VoiceOver reads each quick time as 「截止时间：<time>」.
 Reached without typing, since
 AXe key events drop on iOS 27.2."""
 import sys
@@ -40,6 +41,10 @@ items = ui.read()
 assert_label_reads(ui.snap('02-time-selected'), by_id(items, pick)['frame'], f'selected {pick}', accent)
 picks = [i['AXUniqueId'] for i in items if str(i.get('AXUniqueId')).startswith('bounty-post-pick-time-')]
 assert len(picks) == 3, f'expected three quick times, found {picks}'
+for identifier in picks:
+    name = ui.t(f"bounty.post.timePick.{identifier.removeprefix('bounty-post-pick-time-')}")
+    spoken = by_id(items, identifier).get('AXLabel')
+    assert spoken == ui.t('bounty.post.timePick.label', name=name), f'{identifier} reads {spoken!r}'
 assert_chip_room(items, picks, 12, 'the quick times')
 assert_row_edges(ui, items, [], least=2)
 print('PASS: a picked amount and quick time read against the accent fill; the quick times are one height, clear of the hairlines')

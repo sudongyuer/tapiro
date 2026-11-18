@@ -1,6 +1,6 @@
 import { PlatformColor, StyleSheet, Text, type TextProps } from 'react-native';
 
-import { typeStyle, vars, type TypeRole } from './theme/tokens';
+import { maxTextScale, typeStyle, vars, type TypeRole } from './theme/tokens';
 
 type Tone = 'label' | 'secondaryLabel' | 'tertiaryLabel';
 
@@ -31,10 +31,17 @@ export type AppTextProps = TextProps & {
   tone?: Tone;
 };
 
-export function AppText({ variant, tone = 'label', style, ...rest }: AppTextProps) {
+export function AppText({
+  variant,
+  tone = 'label',
+  style,
+  maxFontSizeMultiplier = maxTextScale(variant),
+  ...rest
+}: AppTextProps) {
   return (
     <Text
       {...rest}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
       style={[
         typeStyle(variant),
         { fontWeight: WEIGHTS[variant], color: PlatformColor(tone) },

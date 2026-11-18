@@ -295,6 +295,13 @@ Dynamic Type defaults at the Large setting (Apple HIG, Typography → Specificat
 with the user's text size. Acceptance runs at Large; there are no separate layouts for
 accessibility sizes.
 
+Each role stops growing at the size its iOS text style reaches at the largest accessibility size (AX5): wordmark,
+amounts and large title at 60 pt (Large Title), moment title 58 (Title 1), reward 56 (Title 2), title 55 (Title 3),
+body 53 (Body), secondary 49 (Subheadline), meta 44 (Footnote). `AppText` sets `maxFontSizeMultiplier` from
+`maxTextScale` in `src/ui/theme/tokens.ts`; React Native would otherwise multiply every size by 3.57 at AX5. 小貘's
+speech bubble on the home stage stays at the Large size: it is part of the fixed 200 pt illustration, and VoiceOver
+reads its line from the strip and the stage button. `bun run verify:ui <cases> --text-size ax5` audits a screen at AX5.
+
 | Token                                | Value              | Role                                                         |
 | ------------------------------------ | ------------------ | ------------------------------------------------------------ |
 | `--font-sans`                        |                    | System (PingFang SC / SF Pro)                                |

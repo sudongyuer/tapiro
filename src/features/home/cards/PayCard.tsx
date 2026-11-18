@@ -63,7 +63,14 @@ export function PayCard({ detail }: { detail: PayDetail }) {
         <CardText variant="meta" ink={ink} muted style={styles.footerText} numberOfLines={2}>
           {t('home.card.pay.footer', { name: detail.payee })}
         </CardText>
-        <SymbolView name="chevron.right" size={12} tintColor={ink} style={styles.chevron} />
+        <SymbolView
+          name="chevron.right"
+          size={12}
+          tintColor={ink}
+          style={styles.chevron}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
       </View>
     </LiveCard>
   );
