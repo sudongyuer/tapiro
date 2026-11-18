@@ -1,5 +1,7 @@
 import type { TFunction } from 'i18next';
 
+import { localClock } from '@/lib/deviceClock';
+
 import type { TimeChoice } from './types';
 
 const DAY_MS = 86_400_000;
@@ -22,11 +24,7 @@ export function timeParts(iso: string, language: string, now: Date): TimeParts {
       day: 'numeric',
       weekday: 'short',
     }).format(at),
-    clock: new Intl.DateTimeFormat(language, {
-      hour: '2-digit',
-      minute: '2-digit',
-      hourCycle: 'h23',
-    }).format(at),
+    clock: localClock(at.getTime(), language),
   };
 }
 

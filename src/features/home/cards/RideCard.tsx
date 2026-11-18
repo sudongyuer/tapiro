@@ -77,18 +77,6 @@ export function RideCard({ detail }: { detail: RideDetail }) {
             </View>
           ))}
         </View>
-        <View
-          accessible
-          accessibilityRole="button"
-          accessibilityState={{ disabled: true }}
-          accessibilityLabel={t('home.card.ride.arrive')}
-          accessibilityHint={t('home.soon')}
-          style={[styles.arrive, { backgroundColor: ink }]}
-        >
-          <AppText variant="secondary" style={[styles.arriveText, { color: surface }]}>
-            {t('home.card.ride.arrive')}
-          </AppText>
-        </View>
       </View>
     </LiveCard>
   );
@@ -169,12 +157,4 @@ const styles = StyleSheet.create({
   },
   overlap: { marginLeft: -vars['--space-2'] },
   initial: { fontWeight: '800' },
-  arrive: {
-    minHeight: vars['--touch-min'],
-    paddingHorizontal: vars['--space-5'],
-    borderRadius: vars['--radius-pill'],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  arriveText: { fontWeight: '700' },
 });

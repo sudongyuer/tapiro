@@ -7,8 +7,13 @@ import {
 
 export type MostUrgent = { item: TabAccessoryItem; more: number };
 
-export function pickMostUrgent(items: readonly AccessoryItem[]): MostUrgent | null {
-  const shown = items.filter(inTabAccessory);
+export function pickMostUrgent(
+  items: readonly AccessoryItem[],
+  onScreen: string | null = null,
+): MostUrgent | null {
+  const shown = items.filter(
+    (item): item is TabAccessoryItem => inTabAccessory(item) && item.bounty?.target !== onScreen,
+  );
   let best: TabAccessoryItem | null = null;
   for (const item of shown) {
     if (!best || accessoryPriority(item.kind) < accessoryPriority(best.kind)) best = item;

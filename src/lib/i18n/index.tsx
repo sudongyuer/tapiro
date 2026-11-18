@@ -1,8 +1,9 @@
-import { getLocales } from 'expo-localization';
+import { getLocales, useCalendars } from 'expo-localization';
 import { createInstance } from 'i18next';
 import { useCallback, type ReactNode } from 'react';
 import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
 
+import { setClockStyle } from '../deviceClock';
 import { FALLBACK_LANGUAGE, LANGUAGES, isLanguage, type Language } from './languages';
 import { resolveLanguage } from './resolve';
 import { resources } from './resources';
@@ -33,7 +34,18 @@ export function initI18n() {
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  return <I18nextProvider i18n={initI18n()}>{children}</I18nextProvider>;
+  return (
+    <I18nextProvider i18n={initI18n()}>
+      <ClockStyle>{children}</ClockStyle>
+    </I18nextProvider>
+  );
+}
+
+function ClockStyle({ children }: { children: ReactNode }) {
+  const { language } = useI18n();
+  const [calendar] = useCalendars();
+  setClockStyle(language, calendar.uses24hourClock !== false);
+  return children;
 }
 
 export function useI18n() {

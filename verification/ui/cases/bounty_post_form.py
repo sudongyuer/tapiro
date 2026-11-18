@@ -3,7 +3,7 @@ shows the first missing field; typing "parcel" guesses 代取 and marks it 按�
 the reward, and the type row keeps 代取 on one line beside the mark (ms wrapped it); the category menu lists all eight types and a manual choice (代排, then back to 代取) drops the mark; the reward card
 suggests RM 5–8 under the amount (160A) and its amounts sit 16 pt above the card's bottom; the title field is labelled
 for VoiceOver and starts on the system row edge, where the hairlines start too;
-a reward of 0 or 501 is out of range; the RM 8 button fills the field; a valid form reaches
+a reward of 00 or 501 is out of range; the RM 8 button fills the field; a valid form reaches
 确认发布, whose card shows the category under 「悬赏板上会这样显示」 (155A). Scrolled content passes under the bar
 without a hard edge. The form sits on the grouped background and every control it touches is 44 pt.
 A 20-key burst typed with no delay lands in full and the title counter stays hidden below 50 characters."""
@@ -77,7 +77,7 @@ pick_category(ui, 'pickup')
 items = ui.wait(lambda items: by_id(items, 'bounty-post-reward-suggest') and items, 'the reward card suggests nothing')
 assert_reward_card(ui, items, SUGGESTED, [5, 6, 8, 10])
 assert_row_edges(ui, items, ['bounty-post-title'])
-for wrong in ('0', '501'):
+for wrong in ('00', '501'):
     typed(ui, 'bounty-post-reward', wrong)
     next_step(ui)
     assert_error(ui, 'bounty.post.error.rewardRange', **REWARD_RANGE_TEXT)

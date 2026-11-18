@@ -1,0 +1,87 @@
+device: Tapiro Verify (A5CC377F-F7C4-4AC8-9AE2-269111818C19)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl launch
+PROBE a-default-focused: reward AXValue='0' error=None pad=False return=False
+PROBE a-default-hid-typed: reward AXValue='0' error=None pad=False return=False
+PROBE a-default-after-next: reward AXValue='0' error='填一下赏金' pad=False return=False
+PROBE b-hw-focused: reward AXValue='0' error=None pad=False return=False
+PROBE b-hw-hid-typed: reward AXValue='0' error=None pad=False return=False
+PROBE b-hw-after-next: reward AXValue='0' error='填一下赏金' pad=False return=False
+PROBE pad present in b; tapping 7 on the pad
+PASS: probe
+  0.8s axe describe-ui
+  0.7s axe describe-ui
+  1.3s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.3s axe tap --label 发悬赏 --post-delay 0.5
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  2.4s axe tap --id bounty-post-pick-free --post-delay 0.5
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe tap -x 362 -y 339 --post-delay 0.5
+  0.8s axe type Parcel
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe tap -x 362 -y 502 --post-delay 0.5
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  0.4s screenshot a-default-focused
+  1.2s axe describe-ui
+  0.3s axe key-sequence --keycodes 34 --delay 0.08
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot a-default-hid-typed
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  2.8s axe tap --label 下一步 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  0.4s screenshot a-default-after-next
+  1.2s axe describe-ui
+  0.9s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.2s axe tap --label 发悬赏 --post-delay 0.5
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  2.4s axe tap --id bounty-post-pick-free --post-delay 0.5
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.8s axe tap -x 362 -y 339 --post-delay 0.5
+  1.6s axe type Parcel
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe tap -x 362 -y 502 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot b-hw-focused
+  1.3s axe describe-ui
+  0.3s axe key-sequence --keycodes 34 --delay 0.08
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot b-hw-hid-typed
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  2.9s axe tap --label 下一步 --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  0.4s screenshot b-hw-after-next
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+latency on Tapiro Verify: 76 commands, median 1.2 s, max 2.9 s (axe tap --label 下一步 --post-delay 0.5), 0 timeouts
