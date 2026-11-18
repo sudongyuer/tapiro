@@ -15,6 +15,13 @@ bun run verify:ui design_tokens --appearance dark   # named cases run zh-Hans; a
 bun run verify:clean
 ```
 
+When agents run in parallel, wrap every Simulator command in the shared queue, for example
+`scripts/sim-lock.sh run <agent-name> -- bun run verify:ui bounty_apply`. It serves waiters first come, first served,
+always releases when the command ends, and takes over a lock whose holder died or held it past 4 h
+(`TAPIRO_SIM_LOCK_MAX_AGE`); `scripts/sim-lock.sh status` shows the holder and the queue. The lock lives in
+`$TAPIRO_SIM_LOCK_DIR` (default `~/.cache/tapiro/sim-lock`), so worktrees share it. `acquire` alone binds the lock to
+the calling shell, which an agent's one-off tool shell leaves at once; use `run`.
+
 The runner owns three named Simulators, `Tapiro Verify`, `Tapiro Verify 2` and `Tapiro Verify 3` (iPhone 17 Pro,
 newest iOS runtime that offers it, skipping device-specific ones), creates each once if missing, and hands the runs to them from one queue; `--workers N` sets how many
 it uses, and `--udid` runs on one given Simulator. Before booting more than one it checks that the disk holding the
