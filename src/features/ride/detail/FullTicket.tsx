@@ -58,7 +58,13 @@ export function FullTicket({
         </View>
         <View style={styles.statusRow}>
           <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
-          <AppText variant="meta" numberOfLines={1} style={[styles.status, { color: toneInk }]}>
+          <AppText
+            variant="meta"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={MIN_ROUTE_SCALE}
+            style={[styles.status, { color: toneInk }]}
+          >
             {view.status}
             {view.time ? (
               <AppText variant="meta" style={styles.dot}>
