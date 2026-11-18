@@ -7,7 +7,7 @@ import { askConfirm, pressAnchor, type ConfirmAnchor } from '@/ui/confirm';
 
 import type { AskSessionState } from './askSession';
 import { bellyMood, draftWaitsOnTop, isHungry, type Belly } from './belly';
-import { BellyBar } from './BellyBar';
+import { BellyBar, BellyRowSpace } from './BellyBar';
 import { liveBelly, type ConsentState } from './consentStore';
 import { usePantry } from './hooks';
 import { HungryCard } from './HungryCard';
@@ -67,9 +67,15 @@ export function useBellySlots({
     !draftWaitsOnTop(session?.turns ?? [], session?.failed != null);
   const toldHungry = !belly && session?.failed?.reason === 'hungry';
   const showCard = motion.flying || hungryNow || toldHungry;
+  // Holding the row's height while the belly loads keeps the field and its mic from moving under the finger.
+  const loadingBelly = consent.status.status === 'idle' || consent.status.status === 'loading';
 
   return {
-    bar: belly ? <BellyBar belly={belly} progress={motion.progress} /> : null,
+    bar: belly ? (
+      <BellyBar belly={belly} progress={motion.progress} />
+    ) : loadingBelly ? (
+      <BellyRowSpace />
+    ) : null,
     notice:
       belly && bellyMood(belly) === 'low' ? (
         <AppText variant="secondary" tone="secondaryLabel" testID="ask-belly-low">

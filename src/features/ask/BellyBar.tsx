@@ -78,7 +78,12 @@ export function BellyBar({ belly, progress }: { belly: Belly; progress: SharedVa
   );
 }
 
+export function BellyRowSpace() {
+  return <View style={styles.space} testID="ask-belly-space" />;
+}
+
 const styles = StyleSheet.create({
+  space: { height: ROW_HEIGHT },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

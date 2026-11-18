@@ -13,6 +13,7 @@ from driver import UI, by_id, reach_home  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/ask.tsx', 'src/lib/drafts/',
         'src/lib/i18n/locales/ask/', 'verification/ui/ask.py', 'verification/ui/bounty.py']
+LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
         '-uiVerifyAiDelayMs', '8000', '-uiVerifyAiReplies', 'answer,clarify,draft']

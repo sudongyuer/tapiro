@@ -85,7 +85,7 @@ export function AskTapirSheet({
         />
       </Stack.Toolbar>
       {/* No automatic inset for the bar: the sheet's own header sits in the bar's row beside the close button, keeping
-          the half detent's room for the field and the hungry card's buttons. */}
+          the first detent's room for the field and the hungry card's buttons. */}
       <ScrollView
         ref={scroll}
         contentInsetAdjustmentBehavior="never"
