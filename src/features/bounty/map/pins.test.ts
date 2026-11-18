@@ -132,6 +132,7 @@ describe('mapPins', () => {
     );
     expect(pin.applied).toBe(false);
     expect(pin.a11yLabel).toContain('name:bounty.board.card.applied');
-    expect(pin.stamp.ink).toBe('#3ECF8E');
+    expect(pin.stamp.ink).toBe('#187A50');
+    expect(pin.stamp.fill).toBe('#FFFFFF');
   });
 });

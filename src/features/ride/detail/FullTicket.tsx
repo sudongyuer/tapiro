@@ -24,8 +24,8 @@ const CELL_MIN_SCALE = 0.5;
 
 const ink = token('--color-on-card-ride') as string;
 const TONE_INK = {
-  urgent: token('--color-urgent') as string,
-  warning: token('--color-warning') as string,
+  urgent: token('--color-on-ride-urgent') as string,
+  warning: token('--color-on-ride-warning') as string,
   plain: ink,
 };
 
@@ -143,12 +143,15 @@ function Stamp({
       onLayout={(event) => onWidth(event.nativeEvent.layout.width)}
       style={[
         styles.stamp,
-        { borderColor: color('--color-success'), backgroundColor: color('--color-receipt') },
+        { borderColor: color('--color-paper-green'), backgroundColor: color('--color-receipt') },
         landing,
       ]}
       testID={kind === 'settled' ? 'ride-detail-stamp-settled' : 'ride-detail-stamp'}
     >
-      <AppText variant="secondary" style={[styles.stampText, { color: color('--color-success') }]}>
+      <AppText
+        variant="secondary"
+        style={[styles.stampText, { color: color('--color-paper-green') }]}
+      >
         {kind === 'settled' ? t('rideSettle.ticket.stamp') : t('ride.detail.applied.stamp')}
       </AppText>
     </Animated.View>

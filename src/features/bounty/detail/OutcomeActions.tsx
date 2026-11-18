@@ -105,7 +105,7 @@ export function NotSelectedActions({
           testID="bounty-detail-not-selected-note"
           style={styles.centred}
         >
-          <AppText variant="meta" tone="tertiaryLabel">
+          <AppText variant="meta" tone="secondaryLabel">
             {t('bounty.detail.notSelected.yourNote')}
           </AppText>
           {` ${note}`}

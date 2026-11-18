@@ -33,7 +33,7 @@ def detail_stamp(name):
     title = by_id(items, 'bounty-detail-title')['frame']
     s = screen(items)
     band = {'x': 0, 'y': title['y'] - STICKER_BAND, 'width': s['width'], 'height': STICKER_BAND}
-    found = ink_box(ui.snap(name), band, token('--color-success', ui.appearance), 40)
+    found = ink_box(ui.snap(name), band, token('--color-paper-green', ui.appearance), 40)
     return by_id(items, 'bounty-detail-stamp'), found
 
 
