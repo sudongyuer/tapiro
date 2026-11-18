@@ -19,10 +19,10 @@ class KeyboardCommandsTest(unittest.TestCase):
         self.assertEqual(value, ['-array', 'en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji'])
         self.assertFalse(any('Pinyin' in part for command in keyboard_commands(UDID) for part in command))
 
-    def test_turns_off_prediction_and_autocorrection_but_keeps_autocapitalisation(self):
+    def test_turns_off_prediction_autocorrection_and_autocapitalisation(self):
         self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardPrediction'), [['-bool', 'false']])
         self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardAutocorrection'), [['-bool', 'false']])
-        self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardAutocapitalization'), [])
+        self.assertEqual(writes('com.apple.keyboard.preferences', 'KeyboardAutocapitalization'), [['-bool', 'false']])
 
     def test_keeps_the_software_keyboard_up_after_typed_hid_keys(self):
         self.assertEqual(writes('com.apple.keyboard.preferences', 'AutomaticMinimizationEnabled'), [['-bool', 'false']])

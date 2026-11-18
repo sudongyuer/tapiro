@@ -7,7 +7,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import DEMO_TITLE, assert_cost, assert_pinned, assert_preview, open_confirm  # noqa: E402
+from bounty import DEMO_TITLE, assert_cost, assert_pinned, assert_preview, form_scroll_to, open_confirm  # noqa: E402
 from coins import tap_price, assert_packs  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
@@ -40,7 +40,6 @@ def sheet_items(tree):
 
 
 open_confirm(ui)
-assert_cost(ui, ui.t('bounty.post.cost.coin', balance=0))
 body = re.compile(ui.pattern('bounty.post.noBalance.body', date=r'\S.*\S'))
 ui.wait_label('bounty-post-no-balance', lambda label: ui.t('bounty.post.noBalance.title') in label
               and body.search(label) and ui.t('bounty.post.noBalance.earn') in label, 'the 还差 1 貘币 notice is incomplete')
@@ -56,6 +55,9 @@ below = [i for i in items if i.get('type') == 'Button' and bar <= i['frame']['y'
 assert [i.get('AXUniqueId') for i in below] == ['bounty-post-publish'], f'unexpected actions in the pinned bar: {below}'
 
 ui.element('bounty-post-packs-buy-5', timeout=30)
+# In ms the longer notice puts the cost row under the packs below the fold, where the form leaves it out of the tree.
+form_scroll_to(ui, 'bounty-post-cost', container='bounty-post-confirm')
+assert_cost(ui, ui.t('bounty.post.cost.coin', balance=0))
 items = assert_packs(ui, 'bounty-post-packs')
 card = by_id(items, 'bounty-post-no-balance')['frame']
 first = by_id(items, 'bounty-post-packs-buy-5')['frame']

@@ -38,7 +38,7 @@ export function ReviewSheet({
   const face = useRef<ViewInstance>(null);
   const name = pairName(pair, t);
   const sheet = useReviewSheet(pair, target, face, name);
-  const { draft, update, outcome, busy, frozen, line } = sheet;
+  const { draft, update, outcome, busy, frozen, locked, line } = sheet;
   const [placed, setPlaced] = useState(false);
   const seal = useSealClock(outcome !== null && (placed || outcome.revealed), !outcome?.revealed);
   const revealedNow = outcome?.revealed === true || pair.state === 'revealed';
@@ -58,7 +58,7 @@ export function ReviewSheet({
       {outcome ? null : (
         <Stack.Toolbar placement="left">
           <Stack.Toolbar.Button disabled={busy} onPress={onClose}>
-            {t('reputation.sheet.cancel')}
+            {t(locked ? 'reputation.sheet.close' : 'reputation.sheet.cancel')}
           </Stack.Toolbar.Button>
         </Stack.Toolbar>
       )}
@@ -99,17 +99,32 @@ export function ReviewSheet({
             onPick={(next) => update(pickFace(draft, pair.role, next))}
           />
           {draft.face ? (
-            <ReviewDetails draft={draft} role={pair.role} disabled={frozen} onChange={update} />
+            <ReviewDetails
+              draft={draft}
+              role={pair.role}
+              disabled={frozen}
+              locked={locked}
+              onChange={update}
+            />
           ) : null}
           <View style={styles.actions}>
-            {line ? (
+            {line && locked ? (
+              <AppText
+                variant="secondary"
+                tone="secondaryLabel"
+                style={styles.subtitle}
+                testID="review-failed"
+              >
+                {t(`reputation.sheet.${line}`)}
+              </AppText>
+            ) : line ? (
               <InlineState
                 tone="warning"
                 text={t(`reputation.sheet.${line}`)}
                 testID="review-failed"
               />
             ) : null}
-            {draft.face ? (
+            {draft.face && !locked ? (
               <PillButton
                 label={t('reputation.sheet.submit')}
                 loading={busy}

@@ -6,6 +6,8 @@ const en: typeof zhHans = {
   freePosts: '{{left}} of {{total}} free posts left this month',
   empty: 'No activity yet',
   failed: 'Didn’t load',
+  historyFailed: 'Activity didn’t load',
+  historyFailedBody: 'Tap Try Again or pull down to load it again. Your balance isn’t affected.',
   retry: 'Try Again',
   stale: 'Couldn’t refresh · Showing your coins from last time',
   loading: 'Loading coins',

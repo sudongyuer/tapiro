@@ -1,0 +1,53 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl launch
+selected RM 8: fill (37, 35, 43), label contrast 15.51:1
+selected bounty-post-pick-time-withinHour: fill (37, 35, 43), label contrast 15.51:1
+  5.6s axe describe-ui
+  1.3s axe describe-ui
+  1.7s axe describe-ui
+  3.1s axe tap --label Post a Bounty --post-delay 0.5
+  3.3s axe describe-ui
+  1.9s axe describe-ui
+  1.6s axe describe-ui
+  2.7s axe tap --id bounty-post-pick-pickup --post-delay 0.5
+  1.7s axe describe-ui
+  1.6s axe describe-ui
+  1.8s axe describe-ui
+  1.5s axe describe-ui
+  1.7s axe describe-ui
+  3.8s axe tap --id bounty-post-amount-8 --post-delay 0.5
+  2.9s axe describe-ui
+  1.9s axe describe-ui
+  1.7s axe describe-ui
+  0.5s screenshot frame
+  0.4s screenshot frame
+  1.9s axe describe-ui
+  2.4s axe describe-ui
+  0.4s screenshot 01-amount-selected
+  1.8s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  3.2s axe tap --id bounty-post-add-time --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  2.8s axe tap --id bounty-post-pick-time-withinHour --post-delay 0.5
+  1.2s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  0.4s screenshot 02-time-selected
+  1.4s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/bounty_post_selected_chips.py", line 40, in <module>
+    assert len(picks) == 3, f'expected three quick times, found {picks}'
+AssertionError: expected three quick times, found ['bounty-post-pick-time-withinHour', 'bounty-post-pick-time-tomorrowNoon']
+  0.4s screenshot failure
+latency on Tapiro Verify 3: 44 commands, median 1.5 s, max 5.6 s (axe describe-ui), 0 timeouts

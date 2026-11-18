@@ -3,8 +3,10 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
 import { IDLE_LOAD } from '@/lib/loadable';
+import { useI18n } from '@/lib/i18n';
 
 import { shownTierDrop, type MeState } from './meStore';
+import { standingOf } from './profile/profileView';
 import { cardKey, listKey, type ProfilesState } from './profileStore';
 import type { ReviewsState } from './reviewStore';
 import { followReputation, meStore, profileStore, reviewStore } from './services';
@@ -105,6 +107,19 @@ export function useTierDrop() {
     if (userId) meStore.loadTierDrop();
   }, [userId]);
   return useMe(shownTierDrop);
+}
+
+export function useMyStanding(userId: string | null) {
+  const { t } = useI18n();
+  const signedIn = useProfiles((state) => state.userId);
+  useFocusEffect(
+    useCallback(() => {
+      if (signedIn && userId) return profileStore.openProfile(userId);
+    }, [signedIn, userId]),
+  );
+  const card = useProfiles((state) => (userId ? state.cards[userId] : undefined));
+  const mine = useMyMascot();
+  return standingOf(card, mine, t);
 }
 
 export function useMyMascot() {

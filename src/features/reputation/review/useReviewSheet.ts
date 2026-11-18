@@ -125,6 +125,7 @@ export function useReviewSheet(
     outcome,
     busy,
     frozen: busy || final !== null,
+    locked: !busy && final !== null,
     line,
     ready: canSend(draft, base, pair) && !busy && !final,
   };

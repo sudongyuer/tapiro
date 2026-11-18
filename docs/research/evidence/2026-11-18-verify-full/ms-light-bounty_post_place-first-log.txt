@@ -1,0 +1,153 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl launch
+paste_into: bounty-post-place-label reads 'Sunway Pyramid 北门' after pasting 'Sunway Geo 宿舍' (attempt 1)
+  0.9s axe describe-ui
+  0.7s axe describe-ui
+  1.8s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  2.3s axe tap --label Pasang Ganjaran --post-delay 0.5
+  2.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe swipe --start-x 201 --start-y 671 --end-x 201 --end-y 387 --duration 0.4
+  2.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot 01-no-place
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  2.9s axe tap --id bounty-post-add-place --post-delay 0.5
+  2.4s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  0.9s axe key-sequence --keycodes 22,24,17,26,4,28 --delay 0.08
+  2.5s axe describe-ui
+  0.4s screenshot 02-search
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  3.0s axe tap --id place-search-result-0 --post-delay 0.5
+  2.0s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  3.2s axe swipe --start-x 201 --start-y 671 --end-x 201 --end-y 387 --duration 0.4
+  3.2s axe describe-ui
+  4.0s axe describe-ui
+  3.8s axe describe-ui
+  1.5s axe describe-ui
+  2.1s axe describe-ui
+  0.6s screenshot 03-picked
+  2.6s axe describe-ui
+  3.5s axe describe-ui
+  4.1s axe describe-ui
+  2.2s axe describe-ui
+  1.3s axe describe-ui
+  2.7s axe describe-ui
+  2.6s axe describe-ui
+  2.1s axe describe-ui
+  1.8s axe describe-ui
+  4.7s axe tap -x 178 -y 385 --post-delay 0.5
+  2.7s axe describe-ui
+  1.8s axe describe-ui
+  2.8s axe tap -x 312 -y 385 --post-delay 0.5
+  4.2s axe describe-ui
+  3.4s axe describe-ui
+  3.1s axe describe-ui
+  2.9s axe tap -x 252 -y 337 --post-delay 0.5
+  3.4s axe describe-ui
+  2.3s axe describe-ui
+  2.3s axe tap -x 207 -y 337 --post-delay 0.5
+  2.4s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.6s axe describe-ui
+  1.7s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  2.1s axe tap -x 178 -y 385 --post-delay 0.5
+  2.5s axe describe-ui
+  1.4s axe describe-ui
+  2.0s axe tap -x 312 -y 385 --post-delay 0.5
+  2.6s axe describe-ui
+  1.3s axe describe-ui
+  2.0s axe tap -x 312 -y 385 --post-delay 0.5
+  2.6s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  2.3s axe tap -x 234 -y 337 --post-delay 0.5
+  2.5s axe describe-ui
+  1.5s axe describe-ui
+  2.6s axe tap -x 207 -y 337 --post-delay 0.5
+  2.8s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  2.3s axe describe-ui
+  3.8s axe tap -x 350 -y 786 --post-delay 0.5
+  4.0s axe describe-ui
+  0.6s screenshot 04-edited
+  2.0s axe describe-ui
+  3.4s axe describe-ui
+  1.9s axe describe-ui
+  1.9s axe describe-ui
+  1.6s axe describe-ui
+  4.0s axe tap --id bounty-post-remove-place --post-delay 0.5
+  3.6s axe describe-ui
+  3.4s axe describe-ui
+  2.9s axe describe-ui
+  0.7s screenshot 05-removed
+  2.1s axe describe-ui
+  2.2s axe describe-ui
+  2.1s axe describe-ui
+  1.7s axe describe-ui
+  1.5s axe describe-ui
+  3.6s axe tap --id bounty-post-add-place --post-delay 0.5
+  2.5s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  2.9s axe tap --id place-search-current --post-delay 0.5
+  2.5s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe swipe --start-x 201 --start-y 671 --end-x 201 --end-y 387 --duration 0.4
+  2.8s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  0.4s screenshot 06-current-location
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.8s axe describe-ui
+  1.9s axe tap -x 178 -y 385 --post-delay 0.5
+  4.5s axe describe-ui
+  3.6s axe describe-ui
+  4.5s axe tap -x 312 -y 385 --post-delay 0.5
+  3.9s axe describe-ui
+300.0s case bounty_post_place TIMEOUT
+--- CPU sample at timeout (top, second sample, %cpu) ---
+SimRenderServer and SimRenderingServices are not among the 20 busiest processes
+  0.5s screenshot failure
+latency on Tapiro Verify 3: 147 commands, median 1.7 s, max 300.0 s (case bounty_post_place), 1 timeouts

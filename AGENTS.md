@@ -14,9 +14,11 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 2026-11-03).
 
 - Reply to the owner in Chinese, including progress notes and reports; code, paths and identifiers stay as they are.
-- Decide UI details with your own ★ recommendation and record each in the spec's decisions table for veto. Ask only
-  when a choice changes direction, conflicts with an approved spec, or touches money, privacy or a paid service.
-  Reason: 40+ carpool questions were all answered 「都按推荐」 (2026-11-02).
+- The owner handed over what Tapiro is for and how it is built (2026-11-17): decide product direction, scope, UI,
+  copy and architecture yourself, record each choice with its reason in the spec or plan's decisions table, and list
+  them in reports for veto. Still ask before the items in the merge rule below (paid services, accounts or
+  certificates, deletes, force-push, the hosted Supabase project) and before publishing anything outside the repo.
+  Reason: the owner said the codebase is ours to decide (2026-11-17), after 40+ questions were answered 「都按推荐」.
 - A question goes at the end of the turn's final message with its context and numbered options; afterwards name it
   by number only (「第 N 题待定」) until the summary for the owner's return.
 - An open choice the owner would see or feel is drawn as Tapiro screens on the design canvas
@@ -31,6 +33,8 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   `scripts/merge-when-green.sh <pr>`, never `gh pr merge` directly. Reason: `checks --watch; merge` and a watch that
   returned before any check registered merged two PRs before CI finished (2026-11-17). Ask before paid services,
   accounts or certificates, deletes, force-push and the hosted Supabase project.
+- Website changes (`website/`) deploy after merge with `cd website && bunx wrangler deploy` from the updated main
+  checkout and are checked live afterwards. Reason: the owner allowed it (2026-11-17).
 - One review round per step; fix every finding at once and re-review only after an Important or Critical finding.
 - When the owner is away, continue into the next step with the ★ options and list them for veto in the return
   summary.
@@ -241,7 +245,8 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
   `--affected` lists candidates; it is not the selection. Reason: a runner change selected all 72 cases (79 min) and the
   planned milestone ran every case in dark, en and ms whatever had changed (user, 2026-10-28).
   - Logic only: unit tests; no UI case.
-  - A screen's layout or copy: that screen's cases, zh-Hans light; add `ms` when its copy can be long.
+  - A screen's layout or copy: that screen's cases in zh-Hans light and in `ms` (`en` for a case without `ms`), as
+    `--affected` picks them for a changed `.tsx`. Reason: two #152 faults showed only in en and ms (2026-11-18).
   - Colours, tokens, or a surface drawn over other content: those screens' cases in dark as well.
   - New or changed copy keys: `en` for the cases that show them.
   - Runner or driver: the runner's unit tests, smoke, and one case per touched helper.

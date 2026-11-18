@@ -26,15 +26,24 @@ def type_text(ui, text):
         ui.axe('type', text)
 
 
-def on_pad(ui):
+# A pad can rise seconds after the focus (7 s on Tapiro Verify, 2026-11-18), and pad taps sent before it is up land on
+# the form behind (bounty_post_form opened 选地点). The check waits for the pad's Delete key or a Return key; with
+# neither after the timeout it still takes the pad, which is often on screen but missing from the tree, so a pad entry
+# can cost the whole timeout.
+def on_pad(ui, timeout=8):
     seen = []
 
     def check(items):
-        seen.append(not any(i.get('AXUniqueId') == 'Return' for i in items))
-        return len(seen) > 1 and seen[-1] == seen[-2] or None
+        ids = {i.get('AXUniqueId') for i in items}
+        pad = 'Delete' in {i.get('AXLabel') for i in items if i.get('type') == 'Button'} and 'Return' not in ids
+        seen.append('pad' if pad else 'keys' if 'Return' in ids else None)
+        return seen[-1] and len(seen) > 1 and seen[-1] == seen[-2] or None
 
-    ui.wait(check, 'the keyboard never settled', 10)
-    return seen[-1]
+    try:
+        ui.wait(check, 'no keyboard', timeout)
+    except AssertionError:
+        return True
+    return seen[-1] == 'pad'
 
 
 def keypad(ui, text):

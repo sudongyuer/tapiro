@@ -199,6 +199,7 @@ export default {
       settledUnnamed: '对方收到钱了，这单办成啦',
       bounty: '{{title}} · {{line}}',
       live: '有事在进行，小貘帮你盯着',
+      unavailable: '付款信息没加载出来，下拉再试一次',
       calm: '今天没事…要发个悬赏吗',
     },
     stage: {
@@ -211,7 +212,6 @@ export default {
       collapseHint: '把卡片叠起来',
       peekHint: '摊开全部卡片',
     },
-    soon: '这一步还没开放',
     card: {
       waiting: { tag: '等对方确认' },
       settled: {
@@ -246,7 +246,6 @@ export default {
         countdownLabel: '还有 {{time}} 出发',
         meet: '集合点',
         destination: '目的地',
-        arrive: '我到了',
       },
       owed: {
         tag: '等你确认',

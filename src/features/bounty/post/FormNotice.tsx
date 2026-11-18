@@ -17,7 +17,7 @@ export function FormNotice({
   if (notice === 'alreadySent') {
     return (
       <NoticeCard
-        tone="warning"
+        tone="success"
         icon="checkmark.circle.fill"
         title={t('bounty.post.form.alreadySent')}
         testID="bounty-post-already-sent"

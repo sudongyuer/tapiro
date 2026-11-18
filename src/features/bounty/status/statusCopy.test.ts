@@ -83,8 +83,9 @@ describe('status copy', () => {
 
   test('the helper reads the poster’s reason when disputed', async () => {
     const detail = await detailOf('disputed', 'helper');
-    const completed = timeline(detail, 'helper').steps[2];
-    expect(completed.lines.map((line) => lineText(line, zh))).toEqual([
+    const issue = timeline(detail, 'helper').steps[3];
+    expect(stepText(issue, zh)).toBe('小林说有问题');
+    expect(issue.lines.map((line) => lineText(line, zh))).toEqual([
       `「${FIXTURE_REASON}」`,
       '处理好后再点完成，重新算 48 小时',
     ]);
@@ -155,7 +156,7 @@ describe('status copy', () => {
 
   test('the worst case keeps the whole reason and both long names', async () => {
     const detail = await detailOf('disputed', 'helper', 'worst');
-    const reason = timeline(detail, 'helper').steps[2].lines[0];
+    const reason = timeline(detail, 'helper').steps[3].lines[0];
     expect([...WORST_REASON].length).toBe(140);
     expect(lineText(reason, zh)).toBe(`「${WORST_REASON}」`);
     expect(summaryText(detail, 'helper', zh.t)).toBe(

@@ -1,0 +1,24 @@
+device: Tapiro Verify (A5CC377F-F7C4-4AC8-9AE2-269111818C19)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl launch
+  4.2s axe describe-ui
+  0.7s axe describe-ui
+  1.4s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.5s screenshot 01-preselected
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  2.8s axe tap --id pay-number-copy --post-delay 0.5
+  0.9s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/pay_sheet_duitnow.py", line 36, in <module>
+    copy(ui, 'pay-number', '0123456789')
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/pay_sheet_duitnow.py", line 23, in copy
+    assert board == expected, f'{row} copy left {board!r} on the pasteboard, not {expected!r}'
+AssertionError: pay-number copy left 'pay-sheet-duitnow-sentinel' on the pasteboard, not '0123456789'
+  0.4s screenshot failure
+latency on Tapiro Verify: 15 commands, median 0.9 s, max 4.2 s (axe describe-ui), 0 timeouts

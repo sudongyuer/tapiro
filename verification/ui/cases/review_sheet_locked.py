@@ -1,5 +1,6 @@
-"""The review went public while the sheet was open (`submitLocked` on an edit): the refusal reads 评价已经公开，不能再改了, the
-form shows what went public rather than the edit, nothing is live, and closing asks nothing."""
+"""The review went public while the sheet was open (`submitLocked` on an edit): the refusal reads 评价已经公开，不能再改了 as a
+plain line, the sheet shows what went public read-only (only the picked chips, no field, no count, no 提交), and 关闭 closes
+without asking."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -21,11 +22,15 @@ ui.tap('review-submit')
 ui.element('review-failed', timeout=20)
 assert ui.t('reputation.sheet.locked') in label(ui, 'review-failed')
 items = ui.read()
-assert by_id(items, 'review-chip-on_time').get('AXValue') == 'checkbox, checked', 'the sheet shows the edit, not what went public'
-assert not enabled(ui, 'review-submit'), '提交 is on for a public review'
-assert not enabled(ui, 'review-chip-careful' if by_id(items, 'review-chip-careful') else 'review-chip-on_time'), 'a chip is live'
+chips = [i for i in items if (i.get('AXUniqueId') or '').startswith('review-chip-')]
+shown = sorted(i['AXUniqueId'] for i in chips)
+assert shown == ['review-chip-good_company', 'review-chip-on_time'], f'the sheet shows {shown}, not the two chips that went public'
+live = [i['AXUniqueId'] for i in chips if 'checkbox' in (i.get('AXValue') or '') or i.get('type') == 'Button']
+assert not live, f'chips still look pickable on a public review: {live}'
+for gone in ('review-submit', 'review-count', 'review-sentence'):
+    assert by_id(items, gone) is None, f'{gone} is still shown on a review that can no longer change'
 ui.at_rest()
 shot(ui, '01-locked')
-ui.tap_label(ui.t('reputation.sheet.cancel'))
+ui.tap_label(ui.t('reputation.sheet.close'))
 ui.gone(SHEET)
 print('PASS: a review gone public shows as it is, locked, and closing asks nothing')
