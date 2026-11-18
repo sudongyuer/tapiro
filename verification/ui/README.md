@@ -36,6 +36,9 @@ only; paste other text with `bounty.paste_into`, or seed it through a launch arg
 `keys.py` types it. Lower-case letters, digits and spaces go as paced HID keys: an unpaced space from `axe type`
 repeated, and the keyboard turned the double space into 「. 」 (「see you. at the lobby」). On iOS 27.2 the number, decimal and phone pads drop AXe's HID keys (6 of 6, also after waiting), so digits
 go to the on-screen pad keys, and `ui.backspace` to its delete key, whenever the keyboard lists no Return key.
+`keys.on_pad` first waits up to 8 s for the pad's Delete key or a Return key: a pad rose 7 s after the focus on
+`Tapiro Verify` and earlier taps opened the row behind (2026-11-18). The pad is often on screen without being in the
+tree, so such an entry costs the whole 8 s and then taps the pad anyway.
 A pad has no Return key, and the forms that hold one (and the place search results) dismiss the keyboard as soon as
 they scroll, so `bounty.dismiss_keyboard(ui, container)` makes a short upward held drag on the form, as a person would;
 a downward drag at the top of a sheet's form pulls the sheet closed instead (seen once in `bounty_post_optional`).
@@ -49,13 +52,14 @@ user-authenticated paste, so iOS asks for permission and the field stays empty.
 Every time it prepares a Simulator (the owned ones, `--udid`, and after each reboot), the runner writes the keyboard
 settings with `simctl spawn <udid> defaults write` (`keyboard_commands` in `run.py`, `python3 -m unittest
 test_keyboard`): global `AppleKeyboards` is US English plus emoji, `com.apple.keyboard.preferences` makes US English
-current (`KeyboardsCurrentAndNext`, `KeyboardLastUsed`) and turns off `KeyboardPrediction` and
-`KeyboardAutocorrection`. It also writes `AutomaticMinimizationEnabled` and `HardwareKeyboardLastSeen` false, and writes the two again before each case launches (`software_keyboard_commands`), since a case that types sets them back: AXe's typed HID keys count as a hardware keyboard, and a Simulator that had seen one kept the software keyboard minimised at the next focus (2026-11-17: `Tapiro Verify` and `Tapiro Verify 3` had both keys at 1 and `review_sheet` found no keyboard there three times; `Tapiro Verify 2` had neither and showed it). A new Simulator has no `AppleKeyboards`, so the app derives its keyboards from
+current (`KeyboardsCurrentAndNext`, `KeyboardLastUsed`) and turns off `KeyboardPrediction`,
+`KeyboardAutocorrection` and `KeyboardAutocapitalization` (with the software keyboard kept up, the first typed key was
+sometimes capitalised: `parcel` read `Parcel` in ten 问小貘 runs on 2026-11-17). It also writes `AutomaticMinimizationEnabled` and `HardwareKeyboardLastSeen` false, and writes the two again before each case launches (`software_keyboard_commands`), since a case that types sets them back: AXe's typed HID keys count as a hardware keyboard, and a Simulator that had seen one kept the software keyboard minimised at the next focus (2026-11-17: `Tapiro Verify` and `Tapiro Verify 3` had both keys at 1 and `review_sheet` found no keyboard there three times; `Tapiro Verify 2` had neither and showed it). A new Simulator has no `AppleKeyboards`, so the app derives its keyboards from
 `-AppleLanguages (zh-Hans)` and gets Pinyin, which turns typed ASCII into candidates; on the English keyboard,
 prediction and autocorrection rewrite words (`klia` became `Kline`). The settings apply to the next app launch without
 a reboot; `simctl erase` drops them, and the next run writes them again. Simulators run headless, so there is no
-hardware keyboard: the software keyboard shows, and AXe's typed keys are not autocapitalised, so type text in the case
-it should read. Text with a capital goes through unpaced `axe type`, which sometimes leaves its last key held long
+hardware keyboard: the software keyboard shows, and with autocapitalisation off AXe's keys arrive as typed, so type
+text in the case it should read. Text with a capital goes through unpaced `axe type`, which sometimes leaves its last key held long
 enough for iOS's press-and-hold accent menu (「ł ļ ľ」 for `l`); the menu is modal and swallows the next touch, so text
 followed by a tap the case depends on (the 问小貘 prompt before 发送) is lower case and goes through paced HID keys.
 Cases launch in `zh-Hans` (`-AppleLanguages`). The language order is zh-Hans > en > ms:

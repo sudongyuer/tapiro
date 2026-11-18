@@ -1,0 +1,43 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl launch
+  1.0s axe describe-ui
+  0.7s axe describe-ui
+  1.4s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  2.3s axe tap --id tab-me --post-delay 0.5
+  1.6s axe describe-ui
+  1.0s axe describe-ui
+  2.5s axe tap --id me-tapir --post-delay 0.5
+  1.6s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.4s axe tap --id tapir-memory-row --post-delay 0.5
+  1.6s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.8s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 01-failed
+  0.8s axe describe-ui
+  0.8s axe describe-ui
+  0.8s axe describe-ui
+  2.1s axe tap --id memory-retry --post-delay 0.5
+  1.5s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 02-long
+  0.9s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/ask_memory_worst.py", line 48, in <module>
+    assert len(value) == 2, f'the long value is not read as two lines: {value}'
+AssertionError: the long value is not read as two lines: [{'text': 'Sunway Geo', 'x': 269.9842914688674, 'y': 338.45647190960136, 'width': 96.63709513346357, 'height': 19.238218943277957}, {'text': 'Residences Tower...', 'x': 214.1835005215671, 'y': 359.41319149902955, 'width': 153.73206583658856, 'height': 19.306432723998995}, {'text': 'Sunway Geo', 'x': 269.9842914688674, 'y': 338.45647190960136, 'width': 96.63709513346357, 'height': 19.238218943277957}, {'text': 'Residences Tower...', 'x': 214.1835005215671, 'y': 359.4131921348124, 'width': 153.73206583658856, 'height': 19.306432088216145}]
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 36 commands, median 0.9 s, max 2.5 s (axe tap --id me-tapir --post-delay 0.5), 0 timeouts

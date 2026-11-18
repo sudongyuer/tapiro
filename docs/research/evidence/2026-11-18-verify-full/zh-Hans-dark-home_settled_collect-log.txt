@@ -1,0 +1,32 @@
+device: Tapiro Verify (A5CC377F-F7C4-4AC8-9AE2-269111818C19)
+time zone: Asia/Kuala_Lumpur
+  0.4s simctl appearance
+  0.2s simctl launch
+collect-flight: 0.00s tab=0.00 card=1.00, 1.33s tab=0.00 card=1.00, 1.37s tab=0.00 card=1.00, 1.41s tab=0.00 card=0.00, 1.44s tab=0.00 card=0.00, 1.48s tab=0.00 card=0.00, 1.51s tab=0.00 card=1.00, 1.54s tab=0.00 card=1.00, 1.58s tab=0.00 card=1.00, 1.61s tab=0.00 card=1.00, 1.64s tab=0.00 card=1.00, 1.93s tab=0.00 card=1.00, 1.96s tab=0.00 card=1.00, 1.99s tab=0.00 card=1.00, 2.03s tab=0.00 card=1.00, 2.06s tab=0.00 card=1.00, 2.09s tab=0.00 card=1.00, 2.13s tab=0.00 card=1.00, 2.16s tab=0.00 card=1.00, 2.19s tab=0.00 card=1.00, 2.23s tab=0.00 card=1.00, 2.26s tab=0.00 card=1.00, 2.29s tab=0.00 card=1.00, 2.33s tab=0.00 card=1.00, 2.36s tab=0.00 card=1.00, 2.39s tab=0.00 card=1.00, 2.42s tab=0.00 card=1.00, 2.46s tab=0.00 card=1.00, 2.49s tab=0.32 card=1.00, 2.52s tab=0.36 card=1.00, 2.58s tab=0.86 card=1.00, 2.61s tab=0.32 card=0.64, 2.65s tab=0.32 card=0.00, 2.68s tab=0.37 card=0.00, 2.71s tab=0.37 card=0.00, 2.75s tab=0.71 card=0.00, 2.78s tab=0.27 card=0.00, 2.81s tab=0.09 card=0.00, 2.85s tab=0.09 card=0.00, 2.88s tab=0.05 card=0.00, 2.91s tab=0.01 card=0.00, 2.95s tab=0.06 card=0.00, 2.98s tab=0.00 card=0.00, 3.01s tab=0.00 card=0.00, 3.06s tab=0.00 card=0.00, 3.09s tab=0.00 card=0.00, 3.12s tab=0.00 card=0.00, 3.59s tab=0.00 card=0.00, 3.62s tab=0.00 card=0.00, 3.66s tab=0.00 card=0.00, 3.69s tab=0.00 card=0.00, 3.73s tab=0.00 card=0.00, 3.76s tab=0.00 card=0.00, 3.79s tab=0.00 card=0.00, 3.83s tab=0.00 card=0.00, 3.86s tab=0.00 card=0.00, 3.89s tab=0.00 card=0.00, 3.93s tab=0.00 card=0.00
+board offset 2.49s 45pt (err 1), 2.52s 45pt (err 1), 2.58s 45pt (err 1), 2.61s 27pt (err 13), 2.65s 17pt (err 2), 2.68s 10pt (err 17), 2.71s 6pt (err 14), 2.75s 4pt (err 5), 2.78s 2pt (err 10), 2.81s 1pt (err 13), 2.85s 1pt (err 13), 2.88s 0pt (err 11), 2.91s 0pt (err 5), 2.95s 0pt (err 2), 2.98s 0pt (err 1), 3.01s 0pt (err 1), 3.06s 0pt (err 1), 3.09s 0pt (err 1), 3.12s 0pt (err 1), 3.59s 0pt (err 1), 3.62s 0pt (err 1), 3.66s 0pt (err 1), 3.69s 0pt (err 1), 3.73s 0pt (err 1), 3.76s 0pt (err 1)
+collect-flight: card change 2.58s 0.08, 2.61s 0.31, 2.65s 0.46, 2.68s 0.58, 2.71s 0.68, 2.75s 0.76, 2.78s 0.85, 2.81s 0.91, 2.85s 0.95, 2.88s 0.97
+  1.6s axe describe-ui
+  2.7s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  0.5s screenshot 01-before
+  1.2s axe describe-ui
+  1.0s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.0s axe describe-ui
+  1.6s axe tap -x 201 -y 431 --post-delay 0.5
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.3s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/home_settled_collect.py", line 179, in <module>
+    assert span >= LEAVE_MIN_S, f'the card left in {span:.2f}s, not over the agreed 320 ms'
+AssertionError: the card left in 0.20s, not over the agreed 320 ms
+  0.4s screenshot failure
+latency on Tapiro Verify: 22 commands, median 1.1 s, max 2.7 s (axe describe-ui), 0 timeouts

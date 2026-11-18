@@ -17,7 +17,8 @@ DEPS = [
 
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'empty', '-uiVerifySignedIn', 'onboarded']
-BUDGET = 260
+# Each pad entry may wait 8 s for a pad the tree does not list (keys.on_pad); 260 s ran out with three (2026-11-18).
+BUDGET = 300
 ERRORS = {
     'bank': 'payee.form.error.bankEmpty',
     'account': 'payee.form.error.accountInvalid',
