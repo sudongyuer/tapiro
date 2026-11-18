@@ -57,7 +57,7 @@ export function AskInput({ composer, prompt }: { composer: AskComposer; prompt: 
       </PressDim>
       <TextInput
         testID="ask-tapir-prompt"
-        accessibilityLabel={t(prompt)}
+        accessibilityLabel={t('shell.ask.title')}
         style={[styles.prompt, { color: PlatformColor('label') }]}
         placeholder={placeholder}
         placeholderTextColor={PlatformColor('placeholderText')}
