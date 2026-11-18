@@ -52,7 +52,9 @@ function RootStack() {
           name="ask"
           options={{
             presentation: 'formSheet',
-            sheetAllowedDetents: [0.5, 1],
+            // Not 0.5: 自己填 under 「接着上次」 must stay whole when en and ms wrap the header's subtitle; at 0.5 even
+            // zh-Hans had only 5 pt to spare.
+            sheetAllowedDetents: [0.56, 1],
             sheetGrabberVisible: true,
             headerShown: true,
             title: '',
