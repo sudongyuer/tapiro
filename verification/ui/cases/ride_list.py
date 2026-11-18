@@ -2,9 +2,13 @@
 each a compact 椰糖杏 ticket with a 每人约 · taken/seats stub. Markers: urgent 「n 分钟后出发 · 集合中」, the organiser's
 「我发起的 · 1 人申请」 (both status lines in the ticket inks that read 4.8:1 on the peach, not the status colours), a
 neutral 「已满」 ticket and the airport line 「航班 09:10 起飞 · 2 件大行李」. The nav-bar ＋ is
-shown, 「去过的 · 2 趟」 closes 我的拼车, and a ticket pushes the ride detail with the same route and flight."""
+shown, 「去过的 · 2 趟」 closes 我的拼车, and a ticket pushes the ride detail with the same route and flight. The
+departure time stays whole and left of the stub; when the status and the time do not fit one line (long copy, AX5)
+the time wraps under the status, and the AX5 run checks exactly that."""
+import os
 import re
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 import ocr  # noqa: E402
@@ -17,6 +21,10 @@ DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py',
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 STATUS_INK_MIN = 20
+STUB_WIDTH = int(re.search(r'const STUB_WIDTH = (\d+);', (Path(__file__).resolve().parents[3]
+                                                         / 'src/features/ride/RideTicket.tsx').read_text()).group(1))
+# The AX5 run (--text-size ax5) checks only the 我的拼车 tickets: the rest of the walk assumes the Large layout.
+LARGE_TEXT = os.environ.get('TAPIRO_TEXT_SIZE', 'large') != 'large'
 
 ui = UI(*sys.argv[1:])
 
@@ -50,8 +58,13 @@ for identifier, ink, status in (('ride-ticket-ride-leaving', '--color-on-ride-ur
     assert not faint or faint['count'] < STATUS_INK_MIN, f'{identifier} still draws {status} (3.6:1 on the ticket)'
 read = ocr.lines_in(shot, ui.locale)
 for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
-    clocks = ocr.find(read, r'\d{2}[:.]\d{2}', by_id(items, identifier)['frame'])
-    assert clocks, f'{identifier} cuts its departure time: {[line["text"] for line in read]}'
+    frame = by_id(items, identifier)['frame']
+    main = {**frame, 'width': frame['width'] - STUB_WIDTH}
+    clocks = ocr.find(read, r'\d{2}[:.]\d{2}', main)
+    assert clocks, f'{identifier} cuts its departure time or pushes it under the stub: {[line["text"] for line in read]}'
+if LARGE_TEXT:
+    print('PASS: at AX5 both status lines in the ticket inks and both departure times whole, left of the stub')
+    sys.exit(0)
 
 history = ticket(ui, 'ride-list-history')
 assert history.get('AXLabel') == plural('ride.list.history', 2), history.get('AXLabel')
