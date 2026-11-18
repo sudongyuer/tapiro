@@ -41,7 +41,6 @@ export default {
       cancelled: '已取消',
     },
     ride: {
-      open: '招募中',
       gathering: '集合中',
       departed: '已出发',
       arrived: '到了 · 分车费',

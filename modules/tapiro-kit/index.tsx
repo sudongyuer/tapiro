@@ -206,10 +206,13 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   speechCancel(requestId: string): Promise<void>;
 }
 
-const NativePinnedBar = requireNativeView<{ children: ReactNode }>('TapiroKit', 'PinnedBarView');
+const NativePinnedBar = requireNativeView<{ header?: boolean; children: ReactNode }>(
+  'TapiroKit',
+  'PinnedBarView',
+);
 
-export function PinnedBar({ children }: { children: ReactNode }) {
-  return <NativePinnedBar>{children}</NativePinnedBar>;
+export function PinnedBar({ header, children }: { header?: boolean; children: ReactNode }) {
+  return <NativePinnedBar header={header}>{children}</NativePinnedBar>;
 }
 
 export type ContextMenuAction = {

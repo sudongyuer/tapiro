@@ -98,7 +98,6 @@ export default {
     received: 'Diterima',
     notReceived: 'Belum terima',
     nudged: 'Kami sudah beritahu {{name}} anda belum terima.',
-    report: 'Jika masih belum sampai selepas 24 jam, anda boleh melaporkannya (akan datang)',
     dueCash: '{{name}} belum tandakan sudah bayar',
     dueCashBody: 'Jika dia bayar tunai secara bersemuka, ketik Diterima untuk selesai.',
     dueWait: 'Menunggu {{name}} membayar',

@@ -244,10 +244,10 @@ export function ThreadScreen({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: PlatformColor('systemBackground') },
+  root: { flex: 1, backgroundColor: PlatformColor('systemGroupedBackground') },
   placing: { opacity: 0 },
   left: {
-    backgroundColor: PlatformColor('systemBackground'),
+    backgroundColor: PlatformColor('systemGroupedBackground'),
     position: 'absolute',
     left: 0,
     right: 0,

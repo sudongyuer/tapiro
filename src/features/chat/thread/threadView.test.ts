@@ -60,13 +60,32 @@ describe('item card', () => {
 
   test('a ride shows its route, when it leaves and its phase', () => {
     const ride = itemCardView(
-      { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9, 30), status: 'gathering' },
+      {
+        kind: 'ride',
+        from: '双威',
+        to: 'KLIA2',
+        departsAt: at(7, 9, 30),
+        status: 'gathering',
+        need: 2,
+      },
       NOW,
       t,
       'zh-Hans',
     );
     expect([ride.title, ride.status]).toEqual(['双威 → KLIA2', '明天 09:30 出发 · 集合中']);
     expect(ride.art).toEqual({ kind: 'ride', id: 'car' });
+  });
+
+  test('a recruiting ride says how many it still needs, in the carpool ticket’s words', () => {
+    const card = (need: number) =>
+      itemCardView(
+        { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9, 30), status: 'open', need },
+        NOW,
+        t,
+        'zh-Hans',
+      ).status;
+    expect(card(2)).toBe('明天 09:30 出发 · 还差 2 人');
+    expect(card(0)).toBe('明天 09:30 出发 · 已满');
   });
 });
 
@@ -97,7 +116,14 @@ describe('bubble rows', () => {
   test('a ride group names the speaker when the speaker changes; a bounty thread never does', () => {
     const group = info({
       kind: 'ride',
-      item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9), status: 'open' },
+      item: {
+        kind: 'ride',
+        from: '双威',
+        to: 'KLIA2',
+        departsAt: at(7, 9),
+        status: 'open',
+        need: 2,
+      },
       members: [
         {
           id: 'mei',
@@ -208,7 +234,7 @@ describe('blocked people in a thread', () => {
   });
   const group = info({
     kind: 'ride',
-    item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9), status: 'open' },
+    item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: at(7, 9), status: 'open', need: 2 },
     members: [person('mei', '美玲', true), person('arif', 'Arif')],
   });
   const items = [stored(1, 'mei', at(6, 14)), stored(2, 'arif', at(6, 14, 1))];

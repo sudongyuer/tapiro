@@ -1,11 +1,11 @@
 """Each done card in 一起办成的事 says who helped whom, then the title (71A, 72A): 帮{name} for a payee, {name}帮我 for a
 payer, 和{name} for a ride, 帮一位同学 / 一位同学帮我 when the counterpart is gone. With 40-code-point names and
-120-code-point titles every card keeps the same height (the caption shrinks to one line, the title stops at two), and
+120-code-point titles every card keeps the same height (the caption keeps its handwritten size and wraps to a second line, the title stops at two), and
 VoiceOver reads the date, the full name and the full title."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, reach_home  # noqa: E402
+from driver import UI, Shot, luma, reach_home  # noqa: E402
 
 DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/']
 LOCALES = ['zh-Hans', 'ms']
@@ -38,7 +38,12 @@ for index, (line1, title) in enumerate(EXPECTED):
     assert label.index(line1) > 0, f'card {index} does not read its date first: {label!r}'
     heights.append(card['frame']['height'])
     if index in (0, 3):
-        ui.capture(f'0{index + 1}-card-{index}')
+        shot = Shot(ui.capture(f'0{index + 1}-card-{index}'), ui.read()[0]['frame']['width'])
+    if index == 0:
+        f = card['frame']
+        second_line = {'x': f['x'] + 20, 'y': f['y'] + 266, 'width': f['width'] - 40, 'height': 24}
+        ink = shot.count(second_line, lambda rgb: luma(rgb) < 70)
+        assert ink > 80, f'the long caption did not wrap at full size: {ink} ink pixels where its second line belongs'
     f = card['frame']
     y = f['y'] + f['height'] / 2
     ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)

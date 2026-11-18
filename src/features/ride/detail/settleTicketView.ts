@@ -123,11 +123,10 @@ export function settleTicket(
         text: t('rideSettle.ticket.leadReceived'),
       },
       cells: [
-        each
-          ? cell('each', t('rideSettle.ticket.each'), money(each))
-          : cell('total', t('rideSettle.ticket.total'), money(settle.total)),
+        cell('total', t('rideSettle.ticket.total'), money(settle.total)),
+        each ? cell('each', t('rideSettle.ticket.each'), money(each)) : null,
         cell('yours', t('rideSettle.ticket.yours'), ride.myShare ? money(ride.myShare) : '–'),
-      ],
+      ].filter((item) => item !== null),
       stamp: false,
     };
   }

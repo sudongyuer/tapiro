@@ -25,7 +25,6 @@ export function ThreadListHeader({
       {thread?.older === 'failed' ? (
         <View style={styles.inset}>
           <InlineState
-            ground="plain"
             text={t('chat.thread.olderFailed')}
             action={{
               label: t('chat.thread.retry'),
@@ -47,7 +46,6 @@ export function ThreadListHeader({
       {failed ? (
         <View style={styles.inset}>
           <InlineState
-            ground="plain"
             text={t('chat.thread.loadFailed')}
             action={{
               label: t('chat.thread.retry'),

@@ -21,13 +21,11 @@ export function InlineState({
   text,
   action,
   tone = 'plain',
-  ground = 'grouped',
   testID,
 }: {
   text: string;
   action?: InlineStateAction;
   tone?: 'plain' | 'warning';
-  ground?: 'grouped' | 'plain';
   testID: string;
 }) {
   const { color } = useTheme();
@@ -40,11 +38,7 @@ export function InlineState({
         {
           backgroundColor: warning
             ? color('--color-warning-fill')
-            : PlatformColor(
-                ground === 'plain'
-                  ? 'secondarySystemBackground'
-                  : 'secondarySystemGroupedBackground',
-              ),
+            : PlatformColor('secondarySystemGroupedBackground'),
         },
       ]}
     >

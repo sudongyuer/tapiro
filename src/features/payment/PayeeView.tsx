@@ -126,7 +126,6 @@ export function PayeeView({
           tone="warning"
           icon="clock.badge.exclamationmark"
           title={t('pay.payee.nudged', { name })}
-          body={t('pay.payee.report')}
           testID="pay-payee-nudged"
         />
       ) : null}

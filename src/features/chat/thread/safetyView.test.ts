@@ -30,7 +30,14 @@ const bounty = (members: ChatMember[], over: Partial<ThreadInfo> = {}): ThreadIn
 const ride = (members: ChatMember[], status: 'open' | 'gathering' | 'departed'): ThreadInfo =>
   bounty(members, {
     kind: 'ride',
-    item: { kind: 'ride', from: '双威', to: 'KLIA2', departsAt: '2026-11-06T10:00:00Z', status },
+    item: {
+      kind: 'ride',
+      from: '双威',
+      to: 'KLIA2',
+      departsAt: '2026-11-06T10:00:00Z',
+      status,
+      need: 2,
+    },
   });
 
 describe('report and block in a thread', () => {

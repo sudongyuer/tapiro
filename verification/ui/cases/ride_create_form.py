@@ -1,9 +1,11 @@
 """The form under the live ticket (200 A–205 A): 从哪出发 and 去哪 come from the place search with 「票上叫「双威」 · 自动」
 (201 A); KLIA2 as the destination opens 航班和行李 by itself (205 A); a quick time shows 「hh:mm 起集合 · 出发前 30
 分钟」 (203 A); at 6 people the line reads 「还要 5 人 · 记得叫 6 座的车」 (202 A); typing the whole-ride estimate updates
-每人约 on the ticket and the footer (204 A) while the ticket keeps its height. The date picker and the ticket show the
-same clock in the device zone (234): run in London, the first quick time is the London clock. On a 12-hour device the
-quick time, the ticket and the picker all write it as the picker does (晚上9:00). 下一步 opens 确认发布."""
+每人约 on the ticket and the footer (204 A) while the ticket keeps its height and its stub stays inside it. The ticket
+and its caption sit in the Form's top bar with the system hard scroll edge (carpool plan R11), so the caption is on the
+bar's backing, lighter than the Form's ground. The date picker and the ticket show the same clock in the device zone
+(234): run in London, the first quick time is the London clock. On a 12-hour device the quick time, the ticket and the
+picker all write it as the picker does (晚上9:00). 下一步 opens 确认发布."""
 import math
 import re
 import sys
@@ -12,7 +14,8 @@ from datetime import datetime
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import dismiss_keyboard  # noqa: E402
-from driver import UI, assert_touch_target, by_id, picker_time, plain, token  # noqa: E402
+import ocr  # noqa: E402
+from driver import UI, Shot, assert_touch_target, by_id, picker_time, plain, token  # noqa: E402
 from readable import assert_label_reads  # noqa: E402
 from ride import clock_24h, form_scroll_to, open_form, open_list, step, time_text  # noqa: E402
 
@@ -104,7 +107,14 @@ ui.wait_label('ride-form-ticket', lambda label: '13' in label, 'the ticket stub 
 assert abs(ui.element('ride-form-ticket')['frame']['height'] - height) < 1, 'the live ticket changed height'
 assert_touch_target(form_scroll_to(ui, 'ride-form-airport-remove'), '移除')
 ui.element('ride-form-bags')
-ui.capture('03-filled')
+ui.at_rest()
+shot = Shot(ui.capture('03-filled'), ui.read()[0]['frame']['width'])
+ticket = ui.element('ride-form-ticket')['frame']
+stub = ocr.find(ocr.lines_in(shot, ui.locale), r'RM\s?13', {**ticket, 'x': ticket['x'] - 40, 'width': ticket['width'] + 80})
+assert stub and all(ocr.inside(line, ticket) for line in stub), f'the stub runs out of the ticket: {stub}'
+bar = shot.rgb(4, ticket['y'] + ticket['height'] + 12)
+ground = shot.rgb(4, ticket['y'] + ticket['height'] + 60)
+assert sum(bar) - sum(ground) >= 9, f'the caption is not on the bar backing ({bar}) above the Form ground ({ground})'
 
 ui.tap_label(ui.t('ride.create.next'))
 ui.element('ride-confirm')

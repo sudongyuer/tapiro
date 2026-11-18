@@ -1,6 +1,6 @@
 """已读 (125 B): in the demo bounty thread 阿杰 has read up to your last message, so 「已读 hh:mm」 sits under that bubble,
 right-aligned, and nowhere else; the ride group 双威 → KLIA2 shows no 已读 at all, names each speaker (美玲, Arif) above
-their bubbles, and its item card reads the route, the departure and 招募中."""
+their bubbles, and its item card reads the route, the departure and 还差 2 人, as the carpool ticket says it."""
 import re
 import sys
 
@@ -8,7 +8,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from chat import CLOCK, bubbles, open_thread  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
-DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
+DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py', 'src/lib/i18n/locales/ride/']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1']
 
 
@@ -41,7 +41,7 @@ assert '美玲' in labels and 'Arif' in labels, 'the group does not name its spe
 card = by_id(items, 'chat-item-card')
 when = '(?:' + ui.pattern('chat.item.today', clock=CLOCK) + '|' + ui.pattern('chat.item.tomorrow', clock=CLOCK) + ')'
 status = ui.pattern('chat.item.rideStatus', when=when,
-                    status=re.escape(ui.t('chat.item.ride.open')))
+                    status=re.escape(ui.tn('ride.ticket.need', 2)))
 assert re.fullmatch(ui.pattern('chat.item.a11y', title=re.escape(route), status=status), card.get('AXLabel') or ''), \
     card.get('AXLabel')
 ui.at_rest()

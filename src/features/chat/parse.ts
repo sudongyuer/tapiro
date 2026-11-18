@@ -89,6 +89,7 @@ function toSubject(kind: ThreadInfo['kind'], value: unknown): ChatSubject {
     to: text(row.to, 'ride to'),
     departsAt: text(row.departsAt, 'ride departsAt'),
     status: RIDE_PHASES.find((value) => value === row.status) ?? fail('ride status'),
+    need: Number.isInteger(row.need) ? (row.need as number) : fail('ride need'),
   };
 }
 

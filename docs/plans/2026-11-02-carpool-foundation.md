@@ -64,10 +64,14 @@ have no plan of their own, so their choices are listed here. No amount, arithmet
 | R10 | 撤回申请, 不来了, 取消这趟 and 屏蔽 are the system action sheet as a popover from the control that asked (撤回申请, 晚到, ⋯, the 取消这趟 button on the 还差 n 人 card), the destructive action above a visible keep button (BS-2). Why and how: `docs/plans/2026-10-29-bounty-status.md`, Deviations and rulings, 2026-11-17 BS-2/BS-3.        |
 
 Skipped, with the deciding line: RIDE-14, RideMeetup1 198 A draws the tile as 「填车牌 / VEN 2381 · 白色 Alza」 after the
-organiser booked, which is what ships. RIDE-15, the pinned live ticket is a recorded deviation (step 4: 「It is pinned
-above the scrolling Form」) and a soft edge under it would let rows cross the caption, which the opaque-bar rule
-excludes (`docs/design-language.md`, owner 2026-11-06); asked as an owner question. RIDE-10, the spec's settle section
-does not say which cells the organiser's ticket shows; asked as an owner question.
+organiser booked, which is what ships.
+
+Owner rows of the same audit, decided under the owner's delegation (2026-11-17, ★ for veto):
+
+| #   | Choice (★ taken)                                                                                                                                                                                                                                                                                                                                                            | Alternative                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| R10 | The organiser's settling ticket shows three cells, Grab 总价 / 每人 / 你出, as RideSettle1 214 A draws them; the spec's settle section does not say which cells it shows, so the board decides. When the shares are not equal 每人 is left out and the ticket keeps Grab 总价 / 你出. No amount changed (RIDE-10).                                                          | Keep two cells (每人 or the total, and 你出).                    |
+| R11 | The create form's ticket and caption sit in a top safe-area bar of the Form (kit `PinnedBar header`) with the system hard scroll edge, so rows scrolled under the ticket meet the system edge instead of a clipped view; no overlay is drawn. Hard, not soft, so scrolled rows never cross the caption (the opaque-bar rule). The confirm page uses the same bar (RIDE-15). | The system soft edge, letting rows show faded under the caption. |
 
 ## Rejection reasons
 

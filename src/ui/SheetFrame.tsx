@@ -1,6 +1,13 @@
 import { Form, Host, RNHostView } from '@expo/ui/swift-ui';
 import { refreshable, tint } from '@expo/ui/swift-ui/modifiers';
-import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { StyleSheet, View } from 'react-native';
 import { PinnedBar } from 'tapiro-kit';
 
@@ -36,11 +43,13 @@ export function SheetLayer({ children }: { children: ReactNode }) {
 }
 
 export function SheetFrame({
+  header,
   notice,
   testID,
   onRefresh,
   children,
 }: {
+  header?: ReactElement;
   notice?: ReactNode;
   testID: string;
   onRefresh?: () => Promise<void>;
@@ -61,7 +70,8 @@ export function SheetFrame({
   return (
     <SlotContext.Provider value={slots}>
       <Host style={styles.form} testID={testID}>
-        <PinnedBar>
+        <PinnedBar header={header ? true : undefined}>
+          {header ? <RNHostView matchContents={{ vertical: true }}>{header}</RNHostView> : null}
           {form}
           {actions ? (
             <RNHostView matchContents={{ vertical: true }}>
