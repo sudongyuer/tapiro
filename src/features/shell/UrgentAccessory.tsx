@@ -12,6 +12,10 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import type { MostUrgent } from './accessory';
 
+// The bottom accessory has the tab bar's fixed height, and like the tab bar's own labels its text does not grow; the
+// whole line is one VoiceOver element, and the same item is the first live card on home.
+const ACCESSORY_TEXT_SCALE = 1;
+
 const GLYPHS: Record<
   TabAccessoryKind,
   { fill: TokenName; ink: TokenName; symbol: SFSymbol | null }
@@ -67,17 +71,32 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
         size={GLYPH_SIZE[placement]}
       />
       <View style={styles.text}>
-        <AppText variant="secondary" style={styles.title} numberOfLines={1}>
+        <AppText
+          maxFontSizeMultiplier={ACCESSORY_TEXT_SCALE}
+          variant="secondary"
+          style={styles.title}
+          numberOfLines={1}
+        >
           {item.title}
         </AppText>
         {inline ? null : (
-          <AppText variant="meta" tone="secondaryLabel" numberOfLines={1}>
+          <AppText
+            maxFontSizeMultiplier={ACCESSORY_TEXT_SCALE}
+            variant="meta"
+            tone="secondaryLabel"
+            numberOfLines={1}
+          >
             {item.sub}
           </AppText>
         )}
       </View>
       {amount ? (
-        <AppText variant="secondary" style={styles.amount} numberOfLines={1}>
+        <AppText
+          maxFontSizeMultiplier={ACCESSORY_TEXT_SCALE}
+          variant="secondary"
+          style={styles.amount}
+          numberOfLines={1}
+        >
           {amount}
         </AppText>
       ) : null}
@@ -92,7 +111,12 @@ export function UrgentAccessory({ urgent, onPress }: { urgent: MostUrgent; onPre
 function MorePill({ count }: { count: number }) {
   return (
     <View style={styles.more}>
-      <AppText variant="meta" tone="secondaryLabel" style={styles.moreText}>
+      <AppText
+        maxFontSizeMultiplier={ACCESSORY_TEXT_SCALE}
+        variant="meta"
+        tone="secondaryLabel"
+        style={styles.moreText}
+      >
         {`+${count}`}
       </AppText>
     </View>
@@ -120,7 +144,11 @@ function Glyph({
       {symbol ? (
         <SymbolView name={symbol} size={size * 0.45} tintColor={color(ink)} />
       ) : (
-        <AppText variant="meta" style={[styles.money, { color: color(ink) }]}>
+        <AppText
+          maxFontSizeMultiplier={ACCESSORY_TEXT_SCALE}
+          variant="meta"
+          style={[styles.money, { color: color(ink) }]}
+        >
           {unit}
         </AppText>
       )}

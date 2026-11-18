@@ -911,3 +911,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-18 | ride + settled dark cases               | 0                  | 1             | ~90 min (Simulator lock)                         | 0                       | 0                     |
 | 2026-11-18 | Simulator lock queue                    | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | a11y contrast                           | 0                  | 1             | ~25 min (dark rerun, missed helper)              | 0                       | 0                     |
+| 2026-11-18 | a11y large text + labels                | 0                  | 0             | ~0                                               | 0                       | 0                     |

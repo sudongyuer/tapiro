@@ -104,7 +104,7 @@ const ms: typeof zhHans = {
       tomorrowMorning: 'Esok pagi',
       tomorrow: 'Esok',
       weekend: 'Hujung minggu ini',
-      label: 'Tetapkan tarikh akhir {{name}}',
+      label: 'Tarikh akhir: {{name}}',
     },
     form: {
       art: 'Gambar: {{name}}',

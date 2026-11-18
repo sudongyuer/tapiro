@@ -3,8 +3,10 @@ import { describe, expect, test } from 'bun:test';
 import {
   contrastRatio,
   darkVars,
+  maxTextScale,
   MUTED_TEXT_OPACITY,
   token,
+  typeRoles,
   vars,
   type ThemeName,
   type TokenName,
@@ -179,6 +181,24 @@ test('belly segments stand out from the sheet as graphics (3:1)', () => {
     expect(contrastRatio(vars[name], '#FFFFFF')).toBeGreaterThanOrEqual(3);
     expect(contrastRatio(dark(name), DARK_SURFACE)).toBeGreaterThanOrEqual(3);
   }
+});
+
+describe('type roles stop growing where their iOS text style stops', () => {
+  test('body reaches 53 pt and footnote text 44 pt at AX5', () => {
+    expect(vars['--text-body'] * maxTextScale('body')).toBeCloseTo(53);
+    expect(vars['--text-meta'] * maxTextScale('meta')).toBeCloseTo(44);
+  });
+
+  test('display numbers never grow past the AX5 large title, and never shrink', () => {
+    expect(vars['--text-amount'] * maxTextScale('amount')).toBeCloseTo(60);
+    expect(maxTextScale('amount-hero')).toBe(1);
+  });
+
+  test('a smaller role always gets the larger factor', () => {
+    const order = typeRoles.toSorted((a, b) => vars[`--text-${a}`] - vars[`--text-${b}`]);
+    const factors = order.map(maxTextScale);
+    expect(factors.toSorted((a, b) => b - a)).toEqual(factors);
+  });
 });
 
 test('ride ticket status inks are readable on the ride and muted tickets', () => {

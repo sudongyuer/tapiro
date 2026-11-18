@@ -18,7 +18,12 @@ export function BackFace({
 }) {
   const { surface, ink } = useLiveCardPaint(tone);
   return (
-    <Animated.View pointerEvents="none" style={[styles.face, { backgroundColor: surface }, style]}>
+    <Animated.View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.face, { backgroundColor: surface }, style]}
+    >
       <AppText variant="meta" numberOfLines={1} style={[styles.faceLabel, { color: ink }]}>
         {label}
       </AppText>

@@ -1,6 +1,7 @@
 """Thread states: a first load that fails (`-uiVerifyChatFail thread`) shows 「对话没加载出来」 with 重试, and no safety card,
 item card or composer, never an empty thread, on a card that stands out from the thread's ground; 重试 loads it. A ride group you left (`-uiVerifyChatLeft 1`) keeps its
-messages and shows 「你已离开这个拼车，不能再发消息」 on an opaque bar in place of the composer."""
+messages and shows 「你已离开这个拼车，不能再发消息」 on an opaque bar in place of the composer. VoiceOver names the
+composer 「写消息」 ahead of its placeholder instead of reading the placeholder twice."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -30,7 +31,12 @@ fill, ground = shot.rgb(failed['frame']['x'] - CARD_PADDING / 2, middle), shot.r
 assert max(abs(a - b) for a, b in zip(fill, ground)) >= 8, f'the failed card {fill} melts into the ground {ground}'
 ui.tap('chat-thread-retry')
 ui.element('chat-safety', timeout=30)
-ui.wait(lambda items: len(bubbles(items)) == 3 and by_id(items, 'chat-composer-input'), '重试 did not load the thread')
+items = ui.wait(lambda items: len(bubbles(items)) == 3 and by_id(items, 'chat-composer-input') and items,
+                '重试 did not load the thread')
+spoken = by_id(items, 'chat-composer-input').get('AXLabel') or ''
+placeholder = ui.t('chat.thread.placeholder')
+assert spoken.startswith(ui.t('chat.thread.composerLabel')) and spoken.count(placeholder) <= 1, \
+    f'the composer reads {spoken!r}, not its name ahead of the placeholder'
 ui.capture('02-retried')
 
 relaunch(ui, drop=['-uiVerifyChatFail', 'thread'], add=['-uiVerifyChatLeft', '1'], ready='home-scroll')

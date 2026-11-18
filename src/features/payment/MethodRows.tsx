@@ -7,6 +7,7 @@ import {
   accessibilityIdentifier,
   contentShape,
   disabled,
+  fixedSize,
   font,
   foregroundStyle,
   frame,
@@ -147,6 +148,7 @@ function MethodRowButton({
               font({ textStyle: 'body', weight: 'semibold', design: 'rounded' }),
               monospacedDigit(),
               foregroundStyle({ type: 'hierarchical', style: 'primary' }),
+              fixedSize({ horizontal: true, vertical: false }),
             ]}
           >
             {formatMoney(amount, language)}
