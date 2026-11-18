@@ -150,4 +150,19 @@ describe('live item source states', () => {
     live.retry('rides');
     expect(retried).toBe(1);
   });
+
+  test('retrying the issues calls failed and stale sources, not loading or ready ones', () => {
+    const live = createLiveItems();
+    const retried: string[] = [];
+    const statuses = {
+      payments: 'failed',
+      bounties: 'stale',
+      stickers: 'loading',
+      rides: 'ready',
+    } as const;
+    for (const [name, status] of Object.entries(statuses))
+      live.setSource(name, status === 'ready' ? [owe] : [], status, () => retried.push(name));
+    live.retryIssues();
+    expect(retried).toEqual(['payments', 'bounties']);
+  });
 });

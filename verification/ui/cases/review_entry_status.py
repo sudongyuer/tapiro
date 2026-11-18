@@ -1,5 +1,5 @@
 """Under 已结清 on the status screen (238 A): one row 评价 小林 with the days left; it opens the sheet with the bounty's title;
-after a sealed submit the row reads 已评价, 等小林评完一起公开 and 改一下 (242 A, 244 A), and 改一下 opens the stored review.
+after a sealed submit the row reads 已评价, 等小林评完一起公开 and 改一下 with the envelope before 已评价 (242 A, 244 A), and 改一下 opens the stored review.
 The days left are grey, as drawn; only 改一下, an action, takes the accent (pixels inside the text OCR finds)."""
 import sys
 
@@ -7,7 +7,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from driver import UI  # noqa: E402
 from profile import label  # noqa: E402
 from driver import by_id  # noqa: E402
-from review import SHEET, assert_grey, assert_ink, enabled, on_screen_row, one_line, read_shot, submit_happy  # noqa: E402
+from review import SHEET, assert_envelope, assert_grey, assert_ink, enabled, on_screen_row, one_line, read_shot, submit_happy  # noqa: E402
 
 DEPS = ['src/features/reputation/', 'src/app/review.tsx', 'src/lib/i18n/locales/reputation/', 'src/ui/Mascot.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/InlineState.tsx', 'verification/ui/review.py', 'verification/ui/profile.py', 'verification/ui/ocr.py', 'src/features/bounty/status/', 'src/app/(tabs)/bounty/', 'verification/ui/gestures.py']
 SCENE = 'bounty-status'
@@ -42,6 +42,7 @@ picture, read = read_shot(ui, '02-sealed')
 edit = one_line(read, ui.t('reputation.entry.edit'), by_id(ui.read(), ROW)['frame'])
 assert edit, '改一下 was not read on the row'
 assert_ink(picture, edit[0], ui.appearance, '改一下')
+assert_envelope(ui, picture, read, by_id(ui.read(), ROW)['frame'], 'the sealed status row')
 ui.tap(ROW)
 ui.element('review-chips-title', timeout=20)
 assert not enabled(ui, 'review-submit'), 'the stored review did not open: 提交 is on with nothing changed'

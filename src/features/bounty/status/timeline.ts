@@ -1,15 +1,18 @@
 import type { Money } from '@/lib/money';
 
-import type { BountyEvent, EventKind, StatusDetail, StatusRole } from './types';
+import type { BountyEvent, EventActor, EventKind, StatusDetail, StatusRole } from './types';
 
 export const STEP_IDS = ['selected', 'started', 'completed', 'confirmed', 'payment'] as const;
 export type StepId = (typeof STEP_IDS)[number];
 
-export type StepState = 'done' | 'current' | 'needsYou' | 'upcoming';
+export type StepState = 'done' | 'current' | 'needsYou' | 'upcoming' | 'ended';
 
 export type StepKey =
-  | `bounty.status.step.poster.${'selected' | 'started' | 'completed' | 'confirm' | 'confirmed' | 'paid'}`
-  | `bounty.status.step.helper.${'selected' | 'start' | 'started' | 'complete' | 'completed' | 'confirmed' | 'paid'}`;
+  | `bounty.status.step.poster.${'selected' | 'started' | 'completed' | 'confirm' | 'confirmed' | 'waitFix' | 'paid'}`
+  | `bounty.status.step.helper.${'selected' | 'start' | 'started' | 'complete' | 'completed' | 'confirmed' | 'fix' | 'paid'}`
+  | `bounty.status.ended.${EventActor}${'You' | 'Them'}`
+  | 'bounty.status.cancelled'
+  | 'bounty.select.closed';
 
 export type LineKind =
   'departBy' | 'late' | 'eta' | 'etaPrevious' | 'autoConfirm' | 'reason' | 'dispute' | 'pay';
@@ -46,7 +49,7 @@ export type TimelineLine = {
 };
 
 export type TimelineStep = {
-  id: StepId;
+  id: StepId | 'ended';
   state: StepState;
   at: string | null;
   key: StepKey;
@@ -58,6 +61,7 @@ export type TimelineEnd = {
   kind: 'cancelled' | 'closed';
   at: string | null;
   by: 'you' | 'them' | null;
+  actor: EventActor | null;
 };
 
 export type Timeline = { steps: TimelineStep[]; ended: TimelineEnd | null };
@@ -80,7 +84,7 @@ const CURRENT: Partial<Record<StatusDetail['status'], number>> = {
   open: 0,
   assigned: 1,
   en_route: 2,
-  disputed: 2,
+  disputed: 3,
   done: 3,
   confirmed: 4,
   settled: STEP_IDS.length,
@@ -96,8 +100,9 @@ function reached(detail: StatusDetail) {
 
 function waitsOn(detail: StatusDetail, step: StepId): StatusRole | null {
   switch (step) {
-    case 'selected':
     case 'confirmed':
+      return detail.status === 'disputed' ? 'helper' : 'poster';
+    case 'selected':
       return 'poster';
     case 'started':
     case 'completed':
@@ -109,8 +114,13 @@ function waitsOn(detail: StatusDetail, step: StepId): StatusRole | null {
   }
 }
 
-function stepKey(id: StepId, role: StatusRole, state: StepState): StepKey {
+function stepKey(detail: StatusDetail, id: StepId, role: StatusRole, state: StepState): StepKey {
   const done = state === 'done';
+  if (id === 'confirmed' && detail.status === 'disputed') {
+    return role === 'poster'
+      ? 'bounty.status.step.poster.waitFix'
+      : 'bounty.status.step.helper.fix';
+  }
   if (role === 'poster') {
     if (id === 'payment') return 'bounty.status.step.poster.paid';
     if (id === 'confirmed') return `bounty.status.step.poster.${done ? 'confirmed' : 'confirm'}`;
@@ -183,8 +193,9 @@ function linesFor(detail: StatusDetail, role: StatusRole, step: StepId): Timelin
     case 'started':
       return startLines(detail, role);
     case 'completed':
-      return detail.status === 'disputed' ? disputeLines(detail, role) : [];
+      return [];
     case 'confirmed':
+      if (detail.status === 'disputed') return disputeLines(detail, role);
       if (detail.status !== 'done' || !detail.autoConfirmAt) return [];
       return poster
         ? [
@@ -213,8 +224,15 @@ function linesFor(detail: StatusDetail, role: StatusRole, step: StepId): Timelin
 function ending(detail: StatusDetail, role: StatusRole): TimelineEnd | null {
   if (detail.status !== 'cancelled' && detail.status !== 'closed') return null;
   const event = lastEvent(detail.events, [detail.status === 'cancelled' ? 'cancelled' : 'closed']);
-  const by = event?.actor ? (event.actor === role ? 'you' : 'them') : null;
-  return { kind: detail.status, at: event?.at ?? null, by };
+  const actor = event?.actor ?? null;
+  const by = actor ? (actor === role ? 'you' : 'them') : null;
+  return { kind: detail.status, at: event?.at ?? null, by, actor };
+}
+
+function endKey(end: TimelineEnd): StepKey {
+  if (end.kind === 'closed') return 'bounty.select.closed';
+  if (!end.actor || !end.by) return 'bounty.status.cancelled';
+  return `bounty.status.ended.${end.actor}${end.by === 'you' ? 'You' : 'Them'}`;
 }
 
 export function timeline(detail: StatusDetail, role: StatusRole): Timeline {
@@ -234,12 +252,22 @@ export function timeline(detail: StatusDetail, role: StatusRole): Timeline {
       id,
       state,
       at: event?.at ?? null,
-      key: stepKey(id, role, state),
+      key: stepKey(detail, id, role, state),
       params: { name, amount: detail.reward },
       lines: linesFor(detail, role, id),
     };
   });
-  return { steps, ended: ending(detail, role) };
+  const ended = ending(detail, role);
+  if (!ended) return { steps, ended };
+  const end: TimelineStep = {
+    id: 'ended',
+    state: 'ended',
+    at: ended.at,
+    key: endKey(ended),
+    params: { name },
+    lines: [],
+  };
+  return { steps: [...steps.filter((step) => step.state === 'done'), end], ended };
 }
 
 export type SummaryKey = `bounty.status.summary.${StatusRole}.${

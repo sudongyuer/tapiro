@@ -60,6 +60,7 @@ const ICONS: Record<StepState, SFSymbol> = {
   current: 'circle.fill',
   needsYou: 'exclamationmark.circle.fill',
   upcoming: 'circle',
+  ended: 'xmark.circle',
 };
 
 export function StatusHeader({ detail }: { detail: StatusDetail }) {
@@ -159,7 +160,9 @@ function StepRow({
         ? foregroundStyle(color('--color-warning'))
         : step.state === 'upcoming'
           ? tertiary
-          : foregroundStyle({ type: 'hierarchical', style: 'primary' });
+          : step.state === 'ended'
+            ? secondary
+            : foregroundStyle({ type: 'hierarchical', style: 'primary' });
   const quiet = step.state === 'upcoming' || step.state === 'done';
   return (
     <HStack

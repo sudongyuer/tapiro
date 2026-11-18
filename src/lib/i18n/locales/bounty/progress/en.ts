@@ -32,6 +32,7 @@ const en: typeof zhHans = {
         completed: '{{name}} marks it done',
         confirm: 'You confirm it’s done',
         confirmed: 'You confirmed',
+        waitFix: 'Waiting for {{name}} to sort it out',
         paid: 'Pay {{name}} {{amount}}',
       },
       helper: {
@@ -41,8 +42,15 @@ const en: typeof zhHans = {
         complete: 'Done',
         completed: 'You marked it done',
         confirmed: '{{name}} confirms',
+        fix: '{{name}} reported a problem',
         paid: 'Get {{amount}}',
       },
+    },
+    ended: {
+      posterYou: 'You cancelled it',
+      posterThem: '{{name}} cancelled it',
+      helperYou: 'You stopped helping',
+      helperThem: '{{name}} stopped helping',
     },
     note: {
       departBy: 'Leave by {{time}}. Tap below when you head out.',
@@ -94,6 +102,7 @@ const en: typeof zhHans = {
       current: 'current step',
       needsYou: 'needs you',
       upcoming: 'not yet',
+      ended: 'ended',
     },
   },
   eta: {

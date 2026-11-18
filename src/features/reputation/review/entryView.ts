@@ -10,6 +10,7 @@ export type ReviewEntry = {
   detail: string | null;
   trailing: string | null;
   trailingIsAction: boolean;
+  sealed: boolean;
   label: string;
   target: ReviewTarget | null;
 };
@@ -62,6 +63,7 @@ export function reviewEntry(pair: ReviewPair, index: number, now: Date, t: TFunc
     detail,
     trailing,
     trailingIsAction: pair.state === 'sealed' && trailing !== null,
+    sealed: pair.state === 'sealed',
     label: spoken([title, detail, trailing].filter(Boolean).join(t('reputation.profile.listJoin'))),
     target,
   };

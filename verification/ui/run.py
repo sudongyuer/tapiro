@@ -12,9 +12,10 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from affected import SMOKE, parse_declarations, parse_deps, run_locales, select
+from affected import SMOKE, layout_cases, parse_declarations, parse_deps, run_locales, select
 from breaker import tripped
 from driver import BUNDLE_ID
+from hourcycle import hour_cycle_commands
 from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
@@ -36,8 +37,13 @@ REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
 KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # With no AppleKeyboards the app derives its keyboards from -AppleLanguages, so zh-Hans gets Pinyin and typed ASCII
 # becomes candidates; on the English keyboard prediction and autocorrection rewrite typed words (klia -> Kline, see you at
-# the lobby -> See lobby). Autocapitalisation stays on. Non-ASCII text is pasted instead.
+# the lobby -> See lobby). Autocapitalisation is off too: with the software keyboard kept up, AXe's first key was
+# sometimes capitalised (parcel -> Parcel, 2026-11-17). Non-ASCII text is pasted instead.
 KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
+
+
+def locale_args(locale):
+    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale]]
 
 
 def sh(*args, **kwargs):
@@ -76,7 +82,8 @@ def keyboard_commands(udid):
         [*spawn, '-g', 'AppleKeyboards', '-array', *KEYBOARDS],
         [*spawn, KEYBOARD_PREFS, 'KeyboardsCurrentAndNext', '-array', KEYBOARDS[0], KEYBOARDS[0]],
         [*spawn, KEYBOARD_PREFS, 'KeyboardLastUsed', '-string', KEYBOARDS[0]],
-        *([*spawn, KEYBOARD_PREFS, key, '-bool', 'false'] for key in ('KeyboardPrediction', 'KeyboardAutocorrection')),
+        *([*spawn, KEYBOARD_PREFS, key, '-bool', 'false']
+          for key in ('KeyboardPrediction', 'KeyboardAutocorrection', 'KeyboardAutocapitalization')),
         *software_keyboard_commands(udid),
     ]
 
@@ -164,11 +171,13 @@ def changed_files(base):
 
 def pick_affected(cases, base):
     deps = {case: parse_deps((HERE / 'cases' / f'{case}.py').read_text()) for case in cases}
-    picked = select(deps, changed_files(base))
+    changed = changed_files(base)
+    picked = select(deps, changed)
+    layout = layout_cases({case: deps[case] for case in picked}, changed)
     print(f'Affected cases against {base}: {len(picked)} of {len(cases)}')
     for case, reasons in picked.items():
-        print(f'  {case}: {"; ".join(reasons)}')
-    return list(picked)
+        print(f'  {case}: {"; ".join(reasons)}' + ('; layout: adds ms, or en without ms' if case in layout else ''))
+    return list(picked), layout
 
 
 def render_cpu_sample():
@@ -244,7 +253,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
-    for command in software_keyboard_commands(udid):
+    for command in [*software_keyboard_commands(udid), *hour_cycle_commands(udid, extra)]:
         subprocess.run(command, capture_output=True, timeout=30)
     reset_records(udid)
     video = out / 'run.mp4'
@@ -254,7 +263,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     )
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
-        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, '-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale],
+        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, *locale_args(locale),
         *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(zone))
     if stuck:
         status, message = 'fail', stuck
@@ -363,7 +372,8 @@ def main():
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
     parser.add_argument('--locale', choices=sorted(REGIONS))
     parser.add_argument('--affected', action='store_true',
-                        help='only cases whose DEPS meet the diff against --base plus uncommitted changes; zh-Hans light')
+                        help='only cases whose DEPS meet the diff against --base plus uncommitted changes; zh-Hans light, '
+                             'plus ms (en when undeclared) for a changed .tsx in DEPS')
     parser.add_argument('--smoke', action='store_true', help='the fixed smoke set in zh-Hans light')
     parser.add_argument('--base', default='main')
     parser.add_argument('--dark', action='store_true', help='with --affected or --smoke, also run dark')
@@ -373,10 +383,11 @@ def main():
 
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
     tiered = args.affected or args.smoke
+    layout = set()
     if args.smoke:
         cases = [case for case in SMOKE if case in cases]
     if args.affected:
-        cases = pick_affected(cases, args.base)
+        cases, layout = pick_affected(cases, args.base)
         if not cases:
             print('No UI case is affected.')
             sys.exit(0)
@@ -406,7 +417,8 @@ def main():
     machine.flush()
     export_strings()
     runs = [(case, *case_meta(case)) for case in cases]
-    runs = [(case, scene, [args.locale] if args.locale else run_locales(locales, args.locales or not (tiered or args.cases)),
+    runs = [(case, scene, [args.locale] if args.locale else run_locales(locales, args.locales or not (tiered or args.cases),
+                                                                         layout=case in layout),
              extra, budget)
             for case, scene, locales, extra, budget in runs]
     jobs = [(appearance, case, scene, locale, extra, budget)

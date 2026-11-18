@@ -4,6 +4,8 @@ export default {
   freePosts: '本月免费发布还剩 {{left}} 条（共 {{total}} 条）',
   empty: '还没有明细',
   failed: '没加载出来',
+  historyFailed: '明细没加载出来',
+  historyFailedBody: '点重试，或下拉页面，再加载一次。余额不受影响。',
   retry: '重试',
   stale: '没刷新成功 · 下面是上次加载的貘币',
   loading: '正在加载貘币',

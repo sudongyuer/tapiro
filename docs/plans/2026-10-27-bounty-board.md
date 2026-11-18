@@ -1059,3 +1059,12 @@ the reason; "cost" is what it costs if the ruling is wrong.
 - BB-10 (27A): the origin label (你 / 这里) is centred under the origin dot.
 - BB-12 not built: `@expo/ui`'s `Text` joins only `Text` children (`TextView.swift`), so the clock cannot sit inside
   the wrapping line without a Swift view in the kit; the wrapped place lines keep their indent after the clock.
+
+### UI polish, delegated rows (2026-11-17; audit BB-5; ★ = chosen without a board, for veto)
+
+- BB-5: ★ In dark the 列表 / 地图 sticker that is not selected drops to the grouped fill
+  (`secondarySystemGroupedBackground`, label ink, no white rim) instead of paper; the selected one stays the accent
+  sticker, tilted and lifted. Reason: the dark accent (`#F3EFE6`) is cream like the paper (`#FFFDF8`), so both
+  stickers read as selected and only the tilt told them apart; V2 draws light only, where the unselected sticker is
+  the one closer to the page. Light is unchanged. `bounty_board_view_switch` asserts in dark that the unselected
+  sticker has no paper pixels.

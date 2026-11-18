@@ -6,7 +6,7 @@ import { AppText } from '@/ui/AppText';
 import { askConfirm, pressAnchor, type ConfirmAnchor } from '@/ui/confirm';
 
 import type { AskSessionState } from './askSession';
-import { bellyMood, isHungry, type Belly } from './belly';
+import { bellyMood, draftWaitsOnTop, isHungry, type Belly } from './belly';
 import { BellyBar } from './BellyBar';
 import { liveBelly, type ConsentState } from './consentStore';
 import { usePantry } from './hooks';
@@ -61,7 +61,10 @@ export function useBellySlots({
     if (yes) await feed(pantryStore.swapAndFeed);
   };
 
-  const hungryNow = isHungry(belly) && !session?.sending;
+  const hungryNow =
+    isHungry(belly) &&
+    !session?.sending &&
+    !draftWaitsOnTop(session?.turns ?? [], session?.failed != null);
   const toldHungry = !belly && session?.failed?.reason === 'hungry';
   const showCard = motion.flying || hungryNow || toldHungry;
 

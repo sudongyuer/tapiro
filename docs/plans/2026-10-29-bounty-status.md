@@ -284,6 +284,20 @@ and the Live Activity (11), 先付 (12).
     frame ends at 505.0 pt and the next begins at 505.33 pt, so one device pixel of the list background shows between
     two cells when a row's height is not a whole pixel (the default row padding is fractional). The timeline rows now
     carry whole-point padding; whether the line is gone there is checked in the milestone screenshots.
+- 2026-11-17, UI polish delegated rows (audit BS-1, BS-15; the owner delegated these choices, PR #162). ★ for veto:
+  - BS-15 ★ Follows the 7A board's 「等处理 disputed」 frame and overturns P10 above (and ruling 2's "reason under
+    点完成"): in `disputed` the 点完成 step stays done with its check and time; the next step is the live one and carries
+    the reason and the 48-hour line. The poster reads 等{name}处理 there (current dot, as drawn); the helper, who has to
+    act, reads {name}说有问题 with the needs-you mark (not drawn; the summary's copy). The step order does not change
+    and the header status line is unchanged (poster in progress, helper needs you).
+  - BS-1 ★ A cancelled (or closed) bounty keeps only the steps that happened and ends on one more row: `xmark.circle`
+    in the secondary label (P2's ended symbol), the label naming who ended it, and its time on the right like other
+    steps: 你取消了这单 / {name}取消了这单 (poster), 你退出了这单 / {name}退出了这单 (helper; 退出 is the cancel sheet's
+    word), 这单取消了 when the event has no actor, 这条悬赏已经关闭了 for closed. Steps after the cancel are not drawn,
+    so nothing reads as pending. Reason: AGENTS data integrity (an ended bounty must not look live) and 7A draws no
+    cancelled state. VoiceOver reads the row's state as 已结束. New keys `bounty.status.ended.*`,
+    `bounty.status.step.poster.waitFix`, `bounty.status.step.helper.fix`, `bounty.status.a11y.ended` in all three
+    locales.
 - 2026-11-17, UI polish (audit BS-2, BS-3; boards BountyPickProgress 8A, BountyPickPost 4A). ★ choices for veto:
   - Cause, measured with a scratch UIKit/SwiftUI app on the iOS 27.2 Simulator: since iOS 26 an iPhone action sheet
     (`UIAlertController` `.actionSheet`, SwiftUI `confirmationDialog`) with a source is a popover from that source and

@@ -120,6 +120,7 @@ The hold button's track is the accent; the gold fill appears only while the user
 | `--color-warning`      | `#965A00` | `#FFB340` | Needs your action                                                  |
 | `--color-urgent-fill`  | `#FCE6E2` | `#3D1D19` | Error card behind urgent text (form errors)                        |
 | `--color-warning-fill` | `#FFF2D6` | `#3A2A0E` | Notice banner behind warning text (re-check prompt)                |
+| `--color-success-fill` | `#E3F3EA` | `#12301F` | Notice banner behind success text (a post that already went out)   |
 | `--color-filled-glow`  | `#FFF4D6` | `#3D3216` | A post-form row 小貘 just filled (132 A), fades out                |
 | `--color-filled-row`   | `#FFFFFF` | `#2C2C2E` | The grouped row colour in a sheet the glow fades into (blend only) |
 | `--color-belly`        | `#3E8A3A` | `#6CC25A` | A filled segment of 小貘's belly bar (135 A)                       |
@@ -294,40 +295,40 @@ Dynamic Type defaults at the Large setting (Apple HIG, Typography → Specificat
 with the user's text size. Acceptance runs at Large; there are no separate layouts for
 accessibility sizes.
 
-| Token                                | Value              | Role                                                |
-| ------------------------------------ | ------------------ | --------------------------------------------------- |
-| `--font-sans`                        |                    | System (PingFang SC / SF Pro)                       |
-| `--font-rounded`                     |                    | SF Rounded, numerals only                           |
-| `--font-hand-han`                    | `LongCang-Regular` | Handwritten captions in zh-Hans                     |
-| `--font-hand-latin`                  | `Caveat`           | Handwritten captions in en and ms                   |
-| `--text-wordmark`                    | `48`               | Tapiro wordmark, rounded heavy, white outline       |
-| `--text-wordmark--line-height`       | `56`               |                                                     |
-| `--text-amount-hero`                 | `62`               | Celebration amount, rounded heavy, white outline    |
-| `--text-amount-hero--line-height`    | `66`               |                                                     |
-| `--text-amount`                      | `48`               | Live-card amount and countdown, rounded heavy       |
-| `--text-amount--line-height`         | `52`               |                                                     |
-| `--text-amount-compact`              | `36`               | Amount beside a card title, rounded heavy           |
-| `--text-amount-compact--line-height` | `40`               |                                                     |
-| `--text-large-title`                 | `34`               | Tab root titles (Large Title, bold)                 |
-| `--text-large-title--line-height`    | `41`               |                                                     |
-| `--text-moment-title`                | `28`               | Moment screen title (Title 1, heavy, white outline) |
-| `--text-moment-title--line-height`   | `34`               |                                                     |
-| `--text-reward`                      | `22`               | Reward amount, rounded heavy (Title 2)              |
-| `--text-reward--line-height`         | `28`               |                                                     |
-| `--text-title`                       | `20`               | Section and sheet titles (Title 3, semibold)        |
-| `--text-title--line-height`          | `25`               |                                                     |
-| `--text-body`                        | `17`               | Content, list primary text, inputs (Body)           |
-| `--text-body--line-height`           | `22`               |                                                     |
-| `--text-secondary`                   | `15`               | Row subtitles, places (Subhead)                     |
-| `--text-secondary--line-height`      | `20`               |                                                     |
-| `--text-meta`                        | `13`               | Time, poster, footers (Footnote)                    |
-| `--text-meta--line-height`           | `18`               |                                                     |
-| `--text-hand-caption`                | `30`               | Done-card caption, handwritten                      |
-| `--text-hand-caption--line-height`   | `34`               |                                                     |
-| `--text-hand-date`                   | `22`               | Done-card date, handwritten                         |
-| `--text-hand-date--line-height`      | `26`               |                                                     |
-| `--text-hand-month`                  | `40`               | Month-calendar heading, handwritten                 |
-| `--text-hand-month--line-height`     | `44`               |                                                     |
+| Token                                | Value              | Role                                                         |
+| ------------------------------------ | ------------------ | ------------------------------------------------------------ |
+| `--font-sans`                        |                    | System (PingFang SC / SF Pro)                                |
+| `--font-rounded`                     |                    | SF Rounded, numerals only                                    |
+| `--font-hand-han`                    | `LongCang-Regular` | Handwritten captions in zh-Hans                              |
+| `--font-hand-latin`                  | `Caveat`           | Handwritten captions in en and ms                            |
+| `--text-wordmark`                    | `48`               | Tapiro wordmark, rounded heavy, white outline                |
+| `--text-wordmark--line-height`       | `56`               |                                                              |
+| `--text-amount-hero`                 | `62`               | Celebration amount, rounded heavy, white outline             |
+| `--text-amount-hero--line-height`    | `66`               |                                                              |
+| `--text-amount`                      | `48`               | Live-card amount and countdown, rounded heavy                |
+| `--text-amount--line-height`         | `52`               |                                                              |
+| `--text-amount-compact`              | `36`               | Amount beside a card title, rounded heavy                    |
+| `--text-amount-compact--line-height` | `40`               |                                                              |
+| `--text-large-title`                 | `34`               | Tab root titles (Large Title, bold)                          |
+| `--text-large-title--line-height`    | `41`               |                                                              |
+| `--text-moment-title`                | `28`               | Moment screen title (Title 1, heavy, white outline in light) |
+| `--text-moment-title--line-height`   | `34`               |                                                              |
+| `--text-reward`                      | `22`               | Reward amount, rounded heavy (Title 2)                       |
+| `--text-reward--line-height`         | `28`               |                                                              |
+| `--text-title`                       | `20`               | Section and sheet titles (Title 3, semibold)                 |
+| `--text-title--line-height`          | `25`               |                                                              |
+| `--text-body`                        | `17`               | Content, list primary text, inputs (Body)                    |
+| `--text-body--line-height`           | `22`               |                                                              |
+| `--text-secondary`                   | `15`               | Row subtitles, places (Subhead)                              |
+| `--text-secondary--line-height`      | `20`               |                                                              |
+| `--text-meta`                        | `13`               | Time, poster, footers (Footnote)                             |
+| `--text-meta--line-height`           | `18`               |                                                              |
+| `--text-hand-caption`                | `30`               | Done-card caption, handwritten                               |
+| `--text-hand-caption--line-height`   | `34`               |                                                              |
+| `--text-hand-date`                   | `22`               | Done-card date, handwritten                                  |
+| `--text-hand-date--line-height`      | `26`               |                                                              |
+| `--text-hand-month`                  | `40`               | Month-calendar heading, handwritten                          |
+| `--text-hand-month--line-height`     | `44`               |                                                              |
 
 The reward and the primary action wrap rather than truncate at any size.
 

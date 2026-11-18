@@ -1,12 +1,13 @@
 """问小貘 answers in the sheet. A suggestion fills the field and sends nothing; 发送 sends it and shows progress, then 小貘's answer
 under the words, and the field clears. A short request gets one question with buttons; tapping one sends the earlier
-words with the question and its answer, and the draft card comes back. Each open is new, with 「接着上次：…」 on top
+words with the question and its answer, and the draft card comes back; that draft empties the belly, and its 填进表单
+stays whole under the sheet's bar with no hungry card until the next ask (ASK-1). Each open is new, with 「接着上次：…」 on top
 that restores the last conversation, also after a restart. Words typed but not sent are kept on the device: closing the
 sheet and restarting the app keep them."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from ask import TYPED, ask_texts, captured, close_sheet, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
+from ask import TYPED, ask_texts, captured, close_button, close_sheet, open_sheet, prompt_value, turn, type_and_send  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
 
@@ -56,6 +57,13 @@ ui.element('ask-turn-5-fill')
 assert ask_texts(ui, 3)[2] == f'{TYPED}\n什么时候要？ 今晚', 'the button answer went without its question'
 assert by_id(ui.read(), 'ask-turn-3-choice-0').get('enabled') is False, 'an answered question still takes taps'
 ui.at_rest()
+items = ui.read()
+hungry = [i.get('AXUniqueId') for i in items if (i.get('AXUniqueId') or '').startswith('ask-hungry-')]
+assert not hungry, f'the hungry card came with the draft: {hungry}'
+bar, fill, sheet = close_button(ui, items)['frame'], by_id(items, 'ask-turn-5-fill')['frame'], \
+    by_id(items, 'ask-tapir-sheet')['frame']
+assert fill['y'] >= bar['y'] + bar['height'] and fill['y'] + fill['height'] <= sheet['y'] + sheet['height'], \
+    f'填进表单 is not whole between the bar and the sheet bottom: {fill}, bar {bar}, sheet {sheet}'
 ui.capture('05-draft-after-button')
 
 ui.tap('ask-tapir-prompt')

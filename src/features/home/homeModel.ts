@@ -92,12 +92,14 @@ export type StageLine =
   | { key: 'settled'; name: string }
   | { key: 'settledUnnamed' }
   | { key: 'live' }
+  | { key: 'unavailable' }
   | { key: 'calm' };
 
 export function stageLine(cards: readonly LiveCardModel[]): StageLine {
   const front = cards[0];
   if (front.kind === 'calm') return { key: 'calm' };
-  if (front.kind === 'unavailable') return { key: 'live' };
+  if (front.kind === 'unavailable')
+    return front.issue.status === 'loading' ? { key: 'live' } : { key: 'unavailable' };
   const { detail } = front;
   switch (detail?.kind) {
     case 'oweMoney':

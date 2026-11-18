@@ -30,6 +30,7 @@ export default {
         completed: '{{name}}点完成',
         confirm: '你确认完成',
         confirmed: '你确认了',
+        waitFix: '等{{name}}处理',
         paid: '付给{{name}} {{amount}}',
       },
       helper: {
@@ -39,8 +40,15 @@ export default {
         complete: '完成',
         completed: '你点了完成',
         confirmed: '{{name}}确认',
+        fix: '{{name}}说有问题',
         paid: '收 {{amount}}',
       },
+    },
+    ended: {
+      posterYou: '你取消了这单',
+      posterThem: '{{name}}取消了这单',
+      helperYou: '你退出了这单',
+      helperThem: '{{name}}退出了这单',
     },
     note: {
       departBy: '约好 {{time}} 前出发，出门时点下面',
@@ -89,6 +97,7 @@ export default {
       current: '现在这一步',
       needsYou: '要你处理',
       upcoming: '还没到',
+      ended: '已结束',
     },
   },
   eta: {

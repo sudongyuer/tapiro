@@ -12,9 +12,13 @@ import {
   accessibilityElement,
   accessibilityIdentifier,
   accessibilityLabel,
+  buttonBorderShape,
+  buttonStyle,
+  controlSize,
   disabled,
   font,
   foregroundStyle,
+  frame,
 } from '@expo/ui/swift-ui/modifiers';
 import { Image } from 'expo-image';
 import { useState, type ComponentProps } from 'react';
@@ -23,6 +27,7 @@ import { useI18n } from '@/lib/i18n';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
+import { useTheme } from '@/ui/theme/useTheme';
 
 import type { Belly } from './belly';
 import type { PantryState } from './pantryStore';
@@ -35,6 +40,7 @@ const JAR_IMAGES = {
 };
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
+const WIDE = frame({ maxWidth: Infinity });
 
 export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryState }) {
   const { t } = useI18n();
@@ -96,6 +102,7 @@ function PantryJar({
   swapDialog: Omit<ComponentProps<typeof ConfirmDialog>, 'destructive' | 'children'>;
 }) {
   const { t } = useI18n();
+  const onInk = useTheme().color('--color-on-accent');
   return (
     <Section
       title={t('ask.pantry.title')}
@@ -140,13 +147,19 @@ function PantryJar({
       ) : (
         <ConfirmDialog {...swapDialog} destructive={false}>
           <Button
-            label={t('ask.pantry.swap')}
             onPress={() => swapDialog.onPresentedChange(true)}
             modifiers={[
+              buttonStyle('borderedProminent'),
+              buttonBorderShape('capsule'),
+              controlSize('large'),
               disabled(belly.coins < 1 || busy),
               accessibilityIdentifier('tapir-pantry-swap'),
             ]}
-          />
+          >
+            <Text modifiers={[WIDE, font({ weight: 'semibold' }), foregroundStyle(onInk)]}>
+              {t('ask.pantry.swap')}
+            </Text>
+          </Button>
         </ConfirmDialog>
       )}
     </Section>

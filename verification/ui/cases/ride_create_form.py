@@ -2,7 +2,8 @@
 (201 A); KLIA2 as the destination opens 航班和行李 by itself (205 A); a quick time shows 「hh:mm 起集合 · 出发前 30
 分钟」 (203 A); at 6 people the line reads 「还要 5 人 · 记得叫 6 座的车」 (202 A); typing the whole-ride estimate updates
 每人约 on the ticket and the footer (204 A) while the ticket keeps its height. The date picker and the ticket show the
-same clock in the device zone (234): run in London, the first quick time is the London clock. 下一步 opens 确认发布."""
+same clock in the device zone (234): run in London, the first quick time is the London clock. On a 12-hour device the
+quick time, the ticket and the picker all write it as the picker does (晚上9:00). 下一步 opens 确认发布."""
 import math
 import re
 import sys
@@ -11,15 +12,15 @@ from datetime import datetime
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import dismiss_keyboard  # noqa: E402
-from driver import UI, assert_touch_target, by_id, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, picker_time, plain, token  # noqa: E402
 from readable import assert_label_reads  # noqa: E402
-from ride import form_scroll_to, open_form, open_list, picker_clock, step  # noqa: E402
+from ride import clock_24h, form_scroll_to, open_form, open_list, step, time_text  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py', 'verification/ui/readable.py',
+DEPS = ['src/features/ride/', 'src/lib/deviceClock.ts', 'src/lib/i18n/index.tsx', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py', 'verification/ui/readable.py',
         'verification/ui/bounty.py',
         'src/ui/FieldRow.tsx', 'src/ui/SyncedTextField.tsx']
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyPlaces', 'ride']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyPlaces', 'ride', '-AppleICUForce12HourTime', 'YES']
 TIME_ZONE = 'Europe/London'
 
 ui = UI(*sys.argv[1:])
@@ -69,19 +70,25 @@ ui.capture('02-places')
 
 assert_touch_target(ui.element('ride-form-pick-0'), 'quick time')
 opened = time.time()
-picked = re.search(r'\d{2}:\d{2}', ui.element('ride-form-pick-0').get('AXLabel') or '').group()
+quick = time_text(ui.element('ride-form-pick-0').get('AXLabel'))
+assert quick and not re.fullmatch(r'\d{2}:\d{2}', quick), f'the quick time {quick!r} is not 12-hour'
+picked = clock_24h(quick)
 local = {first_quick_time(at) for at in (opened - 120, opened)}
 assert picked in local, f'the first quick time is {picked}, not the device-zone clock {sorted(local)}'
 ui.tap('ride-form-pick-0')
-gather = re.compile(ui.pattern('ride.create.form.gather', time=r'\d{2}:\d{2}'))
+gather = re.compile(ui.pattern('ride.create.form.gather', time=r'.+?'))
 ui.wait_label('ride-form-gather', lambda label: bool(gather.fullmatch(label)), 'no 起集合 line after a quick time')
-ui.wait_label('ride-form-ticket', lambda label: picked in label, f'the ticket does not read the picked {picked}')
+ui.wait_label('ride-form-ticket', lambda label: quick in plain(label), f'the ticket does not read the picked {quick}')
 ui.at_rest()
 items = ui.read()
 assert_label_reads(ui.snap('02b-time-selected'), by_id(items, 'ride-form-pick-0')['frame'], 'selected quick time',
                    token('--color-accent', ui.appearance))
-shown = picker_clock(ui, 'ride-form-time')
-assert shown == picked, f'the date picker shows {shown} for the picked {picked} (both read the device zone)'
+shown = picker_time(next(i.get('AXValue') for i in items if i.get('type') == 'Button' and i.get('AXValue')
+                         and i['frame']['y'] == by_id(items, 'ride-form-time')['frame']['y']))
+assert clock_24h(shown) == picked, f'the date picker shows {shown} for the picked {picked} (both read the device zone)'
+assert shown == quick, f'the quick time {quick!r} does not write the picker\'s {shown!r}'
+ticket = plain(by_id(items, 'ride-form-ticket').get('AXLabel'))
+assert shown in ticket, f'the ticket {ticket!r} does not write the picker\'s {shown!r}'
 
 form_scroll_to(ui, 'ride-form-seats')
 step(ui, 'ride-form-seats', up=True, times=2)
