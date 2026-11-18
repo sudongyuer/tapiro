@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   // The time beside it must not squeeze the status away: at AX5 the line showed only the time.
   status: { flexShrink: 1, minWidth: '50%', fontWeight: '700' },
   dot: { color: ink, opacity: MUTED_TEXT_OPACITY, marginHorizontal: vars['--space-1'] },
-  time: { flexShrink: 1, color: ink, fontWeight: '700' },
+  time: { color: ink, fontWeight: '700' },
   route: { color: ink },
   labels: { color: ink, opacity: MUTED_TEXT_OPACITY },
   faint: { opacity: 0.4 },
