@@ -680,6 +680,33 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
       outcome is good news (the post is live), and the warning fill with a check mixed two statuses of the Status
       language. `bounty_post_failed` samples the card fill against the token.
 
+25. Time format, one rule for the app (2026-11-17, `fix/ui-polish-time-format`, audit BP-13 and RIDE-19). ★ for veto:
+    every clock the app writes follows the device's 12/24-hour setting in the app language (「晚上9:00」 / 9:00 PM /
+    9:00 PTG on a 12-hour device, 21:00 on a 24-hour one). `I18nProvider` reads `useCalendars()[0].uses24hourClock`
+    (expo-localization 58.0.5) into `setClockStyle`; `localClock` and `clockOptions()` in `src/lib/deviceClock.ts` are
+    the only clock formats, and the post time parts and 问小貘 draft lines use them. Reason: HIG asks apps to respect
+    the user's date and time settings, and the system pickers already follow this one, so the picker and the text
+    beside it agree only this way; before, the picker read 「晚上9:00」 and the card 21:00.
+    - The pickers keep the system locale. `@expo/ui` 58.0.27's `environment('locale', …)` accepts only an identifier
+      in `Locale.availableIdentifiers` (`ios/Modifiers/EnvironmentModifier.swift`), and a locale built from one drops
+      the user's hour-cycle and region overrides, so forcing the app language would break the hour agreement. Left
+      open: after an in-app language switch away from the system language, the picker's words (晚上 / PM) stay in the
+      system language, the same root as HOME-4. A change of the device setting while the app runs shows on the next
+      render of each screen.
+    - The date half of BP-13 is not a format rule. In every run of 11-13 and 11-16 (zh-Hans, en, ms) the 开始
+      picker's own accessibility value was the short date (「14/11/26」) while 结束 in the same row width read
+      「2026年11月14日」: the start picker laid out 11 pt narrower (253 vs 264 pt) and the compact `UIDatePicker` fell
+      back to its short style. App code does not format that text. On this branch's build it did not happen in three
+      runs (zh-Hans twice, ms once; both rows read 「2026年11月19日」), cause not found; `bounty_post_optional` now
+      asserts that 开始 and 结束 on one day write the same date, so a return fails the case.
+    - Verify runs set the Simulator's hour cycle where Settings writes it (`defaults write -g AppleICUForce24HourTime`
+      through `simctl spawn` before each case): 24 hours unless a case's ARGS hold `-AppleICUForce12HourTime`
+      (`zh_MY`, `en_MY` and `ms_MY` default to 12). A launch argument alone reached `UIDatePicker` but not
+      `Locale.current.hourCycle`, which expo-localization reads, so the first run showed a 24-hour wheel beside
+      「上午10:45」. `bounty_post_optional` and `ride_create_form` run in 12 hours and assert that the picker's time
+      text appears as is in the live card, the ticket, the quick time and confirm; `bounty_status_helper` swipes the
+      minute column of the 24-hour wheel.
+
 ## Not in this plan
 
 | Item | Owning step |

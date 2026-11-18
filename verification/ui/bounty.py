@@ -7,7 +7,7 @@ from pathlib import Path
 from driver import BUNDLE_ID, assert_touch_target, bottom, by_id, close, dominant, reach_home
 from gestures import drag
 from records import reset_records
-from run import REGIONS
+from run import locale_args
 from swifttool import SIMULATOR, compiled
 
 OPEN = 'bounty.post.open'
@@ -178,8 +178,8 @@ def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll', keep_records=Fal
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
     if not keep_records:
         reset_records(ui.udid)
-    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, '-AppleLanguages', f'({ui.locale})',
-                    '-AppleLocale', REGIONS[ui.locale], *args, *add], check=True, capture_output=True, timeout=60)
+    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, *locale_args(ui.locale), *args, *add],
+                   check=True, capture_output=True, timeout=60)
     ui.element(ready, timeout=60)
 
 
@@ -252,10 +252,10 @@ def assert_preview(ui, title, amount, symbol='RM'):
 PUBLISHED_KEY = 'uiVerifyPublishedArgs'
 
 
-def form_scroll_to(ui, identifier, tries=6):
+def form_scroll_to(ui, identifier, tries=6, container='bounty-post-form'):
     for _ in range(tries):
         items = ui.read()
-        found, form = by_id(items, identifier), by_id(items, 'bounty-post-form')
+        found, form = by_id(items, identifier), by_id(items, container)
         f = form['frame']
         if found and found['frame']['y'] >= f['y'] + 100 and bottom(found) <= f['y'] + f['height'] - 40:
             return found

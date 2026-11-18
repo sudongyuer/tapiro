@@ -1,0 +1,2 @@
+PROBE HardwareKeyboardLastSeen='1'
+PROBE AutomaticMinimizationEnabled='1'

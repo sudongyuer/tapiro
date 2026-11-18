@@ -2,7 +2,8 @@
 home puts 要你处理 in front with its step and 去选人 pill, names the card for VoiceOver with title, step and reward, puts the
 front card's title and step on the stage, peeks the next two with their title and step, and fans out to four cards with the
 waiting cards in the calm colour; the one-time card is marked seen once, not again when fanned out a second time; tapping
-the front card opens the 挑人 screen for 帮取快递."""
+the front card opens the 挑人 screen for 帮取快递, where the tab-bar strip no longer points at that screen and shows the next
+card (讲一下微积分作业) instead."""
 import json
 import sys
 import time
@@ -11,7 +12,8 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from choose import defaults  # noqa: E402
 from driver import UI, assert_colour, by_id, card_fill, reach_home, token  # noqa: E402
 
-DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/bounty/', 'verification/ui/choose.py']
+DEPS = ['src/features/home/', 'src/features/shell/', 'src/app/(tabs)/_layout.tsx', 'src/app/(tabs)/bounty/',
+        'verification/ui/choose.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyShellFeed', 'bountyAction,bountyInProgress,bountyWaiting,bountyOneTime',
         '-uiVerifySignedIn', 'onboarded']
@@ -85,5 +87,14 @@ assert seen() == ['fixture-bounty-02'], f'the one-time card was marked again: {s
 
 ui.tap('live-card-bountyAction')
 ui.element('bounty-applicant-fixture-applicant-jie')
+
+
+def strip(items):
+    found = by_id(items, 'urgent-accessory') or by_id(items, 'urgent-accessory-inline')
+    return found if found and '讲一下微积分作业' in (found.get('AXLabel') or '') else None
+
+
+accessory = ui.settled(strip, 'the strip does not show the next card on the 挑人 screen')
+assert '帮取快递' not in accessory.get('AXLabel'), f'the strip points at the screen on top: {accessory.get("AXLabel")}'
 ui.snap('03-applicants')
 print('PASS: bounty cards ranked, labelled, fanned, marked seen once and opened')

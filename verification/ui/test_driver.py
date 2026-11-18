@@ -1,3 +1,4 @@
+import itertools
 import unittest
 from types import SimpleNamespace
 from unittest import mock
@@ -31,6 +32,9 @@ class Typing(unittest.TestCase):
             ui.type('我中途下车了')
 
 
+PAD_DELETE_KEY = {'type': 'Button', 'AXLabel': 'Delete'}
+
+
 class Keys(unittest.TestCase):
     def typed(self, text, screens):
         ui = UI.__new__(UI)
@@ -41,7 +45,7 @@ class Keys(unittest.TestCase):
         return sent
 
     def test_digits_on_a_pad_tap_its_keys(self):
-        pad = [{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}]
+        pad = [{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}, PAD_DELETE_KEY]
         sent = self.typed('80', [pad] * 4)
         self.assertEqual(sent, [('tap', '-x', '201', '-y', '728', '--post-delay', '0.5'),
                                 ('tap', '-x', '201', '-y', '782', '--post-delay', '0.5')])
@@ -51,9 +55,17 @@ class Keys(unittest.TestCase):
         sent = self.typed('12', [letters] * 2)
         self.assertEqual(sent, [('key-sequence', '--keycodes', '30,31', '--delay', '0.08')])
 
+    def test_digits_with_no_keyboard_in_the_tree_still_tap_the_pad(self):
+        bare = [{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}]
+        with mock.patch.object(driver.time, 'monotonic', side_effect=itertools.count(0, 1)), \
+                mock.patch.object(driver.time, 'sleep'):
+            sent = self.typed('80', itertools.repeat(bare))
+        self.assertEqual(sent, [('tap', '-x', '201', '-y', '728', '--post-delay', '0.5'),
+                                ('tap', '-x', '201', '-y', '782', '--post-delay', '0.5')])
+
     def test_backspace_on_a_pad_taps_its_delete_key(self):
         ui = UI.__new__(UI)
-        sent, reads = [], iter([[{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}]] * 6)
+        sent, reads = [], iter([[{'frame': {'x': 0, 'y': 0, 'width': 402, 'height': 874}}, PAD_DELETE_KEY]] * 6)
         ui.axe = lambda *args, **kwargs: sent.append(args)
         ui.state = lambda: next(reads)
         ui.backspace(2)

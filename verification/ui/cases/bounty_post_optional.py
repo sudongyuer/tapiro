@@ -1,19 +1,19 @@
 """「＋ 时间」 and 「＋ 说明」 expand in place under a heading row with 移除 on its right (156A): the time row offers three
 quick picks (161A; 「明天」 sets tomorrow 21:00 and sticks), then 截止 / 时间段 with system date pickers whose calendar
-disables past days, and
-移除 collapses it back; confirm shows the deadline and the description's first line; the description counter stays
+disables past days, and 移除 collapses it back. On a 12-hour device the live card and confirm write each time as its
+picker shows it (晚上9:00). Confirm shows the deadline and the description's first line; the description counter stays
 hidden for a short note. A seeded long draft shows its counters in code points (an emoji counts once)."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import close_sheet_by_swipe, dismiss_keyboard, fill_fixed, form_scroll_to, open_post, relaunch, typed  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, by_id, picker_time, plain  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
+DEPS = ['src/features/bounty/', 'src/lib/deviceClock.ts', 'src/lib/i18n/index.tsx', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
         'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-AppleICUForce12HourTime', 'YES']
 BUDGET = 300
 WORST_TITLE = '帮忙从 Mid Valley Megamall 取 Uniqlo 外套再买两杯 Tealive 🧋送到 Sunway 楼'
 NOTE = 'Parcel at the door'
@@ -33,20 +33,6 @@ def picker_value(items, identifier):
 
     return next((i.get('AXValue') for i in items
                  if i.get('type') == 'Button' and inside(i['frame']) and i.get('AXValue')), None)
-
-
-PM = ('下午', '晚上', 'PM', 'PTG')
-AM = ('凌晨', '上午', 'AM', 'PG')
-
-
-def clock_24h(shown):
-    # The system picker follows the device's 12/24-hour setting; the confirm sheet always writes 24-hour time.
-    hour, minute = map(int, re.search(r'(\d{1,2}):(\d{2})', shown).groups())
-    if any(mark in shown for mark in PM) and hour < 12:
-        hour += 12
-    elif any(mark in shown for mark in AM) and hour == 12:
-        hour = 0
-    return f'{hour:02d}:{minute:02d}'
 
 
 def counter(identifier, count, maximum):
@@ -78,7 +64,7 @@ calendar_bottom = max(day['frame']['y'] + day['frame']['height'] for day in days
 ui.tap_point(8, min(calendar_bottom + 120, ui.read()[0]['frame']['height'] - 60))
 ui.gone('PopoverDismissRegion')
 ui.tap('bounty-post-pick-time-tomorrow')
-after = ui.wait(lambda items: (lambda value: value if value and value != before and re.search(r'(21|9):00', value)
+after = ui.wait(lambda items: (lambda value: value if value and value != before and re.search(r'(21|9)[:.]00', value)
                                else None)(picker_value(items, 'bounty-post-deadline')),
                 f'the 明天 quick pick did not set tomorrow 21:00 (still {before!r})')
 ui.capture('02b-time-pick')
@@ -86,7 +72,15 @@ ui.capture('02b-time-pick')
 ui.tap_label(ui.t('bounty.post.form.window'))
 ui.element('bounty-post-start')
 ui.element('bounty-post-end')
-assert by_id(ui.read(), 'bounty-post-deadline') is None, '截止 still shown after choosing 时间段'
+items = ui.read()
+assert by_id(items, 'bounty-post-deadline') is None, '截止 still shown after choosing 时间段'
+values = [picker_value(items, identifier) or '' for identifier in ('bounty-post-start', 'bounty-post-end')]
+window = [picker_time(value) for value in values]
+dates = [value.partition(',')[2].strip() for value in values]
+assert dates[0] == dates[1], f'开始 and 结束 on one day write the date differently: {dates} (BP-13)'
+assert all(':' in shown for shown in window), f'the window pickers show no time: {window}'
+ui.wait_label('bounty-post-live-text', lambda label: all(shown in plain(label) for shown in window),
+              f'the live card does not write the picked times {window}')
 ui.capture('02-window')
 ui.tap_label(ui.t('bounty.post.form.deadline'))
 ui.element('bounty-post-deadline')
@@ -103,10 +97,10 @@ ui.gone('bounty-post-description-count')
 ui.gone('bounty-post-remove-description')
 ui.capture('03-expanded')
 
-clock = clock_24h(chosen)
+clock = picker_time(chosen)
 ui.tap_label(ui.t('bounty.post.next'))
 ui.element('bounty-post-confirm')
-ui.wait_label('bounty-post-time', lambda label: clock in label and ui.t('bounty.post.confirm.tomorrow') in label,
+ui.wait_label('bounty-post-time', lambda label: clock in plain(label) and ui.t('bounty.post.confirm.tomorrow') in label,
               f'confirm does not show the chosen deadline (tomorrow {clock}, picker read {chosen!r})')
 ui.wait_label('bounty-post-summary-description', lambda label: NOTE in label,
               'confirm does not show the description')

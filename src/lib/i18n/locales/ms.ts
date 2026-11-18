@@ -213,6 +213,7 @@ const ms: Translation = {
       settledUnnamed: 'Duit dah diterima, urusan selesai!',
       bounty: '{{title}} · {{line}}',
       live: 'Ada urusan berjalan, Tapir tolong perhatikan',
+      unavailable: 'Bayaran tidak dapat dimuatkan. Tarik ke bawah untuk cuba lagi',
       calm: 'Tiada apa hari ini… mahu siarkan ganjaran?',
     },
     stage: {
@@ -225,7 +226,6 @@ const ms: Translation = {
       collapseHint: 'Menyusun semula kad',
       peekHint: 'Membentangkan semua kad',
     },
-    soon: 'Langkah ini belum dibuka',
     card: {
       waiting: { tag: 'Menunggu pengesahan' },
       settled: {
@@ -260,7 +260,6 @@ const ms: Translation = {
         countdownLabel: '{{time}} lagi sebelum bertolak',
         meet: 'Titik temu',
         destination: 'Ke',
-        arrive: 'Saya sampai',
       },
       owed: {
         tag: 'Perlu disahkan',
