@@ -451,3 +451,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-17 | merge guard                   | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-17 | owner delegation              | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-17 | website AI pages              | 0                  | 0             | ~0                                               | 0                       | 0                     |
+| 2026-11-18 | 问小貘 switch + sheet follow  | 2                  | 1             | ~0                                               | 0                       | 0                     |
