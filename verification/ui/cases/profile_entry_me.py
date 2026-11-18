@@ -1,5 +1,5 @@
 """Entry from 我的: the name row is a 44 pt button with a chevron and, with no photo, the cream initial disc the profile
-shows, with the tier and the level under the name (CoinPick1 251 A); a tap pushes your own profile in the 我的
+shows, with the tier and, on the line below, the level under the name (CoinPick1 251 A; OCR reads the level whole); a tap pushes your own profile in the 我的
 tab (one read for your id, made by the tab) with the level card, and back returns with the row deselected. When that
 read fails, the row shows the name alone, never a tier it does not have."""
 import sys
@@ -8,9 +8,11 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
+from ocr import lines_in  # noqa: E402
 from profile import open_profile, rep_calls  # noqa: E402
+from review import one_line  # noqa: E402
 
-DEPS = ['src/features/account/MeView.tsx', 'src/ui/Avatar.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'src/ui/TierMark.tsx', 'src/features/reputation/hooks.ts', 'verification/ui/profile.py', 'verification/ui/bounty.py']
+DEPS = ['src/features/account/MeView.tsx', 'src/ui/Avatar.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'src/ui/TierMark.tsx', 'src/features/reputation/hooks.ts', 'verification/ui/profile.py', 'verification/ui/bounty.py', 'verification/ui/ocr.py', 'verification/ui/review.py']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
 
@@ -26,6 +28,8 @@ assert_touch_target(row, '我的名字那行')
 ui.at_rest()
 shot = ui.snap('00-me')
 f = row['frame']
+read = [{**line, 'text': line['text'].upper()} for line in lines_in(shot, ui.locale)]
+assert one_line(read, level.upper(), f), f'{level} is not read on one line in the name row'
 disc = shot.rgb(f['x'] + 30, f['y'] + f['height'] / 2 - 15)
 assert close(disc, token('--color-card-calm', ui.appearance), 8), f'the avatar is not the cream initial disc: {disc}'
 ui.tap('me-profile')

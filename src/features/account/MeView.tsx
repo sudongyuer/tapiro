@@ -19,7 +19,6 @@ import {
   contentShape,
   fixedSize,
   font,
-  layoutPriority,
   foregroundStyle,
   lineLimit,
   listRowBackground,
@@ -159,16 +158,10 @@ function ProfileRow({
           {name}
         </Text>
         {standing ? (
-          <HStack alignment="top" spacing={vars['--space-2']}>
-            <TierMark
-              label={standing.tier}
-              rank={standing.rank}
-              modifiers={[fixedSize(), layoutPriority(1)]}
-            />
-            <Text modifiers={[font({ textStyle: 'footnote' }), secondary, lineLimit(2)]}>
-              {standing.level}
-            </Text>
-          </HStack>
+          <VStack alignment="leading" spacing={2}>
+            <TierMark label={standing.tier} rank={standing.rank} modifiers={[fixedSize()]} />
+            <Text modifiers={[font({ textStyle: 'footnote' }), secondary]}>{standing.level}</Text>
+          </VStack>
         ) : null}
       </VStack>
       {onPress ? (
