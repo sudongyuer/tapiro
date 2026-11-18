@@ -104,7 +104,7 @@ const en: typeof zhHans = {
       tomorrowMorning: 'Tomorrow morning',
       tomorrow: 'Tomorrow',
       weekend: 'This weekend',
-      label: 'Set the deadline to {{name}}',
+      label: 'Deadline: {{name}}',
     },
     form: {
       art: 'Picture: {{name}}',

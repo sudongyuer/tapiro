@@ -1,5 +1,6 @@
 """With a ride and an in-progress bounty and nothing to pay, home shows the live stage with the ride card in front of a two-card stack;
-the ride card offers no button of its own (the inert 我到了 is gone until a live ride feeds home)."""
+the ride card offers no button of its own (the inert 我到了 is gone until a live ride feeds home). VoiceOver reads the
+ride card as one sentence that ends at the destination: the riders' initials and the card's own back face are hidden."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -12,7 +13,11 @@ ARGS = ['-uiVerifyShellFeed', 'rideSoon,bountyInProgress', '-uiVerifySignedIn', 
 
 ui = UI(*sys.argv[1:])
 items = assert_home(ui, 'live', 'live', ['rideSoon', 'bountyInProgress'])
-card = by_id(items, 'live-card-rideSoon')['frame']
+ride = by_id(items, 'live-card-rideSoon')
+card = ride['frame']
+spoken = (ride.get('AXLabel') or '').split(', ')
+assert ride.get('AXLabel', '').endswith('YC 宿舍'), f'the ride card reads past its destination: {spoken}'
+assert not {'M', '杰', 'H', '林'} & set(spoken), f'the ride card reads the avatar initials: {spoken}'
 
 
 def inside(f):

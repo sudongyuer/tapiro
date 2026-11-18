@@ -1,19 +1,22 @@
 """The 拼车 tab (180 B, 181 A, 182 B, 183 B, 184 A): one list with 我的拼车 then the joinable rides under day subheadings,
 each a compact 椰糖杏 ticket with a 每人约 · taken/seats stub. Markers: urgent 「n 分钟后出发 · 集合中」, the organiser's
-「我发起的 · 1 人申请」, a neutral 「已满」 ticket and the airport line 「航班 09:10 起飞 · 2 件大行李」. The nav-bar ＋ is
+「我发起的 · 1 人申请」 (both status lines in the ticket inks that read 4.8:1 on the peach, not the status colours), a
+neutral 「已满」 ticket and the airport line 「航班 09:10 起飞 · 2 件大行李」. The nav-bar ＋ is
 shown, 「去过的 · 2 趟」 closes 我的拼车, and a ticket pushes the ride detail with the same route and flight."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 import ocr  # noqa: E402
-from driver import UI, assert_touch_target, by_id  # noqa: E402
+from board import ink_box  # noqa: E402
+from driver import UI, assert_touch_target, by_id, token  # noqa: E402
 from ride import add_button, assert_ticket_colour, label, open_list, ticket, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'verification/ui/ocr.py',
-        'src/ui/HandArt.tsx', 'src/ui/InlineState.tsx']
+        'verification/ui/board.py', 'src/ui/HandArt.tsx', 'src/ui/InlineState.tsx']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
+STATUS_INK_MIN = 20
 
 ui = UI(*sys.argv[1:])
 
@@ -38,6 +41,13 @@ for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
     within_screen(items, identifier)
 shot = ui.snap('01-mine')
 assert_ticket_colour(ui, shot, by_id(items, 'ride-ticket-ride-leaving'), '--color-ride', 'mine ticket')
+for identifier, ink, status in (('ride-ticket-ride-leaving', '--color-on-ride-urgent', '--color-urgent'),
+                                ('ride-ticket-ride-requests', '--color-on-ride-warning', '--color-warning')):
+    frame = by_id(items, identifier)['frame']
+    found = ink_box(shot, frame, token(ink, 'light'), 6)
+    assert found and found['count'] >= STATUS_INK_MIN, f'{identifier} status line is not drawn in {ink}: {found}'
+    faint = ink_box(shot, frame, token(status, 'light'), 6)
+    assert not faint or faint['count'] < STATUS_INK_MIN, f'{identifier} still draws {status} (3.6:1 on the ticket)'
 read = ocr.lines_in(shot, ui.locale)
 for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
     clocks = ocr.find(read, r'\d{2}[:.]\d{2}', by_id(items, identifier)['frame'])

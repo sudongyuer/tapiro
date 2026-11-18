@@ -1,4 +1,4 @@
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { PlatformColor, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,7 +16,8 @@ const OVERSHOOT_BLEED = vars['--space-7'];
 export function SignInPanel({ onMeasure }: { onMeasure: (visibleHeight: number) => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const { bottom } = useSafeAreaInsets();
+  const { bottom, top } = useSafeAreaInsets();
+  const window = useWindowDimensions();
   const { style, height } = useRise();
   return (
     <Animated.View
@@ -29,26 +30,33 @@ export function SignInPanel({ onMeasure }: { onMeasure: (visibleHeight: number) 
         styles.panel,
         {
           paddingBottom: Math.max(bottom, vars['--space-5']) + OVERSHOOT_BLEED,
+          maxHeight: window.height - top + OVERSHOOT_BLEED,
           shadowColor: color('--color-sticker-shadow'),
         },
         style,
       ]}
     >
-      <View style={styles.intro}>
-        <AppText
-          variant="title"
-          accessibilityRole="header"
-          testID="welcome-headline"
-          style={styles.headline}
-        >
-          {t('account.welcome.headline')}
-        </AppText>
-        <AppText variant="secondary" tone="secondaryLabel" style={styles.center}>
-          {t('account.welcome.subline')}
-        </AppText>
-      </View>
-      <SignInButtons />
-      <TermsLine />
+      <ScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <View style={styles.intro}>
+          <AppText
+            variant="title"
+            accessibilityRole="header"
+            testID="welcome-headline"
+            style={styles.headline}
+          >
+            {t('account.welcome.headline')}
+          </AppText>
+          <AppText variant="secondary" tone="secondaryLabel" style={styles.center}>
+            {t('account.welcome.subline')}
+          </AppText>
+        </View>
+        <SignInButtons />
+        <TermsLine />
+      </ScrollView>
     </Animated.View>
   );
 }
@@ -59,7 +67,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: -OVERSHOOT_BLEED,
-    gap: vars['--space-4'],
     paddingTop: vars['--space-6'],
     paddingHorizontal: vars['--space-5'],
     borderTopLeftRadius: vars['--radius-sheet'],
@@ -70,6 +77,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: vars['--space-5'],
   },
+  content: { gap: vars['--space-4'] },
   intro: { gap: vars['--space-1'] },
   headline: { textAlign: 'center', fontWeight: '800' },
   center: { textAlign: 'center' },

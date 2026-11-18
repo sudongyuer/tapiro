@@ -66,6 +66,7 @@ export default {
     openSettings: 'Open Settings',
     cameraUnavailable: 'The camera isn’t available on this device',
     placeholder: 'Message',
+    composerLabel: 'Write a message',
     send: 'Send',
     failed: 'Not sent. Tap to try again.',
     safety:

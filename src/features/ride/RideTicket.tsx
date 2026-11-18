@@ -17,8 +17,8 @@ const MIN_ROUTE_SCALE = 0.55;
 
 const ink = token('--color-on-card-ride') as string;
 const TONE_INK = {
-  urgent: token('--color-urgent') as string,
-  warning: token('--color-warning') as string,
+  urgent: token('--color-on-ride-urgent') as string,
+  warning: token('--color-on-ride-warning') as string,
   plain: ink,
 };
 
@@ -44,7 +44,13 @@ export function RideTicket({
       <View style={styles.main}>
         <View style={styles.statusRow}>
           <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
-          <AppText variant="meta" numberOfLines={1} style={[styles.status, { color: toneInk }]}>
+          <AppText
+            variant="meta"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={MIN_ROUTE_SCALE}
+            style={[styles.status, { color: toneInk }]}
+          >
             {view.status}
           </AppText>
           {view.time ? (
@@ -53,7 +59,13 @@ export function RideTicket({
             </AppText>
           ) : null}
           {view.time ? (
-            <AppText variant="meta" numberOfLines={1} style={styles.time}>
+            <AppText
+              variant="meta"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={MIN_ROUTE_SCALE}
+              style={styles.time}
+            >
               {view.time}
             </AppText>
           ) : null}
@@ -94,7 +106,13 @@ export function RideTicket({
         >
           {view.amount}
         </AppText>
-        <AppText variant="meta" numberOfLines={1} style={styles.fare}>
+        <AppText
+          variant="meta"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={MIN_ROUTE_SCALE}
+          style={styles.fare}
+        >
           {view.fare}
         </AppText>
       </View>
@@ -167,7 +185,8 @@ const styles = StyleSheet.create({
     gap: vars['--space-1'] / 2,
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
-  status: { flexShrink: 1, fontWeight: '700' },
+  // The time beside it must not squeeze the status away: at AX5 the line showed only the time.
+  status: { flexShrink: 1, minWidth: '50%', fontWeight: '700' },
   dot: { color: ink, opacity: MUTED_TEXT_OPACITY, marginHorizontal: vars['--space-1'] },
   time: { color: ink, fontWeight: '700' },
   route: { color: ink },

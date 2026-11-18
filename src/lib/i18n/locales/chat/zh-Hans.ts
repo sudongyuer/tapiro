@@ -66,6 +66,7 @@ export default {
     openSettings: '去设置',
     cameraUnavailable: '这台设备用不了相机',
     placeholder: '发消息',
+    composerLabel: '写消息',
     send: '发送',
     failed: '没发出去，点一下重试',
     safety: '钱只在「付款」那一步付，别提前转定金。有人要你站外付款，长按他的消息点「举报」。',

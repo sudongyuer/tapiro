@@ -1,5 +1,6 @@
 """问小貘 opens as a sheet from 悬赏 and from 拼车 with suggestions for that tab; it closes with the system close button at the
-trailing end of its bar (no drawn close button), and closing it leaves the same tab selected."""
+trailing end of its bar (no drawn close button), and closing it leaves the same tab selected. VoiceOver names the prompt
+「问小貘」 and then reads its placeholder, not the placeholder twice."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -15,6 +16,7 @@ COPY = {
     'tab-ride': ('shell.ask.subtitle.ride', 'shell.ask.suggestions.ride.first'),
 }
 
+PROMPTS = {'tab-bounty': 'shell.ask.prompt.bounty', 'tab-ride': 'shell.ask.prompt.ride'}
 ARGS = ['-uiVerifySignedIn', 'onboarded']
 ui = UI(*sys.argv[1:])
 
@@ -42,6 +44,10 @@ def open_sheet(tab, name):
     f = by_id(items, 'ask-tapir-mic')['frame']
     assert min(f['width'], f['height']) >= floor, f'ask-tapir-mic is under 44 pt at sheet scale {scale:.3f}: {f}'
     assert by_id(items, 'ask-tapir-mic').get('enabled') is not False, 'the mic is disabled'
+    spoken = by_id(items, 'ask-tapir-prompt').get('AXLabel') or ''
+    placeholder = ui.t(PROMPTS[tab])
+    assert spoken.startswith(ui.t('shell.ask.title')) and spoken.count(placeholder) <= 1, \
+        f'the prompt reads {spoken!r}, not its name ahead of the placeholder'
     for identifier in ('ask-tapir-suggestion-0', 'ask-tapir-suggestion-2', 'ask-tapir-prompt', 'ask-tapir-mic'):
         f, edge = by_id(items, identifier)['frame'], sheet['frame']
         assert f['x'] >= edge['x'] and f['x'] + f['width'] <= edge['x'] + edge['width'], f'{identifier} overflows the sheet: {f}'
