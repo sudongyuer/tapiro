@@ -14,7 +14,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 import ocr  # noqa: E402
 from board import ink_box  # noqa: E402
 from driver import UI, assert_touch_target, by_id, token  # noqa: E402
-from ride import add_button, assert_ticket_colour, label, open_list, ticket, within_screen  # noqa: E402
+from ride import add_button, assert_ticket_colour, label, open_list, tab_bar_top, ticket, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'verification/ui/ocr.py',
         'verification/ui/board.py', 'src/ui/HandArt.tsx', 'src/ui/InlineState.tsx']
@@ -25,6 +25,7 @@ STUB_WIDTH = int(re.search(r'const STUB_WIDTH = (\d+);', (Path(__file__).resolve
                                                          / 'src/features/ride/RideTicket.tsx').read_text()).group(1))
 # The AX5 run (--text-size ax5) checks only the 我的拼车 tickets: the rest of the walk assumes the Large layout.
 LARGE_TEXT = os.environ.get('TAPIRO_TEXT_SIZE', 'large') != 'large'
+AX5_HEAD = 140
 
 ui = UI(*sys.argv[1:])
 
@@ -49,21 +50,27 @@ for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
     within_screen(items, identifier)
 shot = ui.snap('01-mine')
 assert_ticket_colour(ui, shot, by_id(items, 'ride-ticket-ride-leaving'), '--color-ride', 'mine ticket')
+# At AX5 the second ticket can start below the fold (ms); a ticket counts once its status band clears the tab bar.
+heads = [identifier for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests')
+         if not LARGE_TEXT or by_id(items, identifier)['frame']['y'] + AX5_HEAD <= tab_bar_top(items)]
+assert 'ride-ticket-ride-leaving' in heads, f'the first ticket\'s status and time are not on screen: {heads}'
 for identifier, ink, status in (('ride-ticket-ride-leaving', '--color-on-ride-urgent', '--color-urgent'),
                                 ('ride-ticket-ride-requests', '--color-on-ride-warning', '--color-warning')):
+    if identifier not in heads:
+        continue
     frame = by_id(items, identifier)['frame']
     found = ink_box(shot, frame, token(ink, 'light'), 6)
     assert found and found['count'] >= STATUS_INK_MIN, f'{identifier} status line is not drawn in {ink}: {found}'
     faint = ink_box(shot, frame, token(status, 'light'), 6)
     assert not faint or faint['count'] < STATUS_INK_MIN, f'{identifier} still draws {status} (3.6:1 on the ticket)'
 read = ocr.lines_in(shot, ui.locale)
-for identifier in ('ride-ticket-ride-leaving', 'ride-ticket-ride-requests'):
+for identifier in heads:
     frame = by_id(items, identifier)['frame']
     main = {**frame, 'width': frame['width'] - STUB_WIDTH}
     clocks = ocr.find(read, r'\d{2}[:.]\d{2}', main)
     assert clocks, f'{identifier} cuts its departure time or pushes it under the stub: {[line["text"] for line in read]}'
 if LARGE_TEXT:
-    print('PASS: at AX5 both status lines in the ticket inks and both departure times whole, left of the stub')
+    print(f'PASS: at AX5 the status lines in the ticket inks and the departure times whole, left of the stub: {heads}')
     sys.exit(0)
 
 history = ticket(ui, 'ride-list-history')
