@@ -120,14 +120,14 @@ def close_button(ui, items=None):
     return next((i for i in (items or ui.read()) if i.get('AXLabel') == label and i.get('type') == 'Button'), None)
 
 
-# The sheet's own header rests under the system bar that holds the close button, and scrolled content passes under
+# The sheet's own header rests in the system bar's row, left of its close button, and scrolled content passes under
 # that bar (its scroll edge effect) while the close button stays where it was.
 def header_drop(ui):
     items = ui.read()
     button = close_button(ui, items)
     assert button, 'the 问小貘 sheet has no system close button'
     belly = by_id(items, 'ask-belly')['frame']
-    assert button['frame']['x'] < belly['x'], f'the close button is not at the leading edge: {button["frame"]}'
+    assert button['frame']['x'] > belly['x'] + belly['width'], f'the close button is not at the trailing end: {button["frame"]}'
     return button['frame']
 
 

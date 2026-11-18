@@ -356,7 +356,9 @@ so the card does not flip live (11), 先付 (12).
   comes back wired to `mark_ride_arrived` as HomeGCases G6 draws. `home.card.ride.arrive` and `home.soon` are removed.
   (c) HOME-6: the tab-bar strip leaves out the item whose screen is on top (its `target` equals the current path) and
   shows the next most urgent one, or nothing when it was the only one; on 帮取快递's 挑人 screen it shows 讲一下微积分作业.
-  The strip still opens home. (d) HOME-7: the 问小貘 sheet closes with the system toolbar `xmark` at the leading end of
-  a transparent header with the system scroll edge effect, like the pay and payee sheets; the drawn
-  `xmark.circle.fill` is gone. The sheet's own header (小貘, title, belly) rests under that bar and scrolls under it.
+  The strip still opens home. (d) HOME-7: the 问小貘 sheet closes with the system toolbar `xmark` at the trailing end of
+  a transparent header with the system scroll edge effect (the 买貘币 form sheet's pattern); the drawn
+  `xmark.circle.fill` is gone. The sheet's own header (小貘, title, belly) rests in the bar's row beside it, so the half
+  detent keeps its room (a first build put the header under the bar and pushed the field and 自己填 off the sheet), and
+  scrolls under it.
   This replaces the ask plan's U4 (content cut 16 pt under the grabber).

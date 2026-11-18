@@ -1,6 +1,5 @@
 import type { ParseKeys } from 'i18next';
 import { Stack } from 'expo-router';
-import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
 
@@ -66,7 +65,6 @@ export function AskTapirSheet({
   const { t } = useI18n();
   const { color } = useTheme();
   const fill = useSheetFill();
-  const headerHeight = useHeaderHeight();
   const scroll = useRef<ScrollViewInstance>(null);
   useEffect(() => {
     if (replies > 0) scroll.current?.scrollToEnd({ animated: true });
@@ -76,19 +74,19 @@ export function AskTapirSheet({
 
   return (
     <>
-      <Stack.Toolbar placement="left">
+      <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
           icon="xmark"
           accessibilityLabel={t('shell.ask.close')}
           onPress={onClose}
         />
       </Stack.Toolbar>
-      {/* The header's inset is padding, not the automatic content inset: automaticallyAdjustKeyboardInsets scrolls to
-          an offset clamped to -contentInset.top, which leaves the automatic inset out (see ReviewSheet). */}
+      {/* No automatic inset for the bar: the sheet's own header sits in the bar's row beside the close button, keeping
+          the half detent's room for the field and the hungry card's buttons. */}
       <ScrollView
         ref={scroll}
         contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={[styles.sheet, { paddingTop: headerHeight + vars['--space-2'] }]}
+        contentContainerStyle={styles.sheet}
         automaticallyAdjustKeyboardInsets
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
@@ -107,6 +105,7 @@ export function AskTapirSheet({
             </AppText>
             {belly}
           </View>
+          <View style={styles.closeSlot} />
         </View>
 
         <View style={styles.body} testID="ask-tapir-body">
@@ -137,6 +136,7 @@ export function AskTapirSheet({
 const styles = StyleSheet.create({
   sheet: {
     paddingHorizontal: vars['--space-5'],
+    paddingTop: vars['--space-6'],
     paddingBottom: vars['--space-6'],
     gap: vars['--space-4'],
   },
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: { flex: 1, minWidth: 0 },
+  closeSlot: { width: vars['--touch-min'] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
   chip: {
     minHeight: vars['--touch-min'],
