@@ -346,3 +346,19 @@ so the card does not flip live (11), 先付 (12).
   over the stage, so 「+」 is a dark glyph on light glass in dark mode too; pushed screens follow the appearance.
   (d) Spacing on tokens: bubble padding 9/13 → 8/12, calm chips 6 → 8 pt apart, the title under a card's meta line
   2 → 4 pt (bounty, pay and ride cards); the calm card's mic keeps its 6 pt inset, now derived from the two sizes.
+- 2026-11-17, UI polish audit, home owner rows (HOME-3, -5, -6, -7; delegated to the agents, #162). ★ for veto:
+  (a) HOME-3, decided by the main session: when payments failed to load or went stale, 小貘 says
+  「付款信息没加载出来，下拉再试一次」 (`home.say.unavailable`, en and ms alike, plain), not 「有事在进行，小貘帮你盯着」;
+  while they are still loading the line is unchanged. Pull to refresh on home now also retries every failed or stale
+  live source (`liveItems.retryIssues()`), so the line tells the truth; it retried only the board before.
+  (b) HOME-5: the ride card's 「我到了」 pill is gone. It was drawn as the card's primary action and did nothing, and no
+  live source feeds the ride card yet (fixtures only), so it has no ride to mark; when carpool feeds home, the pill
+  comes back wired to `mark_ride_arrived` as HomeGCases G6 draws. `home.card.ride.arrive` and `home.soon` are removed.
+  (c) HOME-6: the tab-bar strip leaves out the item whose screen is on top (its `target` equals the current path) and
+  shows the next most urgent one, or nothing when it was the only one; on 帮取快递's 挑人 screen it shows 讲一下微积分作业.
+  The strip still opens home. (d) HOME-7: the 问小貘 sheet closes with the system toolbar `xmark` at the trailing end of
+  a transparent header with the system scroll edge effect (the 买貘币 form sheet's pattern); the drawn
+  `xmark.circle.fill` is gone. The sheet's own header (小貘, title, belly) rests in the bar's row beside it, so the half
+  detent keeps its room (a first build put the header under the bar and pushed the field and 自己填 off the sheet), and
+  scrolls under it.
+  This replaces the ask plan's U4 (content cut 16 pt under the grabber).

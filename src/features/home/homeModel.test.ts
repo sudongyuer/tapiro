@@ -172,6 +172,15 @@ describe('payments that are not known', () => {
     expect(stageState([], issues)).toBe('live');
   });
 
+  test('a failed or stale source makes 小貘 say the payments did not load, and loading says nothing new', () => {
+    for (const status of ['failed', 'stale'] as const) {
+      const cards = liveCards([ride], DETAILS, priority, [{ source: 'payments', status }]);
+      expect(stageLine(cards)).toEqual({ key: 'unavailable' });
+    }
+    const loading = liveCards([], DETAILS, priority, [{ source: 'payments', status: 'loading' }]);
+    expect(stageLine(loading)).toEqual({ key: 'live' });
+  });
+
   test('a stale source puts the unavailable card in front of the other live items', () => {
     const issues = [{ source: 'payments', status: 'stale' } as const];
     expect(liveCards([ride], DETAILS, priority, issues).map((card) => card.kind)).toEqual([

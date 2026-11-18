@@ -31,6 +31,7 @@ import {
 } from '@/features/home';
 import { PendingReviewCards, reviewStore, useStageGrowth } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
+import { liveItems } from '@/lib/useLiveItems';
 import { vars } from '@/ui/theme/tokens';
 
 export default function BountyHomeRoute() {
@@ -152,6 +153,7 @@ function BountyHome({ user }: { user: AccountUser }) {
             onRefresh={() => {
               void reviewStore.reloadPending();
               void coinsStore.reloadFeedStatus();
+              liveItems.retryIssues();
               board.pull();
             }}
           />

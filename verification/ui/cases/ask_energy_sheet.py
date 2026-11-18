@@ -2,8 +2,8 @@
 third, so the bar drops to four, and tapping it explains the belly in a system alert. With one segment left the bar
 turns orange and the sheet says 小貘 can help about once more. An empty belly shows the hungry card instead of a send:
 with a leaf in the jar 喂一片嫩叶 feeds it (one call, the leaf flies to 小貘 in the recorded clip) and the bar is full
-again; with no leaf, a coin swap asks first in a system action sheet and feeds at once; after five feeds today it
-says 吃撑了 with only 自己填; with nothing, 明早再来 closes the sheet. A belly emptied by an answer brings the card
+again; with no leaf, a coin swap asks first in a system action sheet and feeds at once; after five feeds today its one
+title says 吃撑了 (not 饿了 over it) with only 自己填; with nothing, 明早再来 closes the sheet. A belly emptied by an answer brings the card
 without another send."""
 import sys
 
@@ -81,6 +81,7 @@ with_belly('0,2,3,5')
 segments(ui, 0)
 offer(ui, 'feed', ui.t('ask.hungry.feed', count=2))
 ui.wait_label('ask-hungry-line', lambda text: text == ui.t('ask.hungry.refill'), 'the refill line is missing')
+ui.wait_label('ask-hungry-title', lambda text: text == ui.t('ask.hungry.title'), 'the hungry title is missing')
 ui.at_rest()
 shot = ui.snap('04-hungry-leaf')
 if ui.appearance == 'dark':
@@ -113,7 +114,8 @@ assert assert_calls(ui, 'pantry', 1, wait=1) == [{'kind': 'swapFeed'}]
 
 with_belly('0,2,3,0')
 offer(ui, 'capped', None)
-ui.wait_label('ask-hungry-line', lambda text: text == ui.t('ask.hungry.capped'), 'the capped line is missing')
+ui.wait_label('ask-hungry-title', lambda text: text == ui.t('ask.hungry.capped'), 'the capped title is missing')
+assert by_id(ui.read(), 'ask-hungry-line') is None, 'the capped card still has a second line under its title'
 ui.at_rest()
 ui.capture('07-capped')
 

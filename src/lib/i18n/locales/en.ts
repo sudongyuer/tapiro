@@ -210,6 +210,7 @@ const en: Translation = {
       settledUnnamed: 'They got the money — all done!',
       bounty: '{{title}} · {{line}}',
       live: 'Something’s in progress, I’m keeping an eye on it',
+      unavailable: 'Couldn’t load your payments. Pull down to try again',
       calm: 'Nothing on today… post a bounty?',
     },
     stage: {
@@ -222,7 +223,6 @@ const en: Translation = {
       collapseHint: 'Stacks the cards again',
       peekHint: 'Spreads out all cards',
     },
-    soon: 'This step isn’t available yet',
     card: {
       waiting: { tag: 'Waiting to be confirmed' },
       settled: {
@@ -257,7 +257,6 @@ const en: Translation = {
         countdownLabel: '{{time}} until departure',
         meet: 'Meet',
         destination: 'To',
-        arrive: 'I’m here',
       },
       owed: {
         tag: 'Confirm',
