@@ -3,6 +3,7 @@ quick picks (161A; 「明天」 sets tomorrow 21:00 and sticks), then 截止 / �
 disables past days, and 移除 collapses it back. On a 12-hour device the live card and confirm write each time as its
 picker shows it (晚上9:00). Confirm shows the deadline and the description's first line; the description counter stays
 hidden for a short note. A seeded long draft shows its counters in code points (an emoji counts once)."""
+import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -63,7 +64,7 @@ calendar_bottom = max(day['frame']['y'] + day['frame']['height'] for day in days
 ui.tap_point(8, min(calendar_bottom + 120, ui.read()[0]['frame']['height'] - 60))
 ui.gone('PopoverDismissRegion')
 ui.tap('bounty-post-pick-time-tomorrow')
-after = ui.wait(lambda items: (lambda value: value if value and value != before and picker_time(value).endswith('9:00')
+after = ui.wait(lambda items: (lambda value: value if value and value != before and re.search(r'(21|9)[:.]00', value)
                                else None)(picker_value(items, 'bounty-post-deadline')),
                 f'the 明天 quick pick did not set tomorrow 21:00 (still {before!r})')
 ui.capture('02b-time-pick')
@@ -73,10 +74,13 @@ ui.element('bounty-post-start')
 ui.element('bounty-post-end')
 items = ui.read()
 assert by_id(items, 'bounty-post-deadline') is None, '截止 still shown after choosing 时间段'
-window = [picker_time(picker_value(items, identifier) or '') for identifier in ('bounty-post-start', 'bounty-post-end')]
+values = [picker_value(items, identifier) or '' for identifier in ('bounty-post-start', 'bounty-post-end')]
+window = [picker_time(value) for value in values]
+dates = [value.partition(',')[2].strip() for value in values]
+assert dates[0] == dates[1], f'开始 and 结束 on one day write the date differently: {dates} (BP-13)'
 assert all(':' in shown for shown in window), f'the window pickers show no time: {window}'
-live = plain(by_id(items, 'bounty-post-live-text').get('AXLabel'))
-assert all(shown in live for shown in window), f'the live card {live!r} does not write the picked times {window}'
+ui.wait_label('bounty-post-live-text', lambda label: all(shown in plain(label) for shown in window),
+              f'the live card does not write the picked times {window}')
 ui.capture('02-window')
 ui.tap_label(ui.t('bounty.post.form.deadline'))
 ui.element('bounty-post-deadline')

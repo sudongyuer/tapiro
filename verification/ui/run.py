@@ -33,13 +33,20 @@ DEFAULT_TIME_ZONE = 'Asia/Kuala_Lumpur'
 DEFAULT_ZONE_OFFSET = 8
 SIMCTL_TIMEOUT = 60
 REGIONS = {'zh-Hans': 'zh_MY', 'en': 'en_MY', 'ms': 'ms_MY'}
-HOUR_KEYS = ('-AppleICUForce24HourTime', '-AppleICUForce12HourTime')
+TWELVE_HOURS = '-AppleICUForce12HourTime'
 
 
-def locale_args(locale, args):
-    # The Malaysian regions default to 12-hour time; a case gets 24 hours unless its ARGS choose a cycle.
-    hours = [] if any(key in args for key in HOUR_KEYS) else ['-AppleICUForce24HourTime', 'YES']
-    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale], *hours]
+def locale_args(locale):
+    return ['-AppleLanguages', f'({locale})', '-AppleLocale', REGIONS[locale]]
+
+
+def hour_cycle_commands(udid, args):
+    # The Malaysian regions default to 12-hour time; a case gets 24 hours unless its ARGS name TWELVE_HOURS. A launch
+    # argument reaches UIDatePicker but not Locale.current.hourCycle, so the setting goes where Settings writes it.
+    twelve = TWELVE_HOURS in args
+    spawn = ['xcrun', 'simctl', 'spawn', udid, 'defaults', 'write', '-g']
+    return [[*spawn, 'AppleICUForce24HourTime', '-bool', 'false' if twelve else 'true'],
+            [*spawn, 'AppleICUForce12HourTime', '-bool', 'true' if twelve else 'false']]
 KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # With no AppleKeyboards the app derives its keyboards from -AppleLanguages, so zh-Hans gets Pinyin and typed ASCII
 # becomes candidates; on the English keyboard prediction and autocorrection rewrite typed words (klia -> Kline, see you at
@@ -251,7 +258,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
-    for command in software_keyboard_commands(udid):
+    for command in [*software_keyboard_commands(udid), *hour_cycle_commands(udid, extra)]:
         subprocess.run(command, capture_output=True, timeout=30)
     reset_records(udid)
     video = out / 'run.mp4'
@@ -261,7 +268,7 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     )
     time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
-        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, *locale_args(locale, extra),
+        'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, *locale_args(locale),
         *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(zone))
     if stuck:
         status, message = 'fail', stuck

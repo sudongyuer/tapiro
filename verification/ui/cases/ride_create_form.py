@@ -14,7 +14,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import dismiss_keyboard  # noqa: E402
 from driver import UI, assert_touch_target, by_id, picker_time, plain, token  # noqa: E402
 from readable import assert_label_reads  # noqa: E402
-from ride import AFTERNOON, MORNING, clock_24h, form_scroll_to, open_form, open_list, step  # noqa: E402
+from ride import clock_24h, form_scroll_to, open_form, open_list, step, time_text  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/lib/deviceClock.ts', 'src/lib/i18n/index.tsx', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py', 'verification/ui/readable.py',
         'verification/ui/bounty.py',
@@ -70,8 +70,8 @@ ui.capture('02-places')
 
 assert_touch_target(ui.element('ride-form-pick-0'), 'quick time')
 opened = time.time()
-quick = plain(ui.element('ride-form-pick-0').get('AXLabel'))
-assert any(mark in quick for mark in AFTERNOON + MORNING + ('中午',)), f'the quick time {quick!r} is not 12-hour'
+quick = time_text(ui.element('ride-form-pick-0').get('AXLabel'))
+assert quick and not re.fullmatch(r'\d{2}:\d{2}', quick), f'the quick time {quick!r} is not 12-hour'
 picked = clock_24h(quick)
 local = {first_quick_time(at) for at in (opened - 120, opened)}
 assert picked in local, f'the first quick time is {picked}, not the device-zone clock {sorted(local)}'
@@ -86,7 +86,7 @@ assert_label_reads(ui.snap('02b-time-selected'), by_id(items, 'ride-form-pick-0'
 shown = picker_time(next(i.get('AXValue') for i in items if i.get('type') == 'Button' and i.get('AXValue')
                          and i['frame']['y'] == by_id(items, 'ride-form-time')['frame']['y']))
 assert clock_24h(shown) == picked, f'the date picker shows {shown} for the picked {picked} (both read the device zone)'
-assert shown in quick, f'the quick time {quick!r} does not write the picker\'s {shown!r}'
+assert shown == quick, f'the quick time {quick!r} does not write the picker\'s {shown!r}'
 ticket = plain(by_id(items, 'ride-form-ticket').get('AXLabel'))
 assert shown in ticket, f'the ticket {ticket!r} does not write the picker\'s {shown!r}'
 

@@ -155,6 +155,12 @@ def tap_clear(ui, identifier, tries=6):
 CLOCK_IN_VALUE = re.compile(r'([^\d\s,]*)\s*(\d{1,2})[:.](\d{2})\s*([^\d\s,]*)')
 AFTERNOON = ('PM', 'PTG', 'P.M.', '下午', '晚上')
 MORNING = ('AM', 'PG', 'A.M.', '凌晨', '上午', '早上')
+TIME_TEXT = re.compile(r'(?:凌晨|早上|上午|中午|下午|晚上)?\d{1,2}[:.]\d{2}(?:\s?(?:AM|PM|PG|PTG|A\.M\.|P\.M\.))?')
+
+
+def time_text(label):
+    found = TIME_TEXT.search(' '.join((label or '').split()))
+    return found.group() if found else None
 
 
 def picker_clock(ui, identifier):

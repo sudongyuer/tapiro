@@ -178,7 +178,7 @@ def relaunch(ui, drop=EMPTY_DRAFT, add=(), ready='home-scroll', keep_records=Fal
     subprocess.run(['xcrun', 'simctl', 'terminate', ui.udid, BUNDLE_ID], capture_output=True)
     if not keep_records:
         reset_records(ui.udid)
-    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, *locale_args(ui.locale, [*args, *add]), *args, *add],
+    subprocess.run(['xcrun', 'simctl', 'launch', ui.udid, BUNDLE_ID, *locale_args(ui.locale), *args, *add],
                    check=True, capture_output=True, timeout=60)
     ui.element(ready, timeout=60)
 

@@ -688,15 +688,19 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
       open: after an in-app language switch away from the system language, the picker's words (晚上 / PM) stay in the
       system language, the same root as HOME-4. A change of the device setting while the app runs shows on the next
       render of each screen.
-    - The date half of BP-13 is not a format rule and is not built. In every recorded run (zh-Hans, en, ms on 11-13,
-      zh-Hans on 11-16) the 开始 picker's own accessibility value is the short date (「14/11/26」) while 结束 in the
-      same row width reads 「2026年11月14日」: the start picker lays out 11 pt narrower (253 vs 264 pt) and the compact
-      `UIDatePicker` falls back to its short style. App code does not format that text; why the start picker gets the
-      narrower layout is open (Simulator investigation).
-    - Verify runs pin the Simulator to 24 hours (`-AppleICUForce24HourTime YES`; `zh_MY`, `en_MY` and `ms_MY` default
-      to 12) unless a case's ARGS choose a cycle. `bounty_post_optional` and `ride_create_form` run in 12 hours and
-      assert that the picker's time text appears as is in the live card, the ticket, the quick time and confirm;
-      `bounty_status_helper` swipes the minute column of the 24-hour wheel.
+    - The date half of BP-13 is not a format rule. In every run of 11-13 and 11-16 (zh-Hans, en, ms) the 开始
+      picker's own accessibility value was the short date (「14/11/26」) while 结束 in the same row width read
+      「2026年11月14日」: the start picker laid out 11 pt narrower (253 vs 264 pt) and the compact `UIDatePicker` fell
+      back to its short style. App code does not format that text. On this branch's build it did not happen in three
+      runs (zh-Hans twice, ms once; both rows read 「2026年11月19日」), cause not found; `bounty_post_optional` now
+      asserts that 开始 and 结束 on one day write the same date, so a return fails the case.
+    - Verify runs set the Simulator's hour cycle where Settings writes it (`defaults write -g AppleICUForce24HourTime`
+      through `simctl spawn` before each case): 24 hours unless a case's ARGS hold `-AppleICUForce12HourTime`
+      (`zh_MY`, `en_MY` and `ms_MY` default to 12). A launch argument alone reached `UIDatePicker` but not
+      `Locale.current.hourCycle`, which expo-localization reads, so the first run showed a 24-hour wheel beside
+      「上午10:45」. `bounty_post_optional` and `ride_create_form` run in 12 hours and assert that the picker's time
+      text appears as is in the live card, the ticket, the quick time and confirm; `bounty_status_helper` swipes the
+      minute column of the 24-hour wheel.
 
 ## Not in this plan
 
