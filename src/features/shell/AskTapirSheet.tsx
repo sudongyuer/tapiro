@@ -76,8 +76,11 @@ export function AskTapirSheet({
   const { color } = useTheme();
   const fill = useSheetFill();
   const scroll = useRef<ScrollViewInstance>(null);
+  const follow = useRef(false);
   useEffect(() => {
-    if (replies > 0) scroll.current?.scrollToEnd({ animated: true });
+    if (replies === 0) return;
+    follow.current = true;
+    scroll.current?.scrollToEnd({ animated: true });
   }, [replies]);
   const copy = COPY[tab];
   const suggestions = [...copy.suggestions, 'shell.ask.suggestions.writeBounty' as const];
@@ -90,6 +93,12 @@ export function AskTapirSheet({
       automaticallyAdjustKeyboardInsets
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="interactive"
+      onContentSizeChange={() => {
+        if (follow.current) scroll.current?.scrollToEnd({ animated: true });
+      }}
+      onScrollBeginDrag={() => {
+        follow.current = false;
+      }}
       testID="ask-tapir-sheet"
     >
       <View style={styles.header}>
