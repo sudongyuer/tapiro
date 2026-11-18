@@ -59,7 +59,7 @@ def send(ui):
 
 def stamp_box(ui, shot, f):
     lane = {'x': f['x'] - STAMP_REACH, 'y': f['y'], 'width': STAMP_REACH + STAMP_WIDTH, 'height': f['height']}
-    return ink_box(shot, lane, token('--color-success', ui.appearance), 40)
+    return ink_box(shot, lane, token('--color-paper-green', ui.appearance), 40)
 
 
 def has_stamp(ui, shot, f):
