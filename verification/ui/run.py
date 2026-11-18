@@ -200,12 +200,12 @@ def simctl_step(label, argv, log, env=None):
         return f'{label} timed out after {SIMCTL_TIMEOUT} s'
 
 
-def run_script(case, extra, budget, locale, appearance, udid, out, after, zone):
+def run_script(case, extra, budget, locale, appearance, udid, out, after, zone, text_size='large'):
     try:
         proc = subprocess.run(
             [sys.executable, str(HERE / 'cases' / f'{case}.py'), udid, str(out), appearance, locale],
             capture_output=True, text=True, timeout=budget,
-            env={**zone_env(zone), 'TAPIRO_VERIFY_ARGS': ' '.join(extra)},
+            env={**zone_env(zone), 'TAPIRO_VERIFY_ARGS': ' '.join(extra), 'TAPIRO_TEXT_SIZE': text_size},
         )
     except subprocess.TimeoutExpired as error:
         message = f'command timed out after {budget} s'
@@ -262,7 +262,8 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     if stuck:
         status, message = 'fail', stuck
     else:
-        status, message, case_log = run_script(case, extra, budget, locale, appearance, udid, out, after, zone)
+        status, message, case_log = run_script(case, extra, budget, locale, appearance, udid, out, after, zone,
+                                                text_size)
     if status == 'fail':
         try:
             timed('screenshot failure', ['xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'failure.png')],

@@ -184,7 +184,7 @@ verification/ui/a11y.py <dir or json ...>` lists the same problems for every dum
 (`simctl ui <udid> content_size accessibility-extra-extra-extra-large`; every run sets the size, `large` by default, so it
 never leaks into the next case) and writes to `.verify/ui-ax5/` unless `--output` is given. Acceptance stays at Large: the
 AX5 run is an audit for clipping and overlap, so a case whose assertions depend on the Large layout may fail there while
-its screenshots still show what to fix. The launch argument `-UIPreferredContentSizeCategoryName` does not work for this
+its screenshots still show what to fix. Cases read the size from `TAPIRO_TEXT_SIZE` (`a11y_screens` moves past a row that AX5 pushes below the fold). The launch argument `-UIPreferredContentSizeCategoryName` does not work for this
 scene-based app: it stayed at Large.
 
 Shell and home cases sign in through `reach_home`. `Shot` reads screenshot pixels in points, so
