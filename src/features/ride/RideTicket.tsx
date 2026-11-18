@@ -22,17 +22,15 @@ const TONE_INK = {
   plain: ink,
 };
 
-// When the status and the time do not fit one line (long copy, large text), the time wraps under the status and drops
-// its leading dot, so neither is cut or pushed under the stub.
+// When the status and the time do not fit one line (long copy, large text), the time wraps under the status. The dot
+// only fades there: removing it would narrow the time, let it fit back on the first line, and toggle without end.
 function TimeTail({ time }: { time: string }) {
   const [wrapped, setWrapped] = useState(false);
   return (
     <View style={styles.timeTail} onLayout={(event) => setWrapped(event.nativeEvent.layout.y > 1)}>
-      {wrapped ? null : (
-        <AppText variant="meta" style={styles.dot}>
-          ·
-        </AppText>
-      )}
+      <AppText variant="meta" style={[styles.dot, wrapped && styles.hidden]}>
+        ·
+      </AppText>
       <AppText variant="meta" style={styles.time}>
         {time}
       </AppText>
@@ -61,16 +59,18 @@ export function RideTicket({
     <>
       <View style={styles.main}>
         <View style={styles.statusRow}>
-          <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
-          <AppText
-            variant="meta"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={MIN_ROUTE_SCALE}
-            style={[styles.status, { color: toneInk }]}
-          >
-            {view.status}
-          </AppText>
+          <View style={styles.statusLead}>
+            <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
+            <AppText
+              variant="meta"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={MIN_ROUTE_SCALE}
+              style={[styles.status, { color: toneInk }]}
+            >
+              {view.status}
+            </AppText>
+          </View>
           {view.time ? <TimeTail time={view.time} /> : null}
         </View>
         <AppText
@@ -193,7 +193,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     columnGap: vars['--space-1'],
   },
+  statusLead: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'], flexShrink: 1 },
   status: { flexShrink: 1, fontWeight: '700' },
+  hidden: { opacity: 0 },
   timeTail: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
   dot: { color: ink, opacity: MUTED_TEXT_OPACITY, marginHorizontal: vars['--space-1'] },
   time: { color: ink, fontWeight: '700' },
