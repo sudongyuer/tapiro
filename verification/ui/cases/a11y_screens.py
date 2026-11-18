@@ -43,7 +43,7 @@ SCENES = [
     ('ride-form', QUIET, [], False),
     ('ride-confirm', QUIET, [], False),
     ('ride-detail', [*QUIET, '-uiVerifyRideDetail', 'viewer'], [], False, 'ride-detail-ticket'),
-    ('chat-thread', [*QUIET, '-uiVerifyChat', '1'], [], False, 'chat-composer-input'),
+    ('chat-thread', [*QUIET, '-uiVerifyChat', '1', '-uiVerifyChatLong', '1'], [], False, 'chat-composer-input'),
     ('profile', QUIET, [], False, 'profile-screen'),
     ('coins-page', [*QUIET, '-uiVerifyCoins', 'many'], [], False, 'coins-screen'),
     ('settings', QUIET, [], False),
