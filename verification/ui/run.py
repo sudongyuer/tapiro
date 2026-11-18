@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from affected import SMOKE, layout_cases, parse_declarations, parse_deps, run_locales, select
-from breaker import tripped
+from breaker import render_cpu_sample, tripped
 from driver import BUNDLE_ID
 from hourcycle import hour_cycle_commands
 from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
@@ -40,6 +40,9 @@ KEYBOARDS = ['en_US@sw=QWERTY;hw=Automatic', 'emoji@sw=Emoji']
 # the lobby -> See lobby). Autocapitalisation is off too: with the software keyboard kept up, AXe's first key was
 # sometimes capitalised (parcel -> Parcel, 2026-11-17). Non-ASCII text is pasted instead.
 KEYBOARD_PREFS = 'com.apple.keyboard.preferences'
+# Every run sets the Simulator's text size, so a large-text run never leaks into the next case. The launch argument
+# -UIPreferredContentSizeCategoryName left a scene-based app at Large (2026-11-18).
+TEXT_SIZES = {'large': 'large', 'ax5': 'accessibility-extra-extra-extra-large'}
 
 
 def locale_args(locale):
@@ -180,17 +183,6 @@ def pick_affected(cases, base):
     return list(picked), layout
 
 
-def render_cpu_sample():
-    try:
-        out = subprocess.run(['top', '-l', '2', '-s', '1', '-o', 'cpu', '-n', '20', '-stats', 'pid,cpu,command'],
-                             capture_output=True, text=True, timeout=20).stdout
-    except subprocess.TimeoutExpired:
-        return 'top timed out'
-    last = out.split('PID')[-1]
-    rows = [line for line in last.splitlines() if 'SimRenderServer' in line or 'SimRenderingServices' in line]
-    return '\n'.join(rows) or 'SimRenderServer and SimRenderingServices are not among the 20 busiest processes'
-
-
 def videos(out):
     return sorted(out.glob('*.mp4'))
 
@@ -245,13 +237,15 @@ def clear_output(out, keep_first):
             stale.unlink()
 
 
-def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_first=False):
+def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_first=False, text_size='large'):
     name, udid, _ = device
     started = time.monotonic()
     clear_output(out, keep_first)
     zone = case_zone(case)
     before, after, case_log = [f'time zone: {zone}'], [], ''
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
+    stuck = stuck or simctl_step('simctl content_size',
+                                 ['xcrun', 'simctl', 'ui', udid, 'content_size', TEXT_SIZES[text_size]], before)
     subprocess.run(['xcrun', 'simctl', 'terminate', udid, BUNDLE_ID], capture_output=True)
     for command in [*software_keyboard_commands(udid), *hour_cycle_commands(udid, extra)]:
         subprocess.run(command, capture_output=True, timeout=30)
@@ -368,7 +362,9 @@ def main():
     parser.add_argument('--udid', help='run on this one Simulator instead of the runner-owned ones')
     parser.add_argument('--workers', type=int, default=DEFAULT_WORKERS,
                         help='Simulators to run cases on in parallel; one when disk is low')
-    parser.add_argument('--output', default=str(ROOT / '.verify/ui'))
+    parser.add_argument('--output', help='default .verify/ui, or .verify/ui-<size> for another --text-size')
+    parser.add_argument('--text-size', choices=sorted(TEXT_SIZES), default='large',
+                        help='Dynamic Type for the app under test; acceptance runs at large')
     parser.add_argument('--appearance', choices=['light', 'dark', 'both'], default='both')
     parser.add_argument('--locale', choices=sorted(REGIONS))
     parser.add_argument('--affected', action='store_true',
@@ -380,6 +376,8 @@ def main():
     parser.add_argument('--locales', action='store_true', help="with --affected or --smoke, also run en and each case's LOCALES")
     parser.add_argument('cases', nargs='*')
     args = parser.parse_args()
+    if args.output is None:
+        args.output = str(ROOT / ('.verify/ui' if args.text_size == 'large' else f'.verify/ui-{args.text_size}'))
 
     cases = args.cases or sorted(p.stem for p in (HERE / 'cases').glob('*.py'))
     tiered = args.affected or args.smoke
@@ -466,7 +464,7 @@ def main():
     def attempt(device, job, retry):
         appearance, case, scene, locale, extra, budget = job
         return run_case(case, scene, extra, budget, locale, appearance, device, output / locale / appearance / case,
-                        keep_first=retry)
+                        keep_first=retry, text_size=args.text_size)
 
     run_started = time.monotonic()
     threads = [guarded(work, scheduler, device, attempt, lambda d: heal(d, app), report, halt) for device in devices]

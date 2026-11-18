@@ -171,6 +171,22 @@ interaction, and `recording.frames(video, dir)` (`frames.swift`) returns each fr
 timing does not depend on screenshot latency. It reads each frame as sRGB: the recording's colour tag is wider than its
 values, and converting from the tag moved the dark hold gold #D99A2B to (226, 149, 0) (2026-11-10). Swift helpers compile once to `.verify/<name>` through `swifttool.py`.
 
+Accessibility (`a11y.py`, `python3 -m unittest test_a11y`): `a11y.assert_accessible(ui, '<capture>')` reads the tree a
+`ui.capture` saved and fails when an interactive element (button, link, field, menu, switch, tab) has no VoiceOver
+label, a label that is an identifier or an SF Symbol name (`chevron.right`), or, for an element carrying one of our
+kebab-case `testID`s, a frame under 44 pt on either side (half a point of rounding allowed). Children of an interactive
+element are skipped, since VoiceOver reads them as part of it, and so are the navigation bar, the keyboard and segmented
+controls (Apple's chrome), and the size of switches, steppers, menu pickers and text fields, whose 44 pt row is the target (`FieldRow` focuses its field). A
+control without a `testID` is not size-checked, so a system control (date picker, sheet grabber, context menu row) does
+not fail a case; `allow=[...]` names a `testID` that may stay small, with the reason in the case. `python3
+verification/ui/a11y.py <dir or json ...>` lists the same problems for every dump under a run folder.
+`--text-size ax5` runs the named cases at the largest accessibility text size
+(`simctl ui <udid> content_size accessibility-extra-extra-extra-large`; every run sets the size, `large` by default, so it
+never leaks into the next case) and writes to `.verify/ui-ax5/` unless `--output` is given. Acceptance stays at Large: the
+AX5 run is an audit for clipping and overlap, so a case whose assertions depend on the Large layout may fail there while
+its screenshots still show what to fix. The launch argument `-UIPreferredContentSizeCategoryName` does not work for this
+scene-based app: it stayed at Large.
+
 Shell and home cases sign in through `reach_home`. `Shot` reads screenshot pixels in points, so
 cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`), the 悬赏令 halo
 (`glow`) and the 小貘 button outline (`assert_tapir_button`).
