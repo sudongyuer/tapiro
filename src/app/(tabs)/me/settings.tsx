@@ -22,6 +22,7 @@ export default function Settings() {
       signingOut={signingOut}
       onSignOut={() => void accountActions.signOut()}
       onDeleteAccount={() => router.push('/delete-account')}
+      onOpenLegal={(page) => router.push(`/legal/${page}`)}
     />
   );
 }

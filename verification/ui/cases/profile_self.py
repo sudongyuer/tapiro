@@ -1,6 +1,6 @@
 """Your own profile keeps the RepBC order (245 A): header, the three numbers, the 小貘等级 · 只升不降 card (Lv.4 少年貘, 再收 2 张贴纸
 → Lv.5 青年貘, 小红帽 / 书包 / 雨伞 unlocked and 围巾 locked at Lv.5), 一起办成的事 with 23 张, then the reviews; your own ride review keeps its route and
-reviewer (256 A); a review with no reply offers 回复 (44 pt, read with the review) and the one already answered reads 我的回复：…; there is no ⋯; 一起办成的事 opens the sticker book."""
+reviewer (256 A); a review with no reply offers 回复 (44 pt, read with the review) at the end of its face line, adding no line and the one already answered reads 我的回复：…; there is no ⋯; 一起办成的事 opens the sticker book."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -46,6 +46,10 @@ reply = by_id(items, f'{review_id(1)}-reply-button')
 line = f"{ui.t('reputation.face.happy')} · {ui.t('reputation.chip.helper.on_time')} · {ui.t('reputation.chip.helper.kept_posted')}"
 assert reply.get('AXLabel') == ui.t('reputation.reply.actionA11y', review=line), reply.get('AXLabel')
 assert_touch_target(reply, '回复')
+first = by_id(items, review_id(1))['frame']
+r = reply['frame']
+assert abs(r['y'] - first['y']) <= 1 and r['x'] >= first['x'] + first['width'], f'回复 is not at the end of the face line: {r} vs {first}'
+assert r['y'] + r['height'] <= first['y'] + first['height'] + 1, f'回复 adds a line under the review: {r} vs {first}'
 assert by_id(items, f'{review_id(2)}-reply-button') is None, 'an answered review still offers 回复'
 ride = scroll_to(ui, review_id(3)).get('AXLabel') or ''
 assert 'Mei' in ride and '双威 → KLIA2' in ride, f'your own ride review hides its route or reviewer: {ride}'

@@ -139,6 +139,26 @@ export function ChipPicker({
   );
 }
 
+export function PickedChips({ draft, role }: { draft: ReviewDraft; role: Role }) {
+  const { t } = useI18n();
+  if (draft.chips.length === 0) return null;
+  return (
+    <View style={styles.chips}>
+      {draft.chips.map((chip) => (
+        <View
+          key={chip}
+          accessible
+          accessibilityLabel={chipLabel(role, chip, t)}
+          testID={`review-chip-${chip}`}
+          style={[styles.chip, { borderColor: PlatformColor('separator') }]}
+        >
+          <AppText variant="secondary">{chipLabel(role, chip, t)}</AppText>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   faces: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' },
   face: {

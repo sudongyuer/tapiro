@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -13,6 +13,7 @@ import Animated, {
 import { useI18n } from '@/lib/i18n';
 import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { AppText } from '@/ui/AppText';
+import { InkText } from '@/ui/InkText';
 import { Mascot } from '@/ui/Mascot';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
@@ -73,14 +74,16 @@ export function MascotGrownScreen({
         <Animated.View style={[styles.hero, entrance]} accessibilityElementsHidden>
           <Mascot variant="side" size={HERO} outlined wear={moment.wear} />
         </Animated.View>
-        <AppText
+        <InkText
           variant="moment-title"
+          outline={vars['--sticker-border']}
+          ink={PlatformColor('label')}
           accessibilityRole="header"
           style={styles.center}
           testID="mascot-grown-title"
         >
           {lines.title}
-        </AppText>
+        </InkText>
         <AppText
           variant="body"
           tone="secondaryLabel"
