@@ -2,7 +2,7 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import (UI, accessory, assert_colour, assert_tapir_button, bottom, by_id, corner,  # noqa: E402
+from driver import (UI, accessory, assert_colour, assert_label_ink, assert_tapir_button, bottom, by_id, corner,  # noqa: E402
                     nav_bar, reach_home, tab, token)
 
 DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
@@ -52,5 +52,6 @@ bar, full = by_id(items, 'tab-bounty')['frame'], by_id(items, 'urgent-accessory'
 assert bar['height'] >= 54 and str(by_id(items, 'tab-bounty').get('AXValue')) == '1', f'expanded tab bar {bar}'
 assert bottom(by_id(items, 'urgent-accessory')) <= bar['y'], f'accessory {full} is not above the expanded tab bar {bar}'
 shot = ui.snap('03-expanded')
-assert_tapir_button(shot, by_id(items, 'tab-ask-tapir')['frame'], ui.appearance, '62 pt 小貘 button')
+assert_tapir_button(shot, by_id(items, 'tab-ask-tapir')['frame'], ui.appearance, '62 pt 小貘 button', glass=False)
+assert_label_ink(shot, by_id(items, 'tab-ride')['frame'], ui.appearance, 'expanded bar 拼车 tab')
 print('PASS: accessory after scrolling, minimised layout, expand on tap')

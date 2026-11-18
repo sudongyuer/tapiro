@@ -453,3 +453,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-17 | website AI pages              | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | verify:full 1118              | 0                  | 2             | ~30 min (start under sibling builds)             | 0                       | 0                     |
 | 2026-11-18 | 问小貘 switch + sheet follow  | 2                  | 1             | ~0                                               | 0                       | 0                     |
+| 2026-11-18 | glass label ink               | 0                  | 0             | ~105 min (Simulator lock)                        | 0                       | 0                     |

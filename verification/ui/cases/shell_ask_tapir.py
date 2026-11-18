@@ -2,7 +2,7 @@
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id, luma, reach_home, selected  # noqa: E402
+from driver import UI, assert_label_ink, by_id, reach_home, selected  # noqa: E402
 
 DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/ask.tsx']
 
@@ -36,19 +36,8 @@ def open_sheet(tab, name):
         f, edge = by_id(items, identifier)['frame'], sheet['frame']
         assert f['x'] >= edge['x'] and f['x'] + f['width'] <= edge['x'] + edge['width'], f'{identifier} overflows the sheet: {f}'
     shot = ui.snap(name)
-    f = sheet['frame']
-    # The half-detent sheet is glass, so its edge shows the page behind: in ms dark a ride card read 96 there along
-    # the whole edge (2026-11-16). The prompt field is opaque; five points of it around its buttons measure the sheet.
-    p, plus, mic = (by_id(items, i)['frame'] for i in ('ask-tapir-prompt', 'ask-tapir-add-image', 'ask-tapir-mic'))
-    points = [(plus['x'] + plus['width'] / 2, plus['y'] - 8), (mic['x'] + mic['width'] / 2, mic['y'] - 8),
-              ((plus['x'] + plus['width'] + p['x']) / 2, p['y'] + p['height'] / 2),
-              ((p['x'] + p['width'] + mic['x']) / 2, p['y'] + p['height'] / 2),
-              (plus['x'] + plus['width'] / 2, plus['y'] + plus['height'] + 8)]
-    background = sorted(luma(shot.rgb(x, y)) for x, y in points)[2]
-    if ui.appearance == 'dark':
-        assert background < 80, f'sheet background is light ({background:.0f}) in dark appearance'
-    else:
-        assert background > 175, f'sheet background is dark ({background:.0f}) in light appearance'
+    title = next(i for i in items if i.get('type') == 'Heading' and i.get('AXLabel') == ui.t('shell.ask.title'))
+    assert_label_ink(shot, title['frame'], ui.appearance, f'{name}: sheet title')
     ui.tap('ask-tapir-close')
     ui.gone('ask-tapir-sheet')
     ui.wait(lambda items: selected(items) == [tab], f'{tab} is not selected after closing the sheet')

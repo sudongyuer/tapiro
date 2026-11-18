@@ -417,6 +417,25 @@ def glass_luma(shot, f):
     return rim[len(rim) // 2]
 
 
+# Glass shows whatever lies behind it, so its luma depends on the backdrop (105 over a light ride card in en dark,
+# 2026-11-18); the label drawn on it follows the appearance: light ink above its ground in dark, dark ink in light.
+def label_ink(shot, f):
+    values = sorted(luma(rgb) for rgb in shot.pixels(f))
+    assert values, f'region {f} is off screen'
+    ground, edge = values[len(values) // 2], len(values) // 100
+    darkest, brightest = values[edge], values[-1 - edge]
+    return ground, brightest if brightest - ground > ground - darkest else darkest
+
+
+def assert_label_ink(shot, f, appearance, name, contrast=60):
+    ground, ink = label_ink(shot, f)
+    print(f'{name}: ink luma {ink:.0f} on ground {ground:.0f}')
+    if appearance == 'dark':
+        assert ink - ground > contrast, f'{name} is not light ink on its ground ({ink:.0f} on {ground:.0f}) in dark'
+    else:
+        assert ground - ink > contrast, f'{name} is not dark ink on its ground ({ink:.0f} on {ground:.0f}) in light'
+
+
 # glass=False: the glass shows its backdrop (135 over a light Apply button in en dark, 2026-11-16); the head is opaque.
 def assert_tapir_button(shot, f, appearance, name, glass=True):
     snout = {**f, 'width': f['width'] * 0.4}
