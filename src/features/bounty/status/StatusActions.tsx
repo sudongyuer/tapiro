@@ -148,7 +148,9 @@ export function PinnedActions({
 
 const styles = StyleSheet.create({
   notice: { textAlign: 'center' },
-  row: { flexDirection: 'row', gap: vars['--space-2'] },
-  fill: { flex: 1 },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: vars['--space-2'] },
+  // Half the bar keeps 消息 and the main action side by side; when large text makes 消息 wider than the rest, the main
+  // action moves to its own line instead of clipping its label.
+  fill: { flexGrow: 1, minWidth: '50%' },
   busy: { minWidth: vars['--touch-min'], minHeight: vars['--touch-min'] },
 });

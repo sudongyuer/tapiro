@@ -18,6 +18,9 @@ const ICON = 13;
 const STAMP_TILT = -8;
 const STAMP_TOP = vars['--space-2'] + STICKER + vars['--space-1'];
 const MIN_ROUTE_SCALE = 0.5;
+// Three cells share the ticket's width; at the accessibility sizes a time or a fare shrinks to fit instead of ending in
+// 「…」, which hid the whole value at AX5.
+const CELL_MIN_SCALE = 0.5;
 
 const ink = token('--color-on-card-ride') as string;
 const TONE_INK = {
@@ -167,18 +170,32 @@ function CellRow({ cells }: { cells: TicketCell[] }) {
     <View style={styles.cells}>
       {cells.map((item) => (
         <View key={item.key} style={styles.cell} testID={`ride-detail-cell-${item.key}`}>
-          <AppText variant="meta" numberOfLines={1} style={[styles.ink, styles.muted]}>
+          <AppText
+            variant="meta"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={CELL_MIN_SCALE}
+            style={[styles.ink, styles.muted]}
+          >
             {item.label}
           </AppText>
           <AppText
             variant="body"
             numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={CELL_MIN_SCALE}
             style={[styles.ink, styles.value, item.faint && styles.faint]}
           >
             {item.value}
           </AppText>
           {item.sub ? (
-            <AppText variant="meta" numberOfLines={1} style={[styles.ink, styles.muted]}>
+            <AppText
+              variant="meta"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={CELL_MIN_SCALE}
+              style={[styles.ink, styles.muted]}
+            >
               {item.sub}
             </AppText>
           ) : null}

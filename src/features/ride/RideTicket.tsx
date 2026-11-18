@@ -44,7 +44,13 @@ export function RideTicket({
       <View style={styles.main}>
         <View style={styles.statusRow}>
           <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
-          <AppText variant="meta" numberOfLines={1} style={[styles.status, { color: toneInk }]}>
+          <AppText
+            variant="meta"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={MIN_ROUTE_SCALE}
+            style={[styles.status, { color: toneInk }]}
+          >
             {view.status}
           </AppText>
           {view.time ? (
@@ -53,7 +59,13 @@ export function RideTicket({
             </AppText>
           ) : null}
           {view.time ? (
-            <AppText variant="meta" numberOfLines={1} style={styles.time}>
+            <AppText
+              variant="meta"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={MIN_ROUTE_SCALE}
+              style={styles.time}
+            >
               {view.time}
             </AppText>
           ) : null}
@@ -94,7 +106,13 @@ export function RideTicket({
         >
           {view.amount}
         </AppText>
-        <AppText variant="meta" numberOfLines={1} style={styles.fare}>
+        <AppText
+          variant="meta"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={MIN_ROUTE_SCALE}
+          style={styles.fare}
+        >
           {view.fare}
         </AppText>
       </View>
