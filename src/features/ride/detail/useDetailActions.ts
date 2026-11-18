@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { ActionSheetIOS } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { askConfirm, type ConfirmAnchor } from '@/ui/confirm';
 
 import { askThenSync } from '../reminders/useRideReminders';
 import { rideDetailService as service } from '../services';
@@ -9,21 +9,6 @@ import type { SplitMode } from '../types';
 import type { RideDetailStore } from './detailState';
 import { applyNotes, detailsDrafts } from './drafts';
 import type { DetailsInput, LateChoice, NoShowPreview } from './types';
-
-function ask(options: { title: string; message: string; confirm: string; keep: string }) {
-  return new Promise<boolean>((resolve) =>
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        title: options.title,
-        message: options.message,
-        options: [options.confirm, options.keep],
-        destructiveButtonIndex: 0,
-        cancelButtonIndex: 1,
-      },
-      (index) => resolve(index === 0),
-    ),
-  );
-}
 
 export function useDetailActions(id: string, store: RideDetailStore, organiserName: string) {
   const { t, language } = useI18n();
@@ -47,42 +32,54 @@ export function useDetailActions(id: string, store: RideDetailStore, organiserNa
         }
         return answer?.ok ?? false;
       },
-      async withdraw() {
-        const sure = await ask({
-          title: t('ride.detail.applied.confirmTitle'),
-          message: t('ride.detail.applied.confirmBody', { name: organiserName }),
-          confirm: t('ride.detail.applied.confirm'),
-          keep: t('ride.detail.applied.keep'),
-        });
+      async withdraw(anchor: ConfirmAnchor) {
+        const sure = await askConfirm(
+          {
+            title: t('ride.detail.applied.confirmTitle'),
+            message: t('ride.detail.applied.confirmBody', { name: organiserName }),
+            confirm: t('ride.detail.applied.confirm'),
+            keep: t('ride.detail.applied.keep'),
+          },
+          true,
+          anchor,
+        );
         if (sure) await store.act('withdraw', () => service.withdraw(id));
       },
       decide: (member: string, approve: boolean) =>
         void store.act('decide', () => service.decide(id, member, approve), member),
-      async leave() {
+      async leave(anchor: ConfirmAnchor) {
         const preview = await store.peek('leave', () => service.leavePreview(id));
         if (!preview) return;
-        const sure = await ask({
-          title: t('ride.detail.leave.title'),
-          message: noShowText(preview) ?? t('ride.detail.leave.body', { name: organiserName }),
-          confirm: t('ride.detail.leave.confirm'),
-          keep: t('ride.detail.leave.keep'),
-        });
+        const sure = await askConfirm(
+          {
+            title: t('ride.detail.leave.title'),
+            message: noShowText(preview) ?? t('ride.detail.leave.body', { name: organiserName }),
+            confirm: t('ride.detail.leave.confirm'),
+            keep: t('ride.detail.leave.keep'),
+          },
+          true,
+          anchor,
+        );
         if (sure) await store.act('leave', () => service.leave(id));
       },
-      async cancel() {
+      async cancel(anchor: ConfirmAnchor) {
         const preview = await store.peek('cancel', () => service.cancelPreview(id));
         if (!preview) return;
-        const sure = await ask({
-          title: t('ride.detail.cancel.title'),
-          message: [
-            preview.refund ? t('ride.detail.cancel.refund') : t('ride.detail.cancel.members'),
-            noShowText(preview),
-          ]
-            .filter(Boolean)
-            .join('\n'),
-          confirm: t('ride.detail.cancel.confirm'),
-          keep: t('ride.detail.cancel.keep'),
-        });
+        const sure = await askConfirm(
+          {
+            title: t('ride.detail.cancel.title'),
+            message: [
+              preview.refund ? t('ride.detail.cancel.refund') : t('ride.detail.cancel.members'),
+              noShowText(preview),
+            ]
+              .filter(Boolean)
+              .join('\n'),
+            confirm: t('ride.detail.cancel.confirm'),
+            keep: t('ride.detail.cancel.keep'),
+          },
+          true,
+          anchor,
+        );
         if (sure) await store.act('cancel', () => service.cancel(id));
       },
       arrive: () => void store.act('arrive', () => service.arrive(id)),

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { blockEvents, useBlockPerson, useUnblockPerson, type AskOutcome } from '@/features/block';
+import type { ConfirmAnchor } from '@/ui/confirm';
 
 import type { ChatMember, ThreadInfo } from '../types';
 import { blockKind } from './safetyView';
@@ -38,9 +39,9 @@ export function useThreadSafety({
   );
 
   const askUnblock = useCallback(
-    (member: ChatMember) => {
+    (member: ChatMember, anchor: ConfirmAnchor = 'bar') => {
       setFailure(null);
-      unblocking.ask(person(member), settled('unblock'));
+      unblocking.ask(person(member), settled('unblock'), anchor);
     },
     [unblocking, settled],
   );

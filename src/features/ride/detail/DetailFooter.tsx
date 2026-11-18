@@ -8,11 +8,13 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { SymbolView } from 'expo-symbols';
+import { useRef } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { anchorOf, pressAnchor, type ConfirmAnchor } from '@/ui/confirm';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -27,11 +29,11 @@ const ICON = 15;
 
 export type FooterActions = {
   apply: () => void;
-  withdraw: () => void;
+  withdraw: (anchor: ConfirmAnchor) => void;
   arrive: () => void;
   undoArrive: () => void;
   late: (minutes: LateChoice | null) => void;
-  notComing: () => void;
+  notComing: (anchor: ConfirmAnchor) => void;
   depart: () => void;
   settle: SettleFooterActions;
 };
@@ -111,7 +113,7 @@ export function DetailFooter({
             label={t('ride.detail.applied.withdraw')}
             variant="secondary"
             loading={busy === 'withdraw'}
-            onPress={actions.withdraw}
+            onPress={(event) => actions.withdraw(pressAnchor(event))}
             testID="ride-detail-withdraw"
           />
         </View>
@@ -197,12 +199,13 @@ function LateMenu({
   late: boolean;
   disabled: boolean;
   onLate: (minutes: LateChoice | null) => void;
-  onNotComing: () => void;
+  onNotComing: (anchor: ConfirmAnchor) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const host = useRef(null);
   return (
-    <Host matchContents>
+    <Host matchContents ref={host}>
       <Menu
         label={t('ride.detail.meetup.late')}
         systemImage="chevron.down"
@@ -229,7 +232,7 @@ function LateMenu({
         <Button
           role="destructive"
           label={t('ride.detail.meetup.notComing')}
-          onPress={onNotComing}
+          onPress={() => onNotComing(anchorOf(host.current))}
         />
       </Menu>
     </Host>

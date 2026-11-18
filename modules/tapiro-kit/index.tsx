@@ -28,6 +28,16 @@ export type StickerFlightOptions = {
 };
 export type StickerFlightResult = { landed: boolean };
 
+export type ConfirmOptions = {
+  title: string;
+  message?: string | null;
+  confirm: string;
+  keep: string;
+  destructive: boolean;
+  anchorTag?: number;
+  anchorBar?: boolean;
+};
+
 export type BountyMapPin = {
   id: string;
   point: PlacePoint;
@@ -164,6 +174,7 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   placeAt(latitude: number, longitude: number): Promise<PlaceResult>;
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
   resignFocus(): Promise<void>;
+  confirm(options: ConfirmOptions): Promise<boolean>;
   liveActivityStart(
     kind: string,
     link: string | null,
@@ -307,6 +318,10 @@ export function resignFocus(): Promise<void> {
 
 export function endPlaceSearch(searchId: string): void {
   kit.endPlaceSearch(searchId);
+}
+
+export function confirm(options: ConfirmOptions): Promise<boolean> {
+  return kit.confirm(options);
 }
 
 export const StickerFlight = {

@@ -1,10 +1,10 @@
 import type { TFunction } from 'i18next';
 
 import { formatMoney, type Money } from '@/lib/money';
+import type { ConfirmCopy } from '@/ui/confirm';
 
 import { dateText } from '../post/timeText';
 import { codePoints } from '../post/validate';
-import type { SheetCopy } from '../shared/askSheet';
 import { ISSUE_REASON_MAX, type CancelPreview, type PostCharge, type StatusRole } from './types';
 
 type Copy = { t: TFunction; language: string };
@@ -14,7 +14,7 @@ export function cancelSheetCopy(
   role: StatusRole,
   name: string,
   { t, language }: Copy,
-): SheetCopy {
+): ConfirmCopy {
   const poster = role === 'poster';
   const side = poster ? 'Poster' : 'Helper';
   const message = (() => {
@@ -38,7 +38,7 @@ export function closeSheetCopy(
   charge: PostCharge,
   applicants: number | null,
   t: TFunction,
-): SheetCopy {
+): ConfirmCopy {
   const message =
     applicants && applicants > 0
       ? t(`bounty.close.${charge}`, { count: applicants })
@@ -51,7 +51,7 @@ export function closeSheetCopy(
   };
 }
 
-export function confirmSheetCopy(name: string, reward: Money, { t, language }: Copy): SheetCopy {
+export function confirmSheetCopy(name: string, reward: Money, { t, language }: Copy): ConfirmCopy {
   return {
     title: t('bounty.confirm.title', { name }),
     message: t('bounty.confirm.body', {

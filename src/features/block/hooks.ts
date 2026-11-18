@@ -1,8 +1,7 @@
 import { useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ActionSheetIOS } from 'react-native';
-
 import { useI18n } from '@/lib/i18n';
+import { askConfirm, type ConfirmAnchor } from '@/ui/confirm';
 
 import { blockEvents } from './blockEvents';
 import { createBlockFlow, createBlockList, createUnblockFlow } from './blockFlow';
@@ -25,6 +24,7 @@ export type AskOutcome = 'cancelled' | 'blocked' | 'unblocked' | 'failed';
 export type AskOptions = {
   kind?: BlockKind;
   title?: string;
+  anchor?: ConfirmAnchor;
   onSettled?: (outcome: AskOutcome) => void;
 };
 
@@ -48,36 +48,50 @@ export function useBlockPerson(kind: BlockKind, onBlocked?: () => void) {
   const [target, setTarget] = useState<string | null>(null);
   const mounted = useMounted();
 
+  const run = useCallback(
+    async (person: BlockedPerson, options: AskOptions = {}) => {
+      const blocking = flow.block(person.id);
+      setTarget(flow.target());
+      const blocked = await blocking;
+      if (!mounted.current) return;
+      if (blocked) onBlocked?.();
+      options.onSettled?.(blocked ? 'blocked' : 'failed');
+    },
+    [flow, mounted, onBlocked],
+  );
+
+  const copy = useCallback(
+    (person: BlockedPerson, options: AskOptions = {}) => {
+      const name = person.name ?? t('bounty.post.unknownName');
+      return {
+        title: options.title ?? t('block.confirm.title', { name }),
+        message: t(BODY[options.kind ?? kind], { name }),
+        confirm: t('block.confirm.confirm'),
+        keep: t('block.confirm.cancel'),
+      };
+    },
+    [kind, t],
+  );
+
   const ask = useCallback(
     (person: BlockedPerson, options: AskOptions = {}) => {
       if (flow.get() === 'busy') return;
-      const name = person.name ?? t('bounty.post.unknownName');
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          title: options.title ?? t('block.confirm.title', { name }),
-          message: t(BODY[options.kind ?? kind], { name }),
-          options: [t('block.confirm.confirm'), t('block.confirm.cancel')],
-          destructiveButtonIndex: 0,
-          cancelButtonIndex: 1,
-        },
-        async (index) => {
-          if (index !== 0) {
-            if (mounted.current) options.onSettled?.('cancelled');
-            return;
-          }
-          const blocking = flow.block(person.id);
-          setTarget(flow.target());
-          const blocked = await blocking;
-          if (!mounted.current) return;
-          if (blocked) onBlocked?.();
-          options.onSettled?.(blocked ? 'blocked' : 'failed');
-        },
-      );
+      void askConfirm(copy(person, options), true, options.anchor ?? 'bar').then((sure) => {
+        if (sure) return run(person, options);
+        if (mounted.current) options.onSettled?.('cancelled');
+      });
     },
-    [flow, kind, mounted, onBlocked, t],
+    [copy, flow, mounted, run],
   );
 
-  return { state, ask, target: state === 'busy' ? target : null };
+  const confirmed = useCallback(
+    (person: BlockedPerson) => {
+      if (flow.get() !== 'busy') void run(person);
+    },
+    [flow, run],
+  );
+
+  return { state, ask, copy, confirmed, target: state === 'busy' ? target : null };
 }
 
 export function useBlockPoster(onBlocked: () => void) {
@@ -94,22 +108,27 @@ export function useUnblockPerson() {
   const mounted = useMounted();
 
   const ask = useCallback(
-    (person: BlockedPerson, onSettled?: (outcome: AskOutcome) => void) => {
+    (
+      person: BlockedPerson,
+      onSettled?: (outcome: AskOutcome) => void,
+      anchor: ConfirmAnchor = 'bar',
+    ) => {
       if (flow.get() === 'busy') return;
       const name = person.name ?? t('bounty.post.unknownName');
-      ActionSheetIOS.showActionSheetWithOptions(
+      void askConfirm(
         {
           title: t('block.unblock.title', { name }),
           message: t('block.unblock.body', { name }),
-          options: [t('block.unblock.confirm'), t('block.unblock.cancel')],
-          cancelButtonIndex: 1,
+          confirm: t('block.unblock.confirm'),
+          keep: t('block.unblock.cancel'),
         },
-        async (index) => {
-          if (index !== 0) return;
-          const done = await flow.unblock(person.id);
-          if (mounted.current) onSettled?.(done ? 'unblocked' : 'failed');
-        },
-      );
+        false,
+        anchor,
+      ).then(async (sure) => {
+        if (!sure) return;
+        const done = await flow.unblock(person.id);
+        if (mounted.current) onSettled?.(done ? 'unblocked' : 'failed');
+      });
     },
     [flow, mounted, t],
   );

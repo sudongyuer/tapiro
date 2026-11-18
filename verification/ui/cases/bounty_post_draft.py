@@ -5,9 +5,10 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import TITLE_SHOWN, TITLE_TYPED, close_sheet_by_swipe, form_scroll_to, open_post, relaunch, tap_sheet_action, typed, value  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
+DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 240
 TITLE, REWARD = TITLE_SHOWN, '12'
@@ -38,6 +39,8 @@ ui.capture('02-after-relaunch')
 
 form_scroll_to(ui, 'bounty-post-clear')
 ui.tap('bounty-post-clear')
+assert_dialog(ui, ui.t('bounty.post.form.clearConfirm.title'), ui.t('bounty.post.form.clearConfirm.confirm'),
+              ui.t('bounty.post.form.clearConfirm.cancel'), source='bounty-post-clear')
 tap_sheet_action(ui, ui.t('bounty.post.form.clearConfirm.confirm'), 'bounty-post-clear')
 ui.element('bounty-post-pick')
 ui.gone('bounty-post-form')

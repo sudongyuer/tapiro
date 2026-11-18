@@ -1,4 +1,4 @@
-import { Button, ConfirmationDialog, Host, ProgressView, Text } from '@expo/ui/swift-ui';
+import { Button, Host, ProgressView, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   accessibilityLabel,
@@ -12,6 +12,7 @@ import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
+import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { SheetActions } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -83,36 +84,29 @@ export function AppliedActions({
             ]}
           />
         ) : (
-          <ConfirmationDialog
-            title={t('bounty.detail.withdrawConfirm.title')}
-            titleVisibility="visible"
-            isPresented={asking}
-            onIsPresentedChange={setAsking}
+          <ConfirmDialog
+            copy={{
+              title: t('bounty.detail.withdrawConfirm.title'),
+              message: t('bounty.detail.withdrawConfirm.body', { name }),
+              confirm: t('bounty.detail.withdrawConfirm.confirm'),
+              keep: t('bounty.detail.withdrawConfirm.cancel'),
+            }}
+            destructive
+            presented={asking}
+            onPresentedChange={setAsking}
+            onConfirm={() => void withdraw()}
           >
-            <ConfirmationDialog.Trigger>
-              <Button
-                role="destructive"
-                onPress={() => setAsking(true)}
-                testID="bounty-detail-withdraw"
-                modifiers={[foregroundStyle(color('--color-urgent'))]}
-              >
-                <Text modifiers={[ROW, contentShape(shapes.rectangle())]}>
-                  {t('bounty.detail.withdraw')}
-                </Text>
-              </Button>
-            </ConfirmationDialog.Trigger>
-            <ConfirmationDialog.Actions>
-              <Button
-                label={t('bounty.detail.withdrawConfirm.confirm')}
-                role="destructive"
-                onPress={() => void withdraw()}
-              />
-              <Button label={t('bounty.detail.withdrawConfirm.cancel')} role="cancel" />
-            </ConfirmationDialog.Actions>
-            <ConfirmationDialog.Message>
-              <Text>{t('bounty.detail.withdrawConfirm.body', { name })}</Text>
-            </ConfirmationDialog.Message>
-          </ConfirmationDialog>
+            <Button
+              role="destructive"
+              onPress={() => setAsking(true)}
+              testID="bounty-detail-withdraw"
+              modifiers={[foregroundStyle(color('--color-urgent'))]}
+            >
+              <Text modifiers={[ROW, contentShape(shapes.rectangle())]}>
+                {t('bounty.detail.withdraw')}
+              </Text>
+            </Button>
+          </ConfirmDialog>
         )}
       </Host>
     </SheetActions>

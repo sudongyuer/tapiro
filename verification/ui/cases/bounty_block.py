@@ -1,13 +1,15 @@
-"""Block 5A/37A from the detail: the board reads 全部 12; the detail's ⋯ (更多) holds 屏蔽小林, which opens the system action sheet 屏蔽小林？ stating the effect; 不屏蔽 (or a tap outside when the sheet has no cancel button) keeps the detail; 屏蔽 shows progress in place of ⋯; the first block fails (`-uiVerifyBlock failOnce`) and the detail stays with 没屏蔽成功; the second closes the detail and the board reads 全部 11 without 小林's bounty. 我的 → 屏蔽名单 (a 44 pt row) lists 小林; swiping the row left reveals 解除, which shows progress; the first 解除 fails and keeps 小林 with 没解除成功, the second empties the list; back on 悬赏 the board reads 全部 12 and 小林's bounty is there again."""
+"""Block 5A/37A from the detail: the board reads 全部 12; the detail's ⋯ (更多) holds 屏蔽小林, which opens the system confirmation 屏蔽小林？ as a popover from ⋯, stating the effect, with 屏蔽 stacked above a visible 不屏蔽; a tap outside it keeps the detail; 屏蔽 shows progress in place of ⋯; the first block fails (`-uiVerifyBlock failOnce`) and the detail stays with 没屏蔽成功; the second closes the detail and the board reads 全部 11 without 小林's bounty. 我的 → 屏蔽名单 (a 44 pt row) lists 小林; swiping the row left reveals 解除, which shows progress; the first 解除 fails and keeps 小林 with 没解除成功, the second empties the list; back on 悬赏 the board reads 全部 12 and 小林's bounty is there again."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import visible  # noqa: E402
 from bounty import tap_sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, assert_touch_target, by_id, reach_home, tab  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/account/', 'src/app/(tabs)/', 'verification/ui/board.py',
-        'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/']
+        'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/', 'verification/ui/confirm.py',
+        'src/ui/confirm.ts', 'modules/tapiro-kit/ios/ConfirmDialog.swift']
 BUDGET = 420
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBlock', 'failOnce', '-uiVerifyBlockDelayMs', '6000']
 CARD = 'bounty-card-fixture-bounty-01'
@@ -82,16 +84,14 @@ ui.tap_label(ui.t('block.menu', name=NAME))
 ui.labelled(ui.t('block.confirm.title', name=NAME))
 ui.labelled(ui.t('block.confirm.body', name=NAME))
 ui.at_rest()
+_, keep = assert_dialog(ui, ui.t('block.confirm.title', name=NAME), ui.t('block.confirm.confirm'),
+                        ui.t('block.confirm.cancel'), source_label=ui.t('bounty.detail.more'))
 ui.capture('02-confirm')
-cancel = next((i for i in ui.read() if i.get('AXLabel') == ui.t('block.confirm.cancel')), None)
-if cancel:
-    ui.tap_label(ui.t('block.confirm.cancel'))
-else:
-    title = ui.element('bounty-detail-title')['frame']
-    ui.tap_point(title['x'] + title['width'] / 2, title['y'] + title['height'] / 2)
-ui.wait(lambda items: not sheet_open(items), 'the action sheet stayed open after 不屏蔽')
+below = keep['frame']
+ui.tap_point(32, below['y'] + below['height'] + 160)
+ui.wait(lambda items: not sheet_open(items), 'the dialog stayed open after a tap outside it')
 ui.element('bounty-detail-title')
-assert by_id(ui.read(), 'bounty-detail-blocking') is None, '不屏蔽 started a block'
+assert by_id(ui.read(), 'bounty-detail-blocking') is None, 'a tap outside the dialog started a block'
 
 confirm_block()
 ui.wait_label('bounty-detail-block-failed', lambda label: ui.t('block.failed') in label,

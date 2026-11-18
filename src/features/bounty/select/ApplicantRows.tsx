@@ -27,10 +27,13 @@ import {
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
 
 import type { BlockedPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
+import type { ConfirmCopy } from '@/ui/confirm';
+import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { HandArtSticker } from '@/ui/HandArt';
 import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
@@ -120,6 +123,10 @@ export function ApplicantsHeader({
 }
 
 type Motion = (id: string) => ModifierConfig[];
+type BlockActions = {
+  copy: (person: BlockedPerson) => ConfirmCopy;
+  confirmed: (person: BlockedPerson) => void;
+};
 
 function ApplicantRow({
   applicant,
@@ -137,11 +144,13 @@ function ApplicantRow({
   blocking: boolean;
   canBlock: boolean;
   onChoose: (id: string) => void;
-  onBlock: (person: BlockedPerson) => void;
+  onBlock: BlockActions;
   onOpenProfile: (id: string) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const [asking, setAsking] = useState(false);
+  const person = { id: applicant.id, name: applicant.name };
   const name = applicant.name ?? t('bounty.post.unknownName');
   const tier = tierName(applicant.tier, t);
   const meta = helpedLine(applicant.helpedCount, t);
@@ -201,31 +210,39 @@ function ApplicantRow({
     </Button>
   );
   return (
-    <ContextMenu>
-      <ContextMenu.Items>
-        <Button
-          label={t('reputation.profile.open', { name })}
-          systemImage="person.crop.circle"
-          onPress={() => onOpenProfile(applicant.id)}
-          testID={`bounty-applicant-open-${applicant.id}`}
-        />
-        {canBlock ? (
+    <ConfirmDialog
+      copy={onBlock.copy(person)}
+      destructive
+      presented={asking}
+      onPresentedChange={setAsking}
+      onConfirm={() => onBlock.confirmed(person)}
+    >
+      <ContextMenu>
+        <ContextMenu.Items>
           <Button
-            label={t('block.menu', { name })}
-            systemImage="hand.raised"
-            role="destructive"
-            onPress={() => onBlock({ id: applicant.id, name: applicant.name })}
-            testID={`bounty-applicant-block-${applicant.id}`}
+            label={t('reputation.profile.open', { name })}
+            systemImage="person.crop.circle"
+            onPress={() => onOpenProfile(applicant.id)}
+            testID={`bounty-applicant-open-${applicant.id}`}
           />
-        ) : null}
-      </ContextMenu.Items>
-      <ContextMenu.Trigger>
-        <HStack alignment="top" spacing={vars['--space-3']} modifiers={motion(applicant.id)}>
-          <AvatarButton id={applicant.id} name={name} onPress={onOpenProfile} />
-          {row}
-        </HStack>
-      </ContextMenu.Trigger>
-    </ContextMenu>
+          {canBlock ? (
+            <Button
+              label={t('block.menu', { name })}
+              systemImage="hand.raised"
+              role="destructive"
+              onPress={() => setAsking(true)}
+              testID={`bounty-applicant-block-${applicant.id}`}
+            />
+          ) : null}
+        </ContextMenu.Items>
+        <ContextMenu.Trigger>
+          <HStack alignment="top" spacing={vars['--space-3']} modifiers={motion(applicant.id)}>
+            <AvatarButton id={applicant.id} name={name} onPress={onOpenProfile} />
+            {row}
+          </HStack>
+        </ContextMenu.Trigger>
+      </ContextMenu>
+    </ConfirmDialog>
   );
 }
 
@@ -245,7 +262,7 @@ export function ApplicantSection({
   blocking: string | null;
   canBlock: boolean;
   onChoose: (id: string) => void;
-  onBlock: (person: BlockedPerson) => void;
+  onBlock: BlockActions;
   onOpenProfile: (id: string) => void;
 }) {
   const { t } = useI18n();

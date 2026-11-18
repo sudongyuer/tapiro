@@ -21,14 +21,15 @@ import {
   frame,
 } from '@expo/ui/swift-ui/modifiers';
 import { Image } from 'expo-image';
+import { useState, type ComponentProps } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { ConfirmDialog } from '@/ui/ConfirmDialog';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import type { Belly } from './belly';
-import { confirmSwap } from './confirmSwap';
 import type { PantryState } from './pantryStore';
 import { pantryStore } from './services';
 
@@ -50,15 +51,12 @@ export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryS
     t('ask.pantry.footer'),
   ].join('\n');
 
-  const swap = async () => {
-    pantryStore.dismissFailure();
-    const yes = await confirmSwap({
-      title: t('ask.pantry.swapTitle'),
-      message: t('ask.pantry.swapMessage', { count: Math.max(0, belly.coins - 1) }),
-      confirm: t('ask.hungry.swapConfirm'),
-      cancel: t('ask.hungry.cancel'),
-    });
-    if (yes) await pantryStore.swap();
+  const [asking, setAsking] = useState(false);
+  const swapCopy = {
+    title: t('ask.pantry.swapTitle'),
+    message: t('ask.pantry.swapMessage', { count: Math.max(0, belly.coins - 1) }),
+    confirm: t('ask.hungry.swapConfirm'),
+    keep: t('ask.hungry.cancel'),
   };
 
   return (
@@ -75,7 +73,15 @@ export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryS
         belly={belly}
         swapping={swapping}
         footer={footer}
-        onSwap={() => void swap()}
+        swapDialog={{
+          copy: swapCopy,
+          presented: asking,
+          onPresentedChange: (presented) => {
+            if (presented) pantryStore.dismissFailure();
+            setAsking(presented);
+          },
+          onConfirm: () => void pantryStore.swap(),
+        }}
         busy={pantry.writing !== null}
       />
     </>
@@ -87,13 +93,13 @@ function PantryJar({
   swapping,
   busy,
   footer,
-  onSwap,
+  swapDialog,
 }: {
   belly: Belly;
   swapping: boolean;
   busy: boolean;
   footer: string;
-  onSwap: () => void;
+  swapDialog: Omit<ComponentProps<typeof ConfirmDialog>, 'destructive' | 'children'>;
 }) {
   const { t } = useI18n();
   const onInk = useTheme().color('--color-on-accent');
@@ -139,20 +145,22 @@ function PantryJar({
           <ProgressView modifiers={[accessibilityLabel(t('ask.pantry.swapping'))]} />
         </HStack>
       ) : (
-        <Button
-          onPress={onSwap}
-          modifiers={[
-            buttonStyle('borderedProminent'),
-            buttonBorderShape('capsule'),
-            controlSize('large'),
-            disabled(belly.coins < 1 || busy),
-            accessibilityIdentifier('tapir-pantry-swap'),
-          ]}
-        >
-          <Text modifiers={[WIDE, font({ weight: 'semibold' }), foregroundStyle(onInk)]}>
-            {t('ask.pantry.swap')}
-          </Text>
-        </Button>
+        <ConfirmDialog {...swapDialog} destructive={false}>
+          <Button
+            onPress={() => swapDialog.onPresentedChange(true)}
+            modifiers={[
+              buttonStyle('borderedProminent'),
+              buttonBorderShape('capsule'),
+              controlSize('large'),
+              disabled(belly.coins < 1 || busy),
+              accessibilityIdentifier('tapir-pantry-swap'),
+            ]}
+          >
+            <Text modifiers={[WIDE, font({ weight: 'semibold' }), foregroundStyle(onInk)]}>
+              {t('ask.pantry.swap')}
+            </Text>
+          </Button>
+        </ConfirmDialog>
       )}
     </Section>
   );

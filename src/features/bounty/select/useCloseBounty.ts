@@ -1,8 +1,8 @@
 import { useState, useSyncExternalStore } from 'react';
 
 import { useI18n } from '@/lib/i18n';
+import { askConfirm } from '@/ui/confirm';
 
-import { askSheet } from '../shared/askSheet';
 import { closeSheetCopy } from '../status/actionCopy';
 import { statusService } from '../status/services';
 import { createCloseFlow } from './closeFlow';
@@ -21,6 +21,7 @@ export function useCloseBounty(
     }),
   );
   const state = useSyncExternalStore(flow.subscribe, flow.get);
-  const close = () => flow.close((charge) => askSheet(closeSheetCopy(charge, applicants, t), true));
+  const close = () =>
+    flow.close((charge) => askConfirm(closeSheetCopy(charge, applicants, t), true, 'bar'));
   return { state, close };
 }

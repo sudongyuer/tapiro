@@ -2,7 +2,7 @@ import { Host, Picker, Text } from '@expo/ui/swift-ui';
 import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { SymbolView } from 'expo-symbols';
 import type { ReactNode } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { PlatformColor, StyleSheet, View, type GestureResponderEvent } from 'react-native';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { useI18n } from '@/lib/i18n';
@@ -225,7 +225,7 @@ export function PromptCard({
   body: string | null;
   actions: {
     label: string;
-    onPress: () => void;
+    onPress: (event: GestureResponderEvent) => void;
     variant?: 'primary' | 'secondary';
     loading?: boolean;
     testID: string;
