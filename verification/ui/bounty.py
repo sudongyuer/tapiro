@@ -64,6 +64,9 @@ def field_point(f, below=False):
 
 
 def typed(ui, identifier, text, shows=None, band=True):
+    shows = shows or text
+    # An empty field reports its placeholder as its value, so typing the placeholder's own text proves nothing.
+    assert shows not in placeholders(ui).get(identifier, ()), f'{identifier} reads {shows!r} when empty'
     f = ui.settled(lambda items: by_id(items, identifier), f'{identifier} never settled')['frame']
     ui.tap_point(*(field_point(f) if band else (f['x'] + f['width'] - 4, f['y'] + f['height'] / 2)),
                  expect_change=False)
@@ -72,7 +75,6 @@ def typed(ui, identifier, text, shows=None, band=True):
         # Return key, so pad taps sent then land on the form behind it.
         ui.at_rest()
     ui.type(text)
-    shows = shows or text
     ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == shows, f'{identifier} does not read {shows!r}')
 
 
