@@ -1,0 +1,32 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.3s simctl launch
+  3.7s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.1s axe describe-ui
+  0.5s screenshot 01-preselected
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  1.3s axe describe-ui
+  2.3s axe tap --id pay-number-copy --post-delay 0.5
+  1.7s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.8s axe describe-ui
+  1.8s axe describe-ui
+  1.1s axe describe-ui
+  3.5s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/pay_sheet_duitnow.py", line 42, in <module>
+    copy(ui, 'pay-reference', code.group(0))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/pay_sheet_duitnow.py", line 19, in copy
+    copy_on_device(ui, SENTINEL)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/bounty.py", line 304, in copy_on_device
+    assert on_board == text, f'the device pasteboard reads {on_board!r}, not {text!r}'
+AssertionError: the device pasteboard reads '', not 'pay-sheet-duitnow-sentinel'
+  0.5s screenshot failure
+latency on Tapiro Verify 3: 21 commands, median 1.1 s, max 3.7 s (axe describe-ui), 0 timeouts

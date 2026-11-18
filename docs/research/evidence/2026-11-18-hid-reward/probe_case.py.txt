@@ -1,0 +1,49 @@
+import subprocess
+import sys
+import time
+
+sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
+from bounty import TITLE_SHOWN, TITLE_TYPED, field_point, next_step, open_post, relaunch, typed  # noqa: E402
+from driver import UI, by_id  # noqa: E402
+from keys import keypad, on_pad  # noqa: E402
+
+DEPS = ['src/features/bounty/']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
+BUDGET = 400
+ui = UI(*sys.argv[1:])
+PREFS = 'com.apple.keyboard.preferences'
+
+
+def state(tag):
+    items = ui.read()
+    reward = by_id(items, 'bounty-post-reward') or {}
+    error = by_id(items, 'bounty-post-error') or {}
+    pad = 'Delete' in {i.get('AXLabel') for i in items if i.get('type') == 'Button'}
+    ret = any(i.get('AXUniqueId') == 'Return' for i in items)
+    print(f'PROBE {tag}: reward AXValue={reward.get("AXValue")!r} error={error.get("AXLabel")!r} pad={pad} return={ret}')
+    ui.snap(tag)
+
+
+def round_(tag, keys):
+    open_post(ui)
+    typed(ui, 'bounty-post-title', TITLE_TYPED, TITLE_SHOWN)
+    f = ui.element('bounty-post-reward')['frame']
+    ui.tap_point(*field_point(f), expect_change=False)
+    time.sleep(3)
+    state(f'{tag}-focused')
+    ui.axe('key-sequence', '--keycodes', keys, '--delay', '0.08')
+    time.sleep(2)
+    state(f'{tag}-hid-typed')
+    next_step(ui)
+    time.sleep(2)
+    state(f'{tag}-after-next')
+
+
+round_('a-default', '34')
+subprocess.run(['xcrun', 'simctl', 'spawn', ui.udid, 'defaults', 'write', PREFS, 'HardwareKeyboardLastSeen', '-bool', 'true'])
+subprocess.run(['xcrun', 'simctl', 'spawn', ui.udid, 'defaults', 'write', PREFS, 'AutomaticMinimizationEnabled', '-bool', 'true'])
+relaunch(ui, drop=[])
+round_('b-hw', '34')
+if on_pad(ui, timeout=3):
+    print('PROBE pad present in b; tapping 7 on the pad')
+print('PASS: probe')

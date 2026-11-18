@@ -14,7 +14,15 @@ def lines(shot, languages=None):
 
 def lines_in(shot, locale):
     # zh-Hans first misreads Latin (「lebih jauh」 as 「lebin jaun」); en-US first loses Chinese, so Latin locales read twice.
-    return lines(shot) + ([] if locale == 'zh-Hans' else lines(shot, ['en-US', 'zh-Hans']))
+    # A line both reads agree on is kept once, so counting a word or the lines of a value sees it once.
+    first = lines(shot)
+    if locale == 'zh-Hans':
+        return first
+    return first + [line for line in lines(shot, ['en-US', 'zh-Hans']) if not any(same(line, seen) for seen in first)]
+
+
+def same(a, b):
+    return a['text'] == b['text'] and abs(a['x'] - b['x']) < 4 and abs(a['y'] - b['y']) < 4
 
 
 def inside(box, f, slack=1):

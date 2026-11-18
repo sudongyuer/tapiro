@@ -15,6 +15,8 @@ DEPS = ['src/features/bounty/post/', 'src/app/bounty-post/', 'src/ui/FieldRow.ts
         'verification/ui/post_layout.py', 'verification/ui/readable.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none']
 BUDGET = 180
+# 今晚 (21:00) is hidden once it has passed, so a run after 21:00 found two quick times (2026-11-17).
+LOCAL_HOURS = [14, 15]
 
 ui = UI(*sys.argv[1:])
 accent = token('--color-accent', ui.appearance)

@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home  # noqa: E402
-from ocr import find, lines  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/home/', 'src/features/chat/', 'src/features/bounty/live/', 'src/lib/liveItems.ts',
         'src/app/(tabs)/bounty/index.tsx', 'src/app/(tabs)/messages/', 'verification/ui/bounty.py',
@@ -24,7 +24,7 @@ reach_home(ui)
 front = ui.settled(lambda items: by_id(items, 'live-card-bountyAction'), 'the 要你处理 card is not in front')
 ui.at_rest()
 shot = ui.snap('01-choose-no-entry')
-assert not find(lines(shot), word, front['frame']), f'a bounty still open for applicants shows {word}'
+assert not find(lines_in(shot, ui.locale), word, front['frame']), f'a bounty still open for applicants shows {word}'
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyShellFeed', 'bountyInProgress'])
 front = ui.settled(lambda items: by_id(items, 'live-card-bountyInProgress'), 'the in-progress card is not in front')
@@ -32,7 +32,7 @@ assert front.get('AXLabel') == ui.t('home.card.bounty.label', title='讲一下�
                                     reward='RM 20'), front.get('AXLabel')
 ui.at_rest()
 shot = ui.snap('02-in-progress')
-pills = find(lines(shot), word, front['frame'])
+pills = find(lines_in(shot, ui.locale), word, front['frame'])
 assert len(pills) == 1, f'expected one {word} on the card, OCR read {pills}'
 pill = pills[0]
 assert pill['y'] > front['frame']['y'] + front['frame']['height'] / 2, f'{word} is not at the bottom of the card: {pill}'
@@ -54,7 +54,7 @@ relaunch(ui, drop=FIRST, add=['-uiVerifyShellFeed', 'bountyAction', '-uiVerifyFi
 front = ui.settled(lambda items: by_id(items, 'live-card-bountyAction'), 'the worst 要你处理 card is not in front')
 ui.at_rest()
 shot = ui.snap('04-worst-row')
-read = lines(shot)
+read = lines_in(shot, ui.locale)
 pills = find(read, word, front['frame'])
 actions = find(read, '去确认', front['frame'])
 assert len(pills) == 1, f'expected one {word} on the worst card, OCR read {pills}'

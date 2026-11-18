@@ -1,5 +1,5 @@
 """The pantry on 我的 → 小貘 (137, 139). Under the cloud switch a crayon jar shows how many leaves are kept and that they
-never expire, with 用 1 颗貘币换一片 and the coin balance. The swap asks first in a system action sheet naming what is
+never expire, with 用 1 颗貘币换一片 as a filled ink capsule button (137 A, so it reads as an action) and the coin balance. The swap asks first in a system action sheet naming what is
 left; 取消 sends nothing; 换一片 shows progress, swaps once and puts the leaf in the jar without feeding it. A swap that
 gets no answer says it may not have gone through and is not retried; with no coins the button is disabled."""
 import sys
@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
-from driver import UI, by_id, reach_home  # noqa: E402
+from driver import UI, by_id, close, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/ask/', 'assets/pantry/',
         'verification/ui/ask.py']
@@ -43,7 +43,13 @@ count(2)
 footer_has(ui.t('ask.pantry.coins', count=3))
 assert ui.t('ask.pantry.never') in by_id(ui.read(), 'tapir-pantry-jar')['AXLabel']
 ui.at_rest()
-ui.capture('01-jar')
+shot = ui.snap('01-jar')
+button = by_id(ui.read(), 'tapir-pantry-swap')['frame']
+ink = token('--color-accent', ui.appearance)
+middle = {'x': button['x'] + 8, 'y': button['y'] + button['height'] / 2 - 6, 'width': button['width'] - 16, 'height': 12}
+inked = shot.count(middle, lambda rgb: close(rgb, ink, 24))
+total = len(list(shot.pixels(middle)))
+assert inked >= total * 0.5, f'the swap button is not filled with ink ({inked} of {total} pixels): it reads as text'
 
 ui.tap('tapir-pantry-swap')
 ui.labelled(ui.t('ask.pantry.swapTitle'))

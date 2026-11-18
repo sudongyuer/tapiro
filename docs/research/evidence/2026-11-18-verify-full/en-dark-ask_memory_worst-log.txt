@@ -1,0 +1,43 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.1s simctl launch
+  4.8s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  2.7s axe tap --id tab-me --post-delay 0.5
+  1.2s axe describe-ui
+  1.0s axe describe-ui
+  2.5s axe tap --id me-tapir --post-delay 0.5
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.0s axe describe-ui
+  2.2s axe tap --id tapir-memory-row --post-delay 0.5
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  1.1s axe describe-ui
+  0.5s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 01-failed
+  0.9s axe describe-ui
+  0.8s axe describe-ui
+  0.9s axe describe-ui
+  2.1s axe tap --id memory-retry --post-delay 0.5
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.4s screenshot 02-long
+  0.9s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/ask_memory_worst.py", line 48, in <module>
+    assert len(value) == 2, f'the long value is not read as two lines: {value}'
+AssertionError: the long value is not read as two lines: [{'text': 'Sunway Geo', 'x': 269.99278493496206, 'y': 323.2711797019689, 'width': 95.35196940104167, 'height': 19.120431264241546}, {'text': 'Residences Tower...', 'x': 214.2008226306839, 'y': 345.7790520126519, 'width': 152.44033813476562, 'height': 16.424332936604902}, {'text': 'Sunway Geo', 'x': 269.99278493496206, 'y': 323.2711797019689, 'width': 95.35196940104167, 'height': 19.120431264241546}, {'text': 'Residences Tower….', 'x': 214.2008226306839, 'y': 345.7790520126519, 'width': 152.44033813476562, 'height': 16.424332936604902}]
+  0.4s screenshot failure
+latency on Tapiro Verify 3: 36 commands, median 0.9 s, max 4.8 s (axe describe-ui), 0 timeouts

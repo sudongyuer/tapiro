@@ -100,17 +100,24 @@ export function HungryCard({
       <View onLayout={measure(setMascot)}>
         <Mascot variant="front" size={MASCOT} darkOutline />
       </View>
-      <AppText variant="title" style={styles.center} accessibilityRole="header">
-        {t('ask.hungry.title')}
-      </AppText>
       <AppText
-        variant="secondary"
-        tone="secondaryLabel"
+        variant="title"
         style={styles.center}
-        testID="ask-hungry-line"
+        accessibilityRole="header"
+        testID="ask-hungry-title"
       >
-        {offer === 'capped' ? t('ask.hungry.capped') : t('ask.hungry.refill')}
+        {offer === 'capped' ? t('ask.hungry.capped') : t('ask.hungry.title')}
       </AppText>
+      {offer === 'capped' ? null : (
+        <AppText
+          variant="secondary"
+          tone="secondaryLabel"
+          style={styles.center}
+          testID="ask-hungry-line"
+        >
+          {t('ask.hungry.refill')}
+        </AppText>
+      )}
       {label ? (
         <View style={styles.action} onLayout={measure(setButton)}>
           <PillButton

@@ -1,0 +1,40 @@
+device: Tapiro Verify 3 (E33C5A33-6A52-42D2-A6AD-40F9EED87350)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.3s simctl launch
+  2.9s axe describe-ui
+  1.6s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  2.7s axe swipe --start-x 201 --start-y 656 --end-x 201 --end-y 510 --duration 1.2
+  3.9s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.0s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot card-01-before
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  1.6s axe tap -x 329 -y 529 --post-delay 0.5
+  5.2s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/bounty_apply_failed.py", line 28, in <module>
+    open_from_card(ui, CARD)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/apply.py", line 30, in open_from_card
+    ui.tap_point(pill['x'] + pill['width'] / 2, pill['y'] + pill['height'] / 2)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 202, in tap_point
+    tap_checked(self, lambda items: f'({x}, {y}) on {name(hit(items, x, y))}',
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/taps.py", line 92, in tap_checked
+    waited = quiet(ui, before, clock, sleep)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/taps.py", line 64, in quiet
+    after = ui.snapshot()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 113, in snapshot
+    self.state()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 102, in state
+    tree = json.loads(self.axe('describe-ui'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 94, in axe
+    raise AxeError(f'axe {" ".join(args)} failed: {error}')
+driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session
+  0.4s screenshot failure
+latency on Tapiro Verify 3: 19 commands, median 1.1 s, max 5.2 s (axe describe-ui), 0 timeouts

@@ -1,0 +1,183 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.2s simctl launch
+paste_into: bounty-post-place-label reads 'Sunway Geo 宿舍' after pasting 'Sunway Pyramid 北门' (attempt 1)
+paste_into: bounty-post-place-label reads 'Sunway Geo 宿舍' after pasting 'Sunway Pyramid 北门' (attempt 2)
+  0.9s axe describe-ui
+  0.8s axe describe-ui
+  1.3s axe describe-ui
+  1.0s axe describe-ui
+  1.0s axe describe-ui
+  2.4s axe tap --label Post a Bounty --post-delay 0.5
+  1.9s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  2.2s axe swipe --start-x 201 --start-y 671 --end-x 201 --end-y 387 --duration 0.4
+  1.6s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot 01-no-place
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  3.3s axe tap --id bounty-post-add-place --post-delay 0.5
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  0.9s axe key-sequence --keycodes 22,24,17,26,4,28 --delay 0.08
+  1.3s axe describe-ui
+  0.4s screenshot 02-search
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  3.0s axe tap --id place-search-result-0 --post-delay 0.5
+  1.7s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.8s axe swipe --start-x 201 --start-y 671 --end-x 201 --end-y 387 --duration 0.4
+  1.7s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot 03-picked
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe tap -x 178 -y 363 --post-delay 0.5
+  2.0s axe describe-ui
+  1.2s axe describe-ui
+  2.1s axe tap -x 312 -y 363 --post-delay 0.5
+  1.8s axe describe-ui
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  2.3s axe tap -x 258 -y 315 --post-delay 0.5
+  1.7s axe describe-ui
+  1.4s axe describe-ui
+  2.0s axe tap -x 180 -y 315 --post-delay 0.5
+  1.8s axe describe-ui
+  1.4s axe describe-ui
+  1.6s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe tap -x 350 -y 786 --post-delay 0.5
+  1.6s axe describe-ui
+  0.4s screenshot 04-edited
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.1s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  2.7s axe tap --id bounty-post-remove-place --post-delay 0.5
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  0.4s screenshot 05-removed
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.3s axe describe-ui
+  3.1s axe tap --id bounty-post-add-place --post-delay 0.5
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  2.9s axe tap --id place-search-current --post-delay 0.5
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.9s axe swipe --start-x 201 --start-y 671 --end-x 201 --end-y 387 --duration 0.4
+  1.5s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  0.4s screenshot 06-current-location
+  1.3s axe describe-ui
+  2.7s axe describe-ui
+  2.1s axe describe-ui
+  2.7s axe tap -x 178 -y 363 --post-delay 0.5
+  3.5s axe describe-ui
+  3.6s axe describe-ui
+  2.5s axe tap -x 312 -y 363 --post-delay 0.5
+  3.2s axe describe-ui
+  5.1s axe describe-ui
+  4.4s axe describe-ui
+  2.1s axe tap -x 214 -y 315 --post-delay 0.5
+  3.6s axe describe-ui
+  3.8s axe describe-ui
+  3.0s axe tap -x 180 -y 315 --post-delay 0.5
+  4.4s axe describe-ui
+  2.7s axe describe-ui
+  1.9s axe describe-ui
+  2.1s axe describe-ui
+  2.3s axe describe-ui
+  2.9s axe describe-ui
+  3.4s axe describe-ui
+  2.7s axe describe-ui
+  2.3s axe describe-ui
+  2.9s axe tap -x 178 -y 363 --post-delay 0.5
+  2.2s axe describe-ui
+  2.0s axe describe-ui
+  2.6s axe tap -x 312 -y 363 --post-delay 0.5
+  2.1s axe describe-ui
+  1.3s axe describe-ui
+  2.0s axe tap -x 312 -y 363 --post-delay 0.5
+  1.7s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  2.2s axe tap -x 214 -y 315 --post-delay 0.5
+  2.0s axe describe-ui
+  1.6s axe describe-ui
+  2.2s axe tap -x 180 -y 315 --post-delay 0.5
+  1.9s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.6s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.6s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+  1.9s axe describe-ui
+  1.5s axe describe-ui
+  1.7s axe describe-ui
+  1.4s axe describe-ui
+  1.4s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/cases/bounty_post_place.py", line 103, in <module>
+    paste_into(ui, 'bounty-post-place-label', PYRAMID_EDITED)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/bounty.py", line 331, in paste_into
+    ui.wait(lambda items: (by_id(items, identifier) or {}).get('AXValue') == text,
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1118/verification/ui/driver.py", line 142, in wait
+    raise AssertionError(message)
+AssertionError: bounty-post-place-label does not read 'Sunway Pyramid 北门'
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 170 commands, median 1.4 s, max 5.1 s (axe describe-ui), 0 timeouts
