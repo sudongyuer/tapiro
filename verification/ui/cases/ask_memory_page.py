@@ -83,8 +83,17 @@ assert_calls(ui, 'memoryRemove', 2)
 
 ui.tap('memory-add')
 ui.element('memory-entry-sheet', timeout=30)
-ui.tap('memory-entry-label')
-ui.type('Gym')
+# axe types a capital letter unpaced, and once the whole word was lost (en light, 2026-11-19); typed once more then.
+for attempt in range(2):
+    ui.tap('memory-entry-label')
+    ui.type('Gym')
+    try:
+        ui.wait(lambda items: ((by_id(items, 'memory-entry-label') or {}).get('AXValue') or '') == 'Gym',
+                'the name never read Gym', 10 if attempt == 0 else 30)
+        break
+    except AssertionError:
+        if attempt:
+            raise
 ui.tap('memory-entry-content')
 ui.type('Pyramid')
 ui.wait(lambda items: ((by_id(items, 'memory-entry-content') or {}).get('AXValue') or '') == 'Pyramid',
