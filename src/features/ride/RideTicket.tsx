@@ -1,5 +1,5 @@
 import { SymbolView } from 'expo-symbols';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/ui/AppText';
@@ -22,6 +22,22 @@ const TONE_INK = {
   plain: ink,
 };
 
+// When the status and the time do not fit one line (long copy, large text), the time wraps under the status. The dot
+// only fades there: removing it would narrow the time, let it fit back on the first line, and toggle without end.
+function TimeTail({ time }: { time: string }) {
+  const [wrapped, setWrapped] = useState(false);
+  return (
+    <View style={styles.timeTail} onLayout={(event) => setWrapped(event.nativeEvent.layout.y > 1)}>
+      <AppText variant="meta" style={[styles.dot, wrapped && styles.hidden]}>
+        ·
+      </AppText>
+      <AppText variant="meta" style={styles.time}>
+        {time}
+      </AppText>
+    </View>
+  );
+}
+
 export function RideTicket({
   view,
   onPress,
@@ -43,32 +59,19 @@ export function RideTicket({
     <>
       <View style={styles.main}>
         <View style={styles.statusRow}>
-          <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
-          <AppText
-            variant="meta"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={MIN_ROUTE_SCALE}
-            style={[styles.status, { color: toneInk }]}
-          >
-            {view.status}
-          </AppText>
-          {view.time ? (
-            <AppText variant="meta" style={styles.dot}>
-              ·
-            </AppText>
-          ) : null}
-          {view.time ? (
+          <View style={styles.statusLead}>
+            <SymbolView name={view.icon} size={ICON} tintColor={toneInk} />
             <AppText
               variant="meta"
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={MIN_ROUTE_SCALE}
-              style={styles.time}
+              style={[styles.status, { color: toneInk }]}
             >
-              {view.time}
+              {view.status}
             </AppText>
-          ) : null}
+          </View>
+          {view.time ? <TimeTail time={view.time} /> : null}
         </View>
         <AppText
           variant="reward"
@@ -184,9 +187,16 @@ const styles = StyleSheet.create({
     paddingRight: vars['--space-3'],
     gap: vars['--space-1'] / 2,
   },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
-  // The time beside it must not squeeze the status away: at AX5 the line showed only the time.
-  status: { flexShrink: 1, minWidth: '50%', fontWeight: '700' },
+  statusRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: vars['--space-1'],
+  },
+  statusLead: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'], flexShrink: 1 },
+  status: { flexShrink: 1, fontWeight: '700' },
+  hidden: { opacity: 0 },
+  timeTail: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
   dot: { color: ink, opacity: MUTED_TEXT_OPACITY, marginHorizontal: vars['--space-1'] },
   time: { color: ink, fontWeight: '700' },
   route: { color: ink },
