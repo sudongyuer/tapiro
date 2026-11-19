@@ -39,6 +39,9 @@ overturned: 0
 - The re-review found my first name fix leaked a name across accounts: one pending value for the whole service,
   never cleared on sign-out. State that outlives a request needs an owner (provider + subject) and an end (session
   change); `sessionLifetimes.test.ts` only sees module-level values, not closures. Tag `closure-lifetime`.
+- `prettier --write docs/retros/*.md` reformatted 23 other retros and the whole index table, and I committed it
+  without reading the staged list. Restored in follow-up commits. Format only the files I changed, and read
+  `git status` before every commit (CLAUDE.md already says so). Tag `glob-format`.
 - My first `/code-review` without a target reviewed the previous merged PR, because the main checkout was the cwd.
   Pass the PR number. Tag `review-target`.
 - Supabase CLI 2.x moved its Go sources under `apps/cli-go/`; `env()` that is unset only warns, so enabling a provider
