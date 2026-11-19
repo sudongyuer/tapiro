@@ -5,7 +5,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import cards, distance_text, ink_box, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, bottom, by_id, clock, close, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, bottom, by_id, close, reach_home, token  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',

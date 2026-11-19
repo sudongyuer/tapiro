@@ -11,7 +11,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, by_id, clock, close  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from gestures import drag  # noqa: E402
 from map import CARD_FILL, MAP, map_at_rest, open_scene, pin_id, pins  # noqa: E402
 

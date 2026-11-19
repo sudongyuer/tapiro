@@ -1,6 +1,7 @@
 import re
 
-from driver import by_id, clock, reach_home
+from driver import by_id, reach_home
+from hourcycle import clock
 
 ROW_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 LIST_GROUND = {'light': (242, 242, 247), 'dark': (0, 0, 0)}

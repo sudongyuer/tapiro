@@ -11,7 +11,8 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import UI, assert_touch_target, by_id, clock  # noqa: E402
+from driver import UI, assert_touch_target, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from ride import tap_bar  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/PillButton.tsx']

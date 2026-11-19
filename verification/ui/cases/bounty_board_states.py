@@ -6,7 +6,8 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import visible as board_visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from gestures import pull  # noqa: E402
-from driver import UI, assert_touch_target, by_id, clock, close, reach_home  # noqa: E402
+from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/', 'verification/ui/gestures.py']
 LOCALES = ['zh-Hans', 'ms']

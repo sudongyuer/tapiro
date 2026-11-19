@@ -5,7 +5,8 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import apply_pill, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, by_id, clock, reach_home, token  # noqa: E402
+from driver import UI, by_id, reach_home, token  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py', 'src/features/place/', 'src/features/block/']

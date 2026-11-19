@@ -3,7 +3,7 @@ import re
 import unittest
 from unittest import mock
 
-from driver import clock
+from hourcycle import clock
 
 
 class ClockTest(unittest.TestCase):

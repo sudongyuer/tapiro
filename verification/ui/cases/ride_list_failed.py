@@ -6,7 +6,8 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from gestures import pull  # noqa: E402
-from driver import UI, assert_touch_target, by_id, clock  # noqa: E402
+from driver import UI, assert_touch_target, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from ride import add_button, open_list, relaunch_list  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/InlineState.tsx', 'verification/ui/gestures.py']

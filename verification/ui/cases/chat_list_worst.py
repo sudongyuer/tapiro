@@ -8,7 +8,8 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 import ocr  # noqa: E402
 from board import screen  # noqa: E402
 from chat import open_list, row_label, rows, within_screen  # noqa: E402
-from driver import UI, by_id, clock  # noqa: E402
+from driver import UI, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py', 'src/ui/InlineState.tsx']
 LOCALES = ['zh-Hans', 'ms']
