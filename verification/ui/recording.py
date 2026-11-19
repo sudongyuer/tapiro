@@ -9,6 +9,13 @@ from contextlib import contextmanager
 from swifttool import run
 
 STARTED = 'Recording started'
+# A recorder that ends on any signal but SIGINT (SIGTERM or SIGHUP from a killed run, SIGKILL) leaves the Simulator
+# holding its recording until it shuts down, and every later recorder exits 16 with this (2026-11-19).
+BUSY = 'A recording is already in progress'
+
+
+class RecorderBusy(AssertionError):
+    pass
 
 
 def recorder_pids(udid):
@@ -47,8 +54,52 @@ def start(udid, path, timeout=20):
         seen.append(line)
         if STARTED in line:
             return proc
-    proc.kill()
-    raise AssertionError(f'recordVideo to {path.name} did not start: {"".join(seen)!r}')
+    proc.send_signal(signal.SIGINT)
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    seen.append(proc.stdout.read() or '')
+    output = ''.join(seen)
+    error = RecorderBusy if BUSY in output else AssertionError
+    raise error(f'recordVideo to {path.name} did not start: {_detail(output)}')
+
+
+def _detail(output):
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    return next((line for line in lines if BUSY in line), lines[-1] if lines else 'no output')
+
+
+def arm(udid, path, log, reboot):
+    stop_all(udid)
+    try:
+        return start(udid, path), None
+    except RecorderBusy as error:
+        log.append(f'{error}; rebooting the Simulator to free it')
+        reboot(udid)
+    except AssertionError as error:
+        log.append(str(error))
+    try:
+        return start(udid, path), None
+    except AssertionError as error:
+        log.append(str(error))
+        return None, str(error)
+
+
+def disarm(proc, log):
+    if proc is None:
+        return True, None
+    proc.send_signal(signal.SIGINT)
+    try:
+        proc.wait(timeout=30)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        return False, None
+    if proc.returncode == 0:
+        return True, None
+    error = f'recorder exited {proc.returncode}: {_detail(proc.stdout.read())}'
+    log.append(error)
+    return True, error
 
 
 @contextmanager
