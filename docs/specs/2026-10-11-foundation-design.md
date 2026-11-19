@@ -946,17 +946,18 @@ Apple/Google adapters wait for the accounts"). The paid account arrived on 2026-
 
 ### Decisions (owner delegated, 2026-11-17; listed for veto)
 
-| #   | Decision                                                                               | Reason                                                                                                                                                                                                                                                                       |
-| --- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S1  | Google library: `@react-native-google-signin/google-signin` (free API)                 | The one Supabase's Expo guide uses; peer `expo >=52`. The alternative `react-native-nitro-google-signin` 2.3.1 passes a nonce, but its `compatibility.json` stops at RN 0.87 (we run 0.88) and adds `react-native-nitro-modules`.                                            |
-| S2  | Google nonce check skipped on the backend                                              | The free API has no nonce parameter; GoogleSignIn-iOS then calls AppAuth's initializer that generates its own nonce (`OIDAuthorizationRequest.m`), which the app never sees. Audience and signature are still checked. Revisit with S1 if nitro supports RN 0.88.            |
-| S3  | Apple nonce: SHA-256 hex to Apple, raw to Supabase                                     | expo-apple-authentication passes the nonce through unchanged (`AppleAuthenticationRequest.swift:37`); auth-js documents that Supabase hashes the supplied nonce before comparing.                                                                                            |
-| S4  | Apple asks for full name and email                                                     | The name step is prefilled from the provider (Behaviour → Accounts); Apple gives the name once.                                                                                                                                                                              |
-| S5  | East Asian names (Han, Hangul, kana) joined family + given without a space             | Apple returns parts; 「小貘 林」 would be wrong for most users. Mixed scripts and Latin names stay given, middle, family with spaces.                                                                                                                                        |
-| S6  | Google client IDs from `EXPO_PUBLIC_GOOGLE_*`, not committed in `app.json`             | They are public but owner-specific and not yet issued; prebuild and Metro load `.env`, so one place feeds both the URL scheme and the runtime IDs. Unset means the app builds and Google shows the existing 「登录还没配置好」 line.                                         |
-| S7  | The Google button stays visible when Google is unconfigured                            | Same screen in every build; the failure line already explains it. Hiding it would make the TestFlight screen differ from the designed one.                                                                                                                                   |
-| S8  | Tapiro sign-out and account deletion also sign out of Google on the device             | The GoogleSignIn keychain entry would otherwise keep the previous user's Google session (review of #189); `signIn()` still always shows Google's account sheet.                                                                                                              |
-| S9  | Apple token revocation on account deletion is a follow-up, before App Store submission | Guideline 5.1.1(v) asks apps with Sign in with Apple to revoke tokens through Apple's REST API on deletion. That needs a Sign in with Apple private key (owner) and a server exchange of the authorization code; TestFlight internal testing does not go through App Review. |
+| #   | Decision                                                                                                               | Reason                                                                                                                                                                                                                                                                       |
+| --- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | Google library: `@react-native-google-signin/google-signin` (free API)                                                 | The one Supabase's Expo guide uses; peer `expo >=52`. The alternative `react-native-nitro-google-signin` 2.3.1 passes a nonce, but its `compatibility.json` stops at RN 0.87 (we run 0.88) and adds `react-native-nitro-modules`.                                            |
+| S2  | Google nonce check skipped on the backend                                                                              | The free API has no nonce parameter; GoogleSignIn-iOS then calls AppAuth's initializer that generates its own nonce (`OIDAuthorizationRequest.m`), which the app never sees. Audience and signature are still checked. Revisit with S1 if nitro supports RN 0.88.            |
+| S3  | Apple nonce: SHA-256 hex to Apple, raw to Supabase                                                                     | expo-apple-authentication passes the nonce through unchanged (`AppleAuthenticationRequest.swift:37`); auth-js documents that Supabase hashes the supplied nonce before comparing.                                                                                            |
+| S4  | Apple asks for full name and email                                                                                     | The name step is prefilled from the provider (Behaviour → Accounts); Apple gives the name once.                                                                                                                                                                              |
+| S5  | East Asian names (Han, Hangul, kana) joined family + given without a space                                             | Apple returns parts; 「小貘 林」 would be wrong for most users. Mixed scripts and Latin names stay given, middle, family with spaces.                                                                                                                                        |
+| S6  | Google client IDs from `EXPO_PUBLIC_GOOGLE_*`, not committed in `app.json`                                             | They are public but owner-specific and not yet issued; prebuild and Metro load `.env`, so one place feeds both the URL scheme and the runtime IDs. Unset means the app builds and Google shows the existing 「登录还没配置好」 line.                                         |
+| S7  | The Google button is hidden when the build has no Google client IDs                                                    | A TestFlight build made before the Google clients exist would otherwise show a button that always fails (re-review of #189). Verify mode and configured builds show both buttons, as designed.                                                                               |
+| S8  | Tapiro sign-out and account deletion also sign out of Google on the device                                             | The GoogleSignIn keychain entry would otherwise keep the previous user's Google session (review of #189); `signIn()` still always shows Google's account sheet.                                                                                                              |
+| S9  | Apple token revocation on account deletion is a follow-up, before App Store submission                                 | Guideline 5.1.1(v) asks apps with Sign in with Apple to revoke tokens through Apple's REST API on deletion. That needs a Sign in with Apple private key (owner) and a server exchange of the authorization code; TestFlight internal testing does not go through App Review. |
+| S10 | Apple's one-time name is kept in memory for the same provider and Apple subject only, cleared on sign-out and deletion | A single pending name could have been written to a different account (re-review of #189). Persisting it to the Keychain would outlive the session it belongs to; the name step still asks when the prefill is lost.                                                          |
 
 ### Deviations from the design
 
@@ -968,8 +969,12 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
   the literal `'SIGN_IN_CANCELLED'`; on iOS the library's code is `String(kGIDSignInErrorCodeCanceled)`, `-5`
   (`RNGoogleSignin.mm:35`). **Fix:** the adapter takes `statusCodes.SIGN_IN_CANCELLED` from the library.
 - **Symptom (review of #189):** Apple's one-time name was lost when the token exchange failed or `updateUser` returned
-  an error (it resolves `{ error }`, it does not throw). **Fix:** the service keeps the name until a save succeeds, for
-  the rest of the launch (`supabaseAuthService.ts`).
+  an error (it resolves `{ error }`, it does not throw). **Fix:** the service keeps the name until a save succeeds.
+  The re-review found that this first fix could save it on another account (another provider, or after sign-out);
+  the pending name is now bound to the provider and the Apple `user` subject and cleared on sign-out and deletion (S10).
+- **Symptom (re-review of #189):** a rejected native `configure` would make every later Google attempt fail until
+  restart. **Root cause:** the library stores configure's promise and awaits it in `signIn`; the adapter configured
+  once. **Fix:** configure before every attempt.
 
 - **Symptom:** `expo config` failed with `googleSignIn is not a function` when a client ID was set.
   **Root cause:** the library's `app.plugin.js` is an ES module export (`exports.default`).
@@ -990,7 +995,8 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
 - `bun run verify:smoke` → 4 of 4 pass (`app_launches`, `sign_in_fixture`, `shell_tabs`, `home_one_card`, zh-Hans light).
   Selection: no screen layout or copy changed; the native config (entitlement, GoogleSignIn pod, URL scheme) can only
   break launch or the sign-in screen, which the smoke set covers.
-- `bun test` → 3024 pass; `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `check-story-map` → pass.
+- After the review fixes (Google button conditional): rebuilt, `sign_in_fixture` in zh-Hans light and ms light → pass.
+- `bun test` → 3031 pass; `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `check-story-map` → pass.
 
 ### Known limits
 
@@ -1002,6 +1008,8 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
   name step still lets the user type it).
 - Google client IDs come from `.env.local` at prebuild and bundle time on this Mac; an EAS cloud build would need them
   as EAS environment variables, or Google stays unconfigured.
+- A missing Google URL scheme (prebuilt before the iOS client ID was set) makes Google sign-in fail, not crash: the
+  library catches GoogleSignIn's NSException (`RNGoogleSignin.mm:136-143`). Prebuild again after setting the IDs.
 - The Google stack case proves the provider is enabled, not that the client IDs match: the forged token fails at the
   signature check first. Audience is proven on the device run.
 - The hosted Supabase project is not touched; its Apple and Google providers are configured by the owner.

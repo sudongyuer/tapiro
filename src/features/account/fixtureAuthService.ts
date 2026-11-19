@@ -69,6 +69,7 @@ export function createFixtureAuthService({
   return {
     getState: store.get,
     subscribe: store.subscribe,
+    isAvailable: () => true,
     async signIn(provider) {
       store.set({ status: 'signedIn', user: fixtureUser(provider, variant) });
       return { ok: true };

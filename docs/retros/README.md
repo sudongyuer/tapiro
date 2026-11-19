@@ -917,4 +917,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-19 | BP-13, chat 12-hour, flight time        | 3                  | 2             | ~150 min (failed BP-13 fixes, empty probes)         | 0                       | 0                     |
 | 2026-11-19 | BP-13 kit date row                      | 0                  | 1             | ~45 min (sizing before logging, row tap)            | 0                       | 0                     |
 | 2026-11-19 | date row for every compact picker       | 0                  | 3             | ~70 min (sheet layout, ViewThatFits slack)          | 0                       | 0                     |
-| 2026-11-19 | real sign-in adapters                   | 0                  | 2             | ~10 min (Apple JWKS fetch timeout, CLI source path) | 0                       | 0                     |
+| 2026-11-19 | real sign-in adapters                   | 0                  | 3             | ~10 min (Apple JWKS fetch timeout, CLI source path) | 0                       | 0                     |

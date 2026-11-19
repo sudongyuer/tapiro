@@ -3,6 +3,7 @@ import type { NonceSource } from './nonce';
 import type { IdTokenProvider } from './types';
 
 export type AppleCredential = {
+  user: string;
   identityToken: string | null;
   fullName: {
     givenName?: string | null;
@@ -30,6 +31,7 @@ export function createAppleIdTokenProvider(
           idToken: credential.identityToken,
           nonce: nonce.raw,
           fullName: joinName(credential.fullName),
+          subject: credential.user,
         };
       } catch (error) {
         return {

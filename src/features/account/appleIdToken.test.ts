@@ -13,6 +13,7 @@ const sha256 = async (value: string) => createHash('sha256').update(value).diges
 const nonces = createNonceSource(() => 'raw-nonce', sha256);
 
 const credential = (overrides: Partial<AppleCredential> = {}): AppleCredential => ({
+  user: 'apple-subject',
   identityToken: 'apple-jwt',
   fullName: null,
   ...overrides,
@@ -38,6 +39,7 @@ describe('apple ID token provider', () => {
       idToken: 'apple-jwt',
       nonce: 'raw-nonce',
       fullName: undefined,
+      subject: 'apple-subject',
     });
   });
 

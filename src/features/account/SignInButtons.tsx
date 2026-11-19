@@ -67,29 +67,31 @@ export function SignInButtons() {
         testID="sign-in-apple"
         style={styles.apple}
       />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: pending }}
-        disabled={pending}
-        onPress={() => signIn('google')}
-        testID="sign-in-google"
-        style={({ pressed }) => [
-          styles.google,
-          {
-            backgroundColor: color('--color-google-fill'),
-            borderColor: color('--color-google-stroke'),
-          },
-          pressed && styles.pressed,
-        ]}
-      >
-        <GoogleLogo size={LOGO_SIZE} />
-        <AppText
-          variant="body"
-          style={[styles.googleLabel, { color: color('--color-google-label') }]}
+      {(authService.isAvailable?.('google') ?? true) && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: pending }}
+          disabled={pending}
+          onPress={() => signIn('google')}
+          testID="sign-in-google"
+          style={({ pressed }) => [
+            styles.google,
+            {
+              backgroundColor: color('--color-google-fill'),
+              borderColor: color('--color-google-stroke'),
+            },
+            pressed && styles.pressed,
+          ]}
         >
-          {t('account.signIn.google')}
-        </AppText>
-      </Pressable>
+          <GoogleLogo size={LOGO_SIZE} />
+          <AppText
+            variant="body"
+            style={[styles.googleLabel, { color: color('--color-google-label') }]}
+          >
+            {t('account.signIn.google')}
+          </AppText>
+        </Pressable>
+      )}
       {showTestAccounts && <TestAccountButtons disabled={pending} onPick={signInAs} />}
       {failure && (
         <AppText

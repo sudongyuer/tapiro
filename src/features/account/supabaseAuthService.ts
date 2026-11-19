@@ -26,8 +26,9 @@ export function createSupabaseAuthService(
   const store = createSessionStore(client ? { status: 'loading' } : { status: 'signedOut' });
   const forgetProviders = () =>
     Promise.all(Object.values(adapters).map((adapter) => adapter.forget?.().catch(() => {})));
-  // Apple sends the name only on the first authorisation; keep it until it is saved, across failed attempts.
-  let pendingFullName: string | undefined;
+  // Apple sends the name only on the first authorisation. Keep it across failed attempts, but only for the same
+  // provider account, and never past a sign-out, so one person's name cannot land on another account.
+  let pendingName: { provider: AuthProvider; subject: string; fullName: string } | null = null;
 
   client?.auth.onAuthStateChange((_event, session) => {
     store.set(
@@ -37,6 +38,7 @@ export function createSupabaseAuthService(
 
   return {
     getState: store.get,
+    isAvailable: (provider) => Boolean(adapters[provider]),
     subscribe: store.subscribe,
 
     async signIn(provider) {
@@ -45,10 +47,14 @@ export function createSupabaseAuthService(
       try {
         const token = await adapter.requestIdToken();
         if (!token.ok) return { ok: false, reason: token.reason };
-        pendingFullName = token.fullName?.trim() || pendingFullName;
+        const fullName = token.fullName?.trim();
+        if (fullName && token.subject) pendingName = { provider, subject: token.subject, fullName };
         const result = await exchangeIdToken(client, provider, token);
-        if (result.ok && pendingFullName && (await saveFullName(client, pendingFullName))) {
-          pendingFullName = undefined;
+        if (!result.ok) return result;
+        const name = pendingName;
+        pendingName = null;
+        if (name && name.provider === provider && name.subject === token.subject) {
+          if (!(await saveFullName(client, name.fullName))) pendingName = name;
         }
         return result;
       } catch {
@@ -68,6 +74,7 @@ export function createSupabaseAuthService(
     },
 
     async signOut() {
+      pendingName = null;
       await client?.auth.signOut({ scope: 'local' }).catch(() => {});
       await forgetProviders();
     },
@@ -87,6 +94,7 @@ export function createSupabaseAuthService(
       }
       if (error instanceof FunctionsFetchError) return { ok: false, reason: 'network' };
       if (error) return { ok: false, reason: 'failed' };
+      pendingName = null;
       await client.auth.signOut({ scope: 'local' });
       await forgetProviders();
       return { ok: true };

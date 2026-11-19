@@ -31,14 +31,12 @@ export function createGoogleIdTokenProvider(
   google: GoogleSignInModule,
   clientIds: GoogleClientIds,
 ): IdTokenProvider {
-  let configured = false;
   return {
     async requestIdToken() {
       try {
-        if (!configured) {
-          google.configure(clientIds);
-          configured = true;
-        }
+        // The library stores configure's native promise and awaits it in signIn; a rejected one would stick, so
+        // every attempt configures again.
+        google.configure(clientIds);
         const response = await google.signIn();
         if (response.type === 'cancelled') return { ok: false, reason: 'cancelled' };
         if (!response.data.idToken) return { ok: false, reason: 'failed' };

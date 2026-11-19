@@ -35,7 +35,14 @@ export type DeleteAccountResult =
   | { ok: false; reason: Exclude<DeleteAccountFailure, 'blocked'> };
 
 export type IdTokenResult =
-  | { ok: true; idToken: string; nonce?: string; accessToken?: string; fullName?: string }
+  | {
+      ok: true;
+      idToken: string;
+      nonce?: string;
+      accessToken?: string;
+      fullName?: string;
+      subject?: string;
+    }
   | { ok: false; reason: 'cancelled' | 'failed' };
 
 export type IdTokenProvider = {
@@ -48,6 +55,7 @@ export type ProviderAdapters = Partial<Record<AuthProvider, IdTokenProvider>>;
 export type AuthService = {
   getState(): SessionState;
   subscribe(listener: () => void): () => void;
+  isAvailable?(provider: AuthProvider): boolean;
   signIn(provider: AuthProvider): Promise<SignInResult>;
   signInWithPassword?(email: string, password: string): Promise<SignInResult>;
   signOut(): Promise<void>;

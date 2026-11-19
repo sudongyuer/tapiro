@@ -36,7 +36,7 @@ const rejecting = (code: string) => async (): Promise<GoogleSignInResponse> => {
 };
 
 describe('google ID token provider', () => {
-  test('configures both client IDs once and returns the ID token', async () => {
+  test('configures both client IDs before every attempt and returns the ID token', async () => {
     const { google, configured } = fakeGoogle(async () => ({
       type: 'success',
       data: { idToken: 'google-jwt' },
@@ -44,7 +44,7 @@ describe('google ID token provider', () => {
     const provider = createGoogleIdTokenProvider(google, ids);
     expect(await provider.requestIdToken()).toEqual({ ok: true, idToken: 'google-jwt' });
     await provider.requestIdToken();
-    expect(configured).toEqual([ids]);
+    expect(configured).toEqual([ids, ids]);
   });
 
   test('a cancelled response and the native cancel code are cancelled', async () => {
