@@ -20,7 +20,12 @@ function label(check) {
   return `${name}: ${result ?? 'unknown'}`;
 }
 
-export function decide(view) {
+export function decide(view, expectedHead) {
+  if (expectedHead && view?.headRefOid !== expectedHead)
+    return {
+      verdict: 'stale',
+      details: [`pull request head ${view?.headRefOid || '(none)'} is not ${expectedHead}`],
+    };
   const checks = Array.isArray(view?.statusCheckRollup) ? view.statusCheckRollup : [];
   if (checks.length === 0) return { verdict: 'none', details: ['no checks reported'] };
   const failing = checks.filter((c) => outcome(c) === 'fail');
@@ -38,7 +43,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     console.error(`merge-gate: cannot parse gh pr view JSON: ${error.message}`);
     process.exit(2);
   }
-  const { verdict, details } = decide(view);
+  const { verdict, details } = decide(view, process.argv[2]);
   console.log(verdict);
   for (const line of details) console.error(`  ${line}`);
   process.exit(verdict === 'pass' ? 0 : 1);
