@@ -91,6 +91,75 @@ describe('sim-lock', () => {
     SLOW,
   );
 
+  test(
+    'serves two runs with the same name one after the other',
+    async () => {
+      setup();
+      const holder = sleeper();
+      expect(lock('acquire', 'holder', '--pid', String(holder.pid)).code).toBe(0);
+      const log = join(dir, 'order.log');
+      const runs: Bun.Subprocess[] = [];
+      for (const tag of ['first', 'second']) {
+        runs.push(
+          background([
+            'run',
+            'same',
+            '--timeout',
+            '5',
+            '--',
+            'bash',
+            '-c',
+            `echo start ${tag} >> ${log}; sleep 0.3; echo end ${tag} >> ${log}`,
+          ]),
+        );
+        await waitFor(() => queued() === runs.length);
+      }
+      expect(lock('release', 'holder').code).toBe(0);
+      expect(await Promise.all(runs.map((r) => r.exited))).toEqual([0, 0]);
+      expect(readFileSync(log, 'utf8').trim().split('\n')).toEqual([
+        'start first',
+        'end first',
+        'start second',
+        'end second',
+      ]);
+      expect(lock('status').out).toContain('free');
+    },
+    SLOW,
+  );
+
+  test(
+    'run leaves a lock that a same-named waiter took over past its max age',
+    async () => {
+      setup();
+      const other = sleeper();
+      const run = background(['run', 'same', '--max-age', '1', '--', 'sleep', '2.5']);
+      await waitFor(() => lock('status').out.includes('held by same'));
+      const taken = lock('acquire', 'same', '--pid', String(other.pid), '--timeout', '5');
+      expect(taken.code).toBe(0);
+      expect(taken.err).toContain('over the max age of 1s');
+      expect(await run.exited).toBe(0);
+      expect(lock('status').out).toContain(`held by same (pid ${other.pid}, alive)`);
+    },
+    SLOW,
+  );
+
+  test(
+    'a waiter whose ticket another process removed joins the queue again',
+    async () => {
+      setup();
+      const holder = sleeper();
+      expect(lock('acquire', 'holder', '--pid', String(holder.pid)).code).toBe(0);
+      const waiter = background(['run', 'w', '--timeout', '5', '--', 'true']);
+      await waitFor(() => queued() === 1);
+      for (const t of readdirSync(join(dir, 'queue'))) rmSync(join(dir, 'queue', t));
+      await waitFor(() => queued() === 1);
+      expect(lock('release', 'holder').code).toBe(0);
+      expect(await waiter.exited).toBe(0);
+      expect(readFileSync(join(dir, 'log'), 'utf8')).toContain('w rejoined the queue');
+    },
+    SLOW,
+  );
+
   test('refuses a release by anyone but the holder', () => {
     setup();
     const holder = sleeper();
