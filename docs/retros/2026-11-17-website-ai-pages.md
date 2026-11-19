@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                              |
-| --------- | --------------------- | ---------------------------------------------------------------------- |
-| Quality   | Escaped defects       | 0                                                                      |
-| Quality   | Skipped verifications | No browser screenshot; pages checked live by HTTP content after deploy |
-| Speed     | Wasted time           | ~0                                                                     |
-| Autonomy  | Interventions         | 0                                                                      |
+| Dimension | Measure               | This step                                                                         |
+| --------- | --------------------- | --------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0                                                                                 |
+| Quality   | Skipped verifications | No browser screenshot; pages checked live by HTTP content after deploy            |
+| Speed     | Wasted time           | ~0                                                                                |
+| Autonomy  | Interventions         | 0                                                                                 |
 
 ## Findings
 
