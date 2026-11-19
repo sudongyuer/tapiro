@@ -67,7 +67,7 @@ export function SignInButtons() {
         testID="sign-in-apple"
         style={styles.apple}
       />
-      {(authService.isAvailable?.('google') ?? true) && (
+      {authService.isAvailable('google') && (
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ disabled: pending }}

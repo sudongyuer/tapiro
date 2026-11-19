@@ -5,6 +5,7 @@ import {
   type GoogleClientIds,
   type GoogleSignInModule,
   type GoogleSignInResponse,
+  googleUrlScheme,
   readGoogleClientIds,
 } from './googleIdToken';
 
@@ -12,8 +13,6 @@ const ids: GoogleClientIds = {
   iosClientId: '123-ios.apps.googleusercontent.com',
   webClientId: '123-web.apps.googleusercontent.com',
 };
-
-const IOS_CANCELLED = '-5';
 
 function fakeGoogle(signIn: () => Promise<GoogleSignInResponse>) {
   const configured: GoogleClientIds[] = [];
@@ -26,7 +25,6 @@ function fakeGoogle(signIn: () => Promise<GoogleSignInResponse>) {
     signOut: async () => {
       signedOut += 1;
     },
-    cancelledCode: IOS_CANCELLED,
   };
   return { google, configured, signedOuts: () => signedOut };
 }
@@ -47,21 +45,20 @@ describe('google ID token provider', () => {
     expect(configured).toEqual([ids, ids]);
   });
 
-  test('a cancelled response and the native cancel code are cancelled', async () => {
-    for (const signIn of [
-      async (): Promise<GoogleSignInResponse> => ({ type: 'cancelled', data: null }),
-      rejecting(IOS_CANCELLED),
-    ]) {
-      const provider = createGoogleIdTokenProvider(fakeGoogle(signIn).google, ids);
-      expect(await provider.requestIdToken()).toEqual({ ok: false, reason: 'cancelled' });
-    }
+  test('a cancelled response is cancelled', async () => {
+    const cancelled = async (): Promise<GoogleSignInResponse> => ({
+      type: 'cancelled',
+      data: null,
+    });
+    const provider = createGoogleIdTokenProvider(fakeGoogle(cancelled).google, ids);
+    expect(await provider.requestIdToken()).toEqual({ ok: false, reason: 'cancelled' });
   });
 
   test('a missing ID token or another error fails', async () => {
     for (const signIn of [
       async (): Promise<GoogleSignInResponse> => ({ type: 'success', data: { idToken: null } }),
       rejecting('ASYNC_OP_IN_PROGRESS'),
-      rejecting('SIGN_IN_CANCELLED'),
+      rejecting('SIGN_IN_ERROR'),
     ]) {
       const provider = createGoogleIdTokenProvider(fakeGoogle(signIn).google, ids);
       expect(await provider.requestIdToken()).toEqual({ ok: false, reason: 'failed' });
@@ -91,16 +88,28 @@ test('forget signs out of Google even before this launch configured it, and neve
   await createGoogleIdTokenProvider(failing, ids).forget?.();
 });
 
+const schemes = ['tapiro', 'app.tapiro', 'com.googleusercontent.apps.123-ios'];
+
 describe('google client IDs', () => {
   test('both public client IDs are required', () => {
-    expect(readGoogleClientIds(ids.iosClientId, ids.webClientId)).toEqual(ids);
-    expect(readGoogleClientIds(` ${ids.iosClientId} `, ids.webClientId)).toEqual(ids);
-    expect(readGoogleClientIds(undefined, ids.webClientId)).toBeNull();
-    expect(readGoogleClientIds(ids.iosClientId, '')).toBeNull();
+    expect(readGoogleClientIds(ids.iosClientId, ids.webClientId, schemes)).toEqual(ids);
+    expect(readGoogleClientIds(` ${ids.iosClientId} `, ids.webClientId, schemes)).toEqual(ids);
+    expect(readGoogleClientIds(undefined, ids.webClientId, schemes)).toBeNull();
+    expect(readGoogleClientIds(ids.iosClientId, '', schemes)).toBeNull();
   });
 
   test('a value that is not a Google client ID leaves Google unconfigured', () => {
-    expect(readGoogleClientIds('com.googleusercontent.apps.123-ios', ids.webClientId)).toBeNull();
-    expect(readGoogleClientIds(ids.iosClientId, 'GOCSPX-secret')).toBeNull();
+    expect(
+      readGoogleClientIds('com.googleusercontent.apps.123-ios', ids.webClientId, schemes),
+    ).toBeNull();
+    expect(readGoogleClientIds(ids.iosClientId, 'GOCSPX-secret', schemes)).toBeNull();
+  });
+
+  test('without the reversed client ID registered as a URL scheme, Google stays off', () => {
+    expect(googleUrlScheme(ids.iosClientId)).toBe('com.googleusercontent.apps.123-ios');
+    expect(readGoogleClientIds(ids.iosClientId, ids.webClientId, ['tapiro'])).toBeNull();
+    expect(
+      readGoogleClientIds(ids.iosClientId, ids.webClientId, ['com.googleusercontent.apps.999-old']),
+    ).toBeNull();
   });
 });

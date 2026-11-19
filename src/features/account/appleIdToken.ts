@@ -1,4 +1,3 @@
-import { errorCode } from './errorCode';
 import type { NonceSource } from './nonce';
 import type { IdTokenProvider } from './types';
 
@@ -30,8 +29,7 @@ export function createAppleIdTokenProvider(
           ok: true,
           idToken: credential.identityToken,
           nonce: nonce.raw,
-          fullName: joinName(credential.fullName),
-          subject: credential.user,
+          account: { subject: credential.user, fullName: joinName(credential.fullName) },
         };
       } catch (error) {
         return {
@@ -54,3 +52,6 @@ export function joinName(name: AppleCredential['fullName']): string | undefined 
   const joined = [...given, family].filter(Boolean).join(' ');
   return joined || undefined;
 }
+
+const errorCode = (error: unknown): unknown =>
+  typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;

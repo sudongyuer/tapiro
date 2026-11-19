@@ -26,8 +26,8 @@ export function createSupabaseAuthService(
   const store = createSessionStore(client ? { status: 'loading' } : { status: 'signedOut' });
   const forgetProviders = () =>
     Promise.all(Object.values(adapters).map((adapter) => adapter.forget?.().catch(() => {})));
-  // Apple sends the name only on the first authorisation. Keep it across failed attempts, but only for the same
-  // provider account, and never past a sign-out, so one person's name cannot land on another account.
+  // Apple sends the name only on the first authorisation. Keep it across failed attempts and sign-outs, but write it
+  // only to the same provider account, so one person's name cannot land on another account.
   let pendingName: { provider: AuthProvider; subject: string; fullName: string } | null = null;
 
   client?.auth.onAuthStateChange((_event, session) => {
@@ -47,13 +47,14 @@ export function createSupabaseAuthService(
       try {
         const token = await adapter.requestIdToken();
         if (!token.ok) return { ok: false, reason: token.reason };
-        const fullName = token.fullName?.trim();
-        if (fullName && token.subject) pendingName = { provider, subject: token.subject, fullName };
+        const subject = token.account?.subject;
+        const fullName = token.account?.fullName?.trim();
+        if (subject && fullName) pendingName = { provider, subject, fullName };
         const result = await exchangeIdToken(client, provider, token);
         if (!result.ok) return result;
         const name = pendingName;
         pendingName = null;
-        if (name && name.provider === provider && name.subject === token.subject) {
+        if (name && name.provider === provider && name.subject === subject) {
           if (!(await saveFullName(client, name.fullName))) pendingName = name;
         }
         return result;
@@ -74,7 +75,6 @@ export function createSupabaseAuthService(
     },
 
     async signOut() {
-      pendingName = null;
       await client?.auth.signOut({ scope: 'local' }).catch(() => {});
       await forgetProviders();
     },

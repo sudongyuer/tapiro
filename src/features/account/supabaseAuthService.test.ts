@@ -85,8 +85,7 @@ describe('supabase auth service', () => {
       requestIdToken: async () => ({
         ok: true,
         idToken: 'token',
-        fullName: '  林小貘 ',
-        subject: 'a1',
+        account: { subject: 'a1', fullName: '  林小貘 ' },
       }),
     };
     expect(await createSupabaseAuthService(client, { apple: named }).signIn('apple')).toEqual({
@@ -108,8 +107,7 @@ describe('supabase auth service', () => {
       requestIdToken: async () => ({
         ok: true,
         idToken: 'token',
-        fullName: 'Lin Mo',
-        subject: 'a1',
+        account: { subject: 'a1', fullName: 'Lin Mo' },
       }),
     };
     expect(await createSupabaseAuthService(client, { apple: named }).signIn('apple')).toEqual({
@@ -125,8 +123,7 @@ describe('supabase auth service', () => {
       requestIdToken: async () => ({
         ok: true,
         idToken: 'token',
-        fullName: 'Lin Mo',
-        subject: 'a1',
+        account: { subject: 'a1', fullName: 'Lin Mo' },
       }),
     };
     await createSupabaseAuthService(client, { apple: named }).signIn('apple');
@@ -139,8 +136,8 @@ describe('supabase auth service', () => {
     const firstOnly: IdTokenProvider = {
       requestIdToken: async () =>
         calls++ === 0
-          ? { ok: true, idToken: 'token', fullName: '林小貘', subject: 'a1' }
-          : { ok: true, idToken: 'token', subject: 'a1' },
+          ? { ok: true, idToken: 'token', account: { subject: 'a1', fullName: '林小貘' } }
+          : { ok: true, idToken: 'token', account: { subject: 'a1' } },
     };
     const service = createSupabaseAuthService(client, { apple: firstOnly });
     signInWithIdToken.mockImplementationOnce(async () => ({
@@ -165,10 +162,14 @@ describe('supabase auth service', () => {
   test('a pending name never lands on another account', async () => {
     const { client, signInWithIdToken, updateUser } = fakeClient();
     const named: IdTokenProvider = {
-      requestIdToken: async () => ({ ok: true, idToken: 't', fullName: '林小貘', subject: 'a1' }),
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 't',
+        account: { subject: 'a1', fullName: '林小貘' },
+      }),
     };
     const otherApple: IdTokenProvider = {
-      requestIdToken: async () => ({ ok: true, idToken: 't', subject: 'a2' }),
+      requestIdToken: async () => ({ ok: true, idToken: 't', account: { subject: 'a2' } }),
     };
     const google: IdTokenProvider = { requestIdToken: async () => ({ ok: true, idToken: 'g' }) };
     const failOnce = () =>
@@ -202,10 +203,44 @@ describe('supabase auth service', () => {
     expect(updateUser).not.toHaveBeenCalled();
   });
 
+  test('a name whose save failed is saved on the same Apple account after a sign-out, never after deletion', async () => {
+    const { client, emit, updateUser } = fakeClient();
+    let calls = 0;
+    const firstOnly: IdTokenProvider = {
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'token',
+        account: calls++ === 0 ? { subject: 'a1', fullName: '林小貘' } : { subject: 'a1' },
+      }),
+    };
+    const failSave = () =>
+      updateUser.mockImplementationOnce(async () => ({
+        data: { user: null },
+        error: new AuthApiError('save failed', 500, undefined),
+      }));
+    const service = createSupabaseAuthService(client, { apple: firstOnly });
+    failSave();
+    await service.signIn('apple');
+    await service.signOut();
+    await service.signIn('apple');
+    expect(updateUser).toHaveBeenCalledTimes(2);
+    expect(updateUser).toHaveBeenLastCalledWith({ data: { full_name: '林小貘' } });
+
+    calls = 0;
+    updateUser.mockClear();
+    const deleting = createSupabaseAuthService(client, { apple: firstOnly });
+    failSave();
+    await deleting.signIn('apple');
+    emit(session);
+    expect(await deleting.deleteAccount()).toEqual({ ok: true });
+    await deleting.signIn('apple');
+    expect(updateUser).toHaveBeenCalledTimes(1);
+  });
+
   test('only providers with an adapter are available', () => {
     const service = createSupabaseAuthService(null, { apple });
-    expect(service.isAvailable?.('apple')).toBe(true);
-    expect(service.isAvailable?.('google')).toBe(false);
+    expect(service.isAvailable('apple')).toBe(true);
+    expect(service.isAvailable('google')).toBe(false);
   });
 
   test('signing out and deleting the account forget every provider session', async () => {

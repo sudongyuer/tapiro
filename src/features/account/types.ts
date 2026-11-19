@@ -40,8 +40,7 @@ export type IdTokenResult =
       idToken: string;
       nonce?: string;
       accessToken?: string;
-      fullName?: string;
-      subject?: string;
+      account?: { subject: string; fullName?: string };
     }
   | { ok: false; reason: 'cancelled' | 'failed' };
 
@@ -55,7 +54,7 @@ export type ProviderAdapters = Partial<Record<AuthProvider, IdTokenProvider>>;
 export type AuthService = {
   getState(): SessionState;
   subscribe(listener: () => void): () => void;
-  isAvailable?(provider: AuthProvider): boolean;
+  isAvailable(provider: AuthProvider): boolean;
   signIn(provider: AuthProvider): Promise<SignInResult>;
   signInWithPassword?(email: string, password: string): Promise<SignInResult>;
   signOut(): Promise<void>;

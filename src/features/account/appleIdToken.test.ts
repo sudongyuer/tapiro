@@ -38,8 +38,7 @@ describe('apple ID token provider', () => {
       ok: true,
       idToken: 'apple-jwt',
       nonce: 'raw-nonce',
-      fullName: undefined,
-      subject: 'apple-subject',
+      account: { subject: 'apple-subject', fullName: undefined },
     });
   });
 
@@ -94,7 +93,10 @@ describe('apple ID token provider', () => {
       async () => credential({ fullName: { givenName: 'Mei Ling', familyName: 'Tan' } }),
       nonces,
     );
-    expect(await provider.requestIdToken()).toMatchObject({ ok: true, fullName: 'Mei Ling Tan' });
+    expect(await provider.requestIdToken()).toMatchObject({
+      ok: true,
+      account: { subject: 'apple-subject', fullName: 'Mei Ling Tan' },
+    });
   });
 });
 

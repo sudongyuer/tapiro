@@ -1,6 +1,7 @@
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AppleAuthenticationScope, signInAsync } from 'expo-apple-authentication';
 import { CryptoDigestAlgorithm, digestStringAsync, randomUUID } from 'expo-crypto';
+import { registeredUrlSchemes } from 'tapiro-kit';
 
 import { createAppleIdTokenProvider } from './appleIdToken';
 import { createGoogleIdTokenProvider, readGoogleClientIds } from './googleIdToken';
@@ -23,6 +24,7 @@ const apple = createAppleIdTokenProvider(
 const googleClientIds = readGoogleClientIds(
   process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  registeredUrlSchemes(),
 );
 
 export const providerAdapters: ProviderAdapters = {
@@ -33,7 +35,6 @@ export const providerAdapters: ProviderAdapters = {
         configure: GoogleSignin.configure,
         signIn: GoogleSignin.signIn,
         signOut: GoogleSignin.signOut,
-        cancelledCode: statusCodes.SIGN_IN_CANCELLED,
       },
       googleClientIds,
     ),

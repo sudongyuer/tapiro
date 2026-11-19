@@ -1,4 +1,3 @@
-import { errorCode } from './errorCode';
 import type { IdTokenProvider } from './types';
 
 export type GoogleClientIds = { iosClientId: string; webClientId: string };
@@ -10,18 +9,24 @@ export type GoogleSignInModule = {
   configure(options: GoogleClientIds): void;
   signIn(): Promise<GoogleSignInResponse>;
   signOut(): Promise<unknown>;
-  cancelledCode: string;
 };
 
 const PUBLIC_CLIENT_ID = /^[\w-]+\.apps\.googleusercontent\.com$/;
 
+export const googleUrlScheme = (iosClientId: string) =>
+  `com.googleusercontent.apps.${iosClientId.replace(/\.apps\.googleusercontent\.com$/, '')}`;
+
+// GoogleSignIn raises an uncaught NSException in release builds when the reversed client ID is not a registered URL
+// scheme, which happens when `ios/` was prebuilt before the ID was set or with another ID.
 export function readGoogleClientIds(
   iosClientId: string | undefined,
   webClientId: string | undefined,
+  registeredSchemes: readonly string[],
 ): GoogleClientIds | null {
   const ios = iosClientId?.trim();
   const web = webClientId?.trim();
   if (!ios || !web || !PUBLIC_CLIENT_ID.test(ios) || !PUBLIC_CLIENT_ID.test(web)) return null;
+  if (!registeredSchemes.includes(googleUrlScheme(ios))) return null;
   return { iosClientId: ios, webClientId: web };
 }
 
@@ -41,11 +46,8 @@ export function createGoogleIdTokenProvider(
         if (response.type === 'cancelled') return { ok: false, reason: 'cancelled' };
         if (!response.data.idToken) return { ok: false, reason: 'failed' };
         return { ok: true, idToken: response.data.idToken };
-      } catch (error) {
-        return {
-          ok: false,
-          reason: errorCode(error) === google.cancelledCode ? 'cancelled' : 'failed',
-        };
+      } catch {
+        return { ok: false, reason: 'failed' };
       }
     },
     async forget() {
