@@ -18,7 +18,10 @@ function fakeClient({ signInError = null as unknown, invokeError = null as unkno
   const signInWithIdToken = mock(async () => ({ error: signInError }));
   const signInWithPassword = mock(async (_credentials: unknown) => ({ error: signInError }));
   const signOut = mock(async (_options?: unknown) => ({ error: null }));
-  const updateUser = mock(async (_attributes: unknown) => ({ data: { user: null }, error: null }));
+  const updateUser = mock(async (_attributes: unknown) => ({
+    data: { user: null },
+    error: null as AuthApiError | null,
+  }));
   const invoke = mock(async () => ({ data: null, error: invokeError }));
   const client = {
     auth: {
@@ -79,7 +82,11 @@ describe('supabase auth service', () => {
   test('a one-time full name from the provider is written to user metadata', async () => {
     const { client, updateUser } = fakeClient();
     const named: IdTokenProvider = {
-      requestIdToken: async () => ({ ok: true, idToken: 'token', fullName: '  林小貘 ' }),
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'token',
+        account: { subject: 'a1', fullName: '  林小貘 ' },
+      }),
     };
     expect(await createSupabaseAuthService(client, { apple: named }).signIn('apple')).toEqual({
       ok: true,
@@ -97,7 +104,11 @@ describe('supabase auth service', () => {
       throw new Error('offline');
     });
     const named: IdTokenProvider = {
-      requestIdToken: async () => ({ ok: true, idToken: 'token', fullName: 'Lin Mo' }),
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'token',
+        account: { subject: 'a1', fullName: 'Lin Mo' },
+      }),
     };
     expect(await createSupabaseAuthService(client, { apple: named }).signIn('apple')).toEqual({
       ok: true,
@@ -109,10 +120,185 @@ describe('supabase auth service', () => {
       signInError: new AuthApiError('bad token', 400, undefined),
     });
     const named: IdTokenProvider = {
-      requestIdToken: async () => ({ ok: true, idToken: 'token', fullName: 'Lin Mo' }),
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'token',
+        account: { subject: 'a1', fullName: 'Lin Mo' },
+      }),
     };
     await createSupabaseAuthService(client, { apple: named }).signIn('apple');
     expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  test('the one-time name survives a failed sign-in and a failed save until it is saved', async () => {
+    const { client, signInWithIdToken, updateUser } = fakeClient();
+    let calls = 0;
+    const firstOnly: IdTokenProvider = {
+      requestIdToken: async () =>
+        calls++ === 0
+          ? { ok: true, idToken: 'token', account: { subject: 'a1', fullName: '林小貘' } }
+          : { ok: true, idToken: 'token', account: { subject: 'a1' } },
+    };
+    const service = createSupabaseAuthService(client, { apple: firstOnly });
+    signInWithIdToken.mockImplementationOnce(async () => ({
+      error: new AuthRetryableFetchError('offline', 0),
+    }));
+    expect(await service.signIn('apple')).toEqual({ ok: false, reason: 'network' });
+    expect(updateUser).not.toHaveBeenCalled();
+    updateUser.mockImplementationOnce(async () => ({
+      data: { user: null },
+      error: new AuthApiError('save failed', 500, undefined),
+    }));
+    expect(await service.signIn('apple')).toEqual({ ok: true });
+    expect(await service.signIn('apple')).toEqual({ ok: true });
+    expect(updateUser.mock.calls).toEqual([
+      [{ data: { full_name: '林小貘' } }],
+      [{ data: { full_name: '林小貘' } }],
+    ]);
+    await service.signIn('apple');
+    expect(updateUser).toHaveBeenCalledTimes(2);
+  });
+
+  test('a pending name never lands on another account', async () => {
+    const { client, signInWithIdToken, updateUser } = fakeClient();
+    const named: IdTokenProvider = {
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 't',
+        account: { subject: 'a1', fullName: '林小貘' },
+      }),
+    };
+    const otherApple: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: true, idToken: 't', account: { subject: 'a2' } }),
+    };
+    const google: IdTokenProvider = { requestIdToken: async () => ({ ok: true, idToken: 'g' }) };
+    const failOnce = () =>
+      signInWithIdToken.mockImplementationOnce(async () => ({
+        error: new AuthRetryableFetchError('offline', 0),
+      }));
+
+    failOnce();
+    const viaGoogle = createSupabaseAuthService(client, { apple: named, google });
+    await viaGoogle.signIn('apple');
+    expect(await viaGoogle.signIn('google')).toEqual({ ok: true });
+
+    let first = true;
+    const switching: IdTokenProvider = {
+      requestIdToken: async () => {
+        const token = first ? named : otherApple;
+        first = false;
+        return token.requestIdToken();
+      },
+    };
+    failOnce();
+    const viaOtherApple = createSupabaseAuthService(client, { apple: switching });
+    await viaOtherApple.signIn('apple');
+    expect(await viaOtherApple.signIn('apple')).toEqual({ ok: true });
+
+    failOnce();
+    const afterSignOut = createSupabaseAuthService(client, { apple: named, google });
+    await afterSignOut.signIn('apple');
+    await afterSignOut.signOut();
+    await afterSignOut.signIn('google');
+    expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  test('a name whose save failed is saved on the same Apple account after a sign-out, never after deletion', async () => {
+    const { client, emit, updateUser } = fakeClient();
+    let calls = 0;
+    const firstOnly: IdTokenProvider = {
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'token',
+        account: calls++ === 0 ? { subject: 'a1', fullName: '林小貘' } : { subject: 'a1' },
+      }),
+    };
+    const failSave = () =>
+      updateUser.mockImplementationOnce(async () => ({
+        data: { user: null },
+        error: new AuthApiError('save failed', 500, undefined),
+      }));
+    const service = createSupabaseAuthService(client, { apple: firstOnly });
+    failSave();
+    await service.signIn('apple');
+    await service.signOut();
+    await service.signIn('apple');
+    expect(updateUser).toHaveBeenCalledTimes(2);
+    expect(updateUser).toHaveBeenLastCalledWith({ data: { full_name: '林小貘' } });
+
+    calls = 0;
+    updateUser.mockClear();
+    const deleting = createSupabaseAuthService(client, { apple: firstOnly });
+    failSave();
+    await deleting.signIn('apple');
+    emit(session);
+    expect(await deleting.deleteAccount()).toEqual({ ok: true });
+    await deleting.signIn('apple');
+    expect(updateUser).toHaveBeenCalledTimes(1);
+  });
+
+  test("another account's sign-in does not throw away a pending name", async () => {
+    const { client, signInWithIdToken, updateUser } = fakeClient();
+    let appleCalls = 0;
+    const apple: IdTokenProvider = {
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'a',
+        account: appleCalls++ === 0 ? { subject: 'a1', fullName: '林小貘' } : { subject: 'a1' },
+      }),
+    };
+    const google: IdTokenProvider = { requestIdToken: async () => ({ ok: true, idToken: 'g' }) };
+    const service = createSupabaseAuthService(client, { apple, google });
+    signInWithIdToken.mockImplementationOnce(async () => ({
+      error: new AuthRetryableFetchError('offline', 0),
+    }));
+    await service.signIn('apple');
+    await service.signIn('google');
+    await service.signOut();
+    await service.signIn('apple');
+    expect(updateUser.mock.calls).toEqual([[{ data: { full_name: '林小貘' } }]]);
+  });
+
+  test('a deleted account still forgets provider sessions when the local sign-out throws', async () => {
+    const { client, emit, signOut } = fakeClient();
+    const reasons: string[] = [];
+    const google: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: false, reason: 'cancelled' }),
+      forget: async (reason) => {
+        reasons.push(reason);
+      },
+    };
+    const service = createSupabaseAuthService(client, { google });
+    emit(session);
+    signOut.mockImplementationOnce(async () => {
+      throw new Error('keychain');
+    });
+    expect(await service.deleteAccount()).toEqual({ ok: true });
+    expect(reasons).toEqual(['deleted']);
+  });
+
+  test('only providers with an adapter are available', () => {
+    const service = createSupabaseAuthService(null, { apple });
+    expect(service.isAvailable('apple')).toBe(true);
+    expect(service.isAvailable('google')).toBe(false);
+  });
+
+  test('signing out and deleting the account forget every provider session', async () => {
+    const { client, emit } = fakeClient();
+    const reasons: string[] = [];
+    const google: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: false, reason: 'cancelled' }),
+      forget: async (reason) => {
+        reasons.push(reason);
+        if (reasons.length === 1) throw new Error('keychain');
+      },
+    };
+    const service = createSupabaseAuthService(client, { apple, google });
+    await service.signOut();
+    expect(reasons).toEqual(['signOut']);
+    emit(session);
+    expect(await service.deleteAccount()).toEqual({ ok: true });
+    expect(reasons).toEqual(['signOut', 'deleted']);
   });
 
   test('signs in with an email and password', async () => {

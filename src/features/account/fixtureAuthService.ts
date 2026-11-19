@@ -52,6 +52,7 @@ export const fixtureDeletion = (value: string | undefined): FixtureDeletion =>
 
 export type FixtureAuthOptions = {
   signedInAs?: AuthProvider;
+  providers?: readonly AuthProvider[];
   deletion?: FixtureDeletion;
   variant?: FixtureVariant;
 };
@@ -60,6 +61,7 @@ export function createFixtureAuthService({
   signedInAs,
   deletion = 'allowed',
   variant = 'demo',
+  providers = ['apple', 'google'],
 }: FixtureAuthOptions = {}): AuthService {
   const store = createSessionStore(
     signedInAs
@@ -69,6 +71,7 @@ export function createFixtureAuthService({
   return {
     getState: store.get,
     subscribe: store.subscribe,
+    isAvailable: (provider) => providers.includes(provider),
     async signIn(provider) {
       store.set({ status: 'signedIn', user: fixtureUser(provider, variant) });
       return { ok: true };

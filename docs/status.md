@@ -222,7 +222,14 @@ core-screen tour).
      `lint:changed` runs the size check.
 
 1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).
-2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The
+2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. Real
+   sign-in is built (2026-11-19, `feat/native-sign-in`; record in the foundation spec). Signing team: the owner's
+   personal team `4RML7RLKML` (Individual), not the Lobehub organisation team (owner, 2026-11-19); it is
+   `ios.appleTeamId` in `app.json`. Sign-in has the Apple adapter with a hashed
+   nonce and the entitlement, the Google adapter (`@react-native-google-signin/google-signin`, client IDs from
+   `EXPO_PUBLIC_GOOGLE_*`), both providers on the local stack. It waits on the owner's Google Cloud iOS and web clients,
+   Sign in with Apple on the App ID, the hosted Auth providers, and a device run (`account.sign-in.real-*`). Before App
+   Store submission: revoke Apple tokens on account deletion (S9; needs a Sign in with Apple key from the owner). The
    account-free halves are planned (2026-11-11): in-app purchase on the Simulator with a local `.storekit` file, the
    local stack and a StoreKit 2 wrapper in the kit (`docs/plans/2026-11-11-iap-local.md`). Built 2026-11-11: the server
    (Task 3: ledger reasons, packs, transactions, `iap-verify`) and the `iap-notify` receiver (Task 9's account-free

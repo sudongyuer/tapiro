@@ -1,0 +1,68 @@
+import type { IdTokenProvider } from './types';
+
+export type GoogleClientIds = { iosClientId: string; webClientId: string };
+
+export type GoogleSignInResponse =
+  { type: 'success'; data: { idToken: string | null } } | { type: 'cancelled'; data: null };
+
+export type GoogleSignInModule = {
+  configure(options: GoogleClientIds): void;
+  signIn(): Promise<GoogleSignInResponse>;
+  signInSilently(): Promise<unknown>;
+  signOut(): Promise<unknown>;
+  revokeAccess(): Promise<unknown>;
+};
+
+const PUBLIC_CLIENT_ID = /^[\w-]+\.apps\.googleusercontent\.com$/;
+
+export const googleUrlScheme = (iosClientId: string) =>
+  `com.googleusercontent.apps.${iosClientId.replace(/\.apps\.googleusercontent\.com$/, '')}`;
+
+// GoogleSignIn raises an uncaught NSException in release builds when the reversed client ID is not a registered URL
+// scheme, which happens when `ios/` was prebuilt before the ID was set or with another ID.
+export function readGoogleClientIds(
+  iosClientId: string | undefined,
+  webClientId: string | undefined,
+  registeredSchemes: readonly string[],
+): GoogleClientIds | null {
+  const ios = iosClientId?.trim();
+  const web = webClientId?.trim();
+  if (!ios || !web || !PUBLIC_CLIENT_ID.test(ios) || !PUBLIC_CLIENT_ID.test(web)) return null;
+  if (!registeredSchemes.includes(googleUrlScheme(ios))) return null;
+  return { iosClientId: ios, webClientId: web };
+}
+
+// The GoogleSignIn SDK on iOS adds a nonce the app cannot read, so the backend skips the Google nonce check
+// (supabase/config.toml `skip_nonce_check`).
+export function createGoogleIdTokenProvider(
+  google: GoogleSignInModule,
+  clientIds: GoogleClientIds,
+): IdTokenProvider {
+  return {
+    async requestIdToken() {
+      try {
+        // The library stores configure's native promise and awaits it in signIn; a rejected one would stick, so
+        // every attempt configures again.
+        google.configure(clientIds);
+        const response = await google.signIn();
+        if (response.type === 'cancelled') return { ok: false, reason: 'cancelled' };
+        if (!response.data.idToken) return { ok: false, reason: 'failed' };
+        return { ok: true, idToken: response.data.idToken };
+      } catch {
+        return { ok: false, reason: 'failed' };
+      }
+    },
+    async forget(reason) {
+      if (reason === 'deleted') {
+        // After a relaunch GoogleSignIn has no current user until the previous sign-in is restored, and revoking
+        // without one does nothing.
+        try {
+          google.configure(clientIds);
+          await google.signInSilently();
+          await google.revokeAccess();
+        } catch {}
+      }
+      await google.signOut().catch(() => {});
+    },
+  };
+}

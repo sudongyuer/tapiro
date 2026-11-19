@@ -188,6 +188,7 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
     dismissAfterSeconds: number,
   ): Promise<LiveActivityChangeResult>;
   liveActivityEnabled(): Promise<boolean>;
+  registeredUrlSchemes(): string[];
   liveActivityList(): Promise<LiveActivityInfo[]>;
   storeProducts(ids: string[]): Promise<StoreProductsResult>;
   storePurchase(productId: string, accountToken: string): Promise<StorePurchaseResult>;
@@ -367,6 +368,10 @@ export function placeAt(point: PlacePoint): Promise<PlaceResult> {
 
 export function resignFocus(): Promise<void> {
   return kit.resignFocus();
+}
+
+export function registeredUrlSchemes(): string[] {
+  return kit.registeredUrlSchemes();
 }
 
 export function endPlaceSearch(searchId: string): void {

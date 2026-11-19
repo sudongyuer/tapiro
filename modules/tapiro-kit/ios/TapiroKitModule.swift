@@ -112,6 +112,11 @@ public final class TapiroKitModule: Module {
       return try? QrImage.file(for: payload, points: points).absoluteString
     }
 
+    Function("registeredUrlSchemes") { () -> [String] in
+      let types = Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]] ?? []
+      return types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+    }
+
     Function("startPlaceSearch") { (latitude: Double?, longitude: Double?) -> String in
       let searchId = UUID().uuidString
       onMain { [weak self] places in

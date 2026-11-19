@@ -12,6 +12,8 @@
       "icon": "./assets/expo.icon",
       "deploymentTarget": "26.0",
       "bundleIdentifier": "app.tapiro",
+      "appleTeamId": "4RML7RLKML",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "NSMicrophoneUsageDescription": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop.",
@@ -86,10 +88,10 @@
           "isIosBackgroundLocationEnabled": false
         }
       ],
-      "./plugins/withoutAppleSignInEntitlement",
       "./plugins/withoutPushEntitlement",
       "./plugins/withStoreKitConfiguration",
       "./plugins/withLiveActivity",
+      "./plugins/withGoogleSignIn",
       "expo-image",
       "expo-status-bar"
     ],

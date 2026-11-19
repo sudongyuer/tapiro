@@ -11,7 +11,7 @@ import { readUnsettledPayments } from './unsettledPayments';
 import type {
   AuthProvider,
   AuthService,
-  IdTokenProvider,
+  IdTokenResult,
   ProviderAdapters,
   SignInResult,
 } from './types';
@@ -24,6 +24,11 @@ export function createSupabaseAuthService(
   adapters: ProviderAdapters,
 ): AuthService {
   const store = createSessionStore(client ? { status: 'loading' } : { status: 'signedOut' });
+  const forgetProviders = (reason: 'signOut' | 'deleted') =>
+    Promise.all(Object.values(adapters).map((adapter) => adapter.forget?.(reason).catch(() => {})));
+  // Apple sends the name only on the first authorisation. Keep it across failed attempts and sign-outs, but write it
+  // only to the same provider account, so one person's name cannot land on another account.
+  let pendingName: { provider: AuthProvider; subject: string; fullName: string } | null = null;
 
   client?.auth.onAuthStateChange((_event, session) => {
     store.set(
@@ -33,13 +38,25 @@ export function createSupabaseAuthService(
 
   return {
     getState: store.get,
+    isAvailable: (provider) => Boolean(adapters[provider]),
     subscribe: store.subscribe,
 
     async signIn(provider) {
       const adapter = adapters[provider];
       if (!client || !adapter) return { ok: false, reason: 'notConfigured' };
       try {
-        return await signInWithAdapter(client, provider, adapter);
+        const token = await adapter.requestIdToken();
+        if (!token.ok) return { ok: false, reason: token.reason };
+        const subject = token.account?.subject;
+        const fullName = token.account?.fullName?.trim();
+        if (subject && fullName) pendingName = { provider, subject, fullName };
+        const result = await exchangeIdToken(client, provider, token);
+        if (!result.ok) return result;
+        const name = pendingName;
+        if (name?.provider === provider && name.subject === subject) {
+          if (await saveFullName(client, name.fullName)) pendingName = null;
+        }
+        return result;
       } catch {
         return { ok: false, reason: 'failed' };
       }
@@ -58,6 +75,7 @@ export function createSupabaseAuthService(
 
     async signOut() {
       await client?.auth.signOut({ scope: 'local' }).catch(() => {});
+      await forgetProviders('signOut');
     },
 
     async deleteAccount() {
@@ -75,19 +93,19 @@ export function createSupabaseAuthService(
       }
       if (error instanceof FunctionsFetchError) return { ok: false, reason: 'network' };
       if (error) return { ok: false, reason: 'failed' };
-      await client.auth.signOut({ scope: 'local' });
+      pendingName = null;
+      await client.auth.signOut({ scope: 'local' }).catch(() => {});
+      await forgetProviders('deleted');
       return { ok: true };
     },
   };
 }
 
-async function signInWithAdapter(
+async function exchangeIdToken(
   client: SupabaseClient,
   provider: AuthProvider,
-  adapter: IdTokenProvider,
+  token: Extract<IdTokenResult, { ok: true }>,
 ): Promise<SignInResult> {
-  const token = await adapter.requestIdToken();
-  if (!token.ok) return { ok: false, reason: token.reason };
   const { error } = await client.auth.signInWithIdToken({
     provider,
     token: token.idToken,
@@ -95,7 +113,14 @@ async function signInWithAdapter(
     access_token: token.accessToken,
   });
   if (error) return { ok: false, reason: isAuthRetryableFetchError(error) ? 'network' : 'failed' };
-  const fullName = token.fullName?.trim();
-  if (fullName) await client.auth.updateUser({ data: { full_name: fullName } }).catch(() => {});
   return { ok: true };
+}
+
+async function saveFullName(client: SupabaseClient, fullName: string): Promise<boolean> {
+  try {
+    const { error } = await client.auth.updateUser({ data: { full_name: fullName } });
+    return !error;
+  } catch {
+    return false;
+  }
 }

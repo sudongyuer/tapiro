@@ -919,3 +919,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-19 | date row for every compact picker       | 0                  | 3             | ~70 min (sheet layout, ViewThatFits slack)       | 0                       | 0                     |
 | 2026-11-19 | video missing after a killed recorder   | 0                  | 1             | ~40 min (cold-boot runs on a misread cause)      | 0                       | 0                     |
 | 2026-11-19 | sim-lock same name                      | 0                  | 0             | ~0                                               | 0                       | 0                     |
+| 2026-11-19 | real sign-in adapters                   | 0                  | 6             | ~10 min (Apple JWKS timeout, CLI source path)    | 0                       | 0                     |
