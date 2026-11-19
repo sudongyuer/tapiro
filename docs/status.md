@@ -204,8 +204,8 @@ core-screen tour).
      `review_sheet` en dark (Submit did nothing on both attempts at 05:17, passed twice later) and the night's
      `ask_memory_page` en light (Save left the editor with both fields filled, once, at a load spike) have no cause.
      Lost sessions on both attempts: `chat_image_viewer` en, `home_fan_out` en, `profile_report_review` ms (all
-     passed on rerun). 12-hour round (`--hour-cycle 12`, 79 time-showing cases, zh-Hans and en light, 158 runs): 135 passed, 5 flaky
-     (lost sessions), 18 failed. Product: every time on screen reads in 12-hour form (上午8:47, 9:00 PM, 9:00 PTG; zh-Hans
+     passed on rerun). 12-hour round (`--hour-cycle 12`, 79 time-showing cases, zh-Hans and en light, 158 runs): 135 passed, 5 flaky (4 lost
+     sessions), 18 failed (1 lost sessions on both attempts). Product: every time on screen reads in 12-hour form (上午8:47, 9:00 PM, 9:00 PTG; zh-Hans
      writes 早上 before 8:00 and 上午 after, as CLDR does); one open bug, `chat_thread_long` en 12-hour does not open at
      the newest message (3 of 4 first attempts; en 24-hour passes). The other failures are cases that assert a 24-hour
      clock; `driver.clock()` now reads the device's cycle and fixed `bounty_board_list`, `_states`, `bounty_detail` and
