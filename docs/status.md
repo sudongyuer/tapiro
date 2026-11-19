@@ -199,21 +199,30 @@ core-screen tour).
      `payee_add_bank` and `ask_memory_page` type again once when a value reads wrong; `ocr.same` ignores how a truncated
      line ends; `paste_into` leaves the app and comes back before its retry (stale paste in `account_flow` and
      `bounty_post_place`; not exercised in the reruns). All passed on the rerun build (57 runs; flaky ones were lost
-     sessions). Open: BP-13 fails every run when 明天 is the 20th (开始 「20/11/26」 beside 结束 「2026年11月20日」, all
-     locales, reproduced on main); a label beside the picker and a remount key did not change it, so neither shipped.
+     sessions). Open: BP-13 fails every run when 明天 writes wider than today (开始 「20/11/26」 beside 结束 「2026年11月20日」 on
+     11-19, all locales). Measured on `fix/bp13-chat-12h` (ruling 26 of the bounty post plan): the compact picker's
+     date button keeps an earlier width (154 pt for the 19th; the 20th needs 156.3 pt) across mounts, so neither the
+     `@expo/ui` `Date()` start nor a remount key is the cause; starting the range at the selection was inconclusive.
+     Next: a kit date row or an `@expo/ui` patch that re-measures on appear. The case now also checks 截止 shown again.
      `review_sheet` en dark (Submit did nothing on both attempts at 05:17, passed twice later) and the night's
      `ask_memory_page` en light (Save left the editor with both fields filled, once, at a load spike) have no cause.
      Lost sessions on both attempts: `chat_image_viewer` en, `home_fan_out` en, `profile_report_review` ms (all
      passed on rerun). 12-hour round (`--hour-cycle 12`, 79 time-showing cases, zh-Hans and en light, 158 runs): 135 passed, 5 flaky (4 lost
      sessions), 18 failed (one of them lost sessions on both attempts). Product: every time on screen reads in 12-hour form (上午8:47, 9:00 PM, 9:00 PTG; zh-Hans
-     writes 早上 before 8:00 and 上午 after, as CLDR does); one open bug, `chat_thread_long` en 12-hour does not open at
-     the newest message (3 of 4 first attempts; en 24-hour passes). The other failures are cases that assert a 24-hour
+     writes 早上 before 8:00 and 上午 after, as CLDR does); `chat_thread_long` en 12-hour sometimes opened at the
+     oldest message (3 of 4 first attempts that night, 3 of 13 on 11-19 morning; list at its top although it had been
+     told to scroll to the end). Fixed on `fix/bp13-chat-12h`: while the thread opens (1.5 s after it shows, or until a
+     drag), a pinned list that loses the end goes back to it; 15 of 15 first attempts in en 12-hour then opened at the newest
+     (load 5–20; the old build's failures were at an unrecorded, higher load), cause of the jump not isolated. The other failures are cases that assert a 24-hour
      clock; `driver.clock()` now reads the device's cycle and fixed `bounty_board_list`, `_states`, `bounty_detail` and
      `chat_list_*`/`ride_meetup*` patterns; the rest (`ride_detail`, `ride_list`, `ride_settle_owing*`, `bounty_status_helper`, `_states`, `_worst`, and
      `bounty_status_poster`) read set times through `hourcycle.clock_at` and passed in 12-hour zh-Hans and en and in
      24-hour zh-Hans (`fix/verify-followups-1119`); `test_clock_guard.py` now fails a case that hard-codes a clock.
-     Open (product): the ride create confirm sheet shows the stored flight time `09:10` in a 12-hour run while the
-     picker and ticket read `9:10 AM`. Tooling: `merge-when-green.sh` waits for checks on the pushed head (#184);
+     Ride flight time (`fix/bp13-chat-12h`, carpool plan R12): the picker stored its display text (「9:10 AM」), which
+     made checking the draft throw on 下一步 on a 12-hour device, and the confirm sheet wrote a stored `09:10` raw. It
+     is now stored as `HH:mm` (`wallClock`) and shown through the device clock (`wallClockText`); `ride_create_confirm`
+     reads it through `hourcycle.clock_at` (exemption removed from `test_clock_guard.py`; it failed on the old build in
+     en 12-hour). Still raw: the home ride card's `departAt` (verify fixtures only; production has no source yet). Tooling: `merge-when-green.sh` waits for checks on the pushed head (#184);
      `lint:changed` runs the size check.
 
 1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).

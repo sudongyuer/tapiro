@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import { wallClockText } from '@/lib/deviceClock';
 import { CURRENCIES, formatMoney, type DecimalSeparator } from '@/lib/money';
 
 import { perPersonAbout } from '../perPerson';
@@ -15,9 +16,8 @@ export function draftPerPerson(draft: RideDraft, decimal: DecimalSeparator = '.'
 }
 
 export function flightLine(draft: RideDraft, t: TFunction) {
-  return draft.airportOpen && draft.flightClock
-    ? t('ride.ticket.flight', { time: draft.flightClock })
-    : null;
+  const time = draft.airportOpen && draft.flightClock ? wallClockText(draft.flightClock) : null;
+  return time ? t('ride.ticket.flight', { time }) : null;
 }
 
 export function bagsLine(draft: RideDraft, t: TFunction) {

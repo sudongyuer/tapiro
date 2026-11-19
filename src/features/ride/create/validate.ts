@@ -1,5 +1,5 @@
 import { validShortName } from '@/features/place/shortName';
-import { addDays, localDayKey, localTimeOn } from '@/lib/deviceClock';
+import { addDays, localDayKey, localTimeOn, parseWallClock } from '@/lib/deviceClock';
 import {
   CURRENCIES,
   POST_LIMITS,
@@ -48,8 +48,10 @@ export function estimateLimits(currency: CurrencyCode) {
   return POST_LIMITS.ride[currency];
 }
 
-export function flightTime(departAt: string, clock: string): string {
-  const [hours, minutes] = clock.split(':').map(Number);
+export function flightTime(departAt: string, clock: string): string | null {
+  const parsed = parseWallClock(clock);
+  if (!parsed) return null;
+  const { hours, minutes } = parsed;
   const departs = Date.parse(departAt);
   const day = localDayKey(departs);
   const sameDay = localTimeOn(day, hours, minutes);

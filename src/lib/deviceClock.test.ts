@@ -6,7 +6,10 @@ import {
   localClock,
   localDayKey,
   localTimeOn,
+  parseWallClock,
   setClockStyle,
+  wallClock,
+  wallClockText,
 } from './deviceClock';
 import { inTimeZone } from './inTimeZone';
 
@@ -74,6 +77,25 @@ describe('the device clock', () => {
         expect(localClock(EVENING, 'en')).toMatch(/^9:05\sPM$/);
         expect(localClock(EVENING, 'ms')).toMatch(/^9:05\sPTG$/);
       });
+    });
+
+    test('a stored wall clock stays HH:mm and reads in the device cycle', () => {
+      setClockStyle('en', false);
+      inTimeZone('Asia/Kuala_Lumpur', () => {
+        expect(wallClock(EVENING)).toBe('21:05');
+        expect(wallClockText('09:10')).toMatch(/^9:10\sAM$/);
+        expect(wallClockText('21:05')).toMatch(/^9:05\sPM$/);
+      });
+      setClockStyle('zh-Hans', true);
+      expect(wallClockText('09:10')).toBe('09:10');
+    });
+
+    test('only HH:mm parses as a stored wall clock', () => {
+      expect(parseWallClock('09:10')).toEqual({ hours: 9, minutes: 10 });
+      expect(parseWallClock('9:10 AM')).toBeNull();
+      expect(parseWallClock('上午9:10')).toBeNull();
+      expect(parseWallClock('24:00')).toBeNull();
+      expect(wallClockText('9:10 AM')).toBeNull();
     });
 
     test('a combined day and time format follows the same cycle', () => {

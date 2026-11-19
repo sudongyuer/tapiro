@@ -706,7 +706,20 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
       「上午10:45」. `bounty_post_optional` and `ride_create_form` run in 12 hours and assert that the picker's time
       text appears as is in the live card, the ticket, the quick time and confirm; `bounty_status_helper` swipes the
       minute column of the 24-hour wheel.
-
+26. BP-13's date half, measured but not fixed (2026-11-19, `fix/bp13-chat-12h`; time-boxed). The compact picker's
+    date button keeps a width it got earlier and does not grow for a wider day: on 11-19 it was 154 pt (「2026年11月19日」)
+    where 「2026年11月20日」 needs 156.3 pt, and the picker then writes 「20/11/26」. A probe case reading each
+    sub-button's width showed: 截止 on screen resizes to 156.3 pt when 明天 moves it from the 19th to the 20th; a
+    picker mounted afterwards for the 20th (开始, or 截止 shown again) usually stays at 154 pt; after one round of
+    时间段 → 截止 → 时间段 even 结束 stays at 154 pt. Ruled out by measurement: `@expo/ui` 58.0.27's `DatePickerView`
+    starting its `@State` at `Date()` (a patched view that read the selection from its first frame, and one that drew
+    nothing until the selection arrived, both still measured 154 pt); a remount key (the first try on
+    `fix/bounty-time-row-format`). Inconclusive: starting the range at the selection fixed the first mount in a probe
+    and failed in the case. The pattern (widths surviving across mounts) points at the List reusing a cell with the
+    picker it already sized, which RN keys cannot reach. Next step: a kit SwiftUI date row that sizes from the
+    selection, or an `@expo/ui` patch that re-measures on appear; the bug stays open in `docs/status.md` 0g.
+    `bounty_post_optional` now also checks 截止 shown again against the date 截止 wrote after 明天, and fails (as
+    before) on days whose tomorrow writes wider than today.
 ## Not in this plan
 
 | Item | Owning step |

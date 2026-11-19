@@ -27,7 +27,7 @@ import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
-import { localClock, localDayKey, localTimeOn } from '@/lib/deviceClock';
+import { localDayKey, localTimeOn, parseWallClock, wallClock } from '@/lib/deviceClock';
 
 import { BAGS_MAX, type RideDraft } from './draft';
 import { codePoints, NOTE_MAX } from './validate';
@@ -72,7 +72,7 @@ function AddRow({
 }
 
 function clockDate(clock: string) {
-  const [hours, minutes] = clock.split(':').map(Number);
+  const { hours, minutes } = parseWallClock(clock) ?? { hours: 9, minutes: 0 };
   return new Date(localTimeOn(localDayKey(Date.now()), hours, minutes));
 }
 
@@ -112,7 +112,7 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
           <DatePicker
             selection={clockDate(draft.flightClock)}
             displayedComponents={['hourAndMinute']}
-            onDateChange={(date) => onEdit({ flightClock: localClock(date.getTime()) })}
+            onDateChange={(date) => onEdit({ flightClock: wallClock(date.getTime()) })}
             testID="ride-form-flight"
             modifiers={[labelsHidden(), accessibilityLabel(t('ride.create.form.flight'))]}
           />
