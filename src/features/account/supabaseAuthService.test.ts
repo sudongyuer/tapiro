@@ -18,7 +18,10 @@ function fakeClient({ signInError = null as unknown, invokeError = null as unkno
   const signInWithIdToken = mock(async () => ({ error: signInError }));
   const signInWithPassword = mock(async (_credentials: unknown) => ({ error: signInError }));
   const signOut = mock(async (_options?: unknown) => ({ error: null }));
-  const updateUser = mock(async (_attributes: unknown) => ({ data: { user: null }, error: null }));
+  const updateUser = mock(async (_attributes: unknown) => ({
+    data: { user: null },
+    error: null as AuthApiError | null,
+  }));
   const invoke = mock(async () => ({ data: null, error: invokeError }));
   const client = {
     auth: {
@@ -113,6 +116,53 @@ describe('supabase auth service', () => {
     };
     await createSupabaseAuthService(client, { apple: named }).signIn('apple');
     expect(updateUser).not.toHaveBeenCalled();
+  });
+
+  test('the one-time name survives a failed sign-in and a failed save until it is saved', async () => {
+    const { client, signInWithIdToken, updateUser } = fakeClient();
+    let calls = 0;
+    const firstOnly: IdTokenProvider = {
+      requestIdToken: async () =>
+        calls++ === 0
+          ? { ok: true, idToken: 'token', fullName: '林小貘' }
+          : { ok: true, idToken: 'token' },
+    };
+    const service = createSupabaseAuthService(client, { apple: firstOnly });
+    signInWithIdToken.mockImplementationOnce(async () => ({
+      error: new AuthRetryableFetchError('offline', 0),
+    }));
+    expect(await service.signIn('apple')).toEqual({ ok: false, reason: 'network' });
+    expect(updateUser).not.toHaveBeenCalled();
+    updateUser.mockImplementationOnce(async () => ({
+      data: { user: null },
+      error: new AuthApiError('save failed', 500, undefined),
+    }));
+    expect(await service.signIn('apple')).toEqual({ ok: true });
+    expect(await service.signIn('apple')).toEqual({ ok: true });
+    expect(updateUser.mock.calls).toEqual([
+      [{ data: { full_name: '林小貘' } }],
+      [{ data: { full_name: '林小貘' } }],
+    ]);
+    await service.signIn('apple');
+    expect(updateUser).toHaveBeenCalledTimes(2);
+  });
+
+  test('signing out and deleting the account forget every provider session', async () => {
+    const { client, emit } = fakeClient();
+    let forgotten = 0;
+    const google: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: false, reason: 'cancelled' }),
+      forget: async () => {
+        forgotten += 1;
+        if (forgotten === 1) throw new Error('keychain');
+      },
+    };
+    const service = createSupabaseAuthService(client, { apple, google });
+    await service.signOut();
+    expect(forgotten).toBe(1);
+    emit(session);
+    expect(await service.deleteAccount()).toEqual({ ok: true });
+    expect(forgotten).toBe(2);
   });
 
   test('signs in with an email and password', async () => {

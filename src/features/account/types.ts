@@ -40,6 +40,7 @@ export type IdTokenResult =
 
 export type IdTokenProvider = {
   requestIdToken(): Promise<IdTokenResult>;
+  forget?(): Promise<void>;
 };
 
 export type ProviderAdapters = Partial<Record<AuthProvider, IdTokenProvider>>;

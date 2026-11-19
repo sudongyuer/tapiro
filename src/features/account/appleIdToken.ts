@@ -1,3 +1,4 @@
+import { errorCode } from './errorCode';
 import type { NonceSource } from './nonce';
 import type { IdTokenProvider } from './types';
 
@@ -40,16 +41,14 @@ export function createAppleIdTokenProvider(
   };
 }
 
-const HAN = /\p{Script=Han}/u;
+const EAST_ASIAN = /^[\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\s]+$/u;
 
 export function joinName(name: AppleCredential['fullName']): string | undefined {
   const given = [name?.givenName, name?.middleName].map((part) => part?.trim()).filter(Boolean);
   const family = name?.familyName?.trim();
-  if (family && HAN.test(family + given.join(''))) return family + given.join('');
+  if (family && given.length > 0 && EAST_ASIAN.test(family + given.join(''))) {
+    return family + given.join('');
+  }
   const joined = [...given, family].filter(Boolean).join(' ');
   return joined || undefined;
-}
-
-export function errorCode(error: unknown): unknown {
-  return typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
 }

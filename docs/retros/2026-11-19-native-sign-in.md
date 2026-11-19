@@ -4,7 +4,7 @@ date: 2026-11-19
 pr: Real Sign in with Apple and Google Sign-In adapters; both providers on the local stack
 title: adapters had waited for the paid team since step 1; built as far as Simulator and stack tests prove
 escaped: 0
-rework: 1
+rework: 2
 interventions: 0
 overturned: 0
 ---
@@ -33,6 +33,11 @@ overturned: 0
 - The full `bun test` failed once: `sessionLifetimes.test.ts` requires a declared lifetime for every module-level
   value, and I had run only the account tests. The guard worked as designed; the full suite before commit caught it.
   Tag `scoped-test-run`.
+- Review of #189 found the Google cancel code wrong on iOS (`-5`, read from native constants, not the JS name) and
+  Apple's one-time name lost on a failed exchange. I had read the library's JS `statusCodes` but not where the values
+  come from. Both fixed with tests that fail on the old code. Tag `native-constant`.
+- My first `/code-review` without a target reviewed the previous merged PR, because the main checkout was the cwd.
+  Pass the PR number. Tag `review-target`.
 - Supabase CLI 2.x moved its Go sources under `apps/cli-go/`; `env()` that is unset only warns, so enabling a provider
   with an env client ID does not break `supabase start` or CI.
 

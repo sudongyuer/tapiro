@@ -101,6 +101,16 @@ describe('apple name', () => {
     expect(joinName({ givenName: '小貘', familyName: '林' })).toBe('林小貘');
   });
 
+  test('Korean and Japanese names are family-first too', () => {
+    expect(joinName({ givenName: '민수', familyName: '김' })).toBe('김민수');
+    expect(joinName({ givenName: 'さくら', familyName: '山田' })).toBe('山田さくら');
+  });
+
+  test('mixed scripts keep the given-first order with a space', () => {
+    expect(joinName({ givenName: 'Xiao Mao', familyName: '林' })).toBe('Xiao Mao 林');
+    expect(joinName({ givenName: '小貘', familyName: 'Tan' })).toBe('小貘 Tan');
+  });
+
   test('Latin names are given, middle, family', () => {
     expect(joinName({ givenName: 'Muhammad', middleName: 'Hafiz', familyName: 'Ali' })).toBe(
       'Muhammad Hafiz Ali',

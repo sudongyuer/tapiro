@@ -13,15 +13,22 @@ const ids: GoogleClientIds = {
   webClientId: '123-web.apps.googleusercontent.com',
 };
 
+const IOS_CANCELLED = '-5';
+
 function fakeGoogle(signIn: () => Promise<GoogleSignInResponse>) {
   const configured: GoogleClientIds[] = [];
+  let signedOut = 0;
   const google: GoogleSignInModule = {
     configure: (options) => {
       configured.push(options);
     },
     signIn,
+    signOut: async () => {
+      signedOut += 1;
+    },
+    cancelledCode: IOS_CANCELLED,
   };
-  return { google, configured };
+  return { google, configured, signedOuts: () => signedOut };
 }
 
 const rejecting = (code: string) => async (): Promise<GoogleSignInResponse> => {
@@ -40,10 +47,10 @@ describe('google ID token provider', () => {
     expect(configured).toEqual([ids]);
   });
 
-  test('a cancelled response and a cancel rejection are cancelled', async () => {
+  test('a cancelled response and the native cancel code are cancelled', async () => {
     for (const signIn of [
       async (): Promise<GoogleSignInResponse> => ({ type: 'cancelled', data: null }),
-      rejecting('SIGN_IN_CANCELLED'),
+      rejecting(IOS_CANCELLED),
     ]) {
       const provider = createGoogleIdTokenProvider(fakeGoogle(signIn).google, ids);
       expect(await provider.requestIdToken()).toEqual({ ok: false, reason: 'cancelled' });
@@ -53,8 +60,8 @@ describe('google ID token provider', () => {
   test('a missing ID token or another error fails', async () => {
     for (const signIn of [
       async (): Promise<GoogleSignInResponse> => ({ type: 'success', data: { idToken: null } }),
-      rejecting('IN_PROGRESS'),
-      rejecting('-5'),
+      rejecting('ASYNC_OP_IN_PROGRESS'),
+      rejecting('SIGN_IN_CANCELLED'),
     ]) {
       const provider = createGoogleIdTokenProvider(fakeGoogle(signIn).google, ids);
       expect(await provider.requestIdToken()).toEqual({ ok: false, reason: 'failed' });
@@ -64,16 +71,24 @@ describe('google ID token provider', () => {
   test('a configure failure fails and is retried on the next attempt', async () => {
     let calls = 0;
     const google: GoogleSignInModule = {
+      ...fakeGoogle(async () => ({ type: 'success', data: { idToken: 'google-jwt' } })).google,
       configure: () => {
         calls += 1;
         if (calls === 1) throw new Error('bad config');
       },
-      signIn: async () => ({ type: 'success', data: { idToken: 'google-jwt' } }),
     };
     const provider = createGoogleIdTokenProvider(google, ids);
     expect(await provider.requestIdToken()).toEqual({ ok: false, reason: 'failed' });
     expect(await provider.requestIdToken()).toEqual({ ok: true, idToken: 'google-jwt' });
   });
+});
+
+test('forget signs out of Google even before this launch configured it, and never throws', async () => {
+  const { google, signedOuts } = fakeGoogle(async () => ({ type: 'cancelled', data: null }));
+  await createGoogleIdTokenProvider(google, ids).forget?.();
+  expect(signedOuts()).toBe(1);
+  const failing = { ...google, signOut: async () => Promise.reject(new Error('keychain')) };
+  await createGoogleIdTokenProvider(failing, ids).forget?.();
 });
 
 describe('google client IDs', () => {

@@ -1,4 +1,4 @@
-import { errorCode } from './appleIdToken';
+import { errorCode } from './errorCode';
 import type { IdTokenProvider } from './types';
 
 export type GoogleClientIds = { iosClientId: string; webClientId: string };
@@ -9,9 +9,9 @@ export type GoogleSignInResponse =
 export type GoogleSignInModule = {
   configure(options: GoogleClientIds): void;
   signIn(): Promise<GoogleSignInResponse>;
+  signOut(): Promise<unknown>;
+  cancelledCode: string;
 };
-
-export const GOOGLE_CANCELLED_CODE = 'SIGN_IN_CANCELLED';
 
 const PUBLIC_CLIENT_ID = /^[\w-]+\.apps\.googleusercontent\.com$/;
 
@@ -46,9 +46,12 @@ export function createGoogleIdTokenProvider(
       } catch (error) {
         return {
           ok: false,
-          reason: errorCode(error) === GOOGLE_CANCELLED_CODE ? 'cancelled' : 'failed',
+          reason: errorCode(error) === google.cancelledCode ? 'cancelled' : 'failed',
         };
       }
+    },
+    async forget() {
+      await google.signOut().catch(() => {});
     },
   };
 }
