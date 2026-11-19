@@ -6,10 +6,12 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 import ocr  # noqa: E402
-from driver import UI  # noqa: E402
-from ride import form_scroll_to, open_form, open_list, picker_clock, within_screen  # noqa: E402
+from datepicker import picker_value  # noqa: E402
+from driver import UI, picker_time, plain  # noqa: E402
+from ride import form_scroll_to, open_form, open_list, within_screen  # noqa: E402
 
-DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py', 'verification/ui/ocr.py']
+DEPS = ['src/features/ride/', 'src/app/ride-create/', 'verification/ui/ride.py', 'verification/ui/ocr.py',
+        'verification/ui/datepicker.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDraft', 'worst']
 TIME_ZONE = 'Europe/London'
@@ -38,8 +40,9 @@ form_scroll_to(ui, 'ride-form-seats-label')
 ui.wait_label('ride-form-seats-label', lambda label: ui.t('ride.create.form.sixSeats', count=5) in label,
               'the 6-seat hint is missing')
 form_scroll_to(ui, 'ride-form-flight')
-flight = picker_clock(ui, 'ride-form-flight')
-assert ui.t('ride.ticket.flight', time=flight) in (ui.element('ride-form-ticket').get('AXLabel') or ''), \
+# Read as the picker writes it, so the check holds in either hour cycle (晚上11:55 or 23:55).
+flight = picker_time(ui.wait(lambda items: picker_value(items, 'ride-form-flight'), 'the flight picker has no value'))
+assert plain(ui.t('ride.ticket.flight', time=flight)) in plain(ui.element('ride-form-ticket').get('AXLabel')), \
     f'the flight picker shows {flight}, the ticket does not'
 form_scroll_to(ui, 'ride-form-note')
 assert abs(ui.element('ride-form-ticket')['frame']['height'] - height) < 1, 'the live ticket changed height'

@@ -164,14 +164,6 @@ def time_text(label):
     return found.group() if found else None
 
 
-def picker_clock(ui, identifier):
-    def value(items):
-        f = by_id(items, identifier)['frame']
-        return next((i.get('AXValue') for i in items if i.get('type') == 'Button' and i.get('AXValue')
-                     and i['frame']['y'] == f['y'] and i['frame']['x'] >= f['x'] - 1), None)
-    return clock_24h(ui.wait(value, f'{identifier} exposes no picker value'))
-
-
 def clock_24h(text):
     found = CLOCK_IN_VALUE.search(text)
     assert found, f'no clock in the picker value {text!r}'

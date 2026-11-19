@@ -1,11 +1,11 @@
-import { DatePicker, Section, Text, Toggle } from '@expo/ui/swift-ui';
+import { Section, Text, Toggle } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   accessibilityLabel,
-  datePickerStyle,
   lineLimit,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
+import { DateTimeRow } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
@@ -109,13 +109,13 @@ export function TimeSheet({
     >
       {request ? (
         <Section footer={<Text>{t('ride.detail.time.footer')}</Text>}>
-          <DatePicker
+          <DateTimeRow
             title={t('ride.detail.time.picker')}
+            titleAbove
             selection={shown}
-            displayedComponents={['date', 'hourAndMinute']}
             range={{ start: new Date(start), end: new Date(request.first + DAY) }}
             onDateChange={setPicked}
-            modifiers={[datePickerStyle('compact'), accessibilityIdentifier('ride-time-picker')]}
+            testID="ride-time-picker"
           />
         </Section>
       ) : null}
@@ -179,13 +179,13 @@ export function DetailsSheet({
           modifiers={[accessibilityIdentifier('ride-details-eta-toggle')]}
         />
         {draft.eta !== null ? (
-          <DatePicker
+          <DateTimeRow
             title={t('ride.detail.details.etaPicker')}
+            components="hourAndMinute"
             selection={new Date(draft.eta)}
-            displayedComponents={['hourAndMinute']}
             range={{ start: new Date(now - 60 * MINUTE), end: new Date(now + 2 * DAY - MINUTE) }}
             onDateChange={(date) => edit({ eta: date.toISOString() })}
-            modifiers={[datePickerStyle('compact'), accessibilityIdentifier('ride-details-eta')]}
+            testID="ride-details-eta"
           />
         ) : null}
       </Section>

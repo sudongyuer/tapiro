@@ -1,13 +1,4 @@
-import {
-  Button,
-  DatePicker,
-  HStack,
-  Image,
-  Section,
-  Spacer,
-  Stepper,
-  Text,
-} from '@expo/ui/swift-ui';
+import { Button, HStack, Image, Section, Spacer, Stepper, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityHidden,
   accessibilityIdentifier,
@@ -21,6 +12,7 @@ import {
   monospacedDigit,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
+import { DateTimeRow } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
@@ -109,12 +101,13 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
         <HStack spacing={0} modifiers={[fullRow]}>
           <Text>{t('ride.create.form.flight')}</Text>
           <Spacer />
-          <DatePicker
+          <DateTimeRow
+            title={t('ride.create.form.flight')}
+            labelHidden
+            components="hourAndMinute"
             selection={clockDate(draft.flightClock)}
-            displayedComponents={['hourAndMinute']}
             onDateChange={(date) => onEdit({ flightClock: wallClock(date.getTime()) })}
             testID="ride-form-flight"
-            modifiers={[labelsHidden(), accessibilityLabel(t('ride.create.form.flight'))]}
           />
         </HStack>
       ) : (

@@ -742,6 +742,41 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
     - Same pattern left as is: `DatePicker` (compact) in `ride/create/FormTime.tsx`, `ride/create/FormDetails.tsx`,
       `ride/detail/EditSheets.tsx` and `bounty/status/EtaSheet.tsx`. Not measured there; each can move to
       `DateTimeRow` (it would need a hidden-label variant) when a case shows the short style.
+28. The other compact pickers moved to `DateTimeRow` too (2026-11-19, `fix/date-row-pickers`). ★ for veto:
+    - Measured first on the old build (probe cases, 12-hour, zh-Hans and ms light, `-uiVerifyToday 2026-12-09`): none
+      of them showed the short style. 出发 (`ride/create/FormTime.tsx`, picker beside a separate title and a
+      `Spacer`) grew from 149 to 156.3 pt for every widening path: created by a quick time, moved by its own calendar
+      from the 9th to the 10th, and moved by a quick time from the 9th to the 10th across midnight (`LOCAL_HOURS`
+      23). 新的出发时间 (`ride/detail/EditSheets.tsx`) opened on the 10th with the long date because SwiftUI put its
+      title above the picker in the narrow sheet. The time-only pickers (航班起飞, 预计到) have a time button of one
+      width (105.7 pt for 上午11:30 and 晚上11:55) and no short style. So no case could fail on the old code; the move
+      is for one picker path and the lint guard below, not for a reproduced bug in these screens.
+    - The move itself broke 新的出发时间 at first: the kit row put the title beside the picker, which then read
+      「10/12/26」 in the narrow sheet. `DateTimeRow` takes `titleAbove`, and the sheet sets it: the title sits above
+      and the picker's buttons start at the leading edge, as SwiftUI laid it out. Tried and dropped: choosing with
+      `ViewThatFits` from the picker's ideal width plus slack. The ideal comes from the same unreliable fitting size;
+      12 pt of slack still stacked the bounty post form's 截止 in ms, which fits beside its title (#187's matrix), and
+      32 pt stacked it in 12-hour zh-Hans. A fixed choice per screen keeps #187's rows as they were. New props besides
+      `titleAbove`: `labelHidden` (出发 and 航班起飞 keep their own title row) and `components: 'hourAndMinute'`;
+      `range` and `testID` are optional. The kit row's identifier also lands on its hidden title, first in the tree,
+      so `verification/ui/datepicker.py` reads the largest element with it, and skips buttons with identifiers (a
+      sheet's tree still lists the screen under it: ms read 拒绝's 「Tolak」 inside the picker's frame).
+    - `bounty/status/EtaSheet.tsx` is not moved: it is a wheel (`datePickerStyle('wheel')`), which has no label to
+      size, so it is outside BP-13's class.
+    - Guard: ESLint `no-restricted-syntax` flags a `DatePicker` JSX element under `src/` whose modifiers do not set
+      `datePickerStyle('wheel')` or `'graphical'` (the default style is compact), pointing at `DateTimeRow`; fixtures
+      and a test in `scripts/lint-fixtures/compactDatePicker.*` prove it fires on the default and compact styles and
+      passes the wheel. On the old files it flagged all four compact pickers.
+    - Cases: `ride_create_time_day` (出发 through the three widening steps and 航班起飞 read whole by OCR) and
+      `ride_detail_edit_time` (新的出发时间 opened on the 10th and moved by its calendar to the 11th, the last day the
+      sheet allows, so it cannot widen there; 预计到 read whole). The paths the probes
+      reached passed on the old code (the sheet's calendar step and 预计到 were not reached: the probe picked the day
+      already selected, and the switch missed its touch); the cases hold the long date and the whole ink from here on,
+      and `ride_detail_edit_time` failed on the first kit build with the title beside the picker. Each case's
+      `assert_ink_reads` compares the picker's date and time button labels with the OCR'd ink in its row.
+    - `ride_create_worst` read the flight picker as a 24-hour clock and compared it with the ticket, so it failed under
+      `--hour-cycle 12` (ticket 晚上11:55); it now compares the picker's own text, and `ride.picker_clock` is gone.
+
 ## Not in this plan
 
 | Item | Owning step |

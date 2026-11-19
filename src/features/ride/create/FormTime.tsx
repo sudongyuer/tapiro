@@ -1,4 +1,4 @@
-import { Button, DatePicker, HStack, Section, Spacer, Text } from '@expo/ui/swift-ui';
+import { Button, HStack, Section, Spacer, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityAddTraits,
   accessibilityIdentifier,
@@ -8,9 +8,9 @@ import {
   controlSize,
   foregroundStyle,
   frame,
-  labelsHidden,
   lineLimit,
 } from '@expo/ui/swift-ui/modifiers';
+import { DateTimeRow } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
@@ -24,7 +24,6 @@ import { DEPART_AHEAD_MS } from './validate';
 
 // A regular bordered button adds 7 pt above and below its label (measured 34 pt around a 20 pt label).
 const CHIP_LABEL_HEIGHT = vars['--touch-min'] - 14;
-const DATE_PARTS: ('date' | 'hourAndMinute')[] = ['date', 'hourAndMinute'];
 
 export function FormTime({
   draft,
@@ -57,13 +56,13 @@ export function FormTime({
         <Text>{t('ride.create.form.depart')}</Text>
         <Spacer />
         {chosen ? (
-          <DatePicker
+          <DateTimeRow
+            title={t('ride.create.form.depart')}
+            labelHidden
             selection={new Date(chosen)}
             range={{ start: new Date(now), end: new Date(now + DEPART_AHEAD_MS) }}
-            displayedComponents={DATE_PARTS}
             onDateChange={(date) => set(date.getTime())}
             testID="ride-form-time"
-            modifiers={[labelsHidden(), accessibilityLabel(t('ride.create.form.depart'))]}
           />
         ) : null}
       </HStack>
