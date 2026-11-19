@@ -1,0 +1,424 @@
+sim-lock: verify-full acquired (pid 85986)
+Booting Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3 and installing the app
+Running 79 runs on 3 Simulators: Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3
+PASS zh-Hans light bounty_applicants_progress: PASS: assigned shows 选好了阿杰 and 看进度 to the status screen; cancelled shows 这单取消了 and 看进度, never 选好了  [Tapiro Verify]
+REBOOT Tapiro Verify: failed in zh-Hans light bounty_board_list; rebooting it and retrying the run once
+PASS zh-Hans light bounty_applicants: PASS: three rows in order, Q46 button, check moves, a pull adds Mei Ling, empty and failed first load  [Tapiro Verify 3]
+REBOOT Tapiro Verify: failed in zh-Hans light bounty_board_states; rebooting it and retrying the run once
+REBOOT Tapiro Verify 3: failed in zh-Hans light bounty_board_list; rebooting it
+FAIL zh-Hans light bounty_board_list: failed on Tapiro Verify (AssertionError: first card reads '代取，帮取快递，赏金 RM\xa08，急，今天 上午8:47 前，Sunway Geo 宿舍，300\xa0m，小林，靠谱', expected '代取，帮取快递，赏金\\ RM\\s?8，急，.+? \\d{2}:\\d{2}\\ 前，Sunway\\ Geo\\ 宿舍，300\\sm，小林，靠谱') and again on Tapiro Verify 3: AssertionError: first card reads '代取，帮取快递，赏金 RM\xa08，急，今天 上午8:50 前，Sunway Geo 宿舍，300\xa0m，小林，靠谱', expected '代取，帮取快递，赏金\\ RM\\s?8，急，.+? \\d{2}:\\d{2}\\ 前，Sunway\\ Geo\\ 宿舍，300\\sm，小林，靠谱'  [Tapiro Verify 3]
+STALL Tapiro Verify: lost the AXe automation session in zh-Hans light bounty_board_worst; rebooting it and retrying the run once
+REBOOT Tapiro Verify 3: failed in zh-Hans light bounty_board_states; rebooting it
+FAIL zh-Hans light bounty_board_states: failed on Tapiro Verify (AssertionError: a failed refresh shows no stale notice with a time) and again on Tapiro Verify 3: AssertionError: a failed refresh shows no stale notice with a time  [Tapiro Verify 3]
+STALL Tapiro Verify 3: lost the AXe automation session in zh-Hans light bounty_board_worst; rebooting it
+FAIL zh-Hans light bounty_board_worst: failed on Tapiro Verify (driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session) and again on Tapiro Verify 3: driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session  [Tapiro Verify 3]  stalled: Tapiro Verify, Tapiro Verify 3
+PASS zh-Hans light bounty_detail_outcome: PASS: 这次没选上 untilted without a stamp, one seen mark, back to the board top; 小林选了你 with A 座 12-03 and 看进度; cancelled after selection shows 这单取消了 and 看进度 to the status screen without the address  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in zh-Hans light bounty_detail; rebooting it and retrying the run once
+PASS zh-Hans light bounty_post_optional: PASS: time and description rows expand, a picked time sticks (下午2:00, 2026年11月18日 → 晚上9:00, 2026年11月19日), counters count code points  [Tapiro Verify 3]
+PASS zh-Hans light bounty_applicants_worst: PASS: worst applicant rows, hold label, fifty rows, RM 1, chosen row, both outcomes  [Tapiro Verify 2]
+REBOOT Tapiro Verify 2: failed in zh-Hans light bounty_detail; rebooting it
+FAIL zh-Hans light bounty_detail: failed on Tapiro Verify 3 (AssertionError: bounty-detail-time reads '今天 上午8:53 前、急 · 还有 1 小时', expected '.+? \\d{2}:\\d{2}\\ 前') and again on Tapiro Verify 2: AssertionError: bounty-detail-time reads '今天 上午8:58 前、急 · 还有 1 小时', expected '.+? \\d{2}:\\d{2}\\ 前'  [Tapiro Verify 2]
+PASS zh-Hans light bounty_post_form: PASS: 「+」 opens the form, errors show in order, the menu lists eight types and a valid form reaches confirm  [Tapiro Verify]
+PASS zh-Hans light bounty_post_publish: PASS: free cost line, pinned 发出去, publish closes the sheet and clears the draft  [Tapiro Verify]
+PASS zh-Hans light bounty_post_selected_chips: PASS: a picked amount and quick time read against the accent fill; the quick times are one height, clear of the hairlines  [Tapiro Verify 2]
+PASS zh-Hans light bounty_post_pick: PASS: tiles set the errand and its hints, back keeps the title, a kept draft opens the form, 清空草稿 returns  [Tapiro Verify 3]
+REBOOT Tapiro Verify 2: failed in zh-Hans light bounty_status_helper; rebooting it and retrying the run once
+REBOOT Tapiro Verify 2: failed in zh-Hans light bounty_status_states; rebooting it and retrying the run once
+REBOOT Tapiro Verify: failed in zh-Hans light bounty_post_worst; rebooting it and retrying the run once
+STALL Tapiro Verify 2: lost the AXe automation session in zh-Hans light bounty_status_worst; rebooting it and retrying the run once
+REBOOT Tapiro Verify: failed in zh-Hans light bounty_status_helper; rebooting it
+FAIL zh-Hans light bounty_status_helper: failed on Tapiro Verify 2 (AssertionError: the timeline does not show the ETA (?:(?:今天|明天)\s?)?(?:0?8|0?8)[:.]35: '你出发了，上午8:01，预计 上午8:35 到，已完成') and again on Tapiro Verify: AssertionError: the timeline does not show the ETA (?:(?:今天|明天)\s?)?(?:0?8|0?8)[:.]35: '你出发了，上午8:04，预计 上午8:35 到，已完成'  [Tapiro Verify]
+REBOOT Tapiro Verify: failed in zh-Hans light bounty_status_states; rebooting it
+FAIL zh-Hans light bounty_status_states: failed on Tapiro Verify 2 (AssertionError: bounty.status.note.eta missing from '阿杰出发了，早上7:22，预计 上午8:27 到，原来是 上午8:12，阿杰 早上7:57 改了时间，已完成') and again on Tapiro Verify: AssertionError: bounty.status.note.eta missing from '阿杰出发了，早上7:24，预计 上午8:29 到，原来是 上午8:14，阿杰 早上7:59 改了时间，已完成'  [Tapiro Verify]
+FLAKY zh-Hans light bounty_post_worst: PASS: worst and RM 1 drafts fit the form and confirm (passed on retry; the first run on Tapiro Verify failed): AssertionError: bounty-post-form is still on screen  [Tapiro Verify 2]
+REBOOT Tapiro Verify: failed in zh-Hans light bounty_status_worst; rebooting it
+FAIL zh-Hans light bounty_status_worst: failed on Tapiro Verify 2 (driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session) and again on Tapiro Verify: AssertionError: the departure three days ahead has no day: '出发，约好 11月22日 周日 上午9:30 前出发，出门时点下面，要你处理'  [Tapiro Verify]  stalled: Tapiro Verify 2
+PASS zh-Hans light bounty_status_poster: PASS: confirm sheet with the amount then the pay sheet, issue sheet with a failed send kept as a draft and a manual resend, cancel copy for the late helper and the helper waiver, close from the applicant list  [Tapiro Verify 3]
+PASS zh-Hans light chat_entry_home: PASS: 发消息 only on a card with a chosen helper, opens the thread in 消息 without the status screen, and sits left of the action pill on the worst card  [Tapiro Verify 2]
+PASS zh-Hans light chat_entry_ride: PASS: 群聊 in the bar for a member opens the group in 消息 over the list; a viewer has none  [Tapiro Verify]
+PASS zh-Hans light chat_list_empty: PASS: empty moment with title, body and 去看看悬赏 into 悬赏  [Tapiro Verify 2]
+PASS zh-Hans light chat_list_failed: PASS: failed first load with retry; failed refresh keeps rows under the stale note; offline line above rows  [Tapiro Verify]
+PASS zh-Hans light chat_entry_status: PASS: 发消息 alone and beside 确认完成, grey buttons opaque over the address, failed lookup kept the screen, thread opens in 消息 over the list, none before selection  [Tapiro Verify 3]
+PASS zh-Hans light chat_list_stale_more: PASS: a stale list pages on, with a failed page and 重试 below the rows  [Tapiro Verify]
+PASS zh-Hans light chat_list_worst: PASS: long title and name truncate with the time kept, 99+ badge, paging with a failed page and retry to the end  [Tapiro Verify 3]
+PASS zh-Hans light chat_list_shrink: PASS: the next page is asked for again after the list shrinks  [Tapiro Verify 2]
+PASS zh-Hans light chat_list: PASS: rows newest first with title, side, last line and dot; push, deselect on return, read clears the badge  [Tapiro Verify]
+PASS zh-Hans light chat_thread_failed: PASS: red ! on failure, no automatic resend, 重发 sends once more with the same client id  [Tapiro Verify 3]
+PASS zh-Hans light chat_thread_hint: PASS: tab bar hidden, item card with 看详情, safety card first, newest above the composer, card opens the status  [Tapiro Verify 2]
+PASS zh-Hans light chat_thread_long: PASS: opens at the newest message; a live reply lands at the bottom  [Tapiro Verify]
+PASS zh-Hans light chat_thread_read: PASS: 已读 under your last bounty message only; the ride group has no 已读 and names its speakers  [Tapiro Verify 2]
+PASS zh-Hans light chat_thread_menu: PASS: peer menu 复制 and 举报 (opens the sheet, 取消 sends nothing); own menu only 复制  [Tapiro Verify 3]
+PASS zh-Hans light chat_thread_sending: PASS: kept draft, spinner while sending, plain once stored, draft cleared  [Tapiro Verify]
+PASS zh-Hans light chat_thread_worst: PASS: one-line item card, whole safety card, long bubbles inside the screen, composer and 已读 on screen  [Tapiro Verify 3]
+PASS zh-Hans light chat_thread_states: PASS: failed first load with 重试 and no empty thread; a left ride shows 你已离开 in place of the composer  [Tapiro Verify 2]
+PASS zh-Hans light home_calm: PASS: calm stage and card, no accessory  [Tapiro Verify 3]
+PASS zh-Hans light home_live: PASS: live stage, ride card in front with no button of its own, two-card stack  [Tapiro Verify 3]
+PASS zh-Hans light home_one_card: PASS: one card, no peeks, no toggle  [Tapiro Verify 3]
+PASS zh-Hans light home_bounty_cards: PASS: bounty cards ranked, labelled, fanned, marked seen once and opened  [Tapiro Verify]
+PASS zh-Hans light home_payments_failed: PASS: failed payments are not shown as calm, and retry loads them  [Tapiro Verify]
+PASS zh-Hans light home_fan_out: PASS: stacked, fanned, accessory threshold at the last fanned card, stacked again  [Tapiro Verify 2]
+PASS zh-Hans light home_one: PASS: worst-case home walk captured  [Tapiro Verify 3]
+PASS zh-Hans light home_status_bar: PASS: dark ink and a light 「+」 over the stage, the appearance everywhere else  [Tapiro Verify 3]
+PASS zh-Hans light home_settled_collect: reduced: card leaving 1.27s, gone 1.27s, board moved over 0.00s  [Tapiro Verify 2]
+PASS zh-Hans light home_three_cards: PASS: three cards stacked and fanned  [Tapiro Verify 3]
+PASS zh-Hans light home_settled_card: PASS: 已结清 card in front, behind 欠钱, two settles and worst case  [Tapiro Verify]
+PASS zh-Hans light home_worst_calm: PASS: calm card with a 40-character name  [Tapiro Verify 3]
+PASS zh-Hans light home_worst_inline: PASS: inline accessory with a worst-case title  [Tapiro Verify]
+PASS zh-Hans light home_title_strip: PASS: title halo expanded, collapsed and after a tab switch; strip under the compact bar  [Tapiro Verify 2]
+PASS zh-Hans light live_home_card: PASS: one launch load, then exactly one load after the recorded signal turns the card into 3 人申请，去选  [Tapiro Verify]
+PASS zh-Hans light home_worst: PASS: worst-case home walk captured  [Tapiro Verify 3]
+PASS zh-Hans light ride_appeal: PASS: 我上车了, 申诉中, 申诉过期了 and a boarded member confirms  [Tapiro Verify 2]
+PASS zh-Hans light ride_create_confirm: PASS: confirm rows, free fee line, 发出去 closes the sheet and lists the ride first  [Tapiro Verify]
+PASS zh-Hans light ride_create_payee: PASS: no payee method explains and routes to 收款方式; the draft is kept  [Tapiro Verify]
+PASS zh-Hans light ride_create_cost: PASS: coin line and label, no balance offers the packs, blocked disables 发出去  [Tapiro Verify 3]
+PASS zh-Hans light ride_create_pick: PASS: recent routes, tiles, airport opens the airport group, back keeps the tiles, a route fills the form  [Tapiro Verify]
+PASS zh-Hans light ride_create_form: PASS: places with short names, airport group, time, 6 people, estimate and 每人约, fixed ticket height  [Tapiro Verify 2]
+PASS zh-Hans light ride_detail_organiser: PASS: organiser menu, cancel asks first, split row, 照常走还是取消  [Tapiro Verify]
+PASS zh-Hans light ride_create_worst: PASS: worst draft fits the live ticket, form and confirm  [Tapiro Verify 3]
+REBOOT Tapiro Verify: failed in zh-Hans light ride_detail; rebooting it and retrying the run once
+PASS zh-Hans light ride_detail_worst: PASS: worst ride stays inside the screen; six riders wrap and keep their labels  [Tapiro Verify 2]
+REBOOT Tapiro Verify 2: failed in zh-Hans light ride_detail; rebooting it
+FAIL zh-Hans light ride_detail: failed on Tapiro Verify (AssertionError: ticket label misses '航班 09:10 起飞': 还差 1 人，明天 早上6:30，双威 → KLIA2，Sunway Geo Residences → KLIA2 第 2 航站楼, 航班 上午9:10 起飞, 2 件大行李, 每人约 RM 25，2/3 人, 集合 早上6:00, 座位 2/3, 每人约 RM 25) and again on Tapiro Verify 2: AssertionError: ticket label misses '航班 09:10 起飞': 还差 1 人，明天 早上6:30，双威 → KLIA2，Sunway Geo Residences → KLIA2 第 2 航站楼, 航班 上午9:10 起飞, 2 件大行李, 每人约 RM 25，2/3 人, 集合 早上6:00, 座位 2/3, 每人约 RM 25  [Tapiro Verify 2]
+STALL Tapiro Verify: lost the AXe automation session in zh-Hans light ride_list_empty; rebooting it and retrying the run once
+PASS zh-Hans light ride_history: PASS: history row, 去过的 list newest first, back to 拼车  [Tapiro Verify 3]
+FLAKY zh-Hans light ride_list_empty: PASS: moment screen, no ＋, 发起拼车 opens 去哪儿？ (passed on retry; the first run on Tapiro Verify failed): driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session  [Tapiro Verify 2]  stalled: Tapiro Verify
+PASS zh-Hans light ride_list_settled: PASS: the settled ticket keeps 已结清 and shows 你付了 RM 24.70  [Tapiro Verify 3]
+PASS zh-Hans light ride_list_failed: PASS: failed first load with ＋ and retry; failed refresh keeps the tickets under the stale note  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in zh-Hans light ride_list; rebooting it and retrying the run once
+PASS zh-Hans light ride_list_worst: PASS: long labels, 8-character short names and the limit amounts stay inside the tickets  [Tapiro Verify 2]
+REBOOT Tapiro Verify 2: failed in zh-Hans light ride_list; rebooting it
+FAIL zh-Hans light ride_list: failed on Tapiro Verify 3 (AssertionError: ride-ticket-ride-leaving cuts its departure time or pushes it under the stub: ['9:41', '三の', '拼车', '我的拼车2', '① 9分钟后出发•集合中', '今天上午8:30', 'Pyramid → YC', 'Sunway Pyramid 正门 → YC Residence', 'RM4', '每人约•3/4', '① 我发起的•1人申请', '明天 上午10:30', 'Geo → Pavilion', 'Sunway Geo Residences → Pavilion', 'Kuala Lumpur', 'RM 12', '每人约•1/4', '①', '去过•2趟', '今天 可以加入', 'x 已满•上午9:12', "Pyramid → Taylor's", "Sunway Pyramid 正门→ Taylor's", 'Lakeside', 'RM 6', '每人约•3/3', '明天', '• 还差1人 ·早上6:30', '悬赏', '拼车', '+ 航班上午9:10起飞•', '消息', '我的', 'RM 25']) and again on Tapiro Verify 2: AssertionError: ride-ticket-ride-leaving cuts its departure time or pushes it under the stub: ['9:41', '三の', '拼车', '我的拼车2', '① 9分钟后出发•集合中', '今天上午8:30', 'Pyramid → YC', 'Sunway Pyramid 正门 → YC Residence', 'RM4', '每人约•3/4', '① 我发起的•1人申请', '明天 上午10:30', 'Geo → Pavilion', 'Sunway Geo Residences → Pavilion', 'Kuala Lumpur', 'RM 12', '每人约•1/4', '①', '去过•2趟', '今天 可以加入', 'x 已满•上午9:12', "Pyramid → Taylor's", "Sunway Pyramid 正门→ Taylor's", 'Lakeside', 'RM 6', '每人约•3/3', '明天', '• 还差1人 ·早上6:30', '悬赏', '拼车', '+ 航班上午9:10起飞•', '消息', '我的', 'RM 25']  [Tapiro Verify 2]
+PASS zh-Hans light ride_meetup_depart: PASS: plate cell, organiser tiles, late line, boarding sheet pre-ticks and 3 人出发  [Tapiro Verify]
+PASS zh-Hans light ride_meetup_stale: PASS: no line while loads succeed, 可能不是最新 after a failed poll, the last row kept  [Tapiro Verify 2]
+PASS zh-Hans light ride_meetup_late: PASS: 晚到 menu, 5 minutes, clear, and 不来了… asks before leaving  [Tapiro Verify 3]
+PASS zh-Hans light ride_settle_grab: PASS: a Grab-split ride settles at 到了 with stamp and sticker  [Tapiro Verify 2]
+PASS zh-Hans light ride_meetup: PASS: countdown ticket, arrival row, 我到了 with undo, organiser-only Grab, no stale line while connected  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in zh-Hans light ride_settle_owing_night; rebooting it and retrying the run once
+REBOOT Tapiro Verify 2: failed in zh-Hans light ride_settle_owing; rebooting it and retrying the run once
+PASS zh-Hans light ride_settle_pay: PASS: rider pays through the built sheet titled 拼车; receipt and 金额不对 work  [Tapiro Verify]
+REBOOT Tapiro Verify 2: failed in zh-Hans light ride_settle_owing_night; rebooting it
+FAIL zh-Hans light ride_settle_owing_night: failed on Tapiro Verify 3 (AssertionError: expected ['ride.pay24', 'ride.pay72'] scheduled and the card naming ride.pay24; saw [(['ride.pay24', 'ride.pay72'], 'Tapiro 会在 今天 上午8:00 提醒你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。')]) and again on Tapiro Verify 2: AssertionError: expected ['ride.pay24', 'ride.pay72'] scheduled and the card naming ride.pay24; saw [(['ride.pay24', 'ride.pay72'], 'Tapiro 会在 今天 上午8:00 提醒你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。')]  [Tapiro Verify 2]
+REBOOT Tapiro Verify 3: failed in zh-Hans light ride_settle_owing; rebooting it
+FAIL zh-Hans light ride_settle_owing: failed on Tapiro Verify 2 (AssertionError: expected ['ride.pay72'] scheduled and the card naming ride.pay72; saw [(['ride.pay72'], 'Tapiro 会在 11月21日 周六 上午8:00 提醒你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。')]) and again on Tapiro Verify 3: AssertionError: expected ['ride.pay72'] scheduled and the card naming ride.pay72; saw [(['ride.pay72'], 'Tapiro 会在 11月21日 周六 上午8:00 提醒你。7 天不付，或有 2 笔没付，会暂停发布悬赏和拼车。')]  [Tapiro Verify 3]
+PASS zh-Hans light ride_settle_rows: PASS: per-person rows, one 已收到, no celebration before the last  [Tapiro Verify]
+PASS zh-Hans light ride_settled: PASS: stamped ticket with 你付了, 2/2 rows, one car sticker collected once  [Tapiro Verify]
+PASS zh-Hans light ride_settle_worst: PASS: six long names, both currency limits and one rider fit  [Tapiro Verify 2]
+PASS zh-Hans light ride_settle_split: PASS: 到了 opens the split sheet, equal rows round up, 220 A blocks and remainders, one send with the receipt  [Tapiro Verify 3]
+
+ seconds  status locale  look  case
+    65.7  pass   zh-Hans light bounty_applicants_progress
+   224.5  pass   zh-Hans light bounty_applicants
+    40.2  fail   zh-Hans light bounty_board_list
+   257.8  fail   zh-Hans light bounty_board_states
+    21.8  fail   zh-Hans light bounty_board_worst
+   192.3  pass   zh-Hans light bounty_detail_outcome
+   219.4  pass   zh-Hans light bounty_post_optional
+   717.0  pass   zh-Hans light bounty_applicants_worst
+    66.3  fail   zh-Hans light bounty_detail
+   290.3  pass   zh-Hans light bounty_post_form
+    85.1  pass   zh-Hans light bounty_post_publish
+    76.9  pass   zh-Hans light bounty_post_selected_chips
+   149.0  pass   zh-Hans light bounty_post_pick
+   147.8  fail   zh-Hans light bounty_status_helper
+    33.0  fail   zh-Hans light bounty_status_states
+   282.7  flaky  zh-Hans light bounty_post_worst
+    64.6  fail   zh-Hans light bounty_status_worst
+   368.5  pass   zh-Hans light bounty_status_poster
+    70.3  pass   zh-Hans light chat_entry_home
+    48.2  pass   zh-Hans light chat_entry_ride
+    31.7  pass   zh-Hans light chat_list_empty
+    72.9  pass   zh-Hans light chat_list_failed
+    88.4  pass   zh-Hans light chat_entry_status
+    53.6  pass   zh-Hans light chat_list_stale_more
+    55.5  pass   zh-Hans light chat_list_worst
+   138.0  pass   zh-Hans light chat_list_shrink
+    52.7  pass   zh-Hans light chat_list
+    54.6  pass   zh-Hans light chat_thread_failed
+    37.8  pass   zh-Hans light chat_thread_hint
+    35.4  pass   zh-Hans light chat_thread_long
+    38.0  pass   zh-Hans light chat_thread_read
+    63.9  pass   zh-Hans light chat_thread_menu
+    38.2  pass   zh-Hans light chat_thread_sending
+    34.1  pass   zh-Hans light chat_thread_worst
+    53.4  pass   zh-Hans light chat_thread_states
+    27.2  pass   zh-Hans light home_calm
+    15.0  pass   zh-Hans light home_live
+    14.9  pass   zh-Hans light home_one_card
+    87.8  pass   zh-Hans light home_bounty_cards
+    23.5  pass   zh-Hans light home_payments_failed
+   110.9  pass   zh-Hans light home_fan_out
+    59.2  pass   zh-Hans light home_one
+    75.7  pass   zh-Hans light home_status_bar
+    93.7  pass   zh-Hans light home_settled_collect
+    27.3  pass   zh-Hans light home_three_cards
+   144.9  pass   zh-Hans light home_settled_card
+    12.3  pass   zh-Hans light home_worst_calm
+    15.9  pass   zh-Hans light home_worst_inline
+    59.0  pass   zh-Hans light home_title_strip
+    35.3  pass   zh-Hans light live_home_card
+    68.6  pass   zh-Hans light home_worst
+    55.0  pass   zh-Hans light ride_appeal
+    45.9  pass   zh-Hans light ride_create_confirm
+    57.1  pass   zh-Hans light ride_create_payee
+   132.3  pass   zh-Hans light ride_create_cost
+    63.4  pass   zh-Hans light ride_create_pick
+   166.5  pass   zh-Hans light ride_create_form
+    58.9  pass   zh-Hans light ride_detail_organiser
+    77.2  pass   zh-Hans light ride_create_worst
+    30.0  pass   zh-Hans light ride_detail_worst
+    21.4  fail   zh-Hans light ride_detail
+    63.4  pass   zh-Hans light ride_history
+    64.1  flaky  zh-Hans light ride_list_empty
+    34.6  pass   zh-Hans light ride_list_settled
+    72.6  pass   zh-Hans light ride_list_failed
+    40.5  pass   zh-Hans light ride_list_worst
+    53.5  fail   zh-Hans light ride_list
+    65.5  pass   zh-Hans light ride_meetup_depart
+    35.3  pass   zh-Hans light ride_meetup_stale
+    96.0  pass   zh-Hans light ride_meetup_late
+    23.9  pass   zh-Hans light ride_settle_grab
+    49.7  pass   zh-Hans light ride_meetup
+    86.7  pass   zh-Hans light ride_settle_pay
+    82.0  fail   zh-Hans light ride_settle_owing_night
+    84.4  fail   zh-Hans light ride_settle_owing
+    48.6  pass   zh-Hans light ride_settle_rows
+    37.1  pass   zh-Hans light ride_settled
+    49.2  pass   zh-Hans light ride_settle_worst
+   238.1  pass   zh-Hans light ride_settle_split
+  2631.0  total (79 runs, 43 min 51 s)
+rebooted Simulators (shut down and booted after a failed or stalled run; a failed run retried once):
+  Tapiro Verify (zh-Hans light bounty_board_list, failed)
+  Tapiro Verify (zh-Hans light bounty_board_states, failed)
+  Tapiro Verify 3 (zh-Hans light bounty_board_list, failed)
+  Tapiro Verify (zh-Hans light bounty_board_worst, lost the AXe automation session)
+  Tapiro Verify 3 (zh-Hans light bounty_board_states, failed)
+  Tapiro Verify 3 (zh-Hans light bounty_board_worst, lost the AXe automation session)
+  Tapiro Verify 3 (zh-Hans light bounty_detail, failed)
+  Tapiro Verify 2 (zh-Hans light bounty_detail, failed)
+  Tapiro Verify 2 (zh-Hans light bounty_status_helper, failed)
+  Tapiro Verify 2 (zh-Hans light bounty_status_states, failed)
+  Tapiro Verify (zh-Hans light bounty_post_worst, failed)
+  Tapiro Verify 2 (zh-Hans light bounty_status_worst, lost the AXe automation session)
+  Tapiro Verify (zh-Hans light bounty_status_helper, failed)
+  Tapiro Verify (zh-Hans light bounty_status_states, failed)
+  Tapiro Verify (zh-Hans light bounty_status_worst, failed)
+  Tapiro Verify (zh-Hans light ride_detail, failed)
+  Tapiro Verify 2 (zh-Hans light ride_detail, failed)
+  Tapiro Verify (zh-Hans light ride_list_empty, lost the AXe automation session)
+  Tapiro Verify 3 (zh-Hans light ride_list, failed)
+  Tapiro Verify 2 (zh-Hans light ride_list, failed)
+  Tapiro Verify 3 (zh-Hans light ride_settle_owing_night, failed)
+  Tapiro Verify 2 (zh-Hans light ride_settle_owing, failed)
+  Tapiro Verify 2 (zh-Hans light ride_settle_owing_night, failed)
+  Tapiro Verify 3 (zh-Hans light ride_settle_owing, failed)
+flaky: 2 runs failed first and passed only on the retry; the first run is kept in first-attempt/:
+  zh-Hans light bounty_post_worst
+  zh-Hans light ride_list_empty
+Artifacts: .verify/ui-12h
+Booting Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3 and installing the app
+Running 79 runs on 3 Simulators: Tapiro Verify, Tapiro Verify 2, Tapiro Verify 3
+PASS en      light bounty_applicants_progress: PASS: assigned shows 选好了阿杰 and 看进度 to the status screen; cancelled shows 这单取消了 and 看进度, never 选好了  [Tapiro Verify]
+PASS en      light bounty_applicants: PASS: three rows in order, Q46 button, check moves, a pull adds Mei Ling, empty and failed first load  [Tapiro Verify 3]
+PASS en      light bounty_board_list: PASS: first card copy, urgent colour and clock, 44 pt 申请, stamp inside the card, open/apply taps, 45 long cards in order, page failure and retry  [Tapiro Verify]
+PASS en      light bounty_board_states: PASS: failed, retry, end, empty with post, stale refresh and its retry, filter-empty and show all  [Tapiro Verify 3]
+PASS en      light bounty_detail_outcome: PASS: 这次没选上 untilted without a stamp, one seen mark, back to the board top; 小林选了你 with A 座 12-03 and 看进度; cancelled after selection shows 这单取消了 and 看进度 to the status screen without the address  [Tapiro Verify 3]
+PASS en      light bounty_board_worst: PASS: 45 worst cards, RM 500 beside a two-line title, distances shown, 44 pt 申请, +42 更远 from the first page, detail, 140-code-point note, long place search and row  [Tapiro Verify]
+PASS en      light bounty_applicants_worst: PASS: worst applicant rows, hold label, fifty rows, RM 1, chosen row, both outcomes  [Tapiro Verify 2]
+PASS en      light bounty_detail: page two: card 25 back at y 418.7 pt with 45 cards loaded  [Tapiro Verify 3]
+PASS en      light bounty_post_form: PASS: 「+」 opens the form, errors show in order, the menu lists eight types and a valid form reaches confirm  [Tapiro Verify]
+PASS en      light bounty_post_pick: PASS: tiles set the errand and its hints, back keeps the title, a kept draft opens the form, 清空草稿 returns  [Tapiro Verify 3]
+PASS en      light bounty_post_optional: PASS: time and description rows expand, a picked time sticks (2:45 PM, 18 Nov 2026 → 9:00 PM, 19 Nov 2026), counters count code points  [Tapiro Verify 2]
+PASS en      light bounty_post_publish: PASS: free cost line, pinned 发出去, publish closes the sheet and clears the draft  [Tapiro Verify]
+PASS en      light bounty_post_selected_chips: PASS: a picked amount and quick time read against the accent fill; the quick times are one height, clear of the hairlines  [Tapiro Verify 3]
+PASS en      light bounty_post_worst: PASS: worst and RM 1 drafts fit the form and confirm  [Tapiro Verify 2]
+PASS en      light bounty_status_helper: PASS: ETA sheet before start, cancel sends nothing, start with ETA, change with the old time struck, complete with progress, failed complete with the inline notice and a manual retry  [Tapiro Verify]
+REBOOT Tapiro Verify: failed in en light bounty_status_worst; rebooting it and retrying the run once
+REBOOT Tapiro Verify 2: failed in en light bounty_status_states; rebooting it and retrying the run once
+PASS en      light chat_entry_home: PASS: 发消息 only on a card with a chosen helper, opens the thread in 消息 without the status screen, and sits left of the action pill on the worst card  [Tapiro Verify]
+REBOOT Tapiro Verify 2: failed in en light bounty_status_worst; rebooting it
+FAIL en      light bounty_status_worst: failed on Tapiro Verify (AssertionError: the departure three days ahead has no day: 'Head out, Leave by Sun, Nov 22 9:30\u202fAM. Tap below when you head out., needs you') and again on Tapiro Verify 2: AssertionError: the departure three days ahead has no day: 'Head out, Leave by Sun, Nov 22 9:30\u202fAM. Tap below when you head out., needs you'  [Tapiro Verify 2]
+PASS en      light bounty_status_poster: PASS: confirm sheet with the amount then the pay sheet, issue sheet with a failed send kept as a draft and a manual resend, cancel copy for the late helper and the helper waiver, close from the applicant list  [Tapiro Verify 3]
+STALL Tapiro Verify 2: lost the AXe automation session in en light chat_entry_ride; rebooting it and retrying the run once
+PASS en      light chat_list_empty: PASS: empty moment with title, body and 去看看悬赏 into 悬赏  [Tapiro Verify 2]
+PASS en      light chat_entry_status: PASS: 发消息 alone and beside 确认完成, grey buttons opaque over the address, failed lookup kept the screen, thread opens in 消息 over the list, none before selection  [Tapiro Verify 3]
+PASS en      light chat_list_failed: PASS: failed first load with retry; failed refresh keeps rows under the stale note; offline line above rows  [Tapiro Verify 2]
+FLAKY en      light chat_entry_ride: PASS: 群聊 in the bar for a member opens the group in 消息 over the list; a viewer has none (passed on retry; the first run on Tapiro Verify 2 failed): driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session  [Tapiro Verify 3]  stalled: Tapiro Verify 2
+REBOOT Tapiro Verify: failed in en light bounty_status_states; rebooting it
+FAIL en      light bounty_status_states: failed on Tapiro Verify 2 (AssertionError: the failed pull shows no refresh notice with the data time) and again on Tapiro Verify: AssertionError: the failed pull shows no refresh notice with the data time  [Tapiro Verify]
+PASS en      light chat_list_stale_more: PASS: a stale list pages on, with a failed page and 重试 below the rows  [Tapiro Verify 3]
+PASS en      light chat_list_worst: PASS: long title and name truncate with the time kept, 99+ badge, paging with a failed page and retry to the end  [Tapiro Verify]
+PASS en      light chat_list_shrink: PASS: the next page is asked for again after the list shrinks  [Tapiro Verify 2]
+PASS en      light chat_list: PASS: rows newest first with title, side, last line and dot; push, deselect on return, read clears the badge  [Tapiro Verify 3]
+PASS en      light chat_thread_failed: PASS: red ! on failure, no automatic resend, 重发 sends once more with the same client id  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in en light chat_thread_long; rebooting it and retrying the run once
+PASS en      light chat_thread_hint: PASS: tab bar hidden, item card with 看详情, safety card first, newest above the composer, card opens the status  [Tapiro Verify 2]
+REBOOT Tapiro Verify 2: failed in en light chat_thread_long; rebooting it
+FAIL en      light chat_thread_long: failed on Tapiro Verify 3 (AssertionError: the newest is under the composer) and again on Tapiro Verify 2: AssertionError: the newest is under the composer  [Tapiro Verify 2]
+PASS en      light chat_thread_read: PASS: 已读 under your last bounty message only; the ride group has no 已读 and names its speakers  [Tapiro Verify 3]
+PASS en      light chat_thread_menu: PASS: peer menu 复制 and 举报 (opens the sheet, 取消 sends nothing); own menu only 复制  [Tapiro Verify]
+PASS en      light chat_thread_sending: PASS: kept draft, spinner while sending, plain once stored, draft cleared  [Tapiro Verify 2]
+PASS en      light chat_thread_worst: PASS: one-line item card, whole safety card, long bubbles inside the screen, composer and 已读 on screen  [Tapiro Verify]
+PASS en      light chat_thread_states: PASS: failed first load with 重试 and no empty thread; a left ride shows 你已离开 in place of the composer  [Tapiro Verify 3]
+PASS en      light home_calm: PASS: calm stage and card, no accessory  [Tapiro Verify]
+PASS en      light home_live: PASS: live stage, ride card in front with no button of its own, two-card stack  [Tapiro Verify]
+PASS en      light home_one_card: PASS: one card, no peeks, no toggle  [Tapiro Verify]
+PASS en      light home_bounty_cards: PASS: bounty cards ranked, labelled, fanned, marked seen once and opened  [Tapiro Verify 2]
+PASS en      light home_payments_failed: PASS: failed payments are not shown as calm, and retry loads them  [Tapiro Verify 2]
+PASS en      light home_one: PASS: worst-case home walk captured  [Tapiro Verify]
+PASS en      light home_fan_out: PASS: stacked, fanned, accessory threshold at the last fanned card, stacked again  [Tapiro Verify 3]
+PASS en      light home_status_bar: PASS: dark ink and a light 「+」 over the stage, the appearance everywhere else  [Tapiro Verify 3]
+PASS en      light home_settled_collect: reduced: card leaving 1.24s, gone 1.24s, board moved over 0.00s  [Tapiro Verify]
+PASS en      light home_three_cards: PASS: three cards stacked and fanned  [Tapiro Verify 3]
+PASS en      light home_worst_calm: PASS: calm card with a 40-character name  [Tapiro Verify 3]
+PASS en      light home_settled_card: PASS: 已结清 card in front, behind 欠钱, two settles and worst case  [Tapiro Verify 2]
+PASS en      light home_worst_inline: PASS: inline accessory with a worst-case title  [Tapiro Verify 3]
+PASS en      light home_title_strip: PASS: title halo expanded, collapsed and after a tab switch; strip under the compact bar  [Tapiro Verify]
+PASS en      light live_home_card: PASS: one launch load, then exactly one load after the recorded signal turns the card into 3 人申请，去选  [Tapiro Verify 3]
+PASS en      light home_worst: PASS: worst-case home walk captured  [Tapiro Verify 2]
+PASS en      light ride_appeal: PASS: 我上车了, 申诉中, 申诉过期了 and a boarded member confirms  [Tapiro Verify]
+PASS en      light ride_create_confirm: PASS: confirm rows, free fee line, 发出去 closes the sheet and lists the ride first  [Tapiro Verify 3]
+PASS en      light ride_create_payee: PASS: no payee method explains and routes to 收款方式; the draft is kept  [Tapiro Verify 3]
+PASS en      light ride_create_cost: PASS: coin line and label, no balance offers the packs, blocked disables 发出去  [Tapiro Verify 2]
+PASS en      light ride_create_pick: PASS: recent routes, tiles, airport opens the airport group, back keeps the tiles, a route fills the form  [Tapiro Verify 3]
+PASS en      light ride_create_form: PASS: places with short names, airport group, time, 6 people, estimate and 每人约, fixed ticket height  [Tapiro Verify]
+PASS en      light ride_create_worst: PASS: worst draft fits the live ticket, form and confirm  [Tapiro Verify 2]
+REBOOT Tapiro Verify 2: failed in en light ride_detail; rebooting it and retrying the run once
+PASS en      light ride_detail_organiser: PASS: organiser menu, cancel asks first, split row, 照常走还是取消  [Tapiro Verify 3]
+PASS en      light ride_detail_worst: PASS: worst ride stays inside the screen; six riders wrap and keep their labels  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in en light ride_detail; rebooting it
+FAIL en      light ride_detail: failed on Tapiro Verify 2 (AssertionError: ticket label misses 'Flight 09:10': 1 more needed, Tomorrow 6:30 AM, 双威 → KLIA2, Sunway Geo Residences → KLIA2 第 2 航站楼, Flight 9:10 AM, 2 large bags, About RM 25 each, 2 of 3 people, Meet 6:00 AM, Seats 2/3, Each about RM 25) and again on Tapiro Verify 3: AssertionError: ticket label misses 'Flight 09:10': 1 more needed, Tomorrow 6:30 AM, 双威 → KLIA2, Sunway Geo Residences → KLIA2 第 2 航站楼, Flight 9:10 AM, 2 large bags, About RM 25 each, 2 of 3 people, Meet 6:00 AM, Seats 2/3, Each about RM 25  [Tapiro Verify 3]
+PASS en      light ride_list_empty: PASS: moment screen, no ＋, 发起拼车 opens 去哪儿？  [Tapiro Verify 2]
+PASS en      light ride_history: PASS: history row, 去过的 list newest first, back to 拼车  [Tapiro Verify]
+PASS en      light ride_list_settled: PASS: the settled ticket keeps 已结清 and shows 你付了 RM 24.70  [Tapiro Verify 2]
+PASS en      light ride_list_worst: PASS: long labels, 8-character short names and the limit amounts stay inside the tickets  [Tapiro Verify]
+PASS en      light ride_list_failed: PASS: failed first load with ＋ and retry; failed refresh keeps the tickets under the stale note  [Tapiro Verify 3]
+REBOOT Tapiro Verify 2: failed in en light ride_list; rebooting it and retrying the run once
+STALL Tapiro Verify 2: lost the AXe automation session in en light ride_meetup_stale; rebooting it and retrying the run once
+PASS en      light ride_meetup_depart: PASS: plate cell, organiser tiles, late line, boarding sheet pre-ticks and 3 人出发  [Tapiro Verify]
+PASS en      light ride_meetup_late: PASS: 晚到 menu, 5 minutes, clear, and 不来了… asks before leaving  [Tapiro Verify 3]
+REBOOT Tapiro Verify: failed in en light ride_list; rebooting it
+FAIL en      light ride_list: failed on Tapiro Verify 2 (AssertionError: 1 more needed, 6:30 AM, 双威 → KLIA2, Sunway Geo Residences → KLIA2 第 2 航站楼, Flight 9:10 AM, 2 large bags, About RM 25 each, 2 of 3 people) and again on Tapiro Verify: AssertionError: 1 more needed, 6:30 AM, 双威 → KLIA2, Sunway Geo Residences → KLIA2 第 2 航站楼, Flight 9:10 AM, 2 large bags, About RM 25 each, 2 of 3 people  [Tapiro Verify]
+PASS en      light ride_meetup: PASS: countdown ticket, arrival row, 我到了 with undo, organiser-only Grab, no stale line while connected  [Tapiro Verify 2]
+FLAKY en      light ride_meetup_stale: PASS: no line while loads succeed, 可能不是最新 after a failed poll, the last row kept (passed on retry; the first run on Tapiro Verify 2 failed): driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session  [Tapiro Verify 3]  stalled: Tapiro Verify 2
+PASS en      light ride_settle_grab: PASS: a Grab-split ride settles at 到了 with stamp and sticker  [Tapiro Verify 2]
+REBOOT Tapiro Verify: failed in en light ride_settle_owing_night; rebooting it and retrying the run once
+REBOOT Tapiro Verify 3: failed in en light ride_settle_owing; rebooting it and retrying the run once
+REBOOT Tapiro Verify: failed in en light ride_settle_owing; rebooting it
+FAIL en      light ride_settle_owing: failed on Tapiro Verify 3 (AssertionError: expected ['ride.pay72'] scheduled and the card naming ride.pay72; saw [(['ride.pay72'], 'Tapiro will remind you Sat, Nov 21 8:27\u202fAM. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.')]) and again on Tapiro Verify: AssertionError: expected ['ride.pay72'] scheduled and the card naming ride.pay72; saw [(['ride.pay72'], 'Tapiro will remind you Sat, Nov 21 8:28\u202fAM. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.')]  [Tapiro Verify]
+REBOOT Tapiro Verify 3: failed in en light ride_settle_owing_night; rebooting it
+FAIL en      light ride_settle_owing_night: failed on Tapiro Verify (AssertionError: expected ['ride.pay24', 'ride.pay72'] scheduled and the card naming ride.pay24; saw [(['ride.pay24', 'ride.pay72'], 'Tapiro will remind you today 8:00\u202fAM. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.')]) and again on Tapiro Verify 3: AssertionError: expected ['ride.pay24', 'ride.pay72'] scheduled and the card naming ride.pay24; saw [(['ride.pay24', 'ride.pay72'], 'Tapiro will remind you today 8:00\u202fAM. After 7 days unpaid, or with 2 unpaid items, posting bounties and rides is paused.')]  [Tapiro Verify 3]
+PASS en      light ride_settle_pay: PASS: rider pays through the built sheet titled 拼车; receipt and 金额不对 work  [Tapiro Verify 2]
+STALL Tapiro Verify 3: lost the AXe automation session in en light ride_settle_worst; rebooting it and retrying the run once
+PASS en      light ride_settle_rows: PASS: per-person rows, one 已收到, no celebration before the last  [Tapiro Verify 2]
+PASS en      light ride_settled: PASS: stamped ticket with 你付了, 2/2 rows, one car sticker collected once  [Tapiro Verify 3]
+FLAKY en      light ride_settle_worst: PASS: six long names, both currency limits and one rider fit (passed on retry; the first run on Tapiro Verify 3 failed): driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session  [Tapiro Verify 2]  stalled: Tapiro Verify 3
+PASS en      light ride_settle_split: PASS: 到了 opens the split sheet, equal rows round up, 220 A blocks and remainders, one send with the receipt  [Tapiro Verify]
+
+ seconds  status locale  look  case
+    64.9  pass   en      light bounty_applicants_progress
+   201.2  pass   en      light bounty_applicants
+   228.1  pass   en      light bounty_board_list
+   136.4  pass   en      light bounty_board_states
+   189.3  pass   en      light bounty_detail_outcome
+   260.2  pass   en      light bounty_board_worst
+   646.2  pass   en      light bounty_applicants_worst
+   215.8  pass   en      light bounty_detail
+   300.9  pass   en      light bounty_post_form
+   137.9  pass   en      light bounty_post_pick
+   238.5  pass   en      light bounty_post_optional
+    72.9  pass   en      light bounty_post_publish
+    67.2  pass   en      light bounty_post_selected_chips
+   115.2  pass   en      light bounty_post_worst
+   172.2  pass   en      light bounty_status_helper
+    78.8  pass   en      light chat_entry_home
+   103.0  fail   en      light bounty_status_worst
+   331.9  pass   en      light bounty_status_poster
+    39.5  pass   en      light chat_list_empty
+   118.0  pass   en      light chat_entry_status
+    75.8  pass   en      light chat_list_failed
+    54.6  flaky  en      light chat_entry_ride
+   376.4  fail   en      light bounty_status_states
+    73.7  pass   en      light chat_list_stale_more
+    68.7  pass   en      light chat_list_worst
+   145.6  pass   en      light chat_list_shrink
+    59.0  pass   en      light chat_list
+    53.5  pass   en      light chat_thread_failed
+    42.9  pass   en      light chat_thread_hint
+    28.5  fail   en      light chat_thread_long
+    47.0  pass   en      light chat_thread_read
+    81.5  pass   en      light chat_thread_menu
+    47.3  pass   en      light chat_thread_sending
+    34.1  pass   en      light chat_thread_worst
+    57.7  pass   en      light chat_thread_states
+    26.6  pass   en      light home_calm
+    15.0  pass   en      light home_live
+    15.0  pass   en      light home_one_card
+    86.2  pass   en      light home_bounty_cards
+    22.7  pass   en      light home_payments_failed
+    55.0  pass   en      light home_one
+   109.4  pass   en      light home_fan_out
+    73.6  pass   en      light home_status_bar
+    94.1  pass   en      light home_settled_collect
+    26.1  pass   en      light home_three_cards
+    11.9  pass   en      light home_worst_calm
+   143.6  pass   en      light home_settled_card
+    15.2  pass   en      light home_worst_inline
+    58.7  pass   en      light home_title_strip
+    36.2  pass   en      light live_home_card
+    62.2  pass   en      light home_worst
+    49.0  pass   en      light ride_appeal
+    44.8  pass   en      light ride_create_confirm
+    53.1  pass   en      light ride_create_payee
+   120.0  pass   en      light ride_create_cost
+    59.2  pass   en      light ride_create_pick
+   154.1  pass   en      light ride_create_form
+    63.2  pass   en      light ride_create_worst
+    61.6  pass   en      light ride_detail_organiser
+    30.4  pass   en      light ride_detail_worst
+    21.8  fail   en      light ride_detail
+    45.3  pass   en      light ride_list_empty
+    54.8  pass   en      light ride_history
+    19.1  pass   en      light ride_list_settled
+    37.0  pass   en      light ride_list_worst
+    55.0  pass   en      light ride_list_failed
+    65.6  pass   en      light ride_meetup_depart
+   102.5  pass   en      light ride_meetup_late
+    94.9  fail   en      light ride_list
+    57.1  pass   en      light ride_meetup
+    46.3  flaky  en      light ride_meetup_stale
+    27.5  pass   en      light ride_settle_grab
+    87.9  fail   en      light ride_settle_owing
+    83.5  fail   en      light ride_settle_owing_night
+    97.6  pass   en      light ride_settle_pay
+    50.8  pass   en      light ride_settle_rows
+    32.5  pass   en      light ride_settled
+    52.9  flaky  en      light ride_settle_worst
+   194.4  pass   en      light ride_settle_split
+  2750.7  total (79 runs, 45 min 50 s)
+rebooted Simulators (shut down and booted after a failed or stalled run; a failed run retried once):
+  Tapiro Verify (en light bounty_status_worst, failed)
+  Tapiro Verify 2 (en light bounty_status_states, failed)
+  Tapiro Verify 2 (en light bounty_status_worst, failed)
+  Tapiro Verify 2 (en light chat_entry_ride, lost the AXe automation session)
+  Tapiro Verify (en light bounty_status_states, failed)
+  Tapiro Verify 3 (en light chat_thread_long, failed)
+  Tapiro Verify 2 (en light chat_thread_long, failed)
+  Tapiro Verify 2 (en light ride_detail, failed)
+  Tapiro Verify 3 (en light ride_detail, failed)
+  Tapiro Verify 2 (en light ride_list, failed)
+  Tapiro Verify 2 (en light ride_meetup_stale, lost the AXe automation session)
+  Tapiro Verify (en light ride_list, failed)
+  Tapiro Verify (en light ride_settle_owing_night, failed)
+  Tapiro Verify 3 (en light ride_settle_owing, failed)
+  Tapiro Verify (en light ride_settle_owing, failed)
+  Tapiro Verify 3 (en light ride_settle_owing_night, failed)
+  Tapiro Verify 3 (en light ride_settle_worst, lost the AXe automation session)
+flaky: 3 runs failed first and passed only on the retry; the first run is kept in first-attempt/:
+  en light chat_entry_ride
+  en light ride_meetup_stale
+  en light ride_settle_worst
+Artifacts: .verify/ui-12h
+Tapiro Verify A5CC377F-F7C4-4AC8-9AE2-269111818C19 size=large 24h=0 12h=1
+Tapiro Verify 2 6E3235E4-D974-46C7-9846-D46A50D548DE size=large 24h=0 12h=1
+Tapiro Verify 3 E33C5A33-6A52-42D2-A6AD-40F9EED87350 size=large 24h=0 12h=1
+H12_DONE
