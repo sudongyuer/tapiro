@@ -7,6 +7,7 @@ import { decide } from './merge-gate.mjs';
 
 const SCRIPT = join(import.meta.dir, 'merge-when-green.sh');
 const HEAD = '0123456789abcdef0123456789abcdef01234567';
+const OLD = 'fedcba9876543210fedcba9876543210fedcba98';
 
 const run = (name: string, status: string, conclusion: string) => ({
   __typename: 'CheckRun',
@@ -56,6 +57,12 @@ describe('decide', () => {
     expect(decide(view)).toEqual({ verdict: 'fail', details: ['b: FAILURE'] });
   });
 
+  test('refuses checks that belong to a head other than the pushed one', () => {
+    expect(decide({ headRefOid: OLD, statusCheckRollup: [passed] }, HEAD).verdict).toBe('stale');
+    expect(decide({ statusCheckRollup: [passed] }, HEAD).verdict).toBe('stale');
+    expect(decide({ headRefOid: HEAD, statusCheckRollup: [passed] }, HEAD).verdict).toBe('pass');
+  });
+
   test('passes only when every check succeeded, skipped or was neutral', () => {
     const view = {
       statusCheckRollup: [
@@ -74,21 +81,28 @@ afterEach(() => {
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
-function fakeGh(rollups: unknown[][], checksExit: number) {
+type View = { head: string; rollup: unknown[] };
+
+function fakeGh(rollups: (unknown[] | View)[], checksExit: number) {
   const dir = mkdtempSync(join(tmpdir(), 'merge-when-green-'));
   dirs.push(dir);
-  rollups.forEach((rollup, i) =>
+  rollups.forEach((view, i) => {
+    const { head, rollup } = Array.isArray(view) ? { head: HEAD, rollup: view } : view;
     writeFileSync(
       join(dir, `view${i}.json`),
-      JSON.stringify({ headRefOid: HEAD, statusCheckRollup: rollup }),
-    ),
-  );
+      JSON.stringify({ headRefOid: head, statusCheckRollup: rollup }),
+    );
+  });
   writeFileSync(join(dir, 'count'), '0');
   const gh = `#!/usr/bin/env bash
 dir=${JSON.stringify(dir)}
 echo "$*" >> "$dir/calls"
 case "$1 $2" in
+  "api repos/sudongyuer/tapiro/git/ref/heads/fix/x") echo ${HEAD} ;;
   "pr view")
+    if [[ "$*" == *headRefName* ]]; then
+      echo '{"headRefName":"fix/x","headRepository":{"nameWithOwner":"sudongyuer/tapiro"}}'; exit 0
+    fi
     n=$(cat "$dir/count"); last=${rollups.length - 1}
     (( n > last )) && n=$last
     cat "$dir/view$n.json"; echo $(( $(cat "$dir/count") + 1 )) > "$dir/count" ;;
@@ -101,12 +115,12 @@ esac
   return dir;
 }
 
-function mergeWhenGreen(dir: string) {
+function mergeWhenGreen(dir: string, waitSeconds = '0') {
   const result = Bun.spawnSync(['bash', SCRIPT, '42'], {
     env: {
       ...process.env,
       PATH: `${dir}:${process.env.PATH}`,
-      MERGE_WAIT_FOR_CHECKS_SECONDS: '0',
+      MERGE_WAIT_FOR_CHECKS_SECONDS: waitSeconds,
       MERGE_POLL_SECONDS: '0',
     },
   });
@@ -120,6 +134,37 @@ describe('merge-when-green.sh', () => {
     expect(r.code).not.toBe(0);
     expect(r.merged).toBe(false);
     expect(r.calls).not.toContain('pr checks');
+  });
+
+  test('waits past the previous head and merges the pushed head once its checks are green', () => {
+    const stale = { head: OLD, rollup: [passed] };
+    const r = mergeWhenGreen(fakeGh([stale, stale, [], [passed]], 0), '30');
+    expect(r.code).toBe(0);
+    expect(r.calls).toContain(`pr merge 42 --squash --match-head-commit ${HEAD}`);
+  });
+
+  test('does not watch or merge while only the previous head has checks', () => {
+    const r = mergeWhenGreen(fakeGh([{ head: OLD, rollup: [passed] }], 0));
+    expect(r.code).not.toBe(0);
+    expect(r.merged).toBe(false);
+    expect(r.calls).not.toContain('pr checks');
+  });
+
+  test('does not merge when the head moves again during the watch', () => {
+    const r = mergeWhenGreen(fakeGh([[passed], { head: OLD, rollup: [passed] }], 0));
+    expect(r.code).not.toBe(0);
+    expect(r.merged).toBe(false);
+  });
+
+  test('does not merge when the head of the branch cannot be read', () => {
+    const dir = fakeGh([[passed]], 0);
+    writeFileSync(
+      join(dir, 'gh'),
+      readFileSync(join(dir, 'gh'), 'utf8').replace(`echo ${HEAD}`, 'exit 1'),
+    );
+    const r = mergeWhenGreen(dir);
+    expect(r.code).not.toBe(0);
+    expect(r.merged).toBe(false);
   });
 
   test('does not merge when the watch reports a failing check', () => {
