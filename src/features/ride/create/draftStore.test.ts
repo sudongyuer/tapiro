@@ -61,6 +61,22 @@ describe('ride draft store', () => {
     ).load('u');
     expect(draft).toMatchObject({ id: 'x', start: null, seats: 3, splitMode: 'tapiro' });
   });
+
+  test('a stored flight clock that is not HH:mm is dropped, an HH:mm one kept', () => {
+    const load = (flightClock: string) => {
+      const settings = memorySettings();
+      settings.set({
+        'tapiro.rideDraft.u': JSON.stringify({ id: 'x', airportOpen: true, flightClock }),
+      });
+      return createRideDraftStore(
+        settings,
+        () => 'new',
+        () => 'MYR',
+      ).load('u').flightClock;
+    };
+    expect(load('9:10 AM')).toBeNull();
+    expect(load('09:10')).toBe('09:10');
+  });
 });
 
 describe('recent routes', () => {

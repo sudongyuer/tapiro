@@ -12,7 +12,7 @@ import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { deviceDecimal } from '@/lib/deviceDecimal';
-import { localClock } from '@/lib/deviceClock';
+import { localClock, wallClockText } from '@/lib/deviceClock';
 
 import { whenText } from '../ticketView';
 import type { RideDraft } from './draft';
@@ -43,6 +43,7 @@ export function SummarySection({ draft, now }: { draft: RideDraft; now: number }
   const estimate = parseEstimate(draft.estimateText, draft.currency, deviceDecimal());
   const each = draftPerPerson(draft, deviceDecimal());
   const bags = bagsLine(draft, t);
+  const flight = draft.airportOpen && draft.flightClock ? wallClockText(draft.flightClock) : null;
   return (
     <Section>
       <Row
@@ -79,12 +80,8 @@ export function SummarySection({ draft, now }: { draft: RideDraft; now: number }
         )}
         testID="ride-confirm-split"
       />
-      {draft.airportOpen && draft.flightClock ? (
-        <Row
-          label={t('ride.create.confirm.flight')}
-          value={draft.flightClock}
-          testID="ride-confirm-flight"
-        />
+      {flight ? (
+        <Row label={t('ride.create.confirm.flight')} value={flight} testID="ride-confirm-flight" />
       ) : null}
       {bags ? (
         <Row label={t('ride.create.confirm.bags')} value={bags} testID="ride-confirm-bags" />

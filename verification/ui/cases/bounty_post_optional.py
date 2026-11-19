@@ -35,6 +35,10 @@ def picker_value(items, identifier):
                  if i.get('type') == 'Button' and inside(i['frame']) and i.get('AXValue')), None)
 
 
+def date_part(value):
+    return value.partition(',')[2].strip()
+
+
 def counter(identifier, count, maximum):
     expected = ui.t('bounty.post.form.countLabel', count=count, max=maximum)
     ui.wait_label(identifier, lambda label: label == expected, f'{identifier} does not read {expected!r}')
@@ -76,8 +80,9 @@ items = ui.read()
 assert by_id(items, 'bounty-post-deadline') is None, '截止 still shown after choosing 时间段'
 values = [picker_value(items, identifier) or '' for identifier in ('bounty-post-start', 'bounty-post-end')]
 window = [picker_time(value) for value in values]
-dates = [value.partition(',')[2].strip() for value in values]
-assert dates[0] == dates[1], f'开始 and 结束 on one day write the date differently: {dates} (BP-13)'
+day = date_part(after)
+dates = [date_part(value) for value in values]
+assert dates == [day, day], f'开始 and 结束 do not write tomorrow as 截止 did ({day!r}): {dates} (BP-13)'
 assert all(':' in shown for shown in window), f'the window pickers show no time: {window}'
 # The live card heads the form; in ms the longer rows leave it scrolled off, out of the tree.
 form_scroll_to(ui, 'bounty-post-live-text', up=True)
@@ -88,6 +93,7 @@ ui.tap_label(ui.t('bounty.post.form.deadline'))
 ui.element('bounty-post-deadline')
 ui.gone('bounty-post-start')
 chosen = ui.wait(lambda items: picker_value(items, 'bounty-post-deadline'), 'deadline picker has no value')
+assert date_part(chosen) == day, f'截止 shown again writes tomorrow as {date_part(chosen)!r}, not {day!r} (BP-13)'
 
 form_scroll_to(ui, 'bounty-post-add-description')
 ui.tap('bounty-post-add-description')

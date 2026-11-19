@@ -30,6 +30,24 @@ export function localClock(time: number, language = clockStyle.language) {
   return new Intl.DateTimeFormat(language, clockOptions()).format(date);
 }
 
+export function wallClock(time: number) {
+  const date = new Date(time);
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function parseWallClock(clock: string) {
+  const match = /^(\d{2}):(\d{2})$/.exec(clock);
+  if (!match) return null;
+  const [hours, minutes] = [Number(match[1]), Number(match[2])];
+  return hours < 24 && minutes < 60 ? { hours, minutes } : null;
+}
+
+export function wallClockText(clock: string) {
+  const parsed = parseWallClock(clock);
+  if (!parsed) return null;
+  return localClock(localTimeOn(localDayKey(Date.now()), parsed.hours, parsed.minutes));
+}
+
 export function localTimeOn(dayKey: string, hours: number, minutes: number) {
   return dateOf(dayKey, hours, minutes).getTime();
 }

@@ -1,3 +1,4 @@
+import { parseWallClock } from '@/lib/deviceClock';
 import type { CurrencyCode } from '@/lib/money';
 import type { SettingsLike } from '@/features/place/originStore';
 
@@ -75,6 +76,10 @@ export function restoreDraft(value: unknown, fallback: RideDraft): RideDraft {
     ...stored,
     start: isPlace(stored.start) ? stored.start : null,
     dest: isPlace(stored.dest) ? stored.dest : null,
+    flightClock:
+      typeof stored.flightClock === 'string' && parseWallClock(stored.flightClock)
+        ? stored.flightClock
+        : null,
   };
 }
 

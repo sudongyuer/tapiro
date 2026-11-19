@@ -8,7 +8,6 @@ TIME = re.compile(r'\d{1,2}:\d{2}')
 TIME_REGEX = re.compile(r'\\d(?:\{1,2\}|\{2\}|\+)\[?:')
 EXEMPT = {
     ('ride_create_form.py', r'\d{2}:\d{2}'): 'asserts the quick time is not in 24-hour form',
-    ('ride_create_confirm.py', '09:10'): 'the confirm sheet shows the stored HH:mm flight time in both cycles',
 }
 
 

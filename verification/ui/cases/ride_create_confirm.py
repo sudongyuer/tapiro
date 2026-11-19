@@ -1,10 +1,12 @@
 """确认发布 (206 A) with a kept airport draft: ＋ opens the form directly, 下一步 shows the ticket, 出发 / 集合 / 一共 /
 全程约 · 每人约 / 车费怎么分 / 航班 / 行李 rows and 「本月免费 · 还剩 2/3」 with the refund rule; 发出去 closes the sheet and
 the new ticket leads 我的拼车."""
+import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, by_id  # noqa: E402
+from driver import UI, by_id, plain  # noqa: E402
+from hourcycle import clock_at  # noqa: E402
 from ride import open_confirm, open_list  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/ride-create/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py',
@@ -18,13 +20,15 @@ items = ui.read()
 expect = {
     'ride-confirm-seats': ui.t('ride.create.confirm.seatsValue', count=4),
     'ride-confirm-split': ui.t('ride.create.form.splitTapiro'),
-    'ride-confirm-flight': '09:10',
+    'ride-confirm-flight': clock_at(9, 10),
     'ride-confirm-bags': ui.tn('ride.ticket.bags', 2),
     'ride-confirm-fee': ui.t('ride.create.confirm.free', left=2, of=3),
 }
 for identifier, value in expect.items():
     row = by_id(items, identifier)
-    assert row and value in (row.get('AXLabel') or ''), f'{identifier}: {row and row.get("AXLabel")}'
+    found = row and (re.search(value, plain(row.get('AXLabel') or '')) if identifier == 'ride-confirm-flight'
+                     else value in (row.get('AXLabel') or ''))
+    assert found, f'{identifier}: {row and row.get("AXLabel")}'
 estimate = by_id(items, 'ride-confirm-estimate')
 assert estimate and '76' in estimate.get('AXLabel', '') and '19' in estimate.get('AXLabel', ''), \
     estimate and estimate.get('AXLabel')

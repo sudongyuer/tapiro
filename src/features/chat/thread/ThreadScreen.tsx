@@ -43,6 +43,7 @@ const KEYBOARD_GAP = space.sm;
 const KEEP_POSITION = { minIndexForVisible: 0 };
 // The first page renders whole and stays transparent until it has scrolled to its end, so it opens at the newest message.
 const FIRST_RENDER = PAGE_SIZE;
+const OPENING_MS = 1500;
 
 const keyOf = (row: BubbleRow) => row.key;
 
@@ -87,14 +88,26 @@ export function ThreadScreen({
   const scroll = useRef<KeyboardChatScrollViewRef>(null);
   const pinned = useRef(true);
   const dragging = useRef(false);
+  const opening = useRef(true);
   const [shown, setShown] = useState(false);
   const extraContentPadding = useSharedValue(0);
   const offset = bottom - KEYBOARD_GAP;
 
+  // On open the list was sometimes found at its top although it had been told to scroll to the end (en, 12-hour,
+  // 2026-11-19). While the thread opens, a pinned list that loses the end without a drag goes back; after that, a
+  // scroll to the top from the status bar must stay where it went.
   const onEndVisible = useCallback((visible: boolean) => {
     if (visible) pinned.current = true;
     else if (dragging.current) pinned.current = false;
+    else if (pinned.current && opening.current) scroll.current?.scrollToEnd({ animated: false });
   }, []);
+  useEffect(() => {
+    if (!shown) return;
+    const timer = setTimeout(() => {
+      opening.current = false;
+    }, OPENING_MS);
+    return () => clearTimeout(timer);
+  }, [shown]);
 
   const renderScrollComponent = useCallback(
     (props: ScrollViewProps) => (
@@ -197,6 +210,7 @@ export function ThreadScreen({
           }}
           onScrollBeginDrag={() => {
             dragging.current = true;
+            opening.current = false;
             pinned.current = false;
           }}
           onScrollEndDrag={() => {

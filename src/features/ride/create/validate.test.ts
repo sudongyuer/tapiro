@@ -120,6 +120,11 @@ describe('ride draft', () => {
     });
   });
 
+  test('a flight clock written in a 12-hour form is not read as a time', () => {
+    expect(flightTime('2026-11-02T22:30:00.000Z', '9:10 AM')).toBeNull();
+    expect(flightTime('2026-11-02T22:30:00.000Z', '上午9:10')).toBeNull();
+  });
+
   test('the flight clock is read in the device zone', () => {
     inTimeZone('Europe/London', () => {
       expect(flightTime('2026-11-02T22:30:00.000Z', '09:10')).toBe('2026-11-03T09:10:00.000Z');

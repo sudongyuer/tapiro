@@ -914,3 +914,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-18 | a11y large text + labels                | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | a11y checks + tour                      | 0                  | 1             | ~40 min (40-case audit before the tour)          | 0                       | 0                     |
 | 2026-11-18 | ride ticket status wrap                 | 0                  | 1             | ~35 min (proof build, dot loop round)            | 0                       | 0                     |
+| 2026-11-19 | BP-13, chat 12-hour, flight time         | 3                  | 2             | ~150 min (failed BP-13 fixes, empty probes)      | 0                       | 0                     |
