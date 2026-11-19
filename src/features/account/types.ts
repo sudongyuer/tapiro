@@ -46,7 +46,7 @@ export type IdTokenResult =
 
 export type IdTokenProvider = {
   requestIdToken(): Promise<IdTokenResult>;
-  forget?(): Promise<void>;
+  forget?(reason: 'signOut' | 'deleted'): Promise<void>;
 };
 
 export type ProviderAdapters = Partial<Record<AuthProvider, IdTokenProvider>>;

@@ -17,6 +17,7 @@ const ids: GoogleClientIds = {
 function fakeGoogle(signIn: () => Promise<GoogleSignInResponse>) {
   const configured: GoogleClientIds[] = [];
   let signedOut = 0;
+  const calls: string[] = [];
   const google: GoogleSignInModule = {
     configure: (options) => {
       configured.push(options);
@@ -24,9 +25,13 @@ function fakeGoogle(signIn: () => Promise<GoogleSignInResponse>) {
     signIn,
     signOut: async () => {
       signedOut += 1;
+      calls.push('signOut');
+    },
+    revokeAccess: async () => {
+      calls.push('revokeAccess');
     },
   };
-  return { google, configured, signedOuts: () => signedOut };
+  return { google, configured, signedOuts: () => signedOut, calls };
 }
 
 const rejecting = (code: string) => async (): Promise<GoogleSignInResponse> => {
@@ -80,12 +85,19 @@ describe('google ID token provider', () => {
   });
 });
 
-test('forget signs out of Google even before this launch configured it, and never throws', async () => {
-  const { google, signedOuts } = fakeGoogle(async () => ({ type: 'cancelled', data: null }));
-  await createGoogleIdTokenProvider(google, ids).forget?.();
-  expect(signedOuts()).toBe(1);
-  const failing = { ...google, signOut: async () => Promise.reject(new Error('keychain')) };
-  await createGoogleIdTokenProvider(failing, ids).forget?.();
+test('forget signs out of Google, revokes access only after deletion, and never throws', async () => {
+  const signOut = fakeGoogle(async () => ({ type: 'cancelled', data: null }));
+  await createGoogleIdTokenProvider(signOut.google, ids).forget?.('signOut');
+  expect(signOut.calls).toEqual(['signOut']);
+  const deleted = fakeGoogle(async () => ({ type: 'cancelled', data: null }));
+  await createGoogleIdTokenProvider(deleted.google, ids).forget?.('deleted');
+  expect(deleted.calls).toEqual(['revokeAccess', 'signOut']);
+  const failing = {
+    ...deleted.google,
+    revokeAccess: async () => Promise.reject(new Error('no session')),
+    signOut: async () => Promise.reject(new Error('keychain')),
+  };
+  await createGoogleIdTokenProvider(failing, ids).forget?.('deleted');
 });
 
 const schemes = ['tapiro', 'app.tapiro', 'com.googleusercontent.apps.123-ios'];
@@ -112,4 +124,17 @@ describe('google client IDs', () => {
       readGoogleClientIds(ids.iosClientId, ids.webClientId, ['com.googleusercontent.apps.999-old']),
     ).toBeNull();
   });
+});
+
+test('the prebuild plugin registers the same URL scheme the runtime looks for', () => {
+  const plugin: {
+    googleUrlScheme(clientId: string): string;
+  } = require('../../../plugins/withGoogleSignIn.js');
+  for (const clientId of [ids.iosClientId, '1234567890-abc_DEF.apps.googleusercontent.com']) {
+    expect(plugin.googleUrlScheme(clientId)).toBe(googleUrlScheme(clientId));
+  }
+  expect(() => plugin.googleUrlScheme('com.googleusercontent.apps.123-ios')).toThrow();
+  expect(
+    readGoogleClientIds('com.googleusercontent.apps.123-ios', ids.webClientId, schemes),
+  ).toBeNull();
 });

@@ -4,7 +4,7 @@ date: 2026-11-19
 pr: Real Sign in with Apple and Google Sign-In adapters; both providers on the local stack
 title: adapters had waited for the paid team since step 1; built as far as Simulator and stack tests prove
 escaped: 0
-rework: 4
+rework: 5
 interventions: 0
 overturned: 0
 ---
@@ -44,6 +44,9 @@ overturned: 0
   `git status` before every commit (CLAUDE.md already says so). Tag `glob-format`.
 - I told the reviewer a missing URL scheme only fails because the library has `@try`; the `@try` is under `#if DEBUG`.
   Read the preprocessor guards around a catch before relying on it. Tag `debug-only-guard`.
+- Two story-map edits silently did nothing: exact-string replacement against a Prettier-padded table never matches,
+  and my script did not assert the replacement happened. Edit table rows by id, and assert each replacement. Tag
+  `padded-table-edit`.
 - My first `/code-review` without a target reviewed the previous merged PR, because the main checkout was the cwd.
   Pass the PR number. Tag `review-target`.
 - Supabase CLI 2.x moved its Go sources under `apps/cli-go/`; `env()` that is unset only warns, so enabling a provider

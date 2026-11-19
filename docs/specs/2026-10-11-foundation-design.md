@@ -481,7 +481,7 @@ PR: not opened yet · Commits: 51aa12c..0b76203 (branch `feat/welcome`). Steps 3
 
 ### Verification
 
-- `bun test` → 194 pass; `bunx tsc --noEmit`, `bun run lint -- <changed files>`, `bun run format:check`,
+- `bun test` → 3036 pass; `bunx tsc --noEmit`, `bun run lint -- <changed files>`, `bun run format:check`,
   `node scripts/design-check.mjs` → exit 0 (2026-10-15)
 - Full `bun run verify:ui` → 90/90 pass in 41 min 14 s (build before 0b76203); `welcome_legal` after 0b76203 → 4/4
   light and dark, zh-Hans and ms. New cases: `welcome_a`, `welcome_legal`, `onboarding_moment`, `onboarding_language_moment`.
@@ -932,11 +932,13 @@ Apple/Google adapters wait for the accounts"). The paid account arrived on 2026-
   scopes, the raw value to Supabase; `ERR_REQUEST_CANCELED` → `cancelled`, every other error or a missing identity
   token → `failed`; the one-time name joined family-first without a space for Han names. Evidence:
   `src/features/account/appleIdToken.ts`, `src/features/account/nonce.ts`.
-- Google adapter on `@react-native-google-signin/google-signin` 17.0.0 (`bunx expo install`): configured once with the
-  iOS and web client IDs, `cancelled` response or `SIGN_IN_CANCELLED` → `cancelled`, others → `failed`. Registered only
-  when `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` both hold `*.apps.googleusercontent.com`
-  values; otherwise Google stays `notConfigured`. Evidence: `src/features/account/googleIdToken.ts`,
-  `src/features/account/providers.ts`.
+- Google adapter on `@react-native-google-signin/google-signin` 17.0.0 (`bunx expo install`): configured with the iOS
+  and web client IDs before every attempt; a `cancelled` response → `cancelled` (the library turns the native cancel
+  into it), any throw → `failed`. Built only when both `EXPO_PUBLIC_GOOGLE_*` IDs hold `*.apps.googleusercontent.com`
+  values and the app registers the reversed iOS client ID as a URL scheme (kit `registeredUrlSchemes()`); otherwise
+  the sign-in screen does not show Google (S7). Sign-out signs out of Google; deletion revokes access, then signs out
+  (S8). Adapters are created only outside verify mode. Evidence: `src/features/account/googleIdToken.ts`,
+  `src/features/account/providers.ts`, `src/features/account/authService.ts`.
 - App config: `ios.appleTeamId: "4RML7RLKML"` (the owner's personal team, owner 2026-11-19); `ios.usesAppleSignIn: true`; `plugins/withoutAppleSignInEntitlement.js` removed;
   `plugins/withGoogleSignIn.js` adds the reversed client ID URL scheme from `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` at prebuild
   and fails prebuild on a malformed value. `.env.example` lists both variables.
@@ -955,7 +957,7 @@ Apple/Google adapters wait for the accounts"). The paid account arrived on 2026-
 | S5  | East Asian names (Han, Hangul, kana) joined family + given without a space                                                                         | Apple returns parts; 「小貘 林」 would be wrong for most users. Mixed scripts and Latin names stay given, middle, family with spaces.                                                                                                                                                    |
 | S6  | Google client IDs from `EXPO_PUBLIC_GOOGLE_*`, not committed in `app.json`                                                                         | They are public but owner-specific and not yet issued; prebuild and Metro load `.env`, so one place feeds both the URL scheme and the runtime IDs. Unset means the app builds and Google shows the existing 「登录还没配置好」 line.                                                     |
 | S7  | The Google button is hidden unless the build has both Google client IDs and registers the reversed iOS client ID as a URL scheme                   | A build without the clients would show a button that always fails; a build prebuilt without the scheme would crash in release, because GoogleSignIn's NSException is caught only in DEBUG (`RNGoogleSignin.mm:135-147`). The kit's `registeredUrlSchemes()` reads Info.plist at runtime. |
-| S8  | Tapiro sign-out and account deletion also sign out of Google on the device                                                                         | The GoogleSignIn keychain entry would otherwise keep the previous user's Google session (review of #189); `signIn()` still always shows Google's account sheet.                                                                                                                          |
+| S8  | Tapiro sign-out signs out of Google on the device; account deletion also revokes Tapiro's Google access                                            | The GoogleSignIn keychain entry would otherwise keep the previous user's session, and a deleted account would keep its Google grant (reviews of #189).                                                                                                                                   |
 | S9  | Apple token revocation on account deletion is a follow-up, before App Store submission                                                             | Guideline 5.1.1(v) asks apps with Sign in with Apple to revoke tokens through Apple's REST API on deletion. That needs a Sign in with Apple private key (owner) and a server exchange of the authorization code; TestFlight internal testing does not go through App Review.             |
 | S10 | Apple's one-time name is kept in memory, bound to the provider and Apple `user` subject; it survives a sign-out and is dropped on account deletion | The token result carries `account: { subject, fullName? }`, so a name cannot exist without its owner and never lands on another account (re-reviews of #189). Persisting it to the Keychain would outlive the launch; the name step still asks when the prefill is lost.                 |
 
@@ -973,7 +975,8 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
 - **Symptom (review of #189):** Apple's one-time name was lost when the token exchange failed or `updateUser` returned
   an error (it resolves `{ error }`, it does not throw). **Fix:** the service keeps the name until a save succeeds.
   The re-review found that this first fix could save it on another account (another provider, or after sign-out);
-  the pending name is now bound to the provider and the Apple `user` subject and cleared on sign-out and deletion (S10).
+  the pending name is now bound to the provider and the Apple `user` subject; another account's sign-in leaves it alone,
+  and only a successful save or account deletion clears it (S10).
 - **Symptom (re-review of #189):** a rejected native `configure` would make every later Google attempt fail until
   restart. **Root cause:** the library stores configure's promise and awaits it in `signIn`; the adapter configured
   once. **Fix:** configure before every attempt.
@@ -997,6 +1000,8 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
 - `bun run verify:smoke` → 4 of 4 pass (`app_launches`, `sign_in_fixture`, `shell_tabs`, `home_one_card`, zh-Hans light).
   Selection: no screen layout or copy changed; the native config (entitlement, GoogleSignIn pod, URL scheme) can only
   break launch or the sign-in screen, which the smoke set covers.
+- `ui:sign_in_apple_only` (launch argument `-uiVerifyProviders apple`): fails on the build before this change
+  (「sign-in-google is still on screen」), passes after it.
 - After the review fixes (Google button conditional, kit `registeredUrlSchemes`): rebuilt, `verify:smoke` → 4 of 4
   pass and `sign_in_fixture` in ms light → pass. `providers.ts` calls the kit function at load, in verify mode too.
 - `bun test` → 3031 pass; `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `check-story-map` → pass.

@@ -9,6 +9,7 @@ export type GoogleSignInModule = {
   configure(options: GoogleClientIds): void;
   signIn(): Promise<GoogleSignInResponse>;
   signOut(): Promise<unknown>;
+  revokeAccess(): Promise<unknown>;
 };
 
 const PUBLIC_CLIENT_ID = /^[\w-]+\.apps\.googleusercontent\.com$/;
@@ -50,7 +51,8 @@ export function createGoogleIdTokenProvider(
         return { ok: false, reason: 'failed' };
       }
     },
-    async forget() {
+    async forget(reason) {
+      if (reason === 'deleted') await google.revokeAccess().catch(() => {});
       await google.signOut().catch(() => {});
     },
   };

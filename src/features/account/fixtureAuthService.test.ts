@@ -66,3 +66,10 @@ describe('fixture auth service', () => {
     expect(fixtureDeletion('blockedMany')).toBe('blockedMany');
   });
 });
+
+test('verify mode can leave a provider out of the sign-in screen', () => {
+  expect(createFixtureAuthService().isAvailable('google')).toBe(true);
+  const appleOnly = createFixtureAuthService({ providers: ['apple'] });
+  expect(appleOnly.isAvailable('apple')).toBe(true);
+  expect(appleOnly.isAvailable('google')).toBe(false);
+});

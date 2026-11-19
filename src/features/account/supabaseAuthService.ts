@@ -24,8 +24,8 @@ export function createSupabaseAuthService(
   adapters: ProviderAdapters,
 ): AuthService {
   const store = createSessionStore(client ? { status: 'loading' } : { status: 'signedOut' });
-  const forgetProviders = () =>
-    Promise.all(Object.values(adapters).map((adapter) => adapter.forget?.().catch(() => {})));
+  const forgetProviders = (reason: 'signOut' | 'deleted') =>
+    Promise.all(Object.values(adapters).map((adapter) => adapter.forget?.(reason).catch(() => {})));
   // Apple sends the name only on the first authorisation. Keep it across failed attempts and sign-outs, but write it
   // only to the same provider account, so one person's name cannot land on another account.
   let pendingName: { provider: AuthProvider; subject: string; fullName: string } | null = null;
@@ -53,9 +53,8 @@ export function createSupabaseAuthService(
         const result = await exchangeIdToken(client, provider, token);
         if (!result.ok) return result;
         const name = pendingName;
-        pendingName = null;
-        if (name && name.provider === provider && name.subject === subject) {
-          if (!(await saveFullName(client, name.fullName))) pendingName = name;
+        if (name?.provider === provider && name.subject === subject) {
+          if (await saveFullName(client, name.fullName)) pendingName = null;
         }
         return result;
       } catch {
@@ -76,7 +75,7 @@ export function createSupabaseAuthService(
 
     async signOut() {
       await client?.auth.signOut({ scope: 'local' }).catch(() => {});
-      await forgetProviders();
+      await forgetProviders('signOut');
     },
 
     async deleteAccount() {
@@ -96,7 +95,7 @@ export function createSupabaseAuthService(
       if (error) return { ok: false, reason: 'failed' };
       pendingName = null;
       await client.auth.signOut({ scope: 'local' });
-      await forgetProviders();
+      await forgetProviders('deleted');
       return { ok: true };
     },
   };

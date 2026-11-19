@@ -237,6 +237,28 @@ describe('supabase auth service', () => {
     expect(updateUser).toHaveBeenCalledTimes(1);
   });
 
+  test("another account's sign-in does not throw away a pending name", async () => {
+    const { client, signInWithIdToken, updateUser } = fakeClient();
+    let appleCalls = 0;
+    const apple: IdTokenProvider = {
+      requestIdToken: async () => ({
+        ok: true,
+        idToken: 'a',
+        account: appleCalls++ === 0 ? { subject: 'a1', fullName: '林小貘' } : { subject: 'a1' },
+      }),
+    };
+    const google: IdTokenProvider = { requestIdToken: async () => ({ ok: true, idToken: 'g' }) };
+    const service = createSupabaseAuthService(client, { apple, google });
+    signInWithIdToken.mockImplementationOnce(async () => ({
+      error: new AuthRetryableFetchError('offline', 0),
+    }));
+    await service.signIn('apple');
+    await service.signIn('google');
+    await service.signOut();
+    await service.signIn('apple');
+    expect(updateUser.mock.calls).toEqual([[{ data: { full_name: '林小貘' } }]]);
+  });
+
   test('only providers with an adapter are available', () => {
     const service = createSupabaseAuthService(null, { apple });
     expect(service.isAvailable('apple')).toBe(true);
@@ -245,20 +267,20 @@ describe('supabase auth service', () => {
 
   test('signing out and deleting the account forget every provider session', async () => {
     const { client, emit } = fakeClient();
-    let forgotten = 0;
+    const reasons: string[] = [];
     const google: IdTokenProvider = {
       requestIdToken: async () => ({ ok: false, reason: 'cancelled' }),
-      forget: async () => {
-        forgotten += 1;
-        if (forgotten === 1) throw new Error('keychain');
+      forget: async (reason) => {
+        reasons.push(reason);
+        if (reasons.length === 1) throw new Error('keychain');
       },
     };
     const service = createSupabaseAuthService(client, { apple, google });
     await service.signOut();
-    expect(forgotten).toBe(1);
+    expect(reasons).toEqual(['signOut']);
     emit(session);
     expect(await service.deleteAccount()).toEqual({ ok: true });
-    expect(forgotten).toBe(2);
+    expect(reasons).toEqual(['signOut', 'deleted']);
   });
 
   test('signs in with an email and password', async () => {
