@@ -1,4 +1,5 @@
 import ExpoModulesCore
+import ExpoUI
 import UIKit
 
 public final class TapiroKitModule: Module {
@@ -86,6 +87,8 @@ public final class TapiroKitModule: Module {
     }
 
     View(PinnedBarView.self)
+
+    ExpoUIView(DateTimeRowView.self)
 
     View(ContextMenuView.self) {
       Events("onAction")

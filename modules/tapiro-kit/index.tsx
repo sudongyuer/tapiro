@@ -1,4 +1,5 @@
 import { NativeModule, requireNativeModule, requireNativeView } from 'expo';
+import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewProps, ViewStyle } from 'react-native';
 
@@ -213,6 +214,44 @@ const NativePinnedBar = requireNativeView<{ header?: boolean; children: ReactNod
 
 export function PinnedBar({ header, children }: { header?: boolean; children: ReactNode }) {
   return <NativePinnedBar header={header}>{children}</NativePinnedBar>;
+}
+
+type NativeDateTimeRowProps = {
+  title: string;
+  selection: string;
+  range: { start: string; end: string };
+  testID: string;
+  modifiers: ModifierConfig[];
+  onDateChange(event: NativeSyntheticEvent<{ date: number }>): void;
+};
+
+const NativeDateTimeRow = requireNativeView<NativeDateTimeRowProps>('TapiroKit', 'DateTimeRowView');
+
+export function DateTimeRow({
+  title,
+  selection,
+  range,
+  testID,
+  modifiers = [],
+  onDateChange,
+}: {
+  title: string;
+  selection: Date;
+  range: { start: Date; end: Date };
+  testID: string;
+  modifiers?: ModifierConfig[];
+  onDateChange(date: Date): void;
+}) {
+  return (
+    <NativeDateTimeRow
+      title={title}
+      selection={selection.toISOString()}
+      range={{ start: range.start.toISOString(), end: range.end.toISOString() }}
+      testID={testID}
+      modifiers={modifiers}
+      onDateChange={(event) => onDateChange(new Date(event.nativeEvent.date))}
+    />
+  );
 }
 
 export type ContextMenuAction = {

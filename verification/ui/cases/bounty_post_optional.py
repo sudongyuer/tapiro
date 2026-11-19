@@ -9,11 +9,17 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import close_sheet_by_swipe, dismiss_keyboard, fill_fixed, form_scroll_to, open_post, relaunch, typed  # noqa: E402
 from driver import UI, by_id, picker_time, plain  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/lib/deviceClock.ts', 'src/lib/i18n/index.tsx', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/',
+        'src/lib/verifyToday.ts', 'modules/tapiro-kit/ios/DateTimeRowView.swift']
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-AppleICUForce12HourTime', 'YES']
+# 明天 moves the deadline from the 9th to the wider 10th in every locale, the day BP-13 shows; before 22:00 the added
+# deadline stays on the 9th.
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-AppleICUForce12HourTime', 'YES',
+        '-uiVerifyToday', '2026-12-09']
+LOCAL_HOURS = [10, 11, 12, 13, 14, 15, 16]
 BUDGET = 300
 WORST_TITLE = '帮忙从 Mid Valley Megamall 取 Uniqlo 外套再买两杯 Tealive 🧋送到 Sunway 楼'
 NOTE = 'Parcel at the door'
@@ -21,7 +27,7 @@ NOTE = 'Parcel at the door'
 ui = UI(*sys.argv[1:])
 
 
-def picker_value(items, identifier):
+def picker_button(items, identifier):
     group = by_id(items, identifier)
     if not group:
         return None
@@ -31,8 +37,12 @@ def picker_value(items, identifier):
         x, y = f['x'] + f['width'] / 2, f['y'] + f['height'] / 2
         return g['x'] <= x <= g['x'] + g['width'] and g['y'] <= y <= g['y'] + g['height']
 
-    return next((i.get('AXValue') for i in items
-                 if i.get('type') == 'Button' and inside(i['frame']) and i.get('AXValue')), None)
+    return next((i for i in items if i.get('type') == 'Button' and inside(i['frame']) and i.get('AXValue')), None)
+
+
+def picker_value(items, identifier):
+    button = picker_button(items, identifier)
+    return button.get('AXValue') if button else None
 
 
 def date_part(value):
@@ -57,8 +67,13 @@ ui.element('bounty-post-deadline')
 ui.element('bounty-post-remove-time')
 ui.gone('bounty-post-add-time')
 before = ui.wait(lambda items: picker_value(items, 'bounty-post-deadline'), 'deadline picker has no value')
-row = form_scroll_to(ui, 'bounty-post-deadline')['frame']
-ui.tap_point(row['x'] + 40, row['y'] + row['height'] / 2)
+form_scroll_to(ui, 'bounty-post-deadline')
+# The picker element spans the row beside its title and draws its buttons at the trailing edge; tap the date's ink.
+row = picker_button(ui.read(), 'bounty-post-deadline')['frame']
+date_ink = find(lines_in(ui.snap('02-deadline'), ui.locale), r'2026', row)
+assert date_ink, f'no date text read in the deadline picker at {row}'
+date_ink = min(date_ink, key=lambda line: line['x'])
+ui.tap_point(date_ink['x'] + date_ink['width'] / 2, date_ink['y'] + date_ink['height'] / 2)
 days = ui.wait(lambda items: [i for i in items if i.get('type') == 'Button' and not i.get('AXUniqueId')
                               and 40 <= i['frame']['width'] <= 48
                               and 36 <= i['frame']['height'] <= 50] or None, 'the calendar did not open')

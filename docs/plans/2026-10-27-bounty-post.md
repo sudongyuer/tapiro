@@ -720,6 +720,28 @@ oldest unpaid payment; the preview has no poster line or distance; an empty draf
     selection, or an `@expo/ui` patch that re-measures on appear; the bug stays open in `docs/status.md` 0g.
     `bounty_post_optional` now also checks 截止 shown again against the date 截止 wrote after 明天, and fails (as
     before) on days whose tomorrow writes wider than today.
+27. BP-13's date half fixed in the kit (2026-11-19, `fix/bp13-date-row`). ★ for veto: the post form's three date rows
+    (截止, 开始, 结束) are `DateTimeRow` from `tapiro-kit`: a SwiftUI row (`DateTimeRowView.swift`, registered with
+    `@expo/ui`'s `ExpoUIView` so it sits in the form's `Form` and takes its modifiers) that hosts the system compact
+    `UIDatePicker` beside the title. Measured cause (a probe that logged each picker's `sizeThatFits` and fitting size
+    through 明天 → 时间段 → 截止 → 时间段): a compact `UIDatePicker` reports the fitting width of the text it showed
+    before a new date reaches its label. A picker created or moved to the 20th still measured 253.3 pt, the width of
+    「2026年11月19日」, against 255.7 pt needed; laid out at that width it switches to its short style and from then on
+    measures the short style (263.7 pt for 「晚上10:00, 20/11/26」), so it never grows back. Sized to fit by SwiftUI the
+    bug stayed (own representable, with or without `layoutIfNeeded` before measuring; a fresh off-screen picker
+    measured the same stale 253.3 pt). The fix: the picker takes the whole width SwiftUI proposes beside the title
+    (288 pt in zh-Hans) instead of its fitting width, so it never runs short of room; every step then read the long
+    date, and the compact picker draws its buttons against the trailing edge where SwiftUI's `DatePicker` drew them.
+    Not a drawn picker: the buttons, calendar and wheel are the system's. Its accessibility element now spans that
+    width, so `bounty_post_optional` opens the calendar by tapping the date text it reads with OCR inside the
+    element, not the element's left edge plus 40 pt.
+    - Determinism: `-uiVerifyToday YYYY-MM-DD` (verify builds only, `src/lib/verifyToday.ts`) moves JS time by whole
+      days; native views keep the real date. `bounty_post_optional` pins 2026-12-09, so 明天 moves the deadline from
+      the 9th to the wider 10th in every locale, with `LOCAL_HOURS` 10–16 keeping the added deadline on the 9th. On
+      the old form the case failed both attempts (「10/12/26」 beside 「2026年12月10日」).
+    - Same pattern left as is: `DatePicker` (compact) in `ride/create/FormTime.tsx`, `ride/create/FormDetails.tsx`,
+      `ride/detail/EditSheets.tsx` and `bounty/status/EtaSheet.tsx`. Not measured there; each can move to
+      `DateTimeRow` (it would need a hidden-label variant) when a case shows the short style.
 ## Not in this plan
 
 | Item | Owning step |

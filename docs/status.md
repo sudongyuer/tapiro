@@ -199,11 +199,7 @@ core-screen tour).
      `payee_add_bank` and `ask_memory_page` type again once when a value reads wrong; `ocr.same` ignores how a truncated
      line ends; `paste_into` leaves the app and comes back before its retry (stale paste in `account_flow` and
      `bounty_post_place`; not exercised in the reruns). All passed on the rerun build (57 runs; flaky ones were lost
-     sessions). Open: BP-13 fails every run when 明天 writes wider than today (开始 「20/11/26」 beside 结束 「2026年11月20日」 on
-     11-19, all locales). Measured on `fix/bp13-chat-12h` (ruling 26 of the bounty post plan): the compact picker's
-     date button keeps an earlier width (154 pt for the 19th; the 20th needs 156.3 pt) across mounts, so neither the
-     `@expo/ui` `Date()` start nor a remount key is the cause; starting the range at the selection was inconclusive.
-     Next: a kit date row or an `@expo/ui` patch that re-measures on appear. The case now also checks 截止 shown again.
+     sessions). BP-13 fixed on `fix/bp13-date-row` (ruling 27 of the bounty post plan): the post form's date rows are the kit's `DateTimeRow`, a system compact `UIDatePicker` given the whole width beside its title, because a compact picker sized to fit measures the text of its previous date and falls back to the short style; `bounty_post_optional` pins the day to 12-09 (`-uiVerifyToday`) and failed on the old form.
      `review_sheet` en dark (Submit did nothing on both attempts at 05:17, passed twice later) and the night's
      `ask_memory_page` en light (Save left the editor with both fields filled, once, at a load spike) have no cause.
      Lost sessions on both attempts: `chat_image_viewer` en, `home_fan_out` en, `profile_report_review` ms (all

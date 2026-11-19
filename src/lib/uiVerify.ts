@@ -2,6 +2,7 @@ import { Settings } from 'react-native';
 
 import { fixtureVariant } from './fixtureVariant';
 import { signedInLaunch } from './signedInLaunch';
+import { shiftToday } from './verifyToday';
 
 export const uiVerify = process.env.EXPO_PUBLIC_UI_VERIFY === '1';
 
@@ -19,3 +20,5 @@ export const uiVerifyFixture = fixtureVariant(uiVerifyArgument('uiVerifyFixture'
 export const uiVerifySignedIn = signedInLaunch(uiVerifyArgument('uiVerifySignedIn'));
 
 export const uiVerifyReduceMotion = uiVerifyArgument('uiVerifyReduceMotion') === '1';
+
+shiftToday(uiVerifyArgument('uiVerifyToday'));

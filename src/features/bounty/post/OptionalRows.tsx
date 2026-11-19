@@ -1,4 +1,4 @@
-import { Button, DatePicker, HStack, Image, Picker, Spacer, Text } from '@expo/ui/swift-ui';
+import { Button, HStack, Image, Picker, Spacer, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityHidden,
@@ -19,6 +19,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
+import { DateTimeRow } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { afterResign } from '@/ui/afterResign';
@@ -35,7 +36,6 @@ import type { PostDraft, TimeChoice } from './types';
 import { codePoints, DESCRIPTION_MAX } from './validate';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
-const DATE_PARTS: ('date' | 'hourAndMinute')[] = ['date', 'hourAndMinute'];
 const DESCRIPTION_COUNT_FROM = 450;
 
 type Edit = (patch: Partial<PostDraft>) => void;
@@ -176,11 +176,10 @@ export function TimeRows({
         <Text modifiers={[tag('window')]}>{t('bounty.post.form.window')}</Text>
       </Picker>
       {time.kind === 'deadline' ? (
-        <DatePicker
+        <DateTimeRow
           title={t('bounty.post.form.deadline')}
           selection={new Date(time.deadlineAt)}
           range={range}
-          displayedComponents={DATE_PARTS}
           onDateChange={(date) =>
             onEdit({ time: { kind: 'deadline', deadlineAt: date.toISOString() } })
           }
@@ -189,20 +188,18 @@ export function TimeRows({
         />
       ) : (
         <>
-          <DatePicker
+          <DateTimeRow
             title={t('bounty.post.form.start')}
             selection={new Date(time.startsAt)}
             range={range}
-            displayedComponents={DATE_PARTS}
             onDateChange={(date) => onEdit({ time: moveStart(time, date) })}
             testID="bounty-post-start"
             modifiers={glow}
           />
-          <DatePicker
+          <DateTimeRow
             title={t('bounty.post.form.end')}
             selection={new Date(time.endsAt)}
             range={{ start: new Date(time.startsAt), end: range.end }}
-            displayedComponents={DATE_PARTS}
             onDateChange={(date) => onEdit({ time: { ...time, endsAt: date.toISOString() } })}
             testID="bounty-post-end"
             modifiers={glow}
