@@ -914,8 +914,10 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-18 | a11y large text + labels                | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-18 | a11y checks + tour                      | 0                  | 1             | ~40 min (40-case audit before the tour)          | 0                       | 0                     |
 | 2026-11-18 | ride ticket status wrap                 | 0                  | 1             | ~35 min (proof build, dot loop round)            | 0                       | 0                     |
-| 2026-11-19 | BP-13, chat 12-hour, flight time         | 3                  | 2             | ~150 min (failed BP-13 fixes, empty probes)      | 0                       | 0                     |
+| 2026-11-19 | BP-13, chat 12-hour, flight time        | 3                  | 2             | ~150 min (failed BP-13 fixes, empty probes)      | 0                       | 0                     |
 | 2026-11-19 | BP-13 kit date row                      | 0                  | 1             | ~45 min (sizing before logging, row tap)         | 0                       | 0                     |
 | 2026-11-19 | date row for every compact picker       | 0                  | 3             | ~70 min (sheet layout, ViewThatFits slack)       | 0                       | 0                     |
 | 2026-11-19 | video missing after a killed recorder     | 0                  | 1             | ~40 min (cold-boot runs on a misread cause)      | 0                       | 0                     |
 | 2026-11-19 | real sign-in adapters                   | 0                  | 6             | ~10 min (Apple JWKS timeout, CLI source path)    | 0                       | 0                     |
+| 2026-11-19 | video missing after a killed recorder   | 0                  | 1             | ~40 min (cold-boot runs on a misread cause)      | 0                       | 0                     |
+| 2026-11-19 | sim-lock same name                      | 0                  | 0             | ~0                                               | 0                       | 0                     |

@@ -127,6 +127,10 @@ acquire() {
   trap 'leave_queue; exit 130' INT TERM HUP
   while :; do
     prune_dead_tickets
+    if [ ! -f "$TICKET" ]; then
+      join_queue "$name"
+      note "$name rejoined the queue: its ticket was removed by another process"
+    fi
     head=$(first_ticket)
     if [ "$head" = "$TICKET" ]; then
       if [ -d "$HELD" ]; then
@@ -154,11 +158,8 @@ acquire() {
 }
 
 release() {
-  local name="$1" holder t
+  local name="$1" pid="${2:-}" holder
   init
-  for t in "$QUEUE"/*; do
-    [ -f "$t" ] && [ "$(field "$t" name)" = "$name" ] && rm -f "$t"
-  done
   holder=$(field "$HELD/owner" name)
   if [ ! -d "$HELD" ]; then
     echo "sim-lock: not held" >&2
@@ -166,6 +167,10 @@ release() {
   fi
   if [ "$holder" != "$name" ]; then
     echo "sim-lock: refused, held by ${holder:-unknown}, not $name" >&2
+    return 1
+  fi
+  if [ -n "$pid" ] && [ "$(field "$HELD/owner" pid)" != "$pid" ]; then
+    echo "sim-lock: refused, $name is held by pid $(field "$HELD/owner" pid), not $pid" >&2
     return 1
   fi
   rm -rf "$HELD"
@@ -198,7 +203,7 @@ run_locked() {
   local name="$1" timeout="$2" rc
   shift 2
   acquire "$name" "$$" "$timeout" || exit $?
-  trap 'release "$name" >/dev/null 2>&1' EXIT
+  trap 'release "$name" "$$" >/dev/null 2>&1' EXIT
   trap 'exit 130' INT
   trap 'exit 143' TERM
   trap 'exit 129' HUP
