@@ -4,7 +4,6 @@ import fcntl
 import json
 import os
 import shutil
-import signal
 import subprocess
 import sys
 import threading
@@ -19,7 +18,7 @@ from hourcycle import hour_cycle_commands, with_hour_cycle
 from heal import FIRST_ATTEMPT, Attempt, Scheduler, summarize, work
 from latency import calls, line, summary, timed, timeouts
 from pool import DEFAULT_WORKERS, device_names, worker_count
-from recording import stop_all
+from recording import arm, disarm, stop_all
 from records import reset_records
 from taps import retries
 
@@ -236,12 +235,15 @@ def clear_output(out, keep_first):
             stale.unlink()
 
 
-def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_first=False, text_size='large'):
+def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_first=False, text_size='large',
+             app=DEFAULT_APP):
     name, udid, _ = device
     started = time.monotonic()
     clear_output(out, keep_first)
     zone = case_zone(case)
     before, after, case_log = [f'time zone: {zone}'], [], ''
+    video = out / 'run.mp4'
+    recorder, recorder_error = arm(udid, video, before, lambda _: heal(device, app))
     stuck = simctl_step('simctl appearance', ['xcrun', 'simctl', 'ui', udid, 'appearance', appearance], before)
     stuck = stuck or simctl_step('simctl content_size',
                                  ['xcrun', 'simctl', 'ui', udid, 'content_size', TEXT_SIZES[text_size]], before)
@@ -249,12 +251,6 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
     for command in [*software_keyboard_commands(udid), *hour_cycle_commands(udid, extra)]:
         subprocess.run(command, capture_output=True, timeout=30)
     reset_records(udid)
-    video = out / 'run.mp4'
-    recorder = subprocess.Popen(
-        ['xcrun', 'simctl', 'io', udid, 'recordVideo', '--codec=hevc', '--force', str(video)],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-    )
-    time.sleep(1.5)  # recorder needs its first frame before the launch is visible
     stuck = stuck or simctl_step('simctl launch', [
         'xcrun', 'simctl', 'launch', udid, BUNDLE_ID, *locale_args(locale),
         *(['-uiVerifyScene', scene] if scene else []), *extra], before, env=zone_env(zone))
@@ -269,18 +265,17 @@ def run_case(case, scene, extra, budget, locale, appearance, device, out, keep_f
                   60, out=after.append)
         except subprocess.TimeoutExpired:
             message += '; failure screenshot timed out after 60 s'
-    recorder.send_signal(signal.SIGINT)
-    try:
-        recorder.wait(timeout=30)
-    except subprocess.TimeoutExpired:
-        recorder.kill()
+    stopped, ended_error = disarm(recorder, after)
+    recorder_error = recorder_error or ended_error
+    if not stopped:
         status, message = 'fail', f'{message}; recorder did not stop'.strip('; ')
     try:
         stop_all(udid)
     except AssertionError as error:
         status, message = 'fail', f'{message}; {error}'.strip('; ')
     if not video.exists():
-        status, message = 'fail', f'{message}; video missing'.strip('; ')
+        missing = f'video missing ({recorder_error})' if recorder_error else 'video missing'
+        status, message = 'fail', f'{message}; {missing}'.strip('; ')
     empty = [v.name for v in videos(out) if v.stat().st_size == 0]
     if empty:
         status, message = 'fail', f'{message}; empty video {", ".join(empty)}'.strip('; ')
@@ -464,7 +459,7 @@ def main():
     def attempt(device, job, retry):
         appearance, case, scene, locale, extra, budget = job
         return run_case(case, scene, extra, budget, locale, appearance, device, output / locale / appearance / case,
-                        keep_first=retry, text_size=args.text_size)
+                        keep_first=retry, text_size=args.text_size, app=app)
 
     run_started = time.monotonic()
     threads = [guarded(work, scheduler, device, attempt, lambda d: heal(d, app), report, halt) for device in devices]
