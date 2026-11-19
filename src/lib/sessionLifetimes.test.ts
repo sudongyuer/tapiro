@@ -10,6 +10,8 @@ const LIFETIMES: Record<string, Lifetime> = {
     'kept: keyed by user id; account deletion clears it through accountActions',
   'src/features/account/services.ts#profileStore': 'session',
   'src/features/account/services.ts#accountActions': 'kept: holds no user data',
+  'src/features/account/providers.ts#nonces': 'kept: draws a new nonce per call, holds none',
+  'src/features/account/providers.ts#apple': 'kept: holds no user data',
   'src/features/ask/services.ts#deviceStorage': 'kept: a storage adapter',
   'src/features/ask/services.ts#consentStore': 'session',
   'src/features/ask/services.ts#memoryStore': 'session',

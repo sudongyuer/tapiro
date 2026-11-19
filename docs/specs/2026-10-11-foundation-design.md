@@ -917,3 +917,77 @@ except the parts listed under 「Not built」; with steps 5 (IAP) and 9 still op
 - The consent page's long rows wrap with trailing alignment under a stacked label (LabeledContent); readable, not polished.
 - The home calm card's example chip 「五点回 YC 谁一起」 is decorative, not a suggestion, but reads as a ride request.
 - M18: content the platform blocks stays 小貘晕了; revisit after the smoke run.
+
+## Implementation Record (2026-11-19) — real sign-in: Apple and Google adapters
+
+PR: not opened yet · Commits: a133fd0c..HEAD (`feat/native-sign-in`)
+
+Step 1 shipped the `signInWithIdToken` boundary with `providerAdapters = {}`: the real adapters waited for the paid Apple
+team (the free team cannot sign the Sign in with Apple entitlement) and for Google Cloud clients (PR #1, "the real
+Apple/Google adapters wait for the accounts"). The paid account arrived on 2026-11-19.
+
+### What was built
+
+- Apple adapter: a fresh nonce per attempt (`randomUUID`), its SHA-256 hex to `signInAsync` with full name and email
+  scopes, the raw value to Supabase; `ERR_REQUEST_CANCELED` → `cancelled`, every other error or a missing identity
+  token → `failed`; the one-time name joined family-first without a space for Han names. Evidence:
+  `src/features/account/appleIdToken.ts`, `src/features/account/nonce.ts`.
+- Google adapter on `@react-native-google-signin/google-signin` 17.0.0 (`bunx expo install`): configured once with the
+  iOS and web client IDs, `cancelled` response or `SIGN_IN_CANCELLED` → `cancelled`, others → `failed`. Registered only
+  when `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` both hold `*.apps.googleusercontent.com`
+  values; otherwise Google stays `notConfigured`. Evidence: `src/features/account/googleIdToken.ts`,
+  `src/features/account/providers.ts`.
+- App config: `ios.appleTeamId: "4RML7RLKML"` (the owner's personal team, owner 2026-11-19); `ios.usesAppleSignIn: true`; `plugins/withoutAppleSignInEntitlement.js` removed;
+  `plugins/withGoogleSignIn.js` adds the reversed client ID URL scheme from `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` at prebuild
+  and fails prebuild on a malformed value. `.env.example` lists both variables.
+- Local Supabase: `[auth.external.apple]` enabled with client ID `app.tapiro`, no secret; `[auth.external.google]` enabled
+  with `client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"` and `skip_nonce_check = true`. Evidence:
+  `supabase/config.toml`.
+
+### Decisions (owner delegated, 2026-11-17; listed for veto)
+
+| #   | Decision                                                                   | Reason                                                                                                                                                                                                                                                            |
+| --- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | Google library: `@react-native-google-signin/google-signin` (free API)     | The one Supabase's Expo guide uses; peer `expo >=52`. The alternative `react-native-nitro-google-signin` 2.3.1 passes a nonce, but its `compatibility.json` stops at RN 0.87 (we run 0.88) and adds `react-native-nitro-modules`.                                 |
+| S2  | Google nonce check skipped on the backend                                  | The free API has no nonce parameter; GoogleSignIn-iOS then calls AppAuth's initializer that generates its own nonce (`OIDAuthorizationRequest.m`), which the app never sees. Audience and signature are still checked. Revisit with S1 if nitro supports RN 0.88. |
+| S3  | Apple nonce: SHA-256 hex to Apple, raw to Supabase                         | expo-apple-authentication passes the nonce through unchanged (`AppleAuthenticationRequest.swift:37`); auth-js documents that Supabase hashes the supplied nonce before comparing.                                                                                 |
+| S4  | Apple asks for full name and email                                         | The name step is prefilled from the provider (Behaviour → Accounts); Apple gives the name once.                                                                                                                                                                   |
+| S5  | Han names joined family + given without a space                            | Apple returns parts; 「小貘 林」 would be wrong for most users. Latin names stay given, middle, family.                                                                                                                                                           |
+| S6  | Google client IDs from `EXPO_PUBLIC_GOOGLE_*`, not committed in `app.json` | They are public but owner-specific and not yet issued; prebuild and Metro load `.env`, so one place feeds both the URL scheme and the runtime IDs. Unset means the app builds and Google shows the existing 「登录还没配置好」 line.                              |
+| S7  | The Google button stays visible when Google is unconfigured                | Same screen in every build; the failure line already explains it. Hiding it would make the TestFlight screen differ from the designed one.                                                                                                                        |
+| S8  | No Google sign-out on Tapiro sign-out                                      | `signIn()` always presents Google's account sheet, so switching accounts works without it; one less native call on the sign-out path.                                                                                                                             |
+
+### Deviations from the design
+
+None. The design names `expo-apple-authentication`, Google Sign-In and `signInWithIdToken`; S2 is recorded above.
+
+### Bugs fixed during implementation
+
+- **Symptom:** `expo config` failed with `googleSignIn is not a function` when a client ID was set.
+  **Root cause:** the library's `app.plugin.js` is an ES module export (`exports.default`).
+  **Fix:** require `.default` in `plugins/withGoogleSignIn.js` (this branch).
+
+### Verification
+
+- `bun test src/features/account/` → pass, including `appleIdToken.test.ts` and `googleIdToken.test.ts`.
+- `int:src/features/account/idTokenProviders.integration.ts` on a throwaway stack (port prefix 567) → 2 pass on this
+  branch ("Bad ID token" for a forged token from each issuer); on `origin/main`'s config both fail with "Provider … is
+  not enabled", so the test can fail.
+- `expo config --type introspect`: without a client ID, URL schemes `tapiro`, `app.tapiro` and entitlement
+  `com.apple.developer.applesignin: ["Default"]`; with `123-abc.apps.googleusercontent.com`, the added scheme
+  `com.googleusercontent.apps.123-abc`; a malformed value fails prebuild.
+
+- `bun run verify:build` (Release, Simulator, with `appleTeamId`) → BUILD SUCCEEDED in 248 s; the simulated entitlements of
+  the built app hold `com.apple.developer.applesignin: [Default]`. Signing stays on.
+- `bun run verify:smoke` → 4 of 4 pass (`app_launches`, `sign_in_fixture`, `shell_tabs`, `home_one_card`, zh-Hans light).
+  Selection: no screen layout or copy changed; the native config (entitlement, GoogleSignIn pod, URL scheme) can only
+  break launch or the sign-in screen, which the smoke set covers.
+- `bun test` → 3024 pass; `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `check-story-map` → pass.
+
+### Known limits
+
+- Real sign-in is unproven until a device run (`account.sign-in.real-apple`, `account.sign-in.real-google`): it needs
+  the Google Cloud clients, Sign in with Apple on the `app.tapiro` App ID, and the hosted Auth providers (owner steps in
+  the PR).
+- The hosted Supabase project is not touched; its Apple and Google providers are configured by the owner.
+- The Apple identity token's email may be a private relay address; accepted per Behaviour → Accounts.
