@@ -15,6 +15,13 @@ const endlessLoopSelectors = [
   "Property[key.name='animationIterationCount'][value.value='infinite']",
 ].map((selector) => ({ selector, message: endlessLoopMessage }));
 
+const compactDatePickerSelector = {
+  selector:
+    "JSXOpeningElement[name.name='DatePicker']:not(:has(CallExpression[callee.name='datePickerStyle'] > Literal[value=/^(wheel|graphical)$/]))",
+  message:
+    "Use DateTimeRow from 'tapiro-kit': @expo/ui's compact DatePicker sizes its label from the previous date and falls back to the short style (「10/12/26」) when the date widens (BP-13, bounty post plan rulings 27-28).",
+};
+
 module.exports = defineConfig([
   expoConfig,
   eslintPluginPrettierRecommended,
@@ -23,8 +30,10 @@ module.exports = defineConfig([
     rules: { 'import/no-unresolved': ['error', { ignore: ['^npm:', '^jsr:'] }] },
   },
   {
-    files: ['src/**/*.{ts,tsx}', 'scripts/lint-fixtures/**/*.ts'],
-    rules: { 'no-restricted-syntax': ['error', ...endlessLoopSelectors] },
+    files: ['src/**/*.{ts,tsx}', 'scripts/lint-fixtures/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': ['error', ...endlessLoopSelectors, compactDatePickerSelector],
+    },
   },
   {
     files: ['src/**/*.{ts,tsx}', 'scripts/lint-fixtures/**/*.ts'],
@@ -41,6 +50,12 @@ module.exports = defineConfig([
     },
   },
   {
-    ignores: ['dist/*', 'ios/*', 'scripts/check-specs.mjs', 'scripts/lint-fixtures/*.bad.ts'],
+    ignores: [
+      'dist/*',
+      'ios/*',
+      'scripts/check-specs.mjs',
+      'scripts/lint-fixtures/*.bad.ts',
+      'scripts/lint-fixtures/*.bad.tsx',
+    ],
   },
 ]);

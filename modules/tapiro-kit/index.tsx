@@ -219,26 +219,37 @@ export function PinnedBar({ header, children }: { header?: boolean; children: Re
 type NativeDateTimeRowProps = {
   title: string;
   selection: string;
-  range: { start: string; end: string };
-  testID: string;
+  range: { start?: string; end?: string };
+  labelHidden: boolean;
+  titleAbove: boolean;
+  components: DateTimeRowComponents;
+  testID?: string;
   modifiers: ModifierConfig[];
   onDateChange(event: NativeSyntheticEvent<{ date: number }>): void;
 };
+
+export type DateTimeRowComponents = 'dateAndTime' | 'hourAndMinute';
 
 const NativeDateTimeRow = requireNativeView<NativeDateTimeRowProps>('TapiroKit', 'DateTimeRowView');
 
 export function DateTimeRow({
   title,
   selection,
-  range,
+  range = {},
+  labelHidden = false,
+  titleAbove = false,
+  components = 'dateAndTime',
   testID,
   modifiers = [],
   onDateChange,
 }: {
   title: string;
   selection: Date;
-  range: { start: Date; end: Date };
-  testID: string;
+  range?: { start?: Date; end?: Date };
+  labelHidden?: boolean;
+  titleAbove?: boolean;
+  components?: DateTimeRowComponents;
+  testID?: string;
   modifiers?: ModifierConfig[];
   onDateChange(date: Date): void;
 }) {
@@ -246,7 +257,10 @@ export function DateTimeRow({
     <NativeDateTimeRow
       title={title}
       selection={selection.toISOString()}
-      range={{ start: range.start.toISOString(), end: range.end.toISOString() }}
+      range={{ start: range.start?.toISOString(), end: range.end?.toISOString() }}
+      labelHidden={labelHidden}
+      titleAbove={titleAbove}
+      components={components}
       testID={testID}
       modifiers={modifiers}
       onDateChange={(event) => onDateChange(new Date(event.nativeEvent.date))}
