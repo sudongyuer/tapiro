@@ -164,7 +164,7 @@ pad changes nothing in the tree, and a second tap on a focused field opens its e
 area is not retried while the keyboard's Return key shows, for the same reason. Swipes, typed keys and raw `ui.axe`
 calls are not checked. Only one `verify:ui` run may drive the Simulators at a time; a second run
 exits instead of interleaving taps with the first. Every run also takes the machine-wide lock `/tmp/ios-ui-verify.lock` shared with other projects' runners and waits while another project holds it, printing the holder. The lock does not cover `verify:build` or
-scripts that drive the Simulator outside the runner. Stopping a run mid-case left every later run on that Simulator `video missing` until it was shut down (`xcrun simctl shutdown <udid>`; the next run boots it). Do not click or scroll in the Simulator window
+scripts that drive the Simulator outside the runner. A recorder that ends on SIGTERM, SIGHUP or SIGKILL (a run killed mid-case) leaves the Simulator holding its recording until it shuts down, and every later recorder exits 16 (「A recording is already in progress」); before each case the runner stops any leftover recorder with SIGINT, waits for 「Recording started」, and on that error reboots the Simulator and arms the recorder again. A recorder that still cannot start, or exits during the case, fails the run as `video missing (<recorder error>)`. Do not click or scroll in the Simulator window
 while a run is in progress: a pointer drag reaches the app as a real touch, and a home case once
 failed because a stray drag scrolled 悬赏 back to the top.
 
