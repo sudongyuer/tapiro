@@ -7,6 +7,7 @@ from bounty import relaunch
 from choose import defaults
 from driver import by_id, close, dominant, reach_home, token
 from gestures import drag
+from hourcycle import clock_at
 
 
 def open_list(ui, ready='ride-screen'):
@@ -189,17 +190,14 @@ def pay_reminders(ui):
     return sorted(notices, key=lambda notice: notice['at'])
 
 
-def clock_of(at):
-    return datetime.fromtimestamp(at / 1000).strftime('%H:%M')
-
-
 def reminder_when(ui, at):
-    days = (datetime.fromtimestamp(at / 1000).date() - date.today()).days
+    moment = datetime.fromtimestamp(at / 1000)
+    days = (moment.date() - date.today()).days
+    time = clock_at(moment.hour, moment.minute, ui.locale)
     if days not in (0, 1):
-        return r'.+ ' + re.escape(clock_of(at))
-    text = ui.t('ride.ticket.time', day=ui.t('ride.list.today' if days == 0 else 'ride.list.tomorrow'),
-                clock=clock_of(at))
-    return re.escape(text[0].lower() + text[1:])
+        return r'.+ ' + time
+    day = ui.t('ride.list.today' if days == 0 else 'ride.list.tomorrow')
+    return ui.pattern('ride.ticket.time', day=re.escape(day[0].lower() + day[1:]), clock=time)
 
 
 def wait_owe_reminder(ui, kinds):

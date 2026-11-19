@@ -18,6 +18,7 @@ from bounty import paste_into, relaunch, tap_sheet_action  # noqa: E402
 from choose import defaults  # noqa: E402
 from confirm import assert_dialog, tap  # noqa: E402
 from driver import UI, by_id, close, luma, token  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/select/', 'src/features/bounty/shared/',
         'src/ui/SheetFrame.tsx', 'src/ui/SyncedTextField.tsx', 'src/ui/PillButton.tsx', 'modules/tapiro-kit/',
@@ -160,7 +161,7 @@ ui.wait_label('bounty-status-step-confirmed',
               lambda text: text.startswith(ui.t('bounty.status.step.poster.waitFix', name='阿杰')) and REASON in text,
               'the reason is not on the 等阿杰处理 step')
 completed = ui.element('bounty-status-step-completed').get('AXLabel') or ''
-assert re.search(r'\d{1,2}:\d{2}', completed), f'点完成 lost its time: {completed!r}'
+assert re.search(clock(), completed), f'点完成 lost its time: {completed!r}'
 assert completed.endswith(ui.t('bounty.status.a11y.done')), completed
 ui.gone('bounty-status-failed')
 ui.at_rest()
@@ -194,7 +195,7 @@ assert len(wait_sent('cancel_bounty', 1)) == 1
 ended = ui.wait_label('bounty-status-step-ended',
                       lambda text: text.startswith(ui.t('bounty.status.ended.helperYou')),
                       'the timeline does not end on 你退出了这单').get('AXLabel') or ''
-assert re.search(r'\d{1,2}:\d{2}', ended), f'the end row has no time: {ended!r}'
+assert re.search(clock(), ended), f'the end row has no time: {ended!r}'
 assert ended.endswith(ui.t('bounty.status.a11y.ended')), ended
 items = ui.read()
 assert by_id(items, 'bounty-status-step-selected'), 'the done step before the cancel is gone'

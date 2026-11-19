@@ -15,6 +15,7 @@ from board import ink_box, screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, luma, token  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from ocr import lines  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/shared/', 'src/features/bounty/post/timeText.ts',
@@ -27,7 +28,6 @@ BUDGET = 360
 FIRST = ['-uiVerifyBountyStatus', 'enRouteChanged', '-uiVerifyBountyRole', 'poster']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'enRouteChanged', '-uiVerifyBountyRole', 'poster']
 REASON = '快递盒子压坏了，里面的杯子碎了一个'
-CLOCK = r'\d{1,2}[:.]\d{2}'
 LIST_ROWS = ('bounty-status-step-', 'bounty-status-address')
 STRUCK_SHARE = 0.6
 INK_CONTRAST = 40
@@ -44,7 +44,7 @@ QUIET = {'light': lambda inks: min(inks) > 70, 'dark': lambda inks: max(inks) < 
 ui = UI(*sys.argv[1:])
 # Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
 DAY = rf"(?:(?:{re.escape(ui.t('bounty.post.confirm.today'))}|{re.escape(ui.t('bounty.post.confirm.tomorrow'))})\s?)?"
-CLOCK = DAY + CLOCK
+CLOCK = DAY + clock()
 
 
 def step(identifier):

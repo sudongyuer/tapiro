@@ -14,6 +14,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 import ocr  # noqa: E402
 from board import ink_box  # noqa: E402
 from driver import UI, assert_touch_target, by_id, token  # noqa: E402
+from hourcycle import clock, clock_at  # noqa: E402
 from ride import add_button, assert_ticket_colour, label, open_list, tab_bar_top, ticket, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'verification/ui/ocr.py',
@@ -67,7 +68,7 @@ read = ocr.lines_in(shot, ui.locale)
 for identifier in heads:
     frame = by_id(items, identifier)['frame']
     main = {**frame, 'width': frame['width'] - STUB_WIDTH}
-    clocks = ocr.find(read, r'\d{1,2}[:.]\d{2}', main)
+    clocks = ocr.find(read, clock(), main)
     assert clocks, f'{identifier} cuts its departure time or pushes it under the stub: {[line["text"] for line in read]}'
 if LARGE_TEXT:
     print(f'PASS: at AX5 the status lines in the ticket inks and the departure times whole, left of the stub: {heads}')
@@ -86,7 +87,8 @@ assert_ticket_colour(ui, shot, ui.element('ride-ticket-ride-full'), '--color-car
 
 airport = ticket(ui, 'ride-ticket-ride-airport')
 airport_label = airport.get('AXLabel') or ''
-assert ui.t('ride.ticket.flight', time='09:10') in airport_label, airport_label
+FLIGHT = ui.pattern('ride.ticket.flight', time=clock_at(9, 10))
+assert re.search(FLIGHT, airport_label), airport_label
 assert plural('ride.ticket.bags', 2) in airport_label, airport_label
 ticket(ui, 'ride-ticket-ride-mall')
 items = ui.read()
@@ -97,7 +99,7 @@ ui.capture('03-airport')
 ui.tap('ride-ticket-ride-airport')
 ui.element('ride-detail')
 detail = ui.element('ride-detail-ticket')
-assert ui.t('ride.ticket.flight', time='09:10') in (detail.get('AXLabel') or ''), detail.get('AXLabel')
+assert re.search(FLIGHT, detail.get('AXLabel') or ''), detail.get('AXLabel')
 ui.capture('04-detail')
 ui.tap('BackButton')
 ui.element('ride-screen')

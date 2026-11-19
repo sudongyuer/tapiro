@@ -190,8 +190,9 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
 
 - Before commit: `bun run lint:changed <base>`, `bunx tsc --noEmit`, `bun run format:check` (the same
   command CI runs; run it after any scripted edit to JSON or config).
-- `bun run check:size` (CI) fails source files over 500 lines and `.tsx` components under `src/` over 300;
-  `scripts/file-size-allowlist.json` holds today's oversized files, which may shrink but not grow.
+- The size check (`check:size`, run by `lint:changed` and CI) fails source files over 500 lines and `.tsx`
+  components under `src/` over 300; `scripts/file-size-allowlist.json` holds today's oversized files, which may shrink
+  but not grow. Reason: run on its own, it was skipped locally twice and caught by CI (2026-11-19).
 - Logic tests run with `bun test`. UI work runs `node scripts/design-check.mjs`; tokens live only in
   `docs/design-language.md` and `src/ui/theme/tokens.ts`, and product code never uses raw colours,
   font sizes or font families.

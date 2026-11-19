@@ -17,6 +17,7 @@ from bounty import relaunch, tap_sheet_action  # noqa: E402
 from confirm import assert_dialog  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, bottom, by_id  # noqa: E402
+from hourcycle import clock_at  # noqa: E402
 from ride import assert_stamp_under_sticker, assert_ticket_colour, tab_bar_top, tap_bar, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/features/block/',
@@ -52,8 +53,9 @@ def ticket_label():
 
 ticket = ui.element('ride-detail-ticket')
 text = ticket_label()
-for part in (ROUTE, ui.t('ride.ticket.flight', time='09:10'), ui.tn('ride.ticket.bags', 2)):
-    assert part in text, f'ticket label misses {part!r}: {text}'
+for part in (re.escape(ROUTE), ui.pattern('ride.ticket.flight', time=clock_at(9, 10)),
+             re.escape(ui.tn('ride.ticket.bags', 2))):
+    assert re.search(part, text), f'ticket label misses {part!r}: {text}'
 assert text.startswith(ui.tn('ride.ticket.need', 1)), text
 seats = ui.element('ride-detail-seats')
 assert seats.get('AXLabel') == ui.t('ride.detail.seatsA11y', name='小林', taken=2, empty=1), seats.get('AXLabel')
