@@ -8,6 +8,7 @@ export type GoogleSignInResponse =
 export type GoogleSignInModule = {
   configure(options: GoogleClientIds): void;
   signIn(): Promise<GoogleSignInResponse>;
+  signInSilently(): Promise<unknown>;
   signOut(): Promise<unknown>;
   revokeAccess(): Promise<unknown>;
 };
@@ -52,7 +53,15 @@ export function createGoogleIdTokenProvider(
       }
     },
     async forget(reason) {
-      if (reason === 'deleted') await google.revokeAccess().catch(() => {});
+      if (reason === 'deleted') {
+        // After a relaunch GoogleSignIn has no current user until the previous sign-in is restored, and revoking
+        // without one does nothing.
+        try {
+          google.configure(clientIds);
+          await google.signInSilently();
+          await google.revokeAccess();
+        } catch {}
+      }
       await google.signOut().catch(() => {});
     },
   };

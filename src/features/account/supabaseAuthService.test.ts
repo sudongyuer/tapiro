@@ -259,6 +259,24 @@ describe('supabase auth service', () => {
     expect(updateUser.mock.calls).toEqual([[{ data: { full_name: '林小貘' } }]]);
   });
 
+  test('a deleted account still forgets provider sessions when the local sign-out throws', async () => {
+    const { client, emit, signOut } = fakeClient();
+    const reasons: string[] = [];
+    const google: IdTokenProvider = {
+      requestIdToken: async () => ({ ok: false, reason: 'cancelled' }),
+      forget: async (reason) => {
+        reasons.push(reason);
+      },
+    };
+    const service = createSupabaseAuthService(client, { google });
+    emit(session);
+    signOut.mockImplementationOnce(async () => {
+      throw new Error('keychain');
+    });
+    expect(await service.deleteAccount()).toEqual({ ok: true });
+    expect(reasons).toEqual(['deleted']);
+  });
+
   test('only providers with an adapter are available', () => {
     const service = createSupabaseAuthService(null, { apple });
     expect(service.isAvailable('apple')).toBe(true);

@@ -4,7 +4,7 @@ date: 2026-11-19
 pr: Real Sign in with Apple and Google Sign-In adapters; both providers on the local stack
 title: adapters had waited for the paid team since step 1; built as far as Simulator and stack tests prove
 escaped: 0
-rework: 5
+rework: 6
 interventions: 0
 overturned: 0
 ---
@@ -47,6 +47,10 @@ overturned: 0
 - Two story-map edits silently did nothing: exact-string replacement against a Prettier-padded table never matches,
   and my script did not assert the replacement happened. Edit table rows by id, and assert each replacement. Tag
   `padded-table-edit`.
+- Five review rounds: every round after the first found something real in code I had just changed (a name leak, a
+  DEBUG-only catch, a no-op revoke after relaunch). Each fix added state or a native call path whose lifetime I had
+  not traced. For provider SDK calls, read the native method and its preconditions (current user, configure) before
+  writing the JS side. Tag `native-preconditions`.
 - My first `/code-review` without a target reviewed the previous merged PR, because the main checkout was the cwd.
   Pass the PR number. Tag `review-target`.
 - Supabase CLI 2.x moved its Go sources under `apps/cli-go/`; `env()` that is unset only warns, so enabling a provider

@@ -94,7 +94,7 @@ export function createSupabaseAuthService(
       if (error instanceof FunctionsFetchError) return { ok: false, reason: 'network' };
       if (error) return { ok: false, reason: 'failed' };
       pendingName = null;
-      await client.auth.signOut({ scope: 'local' });
+      await client.auth.signOut({ scope: 'local' }).catch(() => {});
       await forgetProviders('deleted');
       return { ok: true };
     },

@@ -25,11 +25,19 @@ export function createProviderAdapters(): ProviderAdapters {
     process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     registeredUrlSchemes(),
   );
-  if (!googleClientIds) return { apple };
+  if (!googleClientIds) {
+    if (__DEV__ && process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID) {
+      console.warn(
+        'Google sign-in is off: the client IDs are invalid or the reversed iOS client ID is not a registered URL scheme. Run prebuild again after setting EXPO_PUBLIC_GOOGLE_*.',
+      );
+    }
+    return { apple };
+  }
   const google = createGoogleIdTokenProvider(
     {
       configure: GoogleSignin.configure,
       signIn: GoogleSignin.signIn,
+      signInSilently: GoogleSignin.signInSilently,
       signOut: GoogleSignin.signOut,
       revokeAccess: GoogleSignin.revokeAccess,
     },

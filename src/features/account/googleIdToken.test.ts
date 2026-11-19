@@ -8,6 +8,7 @@ import {
   googleUrlScheme,
   readGoogleClientIds,
 } from './googleIdToken';
+import { googleUrlScheme as pluginUrlScheme } from '../../../plugins/withGoogleSignIn.js';
 
 const ids: GoogleClientIds = {
   iosClientId: '123-ios.apps.googleusercontent.com',
@@ -26,6 +27,9 @@ function fakeGoogle(signIn: () => Promise<GoogleSignInResponse>) {
     signOut: async () => {
       signedOut += 1;
       calls.push('signOut');
+    },
+    signInSilently: async () => {
+      calls.push('signInSilently');
     },
     revokeAccess: async () => {
       calls.push('revokeAccess');
@@ -85,15 +89,17 @@ describe('google ID token provider', () => {
   });
 });
 
-test('forget signs out of Google, revokes access only after deletion, and never throws', async () => {
+test('forget signs out of Google, restores and revokes access only after deletion, and never throws', async () => {
   const signOut = fakeGoogle(async () => ({ type: 'cancelled', data: null }));
   await createGoogleIdTokenProvider(signOut.google, ids).forget?.('signOut');
   expect(signOut.calls).toEqual(['signOut']);
   const deleted = fakeGoogle(async () => ({ type: 'cancelled', data: null }));
   await createGoogleIdTokenProvider(deleted.google, ids).forget?.('deleted');
-  expect(deleted.calls).toEqual(['revokeAccess', 'signOut']);
+  expect(deleted.calls).toEqual(['signInSilently', 'revokeAccess', 'signOut']);
+  expect(deleted.configured).toEqual([ids]);
   const failing = {
     ...deleted.google,
+    signInSilently: async () => Promise.reject(new Error('no previous sign-in')),
     revokeAccess: async () => Promise.reject(new Error('no session')),
     signOut: async () => Promise.reject(new Error('keychain')),
   };
@@ -127,13 +133,10 @@ describe('google client IDs', () => {
 });
 
 test('the prebuild plugin registers the same URL scheme the runtime looks for', () => {
-  const plugin: {
-    googleUrlScheme(clientId: string): string;
-  } = require('../../../plugins/withGoogleSignIn.js');
   for (const clientId of [ids.iosClientId, '1234567890-abc_DEF.apps.googleusercontent.com']) {
-    expect(plugin.googleUrlScheme(clientId)).toBe(googleUrlScheme(clientId));
+    expect(pluginUrlScheme(clientId)).toBe(googleUrlScheme(clientId));
   }
-  expect(() => plugin.googleUrlScheme('com.googleusercontent.apps.123-ios')).toThrow();
+  expect(() => pluginUrlScheme('com.googleusercontent.apps.123-ios')).toThrow();
   expect(
     readGoogleClientIds('com.googleusercontent.apps.123-ios', ids.webClientId, schemes),
   ).toBeNull();

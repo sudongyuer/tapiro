@@ -481,7 +481,7 @@ PR: not opened yet · Commits: 51aa12c..0b76203 (branch `feat/welcome`). Steps 3
 
 ### Verification
 
-- `bun test` → 3036 pass; `bunx tsc --noEmit`, `bun run lint -- <changed files>`, `bun run format:check`,
+- `bun test` → 3037 pass; `bunx tsc --noEmit`, `bun run lint -- <changed files>`, `bun run format:check`,
   `node scripts/design-check.mjs` → exit 0 (2026-10-15)
 - Full `bun run verify:ui` → 90/90 pass in 41 min 14 s (build before 0b76203); `welcome_legal` after 0b76203 → 4/4
   light and dark, zh-Hans and ms. New cases: `welcome_a`, `welcome_legal`, `onboarding_moment`, `onboarding_language_moment`.
@@ -936,8 +936,8 @@ Apple/Google adapters wait for the accounts"). The paid account arrived on 2026-
   and web client IDs before every attempt; a `cancelled` response → `cancelled` (the library turns the native cancel
   into it), any throw → `failed`. Built only when both `EXPO_PUBLIC_GOOGLE_*` IDs hold `*.apps.googleusercontent.com`
   values and the app registers the reversed iOS client ID as a URL scheme (kit `registeredUrlSchemes()`); otherwise
-  the sign-in screen does not show Google (S7). Sign-out signs out of Google; deletion revokes access, then signs out
-  (S8). Adapters are created only outside verify mode. Evidence: `src/features/account/googleIdToken.ts`,
+  the sign-in screen does not show Google (S7). Sign-out signs out of Google; deletion restores the previous Google sign-in, revokes access, then
+  signs out (S8). Adapters are created only outside verify mode. Evidence: `src/features/account/googleIdToken.ts`,
   `src/features/account/providers.ts`, `src/features/account/authService.ts`.
 - App config: `ios.appleTeamId: "4RML7RLKML"` (the owner's personal team, owner 2026-11-19); `ios.usesAppleSignIn: true`; `plugins/withoutAppleSignInEntitlement.js` removed;
   `plugins/withGoogleSignIn.js` adds the reversed client ID URL scheme from `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` at prebuild
@@ -970,6 +970,9 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
 - **Symptom (review of #189):** the Google catch compared with the literal `'SIGN_IN_CANCELLED'`; on iOS the code is
   `-5` (`RNGoogleSignin.mm:35`). The third review showed the library's `signIn` already turns that rejection into
   `{ type: 'cancelled' }` (`translateNativeRejection.ts`), so the catch now maps every throw to `failed`.
+- **Symptom (fifth review of #189):** after a relaunch, revoking Google access on deletion did nothing (GoogleSignIn
+  has no current user until restored), and a throwing local sign-out skipped provider cleanup. **Fix:** configure and
+  `signInSilently()` before `revokeAccess()`; the local sign-out in `deleteAccount` is caught.
 - **Symptom (third review of #189):** a build prebuilt without the iOS client ID, then bundled with it, would crash on
   the Google tap in release. **Fix:** S7's runtime URL scheme check.
 - **Symptom (review of #189):** Apple's one-time name was lost when the token exchange failed or `updateUser` returned
