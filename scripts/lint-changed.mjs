@@ -1,9 +1,20 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const base = process.argv[2] ?? 'origin/main';
 const git = (...args) =>
   execFileSync('git', args, { encoding: 'utf8' }).split('\n').filter(Boolean);
+
+const size = spawnSync(
+  process.execPath,
+  [join(dirname(fileURLToPath(import.meta.url)), 'check-file-size.mjs')],
+  {
+    stdio: 'inherit',
+  },
+);
+const sizeStatus = size.status ?? 1;
 
 const files = [
   ...new Set([
@@ -15,10 +26,10 @@ const files = [
 
 if (files.length === 0) {
   console.log(`no changed lintable files since ${base}`);
-  process.exit(0);
+  process.exit(sizeStatus);
 }
 
 console.log(`linting ${files.length} changed files since ${base}`);
 const env = { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` };
 const result = spawnSync('bun', ['run', 'lint', '--', ...files], { stdio: 'inherit', env });
-process.exit(result.status ?? 1);
+process.exit(sizeStatus || (result.status ?? 1));

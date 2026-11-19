@@ -19,6 +19,7 @@ from board import screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import assert_touch_target, by_id, close, luma, token, UI  # noqa: E402
+from hourcycle import clock_at, clock as any_clock  # noqa: E402
 from recording import clip, frames  # noqa: E402
 from taps import walk  # noqa: E402
 
@@ -34,7 +35,6 @@ MINUTES = 0.62
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyStatus', 'assigned', '-uiVerifyBountyRole', 'helper',
         '-uiVerifyBountyStatusDelayMs', '6000']
 CALLS = 'uiVerifyBountyStatusCalls'
-CLOCK = r'\d{1,2}[:.]\d{2}'
 PROMINENT_SHARE = 0.35
 FILL_SHARE = 0.6
 FILL_TOLERANCE = 12
@@ -42,7 +42,7 @@ FILL_TOLERANCE = 12
 ui = UI(*sys.argv[1:])
 # Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
 DAY = rf"(?:(?:{re.escape(ui.t('bounty.post.confirm.today'))}|{re.escape(ui.t('bounty.post.confirm.tomorrow'))})\s?)?"
-CLOCK = DAY + CLOCK
+CLOCK = DAY + any_clock()
 
 
 def calls():
@@ -75,9 +75,7 @@ def summary(key, **values):
 
 
 def clock(at):
-    twelve = at.hour % 12 or 12
-    return (DAY + rf'(?:凌晨|早上|上午|中午|下午|晚上)?(?:0?{at.hour}|0?{twelve})[:.]{at.minute:02d}'
-            r'(?:\s?(?:AM|PM|PG|TGH|PTG|MLM))?')
+    return DAY + clock_at(at.hour, at.minute)
 
 
 def default_eta(now):

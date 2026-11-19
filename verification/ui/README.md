@@ -334,8 +334,11 @@ cases assert colours against `src/ui/theme/tokens.ts` (`token`, `assert_colour`)
    identifiers, assert, capture. Cases receive the locale as `ui.locale` for controls that only
    expose a localized label (native toolbar buttons); SwiftUI views from `@expo/ui` take their
    identifier from `testID` or the `accessibilityIdentifier` modifier.
-3. Controls a case touches need a `testID`; plain `View`s also need `accessible` to appear in the
+3. A time the device formats goes through `hourcycle.clock()` (any time) or `clock_at(hour, minute)` (a set time), so
+   a `--hour-cycle 12` run reads it as iOS writes it; `test_clock_guard.py` fails a case with a literal `09:10` or a
+   `\d{2}:\d{2}` pattern.
+4. Controls a case touches need a `testID`; plain `View`s also need `accessible` to appear in the
    accessibility tree.
-4. Run both appearances and open the screenshots before reporting.
-5. Reference the case from the acceptance criterion it proves in `docs/story-map.md`; the story-map
+5. Run both appearances and open the screenshots before reporting.
+6. Reference the case from the acceptance criterion it proves in `docs/story-map.md`; the story-map
    check warns about a case no criterion references.

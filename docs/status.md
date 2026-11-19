@@ -209,8 +209,12 @@ core-screen tour).
      writes 早上 before 8:00 and 上午 after, as CLDR does); one open bug, `chat_thread_long` en 12-hour does not open at
      the newest message (3 of 4 first attempts; en 24-hour passes). The other failures are cases that assert a 24-hour
      clock; `driver.clock()` now reads the device's cycle and fixed `bounty_board_list`, `_states`, `bounty_detail` and
-     `chat_list_*`/`ride_meetup*` patterns; still 24-hour only: `ride_detail` (flight), `ride_list` (label),
-     `ride_settle_owing*` (reminder copy), `bounty_status_helper`, `_states`, `_worst`.
+     `chat_list_*`/`ride_meetup*` patterns; the rest (`ride_detail`, `ride_list`, `ride_settle_owing*`, `bounty_status_helper`, `_states`, `_worst`, and
+     `bounty_status_poster`) read set times through `hourcycle.clock_at` and passed in 12-hour zh-Hans and en and in
+     24-hour zh-Hans (`fix/verify-followups-1119`); `test_clock_guard.py` now fails a case that hard-codes a clock.
+     Open (product): the ride create confirm sheet shows the stored flight time `09:10` in a 12-hour run while the
+     picker and ticket read `9:10 AM`. Tooling: `merge-when-green.sh` waits for checks on the pushed head (#184);
+     `lint:changed` runs the size check.
 
 1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The

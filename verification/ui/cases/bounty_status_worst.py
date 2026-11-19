@@ -13,6 +13,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/live/', 'src/features/bounty/shared/',
         'src/features/bounty/post/timeText.ts', 'src/features/home/', 'src/ui/SheetFrame.tsx', 'src/ui/LiveCard.tsx',
@@ -29,7 +30,7 @@ POSTER = 'Wan Nurul Aisyah binti Wan Abdul Rahman'
 HELPER = 'Muhammad Hafiz Haikal bin Mohd Yusof Ali'
 REASON_START = 'Kotak bungkusan remuk dan dua cawan di dalamnya pecah.'
 REASON_END = '另外少了一包纸巾，'
-CLOCK = r'\d{1,2}[:.]\d{2}'
+CLOCK = clock()
 DATED = r'\S.*\S\s' + CLOCK
 LIVE = ['-uiVerifyShellFeed', 'none', '-uiVerifyBountyLive', 'posterDone,posterEnRoute,helperAssigned,applicantWaiting',
         '-uiVerifyBountyLiveData', 'worst']
