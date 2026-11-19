@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from ride import add_button, open_list, relaunch_list  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/InlineState.tsx', 'verification/ui/gestures.py']
@@ -34,7 +35,7 @@ relaunch_list(ui, drop=FAIL_FIRST, add=['-uiVerifyRideFail', 'refresh'])
 ui.element(FIRST)
 ui.at_rest()
 pull(ui, ui.read())
-stale_text = re.compile(ui.pattern('ride.list.stale', time=r'\d{2}:\d{2}'))
+stale_text = re.compile(ui.pattern('ride.list.stale', time=clock()))
 ui.wait_label('ride-list-stale', lambda label: bool(stale_text.fullmatch(label)),
               'a failed refresh shows no stale note with the time')
 items = ui.read()

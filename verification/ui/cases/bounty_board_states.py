@@ -7,6 +7,7 @@ from board import visible as board_visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py', 'src/features/place/', 'src/features/block/', 'verification/ui/gestures.py']
 LOCALES = ['zh-Hans', 'ms']
@@ -82,7 +83,7 @@ ui.element(FIRST_CARD)
 ui.at_rest()
 assert by_id(ui.read(), 'bounty-board-stale') is None, 'the stale notice shows before any pull (a launch load failed)'
 pull(ui, ui.read())
-stale_text = re.compile(ui.pattern('bounty.board.state.stale', time=r'\d{2}:\d{2}'))
+stale_text = re.compile(ui.pattern('bounty.board.state.stale', time=clock()))
 stale = ui.wait_label('bounty-board-stale', lambda label: bool(stale_text.fullmatch(label)),
                       'a failed refresh shows no stale notice with a time')
 items = ui.read()

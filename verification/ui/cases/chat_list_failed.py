@@ -9,6 +9,7 @@ from bounty import relaunch  # noqa: E402
 from chat import open_list, rows  # noqa: E402
 from gestures import pull  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py', 'src/ui/InlineState.tsx',
         'src/ui/OfflineLine.tsx', 'src/lib/live/', 'verification/ui/gestures.py']
@@ -38,7 +39,7 @@ ui.tap('tab-messages')
 ui.element(FIRST)
 ui.at_rest()
 pull(ui, ui.read())
-stale = re.compile(ui.pattern('live.staleAt', time=r'\d{2}:\d{2}'))
+stale = re.compile(ui.pattern('live.staleAt', time=clock()))
 ui.wait_label('chat-list-stale', lambda label: bool(stale.fullmatch(label)),
               'a failed refresh shows no stale note with the time')
 items = ui.read()

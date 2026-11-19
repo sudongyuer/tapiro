@@ -9,7 +9,8 @@ channel is back. The header is read over and over from launch until it changes, 
 signals by the Mac's clock (the record's `startedAt`): the plist can lag past this bounty's signal, so a single read
 taken when the other signal showed up in it once landed after both (2026-11-11). The signals are 20 s apart because
 one `axe describe-ui` took up to 7 s at a load average of 64, and the offline line is awaited on screen before the drop is
-read from the record, which lagged past most of the line's 15 s on screen at a load average of 85."""
+read from the record, which lagged past most of the line's 15 s on screen at a load average of 85; with describe-ui
+at 2–5 s the arrival and its rest outlasted the whole 15 s in ms (2026-11-18), so the line now stays 32 s."""
 import sys
 import time
 
@@ -26,7 +27,7 @@ SCENE = 'bounty-applicants'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyApplicants', 'stream', '-uiVerifyLive',
-        '12000:bounty.applied:fixture-bounty-other,32000:bounty.applied:fixture-bounty-01,40000:drop,58000:back']
+        '12000:bounty.applied:fixture-bounty-other,32000:bounty.applied:fixture-bounty-01,40000:drop,75000:back']
 OTHER = 'bounty.applied:fixture-bounty-other'
 MINE = 'bounty.applied:fixture-bounty-01'
 LOADS = 'uiVerifyApplicantLoads'

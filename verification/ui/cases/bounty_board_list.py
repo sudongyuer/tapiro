@@ -6,6 +6,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import apply_pill, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home, token  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
@@ -72,7 +73,7 @@ def long_order(items):
 
 reach_home(ui)
 first = visible(ui, FIRST)
-deadline = ui.pattern('bounty.post.confirm.deadlineAt', when=r'.+? \d{2}:\d{2}')
+deadline = ui.pattern('bounty.post.confirm.deadlineAt', when=r'.+? ' + clock())
 assert_label(first, card_label('pickup', '帮取快递', r'RM\s?8', deadline,
                                ui.pattern('bounty.board.card.place', place=re.escape('Sunway Geo 宿舍'),
                                           distance=r'300\sm'),

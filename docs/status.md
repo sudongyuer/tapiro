@@ -185,6 +185,32 @@ core-screen tour).
      changes the screen costs no extra read, as the next read reuses the check's; a retry costs 7–8 s. Intentional
      no-op taps pass `expect_change=False`; the first runs found two the search had missed (own-review long press,
      and field focus under a number pad in `ride_settle_split`, now opted out in `bounty.typed`).
+   - 0g. `verify:full` on e763aca6 (2026-11-19, retro `2026-11-19-verify-full-1119`, 1336 runs, 11 h 57 min; evidence,
+     run log and rerun log in `docs/research/evidence/2026-11-19-verify-full/`): 1231 passed first time, 26 with a tap
+     retry, 56 flaky (32 first attempts a lost AXe session, 15 an assertion, 9 a timeout), 23 failed on both attempts.
+     Text size Large and 24-hour time at start and end. Product bugs fixed (`fix/ask-sheet-first-detent`): the 问小貘
+     sheet opens at 0.56 instead of 0.5, so 自己填 under 「接着上次」 stays whole when en and ms wrap the subtitle (#165
+     moved the header into the bar row; zh-Hans had 5 pt to spare); the belly row's height is held while it loads, so
+     the field and its mic no longer drop 26 pt under the finger (`ask_voice_cloud`, and the suggestion tap of
+     `ask_sheet_answer` dark). Case flaws fixed (`fix/verify-full-1119-cases`): the places `fail` fixture fails each
+     query text once (a key gap sent a partial query that used up the failure); `live_applicants` keeps the channel
+     down 32 s; `ride_create_form` settles on the ticket instead of `at_rest` (the caret blinks), re-measures the ticket
+     after the time (en 12-hour wraps since #180) and gets 300 s; `bounty_post_optional` scrolls up to the live card;
+     `payee_add_bank` and `ask_memory_page` type again once when a value reads wrong; `ocr.same` ignores how a truncated
+     line ends; `paste_into` leaves the app and comes back before its retry (stale paste in `account_flow` and
+     `bounty_post_place`; not exercised in the reruns). All passed on the rerun build (57 runs; flaky ones were lost
+     sessions). Open: BP-13 fails every run when 明天 is the 20th (开始 「20/11/26」 beside 结束 「2026年11月20日」, all
+     locales, reproduced on main); a label beside the picker and a remount key did not change it, so neither shipped.
+     `review_sheet` en dark (Submit did nothing on both attempts at 05:17, passed twice later) and the night's
+     `ask_memory_page` en light (Save left the editor with both fields filled, once, at a load spike) have no cause.
+     Lost sessions on both attempts: `chat_image_viewer` en, `home_fan_out` en, `profile_report_review` ms (all
+     passed on rerun). 12-hour round (`--hour-cycle 12`, 79 time-showing cases, zh-Hans and en light, 158 runs): 135 passed, 5 flaky (4 lost
+     sessions), 18 failed (one of them lost sessions on both attempts). Product: every time on screen reads in 12-hour form (上午8:47, 9:00 PM, 9:00 PTG; zh-Hans
+     writes 早上 before 8:00 and 上午 after, as CLDR does); one open bug, `chat_thread_long` en 12-hour does not open at
+     the newest message (3 of 4 first attempts; en 24-hour passes). The other failures are cases that assert a 24-hour
+     clock; `driver.clock()` now reads the device's cycle and fixed `bounty_board_list`, `_states`, `bounty_detail` and
+     `chat_list_*`/`ride_meetup*` patterns; still 24-hour only: `ride_detail` (flight), `ride_list` (label),
+     `ride_settle_owing*` (reminder copy), `bounty_status_helper`, `_states`, `_worst`.
 
 1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. The

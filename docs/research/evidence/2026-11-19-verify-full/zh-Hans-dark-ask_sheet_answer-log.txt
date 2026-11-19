@@ -1,0 +1,37 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.5s simctl appearance
+  0.3s simctl content_size
+  0.2s simctl launch
+  4.5s axe describe-ui
+  1.5s axe describe-ui
+  1.6s axe describe-ui
+  2.7s axe tap --id tab-ask-tapir --post-delay 0.5
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.6s axe describe-ui
+  3.3s axe tap --id ask-tapir-suggestion-2 --post-delay 0.5
+  1.5s axe describe-ui
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  2.6s axe describe-ui
+  2.6s axe describe-ui
+  2.4s axe describe-ui
+  2.9s axe describe-ui
+  1.7s axe describe-ui
+  2.0s axe describe-ui
+  2.2s axe describe-ui
+  1.7s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/ask_sheet_answer.py", line 25, in <module>
+    ui.wait(lambda items: (by_id(items, 'ask-tapir-prompt') or {}).get('AXValue') == suggestion,
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 142, in wait
+    raise AssertionError(message)
+AssertionError: the suggestion did not fill the field
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 28 commands, median 1.6 s, max 4.5 s (axe describe-ui), 0 timeouts

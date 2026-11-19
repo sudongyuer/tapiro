@@ -109,14 +109,18 @@ export function createFixturePlaces(
   const places = variant === 'worst' ? [WORST_PLACE, ...base] : base;
   const listeners = new Set<(event: PlaceSuggestionsEvent) => void>();
   let sequence = 0;
-  let failNext = fixture === 'fail';
+  // Each query text fails once and its retry succeeds: a pause between typed keys sends a partial query first, and
+  // failing only the first request then answered the full one.
+  const failedQueries = new Set<string>();
   const nextId = (prefix: string) => `${prefix}-${++sequence}`;
 
   return {
     startPlaceSearch: () => nextId('search'),
-    updatePlaceQuery(searchId) {
+    updatePlaceQuery(searchId, query) {
       const requestId = nextId('request');
-      const event: PlaceSuggestionsEvent = failNext
+      const fail = fixture === 'fail' && !failedQueries.has(query);
+      if (fail) failedQueries.add(query);
+      const event: PlaceSuggestionsEvent = fail
         ? { searchId, requestId, status: 'failed', code: 'network' }
         : {
             searchId,
@@ -127,7 +131,6 @@ export function createFixturePlaces(
                 ? []
                 : places.map(({ id, title, subtitle }) => ({ id, title, subtitle })),
           };
-      failNext = false;
       delay(() => listeners.forEach((listener) => listener(event)));
       return requestId;
     },

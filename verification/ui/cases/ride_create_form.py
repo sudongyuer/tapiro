@@ -23,6 +23,7 @@ DEPS = ['src/features/ride/', 'src/lib/deviceClock.ts', 'src/lib/i18n/index.tsx'
         'verification/ui/bounty.py',
         'src/ui/FieldRow.tsx', 'src/ui/SyncedTextField.tsx']
 LOCALES = ['zh-Hans', 'ms']
+BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyPlaces', 'ride', '-AppleICUForce12HourTime', 'YES']
 TIME_ZONE = 'Europe/London'
 
@@ -97,6 +98,9 @@ form_scroll_to(ui, 'ride-form-seats')
 step(ui, 'ride-form-seats', up=True, times=2)
 ui.wait_label('ride-form-seats-label', lambda label: ui.t('ride.create.form.sixSeats', count=5) in label,
               'six people do not read 记得叫 6 座的车')
+# Measured again here: a long status and time take two lines since #180 (en 12-hour 「3 more needed · Today 10:30 PM」),
+# so the ticket may grow when the time is picked; typing the estimate must not change it.
+height = ui.element('ride-form-ticket')['frame']['height']
 form_scroll_to(ui, 'ride-form-estimate')
 ui.tap('ride-form-estimate')
 ui.type('76')
@@ -107,7 +111,9 @@ ui.wait_label('ride-form-ticket', lambda label: '13' in label, 'the ticket stub 
 assert abs(ui.element('ride-form-ticket')['frame']['height'] - height) < 1, 'the live ticket changed height'
 assert_touch_target(form_scroll_to(ui, 'ride-form-airport-remove'), '移除')
 ui.element('ride-form-bags')
-ui.at_rest()
+# Not at_rest: the caret blinks in the fare field under the pad, and waiting for two equal frames took 45 s of the
+# budget (zh-Hans light, both attempts, 2026-11-18).
+ui.settled(lambda items: by_id(items, 'ride-form-ticket'), 'the live ticket never settled')
 shot = Shot(ui.capture('03-filled'), ui.read()[0]['frame']['width'])
 ticket = ui.element('ride-form-ticket')['frame']
 stub = ocr.find(ocr.lines_in(shot, ui.locale), r'RM\s?13', {**ticket, 'x': ticket['x'] - 40, 'width': ticket['width'] + 80})

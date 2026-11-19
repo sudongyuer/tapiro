@@ -1,0 +1,63 @@
+device: Tapiro Verify (A5CC377F-F7C4-4AC8-9AE2-269111818C19)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl content_size
+  0.2s simctl launch
+header reads [(-6.6, 3), (3.3, 3), (9.3, 3), (15.9, 3), (21.3, 4)] s after the other signal; this bounty's signal at 20.0 s
+  1.9s axe describe-ui
+  5.2s axe describe-ui
+  4.2s axe describe-ui
+  3.4s axe describe-ui
+  0.4s screenshot 01-before-signals
+  1.5s axe describe-ui
+  3.0s axe describe-ui
+  2.8s axe describe-ui
+  2.5s axe describe-ui
+  3.8s axe describe-ui
+  1.9s axe describe-ui
+  3.2s axe describe-ui
+  2.5s axe describe-ui
+  1.7s axe describe-ui
+  4.1s axe describe-ui
+  4.2s axe describe-ui
+  2.6s axe describe-ui
+  2.7s axe describe-ui
+  3.3s axe describe-ui
+  2.6s axe describe-ui
+  1.7s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 02-after-signal
+  1.6s axe describe-ui
+  1.6s axe describe-ui
+  1.7s axe describe-ui
+  1.7s axe describe-ui
+  1.5s axe describe-ui
+  1.6s axe describe-ui
+  2.0s axe describe-ui
+  1.6s axe describe-ui
+  1.8s axe describe-ui
+  1.5s axe describe-ui
+  1.6s axe describe-ui
+  2.5s axe describe-ui
+  1.9s axe describe-ui
+  2.0s axe describe-ui
+  2.0s axe describe-ui
+  1.9s axe describe-ui
+  2.1s axe describe-ui
+  1.7s axe describe-ui
+  2.2s axe describe-ui
+  2.3s axe describe-ui
+  1.6s axe describe-ui
+  2.1s axe describe-ui
+  1.9s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/live_applicants.py", line 85, in <module>
+    line = ui.settled(lambda items: by_id(items, OFFLINE), 'the offline line never appeared after the drop', timeout=45)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 155, in settled
+    return self.wait(check, message, timeout)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 142, in wait
+    raise AssertionError(message)
+AssertionError: the offline line never appeared after the drop
+  0.4s screenshot failure
+latency on Tapiro Verify: 51 commands, median 1.9 s, max 5.2 s (axe describe-ui), 0 timeouts

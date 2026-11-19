@@ -11,6 +11,7 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 from ride import assert_ticket_colour, within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/PillButton.tsx',
@@ -21,7 +22,7 @@ BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'meetup']
 CALLS = 'uiVerifyRideDetailCalls'
 SELF = '00000000-0000-4000-8000-000000000001'
-CLOCK = r'\d{2}:\d{2}'
+CLOCK = clock()
 
 ui = UI(*sys.argv[1:])
 

@@ -1,0 +1,18 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl content_size
+  0.2s simctl launch
+  1.3s axe describe-ui
+  2.2s axe describe-ui
+  1.1s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.2s axe describe-ui
+  1.1s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/vf19-all/verification/ui/cases/chat_thread_long.py", line 31, in <module>
+    assert newest['frame']['y'] + newest['frame']['height'] <= composer['frame']['y'] + 1, 'the newest is under the composer'
+AssertionError: the newest is under the composer
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 11 commands, median 0.4 s, max 2.2 s (axe describe-ui), 0 timeouts

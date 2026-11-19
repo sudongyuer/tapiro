@@ -1,0 +1,79 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.1s simctl appearance
+  0.1s simctl content_size
+  0.1s simctl launch
+header reads [(-10.1, 3), (-5.3, 3), (-2.4, 3), (0.7, 3), (3.8, 3), (6.6, 3), (9.8, 3), (12.8, 3), (15.7, 3), (18.6, 4)] s after the other signal; this bounty's signal at 20.0 s
+  0.9s axe describe-ui
+  0.7s axe describe-ui
+  1.8s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  0.4s screenshot 01-before-signals
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.6s axe describe-ui
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.5s axe describe-ui
+  1.7s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  1.4s screenshot 02-after-signal
+  1.5s axe describe-ui
+  1.7s axe describe-ui
+  1.8s axe describe-ui
+  1.4s axe describe-ui
+  1.6s axe describe-ui
+  1.7s axe describe-ui
+  1.7s axe describe-ui
+  1.6s axe describe-ui
+  1.7s axe describe-ui
+  1.7s axe describe-ui
+  2.2s axe describe-ui
+  1.7s axe describe-ui
+  1.5s axe describe-ui
+  1.6s axe describe-ui
+  2.2s axe describe-ui
+  2.2s axe describe-ui
+  1.7s axe describe-ui
+  1.6s axe describe-ui
+  1.7s axe describe-ui
+  1.6s axe describe-ui
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+  1.9s axe describe-ui
+  1.6s axe describe-ui
+  1.5s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/live_applicants.py", line 85, in <module>
+    line = ui.settled(lambda items: by_id(items, OFFLINE), 'the offline line never appeared after the drop', timeout=45)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 155, in settled
+    return self.wait(check, message, timeout)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 142, in wait
+    raise AssertionError(message)
+AssertionError: the offline line never appeared after the drop
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 67 commands, median 1.5 s, max 2.2 s (axe describe-ui), 0 timeouts

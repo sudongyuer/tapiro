@@ -76,7 +76,8 @@ def summary(key, **values):
 
 def clock(at):
     twelve = at.hour % 12 or 12
-    return DAY + rf'(?:0?{at.hour}|0?{twelve})[:.]{at.minute:02d}'
+    return (DAY + rf'(?:凌晨|早上|上午|中午|下午|晚上)?(?:0?{at.hour}|0?{twelve})[:.]{at.minute:02d}'
+            r'(?:\s?(?:AM|PM|PG|TGH|PTG|MLM))?')
 
 
 def default_eta(now):

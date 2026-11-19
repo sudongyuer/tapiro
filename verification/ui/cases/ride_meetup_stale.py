@@ -6,6 +6,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
+from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py']
 SCENE = 'ride-detail'
@@ -18,7 +19,7 @@ ui = UI(*sys.argv[1:])
 ui.element('ride-detail-arrivals')
 assert by_id(ui.read(), 'ride-detail-live-stale') is None, '可能不是最新 shows before any load failed'
 ui.wait_label('ride-detail-live-stale',
-              lambda label: re.fullmatch(ui.pattern('ride.detail.staleLive', time=r'\d{2}:\d{2}'), label or ''),
+              lambda label: re.fullmatch(ui.pattern('ride.detail.staleLive', time=clock()), label or ''),
               'the poll never failed into 「可能不是最新」', timeout=POLL_S * 3)
 assert by_id(ui.read(), 'ride-detail-arrival-fixture-ride-xiaolin'), 'the arrival row went away with the failed poll'
 ui.at_rest()

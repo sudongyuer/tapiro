@@ -67,7 +67,7 @@ read = ocr.lines_in(shot, ui.locale)
 for identifier in heads:
     frame = by_id(items, identifier)['frame']
     main = {**frame, 'width': frame['width'] - STUB_WIDTH}
-    clocks = ocr.find(read, r'\d{2}[:.]\d{2}', main)
+    clocks = ocr.find(read, r'\d{1,2}[:.]\d{2}', main)
     assert clocks, f'{identifier} cuts its departure time or pushes it under the stub: {[line["text"] for line in read]}'
 if LARGE_TEXT:
     print(f'PASS: at AX5 the status lines in the ticket inks and the departure times whole, left of the stub: {heads}')

@@ -22,7 +22,12 @@ def lines_in(shot, locale):
 
 
 def same(a, b):
-    return a['text'] == b['text'] and abs(a['x'] - b['x']) < 4 and abs(a['y'] - b['y']) < 4
+    return clipped(a['text']) == clipped(b['text']) and abs(a['x'] - b['x']) < 4 and abs(a['y'] - b['y']) < 4
+
+
+def clipped(text):
+    # The two reads end a truncated line differently (「Tower...」 and 「Tower….」, ask_memory_worst en dark, 2026-11-18).
+    return re.sub(r'[.…]+$', '…', text)
 
 
 def inside(box, f, slack=1):

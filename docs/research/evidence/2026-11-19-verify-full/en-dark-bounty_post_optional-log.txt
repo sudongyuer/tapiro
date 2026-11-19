@@ -1,0 +1,83 @@
+device: Tapiro Verify (A5CC377F-F7C4-4AC8-9AE2-269111818C19)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl content_size
+  0.2s simctl launch
+  4.7s axe describe-ui
+  1.9s axe describe-ui
+  2.9s axe describe-ui
+  3.4s axe tap --label Post a Bounty --post-delay 0.5
+  2.0s axe describe-ui
+  1.6s axe describe-ui
+  1.4s axe describe-ui
+  3.2s axe tap --id bounty-post-pick-free --post-delay 0.5
+  1.9s axe describe-ui
+  1.9s axe describe-ui
+  1.6s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  0.4s screenshot 01-collapsed
+  1.2s axe describe-ui
+  2.3s axe describe-ui
+  2.3s axe describe-ui
+  2.6s axe tap -x 362 -y 339 --post-delay 0.5
+  0.7s axe type Parcel
+  2.2s axe describe-ui
+  3.9s axe describe-ui
+  2.1s axe describe-ui
+  1.8s axe describe-ui
+  2.1s axe describe-ui
+  2.9s axe tap -x 308 -y 391 --post-delay 0.5
+  2.4s axe describe-ui
+  2.0s axe describe-ui
+  3.0s axe tap -x 241 -y 534 --post-delay 0.5
+  1.9s axe describe-ui
+  1.7s axe describe-ui
+  2.2s axe describe-ui
+  2.4s axe tap -x 362 -y 501 --post-delay 0.5
+  0.7s screenshot frame
+  0.9s screenshot frame
+  2.7s axe describe-ui
+  2.7s axe describe-ui
+  1.8s axe describe-ui
+  1.8s axe describe-ui
+  2.8s axe tap -x 201 -y 728 --post-delay 0.5
+  1.7s axe describe-ui
+  1.8s axe describe-ui
+  2.6s axe drag --start-x 201 --start-y 362 --end-x 201 --end-y 282 --duration 0.6 --steps 30
+  1.5s axe describe-ui
+  1.3s axe describe-ui
+  2.8s axe tap --id bounty-post-add-time --post-delay 0.5
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.4s axe describe-ui
+  1.3s axe describe-ui
+  2.0s axe tap -x 194 -y 811 --post-delay 0.5
+  1.6s axe describe-ui
+  0.4s screenshot 02a-calendar
+  1.4s axe describe-ui
+  1.5s axe describe-ui
+  1.4s axe describe-ui
+  2.1s axe tap -x 8 -y 814 --post-delay 0.5
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  2.8s axe tap --id bounty-post-pick-time-tomorrow --post-delay 0.5
+  1.4s axe describe-ui
+  0.4s screenshot 02b-time-pick
+  1.3s axe describe-ui
+  1.4s axe describe-ui
+  1.2s axe describe-ui
+  2.7s axe tap --label Time window --post-delay 0.5
+  1.3s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+  1.2s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/bounty_post_optional.py", line 80, in <module>
+    assert dates[0] == dates[1], f'开始 and 结束 on one day write the date differently: {dates} (BP-13)'
+AssertionError: 开始 and 结束 on one day write the date differently: ['20/11/2026', '20 Nov 2026'] (BP-13)
+  0.4s screenshot failure
+latency on Tapiro Verify: 76 commands, median 1.6 s, max 4.7 s (axe describe-ui), 0 timeouts

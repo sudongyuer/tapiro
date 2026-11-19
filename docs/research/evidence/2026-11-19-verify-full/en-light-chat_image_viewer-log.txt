@@ -1,0 +1,77 @@
+device: Tapiro Verify 2 (6E3235E4-D974-46C7-9846-D46A50D548DE)
+time zone: Asia/Kuala_Lumpur
+  0.2s simctl appearance
+  0.2s simctl content_size
+  0.2s simctl launch
+  0.9s axe describe-ui
+  2.2s axe describe-ui
+  1.2s axe describe-ui
+  1.0s axe describe-ui
+  2.4s axe tap --id tab-messages --post-delay 0.5
+  3.8s axe describe-ui
+  2.2s axe describe-ui
+  0.8s axe describe-ui
+  0.9s axe describe-ui
+  1.3s axe describe-ui
+  2.0s axe tap --id chat-row-fixture-chat-bounty --post-delay 0.5
+  4.2s axe describe-ui
+  1.4s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 01-thread
+  0.8s axe describe-ui
+  0.8s axe describe-ui
+  0.8s axe describe-ui
+  2.2s axe tap --id chat-bubble-fixture-chat-bounty-m4 --post-delay 0.5
+  4.9s axe describe-ui
+  0.8s axe describe-ui
+  1.4s screenshot frame
+  0.4s screenshot frame
+  1.4s screenshot 02-viewer
+  0.6s axe describe-ui
+  0.7s axe describe-ui
+  1.3s axe tap -x 201 -y 437 --post-delay 0.5
+  3.1s axe describe-ui
+  0.4s screenshot 02b-viewer-bars
+  0.7s axe describe-ui
+  1.3s axe tap -x 38 -y 84 --post-delay 0.5
+  4.7s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.9s axe describe-ui
+  0.8s axe describe-ui
+  2.5s axe touch -x 117 -y 629 --down --up --delay 1.2
+  1.0s axe describe-ui
+  0.9s axe describe-ui
+  0.4s screenshot frame
+  0.4s screenshot frame
+  0.4s screenshot 03-menu
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  0.9s axe describe-ui
+  2.3s axe tap --label Report --post-delay 0.5
+  5.7s axe describe-ui
+tap retry: 'Report': unchanged 5.7 s after tap 1; tapping again (retry 1 of 2)
+  2.9s axe tap --label Report --post-delay 0.5
+  5.2s axe describe-ui
+Traceback (most recent call last):
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/cases/chat_image_viewer.py", line 62, in <module>
+    ui.tap_label(ui.t('chat.thread.report'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 197, in tap_label
+    tap_checked(self, repr(label), lambda: self.axe('tap', '--label', label, '--post-delay', '0.5'), find,
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/taps.py", line 92, in tap_checked
+    waited = quiet(ui, before, clock, sleep)
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/taps.py", line 64, in quiet
+    after = ui.snapshot()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 113, in snapshot
+    self.state()
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 102, in state
+    tree = json.loads(self.axe('describe-ui'))
+  File "/Users/sudongyu/work/tapiro-worktrees/verify-full-1119/verification/ui/driver.py", line 94, in axe
+    raise AxeError(f'axe {" ".join(args)} failed: {error}')
+driver.AxeError: axe describe-ui failed: Error: Timed out creating the simulator remote automation session
+  0.4s screenshot failure
+latency on Tapiro Verify 2: 57 commands, median 0.9 s, max 5.7 s (axe describe-ui), 0 timeouts

@@ -59,6 +59,15 @@ describe('place fixtures', () => {
     expect(events.map((event) => event.status)).toEqual(['failed', 'ok']);
   });
 
+  test('fail fails each new query text once, so a partial query does not use up the failure', () => {
+    const places = createFixturePlaces('fail', now);
+    const events: PlaceSuggestionsEvent[] = [];
+    places.addPlaceSuggestionsListener((event) => events.push(event));
+    const searchId = places.startPlaceSearch(null);
+    for (const text of ['sunwa', 'sunway', 'sunway']) places.updatePlaceQuery(searchId, text);
+    expect(events.map((event) => event.status)).toEqual(['failed', 'failed', 'ok']);
+  });
+
   test('resolveFail lists results but cannot resolve them', async () => {
     const { places, events, searchId } = query('resolveFail');
     expect(events[0].status).toBe('ok');
