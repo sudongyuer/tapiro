@@ -10,14 +10,14 @@ import time
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, by_id, clock  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/ui/PillButton.tsx']
 SCENE = 'ride-detail'
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyRideDetail', 'appealOpen']
 CALLS = 'uiVerifyRideDetailCalls'
-CLOCK = r'\d{2}:\d{2}'
+CLOCK = clock()
 
 ui = UI(*sys.argv[1:])
 

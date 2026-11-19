@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import cards, distance_text, ink_box, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
-from driver import UI, assert_touch_target, bottom, by_id, close, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, bottom, by_id, clock, close, reach_home, token  # noqa: E402
 from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
@@ -67,7 +67,7 @@ assert_reads('bounty-detail-place', re.escape('Sunway Geo 宿舍'), re.escape(hi
 left = '|'.join(ui.pattern(f'bounty.detail.{unit}_{form}', **{name: r'\d+'})
                 for unit, name in (('urgentHours', 'hours'), ('urgentMinutes', 'minutes'))
                 for form in ('one', 'other'))
-assert_reads('bounty-detail-time', ui.pattern('bounty.post.confirm.deadlineAt', when=r'.+? \d{2}:\d{2}'), left)
+assert_reads('bounty-detail-time', ui.pattern('bounty.post.confirm.deadlineAt', when=r'.+? ' + clock()), left)
 assert_reads('bounty-detail-poster', re.escape('小林'), re.escape(ui.t('bounty.tier.reliable')))
 assert_reads('bounty-detail-description', re.escape('快递在 Sunway Geo 楼下的驿站'))
 pinned = apply_frame()

@@ -1,10 +1,10 @@
 import re
 
-from driver import by_id, reach_home
+from driver import by_id, clock, reach_home
 
 ROW_FILL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
 LIST_GROUND = {'light': (242, 242, 247), 'dark': (0, 0, 0)}
-CLOCK = r'\d{2}:\d{2}'
+CLOCK = clock()
 
 
 def open_list(ui, ready='chat-list'):

@@ -291,6 +291,20 @@ def picker_time(value):
     return plain(value.split(',')[0])
 
 
+# A case reads the clock as the device writes it: 24-hour unless the run is 12-hour (`--hour-cycle 12` or ARGS).
+TWELVE_HOUR_CLOCKS = {
+    'zh-Hans': r'(?:凌晨|早上|上午|中午|下午|晚上)\d{1,2}:\d{2}',
+    'en': r'\d{1,2}:\d{2}\s?[AP]M',
+    'ms': r'\d{1,2}:\d{2}\s?(?:PG|TGH|PTG|MLM)',
+}
+
+
+def clock(locale=None):
+    if '-AppleICUForce12HourTime' not in os.environ.get('TAPIRO_VERIFY_ARGS', '').split():
+        return r'\d{2}:\d{2}'
+    return TWELVE_HOUR_CLOCKS[locale or sys.argv[4]]
+
+
 def by_id(items, identifier):
     return next((i for i in items if i.get('AXUniqueId') == identifier), None)
 
