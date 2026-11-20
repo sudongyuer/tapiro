@@ -2,22 +2,27 @@ import { describe, expect, test } from 'bun:test';
 
 import type { NoticePermission } from '@/lib/notifications/types';
 
+import type { DeviceToken } from './deviceToken';
 import { createPushRegistration } from './pushRegistration';
 
-const TOKEN = 'ExponentPushToken[abc]';
+const TOKEN = 'ab'.repeat(32);
+const DEVICE: DeviceToken = { token: TOKEN, environment: 'production' };
 
-function setup(permission: NoticePermission = 'provisional', token: string | null = TOKEN) {
+function setup(permission: NoticePermission = 'provisional', initial: DeviceToken | null = DEVICE) {
   const calls: string[] = [];
+  const environments: string[] = [];
+  let device = initial;
   let stored: string | null = null;
   let current = permission;
   let failNext = false;
   let hold: Promise<void> | null = null;
   const push = createPushRegistration({
     permission: async () => current,
-    token: async () => token,
+    token: async () => device,
     rpc: {
-      async register(value, language) {
+      async register(value, language, environment) {
         calls.push(`register ${value} ${language}`);
+        environments.push(environment);
         if (hold) await hold;
         calls.push('registered');
         if (failNext) {
@@ -34,7 +39,9 @@ function setup(permission: NoticePermission = 'provisional', token: string | nul
   return {
     push,
     calls,
+    environments,
     stored: () => stored,
+    resign: (environment: DeviceToken['environment']) => (device = { token: TOKEN, environment }),
     allow: (next: NoticePermission) => (current = next),
     failNext: () => (failNext = true),
     holdRegister() {
@@ -70,7 +77,16 @@ describe('push token registration', () => {
     expect(sent(calls)).toEqual([`register ${TOKEN} en`]);
   });
 
-  test('without a token (no EAS project yet) nothing is sent', async () => {
+  test('registers the APNs environment with the token, and again when the build signing changes it', async () => {
+    const { push, calls, environments, resign } = setup('allowed');
+    await push.sync('u1', 'en');
+    resign('sandbox');
+    await push.sync('u1', 'en');
+    expect(sent(calls)).toEqual([`register ${TOKEN} en`, `register ${TOKEN} en`]);
+    expect(environments).toEqual(['production', 'sandbox']);
+  });
+
+  test('without a device token nothing is sent', async () => {
     const { push, calls } = setup('allowed', null);
     await push.sync('u1', 'en');
     expect(calls).toEqual([]);

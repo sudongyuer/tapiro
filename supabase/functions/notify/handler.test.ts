@@ -23,7 +23,7 @@ const due = (queueId: number, overrides: Partial<DuePush> = {}): DuePush => ({
   threadId: `bounty:bounty-${queueId}`,
   actorName: 'Alice',
   subject: { title: '帮取快递' },
-  tokens: [{ token: `ExponentPushToken[${queueId}]`, language: 'en' }],
+  tokens: [{ token: `apns-${queueId}`, language: 'en', environment: 'production' }],
   ...overrides,
 });
 
@@ -52,13 +52,13 @@ function harness(batches: DuePush[][], answer?: (push: OutgoingPush) => SendResu
 }
 
 describe('handleNotify', () => {
-  test('sends each due push to every token in its language, grouped by thread, with ids only in data', async () => {
+  test('sends each due push to every token in its language and APNs environment, grouped by thread, with ids only in data', async () => {
     const run = harness([
       [
         due(1, {
           tokens: [
-            { token: 'ExponentPushToken[phone]', language: 'zh-Hans' },
-            { token: 'ExponentPushToken[ipad]', language: 'ms' },
+            { token: 'apns-phone', language: 'zh-Hans', environment: 'production' },
+            { token: 'apns-ipad', language: 'ms', environment: 'sandbox' },
           ],
         }),
       ],
@@ -69,7 +69,8 @@ describe('handleNotify', () => {
       [
         'zh-Hans',
         {
-          to: 'ExponentPushToken[phone]',
+          to: 'apns-phone',
+          environment: 'production',
           title: '帮取快递',
           body: 'Alice 选了你来帮忙',
           threadId: 'bounty:bounty-1',
@@ -80,7 +81,8 @@ describe('handleNotify', () => {
       [
         'ms',
         {
-          to: 'ExponentPushToken[ipad]',
+          to: 'apns-ipad',
+          environment: 'sandbox',
           title: '帮取快递',
           body: 'Alice memilih anda untuk membantu',
           threadId: 'bounty:bounty-1',
@@ -105,19 +107,17 @@ describe('handleNotify', () => {
         [
           due(3, {
             tokens: [
-              { token: 'ExponentPushToken[old]', language: 'en' },
-              { token: 'ExponentPushToken[new]', language: 'en' },
+              { token: 'apns-old', language: 'en', environment: 'production' },
+              { token: 'apns-new', language: 'en', environment: 'production' },
             ],
           }),
         ],
       ],
       (push) =>
-        push.message.to === 'ExponentPushToken[old]'
-          ? { ok: false, error: 'DeviceNotRegistered' }
-          : { ok: true },
+        push.message.to === 'apns-old' ? { ok: false, error: 'Unregistered' } : { ok: true },
     );
     await handleNotify(post('service'), run.deps);
-    expect(run.dropped).toEqual(['ExponentPushToken[old]']);
+    expect(run.dropped).toEqual(['apns-old']);
     expect(run.finished).toEqual([[3, null]]);
   });
 
@@ -166,14 +166,14 @@ describe('handleNotify', () => {
 
 describe('handleNotify when the database fails mid-run', () => {
   test('a push whose every device is unregistered is no_device, and a failing token drop skips nothing', async () => {
-    const run = harness([[due(10), due(11)]], () => ({ ok: false, error: 'DeviceNotRegistered' }));
+    const run = harness([[due(10), due(11)]], () => ({ ok: false, error: 'Unregistered' }));
     run.deps.dropToken = async (token) => {
-      if (token === 'ExponentPushToken[10]') throw new Error('db');
+      if (token === 'apns-10') throw new Error('db');
       run.dropped.push(token);
     };
     const res = await handleNotify(post('service'), run.deps);
     expect(await res.json()).toEqual({ sent: 0, failed: 2, unfinished: 0 });
-    expect(run.dropped).toEqual(['ExponentPushToken[11]']);
+    expect(run.dropped).toEqual(['apns-11']);
     expect(run.finished).toEqual([
       [10, 'no_device'],
       [11, 'no_device'],
@@ -201,8 +201,9 @@ describe('handleNotify when the database fails mid-run', () => {
     const many = Array.from({ length: 12 }, (_, index) =>
       due(200 + index, {
         tokens: Array.from({ length: 10 }, (__, device) => ({
-          token: `ExponentPushToken[${index}-${device}]`,
+          token: `apns-${index}-${device}`,
           language: 'en',
+          environment: 'production' as const,
         })),
       }),
     );
@@ -242,7 +243,8 @@ describe('recordingSender', () => {
         queueId: 9,
         language: 'en',
         message: {
-          to: 'ExponentPushToken[x]',
+          to: 'apns-x',
+          environment: 'sandbox',
           title: 'T',
           body: 'B',
           threadId: 'ride:r',
@@ -255,7 +257,7 @@ describe('recordingSender', () => {
     expect(rows).toEqual([
       {
         queue_id: 9,
-        token: 'ExponentPushToken[x]',
+        token: 'apns-x',
         language: 'en',
         title: 'T',
         body: 'B',

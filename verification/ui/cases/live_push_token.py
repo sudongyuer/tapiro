@@ -1,5 +1,5 @@
 """Push token registration (spec, Permission and Push copy): with provisional authorisation the signed-in app registers its
-Expo push token once with register_push_token in the app language; choosing another language in settings registers this
+APNs device token and its environment once with register_push_token in the app language; choosing another language in settings registers this
 device again with that language (not set_push_language, which would change every device), and choosing the launch
 language again does the same, and the back button beside the settings title follows each change; 退出登录 sends unregister_push_token for the same token before the session ends and lands on
 welcome. The verify build replaces the token and the RPCs at their boundary and records each call in the defaults key
@@ -15,7 +15,7 @@ DEPS = ['src/lib/push/', 'src/lib/notifications/', 'src/features/account/', 'src
         'src/app/(tabs)/me/', 'verification/ui/choose.py']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyNotifications', 'provisional']
 KEY = 'uiVerifyPushCalls'
-TOKEN = 'ExponentPushToken[uiVerify]'
+TOKEN = 'f0' * 32
 
 ui = UI(*sys.argv[1:])
 
@@ -29,7 +29,7 @@ def wait_calls(expected):
     ui.wait(lambda items: calls() == expected or None, f'push calls are {calls()}, not {expected}', timeout=30)
 
 
-registered = {'name': 'register_push_token', 'args': {'token': TOKEN, 'language': ui.locale}}
+registered = {'name': 'register_push_token', 'args': {'token': TOKEN, 'language': ui.locale, 'environment': 'sandbox'}}
 reach_home(ui)
 wait_calls([registered])
 
@@ -40,7 +40,7 @@ ui.wait_label('settings-sign-out', lambda label: label == ui.t('account.settings
 ui.tap_label(ui.t('languages.' + other))
 ui.wait_label('settings-sign-out', lambda label: label == ui.t_in(other, 'account.settings.signOut'),
               f'settings did not switch to {other}')
-language = {'name': 'register_push_token', 'args': {'token': TOKEN, 'language': other}}
+language = {'name': 'register_push_token', 'args': {'token': TOKEN, 'language': other, 'environment': 'sandbox'}}
 wait_calls([registered, language])
 ui.wait_label('BackButton', lambda label: label == ui.t_in(other, 'shell.tabs.me'), f'the back title did not switch to {other}')
 ui.capture('01-language')

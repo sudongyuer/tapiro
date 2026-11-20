@@ -30,8 +30,9 @@ installs with `bun run device-install`).
   local database on 2026-11-06 (`supabase db reset --local`, test accounts reseeded) and all 49 files, 1721 tests pass.
 - Live updates and push (`docs/plans/2026-11-03-realtime-push.md`): steps 1 (server, #62) and 2 (app, #66) are merged;
   the owner's 2026-11-05 answers added quiet hours for the bounty you are on and a live-only `bounty.expired` to
-  pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3 waits on the paid account;
-  the spec stays `approved` until then.
+  pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3's
+  delivery is built as direct APNs (2026-11-20, `docs/specs/2026-11-20-apns-direct-design.md`, D1–D9 for veto); it
+  waits on the owner's `APNS_PRIVATE_KEY` and a device run (「Release builds」). The spec stays `approved` until then.
 
 ## Queue
 
@@ -455,8 +456,15 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   1.0.0 (20261120.1227) uploaded 2026-11-20 with the fix and passed processing (`COMPLETE`). After an upload, `bun run testflight` waits up to 15 min
   (`TAPIRO_PROCESSING_WAIT`) for Apple's processing through `scripts/asc-upload-status.mjs` and fails with Apple's
   error codes on `FAILED`; `node scripts/asc-upload-status.mjs <version> <build>` checks one later.
-- Push will not arrive on TestFlight or cabled builds: `supabase/functions/notify` sends through Expo's push service,
-  which would need our APNs key; queued: move `notify` to direct APNs (key `88Y29CGN9U` exists).
+- Push goes straight to APNs (2026-11-20, `docs/specs/2026-11-20-apns-direct-design.md`): the app registers its APNs
+  token with `production` (TestFlight) or `sandbox` (cabled Release, dev builds), and `notify` signs an ES256 token with
+  key `88Y29CGN9U`. On hosted, `APNS_KEY_ID` and `APNS_TEAM_ID` are set and `notify` is deployed with the migration
+  `20261121000100_apns_tokens`; until `APNS_PRIVATE_KEY` exists every push fails as `apns_not_configured` (never shown
+  as sent). Owner: Dashboard → Edge Functions → Secrets → add `APNS_PRIVATE_KEY` with the whole
+  `AuthKey_88Y29CGN9U.p8` (BEGIN/END lines included), or
+  `supabase secrets set --project-ref wkpgoildusumtejzhtkv APNS_PRIVATE_KEY="$(cat ~/.appstoreconnect/private_keys/AuthKey_88Y29CGN9U.p8)"`.
+  The hosted poke and drain already reach `notify` with the cron secret. The device
+  check is in the spec's Verification; builds before this change register nothing, so install a new one first.
 - Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
   14 Pro (its UDID, or connect it and approve); the Paid Apps agreement,
   tax and banking in App Store Connect (in-app purchase); the Google Cloud iOS and web client IDs and the hosted Google
