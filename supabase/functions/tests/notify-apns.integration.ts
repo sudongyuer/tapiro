@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 import { CRON_SECRET_HEADER } from '../_shared/cronSecret';
 import { TEST_APNS_HEADER, TEST_KEY_ID, TEST_TEAM_ID } from '../notify/config';
@@ -66,24 +67,14 @@ const subjectId = crypto.randomUUID();
 async function queueDuePush() {
   const later = new Date(Date.now() + 2 * 24 * 3600 * 1000);
   later.setUTCHours(4, 0, 0, 0);
-  const event = await admin
-    .from('events')
-    .insert({
-      recipient: userId,
-      kind: 'bounty.selected',
-      subject_id: subjectId,
-      push: true,
-      created_at: later,
-    })
-    .select('id')
-    .single();
-  if (event.error) throw event.error;
-  eventId = event.data.id;
-  const due = await admin
-    .from('push_queue')
-    .update({ send_at: new Date().toISOString() })
-    .eq('event_id', eventId);
-  if (due.error) throw due.error;
+  const [event] = await localDb()`
+    insert into public.events (recipient, kind, subject_id, push, created_at)
+    values (${userId}, 'bounty.selected', ${subjectId}, true, ${later})
+    returning id`;
+  eventId = Number(event.id);
+  const due =
+    await localDb()`update public.push_queue set send_at = now() where event_id = ${eventId}`;
+  if (due.count !== 1) throw new Error('the event queued no push');
 }
 
 describe('notify through APNs (local stack, mock APNs)', () => {
@@ -152,14 +143,11 @@ describe('notify through APNs (local stack, mock APNs)', () => {
     );
     expect(verified).toBe(true);
 
-    const queued = await admin
-      .from('push_queue')
-      .select('sent_at, failed_at')
-      .eq('event_id', eventId)
-      .single();
-    expect(queued.data?.sent_at).not.toBeNull();
-    expect(queued.data?.failed_at).toBeNull();
-    const tokens = await admin.from('push_tokens').select('token').eq('user_id', userId);
-    expect(tokens.data).toEqual([{ token: LIVE }]);
+    const [queued] = await localDb()`
+      select sent_at, failed_at from public.push_queue where event_id = ${eventId}`;
+    expect(queued.sent_at).not.toBeNull();
+    expect(queued.failed_at).toBeNull();
+    const tokens = await localDb()`select token from public.push_tokens where user_id = ${userId}`;
+    expect([...tokens]).toEqual([{ token: LIVE }]);
   });
 });
