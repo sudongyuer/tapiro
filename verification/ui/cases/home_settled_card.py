@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import UI, accessory, assert_colour, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, accessory, assert_colour, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 from stage import assert_bubble_clear, assert_bubble_whole  # noqa: E402
 
 DEPS = [
@@ -64,6 +64,20 @@ def assert_card(card, button, name):
     assert button.get('AXLabel') == ui.t('home.card.settled.collect'), button.get('AXLabel')
     assert button['frame']['y'] >= card['frame']['y'] + card['frame']['height'] - 1, \
         f'{name}: the button is not below the card text'
+
+
+# The 欠钱 card is one VoiceOver element, so its button has no frame of its own: measure the longest run of its fill
+# down a column clear of the label and the capsule's rounded ends.
+def button_run(shot, card):
+    fill = token('--color-on-card-pay', ui.appearance)
+    x, step = card['x'] + 50, 1 / shot.scale
+    best = run = 0
+    y = card['y']
+    while y < card['y'] + card['height']:
+        run = run + 1 if close(shot.rgb(x, y), fill, 12) else 0
+        best = max(best, run)
+        y += step
+    return best * step
 
 
 def no_accessory_on_me(more_than=None):
@@ -121,10 +135,11 @@ ui.wait_label('live-cards-toggle', lambda label: label == ui.t('home.stack.colla
 card = ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the settled card did not fan out')
 assert card.get('AXLabel') == card_label('帮买奶茶', 'Lily', 'RM 8'), card.get('AXLabel')
 assert_card(card, ui.element('settled-card-collect'), 'behind')
+shot = ui.snap('06-behind-fanned')
 items = ui.read()
-pay, collect = (by_id(items, name)['frame']['height'] for name in ('pay-card-button', 'settled-card-collect'))
-assert abs(pay - collect) <= 0.5, f'去付款 is {pay} pt tall and 收进贴纸本 {collect} pt: the card buttons differ'
-ui.snap('06-behind-fanned')
+pay, collect = button_run(shot, by_id(items, 'live-card-oweMoney')['frame']), by_id(items, 'settled-card-collect')
+assert abs(pay - collect['frame']['height']) <= 1.5, \
+    f'去付款 is {pay:.1f} pt tall and 收进贴纸本 {collect["frame"]["height"]:.1f} pt: the card buttons differ'
 
 relaunch(ui, drop=ARGS[:2], add=['-uiVerifySettled', 'two'])
 stage = ui.settled(lambda items: by_id(items, 'home-stage-live'), 'the live stage never settled')

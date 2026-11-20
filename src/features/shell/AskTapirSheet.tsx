@@ -84,67 +84,65 @@ export function AskTapirSheet({
           onPress={onClose}
         />
       </Stack.Toolbar>
-      <View style={styles.screen}>
-        <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
-            <Mascot variant="side" size={32} />
-          </View>
-          <View style={styles.headerText}>
-            <AppText variant="title" accessibilityRole="header">
-              {t('shell.ask.title')}
-            </AppText>
-            <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
-              {t(SUBTITLES[tab])}
-            </AppText>
-            {belly}
-          </View>
-          <View style={styles.closeSlot} />
+      <View style={styles.header} collapsable={false}>
+        <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
+          <Mascot variant="side" size={32} />
         </View>
-        {/* The header stays out of the scroll view, so the conversation clips at its bottom edge instead of passing
-            under the grabber and the close button that share its row. */}
-        <ScrollView
-          ref={scroll}
-          contentInsetAdjustmentBehavior="never"
-          contentContainerStyle={styles.content}
-          automaticallyAdjustKeyboardInsets
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-          onContentSizeChange={() => {
-            if (follow.current) scroll.current?.scrollToEnd({ animated: true });
-          }}
-          onScrollBeginDrag={() => {
-            follow.current = false;
-          }}
-          testID="ask-tapir-sheet"
-        >
-          <View style={styles.body} testID="ask-tapir-body">
-            {notice}
-            {showSuggestions ? (
-              <View style={styles.chips}>
-                {suggestions.map((key, index) => (
-                  <PressDim
-                    key={key}
-                    accessibilityRole="button"
-                    testID={`ask-tapir-suggestion-${index}`}
-                    onPress={() => onSuggestion(t(key))}
-                    style={[styles.chip, { backgroundColor: fill }]}
-                  >
-                    <AppText variant="secondary">{t(key)}</AppText>
-                  </PressDim>
-                ))}
-              </View>
-            ) : null}
-            {children}
-            <AskInput composer={composer} prompt={copy.prompt} />
-          </View>
-        </ScrollView>
+        <View style={styles.headerText}>
+          <AppText variant="title" accessibilityRole="header">
+            {t('shell.ask.title')}
+          </AppText>
+          <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
+            {t(SUBTITLES[tab])}
+          </AppText>
+          {belly}
+        </View>
+        <View style={styles.closeSlot} />
       </View>
+      {/* react-native-screens sizes a form sheet's scroll view below a header only when the two are the sheet's only
+          children (header first, not collapsed); the conversation then clips at the header's bottom edge instead of
+          passing under the grabber and the close button. */}
+      <ScrollView
+        ref={scroll}
+        contentInsetAdjustmentBehavior="never"
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        onContentSizeChange={() => {
+          if (follow.current) scroll.current?.scrollToEnd({ animated: true });
+        }}
+        onScrollBeginDrag={() => {
+          follow.current = false;
+        }}
+        testID="ask-tapir-sheet"
+      >
+        <View style={styles.body} testID="ask-tapir-body">
+          {notice}
+          {showSuggestions ? (
+            <View style={styles.chips}>
+              {suggestions.map((key, index) => (
+                <PressDim
+                  key={key}
+                  accessibilityRole="button"
+                  testID={`ask-tapir-suggestion-${index}`}
+                  onPress={() => onSuggestion(t(key))}
+                  style={[styles.chip, { backgroundColor: fill }]}
+                >
+                  <AppText variant="secondary">{t(key)}</AppText>
+                </PressDim>
+              ))}
+            </View>
+          ) : null}
+          {children}
+          <AskInput composer={composer} prompt={copy.prompt} />
+        </View>
+      </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
