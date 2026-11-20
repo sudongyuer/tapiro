@@ -184,15 +184,15 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 - 版本：v1
 - 规格：[foundation](specs/2026-10-11-foundation-design.md)
 
-| 验收 id                    | 行为                                                                             | 覆盖                                                                                                                             |
-| -------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| shell.accessory.priority   | 我欠的钱 > 1 小时内出发的拼车 > 别人欠我的钱 > 进行中的悬赏                      | unit:src/features/shell/accessory.test.ts#pickMostUrgent                                                                         |
-| shell.accessory.more       | 不止一件时显示「还有 n 件」                                                      | ui:home_worst, unit:src/features/shell/accessory.test.ts#a single item has nothing more                                          |
-| shell.accessory.visibility | 悬赏顶部实时卡在屏上时隐藏，卡片滑走后出现，其他 Tab 一直显示                    | ui:shell_tabs, ui:home_fan_out, unit:src/features/shell/accessory.test.ts#accessoryVisible                                       |
-| shell.accessory.none       | 没有事时任何 Tab 都不显示                                                        | ui:home_calm, unit:src/features/shell/accessory.test.ts#hidden when there is no item                                             |
-| shell.accessory.tap        | 在别的 Tab 点提醒条，回到悬赏顶部并摊开实时卡                                    | ui:shell_accessory_tap                                                                                                           |
-| shell.accessory.on-screen  | 提醒条不指向正在最上面的那个页面：在那件事的页面上换成下一件，只有这一件时不显示 | ui:home_bounty_cards, unit:src/features/shell/accessory.test.ts#the item whose screen is on top leaves the strip to the next one |
-| shell.accessory.amount     | 金额单独放右边永不截断，长标题一行截断                                           | ui:home_worst_inline, unit:src/lib/liveItems.test.ts#accessory amounts                                                           |
+| 验收 id                    | 行为                                                                                                                                                   | 覆盖                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| shell.accessory.priority   | 我欠的钱 > 1 小时内出发的拼车 > 别人欠我的钱 > 进行中的悬赏                                                                                            | unit:src/features/shell/accessory.test.ts#pickMostUrgent                                                                         |
+| shell.accessory.more       | 不止一件时显示「还有 n 件」                                                                                                                            | ui:home_worst, unit:src/features/shell/accessory.test.ts#a single item has nothing more                                          |
+| shell.accessory.visibility | 悬赏顶部实时卡在屏上时隐藏，卡片滑走后出现，其他 Tab 一直显示                                                                                          | ui:shell_tabs, ui:home_fan_out, unit:src/features/shell/accessory.test.ts#accessoryVisible                                       |
+| shell.accessory.none       | 没有事时任何 Tab 都不显示                                                                                                                              | ui:home_calm, unit:src/features/shell/accessory.test.ts#hidden when there is no item                                             |
+| shell.accessory.tap        | 点提醒条打开那件事自己的页面，和点它的首页卡片一样：等你选人的悬赏进挑人页，付款进付款页；没有自己页面的（拼车、别人欠我的钱）回到悬赏顶部并摊开实时卡 | ui:shell_accessory_choose, ui:shell_accessory_tap, unit:src/features/shell/accessory.test.ts#accessoryTarget                     |
+| shell.accessory.on-screen  | 提醒条不指向正在最上面的那个页面：在那件事的页面上换成下一件，只有这一件时不显示                                                                       | ui:home_bounty_cards, unit:src/features/shell/accessory.test.ts#the item whose screen is on top leaves the strip to the next one |
+| shell.accessory.amount     | 金额单独放右边永不截断，长标题一行截断                                                                                                                 | ui:home_worst_inline, unit:src/lib/liveItems.test.ts#accessory amounts                                                           |
 
 ### home.stage 小貘舞台
 
