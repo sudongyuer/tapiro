@@ -52,6 +52,9 @@ export default {
       avatar: '头像',
       signOut: '退出登录',
       continue: '继续',
+      loading: '正在读取你的资料',
+      loadFailed: '没读到你之前的资料，名字和头像先不改。请检查网络后重试。',
+      retry: '重试',
       error: {
         empty: '请输入名字',
         tooLong: '名字最多 40 个字',

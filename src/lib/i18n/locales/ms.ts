@@ -55,6 +55,10 @@ const ms: Translation = {
       avatar: 'Foto profil',
       signOut: 'Daftar Keluar',
       continue: 'Teruskan',
+      loading: 'Memuatkan profil anda',
+      loadFailed:
+        'Profil anda tidak dapat dimuatkan, jadi nama dan foto anda kekal. Semak sambungan dan cuba lagi.',
+      retry: 'Cuba lagi',
       error: {
         empty: 'Masukkan nama.',
         tooLong: 'Gunakan 40 aksara atau kurang.',

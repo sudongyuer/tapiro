@@ -26,18 +26,23 @@ import { AmountHeader, PayerView } from './PayerView';
 import { PayeeView } from './PayeeView';
 import type { Proof } from './ProofSection';
 import { SheetFrame } from '@/ui/SheetFrame';
+import type { Payment } from './types';
 import { celebratesSettle, sheetTitleKey } from './stateMachine';
+
+export type Remind = { onPress: (payment: Payment) => void; busy: boolean };
 
 export function PaySheet({
   userId,
   paymentId,
   onClose,
   onOpenStickerBook,
+  remind,
 }: {
   userId: string;
   paymentId: string;
   onClose: () => void;
   onOpenStickerBook: () => void;
+  remind: Remind;
 }) {
   const { t } = useI18n();
   const sheet = usePaySheet(userId, paymentId);
@@ -120,7 +125,14 @@ export function PaySheet({
       <SheetFrame notice={notice} testID="pay-sheet">
         {state.status === 'loading' ? (
           <TextSection title={t('pay.sheet.loading')} testID="pay-loading" />
-        ) : state.status === 'failed' || state.status === 'missing' ? (
+        ) : state.status === 'missing' ? (
+          <NoticeCard
+            tone="warning"
+            icon="questionmark.circle.fill"
+            title={t('pay.sheet.missing')}
+            testID="pay-missing"
+          />
+        ) : state.status === 'failed' ? (
           <NoticeCard
             tone="urgent"
             icon="wifi.exclamationmark"
@@ -130,7 +142,13 @@ export function PaySheet({
             testID="pay-load-failed"
           />
         ) : (
-          <SheetBody data={state} sheet={sheet} onConfirm={confirm} onMarkPaid={markPaid} />
+          <SheetBody
+            data={state}
+            sheet={sheet}
+            onConfirm={confirm}
+            onMarkPaid={markPaid}
+            remind={remind}
+          />
         )}
       </SheetFrame>
       {celebration ? (
@@ -152,11 +170,13 @@ function SheetBody({
   sheet,
   onConfirm,
   onMarkPaid,
+  remind,
 }: {
   data: SheetData;
   sheet: ReturnType<typeof usePaySheet>;
   onConfirm: () => void;
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
+  remind: Remind;
 }) {
   const { t, language } = useI18n();
   const { payment } = data;
@@ -177,7 +197,15 @@ function SheetBody({
       />
     );
   if (payment.state === 'due')
-    return <PayerView data={data} busy={sheet.busy} onMarkPaid={onMarkPaid} />;
+    return (
+      <PayerView
+        data={data}
+        busy={sheet.busy}
+        onMarkPaid={onMarkPaid}
+        onRemind={() => remind.onPress(payment)}
+        reminding={remind.busy}
+      />
+    );
   return (
     <>
       <AmountHeader

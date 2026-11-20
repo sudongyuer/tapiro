@@ -32,13 +32,19 @@ export function createDrafts(settings: SettingsLike) {
     cache.set(userId, drafts);
     settings.set({ [key(userId)]: Object.keys(drafts).length === 0 ? '' : JSON.stringify(drafts) });
   };
+  const set = (userId: string, threadId: string, text: string) => {
+    const drafts = load(userId);
+    if ((drafts[threadId] ?? '') === text) return;
+    const { [threadId]: _dropped, ...rest } = drafts;
+    save(userId, text === '' ? rest : { ...rest, [threadId]: text });
+  };
   return {
     get: (userId: string, threadId: string) => load(userId)[threadId] ?? '',
-    set(userId: string, threadId: string, text: string) {
-      const drafts = load(userId);
-      if ((drafts[threadId] ?? '') === text) return;
-      const { [threadId]: _dropped, ...rest } = drafts;
-      save(userId, text === '' ? rest : { ...rest, [threadId]: text });
+    set,
+    prefill(userId: string, threadId: string, text: string) {
+      if ((load(userId)[threadId] ?? '').trim() !== '') return false;
+      set(userId, threadId, text);
+      return true;
     },
     clear(userId: string) {
       save(userId, {});

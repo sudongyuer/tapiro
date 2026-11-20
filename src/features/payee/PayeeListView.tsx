@@ -23,6 +23,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
 
+import { localClock } from '@/lib/deviceClock';
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -39,6 +40,7 @@ const ICON_BOX = 28;
 export function PayeeListView({
   status,
   methods,
+  staleSince,
   now,
   actionFailed,
   onRetry,
@@ -49,6 +51,7 @@ export function PayeeListView({
 }: {
   status: 'loading' | 'ready' | 'failed';
   methods: readonly PayeeMethod[];
+  staleSince: number | null;
   now: Date;
   actionFailed: boolean;
   onRetry: () => void;
@@ -61,6 +64,10 @@ export function PayeeListView({
   const { color } = useTheme();
   const rows = transferMethods(methods);
   const due = firstRecheckDue(rows, now);
+  const cashOn = hasCash(methods);
+  const empty = cashOn
+    ? { title: t('payee.cashOnly.title'), body: t('payee.cashOnly.body'), id: 'payee-cash-only' }
+    : { title: t('payee.emptyTitle'), body: t('payee.emptyBody'), id: 'payee-empty' };
 
   return (
     <Host style={styles.host} testID="payee-screen">
@@ -72,6 +79,15 @@ export function PayeeListView({
             icon="exclamationmark.circle.fill"
             title={t('payee.actionFailed')}
             testID="payee-action-failed"
+          />
+        ) : null}
+        {staleSince !== null ? (
+          <NoticeCard
+            tone="warning"
+            icon="wifi.exclamationmark"
+            title={t('live.staleAt', { time: localClock(staleSince) })}
+            action={{ label: t('payee.retry'), onPress: onRetry, testID: 'payee-stale-retry' }}
+            testID="payee-stale"
           />
         ) : null}
         {status !== 'ready' ? null : due ? (
@@ -93,12 +109,10 @@ export function PayeeListView({
             <VStack
               alignment="leading"
               spacing={vars['--space-1']}
-              modifiers={[accessibilityElement('combine'), accessibilityIdentifier('payee-empty')]}
+              modifiers={[accessibilityElement('combine'), accessibilityIdentifier(empty.id)]}
             >
-              <Text modifiers={[font({ textStyle: 'headline' })]}>{t('payee.emptyTitle')}</Text>
-              <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>
-                {t('payee.emptyBody')}
-              </Text>
+              <Text modifiers={[font({ textStyle: 'headline' })]}>{empty.title}</Text>
+              <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>{empty.body}</Text>
             </VStack>
           </Section>
         ) : (
@@ -111,11 +125,11 @@ export function PayeeListView({
           </Section>
         )}
         {status === 'ready' ? (
-          <Section title={t('payee.cash.header')}>
+          <Section footer={<Text>{t('payee.cash.footer')}</Text>}>
             <Toggle
-              label={t('payee.cash.toggle')}
+              label={t('payee.types.cash')}
               systemImage={METHOD_ICONS.cash}
-              isOn={hasCash(methods)}
+              isOn={cashOn}
               onIsOnChange={onCashChange}
               testID="payee-cash"
             />
