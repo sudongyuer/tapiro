@@ -448,6 +448,9 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
 - Uploaded: 1.0.0 (20261120.1136), 2026-11-20, failed Apple's processing (ITMS-90683: no
   `NSPhotoLibraryUsageDescription`; retro `2026-11-20-photo-purpose-string`). The string now ships in all three
   languages, and `check_bundle` runs `scripts/check-purpose-strings.mjs` on every release build before upload.
+  1.0.0 (20261120.1227) uploaded 2026-11-20 with the fix and passed processing (`COMPLETE`). After an upload, `bun run testflight` waits up to 15 min
+  (`TAPIRO_PROCESSING_WAIT`) for Apple's processing through `scripts/asc-upload-status.mjs` and fails with Apple's
+  error codes on `FAILED`; `node scripts/asc-upload-status.mjs <version> <build>` checks one later.
 - Push will not arrive on TestFlight or cabled builds: `supabase/functions/notify` sends through Expo's push service,
   which would need our APNs key; queued: move `notify` to direct APNs (key `88Y29CGN9U` exists).
 - Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone

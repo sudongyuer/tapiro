@@ -91,5 +91,11 @@ fi
 grep -q 'EXPORT SUCCEEDED' "$OUT/export.log" || fail "xcodebuild exited 0 without EXPORT SUCCEEDED; see $OUT/export.log"
 grep -E 'Upload succeeded|Uploaded|EXPORT SUCCEEDED' "$OUT/export.log" | tail -n 5
 
-echo
-echo "Uploaded Tapiro $VERSION ($BUILD_NUMBER). App Store Connect processes it before TestFlight lists it."
+step "App Store Connect processing"
+status=0
+node "$ROOT/scripts/asc-upload-status.mjs" "$VERSION" "$BUILD_NUMBER" --wait "${TAPIRO_PROCESSING_WAIT:-900}" || status=$?
+case "$status" in
+  0) echo "Tapiro $VERSION ($BUILD_NUMBER) passed processing." ;;
+  3) echo "Uploaded Tapiro $VERSION ($BUILD_NUMBER); still processing. Check: node scripts/asc-upload-status.mjs $VERSION $BUILD_NUMBER" ;;
+  *) fail "App Store Connect rejected $VERSION ($BUILD_NUMBER)" ;;
+esac

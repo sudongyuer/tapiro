@@ -31,6 +31,8 @@ overturned: 0
   key is missing or empty in `Info.plist` or any `.lproj/InfoPlist.strings`. It runs inside `check_bundle`, so both
   `bun run testflight` and `bun run device-install` stop before upload or install. On the rejected archive it reports
   the four missing entries; a unit test keeps all three native locale files complete for the frameworks we link.
-- The App Store Connect API `GET /v1/builds` never lists an upload that failed processing, and `buildUploads` allows
-  no collection read, so a failed upload looks like a slow one. After about 15 minutes with no build, ask for the
-  Build Uploads page instead of waiting. Tag `asc-failed-upload-invisible`.
+- The App Store Connect API `GET /v1/builds` never lists an upload that failed processing, and `/v1/buildUploads`
+  allows no collection read, so a failed upload looked like a slow one. The app's relationship
+  `/v1/apps/{id}/buildUploads` does list it, with `state.state` (`PROCESSING`, `FAILED`, `COMPLETE`) and Apple's error
+  codes. `scripts/asc-upload-status.mjs` reads it, and `bun run testflight` now waits on it after the upload and fails
+  on `FAILED` with Apple's message (follow-up PR `fix/asc-upload-status`). Tag `asc-failed-upload-invisible`.
