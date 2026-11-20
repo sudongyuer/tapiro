@@ -238,7 +238,7 @@ export default {
         title: '付给{{name}}',
         button: '去付款',
         buttonLabel: '去付款 {{amount}}',
-        footer: '撮合付款 · 钱直接到{{name}}',
+        footer: '直接付款 · 钱直接到{{name}}',
       },
       ride: {
         tag: '拼车 · {{seats}} 人齐',
@@ -269,7 +269,7 @@ export default {
         morning: '早上好，{{name}}',
         afternoon: '下午好，{{name}}',
         evening: '晚上好，{{name}}',
-        ask: '说一句话，小貘帮你发悬赏',
+        ask: '说一句话，小貘帮你写悬赏',
         askHint: '打开问小貘',
         chipQuestion: '去 KLIA 怎么走划算',
         chipParcel: '帮我取个快递',

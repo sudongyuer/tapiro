@@ -66,7 +66,7 @@ export default {
     cash: 'Hand {{name}} the cash in person. It’s settled when they tap Received; you don’t need to tap anything.',
     none: {
       title: '{{name}} has no way to receive money yet',
-      body: 'Ask them to add one in Me → Ways to receive, then pay.',
+      body: 'Ask them to add one in Me → Payment Methods, then pay.',
     },
     proof: {
       add: 'Attach a payment screenshot (optional)',
@@ -108,10 +108,15 @@ export default {
     cny: '≈ {{amount}} · Bank Negara Malaysia middle rate',
     first: {
       title: 'Your first payment is in!',
-      body: 'This errand’s sticker is now in your sticker book.',
+      body: 'This job’s sticker is now in your sticker book.',
     },
     routine: { title: 'Another one done', body: 'Sticker {{count}} is in your book.' },
-    unknownBody: 'This errand’s sticker went into your sticker book.',
+    unknownBody: 'This job’s sticker went into your sticker book.',
+    ride: {
+      firstBody: 'This ride’s sticker is now in your sticker book.',
+      routineTitle: 'Another ride shared',
+      unknownBody: 'This ride’s sticker went into your sticker book.',
+    },
     badge: 'First payment',
     receiptPaid: '{{name}} · Paid',
     announce:

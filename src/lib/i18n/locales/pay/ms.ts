@@ -26,7 +26,7 @@ export default {
     rateFooter:
       'Ditukar pada kadar tengah BNM {{date}}, {{rate}}, dikunci semasa bayaran ini dibuka.',
     noRate: 'Belum boleh ditukar ke {{currency}}',
-    noCurrency: '{{name}} belum ada cara menerima {{currency}}',
+    noCurrency: '{{name}} belum ada kaedah terima bayaran untuk {{currency}}',
     currencyName: { MYR: 'ringgit', CNY: 'yuan' },
     fxSource: 'Sumber kadar: Bank Negara Malaysia',
     fxSourceHint: 'Membuka terma penggunaan set data Bank Negara Malaysia',
@@ -63,17 +63,17 @@ export default {
       fullTitle: 'Imbas kod ini dengan telefon lain',
     },
     apps: { alipay: 'Alipay', wechat: 'WeChat', tng: 'TNG eWallet' },
-    cash: 'Serahkan tunai kepada {{name}} secara bersemuka. Selesai apabila dia ketik Diterima; anda tidak perlu ketik apa-apa.',
+    cash: 'Serahkan tunai kepada {{name}} secara bersemuka. Langsai apabila dia ketik Diterima; anda tidak perlu ketik apa-apa.',
     none: {
-      title: '{{name}} belum ada cara menerima wang',
-      body: 'Minta dia tambah satu dalam Saya → Cara terima bayaran, kemudian bayar.',
+      title: '{{name}} belum ada kaedah terima bayaran',
+      body: 'Minta dia tambah satu dalam Saya → Kaedah Terima Bayaran, kemudian bayar.',
     },
     proof: {
       add: 'Lampirkan tangkapan skrin bayaran (pilihan)',
       added: 'Tangkapan skrin dilampirkan',
       remove: 'Buang tangkapan skrin',
       failed: 'Tangkapan skrin tidak dimuat naik. Langkau atau cuba lagi.',
-      footer: 'Hanya anda berdua dan moderator boleh melihatnya. Dipadam 30 hari selepas selesai.',
+      footer: 'Hanya anda berdua dan moderator boleh melihatnya. Dipadam 30 hari selepas langsai.',
     },
     markPaid: 'Saya sudah bayar',
     markPaidHint: 'Memberitahu {{name}} untuk menyemak',
@@ -85,7 +85,7 @@ export default {
       nudged:
         '{{name}} kata belum terima. Semak bayaran anda; jika tidak berjaya, batalkan dan bayar semula.',
     },
-    settled: { title: 'Selesai', body: '{{amount}} · {{title}}' },
+    settled: { title: 'Langsai', body: '{{amount}} · {{title}}' },
   },
   payee: {
     viewProof: 'Lihat tangkapan skrin bayaran',
@@ -99,7 +99,7 @@ export default {
     notReceived: 'Belum terima',
     nudged: 'Kami sudah beritahu {{name}} anda belum terima.',
     dueCash: '{{name}} belum tandakan sudah bayar',
-    dueCashBody: 'Jika dia bayar tunai secara bersemuka, ketik Diterima untuk selesai.',
+    dueCashBody: 'Jika dia bayar tunai secara bersemuka, ketik Diterima untuk melangsaikannya.',
     dueWait: 'Menunggu {{name}} membayar',
     dueWaitBody: 'Apabila dia ketik “Saya sudah bayar”, anda sahkan di sini.',
   },
@@ -112,12 +112,17 @@ export default {
     },
     routine: { title: 'Satu lagi selesai', body: 'Pelekat ke-{{count}} sudah ditampal.' },
     unknownBody: 'Pelekat tugasan ini masuk ke dalam buku pelekat anda.',
+    ride: {
+      firstBody: 'Pelekat tumpangan ini sudah ditampal dalam buku pelekat anda.',
+      routineTitle: 'Satu lagi tumpangan selesai',
+      unknownBody: 'Pelekat tumpangan ini masuk ke dalam buku pelekat anda.',
+    },
     badge: 'Bayaran pertama',
     receiptPaid: '{{name}} · Sudah dibayar',
     announce:
       'Diterima {{amount}}. {{title}}: {{name}} telah membayar. Pelekat sudah ditampal dalam buku pelekat anda.',
-    openBook: 'Lihat buku pelekat',
+    openBook: 'Buka buku pelekat',
     done: 'OK',
-    tick: 'Selesai · diterima {{amount}}',
+    tick: 'Langsai · diterima {{amount}}',
   },
 };

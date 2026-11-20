@@ -28,7 +28,7 @@ const en: typeof zhHans = {
     leaving_other: 'Leaves in {{count}} min · meeting up',
     requests_one: 'Yours · {{count}} request',
     requests_other: 'Yours · {{count}} requests',
-    applied: 'Requested · waiting',
+    applied: 'Applied · waiting',
     full: 'Full',
     mine_one: 'Yours · {{count}} more needed',
     mine_other: 'Yours · {{count}} more needed',
@@ -73,6 +73,7 @@ const en: typeof zhHans = {
     revisedA11y: 'was {{time}}',
     seatsLeft_one: '{{count}} seat left',
     seatsLeft_other: '{{count}} seats left',
+    a11ySeparator: ', ',
     seatsA11y: 'Started by {{name}}, {{taken}} in, {{empty}} seats left',
     privacy: 'Once you’re in, you’ll see the meeting note and who’s riding',
     cell: {
@@ -145,7 +146,7 @@ const en: typeof zhHans = {
       footer: 'Only {{name}} can see it. You can withdraw until you’re approved.',
     },
     applied: {
-      stamp: 'Asked',
+      stamp: 'Applied',
       waiting: 'Waiting for {{name}}',
       withdraw: 'Withdraw',
       confirmTitle: 'Withdraw your request?',
@@ -368,7 +369,7 @@ const en: typeof zhHans = {
       refundFree:
         'If nobody joins and it’s cancelled or expires, the free post comes back. Shared with bounties: {{of}} a month.',
       refundCoin: 'If nobody joins and it’s cancelled or expires, the coin comes back.',
-      noPayee: 'Riders pay you directly at the end. Add a way to get paid first; cash works too.',
+      noPayee: 'Riders pay you directly at the end. Add a payment method first; cash works too.',
       addPayee: 'Add a payment method',
       blocked: 'You have money left to pay. Settle it before starting a ride.',
       noBalance:

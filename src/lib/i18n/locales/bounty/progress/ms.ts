@@ -11,7 +11,7 @@ const ms: typeof zhHans = {
         done: 'Menunggu anda sahkan',
         disputed: 'Menunggu {{name}} selesaikan',
         confirmed: 'Sedia untuk anda bayar',
-        settled: 'Selesai',
+        settled: 'Langsai',
         cancelled: 'Ganjaran ini dibatalkan',
       },
       helper: {
@@ -21,7 +21,7 @@ const ms: typeof zhHans = {
         done: 'Menunggu {{name}} sahkan',
         disputed: '{{name}} laporkan masalah',
         confirmed: 'Menunggu {{name}} membayar',
-        settled: 'Selesai',
+        settled: 'Langsai',
         cancelled: 'Ganjaran ini dibatalkan',
       },
     },

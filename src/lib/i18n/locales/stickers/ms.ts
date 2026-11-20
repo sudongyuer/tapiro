@@ -2,7 +2,7 @@ import type zhHans from './zh-Hans';
 
 const ms: typeof zhHans = {
   book: {
-    title: 'Selesai bersama',
+    title: 'Buku pelekat',
     sub: 'Satu lagi setiap kali urusan selesai dan dibayar',
     summary: '{{total}} · {{sub}}',
     view: { stack: 'Kad', calendar: 'Kalendar', a11y: 'Paparan' },

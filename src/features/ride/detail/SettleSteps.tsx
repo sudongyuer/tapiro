@@ -113,7 +113,9 @@ export function SettleStep({
           style={styles.receipt}
           onPress={onReceipt}
           accessibilityRole="button"
-          accessibilityLabel={`${t('rideSettle.receipt.title')}，${t('rideSettle.receipt.open')}`}
+          accessibilityLabel={[t('rideSettle.receipt.title'), t('rideSettle.receipt.open')].join(
+            t('ride.detail.a11ySeparator'),
+          )}
           testID="ride-settle-receipt"
         >
           <SymbolView name="doc.text.image" size={ICON} tintColor={PlatformColor('label')} />

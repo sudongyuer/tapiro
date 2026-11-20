@@ -5,16 +5,16 @@ const ms: typeof zhHans = {
   meRow: 'Kaedah Terima Bayaran',
   meRowDue: 'Kod QR perlu disemak semula',
   privacy:
-    'Hanya pembayar yang memilih anda nampak maklumat ini semasa membayar, dan ia disembunyikan selepas selesai.',
+    'Hanya pembayar yang memilih anda nampak maklumat ini semasa membayar, dan ia disembunyikan selepas langsai.',
   emptyTitle: 'Belum ada kaedah terima bayaran',
   emptyBody: 'Tambah satu supaya pembayar tahu cara membayar anda.',
-  add: 'Tambah Kaedah',
+  add: 'Tambah Kaedah Terima Bayaran',
   default: 'Lalai',
   makeDefault: 'Jadikan Lalai',
   delete: 'Padam',
   cancel: 'Batal',
   deleteConfirm: {
-    title: 'Padam kaedah ini?',
+    title: 'Padam kaedah terima bayaran ini?',
     body: 'Pembayar tidak akan nampak kaedah ini lagi.',
   },
   loading: 'Memuatkan',
@@ -25,7 +25,7 @@ const ms: typeof zhHans = {
   retry: 'Cuba Lagi',
   actionFailed: 'Tidak berjaya. Semak sambungan anda dan cuba lagi.',
   menuOther: 'Lain-lain',
-  deleteMethod: 'Padam Kaedah Ini',
+  deleteMethod: 'Padam Kaedah Terima Bayaran',
   close: 'Tutup',
   save: 'Simpan',
   types: {

@@ -100,7 +100,7 @@ export default {
   translate: {
     waiting: '小貘在翻译…',
     offline: '连不上网，没翻译。',
-    providerError: '小貘晕了，没扣体力。',
+    providerError: '没连上小貘，没扣体力。',
     unreadable: '小貘的翻译没看懂。',
     busy: '小貘还在忙上一件，过一会儿再试。',
     hungry: '小貘饿了，这句没翻译。',

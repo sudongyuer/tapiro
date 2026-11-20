@@ -101,7 +101,7 @@ export default {
   translate: {
     waiting: 'Tapir is translating…',
     offline: 'No connection. Not translated.',
-    providerError: 'Tapir got dizzy. No energy was used.',
+    providerError: 'Couldn’t reach Tapir. No energy was used.',
     unreadable: 'Tapir’s translation could not be read.',
     busy: 'Tapir is still on the last one. Try again in a moment.',
     hungry: 'Tapir is hungry. Not translated.',
