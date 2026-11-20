@@ -5,7 +5,7 @@ import { Storefront } from 'tapiro-kit';
 import { onReturnToForeground } from '../foreground';
 import { uiVerify, uiVerifyArgument } from '../uiVerify';
 import { createStorefront, type StorefrontSource } from './controller';
-import { aiOffered, storefrontCode, storefrontHeader } from './region';
+import { CHINA_MAINLAND, aiOffered, storefrontCode, storefrontHeader } from './region';
 
 const CACHE_KEY = 'storefrontCountry';
 const TIMEOUT_MS = 5_000;
@@ -39,6 +39,12 @@ export const aiOfferedNow = () => aiOffered(storefront.get());
 
 export function useAiOffered() {
   return useSyncExternalStore(storefront.subscribe, aiOfferedNow);
+}
+
+const onChinaStorefront = () => storefront.get().countryCode === CHINA_MAINLAND;
+
+export function useChinaStorefront() {
+  return useSyncExternalStore(storefront.subscribe, onChinaStorefront);
 }
 
 export function useStorefrontFollow() {

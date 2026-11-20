@@ -40,14 +40,14 @@ export function SettingsView({
   onOpenLegal,
   signingOut = false,
   icpFiling = null,
-  aiOffered = true,
+  chinaStorefront = false,
 }: {
   name: string;
   email: string | null;
   avatarUrl: string | null;
   signingOut?: boolean;
   icpFiling?: string | null;
-  aiOffered?: boolean;
+  chinaStorefront?: boolean;
   onSignOut: () => void;
   onDeleteAccount: () => void;
   onOpenLegal: (page: 'terms' | 'privacy') => void;
@@ -79,11 +79,11 @@ export function SettingsView({
         <LanguagePickerSection />
         <Section
           footer={
-            aiOffered ? undefined : (
+            chinaStorefront ? (
               <Text modifiers={[accessibilityIdentifier('settings-region-note')]}>
                 {t('account.settings.regionNoAi')}
               </Text>
-            )
+            ) : undefined
           }
         >
           {LEGAL_PAGES.map((page) => (

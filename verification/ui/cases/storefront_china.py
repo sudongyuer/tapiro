@@ -31,6 +31,8 @@ assert by_id(items, 'me-tapir') is None, '我的 shows the 问小貘 row on the 
 ui.capture('02-me')
 
 ui.tap('me-settings')
+# The note shows only once the storefront has resolved to CHN (closed-while-pending would also hide the AI above), so it
+# proves the absences were checked on a resolved China storefront.
 note = ui.wait_label('settings-region-note', lambda label: label == ui.t('account.settings.regionNoAi'),
                      'settings does not say why AI is missing')
 icp = ui.wait_label('settings-icp', lambda label: ui.t('account.settings.icp') in label and ICP in label,

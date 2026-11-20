@@ -8,11 +8,11 @@ import {
   useSigningOut,
 } from '@/features/account';
 import { icpFiling } from '@/lib/icpFiling';
-import { useAiOffered } from '@/lib/storefront';
+import { useChinaStorefront } from '@/lib/storefront';
 
 export default function Settings() {
   const router = useRouter();
-  const aiOffered = useAiOffered();
+  const chinaStorefront = useChinaStorefront();
   const user = useSignedInUser();
   const profile = useProfile(user);
   const signingOut = useSigningOut();
@@ -27,7 +27,7 @@ export default function Settings() {
       onDeleteAccount={() => router.push('/delete-account')}
       onOpenLegal={(page) => router.push(`/legal/${page}`)}
       icpFiling={icpFiling}
-      aiOffered={aiOffered}
+      chinaStorefront={chinaStorefront}
     />
   );
 }

@@ -115,4 +115,41 @@ describe('createStorefront', () => {
     stop();
     expect(fake.removed()).toBe(true);
   });
+
+  test('a China answer that arrives after the timeout still closes AI', async () => {
+    let answer: (code: string) => void = () => {};
+    const { source } = fakeSource(() => new Promise((resolve) => (answer = resolve)));
+    const store = createStorefront({ source, cache: fakeCache().cache, timeoutMs: 5 });
+    await store.refresh();
+    expect(aiOffered(store.get())).toBe(true);
+    answer('CHN');
+    await Bun.sleep(0);
+    expect(store.get()).toEqual({ countryCode: 'CHN', resolved: true });
+  });
+
+  test('an install with no storefront remembers it and starts the next launch resolved', async () => {
+    const { source } = fakeSource(async () => null);
+    const { cache, writes } = fakeCache();
+    const store = createStorefront({ source, cache, timeoutMs: 1000 });
+    await store.refresh();
+    expect(writes).toEqual(['none']);
+    const next = createStorefront({
+      source: fakeSource(() => new Promise(() => {})).source,
+      cache: fakeCache('none').cache,
+      timeoutMs: 1000,
+    });
+    expect(next.get()).toEqual({ countryCode: null, resolved: true });
+  });
+
+  test('an older refresh that answers late does not overwrite a newer one', async () => {
+    const answers: ((code: string) => void)[] = [];
+    const { source } = fakeSource(() => new Promise((resolve) => answers.push(resolve)));
+    const store = createStorefront({ source, cache: fakeCache().cache, timeoutMs: 1000 });
+    const first = store.refresh();
+    const second = store.refresh();
+    answers[1]('CHN');
+    answers[0]('MYS');
+    await Promise.all([first, second]);
+    expect(store.get().countryCode).toBe('CHN');
+  });
 });

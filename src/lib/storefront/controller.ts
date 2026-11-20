@@ -8,8 +8,10 @@ export type StorefrontSource = {
 
 export type StorefrontCache = {
   read(): unknown;
-  write(countryCode: string): void;
+  write(value: string): void;
 };
+
+export const NO_STOREFRONT = 'none';
 
 export function createStorefront({
   source,
@@ -20,37 +22,59 @@ export function createStorefront({
   cache: StorefrontCache;
   timeoutMs: number;
 }) {
-  let stored = storefrontCode(cache.read());
-  const store = createStore<StorefrontState>({ countryCode: stored, resolved: false });
+  const saved = cache.read();
+  let stored = saved === NO_STOREFRONT ? NO_STOREFRONT : storefrontCode(saved);
+  const store = createStore<StorefrontState>({
+    countryCode: stored === NO_STOREFRONT ? null : stored,
+    resolved: stored === NO_STOREFRONT,
+  });
+  let latest = 0;
+
+  function save(value: string) {
+    if (value === stored) return;
+    stored = value;
+    cache.write(value);
+  }
+
+  function resolveUnknown() {
+    const current = store.get();
+    if (!current.resolved) store.set({ ...current, resolved: true });
+  }
 
   function apply(value: unknown) {
     const code = storefrontCode(value);
     const current = store.get();
     if (code === null) {
-      if (!current.resolved) store.set({ ...current, resolved: true });
+      if (stored === null) save(NO_STOREFRONT);
+      resolveUnknown();
       return;
     }
-    if (code !== stored) {
-      stored = code;
-      cache.write(code);
-    }
+    save(code);
     if (code !== current.countryCode || !current.resolved) {
       store.set({ countryCode: code, resolved: true });
     }
   }
 
   async function refresh() {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const timedOut = new Promise<null>((resolve) => {
-      timer = setTimeout(() => resolve(null), timeoutMs);
+    const call = ++latest;
+    const answer = source.countryCode().catch(() => null);
+    void answer.then((value) => {
+      if (call === latest) apply(value);
     });
-    const answer = await Promise.race([source.countryCode().catch(() => null), timedOut]);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, timeoutMs);
+    });
+    await Promise.race([answer.then(() => undefined), timedOut]);
     clearTimeout(timer);
-    apply(answer);
+    resolveUnknown();
   }
 
   function follow() {
-    const subscription = source.listen(apply);
+    const subscription = source.listen((code) => {
+      latest += 1;
+      apply(code);
+    });
     void refresh();
     return () => subscription.remove();
   }

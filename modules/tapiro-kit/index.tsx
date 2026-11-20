@@ -422,17 +422,25 @@ export const Store = {
   },
 };
 
+let storefrontUpdates: Promise<void> = Promise.resolve();
+
+// Start and stop are separate native tasks with no order between them; chaining keeps a quick remove-then-listen from
+// stopping the new listener's updates.
+function queueStorefrontUpdates(run: () => Promise<void>) {
+  storefrontUpdates = storefrontUpdates.then(run, run);
+}
+
 export const Storefront = {
   countryCode(): Promise<string | null> {
     return kit.storefrontCountry();
   },
   listen(cb: (countryCode: string) => void): { remove(): void } {
     const subscription = kit.addListener('onStorefront', (event) => cb(event.countryCode));
-    void kit.storefrontStartUpdates();
+    queueStorefrontUpdates(() => kit.storefrontStartUpdates());
     return {
       remove() {
         subscription.remove();
-        void kit.storefrontStopUpdates();
+        queueStorefrontUpdates(() => kit.storefrontStopUpdates());
       },
     };
   },
