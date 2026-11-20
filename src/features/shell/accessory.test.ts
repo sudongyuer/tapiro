@@ -9,7 +9,7 @@ import {
   fixtureLiveItems,
 } from '@/lib/liveItems';
 
-import { accessoryVisible, badgeText, pickMostUrgent } from './accessory';
+import { accessoryTarget, accessoryVisible, badgeText, pickMostUrgent } from './accessory';
 
 const item = (id: string, kind: AccessoryKind): AccessoryItem => ({
   id,
@@ -95,6 +95,28 @@ describe('pickMostUrgent', () => {
         ] as const
       ).map(accessoryPriority),
     ).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+});
+
+describe('accessoryTarget', () => {
+  test('a bounty waiting for the poster to choose opens its applicants in the bounty tab', () => {
+    const choose = {
+      ...item('choose', 'bountyAction'),
+      bounty: { target: '/bounty/applicants/b1' } as BountyCardDetail,
+    };
+    expect(accessoryTarget(choose)).toEqual({
+      href: '/bounty/applicants/b1',
+      inBountyTab: true,
+    });
+  });
+
+  test('money owed opens its pay sheet', () => {
+    const owe = { ...item('owe', 'oweMoney'), payment: { id: 'p1', counterpart: 'A', note: '' } };
+    expect(accessoryTarget(owe)).toEqual({ href: '/pay/p1', inBountyTab: false });
+  });
+
+  test('an item without a screen of its own has no target', () => {
+    expect(accessoryTarget(item('ride', 'rideSoon'))).toBeNull();
   });
 });
 

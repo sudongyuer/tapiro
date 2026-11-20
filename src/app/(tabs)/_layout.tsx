@@ -1,4 +1,4 @@
-import { usePathname, useRouter, useSegments } from 'expo-router';
+import { usePathname, useRouter, useSegments, type Href } from 'expo-router';
 import { useCallback } from 'react';
 import { NativeTabs } from 'expo-router/native-tabs';
 
@@ -10,6 +10,7 @@ import { useLivePayments } from '@/features/payment';
 import { tierDropCanShow, useLiveReputation, useTierDropPrompt } from '@/features/reputation';
 import {
   UrgentAccessory,
+  accessoryTarget,
   accessoryVisible,
   badgeText,
   pickMostUrgent,
@@ -67,7 +68,12 @@ export default function TabsLayout() {
       liveCardsOnScreen,
     });
 
-  const openHome = () => {
+  const openUrgent = () => {
+    const target = urgent ? accessoryTarget(urgent.item) : null;
+    if (target) {
+      router.push(target.href as Href, { withAnchor: target.inBountyTab });
+      return;
+    }
     router.navigate('/bounty');
     homeSignals.requestReveal();
   };
@@ -80,7 +86,7 @@ export default function TabsLayout() {
     >
       {showAccessory && urgent ? (
         <NativeTabs.BottomAccessory>
-          <UrgentAccessory urgent={urgent} onPress={openHome} />
+          <UrgentAccessory urgent={urgent} onPress={openUrgent} />
         </NativeTabs.BottomAccessory>
       ) : null}
       <NativeTabs.Trigger name="bounty" testID="tab-bounty">
