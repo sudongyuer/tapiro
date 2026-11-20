@@ -6,7 +6,7 @@ import { handleFxRate, parseBnmCny, type FxRateDeps } from './handler';
 const post = (token?: string) =>
   new Request('http://localhost/fx-rate', {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: token ? { 'x-cron-secret': token } : {},
   });
 
 function deps(overrides: Partial<FxRateDeps> = {}) {

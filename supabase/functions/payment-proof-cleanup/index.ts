@@ -1,5 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+import { cronSecretCheck } from '../_shared/cronSecret.ts';
+
 import { handleProofCleanup, type ProofBucket } from './handler.ts';
 
 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -37,7 +39,7 @@ function bucket(options: {
 
 Deno.serve((req) =>
   handleProofCleanup(req, {
-    authorized: (token) => token === serviceKey,
+    authorized: cronSecretCheck(Deno.env.get('CRON_SECRET')),
     buckets: [
       bucket({
         bucket: 'payment-proofs',

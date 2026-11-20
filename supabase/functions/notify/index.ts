@@ -1,5 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+import { cronSecretCheck } from '../_shared/cronSecret.ts';
+
 import { localizedCopy } from './copy.ts';
 import { handleNotify, type DuePush } from './handler.ts';
 import { recordingSender } from './recording-sender.ts';
@@ -11,7 +13,7 @@ const admin = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey, {
 
 Deno.serve((req) =>
   handleNotify(req, {
-    authorized: (token) => token === serviceKey,
+    authorized: cronSecretCheck(Deno.env.get('CRON_SECRET')),
     async claim(maxRows) {
       const { data, error } = await admin.rpc('claim_due_pushes', { max_rows: maxRows });
       if (error) throw error;

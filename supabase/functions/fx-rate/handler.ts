@@ -1,3 +1,5 @@
+import { CRON_SECRET_HEADER } from '../_shared/cronSecret.ts';
+
 export const BNM_RATES_URL = 'https://api.bnm.gov.my/public/exchange-rate';
 export const BNM_ACCEPT = 'application/vnd.BNM.API.v1+json';
 
@@ -50,7 +52,7 @@ const json = (status: number, body: unknown) =>
 
 export async function handleFxRate(req: Request, deps: FxRateDeps) {
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
-  const token = req.headers.get('Authorization')?.match(/^Bearer (.+)$/)?.[1];
+  const token = req.headers.get(CRON_SECRET_HEADER);
   if (!token || !deps.authorized(token)) return json(401, { error: 'unauthorized' });
 
   let rate: DailyRate | null;

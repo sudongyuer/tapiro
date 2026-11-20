@@ -433,6 +433,10 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   `~/.appstoreconnect/private_keys/AuthKey_5TGB2NXCG5.p8` (never in the repo); hosted Supabase `wkpgoildusumtejzhtkv`
   (ap-southeast-1). Registered device: 「Owner iPhone 13 Pro Max」 (2026-11-20; automatic signing needs one device
   before the first archive).
+- Scheduled Edge Functions (`fx-rate`, `payment-proof-cleanup`, `notify`) authenticate pg_cron with a dedicated cron
+  secret (Vault `cron_secret` = function secret `CRON_SECRET`, header `x-cron-secret`), not the service role key; a
+  missing Vault secret fails the job in `cron.job_run_details` (`supabase/README.md`, 「Scheduled functions」). Set on
+  the hosted project 2026-11-20 together with Vault `project_url`; rotate by setting both to a new value.
 - `bun run testflight` (`scripts/testflight.sh`): fresh prebuild, Release archive, checks (hosted URL in the bundle and
   no local one, build number, push and Sign in with Apple entitlements), export with `destination=upload`. Build number
   is the UTC time `YYYYMMDD.HHMM`; the version is `app.json`'s. It never reads `.env` files (`EXPO_NO_DOTENV=1`): the
@@ -456,7 +460,7 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
 - Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
   14 Pro (its UDID, or connect it and approve); the Paid Apps agreement,
   tax and banking in App Store Connect (in-app purchase); the Google Cloud iOS and web client IDs and the hosted Google
-  provider; `MODEL_STUDIO_API_KEY` and the Vault secrets on the hosted Supabase project; adding TestFlight testers.
+  provider; `MODEL_STUDIO_API_KEY` on the hosted Supabase project; adding TestFlight testers.
 
 ## Website
 
