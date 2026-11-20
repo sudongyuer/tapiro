@@ -4,8 +4,8 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-21 (local and CI stacks on PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force
-pushes).
+Updated: 2026-11-21 (China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
+PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes).
 
 ## Built and merged
 
@@ -25,6 +25,13 @@ pushes).
 
 ## In progress
 
+- China mainland App Store (owner Q34 = B, 2026-11-21; `docs/specs/2026-11-21-china-storefront-design.md`, research
+  `docs/research/2026-11-21-china-storefront.md`): phase 1 built (StoreKit storefront in the kit, every cloud AI entry
+  hidden on CHN, `ai-draft` refuses CHN with 451, Settings notice and an App 备案号 row from `expo.extra.icpFiling`).
+  Next: phase 2 (PIPL section and cross-border consent, header required, review notes), phase 3 (+86 real-name, needs
+  an SMS provider), phase 4 (keyword filtering, 6-month retention). The China submission waits on phases 2–4 and the
+  ICP number; other regions launch first. Release rule (owner, 2026-11-21): the first App Store release excludes China
+  mainland in Pricing and Availability until the ICP number exists; the filing runs in parallel (spec decision 13).
 - Carpool: `ride_settle_owing` no longer depends on the clock and `paste_into` pastes again (#73). The `ride.remind.*`
   device checks wait for TestFlight. The local pgTAP `rides_schema` test 39 failure is gone: the main session reset the
   local database on 2026-11-06 (`supabase db reset --local`, test accounts reseeded) and all 49 files, 1721 tests pass.
@@ -262,6 +269,11 @@ pushes).
 
 ## Owner decisions pending
 
+- China mainland storefront (spec 「Owner decisions (open)」): Q-A the answer to Alibaba Cloud ticket 000CAT107A
+  (can an individual file this app; does Bailian count as the access resource); Q-A2 buying `tapiro.cn` and its
+  real-name verification (a `.app` domain cannot be filed); Q-B buying a mainland server for the filing (paid, ★ Aliyun
+  lightweight, ≥3 months); Q-C the SMS provider for +86 verification (paid, ★ Aliyun 短信认证; Tencent Cloud SMS;
+  Twilio Verify). Decisions 1–13 of the spec are listed for veto.
 - Merged under the owner's delegation (2026-11-17): #137 (the public privacy page; deployed 2026-11-17 (version facaca3a)) and #141 (the in-app privacy copy, `fix/app-privacy-copy`: contact address, anonymised AI usage and Jar records on
   deletion, 小貘记得 sent only with drafts and answers, location, no training per Alibaba Cloud's terms, Model Studio's
   retention of at most 30 days, one provider name everywhere, the location permission string naming rides and place
@@ -435,6 +447,8 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   (ap-southeast-1). Registered devices (automatic signing needs one before the first archive): 「Owner iPhone 13 Pro
   Max」 `00008110-0004455614F8801E` (2026-11-20, iOS 18.7.8, below the deployment target) and 「Owner iPhone 14 Pro」
   `00008120-001248DA1A0BC01E` (2026-11-21, iOS 26.3.1; `bun run device-install 00008120-001248DA1A0BC01E`).
+- Pricing and Availability excludes China mainland until the ICP filing number exists (owner, 2026-11-21; China
+  storefront spec decision 13).
 - Scheduled Edge Functions (`fx-rate`, `payment-proof-cleanup`, `notify`) authenticate pg_cron with a dedicated cron
   secret (Vault `cron_secret` = function secret `CRON_SECRET`, header `x-cron-secret`), not the service role key; a
   missing Vault secret fails the job in `cron.job_run_details` (`supabase/README.md`, 「Scheduled functions」). Set on

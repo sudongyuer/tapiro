@@ -18,7 +18,7 @@ export function CardBody({
   card: LiveCardModel;
   behind: boolean;
   name: string;
-  onAsk: () => void;
+  onAsk: (() => void) | null;
   message?: CardMessage | null;
 }) {
   if (card.kind === 'calm') return <CalmCard name={name} onAsk={onAsk} />;

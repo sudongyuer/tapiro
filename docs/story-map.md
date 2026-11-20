@@ -1203,6 +1203,75 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | ------------------ | ------------------------ | ---- |
 | rep.vouching.vouch | 担保规则等信誉调研后再定 | db   |
 
+## 中国大陆 App Store
+
+### china.no-ai 中国区店面不提供云端 AI
+
+- 故事：作为用中国区 Apple ID 下载 Tapiro 的同学，我想用到除 AI 以外的全部功能，并知道 AI 为什么没有，以便 App 能在中国区上架。
+- 状态：done
+- 版本：v1
+- 规格：[china-storefront](specs/2026-11-21-china-storefront-design.md)
+
+| 验收 id               | 行为                                                                                       | 覆盖                                                                                                                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| china.no-ai.detect    | 店面按 StoreKit 的国家码判断；中国区（CHN）关闭 AI，第一次拿到答案前也关闭，没有店面时打开 | unit:src/lib/storefront/controller.test.ts#the China mainland storefront never offers AI, unit:src/lib/storefront/controller.test.ts#an install with no storefront yet stays closed until StoreKit answers                                           |
+| china.no-ai.cached    | 上次看到的店面存在手机上，冷启动时先用它；StoreKit 没有答案时保留它                        | unit:src/lib/storefront/controller.test.ts#a cached China storefront closes AI before StoreKit answers, unit:src/lib/storefront/controller.test.ts#no StoreKit storefront keeps the cached one                                                       |
+| china.no-ai.switch    | App 运行中换了店面，AI 入口立刻跟着变                                                      | unit:src/lib/storefront/controller.test.ts#a storefront change while running closes AI and notifies, and unfollowing stops listening, device: 设置里换 App Store 地区后回到 App                                                                      |
+| china.no-ai.entries   | 中国区没有小貘按钮、首页问小貘输入框和示例、我的里的问小貘一行                             | ui:storefront_china                                                                                                                                                                                                                                  |
+| china.no-ai.translate | 中国区长按对方消息没有「翻译」                                                             | ui:chat_translate_china                                                                                                                                                                                                                              |
+| china.no-ai.routes    | 中国区打不开问小貘、同意页、小貘记得的页面（路由被保护）                                   | gap: 路由保护由 Expo Router Stack.Protected 提供，没有能从外部打开这些页面的链接可测                                                                                                                                                                 |
+| china.no-ai.gate      | 中国区的 App 即使有同意记录也不发出任何云端 AI 请求                                        | unit:src/features/ask/cloudGate.test.ts#on a storefront without AI nothing leaves the app, even with consent                                                                                                                                         |
+| china.no-ai.server    | 服务器拒绝声明中国区店面的 AI 请求（451 region_unavailable），不扣体力、不调模型           | unit:supabase/functions/ai-draft/handler.test.ts#storefront %s is refused before metering or the provider, int:supabase/functions/tests/ai-draft.integration.ts#a China mainland storefront is refused through the served function and costs nothing |
+| china.no-ai.notice    | 中国区的设置页在协议下面说明问小貘、翻译和语音输入不提供                                   | ui:storefront_china                                                                                                                                                                                                                                  |
+
+### china.icp App 备案号
+
+- 故事：作为中国区的同学，我想在设置里看到 App 备案号，以便确认 App 已备案。
+- 状态：done
+- 版本：v1
+- 规格：[china-storefront](specs/2026-11-21-china-storefront-design.md)
+
+| 验收 id         | 行为                                                 | 覆盖                                                                   |
+| --------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| china.icp.shown | 配置了备案号时，设置页协议下面显示「App 备案号」一行 | ui:storefront_china                                                    |
+| china.icp.unset | 没配置备案号时不显示这一行                           | gap: 默认没有备案号，现有设置用例（account_settings_long）不显示这一行 |
+
+### china.real-name 中国区发布和聊天前实名
+
+- 故事：作为中国区的同学，我想绑定 +86 手机号后再发悬赏、发起拼车和发消息，以便符合实名要求。
+- 状态：planned
+- 版本：later
+- 规格：[china-storefront](specs/2026-11-21-china-storefront-design.md)
+
+| 验收 id               | 行为                                                        | 覆盖    |
+| --------------------- | ----------------------------------------------------------- | ------- |
+| china.real-name.gate  | 中国区没有验证过的 +86 手机号时，发布和发消息先去绑定手机号 | ui, int |
+| china.real-name.other | 其他店面不要求手机号                                        | ui      |
+
+### china.moderation 关键词过滤和日志留存
+
+- 故事：作为运营者，我想在服务器上过滤违法内容并保留发布和聊天记录，以便履行中国区信息发布的义务。
+- 状态：planned
+- 版本：later
+- 规格：[china-storefront](specs/2026-11-21-china-storefront-design.md)
+
+| 验收 id                | 行为                                                 | 覆盖   |
+| ---------------------- | ---------------------------------------------------- | ------ |
+| china.moderation.block | 命中关键词的悬赏、拼车和消息在服务器上被拒，告诉用户 | db, ui |
+| china.moderation.keep  | 发布和聊天记录至少保留 6 个月，删除账号后也按期保留  | db     |
+
+### china.pipl 跨境告知和单独同意
+
+- 故事：作为中国区的同学，我想知道我的信息存在新加坡、谁会收到，并单独同意，以便我的权利得到保障。
+- 状态：planned
+- 版本：later
+- 规格：[china-storefront](specs/2026-11-21-china-storefront-design.md)
+
+| 验收 id            | 行为                                                         | 覆盖 |
+| ------------------ | ------------------------------------------------------------ | ---- |
+| china.pipl.policy  | 隐私政策有 PIPL 一节：境外接收方、新加坡、联系方式和权利行使 | ui   |
+| china.pipl.consent | 中国区第一次使用前单独同意跨境提供，不同意不能继续           | ui   |
+
 ## 无障碍（贯穿各页）
 
 ### a11y.core 读屏、点按范围和大字号

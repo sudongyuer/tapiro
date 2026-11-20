@@ -25,11 +25,14 @@ export type CloudResult =
 export function createCloudGate({
   store,
   send,
+  offered = () => true,
 }: {
   store: ConsentStore;
   send: (request: CloudRequest) => Promise<CloudAnswer>;
+  offered?: () => boolean;
 }) {
   return async function call(request: CloudRequest): Promise<CloudResult> {
+    if (!offered()) return { kind: 'unavailable' };
     const access = consentAccess(store.getSnapshot());
     if (access === null) return { kind: 'unavailable' };
     if (access === 'needsUpdate') return { kind: 'needsUpdate' };
@@ -44,6 +47,7 @@ export function createCloudGate({
       store.markRefused();
       return { kind: 'consentRequired' };
     }
+    if (answer.error === 'region_unavailable') return { kind: 'unavailable' };
     return { kind: 'failed', error: answer.error, status: answer.status };
   };
 }

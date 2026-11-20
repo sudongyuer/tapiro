@@ -109,6 +109,9 @@ const ms: Translation = {
       signingOut: 'Sedang daftar keluar…',
       deleteAccount: 'Padam Akaun',
       deleteFooter: 'Akaun yang telah dipadam tidak boleh dipulihkan.',
+      icp: 'Nombor pemfailan ICP',
+      regionNoAi:
+        'Tanya Tapir, terjemahan mesej dan input suara tidak ditawarkan dalam Tapiro dari App Store tanah besar China.',
     },
     delete: {
       title: 'Padam Akaun Anda?',

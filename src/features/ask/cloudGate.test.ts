@@ -8,7 +8,11 @@ import { consentAccess, createConsentStore } from './consentStore';
 const REQUEST: CloudRequest = { task: 'answer', input: { text: 'hi' } };
 const AT = '2026-11-12T03:00:00.000Z';
 
-async function gateWith(first: ConsentStatus | null, answers: CloudAnswer[]) {
+async function gateWith(
+  first: ConsentStatus | null,
+  answers: CloudAnswer[],
+  offered: () => boolean = () => true,
+) {
   const sent: CloudRequest[] = [];
   const server = { status: first };
   const service: AskService = {
@@ -29,6 +33,7 @@ async function gateWith(first: ConsentStatus | null, answers: CloudAnswer[]) {
       sent.push(request);
       return answers.shift() ?? { ok: true, body: null };
     },
+    offered,
   });
   return { call, sent, store, server };
 }
@@ -78,6 +83,24 @@ describe('cloud gate', () => {
     expect(consentAccess(gate.store.getSnapshot())).toBe('notGiven');
     expect(await gate.call(REQUEST)).toEqual({ kind: 'consentRequired' });
     expect(gate.sent).toHaveLength(1);
+  });
+
+  test('on a storefront without AI nothing leaves the app, even with consent', async () => {
+    const gate = await gateWith(
+      { currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: AT },
+      [],
+      () => false,
+    );
+    expect(await gate.call(REQUEST)).toEqual({ kind: 'unavailable' });
+    expect(gate.sent).toHaveLength(0);
+  });
+
+  test('a server region refusal is unavailable, not a failure to retry', async () => {
+    const gate = await gateWith(
+      { currentVersion: APP_CONSENT_VERSION, given: true, acceptedAt: AT },
+      [{ ok: false, error: 'region_unavailable', status: 451 }],
+    );
+    expect(await gate.call(REQUEST)).toEqual({ kind: 'unavailable' });
   });
 
   test('other failures pass through and are not retried', async () => {

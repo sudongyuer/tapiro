@@ -22,6 +22,7 @@ import { useLiveActivities } from '@/lib/live-activity';
 import { useNoticeRouting } from '@/lib/notifications';
 import { usePushRegistration } from '@/lib/push';
 import { useLiveStickers } from '@/lib/stickers';
+import { useAiOffered } from '@/lib/storefront';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -32,6 +33,7 @@ export default function TabsLayout() {
   const { t } = useI18n();
   const { color } = useTheme();
   const router = useRouter();
+  const aiOffered = useAiOffered();
   const userId = useSignedInUser()?.id ?? null;
   useLivePayments(userId);
   useLiveBounties(userId);
@@ -105,6 +107,7 @@ export default function TabsLayout() {
         role="search"
         prominent
         disabled
+        hidden={!aiOffered}
         testID="tab-ask-tapir"
         accessibilityLabel={t('shell.tabs.askTapir')}
         listeners={{

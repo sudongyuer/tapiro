@@ -105,6 +105,8 @@ export default {
       signingOut: '正在退出…',
       deleteAccount: '删除账号',
       deleteFooter: '账号删除后无法恢复。',
+      icp: 'App 备案号',
+      regionNoAi: '从中国大陆 App Store 下载的 Tapiro 不提供问小貘、消息翻译和语音输入。',
     },
     delete: {
       title: '删除账号？',

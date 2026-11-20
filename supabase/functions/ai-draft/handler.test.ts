@@ -30,6 +30,39 @@ describe('ai-draft', () => {
     }
   });
 
+  test.each([['CHN'], ['chn'], [' CHN ']])(
+    'storefront %s is refused before metering or the provider',
+    async (storefront) => {
+      const { deps, recorded } = setup();
+      const response = await handleAiDraft(
+        post(DRAFT, 'valid', { 'X-Tapiro-Storefront': storefront }),
+        deps,
+      );
+      await expectError(response, 451, 'region_unavailable');
+      expect(recorded.begins).toEqual([]);
+      expect(recorded.provider).toEqual([]);
+    },
+  );
+
+  test.each([['MYS'], ['unknown'], ['']])(
+    'storefront %s still reaches the provider',
+    async (storefront) => {
+      const { deps, recorded } = setup();
+      const response = await handleAiDraft(
+        post(DRAFT, 'valid', { 'X-Tapiro-Storefront': storefront }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(recorded.provider).toHaveLength(1);
+    },
+  );
+
+  test('a China storefront without a token is still unauthorized first', async () => {
+    const { deps } = setup();
+    const response = await handleAiDraft(post(DRAFT, null, { 'X-Tapiro-Storefront': 'CHN' }), deps);
+    await expectError(response, 401, 'unauthorized');
+  });
+
   test.each([
     ['not json', 'not json'],
     ['an unknown task', { task: 'publish_bounty', input: { text: 'x' } }],

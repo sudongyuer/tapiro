@@ -19,13 +19,14 @@ let userId = '';
 let token = '';
 let client: SupabaseClient;
 
-function ask(body: unknown, bearer: string = token) {
+function ask(body: unknown, bearer: string = token, extra: Record<string, string> = {}) {
   return fetch(endpoint, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${bearer}`,
       apikey: anonKey,
       'Content-Type': 'application/json',
+      ...extra,
     },
     body: JSON.stringify(body),
   });
@@ -123,6 +124,31 @@ describe('ai-draft on the local stack with the fake provider', () => {
     expect(row.energy_spent * 10).toBeLessThan(before);
     expect(body.energy).toBe(before - row.energy_spent);
     expect(JSON.stringify(rows)).not.toContain(MESSAGE);
+  });
+
+  test('a China mainland storefront is refused through the served function and costs nothing', async () => {
+    const before = await status();
+    const rows = (await meterRows()).length;
+    for (const body of [
+      { task: 'draft_bounty', input: { text: PROMPT } },
+      { task: 'translate', input: { text: MESSAGE, to: 'zh-Hans' } },
+      {
+        task: 'transcribe',
+        input: { audio: { mediaType: 'audio/mp4', data: 'AAAAHGZ0eXBNNEEg' }, language: 'ms' },
+      },
+    ]) {
+      const response = await ask(body, token, { 'X-Tapiro-Storefront': 'CHN' });
+      expect(response.status).toBe(451);
+      expect(await response.json()).toEqual({ error: 'region_unavailable' });
+    }
+    expect((await status()).energy).toBe(before.energy);
+    expect(await meterRows()).toHaveLength(rows);
+    const elsewhere = await ask(
+      { task: 'translate', input: { text: MESSAGE, to: 'zh-Hans' } },
+      token,
+      { 'X-Tapiro-Storefront': 'MYS' },
+    );
+    expect(elsewhere.status).toBe(200);
   });
 
   test('a translation names its language; anything else is refused and costs nothing', async () => {

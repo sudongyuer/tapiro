@@ -20,6 +20,8 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/features/ask/services.ts#translations': 'session',
   'src/features/ask/services.ts#voice': 'session',
   'src/features/block/blockEvents.ts#blockEvents': 'kept: an event bus',
+  'src/lib/storefront/instance.ts#storefront':
+    'kept: the device App Store storefront, not tied to a Tapiro account',
   'src/features/bounty/apply/services.ts#noteDrafts': 'session',
   'src/features/bounty/board/services.ts#originStore': 'account',
   'src/features/bounty/board/services.ts#shownOrigins': 'account',

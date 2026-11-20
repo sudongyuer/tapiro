@@ -6,9 +6,11 @@ import { usePayeeRecheckDue } from '@/features/payee';
 import { profileHref, useMyStanding } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 import { useStickers } from '@/lib/stickers';
+import { useAiOffered } from '@/lib/storefront';
 
 export default function Me() {
   const router = useRouter();
+  const aiOffered = useAiOffered();
   const user = useSignedInUser();
   const profile = useProfile(user);
   const ready = profile.status === 'ready' ? profile.profile : null;
@@ -32,7 +34,7 @@ export default function Me() {
       coinCount={coins === null ? null : coinCount(coins, language)}
       onOpenCoins={() => router.push('/me/coins')}
       onOpenInvite={() => router.push('/me/invite')}
-      onOpenTapir={() => router.push('/me/tapir')}
+      onOpenTapir={aiOffered ? () => router.push('/me/tapir') : null}
       onOpenPayee={() => router.push('/me/payee')}
       onOpenBlocked={() => router.push('/me/blocked')}
       onOpenSettings={() => router.push('/me/settings')}

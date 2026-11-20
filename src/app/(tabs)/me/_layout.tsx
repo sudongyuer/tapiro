@@ -6,11 +6,13 @@ import {
   PROFILE_SHEET_OPTIONS,
 } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
+import { useAiOffered } from '@/lib/storefront';
 
 export const unstable_settings = { anchor: 'index' };
 
 export default function MeLayout() {
   const { t } = useI18n();
+  const aiOffered = useAiOffered();
   return (
     <Stack screenOptions={{ headerTransparent: true }}>
       <Stack.Screen
@@ -26,8 +28,10 @@ export default function MeLayout() {
         options={{ title: t('stickers.book.title'), headerTitle: '' }}
       />
       <Stack.Screen name="coins" options={{ title: t('coins.title') }} />
-      <Stack.Screen name="tapir" options={{ title: t('ask.settings.title') }} />
-      <Stack.Screen name="tapir-memory" options={{ title: t('ask.memory.title') }} />
+      <Stack.Protected guard={aiOffered}>
+        <Stack.Screen name="tapir" options={{ title: t('ask.settings.title') }} />
+        <Stack.Screen name="tapir-memory" options={{ title: t('ask.memory.title') }} />
+      </Stack.Protected>
       <Stack.Screen name="invite" options={{ title: t('coins.invite.title') }} />
       <Stack.Screen name="payee" options={{ title: t('payee.title') }} />
       <Stack.Screen name="blocked" options={{ title: t('block.list.title') }} />

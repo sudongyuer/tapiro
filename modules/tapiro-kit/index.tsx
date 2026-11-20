@@ -160,8 +160,11 @@ export type SpeechEvent =
       audio?: string;
     };
 
+export type StorefrontEvent = { countryCode: string };
+
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
+  onStorefront(event: StorefrontEvent): void;
   onStoreTransaction(event: StoreTransaction): void;
   onSpeech(event: SpeechEvent): void;
 };
@@ -197,6 +200,9 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   storeFinish(transactionId: string): Promise<boolean>;
   storeStartUpdates(): Promise<void>;
   storeStopUpdates(): Promise<void>;
+  storefrontCountry(): Promise<string | null>;
+  storefrontStartUpdates(): Promise<void>;
+  storefrontStopUpdates(): Promise<void>;
   speechPermissions(): Promise<SpeechPermissions>;
   speechRequestPermissions(): Promise<SpeechPermissions>;
   speechStart(
@@ -411,6 +417,30 @@ export const Store = {
       remove() {
         subscription.remove();
         void kit.storeStopUpdates();
+      },
+    };
+  },
+};
+
+let storefrontUpdates: Promise<void> = Promise.resolve();
+
+// Start and stop are separate native tasks with no order between them; chaining keeps a quick remove-then-listen from
+// stopping the new listener's updates.
+function queueStorefrontUpdates(run: () => Promise<void>) {
+  storefrontUpdates = storefrontUpdates.then(run, run);
+}
+
+export const Storefront = {
+  countryCode(): Promise<string | null> {
+    return kit.storefrontCountry();
+  },
+  listen(cb: (countryCode: string) => void): { remove(): void } {
+    const subscription = kit.addListener('onStorefront', (event) => cb(event.countryCode));
+    queueStorefrontUpdates(() => kit.storefrontStartUpdates());
+    return {
+      remove() {
+        subscription.remove();
+        queueStorefrontUpdates(() => kit.storefrontStopUpdates());
       },
     };
   },

@@ -109,6 +109,9 @@ const en: Translation = {
       signingOut: 'Signing out…',
       deleteAccount: 'Delete Account',
       deleteFooter: 'A deleted account can’t be restored.',
+      icp: 'ICP filing number',
+      regionNoAi:
+        'Ask Tapir, message translation and voice input aren’t offered in Tapiro from the China mainland App Store.',
     },
     delete: {
       title: 'Delete Your Account?',
