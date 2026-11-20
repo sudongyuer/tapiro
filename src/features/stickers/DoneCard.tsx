@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { dateFormat } from '@/lib/intlCache';
 import { stickerArt, stickerLabel, type Sticker } from '@/lib/stickers';
 import { AppText } from '@/ui/AppText';
 import { HandArt } from '@/ui/HandArt';
@@ -12,7 +13,7 @@ export const CARD_HEIGHT = 380;
 const ART = 168;
 
 export function cardDate(language: string, iso: string) {
-  return new Intl.DateTimeFormat(language, {
+  return dateFormat(language, {
     month: 'long',
     day: 'numeric',
     weekday: 'short',

@@ -37,6 +37,7 @@ import {
 } from './statusCopy';
 import { statusTone, timeline, type StepState, type TimelineStep } from './timeline';
 import type { StatusDetail } from './types';
+import { useDoneBounce } from './useDoneBounce';
 import { useEtaFlip } from './useEtaFlip';
 
 const STICKER = 48;
@@ -149,6 +150,7 @@ function StepRow({
   last: boolean;
 }) {
   const { color } = useTheme();
+  const bounce = useDoneBounce(step.state === 'done');
   const text = stepText(step, copy);
   const time = step.at ? statusClock(step.at, copy) : null;
   const lines = step.lines.map((line) => ({ line, text: lineText(line, copy) }));
@@ -178,7 +180,7 @@ function StepRow({
     >
       <VStack spacing={0}>
         <Rail shown={!first} />
-        <Image systemName={ICONS[step.state]} size={ICON} modifiers={[icon]} />
+        <Image systemName={ICONS[step.state]} size={ICON} modifiers={[icon, bounce]} />
         <Rail shown={!last} grows />
       </VStack>
       <VStack

@@ -4,7 +4,8 @@ and nothing is sent while it is open; 出发 in the sheet sends
 start_bounty with that time and the timeline shows 你出发了 with 预计 … 到. 改预计到达时间 opens the same sheet at the current
 ETA with 好 disabled until the wheel moves; after 好 the new time flips in and the old one is struck through (clip
 eta-change). 完成 shows progress in the button while complete_bounty is in flight, still filled with the accent (not
-dimmed), then 等小林确认. With
+dimmed), then 等小林确认 with the 完成 step's check bouncing in once while the done 出发 step stays still (clip
+step-done). With
 complete_bounty failing once, 完成 shows 没发出去，再试一次 under the buttons and the button comes back; the next tap
 completes. Closing the sheet with 取消 sends nothing."""
 import json
@@ -18,7 +19,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from choose import defaults  # noqa: E402
-from driver import assert_touch_target, by_id, close, luma, token, UI  # noqa: E402
+from driver import assert_touch_target, by_id, close, luma, Shot, token, UI  # noqa: E402
 from hourcycle import clock_at, clock as any_clock  # noqa: E402
 from recording import clip, frames  # noqa: E402
 from taps import walk  # noqa: E402
@@ -38,6 +39,8 @@ CALLS = 'uiVerifyBountyStatusCalls'
 PROMINENT_SHARE = 0.35
 FILL_SHARE = 0.6
 FILL_TOLERANCE = 12
+ICON_TOLERANCE = 24
+BOUNCE_SHARE = 0.08
 
 ui = UI(*sys.argv[1:])
 # Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
@@ -106,6 +109,10 @@ def tap_bar(identifier):
 
 def confirm_button():
     return bar_button('bounty-eta-confirm')
+
+
+def icon_box(f):
+    return {'x': f['x'] - 6, 'y': f['y'] + 8, 'width': 34, 'height': 36}
 
 
 def accent_share(shot, f):
@@ -203,11 +210,28 @@ kept = shot.count(sending['frame'], lambda rgb: close(rgb, accent, FILL_TOLERANC
 assert kept >= FILL_SHARE, f'完成 lost its accent fill while sending ({kept:.2f} of its frame is the accent)'
 waiting = by_id(after, 'bounty-status-action-changeEta')
 assert waiting and waiting.get('enabled') is False, f'改预计到达时间 can be tapped while 完成 is sending: {waiting}'
-summary('bounty.status.summary.helper.done', name='小林')
-ui.gone('bounty-status-action-complete')
+with clip(ui, 'step-done') as video:
+    summary('bounty.status.summary.helper.done', name='小林')
+    ui.gone('bounty-status-action-complete')
+    ui.at_rest()
 assert len(wait_sent('complete_bounty', 1)) == 1, sent('complete_bounty')
-ui.at_rest()
+assert ui.t('bounty.status.a11y.done') in step('completed'), step('completed')
 ui.capture('06-done')
+success = token('--color-success', ui.appearance)
+width = after[0]['frame']['width']
+with tempfile.TemporaryDirectory() as tmp:
+    shots = [Shot(path, width) for path, _ in frames(video, tmp)]
+    inks = {name: [shot.count(icon_box(by_id(after, f'bounty-status-step-{name}')['frame']),
+                               lambda rgb: close(rgb, success, ICON_TOLERANCE)) for shot in shots]
+            for name in ('completed', 'started')}
+print(f'step-done clip: {len(shots)} frames, completed icon ink {inks["completed"]}, started {inks["started"]}')
+final = inks['completed'][-1]
+assert final > 0, 'the 完成 step never turned into the green check'
+moving = [ink for ink in inks['completed'] if ink and abs(ink - final) > final * BOUNCE_SHARE]
+assert moving, f'the check appeared with no bounce: icon ink {inks["completed"]}'
+kept = inks['started'][-1]
+assert kept and all(abs(ink - kept) <= kept * BOUNCE_SHARE for ink in inks['started']), \
+    f'the already-done 出发 step moved when the next step finished: {inks["started"]}'
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyScene', SCENE, '-uiVerifyBountyStatus', 'enRoute', '-uiVerifyBountyRole',
                               'helper', '-uiVerifyBountyStatusFail', 'complete_bounty'],
