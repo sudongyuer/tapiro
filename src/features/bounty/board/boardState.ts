@@ -172,6 +172,7 @@ export function createBoardController(
   let loadGeneration: number | null = null;
   let pageBusy = false;
   let reloadAfter = false;
+  let paged = false;
   let query: Query | null = null;
   let snapshot: BoardSnapshot = { state, refreshing: false, origin: null };
   const listeners = new Set<() => void>();
@@ -206,6 +207,7 @@ export function createBoardController(
     }
     loadGeneration = null;
     dispatch(answer);
+    if (answer.type === 'loadSucceeded' && state.generation === generation) paged = false;
     if (
       answer.type === 'loadSucceeded' &&
       state.kind === 'ready' &&
@@ -256,6 +258,9 @@ export function createBoardController(
     }
     pageBusy = false;
     dispatch(answer);
+    if (answer.type === 'pageSucceeded' && state.generation === generation) {
+      paged = !answer.page.restarted;
+    }
   }
 
   function setQuery(origin: BoardOrigin, filter: BoardFilter, reloadSame: boolean) {
@@ -283,6 +288,11 @@ export function createBoardController(
       if (origin && query) await setQuery(origin, query.filter, true);
     },
     load,
+    // A timed reload replaces the list with its first page, so it waits while more pages are shown.
+    tick() {
+      if (state.kind !== 'ready' || paged || running || pageBusy) return Promise.resolve();
+      return load();
+    },
     loadMore: () => nextPage('idle'),
     retryPage: () => nextPage('failed'),
     applied: (id: string) => dispatch({ type: 'applied', id }),

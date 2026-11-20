@@ -5,8 +5,9 @@ import { blockEvents } from '@/features/block';
 import { bountyCache } from '../shared/bountyCache';
 import { justApplied } from '../shared/justApplied';
 import { createBoardController, nearEnd } from './boardState';
-import { boardService } from './services';
+import { boardService, boardTickMs } from './services';
 import type { BoardFilter, BoardOrigin } from './types';
+import { useBoardTick } from './useBoardTick';
 import { useFreshness } from './useFreshness';
 
 export function useBoard(
@@ -25,6 +26,7 @@ export function useBoard(
   }, [controller, origin, filter]);
 
   useFreshness(controller.load);
+  useBoardTick(controller.tick, boardTickMs);
 
   useEffect(
     () =>

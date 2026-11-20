@@ -8,10 +8,12 @@ import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { verifyRecorder } from '@/lib/verifyRecord';
 import { liveItems } from '@/lib/useLiveItems';
 
+import { bountyCache } from '../shared/bountyCache';
 import { createFixtureLiveService, fixtureLiveOptions } from './fixtureLiveService';
 import { liveBountyItems } from './liveBounties';
 import { createSupabaseLiveService } from './liveService';
 import { createLiveBountyStore } from './liveStore';
+import { reloadOnOwnApplications } from './ownWrites';
 
 const SEEN_KEY = 'uiVerifyBountySeen';
 
@@ -46,10 +48,14 @@ function publish() {
 }
 
 liveBountyStore.subscribe(publish);
-live.on(['bounty.', 'payment.'], () => {
+export function reloadLiveBounties() {
   const state = liveBountyStore.getSnapshot();
-  if (state.status !== 'idle') void liveBountyStore.reload(state.userId);
-});
+  if (state.status === 'idle') return Promise.resolve();
+  return liveBountyStore.reload(state.userId);
+}
+
+live.on(['bounty.', 'payment.'], () => void reloadLiveBounties());
+reloadOnOwnApplications(bountyCache, () => void reloadLiveBounties());
 i18n.on('languageChanged', publish);
 
 sessionEnds.register(() => liveBountyStore.clear());
