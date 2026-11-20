@@ -26,7 +26,8 @@ export type AiRequest =
   | { task: 'transcribe'; input: { audio: AiAudio; language: AiLanguage } };
 
 type Schema = {
-  type: string | readonly string[];
+  type?: string | readonly string[];
+  anyOf?: readonly Schema[];
   properties?: Readonly<Record<string, Schema>>;
   required?: readonly string[];
   additionalProperties?: boolean;
@@ -43,6 +44,9 @@ type Schema = {
 export type ToolSchema = { name: AiTool; description: string; parameters: Schema };
 
 const DATE_TIME_NOTE = 'ISO 8601 with a UTC offset, or null';
+
+// Qwen answered the type list ["integer", "null"] with the string "15" in 5 of 5 live calls; anyOf got 15 in 3 of 3.
+const NULLABLE_REWARD: Schema = { anyOf: [{ type: 'integer', minimum: 1 }, { type: 'null' }] };
 
 // The app parses this shape in src/lib/drafts/bountyDraft.ts; contract.test.ts keeps the two in step. Null means the
 // user did not say. A place has no field for coordinates because a model cannot be trusted to produce them.
@@ -66,7 +70,7 @@ const DRAFT_BOUNTY_PARAMETERS: Schema = {
       type: ['string', 'null'],
       enum: ['pickup', 'buy', 'queue', 'handle', 'move', 'accompany', 'study', 'other', null],
     },
-    rewardMajor: { type: ['integer', 'null'], minimum: 1 },
+    rewardMajor: NULLABLE_REWARD,
     currency: { type: ['string', 'null'], enum: ['MYR', 'CNY', null] },
     description: { type: ['string', 'null'], minLength: 1, maxLength: 500 },
     deadlineAt: { type: ['string', 'null'], description: DATE_TIME_NOTE },
@@ -143,12 +147,20 @@ export const TOOL_SCHEMAS: Readonly<Record<AiTool, ToolSchema>> = {
   },
   translate: {
     name: 'translate',
-    description: 'Translate the given message into the target language.',
+    description:
+      "Give your translation of the user's message, in the target language the instructions name.",
     parameters: {
       type: 'object',
       additionalProperties: false,
       required: ['text'],
-      properties: { text: { type: 'string', minLength: 1, maxLength: OUTPUT_TEXT_MAX } },
+      properties: {
+        text: {
+          type: 'string',
+          minLength: 1,
+          maxLength: OUTPUT_TEXT_MAX,
+          description: 'The translated message in the target language; never the original text.',
+        },
+      },
     },
   },
   transcript: {
@@ -175,8 +187,12 @@ function hasType(value: unknown, type: string) {
   return typeof value === type;
 }
 
+const typesOf = (schema: Schema) =>
+  typeof schema.type === 'string' ? [schema.type] : (schema.type ?? []);
+
 function matches(schema: Schema, value: unknown): boolean {
-  const types = typeof schema.type === 'string' ? [schema.type] : schema.type;
+  if (schema.anyOf) return schema.anyOf.some((variant) => matches(variant, value));
+  const types = typesOf(schema);
   if (!types.some((type) => hasType(value, type))) return false;
   if (value === null) return true;
   if (schema.enum && !schema.enum.includes(value)) return false;
@@ -206,6 +222,28 @@ function matches(schema: Schema, value: unknown): boolean {
   }
   return true;
 }
+
+const WHOLE_NUMBER = /^[1-9]\d{0,8}$/;
+
+const takesInteger = (schema: Schema): boolean =>
+  typesOf(schema).includes('integer') || (schema.anyOf ?? []).some(takesInteger);
+
+function withIntegers(schema: Schema | undefined, value: unknown): unknown {
+  if (schema === undefined) return value;
+  if (typeof value === 'string' && WHOLE_NUMBER.test(value) && takesInteger(schema)) {
+    return Number(value);
+  }
+  const items = schema.items;
+  if (Array.isArray(value) && items) return value.map((item) => withIntegers(items, item));
+  const properties = schema.properties;
+  if (!isRecord(value) || !properties) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, field]) => [key, withIntegers(properties[key], field)]),
+  );
+}
+
+export const withIntegerFields = (tool: AiTool, args: unknown) =>
+  withIntegers(TOOL_SCHEMAS[tool].parameters, args);
 
 const OFFSET_DATE_TIME =
   /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;

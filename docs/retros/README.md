@@ -921,3 +921,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-19 | sim-lock same name                      | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-19 | real sign-in adapters                   | 0                  | 6             | ~10 min (Apple JWKS timeout, CLI source path)    | 0                       | 0                     |
 | 2026-11-20 | first TestFlight upload                 | 0                  | 2             | ~15 min (signing without a device, stale base)   | 1                       | 0                     |
+| 2026-11-20 | first live Qwen run                     | 2                  | 0             | ~0                                               | 0                       | 0                     |

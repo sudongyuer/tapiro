@@ -15,6 +15,7 @@ import {
   TOOL_SCHEMAS,
   toolsFor,
   validToolResult,
+  withIntegerFields,
   type AiRequest,
   type AiTask,
   type AiTool,
@@ -123,15 +124,16 @@ function usable(
   reply: ProviderReply,
   request: AiRequest,
   memory: MemoryContext | null,
-): AiTool | null {
+): { tool: AiTool; args: unknown } | null {
   const tool = offeredTool(reply, request);
+  if (tool === null) return null;
+  const args = withIntegerFields(tool, reply.arguments);
   const valid =
-    tool !== null &&
     isCount(reply.inputTokens) &&
     isCount(reply.outputTokens) &&
     hasModel(reply) &&
-    validToolResult(tool, withoutMemory(reply.arguments, memory));
-  return valid ? tool : null;
+    validToolResult(tool, withoutMemory(args, memory));
+  return valid ? { tool, args } : null;
 }
 
 // Logs carry a fixed code and never the caught error: a provider or database error can quote the user's prompt, and no
@@ -186,8 +188,8 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
     await deps.store.abort(userId, begun.lease).catch(() => logCode('abort_failed'));
     return failure(502, 'provider_error');
   }
-  const tool = usable(reply, request, memory);
-  if (tool === null) {
+  const used = usable(reply, request, memory);
+  if (used === null) {
     logCode('reply_discarded');
     await deps.store
       .discard({
@@ -213,11 +215,17 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
       outputTokens: reply.outputTokens,
       energySpent: energyCost(tokens, PLACEHOLDER_FULL_BELLY_TOKENS, begun.energyFull),
     });
-    const split = splitMemory(reply.arguments, memory);
+    const split = splitMemory(used.args, memory);
     const outcome = usesMemory(request.task)
       ? { memory: split.memory ?? { used: [], offer: null } }
       : {};
-    return json(200, { task: request.task, tool, result: split.result, ...outcome, ...after });
+    return json(200, {
+      task: request.task,
+      tool: used.tool,
+      result: split.result,
+      ...outcome,
+      ...after,
+    });
   } catch {
     logCode('finish_failed');
     return failure(500, 'server_error');

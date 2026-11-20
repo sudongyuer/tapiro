@@ -221,7 +221,7 @@ installs with `bun run device-install`).
      en 12-hour). Still raw: the home ride card's `departAt` (verify fixtures only; production has no source yet). Tooling: `merge-when-green.sh` waits for checks on the pushed head (#184);
      `lint:changed` runs the size check.
 
-1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).
+1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`). The first hosted run (2026-11-20) found and fixed an untranslated `translate` and always-discarded drafts (plan 「First live run on hosted」, L1–L2), then Model Studio refused every model with `AccessDenied.Unpurchased`: the owner checks the account before the smoke reruns (L4).
 2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase (TestFlight: see the
    「Release builds」 section). Real
    sign-in is built (2026-11-19, `feat/native-sign-in`; record in the foundation spec). Signing team: the owner's
