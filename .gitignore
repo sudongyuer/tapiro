@@ -43,6 +43,7 @@ example
 /ios
 /android
 .verify/
+.testflight/
 .dev/
 
 __pycache__/
