@@ -167,10 +167,15 @@ const styles = StyleSheet.create({
     minHeight: vars['--touch-min'],
   },
   inline: { paddingRight: vars['--space-3'], gap: vars['--space-2'] },
-  pressed: { opacity: 0.6 },
+  pressed: { opacity: vars['--opacity-pressed'] },
   text: { flex: 1, minWidth: 0 },
   title: { fontWeight: '600' },
-  amount: { fontWeight: '700', flexShrink: 0, fontVariant: ['tabular-nums'] },
+  amount: {
+    fontFamily: vars['--font-rounded'],
+    fontWeight: '700',
+    flexShrink: 0,
+    fontVariant: ['tabular-nums'],
+  },
   more: {
     minWidth: vars['--space-6'],
     height: vars['--space-5'],
@@ -180,7 +185,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: PlatformColor('quaternarySystemFill'),
   },
-  moreText: { fontWeight: '700' },
+  moreText: {
+    fontFamily: vars['--font-rounded'],
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
   glyph: { alignItems: 'center', justifyContent: 'center' },
   money: { fontWeight: '800' },
 });

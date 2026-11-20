@@ -1,14 +1,15 @@
 """The pantry on 我的 → 小貘 (137, 139). Under the cloud switch a crayon jar shows how many leaves are kept and that they
 never expire, with 用 1 颗貘币换一片 as a filled ink capsule button (137 A, so it reads as an action) and the coin balance. The swap asks first in a system action sheet naming what is
 left; 取消 sends nothing; 换一片 shows progress, swaps once and puts the leaf in the jar without feeding it. A swap that
-gets no answer says it may not have gone through and is not retried; with no coins the button is disabled."""
+gets no answer says it may not have gone through and is not retried; with no coins the button is disabled, its label
+still legible (dark on the grey fill in light, light in dark; not white on grey)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import assert_calls  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
 from confirm import assert_dialog  # noqa: E402
-from driver import UI, by_id, close, reach_home, token  # noqa: E402
+from driver import UI, assert_label_ink, by_id, close, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/app/(tabs)/me/', 'src/lib/i18n/locales/ask/', 'assets/pantry/',
         'verification/ui/ask.py', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
@@ -90,6 +91,9 @@ count(0)
 footer_has(ui.t('ask.pantry.noCoins'))
 assert by_id(ui.read(), 'tapir-pantry-swap').get('enabled') is False, 'the swap is enabled with no coins'
 ui.at_rest()
-ui.capture('06-no-coins')
+shot = ui.snap('06-no-coins')
+f = by_id(ui.read(), 'tapir-pantry-swap')['frame']
+assert_label_ink(shot, {'x': f['x'] + 16, 'y': f['y'] + 4, 'width': f['width'] - 32, 'height': f['height'] - 8},
+                 ui.appearance, 'the disabled swap', contrast=30)
 print('PASS: jar count and coins, swap confirmed in an action sheet with progress, cancel sends nothing, '
       'a lost swap is named and not retried, no coins disables the swap')

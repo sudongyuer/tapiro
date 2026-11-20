@@ -22,6 +22,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Image } from 'expo-image';
 import { useState, type ComponentProps } from 'react';
+import { PlatformColor } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
@@ -41,6 +42,7 @@ const JAR_IMAGES = {
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const WIDE = frame({ maxWidth: Infinity });
+const DISABLED_LABEL = PlatformColor('tertiaryLabel');
 
 export function PantrySection({ belly, pantry }: { belly: Belly; pantry: PantryState }) {
   const { t } = useI18n();
@@ -103,6 +105,7 @@ function PantryJar({
 }) {
   const { t } = useI18n();
   const onInk = useTheme().color('--color-on-accent');
+  const off = belly.coins < 1 || busy;
   return (
     <Section
       title={t('ask.pantry.title')}
@@ -152,11 +155,17 @@ function PantryJar({
               buttonStyle('borderedProminent'),
               buttonBorderShape('capsule'),
               controlSize('large'),
-              disabled(belly.coins < 1 || busy),
+              disabled(off),
               accessibilityIdentifier('tapir-pantry-swap'),
             ]}
           >
-            <Text modifiers={[WIDE, font({ weight: 'semibold' }), foregroundStyle(onInk)]}>
+            <Text
+              modifiers={[
+                WIDE,
+                font({ weight: 'semibold' }),
+                foregroundStyle(off ? DISABLED_LABEL : onInk),
+              ]}
+            >
               {t('ask.pantry.swap')}
             </Text>
           </Button>

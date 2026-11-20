@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   togglePill: {
     opacity: 0.9,
     paddingHorizontal: vars['--space-3'],
-    minHeight: vars['--space-7'] - vars['--space-1'],
+    minHeight: vars['--capsule-min'],
     justifyContent: 'center',
     borderRadius: vars['--radius-pill'],
     borderCurve: 'continuous',

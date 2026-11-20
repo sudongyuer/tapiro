@@ -25,7 +25,7 @@ import {
   shapes,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { PlatformColor, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
@@ -34,7 +34,7 @@ import { TapirCoin } from '@/ui/TapirCoin';
 import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 const AVATAR_SIZE = 60;
 const ROW_COIN = 18;
@@ -188,7 +188,7 @@ function ProfileRow({
       testID="me-profile"
       modifiers={[
         accessibilityHint(t('reputation.profile.openSelf')),
-        ...(selected ? [listRowBackground(PlatformColor('systemGray4'))] : []),
+        ...(selected ? [listRowBackground(SELECTED_ROW_FILL)] : []),
       ]}
     >
       {content}
@@ -220,7 +220,7 @@ function NavRow({
         onPress();
       }}
       testID={testID}
-      modifiers={selected ? [listRowBackground(PlatformColor('systemGray4'))] : []}
+      modifiers={selected ? [listRowBackground(SELECTED_ROW_FILL)] : []}
     >
       <HStack spacing={vars['--space-2']}>
         {coin ? (

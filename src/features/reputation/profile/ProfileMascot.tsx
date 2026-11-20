@@ -24,13 +24,12 @@ import {
   tint,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
-import { PlatformColor } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { Mascot } from '@/ui/Mascot';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import { useMyMascot } from '../hooks';
 import type { PublicMascot } from '../types';
@@ -123,7 +122,7 @@ export function StickerBookRow({ count, onPress }: { count: number; onPress: () 
           onPress();
         }}
         testID="profile-stickers"
-        modifiers={selected ? [listRowBackground(PlatformColor('systemGray4'))] : []}
+        modifiers={selected ? [listRowBackground(SELECTED_ROW_FILL)] : []}
       >
         <HStack spacing={vars['--space-2']} modifiers={[contentShape(shapes.rectangle())]}>
           <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>

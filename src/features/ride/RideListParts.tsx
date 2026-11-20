@@ -6,7 +6,7 @@ import { AppText } from '@/ui/AppText';
 import { InlineState } from '@/ui/InlineState';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 import { localClock } from '@/lib/deviceClock';
 import Animated from 'react-native-reanimated';
 
@@ -146,6 +146,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: PlatformColor('secondarySystemGroupedBackground'),
   },
-  selected: { backgroundColor: PlatformColor('systemFill') },
+  selected: { backgroundColor: SELECTED_ROW_FILL },
   rowText: { flex: 1 },
 });

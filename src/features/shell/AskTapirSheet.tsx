@@ -84,12 +84,28 @@ export function AskTapirSheet({
           onPress={onClose}
         />
       </Stack.Toolbar>
-      {/* No automatic inset for the bar: the sheet's own header sits in the bar's row beside the close button, keeping
-          the first detent's room for the field and the hungry card's buttons. */}
+      <View style={styles.header} collapsable={false}>
+        <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
+          <Mascot variant="side" size={32} />
+        </View>
+        <View style={styles.headerText}>
+          <AppText variant="title" accessibilityRole="header">
+            {t('shell.ask.title')}
+          </AppText>
+          <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
+            {t(SUBTITLES[tab])}
+          </AppText>
+          {belly}
+        </View>
+        <View style={styles.closeSlot} />
+      </View>
+      {/* react-native-screens sizes a form sheet's scroll view below a header only when the two are the sheet's only
+          children (header first, not collapsed); the conversation then clips at the header's bottom edge instead of
+          passing under the grabber and the close button. */}
       <ScrollView
         ref={scroll}
         contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={styles.sheet}
+        contentContainerStyle={styles.content}
         automaticallyAdjustKeyboardInsets
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
@@ -101,22 +117,6 @@ export function AskTapirSheet({
         }}
         testID="ask-tapir-sheet"
       >
-        <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
-            <Mascot variant="side" size={32} />
-          </View>
-          <View style={styles.headerText}>
-            <AppText variant="title" accessibilityRole="header">
-              {t('shell.ask.title')}
-            </AppText>
-            <AppText variant="meta" tone="secondaryLabel" testID="ask-tapir-subtitle">
-              {t(SUBTITLES[tab])}
-            </AppText>
-            {belly}
-          </View>
-          <View style={styles.closeSlot} />
-        </View>
-
         <View style={styles.body} testID="ask-tapir-body">
           {notice}
           {showSuggestions ? (
@@ -143,14 +143,19 @@ export function AskTapirSheet({
 }
 
 const styles = StyleSheet.create({
-  sheet: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: vars['--space-3'],
     paddingHorizontal: vars['--space-5'],
     paddingTop: vars['--space-6'],
-    paddingBottom: vars['--space-6'],
-    gap: vars['--space-4'],
   },
   body: { gap: vars['--space-4'] },
-  header: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
+  content: {
+    paddingHorizontal: vars['--space-5'],
+    paddingTop: vars['--space-4'],
+    paddingBottom: vars['--space-6'],
+  },
   avatar: {
     width: vars['--touch-min'],
     height: vars['--touch-min'],

@@ -360,9 +360,19 @@ The reward and the primary action wrap rather than truncate at any size.
 | `--radius-sheet`    | `24`  |
 | `--radius-pill`     | `999` |
 | `--touch-min`       | `44`  |
+| `--capsule-min`     | `28`  |
 | `--opacity-pressed` | `0.7` |
 
 Radii are continuous corners. Buttons are pills.
+
+- A capsule that labels rather than acts (a card's tag, the stack toggle's pill, the calm card's example chips) is at
+  least `--capsule-min` tall; one that acts keeps `--touch-min` around it.
+- A live card's button is the shared `CardButton`: at least `--touch-min` tall, `body` semibold, up to two lines, in
+  three looks (filled with the card's ink, tinted, outlined).
+- A disabled pill keeps its shape and greys out: the secondary fill with a `tertiaryLabel` label, never a faded
+  accent with a white label.
+- A pressed or selected row fills with `systemGray4`, the colour of a selected `UITableView` cell, in the row's own
+  shape.
 
 ## Stickers
 

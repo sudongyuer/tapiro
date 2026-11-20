@@ -1,8 +1,17 @@
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import type { ReactNode } from 'react';
-import { StyleSheet, View, type TextStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+  type AccessibilityState,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { AppText, type AppTextProps } from '@/ui/AppText';
+import { PressDim } from '@/ui/PressDim';
 import { MUTED_TEXT_OPACITY, vars } from '@/ui/theme/tokens';
 
 export function CardText({
@@ -46,6 +55,70 @@ export function CardHeader({ left, right }: { left: ReactNode; right?: ReactNode
   );
 }
 
+type CardButtonLook = 'filled' | 'tinted' | 'outlined';
+
+export function CardButton({
+  label,
+  ink,
+  surface,
+  look = 'filled',
+  onPress,
+  disabled,
+  busy = false,
+  accessibilityLabel,
+  accessibilityState,
+  testID,
+  style,
+}: {
+  label: string;
+  ink: string;
+  surface: string;
+  look?: CardButtonLook;
+  onPress?: () => void;
+  disabled?: boolean;
+  busy?: boolean;
+  accessibilityLabel?: string;
+  accessibilityState?: AccessibilityState;
+  testID?: string;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const color = look === 'filled' ? surface : ink;
+  const body = (
+    <>
+      {look === 'tinted' ? (
+        <View style={[StyleSheet.absoluteFill, styles.tint, { backgroundColor: ink }]} />
+      ) : null}
+      {busy ? (
+        <ActivityIndicator color={color} />
+      ) : (
+        <AppText variant="body" numberOfLines={2} style={[styles.buttonLabel, { color }]}>
+          {label}
+        </AppText>
+      )}
+    </>
+  );
+  const frame = [
+    styles.button,
+    look === 'filled' && { backgroundColor: ink },
+    look === 'outlined' && [styles.outlined, { borderColor: ink }],
+    style,
+  ];
+  if (!onPress) return <View style={frame}>{body}</View>;
+  return (
+    <PressDim
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled, busy, ...accessibilityState }}
+      disabled={disabled}
+      onPress={onPress}
+      testID={testID}
+      style={frame}
+    >
+      {body}
+    </PressDim>
+  );
+}
+
 const PILL_SYMBOL = 15;
 
 const styles = StyleSheet.create({
@@ -55,7 +128,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: vars['--space-2'],
-    minHeight: vars['--space-6'],
+    minHeight: vars['--capsule-min'],
     paddingHorizontal: vars['--space-3'],
     borderRadius: vars['--radius-pill'],
     borderCurve: 'continuous',
@@ -66,4 +139,17 @@ const styles = StyleSheet.create({
   pillText: { fontWeight: '700' },
   header: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
   headerLeft: { flex: 1, minWidth: 0, alignItems: 'flex-start' },
+  button: {
+    minHeight: vars['--touch-min'],
+    paddingHorizontal: vars['--space-4'],
+    paddingVertical: vars['--space-2'],
+    borderRadius: vars['--radius-pill'],
+    borderCurve: 'continuous',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  tint: { opacity: 0.12 },
+  outlined: { borderWidth: StyleSheet.hairlineWidth * 2 },
+  buttonLabel: { fontWeight: '600', textAlign: 'center' },
 });

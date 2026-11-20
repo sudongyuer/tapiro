@@ -1,5 +1,6 @@
 import { useNavigation, type NativeStackNavigationProp } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { PlatformColor } from 'react-native';
 import {
   ReduceMotion,
   useAnimatedStyle,
@@ -10,6 +11,8 @@ import {
 
 import { EASE_ENTER } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
+
+export const SELECTED_ROW_FILL = PlatformColor('systemGray4');
 
 const FADE = {
   duration: vars['--duration-fade'],

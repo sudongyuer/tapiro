@@ -157,6 +157,7 @@ export const vars = {
   '--radius-sheet': 24,
   '--radius-pill': 999,
   '--touch-min': 44,
+  '--capsule-min': 28,
   '--opacity-pressed': 0.7,
 
   '--sticker-border': 3,

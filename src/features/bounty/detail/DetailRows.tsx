@@ -23,7 +23,6 @@ import {
   multilineTextAlignment,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
-import { PlatformColor } from 'react-native';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { useI18n } from '@/lib/i18n';
@@ -31,7 +30,7 @@ import { Avatar } from '@/ui/Avatar';
 import { TierMark } from '@/ui/TierMark';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import { AppliedSticker } from '../shared/appliedStamp';
 import type { DetailCopy } from './detailCopy';
@@ -149,7 +148,7 @@ function PosterRow({ copy, onPress }: { copy: DetailCopy; onPress: () => void })
       testID="bounty-detail-poster"
       modifiers={[
         accessibilityHint(t('reputation.profile.open', { name: copy.name })),
-        ...(selected ? [listRowBackground(PlatformColor('systemGray4'))] : []),
+        ...(selected ? [listRowBackground(SELECTED_ROW_FILL)] : []),
       ]}
     >
       <HStack
