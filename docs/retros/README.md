@@ -928,3 +928,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-20 | direct APNs push                        | 0                  | 1             | ~15 min (worktree guard on shell pipes)          | 0                       | 0                     |
 | 2026-11-21 | service-role grants (hosted defaults)   | 1                  | 1             | ~10 min (fixtures used the service role)         | 0                       | 0                     |
 | 2026-11-21 | force-push hook + PostgreSQL 17         | 0                  | 1             | ~5 min (worktree guard on test text)             | 0                       | 0                     |
+| 2026-11-21 | Google IDs in release builds            | 0                  | 0             | ~0                                               | 0                       | 0                     |

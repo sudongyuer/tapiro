@@ -229,8 +229,8 @@ pushes).
    personal team `4RML7RLKML` (Individual), not the Lobehub organisation team (owner, 2026-11-19); it is
    `ios.appleTeamId` in `app.json`. Sign-in has the Apple adapter with a hashed
    nonce and the entitlement, the Google adapter (`@react-native-google-signin/google-signin`, client IDs from
-   `EXPO_PUBLIC_GOOGLE_*`), both providers on the local stack. It waits on the owner's Google Cloud iOS and web clients,
-   Sign in with Apple on the App ID, the hosted Auth providers, and a device run (`account.sign-in.real-*`). Before App
+   `EXPO_PUBLIC_GOOGLE_*`), both providers on the local stack. The Google clients and the hosted Apple and Google
+   providers exist (2026-11-21, 「Release builds」); it waits on a device run (`account.sign-in.real-*`). Before App
    Store submission: revoke Apple tokens on account deletion (S9; needs a Sign in with Apple key from the owner). The
    account-free halves are planned (2026-11-11): in-app purchase on the Simulator with a local `.storekit` file, the
    local stack and a StoreKit 2 wrapper in the kit (`docs/plans/2026-11-11-iap-local.md`). Built 2026-11-11: the server
@@ -450,9 +450,14 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
 - `bun run testflight` (`scripts/testflight.sh`): fresh prebuild, Release archive, checks (hosted URL in the bundle and
   no local one, build number, push and Sign in with Apple entitlements), export with `destination=upload`. Build number
   is the UTC time `YYYYMMDD.HHMM`; the version is `app.json`'s. It never reads `.env` files (`EXPO_NO_DOTENV=1`): the
-  anon key comes from `supabase projects api-keys`, so the CLI must be logged in. Google client IDs, once they exist,
-  are exported as `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` / `_WEB_CLIENT_ID` in the shell that runs it; without them the
-  Google button reports not configured. Live Activity stays out (`TAPIRO_LIVE_ACTIVITY` unset).
+  anon key comes from `supabase projects api-keys`, so the CLI must be logged in. Google sign-in: Google Cloud project
+  `tapiro-515317`; iOS client `1014913967695-bga38t6l6tfr0fghcpip7utjjj1csauu.apps.googleusercontent.com`, web client
+  `1014913967695-r8osi0t18a3i7em1g3ob4m6d3q1albs4.apps.googleusercontent.com` (not secret; hosted Supabase has Google
+  with both IDs and skip nonce, S2, and Apple with client ID `app.tapiro`, 2026-11-21). They are the release defaults
+  in `scripts/release-env.sh` (`EXPO_PUBLIC_GOOGLE_*` or `TAPIRO_GOOGLE_*` override), exported before prebuild so
+  `withGoogleSignIn` registers the reversed iOS client ID as a URL scheme; the archive check fails when the built
+  `Info.plist` lacks that scheme or the bundle lacks the client ID. Local and dev builds still read them from `.env`.
+  Live Activity stays out (`TAPIRO_LIVE_ACTIVITY` unset).
 - `bun run device-install <udid>` (`scripts/device-install.sh`): the same Release build against the hosted project,
   installed over the cable with `devicectl` and launched; no TestFlight, no Metro. `xcrun devicectl list devices`
   shows the UDID; `TAPIRO_SKIP_PREBUILD=1` reuses `ios/`. A new iPhone must be registered on the team first, and it must
@@ -476,8 +481,7 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   check is in the spec's Verification; builds before this change register nothing, so install a new one first.
 - Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
   14 Pro (its UDID, or connect it and approve); the Paid Apps agreement,
-  tax and banking in App Store Connect (in-app purchase); the Google Cloud iOS and web client IDs and the hosted Google
-  provider; `MODEL_STUDIO_API_KEY` on the hosted Supabase project; adding TestFlight testers.
+  tax and banking in App Store Connect (in-app purchase); `MODEL_STUDIO_API_KEY` on the hosted Supabase project; adding TestFlight testers.
 
 ## Website
 
