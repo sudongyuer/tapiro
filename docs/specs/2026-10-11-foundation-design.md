@@ -1109,6 +1109,11 @@ veto. Branch `fix/keep-context-navigation`.
 - `DeleteAccountSheet` rows; `PosterActions` and `ownState` in `src/features/bounty/detail/`; three new copy keys
   `bounty.detail.poster.*` in zh-Hans, en and ms.
 - Fixture: `-uiVerifyOwnBounty <id>` makes a bounty the viewer's own before its applicants are loaded.
+- Review fixes: notification taps, 看看贴纸本 and the pay sheet's 发消息提醒 first close whatever is over the tabs
+  (`src/lib/useBackToTabs.ts`), so the target is never opened under a sheet or an over-tabs screen;
+  `useOnReturn` only fires after a blur that follows the leave; the poster's line reads the late summary when the
+  start time has passed (the server's `startLate` rule) and shows nothing for a status the app does not know; the
+  expired redirect waits for the push transition to end.
 
 ### Verification
 

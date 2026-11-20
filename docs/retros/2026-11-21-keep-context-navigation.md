@@ -40,3 +40,10 @@ overturned: 0
 - `bun test`: two `merge-gate` timeouts under load average ~800 (5 s test timeout); the file passed alone. Tag
   `load-timeout`.
 - About 75 minutes waiting for the shared Simulator lock behind batches B, C, D and the shared-UI walkthrough.
+- I rebased the branch onto main after it was already pushed, and the force-push hook blocked the push, as it should.
+  I reset to the pushed head, merged main and carried the resolved tree over, which cost about 10 minutes. Tag
+  `rebase-after-push`. Lesson: once a branch is pushed, merge main into it instead of rebasing.
+- Review (one round, medium): 8 findings, all fixed. Notification taps and the sticker book now leave the screens
+  over the tabs first. The return check needs a blur. The poster's line reads 「还没出发」 when late and shows nothing
+  for unknown statuses. The expired redirect waits for the push to end. A low-effort re-review of the fixes raised
+  only a cold-start concern, which `bounty_detail_poster` covers.
