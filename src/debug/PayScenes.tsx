@@ -18,6 +18,7 @@ export function PaySheetScene({ onReady }: { onReady: () => void }) {
       onOpenStickerBook={() =>
         router.push({ pathname: '/debug/[scene]', params: { scene: 'sticker-book' } })
       }
+      remind={{ onPress: () => {}, busy: false }}
     />
   );
 }

@@ -9,6 +9,7 @@ import {
   LanguageStep,
   NameStep,
   SettingsView,
+  type ProfileLoad,
   WelcomeScreen,
   createFixtureAuthService,
 } from '@/features/account';
@@ -41,13 +42,20 @@ export function ProfileSetupScene({ onReady }: SceneProps) {
       <ProductionHeader />
       <NameStep
         user={longNameUser}
-        profile={{ displayName: LONG_NAME, avatarUrl: null }}
+        load={profileLoad()}
+        onRetry={() => {}}
         onSave={async () => true}
         onDone={() => {}}
         onLayout={onReady}
       />
     </>
   );
+}
+
+function profileLoad(): ProfileLoad {
+  const status = uiVerifyArgument('uiVerifyProfileLoad');
+  if (status === 'loading' || status === 'failed') return { status };
+  return { status: 'ready', profile: { displayName: LONG_NAME, avatarUrl: null } };
 }
 
 export function SettingsScene({ onReady }: SceneProps) {

@@ -7,7 +7,7 @@ export {
   type UnreadState,
 } from './chatStore';
 export { useChatList, useChatThread, useChatUnread, useLiveChat } from './hooks';
-export { chatStore } from './services';
+export { chatDrafts, chatStore } from './services';
 export { useItemChat, type ItemChat } from './useItemChat';
 export {
   MESSAGE_MAX,

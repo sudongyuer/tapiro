@@ -1,11 +1,11 @@
-import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { Stack, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 
 import { METHOD_ICONS, type QrWallet } from './display';
 import { usePayeeMethods } from './hooks';
-import { hasCash, type PayeeMethod } from './methods';
+import type { PayeeMethod } from './methods';
 import { PayeeListView } from './PayeeListView';
 import { payeeStore } from './services';
 
@@ -31,9 +31,13 @@ export function PayeeScreen({
   onOpen: (sheet: PayeeSheet, options?: PayeeSheetOptions) => void;
 }) {
   const { t } = useI18n();
-  const { status, methods } = usePayeeMethods(userId);
+  const { status, methods, staleSince } = usePayeeMethods(userId);
   const [actionFailed, setActionFailed] = useState(false);
-  const cashOn = hasCash(methods);
+  useFocusEffect(
+    useCallback(() => {
+      void payeeStore.refresh(userId);
+    }, [userId]),
+  );
 
   async function act(change: () => Promise<boolean>) {
     setActionFailed(false);
@@ -81,22 +85,16 @@ export function PayeeScreen({
             >
               {t('payee.types.bank_account')}
             </Stack.Toolbar.MenuAction>
-            <Stack.Toolbar.MenuAction
-              icon={METHOD_ICONS.cash}
-              hidden={cashOn}
-              onPress={() => setCash(true)}
-            >
-              {t('payee.types.cash')}
-            </Stack.Toolbar.MenuAction>
           </Stack.Toolbar.Menu>
         </Stack.Toolbar.Menu>
       </Stack.Toolbar>
       <PayeeListView
         status={status}
         methods={methods}
+        staleSince={staleSince}
         now={new Date()}
         actionFailed={actionFailed}
-        onRetry={() => payeeStore.ensureLoaded(userId)}
+        onRetry={() => payeeStore.refresh(userId)}
         onEdit={edit}
         onRemove={(method) => act(() => payeeStore.remove(userId, method.id))}
         onRecheck={(method) => onOpen('qr', { id: method.id, repick: true })}

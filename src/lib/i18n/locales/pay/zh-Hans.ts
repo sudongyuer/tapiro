@@ -14,13 +14,14 @@ export default {
     close: '关闭',
     loading: '正在加载',
     loadFailed: { title: '付款信息没加载出来', body: '请检查网络后重试。' },
+    missing: '这笔付款已不存在',
     retry: '重试',
     failed: '没成功，请检查网络后再试一次。',
     amountChanged: '金额变了，请重新确认',
     payTo: '付给{{name}}',
     amountLabel: '金额 {{amount}}',
     original: '原价 {{amount}}',
-    rateFooter: '按 {{date}} BNM 中间价换算，{{rate}}，付款单打开时锁定。',
+    rateFooter: '按 {{date}} 马来西亚国家银行中间价换算，{{rate}}，付款单打开时锁定。',
     noRate: '暂时不能换算成 {{currency}}',
     noCurrency: '{{name}}还没有能收{{currency}}的方式',
     currencyName: { MYR: '令吉', CNY: '人民币' },
@@ -61,6 +62,10 @@ export default {
     none: {
       title: '{{name}}还没有可用的收款方式',
       body: '请对方在「我的 → 收款方式」里添加后再付。',
+      remind: '发消息提醒',
+      remindBusy: '正在打开对话',
+      draft:
+        '我准备付「{{title}}」的钱，但你还没有我能用的收款方式。可以在「我的 → 收款方式」里加一个吗？',
     },
     proof: {
       add: '附上付款截图（可选）',

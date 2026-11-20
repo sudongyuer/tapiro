@@ -17,6 +17,7 @@ export default {
       title: 'Bayaran ini tidak dapat dimuatkan',
       body: 'Semak sambungan dan cuba lagi.',
     },
+    missing: 'Bayaran ini sudah tiada',
     retry: 'Cuba lagi',
     failed: 'Tidak berjaya. Semak sambungan dan cuba lagi.',
     amountChanged: 'Jumlah telah berubah. Sila semak semula.',
@@ -24,7 +25,7 @@ export default {
     amountLabel: 'Jumlah {{amount}}',
     original: 'Asalnya {{amount}}',
     rateFooter:
-      'Ditukar pada kadar tengah BNM {{date}}, {{rate}}, dikunci semasa bayaran ini dibuka.',
+      'Ditukar pada kadar tengah Bank Negara Malaysia {{date}}, {{rate}}, dikunci semasa bayaran ini dibuka.',
     noRate: 'Belum boleh ditukar ke {{currency}}',
     noCurrency: '{{name}} belum ada cara menerima {{currency}}',
     currencyName: { MYR: 'ringgit', CNY: 'yuan' },
@@ -66,7 +67,11 @@ export default {
     cash: 'Serahkan tunai kepada {{name}} secara bersemuka. Selesai apabila dia ketik Diterima; anda tidak perlu ketik apa-apa.',
     none: {
       title: '{{name}} belum ada cara menerima wang',
-      body: 'Minta dia tambah satu dalam Saya → Cara terima bayaran, kemudian bayar.',
+      body: 'Minta dia tambah satu dalam Saya → Kaedah Terima Bayaran, kemudian bayar.',
+      remind: 'Hantar Peringatan',
+      remindBusy: 'Membuka perbualan',
+      draft:
+        'Saya sedia membayar untuk “{{title}}”, tetapi anda belum ada kaedah terima bayaran yang boleh saya guna. Boleh tambah satu dalam Saya → Kaedah Terima Bayaran?',
     },
     proof: {
       add: 'Lampirkan tangkapan skrin bayaran (pilihan)',
