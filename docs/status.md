@@ -4,8 +4,8 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-18 (accessibility pass on the core flows: contrast, large text, VoiceOver labels, checks and the
-core-screen tour).
+Updated: 2026-11-20 (first TestFlight upload, 1.0.0 (20261120.1136), against the hosted Supabase project; cabled
+installs with `bun run device-install`).
 
 ## Built and merged
 
@@ -222,7 +222,8 @@ core-screen tour).
      `lint:changed` runs the size check.
 
 1. 问小貘 follow-ups (`docs/plans/2026-10-30-ask-tapir.md`): on-device Foundation Models as its own task (M12, story `ask.on-device`), not before the owner has tried the cloud path on a real phone (owner, 2026-11-15); the long-press spike on a device (`ask.long-press-voice`); the smoke run and measured budget once the account exists (148, `ask.real-run`).
-2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase, TestFlight. Real
+2. Waiting on the paid Apple Developer account: push delivery, Live Activity, in-app purchase (TestFlight: see the
+   「Release builds」 section). Real
    sign-in is built (2026-11-19, `feat/native-sign-in`; record in the foundation spec). Signing team: the owner's
    personal team `4RML7RLKML` (Individual), not the Lobehub organisation team (owner, 2026-11-19); it is
    `ios.appleTeamId` in `app.json`. Sign-in has the Apple adapter with a hashed
@@ -422,6 +423,35 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
 - Text rows in pinned bottom bars: ★A, the whole bar opaque; built in `fix/opaque-bottom-bar`. ★ for veto: the bar is
   `systemGroupedBackground` with no hairline on top, so scrolled cards end in a clean cut at its edge; the per-pill
   opaque base went with it, and secondary pills keep `systemGray5`.
+
+## Release builds
+
+- Identifiers (not secret; defaults in `scripts/release-env.sh`, each with a `TAPIRO_*` override): Apple team
+  `4RML7RLKML` (the owner's personal team, never Lobehub's `4684H589ZU`); App IDs `app.tapiro` (Push Notifications,
+  Sign in with Apple) and `app.tapiro.LiveActivity`; App Store Connect app 「Tapiro」, Apple ID `6837172850`; App Store
+  Connect API key `5TGB2NXCG5` (Admin), issuer `aaabce4e-636b-4c19-bed9-d6840d0a2465`, file
+  `~/.appstoreconnect/private_keys/AuthKey_5TGB2NXCG5.p8` (never in the repo); hosted Supabase `wkpgoildusumtejzhtkv`
+  (ap-southeast-1). Registered device: 「Owner iPhone 13 Pro Max」 (2026-11-20; automatic signing needs one device
+  before the first archive).
+- `bun run testflight` (`scripts/testflight.sh`): fresh prebuild, Release archive, checks (hosted URL in the bundle and
+  no local one, build number, push and Sign in with Apple entitlements), export with `destination=upload`. Build number
+  is the UTC time `YYYYMMDD.HHMM`; the version is `app.json`'s. It never reads `.env` files (`EXPO_NO_DOTENV=1`): the
+  anon key comes from `supabase projects api-keys`, so the CLI must be logged in. Google client IDs, once they exist,
+  are exported as `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` / `_WEB_CLIENT_ID` in the shell that runs it; without them the
+  Google button reports not configured. Live Activity stays out (`TAPIRO_LIVE_ACTIVITY` unset).
+- `bun run device-install <udid>` (`scripts/device-install.sh`): the same Release build against the hosted project,
+  installed over the cable with `devicectl` and launched; no TestFlight, no Metro. `xcrun devicectl list devices`
+  shows the UDID; `TAPIRO_SKIP_PREBUILD=1` reuses `ios/`. A new iPhone must be registered on the team first, and it must
+  run iOS 26 or later (the deployment target); the script checks both before building. The registered iPhone 13 Pro
+  Max runs iOS 18.7.8 (2026-11-20), so neither TestFlight nor this script can install Tapiro on it until it is updated
+  to iOS 26; the build signed and bundled the hosted URL, the install step has not run on a phone yet.
+- Uploaded: 1.0.0 (20261120.1136), 2026-11-20.
+- Push will not arrive on TestFlight or cabled builds: `supabase/functions/notify` sends through Expo's push service,
+  which would need our APNs key; queued: move `notify` to direct APNs (key `88Y29CGN9U` exists).
+- Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
+  14 Pro (its UDID, or connect it and approve); the Paid Apps agreement,
+  tax and banking in App Store Connect (in-app purchase); the Google Cloud iOS and web client IDs and the hosted Google
+  provider; `MODEL_STUDIO_API_KEY` and the Vault secrets on the hosted Supabase project; adding TestFlight testers.
 
 ## Website
 
