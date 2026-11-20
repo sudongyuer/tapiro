@@ -1,12 +1,9 @@
 import { useLayoutEffect, useState } from 'react';
-import { useSharedValue, withSpring } from 'react-native-reanimated';
-
-import { vars } from '@/ui/theme/tokens';
+import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { holdStack, type HeldStack } from './stackLayout';
 
-export const RESTACK = { duration: vars['--duration-settle'], dampingRatio: 0.8 } as const;
-export const RESTACK_FADE = { ...RESTACK, overshootClamping: true } as const;
+export const RESTACK = { duration: 420, easing: Easing.bezier(0.2, 0.9, 0.3, 1) };
 
 export function useStackFollow(height: number, ready: boolean, open: boolean, animate: boolean) {
   const [held, setHeld] = useState<HeldStack>({ height: ready ? height : 0, open, shift: 0 });
@@ -19,7 +16,7 @@ export function useStackFollow(height: number, ready: boolean, open: boolean, an
       return;
     }
     offset.set(offset.get() + held.shift);
-    offset.set(withSpring(0, RESTACK));
+    offset.set(withTiming(0, RESTACK));
   }, [held, offset]);
   return { height: held.height, offset };
 }

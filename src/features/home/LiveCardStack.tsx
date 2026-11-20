@@ -5,7 +5,6 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
@@ -23,7 +22,7 @@ import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
 import { useLeavingCard } from './leavingCard';
 import { backOffset, PEEK, SCALE_STEP, type CardPlacement, type StackLayout } from './stackLayout';
-import { RESTACK, RESTACK_FADE } from './useStackFollow';
+import { RESTACK } from './useStackFollow';
 
 const MAX_Z = 10;
 const LEAVE = { duration: vars['--duration-settle'], easing: EASE_ENTER };
@@ -164,10 +163,10 @@ function StackedCard({
       scale.set(stacked.scale - SCALE_STEP);
     }
     wasReady.current = true;
-    y.set(animate ? withSpring(stacked.y, RESTACK) : stacked.y);
-    scale.set(animate ? withSpring(stacked.scale, RESTACK) : stacked.scale);
+    y.set(animate ? withTiming(stacked.y, RESTACK) : stacked.y);
+    scale.set(animate ? withTiming(stacked.scale, RESTACK) : stacked.scale);
     const face = index > 0 ? 1 : 0;
-    faceShown.set(animate ? withSpring(face, RESTACK_FADE) : face);
+    faceShown.set(animate ? withTiming(face, RESTACK) : face);
   }, [leaving, rising, riseFrom, ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
   useEffect(() => {
     if (!onLeft) return;
