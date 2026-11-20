@@ -29,11 +29,11 @@ third-party modules are only checked to resolve.
 
 ## What happened
 
-| #   | What happened                                                                                                                       | Root cause class | Change and layer                                                                                     |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| 1   | A helper removed in one PR broke seven cases, found only on the Simulator                                                           | missing check    | `test_imports.py` (CI, every PR)                                                                     |
-| 2   | CI listed the runner's test modules by name, and the README's copy of that list had already lost `test_records`                      | drift            | CI and README run `python3 -m unittest discover -p 'test_*.py'`; a new test file runs without edits |
-| 3   | `bun run format:check` exited 127 in the fresh worktree before `bun install`                                                         | environment      | None; install first in a new worktree                                                                |
+| #   | What happened                                                                                                   | Root cause class | Change and layer                                                                                    |
+| --- | --------------------------------------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
+| 1   | A helper removed in one PR broke seven cases, found only on the Simulator                                       | missing check    | `test_imports.py` (CI, every PR)                                                                    |
+| 2   | CI listed the runner's test modules by name, and the README's copy of that list had already lost `test_records` | drift            | CI and README run `python3 -m unittest discover -p 'test_*.py'`; a new test file runs without edits |
+| 3   | `bun run format:check` exited 127 in the fresh worktree before `bun install`                                    | environment      | None; install first in a new worktree                                                               |
 
 ## Carry forward
 

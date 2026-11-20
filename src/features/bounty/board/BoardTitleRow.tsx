@@ -33,9 +33,8 @@ export function BoardTitleRow({
         >
           {t('bounty.board.title')}
         </AppText>
-        <View style={styles.switch}>
-          <ViewSwitch view={view} reduceMotion={reduceMotion} onChoose={onChoose} />
-        </View>
+        {/* The selected sticker is tilted and scaled past its box; the wider gap keeps it off a wrapped title. */}
+        <ViewSwitch view={view} reduceMotion={reduceMotion} onChoose={onChoose} />
       </View>
       {hint ? <RememberedHint /> : null}
     </View>
@@ -62,14 +61,7 @@ function RememberedHint() {
 
 const styles = StyleSheet.create({
   block: { gap: vars['--space-1'] },
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    columnGap: vars['--space-3'],
-    rowGap: vars['--space-2'],
-  },
-  title: { flexGrow: 1, flexShrink: 1, fontWeight: '700', paddingHorizontal: 2 },
-  switch: { marginLeft: 'auto' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
+  title: { flex: 1, fontWeight: '700', paddingHorizontal: 2 },
   hint: { paddingHorizontal: 2 },
 });

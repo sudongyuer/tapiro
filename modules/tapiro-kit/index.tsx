@@ -1,7 +1,9 @@
 import { NativeModule, requireNativeModule, requireNativeView } from 'expo';
-import { createModifier, type ModifierConfig } from '@expo/ui/swift-ui/modifiers';
+import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewProps, ViewStyle } from 'react-native';
+
+export { ChipRow, keyboardDone, navigationScrollEdge } from './swiftUiParts';
 
 export type PlacePoint = { latitude: number; longitude: number };
 export type PlaceSuggestion = { id: string; title: string; subtitle: string };
@@ -223,32 +225,6 @@ export function PinnedBar({ header, children }: { header?: boolean; children: Re
   return <NativePinnedBar header={header}>{children}</NativePinnedBar>;
 }
 
-export const navigationScrollEdge = () => createModifier('tapiroNavigationScrollEdge');
-
-export const keyboardDone = (label: string) => createModifier('tapiroKeyboardDone', { label });
-
-const NativeChipRow = requireNativeView<{
-  spacing: number;
-  modifiers: ModifierConfig[];
-  children: ReactNode;
-}>('TapiroKit', 'ChipRowView');
-
-export function ChipRow({
-  spacing,
-  modifiers = [],
-  children,
-}: {
-  spacing: number;
-  modifiers?: ModifierConfig[];
-  children: ReactNode;
-}) {
-  return (
-    <NativeChipRow spacing={spacing} modifiers={modifiers}>
-      {children}
-    </NativeChipRow>
-  );
-}
-
 type NativeDateTimeRowProps = {
   title: string;
   selection: string;
@@ -338,12 +314,6 @@ export function ContextMenuView({
 }
 
 const NativeTitleHalo = requireNativeView<ViewProps>('TapiroKit', 'TitleHaloView');
-
-const NativeScrollEdgeBar = requireNativeView<ViewProps>('TapiroKit', 'ScrollEdgeBarView');
-
-export function ScrollEdgeBar(props: ViewProps) {
-  return <NativeScrollEdgeBar {...props} />;
-}
 
 const NativeBountyMap = requireNativeView<
   Omit<BountyMapViewProps, 'onPinPress' | 'selectedId' | 'onCameraChange' | 'expandLabel'> & {

@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                                       |
-| --------- | --------------------- | ----------------------------------------------------------------------------------------------- |
-| Quality   | Escaped defects       | 0                                                                                               |
-| Quality   | Skipped verifications | no failing-on-old proof: none of the four pickers showed the short style on the old build      |
+| Dimension | Measure               | This step                                                                                            |
+| --------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0                                                                                                    |
+| Quality   | Skipped verifications | no failing-on-old proof: none of the four pickers showed the short style on the old build            |
 | Speed     | Wasted time           | ~70 min: three kit rebuilds and a stopped matrix for the sheet layout; one probe lost to a no-op day |
-| Autonomy  | Interventions         | 0                                                                                               |
+| Autonomy  | Interventions         | 0                                                                                                    |
 
 ## Findings
 

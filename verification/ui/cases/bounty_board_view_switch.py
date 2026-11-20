@@ -4,8 +4,8 @@ paper, the unselected one drops to the grouped fill instead of paper; 地图 hid
 the chips and the chosen place row, and scrolls home so the title sits under the strip; 列表 brings the cards back at the
 scroll position they had; the 急 filter and the chosen place survive both switches; without a location the map view
 shows 选一个地方 (denied) or the location card (undetermined) in the map's place, with 地图 still selected.
-A title too long for one line beside the switch (ms 「Ganjaran yang Boleh Anda Ambil」) takes the row and the switch moves
-below it, so the tilted sticker never runs into the title (audit H2)."""
+A title too long for one line beside the switch (ms 「Ganjaran yang Boleh Anda Ambil」) wraps in its own column, and the
+tilted, lifted sticker stays clear of it (audit H2)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))

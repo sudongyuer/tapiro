@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step |
-| --------- | --------------------- | --------- |
-| Quality   | Escaped defects       | 0 known   |
+| Dimension | Measure               | This step                                                                                                                                                                   |
+| --------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0 known                                                                                                                                                                     |
 | Quality   | Skipped verifications | The case screenshots show the top of the policy only; the 删除账号 section and the contact line are below the fold and are covered by `resources.test.ts`, not by a picture |
-| Speed     | Wasted time           | ~1.5 h waiting on the shared sim lock (another agent's queue); the verify build ran in that time |
-| Autonomy  | Interventions         | 0         |
+| Speed     | Wasted time           | ~1.5 h waiting on the shared sim lock (another agent's queue); the verify build ran in that time                                                                            |
+| Autonomy  | Interventions         | 0                                                                                                                                                                           |
 
 ## Findings
 

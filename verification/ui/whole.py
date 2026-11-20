@@ -4,8 +4,12 @@ from post_layout import squash
 QUOTES = str.maketrans({'’': "'", '‘': "'", '“': '"', '”': '"', '？': '?', '！': '!', '，': ','})
 
 
+# Vision drops a lone 一 (one flat stroke) from Chinese lines: 「一小时内」 read as 「小时内」 on a whole chip (2026-11-21).
+UNREAD = str.maketrans('', '', '一')
+
+
 def plain_text(text):
-    return squash(text).translate(QUOTES).lower()
+    return squash(text).translate(QUOTES).translate(UNREAD).lower()
 
 
 # AX labels carry the whole string even when the drawn line is truncated or clipped, so the pixels are read: every

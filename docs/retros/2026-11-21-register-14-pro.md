@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                            |
-| --------- | --------------------- | -------------------------------------------------------------------- |
-| Quality   | Escaped defects       | 0                                                                    |
-| Quality   | Skipped verifications | No build or install; the owner asked for registration only           |
-| Speed     | Wasted time           | ~0                                                                   |
-| Autonomy  | Interventions         | 0 (the owner approved this device by UDID)                           |
+| Dimension | Measure               | This step                                                  |
+| --------- | --------------------- | ---------------------------------------------------------- |
+| Quality   | Escaped defects       | 0                                                          |
+| Quality   | Skipped verifications | No build or install; the owner asked for registration only |
+| Speed     | Wasted time           | ~0                                                         |
+| Autonomy  | Interventions         | 0 (the owner approved this device by UDID)                 |
 
 ## Findings
 

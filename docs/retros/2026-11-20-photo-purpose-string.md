@@ -17,7 +17,7 @@ overturned: 0
 | --------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Quality   | Escaped defects       | 1: the first TestFlight build failed Apple's processing (ITMS-90683, `NSPhotoLibraryUsageDescription`)       |
 | Quality   | Skipped verifications | None; the new check ran against the rejected archive and failed on exactly Apple's finding                   |
-| Speed     | Wasted time           | ~40 min: one upload and the wait for a build that never listed                                                |
+| Speed     | Wasted time           | ~40 min: one upload and the wait for a build that never listed                                               |
 | Autonomy  | Interventions         | 1 (the owner read the failure in App Store Connect; the API's builds list shows nothing for a failed upload) |
 
 ## Findings

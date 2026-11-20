@@ -29,7 +29,6 @@ import { Stack } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import type { PlaceResult, PlaceSuggestion, ResolvedPlace } from 'tapiro-kit';
-import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { locationService, type Point } from '@/lib/location';
@@ -161,7 +160,7 @@ export function PlaceSearchScreen({
           },
         }}
       />
-      <List modifiers={[navigationScrollEdge(), ...grouped, tint(color('--color-accent'))]}>
+      <List modifiers={[...grouped, tint(color('--color-accent'))]}>
         {notice ? (
           <NoticeCard
             tone="urgent"

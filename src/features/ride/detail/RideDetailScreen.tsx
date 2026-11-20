@@ -9,8 +9,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScrollEdgeBar } from 'tapiro-kit';
 
 import { useBlockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
@@ -61,8 +59,6 @@ export function RideDetailScreen({
   const [titleShown, setTitleShown] = useState(false);
   const [routeBottom, setRouteBottom] = useState(Infinity);
   const [pulling, setPulling] = useState(false);
-  const [footerHeight, setFooterHeight] = useState(0);
-  const { bottom } = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const load = state.load;
   const ride = load.kind === 'ready' ? load.detail : null;
@@ -127,10 +123,7 @@ export function RideDetailScreen({
         <ScrollView
           style={styles.flex}
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: vars['--space-6'] + Math.max(footerHeight - bottom, 0) },
-          ]}
+          contentContainerStyle={styles.content}
           scrollEventThrottle={32}
           onScroll={(event) => {
             const past = event.nativeEvent.contentOffset.y + headerHeight > routeBottom;
@@ -208,34 +201,29 @@ export function RideDetailScreen({
             />
           ) : null}
         </ScrollView>
-        <ScrollEdgeBar
-          style={styles.footer}
-          onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
-        >
-          <DetailFooter
-            footer={footer}
-            organiserName={organiserName}
-            departLine={departLine}
-            late={ride?.lateUntil != null}
-            busy={busy}
-            error={action.kind === 'failed' ? t(`ride.detail.errors.${action.reason}`) : null}
-            actions={{
-              apply: sheets.openApply,
-              withdraw: (anchor) => void actions.withdraw(anchor),
-              arrive: actions.arrive,
-              undoArrive: actions.undoArrive,
-              late: actions.late,
-              notComing: (anchor) => void actions.leave(anchor),
-              depart: sheets.openDepart,
-              settle: {
-                reach: () => void settleSheets.reach(),
-                split: settleSheets.openSplit,
-                pay: settle.pay,
-                dispute: settleSheets.openDispute,
-              },
-            }}
-          />
-        </ScrollEdgeBar>
+        <DetailFooter
+          footer={footer}
+          organiserName={organiserName}
+          departLine={departLine}
+          late={ride?.lateUntil != null}
+          busy={busy}
+          error={action.kind === 'failed' ? t(`ride.detail.errors.${action.reason}`) : null}
+          actions={{
+            apply: sheets.openApply,
+            withdraw: (anchor) => void actions.withdraw(anchor),
+            arrive: actions.arrive,
+            undoArrive: actions.undoArrive,
+            late: actions.late,
+            notComing: (anchor) => void actions.leave(anchor),
+            depart: sheets.openDepart,
+            settle: {
+              reach: () => void settleSheets.reach(),
+              split: settleSheets.openSplit,
+              pay: settle.pay,
+              dispute: settleSheets.openDispute,
+            },
+          }}
+        />
         <DetailSheets sheets={sheets} viewerId={userId} organiserName={organiserName} now={now} />
         <SettleSheets sheets={settleSheets} viewerId={userId} organiserName={organiserName} />
       </View>
@@ -250,7 +238,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: vars['--space-4'],
     paddingTop: vars['--space-2'],
+    paddingBottom: vars['--space-6'],
     gap: vars['--space-3'],
   },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 });

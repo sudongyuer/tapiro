@@ -23,34 +23,34 @@ Prototype: `proto-ai/` in this scratchpad (throwaway).
 
 ### Q1 Foundation Models
 
-| Item | Result |
-|---|---|
-| Module compiles and links FoundationModels with `@Generable`, `@Guide`, `Tool`, `streamResponse(generating:)` | **Yes.** Release build succeeded on the first try with no warnings in module files |
-| `SystemLanguageModel.default.availability` on the Simulator | `unavailable(.appleIntelligenceNotEnabled)` |
-| `supportedLanguages` (reported even when unavailable) | 23 languages: da, de, en-AU/GB/US, es-419/ES/US, fr-CA/FR, it, ja, ko, nb, nl, pt-BR/PT, sv, tr, vi, **zh-Hans-CN**, zh-Hant-HK/TW |
-| `supportsLocale` | zh_CN **true**, en_MY **true**, **ms_MY false** (Malay is not supported by the model) |
-| `respond(to:)` when unavailable | Throws. In JS it arrives as `Error: UnexpectedException: Apple Intelligence is not enabled.` |
-| `streamResponse(generating: TaskDraft.self)` with a tool, when unavailable | Fails in 23 ms with `GenerationError.assetsUnavailable(... "Model is unavailable" ..., errorDescriptionOverride: "Apple Intelligence is not enabled.")` |
-| Availability path + JS fallback | Works. The `ai` page shows the fallback ("server LLM / manual form") |
+| Item                                                                                                          | Result                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Module compiles and links FoundationModels with `@Generable`, `@Guide`, `Tool`, `streamResponse(generating:)` | **Yes.** Release build succeeded on the first try with no warnings in module files                                                                      |
+| `SystemLanguageModel.default.availability` on the Simulator                                                   | `unavailable(.appleIntelligenceNotEnabled)`                                                                                                             |
+| `supportedLanguages` (reported even when unavailable)                                                         | 23 languages: da, de, en-AU/GB/US, es-419/ES/US, fr-CA/FR, it, ja, ko, nb, nl, pt-BR/PT, sv, tr, vi, **zh-Hans-CN**, zh-Hant-HK/TW                      |
+| `supportsLocale`                                                                                              | zh_CN **true**, en_MY **true**, **ms_MY false** (Malay is not supported by the model)                                                                   |
+| `respond(to:)` when unavailable                                                                               | Throws. In JS it arrives as `Error: UnexpectedException: Apple Intelligence is not enabled.`                                                            |
+| `streamResponse(generating: TaskDraft.self)` with a tool, when unavailable                                    | Fails in 23 ms with `GenerationError.assetsUnavailable(... "Model is unavailable" ..., errorDescriptionOverride: "Apple Intelligence is not enabled.")` |
+| Availability path + JS fallback                                                                               | Works. The `ai` page shows the fallback ("server LLM / manual form")                                                                                    |
 
 The real generation output for the sentence "帮我找人明天下午三点前去 Sunway Geo 取个快递，给 10 块" (and the Tool call) was **not observed**. It needs a device with Apple Intelligence enabled, or a host Mac with Apple Intelligence on (I assume the Simulator inherits that from the host; I did not verify it). The OS logs show the framework trying to load the asset `com.apple.fm.language.instruct_3b.fm_api_generic`, so the code path reaches the model manager.
 
 ### Q2 Speech
 
-| API (Simulator, iOS 26.5) | zh-CN | en-US | en-MY | ms-MY |
-|---|---|---|---|---|
-| `SpeechTranscriber.isAvailable` | false (global) | | | |
-| `SpeechTranscriber.supportedLocales` / `installedLocales` | **empty** | | | |
-| `SpeechTranscriber.supportedLocale(equivalentTo:)` | zh-CN | en-US | **en-US** | ms-MY |
-| `AssetInventory.status` for SpeechTranscriber | unsupported | unsupported | unsupported | unsupported |
-| SpeechTranscriber file transcription | `SFSpeechErrorDomain 1 "...not subscribed to transcription.cmn"` (`.en`, `.ms` the same) | | | |
-| `DictationTranscriber.supportedLocales` | yes (56 locales incl. zh-CN, zh-HK, zh-TW, yue-CN, ms-MY, en-SG, **no en-MY**) | | en-MY maps to en-US | |
-| DictationTranscriber assets | `supported` → `downloadAndInstall()` succeeded → `installed` | same | same | same |
-| DictationTranscriber transcription | `bestAvailableAudioFormat` returns nil, `availableCompatibleAudioFormats` is `[]`, `installedLocales` is `[]` (in the Simulator, assets install but the analyzer cannot run) | | | |
-| `SFSpeechRecognizer.supportedLocales()` | 63 locales incl. zh-CN, ms-MY, en-SG, en-ID, en-PH, **no en-MY** | | | |
-| `supportsOnDeviceRecognition` | false → **true** after the Dictation assets were installed | true | true | false → **true** |
-| SF file transcription (authorized) | `kLSRErrorDomain 300 "Failed to initialize recognizer"` for all four locales | | | |
-| `AssetInventory.maximumReservedLocales` | 5 | | | |
+| API (Simulator, iOS 26.5)                                 | zh-CN                                                                                                                                                                        | en-US       | en-MY               | ms-MY            |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------- | ---------------- |
+| `SpeechTranscriber.isAvailable`                           | false (global)                                                                                                                                                               |             |                     |                  |
+| `SpeechTranscriber.supportedLocales` / `installedLocales` | **empty**                                                                                                                                                                    |             |                     |                  |
+| `SpeechTranscriber.supportedLocale(equivalentTo:)`        | zh-CN                                                                                                                                                                        | en-US       | **en-US**           | ms-MY            |
+| `AssetInventory.status` for SpeechTranscriber             | unsupported                                                                                                                                                                  | unsupported | unsupported         | unsupported      |
+| SpeechTranscriber file transcription                      | `SFSpeechErrorDomain 1 "...not subscribed to transcription.cmn"` (`.en`, `.ms` the same)                                                                                     |             |                     |                  |
+| `DictationTranscriber.supportedLocales`                   | yes (56 locales incl. zh-CN, zh-HK, zh-TW, yue-CN, ms-MY, en-SG, **no en-MY**)                                                                                               |             | en-MY maps to en-US |                  |
+| DictationTranscriber assets                               | `supported` → `downloadAndInstall()` succeeded → `installed`                                                                                                                 | same        | same                | same             |
+| DictationTranscriber transcription                        | `bestAvailableAudioFormat` returns nil, `availableCompatibleAudioFormats` is `[]`, `installedLocales` is `[]` (in the Simulator, assets install but the analyzer cannot run) |             |                     |                  |
+| `SFSpeechRecognizer.supportedLocales()`                   | 63 locales incl. zh-CN, ms-MY, en-SG, en-ID, en-PH, **no en-MY**                                                                                                             |             |                     |                  |
+| `supportsOnDeviceRecognition`                             | false → **true** after the Dictation assets were installed                                                                                                                   | true        | true                | false → **true** |
+| SF file transcription (authorized)                        | `kLSRErrorDomain 300 "Failed to initialize recognizer"` for all four locales                                                                                                 |             |                     |                  |
+| `AssetInventory.maximumReservedLocales`                   | 5                                                                                                                                                                            |             |                     |                  |
 
 Conclusion: the module compiles and every capability/asset API returns data in JS. **No STT engine produced text in the iOS 26.5 Simulator.** Actual transcription quality has to be tested on a device.
 
@@ -107,13 +107,17 @@ JS (`modules/tapiro-kit/src/TapiroKitModule.ts`):
 ```ts
 declare class TapiroKitModule extends NativeModule<TapiroKitModuleEvents> {
   readonly documentsPath: string;
-  aiAvailability(): AiAvailability;               // sync
+  aiAvailability(): AiAvailability; // sync
   aiRespond(prompt: string): Promise<string>;
-  aiStream(requestId: string, prompt: string): Promise<string>;      // + onAiText events
+  aiStream(requestId: string, prompt: string): Promise<string>; // + onAiText events
   aiDraftTask(requestId: string, sentence: string): Promise<DraftResult>; // + onAiDraftPartial
   speechCapabilities(): Promise<SpeechCapabilities>;
   speechInstallAssets(locale: string): Promise<{ locale: string; status?: string; error?: string }>; // + onSpeechAssetProgress
-  speechTranscribeFile(path: string, locale: string, engine: 'analyzer' | 'dictation' | 'sf'): Promise<TranscribeResult>;
+  speechTranscribeFile(
+    path: string,
+    locale: string,
+    engine: 'analyzer' | 'dictation' | 'sf',
+  ): Promise<TranscribeResult>;
 }
 export default requireNativeModule<TapiroKitModule>('TapiroKit');
 // subscribe: TapiroKit.addListener('onAiText', e => ...).remove()
