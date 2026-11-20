@@ -1,19 +1,21 @@
 import { canSchedule } from '@/lib/notifications/permission';
 import type { NoticePermission } from '@/lib/notifications/types';
 
+import type { DeviceToken } from './deviceToken';
+
 export type PushRpc = {
-  register(token: string, language: string): Promise<void>;
+  register(token: string, language: string, environment: DeviceToken['environment']): Promise<void>;
   unregister(token: string): Promise<void>;
 };
 
 export type PushDeps = {
   permission(): Promise<NoticePermission>;
-  token(): Promise<string | null>;
+  token(): Promise<DeviceToken | null>;
   rpc: PushRpc;
   stored: { get(): string | null; set(token: string | null): void };
 };
 
-type Registered = { userId: string; token: string; language: string };
+type Registered = DeviceToken & { userId: string; language: string };
 
 export function createPushRegistration(deps: PushDeps) {
   let registered: Registered | null = null;
@@ -30,14 +32,18 @@ export function createPushRegistration(deps: PushDeps) {
       const started = epoch;
       return serial(async () => {
         if (!canSchedule(await deps.permission())) return;
-        const token = await deps.token();
-        if (!token || started !== epoch) return;
-        const same = registered?.userId === userId && registered.token === token;
+        const device = await deps.token();
+        if (!device || started !== epoch) return;
+        const { token, environment } = device;
+        const same =
+          registered?.userId === userId &&
+          registered.token === token &&
+          registered.environment === environment;
         if (same && registered?.language === language) return;
         // Stored before the call, so a sign-out that lands while it is in flight still removes the row it creates.
         deps.stored.set(token);
-        await deps.rpc.register(token, language);
-        if (started === epoch) registered = { userId, token, language };
+        await deps.rpc.register(token, language, environment);
+        if (started === epoch) registered = { userId, token, environment, language };
       });
     },
     async signOut(wait: { expired: boolean } = { expired: false }) {

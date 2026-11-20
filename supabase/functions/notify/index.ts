@@ -1,16 +1,21 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 import { cronSecretCheck } from '../_shared/cronSecret.ts';
-
+import { liveSender, localTestSender, senderFor, unconfiguredSender } from './config.ts';
 import { localizedCopy } from './copy.ts';
 import { handleNotify, type DuePush } from './handler.ts';
 import { recordingSender } from './recording-sender.ts';
 
-const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const admin = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey, {
+const env = (key: string) => Deno.env.get(key);
+const serviceKey = env('SUPABASE_SERVICE_ROLE_KEY')!;
+const admin = createClient(env('SUPABASE_URL')!, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
-const authorized = cronSecretCheck(Deno.env.get('CRON_SECRET'));
+const authorized = cronSecretCheck(env('CRON_SECRET'));
+
+const recording = recordingSender({ insert: (rows) => admin.from('recorded_pushes').insert(rows) });
+const configured = (await liveSender(env)) ?? unconfiguredSender(env, recording);
+const test = await localTestSender(env);
 
 Deno.serve((req) =>
   handleNotify(req, {
@@ -29,6 +34,6 @@ Deno.serve((req) =>
       if (error) throw error;
     },
     copy: localizedCopy,
-    sender: recordingSender({ insert: (rows) => admin.from('recorded_pushes').insert(rows) }),
+    sender: senderFor(req, configured, test),
   }),
 );

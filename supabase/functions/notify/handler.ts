@@ -7,11 +7,14 @@ export type DuePush = {
   threadId: string;
   actorName: string | null;
   subject: Record<string, string | undefined>;
-  tokens: { token: string; language: string }[];
+  tokens: { token: string; language: string; environment: ApnsEnvironment }[];
 };
+
+export type ApnsEnvironment = 'sandbox' | 'production';
 
 export type PushMessage = {
   to: string;
+  environment: ApnsEnvironment;
   title: string;
   body: string;
   threadId: string;
@@ -44,7 +47,7 @@ export type NotifyDeps = {
 
 const BATCH = 100;
 const MAX_ROUNDS = 10;
-const NOT_REGISTERED = 'DeviceNotRegistered';
+export const UNREGISTERED = 'Unregistered';
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
@@ -54,7 +57,7 @@ const json = (status: number, body: unknown) =>
 
 function outgoing(push: DuePush, copyFor: CopyBuilder): OutgoingPush[] | null {
   const pushes: OutgoingPush[] = [];
-  for (const { token, language: stored } of push.tokens) {
+  for (const { token, language: stored, environment } of push.tokens) {
     const copy = copyFor(push.kind, stored, push);
     if (!copy) return null;
     const { language, title, body } = copy;
@@ -63,6 +66,7 @@ function outgoing(push: DuePush, copyFor: CopyBuilder): OutgoingPush[] | null {
       language,
       message: {
         to: token,
+        environment,
         title,
         body,
         threadId: push.threadId,
@@ -89,7 +93,7 @@ async function sendChunk(sender: PushSender, pushes: OutgoingPush[]): Promise<Se
 
 function outcomeOf(results: SendResult[]) {
   if (results.some((result) => result.ok)) return null;
-  const failure = results.find((result) => !result.ok && result.error !== NOT_REGISTERED);
+  const failure = results.find((result) => !result.ok && result.error !== UNREGISTERED);
   return failure && !failure.ok ? failure.error : 'no_device';
 }
 
@@ -105,7 +109,7 @@ async function settle(deps: NotifyDeps, tally: Tally, queueId: number, error: st
 
 async function dropUnregistered(deps: NotifyDeps, pushes: OutgoingPush[], results: SendResult[]) {
   for (const [index, result] of results.entries()) {
-    if (result.ok || result.error !== NOT_REGISTERED) continue;
+    if (result.ok || result.error !== UNREGISTERED) continue;
     try {
       await deps.dropToken(pushes[index].message.to);
     } catch {

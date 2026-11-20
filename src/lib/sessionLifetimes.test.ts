@@ -82,7 +82,7 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/lib/location/expoLocationService.ts#expoLocationService': 'kept: a device service',
   'src/lib/notifications/index.ts#permissionAnswers': 'kept: a device permission signal',
   'src/lib/notifications/useNoticeRouting.ts#handled': 'kept: notification ids already routed',
-  'src/lib/push/instance.ts#expoToken': 'kept: the device push token',
+  'src/lib/push/instance.ts#deviceToken': 'kept: the device push token',
   'src/lib/push/instance.ts#pushRegistration':
     'kept: sign-out unregisters before the session ends (accountActions.beforeSignOut)',
   'src/lib/sessionEnds.ts#sessionEnds': 'kept: the registry',

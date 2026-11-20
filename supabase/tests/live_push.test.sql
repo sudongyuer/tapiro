@@ -1,5 +1,5 @@
 begin;
-select plan(84);
+select plan(86);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -193,40 +193,50 @@ select is(
   (select count(*) from public.events), 'every event row is broadcast once'
 );
 
-select public.register_push_token('ExponentPushToken[aaa]', 'en');
+select public.register_push_token(repeat('a', 64), 'en', 'sandbox');
 select pg_temp.act_as(pg_temp.u('a1'));
-select public.register_push_token('ExponentPushToken[aaa]', 'ms');
+select public.register_push_token(upper(repeat('a', 64)), 'ms', 'production');
 select is(
-  (select array[t.user_id::text, t.language] from public.push_tokens t where t.token = 'ExponentPushToken[aaa]'),
-  array[pg_temp.u('a1')::text, 'ms'], 'a token registered again moves to the signed-in user'
+  (select array[t.user_id::text, t.language, t.environment] from public.push_tokens t where t.token = repeat('a', 64)),
+  array[pg_temp.u('a1')::text, 'ms', 'production'],
+  'a token registered again moves to the signed-in user with its language and APNs environment, stored lowercase'
 );
 select throws_ok(
-  $$select public.register_push_token('not-a-token', 'en')$$, '22023', 'invalid_push_token', 'a malformed token is refused'
+  $$select public.register_push_token('not-a-token', 'en', 'production')$$, '22023', 'invalid_push_token',
+  'a malformed token is refused'
 );
 select throws_ok(
-  $$select public.register_push_token('ExponentPushToken[bbb]', 'fr')$$, '22023', 'invalid_language',
+  $$select public.register_push_token('ExponentPushToken[aaa]', 'en', 'production')$$, '22023', 'invalid_push_token',
+  'an Expo push token is refused'
+);
+select throws_ok(
+  $$select public.register_push_token(repeat('c', 64), 'fr', 'production')$$, '22023', 'invalid_language',
   'an unsupported language is refused'
 );
-select public.register_push_token('ExpoPushToken[a' || n || ']', 'zh-Hans') from generate_series(1, 11) n;
+select throws_ok(
+  $$select public.register_push_token(repeat('c', 64), 'en', 'development')$$, '22023', 'invalid_push_environment',
+  'an APNs environment other than sandbox or production is refused'
+);
+select public.register_push_token(lpad(n::text, 64, '0'), 'zh-Hans', 'production') from generate_series(1, 11) n;
 select is(
   (select count(*) from public.push_tokens t where t.user_id = pg_temp.u('a1')), 10::bigint,
   'a user keeps at most ten tokens, the newest'
 );
 select is(public.set_push_language('en'), 10, 'a language change updates every token of the user');
 select pg_temp.act_as(pg_temp.u('b2'));
-select public.register_push_token('ExponentPushToken[bob]', 'zh-Hans');
+select public.register_push_token(repeat('b0', 32), 'zh-Hans', 'sandbox');
 select pg_temp.act_as(pg_temp.u('a1'));
-select public.unregister_push_token('ExponentPushToken[bob]');
+select public.unregister_push_token(repeat('b0', 32));
 select ok(
-  exists (select 1 from public.push_tokens t where t.token = 'ExponentPushToken[bob]'),
+  exists (select 1 from public.push_tokens t where t.token = repeat('b0', 32)),
   'a user cannot remove another user''s token'
 );
 select pg_temp.act_as(pg_temp.u('b2'));
-select public.unregister_push_token('ExponentPushToken[bob]');
+select public.unregister_push_token(repeat('b0', 32));
 select ok(
-  not exists (select 1 from public.push_tokens t where t.token = 'ExponentPushToken[bob]'), 'sign-out removes the token'
+  not exists (select 1 from public.push_tokens t where t.token = repeat('b0', 32)), 'sign-out removes the token'
 );
-select public.register_push_token('ExponentPushToken[bob]', 'zh-Hans');
+select public.register_push_token(repeat('b0', 32), 'zh-Hans', 'sandbox');
 
 insert into public.events (recipient, kind, subject_id, push, created_at)
 values
@@ -271,9 +281,11 @@ select is(
   jsonb_build_object(
     'kind', 'bounty.selected', 'subjectId', pg_temp.b(1), 'threadId', 'bounty:' || pg_temp.b(1), 'actorName', 'Alice',
     'subject', jsonb_build_object('title', '帮取快递'),
-    'tokens', jsonb_build_array(jsonb_build_object('token', 'ExponentPushToken[bob]', 'language', 'zh-Hans'))
+    'tokens', jsonb_build_array(
+      jsonb_build_object('token', repeat('b0', 32), 'language', 'zh-Hans', 'environment', 'sandbox')
+    )
   ),
-  'a claimed push carries the copy inputs and the recipient''s tokens and languages'
+  'a claimed push carries the copy inputs and the recipient''s tokens, languages and APNs environments'
 );
 select is(
   (select x -> 'subject' from claim where x ->> 'kind' = 'payment.marked_paid'),
@@ -390,10 +402,10 @@ select ok(
     and pg_temp.event_error((select id from stuck)) = 'stalled',
   'the five-minute drain marks a push stuck after its second attempt as stalled, with no other traffic'
 );
-select public.drop_push_token('ExponentPushToken[bob]');
+select public.drop_push_token(repeat('b0', 32));
 select ok(
-  not exists (select 1 from public.push_tokens t where t.token = 'ExponentPushToken[bob]'),
-  'the server drops a token Expo reports as not registered'
+  not exists (select 1 from public.push_tokens t where t.token = repeat('b0', 32)),
+  'the server drops a token APNs reports as unregistered'
 );
 
 create function pg_temp.denied(who text) returns setof text language sql as $$
@@ -402,7 +414,7 @@ create function pg_temp.denied(who text) returns setof text language sql as $$
   select throws_ok($q$select public.finish_push(1, null)$q$, '42501', null, who || ' clients cannot finish pushes')
   union all
   select throws_ok(
-    $q$select public.drop_push_token('ExponentPushToken[aaa]')$q$, '42501', null, who || ' clients cannot drop tokens'
+    $q$select public.drop_push_token(repeat('a', 64))$q$, '42501', null, who || ' clients cannot drop tokens'
   )
   union all
   select throws_ok(
@@ -439,7 +451,7 @@ select set_config('realtime.topic', 'user:' || pg_temp.u('a1'), true);
 select is((select count(*) from realtime.messages), 0::bigint, 'a signed-out client receives no signals');
 select pg_temp.denied('signed-out');
 select throws_ok(
-  $$select public.register_push_token('ExponentPushToken[anon]', 'en')$$, '42501', null,
+  $$select public.register_push_token(repeat('d', 64), 'en', 'production')$$, '42501', null,
   'a signed-out client cannot register a token'
 );
 
