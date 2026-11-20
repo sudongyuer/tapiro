@@ -22,7 +22,6 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
-  useReducedMotion,
   useScrollOffset,
   useSharedValue,
 } from 'react-native-reanimated';
@@ -31,10 +30,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { accessoryPriority } from '@/lib/liveItems';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { MascotStage, STAGE_HEIGHT, STAGE_HILL_HEIGHT, type StageActor } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { createSeenMarks, liveCards, shownOneTimeCards, stageLine, stageState } from './homeModel';
 import { HomeStrip, STRIP_ROW, STRIP_SHADOW } from './HomeStrip';
@@ -92,7 +91,7 @@ export function HomeScreen({
 }: HomeScreenProps) {
   const { t } = useI18n();
   const headerHeight = useSafeAreaInsets().top + COMPACT_BAR;
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const { accessory, issues } = useLiveItems();
   const cards = liveCards(accessory, homeCardDetails, accessoryPriority, issues);
   const state = stageState(accessory, issues);
@@ -102,12 +101,7 @@ export function HomeScreen({
   const layout = stackLayout(heights);
   const progress = useStackProgress(open);
   const extra = layout.fannedHeight - layout.stackedHeight;
-  const follow = useStackFollow(
-    stackHeight(layout, open),
-    ready,
-    open,
-    !(reduceMotion || uiVerifyReduceMotion),
-  );
+  const follow = useStackFollow(stackHeight(layout, open), ready, open, !reduceMotion);
 
   useEffect(() => {
     if (ready) markShownOneTime(shownOneTimeCards(cards, open));

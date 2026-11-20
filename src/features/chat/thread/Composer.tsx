@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     minHeight: TARGET,
     borderRadius: vars['--radius-sheet'],
+    borderCurve: 'continuous',
     paddingLeft: space.lg,
   },
   input: {

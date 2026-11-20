@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     marginHorizontal: -vars['--space-2'],
     borderRadius: vars['--radius-chip'],
+    borderCurve: 'continuous',
     backgroundColor: PlatformColor('systemGray4'),
   },
   content: { flex: 1, minWidth: 0 },

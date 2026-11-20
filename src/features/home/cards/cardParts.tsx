@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
     minHeight: vars['--space-6'],
     paddingHorizontal: vars['--space-3'],
     borderRadius: vars['--radius-pill'],
+    borderCurve: 'continuous',
     overflow: 'hidden',
   },
   pillFill: { opacity: 0.12 },

@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
@@ -16,6 +17,7 @@ import { InkText } from '@/ui/InkText';
 import { MascotSays } from '@/ui/MascotSays';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
+import { FADE_IN, FADE_OUT } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -117,15 +119,17 @@ export function NameStep({
               />
             </View>
             {error && (
-              <AppText
-                variant="meta"
-                accessibilityRole="alert"
-                accessibilityLiveRegion="polite"
-                testID="name-error"
-                style={[styles.error, { color: color('--color-urgent') }]}
-              >
-                {t(`account.name.error.${error}`)}
-              </AppText>
+              <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
+                <AppText
+                  variant="meta"
+                  accessibilityRole="alert"
+                  accessibilityLiveRegion="polite"
+                  testID="name-error"
+                  style={[styles.error, { color: color('--color-urgent') }]}
+                >
+                  {t(`account.name.error.${error}`)}
+                </AppText>
+              </Animated.View>
             )}
           </View>
         </ScrollView>

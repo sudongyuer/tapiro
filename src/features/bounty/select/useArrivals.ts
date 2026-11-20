@@ -1,9 +1,8 @@
 import { animation, Animation, offset, opacity } from '@expo/ui/swift-ui/modifiers';
 import { useCallback, useEffect, useState } from 'react';
-import { useReducedMotion } from 'react-native-reanimated';
 
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { vars } from '@/ui/theme/tokens';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { arrivedIds } from './arrivals';
 
@@ -13,7 +12,7 @@ const RISE = 8;
 type Arrival = { ids: ReadonlySet<string>; phase: 'from' | 'to'; count: number };
 
 export function useArrivals(ids: readonly string[] | null) {
-  const reduced = useReducedMotion() || uiVerifyReduceMotion;
+  const reduced = useMotionReduced();
   const key = ids?.join('\n') ?? null;
   const [known, setKnown] = useState<{ key: string | null; ids: readonly string[] | null }>({
     key,

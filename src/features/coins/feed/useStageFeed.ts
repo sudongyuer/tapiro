@@ -12,7 +12,6 @@ import {
   Easing,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
@@ -20,23 +19,15 @@ import {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import type { StageActor } from '@/ui/MascotStage';
 import { vars } from '@/ui/theme/tokens';
+import { EASE_ENTER, EASE_MOVE, useMotionReduced } from '@/ui/theme/motion';
 
 import { useWeeklyFeed } from '../hooks';
 import { coinsStore } from '../services';
 import { FeedLeaf } from './FeedLeaf';
 import { createFeedGate, FEED_LINES, feedAnswered, feedStep } from './feedStep';
-import {
-  ANSWER_HOLD_MS,
-  BITE,
-  easeMove,
-  enterCurve,
-  FEED_BUBBLE,
-  LEAF,
-  leafDrop,
-} from './feedTimeline';
+import { ANSWER_HOLD_MS, BITE, FEED_BUBBLE, LEAF, leafDrop } from './feedTimeline';
 
 const NEVER = { reduceMotion: ReduceMotion.Never } as const;
 const FADE = { duration: vars['--duration-fade'], ...NEVER };
@@ -55,7 +46,7 @@ function firstBite() {
 export function useStageFeed({ visible }: { visible: boolean }): Partial<StageActor> {
   const { t } = useI18n();
   const { status, feed } = useWeeklyFeed();
-  const reduced = useReducedMotion() || uiVerifyReduceMotion;
+  const reduced = useMotionReduced();
 
   const [tapped, setTapped] = useState(false);
   const [landed, setLanded] = useState(false);
@@ -106,7 +97,7 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
       reveal.set(
         reduced
           ? withTiming(1, FADE)
-          : withTiming(1, { duration: FEED_BUBBLE.duration, easing: enterCurve }),
+          : withTiming(1, { duration: FEED_BUBBLE.duration, easing: EASE_ENTER }),
       );
     if (step === 'waiting') showBubble();
     if (step === 'chewing') {
@@ -119,16 +110,17 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
       out.set(
         reduced
           ? withTiming(1, FADE, done)
-          : withTiming(1, { duration: LEAF.eat, easing: enterCurve }),
+          : withTiming(1, { duration: LEAF.eat, easing: EASE_ENTER }),
       );
       if (!reduced) {
-        const one = (value: number) => withTiming(value, { duration: BITE.step, easing: easeMove });
+        const one = (value: number) =>
+          withTiming(value, { duration: BITE.step, easing: EASE_MOVE });
         bite.set(
           withSequence(
             one(1),
             one(0),
             one(1),
-            withTiming(0, { duration: BITE.step, easing: easeMove }, done),
+            withTiming(0, { duration: BITE.step, easing: EASE_MOVE }, done),
           ),
         );
       }
@@ -136,7 +128,7 @@ export function useStageFeed({ visible }: { visible: boolean }): Partial<StageAc
     if (step === 'alreadyFed' || step === 'failed') {
       falls.set(true);
       out.set(
-        reduced ? withTiming(1, FADE) : withTiming(1, { duration: LEAF.fall, easing: enterCurve }),
+        reduced ? withTiming(1, FADE) : withTiming(1, { duration: LEAF.fall, easing: EASE_ENTER }),
       );
     }
     if (feedAnswered(step)) showBubble();

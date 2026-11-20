@@ -7,10 +7,12 @@ import {
   type GestureResponderEvent,
   type LayoutChangeEvent,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { PressDim } from '@/ui/PressDim';
+import { FADE_IN, FADE_OUT } from '@/ui/theme/motion';
 import { space, vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -66,7 +68,7 @@ export function BlockedFooter({
         </PressDim>
       </View>
       {failed ? (
-        <View style={styles.failed}>
+        <Animated.View entering={FADE_IN} exiting={FADE_OUT} style={styles.failed}>
           <SymbolView
             name="exclamationmark.circle.fill"
             size={FAILED_ICON}
@@ -79,7 +81,7 @@ export function BlockedFooter({
           >
             {t('chat.blocked.unblockFailed')}
           </AppText>
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );

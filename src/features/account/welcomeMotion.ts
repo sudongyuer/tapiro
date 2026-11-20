@@ -4,8 +4,8 @@ import {
   Easing,
   Extrapolation,
   interpolate,
+  ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -15,19 +15,24 @@ import {
 } from 'react-native-reanimated';
 
 import { vars } from '@/ui/theme/tokens';
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
 
 import type { Drift } from './welcomeLayout';
 import { BREATH_CYCLES, DRIFT_CYCLES, PANEL_DELAY, POP_DURATION } from './welcomeTiming';
 
 const POP = { duration: POP_DURATION, dampingRatio: 0.55 } as const;
-const FADE = { duration: vars['--duration-fade'] } as const;
+const FADE = {
+  duration: vars['--duration-fade'],
+  easing: EASE_ENTER,
+  reduceMotion: ReduceMotion.Never,
+} as const;
 const BREATH = 1600;
 const HOP_UP = { duration: 180, dampingRatio: 0.7 } as const;
 const HOP_DOWN = { duration: 360, dampingRatio: 0.45 } as const;
 const loop = Easing.inOut(Easing.sin);
 
 export function usePop(delay: number, drift?: Drift) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const pop = useSharedValue(0);
   const float = useSharedValue(0);
   useEffect(() => {
@@ -68,7 +73,7 @@ export function usePop(delay: number, drift?: Drift) {
 }
 
 export function useBreath(delay: number) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const breath = useSharedValue(0);
   useEffect(() => {
     if (reduceMotion) {
@@ -89,7 +94,7 @@ export function useBreath(delay: number) {
 }
 
 export function useHop() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   function hop() {
@@ -100,7 +105,7 @@ export function useHop() {
 }
 
 export function useRise() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const rise = useSharedValue(reduceMotion ? 0 : 1);
   const height = useSharedValue(0);
   const fade = useSharedValue(reduceMotion ? 0 : 1);

@@ -4,7 +4,6 @@ import Animated, {
   interpolate,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withSpring,
@@ -12,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { takeArrival } from '@/lib/handArt';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 const AFTER_SHEET_MS = 300;
 const DROP = { duration: 600, dampingRatio: 0.55, reduceMotion: ReduceMotion.Never } as const;
@@ -20,7 +19,7 @@ const FADE = { duration: 200, reduceMotion: ReduceMotion.Never } as const;
 const FROM = { y: -140, scale: 0.6, turn: -14 };
 
 export function ArtArrival({ bountyId, children }: { bountyId: string; children: ReactNode }) {
-  const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
+  const reduceMotion = useMotionReduced();
   const [arriving] = useState(() => takeArrival(bountyId));
   const progress = useSharedValue(arriving ? 0 : 1);
 

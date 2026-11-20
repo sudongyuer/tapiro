@@ -1,6 +1,9 @@
 import { Form, Host, Section, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
+  Animation,
+  animation,
+  contentTransition,
   font,
   foregroundStyle,
   listRowBackground,
@@ -10,11 +13,15 @@ import { Stack, type NativeStackNavigationOptions } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { useMotionReduced } from '@/ui/theme/motion';
+import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { useCoinBalance } from '../hooks';
 import { coinCount } from '../page/coinsView';
 import { CoinPacks } from './CoinPacks';
+
+const COUNT = Animation.easeOut({ duration: vars['--duration-settle'] / 1000 });
 
 export const BUY_COINS_SHEET_OPTIONS: NativeStackNavigationOptions = {
   presentation: 'formSheet',
@@ -28,6 +35,7 @@ export const BUY_COINS_SHEET_OPTIONS: NativeStackNavigationOptions = {
 export function BuyCoinsSheet({ onClose }: { onClose: () => void }) {
   const { t, language } = useI18n();
   const { color } = useTheme();
+  const reduced = useMotionReduced();
   const balance = useCoinBalance();
   const coins = balance.status === 'idle' ? null : (balance.data?.coins ?? null);
   return (
@@ -49,6 +57,8 @@ export function BuyCoinsSheet({ onClose }: { onClose: () => void }) {
                   font({ textStyle: 'subheadline' }),
                   foregroundStyle({ type: 'hierarchical', style: 'secondary' }),
                   accessibilityIdentifier('buy-coins-balance'),
+                  contentTransition(reduced ? 'opacity' : 'numericText'),
+                  animation(COUNT, coins),
                 ]}
               >
                 {t('coins.buy.balance', { balance: coinCount(coins, language) })}

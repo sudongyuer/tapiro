@@ -1,18 +1,18 @@
 import { useEffect, type Ref } from 'react';
-import { PlatformColor, Pressable, StyleSheet, View, type ViewInstance } from 'react-native';
+import { PlatformColor, StyleSheet, View, type ViewInstance } from 'react-native';
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { AppText } from '@/ui/AppText';
+import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { chipsFor } from '../model';
 import { chipLabel } from '../profile/profileView';
@@ -59,14 +59,14 @@ export function FacePicker({
   pickedRef: Ref<ViewInstance>;
 }) {
   const { t } = useI18n();
-  const reduced = useReducedMotion() || uiVerifyReduceMotion;
+  const reduced = useMotionReduced();
   return (
     <View style={styles.faces} accessibilityRole="radiogroup">
       {FACES.map((face) => {
         const selected = picked === face;
         const dimmed = picked !== null && !selected;
         return (
-          <Pressable
+          <PressDim
             key={face}
             accessibilityRole="radio"
             accessibilityLabel={t(`reputation.face.${face}`)}
@@ -86,7 +86,7 @@ export function FacePicker({
             >
               {t(`reputation.face.${face}`)}
             </AppText>
-          </Pressable>
+          </PressDim>
         );
       })}
     </View>
@@ -113,7 +113,7 @@ export function ChipPicker({
         const on = draft.chips.includes(chip);
         const label = chipLabel(role, chip, t);
         return (
-          <Pressable
+          <PressDim
             key={chip}
             accessibilityRole="checkbox"
             accessibilityLabel={label}
@@ -132,7 +132,7 @@ export function ChipPicker({
             <AppText variant="secondary" style={on && { color: color('--color-on-accent') }}>
               {label}
             </AppText>
-          </Pressable>
+          </PressDim>
         );
       })}
     </View>

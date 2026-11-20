@@ -9,9 +9,11 @@ import {
   listRowBackground,
 } from '@expo/ui/swift-ui/modifiers';
 import { SymbolView } from 'expo-symbols';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { PlatformColor, StyleSheet } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from './AppText';
+import { FADE_IN, FADE_OUT } from './theme/motion';
 import { vars } from './theme/tokens';
 
 const ICON = 13;
@@ -38,12 +40,19 @@ export function OfflineSection({ text, testID }: { text: string; testID: string 
 
 export function OfflineLine({ text, testID }: { text: string; testID: string }) {
   return (
-    <View accessible accessibilityLabel={text} testID={testID} style={styles.line}>
+    <Animated.View
+      accessible
+      accessibilityLabel={text}
+      testID={testID}
+      entering={FADE_IN}
+      exiting={FADE_OUT}
+      style={styles.line}
+    >
       <SymbolView name={SYMBOL} size={ICON} tintColor={PlatformColor('secondaryLabel')} />
       <AppText variant="meta" tone="secondaryLabel">
         {text}
       </AppText>
-    </View>
+    </Animated.View>
   );
 }
 

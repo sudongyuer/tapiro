@@ -74,6 +74,7 @@ export default {
     loading: 'Loading chat',
     loadFailed: 'This chat didn’t load. Check your connection and try again',
     retry: 'Try Again',
+    olderLoading: 'Loading earlier messages',
     olderFailed: 'Earlier messages didn’t load',
     read: 'Read {{time}}',
     a11ySending: '{{label}}, sending',

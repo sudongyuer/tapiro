@@ -1,5 +1,7 @@
 import type { TFunction } from 'i18next';
 
+import { dateFormat } from '@/lib/intlCache';
+
 import { reasonKey, signedDelta } from '../history';
 import type { CoinRow } from '../types';
 
@@ -7,25 +9,19 @@ const locale = (language: string) => `${language}-MY`;
 
 export { coinCount } from '@/lib/coinCount';
 
-const malaysiaYear = (now: Date) =>
-  Number(
-    new Intl.DateTimeFormat('en', { timeZone: 'Asia/Kuala_Lumpur', year: 'numeric' }).format(now),
-  );
+export const malaysiaYear = (now: Date) =>
+  Number(dateFormat('en', { timeZone: 'Asia/Kuala_Lumpur', year: 'numeric' }).format(now));
 
 const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 
-export function monthLabel(month: string, t: TFunction, now: Date) {
+export function monthLabel(month: string, t: TFunction, currentYear: number) {
   const [year, number] = month.split('-').map(Number);
   const name = t(`coins.monthName.m${MONTHS[number - 1]}`);
-  return year === malaysiaYear(now)
-    ? t('coins.month', { name })
-    : t('coins.monthYear', { name, year });
+  return year === currentYear ? t('coins.month', { name }) : t('coins.monthYear', { name, year });
 }
 
 export const rowDate = (at: string, language: string) =>
-  new Intl.DateTimeFormat(locale(language), { month: 'short', day: 'numeric' }).format(
-    new Date(at),
-  );
+  dateFormat(locale(language), { month: 'short', day: 'numeric' }).format(new Date(at));
 
 export function rowTitle(row: CoinRow, t: TFunction) {
   const named = t(reasonKey(row.reason));

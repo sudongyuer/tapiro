@@ -1,23 +1,24 @@
 import { useCallback, useEffect, useRef } from 'react';
 import {
-  Easing,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
+import { vars } from '@/ui/theme/tokens';
+
 const NEVER = ReduceMotion.Never;
 const FROM_SCALE = 0.18;
 const OUT_SCALE = 0.6;
 const GROW = { duration: 380, dampingRatio: 0.75, reduceMotion: NEVER };
-const APPEAR = { duration: 120, easing: Easing.bezier(0.23, 1, 0.32, 1), reduceMotion: NEVER };
-const LEAVE = { duration: 160, easing: Easing.bezier(0.23, 1, 0.32, 1), reduceMotion: NEVER };
-const FLIP = { duration: 500, easing: Easing.bezier(0.77, 0, 0.175, 1), reduceMotion: NEVER };
-const FADE = { duration: 150, easing: Easing.bezier(0.23, 1, 0.32, 1), reduceMotion: NEVER };
+const APPEAR = { duration: 120, easing: EASE_ENTER, reduceMotion: NEVER };
+const LEAVE = { duration: 120, easing: EASE_ENTER, reduceMotion: NEVER };
+const FLIP = { duration: vars['--duration-settle'], dampingRatio: 0.85, reduceMotion: NEVER };
+const FADE = { duration: vars['--duration-fade'], easing: EASE_ENTER, reduceMotion: NEVER };
 const PERSPECTIVE = 1200;
 
 export function usePinCardMotion({
@@ -31,7 +32,7 @@ export function usePinCardMotion({
   flipped: boolean;
   onGone: () => void;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useMotionReduced();
   const goneRef = useRef(onGone);
   useEffect(() => {
     goneRef.current = onGone;
@@ -60,7 +61,7 @@ export function usePinCardMotion({
   }, [ready, closing, reduced, grow, shown, finish]);
 
   useEffect(() => {
-    turn.set(withTiming(flipped ? 1 : 0, reduced ? FADE : FLIP));
+    turn.set(reduced ? withTiming(flipped ? 1 : 0, FADE) : withSpring(flipped ? 1 : 0, FLIP));
   }, [flipped, reduced, turn]);
 
   const card = useAnimatedStyle(() => {

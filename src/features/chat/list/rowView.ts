@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 
 import { addDays, localClock, localDayKey } from '@/lib/deviceClock';
 import type { ArtSource, HandArtId } from '@/lib/handArt';
+import { dateFormat } from '@/lib/intlCache';
 
 import type { ThreadInfo, ThreadSummary } from '../types';
 import { messageText } from '../messageText';
@@ -30,10 +31,10 @@ export function rowTime(at: string, now: number, t: TFunction, language: string)
   if (day === addDays(today, -1)) return t('chat.list.yesterday');
   const date = new Date(time);
   if (day >= addDays(today, -WEEK_DAYS) && day < today) {
-    return new Intl.DateTimeFormat(language, { weekday: 'short' }).format(date);
+    return dateFormat(language, { weekday: 'short' }).format(date);
   }
   const sameYear = date.getFullYear() === new Date(now).getFullYear();
-  return new Intl.DateTimeFormat(language, {
+  return dateFormat(language, {
     ...(sameYear ? {} : { year: 'numeric' }),
     month: 'short',
     day: 'numeric',

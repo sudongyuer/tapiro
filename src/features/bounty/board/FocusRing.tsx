@@ -3,7 +3,6 @@ import { StyleSheet } from 'react-native';
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withSequence,
@@ -13,6 +12,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 export const RING_HOLD_MS = 1200;
 const RING_WIDTH = 2;
@@ -22,7 +22,7 @@ const NEVER = ReduceMotion.Never;
 
 export function FocusRing({ ringKey, onDone }: { ringKey: number; onDone: (key: number) => void }) {
   const { color } = useTheme();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const opacity = useSharedValue(0);
   const style = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 

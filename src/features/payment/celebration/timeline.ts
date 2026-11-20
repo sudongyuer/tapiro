@@ -32,7 +32,6 @@ export const TIMELINE = {
 } as const;
 
 export const TOTAL = 2600;
-export const REDUCED_FADE = 360;
 
 function bezier(x1: number, y1: number, x2: number, y2: number, x: number) {
   'worklet';

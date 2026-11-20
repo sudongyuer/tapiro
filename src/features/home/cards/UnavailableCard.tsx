@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     marginTop: vars['--space-4'],
     minHeight: vars['--touch-min'],
     borderRadius: vars['--radius-pill'],
+    borderCurve: 'continuous',
     borderWidth: StyleSheet.hairlineWidth * 2,
     alignItems: 'center',
     justifyContent: 'center',

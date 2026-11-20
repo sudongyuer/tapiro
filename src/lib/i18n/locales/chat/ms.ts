@@ -75,6 +75,7 @@ export default {
     loading: 'Memuatkan perbualan',
     loadFailed: 'Perbualan ini tidak dapat dimuatkan. Semak sambungan dan cuba lagi',
     retry: 'Cuba lagi',
+    olderLoading: 'Memuatkan mesej lebih awal',
     olderFailed: 'Mesej lebih awal tidak dapat dimuatkan',
     read: 'Dibaca {{time}}',
     a11ySending: '{{label}}, sedang dihantar',
