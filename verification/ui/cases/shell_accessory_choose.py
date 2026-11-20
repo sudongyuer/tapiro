@@ -20,7 +20,7 @@ ui.wait(lambda items: selected(items) == ['tab-ride'] and accessory(items), '拼
 ui.snap('01-ride-accessory')
 
 ui.tap('urgent-accessory')
-ui.settled(lambda items: by_id(items, row_id(JIE)) and selected(items) == ['tab-bounty'],
+ui.settled(lambda items: by_id(items, row_id(JIE)) if selected(items) == ['tab-bounty'] else None,
            'tapping 去选 in the accessory did not open the applicants of that bounty in 悬赏')
 assert accessory(ui.read()) is None, 'the accessory still points at the screen that is on top'
 ui.snap('02-applicants')
