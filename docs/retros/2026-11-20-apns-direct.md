@@ -4,7 +4,7 @@ date: 2026-11-20
 pr: notify sends through APNs directly; the app registers its APNs token and environment
 title: Push for release builds through direct APNs
 escaped: 0
-rework: 0
+rework: 1
 interventions: 0
 overturned: 0
 ---
@@ -35,3 +35,15 @@ overturned: 0
   stack: both APNs hosts answered `403 InvalidProviderToken` as JSON. Recorded in the spec's Implementation Record.
 - `sessionLifetimes.test.ts` names module-level stores; renaming `expoToken` to `deviceToken` failed it in the full
   `bun test`, which a scoped run of `src/lib/push` did not cover. The registry check did its job.
+- Migration version collision: this branch's `20261120000100_apns_tokens.sql` and #196's
+  `20261120000100_cron_secret.sql` (merged while this branch was open) shared a version, and hosted already recorded
+  `20261120000100` as applied, so `supabase db push --dry-run` reported "up to date" and would have skipped the APNs
+  migration silently. Caught only because `migration list` had shown it pending minutes earlier. Renamed to
+  `20261121000100`. Tag `migration-version-collision`. Candidate guard (first occurrence): a CI step that fails when a
+  migration version on the branch equals one on `origin/main` with a different file name.
+- A scratch stack rerun with the same `project_id` started "from backup" with the previous run's database, so pgTAP
+  ran against stale functions and failed the new cron tests; a clean volume passed. Tag `isolated-stack-stale-volume`.
+  Candidate: `db-isolated.sh` should use a unique `project_id` per run.
+- Review round (one): no Critical; fixed four findings in one pass (provider-token window shared across isolates,
+  `BadDeviceToken` kept visible, `set_push_language` and legacy rows, test key import). The HTTP/2 finding was already
+  settled by the probe.

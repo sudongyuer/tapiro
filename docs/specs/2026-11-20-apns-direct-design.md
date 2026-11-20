@@ -77,8 +77,8 @@ None: no screen changes; the registration call gains one argument.
 ## Known limits
 
 - Real delivery is unverified until a device on iOS 26 runs a TestFlight or cabled build.
-- The hosted push poke and five-minute drain call `notify` only once the Vault secrets `project_url` and
-  `service_role_key` exist (`public.call_edge_function`).
+- The hosted push poke and five-minute drain reach `notify` through `public.call_edge_function` with the cron secret
+  (#196); both Vault secrets were set on hosted on 2026-11-20.
 - Live Activity remote updates are not sent (see Don't do).
 
 ## Implementation order
@@ -108,7 +108,7 @@ PR: not opened yet · Commits: see the PR
   `recorded_pushes` only on the local stack, the mock behind the local-only test header. Evidence:
   `supabase/functions/notify/config.ts`, `config.test.ts`, `index.ts`.
 - Tokens carry their environment from the database to the sender. Evidence: `supabase/functions/notify/handler.ts`
-  (`ApnsEnvironment`, `UNREGISTERED`), `supabase/migrations/20261120000100_apns_tokens.sql`.
+  (`ApnsEnvironment`, `UNREGISTERED`), `supabase/migrations/20261121000100_apns_tokens.sql`.
 - The app registers the APNs token and environment. Evidence: `src/lib/push/deviceToken.ts`, `instance.ts`,
   `pushRegistration.ts`; `expo-application` added as a direct dependency (`package.json`).
 
@@ -138,8 +138,8 @@ Found by the review round before the PR, fixed in the second commit of the branc
 - Deno: `apns.test.ts` and `config.test.ts` pass under `deno test` (added to `test:deno`).
 - Isolated fresh stack (scratch `config.toml`, ports 567xx): `supabase test db` → 67 files, 2243 tests, PASS; a second
   run failed only `live_push` 35 (「every event row is broadcast once」, have 26, want 25), the absolute count CI's
-  comment already calls fragile; no change here touches broadcasts. After the review fixes a third fresh stack passed
-  all of pgTAP and the stack test.
+  comment already calls fragile; no change here touches broadcasts. After the review fixes and the rebase onto
+  #196, a clean fresh stack passed pgTAP (68 files, 2250 tests) and the stack test.
 - Stack test `supabase/functions/tests/notify-apns.integration.ts` through `supabase functions serve` → 1 pass, 12
   assertions: the JWT verifies with the test public key, sandbox and production paths, payload with `body`, gone token
   dropped, queue row sent.

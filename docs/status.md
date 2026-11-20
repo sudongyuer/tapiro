@@ -459,11 +459,11 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
 - Push goes straight to APNs (2026-11-20, `docs/specs/2026-11-20-apns-direct-design.md`): the app registers its APNs
   token with `production` (TestFlight) or `sandbox` (cabled Release, dev builds), and `notify` signs an ES256 token with
   key `88Y29CGN9U`. On hosted, `APNS_KEY_ID` and `APNS_TEAM_ID` are set and `notify` is deployed with the migration
-  `20261120000100_apns_tokens`; until `APNS_PRIVATE_KEY` exists every push fails as `apns_not_configured` (never shown
+  `20261121000100_apns_tokens`; until `APNS_PRIVATE_KEY` exists every push fails as `apns_not_configured` (never shown
   as sent). Owner: Dashboard → Edge Functions → Secrets → add `APNS_PRIVATE_KEY` with the whole
   `AuthKey_88Y29CGN9U.p8` (BEGIN/END lines included), or
   `supabase secrets set --project-ref wkpgoildusumtejzhtkv APNS_PRIVATE_KEY="$(cat ~/.appstoreconnect/private_keys/AuthKey_88Y29CGN9U.p8)"`.
-  Pushes are only triggered on hosted once the Vault secrets `project_url` and `service_role_key` exist. The device
+  The hosted poke and drain already reach `notify` with the cron secret. The device
   check is in the spec's Verification; builds before this change register nothing, so install a new one first.
 - Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
   14 Pro (its UDID, or connect it and approve); the Paid Apps agreement,

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 
 import { localSupabase } from '../../../scripts/local-supabase';
+import { CRON_SECRET_HEADER } from '../_shared/cronSecret';
 import { TEST_APNS_HEADER, TEST_KEY_ID, TEST_TEAM_ID } from '../notify/config';
 
 const MOCK_PORT = 54399;
@@ -117,7 +118,7 @@ describe('notify through APNs (local stack, mock APNs)', () => {
   test('signs with ES256, posts to each token environment with the data under body, and drops a gone token', async () => {
     const res = await fetch(`${url}/functions/v1/notify`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${serviceKey}`, [TEST_APNS_HEADER]: '1' },
+      headers: { [CRON_SECRET_HEADER]: localEnvValue('CRON_SECRET'), [TEST_APNS_HEADER]: '1' },
     });
     expect(res.status).toBe(200);
 
