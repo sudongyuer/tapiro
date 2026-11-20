@@ -1,5 +1,6 @@
 """发消息 on the home in-progress card (126 A). The 讲一下微积分作业 card, with Aiman on the way, shows a 发消息 pill at the
-bottom; tapping it opens the bounty's thread in 消息 rather than the status screen, and the card still reads as one
+bottom; tapping it opens the bounty's thread over home rather than the status screen, 返回 comes back to home in 悬赏
+(audit N1), and the card still reads as one
 VoiceOver button with its title, step and reward. A card still waiting for applicants (帮取快递, 去选人) has no thread
 and no 发消息."""
 import sys
@@ -10,7 +11,7 @@ from driver import UI, by_id, reach_home  # noqa: E402
 from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/home/', 'src/features/chat/', 'src/features/bounty/live/', 'src/lib/liveItems.ts',
-        'src/app/(tabs)/bounty/index.tsx', 'src/app/(tabs)/messages/', 'verification/ui/bounty.py',
+        'src/app/(tabs)/bounty/index.tsx', 'src/app/(tabs)/messages/', 'src/app/chat/', 'verification/ui/bounty.py',
         'verification/ui/ocr.py']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
@@ -43,10 +44,9 @@ ui.at_rest()
 ui.capture('03-thread')
 
 ui.tap('BackButton')
-ui.element('chat-list', timeout=30)
-ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
-ui.tap('tab-bounty')
 ui.element('home-scroll', timeout=30)
+assert by_id(ui.read(), 'chat-list') is None, '返回 from the thread landed in 消息, not back on home'
+ui.wait(lambda items: str((by_id(items, 'tab-bounty') or {}).get('AXValue')) == '1', '悬赏 is not selected')
 ui.at_rest()
 assert by_id(ui.read(), 'bounty-status') is None, 'the pill tap also pushed the status screen under home'
 

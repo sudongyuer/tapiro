@@ -120,6 +120,14 @@ describe('applicants', () => {
   });
 });
 
+describe('own bounty', () => {
+  test('a bounty named as the viewer own is posted before its applicants were ever loaded', () => {
+    const { posterView } = fixture({ own: 'b1' });
+    expect(posterView('b1')).toEqual({ helper: null, status: 'open' });
+    expect(posterView('b2')).toBeNull();
+  });
+});
+
 describe('select', () => {
   test('ok assigns, records the accepted arguments and answers the same for a repeat', async () => {
     const recorded: SelectedArgs[][] = [];

@@ -27,6 +27,12 @@ new bounty on home, and the board reloads itself every 60 s; time-critical pushe
 
 ## In progress
 
+- UI walkthrough audit (`docs/reviews/2026-11-21-ui-walkthrough.md`), fixed in batches. Batch A (keep the user's
+  context: N1, N5, P3, R1, R3, A1, D1 and the apply-sheet payee jump) is built on `fix/keep-context-navigation`: a flow
+  never switches tabs; screens of another tab push over the tabs on the root stack, flows inside a sheet present the
+  next sheet over it (foundation spec, Implementation Record 2026-11-21, decisions A1–A9 for veto). Batches B (pay and
+  payee), C (copy) and D (layout) run in parallel.
+
 - First TestFlight device test (owner, build 20261120.1739): after 发出去 home now shows the poster's 「等人申请」 card
   at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open
   test bounties on the hosted project (2026-11-20 18:29–18:31 UTC) are left for the owner to cancel or keep.
