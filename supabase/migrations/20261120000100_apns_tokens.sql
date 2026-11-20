@@ -40,6 +40,29 @@ begin
 end;
 $$;
 
+-- An update re-checks a NOT VALID constraint, so a language change skips any legacy row instead of failing on it.
+create or replace function public.set_push_language(language text) returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  uid uuid := (select auth.uid());
+  changed integer;
+begin
+  if uid is null then
+    raise exception 'not_signed_in' using errcode = '42501';
+  end if;
+  if language is null or language not in ('zh-Hans', 'en', 'ms') then
+    raise exception 'invalid_language' using errcode = '22023';
+  end if;
+  update public.push_tokens t set language = set_push_language.language, updated_at = now()
+  where t.user_id = uid and t.token ~ '^[0-9a-f]{64,200}$';
+  get diagnostics changed = row_count;
+  return changed;
+end;
+$$;
+
 create or replace function public.unregister_push_token(token text) returns void
 language sql
 security definer

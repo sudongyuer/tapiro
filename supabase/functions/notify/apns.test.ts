@@ -46,7 +46,7 @@ async function harness(
 ) {
   const { pem, publicKey } = await testKey();
   const seen: Seen[] = [];
-  let clock = Date.UTC(2026, 10, 20, 12);
+  let clock = Date.UTC(2026, 10, 20, 12, 7);
   const config: ApnsConfig = {
     keyId: 'KEY1234567',
     teamId: 'TEAM123456',
@@ -110,19 +110,32 @@ describe('apnsSender', () => {
     expect(valid).toBe(true);
   });
 
-  test('reuses the provider token for 50 minutes, then signs a new one', async () => {
+  test('reuses the provider token within its 30-minute window, then signs the next window', async () => {
     const { sender, seen, tick } = await harness();
     await sender.send([push(TOKEN, 'production')]);
-    tick(49 * 60 * 1000);
+    tick(20 * 60 * 1000);
     await sender.send([push(TOKEN, 'production')]);
-    tick(60 * 1000);
+    tick(5 * 60 * 1000);
     await sender.send([push(TOKEN, 'production')]);
     const tokens = seen.map(jwtOf);
+    const iat = (token: string) =>
+      JSON.parse(new TextDecoder().decode(decode(token.split('.')[1]))).iat;
     expect(tokens[1]).toBe(tokens[0]);
-    expect(tokens[2]).not.toBe(tokens[0]);
+    expect(iat(tokens[2])).toBe(Date.UTC(2026, 10, 20, 12, 30) / 1000);
   });
 
-  test('a gone or wrong-environment token is reported unregistered, so notify drops it', async () => {
+  test('isolates started at different times in one window sign the same iat', async () => {
+    const first = await harness();
+    const second = await harness();
+    second.tick(15 * 60 * 1000);
+    await first.sender.send([push(TOKEN, 'production')]);
+    await second.sender.send([push(TOKEN, 'production')]);
+    const iat = (seen: Seen) =>
+      JSON.parse(new TextDecoder().decode(decode(jwtOf(seen).split('.')[1]))).iat;
+    expect(iat(first.seen[0])).toBe(iat(second.seen[0]));
+  });
+
+  test('a gone token is reported unregistered so notify drops it; a wrong-environment one stays an error', async () => {
     const reasons: Record<string, Response> = {
       a: Response.json({ reason: 'Unregistered' }, { status: 410 }),
       b: Response.json({ reason: 'BadDeviceToken' }, { status: 400 }),
@@ -133,25 +146,10 @@ describe('apnsSender', () => {
     const results = await sender.send(['a', 'b', 'c', 'd'].map((to) => push(to, 'production')));
     expect(results).toEqual([
       { ok: false, error: 'Unregistered' },
-      { ok: false, error: 'Unregistered' },
+      { ok: false, error: 'apns_400_BadDeviceToken' },
       { ok: false, error: 'Unregistered' },
       { ok: false, error: 'apns_429_TooManyRequests' },
     ]);
-  });
-
-  test('an expired provider token is signed again on the next send', async () => {
-    let first = true;
-    const { sender, seen, tick } = await harness(() => {
-      if (!first) return new Response(null, { status: 200 });
-      first = false;
-      return Response.json({ reason: 'ExpiredProviderToken' }, { status: 403 });
-    });
-    expect(await sender.send([push(TOKEN, 'production')])).toEqual([
-      { ok: false, error: 'apns_403_ExpiredProviderToken' },
-    ]);
-    tick(1000);
-    expect(await sender.send([push(TOKEN, 'production')])).toEqual([{ ok: true }]);
-    expect(jwtOf(seen[1])).not.toBe(jwtOf(seen[0]));
   });
 
   test('a network failure fails only that push', async () => {

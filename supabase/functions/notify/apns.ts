@@ -14,9 +14,11 @@ export const APNS_ORIGINS: Record<ApnsEnvironment, string> = {
 
 export const APP_TOPIC = 'app.tapiro';
 
-// Apple rejects a provider token older than an hour and throttles one refreshed more often than every 20 minutes.
-const TOKEN_LIFETIME_MS = 50 * 60 * 1000;
-const DROPPED_REASONS = new Set(['Unregistered', 'BadDeviceToken', 'DeviceTokenNotForTopic']);
+// Apple rejects a provider token older than an hour and throttles refreshes more often than every 20 minutes. Each
+// isolate signs its own token, so `iat` is pinned to a shared 30-minute window instead of the isolate's start.
+const TOKEN_WINDOW_MS = 30 * 60 * 1000;
+// BadDeviceToken stays a visible error instead of a drop: for a hex-checked token it means a wrong environment.
+const DROPPED_REASONS = new Set(['Unregistered', 'DeviceTokenNotForTopic']);
 
 export type ApnsConfig = {
   keyId: string;
@@ -88,9 +90,9 @@ export function apnsSender(config: ApnsConfig): PushSender {
   let cached: { token: string; issuedAt: number } | null = null;
 
   async function providerToken() {
-    const at = now();
-    if (!cached || at - cached.issuedAt >= TOKEN_LIFETIME_MS) {
-      cached = { token: await signProviderToken(config, at), issuedAt: at };
+    const window = Math.floor(now() / TOKEN_WINDOW_MS) * TOKEN_WINDOW_MS;
+    if (cached?.issuedAt !== window) {
+      cached = { token: await signProviderToken(config, window), issuedAt: window };
     }
     return cached.token;
   }
@@ -120,7 +122,6 @@ export function apnsSender(config: ApnsConfig): PushSender {
     if (response.status === 410 || DROPPED_REASONS.has(reason)) {
       return { ok: false, error: UNREGISTERED };
     }
-    if (reason === 'ExpiredProviderToken' || reason === 'InvalidProviderToken') cached = null;
     return { ok: false, error: `apns_${response.status}_${reason}` };
   }
 

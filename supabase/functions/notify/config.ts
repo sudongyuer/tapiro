@@ -29,7 +29,12 @@ export async function localTestSender(env: Env): Promise<PushSender | null> {
   const origin = env('APNS_TEST_ORIGIN');
   const pem = env('APNS_TEST_PRIVATE_KEY');
   if (env('APNS_ALLOW_TEST') !== '1' || !origin || !pem || !isLocalStack(env)) return null;
-  const key = await importApnsKey(pem);
+  let key: CryptoKey;
+  try {
+    key = await importApnsKey(pem);
+  } catch {
+    return failing('apns_bad_key');
+  }
   return apnsSender({
     keyId: TEST_KEY_ID,
     teamId: TEST_TEAM_ID,
