@@ -17,7 +17,7 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 - The owner handed over what Tapiro is for and how it is built (2026-11-17): decide product direction, scope, UI,
   copy and architecture yourself, record each choice with its reason in the spec or plan's decisions table, and list
   them in reports for veto. Still ask before the items in the merge rule below (paid services, accounts or
-  certificates, deletes, force-push, the hosted Supabase project) and before publishing anything outside the repo.
+  certificates, deletes, the hosted Supabase project) and before publishing anything outside the repo.
   Reason: the owner said the codebase is ours to decide (2026-11-17), after 40+ questions were answered 「都按推荐」.
 - A question goes at the end of the turn's final message with its context and numbered options; afterwards name it
   by number only (「第 N 题待定」) until the summary for the owner's return.
@@ -32,7 +32,9 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 - Push and open PRs on your own branches, and squash-merge your own PRs without asking, only through
   `scripts/merge-when-green.sh <pr>`, never `gh pr merge` directly. Reason: `checks --watch; merge` and a watch that
   returned before any check registered merged two PRs before CI finished (2026-11-17). Ask before paid services,
-  accounts or certificates, deletes, force-push and the hosted Supabase project.
+  accounts or certificates, deletes and the hosted Supabase project. Force pushes are blocked by a PreToolUse hook
+  (`scripts/block-force-push.ts`); ask the owner instead. Reason: subagents force-pushed their own branches twice in
+  two days without asking (2026-11-21).
 - Website changes (`website/`) deploy after merge with `cd website && bunx wrangler deploy` from the updated main
   checkout and are checked live afterwards. Reason: the owner allowed it (2026-11-17).
 - One review round per step; fix every finding at once and re-review only after an Important or Critical finding.
@@ -67,7 +69,7 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   Exception: a `__DEV__` build whose Supabase URL is a loopback host may sign in with email and password as the
   seeded test accounts (`bun run db:test-accounts`); release builds and verify mode never show them. Reason: the owner
   plays two-phone flows without a paid Apple account (owner, 2026-11-04).
-- Before destructive operations (revert, reset, delete, force-push), inspect the working tree
+- Before destructive operations (revert, reset, delete), inspect the working tree
   and ask for confirmation.
 
 ## UI baseline
