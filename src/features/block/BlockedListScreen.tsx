@@ -20,6 +20,7 @@ import {
   listStyle,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -42,7 +43,7 @@ export function BlockedListScreen() {
 
   return (
     <Host style={styles.host} testID="blocked-screen">
-      <List modifiers={[listStyle('insetGrouped')]}>
+      <List modifiers={[navigationScrollEdge(), listStyle('insetGrouped')]}>
         {state.kind === 'loading' ? (
           <Section>
             <ProgressView

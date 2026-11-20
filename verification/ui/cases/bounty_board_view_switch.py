@@ -3,7 +3,9 @@ VoiceOver with its name, the selected one filled in the accent colour; in dark, 
 paper, the unselected one drops to the grouped fill instead of paper; 地图 hides the cards and the distance axis, keeps
 the chips and the chosen place row, and scrolls home so the title sits under the strip; 列表 brings the cards back at the
 scroll position they had; the 急 filter and the chosen place survive both switches; without a location the map view
-shows 选一个地方 (denied) or the location card (undetermined) in the map's place, with 地图 still selected."""
+shows 选一个地方 (denied) or the location card (undetermined) in the map's place, with 地图 still selected.
+A title too long for one line beside the switch (ms 「Ganjaran yang Boleh Anda Ambil」) takes the row and the switch moves
+below it, so the tilted sticker never runs into the title (audit H2)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -13,6 +15,7 @@ from driver import UI, assert_touch_target, by_id, luma, reach_home, token  # no
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'verification/ui/bounty.py',
         'verification/ui/board.py', 'src/features/place/', 'src/features/block/']
+LOCALES = ['zh-Hans', 'en', 'ms']
 BUDGET = 360
 SEED = ['-uiVerifyBoardView', 'list']
 PLACE_ARGS = ['-uiVerifyBoardPlace', 'sunway', '-uiVerifyLocation', 'denied']
@@ -21,6 +24,7 @@ ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVeri
 PLACE = 'Sunway Geo Residences'
 ANCHOR = 'bounty-axis'
 UNDER_STRIP = 48
+TILT_ROOM = 8
 LOWER = 60
 KEPT = 3
 SELECTED_RATIO = 3
@@ -73,6 +77,10 @@ assert title.get('AXLabel') == ui.t('bounty.board.title'), title.get('AXLabel')
 for view in ('list', 'map'):
     sticker = by_id(items, f'bounty-view-{view}')
     assert sticker['frame']['x'] > title['frame']['x'], f'the {view} sticker is not beside the title'
+    f, t = sticker['frame'], title['frame']
+    across = f['x'] - TILT_ROOM < t['x'] + t['width'] and t['x'] < f['x'] + f['width'] + TILT_ROOM
+    along = f['y'] - TILT_ROOM < t['y'] + t['height'] and t['y'] < f['y'] + f['height'] + TILT_ROOM
+    assert not (across and along), f'the tilted {view} sticker runs into the title: {f} against {t}'
 ui.at_rest()
 assert_selected('01-list', 'list')
 

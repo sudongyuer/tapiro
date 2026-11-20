@@ -26,6 +26,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { PlatformColor, StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { nameInitial } from '@/lib/nameInitial';
@@ -78,7 +79,7 @@ export function MeView({
   const { color } = useTheme();
   return (
     <Host style={styles.host} testID="me-screen">
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
         <Section>
           <ProfileRow
             name={name}

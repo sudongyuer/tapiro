@@ -25,6 +25,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { PlatformColor, StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -67,7 +68,7 @@ export function TapirSettingsScreen({
 
   return (
     <Host style={styles.host} testID="tapir-settings-screen">
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
         {status.status === 'loading' && !status.data ? (
           <Section>
             <ProgressView

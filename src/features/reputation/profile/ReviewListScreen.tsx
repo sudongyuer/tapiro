@@ -8,6 +8,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -51,7 +52,9 @@ export function ReviewListScreen({
     <>
       <Stack.Screen options={{ title: t('reputation.profile.reviews') }} />
       <Host style={styles.host} testID="profile-reviews">
-        <Form modifiers={[tint(color('--color-accent')), refreshable(reload)]}>
+        <Form
+          modifiers={[navigationScrollEdge(), tint(color('--color-accent')), refreshable(reload)]}
+        >
           {list.status === 'stale' && refreshFailed && rows ? (
             <NoticeCard
               tone="warning"

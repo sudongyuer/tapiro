@@ -1,5 +1,5 @@
 import { NativeModule, requireNativeModule, requireNativeView } from 'expo';
-import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
+import { createModifier, type ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewProps, ViewStyle } from 'react-native';
 
@@ -221,6 +221,32 @@ const NativePinnedBar = requireNativeView<{ header?: boolean; children: ReactNod
 
 export function PinnedBar({ header, children }: { header?: boolean; children: ReactNode }) {
   return <NativePinnedBar header={header}>{children}</NativePinnedBar>;
+}
+
+export const navigationScrollEdge = () => createModifier('tapiroNavigationScrollEdge');
+
+export const keyboardDone = (label: string) => createModifier('tapiroKeyboardDone', { label });
+
+const NativeChipRow = requireNativeView<{
+  spacing: number;
+  modifiers: ModifierConfig[];
+  children: ReactNode;
+}>('TapiroKit', 'ChipRowView');
+
+export function ChipRow({
+  spacing,
+  modifiers = [],
+  children,
+}: {
+  spacing: number;
+  modifiers?: ModifierConfig[];
+  children: ReactNode;
+}) {
+  return (
+    <NativeChipRow spacing={spacing} modifiers={modifiers}>
+      {children}
+    </NativeChipRow>
+  );
 }
 
 type NativeDateTimeRowProps = {
