@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { createFixtureLiveService, fixtureLiveBountyId } from '../live/fixtureLiveService';
+import { createLiveBountyStore } from '../live/liveStore';
 import { canPublish, createPostFlow, type FlowDeps } from './postFlow';
 import type { PostDraft, PostStatus, PublishArgs, PublishOutcome } from './types';
 
@@ -72,6 +74,7 @@ function setup({
       current = null;
     },
     now: () => NOW,
+    reloadMine: () => undefined,
   };
   const handlers = {
     onPublished: () => (calls.done += 1),
@@ -241,6 +244,60 @@ describe('post flow', () => {
       reward_minor: 800,
       reward_currency: 'MYR',
       category: 'pickup',
+    });
+  });
+
+  describe('the poster sees what they sent', () => {
+    function withLiveList(outcome: PublishOutcome) {
+      const live = createLiveBountyStore(
+        createFixtureLiveService({
+          rows: [],
+          next: ['posterOpen'],
+          failFirstLoad: false,
+          now: () => NOW,
+        }),
+      );
+      const { flow, deps } = setup({ outcomes: [outcome] });
+      deps.reloadMine = () => void live.reload('user-1');
+      const mine = () => {
+        const state = live.getSnapshot();
+        return state.status === 'idle' ? [] : state.rows.map((row) => `${row.role}:${row.status}`);
+      };
+      return { live, flow, mine };
+    }
+
+    const SENT: PublishOutcome = {
+      ok: true,
+      result: {
+        id: fixtureLiveBountyId('posterOpen'),
+        status: 'open',
+        charge: 'free',
+        expiresAt: '',
+      },
+    };
+
+    for (const [name, outcome] of [
+      ['a publish', SENT],
+      ['an already-sent answer', { ok: false, reason: 'alreadySent' }],
+    ] as const) {
+      test(`${name} reloads the live list, so the open bounty replaces the calm card`, async () => {
+        const { live, flow, mine } = withLiveList(outcome);
+        await live.ensureLoaded('user-1');
+        expect(mine()).toEqual([]);
+        await flow.load();
+        await flow.publish();
+        await new Promise((done) => setTimeout(done, 0));
+        expect(mine()).toEqual(['poster:open']);
+      });
+    }
+
+    test('a failed publish leaves the live list as it was', async () => {
+      const { live, flow, mine } = withLiveList({ ok: false, reason: 'failed' });
+      await live.ensureLoaded('user-1');
+      await flow.load();
+      await flow.publish();
+      await new Promise((done) => setTimeout(done, 0));
+      expect(mine()).toEqual([]);
     });
   });
 });

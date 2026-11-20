@@ -5,7 +5,8 @@ owner decision, a new queue item). Decisions and their reasons live in the specs
 points to them.
 
 Updated: 2026-11-21 (China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
-PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes).
+PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
+new bounty on home, and the board reloads itself every 60 s).
 
 ## Built and merged
 
@@ -24,6 +25,10 @@ PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes).
 | Accessibility pass      | —                                                  | Plan `docs/plans/2026-11-18-accessibility-pass.md` (A1–A16 for veto): contrast #177, large text and VoiceOver sentences #178, checks and the core-screen tour (`a11y_screens`, `--text-size ax5`) in this PR; device checks `docs/walkthroughs/2026-11-18-accessibility.md`                                                                                                                                              |
 
 ## In progress
+
+- First TestFlight device test (owner, build 20261120.1739): after 发出去 home now shows the poster's 「等人申请」 card
+  at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open
+  test bounties on the hosted project (2026-11-20 18:29–18:31 UTC) are left for the owner to cancel or keep.
 
 - China mainland App Store (owner Q34 = B, 2026-11-21; `docs/specs/2026-11-21-china-storefront-design.md`, research
   `docs/research/2026-11-21-china-storefront.md`): phase 1 built (StoreKit storefront in the kit, every cloud AI entry
