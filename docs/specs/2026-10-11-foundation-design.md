@@ -1060,7 +1060,18 @@ veto. Branch `fix/keep-context-navigation`.
 
 ### Verification
 
-- See the PR for the run log; filled in below before merge.
+- `bun test` → 3186 pass, 2 timeouts in `scripts/merge-gate.test.ts` under load average ~800; that file alone → 16
+  pass. `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `check-specs`, `check-story-map`,
+  `verification/ui` unit tests (147) → pass.
+- UI, zh-Hans light (selection: the screens whose navigation changed, plus the smoke set and `live_notice_tap` for
+  the routing change): `app_launches`, `sign_in_fixture`, `shell_tabs`, `home_one_card`, `chat_entry_status`,
+  `chat_entry_ride`, `chat_entry_home`, `chat_thread_hint`, `ride_create_payee`, `bounty_apply_no_payee`,
+  `bounty_post_blocked`, `account_delete_open_payment`, `account_delete_sheet_many`, `bounty_detail_poster`,
+  `profile_sticker_book_in_tab`, `live_notice_tap` → pass (`live_notice_tap` passed on its retry). Three first-run
+  failures were case bugs, fixed in the cases: two 关闭 buttons (apply sheet and payee sheet), and the tab bar minimised
+  after scrolling, so the cases read the back button's label instead.
+- UI, ms light (new layouts with longer copy): `account_delete_open_payment`, `bounty_detail_poster` → pass; the ms
+  status line wraps to two lines without truncation.
 
 ### Known limits
 

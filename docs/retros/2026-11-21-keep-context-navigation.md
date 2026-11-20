@@ -1,7 +1,7 @@
 ---
 branch: fix/keep-context-navigation
 date: 2026-11-21
-pr: pending
+pr: "#211"
 title: UI audit batch A, keep the user's context
 escaped: 0
 rework: 0
@@ -33,3 +33,10 @@ overturned: 0
   prefix scratch files with the batch name; candidate for a written rule if it happens again.
 - Multi-line heredocs and `$var` arguments are refused by the worktree guard; writing the edit script with the Write
   tool and running `python3 <script> <root>` worked first time. Tag `worktree-guard-heredoc`.
+- Three new or changed UI cases failed on their first run for case reasons, not product ones: two sheets each had a
+  「关闭」 button, and the tab bar had minimised after scrolling, so its `AXValue` was not readable. The cases now tap
+  the top sheet's button by position and read the back button's label. Tag `ui-case-minimised-tabbar`. Lesson: prove
+  "which tab" with the back label, not the tab bar, on any screen that scrolls.
+- `bun test`: two `merge-gate` timeouts under load average ~800 (5 s test timeout); the file passed alone. Tag
+  `load-timeout`.
+- About 75 minutes waiting for the shared Simulator lock behind batches B, C, D and the shared-UI walkthrough.
