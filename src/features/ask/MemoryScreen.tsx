@@ -26,6 +26,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { PlatformColor, StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
@@ -62,7 +63,13 @@ export function MemoryScreen({
 
   return (
     <Host style={styles.host} testID="memory-screen">
-      <List modifiers={[listStyle('insetGrouped'), tint(color('--color-accent'))]}>
+      <List
+        modifiers={[
+          navigationScrollEdge(),
+          listStyle('insetGrouped'),
+          tint(color('--color-accent')),
+        ]}
+      >
         {!data && state?.status !== 'failed' ? (
           <Section>
             <ProgressView

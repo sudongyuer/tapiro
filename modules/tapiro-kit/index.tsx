@@ -3,6 +3,8 @@ import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewProps, ViewStyle } from 'react-native';
 
+export { ChipRow, keyboardDone, navigationScrollEdge } from './swiftUiParts';
+
 export type PlacePoint = { latitude: number; longitude: number };
 export type PlaceSuggestion = { id: string; title: string; subtitle: string };
 export type PlaceSuggestionsEvent =

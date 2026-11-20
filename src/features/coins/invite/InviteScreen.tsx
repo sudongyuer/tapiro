@@ -7,6 +7,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -49,7 +50,11 @@ export function InviteScreen() {
   return (
     <Host style={styles.host} testID="invite-screen">
       <Form
-        modifiers={[tint(color('--color-accent')), refreshable(() => coinsStore.reloadInvite())]}
+        modifiers={[
+          navigationScrollEdge(),
+          tint(color('--color-accent')),
+          refreshable(() => coinsStore.reloadInvite()),
+        ]}
       >
         {invite.status === 'stale' && readFailed && data ? (
           <NoticeCard

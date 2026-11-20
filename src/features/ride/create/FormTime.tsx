@@ -9,8 +9,9 @@ import {
   foregroundStyle,
   frame,
   lineLimit,
+  multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
-import { DateTimeRow } from 'tapiro-kit';
+import { ChipRow, DateTimeRow } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
@@ -66,7 +67,7 @@ export function FormTime({
           />
         ) : null}
       </HStack>
-      <HStack spacing={vars['--space-2']}>
+      <ChipRow spacing={vars['--space-2']}>
         {picks.map((time, index) => {
           const label =
             localDayKey(time) === localDayKey(now)
@@ -82,15 +83,16 @@ export function FormTime({
                 buttonStyle(on ? 'borderedProminent' : 'bordered'),
                 buttonBorderShape('capsule'),
                 controlSize('regular'),
-                frame({ maxWidth: Infinity }),
+                frame({ maxWidth: Infinity, maxHeight: Infinity }),
                 accessibilityLabel(t('ride.create.form.pickLabel', { time: label })),
                 ...(on ? [accessibilityAddTraits(['isSelected'])] : []),
               ]}
             >
               <Text
                 modifiers={[
-                  lineLimit(1),
-                  frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+                  lineLimit(2),
+                  multilineTextAlignment('center'),
+                  frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT, maxHeight: Infinity }),
                   ...(on ? [foregroundStyle(color('--color-on-accent'))] : []),
                 ]}
               >
@@ -107,20 +109,21 @@ export function FormTime({
               buttonStyle('bordered'),
               buttonBorderShape('capsule'),
               controlSize('regular'),
-              frame({ maxWidth: Infinity }),
+              frame({ maxWidth: Infinity, maxHeight: Infinity }),
             ]}
           >
             <Text
               modifiers={[
-                lineLimit(1),
-                frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT }),
+                lineLimit(2),
+                multilineTextAlignment('center'),
+                frame({ maxWidth: Infinity, minHeight: CHIP_LABEL_HEIGHT, maxHeight: Infinity }),
               ]}
             >
               {t('ride.create.form.pickTime')}
             </Text>
           </Button>
         ) : null}
-      </HStack>
+      </ChipRow>
     </Section>
   );
 }

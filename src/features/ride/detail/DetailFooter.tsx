@@ -250,6 +250,8 @@ const styles = StyleSheet.create({
     paddingBottom: vars['--space-2'],
     gap: vars['--space-2'],
     backgroundColor: PlatformColor('systemGroupedBackground'),
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: PlatformColor('separator'),
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
   flex: { flex: 1, minWidth: 0 },

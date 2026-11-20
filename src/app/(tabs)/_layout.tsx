@@ -61,13 +61,12 @@ export default function TabsLayout() {
   const urgent = pickMostUrgent(feed.accessory, pathname);
   const badge = badgeText(feed.unreadMessages);
   const inThread = location.tab === 'messages' && !location.onRoot;
-  const showAccessory =
-    !inThread &&
-    accessoryVisible({
-      hasItem: urgent !== null,
-      onHomeRoot: location.tab === 'bounty' && location.onRoot,
-      liveCardsOnScreen,
-    });
+  const showAccessory = accessoryVisible({
+    hasItem: urgent !== null,
+    onTabRoot: location.onRoot,
+    onHomeRoot: location.tab === 'bounty' && location.onRoot,
+    liveCardsOnScreen,
+  });
 
   const openUrgent = () => {
     const target = urgent ? accessoryTarget(urgent.item) : null;

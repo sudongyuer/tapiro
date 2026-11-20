@@ -1,16 +1,18 @@
 """The language step sits on the moment background with 小貘's head and the moment title above the native picker and a 44 pt get-started button.
-Title, rows and button share one 24 pt column, the picker has no 「语言」 header under the question, and the rows use the filled-row colour."""
+Title, rows and button share one 24 pt column, the picker has no 「语言」 header under the question, and the rows use the filled-row colour.
+The whole question is drawn: in en its second line 「prefer?」 lost its first glyph to the hosted view's edge (audit O2)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_colour, assert_touch_target, token  # noqa: E402
+from whole import assert_drawn_whole  # noqa: E402
 
 COLUMN = 24
 
-DEPS = ['src/features/account/', 'src/app/onboarding/']
+DEPS = ['src/features/account/', 'src/app/onboarding/', 'verification/ui/whole.py']
 
 SCENE = 'language-step'
-LOCALES = ['zh-Hans', 'ms']
+LOCALES = ['zh-Hans', 'en', 'ms']
 
 ui = UI(*sys.argv[1:])
 ui.element('ui-verify-ready')
@@ -27,6 +29,7 @@ assert not [i for i in ui.read() if i.get('AXLabel') == header], f'the picker re
 assert title['frame']['y'] < english['frame']['y'] < done['frame']['y'], 'title, picker and button are out of order'
 assert done['frame']['y'] + done['frame']['height'] <= screen['height'], f'get started is off screen: {done["frame"]}'
 shot = ui.snap('language-step')
+assert_drawn_whole(ui, shot, title['frame'], ui.t('account.language.question'), 'the question')
 row = english['frame']
 assert_colour(shot, {'x': row['x'] + row['width'] - 40, 'y': row['y'] + 12, 'width': 12, 'height': 12},
               token('--color-filled-row', ui.appearance), 'language row')

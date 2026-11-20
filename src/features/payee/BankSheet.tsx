@@ -12,6 +12,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
+import { keyboardDone, navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { afterResign } from '@/ui/afterResign';
@@ -124,7 +125,14 @@ function BankForm({
   return (
     <Host style={styles.host} testID="payee-bank-sheet">
       <SheetChrome title={t('payee.types.bank_account')} onClose={onClose} onSave={submit} />
-      <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
+      <Form
+        modifiers={[
+          navigationScrollEdge(),
+          keyboardDone(t('keyboard.done')),
+          tint(color('--color-accent')),
+          scrollDismissesKeyboard('immediately'),
+        ]}
+      >
         {shown ? (
           <NoticeCard
             tone="urgent"

@@ -20,6 +20,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
+import { keyboardDone } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { afterResign } from '@/ui/afterResign';
@@ -71,6 +72,7 @@ export function SheetShell({
                   modifiers={[
                     tint(color('--color-accent')),
                     scrollDismissesKeyboard('immediately'),
+                    keyboardDone(t('keyboard.done')),
                     navigationTitle(title),
                     navigationBarTitleDisplayMode('inline'),
                     accessibilityIdentifier(testID),
