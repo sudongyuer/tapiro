@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { markArrival } from '@/lib/handArt';
 import { notices } from '@/lib/notifications';
 
+import { reloadLiveBounties } from '../live/services';
 import { createPostFlow, type PublishHandlers } from './postFlow';
 import { draftStore, postService } from './services';
 import { resetDraft } from './useDraft';
@@ -15,6 +16,7 @@ export function usePostFlow(userId: string, handlers: PublishHandlers) {
       draft: () => draftStore.load(userId),
       clearDraft: () => resetDraft(userId),
       now: () => new Date(),
+      reloadMine: () => void reloadLiveBounties(),
     }),
   );
   useEffect(() => {

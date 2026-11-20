@@ -15,6 +15,7 @@ import {
   boardLink,
   closePostSheet,
   hasPostDraft,
+  reloadLiveBounties,
   useBountyBoard,
   usePublishBoard,
   useStartPost,
@@ -158,6 +159,7 @@ function BountyHome({ user }: { user: AccountUser }) {
               void reviewStore.reloadPending();
               void coinsStore.reloadFeedStatus();
               liveItems.retryIssues();
+              void reloadLiveBounties();
               board.pull();
             }}
           />

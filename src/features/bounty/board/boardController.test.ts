@@ -307,4 +307,64 @@ describe('stamps waiting for a card', () => {
     expect(stamps.entry('a', 'card')).toBe('none');
     expect(stamps.entry('b', 'card')).toBe('ready');
   });
+
+  describe('timed reload', () => {
+    test('shows bounties posted since the last load, without a pull', async () => {
+      const stub = deferredService();
+      const board = createBoardController(stub.service, () => new Date(AT));
+      void board.setQuery(ME, 'all');
+      stub.pending[0].resolve(page([], null, 0));
+      await settle();
+      expect(ids(board.get().state)).toEqual([]);
+      void board.tick();
+      expect(board.get().refreshing).toBe(true);
+      stub.pending[1].resolve(page(['x', 'y', 'z'], null, 3));
+      await settle();
+      expect(ids(board.get().state)).toEqual(['x', 'y', 'z']);
+    });
+
+    test('a failed timed reload keeps the rows and marks them not fresh, never empty', async () => {
+      const stub = deferredService();
+      const board = createBoardController(stub.service, () => new Date(AT));
+      void board.setQuery(ME, 'all');
+      stub.pending[0].resolve(page(['a'], null, 1));
+      await settle();
+      void board.tick();
+      stub.pending[1].reject(new TypeError('Network request failed'));
+      await settle();
+      expect(ids(board.get().state)).toEqual(['a']);
+      expect(ready(board.get().state).refreshFailed).toBe(true);
+    });
+
+    test('waits while a second page is shown, so the list never shrinks under the reader', async () => {
+      const stub = deferredService();
+      const board = createBoardController(stub.service, () => new Date(AT));
+      void board.setQuery(ME, 'all');
+      stub.pending[0].resolve(page(['a'], { after: 'a' }, 2));
+      await settle();
+      void board.loadMore();
+      stub.pending[1].resolve(page(['b']));
+      await settle();
+      void board.tick();
+      expect(board.get().refreshing).toBe(false);
+      expect(ids(board.get().state)).toEqual(['a', 'b']);
+      void board.load();
+      stub.pending[2].resolve(page(['c'], { after: 'c' }, 2));
+      await settle();
+      void board.tick();
+      expect(board.get().refreshing).toBe(true);
+    });
+
+    test('does nothing before the first load answers', async () => {
+      const stub = deferredService();
+      const board = createBoardController(stub.service, () => new Date(AT));
+      void board.setQuery(ME, 'all');
+      void board.tick();
+      stub.pending[0].reject(new TypeError('Network request failed'));
+      await settle();
+      expect(board.get().state.kind).toBe('failed');
+      void board.tick();
+      expect(board.get().state.kind).toBe('failed');
+    });
+  });
 });

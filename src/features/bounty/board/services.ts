@@ -18,6 +18,11 @@ import type { BoardService } from './types';
 import { createViewStore, seedBoardView } from './viewStore';
 
 const VERIFY_WRITE_DELAY_MS = 2500;
+const BOARD_TICK_MS = 60_000;
+
+export const boardTickMs: number | null = uiVerify
+  ? Number(uiVerifyArgument('uiVerifyBoardTickMs')) || null
+  : BOARD_TICK_MS;
 
 function detailLoadRecorder() {
   const record = verifyRecorder('uiVerifyDetailLoads');

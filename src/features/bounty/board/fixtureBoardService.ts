@@ -51,6 +51,7 @@ export type DetailMode = (typeof DETAIL_MODES)[number];
 
 export type FixtureBoardOptions = {
   board: BoardFixture;
+  later?: BoardFixture;
   fail: BoardFailure;
   apply: ApplyMode;
   detail: DetailMode;
@@ -74,6 +75,7 @@ export function fixtureBoardOptions(
 ): FixtureBoardOptions {
   return {
     board: pick(BOARDS, argument('uiVerifyBoard'), 'full'),
+    later: BOARDS.find((board) => board === argument('uiVerifyBoardLater')),
     fail: pick(BOARD_FAILURES, argument('uiVerifyBoardFail'), 'none'),
     apply: pick(APPLY_MODES, argument('uiVerifyApply'), 'ok'),
     detail: pick(DETAIL_MODES, argument('uiVerifyDetail'), 'ok'),
@@ -110,7 +112,8 @@ export function createFixtureBoardService(options: FixtureBoardOptions): BoardSe
   const at = (minutes: number) => new Date(base + minutes * MINUTE_MS).toISOString();
   const all = FIXTURE_BOARDS[options.board];
   const hidden = (item: FixtureBounty) => options.isBlocked?.(item.poster.id) ?? false;
-  const visible = () => all.filter((item) => !hidden(item));
+  const shownBoard = () => (options.later && firstLoads > 1 ? FIXTURE_BOARDS[options.later] : all);
+  const visible = () => shownBoard().filter((item) => !hidden(item));
   const applications = new Map<string, { status: 'pending' | 'withdrawn'; note: string | null }>(
     all.filter((item) => item.applied).map((item) => [item.id, { status: 'pending', note: null }]),
   );

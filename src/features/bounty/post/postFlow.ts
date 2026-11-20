@@ -29,6 +29,7 @@ export type FlowDeps = {
   draft: () => PostDraft;
   clearDraft: () => void;
   now: () => Date;
+  reloadMine: () => void;
 };
 
 export type PublishHandlers = {
@@ -69,6 +70,7 @@ export function createPostFlow(deps: FlowDeps) {
       if (outcome.ok) {
         deps.clearDraft();
         patch({ busy: false });
+        deps.reloadMine();
         handlers.onPublished(outcome.result);
         return;
       }
@@ -76,6 +78,7 @@ export function createPostFlow(deps: FlowDeps) {
       if (reason === 'alreadySent') {
         deps.clearDraft();
         patch({ busy: false });
+        deps.reloadMine();
         handlers.onAlreadySent();
         return;
       }

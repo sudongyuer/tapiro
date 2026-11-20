@@ -499,3 +499,30 @@ Rulings section holds the overnight decisions).
   captions use Long Cang / Caveat (97A). Cases `sticker_book`, `sticker_book_labels`, `sticker_book_calendar`.
 - Limits: celebration G keeps its book-page choreography and now shows hand art; it does not animate into the card
   stack. The arrival motion and the pins are device lines in `docs/story-map.md`.
+
+## Implementation Record (2026-11-21, first device test: the poster's trace and the board's freshness)
+
+Status stays `approved`. Found in the owner's first TestFlight test (build 20261120.1739, hosted Supabase): after
+发出去 the poster landed on a calm home (「今天没有待处理的事」, 「全部 0」) and posted the same bounty three times; a second
+phone's board stayed at 「全部 0」 for minutes until a relaunch.
+
+- Fixed: the live-card source for the poster's own bounties (`bounty_live_items`) was read only at launch, on a return
+  to the foreground and on a live signal. Publishing sends no signal to the poster, so the 「等人申请」 card (57A) and the
+  94A art landing never appeared until a relaunch. The publish flow now reloads that source when the server accepts
+  the bounty or answers that it was already sent (`reloadMine` in `src/features/bounty/post/postFlow.ts`), and the
+  home pull also reloads it, not only when it had failed. Case `bounty_post_shows_mine`.
+- Fixed, same cause: applying or withdrawing signals only the poster, so the applicant's own 「等某某选」 card waited
+  for a relaunch too. An application change the user made reloads the source (`src/features/bounty/live/ownWrites.ts`).
+- Added: the board reloads itself every 60 s while the bounty home is on screen and the app is active
+  (`src/features/bounty/board/useBoardTick.ts`, `tick` in `boardState.ts`). Case `bounty_board_new_posts` (also proves
+  that a pull brings a newly posted bounty).
+
+| Decision | Choice | Reason | Rejected |
+| --- | --- | --- | --- |
+| Where the poster lands after 发出去 | Unchanged: the sheet closes onto the bounty home (22A), whose front card becomes the new bounty's 「等人申请」 card with the 94A art landing | The design already drew this landing; it failed only because the source was never reloaded. Pushing the detail screen would replace a drawn, answered design | Push the bounty's detail or applicant list after publishing |
+| Card for an open bounty with no applicants | Unchanged: tag 「等对方」, line 「<title> · 等人申请」, tap opens the applicant list (57A) | Already built and drawn; a new 「等人接」 state would add a fourth tag for the same meaning | A new 「等人接」 tag |
+| How the card gets there | Reload the live source on the server's publish answer, not an optimistic card built from the draft | Data integrity: a card shows only what the server returned; the reload keeps the rows already shown while it runs, and a failed reload marks them not up to date | Insert the card from the draft before the reload answers; a server `bounty.published` broadcast to the poster (a second path for a write whose own answer is already in hand) |
+| Board freshness on an open screen | A timed reload every 60 s while focused and active, on top of the v1 rule; no Realtime | The realtime spec keeps the board off Realtime (everyone nearby would subscribe to everything); one small read a minute per open board is cheap at this scale, and new bounties then appear without a gesture the user may not know | Realtime for the board; a shorter interval (more reads for little gain on a list whose items live for days) |
+| Timed reload while more pages are shown | Skipped until the next full load | A reload returns only the first page, so the list would shrink under the reader every minute | Reload all shown pages |
+| A failed timed reload | Keeps the rows and shows the existing 「可能不是最新」 warning with the data time | Data integrity: never show failed data as live or empty | Retry silently with no warning |
+| Double publish | Unchanged: one request at a time (`createInFlightGuard`), the button is busy until the answer, and a replay with the same draft id publishes once | The three hosted bounties were three separate posts, each from a fresh draft after the sheet closed, not a double tap | — |
