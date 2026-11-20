@@ -1065,3 +1065,14 @@ Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (Y1–Y5, O1) and the owner'
 - The reminder prefill is read when the composer mounts; if that thread is already open deeper in the 消息 stack, the
   existing composer keeps its text and the reminder is not shown.
 - The name step's loading spinner has no UI case (only the failed state does).
+
+### Verification (batch B)
+
+- `bun test` → 3185 pass before the rebase onto #206; `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map` → exit 0.
+- `bun run verify:build` → BUILD SUCCEEDED (641 s); `bun run verify:smoke` → 4 of 4 pass.
+- New and changed cases, zh-Hans light and dark: `payee_cash_only`, `pay_sheet_missing`, `pay_none_remind`,
+  `pay_sheet_none`, `account_name_load_failed`, `account_long_name` pass. `payee_stale` and `payee_list` failed on case
+  bugs (a `settled` predicate returning a list; the no-cash-in-menu check matched the toggle's own label) and pass in
+  zh-Hans light after the fix. Selection: only the screens this change touches; `ms`, `en` and the dark rerun of the
+  two fixed cases are left to the milestone run.

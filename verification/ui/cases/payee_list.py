@@ -79,12 +79,14 @@ ui.capture('04-cash-off')
 
 open_menu(ui)
 items = ui.read()
-assert not any(i.get('AXLabel') == ui.t(CASH) and i.get('AXUniqueId') != 'payee-cash' for i in items), 'cash is still offered in the + menu'
 ys = []
 for entry in MENU_ORDER:
     found = [i['frame'] for i in items if i.get('AXLabel') == ui.t(entry)]
     assert found, f'menu is missing {ui.t(entry)}'
     ys.append(max(found, key=lambda frame: frame['x'])['y'])
 assert ys == sorted(ys), f'menu order is wrong: {ys}'
+menu_bottom = ys[-1] + 60
+in_menu = [i for i in items if i.get('AXLabel') == ui.t(CASH) and i['frame']['y'] < menu_bottom]
+assert not in_menu, f'cash is still offered in the + menu: {in_menu}'
 ui.capture('05-menu')
 print('PASS: list states, QR replacement, accessory clearance and menu order')

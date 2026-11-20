@@ -16,8 +16,8 @@ ARGS = ['-uiVerifyPayeeFail', 'refresh', '-uiVerifySignedIn', 'onboarded']
 
 ui = UI(*sys.argv[1:])
 open_payee(ui)
-items = ui.settled(lambda items: by_id(items, 'payee-stale') and items, 'the failed focus refetch was not marked stale')
-stale = by_id(items, 'payee-stale')
+stale = ui.settled(lambda items: by_id(items, 'payee-stale'), 'the failed focus refetch was not marked stale')
+items = ui.read()
 lead = ui.t('live.staleAt', time='@').split('@')[0]
 assert lead in (stale.get('AXLabel') or ''), f'stale card reads {stale.get("AXLabel")!r}'
 assert len(row_labels(items)) == 3, f'old rows were dropped: {row_labels(items)}'

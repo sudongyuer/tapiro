@@ -4,7 +4,7 @@ date: 2026-11-21
 pr: UI audit batch B — payee and payment data truthfulness, pay sheet reminder, guarded onboarding name step
 title: Cash on still said 还没有收款方式
 escaped: 1
-rework: 0
+rework: 1
 interventions: 0
 overturned: 0
 ---
@@ -33,5 +33,8 @@ overturned: 0
   `stickers/store`, `memoryStore`, `coinsStore`, `reputation/profileStore` and `reviewStore` already keep a `stale`
   state; `account/profileStore` keeps `failed` without data, and the name step now honours it (O1). The bounty apply
   check treats a failed payee lookup as "has a method" and lets the server decide; left as is.
+- Rework: two new case assertions were wrong on the first run (`settled` needs a predicate that returns the element,
+  not the tree; a "no cash in the menu" label search also matched the toggle's text behind the menu). Both were fixed
+  by reading `log.txt` and the failure screenshot; the app was right. Tag `case-assertion-scope`.
 - Pattern to watch: a view that filters a list before deciding "empty" must ask whether the filtered-out items still
   count. Candidate lint is not practical; keep it in review.
