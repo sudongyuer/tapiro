@@ -8,6 +8,7 @@ import { createFixturePaymentService, FIXTURE_PAYMENT_IDS } from '../fixturePaym
 import {
   bookSlots,
   celebrationBody,
+  celebrationTitle,
   confettiPieces,
   glyphs,
   groupDrop,
@@ -166,10 +167,25 @@ describe('unknown sticker count', () => {
   });
 
   test('the body never claims a number or a first, even on a first settle', () => {
-    expect(celebrationBody(true, null)).toEqual({ key: 'pay.celebrate.unknownBody' });
-    expect(celebrationBody(false, null)).toEqual({ key: 'pay.celebrate.unknownBody' });
-    expect(celebrationBody(true, 1)).toEqual({ key: 'pay.celebrate.first.body' });
-    expect(celebrationBody(false, 8)).toEqual({ key: 'pay.celebrate.routine.body', count: 8 });
+    expect(celebrationBody(true, null, 'bounty')).toEqual({ key: 'pay.celebrate.unknownBody' });
+    expect(celebrationBody(false, null, 'bounty')).toEqual({ key: 'pay.celebrate.unknownBody' });
+    expect(celebrationBody(true, 1, 'bounty')).toEqual({ key: 'pay.celebrate.first.body' });
+    expect(celebrationBody(false, 8, 'bounty')).toEqual({
+      key: 'pay.celebrate.routine.body',
+      count: 8,
+    });
+  });
+
+  test('a ride gets ride copy, never a bounty line', () => {
+    expect(celebrationBody(true, null, 'ride')).toEqual({ key: 'pay.celebrate.ride.unknownBody' });
+    expect(celebrationBody(true, 1, 'ride')).toEqual({ key: 'pay.celebrate.ride.firstBody' });
+    expect(celebrationBody(false, 8, 'ride')).toEqual({
+      key: 'pay.celebrate.routine.body',
+      count: 8,
+    });
+    expect(celebrationTitle(false, 'ride')).toBe('pay.celebrate.ride.routineTitle');
+    expect(celebrationTitle(false, 'bounty')).toBe('pay.celebrate.routine.title');
+    expect(celebrationTitle(true, 'ride')).toBe('pay.celebrate.first.title');
   });
 });
 

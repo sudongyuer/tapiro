@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { debugToolsEnabled } from '@/lib/uiVerify';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 
@@ -19,9 +20,11 @@ export function LegalDocument({ page }: { page: LegalPage }) {
       contentContainerStyle={styles.content}
       testID={`legal-${page}`}
     >
-      <AppText variant="secondary" tone="secondaryLabel" testID="legal-draft">
-        {t('account.legal.draft')}
-      </AppText>
+      {debugToolsEnabled ? (
+        <AppText variant="secondary" tone="secondaryLabel" testID="legal-draft">
+          {t('account.legal.draft')}
+        </AppText>
+      ) : null}
       {SECTIONS[page].map((section) => (
         <View key={section} style={styles.section}>
           <AppText variant="title" accessibilityRole="header">

@@ -4,14 +4,12 @@ import Animated from 'react-native-reanimated';
 import { useI18n } from '@/lib/i18n';
 import type { SettledDetail } from '@/lib/liveItems';
 import { formatMoney } from '@/lib/money';
-import { AppText } from '@/ui/AppText';
 import { HandArt } from '@/ui/HandArt';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
-import { PressDim } from '@/ui/PressDim';
 import { token, vars } from '@/ui/theme/tokens';
 
 import { TitleRow } from './BountyCard';
-import { CardHeader, CardText, Pill } from './cardParts';
+import { CardButton, CardHeader, CardText, Pill } from './cardParts';
 import { useSettledCollect } from './useSettledCollect';
 
 const STICKER_WIDTH = 78;
@@ -61,22 +59,15 @@ export function SettledCard({
           </CardText>
           <TitleRow ink={ink} title={t('home.card.settled.headline')} amount={detail.amount} />
         </View>
-        <PressDim
-          accessibilityRole="button"
-          accessibilityLabel={t('home.card.settled.collect')}
+        <CardButton
+          label={t('home.card.settled.collect')}
+          ink={ink}
+          surface={surface}
           disabled={behind || collecting}
           onPress={collect}
           testID="settled-card-collect"
-          style={[styles.collect, { backgroundColor: ink }]}
-        >
-          <AppText
-            variant="secondary"
-            numberOfLines={1}
-            style={[styles.collectLabel, { color: surface }]}
-          >
-            {t('home.card.settled.collect')}
-          </AppText>
-        </PressDim>
+          style={styles.collect}
+        />
       </LiveCard>
     </Animated.View>
   );
@@ -84,14 +75,5 @@ export function SettledCard({
 
 const styles = StyleSheet.create({
   line: { marginTop: vars['--space-3'] },
-  collect: {
-    marginTop: vars['--space-3'],
-    minHeight: vars['--touch-min'],
-    paddingHorizontal: vars['--space-4'],
-    borderRadius: vars['--radius-pill'],
-    borderCurve: 'continuous',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  collectLabel: { fontWeight: '700', textAlign: 'center' },
+  collect: { marginTop: vars['--space-3'] },
 });

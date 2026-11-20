@@ -79,7 +79,7 @@ export function SeatRow({ ride, viewerId }: { ride: RideDetail; viewerId: string
     ? [
         ...people.map((m) => displayName(m, viewerId, t)),
         t('ride.detail.seatsLeft', { count: empty }),
-      ].join('，')
+      ].join(t('ride.detail.a11ySeparator'))
     : t('ride.detail.seatsA11y', { name: organiserName, taken: ride.taken, empty });
   return (
     <View style={styles.row} accessible accessibilityLabel={label} testID="ride-detail-seats">

@@ -6,7 +6,7 @@ import Animated from 'react-native-reanimated';
 import { useI18n } from '@/lib/i18n';
 import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import type { RideDetail } from './types';
 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     marginHorizontal: -vars['--space-2'],
     borderRadius: vars['--radius-chip'],
     borderCurve: 'continuous',
-    backgroundColor: PlatformColor('systemGray4'),
+    backgroundColor: SELECTED_ROW_FILL,
   },
   content: { flex: 1, minWidth: 0 },
 });

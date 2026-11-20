@@ -1,4 +1,4 @@
-import type { Sticker } from '@/lib/stickers';
+import type { Sticker, StickerKind } from '@/lib/stickers';
 
 export const BOOK_SLOTS = 6;
 export const BOOK_COLUMNS = 3;
@@ -75,14 +75,32 @@ export function groupDrop(stage: Box, layout: GroupLayout) {
 }
 
 export type CelebrationBody =
-  | { key: 'pay.celebrate.first.body' }
-  | { key: 'pay.celebrate.routine.body'; count: number }
-  | { key: 'pay.celebrate.unknownBody' };
+  | {
+      key:
+        | 'pay.celebrate.first.body'
+        | 'pay.celebrate.unknownBody'
+        | 'pay.celebrate.ride.firstBody'
+        | 'pay.celebrate.ride.unknownBody';
+    }
+  | { key: 'pay.celebrate.routine.body'; count: number };
 
-export function celebrationBody(first: boolean, count: number | null): CelebrationBody {
-  if (count === null) return { key: 'pay.celebrate.unknownBody' };
-  if (first) return { key: 'pay.celebrate.first.body' };
+export function celebrationBody(
+  first: boolean,
+  count: number | null,
+  kind: StickerKind,
+): CelebrationBody {
+  const ride = kind === 'ride';
+  if (count === null)
+    return { key: ride ? 'pay.celebrate.ride.unknownBody' : 'pay.celebrate.unknownBody' };
+  if (first) return { key: ride ? 'pay.celebrate.ride.firstBody' : 'pay.celebrate.first.body' };
   return { key: 'pay.celebrate.routine.body', count };
+}
+
+export function celebrationTitle(first: boolean, kind: StickerKind) {
+  if (first) return 'pay.celebrate.first.title' as const;
+  return kind === 'ride'
+    ? ('pay.celebrate.ride.routineTitle' as const)
+    : ('pay.celebrate.routine.title' as const);
 }
 
 export type Glyph = { kind: 'digit'; digit: number } | { kind: 'mark'; text: string };

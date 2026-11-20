@@ -360,9 +360,19 @@ The reward and the primary action wrap rather than truncate at any size.
 | `--radius-sheet`    | `24`  |
 | `--radius-pill`     | `999` |
 | `--touch-min`       | `44`  |
+| `--capsule-min`     | `28`  |
 | `--opacity-pressed` | `0.7` |
 
 Radii are continuous corners. Buttons are pills.
+
+- A capsule that labels rather than acts (a card's tag, the stack toggle's pill, the calm card's example chips) is at
+  least `--capsule-min` tall; one that acts keeps `--touch-min` around it.
+- A live card's button is the shared `CardButton`: at least `--touch-min` tall, `body` semibold, up to two lines, in
+  three looks (filled with the card's ink, tinted, outlined).
+- A disabled pill keeps its shape and greys out: the secondary fill with a `tertiaryLabel` label, never a faded
+  accent with a white label.
+- A pressed or selected row fills with `systemGray4`, the colour of a selected `UITableView` cell, in the row's own
+  shape.
 
 ## Stickers
 
@@ -412,6 +422,31 @@ Radii are continuous corners. Buttons are pills.
 
 Humour is seasoning: the user is part of the joke, never its target. When a joke does not
 translate into all three languages, drop it.
+
+### Terminology
+
+One name per thing in each locale. Decided under the owner's delegation after the UI walkthrough audit
+(`docs/reviews/2026-11-21-ui-walkthrough.md`, batch C); listed here for veto.
+
+| #   | Thing (audit ID)                  | zh-Hans                                                                                  | en                                                                      | ms                                                                | Why                                                                                                                          |
+| --- | --------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| T1  | The sticker book (C1)             | 贴纸本; 打开贴纸本; 收进贴纸本                                                           | Sticker book (sentence case)                                            | Buku pelekat; Buka / Simpan ke                                    | The buttons already said 贴纸本; the page and its 我的 row now match, so 「打开贴纸本」 leads to a page with that name       |
+| T2  | Settled, money closed (C2)        | 已结清                                                                                   | Settled                                                                 | Langsai (verb: melangsaikan)                                      | Selesai stays for "done" (完成, 办成); a settled stamp and a done button no longer share a word                              |
+| T3  | The bounty amount (C2)            | 赏金                                                                                     | Reward                                                                  | Bayaran                                                           | Ganjaran stays the bounty itself (tab, 「Pasang Ganjaran」); the invite bonus is 「Bonus jemputan」                          |
+| T4  | 收款方式 (C3)                     | 收款方式                                                                                 | Payment methods                                                         | Kaedah Terima Bayaran (lower mid-sentence)                        | Six ms spellings, one of which (Cara Bayaran) read as "way to pay"; en drops "ways to receive" / "a way to get paid"         |
+| T5  | Applied to a ride (C4)            | 已申请                                                                                   | Applied                                                                 | Dipohon                                                           | Same as bounties; 「Asked」 / 「Requested」 and two ms spellings described one state                                         |
+| T6  | Post form fields (P4)             | 时间; 地点, qualified by kind (取件地点, 送达地点, 排队地点, 搬出地点, 目的地, 见面地点) | Time; Pickup / Delivery / Queue / Move-out / Meeting place, Destination | Masa; Tempat ambil / hantar / beratur / angkut / jumpa, Destinasi | The form, its add rows, 确认发布 and the detail page now say the same pair; the kind still says which place is meant         |
+| T7  | What 小貘 does with a bounty (H1) | 小貘帮你写悬赏                                                                           | Tapir drafts the bounty                                                 | Tapir tolong draf ganjaran                                        | The AI never publishes (AGENTS.md, AI)                                                                                       |
+| T8  | Direct pay footer (H7)            | 直接付款 · 钱直接到{{name}}                                                              | Direct pay · …                                                          | Bayaran terus · …                                                 | 「撮合」 was internal jargon and contradicted 「钱直接到」                                                                   |
+| T9  | Errors near 小貘 (K1)             | 没连上小貘，没扣体力 / 没喂成功，请再试一次                                              | Couldn’t reach Tapir / Try again                                        | Tidak dapat menghubungi Tapir / Cuba lagi                         | Voice: errors are plain; the tapir stays, the joke goes                                                                      |
+| T10 | 小貘's person (K3)                | 小貘 (third person)                                                                      | Tapir (third person)                                                    | Tapir (third person)                                              | en had one 「I’m keeping an eye on it」                                                                                      |
+| T11 | A ride no-show in an appeal (R5)  | 没上车                                                                                   | no-show                                                                 | tidak hadir                                                       | Disputes are plain; 放鸽子 stays only in cancellation copy outside the appeal                                                |
+| T12 | The settle celebration (R4)       | 又帮成一单 / 又拼成一趟                                                                  | job / ride                                                              | tugasan / tumpangan                                               | Rides had bounty copy; 「errand」 is also the en name of the 代办 category                                                   |
+| T13 | Coins (A3)                        | 貘币                                                                                     | coins                                                                   | syiling (Syiling only in titles)                                  | One en form; ms capitalised the word mid-sentence                                                                            |
+| T14 | Invite code button (A2)           | 兑换                                                                                     | Redeem                                                                  | Tebus                                                             | 「好」 did not say what the button does                                                                                      |
+| T15 | Card tags (H8)                    | 拼车 · N 人齐; 等你确认                                                                  | Ride · all N in; Needs your confirmation                                | unchanged                                                         | 「4 full」 misread; 「Confirm」 looked like a button                                                                         |
+| T16 | VoiceOver joins (R6)              | ，                                                                                       | ,                                                                       | ,                                                                 | `ride.detail.a11ySeparator`; labels no longer read a Chinese comma in en and ms                                              |
+| T17 | Legal draft line (O3)             | shown only in dev and verify builds                                                      | same                                                                    | same                                                              | Release builds do not show 「草稿」; replacing the text and the contact address is a pre-submission item in `docs/status.md` |
 
 ## Motion
 

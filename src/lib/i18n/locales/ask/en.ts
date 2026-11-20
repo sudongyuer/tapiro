@@ -40,7 +40,7 @@ export default {
     deadline: 'By {{when}}',
     window: '{{start}} – {{end}}',
     place: 'Place: {{place}} (pick it on the map in the form)',
-    providerError: 'Tapir got dizzy. No energy was used. Your text is still here.',
+    providerError: 'Couldn’t reach Tapir. No energy was used. Your text is still here.',
     unreadable: 'Tapir’s answer could not be read. Your text is still here; you can try again.',
     busy: 'Tapir is still on the last one. Try again in a moment.',
     retry: 'Try Again',
@@ -63,7 +63,7 @@ export default {
     note: {
       noSpeech: 'Didn’t catch that. Try saying it again.',
       micFailed: 'The microphone didn’t start. Tap again, or type.',
-      failed: 'Tapir got dizzy. No energy was used. What you said wasn’t written down.',
+      failed: 'Couldn’t reach Tapir. No energy was used. What you said wasn’t written down.',
       offline: 'No connection. What you said wasn’t written down.',
       hungry: 'Tapir is hungry. What you said wasn’t written down.',
       busy: 'Tapir is still on the last one. Try again in a moment.',

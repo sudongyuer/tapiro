@@ -38,7 +38,7 @@ export default {
     deadline: '{{when}} 前',
     window: '{{start}} – {{end}}',
     place: '地点：{{place}}（到表单里在地图上选）',
-    providerError: '小貘晕了，没扣体力。你写的还在。',
+    providerError: '没连上小貘，没扣体力。你写的还在。',
     unreadable: '小貘的回答没看懂。你写的还在，可以再试一次。',
     busy: '小貘还在忙上一件，过一会儿再试。',
     retry: '再试一次',
@@ -60,7 +60,7 @@ export default {
     note: {
       noSpeech: '没听清，再说一次试试。',
       micFailed: '麦克风没开起来，再点一次试试，或者打字。',
-      failed: '小貘晕了，没扣体力。这段话没转成字。',
+      failed: '没连上小貘，没扣体力。这段话没转成字。',
       offline: '连不上网，这段话没转成字。',
       hungry: '小貘饿了，这段话没转成字。',
       busy: '小貘还在忙上一件，过一会儿再转。',

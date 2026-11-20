@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     marginTop: vars['--space-3'],
   },
   chip: {
-    minHeight: 30,
+    minHeight: vars['--capsule-min'],
     paddingHorizontal: vars['--space-3'],
     borderRadius: vars['--radius-pill'],
     borderCurve: 'continuous',

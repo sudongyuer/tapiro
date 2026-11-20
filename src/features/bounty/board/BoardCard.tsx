@@ -12,7 +12,7 @@ import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import { CardApplied, CardFoot, CardHead, CardWhenWhere } from './BoardCardRows';
 import { cardCopy } from './cardCopy';
@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
-    backgroundColor: PlatformColor('systemGray4'),
+    backgroundColor: SELECTED_ROW_FILL,
   },
 });

@@ -1,5 +1,6 @@
 """273 A: with no free post and no coin, the cost row reads 1 貘币 · 余额 0, the 还差 1 貘币 notice names the next free date
-and how to earn one, the three packs follow right under it, and 需要 1 貘币 is disabled under the kept draft; the pinned
+and how to earn one, the three packs follow right under it, and 需要 1 貘币 is disabled under the kept draft, greyed with
+a legible label (dark on the fill in light, light in dark; not white on faded ink); the pinned
 bar offers nothing else. Buying 5 coins there (credited by the server) turns the button into 发出去 · 1 貘币, enabled, the
 cost row into 1 貘币 · 余额 5, removes the notice and the packs, and keeps the draft."""
 import json
@@ -9,13 +10,14 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import DEMO_TITLE, assert_cost, assert_pinned, assert_preview, form_scroll_to, open_confirm  # noqa: E402
 from coins import tap_price, assert_packs  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, assert_label_ink, by_id  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py',
-        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/',
+        'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/ui/PillButton.tsx', 'src/features/place/', 'src/features/block/',
         'src/features/coins/buy/', 'src/features/coins/purchase/', 'src/lib/uiVerifyPurchases.ts', 'verification/ui/coins.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyPostCost', 'none']
+DISABLED_CONTRAST = 30
 
 ui = UI(*sys.argv[1:])
 
@@ -46,7 +48,11 @@ ui.wait_label('bounty-post-no-balance', lambda label: ui.t('bounty.post.noBalanc
 button = assert_pinned(ui, 'bounty-post-publish', '需要 1 貘币')
 assert button.get('AXLabel') == ui.t('bounty.post.confirm.needCoin'), f'button reads {button.get("AXLabel")!r}'
 assert button.get('enabled') is False, '需要 1 貘币 is not disabled'
-ui.capture('01-no-balance')
+ui.at_rest()
+shot = ui.snap('01-no-balance')
+f = button['frame']
+assert_label_ink(shot, {'x': f['x'] + 16, 'y': f['y'] + 4, 'width': f['width'] - 32, 'height': f['height'] - 8},
+                 ui.appearance, 'the disabled 需要 1 貘币', contrast=DISABLED_CONTRAST)
 assert_preview(ui, DEMO_TITLE, '8')
 items = sheet_items(json.loads(ui.axe('describe-ui')))
 sheet = by_id(items, 'bounty-post-confirm')['frame']

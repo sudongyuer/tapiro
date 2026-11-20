@@ -83,7 +83,7 @@ export default {
     fedLead: '谢谢！',
     fedTail: '+1 貘币',
     alreadyFed: '这周吃饱啦，周一再来',
-    failed: '没喂上，再点一下试试',
+    failed: '没喂成功，请再试一次',
     action: '喂小貘',
   },
   invite: {
@@ -106,7 +106,7 @@ export default {
       '我在用 Tapiro 互相帮忙。填我的邀请码 {{code}}，你完成第一单后我们各得 {{reward}} 颗貘币。',
     enterCode: '填朋友的码',
     placeholder: '例如 {{code}}',
-    submit: '好',
+    submit: '兑换',
     invited: '我邀请的人',
     rewarded: '已完成第一单 · +{{reward}}',
     waiting: '还没完成',

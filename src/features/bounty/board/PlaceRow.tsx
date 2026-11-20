@@ -3,7 +3,7 @@ import { PlatformColor, Pressable, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 import { AppText } from '@/ui/AppText';
 import { vars } from '@/ui/theme/tokens';
 
@@ -118,6 +118,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
-    backgroundColor: PlatformColor('systemGray4'),
+    backgroundColor: SELECTED_ROW_FILL,
   },
 });

@@ -8,11 +8,10 @@ import {
   listRowBackground,
   shapes,
 } from '@expo/ui/swift-ui/modifiers';
-import { PlatformColor } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import type { ProfileCard } from '../types';
 import { countText, personName, showsAllReviews } from './profileView';
@@ -83,7 +82,7 @@ export function ProfileReviewsSection({
             onOpenAll();
           }}
           testID="profile-all-reviews"
-          modifiers={selected ? [listRowBackground(PlatformColor('systemGray4'))] : []}
+          modifiers={selected ? [listRowBackground(SELECTED_ROW_FILL)] : []}
         >
           <HStack spacing={vars['--space-2']} modifiers={[contentShape(shapes.rectangle())]}>
             <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'primary' })]}>

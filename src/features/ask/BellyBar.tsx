@@ -1,4 +1,4 @@
-import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
+import { Alert, PlatformColor, StyleSheet, View, type ColorValue } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
@@ -15,16 +15,23 @@ const SEGMENT_HEIGHT = 10;
 const SEGMENT_GAP = 3;
 const ROW_HEIGHT = 28;
 const ROW_SLOP = (vars['--touch-min'] - ROW_HEIGHT) / 2;
+const SEGMENT_EDGE = 1;
+const EMPTY_EDGE = {
+  light: PlatformColor('tertiaryLabel'),
+  dark: PlatformColor('secondaryLabel'),
+};
 
 function Segment({
   index,
   lit,
   fill,
+  edge,
   progress,
 }: {
   index: number;
   lit: boolean;
   fill: string;
+  edge: ColorValue;
   progress: SharedValue<number>;
 }) {
   const style = useAnimatedStyle(() => {
@@ -32,7 +39,7 @@ function Segment({
     return { opacity: level, transform: [{ scaleX: 0.4 + 0.6 * level }] };
   });
   return (
-    <View style={[styles.segment, { backgroundColor: PlatformColor('systemFill') }]}>
+    <View style={[styles.segment, { borderColor: lit ? fill : edge }]}>
       <Animated.View style={[styles.fill, { backgroundColor: fill }, style]} />
     </View>
   );
@@ -40,7 +47,7 @@ function Segment({
 
 export function BellyBar({ belly, progress }: { belly: Belly; progress: SharedValue<number> }) {
   const { t } = useI18n();
-  const { color } = useTheme();
+  const { color, theme } = useTheme();
   const segments = bellySegments(belly);
   const mood = bellyMood(belly);
   const fill = color(segments === 1 ? '--color-belly-low' : '--color-belly');
@@ -67,6 +74,7 @@ export function BellyBar({ belly, progress }: { belly: Belly; progress: SharedVa
             index={index}
             lit={index < segments}
             fill={fill}
+            edge={EMPTY_EDGE[theme]}
             progress={progress}
           />
         ))}
@@ -96,6 +104,8 @@ const styles = StyleSheet.create({
     width: SEGMENT_WIDTH,
     height: SEGMENT_HEIGHT,
     borderRadius: SEGMENT_HEIGHT / 2,
+    borderWidth: SEGMENT_EDGE,
+    backgroundColor: PlatformColor('systemFill'),
     overflow: 'hidden',
   },
   fill: { flex: 1, borderRadius: SEGMENT_HEIGHT / 2 },

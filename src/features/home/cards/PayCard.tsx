@@ -8,12 +8,9 @@ import type { PayDetail } from '@/lib/liveItems';
 import { AppText } from '@/ui/AppText';
 import { HandArtSticker } from '@/ui/HandArt';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
-import { PressDim } from '@/ui/PressDim';
 import { typeStyle, vars } from '@/ui/theme/tokens';
 
-import { CardText, Pill } from './cardParts';
-
-const BUTTON_HEIGHT = 52;
+import { CardButton, CardText, Pill } from './cardParts';
 
 export function PayCard({ detail }: { detail: PayDetail }) {
   const { t, language } = useI18n();
@@ -42,23 +39,15 @@ export function PayCard({ detail }: { detail: PayDetail }) {
           {fraction}
         </AppText>
       </CardText>
-      <PressDim
-        accessibilityRole="button"
-        accessibilityState={{ disabled: detail.paymentId === null }}
+      <CardButton
+        label={t('home.card.pay.button')}
+        ink={ink}
+        surface={paint.surface}
         accessibilityLabel={t('home.card.pay.buttonLabel', { amount })}
         disabled={detail.paymentId === null}
         onPress={() => detail.paymentId && router.push(`/pay/${detail.paymentId}`)}
         testID="pay-card-button"
-        style={[styles.button, { backgroundColor: ink }]}
-      >
-        <AppText
-          variant="body"
-          numberOfLines={1}
-          style={[styles.buttonLabel, { color: paint.surface }]}
-        >
-          {t('home.card.pay.button')}
-        </AppText>
-      </PressDim>
+      />
       <View style={styles.footer}>
         <CardText variant="meta" ink={ink} muted style={styles.footerText} numberOfLines={2}>
           {t('home.card.pay.footer', { name: detail.payee })}
@@ -86,15 +75,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     opacity: 0.55,
   },
-  button: {
-    minHeight: BUTTON_HEIGHT,
-    borderRadius: vars['--radius-pill'],
-    borderCurve: 'continuous',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: vars['--space-5'],
-  },
-  buttonLabel: { fontWeight: '600', textAlign: 'center' },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

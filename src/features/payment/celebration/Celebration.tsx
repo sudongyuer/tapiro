@@ -25,6 +25,7 @@ import { Headline } from './Headline';
 import {
   bookSlots,
   celebrationBody,
+  celebrationTitle,
   groupDrop,
   groupLayout,
   groupPoint,
@@ -82,7 +83,7 @@ export function Celebration({
     return { opacity: p, transform: [{ translateY: 10 * (1 - p) }] };
   });
   const target = targetSlot(data.count);
-  const body = celebrationBody(data.first, data.count);
+  const body = celebrationBody(data.first, data.count, data.itemKind);
   const start = { x: width / 2, y: receiptTop + STICKER_OFFSET };
   const end =
     stage && layout && frame && centre
@@ -137,9 +138,7 @@ export function Celebration({
                         ? t(data.note.key, { amount: formatMoney(data.note.amount, language) })
                         : null
                     }
-                    title={t(
-                      data.first ? 'pay.celebrate.first.title' : 'pay.celebrate.routine.title',
-                    )}
+                    title={t(celebrationTitle(data.first, data.itemKind))}
                     body={
                       body.key === 'pay.celebrate.routine.body'
                         ? t(body.key, { count: body.count })

@@ -83,7 +83,7 @@ const ms: Translation = {
           'Tapiro membantu pelajar di Malaysia saling membantu: pasang ganjaran, bantu sambil lalu, berkongsi kereta.',
         accountTitle: 'Akaun Anda',
         account:
-          'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun dalam Saya → Tetapan; jika ada bayaran yang belum selesai, selesaikannya dahulu.',
+          'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun dalam Saya → Tetapan; jika ada bayaran yang belum langsai, langsaikannya dahulu.',
         moneyTitle: 'Bayaran dan Syiling',
         money:
           'Pelajar membayar antara satu sama lain terus dalam aplikasi bank atau e-dompet sendiri, atau secara tunai bersemuka; Tapiro tidak mengendalikan bayaran antara pelajar. Syiling dibeli melalui App Store, hanya boleh digunakan dalam Tapiro, dan tidak boleh dihantar kepada orang lain atau ditunaikan.',
@@ -92,7 +92,7 @@ const ms: Translation = {
         title: 'Dasar Privasi',
         collectTitle: 'Apa Yang Kami Kumpul',
         collect:
-          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; rekod bayaran (siapa membayar siapa, jumlah dan sama ada telah disahkan); lejar syiling dan rekod pembelian App Store anda; serta token peranti untuk pemberitahuan tolak. Jika anda membenarkan lokasi, Tapiro membaca lokasi anda hanya semasa anda menggunakannya, untuk menyusun ganjaran dan perjalanan berdekatan mengikut jarak, untuk menunjukkan tempat berdekatan dahulu semasa anda mencari tempat, atau untuk menggunakan tempat anda berada sebagai tempat ganjaran atau perjalanan yang anda siarkan. Lokasi anda hanya dihantar bersama carian itu ke pelayan kami atau Apple Maps, dan kami tidak menyimpannya melainkan anda menyiarkannya sebagai tempat ganjaran atau perjalanan.',
+          'Nama, e-mel (alamat geganti Apple diterima) dan foto yang diberikan oleh Apple atau Google semasa daftar masuk; nama paparan pilihan anda; ganjaran dan perjalanan yang anda siarkan, mesej dan imej sembang, serta ulasan; kaedah terima bayaran yang anda tambah (nombor DuitNow, akaun bank, dan teks yang dibaca daripada kod QR terima, bukan imejnya); tangkapan skrin yang anda lampirkan semasa membayar (dilihat oleh kedua-dua pihak dan moderator); laporan dan sekatan anda; rekod bayaran (siapa membayar siapa, jumlah dan sama ada telah disahkan); lejar syiling dan rekod pembelian App Store anda; serta token peranti untuk pemberitahuan tolak. Jika anda membenarkan lokasi, Tapiro membaca lokasi anda hanya semasa anda menggunakannya, untuk menyusun ganjaran dan perjalanan berdekatan mengikut jarak, untuk menunjukkan tempat berdekatan dahulu semasa anda mencari tempat, atau untuk menggunakan tempat anda berada sebagai tempat ganjaran atau perjalanan yang anda siarkan. Lokasi anda hanya dihantar bersama carian itu ke pelayan kami atau Apple Maps, dan kami tidak menyimpannya melainkan anda menyiarkannya sebagai tempat ganjaran atau perjalanan.',
         aiTitle: 'Tanya Tapir',
         ai: 'Hanya selepas anda bersetuju: apa yang anda taip atau sebut, gambar yang anda pilih, dan mesej yang anda terjemah dihantar melalui pelayan kami ke Alibaba Cloud Model Studio (Singapura); tempat serta tabiat dalam Tapir Ingat dihantar bersama hanya semasa mendraf dan menjawab, bukan semasa menterjemah atau menukar suara kepada teks. Terma Alibaba Cloud menyatakan ia tidak menggunakan data ini untuk melatih atau menambah baik modelnya. Dasar penyimpanan datanya menyatakan permintaan dan jawapan ini disimpan tidak lebih daripada 30 hari secara lalai, dan mungkin disimpan lebih lama jika dikehendaki oleh undang-undang, untuk keselamatan perkhidmatan, atau jika penapis keselamatannya menandakan kandungan itu. Perbualan dan draf kekal dalam telefon anda; pelayan hanya menyimpan rekod persetujuan dan penggunaan, bukan perbualan; Tapir Ingat disegerakkan, dan anda boleh melihat, mengubah serta memadamnya.',
         storeTitle: 'Di Mana Ia Disimpan',
@@ -100,7 +100,7 @@ const ms: Translation = {
           'Data disimpan dengan Supabase di Singapura (ap‑southeast‑1). Sesi daftar masuk anda kekal dalam Keychain telefon anda.',
         deleteTitle: 'Memadam Akaun Anda',
         delete:
-          'Padam akaun anda dalam Saya → Tetapan → Padam Akaun. Dipadam: profil, kaedah bayaran, mesej dan ulasan anda, Tapir Ingat, syiling dan pelekat. Disimpan: sebelah pihak lain dalam setiap sembang (tanpa mesej anda), serta rekod yang dinyahnamakan bagi lejar syiling, pembelian dalam aplikasi, penggunaan Tanya Tapir dan daun dalam Balang anda. Anda tidak boleh memadam semasa ada bayaran belum selesai; Tapiro menunjukkan yang mana satu.',
+          'Padam akaun anda dalam Saya → Tetapan → Padam Akaun. Dipadam: profil, kaedah terima bayaran, mesej dan ulasan anda, Tapir Ingat, syiling dan pelekat. Disimpan: sebelah pihak lain dalam setiap sembang (tanpa mesej anda), serta rekod yang dinyahnamakan bagi lejar syiling, pembelian dalam aplikasi, penggunaan Tanya Tapir dan daun dalam Balang anda. Anda tidak boleh memadam semasa ada bayaran belum langsai; Tapiro menunjukkan yang mana satu.',
       },
     },
     me: {
@@ -122,10 +122,10 @@ const ms: Translation = {
       intro: 'Tindakan ini memadam secara kekal:',
       items: {
         profile: 'Profil anda (nama dan foto)',
-        payee: 'Kaedah anda menerima bayaran',
+        payee: 'Kaedah terima bayaran',
         messages: 'Mesej dan ulasan yang anda tulis',
         memory: 'Perkara yang Tapir ingat tentang anda',
-        coins: 'Syiling Tapir anda',
+        coins: 'Syiling anda',
         stickers: 'Pelekat anda',
       },
       confirm: 'Padam Akaun',
@@ -137,7 +137,7 @@ const ms: Translation = {
       },
       error: {
         blocked:
-          'Anda masih ada bayaran yang belum diselesaikan. Selesaikannya sebelum memadam akaun anda.',
+          'Anda masih ada bayaran yang belum langsai. Langsaikannya sebelum memadam akaun anda.',
         failed: 'Akaun anda tidak dapat dipadam. Cuba lagi.',
         network: 'Tiada sambungan. Cuba lagi apabila dalam talian.',
         signedOut: 'Anda sudah daftar keluar.',
@@ -241,7 +241,7 @@ const ms: Translation = {
         lineUnnamed: '{{title}} · Penerimaan disahkan',
         headline: 'Berjaya! Ini pelekat anda',
         collect: 'Simpan ke buku pelekat',
-        collected: 'Disimpan ke buku pelekat',
+        collected: 'Dalam buku pelekat anda',
         badge: '+1',
         strip: '{{title}} · Selesai',
         a11y: 'Langsai, {{line}}, {{amount}}',
@@ -279,7 +279,7 @@ const ms: Translation = {
           waiting: 'Menunggu pihak lain',
         },
         line: '{{title}} · {{line}}',
-        label: '{{title}}, {{line}}, ganjaran {{reward}}',
+        label: '{{title}}, {{line}}, bayaran {{reward}}',
         details: 'Lihat',
         message: 'Mesej',
       },
@@ -288,7 +288,7 @@ const ms: Translation = {
         morning: 'Selamat pagi, {{name}}',
         afternoon: 'Selamat petang, {{name}}',
         evening: 'Selamat malam, {{name}}',
-        ask: 'Sebut sahaja, Tapir siarkan ganjaran',
+        ask: 'Sebut sahaja, Tapir tolong draf ganjaran',
         askHint: 'Membuka Tanya Tapir',
         chipQuestion: 'Cara murah ke KLIA?',
         chipParcel: 'Ambilkan bungkusan saya',
@@ -311,7 +311,7 @@ const ms: Translation = {
         profileSetup: 'Langkah nama (nama panjang)',
         languageStep: 'Langkah bahasa',
         settings: 'Tetapan (nama panjang)',
-        deleteBlocked: 'Padam akaun (bayaran belum selesai)',
+        deleteBlocked: 'Padam akaun (bayaran belum langsai)',
       },
     },
     ride: {
