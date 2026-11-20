@@ -22,6 +22,8 @@ public final class TapiroKitModule: Module {
 
     View(TitleHaloView.self) {}
 
+    View(ScrollEdgeBarView.self) {}
+
     AsyncFunction("liveActivityStart") { (kind: String, link: String?, state: LiveActivityStateRecord) -> [String: Any] in
       MainActor.assumeIsolated { LiveActivities.start(kind: kind, link: link, state: state) }
     }.runOnQueue(.main)

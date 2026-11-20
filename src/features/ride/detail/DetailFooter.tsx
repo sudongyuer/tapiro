@@ -9,7 +9,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { SymbolView } from 'expo-symbols';
 import { useRef } from 'react';
-import { PlatformColor, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -249,7 +249,6 @@ const styles = StyleSheet.create({
     paddingTop: vars['--space-2'],
     paddingBottom: vars['--space-2'],
     gap: vars['--space-2'],
-    backgroundColor: PlatformColor('systemGroupedBackground'),
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
   flex: { flex: 1, minWidth: 0 },

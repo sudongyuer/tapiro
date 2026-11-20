@@ -5,7 +5,8 @@ the 140-code-point reason reads in full in the 点完成 step, and scrolled to t
 Poster, en route with an ETA tomorrow: 预计 明天 … 到 above the struck old time. Poster, two days late: the late line
 counts hours. A counterpart without a name reads 对方 (in Malay, 「Pihak lain」 starts the sentence upper-case). On home, four live bounty cards with the same data: the front
 card names the title, step and RM 500 for VoiceOver, its title wraps inside the card, an arrival tomorrow carries the
-day, the applicant's 等…选 card names the poster, and fanned out every card stays inside the screen."""
+day, the applicant's 等…选 card names the poster, and fanned out every card stays inside the screen. Scrolled to the
+end, the timeline under the status bar is blurred by the bar's scroll edge effect (audit S1)."""
 import re
 import sys
 
@@ -13,11 +14,12 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from board import screen  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
+from edges import assert_top_edge  # noqa: E402
 from hourcycle import clock  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/bounty/live/', 'src/features/bounty/shared/',
         'src/features/bounty/post/timeText.ts', 'src/features/home/', 'src/ui/SheetFrame.tsx', 'src/ui/LiveCard.tsx',
-        'modules/tapiro-kit/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py']
+        'modules/tapiro-kit/', 'src/app/(tabs)/bounty/', 'verification/ui/bounty.py', 'verification/ui/edges.py']
 SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 420
@@ -84,6 +86,7 @@ payment = by_id(items, 'bounty-status-step-payment')
 assert payment and payment['frame']['y'] + payment['frame']['height'] <= confirm['frame']['y'], \
     f'the pay step ends under 确认完成: {payment and payment["frame"]}, {confirm["frame"]}'
 ui.capture('02-poster-disputed-end')
+assert_top_edge(ui.snap('02b-top-edge'), ui.read(), 'scrolled timeline')
 
 restart('assigned', 'helper')
 started = label('bounty-status-step-started')

@@ -1,24 +1,38 @@
-import re
+from driver import luma
 
-import ocr
-
-STATUS_BAR = 50
-CLOCK = re.compile(r'^\d{1,2}[:.]\d{2}$')
-
-
-# The navigation bar's scroll edge effect fades and blurs content scrolled under the status bar until it cannot be
-# read; without it the rows stay legible there (audit S1: 进度 and profile, whose Form the bar did not find).
-def assert_top_edge(ui, shot, name, read=None):
-    read = read if read is not None else ocr.lines_in(shot, ui.locale)
-    legible = [line for line in read if line['y'] + line['height'] <= STATUS_BAR
-               and not CLOCK.match(line['text'].strip()) and len(line['text'].strip()) >= 3]
-    print(f'{name}: lines read under the status bar {[line["text"] for line in legible]}')
-    assert not legible, f'{name}: content under the status bar stays legible, so no top scroll edge effect: {legible}'
-    return read
+UNDER_BAR = (24, 50)
+CLEAR_OF_STATUS = (105, 280)
+SHARP = 90
 
 
-def assert_scrolled_under(items, identifier, name, below=STATUS_BAR):
-    element = next((i for i in items if i.get('AXUniqueId') == identifier), None)
-    assert element, f'{name}: {identifier} is gone'
-    f = element['frame']
-    assert f['y'] < below < f['y'] + f['height'], f'{name}: {identifier} is not under the status bar ({f})'
+# The navigation bar's scroll edge effect blurs and fades content scrolled under the status bar, so text there has no
+# hard ink edge left; without it (audit S1: the bar never found the Form's scroll view) the rows stay crisp under the
+# clock and back button. Crisp text steps 110–250 luma between neighbouring pixels; under the effect it measured 20–64.
+# The band between the clock and the status icons is read, inside the text that the tree places there.
+def assert_top_edge(shot, items, name):
+    top, bottom = UNDER_BAR
+    left, right = CLEAR_OF_STATUS
+    regions = []
+    for item in items:
+        f = item['frame']
+        if item.get('type') != 'StaticText' or f['y'] >= bottom or f['y'] + f['height'] <= top:
+            continue
+        x0, x1 = max(f['x'], left), min(f['x'] + f['width'], right)
+        y0, y1 = max(f['y'], top), min(f['y'] + f['height'], bottom)
+        if x1 - x0 >= 8 and y1 - y0 >= 4:
+            regions.append((item.get('AXLabel'), x0, x1, y0, y1))
+    assert regions, f'{name}: no text sits under the status bar, so the edge effect cannot be seen'
+    step = 1 / shot.scale
+    sharpest = 0
+    for _, x0, x1, y0, y1 in regions:
+        y = y0
+        while y < y1:
+            x, previous = x0, None
+            while x < x1:
+                value = luma(shot.rgb(x, y))
+                if previous is not None:
+                    sharpest = max(sharpest, abs(value - previous))
+                previous, x = value, x + step
+            y += step
+    print(f'{name}: text under the status bar {[r[0] for r in regions]}, sharpest step {sharpest:.0f}')
+    assert sharpest < SHARP, f'{name}: text under the status bar stays crisp (a step of {sharpest:.0f}): no top edge effect'

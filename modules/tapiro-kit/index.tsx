@@ -339,6 +339,12 @@ export function ContextMenuView({
 
 const NativeTitleHalo = requireNativeView<ViewProps>('TapiroKit', 'TitleHaloView');
 
+const NativeScrollEdgeBar = requireNativeView<ViewProps>('TapiroKit', 'ScrollEdgeBarView');
+
+export function ScrollEdgeBar(props: ViewProps) {
+  return <NativeScrollEdgeBar {...props} />;
+}
+
 const NativeBountyMap = requireNativeView<
   Omit<BountyMapViewProps, 'onPinPress' | 'selectedId' | 'onCameraChange' | 'expandLabel'> & {
     selectedId: string | null;

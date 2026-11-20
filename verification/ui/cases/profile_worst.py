@@ -1,15 +1,16 @@
 """Worst case (246 A, `-uiVerifyProfile worst`): a 45-character name stays on one line inside the screen while VoiceOver
 reads it whole; 帮过的人 87, 完成率 99%, 评价 128 with the real count in 全部 128 条评价 (never 99+); a review with all four
 not-good chips and a 70-character sentence wraps inside the row; the 小貘 row reads Lv.85 大貘 · 1234 张贴纸. Runs in ms for
-the longest chips."""
+the longest chips. Scrolled, the numbers under the status bar are blurred by the bar's scroll edge effect (audit S1)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
+from edges import assert_top_edge  # noqa: E402
 from gestures import drag  # noqa: E402
 from profile import assert_tier_whole, label, open_profile, review_id, within_width  # noqa: E402
 
-DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/textwidth.swift']
+DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'verification/ui/textwidth.swift', 'verification/ui/edges.py', 'modules/tapiro-kit/ios/NavigationScrollEdge.swift']
 SCENE = 'profile'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
@@ -50,4 +51,5 @@ assert mascot == f"{ui.t('reputation.level.label', level=85, name=ui.t('reputati
 within_width(items, 'profile-mascot')
 ui.at_rest()
 ui.capture('02-bottom')
+assert_top_edge(ui.snap('02b-top-edge'), ui.read(), 'scrolled profile')
 print('PASS: the worst profile keeps the long name on one line, real counts and wrapped chips')

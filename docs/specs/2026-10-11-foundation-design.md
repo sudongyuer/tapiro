@@ -1025,3 +1025,37 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
   signature check first. Audience is proven on the device run.
 - The hosted Supabase project is not touched; its Apple and Google providers are configured by the owner.
 - The Apple identity token's email may be a private relay address; accepted per Behaviour → Accounts.
+
+## Implementation Record (2026-11-21) — UI audit batch D: layout
+
+Fixes the layout findings O2, H2, L1, P5, P6, S1, S3 and H3 of `docs/reviews/2026-11-21-ui-walkthrough.md`.
+
+### Decisions (owner delegated; listed for veto)
+
+| #   | Decision                                                                                                                                                                                                                        | Reason                                                                                                                                                                                                                                                                |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1  | Bounty and ride wear one native chip row (`ChipRow` in the kit): equal columns when the widest label fits a column; otherwise each chip takes its own width, the rest of the line is shared out, and a line that runs out wraps | A choice is never truncated, and zh keeps the equal three columns it has today. Scrolling chips would hide a choice; a shorter ms copy would only move the problem to the next long string                                                                            |
+| P6  | Every chip on a line takes the line's tallest height; labels may take two lines only when one chip is wider than the whole row                                                                                                  | 「明天中午前」 wrapped beside one-line neighbours; the row decides the height, not the label                                                                                                                                                                          |
+| P5  | A system keyboard toolbar 「完成」 on the post form, the ride form, the ride detail sheets and the bank sheet (kit modifier `keyboardDone`), once per Form                                                                      | Number and decimal pads have no Return key. SwiftUI merges keyboard toolbar items from the whole view, so one per field would show several 完成 keys; every field in those Forms gets the same key                                                                    |
+| H2  | When the board title does not fit beside the list/map switch, the title takes the row and the switch wraps below it, trailing                                                                                                   | The selected sticker is tilted and lifted by design and overhangs its box; a wrap keeps the stickers' size and position on the right in every locale. Shortening the ms title is a copy choice for batch C                                                            |
+| O2  | The language step's heading moves out of the Form into React Native above it; the Form holds only the picker                                                                                                                    | Hosted in a Form row through `RNHostView`, the en question lost the stem of its second line's first glyph; the name step's heading, plain React Native, never did. Measured: `onboarding_language_moment` en read 「orefer?」 before and the whole question after     |
+| S1  | Form- and List-based screens name their scroll view to the screen's controller through the kit (`navigationScrollEdge()` modifier; automatic inside `PinnedBar`)                                                                | See root cause below. Fixed at the one place UIKit reads, not with overlays                                                                                                                                                                                           |
+| S3  | The ride detail footer floats over the bottom of the timeline as a `ScrollEdgeBar` (kit), with the system hard bottom scroll edge effect (cutoff and dividing line); the footer lost its own opaque fill                        | A text-only status line on the same grey as the page read as one more timeline line. `UIScrollEdgeElementContainerInteraction` is the iOS 26 way to mark views over a scroll edge; the hard style is Apple's choice for bars with text                                |
+| H3  | The bottom accessory shows on tab roots only; every pushed page hides it (进度, 挑人, pay, ride detail and settle, settings and the rest)                                                                                       | Pushed item pages carry their own pay, confirm or hold button; a strip for another item there showed two money prompts, and on 挑人 a mis-tap 60 pt under the hold button left the screen. One rule instead of a per-page list that every new page would have to join |
+
+### S1 root cause
+
+react-native-screens applies `scrollEdgeEffects` to the scroll view it finds by walking the screen view's
+**first-subview chain** (`RNSScrollViewFinder findScrollViewInFirstDescendantChainFrom:`, called from
+`updateContentScrollViewEdgeEffectsIfExists`), and UIKit's navigation bar looks for its content scroll view the same way
+unless a controller names one with `setContentScrollView(_:for:)`. An `@expo/ui` `Host` hosts its SwiftUI content in a
+`UIHostingController` added as a child of the screen's controller (`SwiftUIHostingView.didMoveToWindow`), and the Form's
+collection view sits deep inside that hosting view, behind sibling views (the `PinnedBar` bars, menus, the RN views
+before the `Host`). Neither lookup finds it, so the bar draws no top edge effect over it. RN `ScrollView` screens are the
+first descendant and work. The kit's `NavigationScrollEdgeModifier` puts a zero-size anchor behind the Form, finds the
+nearest enclosing scroll view inside the same hosting view, walks up to the controller whose parent is the
+`UINavigationController`, and calls `setContentScrollView(_, for: .top)` on it.
+
+### Verification
+
+Filled in below after the runs.
