@@ -35,6 +35,7 @@ export type FixtureSelectOptions = {
   fail: ApplicantsFailure;
   select: SelectMode;
   posted?: PostedState;
+  own?: string;
   now: () => Date;
   writeDelayMs?: number;
   isBlocked?: (applicantId: string) => boolean;
@@ -58,6 +59,7 @@ export function fixtureSelectOptions(
     fail: pick(APPLICANTS_FAILURES, argument('uiVerifyApplicantsFail'), 'none'),
     select: pick(SELECT_MODES, argument('uiVerifySelect'), 'ok'),
     posted: pick(POSTED_STATES, argument('uiVerifyPosted'), 'open'),
+    own: argument('uiVerifyOwnBounty'),
     now,
   };
 }
@@ -262,7 +264,8 @@ export function createFixtureSelectService(options: FixtureSelectOptions) {
   return {
     service,
     posterView(bountyId: string): PosterView | null {
-      const state = posted.get(bountyId);
+      const state =
+        posted.get(bountyId) ?? (options.own === bountyId ? bounty(bountyId) : undefined);
       if (!state) return null;
       if (!state.helper) return { helper: null, status: 'open' };
       return {

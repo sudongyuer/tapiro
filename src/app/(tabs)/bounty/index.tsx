@@ -13,7 +13,6 @@ import { useProfile, useSignedInUser, type AccountUser } from '@/features/accoun
 import {
   BountyBoard,
   boardLink,
-  closePostSheet,
   hasPostDraft,
   reloadLiveBounties,
   useBountyBoard,
@@ -75,7 +74,7 @@ function BountyHome({ user }: { user: AccountUser }) {
   const actor = composeStageActor(growthActor, feedActor);
   const chat = useItemChat(
     useCallback(
-      (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
+      (thread: string) => router.push({ pathname: '/chat/[thread]', params: { thread } }),
       [router],
     ),
   );
@@ -84,10 +83,7 @@ function BountyHome({ user }: { user: AccountUser }) {
       hasPostDraft(user.id)
         ? router.navigate('/bounty-post/form', { withAnchor: true })
         : router.navigate('/bounty-post'),
-    pay: (paymentId) => {
-      closePostSheet();
-      router.push({ pathname: '/pay/[id]', params: { id: paymentId } });
-    },
+    pay: (paymentId) => router.push({ pathname: '/pay/[id]', params: { id: paymentId } }),
   });
   const { scrollViewProps, onLiveCardsLayout } = useHomeScroll(() => stack.setOpen(true));
   const insets = useSafeAreaInsets();

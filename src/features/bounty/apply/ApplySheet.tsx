@@ -15,6 +15,7 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { useOnReturn } from '@/lib/useOnReturn';
 import { afterResign } from '@/ui/afterResign';
 import { InlineState } from '@/ui/InlineState';
 import { NoticeCard } from '@/ui/NoticeCard';
@@ -39,10 +40,11 @@ type Props = {
 
 export function ApplySheet({ id, surface, onClose: leave, onAddPayee: addPayee }: Props) {
   const onClose = useMemo(() => afterResign(leave), [leave]);
-  const onAddPayee = afterResign(addPayee);
   const { t } = useI18n();
   const { color } = useTheme();
-  const { state, send } = useApply(id, surface, onClose);
+  const { state, send, recheck } = useApply(id, surface, onClose);
+  const away = useOnReturn(() => void recheck());
+  const onAddPayee = afterResign(away(addPayee));
   const name = posterName(id) ?? t('bounty.post.unknownName');
   const sending = state.kind === 'form' && state.sending;
   const [typed, setTyped] = useState(() => noteDrafts.get(id));

@@ -28,12 +28,15 @@ one name per thing in every locale, `docs/design-language.md` 「Terminology」)
 
 ## In progress
 
-- UI audit fixes (`docs/reviews/2026-11-21-ui-walkthrough.md`), four batches in parallel. Batch B is in this PR: the
+- UI audit fixes (`docs/reviews/2026-11-21-ui-walkthrough.md`), four batches in parallel. Batch B (merged, #210): the
   payee page no longer says 「还没有收款方式」 with cash on (root cause: the empty state ignored cash), the payee list
   refetches on focus and marks a failed refresh stale, the pay sheet's no-method card offers 发消息提醒 with a prefilled
   draft, a missing payment says 这笔付款已不存在, cash has one control and one name, the rate source is named Bank Negara
   Malaysia everywhere, and the onboarding name step waits for the profile (O1). Decisions B1–B7 for veto in the
-  foundation spec's record of 2026-11-21. Batches A (navigation), C (copy) and D (layout) are separate PRs.
+  foundation spec's record of 2026-11-21. Batch A (keep the user's context: N1, N5, P3, R1, R3, A1, D1 and the
+  apply-sheet payee jump, #211): a flow never switches tabs; screens of another tab push over the tabs on the root
+  stack, flows inside a sheet present the next sheet over it (decisions A1–A9 for veto in the same spec). Batches C
+  (copy) and D (layout) are separate PRs.
 
 - First TestFlight device test (owner, build 20261120.1739): after 发出去 home now shows the poster's 「等人申请」 card
   at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open

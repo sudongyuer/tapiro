@@ -35,7 +35,7 @@ export const canSend = (state: ApplyState, note: string) => canStart(state) && n
 export function applyReducer(state: ApplyState, event: ApplyEvent): ApplyState {
   switch (event.type) {
     case 'checked':
-      if (state.kind !== 'checking') return state;
+      if (state.kind !== 'checking' && state.kind !== 'noPayee') return state;
       return event.hasPayee ? { kind: 'form', sending: false, reason: null } : { kind: 'noPayee' };
     case 'sendStarted':
       return canStart(state) ? { kind: 'form', sending: true, reason: null } : state;

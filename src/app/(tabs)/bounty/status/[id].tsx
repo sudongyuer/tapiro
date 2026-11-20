@@ -7,11 +7,14 @@ import { ReviewEntriesSection, reviewStore } from '@/features/reputation';
 
 export default function BountyStatusRoute() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const chat = useItemChat(
     useCallback(
-      (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
-      [router],
+      (thread: string) =>
+        from === 'thread'
+          ? router.back()
+          : router.push({ pathname: '/chat/[thread]', params: { thread, from: 'item' } }),
+      [router, from],
     ),
   );
   if (!id) return null;

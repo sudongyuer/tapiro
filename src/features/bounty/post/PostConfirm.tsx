@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { handArtFor } from '@/lib/handArt';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
+import { useOnReturn } from '@/lib/useOnReturn';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
@@ -55,6 +56,7 @@ export function PostConfirm({ userId, onPublished, onPay, onBack, buyCoins }: Co
     },
   });
   const { busy, rejected } = flow.state;
+  const away = useOnReturn(flow.retry);
 
   useEffect(() => {
     navigation.getParent()?.setOptions({ gestureEnabled: !busy });
@@ -96,7 +98,7 @@ export function PostConfirm({ userId, onPublished, onPay, onBack, buyCoins }: Co
     <>
       <Stack.Screen options={{ headerBackVisible: !busy, gestureEnabled: !busy }} />
       <SheetFrame notice={notice} testID="bounty-post-confirm">
-        <Actions state={flow.state} onPublish={flow.publish} onPay={onPay} />
+        <Actions state={flow.state} onPublish={flow.publish} onPay={away(onPay)} />
         <Preview draft={draft} />
         <CostSection state={flow.state.status} onRetry={flow.retry} buyCoins={buyCoins} />
       </SheetFrame>

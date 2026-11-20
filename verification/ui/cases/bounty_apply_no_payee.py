@@ -1,4 +1,4 @@
-"""Apply without a payee method (36A): with no payee methods the apply sheet shows an inline card (小貘's head, 先加一个收款方式 and the body naming 小林) and 添加收款方式 as the accent pill pinned at the bottom, at least 44 pt, no note field and no 发送; 添加收款方式 closes the sheet and opens 收款方式 pushed in the 我的 stack (back button 我的)."""
+"""Apply without a payee method (36A): with no payee methods the apply sheet shows an inline card (小貘's head, 先加一个收款方式 and the body naming 小林) and 添加收款方式 as the accent pill pinned at the bottom, at least 44 pt, no note field and no 发送; 添加收款方式 opens 收款方式 as a sheet over the apply sheet, and closing it lands back on the apply sheet (owner-reported bug, audit R1)."""
 import re
 import sys
 
@@ -8,7 +8,7 @@ from board import screen  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 from ocr import find, lines_in  # noqa: E402
 
-DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/(tabs)/', 'verification/ui/board.py',
+DEPS = ['src/features/bounty/', 'src/app/bounty-apply/', 'src/app/payee/', 'src/app/(tabs)/', 'verification/ui/board.py',
         'verification/ui/apply.py', 'src/features/place/', 'src/features/block/', 'src/ui/InlineState.tsx',
         'src/ui/PillButton.tsx', 'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/', 'verification/ui/ocr.py']
 LOCALES = ['zh-Hans', 'ms']
@@ -51,10 +51,15 @@ kept = shot.count(add, lambda rgb: close(rgb, accent, 12)) / (add['width'] * add
 assert kept >= FILL_SHARE, f'添加收款方式 is not the accent pill ({kept:.2f} of its frame is the accent)'
 
 ui.tap('bounty-apply-add-payee')
-ui.gone('bounty-apply')
 ui.element('payee-screen')
 title_shown(ui, 'payee.title')
-back = by_id(ui.read(), 'BackButton')
-assert back and back.get('AXLabel') == ui.t('shell.tabs.me'), f'收款方式 is not pushed in 我的: {back}'
+assert by_id(ui.read(), 'BackButton') is None, '收款方式 was pushed in a tab instead of opening over the apply sheet'
 ui.at_rest()
-ui.capture('02-payee')
+ui.capture('02-payee-over-apply')
+closes = [i for i in ui.read() if i.get('type') == 'Button' and i.get('AXLabel') == ui.t('payee.close')]
+assert closes, 'the payee sheet has no close button'
+top = max(closes, key=lambda i: i['frame']['y'])['frame']
+ui.tap_point(top['x'] + top['width'] / 2, top['y'] + top['height'] / 2)
+ui.gone('payee-screen')
+ui.element('bounty-apply-add-payee')
+ui.capture('03-back-on-apply')

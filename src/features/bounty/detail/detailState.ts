@@ -3,9 +3,18 @@ import type { Money, MoneyReference } from '@/lib/money';
 
 import type { BoardRow, BountyDetail, Person } from '../board/types';
 import { partyOutcome, showsProgress } from '../shared/partyOutcome';
+import { ownState, type OwnState } from './ownState';
 
 export type DetailAction =
-  'apply' | 'applied' | 'closed' | 'taken' | 'selected' | 'cancelled' | 'notSelected' | 'none';
+  | 'apply'
+  | 'applied'
+  | 'closed'
+  | 'taken'
+  | 'selected'
+  | 'cancelled'
+  | 'notSelected'
+  | 'own'
+  | 'none';
 
 export type DetailView = {
   id: string;
@@ -24,6 +33,7 @@ export type DetailView = {
   note: string | null;
   address: string | null;
   progress: boolean;
+  own: OwnState | null;
 };
 
 export const hasOutcome = (detail: BountyDetail) =>
@@ -35,7 +45,7 @@ export function detailAction(detail: BountyDetail, now: Date): DetailAction {
   const outcome = partyOutcome(detail.status);
   if (detail.viewerRole === 'helper') return outcome ?? 'none';
   if (detail.myApplication?.status === 'not_selected') return 'notSelected';
-  if (detail.viewerRole === 'poster') return outcome === 'cancelled' ? 'cancelled' : 'none';
+  if (detail.viewerRole === 'poster') return outcome === 'cancelled' ? 'cancelled' : 'own';
   if (outcome === 'selected') return 'taken';
   if (detail.myApplication?.status === 'pending') {
     return detail.status === 'open' ? 'applied' : 'closed';
@@ -64,6 +74,7 @@ export function viewOfRow(row: BoardRow): DetailView {
     note: null,
     address: null,
     progress: false,
+    own: null,
   };
 }
 
@@ -89,6 +100,7 @@ export function viewOfDetail(detail: BountyDetail, now: Date): DetailView {
         : null,
     address: action === 'selected' ? detail.address : null,
     progress: showsProgress(detail.viewerRole, detail.status),
+    own: ownState(detail, now),
   };
 }
 

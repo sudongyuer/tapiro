@@ -5,7 +5,7 @@ import { ProfileScreen } from './ProfileScreen';
 import { ReplySheet } from './ReplySheet';
 import { ReviewListScreen } from './ReviewListScreen';
 
-export type ProfileTab = 'bounty' | 'messages' | 'ride' | 'me';
+export type ProfileTab = 'bounty' | 'messages' | 'ride' | 'me' | 'overTabs';
 
 const PATHS = {
   bounty: {
@@ -31,6 +31,12 @@ const PATHS = {
     reviews: '/me/profile/reviews/[id]',
     report: '/me/profile/report',
     reply: '/me/profile/reply',
+  },
+  overTabs: {
+    profile: '/person/[id]',
+    reviews: '/person/reviews/[id]',
+    report: '/person/report',
+    reply: '/person/reply',
   },
 } as const;
 
@@ -61,9 +67,7 @@ export function ProfileRoute({ tab }: { tab: ProfileTab }) {
       onReport={() => router.push({ pathname: PATHS[tab].report, params: { person: id } })}
       onReply={reply}
       onReportReview={reportReview}
-      onOpenStickers={() =>
-        tab === 'me' ? router.push('/me/stickers') : router.navigate('/me/stickers')
-      }
+      onOpenStickers={() => router.push(tab === 'me' ? '/me/stickers' : '/sticker-book')}
       onBack={() => router.back()}
     />
   );

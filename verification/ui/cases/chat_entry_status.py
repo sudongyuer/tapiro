@@ -1,7 +1,7 @@
 """发消息 on the bounty status screen (126 A). An assigned bounty's poster, with no pinned action of their own, sees one
 grey 发消息 at the bottom; with the thread lookup failing once, a tap shows 对话没打开 and nothing opens, and the next tap
-opens the bounty's thread in 消息 (the tab switches, the tab bar hides, the safety card and 阿杰's messages show) with the
-消息 list under it. A done bounty puts 发消息 beside 确认完成 on one row, 发消息 on the left and narrower, 有问题 below. The
+opens the bounty's thread over the status screen without switching tabs (the tab bar is covered, the safety card and
+阿杰's messages show); its item card and 返回 both lead back to the same status screen in 悬赏 (audit N1). A done bounty puts 发消息 beside 确认完成 on one row, 发消息 on the left and narrower, 有问题 below. The
 grey buttons are opaque, also dimmed while 确认完成 is sending: the 精确地址 card scrolled under the bar does not show
 beside their labels in the run's appearance (light per PR, dark at milestones); where longer copy leaves the card below a
 button (en: the auto-confirm line wraps to three lines), the case drags the screen up until it sits behind it. An
@@ -15,7 +15,7 @@ from driver import UI, Shot, assert_touch_target, by_id  # noqa: E402
 from gestures import drag  # noqa: E402
 
 DEPS = ['src/features/bounty/status/', 'src/features/chat/', 'src/app/(tabs)/bounty/status/', 'src/ui/PillButton.tsx',
-        'src/ui/SheetFrame.tsx', 'modules/tapiro-kit/ios/PinnedBarView.swift', 'src/app/(tabs)/messages/',
+        'src/ui/SheetFrame.tsx', 'src/app/chat/','modules/tapiro-kit/ios/PinnedBarView.swift', 'src/app/(tabs)/messages/',
         'verification/ui/chat.py', 'verification/ui/bounty.py']
 SCENE = 'bounty-status'
 LOCALES = ['zh-Hans', 'ms']
@@ -77,10 +77,18 @@ assert [call['itemId'] for call in found] == ['fixture-bounty-01'] * 2, found
 ui.at_rest()
 ui.capture('03-thread')
 
+ui.tap('chat-item-card')
+ui.gone('chat-safety', timeout=30)
+ui.element('bounty-status-message')
+assert by_id(ui.read(), 'chat-list') is None, 'the item card switched to 消息'
+ui.tap('bounty-status-message')
+ui.element('chat-safety', timeout=45)
 ui.tap('BackButton')
-ui.element('chat-list', timeout=30)
-ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
-ui.capture('04-list-under')
+ui.gone('chat-safety', timeout=30)
+ui.element('bounty-status-message')
+ui.wait(lambda items: str((by_id(items, 'tab-bounty') or {}).get('AXValue')) == '1', '悬赏 is not selected')
+assert by_id(ui.read(), 'chat-list') is None, '返回 from the thread landed in 消息'
+ui.capture('04-back-on-status')
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyBountyStatus', 'done', '-uiVerifyScene', SCENE,
                               '-uiVerifyBountyStatusDelayMs', '8000'], ready='bounty-status-message')
@@ -109,4 +117,4 @@ ui.at_rest()
 assert by_id(ui.read(), 'bounty-status-message') is None, 'an open bounty offers 发消息 before anyone is chosen'
 ui.capture('06-open-no-entry')
 print('PASS: 发消息 alone and beside 确认完成, grey buttons opaque over the address, failed lookup kept the screen, '
-      'thread opens in 消息 over the list, none before selection')
+      'thread opens over the status and returns to it, none before selection')

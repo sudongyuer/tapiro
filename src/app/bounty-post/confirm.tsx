@@ -12,10 +12,7 @@ export default function BountyPostConfirmRoute() {
     <PostConfirm
       userId={user.id}
       onPublished={closePostSheet}
-      onPay={(paymentId) => {
-        closePostSheet();
-        router.push({ pathname: '/pay/[id]', params: { id: paymentId } });
-      }}
+      onPay={(paymentId) => router.push({ pathname: '/pay/[id]', params: { id: paymentId } })}
       onBack={() => router.back()}
       buyCoins={(onCredited) => <CoinPacks testID="bounty-post-packs" onCredited={onCredited} />}
     />

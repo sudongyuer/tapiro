@@ -1,15 +1,15 @@
 """Thread screen on the demo bounty thread (118 A, 119 A): opening a row hides the tab bar; the item card pinned under
 the navigation bar reads 帮取快递 · 已选好人 with 看详情; the fixed safety card with the 32 pt 小貘 head is the first item,
 above every bubble, and has no close control; the transcript opens at the newest message just above the composer.
-Tapping the card opens the bounty's status screen in 悬赏 (a cross-tab push, as notification taps do) and the tab bar
-is back."""
+Tapping the card opens the bounty's status screen over the thread without leaving 消息 (audit N1), and 返回 lands back
+on the thread."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from chat import bubbles, open_thread, tab_bar_hidden, within_screen  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
 
-DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'src/app/(tabs)/_layout.tsx', 'verification/ui/chat.py']
+DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'src/app/bounty-status/','src/app/(tabs)/_layout.tsx', 'verification/ui/chat.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1']
 
@@ -46,8 +46,11 @@ except AssertionError:
     # Plain `axe tap` is dropped for stretches on iOS 27.2 (spike method notes); a touch down/up is not.
     ui.press('chat-item-card', 0.12)
 ui.wait(opened, '看详情 did not open the bounty status screen', 45)
-ui.wait(lambda items: str((by_id(items, 'tab-bounty') or {}).get('AXValue')) == '1', '悬赏 is not selected')
 ui.at_rest()
-assert not tab_bar_hidden(ui.read()), 'the tab bar did not come back outside the thread'
+assert tab_bar_hidden(ui.read()), 'the status screen opened from a thread shows the tab bar: it switched tabs'
 ui.capture('02-detail')
-print('PASS: tab bar hidden, item card with 看详情, safety card first, newest above the composer, card opens the status')
+ui.tap('BackButton')
+ui.element('chat-safety', timeout=30)
+ui.gone('bounty-status')
+print('PASS: tab bar hidden, item card with 看详情, safety card first, newest above the composer, card opens the status '
+      'over the thread and 返回 comes back to it')

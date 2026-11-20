@@ -1,6 +1,6 @@
 """群聊 on the ride detail (126 A, carried to rides). An accepted member sees a 群聊 button in the navigation bar beside
-⋯; it opens the ride's group thread in 消息 (the tab switches, the item card reads the route with its status, the safety
-card shows) with the 消息 list under it. A non-member viewer of the same ride has no 群聊."""
+⋯; it opens the ride's group thread over the ride without switching tabs (the item card reads the route with its status,
+the safety card shows), and 返回 lands back on the ride in 拼车 (audit N1). A non-member viewer of the same ride has no 群聊."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -9,7 +9,7 @@ from chat import tab_bar_hidden, tap_button  # noqa: E402
 from driver import UI, by_id  # noqa: E402
 
 DEPS = ['src/features/ride/detail/', 'src/features/chat/', 'src/app/(tabs)/ride/', 'src/app/(tabs)/messages/',
-        'verification/ui/chat.py', 'verification/ui/bounty.py']
+        'src/app/chat/', 'verification/ui/chat.py', 'verification/ui/bounty.py']
 SCENE = 'ride-detail'
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 240
@@ -36,11 +36,13 @@ ui.at_rest()
 ui.capture('02-group')
 
 ui.tap('BackButton')
-ui.element('chat-list', timeout=30)
-ui.wait(lambda items: str((by_id(items, 'tab-messages') or {}).get('AXValue')) == '1', '消息 is not selected')
+ui.gone('chat-safety')
+ui.element('ride-detail-ticket')
+assert by_id(ui.read(), 'chat-list') is None, '返回 from the group landed in 消息'
+ui.wait(lambda items: str((by_id(items, 'tab-ride') or {}).get('AXValue')) == '1', '拼车 is not selected')
 
 relaunch(ui, drop=FIRST, add=['-uiVerifyRideDetail', 'viewer', '-uiVerifyScene', SCENE], ready='ride-detail-ticket')
 ui.at_rest()
 assert not any(i.get('AXLabel') == label for i in ui.read()), 'a non-member viewer has 群聊'
 ui.capture('03-viewer')
-print('PASS: 群聊 in the bar for a member opens the group in 消息 over the list; a viewer has none')
+print('PASS: 群聊 in the bar for a member opens the group over the ride and returns to it; a viewer has none')
