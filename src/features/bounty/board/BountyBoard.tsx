@@ -161,7 +161,7 @@ function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: Bount
               {row.id === firstUnlocated ? <UnlocatedHeader /> : null}
               <BoardCard
                 row={row}
-                now={state.loadedAt}
+                now={new Date(state.loadedAt).setHours(0, 0, 0, 0)}
                 onOpen={onOpen}
                 onApply={onApply}
                 cardRef={focus.cardRef(row.id)}

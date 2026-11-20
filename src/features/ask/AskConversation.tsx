@@ -9,7 +9,7 @@ import type { CurrencyCode } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { PressDim } from '@/ui/PressDim';
-import { FADE_IN, FADE_OUT } from '@/ui/theme/motion';
+import { FADE_IN } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
 import { useSheetFill } from '@/ui/theme/useSheetFill';
 
@@ -103,7 +103,7 @@ export function AskConversation({
           ),
         )}
         {state.sending ? (
-          <Animated.View exiting={FADE_OUT} style={styles.thinking} testID="ask-thinking">
+          <Animated.View style={styles.thinking} testID="ask-thinking">
             <ActivityIndicator />
             <AppText variant="secondary" tone="secondaryLabel">
               {t('ask.sheet.thinking')}

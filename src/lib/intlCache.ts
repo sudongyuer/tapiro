@@ -1,9 +1,9 @@
 const numberFormats = new Map<string, Intl.NumberFormat>();
 const dateFormats = new Map<string, Intl.DateTimeFormat>();
 
-// A formatter fixes the default time zone when it is built; tests switch zones through process.env.TZ, so the
-// key carries it to avoid reusing a formatter from another zone.
-const defaultZone = () => globalThis.process?.env?.TZ ?? '';
+// A formatter fixes the default time zone when it is built. Tests switch zones through process.env.TZ and the device
+// can change zone while the app runs (Hermes leaves TZ empty), so the key carries both the variable and the offset.
+const defaultZone = () => `${globalThis.process?.env?.TZ ?? ''}${new Date().getTimezoneOffset()}`;
 
 export function numberFormat(locale: string, options?: Intl.NumberFormatOptions) {
   const key = `${locale}|${JSON.stringify(options ?? {})}`;

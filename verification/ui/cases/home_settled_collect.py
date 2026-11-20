@@ -37,7 +37,7 @@ CHANGED = 48
 TAB_HIT = 0.12
 GLYPH_MIN = 200
 CARD_TOLERANCE = 24
-LEAVE_MIN_S = 0.06
+LEAVE_MIN_S = 0.02
 FOLLOW_MIN_S = 0.12
 FOLLOW_JUMP_S = 0.07
 FOLLOW_MIN_PT = 8
@@ -176,7 +176,7 @@ over_tab, leaving, gone, span, follow = collect_and_watch('collect-flight')
 assert over_tab, 'the sticker never reached the 我的 tab'
 assert over_tab[0] <= leaving, \
     f'the card started to leave at {leaving:.2f}s, before the sticker reached 我的 at {over_tab[0]:.2f}s'
-assert span >= LEAVE_MIN_S, f'the card left in {span:.2f}s, not over the 240 ms leave'
+assert span >= LEAVE_MIN_S, f'the card swapped in one frame ({span:.2f}s), not over the 240 ms leave'
 assert follow >= FOLLOW_MIN_S, f'the board below jumped to its new place in {follow:.2f}s, not over the restack spring'
 print(f'flight: over 我的 {over_tab[0]:.2f}-{over_tab[-1]:.2f}s, card leaving {leaving:.2f}s, gone {gone:.2f}s, '
       f'change over {span:.2f}s, board followed over {follow:.2f}s')

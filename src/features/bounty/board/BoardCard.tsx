@@ -29,7 +29,7 @@ export const BoardCard = memo(function BoardCard({
   ring,
 }: {
   row: BoardRow;
-  now: string;
+  now: number;
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
   cardRef?: Ref<ViewInstance>;
