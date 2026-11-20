@@ -120,7 +120,8 @@ select pg_temp.assigned(4);
 select pg_temp.act_as(pg_temp.u('a1'));
 select public.cancel_bounty(pg_temp.b(4));
 select is(
-  pg_temp.held('b2', 'bounty.cancelled', pg_temp.b(4)), 'held', 'a cancel before setting off waits for 08:00'
+  pg_temp.held('b2', 'bounty.cancelled', pg_temp.b(4)), 'sent',
+  'a cancel before setting off reaches the chosen helper at once, since they may be about to leave'
 );
 
 select pg_temp.act_as(pg_temp.u('b2'));

@@ -5,7 +5,7 @@ owner decision, a new queue item). Decisions and their reasons live in the specs
 points to them.
 
 Updated: 2026-11-21 (China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
-PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes).
+PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; time-critical pushes skip quiet hours).
 
 ## Built and merged
 
@@ -40,6 +40,9 @@ PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes).
   pending applicants. The milestone run passed on 2026-11-06 (`docs/retros/2026-11-06-live-milestone.md`). Step 3's
   delivery is built as direct APNs (2026-11-20, `docs/specs/2026-11-20-apns-direct-design.md`, D1–D9 for veto); it
   waits on the owner's `APNS_PRIVATE_KEY` and a device run (「Release builds」). The spec stays `approved` until then.
+  Owner Q38 A (2026-11-21): time-critical pushes (payment to confirm or not received, chosen as helper, a bounty
+  cancelled for its pair, a seat approved or declined, a ride cancelled or moved, a request for a ride leaving before
+  10:00) skip quiet hours; the rest still wait for 08:00 Malaysia time (spec decisions table, `push_is_urgent`).
 
 ## Queue
 
