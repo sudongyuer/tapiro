@@ -4,8 +4,8 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-21 (explicit service-role grants for the Edge Functions on the hosted project; local stacks start
-with the hosted default privileges).
+Updated: 2026-11-21 (local and CI stacks on PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force
+pushes).
 
 ## Built and merged
 
@@ -444,7 +444,9 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   (pushed 2026-11-21; `fx-rate`, `payment-proof-cleanup` and `notify` answered 200 and a fresh rate was stored).
   Local and CI stacks now start with the same defaults (`api.auto_expose_new_tables = false`), pgTAP
   `edge_function_grants.test.sql` lists each function's grants, and stack-test fixtures write as `postgres` through
-  `scripts/local-db.ts`. Local hosts PostgreSQL 15 while hosted runs 17 (`db.major_version`), still unaligned.
+  `scripts/local-db.ts`. Local and CI stacks run PostgreSQL 17 like the hosted project (`db.major_version = 17`,
+  2026-11-21); a shared local stack started on 15 must be recreated (`supabase stop --no-backup`, then `db:start` and
+  `db:test-accounts`), which drops its local data.
 - `bun run testflight` (`scripts/testflight.sh`): fresh prebuild, Release archive, checks (hosted URL in the bundle and
   no local one, build number, push and Sign in with Apple entitlements), export with `destination=upload`. Build number
   is the UTC time `YYYYMMDD.HHMM`; the version is `app.json`'s. It never reads `.env` files (`EXPO_NO_DOTENV=1`): the
