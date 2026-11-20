@@ -432,8 +432,9 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   Sign in with Apple) and `app.tapiro.LiveActivity`; App Store Connect app 「Tapiro」, Apple ID `6837172850`; App Store
   Connect API key `5TGB2NXCG5` (Admin), issuer `aaabce4e-636b-4c19-bed9-d6840d0a2465`, file
   `~/.appstoreconnect/private_keys/AuthKey_5TGB2NXCG5.p8` (never in the repo); hosted Supabase `wkpgoildusumtejzhtkv`
-  (ap-southeast-1). Registered device: 「Owner iPhone 13 Pro Max」 (2026-11-20; automatic signing needs one device
-  before the first archive).
+  (ap-southeast-1). Registered devices (automatic signing needs one before the first archive): 「Owner iPhone 13 Pro
+  Max」 `00008110-0004455614F8801E` (2026-11-20, iOS 18.7.8, below the deployment target) and 「Owner iPhone 14 Pro」
+  `00008120-001248DA1A0BC01E` (2026-11-21, iOS 26.3.1; `bun run device-install 00008120-001248DA1A0BC01E`).
 - Scheduled Edge Functions (`fx-rate`, `payment-proof-cleanup`, `notify`) authenticate pg_cron with a dedicated cron
   secret (Vault `cron_secret` = function secret `CRON_SECRET`, header `x-cron-secret`), not the service role key; a
   missing Vault secret fails the job in `cron.job_run_details` (`supabase/README.md`, 「Scheduled functions」). Set on
@@ -479,8 +480,7 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   `supabase secrets set --project-ref wkpgoildusumtejzhtkv APNS_PRIVATE_KEY="$(cat ~/.appstoreconnect/private_keys/AuthKey_88Y29CGN9U.p8)"`.
   The hosted poke and drain already reach `notify` with the cron secret. The device
   check is in the spec's Verification; builds before this change register nothing, so install a new one first.
-- Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
-  14 Pro (its UDID, or connect it and approve); the Paid Apps agreement,
+- Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 if it should run Tapiro too; the Paid Apps agreement,
   tax and banking in App Store Connect (in-app purchase); `MODEL_STUDIO_API_KEY` on the hosted Supabase project; adding TestFlight testers.
 
 ## Website
