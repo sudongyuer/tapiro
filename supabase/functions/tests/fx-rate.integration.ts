@@ -9,7 +9,7 @@ const url = localSupabase('API_URL');
 const localEnv = readFileSync(new URL('../local.env', import.meta.url), 'utf8');
 const cronSecret = localEnv.match(/^CRON_SECRET=(.+)$/m)?.[1];
 const mockPort = Number(new URL(localEnv.match(/^FX_TEST_RATES_URL=(.+)$/m)![1]).port);
-const RATE_DATE = '2099-01-02';
+const RATE_DATE = '2000-01-03';
 const db = localDb();
 
 const bnm = Bun.serve({

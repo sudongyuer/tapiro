@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { proposedBudget, summarize, type MeterRow } from './ai-budget';
 import prompts from './ai-budget-prompts.json';
-import { localDb } from './local-db';
+import { closeLocalDb, localDb } from './local-db';
 import { localSupabase } from './local-supabase';
 
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '[::1]']);
@@ -64,8 +64,11 @@ async function main() {
     const summary = summarize([...rows] as MeterRow[]);
     console.log(JSON.stringify({ outcomes, summary, proposed: proposedBudget(summary) }, null, 2));
   } finally {
-    await admin.auth.admin.deleteUser(userId);
-    await localDb().close();
+    try {
+      await admin.auth.admin.deleteUser(userId);
+    } finally {
+      await closeLocalDb();
+    }
   }
 }
 

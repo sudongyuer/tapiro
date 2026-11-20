@@ -102,8 +102,7 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   Docker Desktop keeps the deleted bind source cached, and `functions serve` fails with 「destination … must be a
   directory」 until something binds that path again (2026-11-13).
 - A migration that adds a public table, sequence or function grants each Data API role (`anon`, `authenticated`,
-  `service_role`) what it uses; a new Edge Function's service-role needs go in `supabase/tests/edge_function_grants.test.sql`;
-  stack-test fixtures write through `scripts/local-db.ts`, not the service role. Reason: hosted projects grant nothing by
+  `service_role`) what it uses; stack-test fixtures write through `scripts/local-db.ts`, not the service role. Reason: hosted projects grant nothing by
   default and `fx-rate` failed only there (2026-11-21); local stacks now match (`api.auto_expose_new_tables = false`).
 - The expo-location plugin adds Always and motion usage strings by default; set them to
   `false` unless a spec requires them. Reason: unused permission strings draw review questions.

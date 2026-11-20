@@ -39,4 +39,10 @@ overturned: 0
 - Hosted had a migration not on main (`20261121000100_apns_tokens`, pushed from `feat/apns-direct`); the push ran from
   a scratch workdir holding that file so the CLI saw no remote-only version. Pattern to check: push hosted migrations
   only from merged main, or say so in the branch's PR.
+- Review (one round, fixed together): `localDb` now refuses a non-loopback URL; the stack test's rate is dated 2000 so
+  a killed run never leaves a "fresh" fake rate; `ai:budget` closes the connection even when cleanup fails; the
+  per-function list in `edge_function_grants.test.sql` is now enforced by `grants-list.test.ts`, which collects every
+  `.rpc`/`.from` name from the function sources. Declined: an RPC instead of column grants for `account-delete`
+  (the grants are tested both ways), a sequence-UPDATE default check (local keeps it, hosted does not; nothing uses
+  it), a shared `local.env` parser and a random mock port (same pattern as the AI mock).
 - Open: local runs PostgreSQL 15 while hosted runs 17; another drift of the same kind, not changed here.
