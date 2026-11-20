@@ -384,9 +384,25 @@ own and never one whose poster and viewer are blocked in either direction.
 ## Scheduled functions
 
 `fx-rate` stores Bank Negara Malaysia's 17:00 CNY middle rate in `fx_rates` as `(CNY, MYR, date, bnm)` (17:30 Malaysia time);
-`payment-proof-cleanup` removes proofs 30 days after settlement. Both are called by pg_cron through
-`call_edge_function`, which needs the Vault secrets `project_url` and `service_role_key` in each
-environment; without them the jobs post nothing.
+`payment-proof-cleanup` removes proofs 30 days after settlement. Both, and `notify` (on each due push and every 5
+minutes from `push-drain`), are called by pg_cron through `call_edge_function`. It posts to
+`<project_url>/functions/v1/<name>` with the header `x-cron-secret` and no Supabase JWT; the three functions run with
+`verify_jwt = false` and accept a call only when that header equals their `CRON_SECRET` (constant-time compare,
+everything rejected while it is unset). They have no user-facing path; the service role key is never sent.
+
+Each environment needs the same random value in the Vault secret `cron_secret` and the function secret `CRON_SECRET`,
+plus the Vault secret `project_url`. A missing Vault secret makes `call_edge_function` raise, so the job shows as
+failed in `cron.job_run_details`; the `push_queue` insert trigger only logs a warning, so a missing secret never rolls
+back the write that queued the push, and `push-stalled` marks stalled pushes in its own job so a failing drain cannot
+roll that back. The post itself is asynchronous: a mismatched `CRON_SECRET` still lets the job succeed, and the 401
+shows only in `net._http_response`, so check it after setting or rotating the secret. Hosted setup: generate the value into a mode-600 file (never print it), set
+`CRON_SECRET` with `supabase secrets set --project-ref <ref>`, and `cron_secret` and `project_url`
+(`https://<ref>.supabase.co`) with `vault.create_secret` (or `vault.update_secret`) through
+`supabase db query --linked`.
+
+Locally `local.env` sets `CRON_SECRET=local-cron-secret` and Vault stays empty, so local cron calls fail visibly
+instead of reaching served functions; add the two Vault secrets (`project_url` = `http://kong:8000`) to exercise the
+path end to end.
 
 `bounty-jobs` runs `run_bounty_jobs()` in SQL every 5 minutes (no Edge Function, no Vault secret): it
 closes open bounties past `expires_at` and refunds their post, confirms bounties `done` for 48 hours
@@ -405,7 +421,8 @@ so a monitor should alert when `skipped` stays above 0. `run_bounty_jobs()` alwa
   `supabase start`).
 - `bun run test:stack` runs the `*.integration.ts` tests against the running stack and served
   functions: `account-delete` (user A deletes itself, user B is untouched, calls without a user
-  token are rejected), `iap-verify` and `iap-notify` with unsigned `Xcode` transactions, and the app's profile service
+  token are rejected), the cron-only functions (`cron.integration.ts`: the `CRON_SECRET` from `local.env` runs them,
+  a missing or wrong secret and the service role key get 401), `iap-verify` and `iap-notify` with unsigned `Xcode` transactions, and the app's profile service
   under RLS. The tests read the URL and keys from
   `supabase status`; set `SUPABASE_LOCAL_API_URL` (and `SUPABASE_LOCAL_ANON_KEY`, `SUPABASE_LOCAL_SERVICE_ROLE_KEY`)
   when the gateway listens on another port than the one `supabase status` reports (`scripts/local-supabase.ts`).

@@ -300,14 +300,15 @@ deno_version = 1
 [functions.account-delete]
 verify_jwt = true
 
+# pg_cron calls these without a Supabase JWT; each handler accepts only the `x-cron-secret` header (CRON_SECRET).
 [functions.fx-rate]
-verify_jwt = true
+verify_jwt = false
 
 [functions.payment-proof-cleanup]
-verify_jwt = true
+verify_jwt = false
 
 [functions.notify]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-draft]
 verify_jwt = true

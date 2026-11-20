@@ -382,6 +382,8 @@ create temp table stuck as
 select q.id from public.push_queue q where q.kind = 'bounty.applied' and q.send_at > '2090-01-01';
 update public.push_queue set attempts = 2, claimed_at = now() - interval '6 minutes', send_at = now() - interval '1 hour'
 where id = (select id from stuck);
+delete from vault.secrets where name in ('project_url', 'cron_secret');
+select vault.create_secret('http://kong:8000', 'project_url'), vault.create_secret('test-cron-secret', 'cron_secret');
 select private.drain_due_pushes();
 select ok(
   (select q.failed_at is not null from public.push_queue q where q.id = (select id from stuck))

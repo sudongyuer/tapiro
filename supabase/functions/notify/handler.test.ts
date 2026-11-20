@@ -13,7 +13,7 @@ import { recordingSender, type RecordedPushInsert } from './recording-sender';
 const post = (token?: string) =>
   new Request('http://localhost/notify', {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: token ? { 'x-cron-secret': token } : {},
   });
 
 const due = (queueId: number, overrides: Partial<DuePush> = {}): DuePush => ({

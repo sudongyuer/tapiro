@@ -5,7 +5,7 @@ import { handleProofCleanup, type ProofBucket, type ProofObject } from './handle
 const post = (token?: string) =>
   new Request('http://localhost/payment-proof-cleanup', {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: token ? { 'x-cron-secret': token } : {},
   });
 
 const PROOFS: ProofObject[] = [

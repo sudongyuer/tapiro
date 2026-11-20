@@ -1,3 +1,5 @@
+import { CRON_SECRET_HEADER } from '../_shared/cronSecret.ts';
+
 export type DuePush = {
   queueId: number;
   kind: string;
@@ -150,7 +152,7 @@ async function round(deps: NotifyDeps, due: DuePush[], tally: Tally) {
 
 export async function handleNotify(req: Request, deps: NotifyDeps) {
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
-  const token = req.headers.get('Authorization')?.match(/^Bearer (.+)$/)?.[1];
+  const token = req.headers.get(CRON_SECRET_HEADER);
   if (!token || !deps.authorized(token)) return json(401, { error: 'unauthorized' });
 
   const tally: Tally = { sent: 0, failed: 0, unfinished: 0 };
