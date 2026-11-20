@@ -6,7 +6,8 @@ points to them.
 
 Updated: 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
 PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
-new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours).
+new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours; UI audit batch C:
+one name per thing in every locale, `docs/design-language.md` 「Terminology」).
 
 ## Built and merged
 
@@ -463,6 +464,7 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   (ap-southeast-1). Registered devices (automatic signing needs one before the first archive): 「Owner iPhone 13 Pro
   Max」 `00008110-0004455614F8801E` (2026-11-20, iOS 18.7.8, below the deployment target) and 「Owner iPhone 14 Pro」
   `00008120-001248DA1A0BC01E` (2026-11-21, iOS 26.3.1; `bun run device-install 00008120-001248DA1A0BC01E`).
+- Before App Store submission (UI audit O3, 2026-11-21): replace the draft Terms and Privacy text (`account.legal.*`) with the final text, and replace the contact line `account.legal.contact` (today a personal Gmail address) with an address on the product domain. The 「草稿」 line is already hidden outside dev and verify builds; the address needs the owner (a mailbox on the domain).
 - Pricing and Availability excludes China mainland until the ICP filing number exists (owner, 2026-11-21; China
   storefront spec decision 13).
 - Scheduled Edge Functions (`fx-rate`, `payment-proof-cleanup`, `notify`) authenticate pg_cron with a dedicated cron

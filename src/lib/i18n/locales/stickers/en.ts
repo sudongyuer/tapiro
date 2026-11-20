@@ -2,7 +2,7 @@ import type zhHans from './zh-Hans';
 
 const en: typeof zhHans = {
   book: {
-    title: 'Done together',
+    title: 'Sticker book',
     sub: 'One more each time a job gets done and paid',
     summary: '{{total}} · {{sub}}',
     view: { stack: 'Cards', calendar: 'Calendar', a11y: 'View' },

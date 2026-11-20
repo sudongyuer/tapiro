@@ -71,6 +71,7 @@ export default {
     revisedA11y: '原定 {{time}}',
     seatsLeft_one: '还空 {{count}} 座',
     seatsLeft_other: '还空 {{count}} 座',
+    a11ySeparator: '，',
     seatsA11y: '{{name}}发起，已有 {{taken}} 人，还空 {{empty}} 座',
     privacy: '上车后能看到集合说明和同车的人',
     cell: {
@@ -176,7 +177,7 @@ export default {
       lateLine_one: '{{at}} 说晚到 {{count}} 分钟 · 还没到',
       lateLine_other: '{{at}} 说晚到 {{count}} 分钟 · 还没到',
       consequence:
-        '没勾的{{names}}这趟记一次放鸽子（60 天内第一次不算），不分车费；可以点「我上车了」申诉，车上的人点一下就撤销。',
+        '没勾的{{names}}这趟记一次没上车（60 天内第一次不算），不分车费；可以点「我上车了」申诉，车上的人点一下就撤销。',
       confirm_one: '{{count}} 人出发',
       confirm_other: '{{count}} 人出发',
     },
@@ -230,18 +231,18 @@ export default {
     appeal: {
       canTitle: '你没被勾上车',
       canBody:
-        '这趟记了一次放鸽子。如果你其实上车了，点「我上车了」，车上任何一人确认就撤销。{{time}} 前有效。',
+        '这趟记了你一次没上车。如果你其实上车了，点「我上车了」，车上任何一人确认就撤销。{{time}} 前有效。',
       action: '我上车了',
       pendingTitle: '申诉中',
-      pendingBody: '等车上的人确认。{{time}} 前没人确认，这次放鸽子照常算。',
+      pendingBody: '等车上的人确认。{{time}} 前没人确认，这次没上车照常记。',
       lapsedTitle: '申诉过期了',
-      lapsedCounted: '72 小时内没人确认，这次放鸽子照常算。',
+      lapsedCounted: '72 小时内没人确认，这次没上车照常记。',
       lapsedWaived: '72 小时内没人确认。这是 60 天内第一次，不算。',
       closedTitle: '你没被勾上车',
-      closedCounted: '这趟记了一次放鸽子，申诉时间已经过了。',
-      closedWaived: '这是 60 天内第一次放鸽子，不算。',
+      closedCounted: '这趟记了你一次没上车，申诉时间已经过了。',
+      closedWaived: '这是 60 天内第一次没上车，不算。',
       confirmTitle: '{{name}}说已经上车了',
-      confirmBody: '确实在车上的话，点确认就撤销这次放鸽子。',
+      confirmBody: '确实在车上的话，点确认就撤销这次没上车的记录。',
       confirm: '确认上车了',
     },
     ended: {

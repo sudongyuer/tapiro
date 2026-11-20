@@ -1,6 +1,6 @@
 export default {
   book: {
-    title: '一起办成的事',
+    title: '贴纸本',
     sub: '每办成一单、钱结清，就多一张',
     summary: '{{total}} · {{sub}}',
     view: { stack: '卡堆', calendar: '月历', a11y: '查看方式' },

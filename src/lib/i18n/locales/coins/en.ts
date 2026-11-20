@@ -87,7 +87,7 @@ const en: typeof zhHans = {
     fedLead: 'Thanks!',
     fedTail: '+1 coin',
     alreadyFed: 'I’m full this week. Come back Monday',
-    failed: 'That didn’t go through. Tap me again',
+    failed: 'That didn’t go through. Try again',
     action: 'Feed the tapir',
   },
   invite: {
@@ -111,7 +111,7 @@ const en: typeof zhHans = {
       'I use Tapiro to help each other out. Enter my invite code {{code}} and we each get {{reward}} coins after your first deal.',
     enterCode: 'Enter a friend’s code',
     placeholder: 'e.g. {{code}}',
-    submit: 'OK',
+    submit: 'Redeem',
     invited: 'People I invited',
     rewarded: 'First deal done · +{{reward}}',
     waiting: 'Not done yet',

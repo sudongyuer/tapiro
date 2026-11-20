@@ -29,7 +29,7 @@ const ms: typeof zhHans = {
     leaving_other: 'Bertolak dalam {{count}} minit · sedang berkumpul',
     requests_one: 'Milik saya · {{count}} permohonan',
     requests_other: 'Milik saya · {{count}} permohonan',
-    applied: 'Sudah memohon · menunggu',
+    applied: 'Dipohon · menunggu',
     full: 'Penuh',
     mine_one: 'Milik saya · perlu {{count}} lagi',
     mine_other: 'Milik saya · perlu {{count}} lagi',
@@ -37,8 +37,8 @@ const ms: typeof zhHans = {
     need_other: 'Perlu {{count}} lagi',
     departed: 'Sudah bertolak',
     arrived: 'Sudah sampai · bahagi tambang',
-    settling: 'Sedang dijelaskan',
-    closed: 'Sudah dijelaskan',
+    settling: 'Sedang dilangsaikan',
+    closed: 'Langsai',
     cancelled: 'Dibatalkan',
     expired: 'Tamat tempoh',
     time: '{{day}} {{clock}}',
@@ -74,6 +74,7 @@ const ms: typeof zhHans = {
     revisedA11y: 'asalnya {{time}}',
     seatsLeft_one: '{{count}} tempat kosong',
     seatsLeft_other: '{{count}} tempat kosong',
+    a11ySeparator: ', ',
     seatsA11y: 'Dimulakan oleh {{name}}, {{taken}} orang, {{empty}} tempat kosong',
     privacy: 'Selepas menyertai, anda akan nampak nota berkumpul dan siapa yang ikut',
     cell: {
@@ -146,7 +147,7 @@ const ms: typeof zhHans = {
       footer: 'Hanya {{name}} boleh lihat. Anda boleh tarik balik sebelum diluluskan.',
     },
     applied: {
-      stamp: 'Sudah mohon',
+      stamp: 'Dipohon',
       waiting: 'Menunggu {{name}}',
       withdraw: 'Tarik Balik',
       confirmTitle: 'Tarik balik permohonan?',
@@ -269,7 +270,7 @@ const ms: typeof zhHans = {
       blocked: 'Anda telah menyekat orang ini, jadi tidak boleh berbuat begitu',
       invalid: 'Ada maklumat yang tidak betul. Semak dan cuba lagi',
       receiptExpired: 'Tangkapan skrin telah tamat tempoh. Sila lampirkan semula.',
-      noPayee: 'Tambah kaedah pembayaran sebelum membahagi tambang',
+      noPayee: 'Tambah kaedah terima bayaran sebelum membahagi tambang',
       transition: 'Keadaan sudah berubah; sudah dimuat semula',
       failed: 'Tidak berjaya. Cuba lagi',
     },
@@ -381,10 +382,10 @@ const ms: typeof zhHans = {
       refundCoin:
         'Jika tiada yang menyertai dan ia dibatalkan atau tamat tempoh, syiling ini dipulangkan.',
       noPayee:
-        'Penumpang bayar terus kepada anda nanti. Tambah satu cara terima bayaran dahulu; tunai pun boleh.',
-      addPayee: 'Tambah cara terima bayaran',
+        'Penumpang bayar terus kepada anda nanti. Tambah satu kaedah terima bayaran dahulu; tunai pun boleh.',
+      addPayee: 'Tambah kaedah terima bayaran',
       blocked:
-        'Anda masih ada bayaran yang belum dijelaskan. Jelaskan dahulu sebelum mulakan tumpangan.',
+        'Anda masih ada bayaran yang belum langsai. Langsaikan dahulu sebelum mulakan tumpangan.',
       noBalance:
         'Siaran percuma bulan ini sudah habis dan syiling tidak cukup. Siaran percuma baharu pada {{date}}.',
       publish: 'Siarkan',

@@ -13,7 +13,7 @@ const reminders: Translation['rideReminders'] = {
   arrive: {
     title: 'Sudah sampai? · {{route}}',
     body: 'Setelah sampai, ketik Sudah sampai · bahagi tambang dan masukkan jumlah Grab.',
-    bodyGrab: 'Setelah sampai, ketik Sudah sampai dan tumpangan ini selesai.',
+    bodyGrab: 'Setelah sampai, ketik Sudah sampai dan tumpangan ini langsai.',
   },
   pay: {
     title: '{{amount}} belum dibayar kepada {{name}}',

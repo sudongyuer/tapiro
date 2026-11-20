@@ -57,12 +57,13 @@ function Tile({
   onPress: () => void;
   testID: string;
 }) {
+  const { t } = useI18n();
   return (
     <PressDim
       style={[styles.card, styles.tile]}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${title}，${sub}`}
+      accessibilityLabel={[title, sub].join(t('ride.detail.a11ySeparator'))}
       testID={testID}
     >
       <SymbolView name={icon} size={ICON} tintColor={PlatformColor('label')} />
