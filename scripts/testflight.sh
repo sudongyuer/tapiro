@@ -25,8 +25,8 @@ ARCHIVE="$OUT/Tapiro.xcarchive"
 mkdir -p "$OUT"
 echo "Version $VERSION, build $BUILD_NUMBER, output $OUT"
 
-step "Hosted Supabase anon key"
-hosted_supabase_env
+step "Hosted Supabase and Google values"
+hosted_release_env
 
 step "Prebuild"
 release_prebuild "$OUT/prebuild.log"
