@@ -247,8 +247,8 @@ select is(
    where q.send_at > '2090-01-01'),
   array[
     array['bounty:' || pg_temp.b(1), 'true', '2099-01-02 00:00:00+00'],
-    array['bounty:' || pg_temp.b(1), 'true', '2099-01-02 00:00:00+00']
-  ], 'a bounty push and a bounty payment push at 01:00 Malaysia time wait for 08:00'
+    array['bounty:' || pg_temp.b(1), 'false', '2099-01-01 17:00:00+00']
+  ], 'at 01:00 Malaysia time a bounty push waits for 08:00 and a payment to confirm goes at once, in the bounty thread'
 );
 insert into private.event_kinds (kind, push) values ('other.thing', true);
 select lives_ok(

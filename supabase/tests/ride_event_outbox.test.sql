@@ -155,7 +155,8 @@ values
   (pg_temp.u('c3'), 'ride.no_show', pg_temp.r(2), true, '2026-11-02 17:00+00');
 select is(
   (select array[p.quiet::text, p.send_at::text] from public.push_queue p
-   where p.recipient = pg_temp.u('c3') and p.kind = 'ride.cancelled'),
+   join public.events e on e.id = p.event_id
+   where p.recipient = pg_temp.u('c3') and p.kind = 'ride.no_show' and e.created_at = '2026-11-02 17:00+00'),
   array['true', '2026-11-03 00:00:00+00'], 'a push at 01:00 for a ride not under way waits for 08:00'
 );
 select pg_temp.publish(3, interval '20 minutes');
