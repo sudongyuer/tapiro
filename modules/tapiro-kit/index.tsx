@@ -160,8 +160,11 @@ export type SpeechEvent =
       audio?: string;
     };
 
+export type StorefrontEvent = { countryCode: string };
+
 type TapiroKitEvents = {
   onPlaceSuggestions(event: PlaceSuggestionsEvent): void;
+  onStorefront(event: StorefrontEvent): void;
   onStoreTransaction(event: StoreTransaction): void;
   onSpeech(event: SpeechEvent): void;
 };
@@ -197,6 +200,9 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   storeFinish(transactionId: string): Promise<boolean>;
   storeStartUpdates(): Promise<void>;
   storeStopUpdates(): Promise<void>;
+  storefrontCountry(): Promise<string | null>;
+  storefrontStartUpdates(): Promise<void>;
+  storefrontStopUpdates(): Promise<void>;
   speechPermissions(): Promise<SpeechPermissions>;
   speechRequestPermissions(): Promise<SpeechPermissions>;
   speechStart(
@@ -411,6 +417,22 @@ export const Store = {
       remove() {
         subscription.remove();
         void kit.storeStopUpdates();
+      },
+    };
+  },
+};
+
+export const Storefront = {
+  countryCode(): Promise<string | null> {
+    return kit.storefrontCountry();
+  },
+  listen(cb: (countryCode: string) => void): { remove(): void } {
+    const subscription = kit.addListener('onStorefront', (event) => cb(event.countryCode));
+    void kit.storefrontStartUpdates();
+    return {
+      remove() {
+        subscription.remove();
+        void kit.storefrontStopUpdates();
       },
     };
   },

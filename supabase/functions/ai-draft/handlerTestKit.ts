@@ -68,10 +68,14 @@ export function okBegin(energy: number): BeginResult {
   return { status: 'ok', lease: 'lease-1', energy, energyFull: 1000 };
 }
 
-export function post(body: unknown, token: string | null = 'valid') {
+export function post(
+  body: unknown,
+  token: string | null = 'valid',
+  extra: Record<string, string> = {},
+) {
   return new Request('http://localhost/ai-draft', {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra },
     body: typeof body === 'string' ? body : JSON.stringify(body),
   });
 }

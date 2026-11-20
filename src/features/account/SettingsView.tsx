@@ -6,6 +6,7 @@ import {
   ProgressView,
   RNHostView,
   Section,
+  Spacer,
   Text,
   VStack,
 } from '@expo/ui/swift-ui';
@@ -38,11 +39,15 @@ export function SettingsView({
   onDeleteAccount,
   onOpenLegal,
   signingOut = false,
+  icpFiling = null,
+  aiOffered = true,
 }: {
   name: string;
   email: string | null;
   avatarUrl: string | null;
   signingOut?: boolean;
+  icpFiling?: string | null;
+  aiOffered?: boolean;
   onSignOut: () => void;
   onDeleteAccount: () => void;
   onOpenLegal: (page: 'terms' | 'privacy') => void;
@@ -72,12 +77,29 @@ export function SettingsView({
           </HStack>
         </Section>
         <LanguagePickerSection />
-        <Section>
+        <Section
+          footer={
+            aiOffered ? undefined : (
+              <Text modifiers={[accessibilityIdentifier('settings-region-note')]}>
+                {t('account.settings.regionNoAi')}
+              </Text>
+            )
+          }
+        >
           {LEGAL_PAGES.map((page) => (
             <Button key={page} onPress={() => onOpenLegal(page)} testID={`settings-${page}`}>
               <Text modifiers={[primary]}>{t(`account.legal.${page}.title`)}</Text>
             </Button>
           ))}
+          {icpFiling ? (
+            <HStack
+              modifiers={[accessibilityElement('combine'), accessibilityIdentifier('settings-icp')]}
+            >
+              <Text modifiers={[primary]}>{t('account.settings.icp')}</Text>
+              <Spacer />
+              <Text modifiers={[secondary]}>{icpFiling}</Text>
+            </HStack>
+          ) : null}
         </Section>
         <Section>
           {signingOut ? (

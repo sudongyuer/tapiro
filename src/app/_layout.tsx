@@ -9,6 +9,7 @@ import { REVIEW_SHEET_OPTIONS, TIER_DROP_SHEET_OPTIONS } from '@/features/reputa
 import { useRideReminders } from '@/features/ride';
 import { I18nProvider } from '@/lib/i18n';
 import { useDiscardNoticeTaps } from '@/lib/notifications';
+import { useAiOffered, useStorefrontFollow } from '@/lib/storefront';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -30,6 +31,8 @@ const FINISHED = { onFinishTransitioning: applySheetGone };
 
 function RootStack() {
   const stage = useAccountStage();
+  const aiOffered = useAiOffered();
+  useStorefrontFollow();
   useRideReminders(stage);
   useDiscardNoticeTaps(stage === 'signedOut');
   return (
@@ -48,6 +51,8 @@ function RootStack() {
       </Stack.Protected>
       <Stack.Protected guard={stage === 'ready'}>
         <Stack.Screen name="(tabs)" />
+      </Stack.Protected>
+      <Stack.Protected guard={stage === 'ready' && aiOffered}>
         <Stack.Screen
           name="ask"
           options={{
@@ -64,6 +69,8 @@ function RootStack() {
         />
         <Stack.Screen name="ask-consent" options={{ presentation: 'pageSheet' }} />
         <Stack.Screen name="ask-memory-entry" options={PAGE_SHEET} />
+      </Stack.Protected>
+      <Stack.Protected guard={stage === 'ready'}>
         <Stack.Screen name="payee/phone" options={PAGE_SHEET} />
         <Stack.Screen name="payee/bank" options={PAGE_SHEET} />
         <Stack.Screen name="payee/qr" options={PAGE_SHEET} />

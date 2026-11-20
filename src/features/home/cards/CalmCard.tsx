@@ -19,15 +19,9 @@ function greetingKey(hour: number) {
   return hour < 18 ? ('home.card.calm.afternoon' as const) : ('home.card.calm.evening' as const);
 }
 
-export function CalmCard({ name, onAsk }: { name: string; onAsk: () => void }) {
+export function CalmCard({ name, onAsk }: { name: string; onAsk: (() => void) | null }) {
   const { t } = useI18n();
-  const { color } = useTheme();
-  const { ink, surface } = useLiveCardPaint('calm');
-  const chips = [
-    t('home.card.calm.chipQuestion'),
-    t('home.card.calm.chipParcel'),
-    t('home.card.calm.chipStudy'),
-  ];
+  const { ink } = useLiveCardPaint('calm');
   return (
     <LiveCard tone="calm">
       <View accessible testID="live-card-calm">
@@ -38,6 +32,22 @@ export function CalmCard({ name, onAsk }: { name: string; onAsk: () => void }) {
           {t(greetingKey(new Date().getHours()), { name })}
         </CardText>
       </View>
+      {onAsk ? <CalmAsk onAsk={onAsk} /> : null}
+    </LiveCard>
+  );
+}
+
+function CalmAsk({ onAsk }: { onAsk: () => void }) {
+  const { t } = useI18n();
+  const { color } = useTheme();
+  const { ink, surface } = useLiveCardPaint('calm');
+  const chips = [
+    t('home.card.calm.chipQuestion'),
+    t('home.card.calm.chipParcel'),
+    t('home.card.calm.chipStudy'),
+  ];
+  return (
+    <>
       <PressDim
         accessibilityRole="button"
         accessibilityLabel={t('home.card.calm.ask')}
@@ -80,7 +90,7 @@ export function CalmCard({ name, onAsk }: { name: string; onAsk: () => void }) {
           </View>
         ))}
       </View>
-    </LiveCard>
+    </>
   );
 }
 

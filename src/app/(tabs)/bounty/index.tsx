@@ -31,6 +31,7 @@ import {
 } from '@/features/home';
 import { PendingReviewCards, reviewStore, useStageGrowth } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
+import { useAiOffered } from '@/lib/storefront';
 import { liveItems } from '@/lib/useLiveItems';
 import { vars } from '@/ui/theme/tokens';
 
@@ -53,6 +54,7 @@ function useDarkStatusBar(focused: boolean) {
 
 function BountyHome({ user }: { user: AccountUser }) {
   const router = useRouter();
+  const aiOffered = useAiOffered();
   const { t } = useI18n();
   const focused = useIsFocused();
   useDarkStatusBar(focused);
@@ -126,7 +128,9 @@ function BountyHome({ user }: { user: AccountUser }) {
         open={stack.open}
         onToggle={stack.setOpen}
         name={name}
-        onAsk={() => router.push({ pathname: '/ask', params: { tab: 'bounty' } })}
+        onAsk={
+          aiOffered ? () => router.push({ pathname: '/ask', params: { tab: 'bounty' } }) : null
+        }
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
         actor={actor}
         onMascotShown={setMascotShown}

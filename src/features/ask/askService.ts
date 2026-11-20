@@ -54,11 +54,15 @@ export function createSupabaseAskService(client: SupabaseClient | null): AskServ
   };
 }
 
-export function createCloudSender(client: SupabaseClient | null) {
+export function createCloudSender(
+  client: SupabaseClient | null,
+  headers: () => Record<string, string>,
+) {
   return async function send(request: CloudRequest): Promise<CloudAnswer> {
     if (!client) return { ok: false, error: null, status: null };
     const { data, error } = await client.functions.invoke(AI_DRAFT_FUNCTION, {
       method: 'POST',
+      headers: headers(),
       body: request,
     });
     if (!error) return { ok: true, body: data };

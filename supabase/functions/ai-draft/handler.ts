@@ -9,6 +9,7 @@ import {
   type MemoryForCall,
 } from './memory.ts';
 import type { AiProvider, ProviderReply } from './provider.ts';
+import { storefrontClosed } from './region.ts';
 import {
   AI_TOOLS,
   parseAiRequest,
@@ -146,6 +147,10 @@ export async function handleAiDraft(req: Request, deps: AiDraftDeps): Promise<Re
   if (req.method !== 'POST') return failure(405, 'method_not_allowed');
   const userId = await bearerUser(req, deps).catch(() => null);
   if (!userId) return failure(401, 'unauthorized');
+  if (storefrontClosed(req)) {
+    logCode('region_unavailable');
+    return failure(451, 'region_unavailable');
+  }
   const request = await readRequest(req);
   if (!request) return failure(400, 'invalid_request');
   if (!deps.provider) {

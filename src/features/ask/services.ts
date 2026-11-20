@@ -1,6 +1,7 @@
 import { Settings } from 'react-native';
 
 import { sessionEnds } from '@/lib/sessionEnds';
+import { STOREFRONT_HEADER, aiOfferedNow, currentStorefrontHeader } from '@/lib/storefront';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -153,7 +154,12 @@ export const pantryStore = createPantryStore({
 
 export const cloudCall = createCloudGate({
   store: consentStore,
-  send: metered(consentStore, verify?.send ?? createCloudSender(getSupabase())),
+  send: metered(
+    consentStore,
+    verify?.send ??
+      createCloudSender(getSupabase(), () => ({ [STOREFRONT_HEADER]: currentStorefrontHeader() })),
+  ),
+  offered: aiOfferedNow,
 });
 
 export const askSession = createAskSession({

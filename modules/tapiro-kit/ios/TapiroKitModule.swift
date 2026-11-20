@@ -6,11 +6,12 @@ public final class TapiroKitModule: Module {
   private let places = PlaceSearch()
   private let store = Store()
   private let speech = SpeechSession()
+  private let storefront = StorefrontWatch()
 
   public func definition() -> ModuleDefinition {
     Name("TapiroKit")
 
-    Events("onPlaceSuggestions", "onStoreTransaction", "onSpeech")
+    Events("onPlaceSuggestions", "onStoreTransaction", "onSpeech", "onStorefront")
 
     View(TitleHaloView.self) {}
 
@@ -61,6 +62,19 @@ public final class TapiroKitModule: Module {
 
     AsyncFunction("storeStopUpdates") { () async in
       await self.store.stopUpdates()
+    }
+
+    AsyncFunction("storefrontCountry") { () async -> String? in
+      await StorefrontWatch.countryCode()
+    }
+
+    AsyncFunction("storefrontStartUpdates") { [weak self] () async in
+      guard let self else { return }
+      await self.storefront.start { [weak self] code in self?.sendEvent("onStorefront", ["countryCode": code]) }
+    }
+
+    AsyncFunction("storefrontStopUpdates") { () async in
+      await self.storefront.stop()
     }
 
     AsyncFunction("speechPermissions") { () -> [String: String] in

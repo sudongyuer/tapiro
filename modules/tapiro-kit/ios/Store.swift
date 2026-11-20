@@ -156,3 +156,27 @@ actor Store {
     return "unknown"
   }
 }
+
+actor StorefrontWatch {
+  typealias Emit = @Sendable (String) -> Void
+
+  private var updates: Task<Void, Never>?
+
+  static func countryCode() async -> String? {
+    await Storefront.current?.countryCode
+  }
+
+  func start(emit: @escaping Emit) {
+    guard updates == nil else { return }
+    updates = Task {
+      for await storefront in Storefront.updates {
+        emit(storefront.countryCode)
+      }
+    }
+  }
+
+  func stop() {
+    updates?.cancel()
+    updates = nil
+  }
+}
