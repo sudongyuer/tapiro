@@ -930,3 +930,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-21 | force-push hook + PostgreSQL 17         | 0                  | 1             | ~5 min (worktree guard on test text)             | 0                       | 0                     |
 | 2026-11-21 | China storefront phase 1                | 0                  | 1             | ~10 min (worktree guard, Deno test.each shim)    | 0                       | 0                     |
 | 2026-11-21 | Google IDs in release builds            | 0                  | 0             | ~0                                               | 0                       | 0                     |
+| 2026-11-21 | second device registered                | 0                  | 0             | ~0                                               | 0                       | 0                     |
