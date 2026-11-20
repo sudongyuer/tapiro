@@ -4,25 +4,34 @@ import { AccessibilityInfo } from 'react-native';
 import {
   cancelAnimation,
   Easing,
+  ReduceMotion,
   useAnimatedReaction,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { REDUCED_FADE, TIMELINE, TOTAL } from './timeline';
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
+import { vars } from '@/ui/theme/tokens';
+
+import { TIMELINE, TOTAL } from './timeline';
 
 export type Clock = SharedValue<number>;
+
+const REDUCED_FADE = {
+  duration: vars['--duration-fade'],
+  easing: EASE_ENTER,
+  reduceMotion: ReduceMotion.Never,
+} as const;
 
 function landed() {
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
 }
 
 export function useCelebrationClock(ready: boolean, announcement: string) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const clock = useSharedValue(0);
   const fade = useSharedValue(reduceMotion ? 0 : 1);
 
@@ -37,7 +46,7 @@ export function useCelebrationClock(ready: boolean, announcement: string) {
     if (reduceMotion) {
       clock.set(TOTAL);
       fade.set(
-        withTiming(1, { duration: REDUCED_FADE }, (finished) => {
+        withTiming(1, REDUCED_FADE, (finished) => {
           if (finished) scheduleOnRN(setButtonsLive, true);
         }),
       );

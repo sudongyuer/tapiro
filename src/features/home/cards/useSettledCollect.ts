@@ -2,10 +2,8 @@ import * as Haptics from 'expo-haptics';
 import { useRef, useState } from 'react';
 import { AccessibilityInfo, findNodeHandle, type ViewInstance } from 'react-native';
 import {
-  Easing,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -13,15 +11,16 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { StickerFlight } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { useTheme } from '@/ui/theme/useTheme';
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
+import { vars } from '@/ui/theme/tokens';
 
 import { runSettledCollect, type SettledExit } from './settledCollect';
 
 const ME_TAB_ID = 'tab-me';
 const FADE = {
-  duration: 200,
-  easing: Easing.bezier(0, 0, 0.58, 1),
+  duration: vars['--duration-fade'],
+  easing: EASE_ENTER,
   reduceMotion: ReduceMotion.Never,
 } as const;
 
@@ -34,7 +33,7 @@ export function useSettledCollect({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
+  const reduceMotion = useMotionReduced();
   const sticker = useRef<ViewInstance>(null);
   const card = useRef<ViewInstance>(null);
   const started = useRef(false);

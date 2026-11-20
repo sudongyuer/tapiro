@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 
 import { localClock } from '@/lib/deviceClock';
+import { dateFormat } from '@/lib/intlCache';
 
 import type { TimeChoice } from './types';
 
@@ -19,7 +20,7 @@ export function timeParts(iso: string, language: string, now: Date): TimeParts {
   const offset = Math.round((dayStart(at) - dayStart(now)) / DAY_MS);
   return {
     day: offset === 0 ? 'today' : offset === 1 ? 'tomorrow' : null,
-    date: new Intl.DateTimeFormat(language, {
+    date: dateFormat(language, {
       month: 'short',
       day: 'numeric',
       weekday: 'short',
@@ -29,7 +30,7 @@ export function timeParts(iso: string, language: string, now: Date): TimeParts {
 }
 
 export function dateText(iso: string, language: string) {
-  return new Intl.DateTimeFormat(language, { month: 'long', day: 'numeric' }).format(new Date(iso));
+  return dateFormat(language, { month: 'long', day: 'numeric' }).format(new Date(iso));
 }
 
 export function timeLine(time: TimeChoice, t: TFunction, language: string, now: Date) {

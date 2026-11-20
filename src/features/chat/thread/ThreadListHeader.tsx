@@ -21,7 +21,13 @@ export function ThreadListHeader({
   const failed = thread?.status === 'failed' && !info;
   return (
     <View>
-      {thread?.older === 'loading' ? <ActivityIndicator style={styles.older} /> : null}
+      {thread?.older === 'loading' ? (
+        <ActivityIndicator
+          style={styles.older}
+          accessibilityLabel={t('chat.thread.olderLoading')}
+          testID="chat-thread-older-loading"
+        />
+      ) : null}
       {thread?.older === 'failed' ? (
         <View style={styles.inset}>
           <InlineState

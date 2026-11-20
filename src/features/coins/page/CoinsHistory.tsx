@@ -12,7 +12,7 @@ import {
   onAppear,
   truncationMode,
 } from '@expo/ui/swift-ui/modifiers';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/lib/i18n';
 import { vars } from '@/ui/theme/tokens';
@@ -21,7 +21,7 @@ import type { History } from '../coinsStore';
 import { groupByMonth, signedDelta } from '../history';
 import { coinsStore } from '../services';
 import type { CoinRow } from '../types';
-import { monthLabel, rowA11y, rowDate, rowTitle } from './coinsView';
+import { malaysiaYear, monthLabel, rowA11y, rowDate, rowTitle } from './coinsView';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const DATE_COLUMN = frame({ minWidth: 68, alignment: 'trailing' });
@@ -39,7 +39,7 @@ export function CoinsHistory({ history }: { history: History }) {
       </Section>
     );
   }
-  const now = new Date();
+  const year = malaysiaYear(new Date());
   return (
     <>
       {groups.map((group) => (
@@ -47,7 +47,7 @@ export function CoinsHistory({ history }: { history: History }) {
           key={group.month}
           header={
             <Text modifiers={[accessibilityIdentifier(`coins-month-${group.month}`)]}>
-              {monthLabel(group.month, t, now)}
+              {monthLabel(group.month, t, year)}
             </Text>
           }
         >
@@ -61,7 +61,7 @@ export function CoinsHistory({ history }: { history: History }) {
   );
 }
 
-function HistoryRow({ row, last }: { row: CoinRow; last: boolean }) {
+const HistoryRow = memo(function HistoryRow({ row, last }: { row: CoinRow; last: boolean }) {
   const { t, language } = useI18n();
   return (
     <HStack
@@ -97,7 +97,7 @@ function HistoryRow({ row, last }: { row: CoinRow; last: boolean }) {
       </Text>
     </HStack>
   );
-}
+});
 
 function MoreRow({ more }: { more: History['more'] }) {
   const { t } = useI18n();

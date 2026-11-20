@@ -25,8 +25,6 @@ import { PlaceRow } from './PlaceRow';
 import type { BoardOrigin, BoardRow } from './types';
 import type { BountyBoardModel } from './useBountyBoard';
 
-const CROSS_FADE_MS = 200;
-
 type Handlers = {
   onPost: () => void;
   onOpen: (id: string) => void;
@@ -37,7 +35,6 @@ type Handlers = {
 
 export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBoardModel }) {
   const { view } = board;
-  const reduce = view.reduceMotion ? ReduceMotion.Always : ReduceMotion.System;
   return (
     <View testID="bounty-board" style={styles.board}>
       <BoardTitleRow
@@ -55,8 +52,8 @@ export function BountyBoard({ board, ...handlers }: Handlers & { board: BountyBo
       <LayoutAnimationConfig skipEntering>
         <Animated.View
           key={view.current}
-          entering={FadeIn.duration(CROSS_FADE_MS).reduceMotion(reduce)}
-          exiting={FadeOut.duration(CROSS_FADE_MS).reduceMotion(reduce)}
+          entering={FadeIn.duration(vars['--duration-fade']).reduceMotion(ReduceMotion.Never)}
+          exiting={FadeOut.duration(vars['--duration-fade']).reduceMotion(ReduceMotion.Never)}
           testID={`bounty-board-${view.current}-view`}
           style={styles.body}
         >
@@ -164,6 +161,7 @@ function BoardBody({ board, onPost, onOpen, onApply }: Handlers & { board: Bount
               {row.id === firstUnlocated ? <UnlocatedHeader /> : null}
               <BoardCard
                 row={row}
+                now={state.loadedAt}
                 onOpen={onOpen}
                 onApply={onApply}
                 cardRef={focus.cardRef(row.id)}

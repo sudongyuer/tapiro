@@ -78,6 +78,8 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/lib/homeSignals.ts#topRequests': 'kept: home layout signal',
   'src/lib/i18n/index.tsx#i18next': 'kept: the language',
   'src/lib/i18n/storage.ts#verifyChoice': 'kept: the language',
+  'src/lib/intlCache.ts#dateFormats': 'kept: locale formatters, no account data',
+  'src/lib/intlCache.ts#numberFormats': 'kept: locale formatters, no account data',
   'src/lib/live-activity/instance.ts#liveActivities':
     'kept: sign-out ends activities before the session ends (accountActions.beforeSignOut)',
   'src/lib/live/instance.ts#live': 'kept: the realtime connection follows the auth session',

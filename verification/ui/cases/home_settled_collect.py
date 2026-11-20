@@ -1,8 +1,8 @@
 """「收进贴纸本」 (73A, ruling 3). A tap writes exactly one collect; the sticker flies from the 已结清 card to the 我的 tab
 and is over its icon no later than the frame the card starts to leave (the same frame passes: owner ★, 2026-11-10),
-then the card leaves upward (up 24 pt, scale 0.92, fade, 320 ms; ④A on the canvas) over the calm card, which rises from
+then the card leaves upward (up 24 pt, scale 0.92, fade, 240 ms ease-out; ④A on the canvas) over the calm card, which rises from
 behind; the change across the card is spread over at least LEAVE_MIN_S of frames, not one. The bounty board below
-follows the taller calm card down over the same 420 ms restack (12 A): its offset, found frame by frame, takes at least
+follows the taller calm card down over the restack spring (12 A): its offset, found frame by frame, takes at least
 FOLLOW_MIN_S to cover the move. With Reduce Motion the board jumps.
 With Reduce Motion (`-uiVerifyReduceMotion 1`, because simctl cannot switch the system setting) nothing reaches 我的:
 the card and sticker fade in place, and one collect is still written. Both paths are read from clips
@@ -37,7 +37,7 @@ CHANGED = 48
 TAB_HIT = 0.12
 GLYPH_MIN = 200
 CARD_TOLERANCE = 24
-LEAVE_MIN_S = 0.12
+LEAVE_MIN_S = 0.06
 FOLLOW_MIN_S = 0.12
 FOLLOW_JUMP_S = 0.07
 FOLLOW_MIN_PT = 8
@@ -176,8 +176,8 @@ over_tab, leaving, gone, span, follow = collect_and_watch('collect-flight')
 assert over_tab, 'the sticker never reached the 我的 tab'
 assert over_tab[0] <= leaving, \
     f'the card started to leave at {leaving:.2f}s, before the sticker reached 我的 at {over_tab[0]:.2f}s'
-assert span >= LEAVE_MIN_S, f'the card left in {span:.2f}s, not over the agreed 320 ms'
-assert follow >= FOLLOW_MIN_S, f'the board below jumped to its new place in {follow:.2f}s, not over the 420 ms restack'
+assert span >= LEAVE_MIN_S, f'the card left in {span:.2f}s, not over the 240 ms leave'
+assert follow >= FOLLOW_MIN_S, f'the board below jumped to its new place in {follow:.2f}s, not over the restack spring'
 print(f'flight: over 我的 {over_tab[0]:.2f}-{over_tab[-1]:.2f}s, card leaving {leaving:.2f}s, gone {gone:.2f}s, '
       f'change over {span:.2f}s, board followed over {follow:.2f}s')
 ui.capture('02-collected')

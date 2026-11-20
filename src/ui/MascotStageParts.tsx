@@ -183,13 +183,13 @@ const styles = StyleSheet.create({
   snore: { position: 'absolute', left: 80, top: -14 },
   bubbleSlot: { position: 'absolute', left: BUBBLE_LEFT, ...BUBBLE_SLOT },
   bubble: {
-    borderRadius: vars['--space-5'],
+    borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',
     paddingVertical: BUBBLE_PADDING.vertical,
     paddingHorizontal: BUBBLE_PADDING.horizontal,
-    shadowOffset: { width: 0, height: vars['--space-2'] },
+    shadowOffset: { width: 0, height: vars['--space-1'] },
     shadowOpacity: 1,
-    shadowRadius: vars['--space-3'],
+    shadowRadius: vars['--space-2'],
   },
   say: { fontWeight: '700' },
   coinLine: {

@@ -49,6 +49,7 @@ export function ProofViewer({
               source={{ uri: current.uri }}
               style={styles.image}
               contentFit="contain"
+              transition={{ duration: vars['--duration-fade'], skipOnCacheHit: 'all' }}
               accessible
               accessibilityLabel={t('pay.payee.proofLabel')}
               testID="pay-proof-image"

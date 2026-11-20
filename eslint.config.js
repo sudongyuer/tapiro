@@ -8,6 +8,9 @@ const endlessLoopMessage =
 const textFieldMessage =
   "Use SyncedTextField from '@/ui/SyncedTextField': @expo/ui's TextField can drop onTextChange for the last keystroke of a fast burst, losing that character (retro 2026-10-27 item 11).";
 
+const reducedMotionMessage =
+  "Use useMotionReduced from '@/ui/theme/motion': it also honours the verify-mode -uiVerifyReduceMotion launch argument, which simctl needs because it cannot switch the system setting.";
+
 const endlessLoopSelectors = [
   "CallExpression[callee.name='withRepeat'][arguments.1.operator='-'][arguments.1.argument.value=1]",
   "CallExpression[callee.name='withRepeat'][arguments.1.name='Infinity']",
@@ -37,13 +40,18 @@ module.exports = defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}', 'scripts/lint-fixtures/**/*.ts'],
-    ignores: ['src/ui/SyncedTextField.tsx'],
+    ignores: ['src/ui/SyncedTextField.tsx', 'src/ui/theme/motion.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           paths: [
             { name: '@expo/ui/swift-ui', importNames: ['TextField'], message: textFieldMessage },
+            {
+              name: 'react-native-reanimated',
+              importNames: ['useReducedMotion'],
+              message: reducedMotionMessage,
+            },
           ],
         },
       ],

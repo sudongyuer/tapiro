@@ -24,6 +24,7 @@ export function TermsLine() {
             hitSlop={{ top: LINK_SLOP, bottom: LINK_SLOP }}
             testID={`welcome-${link}-link`}
             onPress={() => router.push(`/legal/${link}`)}
+            style={({ pressed }) => pressed && styles.pressed}
           >
             <AppText variant="meta" style={[styles.link, { color: color('--color-accent') }]}>
               {text}
@@ -42,4 +43,5 @@ export function TermsLine() {
 const styles = StyleSheet.create({
   line: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
   link: { fontWeight: '600', textDecorationLine: 'underline' },
+  pressed: { opacity: vars['--opacity-pressed'] },
 });

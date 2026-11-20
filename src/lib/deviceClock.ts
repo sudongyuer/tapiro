@@ -1,3 +1,5 @@
+import { dateFormat } from './intlCache';
+
 const pad = (value: number) => String(value).padStart(2, '0');
 
 const keyOf = (date: Date) =>
@@ -27,7 +29,7 @@ export function clockOptions(): Intl.DateTimeFormatOptions {
 export function localClock(time: number, language = clockStyle.language) {
   const date = new Date(time);
   if (clockStyle.uses24hourClock) return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  return new Intl.DateTimeFormat(language, clockOptions()).format(date);
+  return dateFormat(language, clockOptions()).format(date);
 }
 
 export function wallClock(time: number) {

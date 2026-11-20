@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   fill: { flex: 1 },
   inRow: { marginTop: 0 },
-  messageFill: { borderRadius: vars['--radius-pill'], opacity: 0.12 },
+  messageFill: { borderRadius: vars['--radius-pill'], borderCurve: 'continuous', opacity: 0.12 },
   pressed: { opacity: vars['--opacity-pressed'] },
   note: { marginTop: vars['--space-3'] },
   titleRow: {
@@ -181,10 +181,11 @@ const styles = StyleSheet.create({
     minHeight: vars['--touch-min'],
     paddingHorizontal: vars['--space-4'],
     borderRadius: vars['--radius-pill'],
+    borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  actionFill: { borderRadius: vars['--radius-pill'] },
+  actionFill: { borderRadius: vars['--radius-pill'], borderCurve: 'continuous' },
   actionText: { fontWeight: '700' },
 });

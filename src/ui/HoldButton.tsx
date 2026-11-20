@@ -13,7 +13,6 @@ import Animated, {
   ReduceMotion,
   useAnimatedReaction,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
@@ -34,6 +33,7 @@ import {
 } from './holdSchedule';
 import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 export type HoldButtonState = 'disabled' | 'ready' | 'busy';
 
@@ -75,7 +75,7 @@ export function HoldButton({
   testID,
 }: HoldButtonProps) {
   const { color } = useTheme();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const progress = useSharedValue(state === 'busy' ? 1 : 0);
   const width = useSharedValue(0);
   const track = useSharedValue<HoldTrack>(HOLD_IDLE);

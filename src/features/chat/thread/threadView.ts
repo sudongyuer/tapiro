@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 
 import { addDays, localClock, localDayKey } from '@/lib/deviceClock';
+import { dateFormat } from '@/lib/intlCache';
 
 import { rowTime } from '../list/rowView';
 import { messageText } from '../messageText';
@@ -38,9 +39,7 @@ export function departLabel(at: string, now: number, t: TFunction, language: str
   const clock = localClock(time);
   if (day === today) return t('chat.item.today', { clock });
   if (day === addDays(today, 1)) return t('chat.item.tomorrow', { clock });
-  const date = new Intl.DateTimeFormat(language, { month: 'short', day: 'numeric' }).format(
-    new Date(time),
-  );
+  const date = dateFormat(language, { month: 'short', day: 'numeric' }).format(new Date(time));
   return t('chat.item.onDay', { date, clock });
 }
 

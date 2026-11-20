@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { PlatformColor, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -8,7 +9,7 @@ import { RideTicket } from './RideTicket';
 import { rideTicketView } from './ticketView';
 import type { MyRide, RideSummary } from './types';
 
-export function TicketLink({
+export const TicketLink = memo(function TicketLink({
   ride,
   mine,
   now,
@@ -35,7 +36,7 @@ export function TicketLink({
       testID={`ride-ticket-${ride.id}`}
     />
   );
-}
+});
 
 const styles = StyleSheet.create({
   selected: { ...StyleSheet.absoluteFill, backgroundColor: PlatformColor('systemFill') },

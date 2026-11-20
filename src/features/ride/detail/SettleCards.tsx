@@ -150,6 +150,7 @@ export function ReceiptViewer({
               source={{ uri: current.uri }}
               style={styles.image}
               contentFit="contain"
+              transition={{ duration: vars['--duration-fade'], skipOnCacheHit: 'all' }}
               accessible
               accessibilityLabel={t('rideSettle.receipt.label')}
               testID="ride-receipt-image"

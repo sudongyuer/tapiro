@@ -2,11 +2,10 @@ import { useRouter, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
-  Easing,
   interpolate,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
+  withSpring,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
@@ -14,19 +13,20 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import type { LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
+import { vars } from '@/ui/theme/tokens';
 
 import { BackFace } from './BackFace';
 import { CardBody } from './cards/CardBody';
 import { bountyDetail, type LiveCardModel } from './homeModel';
 import { useLeavingCard } from './leavingCard';
 import { backOffset, PEEK, SCALE_STEP, type CardPlacement, type StackLayout } from './stackLayout';
-import { RESTACK } from './useStackFollow';
+import { RESTACK, RESTACK_FADE } from './useStackFollow';
 
 const MAX_Z = 10;
-const LEAVE = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
+const LEAVE = { duration: vars['--duration-settle'], easing: EASE_ENTER };
 const LEAVE_RISE = 24;
 const LEAVE_SHRINK = 0.08;
 const FRONT: CardPlacement = { y: 0, scale: 1, visible: true };
@@ -76,7 +76,7 @@ export type LiveCardStackProps = {
 
 export function LiveCardStack(props: LiveCardStackProps) {
   const { cards, heights, layout, ready } = props;
-  const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
+  const reduceMotion = useMotionReduced();
   const { leaving, rising, left } = useLeavingCard(cards, !reduceMotion);
   const [shown, setShown] = useState(ready);
   if (ready && !shown) setShown(true);
@@ -164,10 +164,10 @@ function StackedCard({
       scale.set(stacked.scale - SCALE_STEP);
     }
     wasReady.current = true;
-    y.set(animate ? withTiming(stacked.y, RESTACK) : stacked.y);
-    scale.set(animate ? withTiming(stacked.scale, RESTACK) : stacked.scale);
+    y.set(animate ? withSpring(stacked.y, RESTACK) : stacked.y);
+    scale.set(animate ? withSpring(stacked.scale, RESTACK) : stacked.scale);
     const face = index > 0 ? 1 : 0;
-    faceShown.set(animate ? withTiming(face, RESTACK) : face);
+    faceShown.set(animate ? withSpring(face, RESTACK_FADE) : face);
   }, [leaving, rising, riseFrom, ready, index, stacked.y, stacked.scale, y, scale, faceShown]);
   useEffect(() => {
     if (!onLeft) return;

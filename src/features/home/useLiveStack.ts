@@ -1,8 +1,9 @@
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
-import { useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { vars } from '@/ui/theme/tokens';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 const SETTLE = { duration: vars['--duration-settle'], dampingRatio: 0.8 } as const;
 
@@ -19,7 +20,7 @@ export function useLiveStackState() {
 }
 
 export function useStackProgress(open: boolean) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const progress = useSharedValue(open ? 1 : 0);
   useEffect(() => {
     const target = open ? 1 : 0;

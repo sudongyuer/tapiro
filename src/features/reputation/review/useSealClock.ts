@@ -5,7 +5,6 @@ import {
   Easing,
   ReduceMotion,
   useAnimatedReaction,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
@@ -13,8 +12,8 @@ import {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { vars } from '@/ui/theme/tokens';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { SEAL, SEAL_PRESS_FROM, SEAL_PRESS_SPRING } from './sealTimeline';
 
@@ -32,7 +31,7 @@ function pressed() {
 }
 
 export function useSealClock(running: boolean, moves: boolean): SealClock {
-  const reduced = useReducedMotion() || uiVerifyReduceMotion || !moves;
+  const reduced = useMotionReduced() || !moves;
   const clock = useSharedValue(0);
   const fade = useSharedValue(0);
   const press = useSharedValue<number>(SEAL_PRESS_FROM);

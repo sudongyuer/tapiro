@@ -1,6 +1,7 @@
 import { SymbolView } from 'expo-symbols';
-import { Fragment, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { ActivityIndicator, PlatformColor, StyleSheet, View } from 'react-native';
+import Animated, { LayoutAnimationConfig } from 'react-native-reanimated';
 
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
 import { useI18n } from '@/lib/i18n';
@@ -8,6 +9,7 @@ import type { CurrencyCode } from '@/lib/money';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { PressDim } from '@/ui/PressDim';
+import { FADE_IN, FADE_OUT } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
 import { useSheetFill } from '@/ui/theme/useSheetFill';
 
@@ -53,71 +55,80 @@ export function AskConversation({
   const resume = state.turns.length === 0 ? resumeLine(state.resume) : null;
   const last = state.turns.length - 1;
   return (
-    <View style={styles.list}>
-      {resume ? (
-        <PressDim
-          accessibilityRole="button"
-          accessibilityLabel={t('ask.sheet.resume', { text: resume })}
-          accessibilityHint={t('ask.sheet.resumeHint')}
-          onPress={actions.onResume}
-          testID="ask-resume"
-          style={[styles.resume, { backgroundColor: fill }]}
-        >
-          <AppText variant="secondary" tone="secondaryLabel" numberOfLines={1} style={styles.grow}>
-            {t('ask.sheet.resume', { text: resume })}
-          </AppText>
-          <SymbolView name="chevron.right" size={13} tintColor={PlatformColor('tertiaryLabel')} />
-        </PressDim>
-      ) : null}
-      {state.turns.map((turn, index) =>
-        turn.role === 'user' ? (
-          <UserBubble key={index} turn={turn} testID={`ask-turn-${index}`} />
-        ) : (
-          <Fragment key={index}>
-            <TapirCard
-              reply={turn.reply}
-              memory={turn.memory}
-              latest={index === last}
-              busy={state.sending !== null}
-              currency={currency}
-              onChoose={actions.onChoose}
-              onPick={actions.onPick}
-              onFill={actions.onFill}
-              onEditMemory={actions.onEditMemory}
-              testID={`ask-turn-${index}`}
+    <LayoutAnimationConfig skipEntering>
+      <View style={styles.list}>
+        {resume ? (
+          <PressDim
+            accessibilityRole="button"
+            accessibilityLabel={t('ask.sheet.resume', { text: resume })}
+            accessibilityHint={t('ask.sheet.resumeHint')}
+            onPress={actions.onResume}
+            testID="ask-resume"
+            style={[styles.resume, { backgroundColor: fill }]}
+          >
+            <AppText
+              variant="secondary"
+              tone="secondaryLabel"
+              numberOfLines={1}
+              style={styles.grow}
+            >
+              {t('ask.sheet.resume', { text: resume })}
+            </AppText>
+            <SymbolView name="chevron.right" size={13} tintColor={PlatformColor('tertiaryLabel')} />
+          </PressDim>
+        ) : null}
+        {state.turns.map((turn, index) =>
+          turn.role === 'user' ? (
+            <Animated.View key={index} entering={FADE_IN}>
+              <UserBubble turn={turn} testID={`ask-turn-${index}`} />
+            </Animated.View>
+          ) : (
+            <Animated.View key={index} entering={FADE_IN} style={styles.list}>
+              <TapirCard
+                reply={turn.reply}
+                memory={turn.memory}
+                latest={index === last}
+                busy={state.sending !== null}
+                currency={currency}
+                onChoose={actions.onChoose}
+                onPick={actions.onPick}
+                onFill={actions.onFill}
+                onEditMemory={actions.onEditMemory}
+                testID={`ask-turn-${index}`}
+              />
+              {state.userId ? (
+                <OfferCard userId={state.userId} turn={turn} testID={`ask-offer-${index}`} />
+              ) : null}
+            </Animated.View>
+          ),
+        )}
+        {state.sending ? (
+          <Animated.View exiting={FADE_OUT} style={styles.thinking} testID="ask-thinking">
+            <ActivityIndicator />
+            <AppText variant="secondary" tone="secondaryLabel">
+              {t('ask.sheet.thinking')}
+            </AppText>
+          </Animated.View>
+        ) : null}
+        {state.failed && state.failed.reason !== 'hungry' ? (
+          <FailureCard
+            text={t(FAILURE_KEYS[state.failed.reason])}
+            dizzy={state.failed.reason !== 'busy'}
+            testID={`ask-failure-${state.failed.reason}`}
+            textTestID="ask-failure-text"
+          >
+            <PillButton label={t('ask.sheet.retry')} onPress={actions.onRetry} testID="ask-retry" />
+            <PillButton
+              label={t('ask.sheet.manual')}
+              variant="secondary"
+              onPress={actions.onManual}
+              testID="ask-manual"
             />
-            {state.userId ? (
-              <OfferCard userId={state.userId} turn={turn} testID={`ask-offer-${index}`} />
-            ) : null}
-          </Fragment>
-        ),
-      )}
-      {state.sending ? (
-        <View style={styles.thinking} testID="ask-thinking">
-          <ActivityIndicator />
-          <AppText variant="secondary" tone="secondaryLabel">
-            {t('ask.sheet.thinking')}
-          </AppText>
-        </View>
-      ) : null}
-      {state.failed && state.failed.reason !== 'hungry' ? (
-        <FailureCard
-          text={t(FAILURE_KEYS[state.failed.reason])}
-          dizzy={state.failed.reason !== 'busy'}
-          testID={`ask-failure-${state.failed.reason}`}
-          textTestID="ask-failure-text"
-        >
-          <PillButton label={t('ask.sheet.retry')} onPress={actions.onRetry} testID="ask-retry" />
-          <PillButton
-            label={t('ask.sheet.manual')}
-            variant="secondary"
-            onPress={actions.onManual}
-            testID="ask-manual"
-          />
-        </FailureCard>
-      ) : null}
-      {hungry}
-    </View>
+          </FailureCard>
+        ) : null}
+        {hungry}
+      </View>
+    </LayoutAnimationConfig>
   );
 }
 

@@ -1,3 +1,4 @@
+import { numberFormat } from './intlCache';
 import type { PayeeType } from './payeeMethods';
 
 export const CURRENCIES = {
@@ -45,7 +46,7 @@ export function moneyParts(money: Money, locale: string, { whole = false } = {})
   const gap = spaced ? '\u00a0' : '';
   const scale = 10 ** minorDigits;
   const digits = whole && money.minor % scale === 0 ? 0 : minorDigits;
-  const text = new Intl.NumberFormat(locale, {
+  const text = numberFormat(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(Math.abs(money.minor) / scale);

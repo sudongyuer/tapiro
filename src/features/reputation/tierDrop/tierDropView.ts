@@ -1,5 +1,7 @@
 import type { TFunction } from 'i18next';
 
+import { dateFormat } from '@/lib/intlCache';
+
 import { tierLabel } from '../profile/profileView';
 import type { TierDrop, TierDropNoShow } from '../types';
 
@@ -8,9 +10,7 @@ export type TierDropLines = { title: string; reasons: string[]; wayBack: string 
 const KEY = 'reputation.tierDrop';
 
 export function noShowDate(at: string, language: string) {
-  return new Intl.DateTimeFormat(`${language}-MY`, { month: 'short', day: 'numeric' }).format(
-    new Date(at),
-  );
+  return dateFormat(`${language}-MY`, { month: 'short', day: 'numeric' }).format(new Date(at));
 }
 
 function noShowItem(noShow: TierDropNoShow, t: TFunction, language: string) {

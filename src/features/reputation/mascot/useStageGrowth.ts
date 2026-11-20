@@ -7,19 +7,18 @@ import {
   useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import type { StageActor } from '@/ui/MascotStage';
+import { EASE_ENTER_FN, useMotionReduced } from '@/ui/theme/motion';
 
 import { useMyMascot } from '../hooks';
 import { accessoryLevel } from '../model';
-import { easeEnter, progress } from '../review/sealTimeline';
+import { progress } from '../review/sealTimeline';
 import { growMarks, meStore } from '../services';
 import {
   GROW,
@@ -47,7 +46,7 @@ export function useStageGrowth({
   const level = data?.level ?? 1;
   const levelUp = data?.levelUp ?? false;
   const newWear = data?.accessory ? accessoryLevel(data.accessory) > data.seenLevel : false;
-  const reduced = useReducedMotion() || uiVerifyReduceMotion;
+  const reduced = useMotionReduced();
   const total = reduced ? GROW_REDUCED.total : GROW.total;
 
   const [marked] = useState(() => growMarks.played(userId));
@@ -105,7 +104,7 @@ export function useStageGrowth({
 
   const bodyStyle = useAnimatedStyle(() => {
     if (reduced) return {};
-    const crouched = easeEnter(progress(clock.value, GROW.crouch));
+    const crouched = EASE_ENTER_FN(progress(clock.value, GROW.crouch));
     return {
       transform: [
         { scaleX: growScale(crouched, grown.value, GROW_CROUCH.x) },
@@ -124,7 +123,7 @@ export function useStageGrowth({
   const reveal = useDerivedValue(() =>
     reduced
       ? progress(clock.value, GROW_REDUCED.bubble)
-      : easeEnter(progress(clock.value, GROW.bubble)),
+      : EASE_ENTER_FN(progress(clock.value, GROW.bubble)),
   );
 
   return {

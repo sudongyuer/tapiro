@@ -3,6 +3,7 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { CURRENCIES, formatMoney, type Money } from '@/lib/money';
 import { localClock, localDayKey } from '@/lib/deviceClock';
+import { dateFormat } from '@/lib/intlCache';
 
 import { dayKeyDate, dayRelation } from './rideClock';
 import { ticketModel, type TicketMine, type TicketStatus, type TicketTone } from './ticket';
@@ -57,7 +58,7 @@ export function statusText(status: TicketStatus, t: TFunction) {
 export function dayText(dayKey: string, now: number, t: TFunction, language: string) {
   const relation = dayRelation(dayKey, now);
   if (relation !== 'other') return t(`ride.list.${relation}`);
-  return new Intl.DateTimeFormat(language, {
+  return dateFormat(language, {
     month: 'short',
     day: 'numeric',
     weekday: 'short',
