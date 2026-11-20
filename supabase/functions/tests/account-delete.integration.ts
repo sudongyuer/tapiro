@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
@@ -14,6 +15,7 @@ const { url, anonKey, serviceKey } = localStack();
 const endpoint = `${url}/functions/v1/account-delete`;
 const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 const password = `pw-${crypto.randomUUID()}`;
+const db = localDb();
 
 async function createUser(name: string) {
   const email = `${name}-${crypto.randomUUID()}@example.test`;
@@ -31,9 +33,8 @@ async function createUser(name: string) {
 }
 
 async function profileExists(id: string) {
-  const { data, error } = await admin.from('profiles').select('id').eq('id', id).maybeSingle();
-  if (error) throw error;
-  return data !== null;
+  const rows = await db`select 1 from public.profiles where id = ${id}`;
+  return rows.length > 0;
 }
 
 async function userExists(id: string) {
@@ -42,12 +43,9 @@ async function userExists(id: string) {
 }
 
 async function payeeMethodCount(id: string) {
-  const { count, error } = await admin
-    .from('payee_methods')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', id);
-  if (error) throw error;
-  return count ?? 0;
+  const [row] =
+    await db`select count(*)::int as count from public.payee_methods where user_id = ${id}`;
+  return row.count as number;
 }
 
 const post = (headers: Record<string, string>) => fetch(endpoint, { method: 'POST', headers });
@@ -105,11 +103,9 @@ describe('account-delete (local stack)', () => {
     expect(owed.status).toBe(409);
     expect((await owed.json()).payments[0].direction).toBe('owed');
     expect(await userExists(a.id)).toBe(true);
-    const { error } = await admin
-      .from('payments')
-      .update({ state: 'settled', settled_at: new Date().toISOString() })
-      .eq('id', opened.data);
-    expect(error).toBeNull();
+    const settled = await db`
+      update public.payments set state = 'settled', settled_at = now() where id = ${opened.data}`;
+    expect(settled.count).toBe(1);
   });
 
   test('deletes the calling user, their profile and payee methods, leaving another user untouched', async () => {
@@ -213,11 +209,10 @@ describe('account-delete with bounties (local stack)', () => {
     const owed = await post({ Authorization: `Bearer ${helper.token}`, apikey: anonKey });
     expect(owed.status).toBe(409);
     expect((await owed.json()).payments).toHaveLength(1);
-    const settled = await admin
-      .from('payments')
-      .update({ state: 'settled', settled_at: new Date().toISOString(), method_type: 'cash' })
-      .eq('item_id', assigned);
-    expect(settled.error).toBeNull();
+    const settled = await db`
+      update public.payments set state = 'settled', settled_at = now(), method_type = 'cash'
+      where item_id = ${assigned}`;
+    expect(settled.count).toBe(1);
 
     const res = await post({ Authorization: `Bearer ${helper.token}`, apikey: anonKey });
     expect(res.status).toBe(200);
@@ -241,12 +236,7 @@ describe('account-delete with bounties (local stack)', () => {
   test('deleting the poster closes their open bounty', async () => {
     const res = await post({ Authorization: `Bearer ${poster.token}`, apikey: anonKey });
     expect(res.status).toBe(200);
-    const { data, error } = await admin
-      .from('bounties')
-      .select('status, poster_id')
-      .eq('id', open)
-      .single();
-    expect(error).toBeNull();
-    expect(data).toEqual({ status: 'closed', poster_id: null });
+    const rows = await db`select status, poster_id from public.bounties where id = ${open}`;
+    expect([...rows]).toEqual([{ status: 'closed', poster_id: null }]);
   });
 });

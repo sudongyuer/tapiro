@@ -2,19 +2,20 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 import { cronSecretCheck } from '../_shared/cronSecret.ts';
 
-import { BNM_ACCEPT, BNM_RATES_URL, handleFxRate } from './handler.ts';
+import { BNM_ACCEPT, handleFxRate, ratesUrlFor } from './handler.ts';
 
 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 const authorized = cronSecretCheck(Deno.env.get('CRON_SECRET'));
+const env = (key: string) => Deno.env.get(key);
 
 Deno.serve((req) =>
   handleFxRate(req, {
     authorized,
     async fetchRates() {
-      const res = await fetch(BNM_RATES_URL, { headers: { Accept: BNM_ACCEPT } });
+      const res = await fetch(ratesUrlFor(req, env), { headers: { Accept: BNM_ACCEPT } });
       if (!res.ok) throw new Error(`BNM answered ${res.status}`);
       return res.json();
     },

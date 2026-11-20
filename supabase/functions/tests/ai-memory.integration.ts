@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 
 const url = localSupabase('API_URL');
@@ -66,13 +67,9 @@ describe('小貘记得 through the served ai-draft', () => {
     if (created.error) throw created.error;
     const earlier = created.data.user.id;
     try {
-      const inserted = await admin.from('ai_consents').insert({
-        user_id: earlier,
-        version: 1,
-        provider: 'Alibaba Cloud Model Studio (Singapore)',
-        purpose: 'bounty_draft,answer,translate',
-      });
-      expect(inserted.error).toBeNull();
+      await localDb()`
+        insert into public.ai_consents (user_id, version, provider, purpose)
+        values (${earlier}, 1, 'Alibaba Cloud Model Studio (Singapore)', 'bounty_draft,answer,translate')`;
       const other = createClient(url, anonKey, { auth: { persistSession: false } });
       const signIn = await other.auth.signInWithPassword({ email, password });
       if (signIn.error) throw signIn.error;
@@ -87,8 +84,8 @@ describe('小貘记得 through the served ai-draft', () => {
       });
       expect(response.status).toBe(403);
       expect(await response.json()).toEqual({ error: 'consent_required' });
-      const meters = await admin.from('ai_metering').select('id').eq('user_id', earlier);
-      expect(meters.data).toEqual([]);
+      const meters = await localDb()`select id from public.ai_metering where user_id = ${earlier}`;
+      expect([...meters]).toEqual([]);
     } finally {
       await admin.auth.admin.deleteUser(earlier);
     }
@@ -123,10 +120,8 @@ describe('小貘记得 through the served ai-draft', () => {
       content: 'Sunway University',
       replaces: null,
     });
-    const { count } = await admin
-      .from('ai_memory')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId);
+    const [{ count }] = await localDb()`
+      select count(*)::int as count from public.ai_memory where user_id = ${userId}`;
     expect(count).toBe(1);
   });
 

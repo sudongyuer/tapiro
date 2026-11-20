@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { proposedBudget, summarize, type MeterRow } from './ai-budget';
 import prompts from './ai-budget-prompts.json';
+import { localDb } from './local-db';
 import { localSupabase } from './local-supabase';
 
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '[::1]']);
@@ -40,8 +41,7 @@ async function main() {
     const outcomes: Record<string, number> = {};
     for (const body of calls) {
       await client.rpc('ai_status');
-      const refill = await admin.from('ai_energy').update({ level: 1000 }).eq('user_id', userId);
-      if (refill.error) throw refill.error;
+      await localDb()`update public.ai_energy set level = 1000 where user_id = ${userId}`;
       const started = performance.now();
       const response = await fetch(`${url}/functions/v1/ai-draft`, {
         method: 'POST',
@@ -58,15 +58,14 @@ async function main() {
       console.log(`${key} ${Math.round(performance.now() - started)} ms`);
     }
 
-    const { data, error } = await admin
-      .from('ai_metering')
-      .select('task, model, input_tokens, output_tokens, discarded')
-      .eq('user_id', userId);
-    if (error) throw error;
-    const summary = summarize(data as MeterRow[]);
+    const rows = await localDb()`
+      select task, model, input_tokens, output_tokens, discarded
+      from public.ai_metering where user_id = ${userId}`;
+    const summary = summarize([...rows] as MeterRow[]);
     console.log(JSON.stringify({ outcomes, summary, proposed: proposedBudget(summary) }, null, 2));
   } finally {
     await admin.auth.admin.deleteUser(userId);
+    await localDb().close();
   }
 }
 
