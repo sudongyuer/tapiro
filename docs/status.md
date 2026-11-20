@@ -481,10 +481,12 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
 
 ## Website
 
-`website/` is the static site at https://tapiro.app (and www), written for the Stripe account application (owner,
-2026-11-14): introduction, pricing, `/coins`, privacy, terms with the refund policy. It names the operator as Su Dongyu
-and contains no "Malaysia" (owner's choices). `/coins` lists the three packs with disabled buttons; taking card payments
-on the web is not planned (owner, 2026-11-14). Deploy from `website/` with `bunx wrangler@4 deploy` (Cloudflare Worker
+`website/` is the static site at https://tapiro.app (and www), first written for the Stripe account application
+(owner, 2026-11-14): introduction, pricing, `/coins`, privacy, terms with the refund policy. It names the operator as Su
+Dongyu and contains no "Malaysia" (owner's choices). Coins are sold only through Apple in-app purchase at launch (Q20 C,
+owner 2026-11-21; foundation 「Coins: purchase」): `/coins` lists the three packs and points to Me → Coins in the app,
+terms send coin refunds to Apple, and privacy names Apple, not Stripe, as handling payment. A website top-up with
+Stripe may come later once there is revenue (3.1.3(b): IAP stays, the app never mentions or links it). Deploy from `website/` with `bunx wrangler@4 deploy` (Cloudflare Worker
 `tapiro` with static assets, the owner's personal account; the `tapiro.app` zone is in the same account).
 
 ## Resuming on another machine
