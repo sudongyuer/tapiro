@@ -25,8 +25,8 @@ DEVICE_OS="$(jq -r --arg udid "$DEVICE" '.result.devices[] | select(.hardwarePro
 MIN_OS="$(node -p "require('./app.json').expo.ios.deploymentTarget")"
 [ "${DEVICE_OS%%.*}" -ge "${MIN_OS%%.*}" ] || fail "the iPhone runs iOS $DEVICE_OS; Tapiro needs iOS $MIN_OS or later"
 
-step "Hosted Supabase anon key"
-hosted_supabase_env
+step "Hosted Supabase and Google values"
+hosted_release_env
 
 if [ "${TAPIRO_SKIP_PREBUILD:-}" = 1 ] && [ -d ios/Tapiro.xcworkspace ]; then
   step "Prebuild skipped (TAPIRO_SKIP_PREBUILD=1)"
