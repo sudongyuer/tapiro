@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { parseBountyDraft } from '../../../src/lib/drafts/bountyDraft';
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 import { DEEPSEEK_FALLBACK, QWEN_ASR, QWEN_FLASH, QWEN_PLUS } from '../ai-draft/models';
 import { asrResult, ERRORS, textCompletion, toolCompletion } from '../ai-draft/modelStudioFixtures';
@@ -126,18 +127,13 @@ async function energy() {
 
 async function refill() {
   await energy();
-  const { error } = await admin.from('ai_energy').update({ level: 1000 }).eq('user_id', userId);
-  if (error) throw error;
+  await localDb()`update public.ai_energy set level = 1000 where user_id = ${userId}`;
 }
 
 async function meterRows() {
-  const { data, error } = await admin
-    .from('ai_metering')
-    .select('*')
-    .eq('user_id', userId)
-    .order('id');
-  if (error) throw error;
-  return data;
+  return [
+    ...(await localDb()`select * from public.ai_metering where user_id = ${userId} order by id`),
+  ];
 }
 
 beforeAll(async () => {

@@ -1,7 +1,15 @@
 import { describe, expect, mock, test } from 'bun:test';
 
+import { LOCAL_ENV } from '../_shared/iap/fakes.ts';
 import recorded from './bnm-exchange-rate.fixture.json';
-import { handleFxRate, parseBnmCny, type FxRateDeps } from './handler';
+import {
+  BNM_RATES_URL,
+  handleFxRate,
+  parseBnmCny,
+  ratesUrlFor,
+  TEST_RATES_HEADER,
+  type FxRateDeps,
+} from './handler';
 
 const post = (token?: string) =>
   new Request('http://localhost/fx-rate', {
@@ -79,5 +87,21 @@ describe('handleFxRate', () => {
     expect((await handleFxRate(post('service'), odd)).status).toBe(502);
     expect(failing.store).not.toHaveBeenCalled();
     expect(odd.store).not.toHaveBeenCalled();
+  });
+});
+
+describe('ratesUrlFor', () => {
+  const mockUrl = 'http://host.docker.internal:54397/exchange-rate';
+  const local = { ...LOCAL_ENV, FX_TEST_RATES_URL: mockUrl };
+  const envOf = (values: Record<string, string>) => (key: string) => values[key];
+  const asked = new Request('http://localhost/fx-rate', { headers: { [TEST_RATES_HEADER]: '1' } });
+
+  test('the mock BNM is read only on the local stack, with its URL and the header', () => {
+    expect(ratesUrlFor(asked, envOf(local))).toBe(mockUrl);
+    expect(ratesUrlFor(post('service'), envOf(local))).toBe(BNM_RATES_URL);
+    expect(ratesUrlFor(asked, envOf(LOCAL_ENV))).toBe(BNM_RATES_URL);
+    expect(ratesUrlFor(asked, envOf({ ...local, SB_REGION: 'ap-southeast-1' }))).toBe(
+      BNM_RATES_URL,
+    );
   });
 });

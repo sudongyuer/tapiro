@@ -926,3 +926,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-20 | ASC upload status                       | 0                  | 1             | ~5 min (lint on Buffer)                          | 0                       | 0                     |
 | 2026-11-20 | cron secret                             | 1                  | 1             | ~5 min (live_push drain without Vault secrets)   | 0                       | 0                     |
 | 2026-11-20 | direct APNs push                        | 0                  | 1             | ~15 min (worktree guard on shell pipes)          | 0                       | 0                     |
+| 2026-11-21 | service-role grants (hosted defaults)   | 1                  | 1             | ~10 min (fixtures used the service role)         | 0                       | 0                     |

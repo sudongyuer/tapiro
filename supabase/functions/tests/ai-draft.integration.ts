@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { translatedText } from '../../../src/features/ask/translations';
 import { parseBountyDraft } from '../../../src/lib/drafts/bountyDraft';
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 
 const url = localSupabase('API_URL');
@@ -46,9 +47,9 @@ async function status() {
 }
 
 async function meterRows() {
-  const { data, error } = await admin.from('ai_metering').select('*').eq('user_id', userId);
-  if (error) throw error;
-  return data;
+  return [
+    ...(await localDb()`select * from public.ai_metering where user_id = ${userId} order by id`),
+  ];
 }
 
 beforeAll(async () => {

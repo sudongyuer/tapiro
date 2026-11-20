@@ -5,6 +5,7 @@ import { createSupabaseStickerService } from '@/lib/stickers/service';
 
 import { createSupabasePaymentService } from './paymentService';
 import { NoRateError } from './types';
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 
 const value = localSupabase;
@@ -134,8 +135,7 @@ describe('supabase payment service (local stack)', () => {
 
   test('marking a yuan payment paid by DuitNow without a locked rate fails as no rate', async () => {
     const week = new Date(Date.now() - 8 * 86_400_000).toISOString().slice(0, 10);
-    const cleared = await admin.from('fx_rates').delete().gte('rate_date', week);
-    expect(cleared.error).toBeNull();
+    await localDb()`delete from public.fx_rates where rate_date >= ${week}`;
     const id = await open(poster.id, helper.id, 1000, 'CNY');
     const marking = poster.service.markPaid(id, methodId, null, 1000);
     await expect(marking).rejects.toBeInstanceOf(NoRateError);
@@ -144,15 +144,11 @@ describe('supabase payment service (local stack)', () => {
 
   test('a yuan payment locks the BNM rate at open and prices each method', async () => {
     const today = new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
-    const { error } = await admin.from('fx_rates').upsert({
-      base: 'CNY',
-      quote: 'MYR',
-      rate_date: today,
-      source: 'bnm',
-      session: '1700',
-      quote_per_base: 0.6494,
-    });
-    expect(error).toBeNull();
+    await localDb()`
+      insert into public.fx_rates (base, quote, rate_date, source, session, quote_per_base)
+      values ('CNY', 'MYR', ${today}, 'bnm', '1700', 0.6494)
+      on conflict (base, quote, rate_date, source)
+      do update set session = excluded.session, quote_per_base = excluded.quote_per_base`;
     const id = await open(poster.id, helper.id, 5000, 'CNY');
     const detail = await poster.service.detail(id);
     expect(detail.rate).toMatchObject({ base: 'CNY', quote: 'MYR', quotePerBase: 0.6494 });

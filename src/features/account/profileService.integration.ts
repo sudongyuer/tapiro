@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { createSupabaseProfileService } from './profileService';
 import type { AccountUser } from './types';
+import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 
 const value = localSupabase;
@@ -43,7 +44,8 @@ describe('supabase profile service (local stack)', () => {
   });
 
   test('inserts the row when it is missing', async () => {
-    await admin.from('profiles').delete().eq('id', user.id);
+    const deleted = await localDb()`delete from public.profiles where id = ${user.id}`;
+    expect(deleted.count).toBe(1);
     expect(await service.save(user, { displayName: 'Again', avatarUrl: null })).toBe(true);
     expect(await service.load(user)).toEqual({ displayName: 'Again', avatarUrl: null });
   });

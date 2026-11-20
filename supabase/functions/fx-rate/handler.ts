@@ -1,7 +1,18 @@
 import { CRON_SECRET_HEADER } from '../_shared/cronSecret.ts';
+import { isLocalStack, type Env } from '../_shared/localStack.ts';
 
 export const BNM_RATES_URL = 'https://api.bnm.gov.my/public/exchange-rate';
 export const BNM_ACCEPT = 'application/vnd.BNM.API.v1+json';
+export const TEST_RATES_HEADER = 'x-tapiro-test-rates';
+
+// The stack test stores a rate from a mock BNM; only the CLI's local stack honours the header, so a hosted project
+// always reads the real BNM.
+export function ratesUrlFor(req: Request, env: Env) {
+  const test = env('FX_TEST_RATES_URL');
+  return test && req.headers.get(TEST_RATES_HEADER) === '1' && isLocalStack(env)
+    ? test
+    : BNM_RATES_URL;
+}
 
 export type DailyRate = {
   base: 'CNY';

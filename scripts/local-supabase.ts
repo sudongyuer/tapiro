@@ -4,6 +4,7 @@ const OVERRIDES = {
   API_URL: process.env.SUPABASE_LOCAL_API_URL,
   ANON_KEY: process.env.SUPABASE_LOCAL_ANON_KEY,
   SERVICE_ROLE_KEY: process.env.SUPABASE_LOCAL_SERVICE_ROLE_KEY,
+  DB_URL: process.env.SUPABASE_LOCAL_DB_URL,
 };
 
 // SUPABASE_LOCAL_<KEY> overrides `supabase status`, which reports the configured port even when another app holds it

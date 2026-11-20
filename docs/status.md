@@ -4,8 +4,8 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-20 (first TestFlight upload, 1.0.0 (20261120.1136), against the hosted Supabase project; cabled
-installs with `bun run device-install`).
+Updated: 2026-11-21 (explicit service-role grants for the Edge Functions on the hosted project; local stacks start
+with the hosted default privileges).
 
 ## Built and merged
 
@@ -438,6 +438,13 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   secret (Vault `cron_secret` = function secret `CRON_SECRET`, header `x-cron-secret`), not the service role key; a
   missing Vault secret fails the job in `cron.job_run_details` (`supabase/README.md`, 「Scheduled functions」). Set on
   the hosted project 2026-11-20 together with Vault `project_url`; rotate by setting both to a new value.
+- The hosted project (created 2026-11-19) gives `anon`, `authenticated` and `service_role` nothing on new public
+  tables, sequences and functions (Supabase changelog 45329), so `fx-rate` failed `store_failed` and `account-delete`
+  could not read payments. `20261121000200_service_role_grants.sql` grants the Edge Functions exactly what they use
+  (pushed 2026-11-21; `fx-rate`, `payment-proof-cleanup` and `notify` answered 200 and a fresh rate was stored).
+  Local and CI stacks now start with the same defaults (`api.auto_expose_new_tables = false`), pgTAP
+  `edge_function_grants.test.sql` lists each function's grants, and stack-test fixtures write as `postgres` through
+  `scripts/local-db.ts`. Local hosts PostgreSQL 15 while hosted runs 17 (`db.major_version`), still unaligned.
 - `bun run testflight` (`scripts/testflight.sh`): fresh prebuild, Release archive, checks (hosted URL in the bundle and
   no local one, build number, push and Sign in with Apple entitlements), export with `destination=upload`. Build number
   is the UTC time `YYYYMMDD.HHMM`; the version is `app.json`'s. It never reads `.env` files (`EXPO_NO_DOTENV=1`): the
