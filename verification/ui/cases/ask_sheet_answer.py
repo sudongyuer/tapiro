@@ -1,7 +1,8 @@
 """问小貘 answers in the sheet. A suggestion fills the field and sends nothing; 发送 sends it and shows progress, then 小貘's answer
 under the words, and the field clears. A short request gets one question with buttons; tapping one sends the earlier
 words with the question and its answer, and the draft card comes back; that draft empties the belly, and its 填进表单
-stays whole under the sheet's bar with no hungry card until the next ask (ASK-1). Each open is new, with 「接着上次：…」 on top
+stays whole under the sheet's bar with no hungry card until the next ask (ASK-1). The conversation scrolls in its own
+view under the fixed header, so it clips at the header's bottom and never passes under the grabber or the close button. Each open is new, with 「接着上次：…」 on top
 that restores the last conversation, also after a restart. Words typed but not sent are kept on the device: closing the
 sheet and restarting the app keep them."""
 import sys
@@ -65,6 +66,10 @@ bar, fill, sheet = close_button(ui, items)['frame'], by_id(items, 'ask-turn-5-fi
     by_id(items, 'ask-tapir-sheet')['frame']
 assert fill['y'] >= bar['y'] + bar['height'] and fill['y'] + fill['height'] <= sheet['y'] + sheet['height'], \
     f'填进表单 is not whole between the bar and the sheet bottom: {fill}, bar {bar}, sheet {sheet}'
+header = [bar] + [by_id(items, name)['frame'] for name in ('ask-tapir-subtitle', 'ask-belly') if by_id(items, name)]
+floor = max(f['y'] + f['height'] for f in header)
+assert sheet['y'] >= floor - 0.5, \
+    f'the conversation scrolls under the header and the close button: it starts at {sheet["y"]}, the header ends at {floor}'
 ui.capture('05-draft-after-button')
 
 ui.tap('ask-tapir-prompt')

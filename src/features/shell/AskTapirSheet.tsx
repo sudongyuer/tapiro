@@ -84,23 +84,7 @@ export function AskTapirSheet({
           onPress={onClose}
         />
       </Stack.Toolbar>
-      {/* No automatic inset for the bar: the sheet's own header sits in the bar's row beside the close button, keeping
-          the first detent's room for the field and the hungry card's buttons. */}
-      <ScrollView
-        ref={scroll}
-        contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={styles.sheet}
-        automaticallyAdjustKeyboardInsets
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-        onContentSizeChange={() => {
-          if (follow.current) scroll.current?.scrollToEnd({ animated: true });
-        }}
-        onScrollBeginDrag={() => {
-          follow.current = false;
-        }}
-        testID="ask-tapir-sheet"
-      >
+      <View style={styles.screen}>
         <View style={styles.header}>
           <View style={[styles.avatar, { backgroundColor: color('--color-card-calm') }]}>
             <Mascot variant="side" size={32} />
@@ -116,41 +100,64 @@ export function AskTapirSheet({
           </View>
           <View style={styles.closeSlot} />
         </View>
-
-        <View style={styles.body} testID="ask-tapir-body">
-          {notice}
-          {showSuggestions ? (
-            <View style={styles.chips}>
-              {suggestions.map((key, index) => (
-                <PressDim
-                  key={key}
-                  accessibilityRole="button"
-                  testID={`ask-tapir-suggestion-${index}`}
-                  onPress={() => onSuggestion(t(key))}
-                  style={[styles.chip, { backgroundColor: fill }]}
-                >
-                  <AppText variant="secondary">{t(key)}</AppText>
-                </PressDim>
-              ))}
-            </View>
-          ) : null}
-          {children}
-          <AskInput composer={composer} prompt={copy.prompt} />
-        </View>
-      </ScrollView>
+        {/* The header stays out of the scroll view, so the conversation clips at its bottom edge instead of passing
+            under the grabber and the close button that share its row. */}
+        <ScrollView
+          ref={scroll}
+          contentInsetAdjustmentBehavior="never"
+          contentContainerStyle={styles.content}
+          automaticallyAdjustKeyboardInsets
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          onContentSizeChange={() => {
+            if (follow.current) scroll.current?.scrollToEnd({ animated: true });
+          }}
+          onScrollBeginDrag={() => {
+            follow.current = false;
+          }}
+          testID="ask-tapir-sheet"
+        >
+          <View style={styles.body} testID="ask-tapir-body">
+            {notice}
+            {showSuggestions ? (
+              <View style={styles.chips}>
+                {suggestions.map((key, index) => (
+                  <PressDim
+                    key={key}
+                    accessibilityRole="button"
+                    testID={`ask-tapir-suggestion-${index}`}
+                    onPress={() => onSuggestion(t(key))}
+                    style={[styles.chip, { backgroundColor: fill }]}
+                  >
+                    <AppText variant="secondary">{t(key)}</AppText>
+                  </PressDim>
+                ))}
+              </View>
+            ) : null}
+            {children}
+            <AskInput composer={composer} prompt={copy.prompt} />
+          </View>
+        </ScrollView>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  sheet: {
+  screen: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: vars['--space-3'],
     paddingHorizontal: vars['--space-5'],
     paddingTop: vars['--space-6'],
-    paddingBottom: vars['--space-6'],
-    gap: vars['--space-4'],
   },
   body: { gap: vars['--space-4'] },
-  header: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-3'] },
+  content: {
+    paddingHorizontal: vars['--space-5'],
+    paddingTop: vars['--space-4'],
+    paddingBottom: vars['--space-6'],
+  },
   avatar: {
     width: vars['--touch-min'],
     height: vars['--touch-min'],

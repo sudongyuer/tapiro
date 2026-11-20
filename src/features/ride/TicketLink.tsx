@@ -1,9 +1,9 @@
 import { memo } from 'react';
-import { PlatformColor, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import { RideTicket } from './RideTicket';
 import { rideTicketView } from './ticketView';
@@ -39,5 +39,5 @@ export const TicketLink = memo(function TicketLink({
 });
 
 const styles = StyleSheet.create({
-  selected: { ...StyleSheet.absoluteFill, backgroundColor: PlatformColor('systemFill') },
+  selected: { ...StyleSheet.absoluteFill, backgroundColor: SELECTED_ROW_FILL },
 });

@@ -92,6 +92,18 @@ export function HungryCard({
     offer === 'feed' ? actions.onFeed : offer === 'swap' ? actions.onSwap : actions.onTomorrow;
   const measure = (set: (box: LayoutRectangle) => void) => (event: LayoutChangeEvent) =>
     set(event.nativeEvent.layout);
+  const manualLeads = offer !== 'feed' && offer !== 'swap';
+  const manual = (
+    <View style={styles.action}>
+      <PillButton
+        label={t('ask.sheet.manual')}
+        variant={manualLeads ? 'primary' : 'secondary'}
+        onPress={actions.onManual}
+        disabled={motion.flying}
+        testID="ask-manual"
+      />
+    </View>
+  );
 
   return (
     <View
@@ -119,10 +131,12 @@ export function HungryCard({
           {t('ask.hungry.refill')}
         </AppText>
       )}
+      {manualLeads ? manual : null}
       {label ? (
         <View style={styles.action} onLayout={measure(setButton)}>
           <PillButton
             label={label}
+            variant={manualLeads ? 'secondary' : 'primary'}
             onPress={onOffer}
             loading={writing}
             loadingLabel={t('ask.hungry.feeding')}
@@ -131,15 +145,7 @@ export function HungryCard({
           />
         </View>
       ) : null}
-      <View style={styles.action}>
-        <PillButton
-          label={t('ask.sheet.manual')}
-          variant="secondary"
-          onPress={actions.onManual}
-          disabled={motion.flying}
-          testID="ask-manual"
-        />
-      </View>
+      {manualLeads ? null : manual}
       {pantry.failure && pantry.failure.write !== 'swap' ? (
         <AppText variant="secondary" style={styles.center} testID="ask-hungry-failure">
           {pantry.failure.write === 'swapFeed' && pantry.failure.reason !== 'failed'

@@ -40,20 +40,25 @@ export function PillButton({
   const { color } = useTheme();
   const pinned = useContext(PinnedSurface);
   const inactive = disabled || loading;
-  const labelColor =
-    variant === 'primary'
+  const greyed = disabled && !loading;
+  const labelColor = greyed
+    ? PlatformColor('tertiaryLabel')
+    : variant === 'primary'
       ? color('--color-on-accent')
       : variant === 'destructive'
         ? color('--color-urgent')
         : PlatformColor('label');
+  const secondaryFill = PlatformColor(pinned ? 'systemGray5' : 'tertiarySystemFill');
   const fill =
-    variant === 'primary'
-      ? color('--color-accent')
-      : variant === 'destructive'
-        ? PlatformColor('secondarySystemGroupedBackground')
-        : variant === 'secondary'
-          ? PlatformColor(pinned ? 'systemGray5' : 'tertiarySystemFill')
-          : undefined;
+    variant === 'plain'
+      ? undefined
+      : greyed
+        ? secondaryFill
+        : variant === 'primary'
+          ? color('--color-accent')
+          : variant === 'destructive'
+            ? PlatformColor('secondarySystemGroupedBackground')
+            : secondaryFill;
 
   return (
     <Pressable
@@ -63,12 +68,7 @@ export function PillButton({
       disabled={inactive}
       onPress={onPress}
       testID={testID}
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: fill },
-        pressed && styles.pressed,
-        disabled && styles.disabled,
-      ]}
+      style={({ pressed }) => [styles.button, { backgroundColor: fill }, pressed && styles.pressed]}
     >
       {loading ? (
         <View style={styles.loading}>
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     paddingVertical: vars['--space-3'],
   },
   pressed: { opacity: vars['--opacity-pressed'] },
-  disabled: { opacity: 0.4 },
   label: { fontWeight: '600', textAlign: 'center' },
   loading: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
 });

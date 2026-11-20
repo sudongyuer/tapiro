@@ -1,7 +1,8 @@
 """The payer's 已结清 card (10A, 68A, 70A). One settle: the green card is in front with the 已结清 tag, the line naming
 阿杰, the amount and a 44 pt 「收进贴纸本」 button, 小貘 says 阿杰收到钱了, and the tab-bar accessory stays away on 我的;
 tapping the button writes one collect and leaves the calm card. Behind an 欠钱 card it is only the strip
-「帮买奶茶 · 办成了」, the accessory on 我的 shows the payment without counting it, and fanning out reaches its button.
+「帮买奶茶 · 办成了」, the accessory on 我的 shows the payment without counting it, and fanning out reaches its button,
+as tall as the 欠钱 card's 去付款 (one shared card button).
 Two settles make two cards, each collected on its own. The worst case (40-code-point name, 120-code-point title, an
 unnamed payee and a ride) keeps the card and its button on screen, and 小貘's bubble wraps the whole line without
 reaching the car."""
@@ -17,6 +18,7 @@ from stage import assert_bubble_clear, assert_bubble_whole  # noqa: E402
 
 DEPS = [
     'src/features/home/',
+    'src/ui/PressDim.tsx',
     'src/features/shell/',
     'src/lib/liveItems.ts',
     'src/lib/stickers/',
@@ -119,6 +121,9 @@ ui.wait_label('live-cards-toggle', lambda label: label == ui.t('home.stack.colla
 card = ui.settled(lambda items: by_id(items, 'live-card-settled'), 'the settled card did not fan out')
 assert card.get('AXLabel') == card_label('帮买奶茶', 'Lily', 'RM 8'), card.get('AXLabel')
 assert_card(card, ui.element('settled-card-collect'), 'behind')
+items = ui.read()
+pay, collect = (by_id(items, name)['frame']['height'] for name in ('pay-card-button', 'settled-card-collect'))
+assert abs(pay - collect) <= 0.5, f'去付款 is {pay} pt tall and 收进贴纸本 {collect} pt: the card buttons differ'
 ui.snap('06-behind-fanned')
 
 relaunch(ui, drop=ARGS[:2], add=['-uiVerifySettled', 'two'])

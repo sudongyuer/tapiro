@@ -15,6 +15,7 @@ const SEGMENT_HEIGHT = 10;
 const SEGMENT_GAP = 3;
 const ROW_HEIGHT = 28;
 const ROW_SLOP = (vars['--touch-min'] - ROW_HEIGHT) / 2;
+const EMPTY_EDGE = PlatformColor('tertiaryLabel');
 
 function Segment({
   index,
@@ -32,7 +33,7 @@ function Segment({
     return { opacity: level, transform: [{ scaleX: 0.4 + 0.6 * level }] };
   });
   return (
-    <View style={[styles.segment, { backgroundColor: PlatformColor('systemFill') }]}>
+    <View style={[styles.segment, { borderColor: lit ? fill : EMPTY_EDGE }]}>
       <Animated.View style={[styles.fill, { backgroundColor: fill }, style]} />
     </View>
   );
@@ -96,6 +97,8 @@ const styles = StyleSheet.create({
     width: SEGMENT_WIDTH,
     height: SEGMENT_HEIGHT,
     borderRadius: SEGMENT_HEIGHT / 2,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    backgroundColor: PlatformColor('systemFill'),
     overflow: 'hidden',
   },
   fill: { flex: 1, borderRadius: SEGMENT_HEIGHT / 2 },

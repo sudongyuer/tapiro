@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { HandArt, HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
-import { useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
+import { SELECTED_ROW_FILL, useSelectedUntilReturn } from '@/ui/useSelectedUntilReturn';
 
 import type { ThreadSummary } from '../types';
 import { rowView } from './rowView';
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
   fill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  selected: { backgroundColor: PlatformColor('systemFill') },
+  selected: { backgroundColor: SELECTED_ROW_FILL },
   separator: {
     position: 'absolute',
     top: 0,

@@ -1,15 +1,14 @@
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import type { BountyCardDetail, OwedDetail } from '@/lib/liveItems';
 import { formatMoney, type Money } from '@/lib/money';
-import { AppText } from '@/ui/AppText';
 import { HandArtSticker } from '@/ui/HandArt';
 import { LiveCard, useLiveCardPaint } from '@/ui/LiveCard';
 import { vars } from '@/ui/theme/tokens';
 
 import { ArtArrival } from './ArtArrival';
-import { CardHeader, CardText, Pill } from './cardParts';
+import { CardButton, CardHeader, CardText, Pill } from './cardParts';
 import { useStackedBeside } from './useStackedBeside';
 
 const TAG = {
@@ -53,15 +52,13 @@ export function BountyCard({
       <TitleRow ink={ink} title={detail.title} amount={detail.reward} />
       {message ? (
         <View style={styles.actions}>
-          <MessagePill message={message} ink={ink} />
+          <MessageButton message={message} ink={ink} surface={surface} />
           {action ? (
-            <View style={styles.fill}>
-              <ActionPill label={action} fill={ink} ink={surface} inRow />
-            </View>
+            <CardButton label={action} ink={ink} surface={surface} style={styles.fill} />
           ) : null}
         </View>
       ) : action ? (
-        <ActionPill label={action} fill={ink} ink={surface} />
+        <CardButton label={action} ink={ink} surface={surface} style={styles.action} />
       ) : null}
     </LiveCard>
   );
@@ -108,49 +105,27 @@ export function TitleRow({ ink, title, amount }: { ink: string; title: string; a
   );
 }
 
-function ActionPill({
-  label,
+function MessageButton({
+  message,
   ink,
-  fill,
-  inRow = false,
+  surface,
 }: {
-  label: string;
+  message: CardMessage;
   ink: string;
-  fill: string;
-  inRow?: boolean;
+  surface: string;
 }) {
-  return (
-    <View style={[styles.action, inRow && styles.inRow]}>
-      <View style={[StyleSheet.absoluteFill, styles.actionFill, { backgroundColor: fill }]} />
-      <AppText variant="secondary" numberOfLines={1} style={[styles.actionText, { color: ink }]}>
-        {label}
-      </AppText>
-    </View>
-  );
-}
-
-function MessagePill({ message, ink }: { message: CardMessage; ink: string }) {
   const { t } = useI18n();
-  const label = t('home.card.bounty.message');
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ busy: message.busy }}
-      // Stays enabled while busy: a disabled Pressable passes the touch to the card, which opens the status screen.
+    // Stays enabled while busy: a disabled Pressable passes the touch to the card, which opens the status screen.
+    <CardButton
+      label={t('home.card.bounty.message')}
+      ink={ink}
+      surface={surface}
+      look="tinted"
+      busy={message.busy}
       onPress={message.onPress}
       testID="live-card-message"
-      style={({ pressed }) => [styles.action, styles.inRow, pressed && styles.pressed]}
-    >
-      <View style={[StyleSheet.absoluteFill, styles.messageFill, { backgroundColor: ink }]} />
-      {message.busy ? (
-        <ActivityIndicator color={ink} />
-      ) : (
-        <AppText variant="secondary" numberOfLines={1} style={[styles.actionText, { color: ink }]}>
-          {label}
-        </AppText>
-      )}
-    </Pressable>
+    />
   );
 }
 
@@ -161,9 +136,7 @@ const styles = StyleSheet.create({
     marginTop: vars['--space-4'],
   },
   fill: { flex: 1 },
-  inRow: { marginTop: 0 },
-  messageFill: { borderRadius: vars['--radius-pill'], borderCurve: 'continuous', opacity: 0.12 },
-  pressed: { opacity: vars['--opacity-pressed'] },
+  action: { marginTop: vars['--space-4'] },
   note: { marginTop: vars['--space-3'] },
   titleRow: {
     flexDirection: 'row',
@@ -176,16 +149,4 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontWeight: '700' },
   titleFull: { fontWeight: '700' },
   amountStacked: { textAlign: 'right' },
-  action: {
-    marginTop: vars['--space-4'],
-    minHeight: vars['--touch-min'],
-    paddingHorizontal: vars['--space-4'],
-    borderRadius: vars['--radius-pill'],
-    borderCurve: 'continuous',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  actionFill: { borderRadius: vars['--radius-pill'], borderCurve: 'continuous' },
-  actionText: { fontWeight: '700' },
 });

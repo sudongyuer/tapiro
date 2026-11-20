@@ -3,7 +3,9 @@ third, so the bar drops to four, and tapping it explains the belly in a system a
 turns orange and the sheet says 小貘 can help about once more. An empty belly shows the hungry card instead of a send:
 with a leaf in the jar 喂一片嫩叶 feeds it (one call, the leaf flies to 小貘 in the recorded clip) and the bar is full
 again; with no leaf, a coin swap asks first in a system action sheet and feeds at once; after five feeds today its one
-title says 吃撑了 (not 饿了 over it) with only 自己填; with nothing, 明早再来 closes the sheet. A belly emptied by an answer brings the card
+title says 吃撑了 (not 饿了 over it) with only 自己填, filled as the primary; with nothing, 自己填 leads as the filled
+primary (it moves the task on) and the grey 明早再来 under it closes the sheet. Empty belly pips keep a visible outline
+on the glass in light and dark. A belly emptied by an answer brings the card
 without another send."""
 import sys
 
@@ -12,10 +14,10 @@ import recording  # noqa: E402
 from ask import ai_calls, assert_calls, assert_lifted, open_sheet, turn, type_and_send  # noqa: E402
 from bounty import relaunch, tap_sheet_action  # noqa: E402
 from confirm import assert_dialog  # noqa: E402
-from driver import UI, assert_colour, by_id, close, reach_home, token  # noqa: E402
+from driver import UI, assert_colour, by_id, close, luma, reach_home, token  # noqa: E402
 
 DEPS = ['src/features/ask/', 'src/features/shell/AskTapirSheet.tsx', 'src/app/ask.tsx', 'src/lib/i18n/locales/ask/',
-        'src/ui/theme/tokens.ts', 'assets/pantry/', 'verification/ui/ask.py', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
+        'src/ui/theme/tokens.ts', 'src/ui/PillButton.tsx', 'assets/pantry/', 'verification/ui/ask.py', 'verification/ui/confirm.py', 'src/ui/ConfirmDialog.tsx']
 LOCALES = ['zh-Hans', 'ms']
 BUDGET = 600
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyAiConsent', 'given',
@@ -28,6 +30,9 @@ def with_belly(value):
     open_sheet(ui)
 
 
+BAR_WIDTH = 5 * 18 + 4 * 3
+PIP_CONTRAST = 35
+PIP_OUTLINE = 800
 MOODS = {5: 'full', 4: 'ok', 3: 'ok', 2: 'half', 1: 'low', 0: 'hungry'}
 
 
@@ -39,6 +44,28 @@ def segments(ui, count, timeout=20):
 def first_segment(ui):
     f = by_id(ui.read(), 'ask-belly')['frame']
     return {'x': f['x'] + 3, 'y': f['y'] + f['height'] / 2 - 2, 'width': 12, 'height': 4}
+
+
+def empty_outline(ui, shot):
+    f = by_id(ui.read(), 'ask-belly')['frame']
+    mid = f['y'] + f['height'] / 2
+    above = sorted(luma(rgb) for rgb in shot.pixels({'x': f['x'], 'y': mid - 11, 'width': BAR_WIDTH, 'height': 3}))
+    ground = above[len(above) // 2]
+    edge = shot.count({'x': f['x'], 'y': mid - 6, 'width': BAR_WIDTH, 'height': 12},
+                      lambda rgb: abs(luma(rgb) - ground) > PIP_CONTRAST)
+    print(f'empty pips: {edge} outline pixels against glass luma {ground:.0f}')
+    assert edge >= PIP_OUTLINE, f'the empty belly pips do not stand out from the glass ({edge} pixels) in {ui.appearance}'
+
+
+def inked(shot, identifier):
+    f = by_id(ui.read(), identifier)['frame']
+    middle = {'x': f['x'] + 8, 'y': f['y'] + f['height'] / 2 - 6, 'width': f['width'] - 16, 'height': 12}
+    ink = token('--color-accent', ui.appearance)
+    return shot.count(middle, lambda rgb: close(rgb, ink, 24)) >= len(list(shot.pixels(middle))) * 0.5
+
+
+def assert_inked(shot, identifier, name):
+    assert inked(shot, identifier), f'{name} is not the filled ink primary'
 
 
 def offer(ui, kind, label):
@@ -85,6 +112,7 @@ ui.wait_label('ask-hungry-line', lambda text: text == ui.t('ask.hungry.refill'),
 ui.wait_label('ask-hungry-title', lambda text: text == ui.t('ask.hungry.title'), 'the hungry title is missing')
 ui.at_rest()
 shot = ui.snap('04-hungry-leaf')
+empty_outline(ui, shot)
 if ui.appearance == 'dark':
     card = by_id(ui.read(), 'ask-hungry-feed')['frame']
     head = {'x': card['x'] + card['width'] / 2 - 40, 'y': card['y'] + 4, 'width': 80, 'height': 80}
@@ -120,12 +148,17 @@ offer(ui, 'capped', None)
 ui.wait_label('ask-hungry-title', lambda text: text == ui.t('ask.hungry.capped'), 'the capped title is missing')
 assert by_id(ui.read(), 'ask-hungry-line') is None, 'the capped card still has a second line under its title'
 ui.at_rest()
-ui.capture('07-capped')
+assert_inked(ui.snap('07-capped'), 'ask-manual', 'the capped card\'s only 自己填')
 
 with_belly('0,0,0,5')
 offer(ui, 'tomorrow', ui.t('ask.hungry.tomorrow'))
 ui.at_rest()
-ui.capture('08-nothing-left')
+items = ui.read()
+manual, later = (by_id(items, name)['frame'] for name in ('ask-manual', 'ask-hungry-offer'))
+assert manual['y'] + manual['height'] <= later['y'], f'自己填 is not above 明早再来: {manual} {later}'
+shot = ui.snap('08-nothing-left')
+assert_inked(shot, 'ask-manual', '自己填 with nothing left')
+assert not inked(shot, 'ask-hungry-offer'), '明早再来 is still the filled primary'
 ui.tap('ask-hungry-offer')
 ui.gone('ask-tapir-sheet')
 
