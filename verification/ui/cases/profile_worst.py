@@ -6,7 +6,7 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, by_id  # noqa: E402
-from edges import assert_top_edge, scroll_under_bar  # noqa: E402
+from edges import assert_top_edge  # noqa: E402
 from gestures import drag  # noqa: E402
 from profile import assert_tier_whole, label, open_profile, review_id, within_width  # noqa: E402
 
@@ -35,7 +35,7 @@ for chip in ('late', 'no_heads_up', 'unfinished', 'item_damaged'):
 within_width(items, review_id(2))
 ui.at_rest()
 ui.capture('01-top')
-assert_top_edge(ui.snap('01b-top-edge'), scroll_under_bar(ui), 'scrolled profile')
+assert_top_edge(ui, '01b-profile')
 
 w, h = items[0]['frame']['width'], items[0]['frame']['height']
 for _ in range(4):

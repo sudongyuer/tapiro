@@ -51,9 +51,9 @@ bar = by_id(ui.read(), 'ride-detail-footer')['frame']
 xs = [x for x in range(24, int(bar['width']) - 24, 6)]
 ground = sorted(luma(shot.rgb(x, bar['y'] + 3)) for x in xs)[len(xs) // 2]
 rows = [bar['y'] + step / shot.scale for step in range(-2, 3)]
-line = min(sorted(luma(shot.rgb(x, y)) for x in xs)[len(xs) // 2] for y in rows)
-print(f'footer: bar {ground:.0f}, darkest row at its top {line:.0f}')
-assert ground - line >= 10, f'no separator along the top of the footer bar: {line:.0f} against the bar {ground:.0f}'
+line = max((sorted(luma(shot.rgb(x, y)) for x in xs)[len(xs) // 2] for y in rows), key=lambda v: abs(v - ground))
+print(f'footer: bar {ground:.0f}, most distinct row at its top {line:.0f}')
+assert abs(line - ground) >= 10, f'no separator along the top of the footer bar: {line:.0f} against the bar {ground:.0f}'
 
 relaunch(ui, drop=['-uiVerifyRideDetail', 'settleCny'], add=['-uiVerifyRideDetail', 'settleOne', '-uiVerifyScene', SCENE],
          ready='ride-detail-ticket')

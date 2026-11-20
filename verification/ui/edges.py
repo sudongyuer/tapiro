@@ -4,6 +4,7 @@ from gestures import drag
 UNDER_BAR = (24, 50)
 CLEAR_OF_STATUS = (105, 280)
 SHARP = 90
+INK = 12
 STEP = 45
 
 
@@ -22,26 +23,7 @@ def regions_under_bar(items):
     return regions
 
 
-# Short held drags move the content until a line of text sits under the clock, wherever the locale's copy left it;
-# the blur reaches only about 55 pt down, and below it rows are crisp either way.
-def scroll_under_bar(ui, tries=12):
-    for _ in range(tries):
-        items = ui.read()
-        if regions_under_bar(items):
-            return items
-        w, h = items[0]['frame']['width'], items[0]['frame']['height']
-        drag(ui, (w / 2, h * 0.6), (w / 2, h * 0.6 - STEP))
-        ui.at_rest()
-    raise AssertionError(f'no text reached the status bar after {tries} drags')
-
-
-# The navigation bar's scroll edge effect blurs and fades content scrolled under the status bar, so text there has no
-# hard ink edge left; without it (audit S1: the bar never found the Form's scroll view) the rows stay crisp under the
-# clock and back button. Crisp text steps 110–250 luma between neighbouring pixels; under the effect it measured 20–64.
-# The band between the clock and the status icons is read, inside the text that the tree places there.
-def assert_top_edge(shot, items, name):
-    regions = regions_under_bar(items)
-    assert regions, f'{name}: no text sits under the status bar, so the edge effect cannot be seen'
+def sharpest_step(shot, regions):
     step = 1 / shot.scale
     sharpest = 0
     for _, x0, x1, y0, y1 in regions:
@@ -54,5 +36,27 @@ def assert_top_edge(shot, items, name):
                     sharpest = max(sharpest, abs(value - previous))
                 previous, x = value, x + step
             y += step
-    print(f'{name}: text under the status bar {[r[0] for r in regions]}, sharpest step {sharpest:.0f}')
-    assert sharpest < SHARP, f'{name}: text under the status bar stays crisp (a step of {sharpest:.0f}): no top edge effect'
+    return sharpest
+
+
+# The navigation bar's scroll edge effect blurs and fades content scrolled under the status bar, so text there keeps
+# no hard ink edge; without it (audit S1: the bar never found the Form's scroll view) rows stay crisp under the clock.
+# Crisp text steps 128–252 luma between neighbouring pixels, under the effect 20–63. Short held drags move content until
+# drawn text sits between the clock and the status icons: the tree also lists the hidden navigation title there, which
+# draws nothing (a step of 0), so a region counts only once it shows ink.
+def assert_top_edge(ui, name, tries=12):
+    for _ in range(tries):
+        items = ui.read()
+        regions = regions_under_bar(items)
+        if regions:
+            shot = ui.snap(f'{name}-top-edge')
+            sharpest = sharpest_step(shot, regions)
+            if sharpest >= INK:
+                print(f'{name}: text under the status bar {[r[0] for r in regions]}, sharpest step {sharpest:.0f}')
+                assert sharpest < SHARP, \
+                    f'{name}: text under the status bar stays crisp (a step of {sharpest:.0f}): no top edge effect'
+                return
+        w, h = items[0]['frame']['width'], items[0]['frame']['height']
+        drag(ui, (w / 2, h * 0.6), (w / 2, h * 0.6 - STEP))
+        ui.at_rest()
+    raise AssertionError(f'{name}: no drawn text reached the status bar after {tries} drags')
