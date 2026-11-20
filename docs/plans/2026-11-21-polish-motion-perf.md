@@ -53,3 +53,17 @@ gaps, the urgent accessory) went to the parallel UI walkthrough session (`docs/r
   rare screens.
 - Symbol bounce on a finished status step, animated SwiftUI form sections and notices: need extra state wiring or
   animate a whole form; left for a later pass.
+
+## Follow-up: walkthrough shared-ui items
+
+Handed back from `docs/reviews/2026-11-21-ui-walkthrough.md` (H4, H5, S2, K2, Consistency 1–3 and 7).
+
+| #   | Decision                                                                                            | Alternative                                  | Reason                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| P13 | A disabled pill keeps its shape on the secondary fill with a `tertiaryLabel` label (H4)             | `secondaryLabel`; keep the 0.4 opacity       | Matches UIKit's disabled style and stays legible; `secondaryLabel` reads as tappable     |
+| P14 | One `CardButton` on the home cards: min `--touch-min`, `body` semibold, two lines, 16 pt sides (H5) | 52 pt for every card                         | 52 pt crowds the cards and two buttons no longer fit side by side                        |
+| P15 | One pressed and selected row fill, `systemGray4`; each row keeps its own corners                    | `systemFill`                                 | The native selected-cell colour; the SwiftUI rows already used it                        |
+| P16 | Capsules in the card stack are 28 pt (`--capsule-min`)                                              | 24 pt                                        | 24 is tight for the chip copy; 30 was a raw number                                       |
+| P17 | The 问小貘 sheet header sits outside the scroll view, so content clips at its edge (S2)             | Move the header into a native navigation bar | react-native-screens sizes a form sheet's scroll view below a header sibling; no overlay |
+| P18 | Empty belly pips have a 1 pt outline, `tertiaryLabel` in light and `secondaryLabel` in dark (K2)    | One colour for both                          | `tertiaryLabel` faded on the lighter dark glass (pixel check)                            |
+| P19 | The hungry card's primary pill is 「自己填」; 「明早再来」 is secondary (K2)                        | Keep 「明早再来」 primary                    | The primary action moves the task on                                                     |
