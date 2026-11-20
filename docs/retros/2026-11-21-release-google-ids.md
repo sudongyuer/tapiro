@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                                       |
-| --------- | --------------------- | ----------------------------------------------------------------------------------------------- |
-| Quality   | Escaped defects       | 0                                                                                               |
+| Dimension | Measure               | This step                                                                                     |
+| --------- | --------------------- | --------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0                                                                                             |
 | Quality   | Skipped verifications | `verify:smoke`: no app code changed. A real Google sign-in on a phone waits on an iOS 26 device |
-| Speed     | Wasted time           | ~0                                                                                              |
-| Autonomy  | Interventions         | 0                                                                                               |
+| Speed     | Wasted time           | ~0                                                                                            |
+| Autonomy  | Interventions         | 0                                                                                             |
 
 ## Findings
 

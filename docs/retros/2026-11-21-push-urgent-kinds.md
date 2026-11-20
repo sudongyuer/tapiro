@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                                              |
-| --------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
-| Quality   | Escaped defects       | 1: the owner tested at 02:35 Malaysia time, nothing arrived, and push looked broken (held until 08:00) |
-| Quality   | Skipped verifications | None; pgTAP ran on an isolated stack (`scripts/db-isolated.sh`), all files pass                        |
-| Speed     | Wasted time           | None worth noting                                                                                      |
-| Autonomy  | Interventions         | 0                                                                                                      |
+| Dimension | Measure               | This step                                                                                                   |
+| --------- | --------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 1: the owner tested at 02:35 Malaysia time, nothing arrived, and push looked broken (held until 08:00)      |
+| Quality   | Skipped verifications | None; pgTAP ran on an isolated stack (`scripts/db-isolated.sh`), all files pass                              |
+| Speed     | Wasted time           | None worth noting                                                                                           |
+| Autonomy  | Interventions         | 0                                                                                                           |
 
 ## Findings
 

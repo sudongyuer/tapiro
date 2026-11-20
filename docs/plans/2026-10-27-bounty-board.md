@@ -96,27 +96,27 @@ other states, 5A). Built contracts: `supabase/migrations/20261026001100_bounty_a
 
 ## Decided UI (do not re-ask)
 
-| Item                 | Decision                                                                                                                                                                                                                                                                                                               | Source                             |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Board card           | Three rows: sticker 48 pt, category, title, reward / time (急 in urgent colour with the clock symbol), place label · distance / poster name · tier, 申请 bottom right; one SwiftUI `Host` per card in the home RN `ScrollView`; no SwiftUI `List`                                                                      | 26A                                |
-| Card taps            | 申请 opens the 4A apply sheet; the rest of the card pushes the 3A detail                                                                                                                                                                                                                                               | Board 26 "已定"                    |
-| Applied card         | 申请 is replaced by 「已申请 · 等对方选」; the sticker sits tilted 8° with the 已申请 stamp                                                                                                                                                                                                                            | 31A                                |
-| Distance axis        | 0–2 km, origin 「你」 (or 「这里」 for a chosen place), ticks 1 km / 2 km, one sticker per located bounty within 2 km; 「+N 更远」 bubble at the end scrolls to the first card beyond 2 km; tapping a sticker scrolls to its card and outlines it                                                                      | 27A; "Distance axis"               |
-| List order           | RPC order: located by distance, then unlocated by recency under 「没写地点的」; end card 「就这些了 · 下拉刷新」                                                                                                                                                                                                       | 27A; ruling 6                      |
-| Location card        | Top of the board while permission is undetermined: 「看看离你多远」, body 「开定位后按距离排，只在用 Tapiro 时定位。现在先按最新排。」, buttons 允许定位 (prompt) and 先不用                                                                                                                                           | 28A                                |
-| No location          | 先不用, denied, or a failed fix: a row 「选一个地方」 / 「没开定位，现在按最新排」 that pushes the search screen; list by recency, no axis                                                                                                                                                                             | 28A, 29A; Errors "Location denied" |
-| Chosen place         | Row 「{place} 附近」 / 「距离从这里算」 with 换; axis origin 「这里」; stored on the device per user                                                                                                                                                                                                                   | 29A                                |
-| Filters              | 全部 / 急 / 塞得进空档 chips under the section title, scrolling with the list (not pinned); an empty filter shows 「现在没有急单」-style inline card with 看全部                                                                                                                                                       | 30A                                |
-| States               | Inline cards with a ≤ 32 pt 小貘 head, one line, one button: first-load failure 「没加载出来」 + 重试 (no count on chips); empty 「附近暂时没有悬赏」 + 发悬赏; end 「就这些了 · 下拉刷新」; refresh failure keeps the list under a warning `NoticeCard` 「没刷新成功 · 下面是 HH:mm 的，可能有的已经被接走。」 + 重试 | 32A                                |
-| Detail               | Pushed in the 悬赏 stack; system screen: sticker, title, reward (SF Rounded) on top; a grouped section with place + 「约 0.8 km · 精确地址只给选中的人」, time + 「急 · 还有 2 小时」, poster + tier; description in its own section; 申请 pinned at the bottom; ⋯ top right (contents per Q4)                         | 3A                                 |
-| Apply sheet          | Sheet titled 申请帮忙 with 发送 top right; multi-line note (optional, ≤ 140, counter `n/140`); footer 「{name}会看到你的名字、靠谱度和这句话。」 and 「选中之前随时可以撤回。」                                                                                                                                        | 4A; 14A                            |
-| No payee method      | The same sheet shows 「先加一个收款方式」, body 「帮完忙，{name}会直接付钱给你，所以申请前要有一种收款方式。现金也算。」 and 添加收款方式 (target per Q3); no note field                                                                                                                                               | 4A other states                    |
-| Applied detail       | Bottom shows 「已申请 · 等{name}选」, 「你写的：…」 and a text button 撤回申请; confirmed by a system action sheet 「撤回申请？」 / 「撤回后{name}看不到你的申请，你还可以再申请。」 with 撤回申请 (destructive) / 不撤回                                                                                              | 4A, 31A                            |
-| Place search         | Pushed screen with the native header search bar; results title + subtitle; 33A adds a first row 「用当前位置」 / 「定位后换成最近的楼名，可以再改」 that asks permission only when tapped; 29A has no current-location row                                                                                             | 29A, 33A                           |
-| Posting place rows   | 「＋ 地点」 pushes the search; after a pick: 地点 row (result name, tap to pick again), 「地点名称 · 别人会看到」 field prefilled with the result name (n/80), 「精确地址 · 只给选中的人看」 field (placeholder 「比如 A 座 12-03」, ≤ 120), red 移除地点                                                              | 33A; 1A                            |
-| Location prompt text | 「按离你多远排附近的悬赏，或把你现在的位置当悬赏地点。只在你用 Tapiro 时定位。」                                                                                                                                                                                                                                       | Board 28/33                        |
-| Screen classes       | Board states, detail, apply and place search are everyday screens: grouped background, type stickers, head ≤ 32 pt                                                                                                                                                                                                     | Screen classes; ruling 7           |
-| Map                  | Not in this step; the right of 「能接的悬赏」 is left free for step 8's two stickers                                                                                                                                                                                                                                   | Board 26 "已定"                    |
+| Item | Decision | Source |
+| --- | --- | --- |
+| Board card | Three rows: sticker 48 pt, category, title, reward / time (急 in urgent colour with the clock symbol), place label · distance / poster name · tier, 申请 bottom right; one SwiftUI `Host` per card in the home RN `ScrollView`; no SwiftUI `List` | 26A |
+| Card taps | 申请 opens the 4A apply sheet; the rest of the card pushes the 3A detail | Board 26 "已定" |
+| Applied card | 申请 is replaced by 「已申请 · 等对方选」; the sticker sits tilted 8° with the 已申请 stamp | 31A |
+| Distance axis | 0–2 km, origin 「你」 (or 「这里」 for a chosen place), ticks 1 km / 2 km, one sticker per located bounty within 2 km; 「+N 更远」 bubble at the end scrolls to the first card beyond 2 km; tapping a sticker scrolls to its card and outlines it | 27A; "Distance axis" |
+| List order | RPC order: located by distance, then unlocated by recency under 「没写地点的」; end card 「就这些了 · 下拉刷新」 | 27A; ruling 6 |
+| Location card | Top of the board while permission is undetermined: 「看看离你多远」, body 「开定位后按距离排，只在用 Tapiro 时定位。现在先按最新排。」, buttons 允许定位 (prompt) and 先不用 | 28A |
+| No location | 先不用, denied, or a failed fix: a row 「选一个地方」 / 「没开定位，现在按最新排」 that pushes the search screen; list by recency, no axis | 28A, 29A; Errors "Location denied" |
+| Chosen place | Row 「{place} 附近」 / 「距离从这里算」 with 换; axis origin 「这里」; stored on the device per user | 29A |
+| Filters | 全部 / 急 / 塞得进空档 chips under the section title, scrolling with the list (not pinned); an empty filter shows 「现在没有急单」-style inline card with 看全部 | 30A |
+| States | Inline cards with a ≤ 32 pt 小貘 head, one line, one button: first-load failure 「没加载出来」 + 重试 (no count on chips); empty 「附近暂时没有悬赏」 + 发悬赏; end 「就这些了 · 下拉刷新」; refresh failure keeps the list under a warning `NoticeCard` 「没刷新成功 · 下面是 HH:mm 的，可能有的已经被接走。」 + 重试 | 32A |
+| Detail | Pushed in the 悬赏 stack; system screen: sticker, title, reward (SF Rounded) on top; a grouped section with place + 「约 0.8 km · 精确地址只给选中的人」, time + 「急 · 还有 2 小时」, poster + tier; description in its own section; 申请 pinned at the bottom; ⋯ top right (contents per Q4) | 3A |
+| Apply sheet | Sheet titled 申请帮忙 with 发送 top right; multi-line note (optional, ≤ 140, counter `n/140`); footer 「{name}会看到你的名字、靠谱度和这句话。」 and 「选中之前随时可以撤回。」 | 4A; 14A |
+| No payee method | The same sheet shows 「先加一个收款方式」, body 「帮完忙，{name}会直接付钱给你，所以申请前要有一种收款方式。现金也算。」 and 添加收款方式 (target per Q3); no note field | 4A other states |
+| Applied detail | Bottom shows 「已申请 · 等{name}选」, 「你写的：…」 and a text button 撤回申请; confirmed by a system action sheet 「撤回申请？」 / 「撤回后{name}看不到你的申请，你还可以再申请。」 with 撤回申请 (destructive) / 不撤回 | 4A, 31A |
+| Place search | Pushed screen with the native header search bar; results title + subtitle; 33A adds a first row 「用当前位置」 / 「定位后换成最近的楼名，可以再改」 that asks permission only when tapped; 29A has no current-location row | 29A, 33A |
+| Posting place rows | 「＋ 地点」 pushes the search; after a pick: 地点 row (result name, tap to pick again), 「地点名称 · 别人会看到」 field prefilled with the result name (n/80), 「精确地址 · 只给选中的人看」 field (placeholder 「比如 A 座 12-03」, ≤ 120), red 移除地点 | 33A; 1A |
+| Location prompt text | 「按离你多远排附近的悬赏，或把你现在的位置当悬赏地点。只在你用 Tapiro 时定位。」 | Board 28/33 |
+| Screen classes | Board states, detail, apply and place search are everyday screens: grouped background, type stickers, head ≤ 32 pt | Screen classes; ruling 7 |
+| Map | Not in this step; the right of 「能接的悬赏」 is left free for step 8's two stickers | Board 26 "已定" |
 
 ## Rulings made in this plan (overturn by saying so)
 
@@ -129,7 +129,7 @@ These close small gaps the canvas did not draw, each following an existing decis
    (`tapiro.boardPlace.<userId>`); both are registered in `src/lib/userCleanups.ts`. Denied permission never shows the
    location card again; the 「选一个地方」 row replaces it.
 3. **Position fix:** `getLastKnownPositionAsync({ maxAge: 120000 })`, else `getCurrentPositionAsync({ accuracy:
-Balanced })` with a 10 s timeout. A failed fix behaves as no location (recency, 「选一个地方」 row) and is retried on
+   Balanced })` with a 10 s timeout. A failed fix behaves as no location (recency, 「选一个地方」 row) and is retried on
    the next load. Reduced accuracy (`ios.accuracy === 'reduced'`) still uses the point (spec Known limits).
 4. **Rounded distances read as 「约」**: the card shows `300 m`, `1.6 km` (one decimal from 1 km); the detail shows
    「约 0.8 km」. The server returns at least 100 (a bounty at the viewer's point reads 100 m).
@@ -188,15 +188,15 @@ option marked ★ is decided (Q1 B, Q2–Q5 A, M1 A, M2 A).
 
 ## Motion
 
-| Motion                                                      | Purpose    | Gate                                                            | Build                                                                 |
-| ----------------------------------------------------------- | ---------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| 申请 tilts the sticker to 8° and stamps 已申请              | feedback   | Passed (spec, canvas G, 4A); once per application, not frequent | M1 below; Reanimated on the RN sticker inside the card's `RNHostView` |
-| Axis sticker tap → list scrolls to the card and outlines it | continuity | Passed (Decisions "Distance axis"); only on tap                 | System `scrollTo({ animated })` + an outline ring per M2              |
-| Push detail, push place search, sheets                      | navigation | System                                                          | Native Stack / sheet                                                  |
-| Pull to refresh, apply / withdraw progress                  | status     | System                                                          | `RefreshControl`; `PillButton loading`                                |
-| Row selected through push, deselected on return             | continuity | System-matching (UI baseline); not a choice                     | `useSelectedUntilReturn`, 240 ms fade like UIKit's deselect           |
-| Chip selection, list replacement on filter change           | —          | Frequent: no animation                                          | Instant swap                                                          |
-| Haptic on apply success                                     | feedback   | Not motion; one meaning                                         | `notificationAsync(Success)`, the same meaning as publish success     |
+| Motion | Purpose | Gate | Build |
+| --- | --- | --- | --- |
+| 申请 tilts the sticker to 8° and stamps 已申请 | feedback | Passed (spec, canvas G, 4A); once per application, not frequent | M1 below; Reanimated on the RN sticker inside the card's `RNHostView` |
+| Axis sticker tap → list scrolls to the card and outlines it | continuity | Passed (Decisions "Distance axis"); only on tap | System `scrollTo({ animated })` + an outline ring per M2 |
+| Push detail, push place search, sheets | navigation | System | Native Stack / sheet |
+| Pull to refresh, apply / withdraw progress | status | System | `RefreshControl`; `PillButton loading` |
+| Row selected through push, deselected on return | continuity | System-matching (UI baseline); not a choice | `useSelectedUntilReturn`, 240 ms fade like UIKit's deselect |
+| Chip selection, list replacement on filter change | — | Frequent: no animation | Instant swap |
+| Haptic on apply success | feedback | Not motion; one meaning | `notificationAsync(Success)`, the same meaning as publish success |
 
 **M1 — sticker tilt and stamp** (`--duration-settle` 240 ms is the nearest token; Reduce Motion: no rotation or scale,
 the stamp fades in over `--duration-fade` 150 ms and the sticker is shown at 8° statically).
@@ -248,19 +248,10 @@ type Tier = 'new_friend' | 'reliable' | 'very_reliable' | 'tapir_friend';
 type Person = { id: string; name: string | null; tier: Tier };
 
 type BoardRow = {
-  id: string;
-  title: string;
-  category: BountyCategory;
-  rewardSen: number;
-  placeLabel: string | null;
-  stickerPath: string | null;
-  startsAt: string | null;
-  endsAt: string | null;
-  deadlineAt: string | null;
-  urgent: boolean;
-  distanceM: number | null;
-  appliedByMe: boolean;
-  createdAt: string;
+  id: string; title: string; category: BountyCategory; rewardSen: number;
+  placeLabel: string | null; stickerPath: string | null;
+  startsAt: string | null; endsAt: string | null; deadlineAt: string | null;
+  urgent: boolean; distanceM: number | null; appliedByMe: boolean; createdAt: string;
   poster: Person;
 };
 type BoardPage = { items: BoardRow[]; next: unknown | null; total?: number };
@@ -269,25 +260,13 @@ type BoardPage = { items: BoardRow[]; next: unknown | null; total?: number };
 //   errors: 'invalid_board_query' | 'board_cursor_mismatch' (22023) → restart from page one once, then 'failed'
 
 type BountyDetail = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: BountyCategory;
-  rewardSen: number;
-  status: string;
-  viewerRole: 'poster' | 'helper' | 'applicant' | 'viewer';
+  id: string; title: string; description: string | null; category: BountyCategory; rewardSen: number;
+  status: string; viewerRole: 'poster' | 'helper' | 'applicant' | 'viewer';
   place: { label: string; latitude?: number; longitude?: number } | null;
-  distanceM: number | null;
-  address: string | null;
-  startsAt: string | null;
-  endsAt: string | null;
-  deadlineAt: string | null;
-  expiresAt: string;
+  distanceM: number | null; address: string | null;
+  startsAt: string | null; endsAt: string | null; deadlineAt: string | null; expiresAt: string;
   poster: Person;
-  myApplication: {
-    status: 'pending' | 'withdrawn' | 'selected' | 'not_selected';
-    note: string | null;
-  } | null;
+  myApplication: { status: 'pending' | 'withdrawn' | 'selected' | 'not_selected'; note: string | null } | null;
   // party-only fields (helper, events, …) are ignored in this step
 };
 // supabase.rpc('bounty_detail', { bounty, latitude, longitude }); 'bounty_not_found' (P0002) → gone
@@ -317,33 +296,21 @@ export type PlaceSuggestion = { id: string; title: string; subtitle: string };
 export type PlaceSuggestionsEvent =
   | { searchId: string; requestId: string; status: 'ok'; items: PlaceSuggestion[] }
   | { searchId: string; requestId: string; status: 'failed'; code: 'network' | 'unknown' };
-export type ResolvedPlace = {
-  name: string;
-  latitude: number;
-  longitude: number;
-  address: string | null;
-};
+export type ResolvedPlace = { name: string; latitude: number; longitude: number; address: string | null };
 export type PlaceResult =
   | { status: 'ok'; place: ResolvedPlace }
   | { status: 'notFound' | 'failed'; code?: 'network' | 'unknown' };
-export function startPlaceSearch(region: Point | null): string; // returns searchId; biases to region or Malaysia
+export function startPlaceSearch(region: Point | null): string;          // returns searchId; biases to region or Malaysia
 export function updatePlaceQuery(searchId: string, query: string): string; // returns requestId; results via event
-export function addPlaceSuggestionsListener(cb: (e: PlaceSuggestionsEvent) => void): {
-  remove(): void;
-};
+export function addPlaceSuggestionsListener(cb: (e: PlaceSuggestionsEvent) => void): { remove(): void };
 export function resolvePlace(searchId: string, suggestionId: string): Promise<PlaceResult>;
-export function placeAt(point: Point): Promise<PlaceResult>; // reverse geocode, nearest named place
+export function placeAt(point: Point): Promise<PlaceResult>;                 // reverse geocode, nearest named place
 export function endPlaceSearch(searchId: string): void;
 
 // src/features/bounty/place/usePlaceSearch.ts (wraps the facade; fixture in verify mode)
 export function usePlaceSearch(region: Point | null): {
-  query: string;
-  setQuery(q: string): void;
-  state:
-    | { kind: 'idle' }
-    | { kind: 'loading' }
-    | { kind: 'ready'; items: PlaceSuggestion[] }
-    | { kind: 'failed' };
+  query: string; setQuery(q: string): void;
+  state: { kind: 'idle' } | { kind: 'loading' } | { kind: 'ready'; items: PlaceSuggestion[] } | { kind: 'failed' };
   resolve(id: string): Promise<PlaceResult>;
 }; // subscribes on mount, removes the listener and ends the search on unmount, drops events with a stale requestId
 
@@ -362,25 +329,15 @@ export type BoardOrigin =
   | { kind: 'none'; reason: 'undetermined' | 'declined' | 'denied' | 'noFix' };
 export type BoardState =
   | { kind: 'loading' }
-  | { kind: 'failed' } // first load: no rows, no count
-  | {
-      kind: 'ready';
-      rows: BoardRow[];
-      total: number | null;
-      next: unknown | null;
-      loadedAt: string;
-      refreshFailed: boolean;
-      page: 'idle' | 'loading' | 'failed';
-    };
+  | { kind: 'failed' }                                            // first load: no rows, no count
+  | { kind: 'ready'; rows: BoardRow[]; total: number | null; next: unknown | null;
+      loadedAt: string; refreshFailed: boolean; page: 'idle' | 'loading' | 'failed' };
 export type ApplyFailure = 'noPayee' | 'closed' | 'taken' | 'gone' | 'own' | 'failed';
 export type BoardService = {
   page(origin: BoardOrigin, filter: BoardFilter, after: unknown | null): Promise<BoardPage>; // throws on failure
   detail(id: string, point: Point | null): Promise<BountyDetail | 'gone'>;
   hasPayeeMethod(): Promise<boolean>;
-  apply(
-    id: string,
-    note: string | null,
-  ): Promise<{ ok: true; note: string | null } | { ok: false; reason: ApplyFailure }>;
+  apply(id: string, note: string | null): Promise<{ ok: true; note: string | null } | { ok: false; reason: ApplyFailure }>;
   withdraw(id: string): Promise<{ ok: true } | { ok: false; reason: 'notPending' | 'failed' }>;
 };
 // src/features/bounty/board/boardState.ts — pure reducer, tested without React
@@ -388,14 +345,8 @@ export function boardReducer(state: BoardState, event: BoardEvent): BoardState;
 // events: loadStarted, loadSucceeded(page, at), loadFailed, pageStarted, pageSucceeded(page), pageFailed,
 //         applied(id), withdrawn(id), originChanged, filterChanged
 // src/features/bounty/board/axis.ts — pure
-export function axisMarks(
-  rows: BoardRow[],
-  widthPt: number,
-): {
-  marks: { ids: string[]; x: number; category: BountyCategory }[];
-  beyond: number;
-  firstBeyondId: string | null;
-};
+export function axisMarks(rows: BoardRow[], widthPt: number):
+  { marks: { ids: string[]; x: number; category: BountyCategory }[]; beyond: number; firstBeyondId: string | null };
 export function formatDistance(m: number, language: string): string; // 300 m, 1.6 km, 18 km
 
 // src/features/bounty/board/originStore.ts — Settings keys per user (ruling 2), userCleanups registered
@@ -407,9 +358,9 @@ export const originStore: {
 };
 
 // public exports from src/features/bounty/index.ts
-export { BountyBoard } from './board/BountyBoard'; // ({ userId, onOpen(id), onApply(id), onPost, onPickPlace })
+export { BountyBoard } from './board/BountyBoard';           // ({ userId, onOpen(id), onApply(id), onPost, onPickPlace })
 export { BountyDetailScreen } from './detail/BountyDetailScreen'; // ({ id, onApply, onAddPayee, onGone })
-export { ApplySheet } from './apply/ApplySheet'; // ({ id, onClose, onAddPayee })
+export { ApplySheet } from './apply/ApplySheet';            // ({ id, onClose, onAddPayee })
 export { PlaceSearchScreen } from './place/PlaceSearchScreen'; // ({ purpose, onPicked })
 ```
 
@@ -420,72 +371,72 @@ offsets relative to its own origin plus its own `onLayout` y inside the scroll c
 
 Routes:
 
-| Path                   | File                                                                      | Presentation                                                    |
-| ---------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `/bounty/[id]`         | `src/app/(tabs)/bounty/[id].tsx`                                          | Push in the 悬赏 Stack, transparent header, `scrollEdgeEffects` |
-| `/bounty/place`        | `src/app/(tabs)/bounty/place.tsx`                                         | Push in the 悬赏 Stack (29A)                                    |
-| `/bounty-post/place`   | `src/app/bounty-post/place.tsx`                                           | Push inside the post sheet Stack (33A)                          |
-| `/bounty-apply/[id]`   | `src/app/bounty-apply/[id].tsx` (+ `_layout.tsx` for the header and 发送) | Root sheet per Q5                                               |
-| `/me/blocked` (Q4 = A) | `src/app/(tabs)/me/blocked.tsx`                                           | Push in the 我的 Stack                                          |
+| Path | File | Presentation |
+| --- | --- | --- |
+| `/bounty/[id]` | `src/app/(tabs)/bounty/[id].tsx` | Push in the 悬赏 Stack, transparent header, `scrollEdgeEffects` |
+| `/bounty/place` | `src/app/(tabs)/bounty/place.tsx` | Push in the 悬赏 Stack (29A) |
+| `/bounty-post/place` | `src/app/bounty-post/place.tsx` | Push inside the post sheet Stack (33A) |
+| `/bounty-apply/[id]` | `src/app/bounty-apply/[id].tsx` (+ `_layout.tsx` for the header and 发送) | Root sheet per Q5 |
+| `/me/blocked` (Q4 = A) | `src/app/(tabs)/me/blocked.tsx` | Push in the 我的 Stack |
 
 testID pattern:
 
-| Element                    | testID                                                                                                                                                                                    |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Board root / section title | `bounty-board`, `bounty-board-title`                                                                                                                                                      |
-| Filter chips               | `bounty-filter-all`, `bounty-filter-urgent`, `bounty-filter-fits`                                                                                                                         |
-| Card / its parts           | `bounty-card-<id>`, `-title`, `-reward`, `-meta`, `-poster`, `-apply`, `-applied`, `-stamp`                                                                                               |
-| Axis                       | `bounty-axis`, `bounty-axis-mark-<firstId>`, `bounty-axis-more`                                                                                                                           |
-| Location card / row        | `bounty-location-card`, `bounty-location-allow`, `bounty-location-later`, `bounty-place-row`, `bounty-place-change`                                                                       |
-| States                     | `bounty-board-failed`, `bounty-board-empty`, `bounty-board-filter-empty`, `bounty-board-end`, `bounty-board-stale`, `bounty-board-page-failed`, `bounty-board-unlocated` (section header) |
-| Retry / actions in states  | `bounty-board-retry`, `bounty-board-post`, `bounty-board-show-all`                                                                                                                        |
-| Detail                     | `bounty-detail`, `-sticker`, `-stamp`, `-place`, `-time`, `-poster`, `-description`, `-apply`, `-applied`, `-withdraw`, `-more`, `-gone`                                                  |
-| Apply sheet                | `bounty-apply-note`, `bounty-apply-send`, `bounty-apply-count`, `bounty-apply-no-payee`, `bounty-apply-add-payee`, `bounty-apply-failed`                                                  |
-| Place search               | `place-search-current`, `place-search-result-<n>`, `place-search-failed`, `place-search-empty`                                                                                            |
-| Post place rows            | `bounty-post-add-place`, `bounty-post-place`, `bounty-post-place-label`, `bounty-post-address`, `bounty-post-remove-place`                                                                |
+| Element | testID |
+| --- | --- |
+| Board root / section title | `bounty-board`, `bounty-board-title` |
+| Filter chips | `bounty-filter-all`, `bounty-filter-urgent`, `bounty-filter-fits` |
+| Card / its parts | `bounty-card-<id>`, `-title`, `-reward`, `-meta`, `-poster`, `-apply`, `-applied`, `-stamp` |
+| Axis | `bounty-axis`, `bounty-axis-mark-<firstId>`, `bounty-axis-more` |
+| Location card / row | `bounty-location-card`, `bounty-location-allow`, `bounty-location-later`, `bounty-place-row`, `bounty-place-change` |
+| States | `bounty-board-failed`, `bounty-board-empty`, `bounty-board-filter-empty`, `bounty-board-end`, `bounty-board-stale`, `bounty-board-page-failed`, `bounty-board-unlocated` (section header) |
+| Retry / actions in states | `bounty-board-retry`, `bounty-board-post`, `bounty-board-show-all` |
+| Detail | `bounty-detail`, `-sticker`, `-stamp`, `-place`, `-time`, `-poster`, `-description`, `-apply`, `-applied`, `-withdraw`, `-more`, `-gone` |
+| Apply sheet | `bounty-apply-note`, `bounty-apply-send`, `bounty-apply-count`, `bounty-apply-no-payee`, `bounty-apply-add-payee`, `bounty-apply-failed` |
+| Place search | `place-search-current`, `place-search-result-<n>`, `place-search-failed`, `place-search-empty` |
+| Post place rows | `bounty-post-add-place`, `bounty-post-place`, `bounty-post-place-label`, `bounty-post-address`, `bounty-post-remove-place` |
 
 Verify launch arguments (fixture services, `uiVerify` only):
 
-| Argument              | Values                                                                                                                                                                  | Effect                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `-uiVerifyLocation`   | `granted` (default, Sunway Pyramid 3.0733, 101.6078), `undetermined` (prompt answers granted), `undeterminedDeny` (prompt answers denied), `denied`, `reduced`, `noFix` | `locationService`                                                                                  |
-| `-uiVerifyBoard`      | `full` (default: 12 rows, 9 located incl. 2 beyond 2 km, 3 unlocated, 2 urgent, 1 applied), `one`, `empty`, `worst`, `long` (45 rows, three pages)                      | `page()` data; filters applied in the fixture with the RPC's rules                                 |
-| `-uiVerifyBoardFail`  | `first` (first load fails once), `refresh` (second load fails), `page` (second page fails once)                                                                         | `page()` failures                                                                                  |
-| `-uiVerifyDetail`     | `ok` (default), `failOnce`, `gone` (every id)                                                                                                                           | `detail()`; the `bounty-detail` scene opens `-uiVerifyDetailId` (default `fixture-bounty-01`)      |
-| `-uiVerifyBoardPlace` | `none` (clears), `sunway` (Sunway Geo Residences)                                                                                                                       | seeds the stored chosen place                                                                      |
-| `-uiVerifyApply`      | `ok` (default), `failOnce`, `taken`, `closed`, `gone`                                                                                                                   | `apply()`; with `-uiVerifyFixture empty` `hasPayeeMethod()` is false and `apply` rejects `noPayee` |
-| `-uiVerifyPlaces`     | `ok` (default: Sunway results), `none`, `fail`, `resolveFail`                                                                                                           | the place-search facade wrapper                                                                    |
+| Argument | Values | Effect |
+| --- | --- | --- |
+| `-uiVerifyLocation` | `granted` (default, Sunway Pyramid 3.0733, 101.6078), `undetermined` (prompt answers granted), `undeterminedDeny` (prompt answers denied), `denied`, `reduced`, `noFix` | `locationService` |
+| `-uiVerifyBoard` | `full` (default: 12 rows, 9 located incl. 2 beyond 2 km, 3 unlocated, 2 urgent, 1 applied), `one`, `empty`, `worst`, `long` (45 rows, three pages) | `page()` data; filters applied in the fixture with the RPC's rules |
+| `-uiVerifyBoardFail` | `first` (first load fails once), `refresh` (second load fails), `page` (second page fails once) | `page()` failures |
+| `-uiVerifyDetail` | `ok` (default), `failOnce`, `gone` (every id) | `detail()`; the `bounty-detail` scene opens `-uiVerifyDetailId` (default `fixture-bounty-01`) |
+| `-uiVerifyBoardPlace` | `none` (clears), `sunway` (Sunway Geo Residences) | seeds the stored chosen place |
+| `-uiVerifyApply` | `ok` (default), `failOnce`, `taken`, `closed`, `gone` | `apply()`; with `-uiVerifyFixture empty` `hasPayeeMethod()` is false and `apply` rejects `noPayee` |
+| `-uiVerifyPlaces` | `ok` (default: Sunway results), `none`, `fail`, `resolveFail` | the place-search facade wrapper |
 
 The fixture `apply` returns the first answer for a repeated id while pending, like the RPC.
 
 ## File structure
 
-| Action          | Path                                                                                                                                | Responsibility                                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Create          | `supabase/migrations/20261027000500_bounty_board_privacy.sql`                                                                       | Column privilege, `nearby_bounties` and `bounty_detail` changes above                                                               |
-| Create          | `supabase/tests/bounty_privacy.test.sql`                                                                                            | Non-party never sees coordinates or exact distance; parties do                                                                      |
-| Modify          | `supabase/tests/bounty_nearby.test.sql`, `supabase/tests/bounty_read.test.sql`                                                      | New keys, rounded values, cursor shape, label-only place for viewers                                                                |
-| Modify          | `app.json`, `package.json`, `bun.lock`, `src/lib/i18n/native/{zh-Hans,en,ms}.json`                                                  | `expo-location` plugin and the usage string                                                                                         |
-| Create          | `src/lib/location/{types,index,expoLocationService,fixtureLocationService}.ts` (+ tests)                                            | Permission, point, fixture                                                                                                          |
-| Create          | `modules/tapiro-kit/ios/PlaceSearch.swift`                                                                                          | Completer sessions, resolve, reverse geocode, typed codes                                                                           |
-| Modify          | `modules/tapiro-kit/ios/TapiroKitModule.swift`, `modules/tapiro-kit/index.tsx`                                                      | Functions, event `onPlaceSuggestions`, facade                                                                                       |
-| Create          | `src/features/bounty/place/{usePlaceSearch,fixturePlaces,placePick,PlaceSearchScreen}.ts(x)` (+ tests)                              | Shared search screen 29A / 33A                                                                                                      |
-| Create          | `src/features/bounty/post/PlaceRows.tsx`; Modify `OptionalRows.tsx`, `PostForm.tsx`, `PostConfirm.tsx`, `validate.ts`               | 33A rows in the form, place summary on confirm                                                                                      |
-| Create          | `src/app/bounty-post/place.tsx`; Modify `src/app/bounty-post/_layout.tsx`                                                           | Post place route                                                                                                                    |
-| Create          | `src/features/bounty/board/{types,boardService,fixtureBoardService,boardState,axis,originStore,useBoard,useOrigin}.ts` (+ tests)    | Board data, state, origin, freshness                                                                                                |
-| Create          | `src/features/bounty/board/{BountyBoard,BoardCard,DistanceAxis,FilterChips,LocationCard,PlaceRow,BoardStates}.tsx`                  | Board UI (each < 300 lines)                                                                                                         |
-| Create          | `src/features/bounty/shared/{bountyCache,appliedStamp,tierCopy}.ts(x)`                                                              | Row/detail cache, once-only stamp trigger, the stamp + tilt motion                                                                  |
-| Create          | `src/features/bounty/detail/{BountyDetailScreen,useDetail}.ts(x)`                                                                   | 3A                                                                                                                                  |
-| Create          | `src/features/bounty/apply/{ApplySheet,useApply}.ts(x)`                                                                             | 4A, no-payee state, withdraw dialog hook                                                                                            |
-| Create          | `src/ui/TierMark.tsx`, `src/ui/InlineState.tsx`                                                                                     | Tier name + heads; the 32A inline card (head ≤ 32, one line, one button)                                                            |
-| Modify          | `src/features/home/HomeScreen.tsx`, `src/features/home/index.ts`; Delete `src/features/home/BountySection.tsx`                      | `board` slot and `refreshControl`, filler removed                                                                                   |
-| Modify          | `src/app/(tabs)/bounty/index.tsx`, `src/app/(tabs)/bounty/_layout.tsx`; Create `[id].tsx`, `place.tsx`                              | Compose board, detail, place                                                                                                        |
-| Create          | `src/app/bounty-apply/_layout.tsx`, `src/app/bounty-apply/[id].tsx`; Modify `src/app/_layout.tsx`                                   | Apply sheet                                                                                                                         |
-| Create (Q4 = A) | `src/features/bounty/block/*`, `src/app/(tabs)/me/blocked.tsx`; Modify `src/app/(tabs)/me/index.tsx`                                | Block action and list                                                                                                               |
-| Modify          | `src/lib/i18n/locales/bounty/{zh-Hans,en,ms}.ts`, `src/lib/i18n/locales/{zh-Hans,en,ms}.ts`                                         | `bounty.board.*`, `bounty.detail.*`, `bounty.apply.*`, `bounty.place.*`, `bounty.tier.*`, `bounty.block.*`; remove `home.section.*` |
-| Modify          | `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx`                                                                                | Scenes `bounty-board`, `bounty-detail`, `bounty-apply`, `place-search`                                                              |
-| Create          | `verification/ui/board.py`; cases `bounty_board_*`, `bounty_detail_*`, `bounty_apply_*`, `bounty_post_place`, `bounty_place_search` | Helpers and cases per task                                                                                                          |
-| Modify          | `verification/ui/README.md`, `docs/story-map.md`, `docs/design-language.md` (component inventory: `TierMark`, `InlineState`)        | Docs                                                                                                                                |
+| Action | Path | Responsibility |
+| --- | --- | --- |
+| Create | `supabase/migrations/20261027000500_bounty_board_privacy.sql` | Column privilege, `nearby_bounties` and `bounty_detail` changes above |
+| Create | `supabase/tests/bounty_privacy.test.sql` | Non-party never sees coordinates or exact distance; parties do |
+| Modify | `supabase/tests/bounty_nearby.test.sql`, `supabase/tests/bounty_read.test.sql` | New keys, rounded values, cursor shape, label-only place for viewers |
+| Modify | `app.json`, `package.json`, `bun.lock`, `src/lib/i18n/native/{zh-Hans,en,ms}.json` | `expo-location` plugin and the usage string |
+| Create | `src/lib/location/{types,index,expoLocationService,fixtureLocationService}.ts` (+ tests) | Permission, point, fixture |
+| Create | `modules/tapiro-kit/ios/PlaceSearch.swift` | Completer sessions, resolve, reverse geocode, typed codes |
+| Modify | `modules/tapiro-kit/ios/TapiroKitModule.swift`, `modules/tapiro-kit/index.tsx` | Functions, event `onPlaceSuggestions`, facade |
+| Create | `src/features/bounty/place/{usePlaceSearch,fixturePlaces,placePick,PlaceSearchScreen}.ts(x)` (+ tests) | Shared search screen 29A / 33A |
+| Create | `src/features/bounty/post/PlaceRows.tsx`; Modify `OptionalRows.tsx`, `PostForm.tsx`, `PostConfirm.tsx`, `validate.ts` | 33A rows in the form, place summary on confirm |
+| Create | `src/app/bounty-post/place.tsx`; Modify `src/app/bounty-post/_layout.tsx` | Post place route |
+| Create | `src/features/bounty/board/{types,boardService,fixtureBoardService,boardState,axis,originStore,useBoard,useOrigin}.ts` (+ tests) | Board data, state, origin, freshness |
+| Create | `src/features/bounty/board/{BountyBoard,BoardCard,DistanceAxis,FilterChips,LocationCard,PlaceRow,BoardStates}.tsx` | Board UI (each < 300 lines) |
+| Create | `src/features/bounty/shared/{bountyCache,appliedStamp,tierCopy}.ts(x)` | Row/detail cache, once-only stamp trigger, the stamp + tilt motion |
+| Create | `src/features/bounty/detail/{BountyDetailScreen,useDetail}.ts(x)` | 3A |
+| Create | `src/features/bounty/apply/{ApplySheet,useApply}.ts(x)` | 4A, no-payee state, withdraw dialog hook |
+| Create | `src/ui/TierMark.tsx`, `src/ui/InlineState.tsx` | Tier name + heads; the 32A inline card (head ≤ 32, one line, one button) |
+| Modify | `src/features/home/HomeScreen.tsx`, `src/features/home/index.ts`; Delete `src/features/home/BountySection.tsx` | `board` slot and `refreshControl`, filler removed |
+| Modify | `src/app/(tabs)/bounty/index.tsx`, `src/app/(tabs)/bounty/_layout.tsx`; Create `[id].tsx`, `place.tsx` | Compose board, detail, place |
+| Create | `src/app/bounty-apply/_layout.tsx`, `src/app/bounty-apply/[id].tsx`; Modify `src/app/_layout.tsx` | Apply sheet |
+| Create (Q4 = A) | `src/features/bounty/block/*`, `src/app/(tabs)/me/blocked.tsx`; Modify `src/app/(tabs)/me/index.tsx` | Block action and list |
+| Modify | `src/lib/i18n/locales/bounty/{zh-Hans,en,ms}.ts`, `src/lib/i18n/locales/{zh-Hans,en,ms}.ts` | `bounty.board.*`, `bounty.detail.*`, `bounty.apply.*`, `bounty.place.*`, `bounty.tier.*`, `bounty.block.*`; remove `home.section.*` |
+| Modify | `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx` | Scenes `bounty-board`, `bounty-detail`, `bounty-apply`, `place-search` |
+| Create | `verification/ui/board.py`; cases `bounty_board_*`, `bounty_detail_*`, `bounty_apply_*`, `bounty_post_place`, `bounty_place_search` | Helpers and cases per task |
+| Modify | `verification/ui/README.md`, `docs/story-map.md`, `docs/design-language.md` (component inventory: `TierMark`, `InlineState`) | Docs |
 
 ## PR split
 
@@ -550,7 +501,7 @@ the board is a separate, larger UI review that can then build on a working searc
       的位置当悬赏地点。只在你用 Tapiro 时定位。」, then en and ms with the same two uses.
 - [ ] Remove `home.section.*` once Task 7 no longer uses it (Task 7 does the removal; this task only adds keys).
 - [ ] zh-Hans first, then en, then ms; `bun test src/lib/i18n` passes; commit `feat(bounty): board, detail, apply and
-    place copy in zh-Hans, en, ms`.
+      place copy in zh-Hans, en, ms`.
 
 ## Task 3: `expo-location` and the location service (PR 4a)
 
@@ -586,10 +537,10 @@ the board is a separate, larger UI review that can then build on a working searc
 **Steps**
 
 - [ ] Read Apple's MapKit docs for `MKLocalSearchCompleter` (`resultTypes`, `region`, delegate), `MKLocalSearch.Request(
-    completion:)` and the iOS 26 reverse geocoding API (`MKReverseGeocodingRequest`, or `CLGeocoder` if the former is
+      completion:)` and the iOS 26 reverse geocoding API (`MKReverseGeocodingRequest`, or `CLGeocoder` if the former is
       unavailable on the deployment target); record the chosen API and doc links in the PR.
 - [ ] `PlaceSearch.swift`: `@MainActor` class keeping completer sessions by `searchId`; `resultTypes = [.pointOfInterest,
-    .address]`; region = given point ± ~5 km, else a Malaysia region; `updateQuery` stores the latest `requestId`
+      .address]`; region = given point ± ~5 km, else a Malaysia region; `updateQuery` stores the latest `requestId`
       and the delegate sends `onPlaceSuggestions` tagged with `searchId` and that `requestId`; suggestion ids are indexes
       into the last result set; `resolve` runs `MKLocalSearch` for that completion and returns name, coordinate and a
       one-line address, mapping every error to `failed` with `network`/`unknown`, and an empty response to `notFound`;
@@ -707,7 +658,7 @@ the board is a separate, larger UI review that can then build on a working searc
       time and the rows stay; 急 chip with no urgent rows (`one`) → filter-empty + 看全部 returns to 全部; scrolled to the
       end → 就这些了. Pixel check: grouped background behind the inline card; head ≤ 32 pt.
 - [ ] Checks; run the case and the four home/shell cases once; commit `feat(bounty): board in home with filters and
-    states`.
+      states`.
 
 ## Task 8: Board card 26A and paging (PR 4b)
 
@@ -795,12 +746,16 @@ the board is a separate, larger UI review that can then build on a working searc
       surface's id (ruling 6), static final state otherwise; Reduce Motion per M1. Success haptic.
 - [ ] Detail applied block and withdraw via `ConfirmationDialog` (destructive 撤回申请, cancel 不撤回); success
       restores 申请 and the untilted sticker without motion.
-- [ ] Cases (`ARGS -uiVerifySignedIn onboarded` plus): - `bounty_apply`: card 申请 opens the sheet titled `bounty.apply.title`; type a note; counter reads the code-point
-      count; 发送 shows progress, the sheet closes, the card shows 「已申请 · 等对方选」 and the stamp (video); open
-      the detail: 已申请 · 等小林选 and 你写的：<note>. - `bounty_apply_no_payee` (`-uiVerifyFixture empty`, `LOCALES ['zh-Hans', 'ms']`): the sheet shows 先加一个收款方式
-      and no note field; 添加收款方式 goes to the Q3 target (assert 收款方式 screen title). - `bounty_apply_failed` (`-uiVerifyApply failOnce`, then `taken`): first 发送 shows the failure with the note
-      intact; second succeeds; `taken` shows the reason and a disabled 发送. - `bounty_withdraw`: from an applied detail, 撤回申请 → the system action sheet → 撤回申请 → 申请 is back and the card
-      shows 申请 again; 不撤回 leaves it unchanged (asserted before and after).
+- [ ] Cases (`ARGS -uiVerifySignedIn onboarded` plus):
+      - `bounty_apply`: card 申请 opens the sheet titled `bounty.apply.title`; type a note; counter reads the code-point
+        count; 发送 shows progress, the sheet closes, the card shows 「已申请 · 等对方选」 and the stamp (video); open
+        the detail: 已申请 · 等小林选 and 你写的：<note>.
+      - `bounty_apply_no_payee` (`-uiVerifyFixture empty`, `LOCALES ['zh-Hans', 'ms']`): the sheet shows 先加一个收款方式
+        and no note field; 添加收款方式 goes to the Q3 target (assert 收款方式 screen title).
+      - `bounty_apply_failed` (`-uiVerifyApply failOnce`, then `taken`): first 发送 shows the failure with the note
+        intact; second succeeds; `taken` shows the reason and a disabled 发送.
+      - `bounty_withdraw`: from an applied detail, 撤回申请 → the system action sheet → 撤回申请 → 申请 is back and the card
+        shows 申请 again; 不撤回 leaves it unchanged (asserted before and after).
 - [ ] Checks; run each once; commit `feat(bounty): apply with a note, payee check, stamp and withdraw`.
 
 ## Task 12: Block from the detail and the block list (PR 4b; only if Q4 = A)
@@ -833,7 +788,7 @@ the board is a separate, larger UI review that can then build on a working searc
       the label, never the distance; the axis 「+N 更远」 fits; screenshots top, middle, end; the detail and the apply
       sheet with the 140-character note.
 - [ ] Fix every break (layout only; copy changes go to the user); re-run; commit `fix(bounty): worst-case board
-    layout`.
+      layout`.
 
 ## Task 14: Story map, README, rulings and the PR gate (PR 4b)
 
@@ -841,13 +796,26 @@ the board is a separate, larger UI review that can then build on a working searc
 
 **Steps**
 
-- [ ] `docs/story-map.md`: - `bounty.board.data` → add `db:supabase/tests/bounty_privacy.test.sql`, `ui:bounty_board_list` - `bounty.board.filters` → `unit:src/features/bounty/board/boardService.test.ts`, `ui:bounty_board_states` - `bounty.board.distance` → `unit:src/features/bounty/board/axis.test.ts`, `ui:bounty_board_axis` - `bounty.board.worst` → fix the behaviour to 「60 字标题、80 字地点、40 字名字、RM 500 和 RM 1 都排得下」
-      (RM 9,999 is impossible since decision 6) → `ui:bounty_board_worst` - new `bounty.board.states` 「首次加载失败不显示成空、不显示数量；刷新失败保留列表并写明是几点的数据；到底有提示」 →
-      `unit:src/features/bounty/board/boardState.test.ts`, `ui:bounty_board_states` - new `bounty.board.location` 「只在点允许定位时才弹系统定位；不开定位可以选一个地方，选的地方存在手机上」 →
-      `unit:src/lib/location/…test.ts`, `ui:bounty_board_location`, `device: 定位弹窗文案、精确开关` - new `bounty.board.privacy` 「除了发布者和选中的人，谁都拿不到地点坐标；距离取整到 100 米」 →
-      `db:supabase/tests/bounty_privacy.test.sql` - new `bounty.board.freshness` 「打开、回前台、切回悬赏、下拉都会刷新；申请和撤回只改那一条」 →
-      `unit:src/features/bounty/board/boardState.test.ts` - `bounty.apply.apply` → add `ui:bounty_apply`, `ui:bounty_withdraw`, `unit:src/features/bounty/apply/…test.ts` - `bounty.apply.no-payee` → add `ui:bounty_apply_no_payee` - new `bounty.apply.failure` 「申请失败保留那句话，不自动重发；被接走或关闭时说明原因」 → `ui:bounty_apply_failed` - new `bounty.post.place` 「发悬赏时搜地点或用当前位置；名称可改，精确地址只给选中的人」 →
-      `ui:bounty_post_place`, `ui:bounty_place_search`, `unit:src/features/bounty/post/validate.test.ts` - `bounty.apply.blocked` → add `ui:bounty_block` if Q4 = A
+- [ ] `docs/story-map.md`:
+      - `bounty.board.data` → add `db:supabase/tests/bounty_privacy.test.sql`, `ui:bounty_board_list`
+      - `bounty.board.filters` → `unit:src/features/bounty/board/boardService.test.ts`, `ui:bounty_board_states`
+      - `bounty.board.distance` → `unit:src/features/bounty/board/axis.test.ts`, `ui:bounty_board_axis`
+      - `bounty.board.worst` → fix the behaviour to 「60 字标题、80 字地点、40 字名字、RM 500 和 RM 1 都排得下」
+        (RM 9,999 is impossible since decision 6) → `ui:bounty_board_worst`
+      - new `bounty.board.states` 「首次加载失败不显示成空、不显示数量；刷新失败保留列表并写明是几点的数据；到底有提示」 →
+        `unit:src/features/bounty/board/boardState.test.ts`, `ui:bounty_board_states`
+      - new `bounty.board.location` 「只在点允许定位时才弹系统定位；不开定位可以选一个地方，选的地方存在手机上」 →
+        `unit:src/lib/location/…test.ts`, `ui:bounty_board_location`, `device: 定位弹窗文案、精确开关`
+      - new `bounty.board.privacy` 「除了发布者和选中的人，谁都拿不到地点坐标；距离取整到 100 米」 →
+        `db:supabase/tests/bounty_privacy.test.sql`
+      - new `bounty.board.freshness` 「打开、回前台、切回悬赏、下拉都会刷新；申请和撤回只改那一条」 →
+        `unit:src/features/bounty/board/boardState.test.ts`
+      - `bounty.apply.apply` → add `ui:bounty_apply`, `ui:bounty_withdraw`, `unit:src/features/bounty/apply/…test.ts`
+      - `bounty.apply.no-payee` → add `ui:bounty_apply_no_payee`
+      - new `bounty.apply.failure` 「申请失败保留那句话，不自动重发；被接走或关闭时说明原因」 → `ui:bounty_apply_failed`
+      - new `bounty.post.place` 「发悬赏时搜地点或用当前位置；名称可改，精确地址只给选中的人」 →
+        `ui:bounty_post_place`, `ui:bounty_place_search`, `unit:src/features/bounty/post/validate.test.ts`
+      - `bounty.apply.blocked` → add `ui:bounty_block` if Q4 = A
       Test names exactly as in the files; `node scripts/check-story-map.mjs` passes.
 - [ ] README: the six launch arguments and every new case row; `-uiVerifyBoard full` is the default that keeps home
       scrollable.
@@ -859,39 +827,39 @@ the board is a separate, larger UI review that can then build on a working searc
 
 Tasks that share files or interfaces; run them in order, never in parallel.
 
-| Shared file / interface                                              | Tasks                              | Rule                                                                 |
-| -------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| Migration + `bounty_nearby.test.sql` / `bounty_read.test.sql`        | 1                                  | One task owns all SQL; Task 12 adds its own migration only if needed |
-| `nearby_bounties` / `bounty_detail` JSON shapes                      | 1 → 6, 10, 11                      | Task 6 starts after Task 1 is committed; types copied from the SQL   |
-| `src/lib/i18n/locales/bounty/*`                                      | 2, then small additions in 5, 7–12 | Task 2 adds every foreseeable key; later tasks append, never rename  |
-| `app.json`, `package.json`, `bun.lock`, `ios/` pods                  | 3, 4                               | Task 4 runs `pod install` after Task 3's                             |
-| `modules/tapiro-kit/index.tsx`, `TapiroKitModule.swift`              | 4                                  | Only Task 4                                                          |
-| `PostForm.tsx`, `OptionalRows.tsx`, `PostConfirm.tsx`, `validate.ts` | 5                                  | Only Task 5 in this step                                             |
-| `src/features/bounty/index.ts`, `services.ts`                        | 5–12                               | Append exports; rebase before each commit                            |
-| `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx`                 | 5, 7, 10, 11                       | Append scenes; shared path selects every case at the milestone       |
-| `HomeScreen.tsx`, home cases                                         | 7                                  | Only Task 7; home/shell cases rerun there                            |
-| `src/app/(tabs)/bounty/_layout.tsx`, `index.tsx`                     | 7, 9, 10                           | Each adds its own `Stack.Screen`; keep toolbar 「+」 untouched       |
-| `src/app/_layout.tsx`                                                | 11                                 | Registers `bounty-apply`                                             |
-| `BoardCard.tsx`, `BountyDetailScreen.tsx`                            | 8, 10, 11, 13                      | 11 adds the stamp; 13 fixes layout last                              |
-| `bountyCache`, `boardReducer` events `applied` / `withdrawn`         | 6 → 10, 11                         | Contract fixed in Task 6                                             |
-| `verification/ui/README.md`, `docs/story-map.md`                     | 5 (4a rows), 14                    | 4a adds its own rows in Task 5's commit                              |
+| Shared file / interface | Tasks | Rule |
+| --- | --- | --- |
+| Migration + `bounty_nearby.test.sql` / `bounty_read.test.sql` | 1 | One task owns all SQL; Task 12 adds its own migration only if needed |
+| `nearby_bounties` / `bounty_detail` JSON shapes | 1 → 6, 10, 11 | Task 6 starts after Task 1 is committed; types copied from the SQL |
+| `src/lib/i18n/locales/bounty/*` | 2, then small additions in 5, 7–12 | Task 2 adds every foreseeable key; later tasks append, never rename |
+| `app.json`, `package.json`, `bun.lock`, `ios/` pods | 3, 4 | Task 4 runs `pod install` after Task 3's |
+| `modules/tapiro-kit/index.tsx`, `TapiroKitModule.swift` | 4 | Only Task 4 |
+| `PostForm.tsx`, `OptionalRows.tsx`, `PostConfirm.tsx`, `validate.ts` | 5 | Only Task 5 in this step |
+| `src/features/bounty/index.ts`, `services.ts` | 5–12 | Append exports; rebase before each commit |
+| `src/debug/BountyScenes.tsx`, `src/debug/scenes.tsx` | 5, 7, 10, 11 | Append scenes; shared path selects every case at the milestone |
+| `HomeScreen.tsx`, home cases | 7 | Only Task 7; home/shell cases rerun there |
+| `src/app/(tabs)/bounty/_layout.tsx`, `index.tsx` | 7, 9, 10 | Each adds its own `Stack.Screen`; keep toolbar 「+」 untouched |
+| `src/app/_layout.tsx` | 11 | Registers `bounty-apply` |
+| `BoardCard.tsx`, `BountyDetailScreen.tsx` | 8, 10, 11, 13 | 11 adds the stamp; 13 fixes layout last |
+| `bountyCache`, `boardReducer` events `applied` / `withdrawn` | 6 → 10, 11 | Contract fixed in Task 6 |
+| `verification/ui/README.md`, `docs/story-map.md` | 5 (4a rows), 14 | 4a adds its own rows in Task 5's commit |
 
 ## Not in this plan
 
-| Item                                                                                                     | Owning step                                                  |
-| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Map view, sticker annotations, the list/map sticker switch and remembered view                           | Step 8 (after the `expo-maps` spike)                         |
-| Applicant list, hold-to-commit selection, 「这次没选上」 / 「已经选好了」                                | Step 5                                                       |
-| Applicant-row long-press block (5A third entry)                                                          | Step 5                                                       |
-| Poster profile screen (「看{name}的主页」, tappable poster row)                                          | Not scheduled; canvas item when a profile screen is designed |
-| Bounty status screens, live-item source, card-detail types in `src/lib`, 出发了 / 完成 / 有问题 / cancel | Step 6                                                       |
-| The poster's own open bounties on the board (the RPC excludes them; they show as live cards)             | Step 6                                                       |
-| Photo → die-cut sticker on cards (`stickerPath` is ignored here)                                         | Step 9                                                       |
-| Publish fly-to-stack                                                                                     | Step 9                                                       |
-| Push for new applications and selection                                                                  | Step 11                                                      |
-| Gates (dimmed cards, 「{tier} 及以上可申请」) — `bounty.board.locked` stays planned                      | Step 12                                                      |
-| Report a bounty                                                                                          | Foundation step 7                                            |
-| Reviews feeding the tier                                                                                 | Foundation step 6                                            |
+| Item | Owning step |
+| --- | --- |
+| Map view, sticker annotations, the list/map sticker switch and remembered view | Step 8 (after the `expo-maps` spike) |
+| Applicant list, hold-to-commit selection, 「这次没选上」 / 「已经选好了」 | Step 5 |
+| Applicant-row long-press block (5A third entry) | Step 5 |
+| Poster profile screen (「看{name}的主页」, tappable poster row) | Not scheduled; canvas item when a profile screen is designed |
+| Bounty status screens, live-item source, card-detail types in `src/lib`, 出发了 / 完成 / 有问题 / cancel | Step 6 |
+| The poster's own open bounties on the board (the RPC excludes them; they show as live cards) | Step 6 |
+| Photo → die-cut sticker on cards (`stickerPath` is ignored here) | Step 9 |
+| Publish fly-to-stack | Step 9 |
+| Push for new applications and selection | Step 11 |
+| Gates (dimmed cards, 「{tier} 及以上可申请」) — `bounty.board.locked` stays planned | Step 12 |
+| Report a bounty | Foundation step 7 |
+| Reviews feeding the tier | Foundation step 6 |
 
 ## Final acceptance
 
@@ -960,7 +928,7 @@ the reason; "cost" is what it costs if the ruling is wrong.
   `bounty.place.placeLabelEmpty` was deleted from all three locales (controller ruling). `validate.ts` already emitted
   it, so the task added a code-point/trim test and no validation change.
 - New copy keys in all three locales: `bounty.place.{denied, noFix, stale, locating, searching, resolving, addLabel,
-picked}`, `bounty.post.confirm.{place, addressNote, meta}`, `debug.bounty.placeSearch`. `stale` (「列表变了，再点一次」)
+  picked}`, `bounty.post.confirm.{place, addressNote, meta}`, `debug.bounty.placeSearch`. `stale` (「列表变了，再点一次」)
   is shown when resolve answers `failed`/`stale`; `noFix` covers a granted permission without a position.
 - 用当前位置 stores the device point as the coordinates and the reverse-geocoded name as the label; if `placeAt` fails or
   throws, the label is empty and the field takes focus (ruling 11). The search is biased to the viewer's point only

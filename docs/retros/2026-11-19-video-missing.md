@@ -29,7 +29,7 @@ overturned: 0
   of a run, so the next run's first case on it passed its script and failed 「video missing」; the heal reboot then
   freed it and the retry passed, which read as "right after boot". Reproduced on the old runner: a recorder ended with
   SIGTERM, then `ride_create_form` → `FLAKY … PASS: …; video missing`, recorder output `Code=16 … A recording is already
-in progress`. Tags `video-missing-after-boot` (third time), `orphan-recording` (2026-11-06), `runner-kill-recorder`
+  in progress`. Tags `video-missing-after-boot` (third time), `orphan-recording` (2026-11-06), `runner-kill-recorder`
   (2026-11-09).
 - The earlier entries blamed the environment and recorded "none" as the change three times; the recorder's own output
   was in a pipe nobody read. The runner now keeps it and puts it in the failure message. Tag `unread-tool-output`.

@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                                                  |
-| --------- | --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Quality   | Escaped defects       | 0                                                                                                          |
-| Quality   | Skipped verifications | `verify:smoke`: no screen or JS changed. A device run of the installed build waits on the owner's hands    |
+| Dimension | Measure               | This step                                                                                                   |
+| --------- | --------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0                                                                                                           |
+| Quality   | Skipped verifications | `verify:smoke`: no screen or JS changed. A device run of the installed build waits on the owner's hands     |
 | Speed     | Wasted time           | ~15 min: two archive runs that failed on signing, a rebase onto #189 that landed while the branch was open |
-| Autonomy  | Interventions         | 1 (registering the owner's iPhone, an account change the owner must approve)                               |
+| Autonomy  | Interventions         | 1 (registering the owner's iPhone, an account change the owner must approve)                                |
 
 ## Findings
 

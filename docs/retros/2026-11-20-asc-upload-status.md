@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                             |
-| --------- | --------------------- | ------------------------------------------------------------------------------------- |
-| Quality   | Escaped defects       | 0                                                                                     |
-| Quality   | Skipped verifications | None; the status script read FAILED with 90683 for 1136 and COMPLETE for 1227         |
+| Dimension | Measure               | This step                                                                          |
+| --------- | --------------------- | ---------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0                                                                                  |
+| Quality   | Skipped verifications | None; the status script read FAILED with 90683 for 1136 and COMPLETE for 1227      |
 | Speed     | Wasted time           | ~5 min (lint `no-undef` on `Buffer` in an `.mjs` script; imported from `node:buffer`) |
-| Autonomy  | Interventions         | 0                                                                                     |
+| Autonomy  | Interventions         | 0                                                                                  |
 
 ## Findings
 

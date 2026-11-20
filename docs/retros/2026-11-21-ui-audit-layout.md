@@ -46,3 +46,6 @@ overturned: 0
 - Tooling friction: the worktree guard refused compound shell commands (heredocs mentioning `git`, `xargs bunx`, quoted
   `(tabs)` paths); edit scripts in the scratchpad were faster than rewording. A blanket rewrite of `| S3  |` hit the
   earlier record's Apple nonce row of the same id and was caught in the diff; table edits now anchor on the record.
+- `prettier --write docs` reformatted about 50 unrelated plans, research notes and retros (docs are not
+  prettier-clean on main); caught by the diff stat after the rebase and undone by restoring `docs/` from main and
+  re-applying only this step's rows. Pattern: run prettier on named doc files only, never on the folder.
