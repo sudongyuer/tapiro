@@ -2,9 +2,10 @@ export const CRON_SECRET_HEADER = 'x-cron-secret';
 
 const encoder = new TextEncoder();
 
-export function cronSecretCheck(expected: string | undefined) {
+export function cronSecretCheck(configured: string | undefined) {
+  const expected = configured?.trim() ?? '';
   if (!expected) console.error('CRON_SECRET is not set; every scheduled call is rejected');
-  const want = encoder.encode(expected ?? '');
+  const want = encoder.encode(expected);
   return (given: string) => {
     if (want.length === 0) return false;
     const got = encoder.encode(given);

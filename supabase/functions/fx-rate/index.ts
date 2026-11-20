@@ -8,10 +8,11 @@ const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
+const authorized = cronSecretCheck(Deno.env.get('CRON_SECRET'));
 
 Deno.serve((req) =>
   handleFxRate(req, {
-    authorized: cronSecretCheck(Deno.env.get('CRON_SECRET')),
+    authorized,
     async fetchRates() {
       const res = await fetch(BNM_RATES_URL, { headers: { Accept: BNM_ACCEPT } });
       if (!res.ok) throw new Error(`BNM answered ${res.status}`);

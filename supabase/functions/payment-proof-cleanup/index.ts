@@ -8,6 +8,7 @@ const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
+const authorized = cronSecretCheck(Deno.env.get('CRON_SECRET'));
 
 function bucket(options: {
   bucket: string;
@@ -39,7 +40,7 @@ function bucket(options: {
 
 Deno.serve((req) =>
   handleProofCleanup(req, {
-    authorized: cronSecretCheck(Deno.env.get('CRON_SECRET')),
+    authorized,
     buckets: [
       bucket({
         bucket: 'payment-proofs',

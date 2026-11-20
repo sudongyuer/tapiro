@@ -34,3 +34,8 @@ overturned: 0
   have no user path. The service role key no longer leaves the Edge runtime; a stack test proves it is rejected.
 - Pattern to check next time: any helper that skips work when configuration is missing should raise or log where the
   operator looks, never return success.
+- Review (one round, all fixed together): raising in `drain_due_pushes` rolled back its stalled-push marking, so
+  `push-stalled` now runs `mark_stalled_pushes()` as its own job; the checker was built per request, now once per
+  isolate; the trigger catches only the new `TP001`, not every error; the configured secret is trimmed. Declined:
+  restoring `verify_jwt` (pg_cron has no JWT to send), and the remaining async gap (a mismatched secret shows only in
+  `net._http_response`), which the README now says to check after setting or rotating.

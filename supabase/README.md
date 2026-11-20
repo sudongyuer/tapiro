@@ -393,7 +393,9 @@ everything rejected while it is unset). They have no user-facing path; the servi
 Each environment needs the same random value in the Vault secret `cron_secret` and the function secret `CRON_SECRET`,
 plus the Vault secret `project_url`. A missing Vault secret makes `call_edge_function` raise, so the job shows as
 failed in `cron.job_run_details`; the `push_queue` insert trigger only logs a warning, so a missing secret never rolls
-back the write that queued the push. Hosted setup: generate the value into a mode-600 file (never print it), set
+back the write that queued the push, and `push-stalled` marks stalled pushes in its own job so a failing drain cannot
+roll that back. The post itself is asynchronous: a mismatched `CRON_SECRET` still lets the job succeed, and the 401
+shows only in `net._http_response`, so check it after setting or rotating the secret. Hosted setup: generate the value into a mode-600 file (never print it), set
 `CRON_SECRET` with `supabase secrets set --project-ref <ref>`, and `cron_secret` and `project_url`
 (`https://<ref>.supabase.co`) with `vault.create_secret` (or `vault.update_secret`) through
 `supabase db query --linked`.

@@ -13,9 +13,14 @@ describe('cronSecretCheck', () => {
     expect(matches('')).toBe(false);
   });
 
+  test('ignores whitespace around the configured secret', () => {
+    expect(cronSecretCheck(`${'a'.repeat(64)}\n`)('a'.repeat(64))).toBe(true);
+  });
+
   test('rejects everything when the secret is not configured', () => {
     expect(cronSecretCheck(undefined)('')).toBe(false);
     expect(cronSecretCheck('')('')).toBe(false);
+    expect(cronSecretCheck(' \n')('')).toBe(false);
     expect(cronSecretCheck(undefined)('anything')).toBe(false);
   });
 });

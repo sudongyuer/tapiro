@@ -10,7 +10,7 @@ begin
   if coalesce(base, '') = '' or coalesce(secret, '') = '' then
     raise exception 'call_edge_function(%): Vault secret % is not set', call_edge_function.name,
       case when coalesce(base, '') = '' then 'project_url' else 'cron_secret' end
-      using hint = 'See "Scheduled functions" in supabase/README.md.';
+      using errcode = 'TP001', hint = 'See "Scheduled functions" in supabase/README.md.';
   end if;
   perform net.http_post(
     url := base || '/functions/v1/' || call_edge_function.name,
@@ -33,7 +33,7 @@ begin
     -- A missing Vault secret must not roll back the write that queued the push; the five-minute drain raises it.
     begin
       perform public.call_edge_function('notify');
-    exception when others then
+    exception when sqlstate 'TP001' then
       raise log '%', sqlerrm;
     end;
   end if;
@@ -42,3 +42,5 @@ end;
 $$;
 
 revoke all on function private.poke_notify() from public, anon, authenticated;
+
+select cron.schedule('push-stalled', '*/5 * * * *', $$select private.mark_stalled_pushes()$$);
