@@ -59,4 +59,5 @@ check_bundle() {
   if grep -aqE '127\.0\.0\.1:54321|localhost:54321' "$app/main.jsbundle"; then
     fail "the JS bundle contains a local Supabase URL"
   fi
+  node "$ROOT/scripts/check-purpose-strings.mjs" "$app" || fail "App Store processing would reject these purpose strings"
 }

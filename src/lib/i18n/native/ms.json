@@ -2,6 +2,7 @@
   "ios": {
     "CFBundleDisplayName": "Tapiro",
     "NSCameraUsageDescription": "Imbas kod QR terima yang dipaparkan pada skrin lain, atau ambil foto untuk dihantar dalam sembang. Kamera hanya dibuka apabila anda ketik Ambil foto atau mengimbas; semasa mengimbas, Tapiro hanya membaca kod.",
+    "NSPhotoLibraryUsageDescription": "Pilih gambar untuk dihantar dalam sembang, dilampirkan sebagai bukti bayaran atau resit, membaca kod QR terima daripada tangkapan skrin, atau ditunjukkan kepada Tapir. Tapiro hanya mendapat gambar yang anda pilih.",
     "NSPhotoLibraryAddUsageDescription": "Simpan kod QR terima penerima ke Foto supaya anda boleh mengimbasnya dalam aplikasi e-dompet. Tapiro hanya menambah imej ini.",
     "NSLocationWhenInUseUsageDescription": "Susun ganjaran dan perjalanan berhampiran mengikut jarak, tunjukkan tempat berhampiran dahulu semasa anda mencari, atau guna lokasi anda sekarang sebagai tempat ganjaran atau perjalanan. Hanya digunakan semasa anda menggunakan Tapiro.",
     "NSMicrophoneUsageDescription": "Merakam suara anda semasa bercakap dengan Tapir, untuk menukarnya menjadi teks dalam ruangan. Rakaman bermula hanya apabila anda ketik mikrofon dan tamat apabila anda ketik henti.",

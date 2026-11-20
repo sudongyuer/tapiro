@@ -2,6 +2,7 @@
   "ios": {
     "CFBundleDisplayName": "Tapiro",
     "NSCameraUsageDescription": "Scan a receive QR code shown on another screen, or take a photo to send in a chat. The camera opens only when you tap Take Photo or scan; when scanning, Tapiro reads the code only.",
+    "NSPhotoLibraryUsageDescription": "Choose a picture to send in a chat, attach as payment or receipt proof, read a receive QR code from a screenshot, or show Tapir a screenshot. Tapiro only gets the pictures you pick.",
     "NSPhotoLibraryAddUsageDescription": "Save a payee's receive QR code to Photos so you can scan it from your wallet app. Tapiro only adds this one image.",
     "NSLocationWhenInUseUsageDescription": "Sort nearby bounties and rides by how far they are, show nearby places first when you search, or use where you are now as a bounty's or ride's place. Used only while you use Tapiro.",
     "NSMicrophoneUsageDescription": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop.",
