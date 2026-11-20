@@ -1,6 +1,7 @@
 """141 A failures, Task 5's hungry pattern: 小貘 dizzy under the message says nothing was charged and offers 再试一次 (a
 tap, never automatic), which then translates; a hungry 小貘 says the message was not translated and offers 去喂小貘,
-which opens 问小貘 on its hungry card. Nothing is retried on its own. Every button is at least 44 pt."""
+which opens 问小貘 on its hungry card; there the way out is 先不翻译 (N4), not 自己填 or 明早再来, and it returns to the
+thread. Nothing is retried on its own. Every button is at least 44 pt."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -61,7 +62,16 @@ ui.capture('02-hungry')
 ui.tap(f'chat-translate-feed-{LAST}')
 ui.settled(lambda items: by_id(items, 'ask-tapir-sheet'), 'the 问小貘 sheet never opened')
 ui.element('ask-hungry-line', timeout=20)
+manual = ui.element('ask-manual')
+assert manual.get('AXLabel') == ui.t('ask.hungry.notNow'), f'the way out reads {manual.get("AXLabel")!r}'
+labels = [i.get('AXLabel') for i in ui.read()]
+for other in ('ask.sheet.manual', 'ask.hungry.tomorrow'):
+    assert ui.t(other) not in labels, f'the translation hungry card offers {ui.t(other)}'
 ui.at_rest()
 ui.capture('03-sheet-hungry')
 assert_calls(ui, 'translate', 3, wait=1)
-print('PASS: dizzy offers 再试一次 and translates on the tap; hungry offers 去喂小貘, which opens the hungry card')
+ui.tap('ask-manual')
+ui.gone('ask-tapir-sheet')
+ui.element(f'chat-bubble-{LAST}')
+assert by_id(ui.read(), 'bounty-post-form') is None, '先不翻译 opened the post form'
+print('PASS: dizzy offers 再试一次 and translates on the tap; hungry offers 去喂小貘, which opens the hungry card with 先不翻译 back to the thread')

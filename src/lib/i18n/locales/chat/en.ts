@@ -59,6 +59,9 @@ export default {
     openImage: 'View Full Size',
     imageLoading: 'Loading photo',
     imageFailed: 'Photo didn’t load. Tap to try again.',
+    imageFailedShort: 'Didn’t load · Tap to try again',
+    imageGone: 'Photo didn’t load',
+    imageRetryHint: 'Loads the photo again',
     viewFailed: 'This photo couldn’t be opened. Try again later.',
     prepareFailed: 'This photo can’t be sent. Try another one.',
     cameraDenied: 'No Camera Access',
@@ -69,6 +72,7 @@ export default {
     composerLabel: 'Write a message',
     send: 'Send',
     failed: 'Not sent. Tap to try again.',
+    safetyHide: 'Hide Tip',
     safety:
       'Pay only in the Pay step, never a deposit up front. If someone asks you to pay outside Tapiro, touch and hold their message and tap Report.',
     loading: 'Loading chat',

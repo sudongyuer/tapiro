@@ -133,7 +133,7 @@ export function OfferCard({
 
 const styles = StyleSheet.create({
   card: {
-    gap: vars['--space-2'],
+    gap: vars['--space-3'],
     padding: vars['--space-4'],
     borderRadius: vars['--radius-card'],
     borderCurve: 'continuous',

@@ -7,7 +7,8 @@ points to them.
 Updated: 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
 PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
 new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours; UI audit batch C:
-one name per thing in every locale, `docs/design-language.md` 「Terminology」).
+one name per thing in every locale, `docs/design-language.md` 「Terminology」; UI audit batch E: the remaining Minor flow
+findings, decisions E1–E12).
 
 ## Built and merged
 
@@ -34,6 +35,10 @@ one name per thing in every locale, `docs/design-language.md` 「Terminology」)
   draft, a missing payment says 这笔付款已不存在, cash has one control and one name, the rate source is named Bank Negara
   Malaysia everywhere, and the onboarding name step waits for the profile (O1). Decisions B1–B7 for veto in the
   foundation spec's record of 2026-11-21. Batches A (navigation), C (copy) and D (layout) are separate PRs.
+  Batch E (the remaining Minor flow findings) is merged: 先不翻译 on the translation hungry card, secondary 申请 pills
+  in board rows, tappable calm-card lines that prefill 问小貘, refresh and recentre on the full-screen map, failed chat
+  images say so, a per-thread 收起提醒 on the safety tip, 去过的 reloads, a confirm before leaving the name step, and
+  one stamp radius and map elevation. Decisions E1–E12 for veto in the foundation spec's record of 2026-11-21.
 
 - First TestFlight device test (owner, build 20261120.1739): after 发出去 home now shows the poster's 「等人申请」 card
   at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open

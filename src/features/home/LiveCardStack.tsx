@@ -67,7 +67,7 @@ export type LiveCardStackProps = {
   open: boolean;
   progress: SharedValue<number>;
   name: string;
-  onAsk: (() => void) | null;
+  onAsk: ((seed?: string) => void) | null;
   onToggle: (open: boolean) => void;
   onCardLayout: (id: string) => (event: LayoutChangeEvent) => void;
   chat?: HomeChat;

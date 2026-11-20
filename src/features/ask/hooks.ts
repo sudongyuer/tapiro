@@ -21,10 +21,12 @@ export function useConsentFor(userId: string | null) {
 }
 
 // Opened before paint, so a reopened sheet never shows the previous open's turns for a frame.
-export function useAskSession(userId: string | null) {
+export function useAskSession(userId: string | null, seed?: string) {
   useLayoutEffect(() => {
-    if (userId) askSession.open(userId);
-  }, [userId]);
+    if (!userId) return;
+    askSession.open(userId);
+    if (seed) askSession.seed(seed);
+  }, [userId, seed]);
   const state = useSyncExternalStore(askSession.subscribe, askSession.getSnapshot);
   return state.userId === userId ? state : null;
 }

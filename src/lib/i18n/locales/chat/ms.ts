@@ -60,6 +60,9 @@ export default {
     openImage: 'Lihat saiz penuh',
     imageLoading: 'Memuatkan foto',
     imageFailed: 'Foto tidak dapat dimuatkan. Ketik untuk cuba lagi.',
+    imageFailedShort: 'Tidak dimuatkan · Ketik untuk cuba lagi',
+    imageGone: 'Foto tidak dapat dimuatkan',
+    imageRetryHint: 'Memuatkan foto sekali lagi',
     viewFailed: 'Foto ini tidak dapat dibuka. Cuba lagi nanti.',
     prepareFailed: 'Foto ini tidak boleh dihantar. Cuba foto lain.',
     cameraDenied: 'Tiada akses kamera',
@@ -70,6 +73,7 @@ export default {
     composerLabel: 'Tulis mesej',
     send: 'Hantar',
     failed: 'Tidak dihantar. Ketik untuk cuba lagi.',
+    safetyHide: 'Sembunyikan Petua',
     safety:
       'Bayar hanya pada langkah Bayar, jangan beri deposit lebih awal. Jika seseorang minta anda bayar di luar Tapiro, sentuh dan tahan mesejnya, kemudian ketik Laporkan.',
     loading: 'Memuatkan perbualan',

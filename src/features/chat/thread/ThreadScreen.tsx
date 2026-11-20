@@ -167,7 +167,7 @@ export function ThreadScreen({
     });
   };
 
-  const header = <ThreadListHeader threadId={threadId} thread={thread} />;
+  const header = <ThreadListHeader threadId={threadId} thread={thread} userId={userId} />;
 
   return (
     <KeyboardGestureArea

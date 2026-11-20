@@ -308,6 +308,8 @@ const en: typeof zhHans = {
       details: 'View Details',
       expand: 'Expand Map',
       close: 'Close Map',
+      recentre: 'Back to Bounty Area',
+      refresh: 'Refresh Bounties',
       noOrigin: 'Choose a place or allow location, and the map shows here',
     },
     state: {
@@ -325,6 +327,7 @@ const en: typeof zhHans = {
     },
     apply: 'Apply',
     applied: 'Applied · waiting for them to choose',
+    waiting: 'Waiting for them to choose',
     distance: {
       meters: '{{value}} m',
       kilometers: '{{value}} km',

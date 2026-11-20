@@ -1,15 +1,16 @@
 """Loading states of a stored image: while the picture downloads (the fixture holds it 12 s) the bubble is the
 placeholder at the photo's shape and reads 「正在加载图片」; the first download fails (`-uiVerifyChatFail image`), so it
-shows a retry mark and reads 「图片没加载出来，点一下重试」, never an empty or blank bubble that looks loaded, and it does
-not retry on its own; a tap loads it again and the picture appears. Runs ms for the longest copy."""
+shows a retry mark with the words 「没加载出来 · 点一下重试」 inside the bubble (N2) and reads 「图片没加载出来，点一下重试」, never an empty or blank bubble that looks loaded, and it does not retry on its own; a tap loads it again and the picture appears. Runs ms for the longest copy."""
+import re
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from chat import chat_calls, drawn, open_thread  # noqa: E402
 from driver import UI, by_id  # noqa: E402
+from ocr import find, lines_in  # noqa: E402
 
-DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py']
+DEPS = ['src/features/chat/', 'src/app/(tabs)/messages/', 'verification/ui/chat.py', 'verification/ui/ocr.py']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyChat', '1',
         '-uiVerifyChatImages', '1', '-uiVerifyChatFail', 'image', '-uiVerifyChatImageDelay', '12000']
@@ -26,10 +27,15 @@ photo = ui.wait_label(PHOTO, lambda label: label == loading, 'the photo never re
 f = photo['frame']
 assert abs(f['height'] / f['width'] - 2048 / 1536) < 0.05, f'the placeholder lost the photo shape: {f}'
 ui.capture('01-loading')
-ui.wait_label(PHOTO, lambda label: label == failed, 'the failed download never said so', 30)
+shown = ui.wait_label(PHOTO, lambda label: label == failed, 'the failed download never said so', 30)
 assert not by_id(ui.read(), f'{PHOTO}-image'), 'a failed photo shows a picture'
 ui.at_rest()
-ui.capture('02-failed')
+shot = ui.snap('02-failed')
+words = ui.t('chat.thread.imageFailedShort').split(' · ')
+read = lines_in(shot, ui.locale)
+for part in words:
+    assert find(read, re.escape(part.split(' ')[-1]), shown['frame']), \
+        f'the failed bubble does not show {part!r}: {[line["text"] for line in read]}'
 assert chat_calls(ui, 'imageFile', 1), 'the failed download never reached the call log'
 time.sleep(3)  # the preferences file lags behind the app
 loads = len(chat_calls(ui, 'imageFile', 1, 0))

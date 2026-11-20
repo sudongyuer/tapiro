@@ -53,6 +53,15 @@ describe('fixture rides', () => {
     await expect(listLoad(refresh)).rejects.toThrow();
   });
 
+  test('past rides fail on a reload when refresh is asked to fail', async () => {
+    const refresh = service({ uiVerifyRideFail: 'refresh' });
+    expect((await refresh.history()).length).toBeGreaterThan(0);
+    await expect(refresh.history()).rejects.toThrow();
+    const plain = service({});
+    await plain.history();
+    expect((await plain.history()).length).toBeGreaterThan(0);
+  });
+
   test('a reminder sync before the list does not use up the first-load failure', async () => {
     const first = service({ uiVerifyRideFail: 'first' });
     expect((await first.mine()).items.length).toBeGreaterThan(0);

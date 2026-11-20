@@ -24,7 +24,6 @@ import { useMotionReduced } from '@/ui/theme/motion';
 import { justApplied, type ApplySurface } from './justApplied';
 
 const STAMP_TILT = -12;
-const STAMP_RADIUS = 6;
 const STAMP_TRACKING = 1;
 const STAMP_MIN_SCALE = 0.6;
 const STAMP_FROM = 1.4;
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
   },
   stamp: {
     borderWidth: vars['--sticker-border-small'],
-    borderRadius: STAMP_RADIUS,
+    borderRadius: vars['--radius-stamp'],
     borderCurve: 'continuous',
     paddingHorizontal: vars['--space-1'],
   },

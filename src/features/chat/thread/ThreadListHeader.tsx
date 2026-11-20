@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
@@ -5,17 +6,25 @@ import { InlineState } from '@/ui/InlineState';
 import { space, vars } from '@/ui/theme/tokens';
 
 import type { ThreadState } from '../chatState';
-import { chatStore } from '../services';
+import { chatStore, safetyNotes } from '../services';
 import { SafetyCard } from './SafetyCard';
+
+function useSafetyShown(userId: string | null, threadId: string) {
+  useSyncExternalStore(safetyNotes.subscribe, safetyNotes.version);
+  return userId !== null && !safetyNotes.hidden(userId, threadId);
+}
 
 export function ThreadListHeader({
   threadId,
   thread,
+  userId,
 }: {
   threadId: string;
   thread: ThreadState | null | undefined;
+  userId: string | null;
 }) {
   const { t } = useI18n();
+  const safety = useSafetyShown(userId, threadId);
   const info = thread?.info ?? null;
   const loading = !thread || (thread.status === 'loading' && !info);
   const failed = thread?.status === 'failed' && !info;
@@ -41,7 +50,9 @@ export function ThreadListHeader({
           />
         </View>
       ) : null}
-      {info && !thread?.hasMore ? <SafetyCard /> : null}
+      {info && !thread?.hasMore && safety && userId ? (
+        <SafetyCard onHide={() => safetyNotes.hide(userId, threadId)} />
+      ) : null}
       {loading ? (
         <ActivityIndicator
           style={styles.loading}

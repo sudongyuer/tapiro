@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     right: vars['--space-4'],
     top: STAMP_TOP,
     borderWidth: vars['--sticker-border-small'],
-    borderRadius: vars['--space-2'],
+    borderRadius: vars['--radius-stamp'],
     borderCurve: 'continuous',
     paddingHorizontal: vars['--space-2'],
   },

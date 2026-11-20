@@ -54,6 +54,9 @@ const en: Translation = {
       footer: 'Other students see this name. Up to 40 characters.',
       avatar: 'Profile photo',
       signOut: 'Sign Out',
+      signOutTitle: 'Sign out?',
+      signOutMessage: 'You haven’t finished setting up. You’ll need to sign in again to carry on.',
+      signOutKeep: 'Keep Setting Up',
       continue: 'Continue',
       loading: 'Loading your profile',
       loadFailed:
@@ -287,6 +290,7 @@ const en: Translation = {
         evening: 'Good evening, {{name}}',
         ask: 'Say it and Tapir drafts the bounty',
         askHint: 'Opens Ask Tapir',
+        chipHint: 'Opens Ask Tapir with this line filled in',
         chipQuestion: 'Cheapest way to KLIA?',
         chipParcel: 'Pick up my parcel',
         chipStudy: 'Find someone to explain calculus',

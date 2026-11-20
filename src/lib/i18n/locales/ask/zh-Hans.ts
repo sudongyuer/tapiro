@@ -98,6 +98,7 @@ export default {
     swapConfirm: '换一片',
     cancel: '取消',
     skip: '跳过',
+    notNow: '先不翻译',
   },
   pantry: {
     title: '储物罐',

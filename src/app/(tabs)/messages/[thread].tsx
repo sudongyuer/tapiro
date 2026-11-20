@@ -13,7 +13,7 @@ export default function Thread() {
   const userId = useSignedInUser()?.id ?? null;
   const translator = useMessageTranslator(useAiOffered() ? userId : null, {
     consent: () => router.push({ pathname: '/ask-consent', params: { from: 'chat' } }),
-    sheet: () => router.push({ pathname: '/ask', params: { tab: 'messages' } }),
+    sheet: () => router.push({ pathname: '/ask', params: { tab: 'messages', via: 'translate' } }),
   });
   const openItem = (info: ThreadInfo) =>
     info.kind === 'bounty'

@@ -91,6 +91,16 @@ describe('the 问小貘 session', () => {
     expect(session.getSnapshot().text).toBe('帮我取快递');
   });
 
+  test('an example line fills an empty field and never replaces typed words', () => {
+    const { session, storage } = setup();
+    session.seed('帮我取个快递');
+    expect(session.getSnapshot().text).toBe('帮我取个快递');
+    expect(storage.texts.get('u1')).toBe('帮我取个快递');
+    session.setText('明天搬家');
+    session.seed('找人讲微积分');
+    expect(session.getSnapshot().text).toBe('明天搬家');
+  });
+
   test('an answer joins the conversation and clears the field', async () => {
     const { session, sent, storage, openConsent } = setup();
     session.setText('靠谱度怎么涨？');

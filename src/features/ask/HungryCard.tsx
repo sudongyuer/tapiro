@@ -26,6 +26,8 @@ const MASCOT = 64;
 const LEAF = 32;
 const LEAF_IMAGE = require('@/assets/pantry/leaf.png');
 
+export type HungryPurpose = 'draft' | 'translate';
+
 export type HungryActions = {
   onFeed: () => void;
   onSwap: (event: GestureResponderEvent) => void;
@@ -64,10 +66,15 @@ function Leaf({
   );
 }
 
-function offerLabel(offer: HungryOffer, belly: Belly, t: ReturnType<typeof useI18n>['t']) {
+function offerLabel(
+  offer: HungryOffer,
+  belly: Belly,
+  purpose: HungryPurpose,
+  t: ReturnType<typeof useI18n>['t'],
+) {
   if (offer === 'feed') return t('ask.hungry.feed', { count: belly.leaves });
   if (offer === 'swap') return t('ask.hungry.swap');
-  return offer === 'tomorrow' ? t('ask.hungry.tomorrow') : null;
+  return offer === 'tomorrow' && purpose === 'draft' ? t('ask.hungry.tomorrow') : null;
 }
 
 export function HungryCard({
@@ -75,18 +82,20 @@ export function HungryCard({
   pantry,
   motion,
   actions,
+  purpose,
 }: {
   belly: Belly | null;
   pantry: PantryState;
   motion: FeedMotion;
   actions: HungryActions;
+  purpose: HungryPurpose;
 }) {
   const { t } = useI18n();
   const fill = useSheetFill();
   const [mascot, setMascot] = useState<LayoutRectangle | null>(null);
   const [button, setButton] = useState<LayoutRectangle | null>(null);
   const offer = belly ? hungryOffer(belly) : null;
-  const label = belly && offer ? offerLabel(offer, belly, t) : null;
+  const label = belly && offer ? offerLabel(offer, belly, purpose, t) : null;
   const writing = pantry.writing === 'feed' || pantry.writing === 'swapFeed';
   const onOffer =
     offer === 'feed' ? actions.onFeed : offer === 'swap' ? actions.onSwap : actions.onTomorrow;
@@ -96,7 +105,7 @@ export function HungryCard({
   const manual = (
     <View style={styles.action}>
       <PillButton
-        label={t('ask.sheet.manual')}
+        label={purpose === 'translate' ? t('ask.hungry.notNow') : t('ask.sheet.manual')}
         variant={manualLeads ? 'primary' : 'secondary'}
         onPress={actions.onManual}
         disabled={motion.flying}

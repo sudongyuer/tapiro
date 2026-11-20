@@ -195,6 +195,11 @@ export function createAskSession(deps: {
       deps.storage.writeText(state.userId, text);
       set({ text, failed: null, needsUpdate: false });
     },
+    seed(text: string) {
+      if (!state.userId || state.sending || state.text.trim() !== '' || text.trim() === '') return;
+      deps.storage.writeText(state.userId, text);
+      set({ text, failed: null, needsUpdate: false });
+    },
     resume() {
       if (!state.resume || state.sending) return;
       set({ turns: state.resume.turns, resume: null, failed: null });

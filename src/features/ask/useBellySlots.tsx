@@ -10,7 +10,7 @@ import { bellyMood, draftWaitsOnTop, isHungry, type Belly } from './belly';
 import { BellyBar, BellyRowSpace } from './BellyBar';
 import { liveBelly, type ConsentState } from './consentStore';
 import { usePantry } from './hooks';
-import { HungryCard } from './HungryCard';
+import { HungryCard, type HungryPurpose } from './HungryCard';
 import { askSession, pantryStore } from './services';
 import { useFeedMotion } from './useFeedMotion';
 
@@ -19,11 +19,13 @@ export function useBellySlots({
   session,
   onTomorrow,
   onManual,
+  purpose,
 }: {
   consent: ConsentState;
   session: AskSessionState | null;
   onTomorrow: () => void;
   onManual: () => void;
+  purpose: HungryPurpose;
 }) {
   const { t } = useI18n();
   const pantry = usePantry();
@@ -87,6 +89,7 @@ export function useBellySlots({
         belly={held ?? belly}
         pantry={pantry}
         motion={motion}
+        purpose={purpose}
         actions={{
           onFeed: () => void feed(pantryStore.feed),
           onSwap: (event: GestureResponderEvent) => void swap(pressAnchor(event)),

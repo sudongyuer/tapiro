@@ -42,6 +42,7 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/features/bounty/status/services.ts#issueDrafts': 'session',
   'src/features/chat/services.ts#outbox': 'account',
   'src/features/chat/services.ts#chatDrafts': 'account',
+  'src/features/chat/services.ts#safetyNotes': 'account',
   'src/features/chat/services.ts#chatStore': 'session',
   'src/features/chat/services.ts#chatImages': 'session',
   'src/features/chat/services.ts#itemThreads': 'kept: drops its cache when the chat user changes',

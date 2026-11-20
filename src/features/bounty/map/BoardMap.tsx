@@ -146,7 +146,7 @@ export function BoardMap({
         }}
         expandLabel={onExpand ? t('bounty.board.map.expand') : undefined}
         onExpand={expand}
-        locateButton={!!cover && located.kind === 'me'}
+        recentre={cover ? { label: t('bounty.board.map.recentre'), radiusM } : undefined}
       />
       {chip ? (
         <View

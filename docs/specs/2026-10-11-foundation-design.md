@@ -1077,3 +1077,41 @@ Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (Y1–Y5, O1) and the owner'
   bugs (a `settled` predicate returning a list; the no-cash-in-menu check matched the toggle's own label) and pass in
   zh-Hans light after the fix. Selection: only the screens this change touches; `ms`, `en` and the dark rerun of the
   two fixed cases are left to the milestone run.
+
+## Implementation Record (2026-11-21) — UI audit batch E: the remaining Minor flow findings
+
+Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (N2, N3, N4, H6, H9, B1, D3, R2, O4, Consistency 4–6). Branch
+`worktree-agent-abde2a888a32cf25d`.
+
+### Decisions (owner-delegated, for veto)
+
+| #   | Decision                                                                                                                                                                                                                | Why                                                                                                                                                                        |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E1  | Opened from a chat translation (`/ask?via=translate`), the hungry card's way out is 「先不翻译」 / "Skip translation" / "Langkau terjemahan", which closes the sheet back to the thread; 明早再来 is not offered there  | N4: 自己填 opens the post form, which means nothing for a translation; 明早再来 would be a second button that also only closes                                             |
+| E2  | A board row's 申请 is the secondary pill (`tertiarySystemFill`, label colour); the detail page keeps the ink 申请                                                                                                       | H6: the ink accent is the one primary action on a screen; a scrolled board showed six or more                                                                              |
+| E3  | An applied board row keeps the 已申请 stamp and its line says only 「等对方选」; VoiceOver and the map pin card (no stamp) keep 「已申请 · 等对方选」                                                                   | D3: the row said 已申请 twice; the waiting state is the part the stamp does not say                                                                                        |
+| E4  | The calm card's three example lines are buttons: a tap opens 问小貘 with the line in the field, not sent; a field that already holds text keeps it. The capsule stays `--capsule-min`, in a 44 pt target                | H9: chips that look tappable did nothing; never send for the user, never overwrite a draft                                                                                 |
+| E5  | The full-screen map gets 刷新悬赏 in the toolbar (disabled while it runs; a failure shows the existing stale notice over kept pins) and a bottom-right glass 回到悬赏范围 that returns to the board origin and radius   | B1: a pull there pans MapKit, and after a pan there was no way back to the pins; the system tracking button it replaces only followed the user and was absent with a place |
+| E6  | A failed chat image shows the retry mark and 「没加载出来 · 点一下重试」; a local image that cannot be retried says 「图片没加载出来」 with no tap promise                                                              | N2; VoiceOver already read the state, and gains the hint 重新加载图片                                                                                                      |
+| E7  | The thread's safety tip has a 44 pt 收起提醒; hiding is per thread and per account, survives restarts, and is cleared on account deletion                                                                               | N3: chosen over "first messages only": the user decides, and every new thread (a new person, where the scam risk is) still shows it                                        |
+| E8  | 去过的 reloads on pull and on returning to it; a failed reload keeps the tickets under 「没刷新成功 · 下面是 hh:mm 的」                                                                                                 | R2, mirroring `useRideList`; data integrity: never show stale data as live or a failure as empty                                                                           |
+| E9  | The name step's 退出登录 first asks 「退出登录？」 in a system action sheet from the button (destructive, keep 继续填写); a bar-anchored confirm falls back to the leading bar items when a screen has no trailing item | O4. Settings' 退出登录 is unchanged (not in the audit, and there the user is already set up)                                                                               |
+| E10 | `--radius-stamp` 6 for the 已申请 stamp and the ticket's 已结清 stamp                                                                                                                                                   | Consistency 4; 8 made the small stamp read as a capsule                                                                                                                    |
+| E11 | One map elevation, `--map-shadow-y` 4 and `--map-shadow-blur` 12, for the more chip, the pin card and its tail                                                                                                          | Consistency 5: the tail should match its card                                                                                                                              |
+| E12 | 小貘记得 cards use a 12 pt gap like the other 问小貘 cards                                                                                                                                                              | Consistency 6                                                                                                                                                              |
+
+### What was built
+
+- `HungryCard` takes a `purpose`; `src/app/ask.tsx` reads `via` and `seed`; `askSession.seed` fills only an empty field.
+- `BoardCardRows`: secondary pill, `bounty.board.waiting`; `verification/ui/board.py` finds the row pill by its fill.
+- Kit: `BountyMapView` `recentre` prop (glass button, `location.fill` or `mappin.and.ellipse`) replacing
+  `locateButton`; `ConfirmDialog` bar anchor uses leading items when there are no trailing ones.
+- `src/app/bounty-map.tsx` toolbar refresh through the board's `retryRefresh`, so the home's RefreshControl behind the
+  cover does not spin.
+- Chat: `safetyNotes` store (`src/features/chat/safetyNotes.ts`), `SafetyCard` hide button, `ImageBubble` failed text.
+- Ride: `historyState.ts` and `useRideHistory.ts`; the fixture fails a history reload under `-uiVerifyRideFail refresh`.
+- Tokens `--radius-stamp`, `--map-shadow-y`, `--map-shadow-blur` in `tokens.ts` and `docs/design-language.md`.
+
+### Not built
+
+- Settings' 退出登录 confirmation (E9).

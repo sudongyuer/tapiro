@@ -19,6 +19,16 @@ export default function BountyMapRoute() {
         />
       </Stack.Toolbar>
       {linked ? (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button
+            icon="arrow.clockwise"
+            accessibilityLabel={t('bounty.board.map.refresh')}
+            disabled={linked.board.retryBusy}
+            onPress={() => void linked.board.retryRefresh()}
+          />
+        </Stack.Toolbar>
+      ) : null}
+      {linked ? (
         <BoardMapCover
           board={linked.board}
           start={start}

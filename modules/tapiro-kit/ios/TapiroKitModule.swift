@@ -117,7 +117,7 @@ public final class TapiroKitModule: Module {
       Prop("origin") { (view: BountyMapView, origin: MapOriginRecord?) in view.setOrigin(origin) }
       Prop("camera") { (view: BountyMapView, camera: MapCameraRecord) in view.setCamera(camera) }
       Prop("expandLabel") { (view: BountyMapView, label: String?) in view.setExpandLabel(label) }
-      Prop("locateButton") { (view: BountyMapView, shown: Bool?) in view.setLocateButton(shown ?? false) }
+      Prop("recentre") { (view: BountyMapView, recentre: MapRecentreRecord?) in view.setRecentre(recentre) }
     }
 
     // Errors become a null result so JS gets a typed outcome instead of an untyped exception.

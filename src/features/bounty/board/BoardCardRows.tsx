@@ -13,6 +13,7 @@ import {
   shapes,
   truncationMode,
 } from '@expo/ui/swift-ui/modifiers';
+import { PlatformColor } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { Avatar } from '@/ui/Avatar';
@@ -114,7 +115,6 @@ export function CardFoot({
   onApply,
 }: Part & { applied: boolean; onApply: () => void }) {
   const { t } = useI18n();
-  const { color } = useTheme();
   return (
     <HStack spacing={vars['--space-2']} modifiers={[accessibilityIdentifier(`${testID}-poster`)]}>
       <RNHostView matchContents>
@@ -141,10 +141,10 @@ export function CardFoot({
           <Text
             modifiers={[
               font({ textStyle: 'subheadline', weight: 'semibold' }),
-              foregroundStyle(color('--color-on-accent')),
+              foregroundStyle({ type: 'hierarchical', style: 'primary' }),
               padding({ horizontal: vars['--space-5'] }),
               frame({ minHeight: vars['--touch-min'] }),
-              background(color('--color-accent'), shapes.capsule()),
+              background(PlatformColor('tertiarySystemFill'), shapes.capsule()),
             ]}
           >
             {t('bounty.board.apply')}
@@ -171,7 +171,7 @@ export function CardApplied({ testID }: { testID: string }) {
           fixedSize({ horizontal: false, vertical: true }),
         ]}
       >
-        {t('bounty.board.applied')}
+        {t('bounty.board.waiting')}
       </Text>
     </HStack>
   );
