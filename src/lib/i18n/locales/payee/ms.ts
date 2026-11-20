@@ -45,7 +45,8 @@ const ms: typeof zhHans = {
     wechat: 'Dikenal pasti',
   },
   cash: {
-    footer: 'Apabila ini dihidupkan, pembayar boleh menyerahkan tunai secara bersemuka, dan anda ketik Diterima untuk selesai.',
+    footer:
+      'Apabila ini dihidupkan, pembayar boleh menyerahkan tunai secara bersemuka, dan anda ketik Diterima untuk selesai.',
   },
   cashOnly: {
     title: 'Belum ada kaedah pindahan',

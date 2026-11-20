@@ -70,7 +70,8 @@ export default {
       body: 'Ask them to add one in Me → Payment Methods, then pay.',
       remind: 'Send a Reminder',
       remindBusy: 'Opening the conversation',
-      draft: 'I’m ready to pay for “{{title}}”, but you have no payment method I can use yet. Could you add one in Me → Payment Methods?',
+      draft:
+        'I’m ready to pay for “{{title}}”, but you have no payment method I can use yet. Could you add one in Me → Payment Methods?',
     },
     proof: {
       add: 'Attach a payment screenshot (optional)',

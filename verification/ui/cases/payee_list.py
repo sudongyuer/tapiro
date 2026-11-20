@@ -1,10 +1,10 @@
-"""我的 shows a red dot for a stale QR; 收款方式 lists the default mark, a masked bank number, the yellow re-check banner and the cash toggle above the accessory; the + menu puts Alipay, WeChat and TNG first; re-picking the stale TNG code with an Alipay screenshot confirms the switch and replaces the row. The Alipay pick is injected at the decode boundary (`-uiVerifyQr`), so the photo picker never opens and the switch and replaced captures carry the `injected-` prefix."""
+"""我的 shows a red dot for a stale QR; 收款方式 lists the default mark, a masked bank number, the yellow re-check banner and the cash toggle (its only control, named like the pay sheet) above the accessory; the + menu puts Alipay, WeChat and TNG first and has no cash entry; re-picking the stale TNG code with an Alipay screenshot confirms the switch and replaces the row. The Alipay pick is injected at the decode boundary (`-uiVerifyQr`), so the photo picker never opens and the switch and replaced captures carry the `injected-` prefix."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_appearance, assert_colour, assert_touch_target, by_id, close, token  # noqa: E402
 from driver import accessory  # noqa: E402
-from payee import ALIPAY, DEFAULT, MENU_ORDER, SAVE, TNG, fill_wallet_name, open_menu, open_payee, row_labels  # noqa: E402
+from payee import ALIPAY, CASH, DEFAULT, MENU_ORDER, SAVE, TNG, fill_wallet_name, open_menu, open_payee, row_labels  # noqa: E402
 
 DEPS = [
     'src/features/payee/',
@@ -48,6 +48,7 @@ for identifier in ('payee-recheck-action', 'payee-cash'):
     assert_touch_target(by_id(items, identifier), identifier)
 cash = by_id(items, 'payee-cash')
 assert str(cash.get('AXValue')) == '1', f'cash toggle is {cash.get("AXValue")}'
+assert ui.t(CASH) in (cash.get('AXLabel') or ''), f'cash toggle is not named {ui.t(CASH)!r}: {cash.get("AXLabel")!r}'
 
 shot = ui.snap('01-list')
 banner = by_id(items, 'payee-recheck')['frame']
@@ -78,8 +79,9 @@ ui.capture('04-cash-off')
 
 open_menu(ui)
 items = ui.read()
+assert not any(i.get('AXLabel') == ui.t(CASH) and i.get('AXUniqueId') != 'payee-cash' for i in items), 'cash is still offered in the + menu'
 ys = []
-for entry in MENU_ORDER[:-1]:
+for entry in MENU_ORDER:
     found = [i['frame'] for i in items if i.get('AXLabel') == ui.t(entry)]
     assert found, f'menu is missing {ui.t(entry)}'
     ys.append(max(found, key=lambda frame: frame['x'])['y'])

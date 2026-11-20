@@ -45,7 +45,8 @@ const en: typeof zhHans = {
     wechat: 'Recognised',
   },
   cash: {
-    footer: 'When this is on, the payer can hand you cash in person, and you tap Received to settle.',
+    footer:
+      'When this is on, the payer can hand you cash in person, and you tap Received to settle.',
   },
   cashOnly: {
     title: 'No transfer methods yet',

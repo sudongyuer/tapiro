@@ -70,7 +70,8 @@ export default {
       body: 'Minta dia tambah satu dalam Saya → Kaedah Terima Bayaran, kemudian bayar.',
       remind: 'Hantar Peringatan',
       remindBusy: 'Membuka perbualan',
-      draft: 'Saya sedia membayar untuk “{{title}}”, tetapi anda belum ada kaedah terima bayaran yang boleh saya guna. Boleh tambah satu dalam Saya → Kaedah Terima Bayaran?',
+      draft:
+        'Saya sedia membayar untuk “{{title}}”, tetapi anda belum ada kaedah terima bayaran yang boleh saya guna. Boleh tambah satu dalam Saya → Kaedah Terima Bayaran?',
     },
     proof: {
       add: 'Lampirkan tangkapan skrin bayaran (pilihan)',
