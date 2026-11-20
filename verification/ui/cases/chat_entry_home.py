@@ -61,5 +61,5 @@ assert len(pills) == 1, f'expected one {word} on the worst card, OCR read {pills
 pill = pills[0]
 beside = [line for line in actions if line is not pill and abs(line['y'] - pill['y']) < 6 and line['x'] > pill['x']]
 assert beside, f'no action pill on the row right of {word}: {actions}'
-print('PASS: 发消息 only on a card with a chosen helper, opens the thread in 消息 without the status screen, '
+print('PASS: 发消息 only on a card with a chosen helper, opens the thread over home and returns there without the status screen, '
       'and sits left of the action pill on the worst card')

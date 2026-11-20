@@ -56,7 +56,10 @@ title_shown(ui, 'payee.title')
 assert by_id(ui.read(), 'BackButton') is None, '收款方式 was pushed in a tab instead of opening over the apply sheet'
 ui.at_rest()
 ui.capture('02-payee-over-apply')
-ui.tap_label(ui.t('payee.close'))
+closes = [i for i in ui.read() if i.get('type') == 'Button' and i.get('AXLabel') == ui.t('payee.close')]
+assert closes, 'the payee sheet has no close button'
+top = max(closes, key=lambda i: i['frame']['y'])['frame']
+ui.tap_point(top['x'] + top['width'] / 2, top['y'] + top['height'] / 2)
 ui.gone('payee-screen')
 ui.element('bounty-apply-add-payee')
 ui.capture('03-back-on-apply')

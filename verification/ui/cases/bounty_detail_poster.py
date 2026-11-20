@@ -42,7 +42,8 @@ ui.capture('01-own-open')
 
 ui.tap('bounty-detail-applicants')
 ui.element('bounty-applicant-fixture-applicant-jie', timeout=45)
-ui.wait(lambda items: str((by_id(items, 'tab-bounty') or {}).get('AXValue')) == '1', '悬赏 is not selected')
+back = ui.element('BackButton')
+assert back.get('AXLabel') == ui.t('shell.home.title'), f'申请人 is not pushed in 悬赏: back reads {back.get("AXLabel")}'
 ui.at_rest()
 ui.capture('02-applicants')
 
