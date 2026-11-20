@@ -1,4 +1,6 @@
-"""Tapping the bottom accessory on 拼车, and the inline accessory on a scrolled 悬赏, opens 悬赏 at the top with the live cards fanned out and the accessory hidden."""
+"""An accessory item without a screen of its own (the ride, which outranks the bounty) opens 悬赏 at the top with the
+live cards fanned out and the accessory hidden, from the bottom accessory on 拼车 and from the inline accessory on a scrolled 悬赏. Items with a screen
+open it instead (shell_accessory_choose)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -6,15 +8,15 @@ from driver import UI, accessory, by_id, reach_home, selected  # noqa: E402
 
 DEPS = ['src/features/shell/', 'src/features/home/', 'src/app/(tabs)/']
 
-ARGS = ['-uiVerifySignedIn', 'onboarded']
-CARDS = ['live-card-oweMoney', 'live-card-rideSoon', 'live-card-owedToYou', 'live-card-bountyInProgress']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'rideSoon,bountyInProgress']
+CARDS = ['live-card-rideSoon', 'live-card-bountyInProgress']
 ui = UI(*sys.argv[1:])
 
 
 def fanned_at_top(items, tab_shown):
     if accessory(items) is not None or (tab_shown and selected(items) != ['tab-bounty']):
         return None
-    if not all(by_id(items, card) for card in CARDS) or not by_id(items, 'home-stage-urgent'):
+    if not all(by_id(items, card) for card in CARDS) or not by_id(items, 'home-stage-live'):
         return None
     return by_id(items, CARDS[-1])
 
@@ -22,14 +24,14 @@ def fanned_at_top(items, tab_shown):
 def assert_revealed(message, name, tab_shown=True):
     ui.settled(lambda items: fanned_at_top(items, tab_shown), message)
     items = ui.read()
-    stage = by_id(items, 'home-stage-urgent')['frame']
+    stage = by_id(items, 'home-stage-live')['frame']
     assert stage['y'] > 0, f'home is not back at the top: stage at {stage}'
     ui.wait_label('live-cards-toggle', lambda label: label == ui.t('home.stack.collapse'), 'live cards are not fanned out')
     ui.snap(name)
 
 
 reach_home(ui)
-ui.settled(lambda items: by_id(items, 'home-stage-urgent'), 'home never settled')
+ui.settled(lambda items: by_id(items, 'home-stage-live'), 'home never settled')
 ui.tap('tab-ride')
 ui.wait(lambda items: selected(items) == ['tab-ride'] and by_id(items, 'urgent-accessory'),
         '拼车 is not selected with the accessory shown')

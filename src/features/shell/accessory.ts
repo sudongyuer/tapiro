@@ -21,6 +21,13 @@ export function pickMostUrgent(
   return best ? { item: best, more: shown.length - 1 } : null;
 }
 
+export type AccessoryTarget = { href: string; inBountyTab: boolean };
+
+export function accessoryTarget(item: AccessoryItem): AccessoryTarget | null {
+  if (item.payment) return { href: `/pay/${item.payment.id}`, inBountyTab: false };
+  return item.bounty ? { href: item.bounty.target, inBountyTab: true } : null;
+}
+
 export function accessoryVisible({
   hasItem,
   onHomeRoot,
