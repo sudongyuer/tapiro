@@ -38,17 +38,82 @@ describe('payee store', () => {
   test('an empty list is ready, not loading', async () => {
     const store = createPayeeStore(createFixturePayeeService('empty'));
     await store.ensureLoaded(USER);
-    expect(store.getSnapshot()).toEqual({ status: 'ready', userId: USER, methods: [] });
+    expect(store.getSnapshot()).toMatchObject({ status: 'ready', userId: USER, methods: [] });
+  });
+
+  test('cash alone is a method the list keeps after saving', async () => {
+    const store = createPayeeStore(createFixturePayeeService('empty'));
+    await store.ensureLoaded(USER);
+    expect(await store.add(USER, { type: 'cash' })).toBe(true);
+    const state = store.getSnapshot();
+    expect(state.status === 'ready' && state.methods.map((m) => m.type)).toEqual(['cash']);
+  });
+
+  test('a failed refresh after a save keeps the list but marks it stale since its load', async () => {
+    let clock = 1_000;
+    const { service, recover } = flaky(createFixturePayeeService('empty'));
+    recover();
+    let listFails = false;
+    const store = createPayeeStore(
+      {
+        ...service,
+        list: async () => {
+          if (listFails) throw new Error('offline');
+          return service.list();
+        },
+      },
+      () => clock,
+    );
+    await store.ensureLoaded(USER);
+    clock = 2_000;
+    listFails = true;
+    expect(await store.add(USER, { type: 'cash' })).toBe(true);
+    expect(store.getSnapshot()).toMatchObject({
+      status: 'ready',
+      methods: [],
+      loadedAt: 1_000,
+      refreshFailed: true,
+    });
+    listFails = false;
+    await store.refresh(USER);
+    const state = store.getSnapshot();
+    expect(state).toMatchObject({ status: 'ready', loadedAt: 2_000, refreshFailed: false });
+    expect(state.status === 'ready' && state.methods.map((m) => m.type)).toEqual(['cash']);
+  });
+
+  test('refresh refetches a ready list, so a method added elsewhere shows up', async () => {
+    const service = createFixturePayeeService('empty');
+    const store = createPayeeStore(service);
+    await store.ensureLoaded(USER);
+    await service.add({ type: 'cash' });
+    await store.ensureLoaded(USER);
+    expect(store.getSnapshot()).toMatchObject({ methods: [] });
+    await store.refresh(USER);
+    const state = store.getSnapshot();
+    expect(state.status === 'ready' && state.methods.map((m) => m.type)).toEqual(['cash']);
+  });
+
+  test('refresh never turns a ready list back into a spinner', async () => {
+    const service = createFixturePayeeService('demo');
+    const store = createPayeeStore(service);
+    await store.ensureLoaded(USER);
+    const seen: string[] = [];
+    store.subscribe(() => seen.push(store.getSnapshot().status));
+    await store.refresh(USER);
+    expect(seen).toEqual(['ready']);
   });
 
   test('a failed delete reports false and republishes the unchanged list', async () => {
     const base = createFixturePayeeService('demo');
-    const store = createPayeeStore({
-      ...base,
-      remove: async () => {
-        throw new Error('offline');
+    const store = createPayeeStore(
+      {
+        ...base,
+        remove: async () => {
+          throw new Error('offline');
+        },
       },
-    });
+      () => 0,
+    );
     await store.ensureLoaded(USER);
     const published = store.getSnapshot();
     expect(await store.remove(USER, 'missing')).toBe(false);

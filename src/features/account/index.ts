@@ -5,7 +5,7 @@ export { useAccountStage, useProfile, useSignedInUser, useSigningOut } from './h
 export { LanguageStep } from './LanguageStep';
 export { LegalDocument } from './LegalDocument';
 export { MeView } from './MeView';
-export { NameStep } from './NameStep';
+export { NameStep, type ProfileLoad } from './NameStep';
 export { accountActions, profileStore } from './services';
 export { SettingsView } from './SettingsView';
 export { SignInButtons } from './SignInButtons';

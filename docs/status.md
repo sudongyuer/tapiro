@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-21 (China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
+Updated: 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
 PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
 new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours; UI audit batch C:
 one name per thing in every locale, `docs/design-language.md` 「Terminology」).
@@ -27,6 +27,13 @@ one name per thing in every locale, `docs/design-language.md` 「Terminology」)
 | Polish: motion, render  | —                                                  | Plan `docs/plans/2026-11-21-polish-motion-perf.md` (P1–P12 for veto): one Reduce Motion hook, shared curves, instant press dim, shorter stack timings, small fades, cached formatters, memoised rows, continuous corners                                                                                                                                                                                                 |
 
 ## In progress
+
+- UI audit fixes (`docs/reviews/2026-11-21-ui-walkthrough.md`), four batches in parallel. Batch B is in this PR: the
+  payee page no longer says 「还没有收款方式」 with cash on (root cause: the empty state ignored cash), the payee list
+  refetches on focus and marks a failed refresh stale, the pay sheet's no-method card offers 发消息提醒 with a prefilled
+  draft, a missing payment says 这笔付款已不存在, cash has one control and one name, the rate source is named Bank Negara
+  Malaysia everywhere, and the onboarding name step waits for the profile (O1). Decisions B1–B7 for veto in the
+  foundation spec's record of 2026-11-21. Batches A (navigation), C (copy) and D (layout) are separate PRs.
 
 - First TestFlight device test (owner, build 20261120.1739): after 发出去 home now shows the poster's 「等人申请」 card
   at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open

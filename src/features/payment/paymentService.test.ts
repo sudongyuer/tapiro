@@ -52,6 +52,7 @@ describe('payment rows', () => {
   const row: PaymentRow = {
     id: 'payment-1',
     item_kind: 'bounty',
+    item_id: 'b1',
     category: 'buy',
     title: '帮带一杯咖啡',
     amount_minor: 800,

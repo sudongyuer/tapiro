@@ -36,8 +36,11 @@ export default {
     wechat: '已识别',
   },
   cash: {
-    header: '当面',
-    toggle: '可以当面收现金',
+    footer: '打开后，付款的人可以当面把现金给你，你点「已收到」就结清。',
+  },
+  cashOnly: {
+    title: '还没有转账方式',
+    body: '现在只能当面收现金。加一个转账方式，对方不用见面也能付给你。',
   },
   recheck: {
     title: '你的{{method}} 90 天没确认了',

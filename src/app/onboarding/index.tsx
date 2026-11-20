@@ -30,7 +30,8 @@ export default function OnboardingName() {
       </Stack.Toolbar>
       <NameStep
         user={user}
-        profile={profile.status === 'ready' ? profile.profile : null}
+        load={profile}
+        onRetry={() => void profileStore.ensureLoaded(user)}
         onSave={(next) => profileStore.save(user, next)}
         onDone={() => router.push('/onboarding/language')}
       />

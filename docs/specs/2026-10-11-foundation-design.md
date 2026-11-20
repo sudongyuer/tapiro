@@ -70,6 +70,7 @@ two feature specs only describe their own flows on top of it.
 | Tabs                  | NativeTabs, 4 triggers (悬赏, 拼车, 消息 with unread badge, 我的), `minimizeBehavior="onScrollDown"`                                                                                                                                                                                                                                                                                                                                                                                                     | KICKOFF 2026-10-11 N3+E; spike 2026-10-11-nav-n3e-spike.md                                               | N1/N2/N3 on canvas: rejected by the user                                                                                                                                                                                                            |
 | 问小貘 entry          | 5th trigger `role="search"`, `disabled`, custom image icon, `tabPress` → push root `formSheet` route (detents 0.5 and 1, grabber); presentation options in the root layout                                                                                                                                                                                                                                                                                                                               | Spike: verified on iOS 26.5 Simulator; options inside the sheet screen were ignored                      | Raised centre button: impossible with the system tab bar                                                                                                                                                                                            |
 | Bottom accessory      | Shows the most urgent item; hidden when there is none; hidden at the top of 悬赏 (the live cards are on screen) and shown there once they scroll away                                                                                                                                                                                                                                                                                                                                                    | KICKOFF 2026-10-11; spike verified mount/unmount per route and scroll state                              | Always on: duplicates the home live cards                                                                                                                                                                                                           |
+| Accessory tap         | Opens the item's own screen, the same one its home card opens (a bounty waiting for the poster opens its applicants, money owed either way opens its payment); an item without one (a ride) opens the top of 悬赏 with the cards fanned out                                                                                                                                                                                                                                                              | Owner report 2026-11-20 (「去选」 landed on home); agent, 2026-11-21                                     | Always open home and fan out the cards: the strip promised 「去选」 and needed a second tap on the card                                                                                                                                             |
 | Expand after minimise | Tapping the minimised tab expands; scrolling back up does not                                                                                                                                                                                                                                                                                                                                                                                                                                            | Observed in the spike                                                                                    | —                                                                                                                                                                                                                                                   |
 | Home frame            | G: stage (mascot pose and colour by state) → live-card stack (stacked when 2+, tap to fan out) → feature content; collapses to a strip on scroll                                                                                                                                                                                                                                                                                                                                                         | KICKOFF 2026-10-10                                                                                       | H1–H3, D, E, F                                                                                                                                                                                                                                      |
 | Payment model         | Payer pays payee directly in their own bank/e-wallet app; Tapiro shows what to copy and records two taps                                                                                                                                                                                                                                                                                                                                                                                                 | KICKOFF 2026-10-05; 2026-10-05-duitnow-p2p.md "Recommended flow"                                         | Stripe/Curlec/Wise: need a Malaysian company or are forbidden                                                                                                                                                                                       |
@@ -1024,3 +1025,55 @@ None. The design names `expo-apple-authentication`, Google Sign-In and `signInWi
   signature check first. Audience is proven on the device run.
 - The hosted Supabase project is not touched; its Apple and Google providers are configured by the owner.
 - The Apple identity token's email may be a private relay address; accepted per Behaviour → Accounts.
+
+## Implementation Record (2026-11-21) — UI audit batch B: payee and payment truthfulness, onboarding name step
+
+Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (Y1–Y5, O1) and the owner's device report that the payee page said
+「还没有收款方式」 after cash was turned on. Branch `fix/ui-audit-batch-b`.
+
+### Decisions (owner-delegated, for veto)
+
+| #   | Decision                                                                                                                                                                     | Why                                                                                                                                        |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| B1  | With cash on and no transfer method, the list says 「还没有转账方式 · 现在只能当面收现金…」 instead of hiding the empty card                                                 | Cash is a way to receive money, so 「还没有收款方式」 is false; a line still tells the user that payers who are not nearby cannot pay them |
+| B2  | Cash keeps only the list toggle; the + menu entry is removed; the toggle is labelled 「现金当面付」 (the type name the pay sheet uses), the 「当面」 header becomes a footer | One control and one name (Y3); a toggle is the HIG control for an on/off capability, and the pay sheet's name is the one payers see        |
+| B3  | The payee list refetches every time 收款方式 gains focus; a failed refetch keeps the rows under a yellow 「可能不是最新 · HH:mm 的数据」 card with 重试                      | Data integrity: never show stale data as current (Y2); the same `live.staleAt` copy the pay sheet uses                                     |
+| B4  | The no-method pay card gets 「发消息提醒」: it closes the sheet, opens the item's thread and prefills a reminder only when that thread has no draft; nothing is sent         | Y1 dead end; the user taps send (never act for the user); a typed draft is never overwritten                                               |
+| B5  | A missing payment shows 「这笔付款已不存在」 with no retry                                                                                                                   | Y4: a retry can never succeed                                                                                                              |
+| B6  | The rate source is 「马来西亚国家银行中间价」 / "Bank Negara Malaysia middle rate" / "kadar tengah Bank Negara Malaysia" on both the pay sheet and the celebration           | Y5; the full name matches the 汇率来源 link and needs no acronym knowledge                                                                 |
+| B7  | The onboarding name step takes the profile load state: spinner while loading, warning with 重试 on failure, no field and 继续 disabled until the profile is known            | O1: a reinstall must not write the provider name and photo over the user's chosen ones                                                     |
+
+### What was built
+
+- Payee store: ready state carries `loadedAt` and `refreshFailed`; `refresh()` refetches a ready list without a spinner
+  and shares one in-flight request (`src/features/payee/payeeStore.ts`); `usePayeeMethods` exposes `staleSince`.
+- Payee list: cash-only empty line, stale card, single cash toggle (`src/features/payee/PayeeListView.tsx`,
+  `PayeeScreen.tsx`).
+- Payment rows now read `item_id` (`Payment.itemId`), so the pay route can find the item's thread
+  (`src/features/payment/paymentService.ts`, `src/app/pay/[id].tsx`); `chatDrafts.prefill` fills only an empty draft
+  (`src/features/chat/drafts.ts`).
+- Pay sheet missing state (`src/features/payment/PaySheet.tsx`); en/ms menu path copy now names 「Payment Methods」 /
+  「Kaedah Terima Bayaran」.
+- Name step `load` prop and retry (`src/features/account/NameStep.tsx`, `src/app/onboarding/index.tsx`).
+
+### Bugs fixed
+
+- 「还没有收款方式」 with cash on: `PayeeListView` decided "empty" from `transferMethods(methods)`, which filters cash out,
+  so a cash-only list showed the empty card above a switched-on toggle. Not the store; Y2 was a separate cause.
+
+### Known limits
+
+- The reminder prefill is read when the composer mounts; if that thread is already open deeper in the 消息 stack, the
+  existing composer keeps its text and the reminder is not shown.
+- The name step's loading spinner has no UI case (only the failed state does).
+
+### Verification (batch B)
+
+- `bun test` → 3185 pass before the rebase onto #206; `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map` → exit 0.
+- `bun run verify:build` → BUILD SUCCEEDED (641 s); `bun run verify:smoke` → 4 of 4 pass.
+- New and changed cases, zh-Hans light and dark: `payee_cash_only`, `pay_sheet_missing`, `pay_none_remind`,
+  `pay_sheet_none`, `account_name_load_failed`, `account_long_name` pass. `payee_stale` and `payee_list` failed on case
+  bugs (a `settled` predicate returning a list; the no-cash-in-menu check matched the toggle's own label) and pass in
+  zh-Hans light after the fix. Selection: only the screens this change touches; `ms`, `en` and the dark rerun of the
+  two fixed cases are left to the milestone run.

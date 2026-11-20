@@ -9,7 +9,7 @@ WECHAT = 'payee.types.wechat'
 TNG = 'payee.types.tng'
 BANK = 'payee.types.bank_account'
 CASH = 'payee.types.cash'
-MENU_ORDER = [ALIPAY, WECHAT, TNG, PHONE, BANK, CASH]
+MENU_ORDER = [ALIPAY, WECHAT, TNG, PHONE, BANK]
 
 
 def open_payee(ui, on_me=None):

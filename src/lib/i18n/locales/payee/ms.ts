@@ -45,8 +45,12 @@ const ms: typeof zhHans = {
     wechat: 'Dikenal pasti',
   },
   cash: {
-    header: 'Bersemuka',
-    toggle: 'Terima tunai secara bersemuka',
+    footer:
+      'Apabila ini dihidupkan, pembayar boleh menyerahkan tunai secara bersemuka, dan anda ketik Diterima untuk melangsaikannya.',
+  },
+  cashOnly: {
+    title: 'Belum ada kaedah pindahan',
+    body: 'Buat masa ini anda hanya boleh terima tunai secara bersemuka. Tambah kaedah pindahan supaya orang boleh bayar tanpa berjumpa.',
   },
   recheck: {
     title: '{{method}} anda belum disemak selama 90 hari',

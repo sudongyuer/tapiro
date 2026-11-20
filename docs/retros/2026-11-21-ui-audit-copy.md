@@ -13,12 +13,12 @@ overturned: 0
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                                                    |
-| --------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Quality   | Escaped defects       | 0 known                                                                                                      |
-| Quality   | Skipped verifications | N4 not built (its only fix lives in the hungry card, which another session holds); see Findings              |
+| Dimension | Measure               | This step                                                                                                      |
+| --------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | 0 known                                                                                                        |
+| Quality   | Skipped verifications | N4 not built (its only fix lives in the hungry card, which another session holds); see Findings                |
 | Speed     | Wasted time           | ~5 min: the worktree had no `node_modules`, so the first `tsc` failed on a missing package until `bun install` |
-| Autonomy  | Interventions         | 0; two mid-task file-lock updates from the coordinator, both honoured                                        |
+| Autonomy  | Interventions         | 0; two mid-task file-lock updates from the coordinator, both honoured                                          |
 
 ## Findings
 
@@ -34,3 +34,7 @@ overturned: 0
   every count matched, so a string that had moved or appeared twice stopped the run instead of being half-changed.
 - N4 (「先不翻译」 on the hungry card when the quota is hit from a translation) needs the card to know it was opened
   for a translation; the card is on another session's do-not-touch list, so the copy change waits for that PR.
+- UI runs: 15 cases by changed key in en and ms (light), `ride_appeal` and `welcome_legal` in zh-Hans, smoke. One
+  en failure, `home_settled_card`, timed out at 180 s twice under a load average of 159 (axe median 1.8–2.1 s, the
+  copy assertions had already passed through screenshot 07); rerun alone at load 7.8 it passed in 134 s. Tag
+  `load-timeout`.

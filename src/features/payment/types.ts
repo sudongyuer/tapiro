@@ -9,6 +9,7 @@ export type PaymentRole = 'payer' | 'payee';
 export type Payment = {
   id: string;
   itemKind: 'bounty' | 'ride';
+  itemId: string;
   category: BountyCategory | null;
   title: string;
   amount: Money;
