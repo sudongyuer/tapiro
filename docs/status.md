@@ -445,7 +445,9 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   run iOS 26 or later (the deployment target); the script checks both before building. The registered iPhone 13 Pro
   Max runs iOS 18.7.8 (2026-11-20), so neither TestFlight nor this script can install Tapiro on it until it is updated
   to iOS 26; the build signed and bundled the hosted URL, the install step has not run on a phone yet.
-- Uploaded: 1.0.0 (20261120.1136), 2026-11-20.
+- Uploaded: 1.0.0 (20261120.1136), 2026-11-20, failed Apple's processing (ITMS-90683: no
+  `NSPhotoLibraryUsageDescription`; retro `2026-11-20-photo-purpose-string`). The string now ships in all three
+  languages, and `check_bundle` runs `scripts/check-purpose-strings.mjs` on every release build before upload.
 - Push will not arrive on TestFlight or cabled builds: `supabase/functions/notify` sends through Expo's push service,
   which would need our APNs key; queued: move `notify` to direct APNs (key `88Y29CGN9U` exists).
 - Waiting on the owner: update the iPhone 13 Pro Max to iOS 26 (or use another phone on iOS 26); register the iPhone
