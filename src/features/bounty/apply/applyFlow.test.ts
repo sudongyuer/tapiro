@@ -59,6 +59,23 @@ describe('apply flow', () => {
     expect(without.flow.get().kind).toBe('noPayee');
   });
 
+  test('a check after adding a payee method opens the form; without one it stays on no-payee', async () => {
+    let has = false;
+    const base = setup(false);
+    const flow = createApplyFlow('b1', 'card', {
+      service: { hasPayeeMethod: async () => has, apply: () => new Promise(() => undefined) },
+      cache: createBountyCache(),
+      justApplied: base.just,
+      drafts: base.drafts,
+    });
+    await flow.check();
+    await flow.check();
+    expect(flow.get().kind).toBe('noPayee');
+    has = true;
+    await flow.check();
+    expect(flow.get()).toEqual({ kind: 'form', sending: false, reason: null });
+  });
+
   test('a failed payee check leaves the decision to the server', async () => {
     const { flow } = setup('throws');
     await flow.check();

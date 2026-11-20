@@ -7,6 +7,7 @@ import { NoticeCard } from '@/ui/NoticeCard';
 import { PillButton } from '@/ui/PillButton';
 import { SheetActions, SheetFrame } from '@/ui/SheetFrame';
 import { deviceDecimal } from '@/lib/deviceDecimal';
+import { useOnReturn } from '@/lib/useOnReturn';
 
 import { askThenSync } from '../reminders/useRideReminders';
 import { recentRoutes, rideDraftStore, rideService } from '../services';
@@ -45,6 +46,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack, buyCoins 
   useEffect(() => {
     void flow.load();
   }, [flow]);
+  const away = useOnReturn(() => void flow.load());
   useEffect(() => {
     navigation.getParent()?.setOptions({ gestureEnabled: !state.busy });
   }, [navigation, state.busy]);
@@ -103,7 +105,7 @@ export function RideConfirm({ userId, onPublished, onAddPayee, onBack, buyCoins 
         notice={notice}
         testID="ride-confirm"
       >
-        <Actions state={state} onPublish={publish} onAddPayee={onAddPayee} />
+        <Actions state={state} onPublish={publish} onAddPayee={away(onAddPayee)} />
         <SummarySection draft={draft} now={now} />
         <FeeSection state={state.status} onRetry={flow.load} buyCoins={buyCoins} />
       </SheetFrame>

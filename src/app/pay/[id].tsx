@@ -15,7 +15,7 @@ export default function PayRoute() {
       onClose={() => router.back()}
       onOpenStickerBook={() => {
         router.back();
-        router.navigate('/me/stickers');
+        router.push('/sticker-book');
       }}
     />
   );

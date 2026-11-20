@@ -386,6 +386,11 @@ const en: typeof zhHans = {
     selected: {
       title: '{{name}} chose you',
     },
+    poster: {
+      open: 'Your bounty · open for applications',
+      closed: 'Closed · nobody was chosen',
+      applicants: 'See applicants',
+    },
   },
   address: {
     row: 'Exact address',

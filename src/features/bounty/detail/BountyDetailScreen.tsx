@@ -19,6 +19,7 @@ import { useWithdraw } from '../apply/useApply';
 import { AppliedActions } from './AppliedActions';
 import { DetailDescription, DetailHeader, DetailInfo } from './DetailRows';
 import { NotSelectedActions, PartyActions, SelectedAddress } from './OutcomeActions';
+import { PosterActions } from './PosterActions';
 import { shownView, type DetailAction, type DetailView } from './detailState';
 import { useDetail } from './useDetail';
 
@@ -30,6 +31,8 @@ type Props = {
   onBlocked: () => void;
   onBrowse: () => void;
   onProgress: (id: string) => void;
+  onApplicants: (id: string) => void;
+  onPosterLoaded?: () => void;
   onOpenProfile: (personId: string) => void;
 };
 
@@ -41,6 +44,8 @@ export function BountyDetailScreen({
   onBlocked,
   onBrowse,
   onProgress,
+  onApplicants,
+  onPosterLoaded,
   onOpenProfile,
 }: Props) {
   const { t, language } = useI18n();
@@ -52,6 +57,10 @@ export function BountyDetailScreen({
   useEffect(() => {
     if (loadedAt) loaded();
   }, [loadedAt, loaded]);
+  const posterLoaded = state.kind === 'ready' && state.detail.viewerRole === 'poster';
+  useEffect(() => {
+    if (posterLoaded) onPosterLoaded?.();
+  }, [posterLoaded, onPosterLoaded]);
 
   if (state.kind === 'gone') {
     return (
@@ -146,6 +155,7 @@ export function BountyDetailScreen({
               onApply={() => onApply(id)}
               onBrowse={onBrowse}
               onProgress={() => onProgress(id)}
+              onApplicants={() => onApplicants(id)}
               withdrawal={withdrawal}
             />
           </>
@@ -176,6 +186,7 @@ function DetailActions({
   onApply,
   onBrowse,
   onProgress,
+  onApplicants,
   withdrawal,
 }: {
   view: DetailView;
@@ -184,9 +195,13 @@ function DetailActions({
   onApply: () => void;
   onBrowse: () => void;
   onProgress: () => void;
+  onApplicants: () => void;
   withdrawal: ReturnType<typeof useWithdraw>;
 }) {
   const { t } = useI18n();
+  if (view.own) {
+    return <PosterActions own={view.own} onApplicants={onApplicants} onProgress={onProgress} />;
+  }
   if (view.action === 'none' || view.action === 'selected' || view.action === 'cancelled') {
     return (
       <PartyActions

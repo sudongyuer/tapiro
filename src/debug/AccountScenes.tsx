@@ -76,7 +76,12 @@ export function DeleteBlockedScene({ onReady }: SceneProps) {
   );
   return (
     <View style={[styles.sheetBackground, { paddingTop, paddingBottom }]}>
-      <DeleteAccountSheet onDelete={service.deleteAccount} onCancel={() => {}} onLayout={onReady} />
+      <DeleteAccountSheet
+        onDelete={service.deleteAccount}
+        onCancel={() => {}}
+        onOpenPayment={() => {}}
+        onLayout={onReady}
+      />
     </View>
   );
 }

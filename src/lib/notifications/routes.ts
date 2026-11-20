@@ -4,7 +4,7 @@ type ItemPath =
   '/bounty/[id]' | '/bounty/applicants/[id]' | '/bounty/status/[id]' | '/pay/[id]' | '/ride/[id]';
 
 export type NoticeRoute =
-  | { pathname: ItemPath; params: { id: string } }
+  | { pathname: ItemPath; params: { id: string; notice?: 'expired' } }
   | { pathname: '/messages/[thread]'; params: { thread: string } };
 
 const BOUNTY_ROUTES: Record<string, ItemPath> = {
@@ -25,6 +25,11 @@ const BOUNTY_ROUTES: Record<string, ItemPath> = {
 export function noticeRoute(data: NoticeData): NoticeRoute | null {
   const params = { id: data.id };
   const bounty = BOUNTY_ROUTES[data.kind];
+  // The expiry goes to the poster and to pending applicants alike; the detail screen sends the poster on to
+  // the applicants once it knows the viewer's role.
+  if (bounty && data.kind === 'bounty.expired') {
+    return { pathname: bounty, params: { ...params, notice: 'expired' } };
+  }
   if (bounty) return { pathname: bounty, params };
   if (data.kind.startsWith('payment.')) return { pathname: '/pay/[id]', params };
   if (data.kind.startsWith('ride.')) return { pathname: '/ride/[id]', params };

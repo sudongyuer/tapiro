@@ -34,6 +34,7 @@ const VIEW: DetailView = {
   note: null,
   address: null,
   progress: false,
+  own: null,
 };
 
 describe('detailCopy', () => {

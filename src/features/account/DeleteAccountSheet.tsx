@@ -1,11 +1,12 @@
 import type { ParseKeys } from 'i18next';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { useState } from 'react';
-import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
+import { PlatformColor, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
 import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { formatMoney } from '@/lib/money';
+import { useOnReturn } from '@/lib/useOnReturn';
 import { AppText } from '@/ui/AppText';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
@@ -25,10 +26,12 @@ const ITEMS: { key: ParseKeys; symbol: SFSymbol }[] = [
 export function DeleteAccountSheet({
   onDelete,
   onCancel,
+  onOpenPayment,
   onLayout,
 }: {
   onDelete: () => Promise<DeleteAccountResult>;
   onCancel: () => void;
+  onOpenPayment: (paymentId: string) => void;
   onLayout?: () => void;
 }) {
   const { t, language } = useI18n();
@@ -37,11 +40,14 @@ export function DeleteAccountSheet({
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<DeleteAccountFailure | null>(null);
   const [payments, setPayments] = useState<UnsettledPayment[]>([]);
+  const [settling, setSettling] = useState(false);
+  const away = useOnReturn(() => setSettling(true));
 
   function confirm() {
     return guard(async () => {
       setPending(true);
       setFailure(null);
+      setSettling(false);
       const result = await onDelete();
       setPending(false);
       if (result.ok) return;
@@ -93,22 +99,33 @@ export function DeleteAccountSheet({
         )}
         {payments.length > 0 && (
           <View style={styles.payments}>
-            {payments.map((payment) => (
-              <View
-                key={payment.id}
-                accessible
-                testID={`delete-account-payment-${payment.id}`}
-                style={styles.payment}
-              >
-                <AppText variant="body">{payment.title}</AppText>
-                <AppText variant="secondary" tone="secondaryLabel">
-                  {t(`account.delete.payment.${payment.direction}`, {
-                    name: payment.counterpartName,
-                    amount: formatMoney(payment.amount, language),
-                  })}
-                </AppText>
-              </View>
-            ))}
+            {payments.map((payment) => {
+              const line = t(`account.delete.payment.${payment.direction}`, {
+                name: payment.counterpartName,
+                amount: formatMoney(payment.amount, language),
+              });
+              return (
+                <Pressable
+                  key={payment.id}
+                  accessibilityRole="button"
+                  onPress={away(() => onOpenPayment(payment.id))}
+                  testID={`delete-account-payment-${payment.id}`}
+                  style={({ pressed }) => [styles.payment, pressed && styles.pressed]}
+                >
+                  <View style={styles.paymentText}>
+                    <AppText variant="body">{payment.title}</AppText>
+                    <AppText variant="secondary" tone="secondaryLabel">
+                      {line}
+                    </AppText>
+                  </View>
+                  <SymbolView
+                    name="chevron.right"
+                    size={14}
+                    tintColor={PlatformColor('tertiaryLabel')}
+                  />
+                </Pressable>
+              );
+            })}
           </View>
         )}
         <View style={styles.actions}>
@@ -117,7 +134,7 @@ export function DeleteAccountSheet({
             variant="destructive"
             onPress={confirm}
             loading={pending}
-            disabled={failure === 'blocked'}
+            disabled={failure === 'blocked' && !settling}
             testID="delete-account-confirm"
           />
           <PillButton
@@ -151,5 +168,13 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: PlatformColor('secondarySystemBackground'),
   },
-  payment: { padding: vars['--space-3'], gap: vars['--space-1'] },
+  payment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: vars['--touch-min'],
+    padding: vars['--space-3'],
+    gap: vars['--space-2'],
+  },
+  paymentText: { flex: 1, gap: vars['--space-1'] },
+  pressed: { opacity: vars['--opacity-pressed'] },
 });

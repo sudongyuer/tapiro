@@ -45,11 +45,7 @@ export default function TabsLayout() {
   useLive(userId);
   useLiveActivities(userId);
   usePushRegistration(userId);
-  useNoticeRouting(
-    (route) =>
-      route.pathname === '/messages/[thread]' ? router.navigate(route) : router.push(route),
-    userId !== null,
-  );
+  useNoticeRouting((route) => router.push(route, { dangerouslySingular: true }), userId !== null);
   const segments = useSegments();
   const location = useTabLocation(segments);
   const openTierDrop = useCallback(() => router.push('/tier-drop'), [router]);

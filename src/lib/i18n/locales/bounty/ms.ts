@@ -389,6 +389,11 @@ const ms: typeof zhHans = {
     selected: {
       title: '{{name}} memilih anda',
     },
+    poster: {
+      open: 'Ganjaran anda · masih dibuka untuk permohonan',
+      closed: 'Ditutup · tiada sesiapa dipilih',
+      applicants: 'Lihat pemohon',
+    },
   },
   address: {
     row: 'Alamat tepat',
