@@ -4,7 +4,7 @@ date: 2026-11-21
 pr: app-wide motion, render and finish polish
 title: Reduce Motion fades that never played; formatters rebuilt per row
 escaped: 0
-rework: 1
+rework: 2
 interventions: 0
 overturned: 0
 ---
@@ -35,3 +35,8 @@ overturned: 0
   property it exists for. Board cards' 今天/明天 were first keyed on the load time string; now on the load day.
 - Parallel agents in one worktree with disjoint file lists worked without conflicts; one lint error crossed the line
   (the new rule fired in a file another agent owned) and was fixed at integration.
+- Rework (Simulator run): turning the card restack into a 240 ms spring made the board below move 44 pt in about
+  30 ms; `home_settled_collect` failed on two Simulators (follow 0.04 s and 0.07 s, against a reduced-motion jump of
+  0.07 s). A spring of the same nominal duration front-loads its travel. The 420 ms tween stays (P4 withdrawn). Tag
+  `spring-vs-tween-follow`: before swapping a tween for a spring where another element follows it, run the case that
+  measures the follow.
