@@ -24,6 +24,7 @@ import { useNoticeRouting } from '@/lib/notifications';
 import { usePushRegistration } from '@/lib/push';
 import { useLiveStickers } from '@/lib/stickers';
 import { useAiOffered } from '@/lib/storefront';
+import { useBackToTabs } from '@/lib/useBackToTabs';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -45,7 +46,11 @@ export default function TabsLayout() {
   useLive(userId);
   useLiveActivities(userId);
   usePushRegistration(userId);
-  useNoticeRouting((route) => router.push(route, { dangerouslySingular: true }), userId !== null);
+  const backToTabs = useBackToTabs();
+  useNoticeRouting((route) => {
+    backToTabs();
+    router.push(route, { dangerouslySingular: true });
+  }, userId !== null);
   const segments = useSegments();
   const location = useTabLocation(segments);
   const openTierDrop = useCallback(() => router.push('/tier-drop'), [router]);

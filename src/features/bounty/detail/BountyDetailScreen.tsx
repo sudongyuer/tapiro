@@ -202,10 +202,15 @@ function DetailActions({
   if (view.own) {
     return <PosterActions own={view.own} onApplicants={onApplicants} onProgress={onProgress} />;
   }
-  if (view.action === 'none' || view.action === 'selected' || view.action === 'cancelled') {
+  if (
+    view.action === 'none' ||
+    view.action === 'own' ||
+    view.action === 'selected' ||
+    view.action === 'cancelled'
+  ) {
     return (
       <PartyActions
-        outcome={view.action === 'none' ? null : view.action}
+        outcome={view.action === 'none' || view.action === 'own' ? null : view.action}
         name={name}
         onProgress={view.progress ? onProgress : null}
       />

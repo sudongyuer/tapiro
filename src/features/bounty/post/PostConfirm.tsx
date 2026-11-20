@@ -98,11 +98,7 @@ export function PostConfirm({ userId, onPublished, onPay, onBack, buyCoins }: Co
     <>
       <Stack.Screen options={{ headerBackVisible: !busy, gestureEnabled: !busy }} />
       <SheetFrame notice={notice} testID="bounty-post-confirm">
-        <Actions
-          state={flow.state}
-          onPublish={flow.publish}
-          onPay={(paymentId) => away(() => onPay(paymentId))()}
-        />
+        <Actions state={flow.state} onPublish={flow.publish} onPay={away(onPay)} />
         <Preview draft={draft} />
         <CostSection state={flow.state.status} onRetry={flow.retry} buyCoins={buyCoins} />
       </SheetFrame>

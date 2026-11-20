@@ -364,6 +364,23 @@ describe('outcomes', () => {
     });
   });
 
+  test('an assigned bounty past its start reads late, like the status screen', () => {
+    const past = new Date(NOW.getTime() - 60_000).toISOString();
+    const future = new Date(NOW.getTime() + 60_000).toISOString();
+    expect(viewOfDetail({ ...POSTER, status: 'assigned', startsAt: past }, NOW).own).toMatchObject({
+      step: 'late',
+    });
+    expect(
+      viewOfDetail({ ...POSTER, status: 'assigned', startsAt: future }, NOW).own,
+    ).toMatchObject({
+      step: 'assigned',
+    });
+  });
+
+  test('a status the app does not know gives the poster no line rather than calling it open', () => {
+    expect(viewOfDetail({ ...POSTER, status: 'archived' }, NOW).own).toBeNull();
+  });
+
   test('only the poster gets an own state; a cancelled bounty keeps its cancelled line', () => {
     expect(viewOfDetail({ ...POSTER, status: 'cancelled' }, NOW).own).toBeNull();
     expect(viewOfDetail(SELECTED, NOW).own).toBeNull();
