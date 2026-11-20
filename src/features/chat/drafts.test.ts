@@ -25,6 +25,18 @@ describe('composer drafts', () => {
     expect(createDrafts(settings).get('me', 't2')).toBe('');
   });
 
+  test('a prefill fills an empty thread but never replaces what the user typed', () => {
+    const settings = memorySettings();
+    const drafts = createDrafts(settings);
+    expect(drafts.prefill('me', 't1', '提醒')).toBe(true);
+    expect(createDrafts(settings).get('me', 't1')).toBe('提醒');
+    drafts.set('me', 't2', '我自己写的');
+    expect(drafts.prefill('me', 't2', '提醒')).toBe(false);
+    expect(createDrafts(settings).get('me', 't2')).toBe('我自己写的');
+    drafts.set('me', 't3', '   ');
+    expect(drafts.prefill('me', 't3', '提醒')).toBe(true);
+  });
+
   test('unreadable stored drafts read as none', () => {
     const settings = memorySettings();
     settings.set({ 'tapiro.chatDrafts.me': '{nope' });

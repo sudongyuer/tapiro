@@ -21,6 +21,7 @@ export const PROOF_BUCKET = 'payment-proofs';
 export type PaymentRow = {
   id: string;
   item_kind: 'bounty' | 'ride';
+  item_id: string;
   category: string | null;
   title: string;
   amount_minor: number;
@@ -52,6 +53,7 @@ export function toPayment(
   return {
     id: row.id,
     itemKind: row.item_kind,
+    itemId: row.item_id,
     category: bountyCategory(row.category),
     title: row.title,
     amount,
@@ -76,7 +78,7 @@ function unwrap<T extends { error: unknown }>(result: T) {
 }
 
 const COLUMNS =
-  'id, item_kind, category, title, amount_minor, currency, paid_minor, paid_currency, reference, state, payer_id, payee_id, method_type, proof_path, nudged_at, marked_paid_at, created_at, reverses';
+  'id, item_kind, item_id, category, title, amount_minor, currency, paid_minor, paid_currency, reference, state, payer_id, payee_id, method_type, proof_path, nudged_at, marked_paid_at, created_at, reverses';
 
 type Json = Record<string, unknown>;
 

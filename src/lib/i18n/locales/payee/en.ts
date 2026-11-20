@@ -45,8 +45,11 @@ const en: typeof zhHans = {
     wechat: 'Recognised',
   },
   cash: {
-    header: 'In Person',
-    toggle: 'Accept cash in person',
+    footer: 'When this is on, the payer can hand you cash in person, and you tap Received to settle.',
+  },
+  cashOnly: {
+    title: 'No transfer methods yet',
+    body: 'For now you can only take cash in person. Add a transfer method so people can pay you without meeting.',
   },
   recheck: {
     title: 'Your {{method}} hasn’t been checked in 90 days',

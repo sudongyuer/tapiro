@@ -5,15 +5,24 @@ import { payeeStore } from './services';
 
 const NONE: PayeeMethod[] = [];
 
-export function usePayeeMethods(userId: string | null) {
+export type PayeeMethodsView =
+  | { status: 'loading' | 'failed'; methods: PayeeMethod[]; staleSince: null }
+  | { status: 'ready'; methods: PayeeMethod[]; staleSince: number | null };
+
+export function usePayeeMethods(userId: string | null): PayeeMethodsView {
   const state = useSyncExternalStore(payeeStore.subscribe, payeeStore.getSnapshot);
   useEffect(() => {
     if (userId) payeeStore.ensureLoaded(userId);
   }, [userId]);
   if (!userId || state.status === 'idle' || state.userId !== userId)
-    return { status: 'loading', methods: NONE } as const;
-  if (state.status === 'ready') return { status: 'ready', methods: state.methods } as const;
-  return { status: state.status, methods: NONE } as const;
+    return { status: 'loading', methods: NONE, staleSince: null };
+  if (state.status === 'ready')
+    return {
+      status: 'ready',
+      methods: state.methods,
+      staleSince: state.refreshFailed ? state.loadedAt : null,
+    };
+  return { status: state.status, methods: NONE, staleSince: null };
 }
 
 export function usePayeeRecheckDue(userId: string | null) {

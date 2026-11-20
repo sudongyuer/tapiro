@@ -4,11 +4,18 @@ import type { PayeeService } from './payeeService';
 export type PayeeState =
   | { status: 'idle' }
   | { status: 'loading'; userId: string }
-  | { status: 'ready'; userId: string; methods: PayeeMethod[] }
+  | {
+      status: 'ready';
+      userId: string;
+      methods: PayeeMethod[];
+      loadedAt: number;
+      refreshFailed: boolean;
+    }
   | { status: 'failed'; userId: string };
 
-export function createPayeeStore(service: PayeeService) {
+export function createPayeeStore(service: PayeeService, now: () => number = Date.now) {
   let state: PayeeState = { status: 'idle' };
+  let refreshing: Promise<void> | null = null;
   const listeners = new Set<() => void>();
 
   function set(next: PayeeState) {
@@ -21,9 +28,12 @@ export function createPayeeStore(service: PayeeService) {
   async function reload(userId: string) {
     try {
       const methods = [...(await service.list())];
-      if (isCurrent(userId)) set({ status: 'ready', userId, methods });
+      if (isCurrent(userId))
+        set({ status: 'ready', userId, methods, loadedAt: now(), refreshFailed: false });
     } catch {
-      if (isCurrent(userId) && state.status !== 'ready') set({ status: 'failed', userId });
+      if (!isCurrent(userId)) return;
+      if (state.status === 'ready') set({ ...state, refreshFailed: true });
+      else set({ status: 'failed', userId });
     }
   }
 
@@ -38,6 +48,12 @@ export function createPayeeStore(service: PayeeService) {
     return ok;
   }
 
+  async function ensureLoaded(userId: string) {
+    if (isCurrent(userId) && state.status !== 'failed') return;
+    set({ status: 'loading', userId });
+    await reload(userId);
+  }
+
   return {
     getSnapshot: () => state,
     subscribe(listener: () => void) {
@@ -47,10 +63,15 @@ export function createPayeeStore(service: PayeeService) {
       };
     },
 
-    async ensureLoaded(userId: string) {
-      if (isCurrent(userId) && state.status !== 'failed') return;
-      set({ status: 'loading', userId });
-      await reload(userId);
+    ensureLoaded,
+
+    async refresh(userId: string) {
+      if (!isCurrent(userId) || state.status === 'failed') return ensureLoaded(userId);
+      if (state.status !== 'ready') return;
+      refreshing ??= reload(userId).finally(() => {
+        refreshing = null;
+      });
+      await refreshing;
     },
 
     clear() {

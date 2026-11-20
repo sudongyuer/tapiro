@@ -68,10 +68,14 @@ export function PayerView({
   data,
   busy,
   onMarkPaid,
+  onRemind,
+  reminding,
 }: {
   data: SheetData;
   busy: SheetAction | null;
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
+  onRemind: () => void;
+  reminding: boolean;
 }) {
   const { t } = useI18n();
   const { payment, methods, detail } = data;
@@ -123,6 +127,12 @@ export function PayerView({
                 })
           }
           body={t('pay.sheet.none.body')}
+          action={{
+            label: t('pay.sheet.none.remind'),
+            onPress: onRemind,
+            testID: 'pay-remind',
+            busyLabel: reminding ? t('pay.sheet.none.remindBusy') : undefined,
+          }}
           testID="pay-no-methods"
         />
       )}

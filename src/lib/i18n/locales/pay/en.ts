@@ -17,6 +17,7 @@ export default {
       title: 'Couldn’t load this payment',
       body: 'Check your connection and try again.',
     },
+    missing: 'This payment no longer exists',
     retry: 'Try again',
     failed: 'That didn’t work. Check your connection and try again.',
     amountChanged: 'The amount changed. Check it again.',
@@ -24,7 +25,7 @@ export default {
     amountLabel: 'Amount {{amount}}',
     original: 'Originally {{amount}}',
     rateFooter:
-      'Converted at the BNM middle rate of {{date}}, {{rate}}, locked when this payment opened.',
+      'Converted at the Bank Negara Malaysia middle rate of {{date}}, {{rate}}, locked when this payment opened.',
     noRate: 'Can’t convert to {{currency}} right now',
     noCurrency: '{{name}} has no way to receive {{currency}} yet',
     currencyName: { MYR: 'ringgit', CNY: 'yuan' },
@@ -66,7 +67,10 @@ export default {
     cash: 'Hand {{name}} the cash in person. It’s settled when they tap Received; you don’t need to tap anything.',
     none: {
       title: '{{name}} has no way to receive money yet',
-      body: 'Ask them to add one in Me → Ways to receive, then pay.',
+      body: 'Ask them to add one in Me → Payment Methods, then pay.',
+      remind: 'Send a Reminder',
+      remindBusy: 'Opening the conversation',
+      draft: 'I’m ready to pay for “{{title}}”, but you have no payment method I can use yet. Could you add one in Me → Payment Methods?',
     },
     proof: {
       add: 'Attach a payment screenshot (optional)',

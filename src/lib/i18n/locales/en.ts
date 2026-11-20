@@ -55,6 +55,9 @@ const en: Translation = {
       avatar: 'Profile photo',
       signOut: 'Sign Out',
       continue: 'Continue',
+      loading: 'Loading your profile',
+      loadFailed: 'Couldn’t load your profile, so your name and photo stay as they are. Check your connection and try again.',
+      retry: 'Try again',
       error: {
         empty: 'Enter a name.',
         tooLong: 'Use 40 characters or fewer.',
