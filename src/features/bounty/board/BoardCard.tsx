@@ -1,6 +1,6 @@
 import { Host, VStack } from '@expo/ui/swift-ui';
 import { contentShape, frame, onTapGesture, padding, shapes } from '@expo/ui/swift-ui/modifiers';
-import type { ReactNode, Ref } from 'react';
+import { memo, type ReactNode, type Ref } from 'react';
 import {
   type AccessibilityActionEvent,
   PlatformColor,
@@ -20,21 +20,23 @@ import type { BoardRow } from './types';
 
 const OPEN = { name: 'activate' } as const;
 
-export function BoardCard({
+export const BoardCard = memo(function BoardCard({
   row,
+  now,
   onOpen,
   onApply,
   cardRef,
   ring,
 }: {
   row: BoardRow;
+  now: number;
   onOpen: (id: string) => void;
   onApply: (id: string) => void;
   cardRef?: Ref<ViewInstance>;
   ring?: ReactNode;
 }) {
   const { t, language } = useI18n();
-  const copy = cardCopy(row, t, language, new Date());
+  const copy = cardCopy(row, t, language, new Date(now));
   const testID = `bounty-card-${row.id}`;
   const actions = row.appliedByMe
     ? [OPEN]
@@ -85,7 +87,7 @@ export function BoardCard({
       {ring}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

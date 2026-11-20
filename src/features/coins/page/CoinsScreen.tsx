@@ -12,8 +12,11 @@ import {
   accessibilityElement,
   accessibilityIdentifier,
   accessibilityLabel,
+  Animation,
+  animation,
   buttonBorderShape,
   buttonStyle,
+  contentTransition,
   controlSize,
   font,
   foregroundStyle,
@@ -31,6 +34,7 @@ import type { Loadable } from '@/lib/loadable';
 import { useI18n } from '@/lib/i18n';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { TapirCoin } from '@/ui/TapirCoin';
+import { useMotionReduced } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -42,6 +46,7 @@ import { CoinsHistory } from './CoinsHistory';
 import { coinCount } from './coinsView';
 
 const BALANCE_COIN = 40;
+const COUNT = Animation.easeOut({ duration: vars['--duration-settle'] / 1000 });
 const EDGE_TO_EDGE = listRowInsets({
   top: vars['--space-2'],
   leading: 0,
@@ -126,6 +131,7 @@ export function CoinsScreen({ onBuy }: { onBuy: () => void }) {
 
 function BalanceHeader({ balance }: { balance: CoinBalance }) {
   const { t, language } = useI18n();
+  const reduced = useMotionReduced();
   const freePosts = t('coins.freePosts', {
     left: balance.freePostsLeft,
     total: balance.freePostsPerMonth,
@@ -154,6 +160,8 @@ function BalanceHeader({ balance }: { balance: CoinBalance }) {
           modifiers={[
             font({ textStyle: 'largeTitle', weight: 'bold', design: 'rounded' }),
             monospacedDigit(),
+            contentTransition(reduced ? 'opacity' : 'numericText'),
+            animation(COUNT, balance.coins),
           ]}
         >
           {coinCount(balance.coins, language)}

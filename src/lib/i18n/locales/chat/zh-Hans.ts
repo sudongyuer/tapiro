@@ -73,6 +73,7 @@ export default {
     loading: '正在加载对话',
     loadFailed: '对话没加载出来，请检查网络后重试',
     retry: '重试',
+    olderLoading: '正在加载更早的消息',
     olderFailed: '更早的消息没加载出来',
     read: '已读 {{time}}',
     a11ySending: '{{label}}，正在发送',

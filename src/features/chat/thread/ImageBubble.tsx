@@ -83,6 +83,7 @@ export function ImageBubble({
             source={{ uri: load.shown }}
             style={StyleSheet.absoluteFill}
             contentFit="cover"
+            transition={{ duration: vars['--duration-fade'], skipOnCacheHit: 'all' }}
             testID={`${testID}-image`}
           />
         ) : failed ? (

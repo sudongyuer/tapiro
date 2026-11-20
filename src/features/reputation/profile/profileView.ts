@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import { numberFormat } from '@/lib/intlCache';
 import type { Loadable } from '@/lib/loadable';
 
 import { levelNameKey, levelStartsAt } from '../model';
@@ -23,13 +24,12 @@ export const personName = (name: string | null, t: TFunction) => name ?? t('repu
 
 export function rateText(rate: number | null, language: string) {
   if (rate === null) return null;
-  return new Intl.NumberFormat(language, { style: 'percent', maximumFractionDigits: 0 }).format(
+  return numberFormat(language, { style: 'percent', maximumFractionDigits: 0 }).format(
     Math.min(1, Math.max(0, rate)),
   );
 }
 
-export const countText = (count: number, language: string) =>
-  new Intl.NumberFormat(language).format(count);
+export const countText = (count: number, language: string) => numberFormat(language).format(count);
 
 export const faceTone = (face: Face) =>
   face === 'happy' ? '--color-success' : face === 'unhappy' ? '--color-urgent' : null;

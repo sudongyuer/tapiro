@@ -1,17 +1,14 @@
 import { useEffect } from 'react';
 import { PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
-  Easing,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
 import { useI18n } from '@/lib/i18n';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import { AppText } from '@/ui/AppText';
 import { InkText } from '@/ui/InkText';
 import { Mascot } from '@/ui/Mascot';
@@ -19,6 +16,7 @@ import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
 
 import { grownLines, type GrownMoment } from './grownView';
 
@@ -28,10 +26,9 @@ const ENTER_FROM = 0.72;
 const ENTER_PEAK = 1.08;
 const ENTER_UP = 540;
 const ENTER_DOWN = 360;
-const easeOut = Easing.bezier(0.23, 1, 0.32, 1);
 
 function useEntrance() {
-  const reduced = useReducedMotion() || uiVerifyReduceMotion;
+  const reduced = useMotionReduced();
   const scale = useSharedValue(reduced ? 1 : ENTER_FROM);
   const opacity = useSharedValue(reduced ? 0 : 1);
   useEffect(() => {
@@ -43,8 +40,8 @@ function useEntrance() {
     }
     scale.set(
       withSequence(
-        withTiming(ENTER_PEAK, { duration: ENTER_UP, easing: easeOut }),
-        withTiming(1, { duration: ENTER_DOWN, easing: easeOut }),
+        withTiming(ENTER_PEAK, { duration: ENTER_UP, easing: EASE_ENTER }),
+        withTiming(1, { duration: ENTER_DOWN, easing: EASE_ENTER }),
       ),
     );
   }, [reduced, scale, opacity]);

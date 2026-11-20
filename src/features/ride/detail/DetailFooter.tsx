@@ -10,12 +10,14 @@ import {
 import { SymbolView } from 'expo-symbols';
 import { useRef } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
 import { AppText } from '@/ui/AppText';
 import { anchorOf, pressAnchor, type ConfirmAnchor } from '@/ui/confirm';
 import { PillButton } from '@/ui/PillButton';
+import { FADE_IN, FADE_OUT } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 import { localClock } from '@/lib/deviceClock';
@@ -61,14 +63,16 @@ export function DetailFooter({
   return (
     <SafeAreaView edges={['bottom']} style={styles.bar} testID="ride-detail-footer">
       {error ? (
-        <AppText
-          variant="meta"
-          accessibilityRole="alert"
-          style={[styles.centre, { color: color('--color-urgent') }]}
-          testID="ride-detail-action-failed"
-        >
-          {error}
-        </AppText>
+        <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
+          <AppText
+            variant="meta"
+            accessibilityRole="alert"
+            style={[styles.centre, { color: color('--color-urgent') }]}
+            testID="ride-detail-action-failed"
+          >
+            {error}
+          </AppText>
+        </Animated.View>
       ) : null}
       {footer.kind === 'settle' ? (
         <SettleFooterBar

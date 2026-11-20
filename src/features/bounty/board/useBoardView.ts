@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent, ViewInstance } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
-import { uiVerifyArgument, uiVerifyReduceMotion } from '@/lib/uiVerify';
+import { uiVerifyArgument } from '@/lib/uiVerify';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { viewStore } from './services';
 import type { ScrollHost } from './useCardFocus';
@@ -19,7 +19,7 @@ export function useBoardView(userId: string, { scroll, content, topInset }: Scro
   const [launch] = useState(() => launchView(userId));
   const [view, setView] = useState<BoardView>(launch.view);
   const [hint, setHint] = useState(launch.hint);
-  const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
+  const reduceMotion = useMotionReduced();
   const title = useRef<ViewInstance>(null);
   const offset = useRef(0);
   const listOffset = useRef(0);

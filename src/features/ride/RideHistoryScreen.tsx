@@ -9,14 +9,13 @@ import { RideLoading } from './RideListParts';
 import { rideCache, rideService } from './services';
 import { TicketLink } from './TicketLink';
 import type { RideSummary } from './types';
-import { useNow } from './useNow';
 
 type HistoryState =
   { kind: 'loading' } | { kind: 'failed' } | { kind: 'ready'; rides: RideSummary[] };
 
 export function RideHistoryScreen({ onOpen }: { onOpen: (id: string) => void }) {
   const { t } = useI18n();
-  const now = useNow();
+  const [now] = useState(Date.now);
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<HistoryState>({ kind: 'loading' });
   useEffect(() => {

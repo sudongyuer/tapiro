@@ -437,8 +437,23 @@ Motion principles:
 
 Completion pairs `peel` with a light haptic and a paper sound. Sound is on by default, follows
 the ring/silent switch, and can be turned off in settings. Every animation respects Reduce
-Motion. Easing curves and a reduced-motion token set are added with the first production
-animation.
+Motion.
+
+Two curves cover every timed motion, both in `src/ui/theme/motion.ts`. `EASE_ENTER`
+(`cubic-bezier(0.23, 1, 0.32, 1)`, a strong ease-out) is for anything that appears, fades, or
+releases from a press. `EASE_MOVE` (`cubic-bezier(0.77, 0, 0.175, 1)`, ease-in-out) is for an
+object already on screen that travels from one place to another. Function forms (`EASE_ENTER_FN`,
+`EASE_MOVE_FN`) serve worklets that drive a clock by hand. Springs use `--duration-settle` as
+their perceptual duration with a damping ratio of 0.8 to 1; a curve is never written inline.
+
+Reduce Motion is read through `useMotionReduced()` only (ESLint blocks Reanimated's
+`useReducedMotion` elsewhere), so verify mode's `-uiVerifyReduceMotion` launch argument reaches
+every screen. Under Reduce Motion, translation, scale, rotation and overshoot drop out; the
+change is shown as an opacity crossfade at `--duration-fade` with `EASE_ENTER`. Such a fade
+passes `reduceMotion: ReduceMotion.Never`, because Reanimated otherwise jumps to the end value
+when the setting is on. `FADE_IN` and `FADE_OUT` are the shared layout-animation builders for an
+element that mounts or unmounts. Press feedback dims to `--opacity-pressed` at once on press-in
+and returns over `--duration-press` on release.
 
 ## Information architecture
 

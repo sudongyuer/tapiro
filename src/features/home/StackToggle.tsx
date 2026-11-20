@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     minHeight: vars['--space-7'] - vars['--space-1'],
     justifyContent: 'center',
     borderRadius: vars['--radius-pill'],
+    borderCurve: 'continuous',
   },
   toggleText: { fontWeight: '700' },
 });

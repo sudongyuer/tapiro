@@ -3,6 +3,7 @@ import { SymbolView } from 'expo-symbols';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { AppText } from './AppText';
+import { vars } from './theme/tokens';
 import { useTheme } from './theme/useTheme';
 
 export function Avatar({
@@ -21,7 +22,12 @@ export function Avatar({
   return (
     <View accessible accessibilityRole="image" accessibilityLabel={label} style={frame}>
       {uri ? (
-        <Image source={{ uri }} style={[styles.image, frame]} contentFit="cover" />
+        <Image
+          source={{ uri }}
+          style={[styles.image, frame]}
+          contentFit="cover"
+          transition={{ duration: vars['--duration-fade'], skipOnCacheHit: 'all' }}
+        />
       ) : initial ? (
         <View style={[styles.initial, frame, { backgroundColor: color('--color-card-calm') }]}>
           <AppText variant="meta" style={[styles.letter, { color: color('--color-on-card-calm') }]}>

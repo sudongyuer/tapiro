@@ -2,10 +2,8 @@ import { useRouter, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
-  Easing,
   interpolate,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -14,9 +12,10 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
-import { uiVerifyReduceMotion } from '@/lib/uiVerify';
 import type { LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
+import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
+import { vars } from '@/ui/theme/tokens';
 
 import { BackFace } from './BackFace';
 import { CardBody } from './cards/CardBody';
@@ -26,7 +25,7 @@ import { backOffset, PEEK, SCALE_STEP, type CardPlacement, type StackLayout } fr
 import { RESTACK } from './useStackFollow';
 
 const MAX_Z = 10;
-const LEAVE = { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) };
+const LEAVE = { duration: vars['--duration-settle'], easing: EASE_ENTER };
 const LEAVE_RISE = 24;
 const LEAVE_SHRINK = 0.08;
 const FRONT: CardPlacement = { y: 0, scale: 1, visible: true };
@@ -76,7 +75,7 @@ export type LiveCardStackProps = {
 
 export function LiveCardStack(props: LiveCardStackProps) {
   const { cards, heights, layout, ready } = props;
-  const reduceMotion = useReducedMotion() || uiVerifyReduceMotion;
+  const reduceMotion = useMotionReduced();
   const { leaving, rising, left } = useLeavingCard(cards, !reduceMotion);
   const [shown, setShown] = useState(ready);
   if (ready && !shown) setShown(true);

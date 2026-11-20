@@ -7,7 +7,7 @@ import {
   useWindowDimensions,
   type ViewInstance,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { needsScroll, scrollTarget } from './axisFocus';
 import { cardFocusReducer, NO_FOCUS } from './cardFocusState';
@@ -31,8 +31,9 @@ export function useCardFocus({ scroll, content, topInset, bottomInset }: ScrollH
   const offset = useRef<number | null>(null);
   const contentHeight = useRef(0);
   const still = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const awaitingMove = useRef(false);
   const { height } = useWindowDimensions();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const [state, dispatch] = useReducer(cardFocusReducer, NO_FOCUS);
   const { ring } = state;
 
@@ -82,6 +83,7 @@ export function useCardFocus({ scroll, content, topInset, bottomInset }: ScrollH
           dispatch({ type: 'show', id });
           return;
         }
+        awaitingMove.current = true;
         dispatch({ type: 'scrolling', id });
         host.scrollTo({ y: target, animated: !reduceMotion });
         if (still.current) clearTimeout(still.current);
@@ -96,6 +98,8 @@ export function useCardFocus({ scroll, content, topInset, bottomInset }: ScrollH
 
   const onScroll = useCallback(({ nativeEvent }: ScrollEvent) => {
     offset.current = nativeEvent.contentOffset.y;
+    if (!awaitingMove.current) return;
+    awaitingMove.current = false;
     dispatch({ type: 'scrolled' });
   }, []);
   const onContentSizeChange = useCallback((_width: number, contentH: number) => {

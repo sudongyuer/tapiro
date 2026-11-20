@@ -1,6 +1,7 @@
 import { FALLBACK_LANGUAGE, isLanguage } from '@/lib/i18n/languages';
 import { resources } from '@/lib/i18n/resources';
 import { handArtFor, type HandArtId } from '@/lib/handArt';
+import { numberFormat } from '@/lib/intlCache';
 
 import type { BoardRow } from './types';
 
@@ -60,7 +61,7 @@ export function formatDistance(m: number, language: string): string {
   const locale = isLanguage(language) ? language : FALLBACK_LANGUAGE;
   const { distance } = resources[locale].translation.bounty.board;
   const number = (value: number, digits: number) =>
-    new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(value);
+    numberFormat(locale, { maximumFractionDigits: digits }).format(value);
   const km = Math.round(m / 100) / 10;
   const text =
     m < 1000

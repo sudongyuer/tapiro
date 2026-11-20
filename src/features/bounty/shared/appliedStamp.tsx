@@ -6,7 +6,6 @@ import Animated, {
   ReduceMotion,
   useAnimatedReaction,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withSpring,
@@ -20,6 +19,7 @@ import { AppText } from '@/ui/AppText';
 import { HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 import { justApplied, type ApplySurface } from './justApplied';
 
@@ -40,7 +40,7 @@ function landed() {
 
 function useStampMotion(applied: boolean, id: string, surface: ApplySurface) {
   const focused = useIsFocused();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const entry = useSyncExternalStore(justApplied.subscribe, () => justApplied.entry(id, surface));
   const final = applied && entry === 'none';
   const tilt = useSharedValue(final ? TILT : 0);

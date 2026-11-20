@@ -42,12 +42,13 @@ export function QrFullScreen({
             <Image
               source={{ uri }}
               style={{ width: side, height: side }}
+              transition={{ duration: vars['--duration-fade'], skipOnCacheHit: 'all' }}
               accessible
               accessibilityLabel={t('pay.sheet.qr.imageLabel', { name })}
               testID="pay-qr-full-image"
             />
           ) : (
-            <View style={{ width: side, height: side }} />
+            <View style={[styles.placeholder, { width: side, height: side }]} />
           )}
           <AppText variant="body" style={styles.center}>
             {name}
@@ -71,5 +72,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: vars['--space-5'],
   },
   center: { textAlign: 'center' },
+  placeholder: { backgroundColor: PlatformColor('secondarySystemFill') },
   footer: { paddingHorizontal: vars['--space-5'], paddingBottom: vars['--space-4'] },
 });

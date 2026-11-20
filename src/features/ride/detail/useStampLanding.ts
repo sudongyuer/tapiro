@@ -3,7 +3,6 @@ import { useLayoutEffect, useRef } from 'react';
 import {
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
@@ -11,6 +10,7 @@ import {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { vars } from '@/ui/theme/tokens';
+import { useMotionReduced } from '@/ui/theme/motion';
 
 const FROM = 1.4;
 const NEVER = ReduceMotion.Never;
@@ -21,7 +21,7 @@ function landed() {
 }
 
 export function useStampLanding(shown: boolean, tilt: number) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useMotionReduced();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(shown ? 1 : 0);
   const before = useRef(shown);

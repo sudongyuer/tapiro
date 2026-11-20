@@ -4,7 +4,7 @@ import { createInstance } from 'i18next';
 import { resources } from '@/lib/i18n/resources';
 
 import type { CoinRow } from '../types';
-import { monthLabel, rowA11y, rowTitle } from './coinsView';
+import { malaysiaYear, monthLabel, rowA11y, rowTitle } from './coinsView';
 
 function translator(lng: string) {
   const i18n = createInstance();
@@ -12,7 +12,7 @@ function translator(lng: string) {
   return i18n.t.bind(i18n);
 }
 
-const NOW = new Date('2026-11-06T04:00:00Z');
+const THIS_YEAR = malaysiaYear(new Date('2026-11-06T04:00:00Z'));
 
 const row = (overrides: Partial<CoinRow> = {}): CoinRow => ({
   id: 1,
@@ -29,12 +29,12 @@ describe('coins page view', () => {
   test('a month header names the year only outside the current year', () => {
     const en = translator('en');
     const zh = translator('zh-Hans');
-    expect(monthLabel('2026-11', en, NOW)).toBe('November');
-    expect(monthLabel('2025-12', en, NOW)).toBe('December 2025');
-    expect(monthLabel('2026-01', zh, NOW)).toBe('1 月');
-    expect(monthLabel('2025-12', zh, NOW)).toBe('2025 年 12 月');
-    expect(monthLabel('2026-03', translator('ms'), NOW)).toBe('Mac');
-    const newYear = new Date('2026-12-31T17:00:00Z');
+    expect(monthLabel('2026-11', en, THIS_YEAR)).toBe('November');
+    expect(monthLabel('2025-12', en, THIS_YEAR)).toBe('December 2025');
+    expect(monthLabel('2026-01', zh, THIS_YEAR)).toBe('1 月');
+    expect(monthLabel('2025-12', zh, THIS_YEAR)).toBe('2025 年 12 月');
+    expect(monthLabel('2026-03', translator('ms'), THIS_YEAR)).toBe('Mac');
+    const newYear = malaysiaYear(new Date('2026-12-31T17:00:00Z'));
     expect(monthLabel('2027-01', zh, newYear)).toBe('1 月');
     expect(monthLabel('2026-12', zh, newYear)).toBe('2026 年 12 月');
   });
