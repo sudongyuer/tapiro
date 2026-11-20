@@ -16,6 +16,7 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "Records your voice when you talk to Tapir, to turn it into text in the field. Recording starts only when you tap the microphone and ends when you tap stop.",
         "NSSpeechRecognitionUsageDescription": "Turns what you say to Tapir into text. Your phone recognises it first; if it can’t, and you have agreed, the recording goes to Alibaba Cloud (Singapore)."
       }
@@ -88,7 +89,6 @@
           "isIosBackgroundLocationEnabled": false
         }
       ],
-      "./plugins/withoutPushEntitlement",
       "./plugins/withStoreKitConfiguration",
       "./plugins/withLiveActivity",
       "./plugins/withGoogleSignIn",
