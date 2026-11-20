@@ -22,6 +22,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { localClock } from '@/lib/deviceClock';
 import { useI18n } from '@/lib/i18n';
@@ -71,7 +72,13 @@ export function PayeeListView({
 
   return (
     <Host style={styles.host} testID="payee-screen">
-      <List modifiers={[listStyle('insetGrouped'), tint(color('--color-accent'))]}>
+      <List
+        modifiers={[
+          navigationScrollEdge(),
+          listStyle('insetGrouped'),
+          tint(color('--color-accent')),
+        ]}
+      >
         {status === 'ready' ? null : <LoadStateSections status={status} onRetry={onRetry} />}
         {actionFailed ? (
           <NoticeCard

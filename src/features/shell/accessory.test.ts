@@ -122,27 +122,58 @@ describe('accessoryTarget', () => {
 
 describe('accessoryVisible', () => {
   test('hidden when there is no item', () => {
-    expect(accessoryVisible({ hasItem: false, onHomeRoot: false, liveCardsOnScreen: false })).toBe(
-      false,
-    );
+    expect(
+      accessoryVisible({
+        onTabRoot: true,
+        hasItem: false,
+        onHomeRoot: false,
+        liveCardsOnScreen: false,
+      }),
+    ).toBe(false);
   });
 
   test('hidden at the top of the home tab while the live cards are on screen', () => {
-    expect(accessoryVisible({ hasItem: true, onHomeRoot: true, liveCardsOnScreen: true })).toBe(
-      false,
-    );
+    expect(
+      accessoryVisible({
+        onTabRoot: true,
+        hasItem: true,
+        onHomeRoot: true,
+        liveCardsOnScreen: true,
+      }),
+    ).toBe(false);
   });
 
   test('shown on home once the live cards scroll away', () => {
-    expect(accessoryVisible({ hasItem: true, onHomeRoot: true, liveCardsOnScreen: false })).toBe(
-      true,
-    );
+    expect(
+      accessoryVisible({
+        onTabRoot: true,
+        hasItem: true,
+        onHomeRoot: true,
+        liveCardsOnScreen: false,
+      }),
+    ).toBe(true);
+  });
+
+  test('hidden on a pushed page, which has its own action bar', () => {
+    expect(
+      accessoryVisible({
+        hasItem: true,
+        onTabRoot: false,
+        onHomeRoot: false,
+        liveCardsOnScreen: false,
+      }),
+    ).toBe(false);
   });
 
   test('shown on other tabs whatever the home scroll state', () => {
-    expect(accessoryVisible({ hasItem: true, onHomeRoot: false, liveCardsOnScreen: true })).toBe(
-      true,
-    );
+    expect(
+      accessoryVisible({
+        onTabRoot: true,
+        hasItem: true,
+        onHomeRoot: false,
+        liveCardsOnScreen: true,
+      }),
+    ).toBe(true);
   });
 });
 

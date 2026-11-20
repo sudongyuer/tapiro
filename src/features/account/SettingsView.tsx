@@ -18,6 +18,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { Avatar } from '@/ui/Avatar';
@@ -56,7 +57,7 @@ export function SettingsView({
   const { color } = useTheme();
   return (
     <Host style={styles.host} testID="settings-screen">
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
         <Section>
           <HStack
             spacing={vars['--space-3']}

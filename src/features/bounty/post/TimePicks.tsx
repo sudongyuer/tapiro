@@ -1,17 +1,18 @@
-import { Button, HStack, Text } from '@expo/ui/swift-ui';
+import { Button, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityAddTraits,
   accessibilityLabel,
   buttonBorderShape,
   buttonStyle,
   controlSize,
-  fixedSize,
   foregroundStyle,
   frame,
   lineLimit,
   listRowInsets,
   multilineTextAlignment,
 } from '@expo/ui/swift-ui/modifiers';
+
+import { ChipRow } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import type { BountyCategory } from '@/lib/stickers/category';
@@ -45,10 +46,7 @@ export function TimePicks({
   if (picks.length === 0) return null;
   const chosen = time.kind === 'deadline' ? Date.parse(time.deadlineAt) : null;
   return (
-    <HStack
-      spacing={vars['--space-2']}
-      modifiers={[fixedSize({ horizontal: false, vertical: true }), PICKS_INSETS, edgeSeparator]}
-    >
+    <ChipRow spacing={vars['--space-2']} modifiers={[PICKS_INSETS, edgeSeparator]}>
       {picks.map((pick) => {
         const name = t(`bounty.post.timePick.${pick.id}`);
         const on = chosen === pick.at.getTime();
@@ -81,6 +79,6 @@ export function TimePicks({
           </Button>
         );
       })}
-    </HStack>
+    </ChipRow>
   );
 }

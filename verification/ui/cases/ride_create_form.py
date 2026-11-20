@@ -5,7 +5,8 @@
 and its caption sit in the Form's top bar with the system hard scroll edge (carpool plan R11), so the caption is on the
 bar's backing, lighter than the Form's ground. The date picker and the ticket show the same clock in the device zone
 (234): run in London, the first quick time is the London clock. On a 12-hour device the quick time, the ticket and the
-picker all write it as the picker does (晚上9:00). 下一步 opens 确认发布."""
+picker all write it as the picker does (晚上9:00). The quick-time chips draw their whole label (en 「Pick a time」 was cut
+to 「Pick a ti…」, audit L1). The fare pad has a 完成 key above it that puts the pad away (audit P5). 下一步 opens 确认发布."""
 import math
 import re
 import sys
@@ -18,11 +19,12 @@ import ocr  # noqa: E402
 from driver import UI, Shot, assert_touch_target, by_id, picker_time, plain, token  # noqa: E402
 from readable import assert_label_reads  # noqa: E402
 from ride import clock_24h, form_scroll_to, open_form, open_list, step, time_text  # noqa: E402
+from whole import assert_drawn_whole  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/lib/deviceClock.ts', 'src/lib/i18n/index.tsx', 'src/app/ride-create/', 'src/features/place/', 'verification/ui/ride.py', 'verification/ui/readable.py',
-        'verification/ui/bounty.py',
-        'src/ui/FieldRow.tsx', 'src/ui/SyncedTextField.tsx']
-LOCALES = ['zh-Hans', 'ms']
+        'verification/ui/bounty.py', 'verification/ui/whole.py', 'modules/tapiro-kit/ios/ChipRowView.swift',
+        'modules/tapiro-kit/ios/KeyboardDone.swift', 'src/ui/FieldRow.tsx', 'src/ui/SyncedTextField.tsx']
+LOCALES = ['zh-Hans', 'en', 'ms']
 BUDGET = 300
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyPlaces', 'ride', '-AppleICUForce12HourTime', 'YES']
 TIME_ZONE = 'Europe/London'
@@ -72,6 +74,18 @@ pitch = dest['frame']['y'] - start['frame']['y']
 assert pitch <= 80, f'a filled place row is {pitch:.0f} pt tall (name, short name and the row insets fit in 80)'
 ui.capture('02-places')
 
+form_scroll_to(ui, 'ride-form-pick-custom')
+ui.at_rest()
+items = ui.read()
+chips = [i for i in items if str(i.get('AXUniqueId')).startswith('ride-form-pick-')]
+assert len(chips) >= 2, f'expected the quick times and 选时间, found {[i.get("AXUniqueId") for i in chips]}'
+shot = ui.snap('02a-chips')
+read = None
+for chip in chips:
+    text = (ui.t('ride.create.form.pickTime') if chip['AXUniqueId'] == 'ride-form-pick-custom'
+            else time_text(chip.get('AXLabel')))
+    read = assert_drawn_whole(ui, shot, chip['frame'], text, chip['AXUniqueId'], read)
+
 assert_touch_target(ui.element('ride-form-pick-0'), 'quick time')
 opened = time.time()
 quick = time_text(ui.element('ride-form-pick-0').get('AXLabel'))
@@ -108,6 +122,11 @@ form_scroll_to(ui, 'ride-form-fare-footer')
 ui.wait_label('ride-form-fare-footer', lambda label: '13' in label and '6' in label,
               'the footer does not split RM 76 among 6')
 ui.wait_label('ride-form-ticket', lambda label: '13' in label, 'the ticket stub does not show 每人约 RM 13')
+done = ui.element('keyboard-done')
+assert done.get('AXLabel') == ui.t('keyboard.done'), f'the pad key reads {done.get("AXLabel")!r}'
+ui.capture('02c-pad-done')
+ui.tap('keyboard-done')
+ui.gone('keyboard-done')
 assert abs(ui.element('ride-form-ticket')['frame']['height'] - height) < 1, 'the live ticket changed height'
 assert_touch_target(form_scroll_to(ui, 'ride-form-airport-remove'), '移除')
 ui.element('ride-form-bags')

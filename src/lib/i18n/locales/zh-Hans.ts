@@ -150,6 +150,9 @@ export default {
   ride,
   rideReminders,
   rideSettle,
+  keyboard: {
+    done: '完成',
+  },
   live: {
     offline: '可能不是最新',
     staleAt: '可能不是最新 · {{time}} 的数据',

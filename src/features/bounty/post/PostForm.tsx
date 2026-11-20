@@ -11,6 +11,7 @@ import {
 import { Stack, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { StyleSheet } from 'react-native';
+import { keyboardDone, navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import type { CurrencyCode } from '@/lib/money';
@@ -149,6 +150,8 @@ function PostFormBody({
       <FillGlowContext.Provider value={glow}>
         <Form
           modifiers={[
+            navigationScrollEdge(),
+            keyboardDone(t('keyboard.done')),
             tint(color('--color-accent')),
             scrollDismissesKeyboard('immediately'),
             scrollEdgeEffectStyle('soft', 'top'),

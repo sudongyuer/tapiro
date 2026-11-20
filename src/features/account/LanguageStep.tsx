@@ -1,11 +1,5 @@
-import { Form, Host, RNHostView, Section } from '@expo/ui/swift-ui';
-import {
-  listRowBackground,
-  listRowInsets,
-  listSectionMargins,
-  scrollContentBackground,
-  tint,
-} from '@expo/ui/swift-ui/modifiers';
+import { Form, Host } from '@expo/ui/swift-ui';
+import { scrollContentBackground, tint } from '@expo/ui/swift-ui/modifiers';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,39 +11,30 @@ import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
-import { LanguagePickerSection, MOMENT_COLUMN } from './LanguagePicker';
+import { LanguagePickerSection } from './LanguagePicker';
 
+// The heading stays in React Native above the Form: hosted in a Form row through RNHostView, the en question's
+// second line lost the stem of its first glyph (「orefer?」, audit O2, 2026-11-21).
 export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayout?: () => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const { bottom } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   return (
     <MomentBackground onLayout={onLayout} testID="language-step">
+      <View style={[styles.heading, { paddingTop: top + vars['--space-7'] }]}>
+        <MascotSays line={t('account.language.greeting')} />
+        <InkText
+          variant="moment-title"
+          outline={vars['--sticker-border']}
+          ink={PlatformColor('label')}
+          accessibilityRole="header"
+          testID="language-question"
+        >
+          {t('account.language.question')}
+        </InkText>
+      </View>
       <Host style={styles.form}>
         <Form modifiers={[tint(color('--color-accent')), scrollContentBackground('hidden')]}>
-          <Section
-            modifiers={[
-              listRowBackground('clear'),
-              listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 }),
-              listSectionMargins({ length: 0, edges: 'top' }),
-              MOMENT_COLUMN,
-            ]}
-          >
-            <RNHostView matchContents={{ vertical: true }}>
-              <View style={styles.heading}>
-                <MascotSays line={t('account.language.greeting')} />
-                <InkText
-                  variant="moment-title"
-                  outline={vars['--sticker-border']}
-                  ink={PlatformColor('label')}
-                  accessibilityRole="header"
-                  testID="language-question"
-                >
-                  {t('account.language.question')}
-                </InkText>
-              </View>
-            </RNHostView>
-          </Section>
           <LanguagePickerSection footer={t('account.language.footer')} onMoment />
         </Form>
       </Host>
@@ -62,6 +47,6 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
 
 const styles = StyleSheet.create({
   form: { flex: 1 },
-  heading: { gap: vars['--space-6'], paddingTop: vars['--space-4'] },
+  heading: { gap: vars['--space-6'], paddingHorizontal: vars['--space-6'] },
   actions: { paddingHorizontal: vars['--space-6'], paddingTop: vars['--space-2'] },
 });

@@ -1,13 +1,15 @@
 """Worst cases for 结清: six riders with 40-character names and RM 1,000.00 (the ride limit) for the organiser, read
 as 每人 RM 166.70 / 你出 RM 166.50 with no empty segment in the ticket label; then a rider's view of ¥1,600.00 (the ¥
 limit) after paying, whose footer waits on the 40-character organiser name; then a lone rider. No row, button or cell
-overflows the screen, the long 「金额不对」 note wraps, and the amounts keep their currency."""
+overflows the screen, the long 「金额不对」 note wraps, and the amounts keep their currency. The pinned footer is an
+opaque bar with the system separator along its top, so the cut timeline above it does not read as one more line beside
+the 「你说已付」 status (audit S3)."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, by_id, luma  # noqa: E402
 from ride import within_screen  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/lib/i18n/locales/rideSettle/']
@@ -44,7 +46,14 @@ items = ui.read()
 lead, ticket = by_id(items, 'ride-detail-lead')['frame'], by_id(items, 'ride-detail-ticket')['frame']
 clear = ticket['x'] + ticket['width'] - (lead['x'] + lead['width'])
 assert clear >= 64, f'the lead line runs under the car sticker: it ends {clear:.0f} pt from the ticket edge'
-ui.snap('02-cny-limit')
+shot = ui.snap('02-cny-limit')
+bar = by_id(ui.read(), 'ride-detail-footer')['frame']
+xs = [x for x in range(24, int(bar['width']) - 24, 6)]
+ground = sorted(luma(shot.rgb(x, bar['y'] + 3)) for x in xs)[len(xs) // 2]
+rows = [bar['y'] + step / shot.scale for step in range(-2, 3)]
+line = max((sorted(luma(shot.rgb(x, y)) for x in xs)[len(xs) // 2] for y in rows), key=lambda v: abs(v - ground))
+print(f'footer: bar {ground:.0f}, most distinct row at its top {line:.0f}')
+assert abs(line - ground) >= 10, f'no separator along the top of the footer bar: {line:.0f} against the bar {ground:.0f}'
 
 relaunch(ui, drop=['-uiVerifyRideDetail', 'settleCny'], add=['-uiVerifyRideDetail', 'settleOne', '-uiVerifyScene', SCENE],
          ready='ride-detail-ticket')

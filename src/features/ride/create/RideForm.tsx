@@ -3,7 +3,7 @@ import { scrollDismissesKeyboard, tint } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import { PinnedBar } from 'tapiro-kit';
+import { keyboardDone, PinnedBar } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoneyRange } from '@/lib/money';
@@ -98,7 +98,13 @@ export function RideForm({ userId, onNext, onPickPlace }: FormProps) {
             view={draftTicketView(draft, now, t, language, deviceDecimal())}
             testID="ride-form"
           />
-          <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
+          <Form
+            modifiers={[
+              tint(color('--color-accent')),
+              scrollDismissesKeyboard('immediately'),
+              keyboardDone(t('keyboard.done')),
+            ]}
+          >
             {noticeText ? (
               <NoticeCard
                 tone="urgent"

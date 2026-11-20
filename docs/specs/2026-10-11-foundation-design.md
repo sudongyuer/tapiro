@@ -1136,3 +1136,59 @@ veto. Branch `fix/keep-context-navigation`.
 - The payee list's recheck after adding a method is unit-tested (`applyFlow.test.ts`); the fixture has no payee to add
   that flips the apply or ride gate, so the UI cases prove the return path, not the flip.
 - A notification tapped twice for one item is a device check: verify mode fakes one tap per launch.
+
+## Implementation Record (2026-11-21) — UI audit batch D: layout
+
+Fixes the layout findings O2, H2, L1, P5, P6, S1, S3 and H3 of `docs/reviews/2026-11-21-ui-walkthrough.md`.
+
+### Decisions (owner delegated; listed for veto)
+
+| #   | Decision                                                                                                                                                                                                                        | Reason                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1  | Bounty and ride wear one native chip row (`ChipRow` in the kit): equal columns when the widest label fits a column; otherwise each chip takes its own width, the rest of the line is shared out, and a line that runs out wraps | A choice is never truncated, and zh keeps the equal three columns it has today. Scrolling chips would hide a choice; a shorter ms copy would only move the problem to the next long string                                                                                                                                                                                                                                                                                                                                                              |
+| P6  | Every chip on a line takes the line's tallest height; labels may take two lines only when one chip is wider than the whole row                                                                                                  | 「明天中午前」 wrapped beside one-line neighbours; the row decides the height, not the label                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| P5  | A system keyboard toolbar 「完成」 on the post form, the ride form, the ride detail sheets and the bank sheet (kit modifier `keyboardDone`), once per Form                                                                      | Number and decimal pads have no Return key. SwiftUI merges keyboard toolbar items from the whole view, so one per field would show several 完成 keys; every field in those Forms gets the same key                                                                                                                                                                                                                                                                                                                                                      |
+| H2  | The board title and the list/map switch keep one row; the gap between them grows from `--space-2` to `--space-3`, so a title that wraps (ms) leaves room for the tilted, lifted sticker                                         | The selected sticker overhangs its box by about 7 pt by design and the 8 pt gap let it touch 「Boleh」. A first try that wrapped the switch below the title did not wrap in Yoga (the title shrank first) and was dropped. Shortening the ms title is a copy choice for batch C                                                                                                                                                                                                                                                                         |
+| O2  | The language step's heading moves out of the Form into React Native above it; the Form holds only the picker                                                                                                                    | Hosted in a Form row through `RNHostView`, the en question lost the stem of its second line's first glyph; the name step's heading, plain React Native, never did. Measured: `onboarding_language_moment` en read 「orefer?」 before and the whole question after                                                                                                                                                                                                                                                                                       |
+| S1  | Form- and List-based screens name their scroll view to the screen's controller through the kit (`navigationScrollEdge()` modifier; automatic inside `PinnedBar`)                                                                | See root cause below. Fixed at the one place UIKit reads, not with overlays                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| S3  | The ride detail footer stays an opaque bar below the timeline and gains the system `separator` hairline along its top, as an opaque `UIToolbar` draws its shadow line                                                           | The status line sat on the same grey as the page, so the cut timeline above read as one more line beside it. Tried first: the footer floating over the timeline with `UIScrollEdgeElementContainerInteraction` and the hard bottom edge effect (cutoff and dividing line). The effect takes its shape from UIKit labels, images and controls in the container; React Native text is none of those, so only the tab bar shaped it and the timeline ran under the status text (screenshot in the PR). Dropped rather than faking the edge with an overlay |
+| H3  | The bottom accessory shows on tab roots only; every pushed page hides it (进度, 挑人, pay, ride detail and settle, settings and the rest)                                                                                       | Pushed item pages carry their own pay, confirm or hold button; a strip for another item there showed two money prompts, and on 挑人 a mis-tap 60 pt under the hold button left the screen. One rule instead of a per-page list that every new page would have to join                                                                                                                                                                                                                                                                                   |
+
+### S1 root cause
+
+react-native-screens applies `scrollEdgeEffects` to the scroll view it finds by walking the screen view's
+**first-subview chain** (`RNSScrollViewFinder findScrollViewInFirstDescendantChainFrom:`, called from
+`updateContentScrollViewEdgeEffectsIfExists`), and UIKit's navigation bar looks for its content scroll view the same way
+unless a controller names one with `setContentScrollView(_:for:)`. An `@expo/ui` `Host` hosts its SwiftUI content in a
+`UIHostingController` added as a child of the screen's controller (`SwiftUIHostingView.didMoveToWindow`), and the Form's
+collection view sits deep inside that hosting view, behind sibling views (the `PinnedBar` bars, menus, the RN views
+before the `Host`). Neither lookup finds it, so the bar draws no top edge effect over it. RN `ScrollView` screens are the
+first descendant and work. The kit's `NavigationScrollEdgeModifier` puts a zero-size anchor behind the Form, finds the
+nearest enclosing scroll view inside the same hosting view, walks up to the controller whose parent is the
+`UINavigationController`, and calls `setContentScrollView(_, for: .top)` on it.
+
+### Verification
+
+Selection (from what changed): the screens whose layout changed, in zh-Hans light and in `en` and `ms` for every
+truncation case; dark for the surfaces drawn over content (the top scroll edge, the ride footer bar); `verify:smoke`.
+
+- `onboarding_language_moment` (zh-Hans, en, ms light): pass. Before the fix the new OCR check failed in en with
+  「…orefer?」.
+- `onboarding_moment` (zh-Hans, en light): pass; the name step's question draws whole.
+- `bounty_post_selected_chips` (zh-Hans, en, ms light): pass; ms wraps to 「Dalam 1 jam · Sebelum malam ini」 then
+  「Sebelum tengah hari esok」, each whole, one height.
+- `ride_create_form` (zh-Hans, en, ms light): pass; en 「Pick a time」 whole; the decimal pad shows 「Done」 and it puts
+  the pad away.
+- `bounty_board_view_switch` (zh-Hans, en, ms light): pass; the tilted sticker clears the wrapped ms title.
+- `profile_worst`, `bounty_status_worst` (zh-Hans light and dark, ms light; en light earlier): pass; text under the
+  status bar measured a sharpest luma step of 16–18 (profile) and 56–67 (status) against 128–252 for the same text
+  crisp.
+- `ride_settle_worst` (zh-Hans light and dark, en and ms light): pass; separator 220 against the bar 242 (light), 42
+  against 0 (dark). On the build without the separator the check failed (28 against 28).
+- `shell_accessory_pushed` (new, en light): pass; 我的 shows the strip, 设置 hides it, back shows it.
+- `verify:smoke`: 4 of 4 pass.
+- `bun test` (3188 pass), `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`,
+  `node scripts/design-check.mjs`, `check-specs`, `check-story-map`, `verification/ui` unit tests: exit 0.
+
+Not run: AX5 and device checks; ms dark (no ms-only colour or surface change). Not changed: the place search List
+(its Host is the screen's first view, so UIKit already finds it, and the file sits at its size limit).
