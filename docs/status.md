@@ -53,6 +53,10 @@ findings, decisions E1–E12).
   at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open
   test bounties on the hosted project (2026-11-20 18:29–18:31 UTC) are left for the owner to cancel or keep.
 
+- TestFlight 1.0.0 (20261121.1730), uploaded 2026-11-22 from main at `d07fde59` (#224–#230: the held stack card
+  stays opaque, no floating 完成 on the bank sheet, the sign-out row height, positioning copy without Malaysia or
+  students, the sticker book deck), passed processing (`COMPLETE`). The owner skipped the two-phone run on 1036.
+
 - TestFlight 1.0.0 (20261121.1036), uploaded 2026-11-21 from main at `10c8cc61` (#204–#222: the UI audit batches,
   the polish rounds and the milestone fixes of #221), passed processing (`COMPLETE`); the internal group Owner gets it
   automatically. Owner's call (2026-11-21): this internal build did not wait for the rest of the milestone run. Done
