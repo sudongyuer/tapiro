@@ -359,14 +359,21 @@ The reward and the primary action wrap rather than truncate at any size.
 | `--radius-card`     | `18`  |
 | `--radius-sheet`    | `24`  |
 | `--radius-pill`     | `999` |
+| `--radius-stamp`    | `6`   |
 | `--touch-min`       | `44`  |
 | `--capsule-min`     | `28`  |
 | `--opacity-pressed` | `0.7` |
 
 Radii are continuous corners. Buttons are pills.
 
-- A capsule that labels rather than acts (a card's tag, the stack toggle's pill, the calm card's example chips) is at
-  least `--capsule-min` tall; one that acts keeps `--touch-min` around it.
+- A capsule that labels rather than acts (a card's tag, the stack toggle's pill) is at least `--capsule-min` tall; one
+  that acts keeps `--touch-min` around it (the calm card's example chips are `--capsule-min` capsules in a 44 pt
+  target and open 问小貘 with their line).
+- A rubber stamp (已申请 on a sticker, 已结清 on a ticket) has `--radius-stamp` corners.
+- Everything floating over the map (the more chip, a pin card and its tail) sits at one height: `--map-shadow-y`,
+  `--map-shadow-blur`.
+- The ink accent fills one primary action per screen. A row in a list (a board card's 申请) uses the secondary pill;
+  the detail page keeps the ink 申请.
 - A live card's button is the shared `CardButton`: at least `--touch-min` tall, `body` semibold, up to two lines, in
   three looks (filled with the card's ink, tinted, outlined).
 - A disabled pill keeps its shape and greys out: the secondary fill with a `tertiaryLabel` label, never a faded
@@ -383,6 +390,8 @@ Radii are continuous corners. Buttons are pills.
 | `--sticker-shadow-y`     | `5`   | Shadow offset                          |
 | `--sticker-shadow-blur`  | `6`   | Shadow radius                          |
 | `--sticker-rotation-max` | `8`   | Degrees; rotate between 2 and this     |
+| `--map-shadow-y`         | `4`   | Map chip, pin card and its tail offset |
+| `--map-shadow-blur`      | `12`  | Map chip, pin card and its tail radius |
 
 - **Hand art (step 9, 92A/93A).** Every bounty sticker is a crayon illustration from one fixed set
   (`assets/hand-art/<id>.png`, mirrored in the kit for map pins): thick wobbly ink-brown outline, flat fills with

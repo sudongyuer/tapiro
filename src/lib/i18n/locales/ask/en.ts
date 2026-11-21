@@ -102,6 +102,7 @@ export default {
     swapConfirm: 'Swap',
     cancel: 'Cancel',
     skip: 'Skip',
+    notNow: 'Skip translation',
   },
   pantry: {
     title: 'Jar',

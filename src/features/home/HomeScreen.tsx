@@ -64,7 +64,7 @@ export type HomeScreenProps = {
   open: boolean;
   onToggle: (open: boolean) => void;
   name: string;
-  onAsk: (() => void) | null;
+  onAsk: ((seed?: string) => void) | null;
   reviews?: ReactNode;
   board?: ReactNode;
   refreshControl?: ReactElement<RefreshControlProps>;

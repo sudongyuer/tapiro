@@ -25,6 +25,7 @@ import {
 import { fixtureImageFile } from './images/imageSource';
 import { createItemThreads } from './itemThreads';
 import { createOutbox } from './outbox';
+import { createSafetyNotes } from './safetyNotes';
 
 const CALLS_KEY = 'uiVerifyChatCalls';
 
@@ -47,6 +48,7 @@ const outbox = createOutbox(Settings, (entry) => {
   if (entry.image) dropOutboxImage(entry.image.file);
 });
 export const chatDrafts = createDrafts(Settings);
+export const safetyNotes = createSafetyNotes(Settings);
 
 const service = uiVerify
   ? verifyChatService()
@@ -66,6 +68,7 @@ export const itemThreads = createItemThreads(service.findThread, chatStore.getSn
 if (uiVerify) {
   outbox.clear(FIXTURE_CHAT_USER_ID);
   chatDrafts.clear(FIXTURE_CHAT_USER_ID);
+  safetyNotes.clear(FIXTURE_CHAT_USER_ID);
   clearImageCache();
   const [threadId, draft] = (uiVerifyArgument('uiVerifyChatDraft') ?? '').split('|');
   if (threadId && draft) chatDrafts.set(FIXTURE_CHAT_USER_ID, threadId, draft);
@@ -85,6 +88,7 @@ blockEvents.onUnblocked((personId) => chatStore.markBlocked(personId, false));
 userCleanups.register((userId) => {
   outbox.clear(userId);
   chatDrafts.clear(userId);
+  safetyNotes.clear(userId);
   chatImages.clear();
   clearImageCache();
 });

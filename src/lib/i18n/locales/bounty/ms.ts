@@ -310,6 +310,8 @@ const ms: typeof zhHans = {
       details: 'Lihat Butiran',
       expand: 'Besarkan Peta',
       close: 'Tutup Peta',
+      recentre: 'Kembali ke Kawasan Ganjaran',
+      refresh: 'Muat Semula Ganjaran',
       noOrigin: 'Pilih tempat atau benarkan lokasi, dan peta akan dipaparkan di sini',
     },
     state: {
@@ -327,6 +329,7 @@ const ms: typeof zhHans = {
     },
     apply: 'Mohon',
     applied: 'Dipohon · menunggu pilihan mereka',
+    waiting: 'Menunggu pilihan mereka',
     distance: {
       meters: '{{value}} m',
       kilometers: '{{value}} km',

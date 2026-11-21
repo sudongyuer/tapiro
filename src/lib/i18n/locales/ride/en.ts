@@ -277,6 +277,7 @@ const en: typeof zhHans = {
     title: 'Past rides',
     empty: 'No past rides yet',
     failed: 'Past rides didn’t load. Check your connection and try again',
+    stale: 'Couldn’t refresh · showing {{time}}',
   },
   create: {
     title: 'Start a ride',

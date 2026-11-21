@@ -302,6 +302,8 @@ export default {
       details: '看详情',
       expand: '全屏看地图',
       close: '关闭地图',
+      recentre: '回到悬赏范围',
+      refresh: '刷新悬赏',
       noOrigin: '选好地点或允许定位后，这里变成地图',
     },
     state: {
@@ -319,6 +321,7 @@ export default {
     },
     apply: '申请',
     applied: '已申请 · 等对方选',
+    waiting: '等对方选',
     distance: {
       meters: '{{value}} m',
       kilometers: '{{value}} km',

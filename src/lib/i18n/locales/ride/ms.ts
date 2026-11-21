@@ -279,6 +279,7 @@ const ms: typeof zhHans = {
     title: 'Tumpangan lepas',
     empty: 'Belum ada tumpangan lepas',
     failed: 'Tumpangan lepas tidak dapat dimuatkan. Semak sambungan dan cuba lagi',
+    stale: 'Gagal dimuat semula · ini data pukul {{time}}',
   },
   create: {
     title: 'Mulakan tumpangan',

@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
     backfaceVisibility: 'hidden',
     shadowOpacity: 1,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: vars['--map-shadow-blur'],
+    shadowOffset: { width: 0, height: vars['--map-shadow-y'] },
   },
   top: { top: 0 },
   bottom: { bottom: 0 },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   tailShadow: {
     shadowOpacity: 1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: vars['--map-shadow-blur'],
+    shadowOffset: { width: 0, height: vars['--map-shadow-y'] },
   },
 });

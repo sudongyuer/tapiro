@@ -156,6 +156,7 @@ export const vars = {
   '--radius-card': 18,
   '--radius-sheet': 24,
   '--radius-pill': 999,
+  '--radius-stamp': 6,
   '--touch-min': 44,
   '--capsule-min': 28,
   '--opacity-pressed': 0.7,
@@ -165,6 +166,8 @@ export const vars = {
   '--sticker-shadow-y': 5,
   '--sticker-shadow-blur': 6,
   '--sticker-rotation-max': 8,
+  '--map-shadow-y': 4,
+  '--map-shadow-blur': 12,
 
   '--duration-press': 90,
   '--duration-fade': 150,

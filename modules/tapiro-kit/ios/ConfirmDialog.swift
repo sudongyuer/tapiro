@@ -73,12 +73,18 @@ enum ConfirmDialog {
 
   private static func barRect(in host: UIView) -> CGRect? {
     let bars = navigationBars(in: host).filter { bar in
-      !bar.isHidden && bar.alpha > 0 && bar.window != nil && !(bar.topItem?.rightBarButtonItems ?? []).isEmpty
+      !bar.isHidden && bar.alpha > 0 && bar.window != nil && !barItems(of: bar).isEmpty
     }
-    guard let items = bars.last?.topItem?.rightBarButtonItems else { return nil }
+    guard let bar = bars.last else { return nil }
+    let items = barItems(of: bar)
     let item = items.first { $0.menu != nil && !$0.isHidden } ?? items.first { !$0.isHidden } ?? items[0]
     guard let frame = item.frame(in: host), !frame.isNull, !frame.isEmpty else { return nil }
     return frame
+  }
+
+  private static func barItems(of bar: UINavigationBar) -> [UIBarButtonItem] {
+    let trailing = bar.topItem?.rightBarButtonItems ?? []
+    return trailing.isEmpty ? bar.topItem?.leftBarButtonItems ?? [] : trailing
   }
 
   private static func navigationBars(in view: UIView) -> [UINavigationBar] {

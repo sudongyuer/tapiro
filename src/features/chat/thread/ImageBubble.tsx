@@ -1,9 +1,10 @@
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
-import { Alert, PlatformColor, StyleSheet } from 'react-native';
+import { Alert, PlatformColor, StyleSheet, View } from 'react-native';
 import { ContextMenuView, type ContextMenuAction } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
+import { AppText } from '@/ui/AppText';
 import { PressDim } from '@/ui/PressDim';
 import { vars } from '@/ui/theme/tokens';
 
@@ -37,6 +38,7 @@ export function ImageBubble({
   const size = bubbleImageSize(image.width, image.height);
   const uri = load.status === 'ready' ? load.uri : null;
   const failed = load.status === 'failed';
+  const retryable = failed && image.kind === 'stored';
   const actions: ContextMenuAction[] = [
     ...(uri ? [{ id: 'copy', title: t('chat.thread.copy'), systemImage: 'doc.on.doc' }] : []),
     ...(report
@@ -58,10 +60,10 @@ export function ImageBubble({
   };
   const press = () => {
     if (uri) return act('open');
-    if (failed && image.kind === 'stored') chatImages.retry(image.path);
+    if (retryable) chatImages.retry(image.path);
   };
   const state = failed
-    ? t('chat.thread.imageFailed')
+    ? t(retryable ? 'chat.thread.imageFailed' : 'chat.thread.imageGone')
     : load.shown
       ? null
       : t('chat.thread.imageLoading');
@@ -71,7 +73,9 @@ export function ImageBubble({
       <PressDim
         accessibilityRole="imagebutton"
         accessibilityLabel={state ? t('chat.thread.a11yImageState', { label, state }) : label}
-        accessibilityHint={uri ? t('chat.thread.openImage') : undefined}
+        accessibilityHint={
+          uri ? t('chat.thread.openImage') : retryable ? t('chat.thread.imageRetryHint') : undefined
+        }
         accessibilityActions={actions.map((action) => ({ name: action.id, label: action.title }))}
         onAccessibilityAction={(event) => act(event.nativeEvent.actionName)}
         onPress={press}
@@ -87,11 +91,18 @@ export function ImageBubble({
             testID={`${testID}-image`}
           />
         ) : failed ? (
-          <SymbolView
-            name="arrow.clockwise"
-            size={vars['--touch-min'] / 2}
-            tintColor={PlatformColor('secondaryLabel')}
-          />
+          <View style={styles.failed} testID={`${testID}-failed`}>
+            {retryable ? (
+              <SymbolView
+                name="arrow.clockwise"
+                size={vars['--touch-min'] / 2}
+                tintColor={PlatformColor('secondaryLabel')}
+              />
+            ) : null}
+            <AppText variant="meta" tone="secondaryLabel" style={styles.failedText}>
+              {t(retryable ? 'chat.thread.imageFailedShort' : 'chat.thread.imageGone')}
+            </AppText>
+          </View>
         ) : null}
       </PressDim>
     </ContextMenuView>
@@ -100,6 +111,8 @@ export function ImageBubble({
 
 const styles = StyleSheet.create({
   menu: { borderRadius: RADIUS },
+  failed: { alignItems: 'center', gap: vars['--space-2'], padding: vars['--space-3'] },
+  failedText: { textAlign: 'center' },
   frame: {
     borderRadius: RADIUS,
     borderCurve: 'continuous',

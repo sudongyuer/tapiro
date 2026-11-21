@@ -9,6 +9,11 @@ struct MapOriginRecord: Record {
   @Field var title: String = ""
 }
 
+struct MapRecentreRecord: Record {
+  @Field var label: String = ""
+  @Field var radiusM: Double = 2000
+}
+
 struct MapCameraRecord: Record {
   @Field var originKey: String = ""
   @Field var latitude: Double = 0
@@ -30,7 +35,9 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
 
   private let map = MKMapView()
   private var expandButton: UIButton?
-  private var locateButton: UIView?
+  private var recentreButton: UIButton?
+  private var recentreRadiusM: Double = 2000
+  private var origin: MapOriginRecord?
   private var annotations: [String: BountyPinAnnotation] = [:]
   private var originAnnotation: OriginAnnotation?
   private var selectedId: String?
@@ -117,6 +124,8 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
   }
 
   func setOrigin(_ origin: MapOriginRecord?) {
+    self.origin = origin
+    updateRecentreImage()
     if let originAnnotation {
       map.removeAnnotation(originAnnotation)
       self.originAnnotation = nil
@@ -140,26 +149,41 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
     button.accessibilityLabel = label
   }
 
-  func setLocateButton(_ shown: Bool) {
-    guard shown else {
-      locateButton?.removeFromSuperview()
-      locateButton = nil
+  func setRecentre(_ recentre: MapRecentreRecord?) {
+    guard let recentre else {
+      recentreButton?.removeFromSuperview()
+      recentreButton = nil
       return
     }
-    guard locateButton == nil else { return }
-    let glass = UIVisualEffectView(effect: UIGlassEffect(style: .regular))
-    glass.cornerConfiguration = .capsule()
-    let tracking = MKUserTrackingButton(mapView: map)
-    tracking.accessibilityIdentifier = "bounty-map-locate"
-    glass.contentView.addSubview(tracking)
-    tracking.translatesAutoresizingMaskIntoConstraints = false
-    NSLayoutConstraint.activate([
-      tracking.centerXAnchor.constraint(equalTo: glass.contentView.centerXAnchor),
-      tracking.centerYAnchor.constraint(equalTo: glass.contentView.centerYAnchor),
-    ])
-    addSubview(glass)
-    locateButton = glass
+    recentreRadiusM = recentre.radiusM
+    let button = recentreButton ?? makeRecentreButton()
+    button.accessibilityLabel = recentre.label
+    updateRecentreImage()
+  }
+
+  private func makeRecentreButton() -> UIButton {
+    var configuration = UIButton.Configuration.glass()
+    configuration.cornerStyle = .capsule
+    let button = UIButton(configuration: configuration)
+    button.accessibilityIdentifier = "bounty-map-recentre"
+    button.addAction(UIAction { [weak self] _ in self?.recentre() }, for: .primaryActionTriggered)
+    addSubview(button)
+    recentreButton = button
     setNeedsLayout()
+    return button
+  }
+
+  private func updateRecentreImage() {
+    guard let button = recentreButton else { return }
+    var configuration = button.configuration ?? UIButton.Configuration.glass()
+    configuration.image = UIImage(systemName: origin?.kind == "place" ? "mappin.and.ellipse" : "location.fill")
+    button.configuration = configuration
+  }
+
+  private func recentre() {
+    guard let origin else { return }
+    onRegionChange([:])
+    move(latitude: origin.latitude, longitude: origin.longitude, radiusM: recentreRadiusM, animated: true)
   }
 
   private func makeExpandButton() -> UIButton {
@@ -181,9 +205,9 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
     if let expandButton {
       expandButton.frame = CGRect(x: bounds.width - margin - side, y: margin, width: side, height: side)
     }
-    if let locateButton {
+    if let recentreButton {
       let inset = safeAreaInsets
-      locateButton.frame = CGRect(
+      recentreButton.frame = CGRect(
         x: bounds.width - inset.right - margin - side,
         y: bounds.height - inset.bottom - margin - side,
         width: side,
@@ -203,9 +227,13 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
   }
 
   private func move(to camera: MapCameraRecord, animated: Bool) {
-    let diameter = max(camera.radiusM, 1) * 2
+    move(latitude: camera.latitude, longitude: camera.longitude, radiusM: camera.radiusM, animated: animated)
+  }
+
+  private func move(latitude: Double, longitude: Double, radiusM: Double, animated: Bool) {
+    let diameter = max(radiusM, 1) * 2
     let region = MKCoordinateRegion(
-      center: CLLocationCoordinate2D(latitude: camera.latitude, longitude: camera.longitude),
+      center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
       latitudinalMeters: diameter,
       longitudinalMeters: diameter)
     map.setRegion(map.regionThatFits(region), animated: animated)
@@ -303,10 +331,6 @@ final class BountyMapView: ExpoView, MKMapViewDelegate, UIGestureRecognizerDeleg
     let touched = touchedPin
     touchedPin = nil
     report(touched ?? view)
-  }
-
-  func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
-    onRegionChange([:])
   }
 
   func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {

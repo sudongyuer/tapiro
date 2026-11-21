@@ -1,9 +1,9 @@
-"""Board cards (26A) under home: the first card is one VoiceOver element reading 帮取快递, RM 8, 急 with its deadline, Sunway Geo 宿舍 · 300 m and 小林 · 靠谱; 急 is drawn in the urgent colour with the clock symbol and 申请 is a 44 pt accent pill; the applied row has no 申请, says 已申请 and carries the green stamp; in the board scene 申请 calls apply and the rest of the card calls open; the `long` board pages to 45 unique cards with 没写地点的 once, before the first card without a place, and ends with 就这些了."""
+"""Board cards (26A) under home: the first card is one VoiceOver element reading 帮取快递, RM 8, 急 with its deadline, Sunway Geo 宿舍 · 300 m and 小林 · 靠谱; 急 is drawn in the urgent colour with the clock symbol and 申请 is a 44 pt secondary pill with no ink accent anywhere in the row (H6; ink stays for the detail page); the applied row has no 申请, carries the green 已申请 stamp and says only 等对方选 beside it (D3); in the board scene 申请 calls apply and the rest of the card calls open; the `long` board pages to 45 unique cards with 没写地点的 once, before the first card without a place, and ends with 就这些了."""
 import re
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from board import apply_pill, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
+from board import accent_in_row, apply_pill, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home, token  # noqa: E402
 from hourcycle import clock  # noqa: E402
@@ -90,7 +90,9 @@ assert clock and clock['count'] >= URGENT_MIN, f'no urgent clock symbol at the s
 words = ink_box(shot, column(f, 34, f['width'] / 2), urgent, 40)
 assert words and words['count'] >= URGENT_MIN, f'急 and the deadline are not in the urgent colour: {words}'
 pill = apply_pill(shot, first, ui.appearance)
-assert pill and pill['height'] >= PILL_MIN and pill['width'] >= PILL_MIN, f'申请 is not a 44 pt accent pill: {pill}'
+assert pill and pill['height'] >= PILL_MIN and pill['width'] >= PILL_MIN, f'申请 is not a 44 pt secondary pill: {pill}'
+ink = accent_in_row(shot, first, ui.appearance)
+assert ink is None or ink['count'] < URGENT_MIN, f'the row still uses the ink accent: {ink}'
 print(f'first card: clock {clock["count"]} px, 申请 {pill["width"]:.1f} x {pill["height"]:.1f} pt')
 
 plain = visible(ui, PLAIN)

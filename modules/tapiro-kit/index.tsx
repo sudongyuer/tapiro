@@ -66,7 +66,7 @@ export type BountyMapViewProps = {
   onCameraChange?(region: BountyMapRegion): void;
   expandLabel?: string;
   onExpand?(): void;
-  locateButton?: boolean;
+  recentre?: { label: string; radiusM: number };
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -316,9 +316,13 @@ export function ContextMenuView({
 const NativeTitleHalo = requireNativeView<ViewProps>('TapiroKit', 'TitleHaloView');
 
 const NativeBountyMap = requireNativeView<
-  Omit<BountyMapViewProps, 'onPinPress' | 'selectedId' | 'onCameraChange' | 'expandLabel'> & {
+  Omit<
+    BountyMapViewProps,
+    'onPinPress' | 'selectedId' | 'onCameraChange' | 'expandLabel' | 'recentre'
+  > & {
     selectedId: string | null;
     expandLabel: string | null;
+    recentre: { label: string; radiusM: number } | null;
     onPinPress(event: NativeSyntheticEvent<BountyMapPinPress>): void;
     onCameraChange(event: NativeSyntheticEvent<BountyMapRegion>): void;
   }
@@ -329,6 +333,7 @@ export function BountyMapView({
   onCameraChange,
   selectedId,
   expandLabel,
+  recentre,
   ...props
 }: BountyMapViewProps) {
   return (
@@ -336,6 +341,7 @@ export function BountyMapView({
       {...props}
       selectedId={selectedId ?? null}
       expandLabel={expandLabel ?? null}
+      recentre={recentre ?? null}
       onPinPress={(event) => onPinPress(event.nativeEvent)}
       onCameraChange={(event) => onCameraChange?.(event.nativeEvent)}
     />

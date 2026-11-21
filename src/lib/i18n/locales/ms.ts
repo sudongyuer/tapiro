@@ -54,6 +54,9 @@ const ms: Translation = {
       footer: 'Pelajar lain akan melihat nama ini. Maksimum 40 aksara.',
       avatar: 'Foto profil',
       signOut: 'Daftar Keluar',
+      signOutTitle: 'Daftar keluar?',
+      signOutMessage: 'Anda belum selesai. Anda perlu daftar masuk semula untuk meneruskan.',
+      signOutKeep: 'Teruskan Mengisi',
       continue: 'Teruskan',
       loading: 'Memuatkan profil anda',
       loadFailed:
@@ -293,6 +296,7 @@ const ms: Translation = {
         evening: 'Selamat malam, {{name}}',
         ask: 'Sebut sahaja, Tapir tolong draf ganjaran',
         askHint: 'Membuka Tanya Tapir',
+        chipHint: 'Membuka Tanya Tapir dengan ayat ini diisi',
         chipQuestion: 'Cara murah ke KLIA?',
         chipParcel: 'Ambilkan bungkusan saya',
         chipStudy: 'Cari orang terangkan kalkulus',

@@ -126,7 +126,13 @@ function BountyHome({ user }: { user: AccountUser }) {
         onToggle={stack.setOpen}
         name={name}
         onAsk={
-          aiOffered ? () => router.push({ pathname: '/ask', params: { tab: 'bounty' } }) : null
+          aiOffered
+            ? (seed?: string) =>
+                router.push({
+                  pathname: '/ask',
+                  params: seed ? { tab: 'bounty', seed } : { tab: 'bounty' },
+                })
+            : null
         }
         chat={{ open: (bountyId) => chat.open('bounty', bountyId), opening: chat.opening }}
         actor={actor}

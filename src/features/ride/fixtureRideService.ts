@@ -89,6 +89,7 @@ export function createFixtureRideService(
   bought: () => number = () => 0,
 ): RideService {
   let listLoads = 0;
+  let historyLoads = 0;
   const published: MyRide[] = [];
   const wait = () => new Promise((resolve) => setTimeout(resolve, options.delayMs));
   const listFails = () =>
@@ -111,7 +112,10 @@ export function createFixtureRideService(
       return { items: [...published, ...data.mine], historyCount: data.historyCount };
     },
     async history() {
+      historyLoads += 1;
       await wait();
+      if (options.fail === 'refresh' && historyLoads > 1)
+        throw new Error('fixture: history failed');
       return fixtureHistory(options.now());
     },
     async shortNames() {

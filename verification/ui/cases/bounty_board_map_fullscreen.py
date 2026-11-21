@@ -1,30 +1,33 @@
 """Full-screen map (85A): the home board in map view has a 44 pt expand button at the map's top-right corner, read by
 VoiceOver as 全屏看地图; it presents the map as a full-screen cover that fills the screen edge to edge, with the 全部 /
-急 / 塞得进空档 chips floating under the safe area, a close button top-left read as 关闭地图 and the system location
-button bottom-right (the board origin is the user's location); a pin opens its card there, and 看详情 dismisses the cover
+急 / 塞得进空档 chips floating under the safe area, a close button top-left read as 关闭地图, a refresh button top-right
+read as 刷新悬赏 and a 44 pt recentre button bottom-right read as 回到悬赏范围 (B1: a pull pans MapKit, so neither is a
+gesture); after the map is dragged away from the pins, recentre brings them back; with a failing refresh the refresh
+button shows the stale notice on the cover and keeps the pins; a pin opens its card there, and 看详情 dismisses the cover
 and pushes the detail; the 急 filter chosen in full screen is the board's own, so closing the cover returns to the board
 in map view with 急 still selected; on the `long` board the cover's 「地图上 20 / 45」 chip floats under the filter chips,
-44 pt, clear of the close button, the location button and MapKit's legal link."""
+44 pt, clear of the close button, the recentre button and MapKit's legal link."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from board import screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, bottom, by_id, reach_home  # noqa: E402
+from gestures import drag  # noqa: E402
 from map import (BACK, FRONT, MAP, close_card, face_box, inside, map_at_rest, overlaps, pin_id, pins,  # noqa: E402
                  tap_pin)
 
 DEPS = ['src/features/bounty/map/', 'src/features/bounty/board/', 'src/app/bounty-map.tsx', 'src/app/_layout.tsx',
         'src/app/(tabs)/bounty/', 'src/features/home/', 'modules/tapiro-kit/ios/BountyMapView.swift',
         'modules/tapiro-kit/ios/BountyPinView.swift', 'verification/ui/map.py', 'verification/ui/board.py', 'src/features/place/', 'src/features/block/',
-        'verification/ui/bounty.py']
+        'verification/ui/bounty.py', 'verification/ui/gestures.py', 'modules/tapiro-kit/index.tsx']
 BUDGET = 450
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyBoardPlace', 'none',
         '-uiVerifyBoardView', 'map']
 COVER = 'bounty-map-cover'
 EXPAND = 'bounty-map-expand'
-LOCATE = 'bounty-map-locate'
+RECENTRE = 'bounty-map-recentre'
 CHIPS = ['bounty-filter-all', 'bounty-filter-urgent', 'bounty-filter-fits']
 FIRST = 'fixture-bounty-01'
 FIRST_TITLE = '帮取快递'
@@ -40,6 +43,17 @@ ui = UI(*sys.argv[1:])
 def close_button(items):
     label = ui.t('bounty.board.map.close')
     return next((i for i in items if i.get('type') == 'Button' and i.get('AXLabel') == label), None)
+
+
+def refresh_button(items):
+    label = ui.t('bounty.board.map.refresh')
+    return next((i for i in items if i.get('type') == 'Button' and i.get('AXLabel') == label), None)
+
+
+def on_screen(items, identifier, s):
+    found = by_id(items, identifier)
+    return found if found and 0 <= found['frame']['x'] <= s['width'] and 0 <= found['frame']['y'] <= s['height'] \
+        else None
 
 
 def chip(identifier):
@@ -96,11 +110,29 @@ assert close, 'no close button read as 关闭地图'
 # A system toolbar button reports its 36 pt glyph to AX; UIKit owns its hit area, so the tap in close_cover proves it.
 assert close['frame']['x'] < s['width'] / 2 and close['frame']['y'] < s['height'] / 4, \
     f'the close button is not top-left: {close["frame"]}'
-locate = ui.element(LOCATE)
-assert locate['frame']['x'] > s['width'] / 2 and locate['frame']['y'] > s['height'] / 2, \
-    f'the location button is not bottom-right: {locate["frame"]}'
+recentre = ui.element(RECENTRE)
+assert recentre.get('AXLabel') == ui.t('bounty.board.map.recentre'), recentre.get('AXLabel')
+assert_touch_target(recentre, 'the recentre button')
+assert recentre['frame']['x'] > s['width'] / 2 and recentre['frame']['y'] > s['height'] / 2, \
+    f'the recentre button is not bottom-right: {recentre["frame"]}'
+refresh = refresh_button(items)
+assert refresh, 'no refresh button read as 刷新悬赏'
+assert refresh['frame']['x'] > s['width'] / 2 and refresh['frame']['y'] < s['height'] / 4, \
+    f'the refresh button is not top-right: {refresh["frame"]}'
 assert by_id(items, EXPAND) is None, 'the full-screen map still offers expand'
 ui.capture('02-cover')
+
+for _ in range(3):
+    if not on_screen(ui.read(), pin_id(FIRST), s):
+        break
+    drag(ui, (s['width'] * 0.2, s['height'] * 0.35), (s['width'] * 0.9, s['height'] * 0.9), duration=0.6, steps=30)
+    map_at_rest(ui)
+assert not on_screen(ui.read(), pin_id(FIRST), s), 'dragging the map never moved the pins off screen'
+ui.capture('02a-panned-away')
+ui.tap(RECENTRE)
+ui.wait(lambda items: on_screen(items, pin_id(FIRST), s), 'recentre did not bring the pins back', 15)
+map_at_rest(ui)
+ui.capture('02b-recentred')
 
 front = tap_pin(ui, FIRST)
 map_at_rest(ui)
@@ -159,11 +191,21 @@ assert under - EDGE <= more['frame']['y'] <= under + MORE_GAP, \
     f'the more chip is not right under the filter chips ({under}): {more["frame"]}'
 legal = [i for i in items if i.get('type') == 'Link']
 assert legal, 'MapKit\'s legal link is not on the cover, so the chip check would prove nothing'
-for name, other in (('the close button', close_button(items)), ('the location button', by_id(items, LOCATE)),
+for name, other in (('the close button', close_button(items)), ('the recentre button', by_id(items, RECENTRE)),
                     ('the legal link', legal[0])):
     assert other and not overlaps(more['frame'], other['frame']), \
         f'the more chip covers {name}: {more["frame"]} / {other and other["frame"]}'
 ui.capture('08-cover-more')
-print('PASS: 44 pt expand at the map corner, edge-to-edge cover with chips, close and location button, pin card on '
+
+relaunch(ui, drop=[], add=['-uiVerifyBoardFail', 'refresh'])
+expand_cover()
+assert by_id(ui.read(), 'bounty-board-stale') is None, 'the stale notice shows before any refresh'
+button = ui.settled(refresh_button, 'no refresh button on the cover')
+ui.tap_point(button['frame']['x'] + button['frame']['width'] / 2, button['frame']['y'] + button['frame']['height'] / 2)
+ui.element('bounty-board-stale', timeout=20)
+assert by_id(ui.read(), pin_id(FIRST)), 'pins vanished after a failed refresh on the cover'
+map_at_rest(ui)
+ui.capture('09-cover-refresh-stale')
+print('PASS: 44 pt expand at the map corner, edge-to-edge cover with chips, close, refresh and recentre (pins back after a drag), stale after a failed refresh, pin card on '
       'the cover, 急 shared with the board after closing, 看详情 dismisses the cover and pushes the detail, the more '
       'chip under the filter chips clear of the controls and the legal link')

@@ -268,6 +268,7 @@ export default {
     title: '去过的',
     empty: '还没有去过的拼车',
     failed: '去过的拼车没加载出来，请检查网络后重试',
+    stale: '没刷新成功 · 下面是 {{time}} 的',
   },
   create: {
     title: '发起拼车',

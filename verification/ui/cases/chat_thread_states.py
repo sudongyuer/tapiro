@@ -1,5 +1,7 @@
 """Thread states: a first load that fails (`-uiVerifyChatFail thread`) shows 「对话没加载出来」 with 重试, and no safety card,
-item card or composer, never an empty thread, on a card that stands out from the thread's ground; 重试 loads it. A ride group you left (`-uiVerifyChatLeft 1`) keeps its
+item card or composer, never an empty thread, on a card that stands out from the thread's ground; 重试 loads it. The
+safety card has a 44 pt 收起提醒 button (N3); hiding it keeps it hidden in that thread after leaving and coming back, while
+another thread still shows it. A ride group you left (`-uiVerifyChatLeft 1`) keeps its
 messages and shows 「你已离开这个拼车，不能再发消息」 on an opaque bar in place of the composer. VoiceOver names the
 composer 「写消息」 ahead of its placeholder instead of reading the placeholder twice."""
 import sys
@@ -7,7 +9,7 @@ import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from bounty import relaunch  # noqa: E402
 from chat import bubbles, open_list  # noqa: E402
-from driver import UI, by_id  # noqa: E402
+from driver import UI, assert_touch_target, by_id  # noqa: E402
 
 CARD_PADDING = 16
 
@@ -39,6 +41,21 @@ assert spoken.startswith(ui.t('chat.thread.composerLabel')) and spoken.count(pla
     f'the composer reads {spoken!r}, not its name ahead of the placeholder'
 ui.capture('02-retried')
 
+hide = ui.element('chat-safety-hide')
+assert hide.get('AXLabel') == ui.t('chat.thread.safetyHide'), hide.get('AXLabel')
+assert_touch_target(hide, '收起提醒')
+ui.tap('chat-safety-hide')
+ui.gone('chat-safety')
+ui.at_rest()
+ui.capture('02a-safety-hidden')
+ui.tap('BackButton')
+ui.tap('chat-row-fixture-chat-ride')
+ui.element('chat-safety', timeout=30)
+ui.tap('BackButton')
+ui.tap('chat-row-fixture-chat-bounty')
+ui.wait(lambda items: len(bubbles(items)) == 3 and items, 'the thread did not reopen')
+assert by_id(ui.read(), 'chat-safety') is None, 'the hidden safety card came back in its thread'
+
 relaunch(ui, drop=['-uiVerifyChatFail', 'thread'], add=['-uiVerifyChatLeft', '1'], ready='home-scroll')
 open_list(ui)
 ui.tap('chat-row-fixture-chat-ride')
@@ -49,4 +66,4 @@ assert ui.t('chat.thread.left') in [i.get('AXLabel') for i in items], 'no 你已
 assert left['frame']['y'] + left['frame']['height'] >= items[0]['frame']['height'] - 1, 'the bar is not at the bottom'
 ui.at_rest()
 ui.capture('03-left')
-print('PASS: failed first load with 重试 and no empty thread; a left ride shows 你已离开 in place of the composer')
+print('PASS: failed first load with 重试 and no empty thread; the safety card hides per thread; a left ride shows 你已离开 in place of the composer')

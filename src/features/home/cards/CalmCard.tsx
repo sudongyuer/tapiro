@@ -13,13 +13,20 @@ import { CardText, Pill } from './cardParts';
 
 const ASK_HEIGHT = 54;
 const MIC = 42;
+const CHIP_SLOP = (vars['--touch-min'] - vars['--capsule-min']) / 2;
 
 function greetingKey(hour: number) {
   if (hour < 12) return 'home.card.calm.morning' as const;
   return hour < 18 ? ('home.card.calm.afternoon' as const) : ('home.card.calm.evening' as const);
 }
 
-export function CalmCard({ name, onAsk }: { name: string; onAsk: (() => void) | null }) {
+export function CalmCard({
+  name,
+  onAsk,
+}: {
+  name: string;
+  onAsk: ((seed?: string) => void) | null;
+}) {
   const { t } = useI18n();
   const { ink } = useLiveCardPaint('calm');
   return (
@@ -37,7 +44,7 @@ export function CalmCard({ name, onAsk }: { name: string; onAsk: (() => void) | 
   );
 }
 
-function CalmAsk({ onAsk }: { onAsk: () => void }) {
+function CalmAsk({ onAsk }: { onAsk: (seed?: string) => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const { ink, surface } = useLiveCardPaint('calm');
@@ -53,7 +60,7 @@ function CalmAsk({ onAsk }: { onAsk: () => void }) {
         accessibilityLabel={t('home.card.calm.ask')}
         accessibilityHint={t('home.card.calm.askHint')}
         testID="home-ask"
-        onPress={onAsk}
+        onPress={() => onAsk()}
         style={[
           styles.ask,
           {
@@ -71,23 +78,28 @@ function CalmAsk({ onAsk }: { onAsk: () => void }) {
       </PressDim>
       <View style={styles.chips}>
         {chips.map((chip, index) => (
-          <View key={chip} style={[styles.chip, { backgroundColor: surface }]}>
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                styles.chipFill,
-                { backgroundColor: color('--color-stage-bubble') },
-              ]}
-            />
-            <AppText
-              variant="meta"
-              numberOfLines={1}
-              style={{ color: ink }}
-              testID={`home-calm-chip-${index}`}
-            >
-              {chip}
-            </AppText>
-          </View>
+          <PressDim
+            key={chip}
+            accessibilityRole="button"
+            accessibilityLabel={chip}
+            accessibilityHint={t('home.card.calm.chipHint')}
+            onPress={() => onAsk(chip)}
+            style={styles.chipTarget}
+            testID={`home-calm-chip-${index}`}
+          >
+            <View style={[styles.chip, { backgroundColor: surface }]}>
+              <View
+                style={[
+                  StyleSheet.absoluteFill,
+                  styles.chipFill,
+                  { backgroundColor: color('--color-stage-bubble') },
+                ]}
+              />
+              <AppText variant="meta" numberOfLines={1} style={{ color: ink }}>
+                {chip}
+              </AppText>
+            </View>
+          </PressDim>
         ))}
       </View>
     </>
@@ -159,9 +171,11 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: vars['--space-2'],
-    marginTop: vars['--space-3'],
+    columnGap: vars['--space-2'],
+    marginTop: vars['--space-3'] - CHIP_SLOP,
+    marginBottom: -CHIP_SLOP,
   },
+  chipTarget: { paddingVertical: CHIP_SLOP },
   chip: {
     minHeight: vars['--capsule-min'],
     paddingHorizontal: vars['--space-3'],

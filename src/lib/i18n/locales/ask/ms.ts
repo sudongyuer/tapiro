@@ -105,6 +105,7 @@ export default {
     swapConfirm: 'Tukar',
     cancel: 'Batal',
     skip: 'Langkau',
+    notNow: 'Langkau terjemahan',
   },
   pantry: {
     title: 'Balang',

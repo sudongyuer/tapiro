@@ -25,10 +25,11 @@ import { useI18n } from '@/lib/i18n';
 export default function Ask() {
   const router = useRouter();
   const { t, language } = useI18n();
-  const { tab } = useLocalSearchParams<{ tab?: string }>();
+  const { tab, via, seed } = useLocalSearchParams<{ tab?: string; via?: string; seed?: string }>();
+  const translating = via === 'translate';
   const userId = useSignedInUser()?.id ?? null;
   const consent = useConsentFor(userId);
-  const state = useAskSession(userId);
+  const state = useAskSession(userId, seed);
   const [imageFailed, setImageFailed] = useState(false);
   const openConsent = useCallback(
     () => router.push({ pathname: '/ask-consent', params: { from: 'sheet' } }),
@@ -51,7 +52,8 @@ export default function Ask() {
     consent,
     session: state,
     onTomorrow: () => router.back(),
-    onManual: () => leaveFor(false),
+    onManual: translating ? () => router.back() : () => leaveFor(false),
+    purpose: translating ? 'translate' : 'draft',
   });
 
   if (!userId || !state) return null;
