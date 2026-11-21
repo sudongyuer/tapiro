@@ -187,7 +187,7 @@ describe('detailReducer', () => {
 describe('detailAction', () => {
   test('maps role, application and status to what the bottom shows', () => {
     expect(detailAction(DETAIL, NOW)).toBe('apply');
-    expect(detailAction({ ...DETAIL, viewerRole: 'poster' }, NOW)).toBe('none');
+    expect(detailAction({ ...DETAIL, viewerRole: 'poster' }, NOW)).toBe('own');
     expect(detailAction({ ...DETAIL, myApplication: { status: 'pending', note: 'hi' } }, NOW)).toBe(
       'applied',
     );
@@ -277,7 +277,7 @@ describe('outcomes', () => {
     );
     expect(view?.address).toBeNull();
     expect(detailAction({ ...DETAIL, viewerRole: 'poster', address: 'A 座 12-03' }, NOW)).toBe(
-      'none',
+      'own',
     );
   });
 
@@ -330,10 +330,11 @@ describe('outcomes', () => {
     });
   });
 
-  test.each(STATUSES)('%s: the poster sees 看进度 and no outcome line', (status) => {
+  test.each(STATUSES)('%s: the poster sees the step with the helper and 看进度', (status) => {
     expect(viewOfDetail({ ...POSTER, status }, NOW)).toMatchObject({
-      action: 'none',
+      action: 'own',
       progress: true,
+      own: { kind: 'underway', helper: POSTER.helper?.name ?? null },
     });
   });
 
@@ -347,11 +348,43 @@ describe('outcomes', () => {
     }
   });
 
-  test('an open bounty gives the poster no 看进度', () => {
+  test('an open bounty gives the poster 查看申请人, not 看进度', () => {
     expect(viewOfDetail({ ...POSTER, status: 'open', helper: null }, NOW)).toMatchObject({
-      action: 'none',
+      action: 'own',
       progress: false,
+      own: { kind: 'open' },
     });
+  });
+
+  test('an expired or closed bounty tells the poster it closed and still offers 查看申请人', () => {
+    const expired = { ...POSTER, status: 'open', helper: null, expiresAt: '2000-01-01T00:00:00Z' };
+    expect(viewOfDetail(expired, NOW).own).toEqual({ kind: 'closed' });
+    expect(viewOfDetail({ ...POSTER, status: 'closed', helper: null }, NOW).own).toEqual({
+      kind: 'closed',
+    });
+  });
+
+  test('an assigned bounty past its start reads late, like the status screen', () => {
+    const past = new Date(NOW.getTime() - 60_000).toISOString();
+    const future = new Date(NOW.getTime() + 60_000).toISOString();
+    expect(viewOfDetail({ ...POSTER, status: 'assigned', startsAt: past }, NOW).own).toMatchObject({
+      step: 'late',
+    });
+    expect(
+      viewOfDetail({ ...POSTER, status: 'assigned', startsAt: future }, NOW).own,
+    ).toMatchObject({
+      step: 'assigned',
+    });
+  });
+
+  test('a status the app does not know gives the poster no line rather than calling it open', () => {
+    expect(viewOfDetail({ ...POSTER, status: 'archived' }, NOW).own).toBeNull();
+  });
+
+  test('only the poster gets an own state; a cancelled bounty keeps its cancelled line', () => {
+    expect(viewOfDetail({ ...POSTER, status: 'cancelled' }, NOW).own).toBeNull();
+    expect(viewOfDetail(SELECTED, NOW).own).toBeNull();
+    expect(viewOfDetail(NOT_SELECTED, NOW).own).toBeNull();
   });
 
   test('applicants and viewers never see 看进度', () => {

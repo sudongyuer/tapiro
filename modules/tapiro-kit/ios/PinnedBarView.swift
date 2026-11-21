@@ -28,6 +28,7 @@ struct PinnedBarView: ExpoSwiftUI.View {
         AnyView(view)
       }
     }
+    .modifier(NavigationScrollEdgeModifier())
     .scrollEdgeEffectStyle(top == nil ? .automatic : .hard, for: .top)
     .safeAreaBar(edge: .top, spacing: 0) {
       if let top {

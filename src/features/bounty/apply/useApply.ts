@@ -32,7 +32,7 @@ export function useApply(id: string, surface: ApplySurface, onSent: () => void) 
     if (sent) void notices.askInContext().catch(() => null);
   }, [sent]);
 
-  return { state, send: flow.send };
+  return { state, send: flow.send, recheck: flow.check };
 }
 
 export function posterName(id: string) {

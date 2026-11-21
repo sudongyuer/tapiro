@@ -12,10 +12,7 @@ export default function RideCreateConfirmRoute() {
     <RideConfirm
       userId={user.id}
       onPublished={closeRideSheet}
-      onAddPayee={() => {
-        closeRideSheet();
-        router.navigate('/me/payee');
-      }}
+      onAddPayee={() => router.push('/payee')}
       onBack={() => router.back()}
       buyCoins={(onCredited) => <CoinPacks testID="ride-confirm-packs" onCredited={onCredited} />}
     />

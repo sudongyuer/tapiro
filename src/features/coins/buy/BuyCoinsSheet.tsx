@@ -11,6 +11,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack, type NativeStackNavigationOptions } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { useMotionReduced } from '@/ui/theme/motion';
@@ -49,7 +50,7 @@ export function BuyCoinsSheet({ onClose }: { onClose: () => void }) {
         />
       </Stack.Toolbar>
       <Host style={styles.host} testID="buy-coins">
-        <Form modifiers={[tint(color('--color-accent'))]}>
+        <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
           {coins !== null ? (
             <Section modifiers={[listRowBackground('clear')]}>
               <Text

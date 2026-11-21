@@ -5,9 +5,15 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useAccountStage } from '@/features/account';
 import { applySheetGone } from '@/features/bounty';
 import { BUY_COINS_SHEET_OPTIONS } from '@/features/coins';
-import { REVIEW_SHEET_OPTIONS, TIER_DROP_SHEET_OPTIONS } from '@/features/reputation';
+import {
+  PROFILE_LIST_OPTIONS,
+  PROFILE_SCREEN_OPTIONS,
+  PROFILE_SHEET_OPTIONS,
+  REVIEW_SHEET_OPTIONS,
+  TIER_DROP_SHEET_OPTIONS,
+} from '@/features/reputation';
 import { useRideReminders } from '@/features/ride';
-import { I18nProvider } from '@/lib/i18n';
+import { I18nProvider, useI18n } from '@/lib/i18n';
 import { useDiscardNoticeTaps } from '@/lib/notifications';
 import { useAiOffered, useStorefrontFollow } from '@/lib/storefront';
 
@@ -26,10 +32,20 @@ export default function RootLayout() {
 
 const PAGE_SHEET = { presentation: 'pageSheet', headerShown: true } as const;
 
+// A thread cannot live in another tab's stack: that tab's stack would switch its list to automatic insets and break
+// the thread's keyboard maths (docs/research/2026-11-06-chat-thread-spike.md), so screens of another tab push here.
+const OVER_TABS = {
+  headerShown: true,
+  headerBackButtonDisplayMode: 'minimal',
+  headerLargeTitleEnabled: false,
+  scrollEdgeEffects: { top: 'automatic' },
+} as const;
+
 // A sheet closed from JS is unmounted before its own transitionEnd; the stack reports when the dismissal finished.
 const FINISHED = { onFinishTransitioning: applySheetGone };
 
 function RootStack() {
+  const { t } = useI18n();
   const stage = useAccountStage();
   const aiOffered = useAiOffered();
   useStorefrontFollow();
@@ -74,6 +90,7 @@ function RootStack() {
         <Stack.Screen name="payee/phone" options={PAGE_SHEET} />
         <Stack.Screen name="payee/bank" options={PAGE_SHEET} />
         <Stack.Screen name="payee/qr" options={PAGE_SHEET} />
+        <Stack.Screen name="payee/index" options={PAGE_SHEET} />
         <Stack.Screen name="pay/[id]" options={PAGE_SHEET} />
         <Stack.Screen name="bounty-apply/[id]" options={PAGE_SHEET} />
         <Stack.Screen
@@ -91,6 +108,33 @@ function RootStack() {
         <Stack.Screen name="tier-drop" options={TIER_DROP_SHEET_OPTIONS} />
         <Stack.Screen name="review" options={REVIEW_SHEET_OPTIONS} />
         <Stack.Screen name="buy-coins" options={BUY_COINS_SHEET_OPTIONS} />
+        <Stack.Screen name="chat/[thread]" options={OVER_TABS} />
+        <Stack.Screen
+          name="chat/report"
+          options={{ ...PROFILE_SHEET_OPTIONS, headerShown: true }}
+        />
+        <Stack.Screen name="bounty-status/[id]" options={{ ...OVER_TABS, headerTitle: '' }} />
+        <Stack.Screen
+          name="ride-detail/[id]"
+          options={{ ...OVER_TABS, title: t('ride.detail.title') }}
+        />
+        <Stack.Screen
+          name="sticker-book"
+          options={{ ...OVER_TABS, title: t('stickers.book.title'), headerTitle: '' }}
+        />
+        <Stack.Screen name="person/[id]" options={{ ...OVER_TABS, ...PROFILE_SCREEN_OPTIONS }} />
+        <Stack.Screen
+          name="person/reviews/[id]"
+          options={{ ...OVER_TABS, ...PROFILE_LIST_OPTIONS }}
+        />
+        <Stack.Screen
+          name="person/report"
+          options={{ ...PROFILE_SHEET_OPTIONS, headerShown: true }}
+        />
+        <Stack.Screen
+          name="person/reply"
+          options={{ ...PROFILE_SHEET_OPTIONS, headerShown: true }}
+        />
         <Stack.Screen
           name="delete-account"
           options={{

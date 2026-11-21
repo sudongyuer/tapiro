@@ -160,6 +160,9 @@ const en: Translation = {
   ride,
   rideReminders,
   rideSettle,
+  keyboard: {
+    done: 'Done',
+  },
   live: {
     offline: 'May not be up to date',
     staleAt: 'May not be up to date · data from {{time}}',

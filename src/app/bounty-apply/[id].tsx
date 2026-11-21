@@ -13,10 +13,7 @@ export default function BountyApplyRoute() {
       id={id}
       surface={from === 'detail' ? 'detail' : 'card'}
       onClose={close}
-      onAddPayee={() => {
-        router.back();
-        router.navigate('/me/payee');
-      }}
+      onAddPayee={() => router.push('/payee')}
     />
   );
 }

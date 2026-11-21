@@ -1,14 +1,15 @@
 """The name step sits on the moment background with 小貘's head and the moment title, and keeps a 40-character name in a full-size field
-drawn in the filled-row colour."""
+drawn in the filled-row colour. The whole question is drawn, as on the language step (audit O2)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from driver import UI, assert_colour, assert_touch_target, token  # noqa: E402
+from whole import assert_drawn_whole  # noqa: E402
 
-DEPS = ['src/features/account/', 'src/app/onboarding/']
+DEPS = ['src/features/account/', 'src/app/onboarding/', 'verification/ui/whole.py']
 
 SCENE = 'profile-setup'
-LOCALES = ['zh-Hans', 'ms']
+LOCALES = ['zh-Hans', 'en', 'ms']
 
 ui = UI(*sys.argv[1:])
 ui.element('ui-verify-ready')
@@ -22,6 +23,7 @@ screen = ui.read()[0]['frame']
 assert button['frame']['y'] + button['frame']['height'] <= screen['height'], f'continue button is off screen: {button["frame"]}'
 assert title['frame']['y'] < field['frame']['y'] < button['frame']['y'], 'title, field and button are out of order'
 shot = ui.snap('name-step')
+assert_drawn_whole(ui, shot, title['frame'], ui.t('account.name.question'), 'the question')
 assert_colour(shot, {'x': field['frame']['x'] - 12, 'y': field['frame']['y'] + 20, 'width': 8, 'height': 10},
               token('--color-filled-row', ui.appearance), 'name field')
 assert_colour(shot, {'x': 2, 'y': field['frame']['y'] + field['frame']['height'] + 60, 'width': 12, 'height': 12},

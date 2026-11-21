@@ -15,7 +15,7 @@ import {
   VoiceCards,
   type VoiceState,
 } from '@/features/ask';
-import { closePostSheet, hasPostDraft, useStartPost } from '@/features/bounty';
+import { hasPostDraft, useStartPost } from '@/features/bounty';
 import { AskTapirSheet, isShellTab } from '@/features/shell';
 import { deviceCurrency } from '@/lib/deviceCurrency';
 import type { BountyDraft } from '@/lib/drafts/bountyDraft';
@@ -42,10 +42,7 @@ export default function Ask() {
       toForm.current || (userId !== null && hasPostDraft(userId))
         ? router.replace('/bounty-post/form', { withAnchor: true })
         : router.replace('/bounty-post'),
-    pay: (paymentId) => {
-      closePostSheet();
-      router.push({ pathname: '/pay/[id]', params: { id: paymentId } });
-    },
+    pay: (paymentId) => router.push({ pathname: '/pay/[id]', params: { id: paymentId } }),
   });
   const leaveFor = (form: boolean) => {
     toForm.current = form;

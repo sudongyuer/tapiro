@@ -157,6 +157,7 @@ Every answered question and the defaults drawn on each board. Board names are th
 | 235 B         | Local reminders' quiet hours (23:00–08:00, a pay reminder moves to 08:00) follow the device time zone; the server push outbox stays in Malaysia time until the account half sends real pushes. Owner, 2026-11-03     | —              |
 | 236 ★ default | The create form's 机场 row keeps `--space-3` between the airplane icon and its label (SDK 58 @expo/ui no longer collapses an unset spacing to 0). ★ by default, owner may veto                                         | —              |
 | 237 ★ default | The create form's place rows keep `--space-2` between the two-line label and the chevron (same SDK 58 change). ★ by default, owner may veto                                                                          | —              |
+| Audit L1/P5/S3 (2026-11-21) | The form's quick times use the kit `ChipRow` (never truncated, en 「Pick a ti…」); the form and detail sheets carry a keyboard 「完成」; the detail footer keeps its opaque bar and gains the system separator along its top. foundation spec, record 2026-11-21 (UI audit batch D) | —              |
 
 Questions 220 and 233 touch money or reputation and were answered by the owner on 2026-11-02 (see "Needs the owner").
 

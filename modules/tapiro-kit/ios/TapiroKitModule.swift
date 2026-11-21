@@ -13,7 +13,15 @@ public final class TapiroKitModule: Module {
 
     Events("onPlaceSuggestions", "onStoreTransaction", "onSpeech", "onStorefront")
 
+    OnCreate {
+      ViewModifierRegistry.register("tapiroNavigationScrollEdge") { _, _, _ in NavigationScrollEdgeModifier() }
+      ViewModifierRegistry.register("tapiroKeyboardDone") { params, _, _ in
+        KeyboardDoneModifier(label: params["label"] as? String ?? "")
+      }
+    }
+
     View(TitleHaloView.self) {}
+
 
     AsyncFunction("liveActivityStart") { (kind: String, link: String?, state: LiveActivityStateRecord) -> [String: Any] in
       MainActor.assumeIsolated { LiveActivities.start(kind: kind, link: link, state: state) }
@@ -103,6 +111,8 @@ public final class TapiroKitModule: Module {
     View(PinnedBarView.self)
 
     ExpoUIView(DateTimeRowView.self)
+
+    ExpoUIView(ChipRowView.self)
 
     View(ContextMenuView.self) {
       Events("onAction")

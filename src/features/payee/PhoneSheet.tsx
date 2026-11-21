@@ -10,6 +10,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { afterResign } from '@/ui/afterResign';
@@ -96,7 +97,13 @@ function PhoneForm({
   return (
     <Host style={styles.host} testID="payee-phone-sheet">
       <SheetChrome title={t('payee.types.duitnow_id')} onClose={onClose} onSave={submit} />
-      <Form modifiers={[tint(color('--color-accent')), scrollDismissesKeyboard('immediately')]}>
+      <Form
+        modifiers={[
+          navigationScrollEdge(),
+          tint(color('--color-accent')),
+          scrollDismissesKeyboard('immediately'),
+        ]}
+      >
         {shown ? (
           <NoticeCard
             tone="urgent"

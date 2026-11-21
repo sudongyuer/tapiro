@@ -29,6 +29,7 @@ import {
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import type { Loadable } from '@/lib/loadable';
 import { useI18n } from '@/lib/i18n';
@@ -77,7 +78,9 @@ export function CoinsScreen({ onBuy }: { onBuy: () => void }) {
   });
   return (
     <Host style={styles.host} testID="coins-screen">
-      <Form modifiers={[tint(color('--color-accent')), refreshable(reload)]}>
+      <Form
+        modifiers={[navigationScrollEdge(), tint(color('--color-accent')), refreshable(reload)]}
+      >
         {stale ? (
           <NoticeCard
             tone="warning"

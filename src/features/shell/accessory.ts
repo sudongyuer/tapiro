@@ -28,16 +28,20 @@ export function accessoryTarget(item: AccessoryItem): AccessoryTarget | null {
   return item.bounty ? { href: item.bounty.target, inBountyTab: true } : null;
 }
 
+// Pushed item pages carry their own pay or confirm bar, so a strip for another item there showed two money prompts at
+// once (audit H3); the strip stays on tab roots only.
 export function accessoryVisible({
   hasItem,
+  onTabRoot,
   onHomeRoot,
   liveCardsOnScreen,
 }: {
   hasItem: boolean;
+  onTabRoot: boolean;
   onHomeRoot: boolean;
   liveCardsOnScreen: boolean;
 }) {
-  return hasItem && !(onHomeRoot && liveCardsOnScreen);
+  return hasItem && onTabRoot && !(onHomeRoot && liveCardsOnScreen);
 }
 
 export function badgeText(count: number) {

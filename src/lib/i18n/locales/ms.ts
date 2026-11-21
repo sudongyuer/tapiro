@@ -160,6 +160,9 @@ const ms: Translation = {
   ride,
   rideReminders,
   rideSettle,
+  keyboard: {
+    done: 'Selesai',
+  },
   live: {
     offline: 'Mungkin tidak terkini',
     staleAt: 'Mungkin tidak terkini · data pada {{time}}',

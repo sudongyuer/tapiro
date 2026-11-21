@@ -383,6 +383,11 @@ export default {
     selected: {
       title: '{{name}}选了你',
     },
+    poster: {
+      open: '你发的悬赏 · 正在等人申请',
+      closed: '已经关闭 · 这次没有选人',
+      applicants: '查看申请人',
+    },
   },
   address: {
     row: '精确地址',

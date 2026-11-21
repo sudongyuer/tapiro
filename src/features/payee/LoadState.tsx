@@ -1,6 +1,7 @@
 import { Form, Host, ProgressView, Section } from '@expo/ui/swift-ui';
 import { accessibilityIdentifier, accessibilityLabel } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 
@@ -40,7 +41,7 @@ export function LoadStateSections({
 export function LoadStateForm(props: { status: 'loading' | 'failed'; onRetry: () => void }) {
   return (
     <Host style={styles.host}>
-      <Form>
+      <Form modifiers={[navigationScrollEdge()]}>
         <LoadStateSections {...props} />
       </Form>
     </Host>

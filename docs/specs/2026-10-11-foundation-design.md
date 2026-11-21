@@ -1078,6 +1078,121 @@ Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (Y1–Y5, O1) and the owner'
   zh-Hans light after the fix. Selection: only the screens this change touches; `ms`, `en` and the dark rerun of the
   two fixed cases are left to the milestone run.
 
+## Implementation Record (2026-11-21) — keep the user's context (UI audit batch A)
+
+Source: `docs/reviews/2026-11-21-ui-walkthrough.md` findings N1, N5, P3, R1, R3, A1, D1 and the owner-reported bug
+(adding a payee from the apply sheet jumped to 我的). Decided under the owner's delegation (2026-11-17); listed for
+veto. Branch `fix/keep-context-navigation`.
+
+### Decisions (for veto)
+
+| #   | Decision                      | Choice                                                                                                                                                                                                                                                                           | Why                                                                                                                                                                                                                                       | Alternatives considered                                                                                                                                        |
+| --- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | One mechanism, two shapes     | A flow never switches tabs. A screen of another tab is pushed on the root stack over the tabs (system back returns to where the user was); a flow inside a sheet presents the next screen as a sheet over it and returns on close                                                | One rule covers every audit finding; both are native presentations (push for drill-down, sheet for transient flows)                                                                                                                       | Per-tab duplicated routes like `profileHref` (the thread cannot live in 悬赏 or 拼车, see A2); the item as a sheet over the chat (drill-down should push, HIG) |
+| A2  | Root routes over the tabs     | `/chat/[thread]`, `/chat/report`, `/bounty-status/[id]`, `/ride-detail/[id]`, `/person/*` (profile, reviews, report, reply), `/sticker-book`; header with a minimal back button and scroll edge effect; the route bodies are shared with the tab routes                          | react-native-screens switches the first scroll view of every stack screen in a tab to automatic insets unless the trigger sets `disableAutomaticContentInsets` (only 消息 does); that broke the thread's keyboard maths in the chat spike | Turning automatic insets off for 悬赏 and 拼车 (every list there relies on them)                                                                               |
+| A3  | No ping-pong                  | An item opened from its thread (`from=thread`) returns to the thread on 发消息; a thread opened from its item (`from=item`) returns to the item on the item card                                                                                                                 | Otherwise 发消息 → 看详情 → 发消息 stacks copies                                                                                                                                                                                          | Singular routes (the thread exists in two stacks)                                                                                                              |
+| A4  | Sheets over sheets            | 先去付款 (confirm and the blocked hint) pushes `/pay/[id]` over the post sheet; 去加收款方式 (ride confirm) and 添加收款方式 (apply) open the payee list as a root page sheet `/payee` with a close button; the screen underneath rechecks when it regains focus (`useOnReturn`) | The user comes back to the step they left, with the gate re-evaluated                                                                                                                                                                     | Closing the sheet and keeping the draft (the audit's complaint)                                                                                                |
+| A5  | Delete blocked by payments    | Each unsettled payment row is a button that opens its pay sheet over the delete sheet; after coming back, 删除 is enabled again and a tap re-checks; nothing deletes by itself                                                                                                   | The user settles from where they were blocked; never replay a write                                                                                                                                                                       | Opening the item's 进度 (needs the item kind the row does not carry)                                                                                           |
+| A6  | Poster's own bounty detail    | Status line and one action: open 「你发的悬赏 · 正在等人申请」 + 查看申请人; expired or closed 「已经关闭 · 这次没有选人」 + 查看申请人; underway the poster's progress summary (「阿杰接了」) + 看进度; cancelled unchanged                                                     | The poster arriving from home or a notification saw a live-looking bounty with no way on                                                                                                                                                  | Hiding the detail from the poster (the board and map still open it)                                                                                            |
+| A7  | Poster's 悬赏过期了 tap       | The route carries `notice=expired`; the detail replaces itself with 申请人 once the viewer is the poster; applicants stay on the detail                                                                                                                                          | The server sends one kind to the poster and to pending applicants alike                                                                                                                                                                   | A separate server kind for the poster (migration and push copy for a live-only event)                                                                          |
+| A8  | Notification taps             | `router.push(route, { dangerouslySingular: true })` for every kind                                                                                                                                                                                                               | A second tap for the same item moves that screen to the top instead of stacking a copy                                                                                                                                                    | `navigate` (replaces the params of a different item on the same route)                                                                                         |
+| A9  | Tab switches left as they are | 消息's empty state 去看看悬赏 → 悬赏; the accessory → 悬赏 home; tier drop and 小貘长大了 「看我的主页」 → 我的; notification taps open the item in its own tab                                                                                                                  | Each is a deliberate move to that tab's root or to the user's own profile in 我的, not a step inside a flow (`tier_drop_reviews` asserts 我的)                                                                                            | Moving them over the tabs                                                                                                                                      |
+
+### What was built
+
+- Root routes and options: `src/app/_layout.tsx` (`OVER_TABS`), `src/app/chat/`, `src/app/bounty-status/[id].tsx`,
+  `src/app/ride-detail/[id].tsx`, `src/app/person/`, `src/app/sticker-book.tsx`, `src/app/payee/index.tsx`.
+- Shared route bodies: `ThreadRoute` in `src/app/(tabs)/messages/[thread].tsx`, `RideDetailRoute` in
+  `src/app/(tabs)/ride/[id].tsx`; `ProfileTab` gains `overTabs` (`src/features/reputation/profile/routes.tsx`).
+- `src/lib/useOnReturn.ts`; rechecks in `PostConfirm`, `RideConfirm`, `ApplySheet` (`applyReducer` accepts a new check
+  from `noPayee`).
+- `DeleteAccountSheet` rows; `PosterActions` and `ownState` in `src/features/bounty/detail/`; three new copy keys
+  `bounty.detail.poster.*` in zh-Hans, en and ms.
+- Fixture: `-uiVerifyOwnBounty <id>` makes a bounty the viewer's own before its applicants are loaded.
+- Review fixes: notification taps, 看看贴纸本 and the pay sheet's 发消息提醒 first close whatever is over the tabs
+  (`src/lib/useBackToTabs.ts`), so the target is never opened under a sheet or an over-tabs screen;
+  `useOnReturn` only fires after a blur that follows the leave; the poster's line reads the late summary when the
+  start time has passed (the server's `startLate` rule) and shows nothing for a status the app does not know; the
+  expired redirect waits for the push transition to end.
+
+### Verification
+
+- `bun test` → 3186 pass, 2 timeouts in `scripts/merge-gate.test.ts` under load average ~800; that file alone → 16
+  pass. `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`, `check-specs`, `check-story-map`,
+  `verification/ui` unit tests (147) → pass.
+- UI, zh-Hans light (selection: the screens whose navigation changed, plus the smoke set and `live_notice_tap` for
+  the routing change): `app_launches`, `sign_in_fixture`, `shell_tabs`, `home_one_card`, `chat_entry_status`,
+  `chat_entry_ride`, `chat_entry_home`, `chat_thread_hint`, `ride_create_payee`, `bounty_apply_no_payee`,
+  `bounty_post_blocked`, `account_delete_open_payment`, `account_delete_sheet_many`, `bounty_detail_poster`,
+  `profile_sticker_book_in_tab`, `live_notice_tap` → pass (`live_notice_tap` passed on its retry). Three first-run
+  failures were case bugs, fixed in the cases: two 关闭 buttons (apply sheet and payee sheet), and the tab bar minimised
+  after scrolling, so the cases read the back button's label instead.
+- UI, ms light (new layouts with longer copy): `account_delete_open_payment`, `bounty_detail_poster` → pass; the ms
+  status line wraps to two lines without truncation.
+
+### Known limits
+
+- Two copies of one thread can be mounted at once (消息 and over the tabs); both read the same store.
+- The payee list's recheck after adding a method is unit-tested (`applyFlow.test.ts`); the fixture has no payee to add
+  that flips the apply or ride gate, so the UI cases prove the return path, not the flip.
+- A notification tapped twice for one item is a device check: verify mode fakes one tap per launch.
+
+## Implementation Record (2026-11-21) — UI audit batch D: layout
+
+Fixes the layout findings O2, H2, L1, P5, P6, S1, S3 and H3 of `docs/reviews/2026-11-21-ui-walkthrough.md`.
+
+### Decisions (owner delegated; listed for veto)
+
+| #   | Decision                                                                                                                                                                                                                        | Reason                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1  | Bounty and ride wear one native chip row (`ChipRow` in the kit): equal columns when the widest label fits a column; otherwise each chip takes its own width, the rest of the line is shared out, and a line that runs out wraps | A choice is never truncated, and zh keeps the equal three columns it has today. Scrolling chips would hide a choice; a shorter ms copy would only move the problem to the next long string                                                                                                                                                                                                                                                                                                                                                              |
+| P6  | Every chip on a line takes the line's tallest height; labels may take two lines only when one chip is wider than the whole row                                                                                                  | 「明天中午前」 wrapped beside one-line neighbours; the row decides the height, not the label                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| P5  | A system keyboard toolbar 「完成」 on the post form, the ride form, the ride detail sheets and the bank sheet (kit modifier `keyboardDone`), once per Form                                                                      | Number and decimal pads have no Return key. SwiftUI merges keyboard toolbar items from the whole view, so one per field would show several 完成 keys; every field in those Forms gets the same key                                                                                                                                                                                                                                                                                                                                                      |
+| H2  | The board title and the list/map switch keep one row; the gap between them grows from `--space-2` to `--space-3`, so a title that wraps (ms) leaves room for the tilted, lifted sticker                                         | The selected sticker overhangs its box by about 7 pt by design and the 8 pt gap let it touch 「Boleh」. A first try that wrapped the switch below the title did not wrap in Yoga (the title shrank first) and was dropped. Shortening the ms title is a copy choice for batch C                                                                                                                                                                                                                                                                         |
+| O2  | The language step's heading moves out of the Form into React Native above it; the Form holds only the picker                                                                                                                    | Hosted in a Form row through `RNHostView`, the en question lost the stem of its second line's first glyph; the name step's heading, plain React Native, never did. Measured: `onboarding_language_moment` en read 「orefer?」 before and the whole question after                                                                                                                                                                                                                                                                                       |
+| S1  | Form- and List-based screens name their scroll view to the screen's controller through the kit (`navigationScrollEdge()` modifier; automatic inside `PinnedBar`)                                                                | See root cause below. Fixed at the one place UIKit reads, not with overlays                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| S3  | The ride detail footer stays an opaque bar below the timeline and gains the system `separator` hairline along its top, as an opaque `UIToolbar` draws its shadow line                                                           | The status line sat on the same grey as the page, so the cut timeline above read as one more line beside it. Tried first: the footer floating over the timeline with `UIScrollEdgeElementContainerInteraction` and the hard bottom edge effect (cutoff and dividing line). The effect takes its shape from UIKit labels, images and controls in the container; React Native text is none of those, so only the tab bar shaped it and the timeline ran under the status text (screenshot in the PR). Dropped rather than faking the edge with an overlay |
+| H3  | The bottom accessory shows on tab roots only; every pushed page hides it (进度, 挑人, pay, ride detail and settle, settings and the rest)                                                                                       | Pushed item pages carry their own pay, confirm or hold button; a strip for another item there showed two money prompts, and on 挑人 a mis-tap 60 pt under the hold button left the screen. One rule instead of a per-page list that every new page would have to join                                                                                                                                                                                                                                                                                   |
+
+### S1 root cause
+
+react-native-screens applies `scrollEdgeEffects` to the scroll view it finds by walking the screen view's
+**first-subview chain** (`RNSScrollViewFinder findScrollViewInFirstDescendantChainFrom:`, called from
+`updateContentScrollViewEdgeEffectsIfExists`), and UIKit's navigation bar looks for its content scroll view the same way
+unless a controller names one with `setContentScrollView(_:for:)`. An `@expo/ui` `Host` hosts its SwiftUI content in a
+`UIHostingController` added as a child of the screen's controller (`SwiftUIHostingView.didMoveToWindow`), and the Form's
+collection view sits deep inside that hosting view, behind sibling views (the `PinnedBar` bars, menus, the RN views
+before the `Host`). Neither lookup finds it, so the bar draws no top edge effect over it. RN `ScrollView` screens are the
+first descendant and work. The kit's `NavigationScrollEdgeModifier` puts a zero-size anchor behind the Form, finds the
+nearest enclosing scroll view inside the same hosting view, walks up to the controller whose parent is the
+`UINavigationController`, and calls `setContentScrollView(_, for: .top)` on it.
+
+### Verification
+
+Selection (from what changed): the screens whose layout changed, in zh-Hans light and in `en` and `ms` for every
+truncation case; dark for the surfaces drawn over content (the top scroll edge, the ride footer bar); `verify:smoke`.
+
+- `onboarding_language_moment` (zh-Hans, en, ms light): pass. Before the fix the new OCR check failed in en with
+  「…orefer?」.
+- `onboarding_moment` (zh-Hans, en light): pass; the name step's question draws whole.
+- `bounty_post_selected_chips` (zh-Hans, en, ms light): pass; ms wraps to 「Dalam 1 jam · Sebelum malam ini」 then
+  「Sebelum tengah hari esok」, each whole, one height.
+- `ride_create_form` (zh-Hans, en, ms light): pass; en 「Pick a time」 whole; the decimal pad shows 「Done」 and it puts
+  the pad away.
+- `bounty_board_view_switch` (zh-Hans, en, ms light): pass; the tilted sticker clears the wrapped ms title.
+- `profile_worst`, `bounty_status_worst` (zh-Hans light and dark, ms light; en light earlier): pass; text under the
+  status bar measured a sharpest luma step of 16–18 (profile) and 56–67 (status) against 128–252 for the same text
+  crisp.
+- `ride_settle_worst` (zh-Hans light and dark, en and ms light): pass; separator 220 against the bar 242 (light), 42
+  against 0 (dark). On the build without the separator the check failed (28 against 28).
+- `shell_accessory_pushed` (new, en light): pass; 我的 shows the strip, 设置 hides it, back shows it.
+- `verify:smoke`: 4 of 4 pass.
+- `bun test` (3188 pass), `bunx tsc --noEmit`, `bun run lint:changed`, `bun run format:check`,
+  `node scripts/design-check.mjs`, `check-specs`, `check-story-map`, `verification/ui` unit tests: exit 0.
+
+Not run: AX5 and device checks; ms dark (no ms-only colour or surface change). Not changed: the place search List
+(its Host is the screen's first view, so UIKit already finds it, and the file sits at its size limit).
+
 ## Implementation Record (2026-11-21) — UI audit batch E: the remaining Minor flow findings
 
 Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (N2, N3, N4, H6, H9, B1, D3, R2, O4, Consistency 4–6). Branch

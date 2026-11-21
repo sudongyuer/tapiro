@@ -24,6 +24,7 @@ import { useNoticeRouting } from '@/lib/notifications';
 import { usePushRegistration } from '@/lib/push';
 import { useLiveStickers } from '@/lib/stickers';
 import { useAiOffered } from '@/lib/storefront';
+import { useBackToTabs } from '@/lib/useBackToTabs';
 import { useLiveItems } from '@/lib/useLiveItems';
 import { useLiveCardsOnScreen } from '@/lib/useHomeSignals';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -45,11 +46,11 @@ export default function TabsLayout() {
   useLive(userId);
   useLiveActivities(userId);
   usePushRegistration(userId);
-  useNoticeRouting(
-    (route) =>
-      route.pathname === '/messages/[thread]' ? router.navigate(route) : router.push(route),
-    userId !== null,
-  );
+  const backToTabs = useBackToTabs();
+  useNoticeRouting((route) => {
+    backToTabs();
+    router.push(route, { dangerouslySingular: true });
+  }, userId !== null);
   const segments = useSegments();
   const location = useTabLocation(segments);
   const openTierDrop = useCallback(() => router.push('/tier-drop'), [router]);
@@ -60,13 +61,12 @@ export default function TabsLayout() {
   const urgent = pickMostUrgent(feed.accessory, pathname);
   const badge = badgeText(feed.unreadMessages);
   const inThread = location.tab === 'messages' && !location.onRoot;
-  const showAccessory =
-    !inThread &&
-    accessoryVisible({
-      hasItem: urgent !== null,
-      onHomeRoot: location.tab === 'bounty' && location.onRoot,
-      liveCardsOnScreen,
-    });
+  const showAccessory = accessoryVisible({
+    hasItem: urgent !== null,
+    onTabRoot: location.onRoot,
+    onHomeRoot: location.tab === 'bounty' && location.onRoot,
+    liveCardsOnScreen,
+  });
 
   const openUrgent = () => {
     const target = urgent ? accessoryTarget(urgent.item) : null;

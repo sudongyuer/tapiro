@@ -7,6 +7,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
 import { PlatformColor, StyleSheet, View } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useBlockPerson, useUnblockPerson } from '@/features/block';
 import { useI18n } from '@/lib/i18n';
@@ -87,6 +88,7 @@ export function ProfileScreen({ personId, ...actions }: { personId: string } & P
       <Host style={styles.host} testID="profile-screen">
         <Form
           modifiers={[
+            navigationScrollEdge(),
             tint(color('--color-accent')),
             refreshable(() => profileStore.reloadCard(personId)),
           ]}

@@ -7,18 +7,25 @@ import { useSettleCelebration } from '@/features/payment';
 import { RideDetailScreen } from '@/features/ride';
 import { profileHref, ReviewEntryCard, reviewStore } from '@/features/reputation';
 
-export default function RideDetailRoute() {
+export default function RideDetail() {
+  return <RideDetailRoute overTabs={false} />;
+}
+
+export function RideDetailRoute({ overTabs }: { overTabs: boolean }) {
   const router = useRouter();
   const user = useSignedInUser();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const userId = user?.id ?? '';
-  const openBook = () => router.navigate('/me/stickers');
+  const openBook = useCallback(() => router.push('/sticker-book'), [router]);
   const celebration = useSettleCelebration(userId, openBook);
   const { settled } = celebration;
   const chat = useItemChat(
     useCallback(
-      (thread: string) => router.navigate({ pathname: '/messages/[thread]', params: { thread } }),
-      [router],
+      (thread: string) =>
+        from === 'thread'
+          ? router.back()
+          : router.push({ pathname: '/chat/[thread]', params: { thread, from: 'item' } }),
+      [router, from],
     ),
   );
   const bridge = useMemo(
@@ -27,9 +34,9 @@ export default function RideDetailRoute() {
       openPayment: (paymentId: string) =>
         router.push({ pathname: '/pay/[id]', params: { id: paymentId } }),
       received: settled,
-      openStickerBook: () => router.navigate('/me/stickers'),
+      openStickerBook: openBook,
     }),
-    [router, settled],
+    [router, settled, openBook],
   );
   if (!user || !id) return null;
   return (
@@ -40,7 +47,7 @@ export default function RideDetailRoute() {
         onGone={() => router.back()}
         settle={bridge}
         message={{ onPress: () => chat.open('ride', id), busy: chat.opening === id }}
-        onOpenProfile={(person) => router.push(profileHref('ride', person))}
+        onOpenProfile={(person) => router.push(profileHref(overTabs ? 'overTabs' : 'ride', person))}
         onPull={() => void reviewStore.pullItem('ride', id)}
         reviews={(title) => <ReviewEntryCard kind="ride" itemId={id} title={title} />}
       />

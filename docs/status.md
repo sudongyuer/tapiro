@@ -26,16 +26,20 @@ findings, decisions E1–E12).
 | Expo SDK 58             | —                                                  | RN 0.88, 问小貘 as the iOS 27 prominent tab; `home_fan_out` fixed (scroll steps, 2026-11-06)                                                                                                                                                                                                                                                                                                                             |
 | Accessibility pass      | —                                                  | Plan `docs/plans/2026-11-18-accessibility-pass.md` (A1–A16 for veto): contrast #177, large text and VoiceOver sentences #178, checks and the core-screen tour (`a11y_screens`, `--text-size ax5`) in this PR; device checks `docs/walkthroughs/2026-11-18-accessibility.md`                                                                                                                                              |
 | Polish: motion, render  | —                                                  | Plan `docs/plans/2026-11-21-polish-motion-perf.md` (P1–P12 for veto): one Reduce Motion hook, shared curves, instant press dim, shorter stack timings, small fades, cached formatters, memoised rows, continuous corners                                                                                                                                                                                                 |
+| UI audit D: layout      | `docs/specs/2026-10-11-foundation-design.md`       | Audit `docs/reviews/2026-11-21-ui-walkthrough.md` O2, H2, L1, P5, P6, S1, S3, H3 (decisions for veto in the record of 2026-11-21): native chip row, keyboard 完成, top scroll edge on every Form screen, a separator on the ride footer bar, accessory on tab roots only                                                                                                                                                 |
 
 ## In progress
 
-- UI audit fixes (`docs/reviews/2026-11-21-ui-walkthrough.md`), four batches in parallel. Batch B is in this PR: the
+- UI audit fixes (`docs/reviews/2026-11-21-ui-walkthrough.md`), four batches in parallel. Batch B (merged, #210): the
   payee page no longer says 「还没有收款方式」 with cash on (root cause: the empty state ignored cash), the payee list
   refetches on focus and marks a failed refresh stale, the pay sheet's no-method card offers 发消息提醒 with a prefilled
   draft, a missing payment says 这笔付款已不存在, cash has one control and one name, the rate source is named Bank Negara
   Malaysia everywhere, and the onboarding name step waits for the profile (O1). Decisions B1–B7 for veto in the
-  foundation spec's record of 2026-11-21. Batches A (navigation), C (copy) and D (layout) are separate PRs.
-  Batch E (the remaining Minor flow findings) is merged: 先不翻译 on the translation hungry card, secondary 申请 pills
+  foundation spec's record of 2026-11-21. Batch A (keep the user's context: N1, N5, P3, R1, R3, A1, D1 and the
+  apply-sheet payee jump, #211): a flow never switches tabs; screens of another tab push over the tabs on the root
+  stack, flows inside a sheet present the next sheet over it (decisions A1–A9 for veto in the same spec). Batches C
+  (copy) and D (layout) are separate PRs.
+  Batch E (the remaining Minor flow findings): 先不翻译 on the translation hungry card, secondary 申请 pills
   in board rows, tappable calm-card lines that prefill 问小貘, refresh and recentre on the full-screen map, failed chat
   images say so, a per-thread 收起提醒 on the safety tip, 去过的 reloads, a confirm before leaving the name step, and
   one stamp radius and map elevation. Decisions E1–E12 for veto in the foundation spec's record of 2026-11-21.

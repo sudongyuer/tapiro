@@ -26,6 +26,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
@@ -97,7 +98,7 @@ export function QrPickForm({
   return (
     <Host style={styles.host} testID="payee-qr-sheet">
       <SheetChrome title={title} onClose={onClose} />
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
         {error ? <QrErrorCard error={error} wallet="" /> : null}
         <Section>
           <Text
@@ -193,7 +194,7 @@ export function QrConfirmForm({
   return (
     <Host style={styles.host} testID="payee-qr-confirm">
       <SheetChrome title={title} onClose={onClose} onSave={() => onSave(nameText.sync())} />
-      <Form modifiers={[tint(color('--color-accent'))]}>
+      <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
         {error ? <QrErrorCard error={error} wallet={walletName(t, qr)} /> : null}
         {mismatch ? (
           <NoticeCard
