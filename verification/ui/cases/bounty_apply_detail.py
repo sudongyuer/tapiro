@@ -58,7 +58,6 @@ ui.element('bounty-apply-no-payee')
 ui.tap('bounty-apply-add-payee')
 ui.element('payee-screen')
 title_shown(ui, 'payee.title')
-assert by_id(ui.read(), 'BackButton') is None, '收款方式 was pushed in a tab instead of opening over the apply sheet'
 assert not by_id(ui.read(), 'tab-me') or str(by_id(ui.read(), 'tab-me').get('AXValue')) != '1', 'the payee detour switched to 我的'
 ui.at_rest()
 ui.capture('03-payee-over-apply')

@@ -24,6 +24,7 @@ import { navigationScrollEdge } from 'tapiro-kit';
 import { useI18n } from '@/lib/i18n';
 import { Avatar } from '@/ui/Avatar';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
+import { fullRow } from '@/ui/FieldRow';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -133,7 +134,7 @@ export function SettingsView({
             >
               <Button
                 label={t('account.settings.signOut')}
-                modifiers={[foregroundStyle(color('--color-accent'))]}
+                modifiers={[foregroundStyle(color('--color-accent')), fullRow]}
                 onPress={() => setAskingSignOut(true)}
                 testID="settings-sign-out"
               />

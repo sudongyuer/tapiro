@@ -11,7 +11,7 @@ import {
 import { Stack, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { StyleSheet } from 'react-native';
-import { keyboardDone, navigationScrollEdge } from 'tapiro-kit';
+import { navigationScrollEdge, resignFocus } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import type { CurrencyCode } from '@/lib/money';
@@ -116,7 +116,10 @@ function PostFormBody({
   function next() {
     sync();
     const checked = checkDraft(draftStore.load(userId), new Date());
-    if (!checked.ok) return formError.set(checked.error);
+    if (!checked.ok) {
+      void resignFocus();
+      return formError.set(checked.error);
+    }
     formError.set(null);
     onNext();
   }
@@ -151,7 +154,6 @@ function PostFormBody({
         <Form
           modifiers={[
             navigationScrollEdge(),
-            keyboardDone(t('keyboard.done')),
             tint(color('--color-accent')),
             scrollDismissesKeyboard('immediately'),
             scrollEdgeEffectStyle('soft', 'top'),

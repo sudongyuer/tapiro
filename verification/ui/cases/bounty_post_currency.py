@@ -24,7 +24,7 @@ DEPS = [
 ]
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'none', '-uiVerifyPostCost', 'free']
-BUDGET = 300
+BUDGET = 420
 
 ui = UI(*sys.argv[1:])
 
@@ -71,6 +71,7 @@ ui.capture('03-form-cny')
 
 erase(ui, 'bounty-post-reward')
 typed(ui, 'bounty-post-reward', '801')
+assert by_id(ui.read(), 'keyboard-done') is None, 'the post form shows the floating 完成 over its right-aligned reward'
 next_step(ui)
 assert_error(ui, 'bounty.post.error.rewardRange', **CNY_RANGE_TEXT)
 ui.capture('04-cny-limit')

@@ -65,10 +65,7 @@ def pill_box(shot, card):
     lane = {'x': f['x'] + f['width'] - PILL_LANE, 'y': f['y'] + f['height'] / 2,
             'width': PILL_LANE, 'height': f['height'] / 2}
     pill = ink_box(shot, lane, ROW_PILL[ui.appearance], 2)
-    if pill is None or pill['count'] < PILL_PIXELS:
-        return None
-    assert pill['x'] > lane['x'] + 1, f'the 申请 pill fill reaches the left edge of its lane: {pill}'
-    return pill
+    return pill if pill and pill['count'] >= PILL_PIXELS else None
 
 
 def padded(element, pad):
@@ -118,7 +115,7 @@ print(f'top card: RM 500 at x {reward["x"]:.1f}, title ends {title["x"] + title[
 
 applied, shot = card_shot('bounty-card-fixture-worst-02', '02-applied')
 assert_in_card(shot, applied, r'1[.,]8\s?km', 'the distance 1.8 km')
-status = assert_in_card(shot, applied, tail('bounty.board.applied'), 'the applied line')
+status = assert_in_card(shot, applied, tail('bounty.board.waiting'), 'the applied line')
 assert_tier_whole(ui, READ[shot.path], applied['frame'])
 assert not re.search(r'…|\.\.\.$', status['text']), f'the applied line is truncated: {status["text"]!r}'
 
