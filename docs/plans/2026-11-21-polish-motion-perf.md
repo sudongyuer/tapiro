@@ -67,3 +67,16 @@ Handed back from `docs/reviews/2026-11-21-ui-walkthrough.md` (H4, H5, S2, K2, Co
 | P17 | The 问小貘 sheet header sits outside the scroll view, so content clips at its edge (S2)             | Move the header into a native navigation bar | react-native-screens sizes a form sheet's scroll view below a header sibling; no overlay |
 | P18 | Empty belly pips have a 1 pt outline, `tertiaryLabel` in light and `secondaryLabel` in dark (K2)    | One colour for both                          | `tertiaryLabel` faded on the lighter dark glass (pixel check)                            |
 | P19 | The hungry card's primary pill is 「自己填」; 「明早再来」 is secondary (K2)                        | Keep 「明早再来」 primary                    | The primary action moves the task on                                                     |
+
+## Round 2
+
+| #   | Decision                                                                                         | Alternative                                  | Reason                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------ | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| P20 | A status step's check bounces once (`symbolEffect` bounce) when it turns done during the session | `contentTransition(.symbolEffect(.replace))` | @expo/ui 58 offers no symbol replace transition; a few completions per job, so it is feedback |
+| P21 | Under Reduce Motion the check swaps without the bounce                                           | Rely on the system                           | Neither the types nor the Swift source show that the effect follows Reduce Motion             |
+| P22 | The ride form's details section eases its rows in (`--duration-settle`) when 机场 or 备注 opens  | Instant swap                                 | Continuity: the row the user tapped turns into fields                                         |
+| P23 | The bounty board is not virtualised for now                                                      | `FlatList` home with the stage as header     | The hosted board holds 2 rows and pages by 20; measure on a device once lists pass ~40 rows   |
+
+Device performance sign-off is still open: the 13 Pro Max run was blocked (UI Automation passcode, then storage) and
+left the phone needing the owner (`docs/research/2026-11-21-device-perf.md`). A hook now blocks uninstalling,
+rebooting, erasing or unpairing a physical iPhone.
