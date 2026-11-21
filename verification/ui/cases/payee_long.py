@@ -1,4 +1,4 @@
-"""With seven worst-case methods (a long bank name, long payee names), scrolling 收款方式 to the bottom leaves the cash row fully above the bottom accessory and the tab bar."""
+"""With seven worst-case methods (a long bank name, long payee names), scrolling 收款方式 to the bottom leaves the cash row fully above the (minimised) tab bar; a pushed page shows no accessory."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -18,6 +18,7 @@ DEPS = [
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifyFixture', 'worst', '-uiVerifySignedIn', 'onboarded']
 BUDGET = 220
+TAB_BAR_BAND = 83
 
 ui = UI(*sys.argv[1:])
 open_payee(ui)
@@ -33,7 +34,11 @@ items = ui.read()
 cash = by_id(items, 'payee-cash')['frame']
 bottom = cash['y'] + cash['height']
 bar = accessory(items)
-limit = bar['frame']['y'] if bar else min(i['frame']['y'] for i in items if (i.get('AXUniqueId') or '').startswith('tab-'))
+screen = items[0]['frame']
+tabs = [i['frame']['y'] for i in items if (i.get('AXUniqueId') or '').startswith('tab-')]
+# A pushed page has no accessory (audit H3), and its minimised tab bar is not in the accessibility tree; the bar's
+# 83 pt band at the bottom of the screen is the limit then.
+limit = bar['frame']['y'] if bar else min(tabs) if tabs else screen['height'] - TAB_BAR_BAND
 assert bottom <= limit, f'cash row ends at {bottom}, under the accessory or tab bar at {limit}'
 assert any('Bank Kerjasama' in row for row in row_labels(items)) or len(row_labels(items)) >= 3, row_labels(items)
 shot = ui.capture('02-bottom')

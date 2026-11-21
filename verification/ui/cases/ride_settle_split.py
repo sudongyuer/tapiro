@@ -74,6 +74,10 @@ typed(ui, 'ride-split-total', '74')
 ui.wait(lambda items: (by_id(items, f'ride-split-share-{MING}') or {}).get('AXValue') == '24.70',
         '阿明 never read 24.70')
 assert (ui.element(f'ride-split-share-{YA}').get('AXValue')) == '24.70'
+# With the pad up, the split footer sits under the keyboard and its floating 完成, out of the accessibility tree in
+# the longer en and ms copy (2026-11-21); a person puts the pad away to read it.
+ui.tap('keyboard-done')
+ui.gone('keyboard-done')
 organiser = ui.element('ride-split-organiser').get('AXLabel') or ''
 assert re.search(MONEY + r'24\.60', organiser), organiser
 assert re.fullmatch(ui.pattern('rideSettle.sheet.footerEqual', count='3', amount=MONEY + r'0\.10') + r'\n.*', footer(),
