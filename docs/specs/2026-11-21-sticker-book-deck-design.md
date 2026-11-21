@@ -104,3 +104,27 @@ The decisions table lives in the plan (S1–S8, ★ for veto) and is repeated in
 - UI cases `sticker_book`, `sticker_book_calendar`, `sticker_book_one`, `sticker_book_empty`, `sticker_book_labels`,
   `sticker_share`, `sticker_share_worst`; zh-Hans light, ms, dark for the deck and posters; a recorded swipe.
 - Device: swipe feel in a Release build, Reduce Motion, VoiceOver adjust, a saved 3× poster in Photos.
+
+## Implementation Record (2026-11-21)
+
+Status stays `proposed`: the owner has not approved the design; decisions S1–S9 are listed for veto in
+`docs/plans/2026-11-21-sticker-book-deck.md`. Branch `feat/sticker-book-deck`.
+
+- Built as designed: S1–S8 (`src/features/stickers/Deck.tsx`, `StickerBook.tsx`, `useBookFocus.ts`,
+  `CalendarSheet.tsx`, `MonthGrid.tsx`, `ShareSheet.tsx`, `Poster.tsx`, routes `src/app/sticker-calendar.tsx` and
+  `src/app/sticker-share.tsx`, kit `modules/tapiro-kit/ios/PosterSnapshot.swift` + `modules/tapiro-kit/poster.ts`).
+- Removed: `BookSwitch`, `CardStack`, `MonthCalendar`, `bookView`, `bookViewStore` and its test; the
+  `-uiVerifyBookView` launch argument; copy keys `stickers.book.view.*`, `stickers.card.hint`,
+  `stickers.calendar.{previous,next,summary}`.
+- Added: S9 (no swipe hint); `PillButton` takes an optional SF Symbol; fixture `-uiVerifyStickers month` and
+  `-uiVerifyPosterSave failed|denied`; tokens `--color-poster-tint`, `--color-poster-night`.
+- Fixed during the work: a finished turn toward newer cards could redraw the old front card above the new one for a
+  frame while React reordered the cards; the pose now carries `zIndex` (commit 312e0a21, test
+  `deckMotion.test.ts#the card coming up from the stack is always drawn under the top card, either way`).
+- Checks run: `bun test` (all pass, including `deckMotion.test.ts`, `posterData.test.ts`), `tsc`, `lint:changed`,
+  `format:check`, `check-specs`, `check-story-map`, `design-check`, an iOS JS export with `EXPO_PUBLIC_UI_VERIFY=1`,
+  `swiftc -typecheck` of `PosterSnapshot.swift`, `python3 -m unittest` in `verification/ui`.
+- Unverified: the UI cases (`sticker_book`, `sticker_book_calendar`, `sticker_book_one`, `sticker_book_empty`,
+  `sticker_book_labels`, `sticker_share`, `sticker_share_worst`, `profile_sticker_book_in_tab`, `pay_settle_routine`)
+  and smoke did not run: free disk was 14.2–14.7 GB, below the 15 GB floor for Release verify builds (AGENTS.md).
+  The native build of `snapshotPoster` and the gesture feel are therefore not yet seen on a Simulator or device.
