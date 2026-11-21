@@ -1,5 +1,6 @@
 """Opening 机场 in the ride form's details section eases the airport rows in over several frames (P22); under Reduce
-Motion the rows appear in one step. The band under the tapped row is sampled frame by frame: the animated run must
+Motion the rows appear in one step. The band under the tapped row is sampled frame by frame for the red 移除 that only
+the open rows draw: the animated run must
 show frames between the closed picture (a still taken before the tap; the recorder starts late) and the open one, the
 reduced run must not."""
 import sys
@@ -7,7 +8,7 @@ import tempfile
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from driver import UI, Shot, by_id, luma  # noqa: E402
+from driver import UI, Shot, by_id  # noqa: E402
 from recording import clip, frames  # noqa: E402
 from ride import form_scroll_to, open_form, open_list, relaunch_list  # noqa: E402
 
@@ -21,7 +22,7 @@ ui = UI(*sys.argv[1:])
 
 
 def ink(shot, band):
-    return shot.count(band, lambda rgb: luma(rgb) < 120)
+    return shot.count(band, lambda rgb: rgb[0] > 170 and rgb[1] < 110 and rgb[2] < 110)
 
 
 def open_airport(name):
@@ -45,7 +46,7 @@ def open_airport(name):
     margin = (high - low) * BETWEEN
     between = [at for value, at in counts if low + margin < value < high - margin]
     print(f'{name}: ink {start} -> {end}, {len(between)} frames between')
-    assert high - low > 200, f'{name}: opening 机场 changed the band too little to measure ({start} -> {end})'
+    assert high - low > 100, f'{name}: opening 机场 changed the band too little to measure ({start} -> {end})'
     return between
 
 
