@@ -3,8 +3,6 @@ import {
   accessibilityHidden,
   accessibilityIdentifier,
   accessibilityLabel,
-  Animation,
-  animation,
   buttonStyle,
   contentShape,
   foregroundStyle,
@@ -19,7 +17,6 @@ import { DateTimeRow } from 'tapiro-kit';
 import { useI18n } from '@/lib/i18n';
 import { fullRow, ROW_INSETS } from '@/ui/FieldRow';
 import { SyncedTextField, type SyncedText } from '@/ui/SyncedTextField';
-import { useMotionReduced } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 import { localDayKey, localTimeOn, parseWallClock, wallClock } from '@/lib/deviceClock';
@@ -141,8 +138,6 @@ function AirportRows({ draft, onEdit }: { draft: RideDraft; onEdit: Edit }) {
   );
 }
 
-const OPEN_ROWS = Animation.easeOut({ duration: vars['--duration-settle'] / 1000 });
-
 export function DetailsSection({
   draft,
   note,
@@ -155,14 +150,9 @@ export function DetailsSection({
   onBlur: (focused: boolean) => void;
 }) {
   const { t } = useI18n();
-  const reduced = useMotionReduced();
   const count = codePoints(draft.note);
-  const opened = (draft.airportOpen ? 1 : 0) + (draft.noteOpen ? 2 : 0);
   return (
-    <Section
-      header={<Text>{t('ride.create.form.details')}</Text>}
-      modifiers={reduced ? [] : [animation(OPEN_ROWS, opened)]}
-    >
+    <Section header={<Text>{t('ride.create.form.details')}</Text>}>
       {draft.airportOpen ? (
         <AirportRows draft={draft} onEdit={onEdit} />
       ) : (

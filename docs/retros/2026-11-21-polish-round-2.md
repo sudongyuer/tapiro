@@ -4,7 +4,7 @@ date: 2026-11-21
 pr: status step bounce, ride form section motion, cached formatters, device guard
 title: A measuring agent uninstalled the app and rebooted the owner's iPhone
 escaped: 0
-rework: 1
+rework: 2
 interventions: 0
 overturned: 0
 ---
@@ -35,3 +35,7 @@ overturned: 0
   window missed it (rework 1). It now samples the row's settled frame.
 - `ride_create_form` was flaky once: `axe drag` itself hung for 20 s after the time step, before the airport row
   (an AXe stall, as in status 0e); it passed on the retry. Tag `axe-stall`.
+- The ride form's section animation (P22) was withdrawn after review asked for proof: SwiftUI's `.animation(_:value:)`
+  on a `Section` is not guaranteed to animate List row insertion, and the measuring case could not show it either way:
+  the Simulator recording of the tap kept only two frames, both before the change (3 runs, then the 20-minute time-box).
+  Tag `motion-unverified`: motion ships only with a case that can see it.

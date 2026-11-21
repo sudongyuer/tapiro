@@ -70,12 +70,12 @@ Handed back from `docs/reviews/2026-11-21-ui-walkthrough.md` (H4, H5, S2, K2, Co
 
 ## Round 2
 
-| #   | Decision                                                                                         | Alternative                                  | Reason                                                                                        |
-| --- | ------------------------------------------------------------------------------------------------ | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| P20 | A status step's check bounces once (`symbolEffect` bounce) when it turns done during the session | `contentTransition(.symbolEffect(.replace))` | @expo/ui 58 offers no symbol replace transition; a few completions per job, so it is feedback |
-| P21 | Under Reduce Motion the check swaps without the bounce                                           | Rely on the system                           | Neither the types nor the Swift source show that the effect follows Reduce Motion             |
-| P22 | The ride form's details section eases its rows in (`--duration-settle`) when 机场 or 备注 opens  | Instant swap                                 | Continuity: the row the user tapped turns into fields                                         |
-| P23 | The bounty board is not virtualised for now                                                      | `FlatList` home with the stage as header     | The hosted board holds 2 rows and pages by 20; measure on a device once lists pass ~40 rows   |
+| #   | Decision                                                                                         | Alternative                                        | Reason                                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| P20 | A status step's check bounces once (`symbolEffect` bounce) when it turns done during the session | `contentTransition(.symbolEffect(.replace))`       | @expo/ui 58 offers no symbol replace transition; a few completions per job, so it is feedback                    |
+| P21 | Under Reduce Motion the check swaps without the bounce                                           | Rely on the system                                 | Neither the types nor the Swift source show that the effect follows Reduce Motion                                |
+| P22 | Withdrawn: the ride form's details section keeps its instant swap                                | `animation` on the Section when 机场 or 备注 opens | Unverified: the Simulator recording kept only two frames of the change, so no case could show the rows easing in |
+| P23 | The bounty board is not virtualised for now                                                      | `FlatList` home with the stage as header           | The hosted board holds 2 rows and pages by 20; measure on a device once lists pass ~40 rows                      |
 
 Device performance sign-off is still open: the 13 Pro Max run was blocked (UI Automation passcode, then storage) and
 left the phone needing the owner (`docs/research/2026-11-21-device-perf.md`). A hook now blocks uninstalling,
