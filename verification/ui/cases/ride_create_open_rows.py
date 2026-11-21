@@ -1,6 +1,7 @@
 """Opening 机场 in the ride form's details section eases the airport rows in over several frames (P22); under Reduce
 Motion the rows appear in one step. The band under the tapped row is sampled frame by frame: the animated run must
-show frames between the closed and the open picture, the reduced run must not."""
+show frames between the closed picture (a still taken before the tap; the recorder starts late) and the open one, the
+reduced run must not."""
 import sys
 import tempfile
 import time
@@ -31,13 +32,15 @@ def open_airport(name):
     width = items[0]['frame']['width']
     row = add['frame']
     band = {'x': row['x'], 'y': row['y'], 'width': row['width'], 'height': BAND_PT}
+    start = ink(ui.snap(f'{name}-closed'), band)
     with clip(ui, name) as video:
+        time.sleep(1.0)
         ui.tap('ride-form-airport-add')
         ui.element('ride-form-airport-remove', timeout=20)
         time.sleep(1.5)
     with tempfile.TemporaryDirectory() as tmp:
         counts = [(ink(Shot(path, width), band), at) for path, at in frames(video, tmp, 0.03)]
-    start, end = counts[0][0], counts[-1][0]
+    end = counts[-1][0]
     low, high = sorted((start, end))
     margin = (high - low) * BETWEEN
     between = [at for value, at in counts if low + margin < value < high - margin]
