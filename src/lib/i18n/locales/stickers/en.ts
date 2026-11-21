@@ -18,10 +18,10 @@ const en: typeof zhHans = {
   label: {
     payee: 'Helped {{name}}',
     payer: '{{name}} helped me',
-    payeeUnnamed: 'Helped a fellow student',
-    payerUnnamed: 'A fellow student helped me',
+    payeeUnnamed: 'Helped a Tapiro friend',
+    payerUnnamed: 'A Tapiro friend helped me',
     ride: 'With {{name}}',
-    rideUnnamed: 'With a fellow student',
+    rideUnnamed: 'With a Tapiro friend',
   },
   card: {
     position: 'Card {{index}} of {{total}}',

@@ -12,7 +12,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { useI18n } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
-import type { LiveCardTone } from '@/ui/LiveCard';
+import { useLiveCardPaint, type LiveCardTone } from '@/ui/LiveCard';
 import { PressDim } from '@/ui/PressDim';
 import { EASE_ENTER, useMotionReduced } from '@/ui/theme/motion';
 import { vars } from '@/ui/theme/tokens';
@@ -228,6 +228,7 @@ function StackedCard({
         ...(message ? [{ name: 'message', label: t('home.card.bounty.message') }] : []),
       ]
     : undefined;
+  const { surface } = useLiveCardPaint(TONE[card.kind]);
   const ownButton = card.kind === 'oweMoney';
   const grouped = card.kind !== 'calm' && card.kind !== 'unavailable' && card.kind !== 'settled';
 
@@ -239,6 +240,10 @@ function StackedCard({
       importantForAccessibility={hidden || leaving ? 'no-hide-descendants' : 'auto'}
       style={[styles.card, { zIndex: leaving ? MAX_Z + 1 : MAX_Z - index }, motion]}
     >
+      {card.kind === 'settled' ? null : (
+        // Press feedback dims by opacity; without an opaque backing the cards stacked behind show through.
+        <View style={[styles.backing, { backgroundColor: surface }]} />
+      )}
       {behind ? (
         <PressDim
           accessibilityRole="button"
@@ -283,5 +288,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     transformOrigin: 'bottom',
+  },
+  backing: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: vars['--radius-sheet'],
+    borderCurve: 'continuous',
   },
 });

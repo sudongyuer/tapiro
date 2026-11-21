@@ -21,7 +21,7 @@ const ms: typeof zhHans = {
   },
   empty: {
     title: 'Belum ada tumpangan',
-    body: 'Balik ke asrama, ke pusat beli-belah atau ke lapangan terbang? Mulakan satu, orang yang sehala akan nampak.',
+    body: 'Balik ke rumah, ke pusat beli-belah atau ke lapangan terbang? Mulakan satu, orang yang sehala akan nampak.',
     action: 'Mulakan tumpangan',
   },
   ticket: {
@@ -294,16 +294,16 @@ const ms: typeof zhHans = {
       tileLabel: '{{name}}, {{hint}}',
       free: 'Tiada yang sesuai, saya tulis sendiri',
       tile: {
-        home: { name: 'Balik rumah', hint: 'Asrama, kondo, YC', dest: 'Rumah yang mana?' },
-        campus: { name: 'Ke kampus', hint: 'Sunway, Taylor’s, kampus', dest: 'Kampus yang mana?' },
+        home: { name: 'Balik rumah', hint: 'Rumah, kondo, pangsapuri', dest: 'Rumah yang mana?' },
+        campus: { name: 'Ke kerja/sekolah', hint: 'Pejabat, sekolah, kampus', dest: 'Ke mana?' },
         mall: {
           name: 'Ke pusat beli-belah',
-          hint: 'Pyramid, Mid Valley',
+          hint: 'Pusat beli-belah, pasar raya',
           dest: 'Pusat beli-belah mana?',
         },
         airport: {
           name: 'Ke lapangan terbang',
-          hint: 'KLIA, KLIA2',
+          hint: 'Kejar penerbangan, jemput orang',
           dest: 'Lapangan terbang mana?',
         },
       },

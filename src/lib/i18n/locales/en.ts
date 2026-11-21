@@ -31,17 +31,17 @@ const en: Translation = {
       wordmark: 'Tapiro',
       tagline: 'Post a bounty. Help out on your way.',
       hello: 'Hi there!',
-      headline: 'Tapir has your back in Malaysia',
-      subline: 'Parcels, queues, rides back to YC: students helping each other out.',
+      headline: 'Tapir has your back',
+      subline: 'Parcels, queues, shared rides: people nearby helping each other out.',
       terms:
         'By continuing, you agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.',
       examples: {
         parcel: 'Pick up a parcel · {{amount}}',
         coffee: 'Bring a coffee · {{amount}}',
         ticket: 'Take a queue number · {{amount}}',
-        books: 'Explain calculus · {{amount}}',
+        books: 'Slide deck help · {{amount}}',
         umbrella: 'Lend an umbrella · on the way',
-        car: '17:00 to YC · 1 more seat',
+        car: '17:00 home · 1 more seat',
         boba: 'Buy bubble tea · {{amount}}',
       },
     },
@@ -51,7 +51,7 @@ const en: Translation = {
       question: 'What’s your name?',
       label: 'Name',
       placeholder: 'Enter your name',
-      footer: 'Other students see this name. Up to 40 characters.',
+      footer: 'Other people see this name. Up to 40 characters.',
       avatar: 'Profile photo',
       signOut: 'Sign Out',
       signOutTitle: 'Sign out?',
@@ -83,13 +83,13 @@ const en: Translation = {
         title: 'Terms of Use',
         aboutTitle: 'What Tapiro Is',
         about:
-          'Tapiro helps students in Malaysia help each other: post bounties, help out on the way, share rides.',
+          'Tapiro helps people nearby help each other: post bounties, help out on the way, share rides.',
         accountTitle: 'Your Account',
         account:
           'You sign in with Apple or Google. You can delete your account in Me → Settings; if a payment is still unsettled, settle it first.',
         moneyTitle: 'Payments and Coins',
         money:
-          'Students pay each other directly in their own bank or e-wallet apps, or in cash in person; Tapiro does not handle payments between students. Coins are bought through the App Store, can be used only in Tapiro, and can’t be sent to others or cashed out.',
+          'Users pay each other directly in their own bank or e-wallet apps, or in cash in person; Tapiro does not handle payments between users. Coins are bought through the App Store, can be used only in Tapiro, and can’t be sent to others or cashed out.',
       },
       privacy: {
         title: 'Privacy Policy',
@@ -202,11 +202,11 @@ const en: Translation = {
       suggestions: {
         bounty: { first: 'Pick up my parcel', second: 'What do I need to pick up a parcel?' },
         ride: {
-          first: 'Cheapest way from Sunway to KLIA?',
-          second: 'Find someone to bring my things back to YC',
+          first: 'Cheapest way to the airport?',
+          second: 'Find someone to bring something home for me',
         },
         messages: {
-          first: 'How do I say “wait in the lobby” in Malay?',
+          first: 'How do I say “wait in the lobby” in Chinese?',
           second: 'How do I tell my landlord the heater broke?',
         },
         writeBounty: 'Write a bounty for me',
@@ -297,9 +297,9 @@ const en: Translation = {
         ask: 'Say it and Tapir drafts the bounty',
         askHint: 'Opens Ask Tapir',
         chipHint: 'Opens Ask Tapir with this line filled in',
-        chipQuestion: 'Cheapest way to KLIA?',
+        chipQuestion: 'Cheapest way to the airport?',
         chipParcel: 'Pick up my parcel',
-        chipStudy: 'Find someone to explain calculus',
+        chipStudy: 'Find someone to teach me slides',
       },
     },
     strip: {
@@ -362,7 +362,7 @@ const en: Translation = {
       helper: 'Lin',
       place: 'Library',
       task: 'Pick up a parcel',
-      start: 'Sunway Geo Residences',
+      start: 'Garden Court',
     },
     flight: {
       title: 'Sticker flight to Me',

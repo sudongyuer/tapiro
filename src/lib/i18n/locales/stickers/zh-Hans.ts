@@ -16,10 +16,10 @@ export default {
   label: {
     payee: '帮{{name}}',
     payer: '{{name}}帮我',
-    payeeUnnamed: '帮一位同学',
-    payerUnnamed: '一位同学帮我',
+    payeeUnnamed: '帮一位貘友',
+    payerUnnamed: '一位貘友帮我',
     ride: '和{{name}}',
-    rideUnnamed: '和一位同学',
+    rideUnnamed: '和一位貘友',
   },
   card: {
     position: '第 {{index}} 张，共 {{total}} 张',

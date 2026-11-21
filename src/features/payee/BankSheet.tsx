@@ -12,7 +12,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { keyboardDone, navigationScrollEdge } from 'tapiro-kit';
+import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { afterResign } from '@/ui/afterResign';
@@ -128,7 +128,6 @@ function BankForm({
       <Form
         modifiers={[
           navigationScrollEdge(),
-          keyboardDone(t('keyboard.done')),
           tint(color('--color-accent')),
           scrollDismissesKeyboard('immediately'),
         ]}

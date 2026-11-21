@@ -104,7 +104,7 @@ const ms: typeof zhHans = {
     redeemedTitle: 'Kod yang saya masukkan',
     redeemedRow: 'Kod {{name}}',
     redeemedStatus: '{{code}} · {{status}}',
-    someone: 'Seorang pelajar',
+    someone: 'Seorang rakan Tapiro',
     share: 'Kongsi',
     explain:
       'Apabila kawan memasukkan kod anda dan menyelesaikan urusan pertama, anda berdua dapat {{reward}} syiling',

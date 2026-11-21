@@ -184,9 +184,9 @@ export default {
       editTitle: 'Ubah',
       kind: 'Jenis',
       label: 'Nama',
-      labelPlaceholder: 'Contoh: asrama',
+      labelPlaceholder: 'Contoh: rumah',
       content: 'Apa itu',
-      contentPlaceholder: 'Contoh: Sunway Geo',
+      contentPlaceholder: 'Contoh: Garden Court, Blok 3',
       footer:
         'Dihantar kepada {{provider}} semasa mendraf atau menjawab. Jangan tulis nombor telefon, kaedah terima bayaran atau butiran orang lain.',
       delete: 'Padam Nota Ini',

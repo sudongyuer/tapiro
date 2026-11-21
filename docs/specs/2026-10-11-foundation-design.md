@@ -1299,3 +1299,27 @@ Run so far (light, zh-Hans + en + declared ms):
 Not run before merge (owner's call, 2026-11-21: the internal TestFlight build does not wait for them): the coins,
 pay, payee and profile batch, the reviews and rides batch, the shell, stickers, tier and weekly batch, the dark cases
 and the AX5 cases. They run after the upload; findings go to a follow-up PR and the next build.
+
+### After the upload (follow-up, `fix/milestone-followup`)
+
+The batches that ran after TestFlight 1.0.0 (20261121.1036), on the verify build of #221 before #217–#222:
+
+- Coins, pay, payee, profile (135 runs): 131 passed (5 on retry). `payee_add_bank` en and ms failed: with the account
+  number's pad up, a tap on 「Name your bank shows」 did not move the focus, because the field sat in the row of the
+  floating keyboard toolbar, which takes touches across its whole width; the name was typed onto the account number,
+  and 保存 then correctly refused it. A real defect on a money path (M5); without the toolbar the case passes 3 of 3 (ms on its retry, after the known pad-digit loss under load). `account_flow` and `account_settings_long` pass in all three locales, light and dark, with M6. `payee_long` zh-Hans and ms: the case found
+  neither an accessory nor a tab button, since a pushed page has no accessory (H3) and a scrolled page minimises the
+  tab bar, whose items then leave the accessibility tree; the case now takes the bar's 83 pt band as the limit. Rerun 3 of 3.
+- Reviews and rides (128 runs): 126 passed; `ride_settle_split` en and ms read the split footer while the pad covered
+  it; the case now puts the pad away with 完成 first, as a person would. Rerun 3 of 3.
+- Shell, stickers, tier, weekly (73 runs): 73 passed (2 on retry). Dark (21 runs): 21 passed.
+- AX5 audit (18 runs, not acceptance): `a11y_screens` passes in all three locales; `onboarding_language_moment` passes
+  in zh-Hans and en. The cases written for Large fail at AX5 where the screenshots show what to fix later: the post
+  form's live card truncates the time and the 类型 label wraps one letter per line; the ride ticket fills the screen
+  and truncates the flight and luggage lines; on the ms language step the heading leaves room for one language row
+  above 开始 (the rows scroll). Listed for a later Dynamic Type pass.
+
+| #   | Decision                                                                                                                       | Why                                                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M5  | The bank sheet drops the keyboard toolbar 「完成」 (P5), like the post form (M2); its Form already puts the pad away on scroll | The floating toolbar row took the taps meant for the name field above the pad; the ride form and ride sheets keep 完成 (their cases pass and no field sits in that row) |
+| M6  | Settings' 退出登录 button spans the row with a width-only frame, not `fullRow`                                                  | `fullRow`'s 44 pt minimum on top of the Form row's own padding made the row taller than its neighbours                                                                       |

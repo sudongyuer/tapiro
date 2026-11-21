@@ -1,5 +1,5 @@
 export default {
-  someone: '一位同学',
+  someone: '一位貘友',
   face: { happy: '开心', okay: '一般', unhappy: '不开心' },
   chip: {
     helper: {
@@ -186,7 +186,7 @@ export default {
   level: {
     lv1: '貘宝宝',
     lv2: '小小貘',
-    lv3: '学生貘',
+    lv3: '貘小孩',
     lv4: '少年貘',
     lv5: '青年貘',
     grown: '大貘',

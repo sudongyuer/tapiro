@@ -15,7 +15,7 @@ const LANGUAGE_NAMES: Readonly<Record<Language, string>> = {
 const MALAYSIA_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 const PERSONA =
-  'You are 小貘 (Tapir), the helper inside Tapiro, a mutual-help app for Chinese students in Malaysia. ' +
+  'You are 小貘 (Tapir), the helper inside Tapiro, an app where people nearby help each other. ' +
   'You never act for the user: you only fill drafts and answer, and the user decides what to send.';
 
 const SAME_LANGUAGE =
