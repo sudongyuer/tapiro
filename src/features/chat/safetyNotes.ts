@@ -30,8 +30,8 @@ export function createSafetyNotes(settings: SettingsLike) {
   };
   return {
     subscribe: version.subscribe,
-    version: version.get,
     hidden: (userId: string, threadId: string) => load(userId).has(threadId),
+    hiddenThreads: load,
     hide(userId: string, threadId: string) {
       const threads = load(userId);
       if (threads.has(threadId)) return;

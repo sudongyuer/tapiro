@@ -9,9 +9,13 @@ import type { ThreadState } from '../chatState';
 import { chatStore, safetyNotes } from '../services';
 import { SafetyCard } from './SafetyCard';
 
+const NONE: ReadonlySet<string> = new Set();
+
 function useSafetyShown(userId: string | null, threadId: string) {
-  useSyncExternalStore(safetyNotes.subscribe, safetyNotes.version);
-  return userId !== null && !safetyNotes.hidden(userId, threadId);
+  const hidden = useSyncExternalStore(safetyNotes.subscribe, () =>
+    userId ? safetyNotes.hiddenThreads(userId) : NONE,
+  );
+  return userId !== null && !hidden.has(threadId);
 }
 
 export function ThreadListHeader({

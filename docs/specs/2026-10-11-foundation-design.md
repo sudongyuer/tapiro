@@ -1112,6 +1112,12 @@ Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (N2, N3, N4, H6, H9, B1, D3,
 - Ride: `historyState.ts` and `useRideHistory.ts`; the fixture fails a history reload under `-uiVerifyRideFail refresh`.
 - Tokens `--radius-stamp`, `--map-shadow-y`, `--map-shadow-blur` in `tokens.ts` and `docs/design-language.md`.
 
+### Bugs fixed during implementation
+
+- 收起提醒 did nothing on the first run: the header called `useSyncExternalStore` for a version number it ignored and
+  then read `safetyNotes.hidden(...)`, which React Compiler (`experiments.reactCompiler`) memoised on unchanged
+  arguments. The header now takes the hidden set itself as the store snapshot. No other discarded snapshot in `src/`.
+
 ### Not built
 
 - Settings' 退出登录 confirmation (E9).
