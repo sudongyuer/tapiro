@@ -5,7 +5,11 @@ build A = `366f907f` (main before #206) and build B = `dae1ca8d` (#206 motion/pe
 Pro Max (`00008110-0004455614F8801E`, iOS 26.7.3), with the `measure-iphone-interaction-hangs` method (Instruments
 Animation Hitches plus Time Profiler, attached to a running Release build).
 
-Result: **the sign-off is still open.** The first run recorded nothing (below). The second run (14:35–14:54, after the
+Closed by the owner on 2026-11-21 without the remaining build B runs (「那不用测了」), after a third attempt to install B
+failed for lack of storage. The polish PRs ship on build A's clean result and B's one board run, which showed no app hang
+and the same hitch level as A; the B chat and pop runs were never recorded.
+
+Result before closing: **the sign-off was still open.** The first run recorded nothing (below). The second run (14:35–14:54, after the
 owner unlocked the phone and freed storage) recorded build A in all three interactions but build B in only one board
 run, because the phone ran out of storage again on the first switch back to B. No hang was found in either build; the
 one sample is too small to call #206 faster or slower.
