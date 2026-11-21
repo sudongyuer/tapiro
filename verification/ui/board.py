@@ -81,8 +81,13 @@ def lower_right(card):
             'height': f['height'] / 2}
 
 
+# A filled 44 pt pill is thousands of pixels; anti-aliased grey text edges in the same quadrant are a few dozen (ms).
+PILL_PIXELS = 500
+
+
 def apply_pill(shot, card, appearance):
-    return ink_box(shot, lower_right(card), ROW_PILL[appearance], 2)
+    found = ink_box(shot, lower_right(card), ROW_PILL[appearance], 2)
+    return found if found and found['count'] >= PILL_PIXELS else None
 
 
 def accent_in_row(shot, card, appearance):
