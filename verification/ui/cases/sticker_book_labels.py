@@ -9,7 +9,7 @@ from driver import UI, Shot, luma, reach_home  # noqa: E402
 
 DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/']
 LOCALES = ['zh-Hans', 'ms']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'worst', '-uiVerifyBookView', 'stack']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'worst']
 
 WORST_NAME = 'Nurul Aisyah binti Wan Abdul Rahman Shah'
 WORST_TITLE = '帮忙从 Mid Valley Megamall 的 Uniqlo 取一件外套，顺便在 Sunway Pyramid 的 ZUS Coffee 买两杯 Spanish Latte，再送到 Universiti Malaya Kolej 宿舍楼'
@@ -46,7 +46,7 @@ for index, (line1, title) in enumerate(EXPECTED):
         assert ink > 80, f'the long caption did not wrap at full size: {ink} ink pixels where its second line belongs'
     f = card['frame']
     y = f['y'] + f['height'] / 2
-    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)
+    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 1.2)
 
 print(f'card heights: {heights}')
 assert max(heights) - min(heights) <= 1, f'cards differ in height: {heights}'

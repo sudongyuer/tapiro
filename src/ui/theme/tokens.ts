@@ -80,6 +80,8 @@ export const vars = {
   '--color-on-paper-muted': '#6C6C70',
   '--color-receipt': '#FFFFFF',
   '--color-paper-green': '#187A50',
+  '--color-poster-tint': '#F8D7B4',
+  '--color-poster-night': '#25232B',
   '--color-glow': '#3ECF8E8C',
   '--color-glow-clear': '#3ECF8E00',
   '--color-shine': '#FFFFFFB3',

@@ -210,10 +210,18 @@ values, as it does for stickers.
 | `--color-on-paper-muted` | `#6C6C70`   | Secondary text on paper, the receipt and sticker labels                           |
 | `--color-receipt`        | `#FFFFFF`   | Receipt card the sticker is peeled from; sticker labels                           |
 | `--color-paper-green`    | `#187A50`   | Green on paper: 第一次收款 badge fill, receipt amount, the 已申请 / 已结清 stamps |
+| `--color-poster-tint`    | `#F8D7B4`   | Share poster background 暖橙 (the paper one uses `--color-paper`)                 |
+| `--color-poster-night`   | `#25232B`   | Share poster background 夜色                                                      |
 | `--color-glow`           | `#3ECF8E8C` | Glow centre when a sticker lands                                                  |
 | `--color-glow-clear`     | `#3ECF8E00` | Glow edge                                                                         |
 | `--color-shine`          | `#FFFFFFB3` | Centre of the shine that sweeps the sticker and the amount                        |
 | `--color-shine-clear`    | `#FFFFFF00` | Shine edge                                                                        |
+
+The sticker book is one deck of `--color-receipt` cards (2026-11-21, `docs/specs/2026-11-21-sticker-book-deck-design.md`):
+the front card follows the finger and tilts up to 10°, leaves with a `--duration-settle` spring (ratio 1) and the next
+card rises from the fanned stack; a short release springs back (ratio 0.8). Share posters are images, so they keep the
+paper values in dark mode: `--color-paper`, `--color-poster-tint` or `--color-poster-night` behind the user's own hand
+art, a `--color-receipt` panel, and the 小貘 + Tapiro chip. Posters never show the other person's name.
 
 ### Object stickers
 

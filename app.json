@@ -74,7 +74,7 @@
         "expo-media-library",
         {
           "photosPermission": "Choose a picture to send in a chat, attach as payment or receipt proof, read a receive QR code from a screenshot, or show Tapir a screenshot. Tapiro only gets the pictures you pick.",
-          "savePhotosPermission": "Save a payee's receive QR code to Photos so you can scan it from your wallet app. Tapiro only adds this one image.",
+          "savePhotosPermission": "Save a payee's receive QR code to Photos so you can scan it from your wallet app, or save a sticker poster you made. Tapiro only adds the image you save.",
           "isAccessMediaLocationEnabled": false
         }
       ],

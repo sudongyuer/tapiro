@@ -1,57 +1,40 @@
-import { useState } from 'react';
-import { ActivityIndicator, PlatformColor, ScrollView, StyleSheet, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
-import { useStickers } from '@/lib/stickers';
+import { useStickers, type Sticker } from '@/lib/stickers';
 import { AppText } from '@/ui/AppText';
-import { InkText } from '@/ui/InkText';
 import { Mascot } from '@/ui/Mascot';
 import { MomentBackground } from '@/ui/MomentBackground';
 import { PillButton } from '@/ui/PillButton';
 import { vars } from '@/ui/theme/tokens';
 
-import { bookViewStore, initialBookView } from './bookView';
-import type { BookView } from './bookViewStore';
-import { BookSwitch } from './BookSwitch';
-import { CardStack } from './CardStack';
-import { MonthCalendar } from './MonthCalendar';
+import { Deck } from './Deck';
+import { useBookFocus } from './useBookFocus';
 
 const EMPTY_MASCOT = 150;
 
 export function StickerBook({ userId }: { userId: string }) {
-  const { t } = useI18n();
-  const view = useStickers(userId);
-  const [shape, setShape] = useState<BookView>(() => initialBookView(userId));
-  const [focusId, setFocusId] = useState<string | null>(null);
-  const choose = (next: BookView) => {
-    bookViewStore.setView(userId, next);
-    setShape(next);
-  };
-  const sub = t('stickers.book.sub');
-
   return (
     <MomentBackground testID="sticker-book">
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
-        <View style={styles.heading}>
-          <InkText
-            variant="large-title"
-            outline={vars['--sticker-border']}
-            ink={PlatformColor('label')}
-            accessibilityRole="header"
-            testID="sticker-book-title"
-            style={styles.heavy}
-          >
-            {t('stickers.book.title')}
-          </InkText>
-          <AppText variant="meta" tone="secondaryLabel" testID="sticker-book-count">
-            {view.status === 'ready'
-              ? t('stickers.book.summary', {
-                  total: t('stickers.count', { count: view.stickers.length }),
-                  sub,
-                })
-              : sub}
-          </AppText>
-        </View>
+      <SafeAreaProvider style={styles.fill}>
+        <BookBody userId={userId} />
+      </SafeAreaProvider>
+    </MomentBackground>
+  );
+}
+
+function BookBody({ userId }: { userId: string }) {
+  const { t } = useI18n();
+  const view = useStickers(userId);
+  const insets = useSafeAreaInsets();
+  const frame = { paddingTop: insets.top, paddingBottom: insets.bottom + vars['--space-4'] };
+
+  if (view.status === 'loading' || view.status === 'failed' || view.stickers.length === 0) {
+    return (
+      <View style={[styles.fill, frame]}>
+        <Stack.Screen options={{ headerTitle: t('stickers.book.title') }} />
         {view.status === 'loading' ? (
           <ActivityIndicator
             style={styles.state}
@@ -72,7 +55,7 @@ export function StickerBook({ userId }: { userId: string }) {
               testID="sticker-book-retry"
             />
           </View>
-        ) : view.stickers.length === 0 && view.status === 'ready' ? (
+        ) : (
           <View style={styles.state} testID="sticker-book-empty">
             <Mascot variant="front" size={EMPTY_MASCOT} outlined />
             <AppText
@@ -86,55 +69,103 @@ export function StickerBook({ userId }: { userId: string }) {
               {t('stickers.empty.body')}
             </AppText>
           </View>
-        ) : (
-          <View style={styles.book}>
-            {view.status === 'stale' ? (
-              <View style={styles.stale} testID="sticker-book-stale">
-                <AppText variant="secondary" tone="secondaryLabel" style={styles.center}>
-                  {t('stickers.stale')}
-                </AppText>
-                <PillButton
-                  label={t('stickers.retry')}
-                  variant="plain"
-                  onPress={view.retry}
-                  testID="sticker-book-stale-retry"
-                />
-              </View>
-            ) : null}
-            <BookSwitch view={shape} onChoose={choose} />
-            {shape === 'stack' ? (
-              <CardStack key={focusId ?? 'top'} stickers={view.stickers} focusId={focusId} />
-            ) : (
-              <MonthCalendar
-                stickers={view.stickers}
-                onOpen={(id) => {
-                  setFocusId(id);
-                  choose('stack');
-                }}
-              />
-            )}
-          </View>
         )}
-      </ScrollView>
-    </MomentBackground>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.fill, frame]}>
+      {view.status === 'stale' ? (
+        <View style={styles.stale} testID="sticker-book-stale">
+          <AppText variant="secondary" tone="secondaryLabel" style={styles.center}>
+            {t('stickers.stale')}
+          </AppText>
+          <PillButton
+            label={t('stickers.retry')}
+            variant="plain"
+            onPress={view.retry}
+            testID="sticker-book-stale-retry"
+          />
+        </View>
+      ) : null}
+      <BookDeck stickers={view.stickers} />
+    </View>
+  );
+}
+
+function BookDeck({ stickers }: { stickers: Sticker[] }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const focus = useBookFocus(stickers);
+  const { index, sticker } = focus;
+  return (
+    <>
+      <Stack.Screen options={{ headerTitle: focus.title }} />
+      {index > 0 ? (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button
+            accessibilityLabel={t('stickers.book.today')}
+            onPress={() => focus.jump(0)}
+          >
+            {t('stickers.book.today')}
+          </Stack.Toolbar.Button>
+        </Stack.Toolbar>
+      ) : null}
+      <View style={styles.middle}>
+        <Deck
+          key={`${focus.epoch}:${stickers.length}`}
+          stickers={stickers}
+          start={index}
+          onTurn={focus.turn}
+          onJump={focus.jump}
+        />
+        {stickers.length > 1 ? (
+          <AppText
+            variant="meta"
+            tone="secondaryLabel"
+            style={styles.center}
+            testID="sticker-stack-position"
+          >
+            {t('stickers.card.position', { index: index + 1, total: stickers.length })}
+          </AppText>
+        ) : null}
+      </View>
+      <View style={styles.bar}>
+        <PillButton
+          label={t('stickers.book.calendar')}
+          symbol="calendar"
+          variant="secondary"
+          onPress={() => router.push('/sticker-calendar')}
+          testID="sticker-book-calendar"
+        />
+        <PillButton
+          label={t('stickers.book.share')}
+          symbol="square.and.arrow.up"
+          onPress={() => router.push({ pathname: '/sticker-share', params: { card: sticker.id } })}
+          testID="sticker-book-share"
+        />
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: vars['--space-5'],
-    paddingBottom: vars['--space-7'],
-    gap: vars['--space-5'],
-  },
-  heading: { gap: vars['--space-1'] },
+  fill: { flex: 1 },
   heavy: { fontWeight: '800' },
-  center: { textAlign: 'center' },
+  center: { textAlign: 'center', paddingHorizontal: vars['--space-5'] },
   state: {
     alignItems: 'center',
     gap: vars['--space-3'],
     paddingTop: vars['--space-7'],
     paddingHorizontal: vars['--space-5'],
   },
-  book: { gap: vars['--space-5'] },
-  stale: { alignItems: 'center', gap: vars['--space-1'] },
+  stale: { alignItems: 'center', gap: vars['--space-1'], paddingTop: vars['--space-2'] },
+  middle: { flex: 1, justifyContent: 'center', gap: vars['--space-3'] },
+  bar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: vars['--space-3'],
+    paddingHorizontal: vars['--space-5'],
+  },
 });

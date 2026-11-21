@@ -53,3 +53,15 @@ export function byDay<T extends { earnedAt: string }>(items: readonly T[], { yea
   }
   return days;
 }
+
+const A_MONDAY = new Date(2026, 9, 5);
+
+export function weekdayNames(format: Intl.DateTimeFormat) {
+  return Array.from({ length: DAYS_IN_WEEK }, (_, day) =>
+    format.format(new Date(A_MONDAY.getFullYear(), A_MONDAY.getMonth(), A_MONDAY.getDate() + day)),
+  );
+}
+
+export function dayKey({ year, month }: Month, day: number) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}

@@ -41,6 +41,15 @@ const OVER_TABS = {
   scrollEdgeEffects: { top: 'automatic' },
 } as const;
 
+const STICKER_SHEET = {
+  presentation: 'formSheet',
+  sheetAllowedDetents: [1] as number[],
+  sheetGrabberVisible: true,
+  headerShown: true,
+  headerLargeTitleEnabled: false,
+  scrollEdgeEffects: { top: 'automatic' },
+} as const;
+
 // A sheet closed from JS is unmounted before its own transitionEnd; the stack reports when the dismissal finished.
 const FINISHED = { onFinishTransitioning: applySheetGone };
 
@@ -122,6 +131,11 @@ function RootStack() {
           name="sticker-book"
           options={{ ...OVER_TABS, title: t('stickers.book.title'), headerTitle: '' }}
         />
+        <Stack.Screen
+          name="sticker-calendar"
+          options={{ ...STICKER_SHEET, title: t('stickers.calendar.title') }}
+        />
+        <Stack.Screen name="sticker-share" options={STICKER_SHEET} />
         <Stack.Screen name="person/[id]" options={{ ...OVER_TABS, ...PROFILE_SCREEN_OPTIONS }} />
         <Stack.Screen
           name="person/reviews/[id]"

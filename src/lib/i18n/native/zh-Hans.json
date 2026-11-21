@@ -3,7 +3,7 @@
     "CFBundleDisplayName": "Tapiro",
     "NSCameraUsageDescription": "扫另一块屏幕上的收款码，或在聊天里拍一张照片发给对方。只在你点「拍照」或扫码时打开相机；扫码时 Tapiro 只读取码的内容。",
     "NSPhotoLibraryUsageDescription": "选一张图片发到聊天里、当作付款或小票凭证、从截图里读出收款码，或拿截图问小貘。Tapiro 只拿到你选的图片。",
-    "NSPhotoLibraryAddUsageDescription": "把收款人的收款码存到相册，方便你在钱包 App 里扫。Tapiro 只添加这一张图。",
+    "NSPhotoLibraryAddUsageDescription": "把收款人的收款码存到相册，方便你在钱包 App 里扫；或者把你做的贴纸海报存到相册。Tapiro 只添加你要存的那张图。",
     "NSLocationWhenInUseUsageDescription": "按离你多远排附近的悬赏和拼车，搜索地点时先显示附近的地方，或把你现在的位置当悬赏或拼车的地点。只在你用 Tapiro 时定位。",
     "NSMicrophoneUsageDescription": "在问小貘里说话时录下你的声音，转成文字填进输入框。只在你点麦克风后录音，点停就结束。",
     "NSSpeechRecognitionUsageDescription": "把你在问小貘里说的话转成文字。先在手机上识别；手机识别不了时，在你同意后发到阿里云百炼 Model Studio（新加坡）识别。"
