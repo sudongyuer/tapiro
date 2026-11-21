@@ -59,14 +59,14 @@ const ms: typeof zhHans = {
       queue: {
         tile: 'Beratur',
         hint: 'Nombor giliran, temu janji, tempat duduk',
-        title: 'cth. Beratur di imigresen esok pagi',
+        title: 'cth. Ambil nombor giliran di bank esok pagi',
         when: 'Masa',
         place: 'Tempat beratur',
         description: 'Kaunter mana, apa perlu dibawa',
       },
       move: {
         tile: 'Angkat Barang',
-        hint: 'Pindah bilik, barang besar',
+        hint: 'Pindah rumah, barang besar',
         title: 'cth. Tolong angkat dua kotak hari Sabtu',
         when: 'Masa',
         place: 'Tempat angkut',
@@ -82,8 +82,8 @@ const ms: typeof zhHans = {
       },
       study: {
         tile: 'Bantuan Belajar',
-        hint: 'Terangkan topik, kongsi nota',
-        title: 'cth. Terangkan kalkulus bab 3',
+        hint: 'Ajar kemahiran, kongsi pengalaman',
+        title: 'cth. Ajar saya buat slaid yang kemas',
         when: 'Masa',
         place: 'Tempat jumpa',
         description: 'Kursus mana, bab mana',
@@ -238,7 +238,7 @@ const ms: typeof zhHans = {
   place: {
     title: 'Pilih Tempat',
     prompt: 'Pilih satu tempat',
-    searchPlaceholder: 'Cari bangunan, pusat beli-belah, kampus',
+    searchPlaceholder: 'Cari bangunan, pusat beli-belah, mercu tanda',
     current: 'Guna Lokasi Semasa',
     currentSubtitle: 'Cari tempat bernama yang terdekat; boleh diubah',
     results: 'Hasil',
