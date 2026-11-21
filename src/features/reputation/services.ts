@@ -4,6 +4,7 @@ import { addBlockFixturePeople, blockEvents, fixtureBlocked } from '@/features/b
 import { onReturnToForeground, type AppStateSource } from '@/lib/foreground';
 import { live } from '@/lib/live';
 import { sessionEnds } from '@/lib/sessionEnds';
+import { fixtureStickerCount } from '@/lib/stickers';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument } from '@/lib/uiVerify';
 import { userCleanups } from '@/lib/userCleanups';
@@ -33,6 +34,7 @@ function verifyService() {
   addBlockFixturePeople(Object.values(FIXTURE_PEOPLE));
   return createFixtureReputationService({
     isBlocked: fixtureBlocked,
+    selfStickers: fixtureStickerCount,
     variant: repVariant(uiVerifyArgument('uiVerifyReviews') ?? uiVerifyArgument('uiVerifyProfile')),
     reviewsOn: uiVerifyArgument('uiVerifyReviews') !== undefined,
     mascot: mascotVariant(

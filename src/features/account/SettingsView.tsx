@@ -17,11 +17,14 @@ import {
   foregroundStyle,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
+import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
 import { Avatar } from '@/ui/Avatar';
+import { ConfirmDialog } from '@/ui/ConfirmDialog';
+import { fullRow } from '@/ui/FieldRow';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -55,6 +58,7 @@ export function SettingsView({
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
+  const [askingSignOut, setAskingSignOut] = useState(false);
   return (
     <Host style={styles.host} testID="settings-screen">
       <Form modifiers={[navigationScrollEdge(), tint(color('--color-accent'))]}>
@@ -115,12 +119,26 @@ export function SettingsView({
               <Text modifiers={[secondary]}>{t('account.settings.signingOut')}</Text>
             </HStack>
           ) : (
-            <Button
-              label={t('account.settings.signOut')}
-              modifiers={[foregroundStyle(color('--color-accent'))]}
-              onPress={onSignOut}
-              testID="settings-sign-out"
-            />
+            <ConfirmDialog
+              copy={{
+                title: t('account.settings.signOutTitle'),
+                message: t('account.settings.signOutMessage'),
+                confirm: t('account.settings.signOut'),
+                keep: t('account.settings.signOutKeep'),
+              }}
+              destructive
+              presented={askingSignOut}
+              onPresentedChange={setAskingSignOut}
+              onConfirm={onSignOut}
+              confirmTestID="settings-sign-out-confirm"
+            >
+              <Button
+                label={t('account.settings.signOut')}
+                modifiers={[foregroundStyle(color('--color-accent')), fullRow]}
+                onPress={() => setAskingSignOut(true)}
+                testID="settings-sign-out"
+              />
+            </ConfirmDialog>
           )}
         </Section>
         <Section footer={<Text>{t('account.settings.deleteFooter')}</Text>}>

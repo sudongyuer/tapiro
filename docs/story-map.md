@@ -143,7 +143,7 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 | me.settings.resolve     | 语言优先用 App 里选的，其次按系统语言加文字匹配，最后 zh-Hans                                    | unit:src/lib/i18n/resolve.test.ts                                                                                                                                                                           |
 | me.settings.complete    | 三种语言没有空文案                                                                               | unit:src/lib/i18n/resources.test.ts                                                                                                                                                                         |
 | me.settings.copy-review | 英文和马来文文案经母语者看过                                                                     | device: 用 en 和 ms 走一遍，请母语者审读                                                                                                                                                                    |
-| me.settings.sign-out    | 退出登录只退这台手机，回到欢迎页，再登录直接回首页                                               | ui:account_flow, unit:src/features/account/supabaseAuthService.test.ts#signs out this device only and never rejects, unit:src/lib/sessionLifetimes.test.ts#every session store clears when the session ends |
+| me.settings.sign-out    | 先问「退出登录？」（取消留下），确认后只退这台手机，回到欢迎页，再登录直接回首页                 | ui:account_flow, unit:src/features/account/supabaseAuthService.test.ts#signs out this device only and never rejects, unit:src/lib/sessionLifetimes.test.ts#every session store clears when the session ends |
 
 ### account.delete 删除账号
 

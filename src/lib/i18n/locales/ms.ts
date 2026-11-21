@@ -113,6 +113,10 @@ const ms: Translation = {
       title: 'Tetapan',
       language: 'Bahasa',
       signOut: 'Daftar Keluar',
+      signOutTitle: 'Daftar keluar?',
+      signOutMessage:
+        'Anda tidak akan menerima mesej atau peringatan sehingga anda daftar masuk semula.',
+      signOutKeep: 'Batal',
       signingOut: 'Sedang daftar keluar…',
       deleteAccount: 'Padam Akaun',
       deleteFooter: 'Akaun yang telah dipadam tidak boleh dipulihkan.',

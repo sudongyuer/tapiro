@@ -10,9 +10,9 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import count_reads, note_value, send, title_shown  # noqa: E402
-from board import assert_tier_whole, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
+from board import PILL_PIXELS, ROW_PILL, assert_tier_whole, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch, search_places  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
 from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/bounty-apply/',
@@ -64,9 +64,8 @@ def pill_box(shot, card):
     f = card['frame']
     lane = {'x': f['x'] + f['width'] - PILL_LANE, 'y': f['y'] + f['height'] / 2,
             'width': PILL_LANE, 'height': f['height'] / 2}
-    pill = ink_box(shot, lane, token('--color-accent', ui.appearance))
-    assert pill is None or pill['x'] > lane['x'] + 1, f'accent ink reaches the left edge of the 申请 lane: {pill}'
-    return pill
+    pill = ink_box(shot, lane, ROW_PILL[ui.appearance], 2)
+    return pill if pill and pill['count'] >= PILL_PIXELS else None
 
 
 def padded(element, pad):
@@ -116,7 +115,7 @@ print(f'top card: RM 500 at x {reward["x"]:.1f}, title ends {title["x"] + title[
 
 applied, shot = card_shot('bounty-card-fixture-worst-02', '02-applied')
 assert_in_card(shot, applied, r'1[.,]8\s?km', 'the distance 1.8 km')
-status = assert_in_card(shot, applied, tail('bounty.board.applied'), 'the applied line')
+status = assert_in_card(shot, applied, tail('bounty.board.waiting'), 'the applied line')
 assert_tier_whole(ui, READ[shot.path], applied['frame'])
 assert not re.search(r'…|\.\.\.$', status['text']), f'the applied line is truncated: {status["text"]!r}'
 

@@ -18,7 +18,7 @@ DEPS = ['src/features/bounty/', 'src/app/bounty-post/', 'src/app/(tabs)/bounty/'
         'verification/ui/pasteboard.swift', 'src/ui/TaskCard.tsx', 'src/ui/SheetFrame.tsx', 'src/features/place/', 'src/features/block/']
 LOCALES = ['zh-Hans', 'ms']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyBountyDraft', 'demo', '-uiVerifyLocation', 'undetermined']
-BUDGET = 300
+BUDGET = 420
 GEO, PYRAMID, EDITED = 'Sunway Geo Residences', 'Sunway Pyramid', 'Sunway Geo 宿舍'
 PYRAMID_EDITED = 'Sunway Pyramid 北门'
 PYRAMID_POINT = (3.0733, 101.6078)

@@ -11,7 +11,7 @@ from profile import assert_order, label, open_profile, review_id, scroll_to  # n
 DEPS = ['src/features/reputation/', 'src/app/(tabs)/', 'src/ui/TierMark.tsx', 'src/ui/Avatar.tsx', 'src/ui/NoticeCard.tsx', 'src/ui/Mascot.tsx', 'src/lib/report.ts', 'src/lib/i18n/locales/reputation/', 'src/features/block/', 'src/debug/ReputationScenes.tsx', 'verification/ui/profile.py', 'src/features/stickers/']
 SCENE = 'profile'
 BUDGET = 240
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson', '00000000-0000-4000-8000-000000000001', '-uiVerifyProfileTab', 'me']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson', '00000000-0000-4000-8000-000000000001', '-uiVerifyProfileTab', 'me', '-uiVerifyStickers', 'many']
 
 ui = UI(*sys.argv[1:])
 open_profile(ui)

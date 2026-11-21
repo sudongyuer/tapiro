@@ -9,10 +9,12 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from choose import defaults  # noqa: E402
+from bounty import tap_sheet_action  # noqa: E402
 from driver import UI, reach_home  # noqa: E402
 
 DEPS = ['src/lib/push/', 'src/lib/notifications/', 'src/features/account/', 'src/app/(tabs)/_layout.tsx',
-        'src/app/(tabs)/me/', 'verification/ui/choose.py']
+        'src/app/(tabs)/me/', 'verification/ui/choose.py',
+        'verification/ui/bounty.py', 'src/ui/ConfirmDialog.tsx']
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyNotifications', 'provisional']
 KEY = 'uiVerifyPushCalls'
 TOKEN = 'f0' * 32
@@ -51,6 +53,7 @@ wait_calls([registered, language, back])
 ui.wait_label('BackButton', lambda label: label == ui.t('shell.tabs.me'), 'the back title did not switch back')
 
 ui.tap('settings-sign-out')
+tap_sheet_action(ui, ui.t('account.settings.signOut'), 'settings-sign-out')
 ui.element('sign-in-apple', timeout=30)
 wait_calls([registered, language, back, {'name': 'unregister_push_token', 'args': {'token': TOKEN}}])
 ui.at_rest()

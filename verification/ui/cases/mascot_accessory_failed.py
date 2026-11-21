@@ -12,7 +12,7 @@ SCENE = 'profile'
 BUDGET = 200
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',
         '00000000-0000-4000-8000-000000000001', '-uiVerifyProfileTab', 'me', '-uiVerifyMascot', 'rest',
-        '-uiVerifyRepFail', 'accessory']
+        '-uiVerifyRepFail', 'accessory', '-uiVerifyStickers', 'many']
 
 ui = UI(*sys.argv[1:])
 worn = lambda key: ui.t('reputation.profile.accessoryWornA11y', name=ui.t(f'reputation.accessory.{key}'))  # noqa: E731

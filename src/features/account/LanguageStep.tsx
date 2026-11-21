@@ -1,6 +1,7 @@
 import { Form, Host } from '@expo/ui/swift-ui';
 import { scrollContentBackground, tint } from '@expo/ui/swift-ui/modifiers';
 import { PlatformColor, StyleSheet, View } from 'react-native';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
@@ -18,10 +19,11 @@ import { LanguagePickerSection } from './LanguagePicker';
 export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayout?: () => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const { top, bottom } = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+  const { bottom } = useSafeAreaInsets();
   return (
     <MomentBackground onLayout={onLayout} testID="language-step">
-      <View style={[styles.heading, { paddingTop: top + vars['--space-7'] }]}>
+      <View style={[styles.heading, { paddingTop: headerHeight + vars['--space-4'] }]}>
         <MascotSays line={t('account.language.greeting')} />
         <InkText
           variant="moment-title"

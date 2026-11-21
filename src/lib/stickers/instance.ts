@@ -15,5 +15,6 @@ export const stickerStore = createStickerStore(
 );
 
 export const earnFixtureSticker = fixture?.earn;
+export const fixtureStickerCount = fixture ? () => fixture.count() : undefined;
 
 sessionEnds.register(() => stickerStore.clear());

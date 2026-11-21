@@ -1252,3 +1252,50 @@ Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (N2, N3, N4, H6, H9, B1, D3,
 - Selection: the screens this batch changes and every case of the touched `board.py` helper; en for new copy keys only
   where a case shows them; dark for the changed fills (row pill, safety card, failed image).
 - After merging main (#211, #214): rebuilt (244 s); `verify:smoke` 4 of 4, `home_calm` and `chat_translate_worst` pass.
+
+## Implementation Record (2026-11-21) — milestone fixes before the next TestFlight build
+
+The milestone run over #204–#216 together (`fix/milestone-2026-11-21`). Retro:
+`docs/retros/2026-11-21-milestone-before-testflight.md`.
+
+### Decisions (owner-delegated, for veto)
+
+| #   | Decision                                                                                                                                                                                                                     | Why                                                                                                                                                                                                                       |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1  | Settings 退出登录 first asks 「退出登录？」 「退出后，要重新登录才会收到消息和提醒。」 in the system action sheet from the row (destructive 退出登录, keep 取消); the owner's call, closing E9's "not built"                                              | One rule with the name step (E9); signing out stops pushes, which the message says. A SwiftUI Form row has no React view to anchor the kit's `confirm`, so it uses `src/ui/ConfirmDialog` (the same system sheet, as a popover from the row) |
+| M2  | The bounty post form drops the keyboard toolbar 「完成」 (P5); the ride form, ride sheets and bank sheet keep it | Since iOS 26 the toolbar floats over the Form outside the keyboard safe area: it covered the right-aligned reward digits and the newly added 说明 field sat under the keyboard. The post form already puts the keyboard away when it scrolls (★ 22). A kit bottom inset, and putting the keyboard away on a form error, were tried and dropped: each broke other post cases |
+| M3  | The language step's heading starts one `--space-4` under the navigation bar (header height), as the name step's does                                                                                                         | The O2 fix (batch D) moved the heading out of the Form and placed it from the safe area, under the back button; the two steps' bubbles were 38 pt apart                                                                 |
+| M4  | In verify mode your own profile counts the stickers the fixture sticker book holds and takes its level from that count; `-uiVerifyStickers many` seeds 23                                                                    | The book (0) and the profile (23) came from two fixtures. Real data cannot disagree: `sticker_book()` and the profile's count both read `public.stickers` by owner                                                     |
+
+### Verification
+
+Selection (from what changed): #204–#216 touch nearly every feature folder plus shared code (`src/ui`, tokens, the kit),
+so `--affected` named 277 of 279 cases by their own `DEPS`. The milestone rule picked every one of them in zh-Hans
+and en light, plus `ms` for the 150 cases that declare it (long copy); dark for the 21 cases whose surfaces or
+colours changed (disabled pills, tokens, map shadow and stamp, native chip row, top scroll edges, the 问小貘 sheet
+edge, calm card, ride footer, failed image, safety card, keyboard 完成, pay-sheet no-method card, payee list); AX5 for
+the chip rows (`bounty_post_worst`, `bounty_post_selected_chips`, `ride_create_time_day`, `ride_create_worst`), the
+language step and `a11y_screens`.
+
+Run so far (light, zh-Hans + en + declared ms):
+
+- Accounts, home, invite, live, mascot, onboarding (122 runs): 116 passed (2 on retry); 6 failed: `account_flow` ×3
+  (the language step heading under the back button, M3) and `home_bounty_cards` ×3 (the case expected the strip on
+  挑人, replaced by H3).
+- Bounty (134 runs): 123 passed (8 on retry); 11 failed: `bounty_apply_detail` ×2 (case expected the payee jump to
+  我的, replaced by batch A), `bounty_board_worst` ×3 (ink 申请 pill and the 「已申请 · 」 line, replaced by E2/E3),
+  `bounty_post_currency` ×3 and `bounty_post_optional` ×3 (the floating 完成 over the reward digits and over the new
+  说明 field, M2).
+- 问小貘 and chat (124 runs): 121 passed (7 on retry); 3 failed: `ask_voice_device` zh-Hans and en (the helper
+  expected the sheet header to scroll away, replaced by P17) and `ask_memory_page` zh-Hans (two different
+  assertions, intermittent).
+- Reruns on the final build: all 16 `bounty_post_*` cases ×3 locales 44 of 44; `account_flow`, `bounty_apply_detail`,
+  `bounty_board_worst` 8 of 8; `ask_voice_device`, `ask_memory_page`, `profile_self`, `profile_entry_me`,
+  `profile_sticker_book_in_tab`, `account_settings_long`, `settings_language` 14 of 14; `onboarding_language_moment`,
+  `home_bounty_cards`, `mascot_accessory`, `mascot_accessory_failed`, `live_push_token` pass in every locale.
+- Tried and dropped on the way (M2): a kit bottom inset broke `bounty_post_form` en and ms and `payee_add_bank`;
+  putting the keyboard away on a form error left the 清空草稿 row out of the accessibility tree in en and ms.
+
+Not run before merge (owner's call, 2026-11-21: the internal TestFlight build does not wait for them): the coins,
+pay, payee and profile batch, the reviews and rides batch, the shell, stickers, tier and weekly batch, the dark cases
+and the AX5 cases. They run after the upload; findings go to a follow-up PR and the next build.

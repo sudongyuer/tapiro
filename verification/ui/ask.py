@@ -120,8 +120,8 @@ def close_button(ui, items=None):
     return next((i for i in (items or ui.read()) if i.get('AXLabel') == label and i.get('type') == 'Button'), None)
 
 
-# The sheet's own header rests in the system bar's row, left of its close button, and scrolled content passes under
-# that bar (its scroll edge effect) while the close button stays where it was.
+# The sheet's own header rests in the system bar's row, left of its close button, and stays there: it sits outside the
+# scroll view (P17), so scrolled content clips at its bottom edge while the header and the close button keep still.
 def header_drop(ui):
     items = ui.read()
     button = close_button(ui, items)
@@ -135,8 +135,8 @@ def assert_scrolled_under_bar(ui, rest):
     items = ui.read()
     button, belly = close_button(ui, items), by_id(items, 'ask-belly')
     assert button and button['frame'] == rest, f'the close button moved with the content: {button and button["frame"]}'
-    assert belly is None or belly['frame']['y'] < rest['y'] + rest['height'], \
-        f'the belly bar did not scroll under the bar: {belly and belly["frame"]}'
+    assert belly and belly['frame']['y'] >= rest['y'], \
+        f'the header scrolled away with the content: {belly and belly["frame"]}'
 
 
 def ink_centre(shot, f, inked):

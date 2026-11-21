@@ -936,3 +936,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-21 | UI audit batch E                        | 0                  | 2             | ~40 min (Simulator queue)                        | 0                       | 0                     |
 | 2026-11-21 | audit batch A, keep context             | 0                  | 0             | ~15 min (shared scratchpad, worktree guard)      | 0                       | 0                     |
 | 2026-11-21 | UI audit D: layout                      | 0                  | 3             | ~90 min (shared Simulator queue)                 | 0                       | 0                     |
+| 2026-11-21 | milestone before TestFlight             | 2 (combination)    | 3             | ~150 min (relaunch, kit inset, load 100–300)     | 0                       | 1 (P5 on post form)   |

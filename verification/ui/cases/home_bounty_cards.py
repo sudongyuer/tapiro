@@ -2,8 +2,8 @@
 home puts 要你处理 in front with its step and 去选人 pill, names the card for VoiceOver with title, step and reward, puts the
 front card's title and step on the stage, peeks the next two with their title and step, and fans out to four cards with the
 waiting cards in the calm colour; the one-time card is marked seen once, not again when fanned out a second time; tapping
-the front card opens the 挑人 screen for 帮取快递, where the tab-bar strip no longer points at that screen and shows the next
-card (讲一下微积分作业) instead."""
+the front card opens the 挑人 screen for 帮取快递, a pushed page, which shows no tab-bar strip (audit H3: the accessory is
+on tab roots only)."""
 import json
 import sys
 import time
@@ -89,12 +89,10 @@ ui.tap('live-card-bountyAction')
 ui.element('bounty-applicant-fixture-applicant-jie')
 
 
-def strip(items):
-    found = by_id(items, 'urgent-accessory') or by_id(items, 'urgent-accessory-inline')
-    return found if found and '讲一下微积分作业' in (found.get('AXLabel') or '') else None
-
-
-accessory = ui.settled(strip, 'the strip does not show the next card on the 挑人 screen')
-assert '帮取快递' not in accessory.get('AXLabel'), f'the strip points at the screen on top: {accessory.get("AXLabel")}'
+ui.at_rest()
+items = ui.read()
+assert by_id(items, 'bounty-applicant-fixture-applicant-jie'), 'the 挑人 screen left before the strip was read'
+shown = by_id(items, 'urgent-accessory') or by_id(items, 'urgent-accessory-inline')
+assert shown is None, f'the pushed 挑人 screen shows the tab-bar strip: {shown.get("AXLabel") if shown else None}'
 ui.snap('03-applicants')
 print('PASS: bounty cards ranked, labelled, fanned, marked seen once and opened')
