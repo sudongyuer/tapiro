@@ -18,7 +18,7 @@ export default {
   },
   empty: {
     title: '现在还没人拼车',
-    body: '回家、去商场还是去机场？发起一趟，顺路的人会看到。',
+    body: '回宿舍、去商场还是去机场？发起一趟，顺路的人会看到。',
     action: '发起拼车',
   },
   ticket: {
@@ -283,10 +283,10 @@ export default {
       tileLabel: '{{name}}，{{hint}}',
       free: '都不像，直接写',
       tile: {
-        home: { name: '回家', hint: '家、公寓、小区', dest: '回哪里' },
-        campus: { name: '去公司/学校', hint: '公司、学校、园区', dest: '去哪里' },
-        mall: { name: '去商场', hint: '购物中心、超市', dest: '去哪个商场' },
-        airport: { name: '去机场', hint: '赶飞机、接机', dest: '去哪个机场' },
+        home: { name: '回住处', hint: '宿舍、公寓、YC', dest: '回哪个住处' },
+        campus: { name: '去学校', hint: '双威、泰莱、校区', dest: '去哪个学校' },
+        mall: { name: '去商场', hint: 'Pyramid、谷中城', dest: '去哪个商场' },
+        airport: { name: '去机场', hint: 'KLIA、KLIA2', dest: '去哪个机场' },
       },
     },
     form: {

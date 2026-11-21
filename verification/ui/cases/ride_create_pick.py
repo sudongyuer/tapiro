@@ -1,4 +1,4 @@
-"""＋ opens 「去哪儿？」 (200 A): two recent routes, then 回家 / 去公司/学校 / 去商场 / 去机场 and 「都不像，直接写」, each 44 pt and
+"""＋ opens 「去哪儿？」 (200 A): two recent routes, then 回住处 / 去学校 / 去商场 / 去机场 and 「都不像，直接写」, each 44 pt and
 read with its hint. 去机场 opens the form with 航班和行李 already open and the destination asking 「去哪个机场」; back
 returns to the tiles, and a recent route fills both places and the people count on the live ticket."""
 import re

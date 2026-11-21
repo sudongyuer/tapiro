@@ -20,7 +20,7 @@ import { rideFormError } from './useRideDraft';
 
 const TILE_ICONS: Record<RideTile, SFSymbol> = {
   home: 'house',
-  campus: 'briefcase',
+  campus: 'graduationcap',
   mall: 'bag',
   airport: 'airplane',
 };

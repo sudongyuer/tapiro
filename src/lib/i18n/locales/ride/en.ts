@@ -292,14 +292,10 @@ const en: typeof zhHans = {
       tileLabel: '{{name}}, {{hint}}',
       free: 'None of these, I’ll write it',
       tile: {
-        home: { name: 'Home', hint: 'House, condo, flat', dest: 'Which home?' },
-        campus: { name: 'Work or school', hint: 'Office, school, campus', dest: 'Where to?' },
-        mall: { name: 'Mall', hint: 'Shopping centre, supermarket', dest: 'Which mall?' },
-        airport: {
-          name: 'Airport',
-          hint: 'Catch a flight, pick someone up',
-          dest: 'Which airport?',
-        },
+        home: { name: 'Home', hint: 'Hostel, condo, YC', dest: 'Which home?' },
+        campus: { name: 'Campus', hint: 'Sunway, Taylor’s, campus', dest: 'Which campus?' },
+        mall: { name: 'Mall', hint: 'Pyramid, Mid Valley', dest: 'Which mall?' },
+        airport: { name: 'Airport', hint: 'KLIA, KLIA2', dest: 'Which airport?' },
       },
     },
     form: {
