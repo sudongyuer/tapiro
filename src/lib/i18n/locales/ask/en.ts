@@ -178,9 +178,9 @@ export default {
       editTitle: 'Edit',
       kind: 'Type',
       label: 'Name',
-      labelPlaceholder: 'For example: dorm',
+      labelPlaceholder: 'For example: home',
       content: 'What it is',
-      contentPlaceholder: 'For example: Sunway Geo',
+      contentPlaceholder: 'For example: Garden Court, Block 3',
       footer:
         'Sent to {{provider}} when drafting or answering. Do not add phone numbers, payee details or other people’s details.',
       delete: 'Delete This Note',

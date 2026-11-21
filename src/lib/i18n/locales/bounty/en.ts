@@ -59,14 +59,14 @@ const en: typeof zhHans = {
       queue: {
         tile: 'Queue for Me',
         hint: 'Numbers, appointments, seats',
-        title: 'e.g. Queue at immigration tomorrow morning',
+        title: 'e.g. Get me a queue number at the bank tomorrow morning',
         when: 'Time',
         place: 'Queue place',
         description: 'Which counter, what to bring',
       },
       move: {
         tile: 'Move Things',
-        hint: 'Room moves, bulky items',
+        hint: 'Moving, bulky items',
         title: 'e.g. Help me move two boxes on Saturday',
         when: 'Time',
         place: 'Move-out place',
@@ -82,8 +82,8 @@ const en: typeof zhHans = {
       },
       study: {
         tile: 'Study Help',
-        hint: 'Explain a topic, share notes',
-        title: 'e.g. Explain calculus chapter 3 to me',
+        hint: 'Teach a skill, share know-how',
+        title: 'e.g. Teach me to make a decent slide deck',
         when: 'Time',
         place: 'Meeting place',
         description: 'Which course, which chapter',
@@ -236,7 +236,7 @@ const en: typeof zhHans = {
   place: {
     title: 'Choose a Place',
     prompt: 'Choose a place',
-    searchPlaceholder: 'Search buildings, malls, campuses',
+    searchPlaceholder: 'Search buildings, malls, landmarks',
     current: 'Use Current Location',
     currentSubtitle: 'Finds the nearest named place; you can change it',
     results: 'Results',
