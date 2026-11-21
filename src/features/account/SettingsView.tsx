@@ -15,6 +15,7 @@ import {
   accessibilityIdentifier,
   font,
   foregroundStyle,
+  frame,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { useState } from 'react';
@@ -24,7 +25,6 @@ import { navigationScrollEdge } from 'tapiro-kit';
 import { useI18n } from '@/lib/i18n';
 import { Avatar } from '@/ui/Avatar';
 import { ConfirmDialog } from '@/ui/ConfirmDialog';
-import { fullRow } from '@/ui/FieldRow';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
@@ -34,6 +34,8 @@ const AVATAR_SIZE = 44;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const primary = foregroundStyle({ type: 'hierarchical', style: 'primary' });
 const LEGAL_PAGES = ['terms', 'privacy'] as const;
+// The confirm popover points at the button's frame; across the row it points at the row, not the label's end.
+const wideRow = frame({ maxWidth: Infinity, alignment: 'leading' });
 
 export function SettingsView({
   name,
@@ -134,7 +136,7 @@ export function SettingsView({
             >
               <Button
                 label={t('account.settings.signOut')}
-                modifiers={[foregroundStyle(color('--color-accent')), fullRow]}
+                modifiers={[foregroundStyle(color('--color-accent')), wideRow]}
                 onPress={() => setAskingSignOut(true)}
                 testID="settings-sign-out"
               />
