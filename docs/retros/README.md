@@ -933,5 +933,6 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-21 | second device registered                | 0                  | 0             | ~0                                               | 0                       | 0                     |
 | 2026-11-21 | accessory opens the item                | 1 (owner)          | 0             | ~40 min (reproduced on the wrong phone first)    | 1                       | 0                     |
 | 2026-11-21 | UI walkthrough audit                    | 0                  | 0             | ~10 min (unnamed run started the full matrix)    | 0                       | 0                     |
+| 2026-11-21 | UI audit batch E                        | 0                  | 2             | ~40 min (Simulator queue)                        | 0                       | 0                     |
 | 2026-11-21 | audit batch A, keep context             | 0                  | 0             | ~15 min (shared scratchpad, worktree guard)      | 0                       | 0                     |
 | 2026-11-21 | UI audit D: layout                      | 0                  | 3             | ~90 min (shared Simulator queue)                 | 0                       | 0                     |

@@ -1236,3 +1236,19 @@ Source: `docs/reviews/2026-11-21-ui-walkthrough.md` (N2, N3, N4, H6, H9, B1, D3,
 ### Not built
 
 - Settings' 退出登录 confirmation (E9).
+
+### Verification (batch E)
+
+- `bun test` → 3210 pass after merging main (#211, #214); `bunx tsc --noEmit`, `bun run lint:changed origin/main`,
+  `bun run format:check`, `check-specs`, `check-story-map`, `node scripts/design-check.mjs` → exit 0.
+- `bun run verify:build` → BUILD SUCCEEDED (342 s, then incremental after each fix).
+- Changed cases, zh-Hans light and dark: `home_calm`, `bounty_board_list`, `bounty_board_map_fullscreen`,
+  `chat_image_states`, `chat_thread_states`, `chat_translate_worst`, `ride_history`, `account_onboarding_sign_out`
+  pass. `chat_thread_states` first failed on the compiler bug above and passes after the fix; dark
+  `chat_translate_worst` first failed on a Simulator automation timeout and passes on rerun.
+- `ms` light (copy changed): the seven cases with `ms` pass; `bounty_board_list` first failed on the pill helper
+  (grey text edges) and passes after the fix. `en` light: `chat_thread_states` (new 收起提醒 label) passes.
+- Board helper users: `bounty_apply`, `bounty_withdraw` pass in zh-Hans light. `verify:smoke` 4 of 4 pass.
+- Selection: the screens this batch changes and every case of the touched `board.py` helper; en for new copy keys only
+  where a case shows them; dark for the changed fills (row pill, safety card, failed image).
+- After merging main (#211, #214): rebuilt (244 s); `verify:smoke` 4 of 4, `home_calm` and `chat_translate_worst` pass.
