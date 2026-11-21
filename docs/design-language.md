@@ -221,7 +221,7 @@ The sticker book is one deck of `--color-receipt` cards (2026-11-21, `docs/specs
 the front card follows the finger and tilts up to 10°, leaves with a `--duration-settle` spring (ratio 1) and the next
 card rises from the fanned stack; a short release springs back (ratio 0.8). Share posters are images, so they keep the
 paper values in dark mode: `--color-paper`, `--color-poster-tint` or `--color-poster-night` behind the user's own hand
-art, a `--color-receipt` panel, and the 小貘 + Tapiro chip. Posters never show the other student's name.
+art, a `--color-receipt` panel, and the 小貘 + Tapiro chip. Posters never show the other person's name.
 
 ### Object stickers
 
