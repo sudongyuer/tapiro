@@ -40,7 +40,9 @@ PROMINENT_SHARE = 0.35
 FILL_SHARE = 0.6
 FILL_TOLERANCE = 12
 ICON_TOLERANCE = 24
-BOUNCE_SHARE = 0.08
+BOUNCE_SHARE = 0.05
+# The bounce scales the check past its resting size; a plain swap never grows beyond it (measured peak about +55%).
+BOUNCE_GROWTH = 0.2
 
 ui = UI(*sys.argv[1:])
 # Near midnight the ETA reads 「明天 00:15」: the app prefixes the day word, so a bare clock would miss it.
@@ -112,7 +114,7 @@ def confirm_button():
 
 
 def icon_box(f):
-    return {'x': f['x'] - 6, 'y': f['y'] + 8, 'width': 34, 'height': 36}
+    return {'x': f['x'] + 16, 'y': f['y'] + 12, 'width': 30, 'height': 32}
 
 
 def accent_share(shot, f):
@@ -217,18 +219,19 @@ with clip(ui, 'step-done') as video:
 assert len(wait_sent('complete_bounty', 1)) == 1, sent('complete_bounty')
 assert ui.t('bounty.status.a11y.done') in step('completed'), step('completed')
 ui.capture('06-done')
+rows = list(walk(json.loads((ui.output / '06-done.json').read_text())))
 success = token('--color-success', ui.appearance)
-width = after[0]['frame']['width']
+width = rows[0]['frame']['width']
 with tempfile.TemporaryDirectory() as tmp:
     shots = [Shot(path, width) for path, _ in frames(video, tmp)]
-    inks = {name: [shot.count(icon_box(by_id(after, f'bounty-status-step-{name}')['frame']),
+    inks = {name: [shot.count(icon_box(by_id(rows, f'bounty-status-step-{name}')['frame']),
                                lambda rgb: close(rgb, success, ICON_TOLERANCE)) for shot in shots]
             for name in ('completed', 'started')}
 print(f'step-done clip: {len(shots)} frames, completed icon ink {inks["completed"]}, started {inks["started"]}')
 final = inks['completed'][-1]
 assert final > 0, 'the 完成 step never turned into the green check'
-moving = [ink for ink in inks['completed'] if ink and abs(ink - final) > final * BOUNCE_SHARE]
-assert moving, f'the check appeared with no bounce: icon ink {inks["completed"]}'
+assert max(inks['completed']) > final * (1 + BOUNCE_GROWTH), \
+    f'the check appeared with no bounce: icon ink {inks["completed"]}'
 kept = inks['started'][-1]
 assert kept and all(abs(ink - kept) <= kept * BOUNCE_SHARE for ink in inks['started']), \
     f'the already-done 出发 step moved when the next step finished: {inks["started"]}'
