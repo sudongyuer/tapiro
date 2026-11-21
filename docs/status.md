@@ -49,6 +49,13 @@ findings, decisions E1–E12).
   at once, and an open board reloads every 60 s (bounty spec, Implementation Record 2026-11-21). The owner's three open
   test bounties on the hosted project (2026-11-20 18:29–18:31 UTC) are left for the owner to cancel or keep.
 
+- TestFlight 1.0.0 (20261121.1036), uploaded 2026-11-21 from main at `10c8cc61` (#204–#222: the UI audit batches,
+  the polish rounds and the milestone fixes of #221), passed processing (`COMPLETE`); the internal group Owner gets it
+  automatically. Owner's call (2026-11-21): this internal build did not wait for the rest of the milestone run. Done
+  before it: light zh-Hans/en/ms for accounts and home, bounty, 问小貘 and chat, with every failure fixed and rerun.
+  Still running after it: coins, pay, payee and profile; reviews and rides; shell, stickers, tier and weekly; the dark
+  and AX5 cases. Their findings go to a follow-up PR and the next build. No device test yet (neither iPhone touched).
+
 - China mainland App Store (owner Q34 = B, 2026-11-21; `docs/specs/2026-11-21-china-storefront-design.md`, research
   `docs/research/2026-11-21-china-storefront.md`): phase 1 built (StoreKit storefront in the kit, every cloud AI entry
   hidden on CHN, `ai-draft` refuses CHN with 451, Settings notice and an App 备案号 row from `expo.extra.icpFiling`).
