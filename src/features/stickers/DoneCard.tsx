@@ -20,29 +20,21 @@ export function cardDate(language: string, iso: string) {
   }).format(new Date(iso));
 }
 
-export function DoneCard({
-  sticker,
-  width,
-  testID,
-}: {
-  sticker: Sticker;
-  width: number;
-  testID: string;
-}) {
+export function useCardLabel(sticker: Sticker) {
+  const { t, language } = useI18n();
+  const { line1, title } = stickerLabel(sticker, t);
+  return t('stickers.card.a11y', { date: cardDate(language, sticker.earnedAt), line1, title });
+}
+
+export function DoneCard({ sticker, width }: { sticker: Sticker; width: number }) {
   const { t, language } = useI18n();
   const { color } = useTheme();
   const { line1, title } = stickerLabel(sticker, t);
-  const date = cardDate(language, sticker.earnedAt);
   return (
-    <View
-      accessible
-      accessibilityLabel={t('stickers.card.a11y', { date, line1, title })}
-      testID={testID}
-      style={[styles.card, cardSurface(color), { width }]}
-    >
+    <View style={[styles.card, cardSurface(color), { width }]}>
       <HandArt id={stickerArt(sticker)} size={ART} />
       <HandText hand="date" numberOfLines={1} style={{ color: color('--color-on-paper-muted') }}>
-        {date}
+        {cardDate(language, sticker.earnedAt)}
       </HandText>
       <HandText
         hand="caption"

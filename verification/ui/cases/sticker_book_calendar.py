@@ -1,99 +1,109 @@
-"""月历 (86C, 96A): the native 卡堆 / 月历 switch turns the book into this month's calendar; the choice survives a
-relaunch. Days with a done errand show its hand art and read the date, the count and the titles; empty days show only
-the number. Each week row holds seven days, so a day sits under its weekday (Monday first in every locale): 12 October
-2026, a Monday, in the first column, the 18th, a Sunday, in the last, on the same row. The enabled month chevron is drawn
-in the accent, not system blue. The month line counts 7 done, and its handwritten heading reads in light and dark. Tapping 帮取快递's day switches back to 卡堆 with that card in front."""
+"""月历 (sticker book deck, S4): the 月历 pill opens a large sheet titled 月历 with a × close and 贴纸本 · 38 张. Months
+run from September to November 2026 and the sheet opens on the month of the card in front (November). A done day shows
+its hand art and no number; 24 October, with three stickers, shows the newest art and a 3 badge; an empty day shows only
+its number; days after today are fainter. Each week row holds seven days, Monday first (12 October in the first column,
+the 18th in the last, on one row). The floating 分享{month} pill names the month most in view and follows the scroll.
+Tapping 24 October closes the sheet and the deck jumps to that day's newest card (第 10 张，共 38 张)."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import relaunch  # noqa: E402
 from driver import UI, assert_touch_target, by_id, close, reach_home, token  # noqa: E402
 
-DEPS = ['src/features/stickers/', 'src/app/(tabs)/me/', 'verification/ui/bounty.py']
+DEPS = ['src/features/stickers/', 'src/app/sticker-calendar.tsx', 'src/app/_layout.tsx', 'src/lib/stickers/fixture.ts']
 LOCALES = ['zh-Hans', 'ms']
-SEED = ['-uiVerifyBookView', 'stack']
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'seven', '-uiVerifyBookView', 'stack']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyStickers', 'month', '-uiVerifyToday', '2026-11-21']
 DAY = 'sticker-calendar-day-'
-COLOURFUL_MIN = 300
-WEEKDAY_COLUMNS = {12: 0, 14: 2, 18: 6, 24: 5}
+MONTHS = {
+    'zh-Hans': {8: '九月', 9: '十月', 10: '十一月'},
+    'en': {8: 'September', 9: 'October', 10: 'November'},
+    'ms': {8: 'September', 9: 'Oktober', 10: 'November'},
+}
+
+
+def colourful(rgb):
+    return max(rgb) - min(rgb) > 40
+
 
 ui = UI(*sys.argv[1:])
+names = MONTHS[ui.locale]
 
 
-def open_book():
-    ui.tap('tab-me')
-    ui.tap('me-stickers')
-    ui.element('sticker-book')
-
-
-def day_with(items, title):
-    return next(
-        (item for item in items
-         if (item.get('AXUniqueId') or '').startswith(DAY) and title in (item.get('AXLabel') or '')),
-        None,
-    )
+def pill_names(month):
+    return ui.wait_label('sticker-calendar-share',
+                         lambda text: text == ui.t('stickers.calendar.share', month=names[month]),
+                         f'the share pill does not name {names[month]}')
 
 
 reach_home(ui)
-open_book()
+ui.tap('tab-me')
+ui.tap('me-stickers')
 ui.element('sticker-stack')
-ui.tap_label(ui.t('stickers.book.view.calendar'))
+ui.tap('sticker-book-calendar')
 ui.element('sticker-calendar')
-relaunch(ui, drop=SEED)
-open_book()
-ui.element('sticker-calendar', timeout=30)
-assert by_id(ui.read(), 'sticker-stack') is None, 'the relaunch did not keep 月历'
-
-summary = ui.element('sticker-calendar-summary')
-assert summary.get('AXLabel') == ui.tn('stickers.calendar.summary', 7), summary
-month = ui.element('sticker-calendar-month')
-assert (month.get('AXLabel') or '').strip(), 'the month heading is empty'
+count = ui.element('sticker-calendar-count')
+expected = ui.t('stickers.calendar.count', title=ui.t('stickers.book.title'), total=ui.tn('stickers.count', 38))
+assert count.get('AXLabel') == expected, count
+ui.labelled(ui.t('stickers.calendar.close'))
+pill = pill_names(10)
+assert_touch_target(pill, 'the share pill')
 items = ui.read()
-tea = day_with(items, '帮买奶茶')
-parcel = day_with(items, '帮取快递')
-assert tea and parcel, 'the days with 帮买奶茶 and 帮取快递 are missing'
-assert_touch_target(tea, 'a done day')
-grid = ui.element('sticker-calendar')['frame']
-for day, column in WEEKDAY_COLUMNS.items():
-    cell = by_id(items, f'{DAY}{day}')['frame']
-    found = int((cell['x'] + cell['width'] / 2 - grid['x']) // (grid['width'] / 7))
-    assert found == column, f'October {day} sits in column {found}, its weekday is column {column} (Monday first)'
-monday, sunday = (by_id(items, f'{DAY}{day}')['frame'] for day in (12, 18))
-assert abs(monday['y'] - sunday['y']) < 1, f'Monday the 12th and Sunday the 18th are not on one week row: {monday} {sunday}'
-empty = next(
-    (item for item in items
-     if (item.get('AXUniqueId') or '').startswith(DAY)
-     and not any(word in (item.get('AXLabel') or '') for word in ('帮', '拼车'))),
-    None,
-)
-assert empty, 'no empty day in the month'
-shot = ui.snap('01-calendar')
-drawn = shot.count(tea['frame'], lambda rgb: max(rgb) - min(rgb) > 40)
-blank = shot.count(empty['frame'], lambda rgb: max(rgb) - min(rgb) > 40)
-print(f'colourful pixels: done day {drawn}, empty day {blank}')
-assert drawn > COLOURFUL_MIN, f'the done day draws no hand art ({drawn})'
-assert blank < 20, f'an empty day draws something ({blank})'
-chevron = ui.element('sticker-calendar-next')['frame']
-accent = token('--color-accent', ui.appearance)
-tinted = shot.count(chevron, lambda rgb: close(rgb, accent, 24))
-blue = shot.count(chevron, lambda rgb: rgb[2] - rgb[0] > 60)
-print(f'next-month chevron: {tinted} accent pixels, {blue} blue pixels')
-assert tinted > 20 and blue == 0, f'the next-month chevron is not drawn in the accent ({tinted} accent, {blue} blue)'
-ink = shot.count(month['frame'], (lambda rgb: max(rgb) > 200) if ui.appearance == 'dark' else (lambda rgb: max(rgb) < 80))
-print(f'month heading ink pixels: {ink}')
-assert ink > 200, f'the handwritten month heading does not contrast with the {ui.appearance} background ({ink})'
+november = by_id(items, f'{DAY}2026-11-03')
+assert november and november.get('AXLabel') != '', november
+assert november.get('type') == 'Button', f'3 November is not a button: {november}'
+later = by_id(items, f'{DAY}2026-11-25')
+assert later, 'a day after today is missing'
+ui.at_rest()
+shot = ui.snap('01-november')
+done_art = shot.count(november['frame'], colourful)
+later_art = shot.count(later['frame'], colourful)
+print(f'colourful pixels: 3 November {done_art}, 25 November {later_art}')
+assert done_art > 300, f'a done day draws no hand art ({done_art})'
+assert later_art < 20, f'a future day draws something ({later_art})'
 
-ui.tap(parcel['AXUniqueId'])
-ui.element('sticker-stack')
-ui.wait(
-    lambda now: next(
-        (item for item in now
-         if (item.get('AXUniqueId') or '').startswith('sticker-card-')
-         and '帮取快递' in (item.get('AXLabel') or '')
-         and item['frame']['x'] >= 0 and item['frame']['x'] < 200),
-        None,
-    ),
-    'the stack does not open on 帮取快递',
-)
-ui.capture('02-opened-card')
-print('PASS: the calendar is remembered, shows hand art on done days only and opens the tapped card')
+for _ in range(6):
+    if by_id(ui.read(), f'{DAY}2026-10-12') and by_id(ui.read(), f'{DAY}2026-10-24'):
+        break
+    ui.swipe((200, 300), (200, 650), 0.5)
+pill_names(9)
+items = ui.read()
+for day, column in {12: 0, 14: 2, 18: 6}.items():
+    cell = by_id(items, f'{DAY}2026-10-{day}')['frame']
+    found = int((cell['x'] + cell['width'] / 2 - 16) // ((402 - 32) / 7))
+    assert found == column, f'October {day} sits in column {found}, its weekday is column {column} (Monday first)'
+monday, sunday = (by_id(items, f'{DAY}2026-10-{day}')['frame'] for day in (12, 18))
+assert abs(monday['y'] - sunday['y']) < 1, f'Monday the 12th and Sunday the 18th are not on one row: {monday} {sunday}'
+busy = by_id(items, f'{DAY}2026-10-24')
+assert (busy.get('AXLabel') or '').count(ui.t('stickers.calendar.join')) >= 2, f'24 October does not read three titles: {busy}'
+assert_touch_target(busy, 'a done day')
+ui.at_rest()
+shot = ui.snap('02-october')
+f = busy['frame']
+badge = {'x': f['x'] + f['width'] / 2, 'y': f['y'], 'width': f['width'] / 2, 'height': f['height'] / 3}
+ink = token('--color-accent', ui.appearance)
+badged = shot.count(badge, lambda rgb: close(rgb, ink, 16))
+print(f'24 October badge: {badged} accent pixels')
+assert badged > 40, f'the day with three stickers shows no count badge ({badged})'
+
+for _ in range(4):
+    if by_id(ui.read(), f'{DAY}2026-09-03'):
+        break
+    ui.swipe((200, 300), (200, 650), 0.5)
+ui.at_rest()
+items = ui.read()
+empty = by_id(items, f'{DAY}2026-09-03')
+assert empty and '帮' not in (empty.get('AXLabel') or ''), empty
+shot = ui.snap('03-september')
+blank = shot.count(empty['frame'], colourful)
+print(f'3 September (empty) colourful pixels: {blank}')
+assert blank < 20, f'an empty day draws something ({blank})'
+
+for _ in range(4):
+    if by_id(ui.read(), f'{DAY}2026-10-24'):
+        break
+    ui.swipe((200, 650), (200, 300), 0.5)
+ui.tap(f'{DAY}2026-10-24')
+ui.gone('sticker-calendar')
+ui.wait_label('sticker-stack-position', lambda text: ui.t('stickers.card.position', index=10, total=38) in text,
+              'the deck did not jump to the newest card of 24 October')
+ui.capture('04-opened-card')
+print('PASS: the calendar scrolls through months, names the one in view and opens the tapped day in the deck')

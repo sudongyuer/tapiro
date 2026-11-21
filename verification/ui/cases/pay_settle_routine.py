@@ -14,8 +14,7 @@ DEPS = [
     'verification/ui/celebration.py',
 ]
 SCENE = 'pay-sheet'
-ARGS = ['-uiVerifyPayment', 'fixture-owed-cash', '-uiVerifyStickers', 'seven', '-uiVerifyFx', 'none',
-        '-uiVerifyBookView', 'stack']
+ARGS = ['-uiVerifyPayment', 'fixture-owed-cash', '-uiVerifyStickers', 'seven', '-uiVerifyFx', 'none']
 LOCALES = ['zh-Hans', 'ms']
 
 ui = UI(*sys.argv[1:])
@@ -25,15 +24,10 @@ ui.tap('pay-confirm')
 assert_celebration(ui, first=False, count=8, title='帮带一杯咖啡', name='小林', amount=r'RM\s?8\.00', shot_name='01-routine')
 ui.tap('pay-celebration-book-open')
 ui.element('sticker-book')
-count = ui.wait_label(
-    'sticker-book-count',
-    lambda label: label.startswith(ui.tn('stickers.count', 8)),
-    'the sticker book does not count 8 stickers',
-)
 first = ui.element('sticker-card-0')
 label = first.get('AXLabel') or ''
 assert ui.t('stickers.label.payee', name='小林') in label and '帮带一杯咖啡' in label, label
-position = ui.element('sticker-stack-position')
-assert ui.t('stickers.card.position', index=1, total=8) in (position.get('AXLabel') or ''), position
+ui.wait_label('sticker-stack-position', lambda text: ui.t('stickers.card.position', index=1, total=8) in text,
+              'the sticker book does not hold 8 stickers with the new one first')
 ui.capture('02-book')
 print('PASS: a later settle celebrates without the badge and the book lists the new sticker first')

@@ -2,7 +2,7 @@ import type { BountyCategory } from './category';
 import type { Sticker, StickerKind, StickerRole, StickerService } from './model';
 import { WORST_NAME, WORST_TITLE } from './worstCase';
 
-export const STICKER_FIXTURES = ['none', 'one', 'seven', 'many', 'worst'] as const;
+export const STICKER_FIXTURES = ['none', 'one', 'seven', 'many', 'worst', 'month'] as const;
 export type StickerFixture = (typeof STICKER_FIXTURES)[number];
 
 export function stickerFixture(value: string | undefined): StickerFixture {
@@ -60,15 +60,30 @@ const WORST: Seed[] = [
   },
 ];
 
+const MONTH_DAYS: [number, number][] = [
+  [10, 3],
+  [10, 1],
+  ...Array.from({ length: 31 }, (_, index): [number, number] => [9, 31 - index]).flatMap(
+    (day): [number, number][] => (day[1] === 24 ? [day, day, day] : [day]),
+  ),
+  [8, 28],
+  [8, 15],
+  [8, 2],
+];
+
 const SEEDS: Record<StickerFixture, Seed[]> = {
   none: [],
   one: [{ title: '帮带一杯咖啡', kind: 'bounty', role: 'payee', name: '小林', category: 'buy' }],
   seven: SEVEN,
   many: Array.from({ length: 23 }, (_, index) => SEVEN[index % SEVEN.length]),
   worst: WORST,
+  month: MONTH_DAYS.map((_, index) => SEVEN[index % SEVEN.length]),
 };
 
-const earned = (index: number) => new Date(Date.UTC(2026, 9, 24 - index * 2, 4)).toISOString();
+const earned = (fixture: StickerFixture, index: number) => {
+  const [month, day] = fixture === 'month' ? MONTH_DAYS[index] : [9, 24 - index * 2];
+  return new Date(Date.UTC(2026, month, day, 4, 59 - index)).toISOString();
+};
 
 export type EarnInput = {
   paymentId: string;
@@ -87,7 +102,7 @@ export function createFixtureStickerService(fixture: StickerFixture) {
     category: seed.category ?? null,
     art: null,
     title: seed.title,
-    earnedAt: earned(index),
+    earnedAt: earned(fixture, index),
     counterpartName: seed.name,
   }));
   const service: StickerService & { earn(input: EarnInput): number; count(): number } = {

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewProps, ViewStyle } from 'react-native';
 
 export { ChipRow, keyboardDone, navigationScrollEdge } from './swiftUiParts';
+export { snapshotPoster, type PosterSnapshotResult } from './poster';
 
 export type PlacePoint = { latitude: number; longitude: number };
 export type PlaceSuggestion = { id: string; title: string; subtitle: string };

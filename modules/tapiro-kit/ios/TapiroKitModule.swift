@@ -184,6 +184,15 @@ public final class TapiroKitModule: Module {
       }
     }.runOnQueue(.main)
 
+    AsyncFunction("snapshotPoster") { [weak self] (viewTag: Int, promise: Promise) in
+      MainActor.assumeIsolated {
+        guard let view = self?.appContext?.findView(withTag: viewTag, ofType: UIView.self) else {
+          return promise.resolve(["status": "failed", "code": "noView"])
+        }
+        promise.resolve(PosterSnapshot.file(of: view))
+      }
+    }.runOnQueue(.main)
+
     AsyncFunction("confirm") { [weak self] (options: ConfirmOptions, promise: Promise) in
       MainActor.assumeIsolated {
         let anchor = options.anchorTag == 0

@@ -1,3 +1,4 @@
+import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { createContext, useContext } from 'react';
 import {
   ActivityIndicator,
@@ -25,6 +26,7 @@ export type PillButtonProps = {
   loading?: boolean;
   loadingLabel?: string;
   disabled?: boolean;
+  symbol?: SFSymbol;
   testID?: string;
 };
 
@@ -35,6 +37,7 @@ export function PillButton({
   loading = false,
   loadingLabel,
   disabled = false,
+  symbol,
   testID,
 }: PillButtonProps) {
   const { color } = useTheme();
@@ -79,6 +82,13 @@ export function PillButton({
             </AppText>
           ) : null}
         </View>
+      ) : symbol ? (
+        <View style={styles.loading}>
+          <SymbolView name={symbol} size={vars['--text-body']} tintColor={labelColor} />
+          <AppText variant="body" style={[styles.label, styles.shrink, { color: labelColor }]}>
+            {label}
+          </AppText>
+        </View>
       ) : (
         <AppText variant="body" style={[styles.label, { color: labelColor }]}>
           {label}
@@ -100,5 +110,6 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: vars['--opacity-pressed'] },
   label: { fontWeight: '600', textAlign: 'center' },
+  shrink: { flexShrink: 1 },
   loading: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-2'] },
 });
