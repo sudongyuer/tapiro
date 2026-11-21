@@ -74,11 +74,12 @@ describe('poses', () => {
   });
 });
 
-test('the card coming up from the stack is always drawn under the top card', () => {
-  expect(cardWindow(0, 2, false)).toEqual([1, 0]);
-  const older = cardWindow(4, 10, false);
-  expect(older.at(-1)).toBe(1);
-  expect(older.indexOf(4)).toBeGreaterThan(older.indexOf(5));
-  const newer = cardWindow(4, 10, true);
-  expect(newer.indexOf(4)).toBeGreaterThan(newer.indexOf(3));
+test('the card coming up from the stack is always drawn under the top card, either way', () => {
+  expect(cardWindow(0, 2)).toEqual([0, 1]);
+  expect(cardWindow(4, 10)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  const older = dragPosition(4, -200, WIDTH, 10);
+  expect(cardPose(4, older, 4, WIDTH).zIndex).toBeGreaterThan(cardPose(5, older, 4, WIDTH).zIndex);
+  const newer = dragPosition(4, 200, WIDTH, 10);
+  expect(cardPose(4, newer, 4, WIDTH).zIndex).toBeGreaterThan(cardPose(3, newer, 4, WIDTH).zIndex);
+  expect(cardPose(4, 3, 3, WIDTH).zIndex).toBeLessThan(cardPose(3, 3, 3, WIDTH).zIndex);
 });

@@ -8,7 +8,6 @@ import {
 } from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
-  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -59,20 +58,12 @@ function MovingDeck({ stickers, start, onTurn, onJump }: Props) {
   const cardWidth = Math.min(screen - GUTTER, CARD_MAX);
   const count = stickers.length;
   const [index, setIndex] = useState(start);
-  const [towardNewer, setTowardNewer] = useState(false);
   const position = useSharedValue(start);
   const base = useSharedValue(start);
   const settle = (next: number) => {
     setIndex(next);
     onTurn(next);
   };
-
-  useAnimatedReaction(
-    () => position.get() < base.get(),
-    (now, before) => {
-      if (now !== before) scheduleOnRN(setTowardNewer, now);
-    },
-  );
 
   const pan = usePanGesture({
     activeOffsetX: [-ACTIVATE, ACTIVATE],
@@ -116,7 +107,7 @@ function MovingDeck({ stickers, start, onTurn, onJump }: Props) {
   return (
     <GestureDetector gesture={pan}>
       <View style={styles.deck} testID="sticker-stack">
-        {cardWindow(index, count, towardNewer).map((card) => (
+        {cardWindow(index, count).map((card) => (
           <MovingCard
             key={stickers[card].id}
             sticker={stickers[card]}
@@ -160,6 +151,7 @@ function MovingCard({
     const now = cardPose(card, position.get(), base.get(), screen);
     return {
       opacity: now.opacity,
+      zIndex: now.zIndex,
       transform: [
         { translateX: now.translateX },
         { translateY: now.translateY },

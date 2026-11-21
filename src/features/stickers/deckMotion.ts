@@ -50,6 +50,7 @@ export type CardPose = {
   rotate: number;
   scale: number;
   opacity: number;
+  zIndex: number;
 };
 
 const LAYERS = [
@@ -75,6 +76,7 @@ function layerPose(depth: number): CardPose {
     rotate: mix(LAYERS[low].rotate, LAYERS[high].rotate, t),
     scale: mix(LAYERS[low].scale, LAYERS[high].scale, t),
     opacity: Math.min(1, Math.max(0, LAYERS.length - depth)),
+    zIndex: -Math.round(depth * 10),
   };
 }
 
@@ -90,16 +92,17 @@ export function cardPose(card: number, position: number, base: number, width: nu
       translateY: 0,
       rotate: rel * TILT_DEGREES,
       scale: 1,
-      opacity: away >= 1.5 ? 0 : 1,
+      opacity: away >= 1 ? 0 : 1,
+      zIndex: 20 - Math.round(away * 10),
     };
   }
   return layerPose(Math.abs(rel));
 }
 
-export function cardWindow(index: number, count: number, towardNewer: boolean): number[] {
+export function cardWindow(index: number, count: number): number[] {
   const cards: number[] = [];
   for (let card = index - WINDOW; card <= index + WINDOW; card++) {
     if (card >= 0 && card < count) cards.push(card);
   }
-  return towardNewer ? cards : cards.reverse();
+  return cards;
 }
