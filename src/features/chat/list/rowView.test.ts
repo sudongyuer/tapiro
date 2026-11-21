@@ -165,6 +165,20 @@ describe('the row time', () => {
     expect(rowTime(new Date(2026, 9, 30, 9).toISOString(), NOW, t, 'en')).toBe('Oct 30');
     expect(rowTime(new Date(2025, 11, 31, 9).toISOString(), NOW, t, 'en')).toBe('Dec 31, 2025');
   });
+
+  test('the start of the loaded day reads every row as the load moment does', () => {
+    const dayStart = new Date(NOW).setHours(0, 0, 0, 0);
+    const times = [
+      at(6, 7, 9),
+      at(5, 23, 59),
+      at(2),
+      at(1),
+      new Date(2025, 11, 31, 9).toISOString(),
+    ];
+    for (const time of times) {
+      expect(rowTime(time, dayStart, t, 'en')).toBe(rowTime(time, NOW, t, 'en'));
+    }
+  });
 });
 
 describe('the thread title', () => {
