@@ -10,9 +10,9 @@ import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from apply import count_reads, note_value, send, title_shown  # noqa: E402
-from board import assert_tier_whole, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
+from board import PILL_PIXELS, ROW_PILL, assert_tier_whole, cards, in_view, ink_box, scroll_down, screen, visible  # noqa: E402
 from bounty import relaunch, search_places  # noqa: E402
-from driver import UI, assert_touch_target, by_id, reach_home, token  # noqa: E402
+from driver import UI, assert_touch_target, by_id, reach_home  # noqa: E402
 from ocr import find, lines_in  # noqa: E402
 
 DEPS = ['src/features/bounty/', 'src/features/home/', 'src/app/(tabs)/', 'src/app/bounty-apply/',
@@ -64,8 +64,10 @@ def pill_box(shot, card):
     f = card['frame']
     lane = {'x': f['x'] + f['width'] - PILL_LANE, 'y': f['y'] + f['height'] / 2,
             'width': PILL_LANE, 'height': f['height'] / 2}
-    pill = ink_box(shot, lane, token('--color-accent', ui.appearance))
-    assert pill is None or pill['x'] > lane['x'] + 1, f'accent ink reaches the left edge of the 申请 lane: {pill}'
+    pill = ink_box(shot, lane, ROW_PILL[ui.appearance], 2)
+    if pill is None or pill['count'] < PILL_PIXELS:
+        return None
+    assert pill['x'] > lane['x'] + 1, f'the 申请 pill fill reaches the left edge of its lane: {pill}'
     return pill
 
 

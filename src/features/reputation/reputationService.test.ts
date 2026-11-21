@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { createReviewDrafts } from './drafts';
+import { FIXTURE_REP_USER_ID } from './fixtureData';
 import { createFixtureReputationService } from './fixtureReputationService';
 import { AccessoryError, createSupabaseReputationService } from './reputationService';
 import { memorySettings } from './storeHarness';
@@ -158,6 +159,27 @@ describe('fixture reputation service', () => {
       { face: 'happy', chips: [], sentence: null },
     );
     expect(ended).toEqual({ ok: false, failure: 'closed' });
+  });
+
+  test('your own profile counts the stickers the sticker book holds', async () => {
+    let book = 0;
+    const service = createFixtureReputationService({
+      variant: 'many',
+      now,
+      selfStickers: () => book,
+    });
+    expect((await service.profile(FIXTURE_REP_USER_ID)).mascot).toEqual({
+      stickers: 0,
+      level: 1,
+      accessory: null,
+    });
+    book = 23;
+    expect((await service.profile(FIXTURE_REP_USER_ID)).mascot).toEqual({
+      stickers: 23,
+      level: 4,
+      accessory: 'umbrella',
+    });
+    expect((await service.profile('fixture-person-mei')).mascot.stickers).toBe(23);
   });
 
   test('profile reviews page through the worst-case list without repeats', async () => {

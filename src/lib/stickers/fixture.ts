@@ -2,7 +2,7 @@ import type { BountyCategory } from './category';
 import type { Sticker, StickerKind, StickerRole, StickerService } from './model';
 import { WORST_NAME, WORST_TITLE } from './worstCase';
 
-export const STICKER_FIXTURES = ['none', 'one', 'seven', 'worst'] as const;
+export const STICKER_FIXTURES = ['none', 'one', 'seven', 'many', 'worst'] as const;
 export type StickerFixture = (typeof STICKER_FIXTURES)[number];
 
 export function stickerFixture(value: string | undefined): StickerFixture {
@@ -64,6 +64,7 @@ const SEEDS: Record<StickerFixture, Seed[]> = {
   none: [],
   one: [{ title: '帮带一杯咖啡', kind: 'bounty', role: 'payee', name: '小林', category: 'buy' }],
   seven: SEVEN,
+  many: Array.from({ length: 23 }, (_, index) => SEVEN[index % SEVEN.length]),
   worst: WORST,
 };
 
@@ -89,9 +90,12 @@ export function createFixtureStickerService(fixture: StickerFixture) {
     earnedAt: earned(index),
     counterpartName: seed.name,
   }));
-  const service: StickerService & { earn(input: EarnInput): number } = {
+  const service: StickerService & { earn(input: EarnInput): number; count(): number } = {
     async list() {
       return [...stickers];
+    },
+    count() {
+      return stickers.length;
     },
     earn({ counterpartName = null, ...input }) {
       if (!stickers.some((sticker) => sticker.paymentId === input.paymentId))

@@ -1,4 +1,4 @@
-export { earnFixtureSticker, stickerStore } from './instance';
+export { earnFixtureSticker, fixtureStickerCount, stickerStore } from './instance';
 export { BOUNTY_CATEGORIES, bountyCategory } from './category';
 export type { BountyCategory } from './category';
 export { collect as collectSticker, dismissSettled } from './live';

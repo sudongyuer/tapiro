@@ -1,6 +1,7 @@
 """The language step sits on the moment background with 小貘's head and the moment title above the native picker and a 44 pt get-started button.
 Title, rows and button share one 24 pt column, the picker has no 「语言」 header under the question, and the rows use the filled-row colour.
-The whole question is drawn: in en its second line 「prefer?」 lost its first glyph to the hosted view's edge (audit O2)."""
+The whole question is drawn: in en its second line 「prefer?」 lost its first glyph to the hosted view's edge (audit O2).
+小貘's greeting starts below the navigation bar, where the name step's starts: the O2 fix first put it under the back button."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -27,6 +28,11 @@ assert abs(english['frame']['width'] - (screen['width'] - 2 * COLUMN)) <= 1, f'r
 header = ui.t('account.settings.language')
 assert not [i for i in ui.read() if i.get('AXLabel') == header], f'the picker repeats the {header!r} header under the question'
 assert title['frame']['y'] < english['frame']['y'] < done['frame']['y'], 'title, picker and button are out of order'
+greeting = ui.labelled(ui.t('account.language.greeting'))['frame']
+bars = [i['frame'] for i in ui.read() if i.get('AXUniqueId') == 'RNSScreen' and 0 < i['frame']['y'] and i['frame']['height'] < 100]
+assert bars, 'no navigation bar over the language step'
+bar_bottom = bars[0]['y'] + bars[0]['height']
+assert greeting['y'] >= bar_bottom + 8, f'the greeting at y {greeting["y"]} sits under the navigation bar ending at {bar_bottom}'
 assert done['frame']['y'] + done['frame']['height'] <= screen['height'], f'get started is off screen: {done["frame"]}'
 shot = ui.snap('language-step')
 assert_drawn_whole(ui, shot, title['frame'], ui.t('account.language.question'), 'the question')

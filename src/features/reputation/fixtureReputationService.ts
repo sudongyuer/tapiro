@@ -18,6 +18,7 @@ import {
   REVIEW_PAGE_SIZE,
   type MyMascot,
   type ProfileReview,
+  type PublicMascot,
   type ReputationService,
   type ReviewPair,
 } from './types';
@@ -53,6 +54,7 @@ export type FixtureRepOptions = {
   now?: () => Date;
   onCall?: (name: string, args: unknown) => void;
   isBlocked?: (personId: string) => boolean;
+  selfStickers?: () => number;
 };
 
 export const FIXTURE_GONE_PERSON_ID = 'fixture-person-gone';
@@ -66,6 +68,12 @@ function seenBy(personId: string, rows: ProfileReview[]) {
       ? { ...row, title: RIDE_ROUTE, reviewer: FIXTURE_PEOPLE.mei, reportable: true }
       : row,
   );
+}
+
+function bookMascot(mascot: PublicMascot, stickers: number): PublicMascot {
+  const level = mascotLevel(stickers);
+  const worn = mascot.accessory && accessoryLevel(mascot.accessory) <= level;
+  return { stickers, level, accessory: worn ? mascot.accessory : null };
 }
 
 export function fixtureRepFailPoints(value: string | undefined): RepFailPoint[] {
@@ -85,6 +93,7 @@ export function createFixtureReputationService({
   now = () => new Date(),
   onCall,
   isBlocked = () => false,
+  selfStickers,
 }: FixtureRepOptions): ReputationService {
   const failing = new Set<RepFailPoint>(
     variant === 'failed'
@@ -216,8 +225,11 @@ export function createFixtureReputationService({
         },
       );
       if (personId === FIXTURE_GONE_PERSON_ID) throw new ProfileGoneError();
+      const card = fixtureProfile(personId, data, now(), seenBy(personId, reviews));
+      const stickers = card.self && selfStickers ? selfStickers() : null;
       return {
-        ...fixtureProfile(personId, data, now(), seenBy(personId, reviews)),
+        ...card,
+        mascot: stickers === null ? card.mascot : bookMascot(card.mascot, stickers),
         blockedByMe: isBlocked(personId),
       };
     },

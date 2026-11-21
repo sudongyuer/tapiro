@@ -1,5 +1,6 @@
 """Your own profile reached inside 拼车 (a member list of your own ride; audit R3): the sticker book row opens
-一起办成的事 over the current screen without switching to 我的, and 返回 lands back on the profile in 拼车."""
+一起办成的事 over the current screen without switching to 我的, and 返回 lands back on the profile in 拼车. The row and the
+book count the same 23 stickers."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
@@ -11,7 +12,7 @@ DEPS = ['src/features/reputation/profile/', 'src/app/sticker-book.tsx', 'src/app
 SCENE = 'profile'
 BUDGET = 200
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',
-        '00000000-0000-4000-8000-000000000001', '-uiVerifyProfileTab', 'ride']
+        '00000000-0000-4000-8000-000000000001', '-uiVerifyProfileTab', 'ride', '-uiVerifyStickers', 'many']
 
 
 def tab_selected(items, tab):
@@ -22,8 +23,12 @@ ui = UI(*sys.argv[1:])
 open_profile(ui)
 ui.wait(lambda items: tab_selected(items, 'tab-ride'), '拼车 is not selected under the profile')
 scroll_to(ui, 'profile-stickers')
+shown = ui.element('profile-stickers').get('AXLabel') or ''
+assert ui.tn('stickers.count', 23) in shown, f'the profile row does not count the 23 stickers the book holds: {shown}'
 ui.tap('profile-stickers')
 ui.element('sticker-book-title', timeout=30)
+ui.wait_label('sticker-book-count', lambda label: label.startswith(ui.tn('stickers.count', 23)),
+              'the sticker book does not count the 23 stickers the profile shows', timeout=30)
 assert not tab_selected(ui.read(), 'tab-me'), 'the sticker book switched to 我的'
 ui.at_rest()
 ui.capture('01-sticker-book')

@@ -1,8 +1,8 @@
-"""Apply from the detail: 申请 in the detail opens the sheet, 发送 closes it and the stamp lands on the detail, which reads 已申请 · 等Aisyah选; back on the board the card shows the stamp at rest. Without a payee method, 添加收款方式 from the detail opens 我的 → 收款方式, and switching back to 悬赏 shows the detail still on top."""
+"""Apply from the detail: 申请 in the detail opens the sheet, 发送 closes it and the stamp lands on the detail, which reads 已申请 · 等Aisyah选; back on the board the card shows the stamp at rest. Without a payee method, 添加收款方式 opens 收款方式 over the apply sheet (audit batch A), and closing it returns to the apply sheet."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from apply import STAMP_MIN, has_stamp, send, switch_tab, title_shown  # noqa: E402
+from apply import STAMP_MIN, has_stamp, send, title_shown  # noqa: E402
 from board import ink_box, screen, visible  # noqa: E402
 from bounty import relaunch  # noqa: E402
 from driver import UI, by_id, reach_home, token  # noqa: E402
@@ -56,16 +56,18 @@ relaunch(ui, drop=[], add=['-uiVerifyFixture', 'empty'])
 open_detail()
 ui.element('bounty-apply-no-payee')
 ui.tap('bounty-apply-add-payee')
-ui.gone('bounty-apply')
 ui.element('payee-screen')
-back = by_id(ui.read(), 'BackButton')
-assert back and back.get('AXLabel') == ui.t('shell.tabs.me'), f'收款方式 is not pushed in 我的: {back}'
+title_shown(ui, 'payee.title')
+assert by_id(ui.read(), 'BackButton') is None, '收款方式 was pushed in a tab instead of opening over the apply sheet'
+assert not by_id(ui.read(), 'tab-me') or str(by_id(ui.read(), 'tab-me').get('AXValue')) != '1', 'the payee detour switched to 我的'
 ui.at_rest()
-ui.capture('03-payee')
-switch_tab(ui, 'tab-bounty', ui.t('shell.tabs.me'))
-ui.element('bounty-detail-title')
-back = ui.settled(lambda items: by_id(items, 'BackButton'), 'the detail has no back button')
-assert back.get('AXLabel') == ui.t('shell.home.title'), f'the 悬赏 stack top is not the detail: {back.get("AXLabel")}'
-assert by_id(ui.read(), 'bounty-detail-apply'), 'the detail lost 申请 after the payee detour'
+ui.capture('03-payee-over-apply')
+closes = [i for i in ui.read() if i.get('type') == 'Button' and i.get('AXLabel') == ui.t('payee.close')]
+assert closes, 'the payee sheet has no close button'
+top = max(closes, key=lambda i: i['frame']['y'])['frame']
+ui.tap_point(top['x'] + top['width'] / 2, top['y'] + top['height'] / 2)
+ui.gone('payee-screen')
+ui.element('bounty-apply-add-payee')
 ui.at_rest()
-ui.capture('04-back-on-detail')
+ui.capture('04-back-on-apply')
+print('PASS: applying from the detail stamps it and the card; without a payee method the payee sheet opens over the apply sheet and closes back to it')

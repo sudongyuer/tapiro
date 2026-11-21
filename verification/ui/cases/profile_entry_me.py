@@ -14,7 +14,7 @@ from review import one_line  # noqa: E402
 
 DEPS = ['src/features/account/MeView.tsx', 'src/ui/Avatar.tsx', 'src/app/(tabs)/me/', 'src/features/reputation/profile/', 'src/debug/ReputationScenes.tsx', 'src/ui/TierMark.tsx', 'src/features/reputation/hooks.ts', 'verification/ui/profile.py', 'verification/ui/bounty.py', 'verification/ui/ocr.py', 'verification/ui/review.py']
 CELL = {'light': (255, 255, 255), 'dark': (28, 28, 30)}
-ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none']
+ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyStickers', 'many']
 
 ui = UI(*sys.argv[1:])
 tier = ui.t('bounty.tier.very_reliable')

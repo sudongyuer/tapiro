@@ -14,7 +14,7 @@ SCENE = 'profile'
 BUDGET = 240
 ARGS = ['-uiVerifySignedIn', 'onboarded', '-uiVerifyShellFeed', 'none', '-uiVerifyProfilePerson',
         '00000000-0000-4000-8000-000000000001', '-uiVerifyProfileTab', 'me', '-uiVerifyMascot', 'rest',
-        '-uiVerifyRepDelayMs', '300']
+        '-uiVerifyRepDelayMs', '300', '-uiVerifyStickers', 'many']
 LOCALES = ['zh-Hans', 'ms']
 
 

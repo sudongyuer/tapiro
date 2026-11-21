@@ -1,11 +1,12 @@
-"""Sign in with the fixture, blank the name (spaces only) and see the error, paste a name, pick a language, reach home, sign out and back in, then delete the account and land on welcome.
+"""Sign in with the fixture, blank the name (spaces only) and see the error, paste a name, pick a language, reach home, sign out (after the 退出登录？ sheet, whose keep action stays) and back in, then delete the account and land on welcome.
 On the way: the continue button sits one space-4 above the keyboard, the caret is the accent, the language step shares the
 name step's column and bubble height, the moment titles have their white outline in light, settings shows the avatar and opens 用户协议 and 隐私政策, and the delete sheet reads no symbol names."""
 import sys
 import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
-from bounty import paste_into  # noqa: E402
+from bounty import paste_into, tap_sheet_action  # noqa: E402
+from confirm import assert_dialog  # noqa: E402
 from driver import UI, assert_appearance, assert_touch_target, bottom, by_id, close, sign_in_apple, token  # noqa: E402
 from halo import assert_title_halo  # noqa: E402
 
@@ -21,6 +22,8 @@ DEPS = [
     'verification/ui/bounty.py',
     'verification/ui/pasteboard.swift',
     'verification/ui/halo.py',
+    'verification/ui/confirm.py',
+    'src/ui/ConfirmDialog.tsx',
 ]
 
 LOCALES = ['zh-Hans', 'ms']
@@ -147,7 +150,20 @@ for page in ('terms', 'privacy'):
     ui.tap_label(ui.t('account.legal.close'))
     ui.gone('legal-draft')
     ui.element('settings-sign-out')
-ui.tap('settings-sign-out')
+def ask_sign_out():
+    ui.tap('settings-sign-out')
+    assert_dialog(ui, ui.t('account.settings.signOutTitle'), ui.t('account.settings.signOut'),
+                  ui.t('account.settings.signOutKeep'), source='settings-sign-out')
+
+
+ask_sign_out()
+ui.capture('06-settings-sign-out-confirm')
+tap_sheet_action(ui, ui.t('account.settings.signOutKeep'), 'settings-sign-out')
+ui.wait(lambda items: items and not any(i.get('AXLabel') == ui.t('account.settings.signOutTitle') for i in items),
+        'the keep action did not close the sign-out sheet')
+ui.element('settings-sign-out')
+ask_sign_out()
+tap_sheet_action(ui, ui.t('account.settings.signOut'), 'settings-sign-out')
 ui.gone('settings-sign-out')
 ui.element('sign-in-apple')
 
