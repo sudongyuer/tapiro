@@ -206,6 +206,9 @@ failure shown as "empty" misleads both users (the payee list showed a failed loa
 - Tests assert behaviour, not snapshots or mock call counts, and each assertion must be able to
   fail: a check that passes before the screen settles proves nothing. Source: expo-ios-starter;
   two vacuous UI checks were found in review (2026-10-14, 2026-10-15).
+- A change that overturns a behaviour searches `verification/ui` for the old behaviour's identifiers and copy keys
+  and updates those cases in the same PR. Reason: four cases still asserted designs the audit batches had replaced and
+  failed only at the milestone (2026-11-21, second occurrence).
 - UI changes add or update a check under `verification/ui` (`bun run verify:build`,
   `bun run verify:ui`), run as Pace describes; screenshots for state, video for motion.
   Missing scenes, missing identifiers and timeouts fail; open the screenshots before reporting.
