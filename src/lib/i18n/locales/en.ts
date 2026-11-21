@@ -39,9 +39,9 @@ const en: Translation = {
         parcel: 'Pick up a parcel · {{amount}}',
         coffee: 'Bring a coffee · {{amount}}',
         ticket: 'Take a queue number · {{amount}}',
-        books: 'Slide deck help · {{amount}}',
+        books: 'Explain calculus · {{amount}}',
         umbrella: 'Lend an umbrella · on the way',
-        car: '17:00 home · 1 more seat',
+        car: '17:00 to YC · 1 more seat',
         boba: 'Buy bubble tea · {{amount}}',
       },
     },
@@ -202,11 +202,11 @@ const en: Translation = {
       suggestions: {
         bounty: { first: 'Pick up my parcel', second: 'What do I need to pick up a parcel?' },
         ride: {
-          first: 'Cheapest way to the airport?',
-          second: 'Find someone to bring something home for me',
+          first: 'Cheapest way from Sunway to KLIA?',
+          second: 'Find someone to bring my things back to YC',
         },
         messages: {
-          first: 'How do I say “wait in the lobby” in Chinese?',
+          first: 'How do I say “wait in the lobby” in Malay?',
           second: 'How do I tell my landlord the heater broke?',
         },
         writeBounty: 'Write a bounty for me',
@@ -297,9 +297,9 @@ const en: Translation = {
         ask: 'Say it and Tapir drafts the bounty',
         askHint: 'Opens Ask Tapir',
         chipHint: 'Opens Ask Tapir with this line filled in',
-        chipQuestion: 'Cheapest way to the airport?',
+        chipQuestion: 'Cheapest way to KLIA?',
         chipParcel: 'Pick up my parcel',
-        chipStudy: 'Find someone to teach me slides',
+        chipStudy: 'Find someone to explain calculus',
       },
     },
     strip: {
@@ -362,7 +362,7 @@ const en: Translation = {
       helper: 'Lin',
       place: 'Library',
       task: 'Pick up a parcel',
-      start: 'Garden Court',
+      start: 'Sunway Geo Residences',
     },
     flight: {
       title: 'Sticker flight to Me',

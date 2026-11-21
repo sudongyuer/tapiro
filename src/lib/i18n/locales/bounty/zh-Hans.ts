@@ -38,7 +38,7 @@ export default {
     kind: {
       pickup: {
         tile: '取快递',
-        hint: '驿站、门卫、楼下',
+        hint: '驿站、门卫、宿舍楼下',
         title: '比如：帮我取个快递，放门口',
         when: '时间',
         place: '取件地点',
@@ -55,14 +55,14 @@ export default {
       queue: {
         tile: '排队',
         hint: '取号、挂号、占位',
-        title: '比如：明早帮我在银行取个号',
+        title: '比如：明早帮我在移民局排个号',
         when: '时间',
         place: '排队地点',
         description: '排哪个窗口、要带什么',
       },
       move: {
         tile: '搬东西',
-        hint: '搬家、拿大件',
+        hint: '搬宿舍、拿大件',
         title: '比如：周六帮我搬两个箱子',
         when: '时间',
         place: '搬出地点',
@@ -78,8 +78,8 @@ export default {
       },
       study: {
         tile: '课业',
-        hint: '教技能、讲经验',
-        title: '比如：教我做一份像样的 PPT',
+        hint: '讲题、借笔记',
+        title: '比如：帮我讲一下微积分第三章',
         when: '时间',
         place: '见面地点',
         description: '哪门课、哪一章',
@@ -230,7 +230,7 @@ export default {
   place: {
     title: '选地点',
     prompt: '选一个地方',
-    searchPlaceholder: '搜楼名、商场、地标',
+    searchPlaceholder: '搜楼名、商场、学校',
     current: '用当前位置',
     currentSubtitle: '定位后换成最近的楼名，可以再改',
     results: '搜索结果',
