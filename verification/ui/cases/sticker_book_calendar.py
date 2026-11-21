@@ -28,6 +28,15 @@ ui = UI(*sys.argv[1:])
 names = MONTHS[ui.locale]
 
 
+def on_screen(identifier):
+    found = by_id(ui.read(), identifier)
+    return found if found and 140 < found['frame']['y'] < 740 else None
+
+
+def scroll(up):
+    ui.swipe((200, 300), (200, 700), 1.2) if up else ui.swipe((200, 700), (200, 300), 1.2)
+
+
 def pill_names(month):
     return ui.wait_label('sticker-calendar-share',
                          lambda text: text == ui.t('stickers.calendar.share', month=names[month]),
@@ -61,9 +70,10 @@ assert done_art > 300, f'a done day draws no hand art ({done_art})'
 assert later_art < 20, f'a future day draws something ({later_art})'
 
 for _ in range(6):
-    if by_id(ui.read(), f'{DAY}2026-10-12') and by_id(ui.read(), f'{DAY}2026-10-24'):
+    if on_screen(f'{DAY}2026-10-12') and on_screen(f'{DAY}2026-10-01'):
         break
-    ui.swipe((200, 300), (200, 650), 0.5)
+    scroll(up=True)
+ui.at_rest()
 pill_names(9)
 items = ui.read()
 for day, column in {12: 0, 14: 2, 18: 6}.items():
@@ -84,10 +94,10 @@ badged = shot.count(badge, lambda rgb: close(rgb, ink, 16))
 print(f'24 October badge: {badged} accent pixels')
 assert badged > 40, f'the day with three stickers shows no count badge ({badged})'
 
-for _ in range(4):
-    if by_id(ui.read(), f'{DAY}2026-09-03'):
+for _ in range(6):
+    if on_screen(f'{DAY}2026-09-03'):
         break
-    ui.swipe((200, 300), (200, 650), 0.5)
+    scroll(up=True)
 ui.at_rest()
 items = ui.read()
 empty = by_id(items, f'{DAY}2026-09-03')
@@ -97,10 +107,11 @@ blank = shot.count(empty['frame'], colourful)
 print(f'3 September (empty) colourful pixels: {blank}')
 assert blank < 20, f'an empty day draws something ({blank})'
 
-for _ in range(4):
-    if by_id(ui.read(), f'{DAY}2026-10-24'):
+for _ in range(6):
+    if on_screen(f'{DAY}2026-10-24'):
         break
-    ui.swipe((200, 650), (200, 300), 0.5)
+    scroll(up=False)
+ui.at_rest()
 ui.tap(f'{DAY}2026-10-24')
 ui.gone('sticker-calendar')
 ui.wait_label('sticker-stack-position', lambda text: ui.t('stickers.card.position', index=10, total=38) in text,

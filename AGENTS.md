@@ -90,6 +90,10 @@ Reason: these preferences lived only in one machine's agent memory; work must re
 
 ## Platform pitfalls
 
+- In a `formSheet` route, a `ScrollView` is the screen's first child (floating views go after it as siblings). Reason:
+  wrapped in a `View`, the sticker calendar's ScrollView drew nothing and never scrolled, while its siblings showed
+  (2026-11-21).
+
 - After adding or removing files under `modules/tapiro-kit/ios`, run `pod install` in `ios/`.
   Reason: CocoaPods snapshots the podspec source glob at install time; new files are not
   compiled until then.

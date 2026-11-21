@@ -91,6 +91,8 @@ print(f'cards fanned out left of the top card: {fanned} white pixels')
 assert fanned > 100, f'no card peeks out behind the top card ({fanned})'
 
 y = f['y'] + f['height'] / 2
+# An axe swipe of 0.8 s reaches the app as a short drag (the card goes about a quarter of the way and springs back);
+# 0.5, 1.2 and 2.0 s deliver the whole stroke (probe, 2026-11-21).
 strip = {'x': f['x'] - 60, 'y': y - 40, 'width': 40, 'height': 80}
 with recording.clip(ui, 'deck-swipe') as video:
     ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 1.2)
@@ -102,7 +104,7 @@ print(f'deck swipe: {len(frames)} frames, most card-white left of the deck {most
 assert most > 1500, f'the top card never followed the finger to the left ({most})'
 shutil.copy(path, ui.output / '03-mid-swipe.png')
 ui.wait(today_shown, '今天 does not appear once an older card is on top')
-ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)
+ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 1.2)
 position_is(3)
 ride = ui.wait_label('sticker-card-2', lambda text: RIDE_TITLE in text, 'the third card is not the ride')
 ui.at_rest()
@@ -114,7 +116,7 @@ assert car_red > 1500, f'the ride card does not draw the red car ({car_red} red 
 ui.tap_label(ui.t('stickers.book.today'))
 position_is(1)
 ui.wait(lambda items: not today_shown(items), '今天 stays after jumping to the newest card')
-ui.swipe((f['x'] + f['width'] * 0.15, y), (f['x'] + f['width'] * 0.9, y), 0.8)
+ui.swipe((f['x'] + f['width'] * 0.15, y), (f['x'] + f['width'] * 0.9, y), 1.2)
 ui.at_rest()
 assert by_id(ui.read(), 'sticker-card-0'), 'a right swipe on the newest card left it'
 position_is(1)

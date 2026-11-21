@@ -124,7 +124,17 @@ Status stays `proposed`: the owner has not approved the design; decisions S1–S
 - Checks run: `bun test` (all pass, including `deckMotion.test.ts`, `posterData.test.ts`), `tsc`, `lint:changed`,
   `format:check`, `check-specs`, `check-story-map`, `design-check`, an iOS JS export with `EXPO_PUBLIC_UI_VERIFY=1`,
   `swiftc -typecheck` of `PosterSnapshot.swift`, `python3 -m unittest` in `verification/ui`.
-- Unverified: the UI cases (`sticker_book`, `sticker_book_calendar`, `sticker_book_one`, `sticker_book_empty`,
-  `sticker_book_labels`, `sticker_share`, `sticker_share_worst`, `profile_sticker_book_in_tab`, `pay_settle_routine`)
-  and smoke did not run: free disk was 14.2–14.7 GB, below the 15 GB floor for Release verify builds (AGENTS.md).
-  The native build of `snapshotPoster` and the gesture feel are therefore not yet seen on a Simulator or device.
+- Fixed during the runs: the 月历 sheet drew nothing while its `ScrollView` sat inside a wrapper `View` in the
+  `formSheet` route; it is now the screen's first child (`CalendarSheet.tsx`; rule added to AGENTS.md platform
+  pitfalls). The share poster now keeps a gap above the buttons, the save pill takes the remaining width so 「Simpan ke
+  Foto」 stays on one line, and the handwritten month heading on the poster is padded so Caveat's last glyph is not
+  clipped (seen in the ms screenshots).
+- UI runs (verify build, iPhone 17 Pro Simulators): zh-Hans light — `sticker_book`, `sticker_book_calendar`,
+  `sticker_book_one`, `sticker_book_empty`, `sticker_book_labels`, `sticker_share`, `sticker_share_worst`,
+  `profile_sticker_book_in_tab`, `pay_settle_routine` pass; ms light — `sticker_book`, `sticker_book_calendar`,
+  `sticker_book_one`, `sticker_book_labels`, `sticker_share`, `sticker_share_worst`, `pay_settle_routine` pass; dark —
+  `sticker_book`, `sticker_book_calendar`, `sticker_share` pass; `verify:smoke` passes. Two FLAKY first attempts were
+  `Timed out creating the simulator remote automation session` at load averages above 100 from parallel agents.
+  The swipe clip is `sticker_book/deck-swipe.mp4` with `03-mid-swipe.png`.
+- Unverified: swipe feel, Reduce Motion, VoiceOver adjust and a saved 3× PNG in Photos on a device (story map
+  `device` lines).

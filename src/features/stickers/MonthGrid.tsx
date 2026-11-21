@@ -18,19 +18,15 @@ const CELL = 52;
 const BADGE = 18;
 
 export const MonthGrid = memo(function MonthGrid({
-  at,
   month,
   stickers,
   today,
   onOpen,
-  onSpan,
 }: {
-  at: number;
   month: Month;
   stickers: Sticker[];
   today: Date;
   onOpen: (stickerId: string) => void;
-  onSpan: (at: number, y: number, height: number) => void;
 }) {
   const { t, language } = useI18n();
   const { color } = useTheme();
@@ -43,11 +39,7 @@ export const MonthGrid = memo(function MonthGrid({
   const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
 
   return (
-    <View
-      style={styles.month}
-      onLayout={({ nativeEvent }) => onSpan(at, nativeEvent.layout.y, nativeEvent.layout.height)}
-      testID={`sticker-calendar-${dayKey(month, 1).slice(0, 7)}`}
-    >
+    <View style={styles.month} testID={`sticker-calendar-${dayKey(month, 1).slice(0, 7)}`}>
       <HandText hand="month" accessibilityRole="header" style={styles.heading}>
         {heading}
       </HandText>

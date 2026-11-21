@@ -82,7 +82,8 @@ for _ in range(6):
     pill = ui.element('sticker-calendar-share')
     if pill.get('AXLabel') == ui.t('stickers.calendar.share', month=OCTOBER[ui.locale]):
         break
-    ui.swipe((200, 300), (200, 650), 0.5)
+    ui.swipe((200, 300), (200, 700), 1.2)
+    ui.at_rest()
 ui.wait_label('sticker-calendar-share', lambda text: text == ui.t('stickers.calendar.share', month=OCTOBER[ui.locale]),
               'the share pill never names October')
 ui.at_rest()

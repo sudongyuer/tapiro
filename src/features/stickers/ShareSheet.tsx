@@ -58,7 +58,11 @@ function Share({ stickers, target }: { stickers: Sticker[]; target: ShareTarget 
   const arts = stickers.map(stickerArt);
   const card = 'card' in target ? stickers.find((sticker) => sticker.id === target.card) : null;
   const width = area
-    ? Math.min(area.width - vars['--space-5'] * 2, area.height / POSTER_RATIO, POSTER_MAX)
+    ? Math.min(
+        area.width - vars['--space-5'] * 2,
+        (area.height - vars['--space-4'] * 2) / POSTER_RATIO,
+        POSTER_MAX,
+      )
     : 0;
   const busy = phase === 'saving' || phase === 'sharing';
 
@@ -157,7 +161,7 @@ function Share({ stickers, target }: { stickers: Sticker[]; target: ShareTarget 
               testID="sticker-share-save"
             />
           </View>
-          <View style={styles.grow}>
+          <View>
             <PillButton
               label={t('stickers.share.share')}
               symbol="square.and.arrow.up"

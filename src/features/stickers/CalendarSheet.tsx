@@ -84,7 +84,6 @@ function Months({
     return Math.max(0, monthIndex(month) - monthIndex(range.first));
   });
   const [inView, setInView] = useState(target);
-  const [placed, setPlaced] = useState(false);
   const scroll = useRef<ScrollViewInstance>(null);
   const spans = useRef<(Span | undefined)[]>([]);
   const placedOnce = useRef(false);
@@ -95,7 +94,6 @@ function Months({
       if (at !== target || placedOnce.current) return;
       placedOnce.current = true;
       scroll.current?.scrollTo({ y: y - headerHeight, animated: false });
-      setPlaced(true);
     },
     [target, headerHeight],
   );
@@ -106,10 +104,11 @@ function Months({
   );
 
   return (
-    <View style={styles.fill} testID="sticker-calendar">
+    <>
       <ScrollView
         ref={scroll}
-        style={[styles.fill, !placed && styles.hidden]}
+        style={styles.fill}
+        testID="sticker-calendar"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={[styles.content, { paddingBottom: SHARE_ROOM + insets.bottom }]}
         scrollEventThrottle={32}
@@ -134,15 +133,14 @@ function Months({
           </AppText>
         ) : null}
         {months.map((each, at) => (
-          <MonthGrid
+          <View
             key={`${each.year}-${each.month}`}
-            at={at}
-            month={each}
-            stickers={stickers}
-            today={today}
-            onOpen={onOpen}
-            onSpan={onSpan}
-          />
+            onLayout={({ nativeEvent }) =>
+              onSpan(at, nativeEvent.layout.y, nativeEvent.layout.height)
+            }
+          >
+            <MonthGrid month={each} stickers={stickers} today={today} onOpen={onOpen} />
+          </View>
         ))}
       </ScrollView>
       <View
@@ -156,13 +154,12 @@ function Months({
           testID="sticker-calendar-share"
         />
       </View>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  hidden: { opacity: 0 },
   content: { paddingHorizontal: vars['--space-4'], gap: vars['--space-2'] },
   state: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: vars['--space-3'] },
   center: { textAlign: 'center' },

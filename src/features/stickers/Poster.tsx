@@ -160,7 +160,7 @@ export function MonthPoster({
           allowFontScaling={false}
           numberOfLines={1}
           adjustsFontSizeToFit
-          style={{ color: ink('--color-on-paper') }}
+          style={[styles.heading, { color: ink('--color-on-paper') }]}
         >
           {heading}
         </HandText>
@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
   },
   center: { textAlign: 'center' },
   title: { fontWeight: '600' },
+  heading: { paddingHorizontal: vars['--space-2'] },
   row: { flexDirection: 'row' },
   weekday: { textAlign: 'center' },
   cell: { alignItems: 'center', justifyContent: 'center' },

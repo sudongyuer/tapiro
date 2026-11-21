@@ -34,7 +34,7 @@ fanned = shot.count(behind, white)
 print(f'white pixels left of the only card: {fanned}')
 assert fanned < 40, f'a card is fanned behind the only sticker ({fanned})'
 y = f['y'] + f['height'] / 2
-ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)
+ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 1.2)
 ui.at_rest()
 again = ui.element('sticker-card-0')
 assert abs(again['frame']['x'] - f['x']) < 1, f'the only card did not spring back: {again["frame"]} vs {f}'

@@ -13,12 +13,12 @@ overturned: pending
 
 ## Core (mandatory)
 
-| Dimension | Measure               | This step                                                                                             |
-| --------- | --------------------- | ----------------------------------------------------------------------------------------------------- |
-| Quality   | Escaped defects       | pending (owner walkthrough)                                                                           |
-| Quality   | Skipped verifications | Simulator runs while the disk held 14.4 GB (below the 15 GB rule for Release builds); see the PR body |
-| Speed     | Wasted time           | ~10 min (case-insensitive file names; worktree guard refusing heredoc shell edits)                    |
-| Autonomy  | Interventions         | 0                                                                                                     |
+| Dimension | Measure               | This step                                                                                           |
+| --------- | --------------------- | --------------------------------------------------------------------------------------------------- |
+| Quality   | Escaped defects       | pending (owner walkthrough)                                                                         |
+| Quality   | Skipped verifications | Device checks (swipe feel, Reduce Motion, VoiceOver, Photos); UI runs waited ~1 h for disk and load |
+| Speed     | Wasted time           | ~10 min (case-insensitive file names; worktree guard refusing heredoc shell edits)                  |
+| Autonomy  | Interventions         | 0                                                                                                   |
 
 ## Findings
 
@@ -33,3 +33,13 @@ overturned: pending
   scratchpad Python files with literal paths. Tag `worktree-guard`; already known (2026-11-02 retros).
 - Free disk was 14.4 GB while two other agents held the Simulator queue; no Release verify build was started.
   Tag `disk-below-15gb`.
+- The 月历 sheet drew nothing: in a `formSheet` route its `ScrollView` sat inside a wrapper `View`, and it neither
+  drew nor scrolled while the floating pill (a sibling) showed. Making the ScrollView the screen's first child fixed it.
+  Tag `formsheet-scrollview-first`. Landed as an AGENTS.md platform pitfall (lowest layer available: no lint can see
+  route presentation).
+- `axe swipe --duration 0.8` reaches the app as a short drag (the card goes about a quarter of the way and springs
+  back); 0.5, 1.2 and 2.0 s deliver the whole stroke (probe on the deck, 2026-11-21). Cases swipe for 1.2 s, noted in
+  `sticker_book.py`. Tag `axe-swipe-duration`. Fix candidate if it recurs: a driver helper `ui.drag()` with a tested
+  duration.
+- Simulator runs met load averages of 130+ from parallel agents; `Timed out creating the simulator remote automation
+session` twice. Waited for the load to drop below 50 before probing. Tag `host-load`.

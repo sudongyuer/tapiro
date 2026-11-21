@@ -46,7 +46,7 @@ for index, (line1, title) in enumerate(EXPECTED):
         assert ink > 80, f'the long caption did not wrap at full size: {ink} ink pixels where its second line belongs'
     f = card['frame']
     y = f['y'] + f['height'] / 2
-    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 0.8)
+    ui.swipe((f['x'] + f['width'] * 0.85, y), (f['x'] + f['width'] * 0.1, y), 1.2)
 
 print(f'card heights: {heights}')
 assert max(heights) - min(heights) <= 1, f'cards differ in height: {heights}'
