@@ -28,6 +28,7 @@ import { PlatformColor, StyleSheet } from 'react-native';
 import { navigationScrollEdge } from 'tapiro-kit';
 
 import { useI18n } from '@/lib/i18n';
+import { dateFormat } from '@/lib/intlCache';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
@@ -38,7 +39,7 @@ import { PantrySection } from './PantrySection';
 import { consentStore } from './services';
 
 export function consentDate(acceptedAt: string, language: string) {
-  return new Intl.DateTimeFormat(language, {
+  return dateFormat(language, {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',

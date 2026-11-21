@@ -46,7 +46,7 @@ export function ChatListScreen({ onOpen, onBrowse }: Actions) {
   const [retrying, retry] = useBusy(reload);
   const threads = list.status === 'idle' ? NO_THREADS : list.threads;
   const loadedAt = list.status === 'idle' ? null : list.loadedAt;
-  const now = loadedAt ? Date.parse(loadedAt) : 0;
+  const now = loadedAt ? new Date(Date.parse(loadedAt)).setHours(0, 0, 0, 0) : 0;
 
   const renderItem = useCallback(
     ({ item, index }: { item: ThreadSummary; index: number }) => (

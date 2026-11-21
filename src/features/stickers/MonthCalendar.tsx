@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { PlatformColor, StyleSheet, View } from 'react-native';
 
 import { useI18n } from '@/lib/i18n';
+import { dateFormat } from '@/lib/intlCache';
 import { stickerArt, stickerLabel, type Sticker } from '@/lib/stickers';
 import { AppText } from '@/ui/AppText';
 import { HandArt } from '@/ui/HandArt';
@@ -26,7 +27,7 @@ const MONDAY = new Date(2026, 9, 5);
 const TAP = 44;
 
 function weekdays(language: string) {
-  const format = new Intl.DateTimeFormat(language, { weekday: 'narrow' });
+  const format = dateFormat(language, { weekday: 'narrow' });
   return Array.from({ length: 7 }, (_, day) =>
     format.format(new Date(MONDAY.getFullYear(), MONDAY.getMonth(), MONDAY.getDate() + day)),
   );
@@ -49,10 +50,10 @@ export function MonthCalendar({
   );
   const days = byDay(stickers, month);
   const done = [...days.values()].reduce((sum, list) => sum + list.length, 0);
-  const heading = new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long' }).format(
+  const heading = dateFormat(language, { year: 'numeric', month: 'long' }).format(
     new Date(month.year, month.month, 1),
   );
-  const dayName = new Intl.DateTimeFormat(language, { month: 'long', day: 'numeric' });
+  const dayName = dateFormat(language, { month: 'long', day: 'numeric' });
   const canBack = monthIndex(month) > monthIndex(range.first);
   const canForward = monthIndex(month) < monthIndex(range.last);
 
