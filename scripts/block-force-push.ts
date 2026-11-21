@@ -127,7 +127,7 @@ export function splitCommands(src: string): string[][] {
 
 const basename = (word: string) => word.slice(word.lastIndexOf('/') + 1);
 
-function stripPrefix(words: string[]): string[] {
+export function stripPrefix(words: string[]): string[] {
   let i = 0;
   while (i < words.length) {
     const w = words[i];
