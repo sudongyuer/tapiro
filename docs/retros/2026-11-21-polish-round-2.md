@@ -33,3 +33,5 @@ overturned: 0
   idle) and passed on the rerun at load 11. Tag `load-timeout`; no case change.
 - The bounce case first sampled the row where it sat before the tap; the row moves up when the step completes, so the
   window missed it (rework 1). It now samples the row's settled frame.
+- `ride_create_form` was flaky once: `axe drag` itself hung for 20 s after the time step, before the airport row
+  (an AXe stall, as in status 0e); it passed on the retry. Tag `axe-stall`.
