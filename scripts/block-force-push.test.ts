@@ -19,6 +19,8 @@ const BLOCKED = [
   'git push --forc origin x',
   'git push --mirror origin',
   'git push -f origin x',
+  'timeout 30 git push -f origin x',
+  'sudo -u me git push --force',
   'git push -uf origin x',
   'git push -fu origin x',
   'git -C /tmp/repo push --force',

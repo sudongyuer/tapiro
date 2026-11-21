@@ -10,12 +10,10 @@ export function useDoneBounce(done: boolean) {
   const reduced = useMotionReduced();
   const trigger = useNativeState(0);
   const was = useRef(done);
-  const count = useRef(0);
 
   useEffect(() => {
     if (done && !was.current && !reduced) {
-      count.current += 1;
-      trigger.set(count.current);
+      trigger.set(trigger.get() + 1);
     }
     was.current = done;
   }, [done, reduced, trigger]);

@@ -15,7 +15,6 @@ const WRAPPERS = new Set([
   'exec',
   'nohup',
   'time',
-  'sudo',
   'then',
   'do',
   'else',
@@ -29,7 +28,12 @@ const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash']);
 const VALUE_FLAGS: Record<string, Set<string>> = {
   env: new Set(['-u', '-C', '-S', '--unset', '--chdir', '--split-string']),
   xargs: new Set(['-I', '-n', '-L', '-P', '-d', '-E', '-s', '-a']),
+  sudo: new Set(['-u', '-g', '-h', '-C', '-p', '-U', '-r', '-t', '-D']),
+  timeout: new Set(['-s', '-k', '--signal', '--kill-after']),
+  nice: new Set(['-n']),
+  caffeinate: new Set(['-t', '-w']),
 };
+const LEADING_OPERANDS: Record<string, number> = { timeout: 1 };
 const SEPARATORS = new Set([';', '&', '|', '\n', '(', ')', '`']);
 
 export function splitCommands(src: string): string[][] {
@@ -134,10 +138,12 @@ export function stripPrefix(words: string[]): string[] {
     if (/^[A-Za-z_][A-Za-z0-9_]*=/.test(w) || WRAPPERS.has(w)) i++;
     else if (basename(w) in VALUE_FLAGS) {
       const valueFlags = VALUE_FLAGS[basename(w)];
+      const operands = LEADING_OPERANDS[basename(w)] ?? 0;
       i++;
       while (i < words.length && (words[i].startsWith('-') || words[i].includes('='))) {
         i += valueFlags.has(words[i]) ? 2 : 1;
       }
+      i += operands;
     } else break;
   }
   return words.slice(i);

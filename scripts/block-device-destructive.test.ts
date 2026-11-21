@@ -22,6 +22,14 @@ const BLOCKED = [
   'eval xcrun devicectl device uninstall app -d X y',
   'xcrun devicectl device app uninstall --device X app.tapiro',
   'devicectl device uninstall app -d X app.tapiro',
+  'xcrun --sdk iphoneos devicectl device uninstall app -d X a',
+  'xcrun -sdk iphoneos devicectl device reboot -d X',
+  'xcrun -r devicectl device reboot -d X',
+  'sudo -u me xcrun devicectl device reboot -d X',
+  'timeout 30 xcrun devicectl device reboot -d X',
+  'nice -n 5 xcrun devicectl device erase -d X',
+  'idevicepair unpair',
+  'cfgutil remove-app app.tapiro',
   'ideviceinstaller -U app.tapiro',
   'ideviceinstaller --uninstall app.tapiro',
   'idevicediagnostics restart',
@@ -37,6 +45,8 @@ const ALLOWED = [
   'echo "xcrun devicectl device reboot"',
   'git commit -m "devicectl device reboot is blocked"',
   'ideviceinstaller -l',
+  'xcrun devicectl device info files --device X --domain-identifier reboot',
+  'xcrun devicectl device info apps -d X | grep uninstall',
 ];
 
 describe('block-device-destructive', () => {
