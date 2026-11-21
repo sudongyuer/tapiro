@@ -16,10 +16,10 @@ const ms: typeof zhHans = {
   label: {
     payee: 'Bantu {{name}}',
     payer: '{{name}} bantu saya',
-    payeeUnnamed: 'Bantu seorang pelajar',
-    payerUnnamed: 'Seorang pelajar bantu saya',
+    payeeUnnamed: 'Bantu seorang rakan Tapiro',
+    payerUnnamed: 'Seorang rakan Tapiro bantu saya',
     ride: 'Bersama {{name}}',
-    rideUnnamed: 'Bersama seorang pelajar',
+    rideUnnamed: 'Bersama seorang rakan Tapiro',
   },
   card: {
     position: 'Kad {{index}} daripada {{total}}',

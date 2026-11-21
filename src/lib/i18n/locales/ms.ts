@@ -31,8 +31,8 @@ const ms: Translation = {
       wordmark: 'Tapiro',
       tagline: 'Pasang ganjaran. Bantu sambil lalu.',
       hello: 'Hai!',
-      headline: 'Tapir teman anda di Malaysia',
-      subline: 'Ambil bungkusan, beratur, tumpang balik ke YC: pelajar saling membantu.',
+      headline: 'Tapir teman anda',
+      subline: 'Ambil bungkusan, beratur, kongsi kereta sehala: orang berdekatan saling membantu.',
       terms:
         'Dengan meneruskan, anda bersetuju dengan <terms>Terma Penggunaan</terms> dan <privacy>Dasar Privasi</privacy>.',
       examples: {
@@ -51,7 +51,7 @@ const ms: Translation = {
       question: 'Siapa nama anda?',
       label: 'Nama',
       placeholder: 'Masukkan nama anda',
-      footer: 'Pelajar lain akan melihat nama ini. Maksimum 40 aksara.',
+      footer: 'Orang lain akan melihat nama ini. Maksimum 40 aksara.',
       avatar: 'Foto profil',
       signOut: 'Daftar Keluar',
       signOutTitle: 'Daftar keluar?',
@@ -83,13 +83,13 @@ const ms: Translation = {
         title: 'Terma Penggunaan',
         aboutTitle: 'Apa Itu Tapiro',
         about:
-          'Tapiro membantu pelajar di Malaysia saling membantu: pasang ganjaran, bantu sambil lalu, berkongsi kereta.',
+          'Tapiro membantu orang berdekatan saling membantu: pasang ganjaran, bantu sambil lalu, berkongsi kereta.',
         accountTitle: 'Akaun Anda',
         account:
           'Anda daftar masuk dengan Apple atau Google. Anda boleh memadam akaun dalam Saya → Tetapan; jika ada bayaran yang belum langsai, langsaikannya dahulu.',
         moneyTitle: 'Bayaran dan Syiling',
         money:
-          'Pelajar membayar antara satu sama lain terus dalam aplikasi bank atau e-dompet sendiri, atau secara tunai bersemuka; Tapiro tidak mengendalikan bayaran antara pelajar. Syiling dibeli melalui App Store, hanya boleh digunakan dalam Tapiro, dan tidak boleh dihantar kepada orang lain atau ditunaikan.',
+          'Pengguna membayar antara satu sama lain terus dalam aplikasi bank atau e-dompet sendiri, atau secara tunai bersemuka; Tapiro tidak mengendalikan bayaran antara pengguna. Syiling dibeli melalui App Store, hanya boleh digunakan dalam Tapiro, dan tidak boleh dihantar kepada orang lain atau ditunaikan.',
       },
       privacy: {
         title: 'Dasar Privasi',

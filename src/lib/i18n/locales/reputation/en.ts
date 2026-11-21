@@ -1,7 +1,7 @@
 import type zhHans from './zh-Hans';
 
 const en: typeof zhHans = {
-  someone: 'A fellow student',
+  someone: 'A Tapiro friend',
   face: { happy: 'Happy', okay: 'Okay', unhappy: 'Unhappy' },
   chip: {
     helper: {
@@ -191,7 +191,7 @@ const en: typeof zhHans = {
   level: {
     lv1: 'Baby Tapir',
     lv2: 'Little Tapir',
-    lv3: 'Student Tapir',
+    lv3: 'Kid Tapir',
     lv4: 'Teen Tapir',
     lv5: 'Young Tapir',
     grown: 'Grown Tapir',

@@ -103,7 +103,7 @@ const en: typeof zhHans = {
     redeemedTitle: 'Code I entered',
     redeemedRow: '{{name}}’s code',
     redeemedStatus: '{{code}} · {{status}}',
-    someone: 'A fellow student',
+    someone: 'A Tapiro friend',
     share: 'Share',
     explain:
       'When a friend enters your code and finishes their first deal, you each get {{reward}} coins',

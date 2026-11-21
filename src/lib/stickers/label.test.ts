@@ -23,12 +23,12 @@ type Case = [Sticker['role'], Sticker['itemKind'], string | null, string, string
 const CASES: Case[] = [
   ['payee', 'bounty', '小林', '帮小林', 'Helped 小林'],
   ['payer', 'bounty', 'Lily', 'Lily帮我', 'Lily helped me'],
-  ['payee', 'bounty', null, '帮一位同学', 'Helped a fellow student'],
-  ['payer', 'bounty', null, '一位同学帮我', 'A fellow student helped me'],
+  ['payee', 'bounty', null, '帮一位貘友', 'Helped a Tapiro friend'],
+  ['payer', 'bounty', null, '一位貘友帮我', 'A Tapiro friend helped me'],
   ['payee', 'ride', '阿杰', '和阿杰', 'With 阿杰'],
   ['payer', 'ride', '阿杰', '和阿杰', 'With 阿杰'],
-  ['payee', 'ride', null, '和一位同学', 'With a fellow student'],
-  ['payer', 'ride', null, '和一位同学', 'With a fellow student'],
+  ['payee', 'ride', null, '和一位貘友', 'With a Tapiro friend'],
+  ['payer', 'ride', null, '和一位貘友', 'With a Tapiro friend'],
 ];
 
 describe('sticker label', () => {
@@ -44,7 +44,7 @@ describe('sticker label', () => {
     expect(
       stickerLabel({ role: 'payer', itemKind: 'bounty', counterpartName: '  ', title: 'x' }, zh)
         .line1,
-    ).toBe('一位同学帮我');
+    ).toBe('一位貘友帮我');
   });
 
   test('the title is kept as typed, never spliced into line 1', () => {

@@ -29,8 +29,8 @@ export default {
       wordmark: 'Tapiro',
       tagline: '有事发悬赏，顺路接一单',
       hello: '你好呀',
-      headline: '小貘陪你在马来西亚好好生活',
-      subline: '取快递、排队、拼车回 YC，同学之间互相帮一把',
+      headline: '小貘陪你好好生活',
+      subline: '取快递、排队、顺路拼车，身边的人互相帮一把',
       terms: '继续即表示同意<terms>《用户协议》</terms>和<privacy>《隐私政策》</privacy>',
       examples: {
         parcel: '帮取快递 · {{amount}}',
@@ -48,7 +48,7 @@ export default {
       question: '你叫什么名字？',
       label: '名字',
       placeholder: '输入名字',
-      footer: '其他同学会看到这个名字，最多 40 个字。',
+      footer: '其他人会看到这个名字，最多 40 个字。',
       avatar: '头像',
       signOut: '退出登录',
       signOutTitle: '退出登录？',
@@ -78,13 +78,13 @@ export default {
       terms: {
         title: '用户协议',
         aboutTitle: 'Tapiro 是什么',
-        about: 'Tapiro 帮在马来西亚的同学互相帮忙：发悬赏、顺路接单、拼车。',
+        about: 'Tapiro 帮身边的人互相帮忙：发悬赏、顺路接单、拼车。',
         accountTitle: '账号',
         account:
           '你用 Apple 或 Google 账号登录。你可以在「我的 → 设置」里删除账号；有未结清的付款时，要先结清才能删除。',
         moneyTitle: '付款和貘币',
         money:
-          '同学之间的付款由双方用自己的银行或电子钱包 App 直接完成，或当面付现金，Tapiro 不经手这笔钱。貘币通过 App Store 购买，只能在 Tapiro 里使用，不能转给别人或提现。',
+          '用户之间的付款由双方用自己的银行或电子钱包 App 直接完成，或当面付现金，Tapiro 不经手这笔钱。貘币通过 App Store 购买，只能在 Tapiro 里使用，不能转给别人或提现。',
       },
       privacy: {
         title: '隐私政策',

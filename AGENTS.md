@@ -1,6 +1,9 @@
 # Tapiro
 
-- Tapiro is a mutual-help app for Chinese students in Malaysia. iOS only; never Android.
+- Tapiro is a nearby mutual-help app: bounties, shared rides and 问小貘. iOS only; never Android.
+- Copy, AI prompts, the website and store listings never position Tapiro around one country or around students;
+  country-specific behaviour (MYR, DuitNow, Malaysian phone numbers, the BNM rate) stays where it is functional.
+  Reason: the owner said twice that this narrows the audience (2026-11-21).
 - Stack: Expo SDK 58 (React Native 0.88), TypeScript, Expo Router, bun. Install packages with
   `bunx expo install`, not `bun add`.
   Read the versioned Expo docs (`https://docs.expo.dev/versions/v58.0.0/`, index at
