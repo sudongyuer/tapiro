@@ -275,9 +275,12 @@ Reason: in foundation step 2, Simulator work (writing, running and debugging UI 
 
 - A physical iPhone is never wiped, rebooted, unpaired or cleared of apps without the owner; a PreToolUse hook
   (`scripts/block-device-destructive.ts`) blocks `devicectl` uninstall, reboot, erase and unpair and `ideviceinstaller -U`.
-  Before installing a Release build, read the device's free storage and stop and report if it is under 1 GB. Reason: a
-  measuring agent short of storage uninstalled Tapiro and rebooted the owner's 13 Pro Max, which then sat at the
-  passcode screen out of reach (2026-11-21).
+  Check storage before every install, not once per device loan: `devicectl` cannot read free space, so the first
+  install of each build is the check, and a script stops on the first failed install and prints its error. Nothing on
+  the phone is deleted to make room; report to the owner instead. Reasons: a measuring agent short of storage
+  uninstalled Tapiro and rebooted the owner's 13 Pro Max, which then sat at the passcode screen out of reach; later six
+  Release reinstalls used up the more than 1 GB that Settings showed, and a script that hid install errors recorded five
+  runs against nothing (2026-11-21).
 - Parallel agents and sessions work in their own `git worktree`; never switch branches in the main checkout. Reason:
   another session's checkout landed two commits on local `main` (2026-10-31).
 - Keep at least 15 GB free disk before iOS Release builds. Reason: parallel prototype
