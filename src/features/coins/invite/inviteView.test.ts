@@ -23,10 +23,10 @@ describe('invite page view', () => {
     expect(spelled('M8WQ4K')).toBe('M 8 W Q 4 K');
   });
 
-  test('a deleted or unnamed friend reads as a fellow student, never blank', () => {
+  test('a deleted or unnamed friend reads as a Tapiro friend, never blank', () => {
     const t = translator('zh-Hans');
-    expect(personLabel(null, t)).toBe('一位同学');
-    expect(personLabel({ id: 'x', name: '  ', avatarUrl: null }, t)).toBe('一位同学');
+    expect(personLabel(null, t)).toBe('一位貘友');
+    expect(personLabel({ id: 'x', name: '  ', avatarUrl: null }, t)).toBe('一位貘友');
     expect(personLabel({ id: 'x', name: '阿明', avatarUrl: null }, t)).toBe('阿明');
   });
 });

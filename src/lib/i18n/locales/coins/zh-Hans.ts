@@ -99,7 +99,7 @@ export default {
     redeemedTitle: '我填的邀请码',
     redeemedRow: '{{name}} 的码',
     redeemedStatus: '{{code}} · {{status}}',
-    someone: '一位同学',
+    someone: '一位貘友',
     share: '分享',
     explain: '朋友填了你的码，完成第一单后，你们各得 {{reward}} 颗貘币',
     shareText:

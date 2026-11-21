@@ -1,5 +1,5 @@
 """Each done card in 一起办成的事 says who helped whom, then the title (71A, 72A): 帮{name} for a payee, {name}帮我 for a
-payer, 和{name} for a ride, 帮一位同学 / 一位同学帮我 when the counterpart is gone. With 40-code-point names and
+payer, 和{name} for a ride, 帮一位貘友 / 一位貘友帮我 when the counterpart is gone. With 40-code-point names and
 120-code-point titles every card keeps the same height (the caption keeps its handwritten size and wraps to a second line, the title stops at two), and
 VoiceOver reads the date, the full name and the full title."""
 import sys
