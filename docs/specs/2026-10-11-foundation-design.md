@@ -1269,4 +1269,33 @@ The milestone run over #204–#216 together (`fix/milestone-2026-11-21`). Retro:
 
 ### Verification
 
-Filled in below after the runs.
+Selection (from what changed): #204–#216 touch nearly every feature folder plus shared code (`src/ui`, tokens, the kit),
+so `--affected` named 277 of 279 cases by their own `DEPS`. The milestone rule picked every one of them in zh-Hans
+and en light, plus `ms` for the 150 cases that declare it (long copy); dark for the 21 cases whose surfaces or
+colours changed (disabled pills, tokens, map shadow and stamp, native chip row, top scroll edges, the 问小貘 sheet
+edge, calm card, ride footer, failed image, safety card, keyboard 完成, pay-sheet no-method card, payee list); AX5 for
+the chip rows (`bounty_post_worst`, `bounty_post_selected_chips`, `ride_create_time_day`, `ride_create_worst`), the
+language step and `a11y_screens`.
+
+Run so far (light, zh-Hans + en + declared ms):
+
+- Accounts, home, invite, live, mascot, onboarding (122 runs): 116 passed (2 on retry); 6 failed: `account_flow` ×3
+  (the language step heading under the back button, M3) and `home_bounty_cards` ×3 (the case expected the strip on
+  挑人, replaced by H3).
+- Bounty (134 runs): 123 passed (8 on retry); 11 failed: `bounty_apply_detail` ×2 (case expected the payee jump to
+  我的, replaced by batch A), `bounty_board_worst` ×3 (ink 申请 pill and the 「已申请 · 」 line, replaced by E2/E3),
+  `bounty_post_currency` ×3 and `bounty_post_optional` ×3 (the floating 完成 over the reward digits and over the new
+  说明 field, M2).
+- 问小貘 and chat (124 runs): 121 passed (7 on retry); 3 failed: `ask_voice_device` zh-Hans and en (the helper
+  expected the sheet header to scroll away, replaced by P17) and `ask_memory_page` zh-Hans (two different
+  assertions, intermittent).
+- Reruns on the final build: all 16 `bounty_post_*` cases ×3 locales 44 of 44; `account_flow`, `bounty_apply_detail`,
+  `bounty_board_worst` 8 of 8; `ask_voice_device`, `ask_memory_page`, `profile_self`, `profile_entry_me`,
+  `profile_sticker_book_in_tab`, `account_settings_long`, `settings_language` 14 of 14; `onboarding_language_moment`,
+  `home_bounty_cards`, `mascot_accessory`, `mascot_accessory_failed`, `live_push_token` pass in every locale.
+- Tried and dropped on the way (M2): a kit bottom inset broke `bounty_post_form` en and ms and `payee_add_bank`;
+  putting the keyboard away on a form error left the 清空草稿 row out of the accessibility tree in en and ms.
+
+Not run before merge (owner's call, 2026-11-21: the internal TestFlight build does not wait for them): the coins,
+pay, payee and profile batch, the reviews and rides batch, the shell, stickers, tier and weekly batch, the dark cases
+and the AX5 cases. They run after the upload; findings go to a follow-up PR and the next build.

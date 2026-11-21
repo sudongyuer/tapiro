@@ -4,7 +4,7 @@ date: 2026-11-21
 pr: Milestone run over #204–#216 before the next TestFlight build, and its fixes
 title: Merged together, the audit batches broke two screens and four cases
 escaped: 2
-rework: 3
+rework: 4
 interventions: 0
 overturned: 1
 ---
@@ -30,11 +30,16 @@ overturned: 1
   (`bounty_board_worst`, E2 and E3). Tag `case-encodes-old-design`, second occurrence after batch E's; escalated to a
   written rule in `AGENTS.md` (Checks): a change that overturns a behaviour searches `verification/ui` for the old
   behaviour's identifiers and copy keys.
+- A fifth case encoded a replaced design: `ask_voice_device`'s helper expected the 问小貘 header to scroll away (P17).
 - Rework 1–3, the keyboard toolbar: since iOS 26 the keyboard toolbar floats outside the keyboard safe area. A kit
   bottom inset (toggled on keyboard notifications, then constant) fixed the reward case but raced the scroll to the
   focused field and moved rows other post cases rely on; it was dropped, and the post form no longer shows the toolbar
   (M2). Lesson: when a system control misbehaves on one screen, removing it there is cheaper than compensating for it
-  in the kit. Tag `keyboard-toolbar-overlay`.
+  in the kit. Putting the keyboard away on a form error was tried too and dropped: it left 清空草稿 out of the
+  accessibility tree in en and ms (`bounty_post_form`), visible on screen; cause not found inside the time box.
+  Tag `keyboard-toolbar-overlay`.
+- Waiting: the full light pass ran at about one run a minute (load 30–300 from other projects' Simulators), so the
+  owner moved the upload ahead of the remaining batches.
 - `onboarding_language_moment` asserted the column and the whole title but not the heading's top, so the O2 fix's
   overlap with the back button passed it. It now asserts the greeting starts below the navigation bar.
 - The Settings confirm first anchored on the label, not the row: a SwiftUI `Button` without `fullRow` reports the row
