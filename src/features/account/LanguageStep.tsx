@@ -1,7 +1,12 @@
-import { Form, Host } from '@expo/ui/swift-ui';
-import { scrollContentBackground, tint } from '@expo/ui/swift-ui/modifiers';
+import { Form, Host, RNHostView, Section } from '@expo/ui/swift-ui';
+import {
+  listRowBackground,
+  listRowInsets,
+  listSectionMargins,
+  scrollContentBackground,
+  tint,
+} from '@expo/ui/swift-ui/modifiers';
 import { PlatformColor, StyleSheet, View } from 'react-native';
-import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/lib/i18n';
@@ -14,29 +19,42 @@ import { useTheme } from '@/ui/theme/useTheme';
 
 import { LanguagePickerSection } from './LanguagePicker';
 
-// The heading stays in React Native above the Form: hosted in a Form row through RNHostView, the en question's
-// second line lost the stem of its first glyph (「orefer?」, audit O2, 2026-11-21).
+const OUTLINE = vars['--sticker-border'];
+
+// The heading scrolls with the rows so all three languages stay reachable at the largest text sizes. Its hosted view
+// is wider than the column by the outline on each side: flush with the hosted edge, the en question's second line
+// lost the stem of its first glyph (「orefer?」, audit O2, 2026-11-21).
 export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayout?: () => void }) {
   const { t } = useI18n();
   const { color } = useTheme();
-  const headerHeight = useHeaderHeight();
   const { bottom } = useSafeAreaInsets();
   return (
     <MomentBackground onLayout={onLayout} testID="language-step">
-      <View style={[styles.heading, { paddingTop: headerHeight + vars['--space-4'] }]}>
-        <MascotSays line={t('account.language.greeting')} />
-        <InkText
-          variant="moment-title"
-          outline={vars['--sticker-border']}
-          ink={PlatformColor('label')}
-          accessibilityRole="header"
-          testID="language-question"
-        >
-          {t('account.language.question')}
-        </InkText>
-      </View>
       <Host style={styles.form}>
         <Form modifiers={[tint(color('--color-accent')), scrollContentBackground('hidden')]}>
+          <Section
+            modifiers={[
+              listRowBackground('clear'),
+              listRowInsets({ top: 0, leading: 0, bottom: 0, trailing: 0 }),
+              listSectionMargins({ length: 0, edges: 'top' }),
+              listSectionMargins({ length: vars['--space-6'] - OUTLINE, edges: 'horizontal' }),
+            ]}
+          >
+            <RNHostView matchContents={{ vertical: true }}>
+              <View style={styles.heading}>
+                <MascotSays line={t('account.language.greeting')} />
+                <InkText
+                  variant="moment-title"
+                  outline={OUTLINE}
+                  ink={PlatformColor('label')}
+                  accessibilityRole="header"
+                  testID="language-question"
+                >
+                  {t('account.language.question')}
+                </InkText>
+              </View>
+            </RNHostView>
+          </Section>
           <LanguagePickerSection footer={t('account.language.footer')} onMoment />
         </Form>
       </Host>
@@ -49,6 +67,10 @@ export function LanguageStep({ onDone, onLayout }: { onDone: () => void; onLayou
 
 const styles = StyleSheet.create({
   form: { flex: 1 },
-  heading: { gap: vars['--space-6'], paddingHorizontal: vars['--space-6'] },
+  heading: {
+    gap: vars['--space-6'],
+    paddingTop: vars['--space-4'],
+    paddingHorizontal: OUTLINE,
+  },
   actions: { paddingHorizontal: vars['--space-6'], paddingTop: vars['--space-2'] },
 });

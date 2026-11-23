@@ -1,4 +1,4 @@
-import { HStack, Label, Picker, Spacer, Text } from '@expo/ui/swift-ui';
+import { HStack, Label, LabeledContent, Picker, Text } from '@expo/ui/swift-ui';
 import {
   accessibilityIdentifier,
   fixedSize,
@@ -32,20 +32,25 @@ export function CategoryRow({
   const { t } = useI18n();
   const glow = useRowGlow('category');
   return (
-    <HStack spacing={vars['--space-2']} modifiers={[fullRow, ROW_INSETS, ...glow]}>
-      <Text>{t('bounty.post.form.category')}</Text>
-      {source === 'auto' ? (
-        <Text
-          modifiers={[
-            font({ textStyle: 'caption' }),
-            secondary,
-            accessibilityIdentifier('bounty-post-category-auto'),
-          ]}
-        >
-          {t('bounty.post.form.autoCategory')}
-        </Text>
-      ) : null}
-      <Spacer />
+    <LabeledContent
+      modifiers={[fullRow, ROW_INSETS, ...glow]}
+      label={
+        <HStack spacing={vars['--space-2']}>
+          <Text>{t('bounty.post.form.category')}</Text>
+          {source === 'auto' ? (
+            <Text
+              modifiers={[
+                font({ textStyle: 'caption' }),
+                secondary,
+                accessibilityIdentifier('bounty-post-category-auto'),
+              ]}
+            >
+              {t('bounty.post.form.autoCategory')}
+            </Text>
+          ) : null}
+        </HStack>
+      }
+    >
       <Picker
         label={t('bounty.post.form.category')}
         selection={category ?? ''}
@@ -68,6 +73,6 @@ export function CategoryRow({
           />
         ))}
       </Picker>
-    </HStack>
+    </LabeledContent>
   );
 }

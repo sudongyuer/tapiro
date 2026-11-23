@@ -81,14 +81,7 @@ export function TaskCard({
         ]}
       >
         {kicker ? (
-          <Text
-            modifiers={[
-              footnote,
-              secondary,
-              lineLimit(1),
-              accessibilityIdentifier(`${testID}-kicker`),
-            ]}
-          >
+          <Text modifiers={[footnote, secondary, accessibilityIdentifier(`${testID}-kicker`)]}>
             {kicker}
           </Text>
         ) : null}
@@ -110,7 +103,6 @@ export function TaskCard({
                 modifiers={[
                   footnote,
                   secondary,
-                  lineLimit(2),
                   fixedSize({ horizontal: false, vertical: true }),
                   layoutPriority(1),
                   accessibilityIdentifier(`${testID}-time`),
