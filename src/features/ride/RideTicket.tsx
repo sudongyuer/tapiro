@@ -149,24 +149,33 @@ function AirportLine({ flight, bags }: { flight: string | null; bags: string | n
       {flight ? (
         <View style={styles.airportPart}>
           <SymbolView name="airplane" size={ICON} tintColor={ink} />
-          <AppText variant="meta" numberOfLines={1} style={styles.airportText}>
+          <AppText variant="meta" style={styles.airportText}>
             {flight}
           </AppText>
         </View>
       ) : null}
-      {flight && bags ? (
-        <AppText variant="meta" style={styles.dot}>
+      {bags ? <BagsPart bags={bags} dot={flight !== null} /> : null}
+    </View>
+  );
+}
+
+// Same rule as TimeTail: when the luggage wraps under the flight, its leading dot only fades.
+function BagsPart({ bags, dot }: { bags: string; dot: boolean }) {
+  const [wrapped, setWrapped] = useState(false);
+  return (
+    <View
+      style={styles.airportPart}
+      onLayout={dot ? (event) => setWrapped(event.nativeEvent.layout.y > 1) : undefined}
+    >
+      {dot ? (
+        <AppText variant="meta" style={[styles.dot, wrapped && styles.hidden]}>
           ·
         </AppText>
       ) : null}
-      {bags ? (
-        <View style={styles.airportPart}>
-          <SymbolView name="suitcase.rolling" size={ICON} tintColor={ink} />
-          <AppText variant="meta" numberOfLines={1} style={styles.airportText}>
-            {bags}
-          </AppText>
-        </View>
-      ) : null}
+      <SymbolView name="suitcase.rolling" size={ICON} tintColor={ink} />
+      <AppText variant="meta" style={styles.airportText}>
+        {bags}
+      </AppText>
     </View>
   );
 }
@@ -204,8 +213,13 @@ const styles = StyleSheet.create({
   faint: { opacity: 0.4 },
   fixedDetail: { minHeight: metaLine * 2 },
   airport: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: vars['--space-1'] },
-  airportPart: { flexDirection: 'row', alignItems: 'center', gap: vars['--space-1'] },
-  airportText: { color: ink, fontWeight: '600' },
+  airportPart: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: vars['--space-1'],
+    flexShrink: 1,
+  },
+  airportText: { color: ink, fontWeight: '600', flexShrink: 1 },
   tear: { width: NOTCH, alignItems: 'center' },
   dash: {
     flex: 1,

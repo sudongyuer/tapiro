@@ -69,6 +69,9 @@ phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes
   before it: light zh-Hans/en/ms for accounts and home, bounty, 问小貘 and chat, with every failure fixed and rerun.
   Still running after it: coins, pay, payee and profile; reviews and rides; shell, stickers, tier and weekly; the dark
   and AX5 cases. Their findings go to a follow-up PR and the next build. No device test yet (neither iPhone touched).
+  AX5 findings fixed in `fix/ax5-truncation` (2026-11-24, decisions A18–A21 in `docs/plans/2026-11-18-accessibility-pass.md`):
+  the post form's live card wraps the time and type, the type row is a system `LabeledContent`, the ride ticket wraps
+  flight and luggage, and the language step's heading scrolls with the rows.
 
 - China mainland App Store (owner Q34 = B, 2026-11-21; `docs/specs/2026-11-21-china-storefront-design.md`, research
   `docs/research/2026-11-21-china-storefront.md`): phase 1 built (StoreKit storefront in the kit, every cloud AI entry
