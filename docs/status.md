@@ -292,8 +292,15 @@ findings, decisions E1–E12).
    a refund in the test session never reaches the app, so refunds are proven server side only. Built 2026-11-12
    (`feat/buy-coins`, 273 A): the client core and purchase UI (Tasks 4–5). `verification/storekit` buys through the real
    sheet and passes all five cases from a fresh install (2026-11-12, `fix/storekit-harness`: the scene marks the test account
-   onboarded, synchronous set-up and tear-down end the 3 h hang, a per-case allowance; plan 「Client and purchase UI as built」). Waiting on the account: real Sandbox data, `IAP_APP_APPLE_ID`, the
-   notification URL, `CONSUMPTION_REQUEST`, the hosted deploy. Live Activity spikes 1–2 done
+   onboarded, synchronous set-up and tear-down end the 3 h hang, a per-case allowance; plan 「Client and purchase UI as built」).
+   App Store Connect products (2026-11-24, `feat/iap-asc-products`): the three consumables exist (`app.tapiro.coins.5`
+   6838384831 at MYR 5.00, `.11` 6838384832 at MYR 10.00, `.35` 6838384879 at MYR 30.00; base territory Malaysia,
+   every territory but China mainland, zh-Hans, en-US and ms names, review screenshot), matching the hosted
+   `iap_products`; `iap-verify` and `iap-notify` are deployed with `IAP_APP_APPLE_ID` and both notification URLs set.
+   `scripts/testflight.sh` now stops when a pack is not in App Store Connect (`scripts/iap-preflight.mjs`), and a
+   StoreKit answer with no products reads as 「价格没加载出来 · 重试」 (`ui:coins_buy_none`), not an empty shop. Waiting on
+   the owner: the Paid Apps agreement with banking and tax (StoreKit returns no products without it), then a TestFlight
+   purchase for `coins.purchase.sandbox`; at App Store submission, the three products go with the app version. `CONSUMPTION_REQUEST` is still not handled. Live Activity spikes 1–2 done
    (`docs/plans/2026-11-11-live-activity-spike.md`): our own plugin's extension renders on the Simulator Lock Screen and
    Dynamic Island, generated only with `TAPIRO_LIVE_ACTIVITY=1` (kept until push, 278 A); spike 3 needs the owner's
    iPhone. Views built 2026-11-12 (`feat/live-activity-ui`, 274–277 A): Lock Screen and island compact, minimal and

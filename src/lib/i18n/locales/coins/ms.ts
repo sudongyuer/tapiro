@@ -65,7 +65,6 @@ const ms: typeof zhHans = {
     loading: 'Memuatkan harga',
     failed: 'Harga tidak dapat dimuatkan',
     retry: 'Cuba Lagi',
-    empty: 'Syiling tidak boleh dibeli sekarang. Cuba lagi nanti.',
     buying: 'Sedang membeli',
     verifying: 'Sudah dibayar, sedang disahkan',
     pending: 'Menunggu kelulusan',

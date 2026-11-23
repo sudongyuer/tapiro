@@ -130,9 +130,13 @@ export function createPurchaseStore(deps: PurchaseDeps) {
       const server = await deps.packs();
       const result = await deps.store.products(server.map((pack) => pack.productId));
       if (result.status !== 'ok') throw new Error(result.code);
+      const packs = mergePacks(server, result.products);
+      // StoreKit answers an empty list, not an error, when App Store Connect has no product or the Paid Apps
+      // agreement is missing; a sheet with nothing to buy would read as a shop that sells nothing.
+      if (packs.length === 0) throw new Error('noProducts');
       if (!live(userId, at)) return;
       packsAt = Date.now();
-      patch({ packs: loaded(mergePacks(server, result.products)) });
+      patch({ packs: loaded(packs) });
     } catch {
       if (live(userId, at)) patch({ packs: loadFailed(get().packs) });
     }
