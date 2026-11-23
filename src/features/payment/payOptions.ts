@@ -12,6 +12,7 @@ export type PayOption =
       bank: string | null;
       payload: string;
       payeeName: string;
+      reported: boolean;
     }
   | {
       kind: 'transfer';
@@ -21,6 +22,7 @@ export type PayOption =
       display: string;
       copyValue: string;
       payeeName: string;
+      reported: boolean;
     }
   | { kind: 'cash'; id: string; type: 'cash' };
 
@@ -52,6 +54,7 @@ const rankOf = (method: PayeeMethod) =>
   method.type === 'duitnow_qr' && method.acquirerId === TNG_ACQUIRER ? RANK.tng : RANK[method.type];
 
 export function toOption(method: PayeeMethod): PayOption {
+  const reported = method.reportedAt !== null;
   switch (method.type) {
     case 'alipay':
     case 'wechat':
@@ -63,6 +66,7 @@ export function toOption(method: PayeeMethod): PayOption {
         bank: null,
         payload: method.payload,
         payeeName: method.displayName,
+        reported,
       };
     case 'duitnow_qr': {
       const tng = method.acquirerId === TNG_ACQUIRER;
@@ -74,6 +78,7 @@ export function toOption(method: PayeeMethod): PayOption {
         bank: tng ? null : acquirerName(method.acquirerId),
         payload: method.payload,
         payeeName: method.name,
+        reported,
       };
     }
     case 'duitnow_id':
@@ -85,6 +90,7 @@ export function toOption(method: PayeeMethod): PayOption {
         display: formatMalaysianMobile(method.phone),
         copyValue: method.phone.replace(/^\+60/, '0'),
         payeeName: method.displayName,
+        reported,
       };
     case 'bank_account':
       return {
@@ -95,6 +101,7 @@ export function toOption(method: PayeeMethod): PayOption {
         display: method.accountNumber,
         copyValue: method.accountNumber,
         payeeName: method.displayName,
+        reported,
       };
     case 'cash':
       return { kind: 'cash', id: method.id, type: 'cash' };

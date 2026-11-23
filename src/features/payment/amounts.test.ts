@@ -18,6 +18,7 @@ const base = {
   isDefault: false,
   createdAt: '2026-10-01T00:00:00Z',
   checkedAt: '2026-10-01T00:00:00Z',
+  reportedAt: null,
 };
 const METHODS: PayeeMethod[] = [
   { ...base, id: 'phone', type: 'duitnow_id', phone: '+60123456789', displayName: 'LIM' },

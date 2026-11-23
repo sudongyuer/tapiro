@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
-import { firstRecheckDue, type PayeeMethod } from './methods';
+import { payeeAttention, type PayeeMethod } from './methods';
 import { payeeStore } from './services';
 
 const NONE: PayeeMethod[] = [];
@@ -25,7 +25,7 @@ export function usePayeeMethods(userId: string | null): PayeeMethodsView {
   return { status: state.status, methods: NONE, staleSince: null };
 }
 
-export function usePayeeRecheckDue(userId: string | null) {
+export function usePayeeAttention(userId: string | null) {
   const { methods } = usePayeeMethods(userId);
-  return firstRecheckDue(methods, new Date()) !== null;
+  return payeeAttention(methods, new Date())?.kind ?? null;
 }

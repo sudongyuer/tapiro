@@ -26,6 +26,7 @@ export type PayeeMethod = PayeeDetails & {
   isDefault: boolean;
   createdAt: string;
   checkedAt: string;
+  reportedAt: string | null;
 };
 
 export type PayeeMethodRow = {
@@ -34,6 +35,7 @@ export type PayeeMethodRow = {
   is_default: boolean;
   created_at: string;
   checked_at: string;
+  reported_at?: string | null;
   display_name: string | null;
   phone: string | null;
   bank_code: string | null;
@@ -90,6 +92,7 @@ export function toMethod(row: PayeeMethodRow): PayeeMethod | null {
     isDefault: row.is_default,
     createdAt: row.created_at,
     checkedAt: row.checked_at,
+    reportedAt: row.reported_at ?? null,
   };
 }
 

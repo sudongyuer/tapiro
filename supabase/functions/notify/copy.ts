@@ -168,6 +168,14 @@ const COPY: Record<string, Entry> = {
       ms: '{name} belum menerima bayaran',
     },
   },
+  'payment.cant_pay': {
+    subject: 'payment',
+    body: {
+      'zh-Hans': '{name}付不了，去检查一下你的收款方式',
+      en: "{name} couldn't pay you. Check your payment methods",
+      ms: '{name} tidak dapat membayar anda. Semak kaedah pembayaran anda',
+    },
+  },
   'chat.message': {
     subject: 'chat',
     body: {

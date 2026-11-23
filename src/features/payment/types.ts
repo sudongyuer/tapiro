@@ -79,6 +79,7 @@ export type PaymentService = {
     expectedMinor: number,
   ): Promise<void>;
   undo(paymentId: string): Promise<void>;
+  reportCantPay(paymentId: string, methodId: string): Promise<void>;
   confirm(paymentId: string): Promise<SettleResult>;
   notReceived(paymentId: string): Promise<void>;
 };

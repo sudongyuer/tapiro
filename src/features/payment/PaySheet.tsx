@@ -1,35 +1,24 @@
-import { Image, HStack, Section, Text, VStack } from '@expo/ui/swift-ui';
-import {
-  accessibilityElement,
-  accessibilityIdentifier,
-  font,
-  foregroundStyle,
-} from '@expo/ui/swift-ui/modifiers';
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { localClock } from '@/lib/deviceClock';
 import { useI18n } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
+import { useOffline } from '@/lib/network';
 import { stickerStore } from '@/lib/stickers';
 import { NoticeCard } from '@/ui/NoticeCard';
 import { OfflineSection } from '@/ui/OfflineLine';
-import { vars } from '@/ui/theme/tokens';
-import { useTheme } from '@/ui/theme/useTheme';
 
 import { Celebration, type CelebrationData } from './celebration/Celebration';
-import { ActionButton, secondary, TextSection } from './formParts';
-import { celebrationNote, originalIfConverted, paidAmount } from './amounts';
-import { usePaymentList, usePaySheet, type SheetData } from './hooks';
-import { AmountHeader, PayerView } from './PayerView';
-import { PayeeView } from './PayeeView';
+import { TextSection } from './formParts';
+import { celebrationNote, paidAmount } from './amounts';
+import { usePaymentList, usePaySheet } from './hooks';
 import type { Proof } from './ProofSection';
 import { SheetFrame } from '@/ui/SheetFrame';
-import type { Payment } from './types';
+import { SheetBody, type Remind } from './SheetBody';
 import { celebratesSettle, sheetTitleKey } from './stateMachine';
 
-export type Remind = { onPress: (payment: Payment) => void; busy: boolean };
+export type { Remind } from './SheetBody';
 
 export function PaySheet({
   userId,
@@ -54,7 +43,22 @@ export function PaySheet({
   const role = state.status === 'ready' ? state.payment.role : (cached?.role ?? null);
   const itemKind = state.status === 'ready' ? state.payment.itemKind : (cached?.itemKind ?? null);
   const titleKey = sheetTitleKey(role, itemKind);
-  const notice = sheet.failed ? (
+  const offline = useOffline();
+  const wasOffline = useRef(offline);
+  const { refresh } = sheet;
+  useEffect(() => {
+    if (wasOffline.current && !offline) refresh();
+    wasOffline.current = offline;
+  }, [offline, refresh]);
+  const notice = offline ? (
+    <NoticeCard
+      tone="warning"
+      icon="wifi.slash"
+      title={t('pay.sheet.offline.title')}
+      body={t('pay.sheet.offline.body')}
+      testID="pay-offline"
+    />
+  ) : sheet.failed ? (
     <NoticeCard
       tone="urgent"
       icon="exclamationmark.circle.fill"
@@ -148,6 +152,7 @@ export function PaySheet({
             onConfirm={confirm}
             onMarkPaid={markPaid}
             remind={remind}
+            offline={offline}
           />
         )}
       </SheetFrame>
@@ -162,119 +167,6 @@ export function PaySheet({
         />
       ) : null}
     </View>
-  );
-}
-
-function SheetBody({
-  data,
-  sheet,
-  onConfirm,
-  onMarkPaid,
-  remind,
-}: {
-  data: SheetData;
-  sheet: ReturnType<typeof usePaySheet>;
-  onConfirm: () => void;
-  onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
-  remind: Remind;
-}) {
-  const { t, language } = useI18n();
-  const { payment } = data;
-  const name = payment.counterpartName;
-  const paid = paidAmount(payment);
-  const amount = formatMoney(paid, language);
-  const original = originalIfConverted(payment);
-
-  if (payment.state === 'settled') return <Settled data={data} />;
-  if (payment.role === 'payee')
-    return (
-      <PayeeView
-        data={data}
-        busy={sheet.busy}
-        onConfirm={onConfirm}
-        onNotReceived={sheet.notReceived}
-        proofUrl={sheet.proofUrl}
-      />
-    );
-  if (payment.state === 'due')
-    return (
-      <PayerView
-        data={data}
-        busy={sheet.busy}
-        onMarkPaid={onMarkPaid}
-        onRemind={() => remind.onPress(payment)}
-        reminding={remind.busy}
-      />
-    );
-  return (
-    <>
-      <AmountHeader
-        title={t('pay.sheet.payTo', { name })}
-        money={paid}
-        note={
-          original ? t('pay.sheet.original', { amount: formatMoney(original, language) }) : null
-        }
-      />
-      <TextSection
-        title={t('pay.sheet.waiting.title', { name })}
-        body={
-          payment.proofPath
-            ? t('pay.sheet.waiting.bodyProof', { amount })
-            : t('pay.sheet.waiting.body', { amount })
-        }
-        testID="pay-waiting"
-      />
-      {payment.nudgedAt ? (
-        <NoticeCard
-          tone="warning"
-          icon="exclamationmark.bubble.fill"
-          title={t('pay.sheet.waiting.nudged', { name })}
-          testID="pay-nudged"
-        />
-      ) : null}
-      {payment.state === 'marked_paid' ? (
-        <Section>
-          <ActionButton
-            label={t('pay.sheet.waiting.undo')}
-            tone="urgent"
-            onPress={sheet.undo}
-            disabled={sheet.busy !== null}
-            testID="pay-undo"
-          />
-        </Section>
-      ) : null}
-    </>
-  );
-}
-
-function Settled({ data }: { data: SheetData }) {
-  const { t, language } = useI18n();
-  const { color } = useTheme();
-  const amount = formatMoney(paidAmount(data.payment), language);
-  const payee = data.payment.role === 'payee';
-  return (
-    <Section>
-      <HStack
-        spacing={vars['--space-3']}
-        modifiers={[accessibilityElement('combine'), accessibilityIdentifier('pay-settled')]}
-      >
-        <Image
-          systemName="checkmark.circle.fill"
-          size={28}
-          modifiers={[foregroundStyle(color('--color-success'))]}
-        />
-        <VStack alignment="leading" spacing={vars['--space-1'] / 2}>
-          <Text modifiers={[font({ textStyle: 'headline' })]}>
-            {payee ? t('pay.celebrate.tick', { amount }) : t('pay.sheet.settled.title')}
-          </Text>
-          <Text modifiers={[font({ textStyle: 'subheadline' }), secondary]}>
-            {payee
-              ? data.payment.title
-              : t('pay.sheet.settled.body', { amount, title: data.payment.title })}
-          </Text>
-        </VStack>
-      </HStack>
-    </Section>
   );
 }
 

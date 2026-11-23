@@ -95,6 +95,19 @@ describe('payment store', () => {
     expect(payments(store)).toHaveLength(2);
   });
 
+  test('付不了 marks the chosen method for the payer; cash and the payee cannot report', async () => {
+    const service = createFixturePaymentService(OPTIONS);
+    const payment = await service.get(FIXTURE_USER_ID, FIXTURE_PAYMENT_IDS.owe);
+    const methods = await service.methodsOf(payment!.counterpartId!);
+    const phone = methods.find((m) => m.type === 'duitnow_id')!;
+    const cash = methods.find((m) => m.type === 'cash')!;
+    await expect(service.reportCantPay(FIXTURE_PAYMENT_IDS.owe, cash.id)).rejects.toThrow();
+    await expect(service.reportCantPay(FIXTURE_PAYMENT_IDS.owed, phone.id)).rejects.toThrow();
+    await service.reportCantPay(FIXTURE_PAYMENT_IDS.owe, phone.id);
+    const after = await service.methodsOf(payment!.counterpartId!);
+    expect(after.filter((m) => m.reportedAt !== null).map((m) => m.id)).toEqual([phone.id]);
+  });
+
   test('settling removes the payment from the list; only the first settle is first', async () => {
     const store = await ready();
     const first = await store.run(FIXTURE_USER_ID, () =>

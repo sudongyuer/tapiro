@@ -74,6 +74,16 @@ export default {
       failed: '截图没传上去，可以不附，或者再试一次。',
       footer: '只有你们俩和管理员看得到，结清 30 天后删除。',
     },
+    cantPay: {
+      action: '付不了？告诉{{name}}',
+      footer: '号码或收款码用不了时点这里，{{name}}会收到提醒去检查。',
+      sent: '{{name}}已收到提醒，会检查这个收款方式。可以换一种方式付，或者等对方改好。',
+      sending: '正在告诉对方',
+    },
+    offline: {
+      title: '没有网络',
+      body: '连上网络后才能付款或确认。你选的方式和截图会保留。',
+    },
     markPaid: '我已付款',
     markPaidHint: '告诉{{name}}去查收',
     waiting: {

@@ -63,7 +63,7 @@ export function MeView({
   name: string;
   avatarUrl: string | null;
   standing: MeStanding | null;
-  payeeDue: boolean;
+  payeeDue: 'reported' | 'due' | null;
   stickerCount: number | null;
   coinCount: string | null;
   onOpenProfile: (() => void) | null;
@@ -108,7 +108,11 @@ export function MeView({
           ) : null}
           <NavRow
             label={t('payee.meRow')}
-            dotLabel={payeeDue ? t('payee.meRowDue') : null}
+            dotLabel={
+              payeeDue
+                ? t(payeeDue === 'reported' ? 'payee.meRowReported' : 'payee.meRowDue')
+                : null
+            }
             onPress={onOpenPayee}
             testID="me-payee"
           />
