@@ -10,6 +10,7 @@ const base = {
   isDefault: false,
   createdAt: '2026-10-01T00:00:00Z',
   checkedAt: '2026-10-01T00:00:00Z',
+  reportedAt: null,
 };
 const METHODS: PayeeMethod[] = [
   { ...base, id: 'cash', type: 'cash' },
@@ -123,6 +124,13 @@ describe('pay options', () => {
       'bank',
       'cash',
     ]);
+  });
+
+  test('a method a payer reported carries the report into its option', () => {
+    const reported = METHODS.map((m) => (m.id === 'phone' ? { ...m, reportedAt: 'now' } : m));
+    const flags = payOptions(reported).map((o) => [o.id, o.kind === 'cash' ? null : o.reported]);
+    expect(flags).toContainEqual(['phone', true]);
+    expect(flags).toContainEqual(['bank', false]);
   });
 
   test('a single method is preselected; several wait for a choice', () => {

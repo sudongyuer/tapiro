@@ -86,6 +86,7 @@ const LIFETIMES: Record<string, Lifetime> = {
     'kept: sign-out ends activities before the session ends (accountActions.beforeSignOut)',
   'src/lib/live/instance.ts#live': 'kept: the realtime connection follows the auth session',
   'src/lib/location/expoLocationService.ts#expoLocationService': 'kept: a device service',
+  'src/lib/network/index.ts#store': 'kept: the device network state',
   'src/lib/notifications/index.ts#permissionAnswers': 'kept: a device permission signal',
   'src/lib/notifications/useNoticeRouting.ts#handled': 'kept: notification ids already routed',
   'src/lib/push/instance.ts#deviceToken': 'kept: the device push token',

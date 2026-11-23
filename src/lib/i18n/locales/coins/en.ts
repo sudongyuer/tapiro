@@ -64,7 +64,6 @@ const en: typeof zhHans = {
     loading: 'Loading prices',
     failed: 'Prices didn’t load',
     retry: 'Try Again',
-    empty: 'Coins can’t be bought right now. Try again later.',
     buying: 'Buying',
     verifying: 'Paid, confirming',
     pending: 'Waiting for approval',

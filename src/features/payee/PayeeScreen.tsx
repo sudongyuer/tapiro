@@ -5,7 +5,7 @@ import { useI18n } from '@/lib/i18n';
 
 import { METHOD_ICONS, type QrWallet } from './display';
 import { usePayeeMethods } from './hooks';
-import type { PayeeMethod } from './methods';
+import { isQrMethod, type PayeeMethod } from './methods';
 import { PayeeListView } from './PayeeListView';
 import { payeeStore } from './services';
 
@@ -98,6 +98,10 @@ export function PayeeScreen({
         onEdit={edit}
         onRemove={(method) => act(() => payeeStore.remove(userId, method.id))}
         onRecheck={(method) => onOpen('qr', { id: method.id, repick: true })}
+        onCheckReported={(method) =>
+          isQrMethod(method) ? onOpen('qr', { id: method.id, repick: true }) : edit(method)
+        }
+        onConfirmReported={(method) => act(() => payeeStore.confirm(userId, method.id))}
         onCashChange={setCash}
       />
     </>

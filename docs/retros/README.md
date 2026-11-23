@@ -937,6 +937,7 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-21 | audit batch A, keep context             | 0                  | 0             | ~15 min (shared scratchpad, worktree guard)      | 0                       | 0                     |
 | 2026-11-21 | UI audit D: layout                      | 0                  | 3             | ~90 min (shared Simulator queue)                 | 0                       | 0                     |
 | 2026-11-21 | milestone before TestFlight             | 2 (combination)    | 3             | ~150 min (relaunch, kit inset, load 100–300)     | 0                       | 1 (P5 on post form)   |
-| 2026-11-21 | TestFlight 20261121.1036                 | 0                  | 0             | ~0                                               | 0                       | 0                     |
-| 2026-11-21 | sticker book deck                        | pending            | 1             | ~10 min (case-insensitive names, shell guard)    | 0                       | pending               |
-| 2026-11-21 | milestone follow-up                      | 1 (bank sheet)     | 1             | ~45 min (build under a running batch)            | 0                       | 1 (P5 on bank sheet)  |
+| 2026-11-21 | TestFlight 20261121.1036                | 0                  | 0             | ~0                                               | 0                       | 0                     |
+| 2026-11-21 | sticker book deck                       | pending            | 1             | ~10 min (case-insensitive names, shell guard)    | 0                       | pending               |
+| 2026-11-21 | milestone follow-up                     | 1 (bank sheet)     | 1             | ~45 min (build under a running batch)            | 0                       | 1 (P5 on bank sheet)  |
+| 2026-11-24 | TestFlight external group               | 0                  | 0             | ~5 min (worktree without node_modules)           | 0                       | 0                     |

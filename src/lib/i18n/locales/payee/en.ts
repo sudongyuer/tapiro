@@ -4,6 +4,7 @@ const en: typeof zhHans = {
   title: 'Payment Methods',
   meRow: 'Payment Methods',
   meRowDue: 'A QR code needs checking',
+  meRowReported: 'Someone couldn’t pay you. Check your methods',
   privacy:
     'Only a poster who picked you sees these, during payment, and they’re hidden once settled.',
   emptyTitle: 'No payment methods yet',
@@ -51,6 +52,12 @@ const en: typeof zhHans = {
   cashOnly: {
     title: 'No transfer methods yet',
     body: 'For now you can only take cash in person. Add a transfer method so people can pay you without meeting.',
+  },
+  reported: {
+    title: 'Someone couldn’t pay with your {{method}}',
+    body: '{{detail}}. A payer says it didn’t work. Check whether the number or QR code has changed. This goes away once you update it or confirm it’s fine.',
+    check: 'Check This Method',
+    fine: 'It’s Fine, Keep It',
   },
   recheck: {
     title: 'Your {{method}} hasn’t been checked in 90 days',

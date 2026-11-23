@@ -61,7 +61,6 @@ export default {
     loading: '正在加载价格',
     failed: '价格没加载出来',
     retry: '重试',
-    empty: '现在买不了貘币，请稍后再试',
     buying: '正在购买',
     verifying: '已付款，正在确认',
     pending: '等待批准',

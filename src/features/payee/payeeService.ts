@@ -11,13 +11,14 @@ export type PayeeService = {
   add(details: PayeeDetails): Promise<void>;
   update(id: string, details: PayeeDetails): Promise<void>;
   replaceQr(id: string, details: PayeeDetails): Promise<void>;
+  confirm(id: string): Promise<void>;
   remove(id: string): Promise<void>;
   setDefault(id: string): Promise<void>;
 };
 
 type Row = PayeeMethodRow;
 
-type Columns = Omit<Row, 'id' | 'is_default' | 'created_at' | 'checked_at'>;
+type Columns = Omit<Row, 'id' | 'is_default' | 'created_at' | 'checked_at' | 'reported_at'>;
 
 const EMPTY: Omit<Columns, 'type'> = {
   display_name: null,
@@ -114,6 +115,16 @@ export function createSupabasePayeeService(client: SupabaseClient | null): Payee
           new_display_name: columns.display_name,
         }),
       );
+    },
+    async confirm(id) {
+      const { data } = unwrap(
+        await db()
+          .from('payee_methods')
+          .update({ checked_at: new Date().toISOString() })
+          .eq('id', id)
+          .select('id'),
+      );
+      if (!data?.length) throw new Error('payee method not found');
     },
     async remove(id) {
       const { data } = unwrap(await db().from('payee_methods').delete().eq('id', id).select('id'));

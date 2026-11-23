@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import {
   firstRecheckDue,
+  payeeAttention,
   isRecheckDue,
   sortMethods,
   withAdded,
@@ -22,6 +23,7 @@ function method(id: string, details: Partial<PayeeMethod> = {}): PayeeMethod {
     isDefault: false,
     createdAt: `2026-10-0${id}T00:00:00Z`,
     checkedAt: NOW.toISOString(),
+    reportedAt: null,
     ...details,
   } as PayeeMethod;
 }
@@ -86,6 +88,18 @@ describe('re-check', () => {
   test('phone, bank and cash are never due', () => {
     expect(isRecheckDue(method('1', { checkedAt: daysAgo(400) }), NOW)).toBe(false);
     expect(isRecheckDue({ ...cash('2'), checkedAt: daysAgo(400) }, NOW)).toBe(false);
+  });
+
+  test('a reported method asks for a check before a QR that is only old', () => {
+    const reported = method('3', { reportedAt: daysAgo(0) });
+    const old = qr('1', daysAgo(120));
+    expect(payeeAttention([old, reported], NOW)).toEqual({ kind: 'reported', method: reported });
+    expect(payeeAttention([old], NOW)).toEqual({ kind: 'due', method: old });
+    expect(payeeAttention([qr('1', daysAgo(10))], NOW)).toBeNull();
+  });
+
+  test('a reported cash row never asks for a check', () => {
+    expect(payeeAttention([{ ...cash('2'), reportedAt: daysAgo(0) }], NOW)).toBeNull();
   });
 
   test('finds the first due method', () => {

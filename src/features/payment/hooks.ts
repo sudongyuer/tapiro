@@ -28,7 +28,7 @@ export function usePaymentList() {
   return useSyncExternalStore(paymentStore.subscribe, paymentStore.getSnapshot);
 }
 
-export type SheetAction = 'markPaid' | 'undo' | 'confirm' | 'notReceived';
+export type SheetAction = 'markPaid' | 'undo' | 'confirm' | 'notReceived' | 'cantPay';
 
 async function loadSheet(userId: string, paymentId: string): Promise<SheetAnswer> {
   const { service } = paymentStore;
@@ -69,6 +69,8 @@ export function usePaySheet(userId: string, paymentId: string) {
     focused,
   );
 
+  const refresh = useCallback(() => setVersion((current) => current + 1), []);
+
   const retry = useCallback(() => {
     setState({ status: 'loading' });
     setVersion((current) => current + 1);
@@ -94,6 +96,7 @@ export function usePaySheet(userId: string, paymentId: string) {
     busy,
     failed,
     retry,
+    refresh,
     markPaid: (methodId: string, proofPath: string | null, expectedMinor: number) =>
       act('markPaid', () => service.markPaid(paymentId, methodId, proofPath, expectedMinor)),
     undo: () =>
@@ -102,6 +105,7 @@ export function usePaySheet(userId: string, paymentId: string) {
         await service.undo(paymentId);
         if (detached) await service.removeProof(detached).catch(() => undefined);
       }),
+    cantPay: (methodId: string) => act('cantPay', () => service.reportCantPay(paymentId, methodId)),
     proofUrl,
     confirm: (): Promise<SettleResult | null> => act('confirm', () => service.confirm(paymentId)),
     notReceived: () => act('notReceived', () => service.notReceived(paymentId)),

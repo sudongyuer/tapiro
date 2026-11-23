@@ -30,7 +30,7 @@ import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { METHOD_ICONS, methodDetail, methodTitle } from './display';
-import { firstRecheckDue, hasCash, transferMethods, type PayeeMethod } from './methods';
+import { hasCash, payeeAttention, transferMethods, type PayeeMethod } from './methods';
 import { LoadStateSections } from './LoadState';
 import { NoticeCard } from '@/ui/NoticeCard';
 
@@ -48,6 +48,8 @@ export function PayeeListView({
   onEdit,
   onRemove,
   onRecheck,
+  onCheckReported,
+  onConfirmReported,
   onCashChange,
 }: {
   status: 'loading' | 'ready' | 'failed';
@@ -59,12 +61,14 @@ export function PayeeListView({
   onEdit: (method: PayeeMethod) => void;
   onRemove: (method: PayeeMethod) => void;
   onRecheck: (method: PayeeMethod) => void;
+  onCheckReported: (method: PayeeMethod) => void;
+  onConfirmReported: (method: PayeeMethod) => void;
   onCashChange: (on: boolean) => void;
 }) {
   const { t } = useI18n();
   const { color } = useTheme();
   const rows = transferMethods(methods);
-  const due = firstRecheckDue(rows, now);
+  const attention = payeeAttention(rows, now);
   const cashOn = hasCash(methods);
   const empty = cashOn
     ? { title: t('payee.cashOnly.title'), body: t('payee.cashOnly.body'), id: 'payee-cash-only' }
@@ -97,20 +101,38 @@ export function PayeeListView({
             testID="payee-stale"
           />
         ) : null}
-        {status !== 'ready' ? null : due ? (
+        {status !== 'ready' || !attention ? null : attention.kind === 'reported' ? (
+          <NoticeCard
+            tone="warning"
+            icon="exclamationmark.triangle.fill"
+            title={t('payee.reported.title', { method: methodTitle(t, attention.method) })}
+            body={t('payee.reported.body', { detail: methodDetail(t, attention.method) })}
+            action={{
+              label: t('payee.reported.check'),
+              onPress: () => onCheckReported(attention.method),
+              testID: 'payee-reported-check',
+            }}
+            secondaryAction={{
+              label: t('payee.reported.fine'),
+              onPress: () => onConfirmReported(attention.method),
+              testID: 'payee-reported-fine',
+            }}
+            testID="payee-reported"
+          />
+        ) : (
           <NoticeCard
             tone="warning"
             icon="clock.badge.exclamationmark"
-            title={t('payee.recheck.title', { method: methodTitle(t, due) })}
+            title={t('payee.recheck.title', { method: methodTitle(t, attention.method) })}
             body={t('payee.recheck.body')}
             action={{
               label: t('payee.recheck.action'),
-              onPress: () => onRecheck(due),
+              onPress: () => onRecheck(attention.method),
               testID: 'payee-recheck-action',
             }}
             testID="payee-recheck"
           />
-        ) : null}
+        )}
         {status !== 'ready' ? null : rows.length === 0 ? (
           <Section footer={<Text>{t('payee.privacy')}</Text>}>
             <VStack

@@ -5,6 +5,7 @@ type ItemPath =
 
 export type NoticeRoute =
   | { pathname: ItemPath; params: { id: string; notice?: 'expired' } }
+  | { pathname: '/payee' }
   | { pathname: '/messages/[thread]'; params: { thread: string } };
 
 const BOUNTY_ROUTES: Record<string, ItemPath> = {
@@ -31,6 +32,7 @@ export function noticeRoute(data: NoticeData): NoticeRoute | null {
     return { pathname: bounty, params: { ...params, notice: 'expired' } };
   }
   if (bounty) return { pathname: bounty, params };
+  if (data.kind === 'payment.cant_pay') return { pathname: '/payee' };
   if (data.kind.startsWith('payment.')) return { pathname: '/pay/[id]', params };
   if (data.kind.startsWith('ride.')) return { pathname: '/ride/[id]', params };
   if (data.kind.startsWith('chat.')) {

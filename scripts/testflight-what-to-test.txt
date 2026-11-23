@@ -1,0 +1,5 @@
+[zh-Hans]
+请试试：发一个悬赏、发起或加入拼车、问小貘一个问题，再看看贴纸册。哪里不好用，请在 TestFlight 里点「发送反馈」告诉我们。
+
+[en-US]
+Please try: posting a bounty, starting or joining a shared ride, asking Xiaomo a question, and the sticker book. If anything feels off, tell us with Send Feedback in TestFlight.

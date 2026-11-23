@@ -1,6 +1,6 @@
 """273 A: the 貘币 page has a black 买貘币 pill right under the balance; it opens a sheet titled 买貘币 with the balance line,
 the three packs from the server table (5, 11, 35, smallest first) priced by StoreKit, and the note that bought coins never
-expire. Tapping RM 9.90 shows a spinner in that price's place, so the rows keep their height, and disables the other prices; the sheet reads 「11 貘币已到账」 only after
+expire. Tapping RM 10.00 shows a spinner in that price's place, so the rows keep their height, and disables the other prices; the sheet reads 「11 貘币已到账」 only after
 the server credited the purchase, StoreKit's transaction is finished after that answer, and the balance line reads 24.
 Closed, the page reads 24 and its newest row is 买貘币 · 测试购买 +11."""
 import json

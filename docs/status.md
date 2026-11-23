@@ -4,12 +4,10 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-24 (an overdue arrival time says how late on the status page and the poster's home card; the profile
-block entry was already built). Before that, 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
-PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
-new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours; UI audit batch C:
-one name per thing in every locale, `docs/design-language.md` 「Terminology」; UI audit batch E: the remaining Minor flow
-findings, decisions E1–E12).
+Updated: 2026-11-24 (付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
+the pay sheet turns writes off without a network; an overdue arrival time says how late on the status page and the
+poster's home card; the profile block entry was already built). Before: 2026-11-21 (UI audit batch B, China storefront
+phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
 
 ## Built and merged
 
@@ -29,6 +27,7 @@ findings, decisions E1–E12).
 | Polish: motion, render  | —                                                  | Plan `docs/plans/2026-11-21-polish-motion-perf.md` (P1–P23 for veto; P4 withdrawn; device sign-off closed by the owner: build A clean, B measured once (no hang), rest waived, `docs/research/2026-11-21-device-perf.md`): one Reduce Motion hook, shared curves, instant press dim, shorter stack timings, small fades, cached formatters, memoised rows, continuous corners                                            |
 | UI audit D: layout      | `docs/specs/2026-10-11-foundation-design.md`       | Audit `docs/reviews/2026-11-21-ui-walkthrough.md` O2, H2, L1, P5, P6, S1, S3, H3 (decisions for veto in the record of 2026-11-21): native chip row, keyboard 完成, top scroll edge on every Form screen, a separator on the ride footer bar, accessory on tab roots only                                                                                                                                                 |
 | Milestone before TF 2   | `docs/specs/2026-10-11-foundation-design.md`       | Milestone run over #204–#216 (record of 2026-11-21, M1–M4 for veto): Settings 退出登录 confirms, the language step heading below the bar, no floating 完成 on the post form, one sticker count in the fixtures; retro `2026-11-21-milestone-before-testflight`                                                                                                                                                           |
+| 付不了 and offline pay  | `docs/specs/2026-11-24-cant-pay-offline-design.md` | The payer reports a method that does not work (`report_cant_pay`, push `payment.cant_pay`); the payee's list leads with a yellow card and 我的 shows the dot until the method changes or 没问题; the pay sheet reads `expo-network` and turns writes off offline. Decisions CP1–CP8, OF1–OF4 (★ for veto). Hosted: apply migration `20261124000100_payee_cant_pay.sql`                                                   |
 
 ## In progress
 
@@ -299,8 +298,15 @@ findings, decisions E1–E12).
    a refund in the test session never reaches the app, so refunds are proven server side only. Built 2026-11-12
    (`feat/buy-coins`, 273 A): the client core and purchase UI (Tasks 4–5). `verification/storekit` buys through the real
    sheet and passes all five cases from a fresh install (2026-11-12, `fix/storekit-harness`: the scene marks the test account
-   onboarded, synchronous set-up and tear-down end the 3 h hang, a per-case allowance; plan 「Client and purchase UI as built」). Waiting on the account: real Sandbox data, `IAP_APP_APPLE_ID`, the
-   notification URL, `CONSUMPTION_REQUEST`, the hosted deploy. Live Activity spikes 1–2 done
+   onboarded, synchronous set-up and tear-down end the 3 h hang, a per-case allowance; plan 「Client and purchase UI as built」).
+   App Store Connect products (2026-11-24, `feat/iap-asc-products`): the three consumables exist (`app.tapiro.coins.5`
+   6838384831 at MYR 5.00, `.11` 6838384832 at MYR 10.00, `.35` 6838384879 at MYR 30.00; base territory Malaysia,
+   every territory but China mainland, zh-Hans, en-US and ms names, review screenshot), matching the hosted
+   `iap_products`; `iap-verify` and `iap-notify` are deployed with `IAP_APP_APPLE_ID` and both notification URLs set.
+   `scripts/testflight.sh` now stops when a pack is not in App Store Connect (`scripts/iap-preflight.mjs`), and a
+   StoreKit answer with no products reads as 「价格没加载出来 · 重试」 (`ui:coins_buy_none`), not an empty shop. Waiting on
+   the owner: the Paid Apps agreement with banking and tax (StoreKit returns no products without it), then a TestFlight
+   purchase for `coins.purchase.sandbox`; at App Store submission, the three products go with the app version. `CONSUMPTION_REQUEST` is still not handled. Live Activity spikes 1–2 done
    (`docs/plans/2026-11-11-live-activity-spike.md`): our own plugin's extension renders on the Simulator Lock Screen and
    Dynamic Island, generated only with `TAPIRO_LIVE_ACTIVITY=1` (kept until push, 278 A); spike 3 needs the owner's
    iPhone. Views built 2026-11-12 (`feat/live-activity-ui`, 274–277 A): Lock Screen and island compact, minimal and
@@ -535,6 +541,17 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   1.0.0 (20261120.1227) uploaded 2026-11-20 with the fix and passed processing (`COMPLETE`). After an upload, `bun run testflight` waits up to 15 min
   (`TAPIRO_PROCESSING_WAIT`) for Apple's processing through `scripts/asc-upload-status.mjs` and fails with Apple's
   error codes on `FAILED`; `node scripts/asc-upload-status.mjs <version> <build>` checks one later.
+- External testing (2026-11-24): once processing is `COMPLETE`, `bun run testflight` runs
+  `scripts/asc-testflight.mjs <version> <build>`, which waits for the build to read `VALID`, writes 「What to Test」 in
+  zh-Hans and en-US (creates them, or updates a different text), adds the build to the external group 「Public」
+  (`ac03bf4b-819f-4004-ae13-b49f81d1c0e0`, public link on) and submits it for beta app review unless it already has a
+  submission. The text comes from `TAPIRO_WHAT_TO_TEST` (a file) or `scripts/testflight-what-to-test.txt`: `[zh-Hans]`
+  and `[en-US]` sections, or one text for both; the preflight refuses the build before archiving when either is
+  empty. `TAPIRO_SKIP_EXTERNAL=1` stops after processing (internal group only). When processing outlasts the wait, or
+  this step fails, the script prints the command to run it later; `--dry-run` does the reads and prints the writes.
+  The app's beta description, feedback address and review contact are set in App Store Connect (2026-11-22), and
+  `ITSAppUsesNonExemptEncryption: false` in `app.json` answers export compliance, so a new build needs nothing by
+  hand. 1.0.0 (20261121.1730) is in 「Public」 and waits for beta review (submitted by hand, 2026-11-22).
 - Push goes straight to APNs (2026-11-20, `docs/specs/2026-11-20-apns-direct-design.md`): the app registers its APNs
   token with `production` (TestFlight) or `sandbox` (cabled Release, dev builds), and `notify` signs an ES256 token with
   key `88Y29CGN9U`. On hosted, `APNS_KEY_ID` and `APNS_TEAM_ID` are set and `notify` is deployed with the migration

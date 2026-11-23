@@ -29,6 +29,13 @@ if (files.length === 0) {
   process.exit(sizeStatus);
 }
 
+if (!existsSync('node_modules')) {
+  console.error(
+    'node_modules is missing in this checkout; run `bun install --frozen-lockfile` first',
+  );
+  process.exit(1);
+}
+
 console.log(`linting ${files.length} changed files since ${base}`);
 const env = { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` };
 const result = spawnSync('bun', ['run', 'lint', '--', ...files], { stdio: 'inherit', env });

@@ -61,7 +61,18 @@ function assertShape(details: PayeeDetails) {
 
 const STALE_QR_DAYS = 120;
 
-export function createFixturePayeeService(variant: FixtureVariant): PayeeService {
+const sameDetails = (method: PayeeMethod, details: PayeeDetails) =>
+  Object.entries(details).every(([key, value]) => method[key as keyof PayeeMethod] === value);
+
+function reportedIndex(details: readonly PayeeDetails[]) {
+  const bank = details.findIndex((item) => item.type === 'bank_account');
+  return bank >= 0 ? bank : details.findIndex((item) => item.type !== 'cash');
+}
+
+export function createFixturePayeeService(
+  variant: FixtureVariant,
+  options: { reported?: boolean } = {},
+): PayeeService {
   const start = Date.now();
   let counter = 0;
   const stamp = (offset: number) => new Date(start + offset).toISOString();
@@ -70,7 +81,7 @@ export function createFixturePayeeService(variant: FixtureVariant): PayeeService
   function make(details: PayeeDetails, createdAt: string, checkedAt = createdAt): PayeeMethod {
     counter += 1;
     const id = `00000000-0000-4000-8000-${String(counter).padStart(12, '0')}`;
-    return { ...details, id, isDefault: false, createdAt, checkedAt };
+    return { ...details, id, isDefault: false, createdAt, checkedAt, reportedAt: null };
   }
 
   function find(id: string) {
@@ -79,10 +90,16 @@ export function createFixturePayeeService(variant: FixtureVariant): PayeeService
     return found;
   }
 
-  seed(variant).forEach((details, index) => {
+  const seeded = seed(variant);
+  const reported = options.reported ? reportedIndex(seeded) : -1;
+  seeded.forEach((details, index) => {
     const created = stamp(-(STALE_QR_DAYS + 10 - index) * DAY_MS);
     const checked = details.type === 'duitnow_qr' ? stamp(-STALE_QR_DAYS * DAY_MS) : created;
-    methods = withAdded(methods, make(details, created, checked));
+    const method = make(details, created, checked);
+    methods = withAdded(
+      methods,
+      index === reported ? { ...method, reportedAt: stamp(-DAY_MS / 24) } : method,
+    );
   });
 
   return {
@@ -98,11 +115,27 @@ export function createFixturePayeeService(variant: FixtureVariant): PayeeService
       if (!canUpdateInPlace(existing, details))
         throw new Error('payee_methods_shape: the type of a method cannot change');
       assertShape(details);
-      const checkedAt = isQrMethod(details) ? new Date().toISOString() : existing.checkedAt;
+      const checked = isQrMethod(details);
+      const checkedAt = checked ? new Date().toISOString() : existing.checkedAt;
+      const reportedAt = checked || !sameDetails(existing, details) ? null : existing.reportedAt;
       methods = methods.map((method) =>
         method.id === id
-          ? { ...details, id, isDefault: method.isDefault, createdAt: method.createdAt, checkedAt }
+          ? {
+              ...details,
+              id,
+              isDefault: method.isDefault,
+              createdAt: method.createdAt,
+              checkedAt,
+              reportedAt,
+            }
           : method,
+      );
+    },
+    async confirm(id) {
+      find(id);
+      const checkedAt = new Date().toISOString();
+      methods = methods.map((method) =>
+        method.id === id ? { ...method, checkedAt, reportedAt: null } : method,
       );
     },
     async replaceQr(id, details) {

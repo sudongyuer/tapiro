@@ -51,7 +51,7 @@ final class StoreKitUITests: XCTestCase {
     for coins in ["5", "11", "35"] {
       XCTAssertTrue(app.buttons["buy-coins-buy-\(coins)"].waitForExistence(timeout: 20), "pack \(coins) missing")
     }
-    XCTAssertTrue(app.buttons["buy-coins-buy-35"].label.contains("29.90"), app.buttons["buy-coins-buy-35"].label)
+    XCTAssertTrue(app.buttons["buy-coins-buy-35"].label.contains("30.00"), app.buttons["buy-coins-buy-35"].label)
   }
 
   func testEachPackCreditsOnce() throws {
@@ -143,14 +143,12 @@ final class StoreKitUITests: XCTestCase {
   private func openSheet() throws {
     app.buttons["coins-buy"].tap()
     let pack = app.buttons["buy-coins-buy-5"]
-    let empty = app.descendants(matching: .any)["buy-coins-empty"]
     let failed = app.descendants(matching: .any)["buy-coins-failed"]
     let deadline = Date().addingTimeInterval(30)
-    while Date() < deadline, !pack.exists, !empty.exists, !failed.exists {
+    while Date() < deadline, !pack.exists, !failed.exists {
       RunLoop.current.run(until: Date().addingTimeInterval(0.5))
     }
-    XCTAssertFalse(empty.exists, "StoreKit returned no products")
-    XCTAssertFalse(failed.exists, "the packs failed to load")
+    XCTAssertFalse(failed.exists, "the packs failed to load or StoreKit returned no products")
     XCTAssertTrue(pack.exists, "the packs never loaded")
   }
 

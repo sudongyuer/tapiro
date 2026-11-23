@@ -21,12 +21,14 @@ export function PayeeView({
   onConfirm,
   onNotReceived,
   proofUrl,
+  offline,
 }: {
   data: SheetData;
   busy: SheetAction | null;
   onConfirm: () => void;
   onNotReceived: () => void;
   proofUrl: (path: string) => Promise<string>;
+  offline: boolean;
 }) {
   const { t, language } = useI18n();
   const [viewing, setViewing] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function PayeeView({
     <PillButton
       label={t('pay.payee.received')}
       onPress={onConfirm}
-      disabled={busy !== null}
+      disabled={busy !== null || offline}
       loading={busy === 'confirm'}
       testID="pay-confirm"
     />
@@ -84,7 +86,7 @@ export function PayeeView({
             label={t('pay.payee.notReceived')}
             variant="plain"
             onPress={onNotReceived}
-            disabled={busy !== null}
+            disabled={busy !== null || offline}
             loading={busy === 'notReceived'}
             testID="pay-not-received"
           />

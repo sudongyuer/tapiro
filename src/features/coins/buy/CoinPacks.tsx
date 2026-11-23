@@ -91,15 +91,9 @@ export function CoinPacks({
     <>
       <PurchaseStatus testID={testID} />
       <Section footer={footerText}>
-        {list.length === 0 ? (
-          <Text modifiers={[secondary, accessibilityIdentifier(`${testID}-empty`)]}>
-            {t('coins.buy.empty')}
-          </Text>
-        ) : (
-          list.map((pack) => (
-            <PackRow key={pack.productId} pack={pack} purchase={purchase} testID={testID} />
-          ))
-        )}
+        {list.map((pack) => (
+          <PackRow key={pack.productId} pack={pack} purchase={purchase} testID={testID} />
+        ))}
       </Section>
     </>
   );
