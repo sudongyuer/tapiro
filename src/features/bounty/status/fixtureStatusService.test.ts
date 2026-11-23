@@ -95,6 +95,7 @@ describe('scenarios', () => {
       assignedLate: 'assigned',
       enRoute: 'en_route',
       enRouteChanged: 'en_route',
+      enRouteLate: 'en_route',
       done: 'done',
       disputed: 'disputed',
       confirmed: 'confirmed',

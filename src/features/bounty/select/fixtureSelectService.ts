@@ -1,3 +1,5 @@
+import { pause } from '@/lib/pause';
+
 import type { Person, Tier } from '../board/types';
 import { applicantPerson, type Applicant, type SelectOutcome, type SelectService } from './types';
 
@@ -159,9 +161,6 @@ export const FIXTURE_APPLICANT_PEOPLE = [
       .map((item) => [item.id, { id: item.id, name: item.name }] as const),
   ).values(),
 ];
-
-const pause = (ms: number) =>
-  ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
 type Posted = { pending: Applicant[]; helper: Applicant | null; later: Seed[] };
 

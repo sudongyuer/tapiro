@@ -5,8 +5,9 @@ owner decision, a new queue item). Decisions and their reasons live in the specs
 points to them.
 
 Updated: 2026-11-24 (付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
-the pay sheet turns writes off without a network). Before: 2026-11-21 (UI audit batch B, China storefront phase 1,
-PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
+the pay sheet turns writes off without a network; an overdue arrival time says how late on the status page and the
+poster's home card; the profile block entry was already built). Before: 2026-11-21 (UI audit batch B, China storefront
+phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
 
 ## Built and merged
 
@@ -29,6 +30,12 @@ PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audi
 | 付不了 and offline pay  | `docs/specs/2026-11-24-cant-pay-offline-design.md` | The payer reports a method that does not work (`report_cant_pay`, push `payment.cant_pay`); the payee's list leads with a yellow card and 我的 shows the dot until the method changes or 没问题; the pay sheet reads `expo-network` and turns writes off offline. Decisions CP1–CP8, OF1–OF4 (★ for veto). Hosted: apply migration `20261124000100_payee_cant_pay.sql`                                                   |
 
 ## In progress
+
+- Overdue arrival time (`bounty.flow.eta-overdue`, deferred as 3B on 2026-10-29; branch `feat/eta-overdue`): five
+  minutes past the helper's ETA without 完成, the status page reads 「预计 … 到，已晚 N 分钟」 in the warning colour and
+  the poster's home card 「某某在路上 · 晚了 N 分钟」, moving with the clock without a reload; the five minutes are the
+  Live Activity's stale threshold. The profile's ⋯ → 屏蔽 entry (`chat.block.entry`) was already built in #88; the
+  story map now says so. Decisions for veto (★) in the bounty spec's record of 2026-11-24.
 
 - Sticker book deck (`docs/specs/2026-11-21-sticker-book-deck-design.md`, plan `docs/plans/2026-11-21-sticker-book-deck.md`,
   branch `feat/sticker-book-deck`): from the owner's reference video, the book is one swipeable deck with a date title,

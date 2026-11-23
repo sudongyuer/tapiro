@@ -10,7 +10,7 @@ import { liveItems } from '@/lib/useLiveItems';
 
 import { bountyCache } from '../shared/bountyCache';
 import { createFixtureLiveService, fixtureLiveOptions } from './fixtureLiveService';
-import { liveBountyItems } from './liveBounties';
+import { liveBountyItems, liveTextChangesAt } from './liveBounties';
 import { createSupabaseLiveService } from './liveService';
 import { createLiveBountyStore } from './liveStore';
 import { reloadOnOwnApplications } from './ownWrites';
@@ -34,17 +34,22 @@ export const liveBountyStore = createLiveBountyStore(
 );
 
 const i18n = initI18n();
+let republish: ReturnType<typeof setTimeout> | undefined;
 
 function publish() {
+  clearTimeout(republish);
   const state = liveBountyStore.getSnapshot();
   if (state.status === 'idle') return liveItems.setSource('bounties', [], 'ready');
+  const now = Date.now();
   const items = liveBountyItems(state.rows, {
     t: i18n.t,
     language: i18n.language,
-    now: new Date(),
+    now: new Date(now),
     markSeen: liveBountyStore.markSeen,
   });
   liveItems.setSource('bounties', items, state.status, liveBountyStore.retry);
+  const at = liveTextChangesAt(state.rows, now);
+  if (at !== null) republish = setTimeout(publish, Math.max(0, at - Date.now()));
 }
 
 liveBountyStore.subscribe(publish);

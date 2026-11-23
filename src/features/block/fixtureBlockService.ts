@@ -1,3 +1,5 @@
+import { pause } from '@/lib/pause';
+
 import type { BlockService, BlockedPerson } from './types';
 
 export type FixtureBlockOptions = {
@@ -8,9 +10,6 @@ export type FixtureBlockOptions = {
 };
 
 const failure = () => new TypeError('Network request failed');
-
-const pause = (ms: number) =>
-  ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
 export function createFixtureBlockService(options: FixtureBlockOptions) {
   const blocked: string[] = [...(options.seeded ?? [])];

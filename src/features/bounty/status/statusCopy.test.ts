@@ -15,7 +15,9 @@ import { WORST_REASON, type StatusData } from './fixtureStatusWorst';
 import {
   etaChangedText,
   headerReward,
+  currentLine,
   lineText,
+  statusTextChangesAt,
   stepLabel,
   stepText,
   summaryText,
@@ -152,6 +154,36 @@ describe('status copy', () => {
     expect(lineText(timeline(demo, 'poster').steps[1].lines[0], zh)).toBe(
       '约好 11:20 前出发，已过 40 分钟',
     );
+  });
+
+  test('an arrival time five minutes gone says how late, in the warning tone', async () => {
+    const detail = await detailOf('enRouteLate', 'poster');
+    const eta = timeline(detail, 'poster').steps[1].lines[0];
+    expect(eta.kind).toBe('eta');
+    expect(lineText(eta, zh)).toBe('预计 11:53 到，已晚 7 分钟');
+    expect(currentLine(eta, NOW).tone).toBe('warning');
+    const fourMinutesIn = new Date(Date.parse(eta.params.at!) + 4 * 60_000);
+    expect(lineText(eta, { ...zh, now: fourMinutesIn })).toBe('预计 11:53 到');
+    expect(currentLine(eta, fourMinutesIn).tone).toBe('plain');
+    expect(lineText(eta, copyFor('en'))).toBe('Due around 11:53, 7 minutes late');
+    expect(lineText(eta, copyFor('ms'))).toBe('Dijangka tiba 11:53, lewat 7 minit');
+  });
+
+  test('an arrival missed by hours counts hours, and the helper reads the same line', async () => {
+    const detail = await detailOf('enRouteLate', 'helper', 'worst');
+    const eta = timeline(detail, 'helper').steps[1].lines[0];
+    expect(lineText(eta, zh)).toMatch(/^预计 10月27日.* 12:00 到，已晚 48 小时$/);
+  });
+
+  test('the status text is redrawn when the next minute of lateness begins', async () => {
+    const now = NOW.getTime();
+    const late = await detailOf('enRouteLate', 'poster');
+    expect(statusTextChangesAt(late, now)).toBe(now + 60_000);
+    const onTime = await detailOf('enRoute', 'poster');
+    expect(statusTextChangesAt(onTime, now)).toBe(now + 15 * 60_000);
+    const start = await detailOf('assignedLate', 'poster');
+    expect(statusTextChangesAt(start, now)).toBe(now + 60_000);
+    expect(statusTextChangesAt(await detailOf('done', 'poster'), now)).toBeNull();
   });
 
   test('the worst case keeps the whole reason and both long names', async () => {

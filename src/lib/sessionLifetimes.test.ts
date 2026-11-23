@@ -27,6 +27,8 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/features/bounty/board/services.ts#shownOrigins': 'account',
   'src/features/bounty/board/services.ts#viewStore': 'account',
   'src/features/bounty/live/services.ts#liveBountyStore': 'session',
+  'src/features/bounty/live/services.ts#republish':
+    'kept: a timer; clearing the live store publishes once more and cancels it',
   'src/features/bounty/map/boardLink.ts#linked': 'kept: the mounted board screen',
   'src/features/bounty/map/boardLink.ts#startRegion': 'kept: a map camera',
   'src/features/bounty/map/boardLink.ts#listeners': 'kept: subscribers',

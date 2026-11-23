@@ -86,7 +86,7 @@ type Timed = {
   events: { kind: string; at: string }[];
 };
 
-const iso = (ms: number) => new Date(ms).toISOString();
+export const iso = (ms: number) => new Date(ms).toISOString();
 
 export function worstTimes<T extends Timed>(item: T, scenario: string, now: number): T {
   if (scenario === 'assigned') return { ...item, startsAt: iso(nextMorning(now, 3)) };
@@ -97,6 +97,7 @@ export function worstTimes<T extends Timed>(item: T, scenario: string, now: numb
     );
     return { ...item, startsAt: iso(late), events };
   }
+  if (scenario === 'enRouteLate') return { ...item, etaAt: iso(now - WORST_LATE_MS) };
   if (scenario === 'enRoute' || scenario === 'enRouteChanged') {
     return { ...item, etaAt: iso(nextMorning(now)) };
   }

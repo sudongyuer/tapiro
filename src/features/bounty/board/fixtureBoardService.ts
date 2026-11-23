@@ -1,6 +1,7 @@
 import { distanceM } from '@/features/place/originStore';
 import type { FixtureVariant } from '@/lib/fixtureVariant';
 import type { Point } from '@/lib/location/types';
+import { pause } from '@/lib/pause';
 
 import { FIXTURE_USER_ID } from '../post/fixtureDrafts';
 import { AXIS_RANGE_M } from './axis';
@@ -101,9 +102,6 @@ const rounded = (from: Point | null, to: Point | null) =>
   from && to ? Math.max(100, Math.round(distanceM(from, to) / 100) * 100) : null;
 
 const cleanNote = (note: string | null) => note?.replace(/^ +| +$/g, '') || null;
-
-const pause = (ms: number) =>
-  ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
 const mismatch = () => Object.assign(new Error('board_cursor_mismatch'), { code: '22023' });
 

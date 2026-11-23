@@ -17,6 +17,7 @@ export const LIVE_FIXTURE_ROWS = [
   'posterAssigned',
   'posterLate',
   'posterEnRoute',
+  'posterEnRouteLate',
   'posterDone',
   'posterDisputed',
   'posterExpiredFree',
@@ -158,6 +159,13 @@ function fixtureRow(row: LiveFixtureRow, now: Date): LiveRow {
         status: 'en_route',
         etaAt: at(15 * MINUTE_MS),
         previousEtaAt: at(5 * MINUTE_MS),
+      };
+    case 'posterEnRouteLate':
+      return {
+        ...poster,
+        kind: 'bountyInProgress',
+        status: 'en_route',
+        etaAt: at(-7 * MINUTE_MS),
       };
     case 'posterDone':
       return {

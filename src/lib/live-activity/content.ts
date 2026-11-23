@@ -2,9 +2,9 @@ import type { TFunction } from 'i18next';
 import type { LiveActivityState } from 'tapiro-kit';
 
 import { localClock } from '../deviceClock';
+import { ETA_GRACE_MS } from '../etaLate';
 
 const MINUTE = 60_000;
-const STALE_GRACE_MS = 5 * MINUTE;
 export const FINAL_LINGER_SECONDS = 15 * 60;
 
 export type LiveActivityPlace = { name: string; home: boolean };
@@ -72,7 +72,7 @@ export function liveActivityContent(
         progress: fraction(subject.leftAt, subject.etaAt, now),
         startLabel: t('liveActivity.bounty.left', { time: localClock(subject.leftAt) }),
         endLabel: t('liveActivity.bounty.eta', { time: localClock(subject.etaAt) }),
-        staleAfterSeconds: Math.max(0, (subject.etaAt + STALE_GRACE_MS - now) / 1000),
+        staleAfterSeconds: Math.max(0, (subject.etaAt + ETA_GRACE_MS - now) / 1000),
       };
     }
     case 'arrived':

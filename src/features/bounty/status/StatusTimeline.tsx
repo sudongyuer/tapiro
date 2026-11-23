@@ -20,17 +20,20 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 import type { ModifierConfig } from '@expo/ui/swift-ui/modifiers';
 
 import { useI18n } from '@/lib/i18n';
+import { useNowUntil } from '@/lib/useNowUntil';
 import { HandArtSticker } from '@/ui/HandArt';
 import { vars } from '@/ui/theme/tokens';
 import { useTheme } from '@/ui/theme/useTheme';
 
 import { StatusLine } from '../shared/StatusLine';
 import {
+  currentLine,
   etaChangedText,
   headerReward,
   lineText,
   statusClock,
   stepLabel,
+  statusTextChangesAt,
   stepText,
   summaryText,
   type CopyContext,
@@ -153,7 +156,10 @@ function StepRow({
   const bounce = useDoneBounce(step.state === 'done');
   const text = stepText(step, copy);
   const time = step.at ? statusClock(step.at, copy) : null;
-  const lines = step.lines.map((line) => ({ line, text: lineText(line, copy) }));
+  const lines = step.lines.map((line) => ({
+    line: currentLine(line, copy.now),
+    text: lineText(line, copy),
+  }));
   const shown = extra ? [...lines.map((entry) => entry.text), extra] : lines.map((e) => e.text);
   const icon =
     step.state === 'done'
@@ -243,9 +249,10 @@ function StepRow({
   );
 }
 
-export function StatusTimeline({ detail, now }: { detail: StatusDetail; now: Date }) {
+export function StatusTimeline({ detail }: { detail: StatusDetail }) {
   const { t, language } = useI18n();
-  const copy: CopyContext = { t, language, now };
+  const now = useNowUntil((at) => statusTextChangesAt(detail, at));
+  const copy: CopyContext = { t, language, now: new Date(now) };
   const role = detail.viewerRole;
   const { steps } = timeline(detail, role);
   const changed = etaChangedText(detail, role, copy);

@@ -23,6 +23,8 @@ export type LineKey =
       | 'departByPoster'
       | 'late'
       | 'eta'
+      | 'etaLate'
+      | 'etaLateHours'
       | 'autoConfirmPoster'
       | 'autoConfirmHelper'
       | 'reason'
