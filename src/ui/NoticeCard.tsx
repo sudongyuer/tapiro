@@ -25,6 +25,7 @@ export function NoticeCard({
   title,
   body,
   action,
+  secondaryAction,
   testID,
 }: {
   tone: keyof typeof TONES;
@@ -32,6 +33,7 @@ export function NoticeCard({
   title: string;
   body?: string;
   action?: { label: string; onPress: () => void; testID: string; busyLabel?: string };
+  secondaryAction?: { label: string; onPress: () => void; testID: string };
   testID: string;
 }) {
   const { color } = useTheme();
@@ -67,6 +69,14 @@ export function NoticeCard({
           label={action.label}
           onPress={action.onPress}
           testID={action.testID}
+          modifiers={[foregroundStyle(accent)]}
+        />
+      ) : null}
+      {secondaryAction ? (
+        <Button
+          label={secondaryAction.label}
+          onPress={secondaryAction.onPress}
+          testID={secondaryAction.testID}
           modifiers={[foregroundStyle(accent)]}
         />
       ) : null}

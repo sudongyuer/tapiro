@@ -1,3 +1,4 @@
+import { live } from '@/lib/live';
 import { sessionEnds } from '@/lib/sessionEnds';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyArgument, uiVerifyFixture } from '@/lib/uiVerify';
@@ -21,7 +22,9 @@ function failingRefreshes(service: PayeeService): PayeeService {
 }
 
 function verifyPayeeService() {
-  const service = createFixturePayeeService(uiVerifyFixture);
+  const service = createFixturePayeeService(uiVerifyFixture, {
+    reported: uiVerifyArgument('uiVerifyPayeeReported') === '1',
+  });
   return uiVerifyArgument('uiVerifyPayeeFail') === 'refresh' ? failingRefreshes(service) : service;
 }
 
@@ -32,5 +35,10 @@ export const payeeStore = createPayeeStore(
 const fixtureScans = uiVerifyArgument('uiVerifyQr');
 
 export const qrSource = fixtureScans ? fixtureQrSource(fixtureScans) : deviceQrSource;
+
+live.on(['payment.cant_pay'], () => {
+  const state = payeeStore.getSnapshot();
+  if (state.status !== 'idle') void payeeStore.refresh(state.userId);
+});
 
 sessionEnds.register(() => payeeStore.clear());

@@ -108,6 +108,7 @@ function asMethods(details: PayeeDetails[], owner: string): PayeeMethod[] {
     isDefault: index === 0 && detail.type !== 'cash',
     createdAt: stamp(index),
     checkedAt: stamp(index),
+    reportedAt: null,
   }));
 }
 
@@ -281,7 +282,7 @@ export function createFixturePaymentService(
     kinds.owe ? FIXTURE_PAYMENT_IDS.owe : null,
     kinds.owed ? FIXTURE_PAYMENT_IDS.owed : null,
   ].filter((id) => id !== null);
-  const payeeMethods = asMethods(methodsFor(options.mix, people.payeeBankName), PAYEE_ID);
+  let payeeMethods = asMethods(methodsFor(options.mix, people.payeeBankName), PAYEE_ID);
   const ownMethods = asMethods(
     methodsFor('duitnow', 'LIN XIAO MO').concat({ type: 'cash' }),
     FIXTURE_USER_ID,
@@ -364,6 +365,17 @@ export function createFixturePaymentService(
         markedPaidAt: new Date().toISOString(),
         nudgedAt: null,
       });
+    },
+    async reportCantPay(paymentId, methodId) {
+      const payment = find(paymentId);
+      const method = payeeMethods.find((candidate) => candidate.id === methodId);
+      if (payment.role !== 'payer' || payment.state !== 'due' || !method || method.type === 'cash')
+        throw new Error('cannot report');
+      if (method.reportedAt) return;
+      const reportedAt = new Date().toISOString();
+      payeeMethods = payeeMethods.map((candidate) =>
+        candidate.id === methodId ? { ...candidate, reportedAt } : candidate,
+      );
     },
     async undo(paymentId) {
       const payment = find(paymentId);

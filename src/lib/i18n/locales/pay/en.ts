@@ -80,6 +80,17 @@ export default {
       failed: 'The screenshot didn’t upload. Skip it or try again.',
       footer: 'Only the two of you and moderators can see it. Deleted 30 days after settling.',
     },
+    cantPay: {
+      action: 'Can’t pay? Tell {{name}}',
+      footer:
+        'If the number or QR code doesn’t work, tap this and {{name}} will be asked to check it.',
+      sent: 'We’ve asked {{name}} to check this method. Pay another way, or wait for them to fix it.',
+      sending: 'Sending',
+    },
+    offline: {
+      title: 'No internet connection',
+      body: 'You can pay or confirm once you’re back online. Your choice and screenshot stay here.',
+    },
     markPaid: 'I’ve paid',
     markPaidHint: 'Tells {{name}} to check',
     waiting: {

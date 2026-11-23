@@ -4,6 +4,7 @@ const ms: typeof zhHans = {
   title: 'Kaedah Terima Bayaran',
   meRow: 'Kaedah Terima Bayaran',
   meRowDue: 'Kod QR perlu disemak semula',
+  meRowReported: 'Seseorang tidak dapat membayar anda. Semak kaedah anda',
   privacy:
     'Hanya pembayar yang memilih anda nampak maklumat ini semasa membayar, dan ia disembunyikan selepas langsai.',
   emptyTitle: 'Belum ada kaedah terima bayaran',
@@ -51,6 +52,12 @@ const ms: typeof zhHans = {
   cashOnly: {
     title: 'Belum ada kaedah pindahan',
     body: 'Buat masa ini anda hanya boleh terima tunai secara bersemuka. Tambah kaedah pindahan supaya orang boleh bayar tanpa berjumpa.',
+  },
+  reported: {
+    title: 'Seseorang tidak dapat membayar dengan {{method}} anda',
+    body: '{{detail}}. Pembayar kata ia tidak berjaya. Semak sama ada nombor atau kod QR telah berubah. Makluman ini hilang selepas anda mengemas kininya atau mengesahkan ia betul.',
+    check: 'Semak Kaedah Ini',
+    fine: 'Tiada Masalah, Kekalkan',
   },
   recheck: {
     title: '{{method}} anda belum disemak selama 90 hari',

@@ -16,6 +16,7 @@ import { SheetActions, SheetLayer } from '@/ui/SheetFrame';
 import { vars } from '@/ui/theme/tokens';
 
 import { methodRows, payerChoice } from './amounts';
+import { CantPaySection } from './CantPay';
 import { secondary } from './formParts';
 import type { SheetAction, SheetData } from './hooks';
 import { MethodDetail } from './MethodDetail';
@@ -68,14 +69,18 @@ export function PayerView({
   data,
   busy,
   onMarkPaid,
+  onCantPay,
   onRemind,
   reminding,
+  offline,
 }: {
   data: SheetData;
   busy: SheetAction | null;
   onMarkPaid: (methodId: string, proof: Proof, setProof: (next: Proof) => void) => void;
+  onCantPay: (methodId: string) => void;
   onRemind: () => void;
   reminding: boolean;
+  offline: boolean;
 }) {
   const { t } = useI18n();
   const { payment, methods, detail } = data;
@@ -97,7 +102,7 @@ export function PayerView({
           <PillButton
             label={t('pay.sheet.markPaid')}
             onPress={() => onMarkPaid(selected.id, proof, setProof)}
-            disabled={busy !== null || proof.status === 'uploading'}
+            disabled={busy !== null || proof.status === 'uploading' || offline}
             loading={busy === 'markPaid' || proof.status === 'uploading'}
             testID="pay-mark-paid"
           />
@@ -151,6 +156,13 @@ export function PayerView({
             icon="person.crop.circle.badge.checkmark"
             title={t('pay.sheet.nameCheck', { name: payeeName })}
             testID="pay-name-check"
+          />
+          <CantPaySection
+            name={payeeName}
+            reported={selected.reported}
+            sending={busy === 'cantPay'}
+            disabled={busy !== null || offline}
+            onPress={() => onCantPay(selected.id)}
           />
           <ProofSection proof={proof} onChange={setProof} />
         </>

@@ -222,6 +222,9 @@ export function createSupabasePaymentService(
       if (isAmountChanged(error)) throw new AmountChangedError();
       if (error) throw error;
     },
+    async reportCantPay(paymentId, methodId) {
+      await rpc('report_cant_pay', { payment: paymentId, method: methodId });
+    },
     async undo(paymentId) {
       await rpc('undo_marked_paid', { payment: paymentId });
     },

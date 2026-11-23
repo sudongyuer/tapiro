@@ -191,6 +191,39 @@ describe('fixture service keeps the database shape rules', () => {
     );
   });
 
+  test('the reported fixture clears its report on 没问题 or on a changed number, not on an unchanged save', async () => {
+    const service = createFixturePayeeService('demo', { reported: true });
+    const store = createPayeeStore(service);
+    await store.ensureLoaded(USER);
+    const reportedOf = () => {
+      const state = store.getSnapshot();
+      return state.status === 'ready' ? state.methods.filter((m) => m.reportedAt !== null) : [];
+    };
+    const [bank] = reportedOf();
+    expect(bank?.type).toBe('bank_account');
+    if (bank?.type !== 'bank_account') return;
+    const { id: _id, isDefault: _d, createdAt: _c, checkedAt: _k, reportedAt: _r, ...same } = bank;
+    expect(await store.update(USER, bank.id, same)).toBe(true);
+    expect(reportedOf().map((m) => m.id)).toEqual([bank.id]);
+    expect(await store.confirm(USER, bank.id)).toBe(true);
+    expect(reportedOf()).toEqual([]);
+
+    const again = createPayeeStore(createFixturePayeeService('demo', { reported: true }));
+    await again.ensureLoaded(USER);
+    const state = again.getSnapshot();
+    const target = state.status === 'ready' ? state.methods.find((m) => m.reportedAt) : undefined;
+    if (target?.type !== 'bank_account') throw new Error('no reported bank');
+    await again.update(USER, target.id, {
+      type: 'bank_account',
+      bankCode: target.bankCode,
+      bankName: target.bankName,
+      accountNumber: '9876543210',
+      displayName: target.displayName,
+    });
+    const after = again.getSnapshot();
+    expect(after.status === 'ready' && after.methods.some((m) => m.reportedAt)).toBe(false);
+  });
+
   test('the worst fixture has seven transfer methods including a named bank', async () => {
     const methods = await createFixturePayeeService('worst').list();
     expect(methods.filter((m) => m.type !== 'cash')).toHaveLength(7);

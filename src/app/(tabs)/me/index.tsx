@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 
 import { MeView, useProfile, useSignedInUser } from '@/features/account';
 import { coinCount, useCoinBalance, useCoinsReadFailed } from '@/features/coins';
-import { usePayeeRecheckDue } from '@/features/payee';
+import { usePayeeAttention } from '@/features/payee';
 import { profileHref, useMyStanding } from '@/features/reputation';
 import { useI18n } from '@/lib/i18n';
 import { useStickers } from '@/lib/stickers';
@@ -15,7 +15,7 @@ export default function Me() {
   const profile = useProfile(user);
   const ready = profile.status === 'ready' ? profile.profile : null;
   const standing = useMyStanding(user?.id ?? null);
-  const payeeDue = usePayeeRecheckDue(user?.id ?? null);
+  const payeeDue = usePayeeAttention(user?.id ?? null);
   const stickers = useStickers(user?.id ?? null);
   const balance = useCoinBalance();
   const { language } = useI18n();

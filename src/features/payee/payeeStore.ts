@@ -83,6 +83,7 @@ export function createPayeeStore(service: PayeeService, now: () => number = Date
       mutate(userId, () => service.update(id, details)),
     replaceQr: (userId: string, id: string, details: PayeeDetails) =>
       mutate(userId, () => service.replaceQr(id, details)),
+    confirm: (userId: string, id: string) => mutate(userId, () => service.confirm(id)),
     remove: (userId: string, id: string) => mutate(userId, () => service.remove(id)),
     setDefault: (userId: string, id: string) => mutate(userId, () => service.setDefault(id)),
   };

@@ -2,6 +2,7 @@ export default {
   title: '收款方式',
   meRow: '收款方式',
   meRowDue: '有收款码需要重新确认',
+  meRowReported: '有人付不了，去检查收款方式',
   privacy: '只有选中你的发布者，在付款那一步看得到，结清后隐藏。',
   emptyTitle: '还没有收款方式',
   emptyBody: '加一个，发布者付款时才知道怎么转给你。',
@@ -41,6 +42,12 @@ export default {
   cashOnly: {
     title: '还没有转账方式',
     body: '现在只能当面收现金。加一个转账方式，对方不用见面也能付给你。',
+  },
+  reported: {
+    title: '有人付不了你的{{method}}',
+    body: '{{detail}}。付款人说用它付不了，看看号码或收款码有没有变。改好或确认没问题后，这条提示就会消失。',
+    check: '检查这个收款方式',
+    fine: '没问题，保留',
   },
   recheck: {
     title: '你的{{method}} 90 天没确认了',

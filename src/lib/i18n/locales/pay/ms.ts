@@ -80,6 +80,17 @@ export default {
       failed: 'Tangkapan skrin tidak dimuat naik. Langkau atau cuba lagi.',
       footer: 'Hanya anda berdua dan moderator boleh melihatnya. Dipadam 30 hari selepas langsai.',
     },
+    cantPay: {
+      action: 'Tidak dapat bayar? Beritahu {{name}}',
+      footer:
+        'Jika nombor atau kod QR tidak berfungsi, ketik ini dan {{name}} akan diminta menyemaknya.',
+      sent: 'Kami telah meminta {{name}} menyemak kaedah ini. Bayar dengan cara lain, atau tunggu sehingga mereka membetulkannya.',
+      sending: 'Sedang menghantar',
+    },
+    offline: {
+      title: 'Tiada sambungan internet',
+      body: 'Anda boleh bayar atau sahkan setelah kembali dalam talian. Pilihan dan tangkapan skrin anda kekal di sini.',
+    },
     markPaid: 'Saya sudah bayar',
     markPaidHint: 'Memberitahu {{name}} untuk menyemak',
     waiting: {

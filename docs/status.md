@@ -4,11 +4,9 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
-PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
-new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours; UI audit batch C:
-one name per thing in every locale, `docs/design-language.md` 「Terminology」; UI audit batch E: the remaining Minor flow
-findings, decisions E1–E12).
+Updated: 2026-11-24 (付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
+the pay sheet turns writes off without a network). Before: 2026-11-21 (UI audit batch B, China storefront phase 1,
+PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
 
 ## Built and merged
 
@@ -28,6 +26,7 @@ findings, decisions E1–E12).
 | Polish: motion, render  | —                                                  | Plan `docs/plans/2026-11-21-polish-motion-perf.md` (P1–P23 for veto; P4 withdrawn; device sign-off closed by the owner: build A clean, B measured once (no hang), rest waived, `docs/research/2026-11-21-device-perf.md`): one Reduce Motion hook, shared curves, instant press dim, shorter stack timings, small fades, cached formatters, memoised rows, continuous corners                                            |
 | UI audit D: layout      | `docs/specs/2026-10-11-foundation-design.md`       | Audit `docs/reviews/2026-11-21-ui-walkthrough.md` O2, H2, L1, P5, P6, S1, S3, H3 (decisions for veto in the record of 2026-11-21): native chip row, keyboard 完成, top scroll edge on every Form screen, a separator on the ride footer bar, accessory on tab roots only                                                                                                                                                 |
 | Milestone before TF 2   | `docs/specs/2026-10-11-foundation-design.md`       | Milestone run over #204–#216 (record of 2026-11-21, M1–M4 for veto): Settings 退出登录 confirms, the language step heading below the bar, no floating 完成 on the post form, one sticker count in the fixtures; retro `2026-11-21-milestone-before-testflight`                                                                                                                                                           |
+| 付不了 and offline pay  | `docs/specs/2026-11-24-cant-pay-offline-design.md` | The payer reports a method that does not work (`report_cant_pay`, push `payment.cant_pay`); the payee's list leads with a yellow card and 我的 shows the dot until the method changes or 没问题; the pay sheet reads `expo-network` and turns writes off offline. Decisions CP1–CP8, OF1–OF4 (★ for veto). Hosted: apply migration `20261124000100_payee_cant_pay.sql`                                                   |
 
 ## In progress
 

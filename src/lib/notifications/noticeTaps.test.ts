@@ -61,6 +61,7 @@ const EXPECTED: Record<string, string> = {
 
 function expected(kind: string, id: string): NoticeRoute {
   if (kind.startsWith('chat.')) return { pathname: '/messages/[thread]', params: { thread: id } };
+  if (kind === 'payment.cant_pay') return { pathname: '/payee' };
   const pathname = EXPECTED[kind] ?? (kind.startsWith('payment.') ? '/pay/[id]' : '/ride/[id]');
   const params = kind === 'bounty.expired' ? { id, notice: 'expired' } : { id };
   return { pathname, params } as NoticeRoute;

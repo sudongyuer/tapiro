@@ -22,6 +22,15 @@ export function firstRecheckDue(methods: readonly PayeeMethod[], now: Date) {
   return methods.find((method) => isRecheckDue(method, now)) ?? null;
 }
 
+export type PayeeAttention = { kind: 'reported' | 'due'; method: PayeeMethod };
+
+export function payeeAttention(methods: readonly PayeeMethod[], now: Date): PayeeAttention | null {
+  const reported = methods.find((method) => method.type !== 'cash' && method.reportedAt !== null);
+  if (reported) return { kind: 'reported', method: reported };
+  const due = firstRecheckDue(methods, now);
+  return due ? { kind: 'due', method: due } : null;
+}
+
 const byCreated = (a: PayeeMethod, b: PayeeMethod) => a.createdAt.localeCompare(b.createdAt);
 
 export function sortMethods(methods: readonly PayeeMethod[]) {
