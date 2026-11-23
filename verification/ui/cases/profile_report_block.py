@@ -2,7 +2,8 @@
 (`-uiVerifyRepFail report`) keeps the sheet and the reason with 没举报成功 and sends nothing on its own; 提交 again records
 one person report with no message and offers 「收到了，我们会看。也屏蔽Mei？」 as a popover from 提交, 屏蔽 above a visible
 不屏蔽; 屏蔽 closes the sheet, the profile reads
-你屏蔽了Mei and ⋯ now offers 解除屏蔽 Mei, which asks first and clears the line."""
+你屏蔽了Mei and ⋯ now offers 解除屏蔽 Mei, which asks first and clears the line. 屏蔽 Mei straight from ⋯ asks with a
+popover from ⋯, and 屏蔽 makes the profile read 你屏蔽了Mei again."""
 import sys
 import time
 
@@ -69,4 +70,14 @@ menu_more(ui)
 ui.labelled(ui.t('reputation.profile.block', name='Mei'))
 ui.at_rest()
 ui.capture('05-unblocked')
-print('PASS: ⋯ reports the person once per tap, offers a block, and blocking and unblocking show on the profile')
+
+tap_item(ui, ui.t('reputation.profile.block', name='Mei'))
+assert_dialog(ui, ui.t('block.confirm.title', name='Mei'), ui.t('block.confirm.confirm'), ui.t('block.confirm.cancel'),
+              source_label=ui.t('reputation.profile.more'))
+tap_button(ui, ui.t('block.confirm.confirm'))
+blocked = ui.element('profile-blocked', timeout=30)
+assert blocked.get('AXLabel') == ui.t('reputation.profile.blocked', name='Mei'), blocked.get('AXLabel')
+ui.at_rest()
+ui.capture('06-blocked-from-menu')
+print('PASS: ⋯ reports the person once per tap, offers a block, blocks straight from ⋯, and blocking and unblocking show '
+      'on the profile')

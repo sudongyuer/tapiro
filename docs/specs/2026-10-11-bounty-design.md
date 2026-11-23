@@ -526,3 +526,27 @@ phone's board stayed at 「全部 0」 for minutes until a relaunch.
 | Timed reload while more pages are shown | Skipped until the next full load | A reload returns only the first page, so the list would shrink under the reader every minute | Reload all shown pages |
 | A failed timed reload | Keeps the rows and shows the existing 「可能不是最新」 warning with the data time | Data integrity: never show failed data as live or empty | Retry silently with no warning |
 | Double publish | Unchanged: one request at a time (`createInFlightGuard`), the button is busy until the answer, and a replay with the same draft id publishes once | The three hosted bounties were three separate posts, each from a fresh draft after the sheet closed, not a double tap | — |
+
+## Implementation Record (2026-11-24, overdue arrival time and the profile block entry)
+
+Status stays `approved`. Built before public testing: the overdue-ETA line the owner deferred on 2026-10-29 (3B,
+story-map gap `bounty.flow.eta-overdue`).
+
+- Built: five minutes after the helper's arrival time, with no 完成 yet, the 出发了 step on the status page reads
+  「预计 14:30 到，已晚 7 分钟」 (hours from 60 minutes) in the warning colour, for both sides; the poster's home card reads
+  「阿杰在路上 · 晚了 7 分钟」. One rule in `src/lib/etaLate.ts` (`etaLate`, `etaTextChangesAt`, `ETA_GRACE_MS`); the
+  status timeline redraws itself at the next change (`src/lib/useNowUntil.ts`, `statusTextChangesAt`), and the home
+  source republishes on one timer at the next change (`liveTextChangesAt` in `src/features/bounty/live/`), with no
+  reload. The Live Activity's stale date uses the same `ETA_GRACE_MS`. The departure-late line (「已过 N 分钟」) now
+  also moves with the clock while the page is open. Cases `bounty_status_eta_late`, `live_home_eta_late`.
+- Found already built: the block entry on someone else's profile (⋯ → 屏蔽某某 / 解除屏蔽某某, #88); the story map
+  still said 「资料页的入口还没有」. The map now names it, and `profile_report_block` also blocks straight from ⋯.
+
+| Decision | Choice | Reason | Rejected |
+| --- | --- | --- | --- |
+| ★ When an arrival counts as late | 5 minutes after the ETA, the same constant at which the Live Activity goes stale | One threshold on every surface: the app never says late while the lock screen still counts down, and a minute or two past an estimate is noise | At the ETA itself; 10 minutes |
+| ★ What is counted | Whole minutes since the ETA (so the first late text reads 5), whole hours from 60 minutes | Matches the departure-late line 「已过 N 分钟 / 小时」 the owner already approved | A bare 「晚了」 without a number; minutes past the grace |
+| ★ Status page | The ETA line keeps the time and adds 「，已晚 N 分钟」 in the warning colour; summary 「阿杰在路上」 and its tone stay | Both sides keep the promised time for reference; neither side has a new action, so the header does not turn into 「需要你」 | Replace the summary with 「阿杰晚了」; a needs-you tone |
+| ★ Home cards | Poster: 「阿杰在路上 · 晚了 7 分钟」 instead of the time. Helper: unchanged 「你在路上 · 到了点完成」 | The helper's card never showed the ETA and its job is to prompt 完成; counting the helper's own lateness at them reads as a scold | A late count on the helper's card |
+| ★ Live Activity | Unchanged (L4): after ETA + 5 min it shows 「小林 · 在路上」 with 「可能不是最新」 | Once stale, the lock screen cannot know whether the helper moved the ETA or arrived, so it must not claim a count it cannot update | A stale title 「过了预计时间」 |
+| How the text moves | A timer to the next change (end of the grace, then each minute), not a fixed interval; no reload | Exact to the minute and idle when nothing will change; a re-read would cost a request a minute per open card | A 60 s interval; reloading the detail |

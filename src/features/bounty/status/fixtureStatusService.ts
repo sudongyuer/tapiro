@@ -1,3 +1,5 @@
+import { pause } from '@/lib/pause';
+
 import type { Person } from '../board/types';
 import {
   ISSUE_REASON_MAX,
@@ -24,6 +26,7 @@ import {
   WORST_REASON,
   WORST_TITLE,
   isWorstData,
+  iso,
   statusPayment,
   statusReference,
   statusReward,
@@ -37,6 +40,7 @@ export const STATUS_SCENARIOS = [
   'assignedLate',
   'enRoute',
   'enRouteChanged',
+  'enRouteLate',
   'done',
   'disputed',
   'confirmed',
@@ -135,8 +139,6 @@ const event = (
   reason: extra.reason ?? null,
 });
 
-const iso = (ms: number) => new Date(ms).toISOString();
-
 type Seed = { scenario: StatusScenario; charge: PostCharge; paymentId: string; data: StatusData };
 
 function seedBounty(id: string, seed: Seed, now: number): Bounty {
@@ -198,10 +200,11 @@ function seedScenario(
         ],
       };
     case 'enRoute':
+    case 'enRouteLate':
       return {
         ...base,
         status: 'en_route',
-        etaAt: iso(firstEta),
+        etaAt: iso(scenario === 'enRoute' ? firstEta : now - 7 * MINUTE_MS),
         events: [...base.events, started],
       };
     case 'enRouteChanged': {
@@ -265,9 +268,6 @@ function issueReason(bounty: Bounty) {
   if (bounty.status !== 'disputed') return null;
   return bounty.events.findLast((item) => item.kind === 'problem_reported')?.reason ?? null;
 }
-
-const pause = (ms: number) =>
-  ms > 0 ? new Promise<void>((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
 
 export function createFixtureStatusService(options: FixtureStatusOptions) {
   const base = options.now().getTime();

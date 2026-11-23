@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import { etaLate, etaTextChangesAt } from '@/lib/etaLate';
 import type { AccessoryItem, BountyCardDetail, BountyCardKind } from '@/lib/liveItems';
 
 import { timeParts } from '../post/timeText';
@@ -31,6 +32,18 @@ function clock(iso: string, copy: LiveCopy) {
   return parts.day === 'today' ? parts.clock : when(iso, copy);
 }
 
+function enRouteLine(etaAt: string | null, name: string, copy: LiveCopy) {
+  const { t } = copy;
+  if (!etaAt) return t('bounty.status.summary.poster.enRoute', { name });
+  const late = etaLate(Date.parse(etaAt), copy.now.getTime());
+  if (!late) return t('bounty.live.poster.enRoute', { name, time: clock(etaAt, copy) });
+  const key =
+    late.unit === 'hours'
+      ? 'bounty.live.poster.enRouteLateHours'
+      : 'bounty.live.poster.enRouteLate';
+  return t(key, { name, count: late.count });
+}
+
 function posterLine(row: LiveRow, name: string, copy: LiveCopy): Line | null {
   const { t } = copy;
   const status = (line: string): Line => ({ line, target: 'status' });
@@ -56,11 +69,7 @@ function posterLine(row: LiveRow, name: string, copy: LiveCopy): Line | null {
           : t('bounty.status.summary.poster.assigned', { name }),
       );
     case 'en_route':
-      return status(
-        row.etaAt
-          ? t('bounty.live.poster.enRoute', { name, time: clock(row.etaAt, copy) })
-          : t('bounty.status.summary.poster.enRoute', { name }),
-      );
+      return status(enRouteLine(row.etaAt, name, copy));
     case 'done':
       return status(t('bounty.live.poster.done', { name }));
     case 'disputed':
@@ -148,4 +157,13 @@ export function liveBountyItem(row: LiveRow, copy: LiveCopy): BountyLiveItem | n
 
 export function liveBountyItems(rows: readonly LiveRow[], copy: LiveCopy) {
   return rows.flatMap((row) => liveBountyItem(row, copy) ?? []);
+}
+
+export function liveTextChangesAt(rows: readonly LiveRow[], now: number) {
+  const times = rows.flatMap((row) =>
+    row.role === 'poster' && row.status === 'en_route' && row.etaAt && row.card === null
+      ? [etaTextChangesAt(Date.parse(row.etaAt), now)]
+      : [],
+  );
+  return times.length > 0 ? Math.min(...times) : null;
 }

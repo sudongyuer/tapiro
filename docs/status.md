@@ -4,7 +4,8 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
+Updated: 2026-11-24 (an overdue arrival time says how late on the status page and the poster's home card; the profile
+block entry was already built). Before that, 2026-11-21 (UI audit batch B: payee and payment truthfulness, onboarding name step; China mainland storefront phase 1: no cloud AI on CHN, ICP slot; local and CI stacks on
 PostgreSQL 17 like the hosted project; a PreToolUse hook blocks force pushes; first device test: the poster sees their
 new bounty on home, and the board reloads itself every 60 s; time-critical pushes skip quiet hours; UI audit batch C:
 one name per thing in every locale, `docs/design-language.md` 「Terminology」; UI audit batch E: the remaining Minor flow
@@ -30,6 +31,12 @@ findings, decisions E1–E12).
 | Milestone before TF 2   | `docs/specs/2026-10-11-foundation-design.md`       | Milestone run over #204–#216 (record of 2026-11-21, M1–M4 for veto): Settings 退出登录 confirms, the language step heading below the bar, no floating 完成 on the post form, one sticker count in the fixtures; retro `2026-11-21-milestone-before-testflight`                                                                                                                                                           |
 
 ## In progress
+
+- Overdue arrival time (`bounty.flow.eta-overdue`, deferred as 3B on 2026-10-29; branch `feat/eta-overdue`): five
+  minutes past the helper's ETA without 完成, the status page reads 「预计 … 到，已晚 N 分钟」 in the warning colour and
+  the poster's home card 「某某在路上 · 晚了 N 分钟」, moving with the clock without a reload; the five minutes are the
+  Live Activity's stale threshold. The profile's ⋯ → 屏蔽 entry (`chat.block.entry`) was already built in #88; the
+  story map now says so. Decisions for veto (★) in the bounty spec's record of 2026-11-24.
 
 - Sticker book deck (`docs/specs/2026-11-21-sticker-book-deck-design.md`, plan `docs/plans/2026-11-21-sticker-book-deck.md`,
   branch `feat/sticker-book-deck`): from the owner's reference video, the book is one swipeable deck with a date title,

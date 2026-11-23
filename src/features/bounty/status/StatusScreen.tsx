@@ -139,7 +139,7 @@ export function StatusScreen({ id, onBack, onPay, message, reviews, onPull }: St
           <>
             <StatusHeader detail={detail} />
             {detail.status === 'settled' ? reviews?.(detail.title) : null}
-            <StatusTimeline detail={detail} now={new Date()} />
+            <StatusTimeline detail={detail} />
             {detail.status === 'cancelled' ? null : (
               <AddressSection
                 address={addressView({ kind: 'ready', detail })}

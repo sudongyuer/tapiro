@@ -12,7 +12,7 @@ import {
   LIVE_FIXTURE_ROWS,
   type LiveFixtureRow,
 } from './fixtureLiveService';
-import { liveBountyItem, type LiveCopy } from './liveBounties';
+import { liveBountyItem, liveTextChangesAt, type LiveCopy } from './liveBounties';
 import type { LiveRow, SeenCard } from './types';
 
 const NOW = new Date('2026-10-29T06:00:00.000Z');
@@ -110,6 +110,13 @@ const NINE_A: Record<LiveFixtureRow, () => Expected> = {
   posterEnRoute: () => ({
     kind: 'bountyInProgress',
     line: `阿杰在路上 · ${clock(15)} 到`,
+    action: null,
+    target: 'status',
+    oneTime: false,
+  }),
+  posterEnRouteLate: () => ({
+    kind: 'bountyInProgress',
+    line: '阿杰在路上 · 晚了 7 分钟',
     action: null,
     target: 'status',
     oneTime: false,
@@ -325,6 +332,7 @@ describe('发消息 on the home card (126 A)', () => {
       'posterAssigned',
       'posterLate',
       'posterEnRoute',
+      'posterEnRouteLate',
       'posterDone',
       'posterDisputed',
       'helperAssigned',
@@ -333,5 +341,42 @@ describe('发消息 on the home card (126 A)', () => {
       'helperDone',
       'helperDisputed',
     ]);
+  });
+});
+
+describe('an arrival time that has passed (bounty.flow.eta-overdue)', () => {
+  const MINUTE = 60_000;
+  const at = (minutes: number) => new Date(NOW.getTime() + minutes * MINUTE).toISOString();
+  const enRoute = async (etaMinutes: number) => ({
+    ...(await rowsByName()).get('posterEnRoute')!,
+    etaAt: at(etaMinutes),
+  });
+  const line = (row: LiveRow, language = 'zh-Hans') =>
+    liveBountyItem(row, copy([], language))!.bounty.line;
+
+  test('the poster keeps the arrival time until five minutes past it', async () => {
+    expect(line(await enRoute(-4))).toBe(`阿杰在路上 · ${clock(-4)} 到`);
+    expect(line(await enRoute(-5))).toBe('阿杰在路上 · 晚了 5 分钟');
+  });
+
+  test('past an hour the card counts hours, in every language', async () => {
+    const row = await enRoute(-135);
+    expect(line(row)).toBe('阿杰在路上 · 晚了 2 小时');
+    expect(line(row, 'en')).toBe('阿杰 is on the way · 2 hours late');
+    expect(line(row, 'ms')).toBe('阿杰 dalam perjalanan · lewat 2 jam');
+  });
+
+  test('the helper card still asks for 完成 rather than counting', async () => {
+    const helper = { ...(await rowsByName()).get('helperEnRoute')!, etaAt: at(-30) };
+    expect(line(helper)).toBe('你在路上 · 到了点完成');
+  });
+
+  test('the card is rebuilt when the line next changes, with no new read', async () => {
+    const rows = await rowsByName();
+    const now = NOW.getTime();
+    expect(liveTextChangesAt([rows.get('posterAssigned')!], now)).toBeNull();
+    expect(liveTextChangesAt([rows.get('helperEnRoute')!], now)).toBeNull();
+    expect(liveTextChangesAt([await enRoute(15)], now)).toBe(now + 20 * MINUTE);
+    expect(liveTextChangesAt([await enRoute(-7), await enRoute(15)], now)).toBe(now + MINUTE);
   });
 });

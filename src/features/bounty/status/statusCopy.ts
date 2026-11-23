@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import { etaLate, etaTextChangesAt } from '@/lib/etaLate';
 import { formatMoney } from '@/lib/money';
 
 import { timeParts } from '../post/timeText';
@@ -26,15 +27,26 @@ export function statusClock(iso: string, copy: CopyContext) {
 const shownName = (name: string | null | undefined, t: TFunction) =>
   name ?? t('bounty.post.unknownName');
 
+export function currentLine(line: TimelineLine, now: Date): TimelineLine {
+  if (line.kind !== 'eta' || !line.params.at) return line;
+  const late = etaLate(Date.parse(line.params.at), now.getTime());
+  if (!late) return line;
+  const key =
+    late.unit === 'hours' ? 'bounty.status.note.etaLateHours' : 'bounty.status.note.etaLate';
+  return { ...line, key, tone: 'warning' };
+}
+
 function lineCount(line: TimelineLine, now: Date) {
   const at = line.params.at ? Date.parse(line.params.at) : null;
   if (at === null) return undefined;
   if (line.kind === 'late') return Math.max(1, Math.floor((now.getTime() - at) / MINUTE_MS));
+  if (line.kind === 'eta') return etaLate(at, now.getTime())?.count;
   if (line.kind === 'autoConfirm') return Math.max(1, Math.ceil((at - now.getTime()) / HOUR_MS));
   return undefined;
 }
 
-export function lineText(line: TimelineLine, copy: CopyContext) {
+export function lineText(timelineLine: TimelineLine, copy: CopyContext) {
+  const line = currentLine(timelineLine, copy.now);
   const { at, name, reason } = line.params;
   const minutes = lineCount(line, copy.now);
   const hours = line.kind === 'late' && minutes !== undefined && minutes >= 60;
@@ -45,6 +57,17 @@ export function lineText(line: TimelineLine, copy: CopyContext) {
     ...(at ? { time: statusClock(at, copy), date: statusWhen(at, copy) } : {}),
     ...(count === undefined ? {} : { count }),
   });
+}
+
+export function statusTextChangesAt(detail: StatusDetail, now: number) {
+  if (detail.status === 'en_route' && detail.etaAt) {
+    return etaTextChangesAt(Date.parse(detail.etaAt), now);
+  }
+  if (detail.status === 'assigned' && detail.startLate && detail.startsAt) {
+    const at = Date.parse(detail.startsAt);
+    return at + (Math.floor((now - at) / MINUTE_MS) + 1) * MINUTE_MS;
+  }
+  return null;
 }
 
 export function stepText(step: TimelineStep, copy: CopyContext) {
