@@ -45,7 +45,7 @@ all tappable offline, fail, and show 「没成功」.
 | #    | Decision               | Choice                                                                                                                                                                                                          | Why                                                                                                                                                                      | Alternatives considered                                                                   |
 | ---- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | CP1★ | Where 付不了 lives     | A plain button in its own section under the name-check card, for the selected non-cash method, with a footer saying the payee will be asked to check                                                            | It sits where the payer finds out (after copying the number or saving the code) and next to 「对不上就别付」; it is a quiet escape, so it is not a pinned primary button | Pinned under 我已付款 (competes with the main action); toolbar menu (hidden)              |
-| CP2★ | Confirmation           | None: one tap sends, the button becomes 「已提醒{name}检查这个收款方式…」, and it cannot be sent twice                                                                                                          | Matches 还没收到, which also notifies the other side on one tap; the result is harmless and the payee can dismiss it                                                     | An alert first (one more tap on every report)                                             |
+| CP2★ | Confirmation           | None: one tap sends, the button becomes 「{name}已收到提醒，会检查这个收款方式…」, and it cannot be sent twice                                                                                                  | Matches 还没收到, which also notifies the other side on one tap; the result is harmless and the payee can dismiss it                                                     | An alert first (one more tap on every report)                                             |
 | CP3  | What is stored         | `payee_methods.reported_at`, set only by `report_cant_pay(payment, method)` (security definer; payer of a due payment, the payee's non-cash method)                                                             | The prompt is about the method, not the payment; the payer already reads the method row, so the sheet shows the sent state after a reload with no extra table            | A `payment_cant_pay` table per report (needs its own RLS and a join for the list)         |
 | CP4  | Repeated reports       | A method already reported stays reported and sends no second push, whoever reports it                                                                                                                           | One payee is never spammed by repeated taps or several payers                                                                                                            | Rate limit per payer (more state for the same outcome)                                    |
 | CP5★ | How the prompt clears  | Changing any detail, re-picking the QR (`replace_payee_qr` inserts a fresh row) or 没问题，保留 (stamps `checked_at`) clears it in a trigger; saving unchanged details keeps it                                 | The payee either fixed it or vouched for it; an unchanged save is neither                                                                                                | Clear on opening the method (a look is not a check); expire after N days (silently wrong) |
@@ -95,6 +95,8 @@ None: the sections swap in place with the list's own row animation.
 ## Known limits
 
 - The payer's sheet does not update live when the payee fixes the method.
+- A report stays until the payee acts, with no second push; every payer of that payee sees 「{name}已收到提醒」 under the
+  method meanwhile (CP4).
 - The design canvas was not updated for these screens; CP1, CP6 and OF3 are listed for veto with screenshots in the PR.
 
 ## Verification
@@ -102,3 +104,31 @@ None: the sections swap in place with the list's own row animation.
 - pgTAP `supabase/tests/payee_cant_pay.test.sql`; unit tests in `methods.test.ts`, `payeeStore.test.ts`,
   `model.test.ts`, `paymentStore.test.ts`, `networkStore.test.ts`, `copy.test.ts`, `noticeTaps.test.ts`.
 - UI cases `pay_cant_pay`, `payee_reported`, `pay_sheet_offline`, `pay_payee_offline` (zh-Hans; ms where declared).
+
+## Implementation Record (2026-11-24)
+
+Status stays `proposed`: the owner has not approved the design; decisions CP1–CP8 and OF1–OF4 (★ for veto) were made
+under the owner's delegation (2026-11-17). Branch `feat/pay-cant-pay-offline`.
+
+- Built as designed: server `supabase/migrations/20261124000100_payee_cant_pay.sql` (`reported_at`,
+  `payee_methods_clear_report`, `report_cant_pay`, kind `payment.cant_pay`); push copy
+  `supabase/functions/notify/copy.ts`; tap route `src/lib/notifications/routes.ts` (`/payee`); payer
+  `src/features/payment/CantPay.tsx`, `PayerView.tsx`; payee `src/features/payee/PayeeListView.tsx` (card),
+  `PayeeScreen.tsx` (检查 → QR re-pick or edit form, 没问题 → `payeeStore.confirm`), `methods.ts` (`payeeAttention`), 我的
+  dot label in `src/features/account/MeView.tsx`; network `src/lib/network/` (`expo-network` 58.0.5), pay sheet gating in
+  `PaySheet.tsx`, `SheetBody.tsx`, `PayeeView.tsx`.
+- Changed: `SheetBody` and `Settled` moved out of `PaySheet.tsx` to keep it under 300 lines. `NoticeCard` gained an
+  optional `secondaryAction` (one more native Button row). The payer's sent line reads 「{name}已收到提醒，会检查这个收款方式」
+  rather than 「已提醒…」, because another payer of the same payee sees the same state (review finding).
+- Added: the network store resets to online when its last subscriber leaves, so a reopened sheet never shows a stale
+  offline card (`networkStore.test.ts` "a new subscriber after everyone left starts online again").
+- Bugs fixed on the way (tests only): pgTAP used `now()` for a "later" `checked_at`, which equals the insert time inside
+  the test transaction; the test uses `clock_timestamp()`.
+- Checks: pgTAP on an isolated stack (`scripts/db-isolated.sh`, 71 files, 2309 tests, PASS); `bun test` (all pass);
+  `tsc`, `lint:changed`, `format:check`, `design-check`, `check-specs`, `check-story-map` exit 0. UI (zh-Hans light and
+  dark): `pay_cant_pay`, `pay_cant_pay_worst`, `payee_reported`, `payee_reported_worst`, `pay_sheet_offline`,
+  `pay_payee_offline`, plus the changed screens' `payee_list`, `pay_sheet_duitnow`, `pay_payee_confirm`,
+  `pay_mark_paid_undo`; ms for the five that declare it; `verify:smoke`.
+- Unverified: push delivery and the tap into 收款方式 on a phone (story-map device item); the payee's live refresh on
+  `payment.cant_pay` (unit-level only through the live registry).
+- Hosted: migration `20261124000100_payee_cant_pay.sql` is not applied to the hosted project.

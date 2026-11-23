@@ -1,4 +1,4 @@
-"""The payer's DuitNow row has 付不了？告诉 LIM WEI JIE under the name check, a 44 pt plain button with a footer saying the payee will be asked to check; tapping it turns the section into the quiet 已提醒…检查这个收款方式 line, with no button left to send it twice, while 我已付款 stays available."""
+"""The payer's DuitNow row has 付不了？告诉 LIM WEI JIE under the name check, a 44 pt plain button with a footer saying the payee will be asked to check; tapping it turns the section into the quiet …已收到提醒，会检查这个收款方式 line, with no button left to send it twice, while 我已付款 stays available."""
 import sys
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))

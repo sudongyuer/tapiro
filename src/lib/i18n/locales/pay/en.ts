@@ -84,7 +84,7 @@ export default {
       action: 'Can’t pay? Tell {{name}}',
       footer:
         'If the number or QR code doesn’t work, tap this and {{name}} will be asked to check it.',
-      sent: 'We’ve asked {{name}} to check this method. Pay another way, or wait for them to fix it.',
+      sent: '{{name}} has been asked to check this method. Pay another way, or wait for them to fix it.',
       sending: 'Sending',
     },
     offline: {

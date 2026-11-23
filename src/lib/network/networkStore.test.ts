@@ -81,4 +81,14 @@ describe('network store', () => {
     second();
     expect(fake.stops()).toBe(1);
   });
+
+  test('a new subscriber after everyone left starts online again', () => {
+    const fake = fakeSource({ isConnected: true });
+    const store = createNetworkStore(fake.source);
+    const first = store.subscribe(() => undefined);
+    fake.emit({ isConnected: false });
+    first();
+    store.subscribe(() => undefined);
+    expect(store.getSnapshot()).toBe(false);
+  });
 });

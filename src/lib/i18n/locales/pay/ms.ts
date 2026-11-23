@@ -84,7 +84,7 @@ export default {
       action: 'Tidak dapat bayar? Beritahu {{name}}',
       footer:
         'Jika nombor atau kod QR tidak berfungsi, ketik ini dan {{name}} akan diminta menyemaknya.',
-      sent: 'Kami telah meminta {{name}} menyemak kaedah ini. Bayar dengan cara lain, atau tunggu sehingga mereka membetulkannya.',
+      sent: '{{name}} telah diminta menyemak kaedah ini. Bayar dengan cara lain, atau tunggu sehingga mereka membetulkannya.',
       sending: 'Sedang menghantar',
     },
     offline: {

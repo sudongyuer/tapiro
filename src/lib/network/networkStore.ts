@@ -45,6 +45,7 @@ export function createNetworkStore(source: NetworkSource) {
         stop();
         stop = null;
         heard = false;
+        offline = false;
       };
     },
   };
