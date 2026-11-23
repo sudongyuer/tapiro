@@ -38,3 +38,11 @@ test('passes when nothing needs linting and every file is within its limit', () 
   expect(result.code).toBe(0);
   expect(result.output).toContain('check-file-size: ok');
 });
+
+test('a checkout without node_modules is told to install before linting', () => {
+  const root = repo(1);
+  writeFileSync(join(root, 'changed.ts'), 'export const x = 1;\n');
+  const result = lintChanged(root);
+  expect(result.code).toBe(1);
+  expect(result.output).toContain('bun install --frozen-lockfile');
+});
