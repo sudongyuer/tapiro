@@ -528,6 +528,17 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   1.0.0 (20261120.1227) uploaded 2026-11-20 with the fix and passed processing (`COMPLETE`). After an upload, `bun run testflight` waits up to 15 min
   (`TAPIRO_PROCESSING_WAIT`) for Apple's processing through `scripts/asc-upload-status.mjs` and fails with Apple's
   error codes on `FAILED`; `node scripts/asc-upload-status.mjs <version> <build>` checks one later.
+- External testing (2026-11-24): once processing is `COMPLETE`, `bun run testflight` runs
+  `scripts/asc-testflight.mjs <version> <build>`, which waits for the build to read `VALID`, writes 「What to Test」 in
+  zh-Hans and en-US (creates them, or updates a different text), adds the build to the external group 「Public」
+  (`ac03bf4b-819f-4004-ae13-b49f81d1c0e0`, public link on) and submits it for beta app review unless it already has a
+  submission. The text comes from `TAPIRO_WHAT_TO_TEST` (a file) or `scripts/testflight-what-to-test.txt`: `[zh-Hans]`
+  and `[en-US]` sections, or one text for both; the preflight refuses the build before archiving when either is
+  empty. `TAPIRO_SKIP_EXTERNAL=1` stops after processing (internal group only). When processing outlasts the wait, or
+  this step fails, the script prints the command to run it later; `--dry-run` does the reads and prints the writes.
+  The app's beta description, feedback address and review contact are set in App Store Connect (2026-11-22), and
+  `ITSAppUsesNonExemptEncryption: false` in `app.json` answers export compliance, so a new build needs nothing by
+  hand. 1.0.0 (20261121.1730) is in 「Public」 and waits for beta review (submitted by hand, 2026-11-22).
 - Push goes straight to APNs (2026-11-20, `docs/specs/2026-11-20-apns-direct-design.md`): the app registers its APNs
   token with `production` (TestFlight) or `sandbox` (cabled Release, dev builds), and `notify` signs an ES256 token with
   key `88Y29CGN9U`. On hosted, `APNS_KEY_ID` and `APNS_TEAM_ID` are set and `notify` is deployed with the migration

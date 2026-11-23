@@ -14,6 +14,8 @@ source "$ROOT/scripts/release-env.sh"
 
 step "Preflight"
 release_preflight
+WHAT_TO_TEST="${TAPIRO_WHAT_TO_TEST:-$ROOT/scripts/testflight-what-to-test.txt}"
+node "$ROOT/scripts/asc-testflight.mjs" --check-notes "$WHAT_TO_TEST" || fail "What to Test is not ready"
 if [ -n "$(git status --porcelain)" ] && [ "${TAPIRO_ALLOW_DIRTY:-}" != 1 ]; then
   fail "working tree has uncommitted changes; commit them or set TAPIRO_ALLOW_DIRTY=1"
 fi
@@ -94,8 +96,20 @@ grep -E 'Upload succeeded|Uploaded|EXPORT SUCCEEDED' "$OUT/export.log" | tail -n
 step "App Store Connect processing"
 status=0
 node "$ROOT/scripts/asc-upload-status.mjs" "$VERSION" "$BUILD_NUMBER" --wait "${TAPIRO_PROCESSING_WAIT:-900}" || status=$?
+EXTERNAL=(node "$ROOT/scripts/asc-testflight.mjs" "$VERSION" "$BUILD_NUMBER" --notes "$WHAT_TO_TEST")
 case "$status" in
   0) echo "Tapiro $VERSION ($BUILD_NUMBER) passed processing." ;;
-  3) echo "Uploaded Tapiro $VERSION ($BUILD_NUMBER); still processing. Check: node scripts/asc-upload-status.mjs $VERSION $BUILD_NUMBER" ;;
+  3)
+    echo "Uploaded Tapiro $VERSION ($BUILD_NUMBER); still processing. Check: node scripts/asc-upload-status.mjs $VERSION $BUILD_NUMBER"
+    echo "Then send it to external testers: ${EXTERNAL[*]}"
+    exit 0
+    ;;
   *) fail "App Store Connect rejected $VERSION ($BUILD_NUMBER)" ;;
 esac
+
+if [ "${TAPIRO_SKIP_EXTERNAL:-}" = 1 ]; then
+  echo "TAPIRO_SKIP_EXTERNAL=1: not sent to external testers. Later: ${EXTERNAL[*]}"
+  exit 0
+fi
+step "External testing (group Public) and beta app review"
+"${EXTERNAL[@]}" || fail "the build is uploaded but not sent to external testers; rerun: ${EXTERNAL[*]}"

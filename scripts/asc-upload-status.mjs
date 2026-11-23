@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-const API = 'https://api.appstoreconnect.apple.com';
+export const API = 'https://api.appstoreconnect.apple.com';
 const PENDING = new Set(['AWAITING_UPLOAD', 'PROCESSING']);
 
 export function token({ keyPath, keyId, issuerId, now = Math.floor(Date.now() / 1000) }) {
@@ -19,6 +19,17 @@ export function token({ keyPath, keyId, issuerId, now = Math.floor(Date.now() / 
   const key = createPrivateKey(readFileSync(keyPath));
   const signature = sign('sha256', Buffer.from(input), { key, dsaEncoding: 'ieee-p1363' });
   return `${input}.${signature.toString('base64url')}`;
+}
+
+export function ascConfig(env = process.env) {
+  const keyId = env.TAPIRO_ASC_KEY_ID ?? '5TGB2NXCG5';
+  return {
+    appId: env.TAPIRO_ASC_APP_ID ?? '6837172850',
+    keyId,
+    issuerId: env.TAPIRO_ASC_ISSUER_ID ?? 'aaabce4e-636b-4c19-bed9-d6840d0a2465',
+    keyPath:
+      env.TAPIRO_ASC_KEY_PATH ?? `${homedir()}/.appstoreconnect/private_keys/AuthKey_${keyId}.p8`,
+  };
 }
 
 export function findUpload(uploads, version, build) {
@@ -54,15 +65,7 @@ async function main() {
     console.error('usage: node scripts/asc-upload-status.mjs <version> <build> [--wait <seconds>]');
     process.exit(2);
   }
-  const keyId = process.env.TAPIRO_ASC_KEY_ID ?? '5TGB2NXCG5';
-  const config = {
-    appId: process.env.TAPIRO_ASC_APP_ID ?? '6837172850',
-    keyId,
-    issuerId: process.env.TAPIRO_ASC_ISSUER_ID ?? 'aaabce4e-636b-4c19-bed9-d6840d0a2465',
-    keyPath:
-      process.env.TAPIRO_ASC_KEY_PATH ??
-      `${homedir()}/.appstoreconnect/private_keys/AuthKey_${keyId}.p8`,
-  };
+  const config = ascConfig();
   const deadline = Date.now() + (flag === '--wait' ? Number(seconds) * 1000 : 0);
   let last = '';
   for (;;) {
