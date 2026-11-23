@@ -27,9 +27,9 @@ export const FIXTURE_PACKS: ServerPack[] = [
 ];
 
 const PRICES: Record<string, string> = {
-  'app.tapiro.coins.5': 'RM 4.90',
-  'app.tapiro.coins.11': 'RM 9.90',
-  'app.tapiro.coins.35': 'RM 29.90',
+  'app.tapiro.coins.5': 'RM 5.00',
+  'app.tapiro.coins.11': 'RM 10.00',
+  'app.tapiro.coins.35': 'RM 30.00',
 };
 
 export function createFixtureStore({

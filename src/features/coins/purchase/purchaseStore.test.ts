@@ -351,8 +351,8 @@ describe('packs', () => {
     const packs = h.purchases.getSnapshot().packs;
     expect(packs.status).toBe('ready');
     expect(packs.status === 'idle' ? null : packs.data).toEqual([
-      { productId: 'app.tapiro.coins.11', coins: 11, price: 'RM 9.90' },
-      { productId: 'app.tapiro.coins.5', coins: 5, price: 'RM 4.90' },
+      { productId: 'app.tapiro.coins.11', coins: 11, price: 'RM 10.00' },
+      { productId: 'app.tapiro.coins.5', coins: 5, price: 'RM 5.00' },
     ]);
   });
 
@@ -362,12 +362,12 @@ describe('packs', () => {
         {
           id: 'app.tapiro.coins.5',
           displayName: '',
-          displayPrice: 'RM 4.90',
-          price: 4.9,
+          displayPrice: 'RM 5.00',
+          price: 5,
           currencyCode: 'MYR',
         },
       ]),
-    ).toEqual([{ productId: 'app.tapiro.coins.5', coins: 5, price: 'RM 4.90' }]);
+    ).toEqual([{ productId: 'app.tapiro.coins.5', coins: 5, price: 'RM 5.00' }]);
   });
 
   test('a StoreKit failure reads as failed, not as an empty shop', async () => {
@@ -375,10 +375,11 @@ describe('packs', () => {
     expect(h.purchases.getSnapshot().packs.status).toBe('failed');
   });
 
-  test('no products from StoreKit reads as an empty list', async () => {
+  test('no products from StoreKit reads as failed, not as an empty shop', async () => {
     const h = await started(harness({ mode: 'noProducts' }));
     const packs = h.purchases.getSnapshot().packs;
-    expect(packs.status === 'idle' ? null : packs.data).toEqual([]);
+    expect(packs.status).toBe('failed');
+    expect(packs.status === 'idle' ? null : packs.data).toBeNull();
   });
 
   test('a malformed server pack is refused', () => {

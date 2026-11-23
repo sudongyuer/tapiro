@@ -17,6 +17,8 @@ release_preflight
 if [ -n "$(git status --porcelain)" ] && [ "${TAPIRO_ALLOW_DIRTY:-}" != 1 ]; then
   fail "working tree has uncommitted changes; commit them or set TAPIRO_ALLOW_DIRTY=1"
 fi
+node "$ROOT/scripts/iap-preflight.mjs" ||
+  fail "a coin pack in iap_products or Tapiro.storekit is not an In-App Purchase in App Store Connect; the build could not sell it"
 
 VERSION="$(node -p "require('./app.json').expo.version")"
 BUILD_NUMBER="${TAPIRO_BUILD_NUMBER:-$(date -u +%Y%m%d.%H%M)}"

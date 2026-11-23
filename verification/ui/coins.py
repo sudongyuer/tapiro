@@ -79,7 +79,7 @@ def assert_month_labels(ui, items):
 
 
 PACKS = (5, 11, 35)
-PRICES = {5: 'RM 4.90', 11: 'RM 9.90', 35: 'RM 29.90'}
+PRICES = {5: 'RM 5.00', 11: 'RM 10.00', 35: 'RM 30.00'}
 
 
 def open_sheet(ui):
