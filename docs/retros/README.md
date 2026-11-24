@@ -947,3 +947,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-24 | unpaid reminders                        | 0                  | 0             | ~5 min (shared local stack behind main)          | 0                       | 0                     |
 | 2026-11-24 | next work list (story map --open)       | 2 (wrong status)   | 0             | one extra owner round                            | 2                       | 0                     |
 | 2026-11-24 | selection and publish races             | 0                  | 0             | ~2 min (lazy PostgREST builder never sent)       | 0                       | 0                     |
+| 2026-11-25 | story audit (v1 without open criteria)  | 0                  | 2             | ~25 min (new cases' OCR reads)                   | 0                       | 0                     |
