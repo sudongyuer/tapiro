@@ -22,6 +22,8 @@ Reason: these preferences lived only in one machine's agent memory; work must re
   them in reports for veto. Still ask before the items in the merge rule below (paid services, accounts or
   certificates, deletes, the hosted Supabase project) and before publishing anything outside the repo.
   Reason: the owner said the codebase is ours to decide (2026-11-17), after 40+ questions were answered 「都按推荐」.
+- Before telling the owner something waits on them, run `node scripts/owner-blockers.mjs` and quote its lines. Reason:
+  Model Studio, APNs and the Paid Apps agreement were reported as pending days after they were done (2026-11-25).
 - A question goes at the end of the turn's final message with its context and numbered options; afterwards name it
   by number only (「第 N 题待定」) until the summary for the owner's return.
 - An open choice the owner would see or feel is drawn as Tapiro screens on the design canvas

@@ -950,3 +950,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-25 | story audit (v1 without open criteria)  | 0                  | 2             | ~25 min (new cases' OCR reads)                   | 0                       | 0                     |
 | 2026-11-25 | ride receipt reading                    | 0                  | 1             | ~13 min (--locales ran the full matrix)          | 0                       | 0                     |
 | 2026-11-25 | stale blocker status (Model Studio)     | 1 (wrong status)   | 0             | one extra owner round                            | 1                       | 0                     |
+| 2026-11-25 | owner blockers probe                    | 0                  | 0             | ~10 min (waiting on #246 rerun)                  | 0                       | 0                     |

@@ -42,7 +42,7 @@ export function compareProducts({ server, storekit, asc }) {
   return problems;
 }
 
-async function ascProducts(config) {
+export async function ascProducts(config) {
   const out = [];
   let next = `${API}/v1/apps/${config.appId}/inAppPurchasesV2?limit=200&fields[inAppPurchases]=productId,inAppPurchaseType,state`;
   while (next) {
