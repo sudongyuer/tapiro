@@ -1,5 +1,5 @@
 begin;
-select plan(86);
+select plan(87);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
 select ('00000000-0000-0000-0000-0000000000' || k)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
@@ -53,6 +53,11 @@ select pg_temp.apply(1, 'b2');
 select is(pg_temp.kinds('a1', pg_temp.b(1)), '{bounty.applied}'::text[], 'an application reaches the poster');
 select is(pg_temp.kinds('b2', pg_temp.b(1)), '{}'::text[], 'the applicant is not told of their own application');
 select ok(pg_temp.pushed('a1', 'bounty.applied'), 'a new applicant pushes (must act)');
+select is(
+  (select count(*)::integer from public.push_tokens where user_id = pg_temp.u('a1')),
+  0,
+  'the poster has no push token (notifications off), and the live event still reaches them'
+);
 
 select pg_temp.apply(1, 'd4');
 select public.withdraw_application(pg_temp.b(1));

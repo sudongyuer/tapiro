@@ -230,7 +230,7 @@ function longThread(now: Date): FixtureThread {
     { from: JIE.id, body: '记得确认一下哦', minutesAgo: -40 / 60 },
   ];
   return thread(LONG_THREAD_ID, bounty('帮取快递', 'pickup'), [JIE], [...lines, ...incoming], now, {
-    mine: 40,
+    mine: 0,
     peer: 30,
   });
 }
