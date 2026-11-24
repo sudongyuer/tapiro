@@ -942,3 +942,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-21 | milestone follow-up                     | 1 (bank sheet)     | 1             | ~45 min (build under a running batch)            | 0                       | 1 (P5 on bank sheet)  |
 | 2026-11-24 | TestFlight external group               | 0                  | 0             | ~5 min (worktree without node_modules)           | 0                       | 0                     |
 | 2026-11-24 | AX5 truncation fixes                    | 0                  | 2             | ~40 min (type row: nested Text in a slot)        | 0                       | 0                     |
+| 2026-11-24 | bounty auto-confirm and cancel races    | 0                  | 0             | ~0                                               | 0                       | 0                     |

@@ -31,6 +31,12 @@ phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes
 
 ## In progress
 
+- Bounty races (`bounty.flow.auto-confirm`, `bounty.flow.cancel`; branch `feat/bounty-flow-races`): the 48 h
+  auto-confirm, 「有问题」 pause and restart, no-show and waiver rules were already built and covered on one session; a
+  new stack test (`src/features/bounty/status/statusRaces.integration.ts`) runs the two-session races (both sides
+  cancel, one helper cancels two bounties, the poster confirms during the job), closing the last gaps; `bounty.flow`
+  and `rep.no-show` are done. No migration. Decisions for veto (★) in the bounty spec's record of 2026-11-24 (races).
+
 - Overdue arrival time (`bounty.flow.eta-overdue`, deferred as 3B on 2026-10-29; branch `feat/eta-overdue`): five
   minutes past the helper's ETA without 完成, the status page reads 「预计 … 到，已晚 N 分钟」 in the warning colour and
   the poster's home card 「某某在路上 · 晚了 N 分钟」, moving with the clock without a reload; the five minutes are the
