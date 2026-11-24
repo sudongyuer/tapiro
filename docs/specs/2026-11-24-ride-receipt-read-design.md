@@ -91,7 +91,7 @@ Unit: `src/features/ride/detail/receiptRead.test.ts`, `src/features/ask/receiptR
 ## Implementation Record (2026-11-25)
 
 Status stays `proposed`: the owner has not approved the design; decisions RR1–RR13 (★ for veto) were made under the
-owner's delegation (2026-11-17). Branch `feat/ride-receipt-read`.
+owner's delegation (2026-11-17). Branch `feat/ride-split-receipt`.
 
 - Built as designed. Server: `ai-draft` task `read_receipt` and tool `draft_split` (`tools.ts`, `prompts.ts`,
   `models.ts`, fake provider reads RM 74.00); migration `20261124000500_ai_read_receipt_task.sql` adds the task to

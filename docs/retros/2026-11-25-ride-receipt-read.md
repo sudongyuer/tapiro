@@ -1,5 +1,5 @@
 ---
-branch: feat/ride-receipt-read
+branch: feat/ride-split-receipt
 date: 2026-11-25
 pr: ride.split.receipt — 小貘 reads the Grab receipt total into the split
 title: Ride receipt reading
@@ -36,3 +36,7 @@ overturned: 0
   there lost focus once, so the case now attaches the receipt after the edits (decision RR13 records the layout).
 - Presenting the consent route over a SwiftUI `BottomSheet`: closing the sheet and pushing in `onDismiss` worked on
   the first run; worth reusing for any route opened from a ride sheet.
+- [push-before-rebase] A chained `rebase && push` ran the push although the rebase stopped on a conflict, so the
+  pre-rebase commit went to `feat/ride-receipt-read`; the force-push hook rightly refused to replace it and the work
+  moved to `feat/ride-split-receipt`. The stale remote branch is left for the owner to delete. Rebase, check, then
+  push as separate steps.
