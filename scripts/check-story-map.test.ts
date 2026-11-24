@@ -4,8 +4,10 @@ import {
   checkStoryMap,
   parseCoverage,
   parseStoryMap,
+  openWork,
   quotedNames,
   summarize,
+  summarizeOpen,
 } from './check-story-map.mjs';
 
 const files: Record<string, string> = {
@@ -213,7 +215,7 @@ describe('check', () => {
     );
     expect(text).toContain('2 stories (done 1, building 0, planned 1)');
     expect(text).toContain(
-      'Criteria: 4; covered by ui 1, unit 0, int 0, db 0, device 1, gap 1; planned only 1',
+      'Criteria: 4; covered by ui 1, unit 0, int 0, db 0, device 1, gap 1; planned only 1: pay.sheet.copy',
     );
     expect(text).toContain('GAP  payee.add.b: 乙 — 没有用例');
     expect(text).toContain('[done] payee.add.c: 丙');
@@ -246,5 +248,48 @@ describe('check', () => {
       expect.stringContaining('payee.add.z is outside'),
       expect.stringContaining('payee.add.y is outside'),
     ]);
+  });
+});
+
+describe('open work', () => {
+  const result = () =>
+    check(
+      map(
+        story('ride.board', 'planned', [], { release: 'later' }),
+        story('payee.add', 'done', [
+          '| payee.add.a | 甲 | ui:payee_list |',
+          '| payee.add.b | 乙 | gap: 没有用例 |',
+        ]),
+        story('pay.sheet', 'building', [
+          '| pay.sheet.copy | 复制 | ui:payee_list, unit |',
+          '| pay.sheet.paid | 已付 | ui:payee_list |',
+        ]),
+        story('payee.edit', 'done', ['| payee.edit.a | 改 | ui:payee_list |']),
+      ),
+    );
+
+  test('lists unfinished stories and criteria with a bare category or a gap, v1 first', () => {
+    const open = openWork(result()).map(
+      ({ story, criteria }: { story: { id: string }; criteria: { id: string }[] }) => [
+        story.id,
+        criteria.map((c) => c.id),
+      ],
+    );
+    expect(open).toEqual([
+      ['payee.add', ['payee.add.b']],
+      ['pay.sheet', ['pay.sheet.copy']],
+      ['ride.board', []],
+    ]);
+  });
+
+  test('the listing names status, release and the open coverage tokens', () => {
+    const text = summarizeOpen(result());
+    expect(text).toContain('Open work (3 stories; v1 first):');
+    expect(text).toContain('[v1] pay.sheet (building) 标题');
+    expect(text).toContain('  pay.sheet.copy: 复制 — unit');
+    expect(text).toContain('  payee.add.b: 乙 — gap: 没有用例');
+    expect(text).toContain('[later] ride.board (planned) 标题');
+    expect(text).not.toContain('payee.edit');
+    expect(text).not.toContain('pay.sheet.paid');
   });
 });
