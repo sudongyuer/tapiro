@@ -176,6 +176,14 @@ const COPY: Record<string, Entry> = {
       ms: '{name} tidak dapat membayar anda. Semak kaedah pembayaran anda',
     },
   },
+  'payment.reminder': {
+    subject: 'payment',
+    body: {
+      'zh-Hans': '还没付给{name}，记得去付款',
+      en: "You haven't paid {name} yet",
+      ms: 'Anda belum membayar {name}',
+    },
+  },
   'chat.message': {
     subject: 'chat',
     body: {
