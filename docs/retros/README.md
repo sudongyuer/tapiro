@@ -943,3 +943,4 @@ PR. A hook blocks opening the PR until the branch has one.
 | 2026-11-24 | TestFlight external group               | 0                  | 0             | ~5 min (worktree without node_modules)           | 0                       | 0                     |
 | 2026-11-24 | AX5 truncation fixes                    | 0                  | 2             | ~40 min (type row: nested Text in a slot)        | 0                       | 0                     |
 | 2026-11-24 | notifications off + seen marks          | 0                  | 0             | ~5 min (worktree without node_modules)           | 0                       | 0                     |
+| 2026-11-24 | unpaid reminders                        | 0                  | 0             | ~5 min (shared local stack behind main)          | 0                       | 0                     |

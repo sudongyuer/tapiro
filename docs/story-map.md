@@ -502,14 +502,14 @@ Tapiro 的需求和验收标准只记在这里。主干是同学使用 App 的�
 ### pay.unpaid 不付款的处理
 
 - 故事：作为接单人，我想 App 帮我提醒不付钱的人，以便我不用自己去催。
-- 状态：building
+- 状态：done
 - 版本：v1
-- 规格：[foundation](specs/2026-10-11-foundation-design.md)
+- 规格：[unpaid reminders](specs/2026-11-24-unpaid-reminders-design.md)
 
-| 验收 id              | 行为                                                     | 覆盖                                                                 |
-| -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
-| pay.unpaid.reminders | 24 小时和 72 小时提醒付款人（推送第 9 步接上）           | unit:src/lib/unpaid.test.ts#reminds at 24 h and 72 h, once each, db  |
-| pay.unpaid.block     | 欠 7 天或同时 2 笔没付就不能发新的，结清或举报处理后解除 | unit:src/lib/unpaid.test.ts, db:supabase/tests/payments.test.sql, ui |
+| 验收 id              | 行为                                                                                                                                                                                                                                                  | 覆盖                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pay.unpaid.reminders | 悬赏的付款没付时，开单后 24 小时和 72 小时各推送提醒付款人一次「还没付给{名字}，记得去付款」，点开到付款；错过 24 小时的只发 72 小时那条；23:00–08:00 推到 08:00；已点我已付款、已结清的不提醒；拼车的付款由手机本地提醒（ride.remind.pay），不再推送 | db:supabase/tests/payment_reminders.test.sql, unit:src/lib/unpaid.test.ts#reminds at 24 h and 72 h, once each, unit:supabase/functions/notify/copy.test.ts#the unpaid reminder names the payee and the bounty for the payer, unit:src/lib/notifications/noticeTaps.test.ts, device: 悬赏结束后不付款，24 小时后付款人锁屏收到提醒，点开是这笔付款 |
+| pay.unpaid.block     | 欠 7 天或同时 2 笔没付就不能发新的悬赏和拼车，结清或举报处理（付款不再是待付）后解除                                                                                                                                                                  | unit:src/lib/unpaid.test.ts, db:supabase/tests/payments.test.sql, db:supabase/tests/payment_reminders.test.sql#a payment whose report was resolved no longer blocks, ui:bounty_post_blocked, ui:bounty_post_unpaid_hint, ui:ride_create_cost, gap: 付款的举报入口和处理工具还没做（foundation 第 7 步），处理靠手动改付款状态                     |
 
 ### pay.prepay-refund 先付单取消后退款
 

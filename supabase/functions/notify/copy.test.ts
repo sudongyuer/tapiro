@@ -78,6 +78,16 @@ describe('pushCopy', () => {
     });
   });
 
+  test('the unpaid reminder names the payee and the bounty for the payer', () => {
+    expect(
+      pushCopy('payment.reminder', 'zh-Hans', { actorName: 'Bob', subject: { title: '帮取快递' } }),
+    ).toEqual({ title: '帮取快递', body: '还没付给 Bob，记得去付款' });
+    expect(
+      pushCopy('payment.reminder', 'ms', { actorName: '小林', subject: { title: '帮取快递' } })
+        ?.body,
+    ).toBe('Anda belum membayar 小林');
+  });
+
   test('a deleted actor or a missing subject still reads well', () => {
     expect(pushCopy('payment.marked_paid', 'en', { actorName: null, subject: {} })).toEqual({
       title: 'Payment',
