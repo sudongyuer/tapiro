@@ -1,4 +1,11 @@
-export const AI_TASKS = ['draft_bounty', 'answer', 'translate', 'ask', 'transcribe'] as const;
+export const AI_TASKS = [
+  'draft_bounty',
+  'answer',
+  'translate',
+  'ask',
+  'transcribe',
+  'read_receipt',
+] as const;
 export type AiTask = (typeof AI_TASKS)[number];
 
 export const AI_TOOLS = [
@@ -8,6 +15,7 @@ export const AI_TOOLS = [
   'clarify',
   'pick',
   'transcript',
+  'draft_split',
 ] as const;
 export type AiTool = (typeof AI_TOOLS)[number];
 
@@ -77,6 +85,26 @@ const DRAFT_BOUNTY_PARAMETERS: Schema = {
     startsAt: { type: ['string', 'null'], description: DATE_TIME_NOTE },
     endsAt: { type: ['string', 'null'], description: DATE_TIME_NOTE },
     placeHint: { type: ['string', 'null'], minLength: 1, maxLength: 80 },
+  },
+};
+
+export const RECEIPT_TOTAL = /^(0|[1-9]\d{0,5})(\.\d{1,2})?$/;
+
+// The app reads this shape in src/lib/drafts/receiptDraft.ts; contract.test.ts keeps the two in step. A total the model
+// cannot read is null, never a guess.
+const DRAFT_SPLIT_PARAMETERS: Schema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['total', 'currency'],
+  properties: {
+    total: {
+      type: ['string', 'null'],
+      minLength: 1,
+      maxLength: 9,
+      description:
+        'The total paid, digits with an optional dot and two decimals, such as 18.40; or null',
+    },
+    currency: { type: ['string', 'null'], enum: ['MYR', 'CNY', null] },
   },
 };
 
@@ -162,6 +190,12 @@ export const TOOL_SCHEMAS: Readonly<Record<AiTool, ToolSchema>> = {
         },
       },
     },
+  },
+  draft_split: {
+    name: 'draft_split',
+    description:
+      'Give the total of the ride receipt in the image. The organiser checks it and sends the split themselves.',
+    parameters: DRAFT_SPLIT_PARAMETERS,
   },
   transcript: {
     name: 'transcript',
@@ -271,6 +305,10 @@ function validDraftTime(args: Record<string, unknown>): boolean {
 export function validToolResult(tool: AiTool, args: unknown) {
   if (!matches(TOOL_SCHEMAS[tool].parameters, args)) return false;
   if (tool === 'draft_bounty') return validDraftTime(args as Record<string, unknown>);
+  if (tool === 'draft_split') {
+    const { total } = args as { total: string | null };
+    return total === null || (RECEIPT_TOTAL.test(total) && Number(total) > 0);
+  }
   if (tool === 'pick') {
     const { items } = args as { items: { draft: Record<string, unknown> }[] };
     return items.every((item) => validDraftTime(item.draft));
@@ -282,6 +320,7 @@ export function validToolResult(tool: AiTool, args: unknown) {
 // drafts, answers or offers a pick, and never asks back.
 export function toolsFor(request: AiRequest): AiTool[] {
   if (request.task === 'transcribe') return ['transcript'];
+  if (request.task === 'read_receipt') return ['draft_split'];
   if (request.task !== 'ask') return [request.task];
   return request.input.image
     ? ['draft_bounty', 'answer', 'pick']
@@ -316,6 +355,12 @@ function parseTranscribe(input: Record<string, unknown>): AiRequest | null {
   return audio && language ? { task: 'transcribe', input: { audio, language } } : null;
 }
 
+function parseReceipt(input: Record<string, unknown>): AiRequest | null {
+  if (!exactKeys(input, ['text', 'image']) || input.text !== '') return null;
+  const image = parseImage(input.image);
+  return image ? { task: 'read_receipt', input: { text: '', image } } : null;
+}
+
 function exactKeys(value: Record<string, unknown>, keys: readonly string[]) {
   const present = Object.keys(value);
   return present.length === keys.length && keys.every((key) => Object.hasOwn(value, key));
@@ -327,6 +372,7 @@ export function parseAiRequest(body: unknown): AiRequest | null {
   const task = AI_TASKS.find((candidate) => candidate === body.task);
   if (!task) return null;
   if (task === 'transcribe') return parseTranscribe(body.input);
+  if (task === 'read_receipt') return parseReceipt(body.input);
   const { text, to } = body.input;
   if (typeof text !== 'string') return null;
   const trimmed = text.trim();

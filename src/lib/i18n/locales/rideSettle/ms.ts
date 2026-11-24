@@ -121,6 +121,23 @@ const settle: Translation['rideSettle'] = {
     send_one: 'Hantar kepada {{count}}',
     send_other: 'Hantar kepada {{count}}',
     sendTo: 'Selepas dihantar, {{names}} masing-masing membayar anda.',
+    read: {
+      button: 'Biar Tapir baca jumlah',
+      reading: 'Tapir sedang membaca resit…',
+      offer: 'Tapir boleh membaca jumlah pada resit. Ia menggunakan sedikit tenaga Tapir.',
+      filled: 'Tapir membaca {{amount}} dan mengisinya sebagai jumlah. Semak sebelum menghantar.',
+      kept: 'Tapir membaca {{amount}}. Anda sudah mengisi jumlah, jadi ia tidak diganti.',
+      otherCurrency:
+        'Resit menunjukkan {{amount}}, mata wang berbeza daripada tumpangan ini. Isi jumlah sendiri.',
+      unreadable: 'Tapir tidak menemui jumlah. Isi sendiri.',
+      offline: 'Tiada sambungan, jadi tidak dibaca. Cuba lagi atau isi jumlah sendiri.',
+      providerError: 'Tapir tidak dapat membacanya. Cuba lagi atau isi jumlah sendiri.',
+      image: 'Tangkapan skrin ini tidak dapat dibuka. Pilih yang lain atau isi jumlah sendiri.',
+      busy: 'Tapir masih sibuk dengan yang tadi. Cuba lagi sebentar.',
+      hungry: 'Tapir lapar, jadi resit tidak dibaca. Isi jumlah sendiri.',
+      capped: 'Tapir sudah cukup makan hari ini. Datang lagi esok, atau isi jumlah sendiri.',
+      needsUpdate: 'Kemas kini aplikasi supaya Tapir boleh membaca resit. Isi jumlah sendiri.',
+    },
   },
   dispute: {
     title: 'Jumlah salah',

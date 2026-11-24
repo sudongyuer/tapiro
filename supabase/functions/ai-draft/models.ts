@@ -15,6 +15,7 @@ export const PRIMARY_MODEL: Readonly<Record<AiTask, string>> = {
   draft_bounty: QWEN_PLUS,
   ask: QWEN_PLUS,
   transcribe: QWEN_ASR,
+  read_receipt: QWEN_PLUS,
 };
 
 export const MAX_OUTPUT_TOKENS: Readonly<Record<ChatTask, number>> = {
@@ -22,6 +23,7 @@ export const MAX_OUTPUT_TOKENS: Readonly<Record<ChatTask, number>> = {
   answer: 1500,
   draft_bounty: 1000,
   ask: 2000,
+  read_receipt: 200,
 };
 
 export const SINGAPORE_PRICES_USD = {

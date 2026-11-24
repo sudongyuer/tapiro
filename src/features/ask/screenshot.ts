@@ -34,6 +34,19 @@ async function encode(uri: string, width: number, height: number): Promise<Scree
   }
 }
 
+export async function cloudImageOf(uri: string): Promise<CloudImage | null> {
+  if (uiVerify) return { mediaType: 'image/jpeg', data: FIXTURE_JPEG };
+  try {
+    const original = await ImageManipulator.manipulate(uri).renderAsync();
+    const { width, height } = original;
+    original.release();
+    const encoded = await encode(uri, width, height);
+    return encoded.kind === 'picked' ? encoded.image : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function pickScreenshot(): Promise<ScreenshotPick> {
   if (uiVerify) {
     return uiVerifyArgument('uiVerifyAskPick') === 'cancelled'

@@ -1,6 +1,6 @@
 import { consentAccess, type ConsentStore } from './consentStore';
 
-export type CloudTask = 'draft_bounty' | 'answer' | 'translate' | 'ask';
+export type CloudTask = 'draft_bounty' | 'answer' | 'translate' | 'ask' | 'read_receipt';
 
 export type CloudImage = { mediaType: 'image/jpeg'; data: string };
 

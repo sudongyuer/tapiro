@@ -120,6 +120,23 @@ const settle: Translation['rideSettle'] = {
     send_one: 'Send to {{count}}',
     send_other: 'Send to {{count}}',
     sendTo: 'Once sent, {{names}} each pay you.',
+    read: {
+      button: 'Read the Total with Tapir',
+      reading: 'Tapir is reading the receipt…',
+      offer: 'Tapir can read the total off the receipt. It uses some of Tapir’s energy.',
+      filled: 'Tapir read {{amount}} and put it in the total. Check it before sending.',
+      kept: 'Tapir read {{amount}}. You already typed a total, so it was left as is.',
+      otherCurrency:
+        'The receipt says {{amount}}, a different currency from this ride. Type the total yourself.',
+      unreadable: 'Tapir couldn’t find the total. Type it yourself.',
+      offline: 'No connection, so it wasn’t read. Try again or type the total.',
+      providerError: 'Tapir couldn’t read it. Try again or type the total.',
+      image: 'This screenshot can’t be opened. Pick another or type the total.',
+      busy: 'Tapir is still on the last one. Try again in a moment.',
+      hungry: 'Tapir is hungry, so the receipt wasn’t read. Type the total yourself.',
+      capped: 'Tapir has eaten enough today. Come back tomorrow, or type the total.',
+      needsUpdate: 'Update the app so Tapir can read receipts. Type the total yourself.',
+    },
   },
   dispute: {
     title: 'Amount wrong',

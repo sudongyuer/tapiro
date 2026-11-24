@@ -82,8 +82,6 @@ organiser = ui.element('ride-split-organiser').get('AXLabel') or ''
 assert re.search(MONEY + r'24\.60', organiser), organiser
 assert re.fullmatch(ui.pattern('rideSettle.sheet.footerEqual', count='3', amount=MONEY + r'0\.10') + r'\n.*', footer(),
                     re.S), footer()
-ui.tap('ride-split-receipt-add')
-ui.element('ride-split-receipt-added')
 ui.at_rest()
 ui.snap('02-sheet-equal')
 
@@ -98,6 +96,9 @@ typed(ui, f'ride-split-share-{MING}', '20')
 ui.wait(lambda items: re.search(MONEY + r'29\.30', (by_id(items, 'ride-split-organiser') or {}).get('AXLabel') or ''),
         'your row did not take the remainder')
 assert ui.element(f'ride-split-share-{YA}').get('AXValue') == '24.70', 'editing 阿明 moved 小雅'
+# Attached last: with a receipt the read row and its footer push the rider rows below the medium detent.
+ui.tap('ride-split-receipt-add')
+ui.element('ride-split-receipt-added')
 ui.at_rest()
 ui.snap('03-sheet-edited')
 

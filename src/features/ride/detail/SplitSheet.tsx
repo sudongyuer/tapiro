@@ -1,4 +1,4 @@
-import { Button, HStack, Section, Spacer, Text, type TextFieldRef } from '@expo/ui/swift-ui';
+import { HStack, Section, Spacer, Text, type TextFieldRef } from '@expo/ui/swift-ui';
 import {
   accessibilityElement,
   accessibilityIdentifier,
@@ -17,7 +17,9 @@ import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { pickReceipt } from './receiptDevice';
+import type { ReceiptRead } from './receiptRead';
 import { SheetShell } from './SheetShell';
+import { SplitReceipt } from './SplitReceipt';
 import { shareText, splitView, syncedDraft, type SplitDraft, type SplitView } from './splitDraft';
 import type { RideDetail } from './types';
 
@@ -25,6 +27,7 @@ const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 const AMOUNT_DIGITS = 8;
 
 export type SplitRequest = { id: number; open: boolean; draft: SplitDraft };
+export type SplitFill = { count: number; draft: SplitDraft };
 
 function footerText(
   view: SplitView,
@@ -116,21 +119,36 @@ export function SplitSheet({
   request,
   ride,
   viewerId,
+  read,
+  readable,
+  fill,
   onDraft,
+  onRead,
   onSend,
   onClose,
+  onDismiss,
 }: {
   request: SplitRequest | null;
   ride: RideDetail | null;
   viewerId: string;
+  read: ReceiptRead;
+  readable: boolean;
+  fill: SplitFill | null;
   onDraft: (draft: SplitDraft) => void;
+  onRead: (draft: SplitDraft) => void;
   onSend: (draft: SplitDraft) => void;
   onClose: () => void;
+  onDismiss: () => void;
 }) {
   const { t, language } = useI18n();
   const [draft, setDraft] = useState<SplitDraft | null>(request?.draft ?? null);
   const [pinned, setPinned] = useState<Record<string, string>>({});
+  const [filled, setFilled] = useState(fill?.count ?? 0);
   const syncs = useRef(new Map<string, () => string>());
+  if (fill && fill.count > filled) {
+    setFilled(fill.count);
+    setDraft(fill.draft);
+  }
   const current = draft ?? request?.draft ?? null;
   if (!request || !ride || !current) return null;
   const edit = (change: (value: SplitDraft) => SplitDraft) =>
@@ -145,7 +163,6 @@ export function SplitSheet({
     .map((row) => row.name ?? t('bounty.post.unknownName'))
     .join(t('ride.detail.listJoin'));
   const me = ride.organiser?.name ?? '';
-  const receipt = current.receipt;
   return (
     <SheetShell
       open={request.open}
@@ -181,9 +198,11 @@ export function SplitSheet({
         onSend(next);
       }}
       onClose={onClose}
+      onDismiss={onDismiss}
     >
       <Section>
         <MoneyField
+          key={`total-${filled}`}
           label={t('rideSettle.sheet.total')}
           initial={current.totalText}
           currency={view.currency}
@@ -193,41 +212,17 @@ export function SplitSheet({
           onText={(text) => edit((value) => ({ ...value, totalText: text }))}
         />
       </Section>
-      <Section
-        footer={
-          <Text modifiers={[accessibilityIdentifier(`ride-split-receipt-${receipt.status}`)]}>
-            {receipt.status === 'failed'
-              ? t('rideSettle.sheet.receiptFailed')
-              : receipt.status === 'expired'
-                ? t('rideSettle.sheet.receiptExpired')
-                : t('rideSettle.sheet.receiptOptional')}
-          </Text>
-        }
-      >
-        {receipt.status === 'none' || receipt.status === 'expired' ? (
-          <Button
-            label={t('rideSettle.sheet.receiptAdd')}
-            systemImage="photo.badge.plus"
-            onPress={async () => {
-              const uri = await pickReceipt();
-              if (uri) edit((value) => ({ ...value, receipt: { status: 'picked', uri } }));
-            }}
-            modifiers={[accessibilityIdentifier('ride-split-receipt-add')]}
-          />
-        ) : (
-          <>
-            <Text modifiers={[accessibilityIdentifier('ride-split-receipt-added')]}>
-              {t('rideSettle.sheet.receiptAdded')}
-            </Text>
-            <Button
-              label={t('rideSettle.sheet.receiptRemove')}
-              role="destructive"
-              onPress={() => edit((value) => ({ ...value, receipt: { status: 'none' } }))}
-              modifiers={[accessibilityIdentifier('ride-split-receipt-remove')]}
-            />
-          </>
-        )}
-      </Section>
+      <SplitReceipt
+        draft={current}
+        read={read}
+        readable={readable}
+        onAdd={async () => {
+          const uri = await pickReceipt();
+          if (uri) edit((value) => ({ ...value, receipt: { status: 'picked', uri } }));
+        }}
+        onRemove={() => edit((value) => ({ ...value, receipt: { status: 'none' } }))}
+        onRead={() => onRead(current)}
+      />
       <Section
         footer={
           <Text modifiers={[accessibilityIdentifier('ride-split-footer')]}>

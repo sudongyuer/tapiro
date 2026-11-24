@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { translatedText } from '../../../src/features/ask/translations';
 import { parseBountyDraft } from '../../../src/lib/drafts/bountyDraft';
+import { parseReceiptReply } from '../../../src/lib/drafts/receiptDraft';
 import { localDb } from '../../../scripts/local-db';
 import { localSupabase } from '../../../scripts/local-supabase';
 
@@ -172,6 +173,23 @@ describe('ai-draft on the local stack with the fake provider', () => {
     const rows = await meterRows();
     expect(rows.filter((row) => row.task === 'transcribe')).toHaveLength(1);
     expect(JSON.stringify(rows)).not.toContain('AAAAHGZ0eXBNNEEg');
+  });
+
+  test('a ride receipt is read through the served function, metered as read_receipt, image unkept', async () => {
+    const before = await status();
+    const image = { mediaType: 'image/jpeg', data: '/9j/4AAQSkZJRg==' };
+    const response = await ask({ task: 'read_receipt', input: { text: '', image } });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(parseReceiptReply(body, 'MYR')).toEqual({
+      kind: 'read',
+      total: { minor: 7400, currency: 'MYR' },
+    });
+    const rows = await meterRows();
+    const row = rows.find((candidate) => candidate.task === 'read_receipt');
+    expect(row).toMatchObject({ model: 'fake', input_tokens: 1500, output_tokens: 40 });
+    expect(body.energy).toBe(before.energy - row.energy_spent);
+    expect(JSON.stringify(rows)).not.toContain(image.data);
   });
 
   test('the same belly gives three drafts, then 小貘 is hungry', async () => {
