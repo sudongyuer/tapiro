@@ -5,6 +5,7 @@ Check with `node scripts/check-specs.mjs --dir docs/specs`.
 
 | Date       | Spec                                                                                                                | Status      | Relation                                                                          |
 | ---------- | ------------------------------------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------- |
+| 2026-11-24 | [Unpaid bounty payments reminded by push](2026-11-24-unpaid-reminders-design.md)                                    | proposed    | builds on foundation §Unpaid handling (24/72 h reminders); built, record appended |
 | 2026-11-24 | [付不了 and the pay sheet without a network](2026-11-24-cant-pay-offline-design.md)                                 | proposed    | builds on foundation §payee methods (付不了 re-check); built, record appended     |
 | 2026-11-21 | [Sticker book as a card deck, a month calendar sheet and shareable posters](2026-11-21-sticker-book-deck-design.md) | proposed    | amends bounty step 9 (95A, 96A); built, record appended                           |
 | 2026-11-21 | [China mainland App Store storefront](2026-11-21-china-storefront-design.md)                                        | proposed    | amends foundation AI (no cloud AI on CHN); phase 1 built, record appended         |

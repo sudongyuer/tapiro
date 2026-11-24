@@ -24,8 +24,7 @@ export function publishBlocked(asPayer: readonly UnpaidInput[], now: Date) {
 export function reminderDue(payment: UnpaidInput, now: Date, sentHours: readonly number[]) {
   if (payment.state !== 'due') return null;
   const age = now.getTime() - Date.parse(payment.createdAt);
-  const due = REMINDER_HOURS.filter(
-    (hours) => age >= hours * HOUR_MS && !sentHours.includes(hours),
-  );
-  return due.length > 0 ? due[due.length - 1] : null;
+  const stage = REMINDER_HOURS.filter((hours) => age >= hours * HOUR_MS).at(-1);
+  if (stage === undefined || sentHours.some((sent) => sent >= stage)) return null;
+  return stage;
 }

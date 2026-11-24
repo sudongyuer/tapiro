@@ -47,6 +47,7 @@ describe('reminderDue', () => {
   });
   test('a missed 24 h reminder is folded into the 72 h one', () => {
     expect(reminderDue(due(80), NOW, [])).toBe(72);
+    expect(reminderDue(due(100), NOW, [72])).toBeNull();
   });
   test('only due payments are reminded', () => {
     expect(reminderDue({ ...due(30), state: 'marked_paid' }, NOW, [])).toBeNull();
