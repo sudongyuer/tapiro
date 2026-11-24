@@ -32,6 +32,12 @@ phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes
 
 ## In progress
 
+- Selection and publish races, scope of gates (branch `test/select-publish-races`): two new stack tests run the
+  last two-session races (`bounty.apply.select`: two devices select at once; `coins.ledger.spend`: two publishes take
+  the last free slot or coin); the existing locks held, no migration. 先付 and application gates move to `later`
+  (new story `bounty.gates`, `pay.prepay-refund`), as bounty decision 7A says; `bounty.board` and `bounty.apply` are done. Decisions for
+  veto (★) in the bounty spec's record of 2026-11-24 (selection and publish races).
+
 - Bounty races (`bounty.flow.auto-confirm`, `bounty.flow.cancel`; branch `feat/bounty-flow-races`): the 48 h
   auto-confirm, 「有问题」 pause and restart, no-show and waiver rules were already built and covered on one session; a
   new stack test (`src/features/bounty/status/statusRaces.integration.ts`) runs the two-session races (both sides
