@@ -18,3 +18,6 @@ topic: stale-blocker-status
 - Candidate fix: `scripts/owner-blockers.mjs` probes each owner-side dependency live before a report lists it (ASC
   agreements and IAP products via the API key, hosted secret names for `APNS_PRIVATE_KEY`, the last successful
   `ai_metering` row per provider) and prints what is still blocked; reports quote its output.
+- Landed (2026-11-25, `chore/owner-blockers`): `scripts/owner-blockers.mjs` with unit tests; agreements have no App
+  Store Connect API and print as CHECK. AGENTS.md (Working with the owner) asks for its output before a report names
+  something as waiting on the owner.
