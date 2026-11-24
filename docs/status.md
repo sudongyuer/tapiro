@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-24 (notifications off keep the badge and strip, and one-time cards' seen marks were already built; unpaid bounty payments are pushed to the payer at 24 h and 72 h; 付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
+Updated: 2026-11-25 (story audit: `pay.settle` and `bounty.post` are done, the photo sticker moves to a later story; `home.live-activity`, `chat.push` and `chat.live` stay building with what is missing named in the story map: the Live Activity extension is not in release builds and both wait on `APNS_PRIVATE_KEY`; new UI cases `pay_sheet_worst` and `ride_detail_revised_time` close `pay.sheet.worst` and `ride.join.late`). 2026-11-24 (notifications off keep the badge and strip, and one-time cards' seen marks were already built; unpaid bounty payments are pushed to the payer at 24 h and 72 h; 付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
 the pay sheet turns writes off without a network; an overdue arrival time says how late on the status page and the
 poster's home card; the profile block entry was already built). Before: 2026-11-21 (UI audit batch B, China storefront
 phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
