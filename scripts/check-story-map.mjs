@@ -222,8 +222,9 @@ export function summarize({ activities, stories, errors, warnings, device, gaps 
   const planned = criteria.filter(
     (c) => c.coverage.length === 0 || c.coverage.every((x) => x.planned),
   );
+  const plannedIds = planned.length ? `: ${planned.map((c) => c.id).join(', ')}` : '';
   lines.push(
-    `Criteria: ${criteria.length}; covered by ${counts.join(', ')}; planned only ${planned.length}`,
+    `Criteria: ${criteria.length}; covered by ${counts.join(', ')}; planned only ${planned.length}${plannedIds}`,
   );
   lines.push('');
   lines.push(`Acknowledged gaps on done stories (${gaps.length}):`);
@@ -250,12 +251,40 @@ export function summarize({ activities, stories, errors, warnings, device, gaps 
   return lines.join('\n');
 }
 
+const isOpen = (c) => c.planned || c.kind === 'gap';
+
+export function openWork({ stories }) {
+  const open = stories
+    .map((story) => ({
+      story,
+      criteria: story.criteria.filter((c) => c.coverage.some(isOpen)),
+    }))
+    .filter(({ story, criteria }) => story.status !== 'done' || criteria.length > 0);
+  const v1 = open.filter(({ story }) => story.release === 'v1');
+  return [...v1, ...open.filter(({ story }) => story.release !== 'v1')];
+}
+
+export function summarizeOpen(result) {
+  const open = openWork(result);
+  const lines = [`Open work (${open.length} stories; v1 first):`];
+  for (const { story, criteria } of open) {
+    lines.push('');
+    lines.push(`[${story.release}] ${story.id} (${story.status}) ${story.title}`);
+    if (criteria.length === 0) lines.push('  (no open criteria listed)');
+    for (const c of criteria) {
+      const tokens = c.coverage.filter(isOpen).map((x) => x.raw);
+      lines.push(`  ${c.id}: ${c.behaviour} — ${tokens.join(', ')}`);
+    }
+  }
+  return lines.join('\n');
+}
+
 function main() {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const argIndex = process.argv.indexOf('--file');
   const file = argIndex > 0 ? process.argv[argIndex + 1] : 'docs/story-map.md';
   if (!file || file.startsWith('--')) {
-    console.error('usage: node scripts/check-story-map.mjs [--file <story-map.md>]');
+    console.error('usage: node scripts/check-story-map.mjs [--file <story-map.md>] [--open]');
     process.exit(2);
   }
   const text = readFileSync(join(root, file), 'utf8');
@@ -269,7 +298,7 @@ function main() {
     mapDir: posix.dirname(file),
     uiCases,
   });
-  console.log(summarize(result));
+  console.log(process.argv.includes('--open') ? summarizeOpen(result) : summarize(result));
   process.exit(result.errors.length ? 1 : 0);
 }
 
