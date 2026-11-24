@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-24 (付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
+Updated: 2026-11-24 (unpaid bounty payments are pushed to the payer at 24 h and 72 h; 付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
 the pay sheet turns writes off without a network; an overdue arrival time says how late on the status page and the
 poster's home card; the profile block entry was already built). Before: 2026-11-21 (UI audit batch B, China storefront
 phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
@@ -28,6 +28,7 @@ phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes
 | UI audit D: layout      | `docs/specs/2026-10-11-foundation-design.md`       | Audit `docs/reviews/2026-11-21-ui-walkthrough.md` O2, H2, L1, P5, P6, S1, S3, H3 (decisions for veto in the record of 2026-11-21): native chip row, keyboard 完成, top scroll edge on every Form screen, a separator on the ride footer bar, accessory on tab roots only                                                                                                                                                 |
 | Milestone before TF 2   | `docs/specs/2026-10-11-foundation-design.md`       | Milestone run over #204–#216 (record of 2026-11-21, M1–M4 for veto): Settings 退出登录 confirms, the language step heading below the bar, no floating 完成 on the post form, one sticker count in the fixtures; retro `2026-11-21-milestone-before-testflight`                                                                                                                                                           |
 | 付不了 and offline pay  | `docs/specs/2026-11-24-cant-pay-offline-design.md` | The payer reports a method that does not work (`report_cant_pay`, push `payment.cant_pay`); the payee's list leads with a yellow card and 我的 shows the dot until the method changes or 没问题; the pay sheet reads `expo-network` and turns writes off offline. Decisions CP1–CP8, OF1–OF4 (★ for veto). Hosted: apply migration `20261124000100_payee_cant_pay.sql`                                                   |
+| Unpaid reminders        | `docs/specs/2026-11-24-unpaid-reminders-design.md` | pg_cron `payment-reminders` pushes `payment.reminder` to the payer of a due bounty payment at 24 h and 72 h (rides keep their local reminders); the publish block was already built. Decisions UR1–UR7 (★ for veto). Hosted: apply migration `20261124000300_payment_reminders.sql` and redeploy `notify` (new copy)                                                                                                     |
 
 ## In progress
 
