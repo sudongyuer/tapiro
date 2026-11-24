@@ -35,6 +35,7 @@ export function SheetShell({
   testID,
   onConfirm: confirmTapped,
   onClose: closed,
+  onDismiss,
   children,
 }: {
   open: boolean;
@@ -45,6 +46,7 @@ export function SheetShell({
   testID: string;
   onConfirm: () => void;
   onClose: () => void;
+  onDismiss?: () => void;
   children: ReactNode;
 }) {
   const onConfirm = afterResign(confirmTapped);
@@ -58,6 +60,7 @@ export function SheetShell({
         onIsPresentedChange={(presented) => {
           if (!presented) onClose();
         }}
+        onDismiss={onDismiss}
       >
         <Group
           modifiers={[

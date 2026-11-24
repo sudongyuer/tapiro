@@ -28,6 +28,7 @@ const FAKE_USAGE: Readonly<Record<AiTask, { inputTokens: number; outputTokens: n
   translate: { inputTokens: 300, outputTokens: 60 },
   ask: { inputTokens: 3000, outputTokens: 600 },
   transcribe: { inputTokens: transcribeTokens(FAKE_RECORDING_SECONDS), outputTokens: 0 },
+  read_receipt: { inputTokens: 1500, outputTokens: 40 },
 };
 const FAKE_TRANSCRIPTS: Readonly<Record<AiLanguage, string>> = {
   'zh-Hans': '明天帮我去 Pyramid 取快递',
@@ -47,6 +48,8 @@ const EMPTY_DRAFT = {
   endsAt: null,
   placeHint: null,
 };
+
+const FAKE_RECEIPT = { total: '74.00', currency: 'MYR' };
 
 const FAKE_PICK = {
   items: [
@@ -102,6 +105,7 @@ function withFakeMemory(
 
 function fakeChat(call: Exclude<ProviderCall, { task: 'transcribe' }>) {
   if (call.task === 'ask') return fakeAsk(call);
+  if (call.task === 'read_receipt') return { toolName: 'draft_split', arguments: FAKE_RECEIPT };
   const { task, input } = call;
   if (task === 'draft_bounty') return { toolName: task, arguments: fakeDraft(input.text) };
   const text = task === 'translate' ? `[${input.to}] ${input.text}` : `[fake] ${input.text}`;

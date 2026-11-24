@@ -2,10 +2,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import { useSignedInUser } from '@/features/account';
+import { useReceiptReader } from '@/features/ask';
 import { useItemChat } from '@/features/chat';
 import { useSettleCelebration } from '@/features/payment';
 import { RideDetailScreen } from '@/features/ride';
 import { profileHref, ReviewEntryCard, reviewStore } from '@/features/reputation';
+import { useAiOffered } from '@/lib/storefront';
 
 export default function RideDetail() {
   return <RideDetailRoute overTabs={false} />;
@@ -18,6 +20,15 @@ export function RideDetailRoute({ overTabs }: { overTabs: boolean }) {
   const userId = user?.id ?? '';
   const openBook = useCallback(() => router.push('/sticker-book'), [router]);
   const celebration = useSettleCelebration(userId, openBook);
+  const reader = useReceiptReader(useAiOffered() && user ? user.id : null);
+  const receipts = useMemo(
+    () =>
+      reader && {
+        reader,
+        openConsent: () => router.push({ pathname: '/ask-consent', params: { from: 'ride' } }),
+      },
+    [reader, router],
+  );
   const { settled } = celebration;
   const chat = useItemChat(
     useCallback(
@@ -50,6 +61,7 @@ export function RideDetailRoute({ overTabs }: { overTabs: boolean }) {
         onOpenProfile={(person) => router.push(profileHref(overTabs ? 'overTabs' : 'ride', person))}
         onPull={() => void reviewStore.pullItem('ride', id)}
         reviews={(title) => <ReviewEntryCard kind="ride" itemId={id} title={title} />}
+        receipts={receipts}
       />
       {celebration.element}
     </>

@@ -982,5 +982,5 @@ PR: #48–#51, #53–#55, #57, #70 (record in the owner-decisions PR) · Commits
   paste on the new machine. To be fixed separately.
 - `ride.remind.*` device checks (local notifications on a locked phone, tap to open after a cold start) and the Apple
   Maps and Grab links wait for TestFlight.
-- Not built in v1: the Grab-receipt AI draft (`ride.split.receipt`, step 8 with 问小貘) and the 集合 Live Activity
-  (`ride.split.live-activity`, account half).
+- Not built in v1: the 集合 Live Activity (`ride.split.live-activity`, account half). The Grab-receipt AI draft
+  (`ride.split.receipt`) was built later: [ride receipt reading](2026-11-24-ride-receipt-read-design.md).

@@ -24,6 +24,8 @@ import { createSupabaseMemoryService } from './memory';
 import { createMemoryStore } from './memoryStore';
 import { metered } from './metered';
 import { createPantryStore } from './pantryStore';
+import { createReceiptReader } from './receiptReader';
+import { cloudImageOf } from './screenshot';
 import { createSettingsAskStorage, createSettingsTranslationStorage } from './settingsAskStorage';
 import { kitSpeech } from './speech';
 import { createTranslations, type TranslationStorage } from './translations';
@@ -174,6 +176,12 @@ export const translations = createTranslations({
   call: cloudCall,
   consent: consentStore,
   storage: verify && !keepAsk ? freshTranslations(translationStorage) : translationStorage,
+});
+
+export const readReceipt = createReceiptReader({
+  call: cloudCall,
+  consent: consentStore,
+  encode: cloudImageOf,
 });
 
 export const voice = createVoice({

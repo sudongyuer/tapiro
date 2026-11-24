@@ -7,7 +7,7 @@ export default function AskConsent() {
   const { from } = useLocalSearchParams<{ from?: string }>();
   return (
     <ConsentScreen
-      from={from === 'me' || from === 'chat' ? from : 'sheet'}
+      from={from === 'me' || from === 'chat' || from === 'ride' ? from : 'sheet'}
       onDone={() => router.back()}
       onOpenPrivacy={() => router.push('/legal/privacy')}
     />
