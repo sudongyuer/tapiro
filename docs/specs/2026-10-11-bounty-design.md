@@ -550,3 +550,27 @@ story-map gap `bounty.flow.eta-overdue`).
 | ★ Home cards | Poster: 「阿杰在路上 · 晚了 7 分钟」 instead of the time. Helper: unchanged 「你在路上 · 到了点完成」 | The helper's card never showed the ETA and its job is to prompt 完成; counting the helper's own lateness at them reads as a scold | A late count on the helper's card |
 | ★ Live Activity | Unchanged (L4): after ETA + 5 min it shows 「小林 · 在路上」 with 「可能不是最新」 | Once stale, the lock screen cannot know whether the helper moved the ETA or arrived, so it must not claim a count it cannot update | A stale title 「过了预计时间」 |
 | How the text moves | A timer to the next change (end of the grace, then each minute), not a fixed interval; no reload | Exact to the minute and idle when nothing will change; a re-read would cost a request a minute per open card | A 60 s interval; reloading the detail |
+
+## Implementation Record (2026-11-24, auto-confirm and cancel races)
+
+Status stays `approved`. Closes the last open criteria of `bounty.flow` (`bounty.flow.auto-confirm`,
+`bounty.flow.cancel`) and the waiver race in `rep.no-show.waiver`; both stories are now done.
+
+- Found already built: the 48 h job (`private.run_bounty_jobs`, pg_cron `bounty-jobs` every 5 minutes) confirms only
+  `done` rows whose `done_at` is 48 h old, so 「有问题」 (`disputed`) pauses it and 完成 again restarts it from a new
+  `done_at`; `cancel_bounty` with `private.no_show_offender` (30 minutes after the later of the agreed start and the
+  selection, helper still `assigned`) and `record_no_show` (one waiver per 60 days, serialised per offender by an
+  advisory lock); the cancel preview, the auto-confirm line on the status page and the 「状态变了」 notice. pgTAP
+  (`bounty_jobs`, `bounty_flow`, `bounty_cancel`, `reputation`), unit and UI cases already covered one session.
+- Built: `src/features/bounty/status/statusRaces.integration.ts` (in `test:stack`) runs the races on two database
+  sessions. A direct `postgres` session holds the lock while the real status service calls the RPCs as signed-in
+  users, so the order is fixed rather than hoped for: both sides cancelling at once cancel once with one no-show and
+  the later side gets `changed`; one helper cancelling two bounties at once uses the waiver once; the poster
+  confirming while the job holds the row gets the job's payment; the job skips a row the poster is confirming
+  (`skip locked`) and never confirms it twice. No server, client or copy change.
+
+| Decision | Choice | Reason | Rejected |
+| --- | --- | --- | --- |
+| ★ How the races are tested | A stack test where one `postgres` session holds the row (or the job's or a cancel's transaction) open and waits until the RPC under test is queued in `pg_locks` | Deterministic: each run exercises the overlap, and a missing lock or a blocking job fails or times out | Two concurrent HTTP calls (they rarely overlap, so the test passes vacuously); `dblink` in pgTAP (a new extension for tests only) |
+| ★ The later canceller | Unchanged: `invalid_transition`, shown as 「状态变了」 with a reload | The client already reloads into the cancelled state; replaying the other side's answer would tell them a no-show outcome that is not theirs | Answer the other side's cancel as theirs |
+| ★ Story status | `bounty.flow` and `rep.no-show` move to done | Every criterion now names a test; no gap is left | Keep building until a milestone run |
