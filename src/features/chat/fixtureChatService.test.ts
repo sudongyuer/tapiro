@@ -147,6 +147,19 @@ describe('fixture chat service', () => {
     expect(sent.ok && sent.message.senderId).toBe(FIXTURE_CHAT_USER_ID);
   });
 
+  test('the long thread is read at launch and counts as unread once its reply arrives', async () => {
+    let at = new Date('2026-11-06T02:00:00.000Z');
+    const service = createFixtureChatService({
+      variant: 'empty',
+      failFirst: [],
+      long: true,
+      now: () => at,
+    });
+    expect(await service.unreadCount()).toBe(0);
+    at = new Date(at.getTime() + 21_000);
+    expect(await service.unreadCount()).toBe(1);
+  });
+
   test('the long thread is opt-in through its launch argument', () => {
     expect(fixtureChatOptions(() => undefined, 'demo').long).toBe(false);
     expect(

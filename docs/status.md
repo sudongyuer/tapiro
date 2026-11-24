@@ -4,7 +4,8 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-24 (付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
+Updated: 2026-11-24 (notifications off keep the badge and strip, and one-time cards' seen marks were already built;
+付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
 the pay sheet turns writes off without a network; an overdue arrival time says how late on the status page and the
 poster's home card; the profile block entry was already built). Before: 2026-11-21 (UI audit batch B, China storefront
 phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
@@ -91,6 +92,8 @@ phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes
   Owner Q38 A (2026-11-21): time-critical pushes (payment to confirm or not received, chosen as helper, a bounty
   cancelled for its pair, a seat approved or declined, a ride cancelled or moved, a request for a ride leaving before
   10:00) skip quiet hours; the rest still wait for 08:00 Malaysia time (spec decisions table, `push_is_urgent`).
+  With notifications turned off the 消息 badge and the strip still follow live signals (`chat.push.off`, UI case
+  `push_off_live`, 2026-11-24); nothing in the app or the broadcast trigger depends on the permission or a push token.
 
 ## Queue
 
