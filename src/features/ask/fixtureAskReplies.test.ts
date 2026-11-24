@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { parseAskReply, toRawReply } from './askReply';
 import { createFixtureSender, FIXTURE_REPLIES, fixtureReplies } from './fixtureAskReplies';
 import { translatedText } from './translations';
+import { parseReceiptReply } from '@/lib/drafts/receiptDraft';
 
 const NOW = new Date('2026-11-12T04:00:00.000Z');
 
@@ -20,7 +21,7 @@ describe('verify replies', () => {
       if (!answer.ok) continue;
       const raw = toRawReply(answer.body);
       expect(raw !== null && parseAskReply(raw) !== null).toBe(
-        reply !== 'malformed' && reply !== 'silence',
+        reply !== 'malformed' && reply !== 'silence' && !reply.startsWith('receipt'),
       );
     }
   });
@@ -91,5 +92,26 @@ describe('verify replies', () => {
       image: false,
       to: 'zh-Hans',
     });
+  });
+
+  test('a receipt is read as RM 74.00 unless the queue says otherwise', async () => {
+    const send = createFixtureSender({
+      replies: fixtureReplies('answer,receiptUnreadable,receiptOtherCurrency,malformed'),
+      delayMs: 0,
+      onCall: () => {},
+      onConsentRequired: () => {},
+    });
+    const image = { mediaType: 'image/jpeg' as const, data: '/9j/' };
+    const readings = [];
+    for (let i = 0; i < 4; i += 1) {
+      const answer = await send({ task: 'read_receipt', input: { text: '', image } });
+      readings.push(answer.ok ? parseReceiptReply(answer.body, 'MYR') : 'refused');
+    }
+    expect(readings).toEqual([
+      { kind: 'read', total: { minor: 7400, currency: 'MYR' } },
+      { kind: 'unreadable' },
+      { kind: 'otherCurrency', total: { minor: 7400, currency: 'CNY' } },
+      null,
+    ]);
   });
 });

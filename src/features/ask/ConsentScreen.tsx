@@ -28,7 +28,7 @@ import { consentStore } from './services';
 const MASCOT = 56;
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
-export type ConsentFrom = 'sheet' | 'me' | 'chat';
+export type ConsentFrom = 'sheet' | 'me' | 'chat' | 'ride';
 
 export function ConsentScreen({
   from,

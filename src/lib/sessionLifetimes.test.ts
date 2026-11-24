@@ -15,6 +15,7 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/features/ask/services.ts#memoryStore': 'session',
   'src/features/ask/services.ts#pantryStore': 'session',
   'src/features/ask/services.ts#cloudCall': 'kept: reads the consent store, holds no user data',
+  'src/features/ask/services.ts#readReceipt': 'kept: calls through cloudCall, holds no user data',
   'src/features/ask/services.ts#askSession': 'session',
   'src/features/ask/services.ts#translationStorage': 'kept: a storage adapter',
   'src/features/ask/services.ts#translations': 'session',

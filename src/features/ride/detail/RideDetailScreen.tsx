@@ -27,7 +27,7 @@ import { activeMembers, detailPhase, footer as footerFor, hasThread } from './de
 import { DetailSheets, useDetailSheets } from './DetailSheets';
 import { DetailMenu, type RideMessage } from './DetailMenu';
 import { ProfileLinkProvider } from './ProfileLink';
-import { SettleSheets, useSettleSheets } from './SettleSheets';
+import { SettleSheets, useSettleSheets, type RideReceipts } from './SettleSheets';
 import { useDetailActions } from './useDetailActions';
 import { useSettleActions, type RideSettleBridge } from './useSettleActions';
 import { useRideDetail } from './useRideDetail';
@@ -43,6 +43,7 @@ export function RideDetailScreen({
   onOpenProfile,
   reviews,
   onPull,
+  receipts = null,
 }: {
   id: string;
   userId: string;
@@ -52,6 +53,7 @@ export function RideDetailScreen({
   onOpenProfile?: (personId: string) => void;
   reviews?: (title: string) => ReactNode;
   onPull?: () => void;
+  receipts?: RideReceipts | null;
 }) {
   const { t } = useI18n();
   const now = useNow(TICK_MS);
@@ -66,7 +68,7 @@ export function RideDetailScreen({
   const actions = useDetailActions(id, store, organiserName);
   const sheets = useDetailSheets(id, ride, now, actions);
   const settle = useSettleActions(id, store, bridge, t('bounty.post.unknownName'));
-  const settleSheets = useSettleSheets(id, ride, settle);
+  const settleSheets = useSettleSheets(id, ride, settle, receipts);
   const blocking = useBlockPerson('rideOrganiser', onGone);
   const offline = useLiveOffline();
 

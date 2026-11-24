@@ -8,6 +8,7 @@ import {
 import { POST_LIMITS } from '../../../src/lib/money';
 import { BOUNTY_CATEGORIES } from '../../../src/lib/stickers/category';
 import { parseAskReply } from '../../../src/features/ask/askReply';
+import { parseReceiptReply, RECEIPT_DRAFT_FIELDS } from '../../../src/lib/drafts/receiptDraft';
 import { fakeProvider } from './provider.ts';
 import { TOOL_SCHEMAS, validToolResult } from './tools.ts';
 
@@ -121,5 +122,46 @@ describe('the sheet tools and the app', () => {
   ])('server and app agree on %s', (_name, tool, result, accepted) => {
     expect(validToolResult(tool, result)).toBe(accepted);
     expect(parseAskReply({ tool, result }) !== null).toBe(accepted);
+  });
+});
+
+describe('the draft_split tool and the app', () => {
+  const split = TOOL_SCHEMAS.draft_split.parameters;
+
+  test('name the same fields and currencies', () => {
+    expect([...split.required!].sort()).toEqual([...RECEIPT_DRAFT_FIELDS].sort());
+    expect(split.properties!.currency.enum).toEqual([...Object.keys(POST_LIMITS.ride), null]);
+  });
+
+  test.each<[string, unknown, boolean]>([
+    ['a total in ringgit', { total: '74.00', currency: 'MYR' }, true],
+    ['a total with one decimal', { total: '18.4', currency: 'MYR' }, true],
+    ['a whole total', { total: '18', currency: 'CNY' }, true],
+    ['a total with no currency', { total: '18.40', currency: null }, true],
+    ['nothing read', { total: null, currency: null }, true],
+    ['three decimals', { total: '18.405', currency: 'MYR' }, false],
+    ['a zero total', { total: '0', currency: 'MYR' }, false],
+    ['a leading zero', { total: '018.40', currency: 'MYR' }, false],
+    ['seven digits', { total: '1000000', currency: 'MYR' }, false],
+    ['a comma', { total: '18,40', currency: 'MYR' }, false],
+    ['an unknown currency', { total: '18.40', currency: 'USD' }, false],
+  ])('server and app agree on %s', (_name, result, accepted) => {
+    expect(validToolResult('draft_split', result)).toBe(accepted);
+    expect(parseReceiptReply({ tool: 'draft_split', result }, 'MYR') !== null).toBe(accepted);
+  });
+
+  test('what the fake provider reads, the app fills', async () => {
+    const reply = await fakeProvider.generate(
+      {
+        task: 'read_receipt',
+        input: { text: '', image: { mediaType: 'image/jpeg', data: '/9j/' } },
+        tools: [TOOL_SCHEMAS.draft_split],
+      },
+      new AbortController().signal,
+    );
+    expect(parseReceiptReply({ tool: reply.toolName, result: reply.arguments }, 'MYR')).toEqual({
+      kind: 'read',
+      total: { minor: 7400, currency: 'MYR' },
+    });
   });
 });

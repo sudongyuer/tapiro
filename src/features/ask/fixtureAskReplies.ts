@@ -16,6 +16,8 @@ export const FIXTURE_REPLIES = [
   'consentRequired',
   'malformed',
   'silence',
+  'receiptUnreadable',
+  'receiptOtherCurrency',
 ] as const;
 export type FixtureReply = (typeof FIXTURE_REPLIES)[number];
 
@@ -61,12 +63,24 @@ export const FIXTURE_TRANSCRIPTS: Readonly<Record<string, string>> = {
   ms: 'Tolong ambil bungkusan saya di Pyramid esok',
 };
 
-// A recording is always written down; only a refusal or 'silence' in the queue changes what comes back.
+export const FIXTURE_RECEIPT_TOTAL = '74.00';
+
+function receipt(reply: FixtureReply) {
+  if (reply === 'malformed') return { tool: 'draft_split', result: {} };
+  if (reply === 'receiptUnreadable')
+    return { tool: 'draft_split', result: { total: null, currency: null } };
+  const currency = reply === 'receiptOtherCurrency' ? 'CNY' : 'MYR';
+  return { tool: 'draft_split', result: { total: FIXTURE_RECEIPT_TOTAL, currency } };
+}
+
+// A recording is always written down and a receipt always read; only a refusal, 'silence' or a receipt reply in the
+// queue changes what comes back.
 function body(reply: FixtureReply, now: Date, request: CloudRequest): unknown {
   if (request.task === 'transcribe') {
     const text = reply === 'silence' ? '' : (FIXTURE_TRANSCRIPTS[request.input.language] ?? '');
     return { tool: 'transcript', result: { text } };
   }
+  if (request.task === 'read_receipt') return receipt(reply);
   switch (reply) {
     case 'answer':
       return {
