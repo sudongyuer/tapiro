@@ -1,7 +1,8 @@
 """A draft from 问小貘 fills the post form in place (132 A). The long, fully filled draft shows in the sheet; 填进表单
 closes it and opens the form with every field filled, a strip 「小貘填了 5 项 · 撤销」 and the place 小貘 heard, which the
 user picks on the map. The filled rows glow and fade out (a clip measures the title row: the glow colour, then frames
-in between, then the plain row). 撤销 puts the blank form back and the strip goes; leaving the form and coming back
+in between, then the plain row). 下一步 to 确认发布 shows the filled title, and back on the form the strip and 撤销 are
+still there, since the confirm step does not leave the form (bounty.post.ai-draft). 撤销 puts the blank form back and the strip goes; leaving the form and coming back
 shows no strip and keeps the undone form. A second fill left in place survives leaving the form, without the strip."""
 import sys
 import tempfile
@@ -9,7 +10,7 @@ import time
 
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]))
 from ask import TYPED, open_sheet, turn, type_and_send  # noqa: E402
-from bounty import assert_category_one_line, close_sheet_by_swipe, value  # noqa: E402
+from bounty import assert_category_one_line, close_sheet_by_swipe, reach_confirm, value  # noqa: E402
 from bounty import open_sheet as open_post_sheet  # noqa: E402
 from driver import UI, Shot, by_id, close, reach_home, token  # noqa: E402
 from recording import clip, frames  # noqa: E402
@@ -68,12 +69,21 @@ print(f'glow lit for {lit[-1] - lit[0]:.2f} s, faded over {len(between)} frames,
 ui.at_rest()
 ui.capture('02-filled-strip')
 
+reach_confirm(ui)
+ui.wait_label('bounty-post-preview-text', lambda label: TITLE in label, '确认发布 does not show the filled title')
+ui.tap('BackButton')
+ui.element('bounty-post-form')
+ui.wait_label('bounty-post-ai-filled', lambda label: label == filled, 'the strip went away on the way back from 确认发布')
+ui.element('bounty-post-ai-undo')
+ui.at_rest()
+ui.capture('03-back-from-confirm')
+
 ui.tap('bounty-post-ai-undo')
 ui.gone('bounty-post-ai-filled')
 ui.wait(lambda items: value(ui, 'bounty-post-title') == '', '撤销 did not clear the title')
 assert value(ui, 'bounty-post-reward') == '', f'撤销 left the reward {value(ui, "bounty-post-reward")!r}'
 ui.at_rest()
-ui.capture('03-undone')
+ui.capture('04-undone')
 
 close_sheet_by_swipe(ui)
 if open_post_sheet(ui).get('AXUniqueId') == 'bounty-post-pick':
@@ -83,7 +93,7 @@ ui.wait(lambda items: by_id(items, 'bounty-post-title') is not None, 'the form n
 assert value(ui, 'bounty-post-title') == '', 'the undone title came back'
 assert by_id(ui.read(), 'bounty-post-ai-filled') is None, 'the strip came back after leaving the form'
 ui.at_rest()
-ui.capture('04-left-after-undo')
+ui.capture('05-left-after-undo')
 close_sheet_by_swipe(ui)
 
 open_sheet(ui)
@@ -97,5 +107,5 @@ ui.element('bounty-post-form')
 ui.wait(lambda items: value(ui, 'bounty-post-title') == TITLE, 'leaving the form lost the filled title')
 assert by_id(ui.read(), 'bounty-post-ai-filled') is None, 'the strip outlived the form'
 ui.at_rest()
-ui.capture('05-filled-kept')
+ui.capture('06-filled-kept')
 print('PASS: long draft card, fill with strip, place hint and a fading glow, 撤销, strip gone after leaving')
