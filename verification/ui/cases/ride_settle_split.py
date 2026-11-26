@@ -1,6 +1,6 @@
 """到了 and the split sheet for the organiser (210 A, 211 A, 212 B, 220 A). On the way the ticket reads 车上 and the
 到了 step asks 「到了？」; the bottom has only 「到了 · 分车费」. Tapping it sends reach_ride once and opens the half sheet
-「到了 · 分车费」 with the Grab total, the optional receipt row and one row per person. Typing 74 splits RM 74.00 three
+「到了 · 分车费」 with the Grab total, one row per person and the optional receipt row below them. Typing 74 splits RM 74.00 three
 ways: 阿明 and 小雅 RM 24.70, 小林 (you) RM 24.60, and the footer says the extra RM 0.10 is yours. Raising 阿明 above the
 total blocks sending (220 A); setting 阿明 to 20 keeps 小雅 at 24.70 and moves your row to RM 29.30. Sending posts
 send_ride_split once with the attached receipt and the edited shares, and the timeline moves to 结清."""
@@ -13,7 +13,7 @@ sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parents[1]
 from bounty import field_point, typed  # noqa: E402
 from choose import defaults  # noqa: E402
 from driver import UI, assert_touch_target, by_id  # noqa: E402
-from ride import assert_ticket_colour, tap_bar  # noqa: E402
+from ride import assert_ticket_colour, form_scroll_to, tap_bar  # noqa: E402
 
 DEPS = ['src/features/ride/', 'src/app/(tabs)/ride/', 'verification/ui/ride.py', 'src/lib/i18n/locales/rideSettle/',
         'supabase/migrations/20261102000900_ride_settle_reads.sql']
@@ -82,6 +82,9 @@ organiser = ui.element('ride-split-organiser').get('AXLabel') or ''
 assert re.search(MONEY + r'24\.60', organiser), organiser
 assert re.fullmatch(ui.pattern('rideSettle.sheet.footerEqual', count='3', amount=MONEY + r'0\.10') + r'\n.*', footer(),
                     re.S), footer()
+form_scroll_to(ui, 'ride-split-receipt-add', container='ride-split')
+ui.tap('ride-split-receipt-add')
+ui.element('ride-split-receipt-added')
 ui.at_rest()
 ui.snap('02-sheet-equal')
 
@@ -96,9 +99,6 @@ typed(ui, f'ride-split-share-{MING}', '20')
 ui.wait(lambda items: re.search(MONEY + r'29\.30', (by_id(items, 'ride-split-organiser') or {}).get('AXLabel') or ''),
         'your row did not take the remainder')
 assert ui.element(f'ride-split-share-{YA}').get('AXValue') == '24.70', 'editing 阿明 moved 小雅'
-# Attached last: with a receipt the read row and its footer push the rider rows below the medium detent.
-ui.tap('ride-split-receipt-add')
-ui.element('ride-split-receipt-added')
 ui.at_rest()
 ui.snap('03-sheet-edited')
 

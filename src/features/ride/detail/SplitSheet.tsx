@@ -17,9 +17,9 @@ import { SyncedTextField, useSyncedText } from '@/ui/SyncedTextField';
 import { deviceDecimal } from '@/lib/deviceDecimal';
 
 import { pickReceipt } from './receiptDevice';
-import type { ReceiptRead } from './receiptRead';
+import { readNote, type ReceiptRead } from './receiptRead';
 import { SheetShell } from './SheetShell';
-import { SplitReceipt } from './SplitReceipt';
+import { noteText, SplitReceipt } from './SplitReceipt';
 import { shareText, splitView, syncedDraft, type SplitDraft, type SplitView } from './splitDraft';
 import type { RideDetail } from './types';
 
@@ -163,6 +163,8 @@ export function SplitSheet({
     .map((row) => row.name ?? t('bounty.post.unknownName'))
     .join(t('ride.detail.listJoin'));
   const me = ride.organiser?.name ?? '';
+  const note = readable ? readNote(read, current) : null;
+  const readResult = note && note.kind !== 'offer' ? noteText(note, t, language) : null;
   return (
     <SheetShell
       open={request.open}
@@ -200,7 +202,13 @@ export function SplitSheet({
       onClose={onClose}
       onDismiss={onDismiss}
     >
-      <Section>
+      <Section
+        footer={
+          readResult ? (
+            <Text modifiers={[accessibilityIdentifier('ride-split-read-note')]}>{readResult}</Text>
+          ) : undefined
+        }
+      >
         <MoneyField
           key={`total-${filled}`}
           label={t('rideSettle.sheet.total')}
@@ -212,17 +220,6 @@ export function SplitSheet({
           onText={(text) => edit((value) => ({ ...value, totalText: text }))}
         />
       </Section>
-      <SplitReceipt
-        draft={current}
-        read={read}
-        readable={readable}
-        onAdd={async () => {
-          const uri = await pickReceipt();
-          if (uri) edit((value) => ({ ...value, receipt: { status: 'picked', uri } }));
-        }}
-        onRemove={() => edit((value) => ({ ...value, receipt: { status: 'none' } }))}
-        onRead={() => onRead(current)}
-      />
       <Section
         footer={
           <Text modifiers={[accessibilityIdentifier('ride-split-footer')]}>
@@ -266,6 +263,17 @@ export function SplitSheet({
           );
         })}
       </Section>
+      <SplitReceipt
+        draft={current}
+        read={read}
+        readable={readable}
+        onAdd={async () => {
+          const uri = await pickReceipt();
+          if (uri) edit((value) => ({ ...value, receipt: { status: 'picked', uri } }));
+        }}
+        onRemove={() => edit((value) => ({ ...value, receipt: { status: 'none' } }))}
+        onRead={() => onRead(current)}
+      />
     </SheetShell>
   );
 }
