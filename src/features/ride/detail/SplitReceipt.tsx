@@ -13,7 +13,7 @@ import type { SplitDraft } from './splitDraft';
 
 const secondary = foregroundStyle({ type: 'hierarchical', style: 'secondary' });
 
-function noteText(note: ReadNote, t: ReturnType<typeof useI18n>['t'], language: string) {
+export function noteText(note: ReadNote, t: ReturnType<typeof useI18n>['t'], language: string) {
   switch (note.kind) {
     case 'offer':
     case 'unreadable':
@@ -42,7 +42,7 @@ export function SplitReceipt({
   onRemove: () => void;
   onRead: () => void;
 }) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const { receipt } = draft;
   const note = readable ? readNote(read, draft) : null;
   const base =
@@ -51,7 +51,7 @@ export function SplitReceipt({
       : receipt.status === 'expired'
         ? t('rideSettle.sheet.receiptExpired')
         : t('rideSettle.sheet.receiptOptional');
-  const footer = note ? `${base}\n${noteText(note, t, language)}` : base;
+  const footer = note?.kind === 'offer' ? `${base}\n\n${t('rideSettle.sheet.read.offer')}` : base;
   return (
     <Section
       footer={
