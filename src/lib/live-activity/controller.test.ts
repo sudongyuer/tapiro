@@ -196,16 +196,16 @@ describe('live activity controller', () => {
     expect(calls).toEqual([]);
   });
 
-  test('sign out ends its own activities at once and pauses until the next user; a refresh queued before does nothing', async () => {
+  test('sign out ends every activity at once, also one started by push and never read, and pauses until the next user; a refresh queued before does nothing', async () => {
     const subjects = { current: [onTheWay(6)] };
     const { controller, calls, started, activities } = setup(subjects);
+    await controller.refresh();
     activities.push({
-      id: 'dbg',
-      kind: 'bounty',
-      link: 'tapiro://bounty/status/debug',
+      id: 'pushed',
+      kind: 'ride',
+      link: 'tapiro://ride/r9',
       state: 'active',
     });
-    await controller.refresh();
     const queued = controller.refresh();
     await controller.signOut();
     await queued;
@@ -214,11 +214,12 @@ describe('live activity controller', () => {
     expect(calls).toEqual([
       ['start', B1, 'onTheWay'],
       ['end', 'a1', null, 0],
+      ['end', 'pushed', null, 0],
     ]);
     expect(started.get()).toEqual([B1]);
     controller.follow();
     await controller.refresh();
-    expect(calls.length).toBe(2);
+    expect(calls.length).toBe(3);
   });
 
   test('a burst of signals reads once', async () => {

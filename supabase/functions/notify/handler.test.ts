@@ -156,6 +156,37 @@ describe('handleNotify', () => {
     expect(await res.json()).toEqual({ sent: 101, failed: 0, unfinished: 0 });
   });
 
+  test('Live Activities run after the pushes and report their own tally; a failed claim is a 500', async () => {
+    const order: string[] = [];
+    const run = harness([[due(1)]]);
+    const send = run.deps.sender.send;
+    run.deps.sender = {
+      send: async (pushes) => {
+        order.push('push');
+        return send(pushes);
+      },
+    };
+    run.deps.liveActivities = async () => {
+      order.push('liveActivities');
+      return { sent: 2, failed: 1, unfinished: 0 };
+    };
+    const res = await handleNotify(post('service'), run.deps);
+    expect(res.status).toBe(200);
+    expect(order).toEqual(['push', 'liveActivities']);
+    expect(await res.json()).toEqual({
+      sent: 1,
+      failed: 0,
+      unfinished: 0,
+      liveActivities: { sent: 2, failed: 1, unfinished: 0 },
+    });
+
+    const broken = harness([]);
+    broken.deps.liveActivities = async () => {
+      throw new Error('claim');
+    };
+    expect((await handleNotify(post('service'), broken.deps)).status).toBe(500);
+  });
+
   test('rejects callers without the service key', async () => {
     const run = harness([[due(8)]]);
     expect((await handleNotify(post('user'), run.deps)).status).toBe(401);

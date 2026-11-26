@@ -1,7 +1,6 @@
 import {
   UNREGISTERED,
   type ApnsEnvironment,
-  type OutgoingPush,
   type PushMessage,
   type PushSender,
   type SendResult,
@@ -84,7 +83,21 @@ async function reasonOf(response: Response) {
   }
 }
 
-export function apnsSender(config: ApnsConfig): PushSender {
+export type ApnsRequest = {
+  to: string;
+  environment: ApnsEnvironment;
+  pushType: 'alert' | 'liveactivity';
+  priority: 5 | 10;
+  payload: unknown;
+};
+
+export type LiveActivityPush = Omit<ApnsRequest, 'pushType'>;
+export type LiveActivitySender = { send(pushes: LiveActivityPush[]): Promise<SendResult[]> };
+export type ApnsSenders = { pushes: PushSender; liveActivities: LiveActivitySender };
+
+export const liveActivityTopic = (appTopic: string) => `${appTopic}.push-type.liveactivity`;
+
+function apnsTransport(config: ApnsConfig) {
   const send = config.fetch ?? fetch;
   const now = config.now ?? Date.now;
   let cached: { token: string; issuedAt: number } | null = null;
@@ -97,19 +110,20 @@ export function apnsSender(config: ApnsConfig): PushSender {
     return cached.token;
   }
 
-  async function deliver({ message }: OutgoingPush, token: string): Promise<SendResult> {
+  async function deliver(request: ApnsRequest, token: string): Promise<SendResult> {
     let response: Response;
     try {
-      response = await send(`${config.origins[message.environment]}/3/device/${message.to}`, {
+      response = await send(`${config.origins[request.environment]}/3/device/${request.to}`, {
         method: 'POST',
         headers: {
           authorization: `bearer ${token}`,
-          'apns-topic': config.topic,
-          'apns-push-type': 'alert',
-          'apns-priority': '10',
+          'apns-topic':
+            request.pushType === 'liveactivity' ? liveActivityTopic(config.topic) : config.topic,
+          'apns-push-type': request.pushType,
+          'apns-priority': String(request.priority),
           'content-type': 'application/json',
         },
-        body: JSON.stringify(apnsPayload(message)),
+        body: JSON.stringify(request.payload),
       });
     } catch {
       return { ok: false, error: 'apns_unreachable' };
@@ -125,11 +139,32 @@ export function apnsSender(config: ApnsConfig): PushSender {
     return { ok: false, error: `apns_${response.status}_${reason}` };
   }
 
+  return async (requests: ApnsRequest[]) => {
+    if (requests.length === 0) return [];
+    const token = await providerToken();
+    return Promise.all(requests.map((request) => deliver(request, token)));
+  };
+}
+
+export function apnsSenders(config: ApnsConfig): ApnsSenders {
+  const post = apnsTransport(config);
   return {
-    async send(pushes) {
-      if (pushes.length === 0) return [];
-      const token = await providerToken();
-      return Promise.all(pushes.map((push) => deliver(push, token)));
+    pushes: {
+      send: (pushes) =>
+        post(
+          pushes.map(({ message }) => ({
+            to: message.to,
+            environment: message.environment,
+            pushType: 'alert',
+            priority: 10,
+            payload: apnsPayload(message),
+          })),
+        ),
+    },
+    liveActivities: {
+      send: (pushes) => post(pushes.map((push) => ({ ...push, pushType: 'liveactivity' }))),
     },
   };
 }
+
+export const apnsSender = (config: ApnsConfig): PushSender => apnsSenders(config).pushes;

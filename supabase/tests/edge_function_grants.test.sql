@@ -1,5 +1,5 @@
 begin;
-select plan(26);
+select plan(28);
 
 -- Hosted projects grant the Data API roles nothing by default (config.toml api.auto_expose_new_tables = false); with
 -- the old defaults every assertion below would pass whether or not a migration granted it.
@@ -51,6 +51,8 @@ select ok(has_function_privilege('service_role', 'public.clear_ride_receipt(uuid
 select ok(has_function_privilege('service_role', 'public.claim_due_pushes(integer)', 'execute'), 'notify: claims due pushes');
 select ok(has_function_privilege('service_role', 'public.finish_push(bigint, text)', 'execute'), 'notify: finishes a push');
 select ok(has_function_privilege('service_role', 'public.drop_push_token(text)', 'execute'), 'notify: drops a dead token');
+select ok(has_function_privilege('service_role', 'public.claim_live_activity_work(integer)', 'execute'), 'notify: claims Live Activity work');
+select ok(has_function_privilege('service_role', 'public.finish_live_activity_work(uuid, bigint, jsonb)', 'execute'), 'notify: finishes Live Activity work');
 select ok(has_table_privilege('service_role', 'public.recorded_pushes', 'insert'), 'notify: records pushes in tests');
 
 select ok(has_function_privilege('service_role', 'public.ai_begin_call(uuid)', 'execute'), 'ai-draft: begins a call');

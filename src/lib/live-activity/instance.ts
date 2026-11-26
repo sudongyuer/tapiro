@@ -4,6 +4,7 @@ import { LiveActivity } from 'tapiro-kit';
 
 import { onReturnToForeground } from '../foreground';
 import { initI18n } from '../i18n';
+import { FALLBACK_LANGUAGE, isLanguage } from '../i18n/languages';
 import { live } from '../live';
 import { getSupabase } from '../supabase';
 import { uiVerify } from '../uiVerify';
@@ -11,6 +12,7 @@ import { userCleanups } from '../userCleanups';
 import { liveActivityContent } from './content';
 import { createLiveActivityController, type StartedLinks } from './controller';
 import { toLiveActivityRead } from './parse';
+import { liveActivityPush } from './pushInstance';
 
 const STARTED_KEY = 'liveActivityStarted';
 const TICK_MS = 60_000;
@@ -47,6 +49,8 @@ async function loadSubjects() {
 }
 
 const i18n = initI18n();
+const language = () =>
+  isLanguage(i18n.resolvedLanguage) ? i18n.resolvedLanguage : FALLBACK_LANGUAGE;
 
 export const liveActivities = createLiveActivityController({
   kit: LiveActivity,
@@ -62,14 +66,24 @@ export function useLiveActivities(userId: string | null) {
   useEffect(() => {
     if (!userId || uiVerify) return;
     liveActivities.follow();
-    const refresh = () => void liveActivities.refresh();
+    const register = (startToken?: string) =>
+      void liveActivityPush.sync(userId, language(), startToken);
+    const refresh = () => {
+      void liveActivities.refresh();
+      register();
+    };
     refresh();
     const offForeground = onReturnToForeground(AppState, refresh);
-    const offSignals = live.on(SIGNALS, refresh);
+    const offSignals = live.on(SIGNALS, () => void liveActivities.refresh());
+    const startTokens = LiveActivity.onStartToken(register);
+    const languages = () => register();
+    i18n.on('languageChanged', languages);
     const timer = setInterval(() => void liveActivities.tick(), TICK_MS);
     return () => {
       offForeground();
       offSignals();
+      startTokens.remove();
+      i18n.off('languageChanged', languages);
       clearInterval(timer);
     };
   }, [userId]);

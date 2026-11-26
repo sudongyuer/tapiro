@@ -11,7 +11,7 @@ public final class TapiroKitModule: Module {
   public func definition() -> ModuleDefinition {
     Name("TapiroKit")
 
-    Events("onPlaceSuggestions", "onStoreTransaction", "onSpeech", "onStorefront")
+    Events("onPlaceSuggestions", "onStoreTransaction", "onSpeech", "onStorefront", "onLiveActivityStartToken")
 
     OnCreate {
       ViewModifierRegistry.register("tapiroNavigationScrollEdge") { _, _, _ in NavigationScrollEdgeModifier() }
@@ -42,6 +42,19 @@ public final class TapiroKitModule: Module {
     AsyncFunction("liveActivityList") { () -> [[String: Any]] in
       MainActor.assumeIsolated { LiveActivities.list() }
     }.runOnQueue(.main)
+
+    AsyncFunction("liveActivityPushSetUp") { [weak self] (url: String, anonKey: String) -> [String: Any] in
+      MainActor.assumeIsolated {
+        LiveActivityPush.shared.onStartToken = { [weak self] token in
+          self?.sendEvent("onLiveActivityStartToken", ["token": token])
+        }
+        return LiveActivityPush.shared.setUp(url: url, anonKey: anonKey)
+      }
+    }.runOnQueue(.main)
+
+    AsyncFunction("liveActivityPushFlush") { () async in
+      await LiveActivityPush.shared.flush()
+    }
 
     AsyncFunction("storeProducts") { (ids: [String]) async -> [String: Any] in
       await self.store.products(ids: ids)

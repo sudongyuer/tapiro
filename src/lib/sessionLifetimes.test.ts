@@ -90,6 +90,8 @@ const LIFETIMES: Record<string, Lifetime> = {
   'src/lib/network/index.ts#store': 'kept: the device network state',
   'src/lib/notifications/index.ts#permissionAnswers': 'kept: a device permission signal',
   'src/lib/notifications/useNoticeRouting.ts#handled': 'kept: notification ids already routed',
+  'src/lib/live-activity/pushInstance.ts#liveActivityPush':
+    'kept: sign-out removes the device row before the session ends (accountActions.beforeSignOut)',
   'src/lib/push/instance.ts#deviceToken': 'kept: the device push token',
   'src/lib/push/instance.ts#pushRegistration':
     'kept: sign-out unregisters before the session ends (accountActions.beforeSignOut)',

@@ -5,6 +5,15 @@ import type { NativeSyntheticEvent, StyleProp, ViewProps, ViewStyle } from 'reac
 
 export { ChipRow, keyboardDone, navigationScrollEdge } from './swiftUiParts';
 export { snapshotPoster, type PosterSnapshotResult } from './poster';
+export {
+  LiveActivity,
+  type LiveActivityChangeResult,
+  type LiveActivityInfo,
+  type LiveActivityPushSetUp,
+  type LiveActivityRunState,
+  type LiveActivityStartResult,
+  type LiveActivityState,
+} from './liveActivity';
 
 export type PlacePoint = { latitude: number; longitude: number };
 export type PlaceSuggestion = { id: string; title: string; subtitle: string };
@@ -110,36 +119,6 @@ export type StorePurchaseResult =
   | { status: 'pending' | 'cancelled' | 'notAllowed' }
   | { status: 'failed'; code: StoreFailureCode };
 
-export type LiveActivityState = {
-  title: string;
-  staleTitle: string;
-  detail: string;
-  minutes?: number;
-  unit: string;
-  progress: number;
-  startLabel: string;
-  endLabel: string;
-  staleNote: string;
-  staleAfterSeconds?: number;
-};
-export type LiveActivityStartResult =
-  | { status: 'ok'; id: string }
-  | { status: 'disabled' }
-  | {
-      status: 'failed';
-      code:
-        'unsupported' | 'disabled' | 'tooMany' | 'tooLarge' | 'unentitled' | 'failed' | 'unknown';
-    };
-export type LiveActivityChangeResult = { status: 'ok' | 'notFound' };
-export type LiveActivityRunState =
-  'active' | 'stale' | 'ended' | 'dismissed' | 'pending' | 'unknown';
-export type LiveActivityInfo = {
-  id: string;
-  kind: string;
-  link: string | null;
-  state: LiveActivityRunState;
-};
-
 export type SpeechPermission = 'granted' | 'denied' | 'restricted' | 'undetermined';
 export type SpeechPermissions = {
   microphone: Exclude<SpeechPermission, 'restricted'>;
@@ -182,20 +161,7 @@ declare class TapiroKitModule extends NativeModule<TapiroKitEvents> {
   flyToTab(options: StickerFlightOptions): Promise<StickerFlightResult>;
   resignFocus(): Promise<void>;
   confirm(options: ConfirmOptions): Promise<boolean>;
-  liveActivityStart(
-    kind: string,
-    link: string | null,
-    state: LiveActivityState,
-  ): Promise<LiveActivityStartResult>;
-  liveActivityUpdate(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult>;
-  liveActivityEnd(
-    id: string,
-    state: LiveActivityState | null,
-    dismissAfterSeconds: number,
-  ): Promise<LiveActivityChangeResult>;
-  liveActivityEnabled(): Promise<boolean>;
   registeredUrlSchemes(): string[];
-  liveActivityList(): Promise<LiveActivityInfo[]>;
   storeProducts(ids: string[]): Promise<StoreProductsResult>;
   storePurchase(productId: string, accountToken: string): Promise<StorePurchaseResult>;
   storeUnfinished(): Promise<StoreTransaction[]>;
@@ -452,28 +418,6 @@ export const Storefront = {
         queueStorefrontUpdates(() => kit.storefrontStopUpdates());
       },
     };
-  },
-};
-
-export const LiveActivity = {
-  start(
-    kind: string,
-    link: string | null,
-    state: LiveActivityState,
-  ): Promise<LiveActivityStartResult> {
-    return kit.liveActivityStart(kind, link, state);
-  },
-  update(id: string, state: LiveActivityState): Promise<LiveActivityChangeResult> {
-    return kit.liveActivityUpdate(id, state);
-  },
-  end(id: string, state: LiveActivityState | null, dismissAfterSeconds: number) {
-    return kit.liveActivityEnd(id, state, dismissAfterSeconds);
-  },
-  enabled(): Promise<boolean> {
-    return kit.liveActivityEnabled();
-  },
-  list(): Promise<LiveActivityInfo[]> {
-    return kit.liveActivityList();
   },
 };
 

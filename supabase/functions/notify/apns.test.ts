@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { APNS_ORIGINS, apnsSender, importApnsKey, type ApnsConfig } from './apns.ts';
+import { APNS_ORIGINS, apnsSender, apnsSenders, importApnsKey, type ApnsConfig } from './apns.ts';
 import type { ApnsEnvironment, OutgoingPush } from './handler.ts';
 
 const TOKEN = 'a1'.repeat(32);
@@ -59,7 +59,13 @@ async function harness(
       return answer(url);
     }) as typeof fetch,
   };
-  return { sender: apnsSender(config), seen, publicKey, tick: (ms: number) => (clock += ms) };
+  return {
+    sender: apnsSender(config),
+    senders: apnsSenders(config),
+    seen,
+    publicKey,
+    tick: (ms: number) => (clock += ms),
+  };
 }
 
 const jwtOf = (seen: Seen) => seen.headers.get('authorization')!.replace(/^bearer /, '');
@@ -87,6 +93,20 @@ describe('apnsSender', () => {
       },
       body: { kind: 'bounty.selected', id: 'b1' },
     });
+  });
+
+  test('a Live Activity push goes to the liveactivity topic with its own push type and priority', async () => {
+    const { senders, seen } = await harness();
+    const payload = { aps: { timestamp: 1, event: 'update', 'content-state': { title: 'x' } } };
+    const results = await senders.liveActivities.send([
+      { to: TOKEN, environment: 'sandbox', priority: 5, payload },
+    ]);
+    expect(results).toEqual([{ ok: true }]);
+    expect(seen[0].url).toBe(`https://api.sandbox.push.apple.com/3/device/${TOKEN}`);
+    expect(seen[0].headers.get('apns-topic')).toBe('app.tapiro.push-type.liveactivity');
+    expect(seen[0].headers.get('apns-push-type')).toBe('liveactivity');
+    expect(seen[0].headers.get('apns-priority')).toBe('5');
+    expect(seen[0].body).toEqual(payload);
   });
 
   test('signs an ES256 provider token that verifies with the public key', async () => {

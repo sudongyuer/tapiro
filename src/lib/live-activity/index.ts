@@ -8,3 +8,4 @@ export {
   type LiveActivitySubject,
 } from './content';
 export { liveActivities, useLiveActivities } from './instance';
+export { liveActivityPush } from './pushInstance';

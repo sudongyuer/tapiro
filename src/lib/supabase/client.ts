@@ -10,6 +10,10 @@ const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 let client: SupabaseClient | null | undefined;
 
+export function supabaseEndpoint() {
+  return url && anonKey && !uiVerify ? { url, anonKey } : null;
+}
+
 export function getSupabase(): SupabaseClient | null {
   if (client !== undefined) return client;
   client =

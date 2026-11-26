@@ -41,7 +41,7 @@ hosted_release_env() {
   export EXPO_PUBLIC_SUPABASE_ANON_KEY="$anon_key"
   export EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID="$GOOGLE_IOS_CLIENT_ID"
   export EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID="$GOOGLE_WEB_CLIENT_ID"
-  unset EXPO_PUBLIC_UI_VERIFY TAPIRO_LIVE_ACTIVITY
+  unset EXPO_PUBLIC_UI_VERIFY
 }
 
 release_prebuild() {
@@ -69,4 +69,12 @@ check_bundle() {
     jq -e --arg scheme "$GOOGLE_URL_SCHEME" '[.CFBundleURLTypes[]?.CFBundleURLSchemes[]?] | index($scheme)' > /dev/null ||
     fail "Info.plist does not register the Google URL scheme $GOOGLE_URL_SCHEME; Google sign-in would stay off"
   node "$ROOT/scripts/check-purpose-strings.mjs" "$app" || fail "App Store processing would reject these purpose strings"
+  local appex="$app/PlugIns/TapiroLiveActivity.appex/Info.plist" key
+  [ -f "$appex" ] || fail "the Live Activity extension is not embedded"
+  for key in CFBundleShortVersionString CFBundleVersion; do
+    [ "$(/usr/libexec/PlistBuddy -c "Print :$key" "$appex")" = "$(/usr/libexec/PlistBuddy -c "Print :$key" "$app/Info.plist")" ] ||
+      fail "the Live Activity extension's $key differs from the app's; App Store Connect flags the build"
+  done
+  [ "$(/usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$app/Info.plist" 2> /dev/null)" = true ] ||
+    fail "Info.plist does not declare NSSupportsLiveActivities"
 }
