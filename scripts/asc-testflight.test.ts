@@ -65,6 +65,17 @@ describe('finding the build', () => {
     });
     expect(pickBuild({ data: [] }, '20261121.1730')).toBeUndefined();
   });
+
+  test('finds a build stamped before 10:00 under the number App Store Connect stores', () => {
+    const query = new URLSearchParams(
+      buildsPath('6837172850', '1.0.0', '20261126.0845').split('?')[1],
+    );
+    expect(query.get('filter[version]')).toBe('20261126.845');
+    const response = {
+      data: [{ id: 'c', attributes: { version: '20261126.845', processingState: 'VALID' } }],
+    };
+    expect(pickBuild(response, '20261126.0845')).toEqual({ id: 'c', processingState: 'VALID' });
+  });
 });
 
 describe('requests', () => {

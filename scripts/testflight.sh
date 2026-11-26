@@ -23,7 +23,9 @@ node "$ROOT/scripts/iap-preflight.mjs" ||
   fail "a coin pack in iap_products or Tapiro.storekit is not an In-App Purchase in App Store Connect; the build could not sell it"
 
 VERSION="$(node -p "require('./app.json').expo.version")"
-BUILD_NUMBER="${TAPIRO_BUILD_NUMBER:-$(date -u +%Y%m%d.%H%M)}"
+STAMP="$(date -u +%Y%m%d.%H%M)"
+# App Store Connect stores 20261126.0845 as 20261126.845, so the build is never found under the leading zero.
+BUILD_NUMBER="${TAPIRO_BUILD_NUMBER:-${STAMP%%.*}.$((10#${STAMP#*.}))}"
 OUT="$ROOT/.testflight/$VERSION-$BUILD_NUMBER"
 ARCHIVE="$OUT/Tapiro.xcarchive"
 mkdir -p "$OUT"

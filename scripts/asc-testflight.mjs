@@ -31,10 +31,17 @@ export function parseWhatToTest(text) {
   return notes;
 }
 
+export function canonicalBuild(build) {
+  return build
+    .split('.')
+    .map((part) => String(Number(part)))
+    .join('.');
+}
+
 export function buildsPath(appId, version, build) {
   const query = new URLSearchParams({
     'filter[app]': appId,
-    'filter[version]': build,
+    'filter[version]': canonicalBuild(build),
     'filter[preReleaseVersion.version]': version,
     'fields[builds]': 'version,processingState,usesNonExemptEncryption',
     limit: '2',
@@ -43,7 +50,9 @@ export function buildsPath(appId, version, build) {
 }
 
 export function pickBuild(response, build) {
-  const found = (response.data ?? []).find(({ attributes }) => attributes?.version === build);
+  const found = (response.data ?? []).find(
+    ({ attributes }) => attributes?.version === canonicalBuild(build),
+  );
   if (!found) return undefined;
   return { id: found.id, processingState: found.attributes.processingState };
 }
