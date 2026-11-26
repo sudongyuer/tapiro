@@ -6,8 +6,9 @@
 
 **Status:** proposed 2026-11-11. Tasks 1 and 2 (spikes) are done (branch `spike/iap-live-activity`, 「Spike results」
 below); Task 3 needs the owner's iPhone; 274–278 answered A (2026-11-12); Task 4 (the views) built 2026-11-12
-(「Views as built」 below); Task 5 (app wiring) built 2026-11-12 (「App wiring as built」 below); Tasks 6–9 wait on the
-account.
+(「Views as built」 below); Task 5 (app wiring) built 2026-11-12 (「App wiring as built」 below); Tasks 6–8 (push,
+push-to-start, the extension in release builds) built 2026-11-26 (「Push as built」 below); Task 9 needs the owner's
+phone.
 
 **Goal:** While a helper is on the way (bounty `en_route`) or a ride is gathering (集合), the Lock Screen and the
 Dynamic Island show one sentence and a progress line, started and updated by the app. Before the account exists this
@@ -255,6 +256,22 @@ draws no Tapiro control, only the system's 「允许来自 Tapiro 的实时活�
   drawn 「6 分」, so it goes to the owner as a question).
 - Spike C on the owner's iPhone (island while Tapiro is in front, the consent prompt, the stale look, background
   updates) is still owed.
+
+## Push as built (Tasks 6–8, 2026-11-26)
+
+Spec: `docs/specs/2026-11-26-live-activity-push-design.md` (decisions LP1–LP12, ★ for veto).
+
+- Task 6: the app starts with `pushType: .token`; the kit sends each activity's update token itself, also when iOS wakes
+  Tapiro in the background for a push-started activity, with a device key from the Keychain
+  (`attach_live_activity_token`); the app registers the device, its push-to-start token, language, time zone and clock
+  (`register_live_activity_device`). `withoutPushEntitlement` was already gone with direct APNs.
+- Task 7: `notify` sends `apns-push-type: liveactivity` to `app.tapiro.push-type.liveactivity` with the same
+  `content-state` the app draws, composed on the server per device; events send at priority 10, a minute tick at
+  priority 5 keeps the minutes counting down (this settles W7's 「the number holds until push」 without
+  `Text(timerInterval:)`). Expo Push was not needed: `notify` already talks to APNs directly.
+- Task 8: push-to-start for the 275 A triggers while Tapiro is closed (LP5), with the silent alert Apple requires;
+  `NSSupportsLiveActivitiesFrequentUpdates` is not set (priority 5 does not count against the budget).
+- L6: the `TAPIRO_LIVE_ACTIVITY` gate is gone; every build carries the extension, and the release scripts check it.
 
 ## Tasks
 

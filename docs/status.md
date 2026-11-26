@@ -4,7 +4,7 @@ Where the mainline stands and what comes next. Update this file in the PR that c
 owner decision, a new queue item). Decisions and their reasons live in the specs and `docs/research/`; this file only
 points to them.
 
-Updated: 2026-11-25 (owner blockers checked live with `node scripts/owner-blockers.mjs`: `APNS_PRIVATE_KEY` is set and hosted sent 16 pushes on 2026-11-20/21, Model Studio has metered real Qwen calls since 2026-11-20, the three coin packs exist, and the Paid Apps agreement, banking and tax are active; the EU Digital Services Act trader status is the open App Store Connect item). 2026-11-25 (小貘 reads the Grab receipt total into the ride split; story audit: `pay.settle` and `bounty.post` are done, the photo sticker moves to a later story; `home.live-activity`, `chat.push` and `chat.live` stay building with what is missing named in the story map: the Live Activity extension is not in release builds and no push has been watched arriving on a device; new UI cases `pay_sheet_worst` and `ride_detail_revised_time` close `pay.sheet.worst` and `ride.join.late`). 2026-11-24 (notifications off keep the badge and strip, and one-time cards' seen marks were already built; unpaid bounty payments are pushed to the payer at 24 h and 72 h; 付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
+Updated: 2026-11-26 (Live Activities by push: `notify` starts, updates and ends the activity while Tapiro is closed, and release builds carry the extension; hosted needs migration `20261126000100_live_activity_push.sql` and a `notify` redeploy). 2026-11-25 (owner blockers checked live with `node scripts/owner-blockers.mjs`: `APNS_PRIVATE_KEY` is set and hosted sent 16 pushes on 2026-11-20/21, Model Studio has metered real Qwen calls since 2026-11-20, the three coin packs exist, and the Paid Apps agreement, banking and tax are active; the EU Digital Services Act trader status is the open App Store Connect item). 2026-11-25 (小貘 reads the Grab receipt total into the ride split; story audit: `pay.settle` and `bounty.post` are done, the photo sticker moves to a later story; `home.live-activity`, `chat.push` and `chat.live` stay building with what is missing named in the story map: the Live Activity extension is not in release builds and no push has been watched arriving on a device; new UI cases `pay_sheet_worst` and `ride_detail_revised_time` close `pay.sheet.worst` and `ride.join.late`). 2026-11-24 (notifications off keep the badge and strip, and one-time cards' seen marks were already built; unpaid bounty payments are pushed to the payer at 24 h and 72 h; 付不了: a payer reports a payment method that does not work and the payee's list asks for a check;
 the pay sheet turns writes off without a network; an overdue arrival time says how late on the status page and the
 poster's home card; the profile block entry was already built). Before: 2026-11-21 (UI audit batch B, China storefront
 phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes, UI audit batches C and E).
@@ -328,16 +328,18 @@ phase 1, PostgreSQL 17 stacks, force-push hook, first device test, urgent pushes
    Apps agreement, banking and tax are active (20 Nov 2026 – 19 Nov 2027, checked 2026-11-25); next a TestFlight
    purchase for `coins.purchase.sandbox`; at App Store submission, the three products go with the app version. `CONSUMPTION_REQUEST` is still not handled. Live Activity spikes 1–2 done
    (`docs/plans/2026-11-11-live-activity-spike.md`): our own plugin's extension renders on the Simulator Lock Screen and
-   Dynamic Island, generated only with `TAPIRO_LIVE_ACTIVITY=1` (278 A tied it to push, which delivers on hosted since 2026-11-20;
-   the remaining step is setting `TAPIRO_LIVE_ACTIVITY` in release builds together with Tasks 6–8); spike 3 needs the
-   owner's iPhone. Views built 2026-11-12 (`feat/live-activity-ui`, 274–277 A): Lock Screen and island compact, minimal and
+   Dynamic Island; since 2026-11-26 every build carries it (the `TAPIRO_LIVE_ACTIVITY` gate is gone with push, 278 A);
+   spike 3 needs the owner's iPhone. Views built 2026-11-12 (`feat/live-activity-ui`, 274–277 A): Lock Screen and island compact, minimal and
    expanded with 小貘's head, the content builder in `src/lib/live-activity`, the Debug scene `live-activity`. App wiring
    built 2026-11-12 (`feat/live-activity-start`, 275 A, Task 5): the activity starts by itself while Tapiro is open as
    the poster's bounty goes `en_route` or a ride reaches 集合, updates on the realtime signals and once a minute while
    open, ends with the final step and 15 minutes on 完成 / 出发 and at once on cancel or sign out, and is found again
    with `list` after a relaunch; one server read `live_activity_subjects()`. V5's island checkmark never shows (the
-   island drops an ended activity). Remote updates (Tasks 6–8: the activity's push token and `notify`'s
-   liveactivity send) are not built; APNs itself works.
+   island drops an ended activity). Push built 2026-11-26 (Tasks 6–8, `docs/specs/2026-11-26-live-activity-push-design.md`,
+   LP1–LP12 for veto): `notify` updates, ends and push-starts the activity while Tapiro is closed (topic
+   `app.tapiro.push-type.liveactivity`), a minute tick keeps the minutes counting down, the kit attaches each activity's
+   token itself; a Release archive embeds `app.tapiro.LiveActivity` signed for 4RML7RLKML. Hosted: apply migration
+   `20261126000100_live_activity_push.sql` and redeploy `notify`. Device run (Task 9) still owed.
 3. Done 2026-11-17 (Q8 A): `website/index.html`, `coins.html` and `terms.html` describe 问小貘 as the app does
    (drafts, answers, translation, cloud speech fallback, 小貘记得, consent first, coins swap for leaves).
 4. Settled 2026-11-10: the 「dropped typed keys」 of `bounty_post_form`, `bounty_post_optional` and `ride_create_form`
@@ -549,7 +551,8 @@ Later on 2026-11-06 the owner answered 「都按推荐」 (relayed by the main s
   in `scripts/release-env.sh` (`EXPO_PUBLIC_GOOGLE_*` or `TAPIRO_GOOGLE_*` override), exported before prebuild so
   `withGoogleSignIn` registers the reversed iOS client ID as a URL scheme; the archive check fails when the built
   `Info.plist` lacks that scheme or the bundle lacks the client ID. Local and dev builds still read them from `.env`.
-  Live Activity stays out (`TAPIRO_LIVE_ACTIVITY` unset).
+  The archive check also fails without the Live Activity extension (`PlugIns/TapiroLiveActivity.appex`, its versions
+  equal to the app's) or `NSSupportsLiveActivities`.
 - `bun run device-install <udid>` (`scripts/device-install.sh`): the same Release build against the hosted project,
   installed over the cable with `devicectl` and launched; no TestFlight, no Metro. `xcrun devicectl list devices`
   shows the UDID; `TAPIRO_SKIP_PREBUILD=1` reuses `ios/`. A new iPhone must be registered on the team first, and it must

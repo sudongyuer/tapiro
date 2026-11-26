@@ -1,4 +1,4 @@
-import { liveActivities } from '@/lib/live-activity';
+import { liveActivities, liveActivityPush } from '@/lib/live-activity';
 import { pushRegistration } from '@/lib/push';
 import { getSupabase } from '@/lib/supabase';
 import { uiVerify, uiVerifyFixture, uiVerifySignedIn } from '@/lib/uiVerify';
@@ -32,7 +32,11 @@ export const accountActions = createAccountActions({
   profiles: profileStore,
   cleanups: userCleanups,
   beforeSignOut: async (wait) => {
-    await Promise.all([pushRegistration.signOut(wait), liveActivities.signOut()]);
+    await Promise.all([
+      pushRegistration.signOut(wait),
+      liveActivities.signOut(),
+      liveActivityPush.signOut(),
+    ]);
   },
 });
 

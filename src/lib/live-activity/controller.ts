@@ -138,12 +138,10 @@ export function createLiveActivityController({
       generation += 1;
       paused = true;
       read = null;
+      // Every Tapiro activity belongs to the account signing out, including one started by push that no read has
+      // adopted yet; the server forgets the device, so nothing would end it later.
       return serial(async () => {
-        const links = new Set(started.load());
-        for (const activity of await running()) {
-          if (activity.link !== null && links.has(activity.link))
-            await kit.end(activity.id, null, 0);
-        }
+        for (const activity of await running()) await kit.end(activity.id, null, 0);
       });
     },
   };

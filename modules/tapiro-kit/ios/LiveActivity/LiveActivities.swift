@@ -21,15 +21,15 @@ enum LiveActivities {
 
   static func start(kind: String, link: String?, state: LiveActivityStateRecord) -> [String: Any] {
     guard ActivityAuthorizationInfo().areActivitiesEnabled else { return ["status": "disabled"] }
+    let attributes = TapiroActivityAttributes(kind: kind, link: link)
     do {
-      let activity = try Activities.request(
-        attributes: TapiroActivityAttributes(kind: kind, link: link),
-        content: content(state),
-        pushType: nil
-      )
+      let activity = try Activities.request(attributes: attributes, content: content(state), pushType: .token)
       return ["status": "ok", "id": activity.id]
     } catch {
-      return ["status": "failed", "code": code(for: error)]
+      // A build without the push entitlement still shows the activity; only remote updates are lost.
+      guard let activity = try? Activities.request(attributes: attributes, content: content(state), pushType: nil)
+      else { return ["status": "failed", "code": code(for: error)] }
+      return ["status": "ok", "id": activity.id]
     }
   }
 

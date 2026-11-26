@@ -4,6 +4,8 @@ import { cronSecretCheck } from '../_shared/cronSecret.ts';
 import { liveSender, localTestSender, senderFor, unconfiguredSender } from './config.ts';
 import { localizedCopy } from './copy.ts';
 import { handleNotify, type DuePush } from './handler.ts';
+import type { LiveActivityWork } from './liveActivityPlan.ts';
+import { runLiveActivities } from './liveActivityRound.ts';
 import { recordingSender } from './recording-sender.ts';
 
 const env = (key: string) => Deno.env.get(key);
@@ -17,8 +19,9 @@ const recording = recordingSender({ insert: (rows) => admin.from('recorded_pushe
 const configured = (await liveSender(env)) ?? unconfiguredSender(env, recording);
 const test = await localTestSender(env);
 
-Deno.serve((req) =>
-  handleNotify(req, {
+Deno.serve((req) => {
+  const senders = senderFor(req, configured, test);
+  return handleNotify(req, {
     authorized,
     async claim(maxRows) {
       const { data, error } = await admin.rpc('claim_due_pushes', { max_rows: maxRows });
@@ -34,6 +37,26 @@ Deno.serve((req) =>
       if (error) throw error;
     },
     copy: localizedCopy,
-    sender: senderFor(req, configured, test),
-  }),
-);
+    sender: senders.pushes,
+    liveActivities: () =>
+      runLiveActivities({
+        async claim(maxRows) {
+          const { data, error } = await admin.rpc('claim_live_activity_work', {
+            max_rows: maxRows,
+          });
+          if (error) throw error;
+          return (data ?? []) as LiveActivityWork[];
+        },
+        async finish(userId, version, outcome) {
+          const { error } = await admin.rpc('finish_live_activity_work', {
+            work_user: userId,
+            work_version: version,
+            outcome,
+          });
+          if (error) throw error;
+        },
+        sender: senders.liveActivities,
+        now: Date.now,
+      }),
+  });
+});

@@ -122,7 +122,7 @@ function withExtensionTarget(config) {
         CURRENT_PROJECT_VERSION: appSettings.CURRENT_PROJECT_VERSION ?? '1',
         INFOPLIST_FILE: `${TARGET}/Info.plist`,
         IPHONEOS_DEPLOYMENT_TARGET: config.ios.deploymentTarget,
-        MARKETING_VERSION: appSettings.MARKETING_VERSION ?? config.version,
+        MARKETING_VERSION: config.version,
         SDKROOT: 'iphoneos',
         SWIFT_VERSION: '5.0',
         TARGETED_DEVICE_FAMILY: '1',
@@ -133,10 +133,7 @@ function withExtensionTarget(config) {
   });
 }
 
-// Gate (docs/plans/2026-11-11-live-activity-spike.md, 278 A): the extension is generated only when prebuild runs with
-// TAPIRO_LIVE_ACTIVITY=1, so verify and release builds carry none until it ships together with push.
 module.exports = function withLiveActivity(config) {
-  if (process.env.TAPIRO_LIVE_ACTIVITY !== '1') return config;
   config = withInfoPlist(config, (config) => {
     config.modResults.NSSupportsLiveActivities = true;
     return config;

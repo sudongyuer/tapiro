@@ -1,4 +1,5 @@
 import { CRON_SECRET_HEADER } from '../_shared/cronSecret.ts';
+import type { LiveActivityTally } from './liveActivityRound.ts';
 
 export type DuePush = {
   queueId: number;
@@ -43,6 +44,7 @@ export type NotifyDeps = {
   dropToken(token: string): Promise<void>;
   copy: CopyBuilder;
   sender: PushSender;
+  liveActivities?: () => Promise<LiveActivityTally>;
 };
 
 const BATCH = 100;
@@ -170,5 +172,13 @@ export async function handleNotify(req: Request, deps: NotifyDeps) {
   } catch {
     return json(500, { error: 'claim_failed', ...tally });
   }
-  return json(tally.unfinished > 0 ? 500 : 200, tally);
+  if (!deps.liveActivities) return json(tally.unfinished > 0 ? 500 : 200, tally);
+  let liveActivities: LiveActivityTally;
+  try {
+    liveActivities = await deps.liveActivities();
+  } catch {
+    return json(500, { error: 'live_activity_claim_failed', ...tally });
+  }
+  const unfinished = tally.unfinished > 0 || liveActivities.unfinished > 0;
+  return json(unfinished ? 500 : 200, { ...tally, liveActivities });
 }
