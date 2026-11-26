@@ -7,7 +7,7 @@ DERIVED="$ROOT/.verify/DerivedData"
 cd "$ROOT"
 STARTED=$SECONDS
 STAMP=ios/.verify-prebuild-stamp
-NATIVE_INPUTS=(app.json package.json bun.lock plugins src/lib/i18n/native modules/tapiro-kit)
+NATIVE_INPUTS=(app.json package.json bun.lock assets/images/app-icon plugins src/lib/i18n/native modules/tapiro-kit)
 EXPO_MAJOR="expo-$(node -p "require('expo/package.json').version.split('.')[0]")"
 # A plain prebuild keeps template files from an older SDK (AppDelegate, scene delegate), so an SDK change starts clean.
 if [ "$(cat "$STAMP" 2>/dev/null)" != "$EXPO_MAJOR" ]; then

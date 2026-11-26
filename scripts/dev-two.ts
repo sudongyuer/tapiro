@@ -13,6 +13,7 @@ const NATIVE_INPUTS = [
   'app.json',
   'package.json',
   'bun.lock',
+  'assets/images/app-icon',
   'plugins',
   'src/lib/i18n/native',
   'modules/tapiro-kit',
